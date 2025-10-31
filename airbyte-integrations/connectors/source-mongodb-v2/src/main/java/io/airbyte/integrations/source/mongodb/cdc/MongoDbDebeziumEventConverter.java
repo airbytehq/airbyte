@@ -51,12 +51,17 @@ public class MongoDbDebeziumEventConverter implements DebeziumEventConverter {
      * of the MongoDB server, the contents Debezium event data will be different. See
      * #formatMongoDbDeleteDebeziumData() for more details.
      */
-    final JsonNode data = switch (operation) {
+    var data = switch (operation) {
       case "c", "i", "u" -> formatMongoDbDebeziumData(
           before, after, source, debeziumEventKey, cdcMetadataInjector, configuredFields, isEnforceSchema);
       case "d" -> formatMongoDbDeleteDebeziumData(before, debeziumEventKey, source, cdcMetadataInjector, configuredFields, isEnforceSchema);
       default -> throw new IllegalArgumentException("Unsupported MongoDB change event operation '" + operation + "'.");
     };
+
+    final JsonNode streamSchema = getStreamSchema(source, configuredAirbyteCatalog, cdcMetadataInjector);
+    if (streamSchema != null) {
+      data = io.airbyte.integrations.source.mongodb.SchemaCoercion.coerce(data, streamSchema);
+    }
 
     return DebeziumEventConverter.buildAirbyteMessage(source, cdcMetadataInjector, emittedAt, data);
   }
@@ -126,6 +131,18 @@ public class MongoDbDebeziumEventConverter implements DebeziumEventConverter {
         .map(CatalogHelpers::getTopLevelFieldNames)
         .flatMap(Set::stream)
         .collect(Collectors.toSet());
+  }
+
+  private static JsonNode getStreamSchema(final JsonNode source,
+                                          final ConfiguredAirbyteCatalog configuredAirbyteCatalog,
+                                          final CdcMetadataInjector cdcMetadataInjector) {
+    final String streamNamespace = cdcMetadataInjector.namespace(source);
+    final String streamName = cdcMetadataInjector.name(source);
+    return configuredAirbyteCatalog.getStreams().stream()
+        .filter(s -> streamName.equals(s.getStream().getName()) && streamNamespace.equals(s.getStream().getNamespace()))
+        .map(s -> s.getStream().getJsonSchema())
+        .findFirst()
+        .orElse(null);
   }
 
 }
