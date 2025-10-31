@@ -41,7 +41,7 @@ class ProtobufConverterTest {
 
     private val encoder = AirbyteValueProtobufEncoder()
 
-    private fun createMockCoercerPassThrough(nullify: Boolean = false): ValueCoercer =
+    private fun createMockCoercerPassThrough(): ValueCoercer =
         mockk<ValueCoercer> {
             every { representAs(any()) } returns null
             every { map(any()) } answers { firstArg<EnrichedAirbyteValue>() }
