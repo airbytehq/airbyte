@@ -73,21 +73,54 @@ interface TableSchemaEvolutionClient<AdditionalSchemaInfo, AdditionalSchemaInfoD
         )
     }
 
+    /**
+     * Query the destination and discover the schema of an existing table. If this method includes
+     * the `_airbyte_*` columns, then [computeSchema] MUST also include those columns.
+     *
+     * [AdditionalSchemaInfo] should be used for anything not represented in the [TableSchema]
+     * object. For example, you may want to configure a partitioning/clustering key on the table,
+     * based on the sync mode - this can be provided via AdditionalSchemaInfo.
+     *
+     * Most destinations will likely use [Unit] for their additional info.
+     */
     suspend fun discoverSchema(tableName: TableName): Pair<TableSchema, AdditionalSchemaInfo> {
         throw NotImplementedError()
     }
+
+    /**
+     * Compute the schema that we _expect_ the table to have, given the [stream]. This should _not_
+     * query the destination in any way.
+     *
+     * See [discoverSchema] for an explanation of [AdditionalSchemaInfo].
+     */
     fun computeSchema(
         stream: DestinationStream,
         columnNameMapping: ColumnNameMapping
     ): Pair<TableSchema, AdditionalSchemaInfo> {
         throw NotImplementedError()
     }
+
+    /**
+     * See [discoverSchema] for an explanation of [AdditionalSchemaInfo].
+     *
+     * This function computes a diff between two "additional info" structs.
+     *
+     * If your destination uses [Unit] as its additional info, you should use this implementation:
+     * ```kotlin
+     * fun diff(actualSchemaInfo: Unit, expectedSchemaInfo: Unit) = Unit
+     * ```
+     */
     fun diff(
         actualSchemaInfo: AdditionalSchemaInfo,
         expectedSchemaInfo: AdditionalSchemaInfo
     ): AdditionalSchemaInfoDiff {
         throw NotImplementedError()
     }
+
+    /**
+     * Execute the diff against the destination. After this method completes, a call to
+     * [discoverSchema] should return an identical schema as [computeSchema].
+     */
     suspend fun applySchemaDiff(
         // Eventually it would be nice for the stream+columnnamemapping to go away,
         // but that would require computeSchema() to include the airbyte columns,
@@ -107,7 +140,14 @@ interface TableSchemaEvolutionClient<AdditionalSchemaInfo, AdditionalSchemaInfoD
     }
 }
 
-data class TableSchema(val columns: Map<String, ColumnType>) {
+data class TableSchema(
+    /**
+     * A map from column name to type. Note that the column name should be as it appears in the
+     * destination: for example, Snowflake upcases all identifiers, so these column names should be
+     * upcased.
+     */
+    val columns: Map<String, ColumnType>
+) {
     /** Generate a diff which, when applied to `this`, will result in [expectedSchema]. */
     fun diff(expectedSchema: TableSchema): TableSchemaDiff {
         val actualColumns = this.columns
@@ -136,10 +176,27 @@ data class TableSchema(val columns: Map<String, ColumnType>) {
 }
 
 data class ColumnType(
+    /**
+     * A string representation of the data type. For most destinations, this will likely be strings
+     * like "VARCHAR" or "INTEGER".
+     *
+     * Implementations _may_ include precision information (e.g. "VARCHAR(1234)"), but should take
+     * care that their `discoverSchema` and `computeSchema` implementations generate the same
+     * precision.
+     */
     val type: String,
+    /**
+     * Note that column nullability is not always the same as whether [DestinationStream.schema]
+     * declares a field as "nullable". Many destinations default all user-configured fields to
+     * nullable, and use "nonnull" for other purposes (e.g. Clickhouse and Iceberg require primary
+     * key columns to be non-nullable).
+     */
     val nullable: Boolean,
 )
 
+/**
+ * As with [TableSchema], all maps are keyed by the column name as it appears in the destination.
+ */
 data class TableSchemaDiff(
     val columnsToAdd: Map<String, ColumnType>,
     val columnsToDrop: Map<String, ColumnType>,
