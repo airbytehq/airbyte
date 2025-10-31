@@ -6,15 +6,15 @@ package io.airbyte.cdk.load.component
 
 // Some potentially-shareable utility classes for TableSchemaEvolutionClient.
 
-data class PrimaryKeyList(val primaryKey: List<String>) {
-    fun diff(other: PrimaryKeyList): PrimaryKeyDiff {
-        TODO()
+data class PrimaryKeySet(val primaryKey: Set<String>) {
+    fun diff(expected: PrimaryKeySet): PrimaryKeyDiff {
+        return PrimaryKeyDiff(
+            columnsToAdd = expected.primaryKey.filter { !this.primaryKey.contains(it) }.toSet(),
+            columnsToRemove = this.primaryKey.filter { !expected.primaryKey.contains(it) }.toSet(),
+        )
     }
 }
 
-data class PrimaryKeyDiff(
-    val columnsToAddToPrimaryKey: List<String>,
-    val columnsToRemoveFromPrimaryKey: List<String>
-) {
-    fun isNoop() = columnsToAddToPrimaryKey.isEmpty() && columnsToRemoveFromPrimaryKey.isEmpty()
+data class PrimaryKeyDiff(val columnsToAdd: Set<String>, val columnsToRemove: Set<String>) {
+    fun isNoop() = columnsToAdd.isEmpty() && columnsToRemove.isEmpty()
 }

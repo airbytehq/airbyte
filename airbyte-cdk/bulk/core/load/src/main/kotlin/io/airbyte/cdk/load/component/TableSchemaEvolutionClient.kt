@@ -63,6 +63,8 @@ interface TableSchemaEvolutionClient<AdditionalSchemaInfo, AdditionalSchemaInfoD
         val schemaDiff = actualSchema.diff(expectedSchema)
         val additionalInfoDiff = diff(actualAdditionalInfo, expectedAdditionalInfo)
         applySchemaDiff(
+            stream,
+            columnNameMapping,
             tableName,
             expectedSchema,
             expectedAdditionalInfo,
@@ -87,6 +89,14 @@ interface TableSchemaEvolutionClient<AdditionalSchemaInfo, AdditionalSchemaInfoD
         throw NotImplementedError()
     }
     suspend fun applySchemaDiff(
+        // Eventually it would be nice for the stream+columnnamemapping to go away,
+        // but that would require computeSchema() to include the airbyte columns,
+        // and we're not consistent about doing that (and there's some CDK work needed
+        // to make that easier to do anyway).
+        // So for now just include the full stream object.
+        // This is needed for destinations that need to recreate the entire table.
+        stream: DestinationStream,
+        columnNameMapping: ColumnNameMapping,
         tableName: TableName,
         expectedSchema: TableSchema,
         expectedAdditionalInfo: AdditionalSchemaInfo,
