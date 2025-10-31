@@ -1,19 +1,22 @@
-#
-# Copyright (c) 2024 Airbyte, Inc., all rights reserved.
-#
+# Copyright (c) 2025 Airbyte, Inc., all rights reserved.
 
 import logging
 from typing import Any, Dict, List
 
 import pytest
 import requests
-from conftest import find_stream, get_source, load_json_file
+from airbyte_protocol_dataclasses.models import AirbyteStream, ConfiguredAirbyteCatalog, ConfiguredAirbyteStream, DestinationSyncMode
+from airbyte_protocol_dataclasses.models import Status as ConnectionStatus
 
 from airbyte_cdk.models import SyncMode
-from airbyte_cdk.sources.declarative.manifest_declarative_source import ManifestDeclarativeSource
+from airbyte_cdk.sources.declarative.concurrent_declarative_source import ConcurrentDeclarativeSource
 from airbyte_cdk.sources.streams import Stream
-from airbyte_cdk.sources.streams.http.exceptions import DefaultBackoffException
+from airbyte_cdk.sources.streams.http.http_client import MessageRepresentationAirbyteTracedErrors
 from airbyte_cdk.sources.streams.http.requests_native_auth import TokenAuthenticator
+from airbyte_cdk.sources.types import Record, StreamSlice
+from unit_tests.utils import run_read
+
+from .conftest import find_stream, get_source, load_json_file
 
 
 logger = logging.getLogger("airbyte")
@@ -93,16 +96,16 @@ class TestAllStreams:
     @pytest.mark.parametrize("error_code", [429, 500, 503])
     def test_should_retry_on_error(self, error_code, requests_mock, mocker):
         mocker.patch.object(
-            ManifestDeclarativeSource, "_initialize_cache_for_parent_streams", side_effect=self._mock_initialize_cache_for_parent_streams
+            ConcurrentDeclarativeSource, "_initialize_cache_for_parent_streams", side_effect=self._mock_initialize_cache_for_parent_streams
         )
         mocker.patch("time.sleep", lambda x: None)
         stream = find_stream("accounts", TEST_CONFIG)
         requests_mock.register_uri(
             "GET", "https://api.linkedin.com/rest/adAccounts", [{"status_code": error_code, "json": {"elements": []}}]
         )
-        stream.exit_on_rate_limit = True
-        with pytest.raises(DefaultBackoffException):
-            list(stream.read_records(sync_mode=SyncMode.full_refresh))
+        stream._stream_partition_generator._partition_factory._retriever.requester.exit_on_rate_limit = True
+        with pytest.raises(MessageRepresentationAirbyteTracedErrors):
+            list(run_read(stream))
 
     def test_custom_streams(self, requests_mock):
         config = {"ad_analytics_reports": [{"name": "ShareAdByMonth", "pivot_by": "COMPANY", "time_granularity": "MONTHLY"}], **TEST_CONFIG}
@@ -128,8 +131,9 @@ class TestAllStreams:
             ],
         )
 
-        stream_slice = next(custom_stream.stream_slices(sync_mode=SyncMode.full_refresh))
-        records = list(custom_stream.read_records(sync_mode=SyncMode.full_refresh, stream_slice=stream_slice, stream_state=None))
+        partitions = iter(custom_stream.generate_partitions())
+        partition_1 = next(partitions)
+        records = list(partition_1.read())
 
         assert len(records) == 2
 
@@ -156,28 +160,28 @@ class TestAllStreams:
     )
     def test_path(self, stream_name, expected):
         stream = find_stream(stream_name, config=TEST_CONFIG)
-        result = stream.retriever.requester.path
+        result = stream._stream_partition_generator._partition_factory._retriever.requester.path
         assert result == expected
 
     @pytest.mark.parametrize(
-        ("status_code", "is_connection_successful", "error_msg"),
+        ("status_code", "expected_connection_status", "error_msg"),
         (
             (
                 400,
-                False,
-                ("Stream accounts is not available: Bad request. Please check your request parameters."),
+                ConnectionStatus.FAILED,
+                "Stream accounts is not available: HTTP Status Code: 400. Error: Bad request. Please check your request parameters.",
             ),
             (
                 403,
-                False,
-                ("Stream accounts is not available: Forbidden. You don't have permission to access this resource."),
+                ConnectionStatus.FAILED,
+                "Stream accounts is not available: HTTP Status Code: 403. Error: Forbidden. You don't have permission to access this resource.",
             ),
-            (200, True, None),
+            (200, ConnectionStatus.SUCCEEDED, None),
         ),
     )
-    def test_check_connection(self, requests_mock, status_code, is_connection_successful, error_msg, mocker):
+    def test_check_connection(self, requests_mock, status_code, expected_connection_status, error_msg, mocker):
         mocker.patch.object(
-            ManifestDeclarativeSource, "_initialize_cache_for_parent_streams", side_effect=self._mock_initialize_cache_for_parent_streams
+            ConcurrentDeclarativeSource, "_initialize_cache_for_parent_streams", side_effect=self._mock_initialize_cache_for_parent_streams
         )
         mocker.patch("time.sleep", lambda x: None)
         json = {"elements": [{"data": []}] * 500} if 200 >= status_code < 300 else {}
@@ -187,9 +191,11 @@ class TestAllStreams:
             status_code=status_code,
             json=json,
         )
-        success, error = get_source(config=TEST_CONFIG).check_connection(logger=logger, config=TEST_CONFIG)
-        assert success is is_connection_successful
-        assert error == error_msg
+        connection_status = get_source(config=TEST_CONFIG).check(logger=logger, config=TEST_CONFIG)
+        assert connection_status.status is expected_connection_status
+
+        if error_msg:
+            assert error_msg in connection_status.message
 
 
 class TestLinkedinAdsStream:
@@ -199,7 +205,7 @@ class TestLinkedinAdsStream:
 
     @pytest.fixture
     def accounts_stream_url(self, accounts_stream) -> str:
-        return f"{accounts_stream.retriever.requester.url_base}/{accounts_stream.retriever.requester.path}"
+        return f"{accounts_stream._stream_partition_generator._partition_factory._retriever.requester.url_base}/{accounts_stream._stream_partition_generator._partition_factory._retriever.requester.path}"
 
     @pytest.mark.parametrize(
         "response_json, expected",
@@ -232,5 +238,102 @@ class TestLinkedinAdsStream:
         last_record = response_json.get("elements", [])[-1] if response_json.get("elements") else None
         last_page_token_value = None
 
-        result = accounts_stream.retriever._next_page_token(test_response, last_page_size, last_record, last_page_token_value)
+        result = accounts_stream._stream_partition_generator._partition_factory._retriever._next_page_token(
+            test_response, last_page_size, last_record, last_page_token_value
+        )
         assert expected == result
+
+    def test_ad_campaign_analytics_stream(self, requests_mock):
+        # Test the built-in ad_campaign_analytics stream with mocked responses
+        config = {**TEST_CONFIG}
+
+        catalog = ConfiguredAirbyteCatalog(
+            streams=[
+                ConfiguredAirbyteStream(
+                    stream=AirbyteStream(
+                        name="ad_campaign_analytics",
+                        json_schema={
+                            "type": "object",
+                            "properties": {
+                                "id": {"type": ["null", "string"]},
+                                "clicks": {"type": ["null", "number"]},
+                                "impressions": {"type": ["null", "number"]},
+                                "sponsoredCampaign": {"type": ["null", "number"]},
+                            },
+                        },
+                        supported_sync_modes=[SyncMode.full_refresh],
+                    ),
+                    sync_mode=SyncMode.full_refresh,
+                    destination_sync_mode=DestinationSyncMode.overwrite,
+                )
+            ]
+        )
+
+        expected_records = [
+            Record(
+                stream_name="ad_campaign_analytics",
+                data={
+                    "clicks": 100.0,
+                    "impressions": 19090.0,
+                    "pivotValues": ["urn:li:sponsoredCampaign:123"],
+                    "costInUsd": 209.449,
+                    "start_date": "2023-01-02",
+                    "end_date": "2023-01-02",
+                    "string_of_pivot_values": "urn:li:sponsoredCampaign:123",
+                    "sponsoredCampaign": "1111",
+                    "pivot": "CAMPAIGN",
+                },
+                associated_slice=StreamSlice(
+                    cursor_slice={"end_time": "2021-01-31", "start_time": "2021-01-01"},
+                    partition={"campaign_id": 1111, "parent_slice": {"account_id": 1, "parent_slice": {}}},
+                    extra_fields={"query_properties": ["dateRange", "pivotValues", "clicks", "impressions"]},
+                ),
+            ),
+            Record(
+                stream_name="ad_campaign_analytics",
+                data={
+                    "clicks": 408.0,
+                    "impressions": 20210.0,
+                    "pivotValues": ["urn:li:sponsoredCampaign:123"],
+                    "costInUsd": 509.98,
+                    "start_date": "2023-01-03",
+                    "end_date": "2023-01-03",
+                    "string_of_pivot_values": "urn:li:sponsoredCampaign:123",
+                    "sponsoredCampaign": "1111",
+                    "pivot": "CAMPAIGN",
+                },
+                associated_slice=StreamSlice(
+                    cursor_slice={"end_time": "2021-01-31", "start_time": "2021-01-01"},
+                    partition={"campaign_id": 1111, "parent_slice": {"account_id": 1, "parent_slice": {}}},
+                    extra_fields={"query_properties": ["dateRange", "pivotValues", "clicks", "impressions"]},
+                ),
+            ),
+        ]
+
+        streams = get_source(config=config, catalog=catalog).streams(config=config)
+        ad_campaign_analytics_streams = [stream for stream in streams if stream.name == "ad_campaign_analytics"]
+
+        assert len(ad_campaign_analytics_streams) == 1
+
+        ad_campaign_analytics_stream = ad_campaign_analytics_streams[0]
+        requests_mock.get("https://api.linkedin.com/rest/adAccounts", json={"elements": [{"id": 1}]})
+        requests_mock.get(
+            "https://api.linkedin.com/rest/adAccounts/1/adCampaigns?q=search&search=(status:(values:List(ACTIVE,PAUSED,ARCHIVED,"
+            "COMPLETED,CANCELED,DRAFT,PENDING_DELETION,REMOVED)))",
+            json={"elements": [{"id": 1111, "lastModified": "2021-01-15"}]},
+        )
+        requests_mock.get(
+            "https://api.linkedin.com/rest/adAnalytics?q=analytics&campaigns=List(urn%3Ali%3AsponsoredCampaign%3A1111)&dateRange=(start:(year:2021,month:1,day:1),end:(year:2021,month:1,day:31))&fields=dateRange,pivotValues,clicks,impressions",
+            [
+                {"json": load_json_file("responses/ad_campaign_analytics/response_1.json")},
+                {"json": load_json_file("responses/ad_campaign_analytics/response_2.json")},
+                {"json": load_json_file("responses/ad_campaign_analytics/response_3.json")},
+            ],
+        )
+
+        partitions = iter(ad_campaign_analytics_stream.generate_partitions())
+        partition_1 = next(partitions)
+        records = list(partition_1.read())
+
+        assert len(records) == 2
+        assert records == expected_records

@@ -5,7 +5,9 @@
 
 /* Section 1: Hero */
 .heroSection {
-  background: var(--ifm-color-primary);
+  background: 
+    linear-gradient(144deg, rgba(97,94,255,1) 45%, rgba(0,0,0,0)),
+    url(/noise.svg);
   padding: 4rem 0;
 }
 
