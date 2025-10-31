@@ -532,12 +532,14 @@ sealed interface CheckpointMessage : DestinationMessage {
     val totalRecords: Long?
     val totalBytes: Long?
     val totalRejectedRecords: Long?
+    val additionalStats: Map<String, Double>
 
     fun updateStats(
         destinationStats: Stats? = null,
         totalRecords: Long? = null,
         totalBytes: Long? = null,
         totalRejectedRecords: Long? = null,
+        additionalStats: Map<String, Double> = emptyMap()
     )
     fun withDestinationStats(stats: Stats): CheckpointMessage
 
@@ -558,6 +560,7 @@ sealed interface CheckpointMessage : DestinationMessage {
                     if (it.rejectedRecordCount > 0) {
                         withRejectedRecordCount(it.rejectedRecordCount.toDouble())
                     }
+                    withAdditionalStats(additionalStats)
                 }
         }
         additionalProperties.forEach { (key, value) -> message.withAdditionalProperty(key, value) }
@@ -590,6 +593,7 @@ data class StreamCheckpoint(
     override var totalRecords: Long? = null,
     override var totalBytes: Long? = null,
     override var totalRejectedRecords: Long? = null,
+    override var additionalStats: MutableMap<String, Double> = mutableMapOf(),
 ) : CheckpointMessage {
     /** Convenience constructor, intended for use in tests. */
     constructor(
@@ -624,12 +628,14 @@ data class StreamCheckpoint(
         destinationStats: Stats?,
         totalRecords: Long?,
         totalBytes: Long?,
-        totalRejectedRecords: Long?
+        totalRejectedRecords: Long?,
+        additionalStats: Map<String, Double>
     ) {
         destinationStats?.let { this.destinationStats = it }
         totalRecords?.let { this.totalRecords = it }
         totalBytes?.let { this.totalBytes = it }
         totalRejectedRecords?.let { this.totalRejectedRecords = it }
+        this.additionalStats.putAll(additionalStats)
     }
     override fun withDestinationStats(stats: Stats) = copy(destinationStats = stats)
 
@@ -656,6 +662,7 @@ data class GlobalCheckpoint(
     override var totalRecords: Long? = null,
     override var totalBytes: Long? = null,
     override var totalRejectedRecords: Long? = null,
+    override var additionalStats: MutableMap<String, Double> = mutableMapOf(),
 ) : CheckpointMessage {
     /** Convenience constructor, primarily intended for use in tests. */
     constructor(
@@ -672,12 +679,14 @@ data class GlobalCheckpoint(
         destinationStats: Stats?,
         totalRecords: Long?,
         totalBytes: Long?,
-        totalRejectedRecords: Long?
+        totalRejectedRecords: Long?,
+        additionalStats: Map<String, Double>
     ) {
         destinationStats?.let { this.destinationStats = it }
         totalRecords?.let { this.totalRecords = it }
         totalBytes?.let { this.totalBytes = it }
         totalRejectedRecords?.let { this.totalRejectedRecords = it }
+        this.additionalStats.putAll(additionalStats)
     }
     override fun withDestinationStats(stats: Stats) = copy(destinationStats = stats)
 
@@ -708,6 +717,7 @@ data class GlobalSnapshotCheckpoint(
     override var totalRecords: Long? = null,
     override var totalBytes: Long? = null,
     override var totalRejectedRecords: Long? = null,
+    override var additionalStats: MutableMap<String, Double> = mutableMapOf(),
     val streamCheckpoints: Map<DestinationStream.Descriptor, CheckpointKey>
 ) : CheckpointMessage {
 
@@ -721,12 +731,14 @@ data class GlobalSnapshotCheckpoint(
         destinationStats: Stats?,
         totalRecords: Long?,
         totalBytes: Long?,
-        totalRejectedRecords: Long?
+        totalRejectedRecords: Long?,
+        additionalStats: Map<String, Double>
     ) {
         destinationStats?.let { this.destinationStats = it }
         totalRecords?.let { this.totalRecords = it }
         totalBytes?.let { this.totalBytes = it }
         totalRejectedRecords?.let { this.totalRejectedRecords = it }
+        this.additionalStats.putAll(additionalStats)
     }
     override fun withDestinationStats(stats: Stats) = copy(destinationStats = stats)
 

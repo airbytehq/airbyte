@@ -8,6 +8,7 @@ import io.airbyte.cdk.load.command.DestinationStream
 import io.airbyte.cdk.load.command.NamespaceMapper
 import io.airbyte.cdk.load.dataflow.state.PartitionKey
 import io.airbyte.cdk.load.dataflow.state.StateKey
+import io.airbyte.cdk.load.dataflow.stats.MetricTracker
 import io.airbyte.cdk.load.message.CheckpointMessage
 import io.airbyte.cdk.load.message.GlobalCheckpoint
 import io.airbyte.cdk.load.message.GlobalSnapshotCheckpoint
@@ -29,11 +30,14 @@ class StateStatsEnricherTest {
 
     @MockK private lateinit var namespaceMapper: NamespaceMapper
 
+    @MockK private lateinit var metricTracker: MetricTracker
+
     private lateinit var stateStatsEnricher: StateStatsEnricher
 
     @BeforeEach
     fun setUp() {
-        stateStatsEnricher = StateStatsEnricher(statsStore, namespaceMapper)
+        every { metricTracker.get() } returns emptyMap()
+        stateStatsEnricher = StateStatsEnricher(statsStore, namespaceMapper, metricTracker)
     }
 
     @Test
