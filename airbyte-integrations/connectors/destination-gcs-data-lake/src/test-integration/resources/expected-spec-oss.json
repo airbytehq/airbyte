@@ -1,0 +1,83 @@
+{
+  "documentationUrl" : "https://docs.airbyte.com/integrations/destinations/gcs-data-lake",
+  "connectionSpecification" : {
+    "$schema" : "http://json-schema.org/draft-07/schema#",
+    "title" : "GCS Data Lake Destination Specification",
+    "type" : "object",
+    "additionalProperties" : true,
+    "description" : "Configuration for GCS Data Lake destination using Apache Iceberg format with BigLake catalog",
+    "properties" : {
+      "gcs_bucket_name" : {
+        "type" : "string",
+        "description" : "The name of the GCS bucket that will host the Iceberg data.",
+        "title" : "GCS Bucket Name",
+        "always_show" : true,
+        "order" : 0
+      },
+      "service_account_json" : {
+        "type" : "string",
+        "description" : "The contents of the JSON service account key file. See the <a href=\"https://cloud.google.com/iam/docs/creating-managing-service-account-keys\">Google Cloud documentation</a> for more information on how to obtain this.",
+        "title" : "Service Account JSON",
+        "airbyte_secret" : true,
+        "always_show" : true,
+        "multiline" : true,
+        "order" : 1
+      },
+      "gcp_project_id" : {
+        "type" : "string",
+        "description" : "The GCP project ID where BigLake resources are located. If not specified, it will be extracted from the service account credentials.",
+        "title" : "GCP Project ID",
+        "order" : 2
+      },
+      "gcp_location" : {
+        "type" : "string",
+        "description" : "The GCP location (region) for BigLake metastore resources. For example: \"us-central1\" or \"us\". See <a href=\"https://cloud.google.com/biglake/docs/locations\">BigLake locations</a> for available regions.",
+        "title" : "GCP Location",
+        "examples" : [ "us", "us-central1", "eu" ],
+        "always_show" : true,
+        "order" : 3
+      },
+      "warehouse_location" : {
+        "type" : "string",
+        "description" : "The root location of the data warehouse used by the Iceberg catalog. Must include the storage protocol \"gs://\" for Google Cloud Storage. For example: \"gs://your-bucket/path/to/warehouse/",
+        "title" : "Warehouse Location",
+        "examples" : [ "gs://your-bucket/path/to/warehouse" ],
+        "always_show" : true,
+        "order" : 4
+      },
+      "catalog_name" : {
+        "type" : "string",
+        "description" : "The name of the BigLake catalog to use. This should match the catalog you created in BigLake metastore.",
+        "title" : "BigLake Catalog Name",
+        "examples" : [ "integration-test-biglake", "default" ],
+        "always_show" : true,
+        "order" : 5
+      },
+      "database_name" : {
+        "type" : "string",
+        "description" : "The default database/namespace to use for tables. This will be used if the stream namespace is null (when \"Destination Namespace\" is set to \"Destination-defined\" or \"Source-defined\").",
+        "title" : "BigLake Database",
+        "examples" : [ "default", "airbyte_data" ],
+        "always_show" : true,
+        "order" : 6
+      },
+      "main_branch_name" : {
+        "type" : "string",
+        "description" : "The primary or default branch name in the catalog. Most query engines will use \"main\" by default. See <a href=\"https://iceberg.apache.org/docs/latest/branching/\">Iceberg documentation</a> for more information.",
+        "title" : "Main Branch Name",
+        "order" : 7
+      },
+      "gcs_endpoint" : {
+        "type" : "string",
+        "description" : "Optional custom GCS endpoint URL. Use this for testing with local GCS emulators.",
+        "title" : "GCS Endpoint (Optional)",
+        "order" : 8
+      }
+    },
+    "required" : [ "gcs_bucket_name", "service_account_json", "gcp_location", "warehouse_location", "catalog_name", "database_name", "main_branch_name" ]
+  },
+  "supportsIncremental" : true,
+  "supportsNormalization" : false,
+  "supportsDBT" : false,
+  "supported_destination_sync_modes" : [ "overwrite", "append", "append_dedup" ]
+}
