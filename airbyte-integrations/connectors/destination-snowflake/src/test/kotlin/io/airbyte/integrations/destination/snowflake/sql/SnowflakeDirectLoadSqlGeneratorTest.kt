@@ -632,9 +632,9 @@ new_record."_AIRBYTE_GENERATION_ID"
         val uuid = UUID.randomUUID()
         every { uuidGenerator.v4() } returns uuid
         val tableName = TableName(namespace = "namespace", name = "name")
-        val addedColumns = setOf(ColumnDefinition("COL1", "TEXT", false))
-        val deletedColumns = setOf(ColumnDefinition("COL2", "TEXT", false))
-        val modifiedColumns = setOf(ColumnDefinition("COL3", "TEXT", false))
+        val addedColumns = setOf(ColumnDefinition("COL1", "TEXT"))
+        val deletedColumns = setOf(ColumnDefinition("COL2", "TEXT"))
+        val modifiedColumns = setOf(ColumnDefinition("COL3", "TEXT"))
         val sql =
             snowflakeDirectLoadSqlGenerator.alterTable(
                 tableName,
