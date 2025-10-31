@@ -714,7 +714,7 @@ class MySqlSourceJdbcPartitionFactory(
 
     fun guidInterpolatedStrings(start: String, end: String, steps: Int): List<String> {
         // GUID-legal characters: 0-9, A-F, a-f, and hyphen (case-sensitive, ASCII order)
-        val guidChars = "0123456789ABCDEFabcdef-"
+        val guidChars = "-0123456789ABCDEFabcdef"
 
         fun charToIndex(c: Char): Int {
             val idx = guidChars.indexOf(c)
