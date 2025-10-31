@@ -38,7 +38,7 @@ class JsonRecordMungerTest {
 
     @MockK lateinit var protobufConverter: ProtobufConverter
 
-    @MockK lateinit var validationResultHandler: ValidationResultHandler
+    private lateinit var validationResultHandler: ValidationResultHandler
 
     private lateinit var jsonConverter: JsonConverter
 
@@ -46,6 +46,7 @@ class JsonRecordMungerTest {
 
     @BeforeEach
     fun setup() {
+        validationResultHandler = ValidationResultHandler(mockk(relaxed = true))
         jsonConverter = JsonConverter(columnNameMapper, valueCoercer, validationResultHandler)
         munger = RecordMunger(jsonConverter, protobufConverter)
     }
