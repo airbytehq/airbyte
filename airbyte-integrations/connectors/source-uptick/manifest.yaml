@@ -27,7 +27,7 @@ definitions:
           - type: WaitTimeFromHeader
             header: Retry-After
       request_headers:
-        User-Agent: Airbyte (Connector Version 0.3.5)
+        User-Agent: Airbyte (Connector Version 0.3.8)
     SimpleRetriever:
       requester:
         $ref: "#/definitions/linked/HttpRequester"
@@ -4527,7 +4527,7 @@ streams:
         request_parameters:
           ordering: -updated
           show_deleted: "true"
-          fields[Asset]: id,created,updated,deleted,is_active,internal_note,contractor_note,contractor_ref,is_silent,is_notoncofo,uptick_ref,ref,iotdevice,label,location,standard_maintenance,standard_performance,standard_installation,compliant,status,inspection_ref,barcode,inspection_order,serviced_date,base_date,installation_date,total_expected_life,asset_condition,inspected_date,make,model,size,signoff_date,signoff_method,guid,coord_lat,coord_lng,bsecure_latest_sticker_guid,bsecure_resolved_guid,extra_fields,tags,type,variant,product,property,contractor,serviced_by,servicelevels,floorplan_location,last_service_result,highest_severity
+          fields[Asset]: id,created,updated,deleted,is_active,internal_note,contractor_note,contractor_ref,is_silent,is_notoncofo,uptick_ref,ref,iotdevice,label,location,standard_maintenance,standard_performance,standard_installation,compliant,status,inspection_ref,barcode,inspection_order,serviced_date,base_date,installation_date,total_expected_life,asset_condition,inspected_date,make,model,size,signoff_date,signoff_method,guid,coord_lat,coord_lng,bsecure_latest_sticker_guid,bsecure_resolved_guid,extra_fields,tags,type,variant,product,property,contractor,serviced_by,servicelevels,last_service_result,highest_severity
     schema_loader:
       type: InlineSchemaLoader
       schema:
@@ -4713,10 +4713,6 @@ streams:
           servicelevels:
             type:
               - array
-          floorplan_location_id:
-            type:
-              - integer
-              - "null"
           last_service_result:
             type:
               - string
@@ -4919,10 +4915,6 @@ streams:
             path:
               - servicelevels
             value: '{{ record["relationships"]["servicelevels"]["data"] }}'
-          - type: AddedFieldDefinition
-            path:
-              - floorplan_location_id
-            value: '{{ record["relationships"]["floorplan_location"]["data"]["id"] or "None"}}'
           - type: AddedFieldDefinition
             path:
               - last_service_result
@@ -5382,7 +5374,7 @@ streams:
         request_parameters:
           ordering: -updated
           show_deleted: "true"
-          fields[TaskSession]: id,created,updated,trashed,submitted,is_approved,is_submitted,type,started,finished,started_coord_lat,started_coord_lng,finished_coord_lat,finished_coord_lng,original_started,original_finished,description,rate,timezone,multiplier,multiplier_label,sell_rate,hours,cost,sell,submitted_at,approved_at,task,technician,sell_product,submitted_by,approved_by,sell_hours,duration,duration_hours,status,payroll_date,appointment_attendance,is_suspicious_started,is_suspicious_finished
+          fields[TaskSession]: id,created,updated,trashed,submitted,is_approved,is_submitted,type,started,finished,started_coord_lat,started_coord_lng,finished_coord_lat,finished_coord_lng,original_started,original_finished,description,rate,timezone,multiplier,multiplier_label,sell_rate,cost,sell,submitted_at,approved_at,task,technician,sell_product,submitted_by,approved_by,duration,duration_hours,status,payroll_date
     schema_loader:
       type: InlineSchemaLoader
       schema:
@@ -5487,11 +5479,6 @@ streams:
               - string
               - "null"
             format: decimal
-          hours:
-            type:
-              - string
-              - "null"
-            format: decimal
           cost:
             type:
               - string
@@ -5534,9 +5521,6 @@ streams:
             type:
               - string
               - "null"
-          sell_hours:
-            type:
-              - string
           duration:
             type:
               - integer
@@ -5555,16 +5539,6 @@ streams:
               - string
               - "null"
             format: date
-          appointment_attendance:
-            type:
-              - string
-              - "null"
-          is_suspicious_started:
-            type:
-              - boolean
-          is_suspicious_finished:
-            type:
-              - boolean
     transformations:
       - type: AddFields
         fields:
@@ -5658,10 +5632,6 @@ streams:
             value: '{{ record["attributes"]["sell_rate"] or "None"}}'
           - type: AddedFieldDefinition
             path:
-              - hours
-            value: '{{ record["attributes"]["hours"] or "None"}}'
-          - type: AddedFieldDefinition
-            path:
               - cost
             value: '{{ record["attributes"]["cost"] or "None"}}'
           - type: AddedFieldDefinition
@@ -5698,10 +5668,6 @@ streams:
             value: '{{ record["relationships"]["approved_by"]["data"]["id"] or "None"}}'
           - type: AddedFieldDefinition
             path:
-              - sell_hours
-            value: '{{ record["attributes"]["sell_hours"] }}'
-          - type: AddedFieldDefinition
-            path:
               - duration
             value: '{{ record["attributes"]["duration"] or "None"}}'
           - type: AddedFieldDefinition
@@ -5716,18 +5682,6 @@ streams:
             path:
               - payroll_date
             value: '{{ record["attributes"]["payroll_date"] or "None"}}'
-          - type: AddedFieldDefinition
-            path:
-              - appointment_attendance
-            value: '{{ record["attributes"]["appointment_attendance"] or "None"}}'
-          - type: AddedFieldDefinition
-            path:
-              - is_suspicious_started
-            value: '{{ record["attributes"]["is_suspicious_started"] }}'
-          - type: AddedFieldDefinition
-            path:
-              - is_suspicious_finished
-            value: '{{ record["attributes"]["is_suspicious_finished"] }}'
   - type: DeclarativeStream
     name: contractors
     primary_key:
