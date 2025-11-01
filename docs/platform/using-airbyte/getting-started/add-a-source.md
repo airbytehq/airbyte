@@ -20,7 +20,7 @@ Add a new source connector to Airbyte.
 
 5. Click **Set up source**. Airbyte tests the source to ensure it can make a connection. Once the test completes, Airbyte takes you to the New Connection page, where you can set up a new destination connector, or choose one you previously created.
 
-<Arcade id="MOZ8NhasIpvf6M9Xkpna" title="Set up a new source" paddingBottom="calc(50%)" />
+<Navattic id="cmhfh6qf4000004kz0e7sa8a5" />
 
 ## Modify a source connector
 

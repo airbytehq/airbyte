@@ -34,7 +34,12 @@
   font-size: 2.5rem;
   font-weight: 700;
   margin-bottom: 1.5rem;
+  margin-top:3rem;
   color: white;
+  max-width: 1200px;
+  margin-left: auto;
+  margin-right: auto;
+  padding: 0 2rem;
 }
 
 .heroDescription {
@@ -46,7 +51,55 @@
 }
 
 .heroRight {
-  /* Arcade component will render here */
+  display: flex;
+  align-items: center;
+  justify-content: center;
+}
+
+.popularConnectors {
+  width: 100%;
+}
+
+.popularTitle {
+  font-size: 1.125rem;
+  font-weight: 600;
+  margin-bottom: 1rem;
+  color: white;
+}
+
+.connectorButtons {
+  display: flex;
+  gap: 0.75rem;
+  margin-bottom: 2rem;
+  flex-wrap: wrap;
+}
+
+.connectorButton {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  width: 48px;
+  height: 48px;
+  padding: 0.5rem;
+  border-radius: 8px;
+  border: 1px solid var(--ifm-color-primary-lightest);
+  background: var(--color-grey-40);
+  transition: all 0.2s ease-out;
+  text-decoration: none;
+}
+
+.connectorButton:hover {
+  background: var(--color-grey-40);
+  border-color: var(--ifm-color-primary);
+  box-shadow: 0 4px 12px rgba(97, 94, 255, 0.15);
+  transform: translateY(-2px);
+  text-decoration: none;
+}
+
+.connectorIcon {
+  width: 32px;
+  height: 32px;
+  object-fit: contain;
 }
 
 /* Section 2: Navigation Links */
