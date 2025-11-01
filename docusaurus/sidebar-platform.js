@@ -150,28 +150,6 @@ const buildAConnector = {
   ],
 };
 
-const contributeToAirbyte = {
-  type: "category",
-  label: "Contribute to Airbyte",
-  link: {
-    type: "doc",
-    id: "contributing-to-airbyte/README",
-  },
-  items: [
-    "contributing-to-airbyte/issues-and-requests",
-    "contributing-to-airbyte/developing-locally",
-    "contributing-to-airbyte/writing-docs",
-    {
-      type: "category",
-      label: "Resources",
-      items: [
-        "contributing-to-airbyte/resources/pull-requests-handbook",
-        "contributing-to-airbyte/resources/qa-checks",
-      ],
-    },
-  ],
-};
-
 const deployAirbyte = {
   type: "category",
   label: "Deploy Airbyte",
@@ -573,30 +551,6 @@ module.exports = {
           id: "using-airbyte/pyairbyte/getting-started",
         },
         understandingAirbyte,
-        {
-          type: "category",
-          label: "Licenses",
-          link: {
-            type: "doc",
-            id: "developer-guides/licenses/README",
-          },
-          items: [
-            "developer-guides/licenses/license-faq",
-            "developer-guides/licenses/elv2-license",
-            "developer-guides/licenses/mit-license",
-            "developer-guides/licenses/examples",
-          ],
-        },
-        sectionHeader("Community"),
-        contributeToAirbyte,
-        "community/getting-support",
-        "community/code-of-conduct",
-        sectionHeader("Product updates"),
-        {
-          type: "link",
-          label: "Roadmap",
-          href: "https://go.airbyte.com/roadmap",
-        },
       ],
     },
   ],
