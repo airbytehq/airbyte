@@ -130,9 +130,9 @@ export default function Home() {
       <div className={styles.homePage}>
         {/* Section 1: Hero with purple background */}
         <section className={styles.heroSection}>
+          <h1 className={styles.heroTitle}>Airbyte documentation</h1>
           <div className={styles.heroContainer}>
             <div className={styles.heroLeft}>
-              <h1 className={styles.heroTitle}>Airbyte documentation</h1>
               <p className={styles.heroDescription}>
                 Airbyte is an open source data integration and activation platform. 
                 It helps you consolidate data from hundreds of sources into your data 
@@ -205,6 +205,42 @@ export default function Home() {
                       className={styles.connectorIcon}
                     />
                   </a>
+                  <a 
+                    href="/integrations/sources/linkedin-ads" 
+                    className={styles.connectorButton}
+                    aria-label="LinkedIn Ads"
+                    title="LinkedIn Ads"
+                  >
+                    <img 
+                      src="https://connectors.airbyte.com/files/metadata/airbyte/source-linkedin-ads/latest/icon.svg" 
+                      alt="LinkedIn Ads" 
+                      className={styles.connectorIcon}
+                    />
+                  </a>
+                  <a 
+                    href="/integrations/sources/mssql" 
+                    className={styles.connectorButton}
+                    aria-label="MSSQL"
+                    title="MSSQL"
+                  >
+                    <img 
+                      src="https://connectors.airbyte.com/files/metadata/airbyte/source-mssql/latest/icon.svg" 
+                      alt="MSSQL" 
+                      className={styles.connectorIcon}
+                    />
+                  </a>
+                  <a 
+                    href="/integrations/sources/s3" 
+                    className={styles.connectorButton}
+                    aria-label="S3"
+                    title="S3"
+                  >
+                    <img 
+                      src="https://connectors.airbyte.com/files/metadata/airbyte/source-s3/latest/icon.svg" 
+                      alt="S3" 
+                      className={styles.connectorIcon}
+                    />
+                  </a>
                 </div>
 
                 <h3 className={styles.popularTitle}>Popular destinations</h3>
@@ -266,6 +302,42 @@ export default function Home() {
                     <img 
                       src="https://connectors.airbyte.com/files/metadata/airbyte/destination-databricks/latest/icon.svg" 
                       alt="Databricks" 
+                      className={styles.connectorIcon}
+                    />
+                  </a>
+                  <a 
+                    href="/integrations/destinations/s3-data-lake" 
+                    className={styles.connectorButton}
+                    aria-label="S3 Data Lake"
+                    title="S3 Data Lake"
+                  >
+                    <img 
+                      src="https://connectors.airbyte.com/files/metadata/airbyte/destination-s3-data-lake/latest/icon.svg" 
+                      alt="S3 Data Lake" 
+                      className={styles.connectorIcon}
+                    />
+                  </a>
+                  <a 
+                    href="/integrations/destinations/clickhouse" 
+                    className={styles.connectorButton}
+                    aria-label="ClickHouse"
+                    title="ClickHouse"
+                  >
+                    <img 
+                      src="https://connectors.airbyte.com/files/metadata/airbyte/destination-clickhouse/latest/icon.svg" 
+                      alt="ClickHouse" 
+                      className={styles.connectorIcon}
+                    />
+                  </a>
+                  <a 
+                    href="/integrations/destinations/mssql" 
+                    className={styles.connectorButton}
+                    aria-label="MSSQL"
+                    title="MSSQL"
+                  >
+                    <img 
+                      src="https://connectors.airbyte.com/files/metadata/airbyte/destination-mssql/latest/icon.svg" 
+                      alt="MSSQL" 
                       className={styles.connectorIcon}
                     />
                   </a>
