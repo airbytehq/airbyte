@@ -142,7 +142,135 @@ export default function Home() {
               </p>
             </div>
             <div className={styles.heroRight}>
-              {/* Reserved for future content */}
+              <div className={styles.popularConnectors}>
+                <h3 className={styles.popularTitle}>Popular sources</h3>
+                <div className={styles.connectorButtons}>
+                  <a 
+                    href="/integrations/sources/postgres" 
+                    className={styles.connectorButton}
+                    aria-label="Postgres"
+                    title="Postgres"
+                  >
+                    <img 
+                      src="https://connectors.airbyte.com/files/metadata/airbyte/source-postgres/latest/icon.svg" 
+                      alt="Postgres" 
+                      className={styles.connectorIcon}
+                    />
+                  </a>
+                  <a 
+                    href="/integrations/sources/facebook-marketing" 
+                    className={styles.connectorButton}
+                    aria-label="Facebook Marketing"
+                    title="Facebook Marketing"
+                  >
+                    <img 
+                      src="https://connectors.airbyte.com/files/metadata/airbyte/source-facebook-marketing/latest/icon.svg" 
+                      alt="Facebook Marketing" 
+                      className={styles.connectorIcon}
+                    />
+                  </a>
+                  <a 
+                    href="/integrations/sources/salesforce" 
+                    className={styles.connectorButton}
+                    aria-label="Salesforce"
+                    title="Salesforce"
+                  >
+                    <img 
+                      src="https://connectors.airbyte.com/files/metadata/airbyte/source-salesforce/latest/icon.svg" 
+                      alt="Salesforce" 
+                      className={styles.connectorIcon}
+                    />
+                  </a>
+                  <a 
+                    href="/integrations/sources/mysql" 
+                    className={styles.connectorButton}
+                    aria-label="MySQL"
+                    title="MySQL"
+                  >
+                    <img 
+                      src="https://connectors.airbyte.com/files/metadata/airbyte/source-mysql/latest/icon.svg" 
+                      alt="MySQL" 
+                      className={styles.connectorIcon}
+                    />
+                  </a>
+                  <a 
+                    href="/integrations/sources/google-sheets" 
+                    className={styles.connectorButton}
+                    aria-label="Google Sheets"
+                    title="Google Sheets"
+                  >
+                    <img 
+                      src="https://connectors.airbyte.com/files/metadata/airbyte/source-google-sheets/latest/icon.svg" 
+                      alt="Google Sheets" 
+                      className={styles.connectorIcon}
+                    />
+                  </a>
+                </div>
+
+                <h3 className={styles.popularTitle}>Popular destinations</h3>
+                <div className={styles.connectorButtons}>
+                  <a 
+                    href="/integrations/destinations/s3" 
+                    className={styles.connectorButton}
+                    aria-label="S3"
+                    title="S3"
+                  >
+                    <img 
+                      src="https://connectors.airbyte.com/files/metadata/airbyte/destination-s3/latest/icon.svg" 
+                      alt="S3" 
+                      className={styles.connectorIcon}
+                    />
+                  </a>
+                  <a 
+                    href="/integrations/destinations/postgres" 
+                    className={styles.connectorButton}
+                    aria-label="Postgres"
+                    title="Postgres"
+                  >
+                    <img 
+                      src="https://connectors.airbyte.com/files/metadata/airbyte/destination-postgres/latest/icon.svg" 
+                      alt="Postgres" 
+                      className={styles.connectorIcon}
+                    />
+                  </a>
+                  <a 
+                    href="/integrations/destinations/snowflake" 
+                    className={styles.connectorButton}
+                    aria-label="Snowflake"
+                    title="Snowflake"
+                  >
+                    <img 
+                      src="https://connectors.airbyte.com/files/metadata/airbyte/destination-snowflake/latest/icon.svg" 
+                      alt="Snowflake" 
+                      className={styles.connectorIcon}
+                    />
+                  </a>
+                  <a 
+                    href="/integrations/destinations/bigquery" 
+                    className={styles.connectorButton}
+                    aria-label="BigQuery"
+                    title="BigQuery"
+                  >
+                    <img 
+                      src="https://connectors.airbyte.com/files/metadata/airbyte/destination-bigquery/latest/icon.svg" 
+                      alt="BigQuery" 
+                      className={styles.connectorIcon}
+                    />
+                  </a>
+                  <a 
+                    href="/integrations/destinations/databricks" 
+                    className={styles.connectorButton}
+                    aria-label="Databricks"
+                    title="Databricks"
+                  >
+                    <img 
+                      src="https://connectors.airbyte.com/files/metadata/airbyte/destination-databricks/latest/icon.svg" 
+                      alt="Databricks" 
+                      className={styles.connectorIcon}
+                    />
+                  </a>
+                </div>
+              </div>
             </div>
           </div>
         </section>
