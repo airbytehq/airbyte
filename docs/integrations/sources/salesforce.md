@@ -8,23 +8,18 @@ This page contains the setup guide and reference information for the [Salesforce
 
 ## Prerequisites
 
-- [Salesforce Account](https://login.salesforce.com/) with Enterprise access or API quota purchased
-- (Optional, Recommended) Dedicated Salesforce [user](https://help.salesforce.com/s/articleView?id=adding_new_users.htm&type=5&language=en_US)
+- A [Salesforce Account](https://login.salesforce.com/) with Enterprise edition **or** Professional edition with API access purchased as an add-on
+
+You may also need the following. This article explains how to get them.
+
+- Optional, but recommended: A dedicated [Salesforce user](https://help.salesforce.com/s/articleView?id=adding_new_users.htm&type=5&language=en_US)
 <!-- env:oss -->
-- (For Airbyte Open Source) Salesforce [OAuth](https://help.salesforce.com/s/articleView?id=sf.remoteaccess_oauth_tokens_scopes.htm&type=5) credentials
+- For Airbyte Open Source: Salesforce [OAuth](https://help.salesforce.com/s/articleView?id=sf.remoteaccess_oauth_tokens_scopes.htm&type=5) credentials
 <!-- /env:oss -->
-
-:::tip
-
-To use this connector, you'll need at least the Enterprise edition of Salesforce or the Professional Edition with API access purchased as an add-on. Reference the [Salesforce docs about API access](https://help.salesforce.com/s/articleView?id=000385436&type=1) for more information.
-
-:::
 
 ## Setup guide
 
-### Set up Salesforce
-
-### Step 1: (Optional, Recommended) Create a dedicated Salesforce user
+### Create a dedicated Salesforce user (optional, but recommended) {#dedicated-salesforce-user}
 
 Follow the instructions below to create a Minimum Access standard profile and assign custom permission sets to grant the new user the read access needed for data you want to access with Airbyte.
 
@@ -34,48 +29,53 @@ Using Permission Sets, you should grant this user read access to the data you wa
 
 [Log in to Salesforce](https://login.salesforce.com/) with an admin account.
 
-#### 1. Create a new User:
--  On the top right of the screen, click the gear icon and then click **Setup**.
--  In the left navigation bar, under Administration, click **Users** > **Users**. Create a new User, entering details for the user's first name, last name, alias, and email. Filling in the email field will auto-populate the username field and nickname.
-      - Leave `role` unspecified
-      - Select `Salesforce` for the User License
-      - Select `Standard User` for Profile.
-      - Decide whether to generate a new password and notify the user.
-      - Select `save`
-#### 2. Create a new Permission Set:
--  Using the left navigation bar, select **Users** > **Permission Sets**
-- Click `New` to create a new Permission Set.
-- Give your permission set a descriptive label name (e.g., "Airbyte Read Only Access"). The API name will autopopulate based on the label you give the permission set.
-- For licence, leave this set to` –None—` and click `save`.
-- Now that you see the permission set is created, define the permissions via Object Settings.
-   - Click "Object Settings."
-   - Select the `Object Name` for each object you want the user to have read-only access to (e.g., Accounts, Contacts, Opportunities).
-   - Select “Edit” and check the "Read" permission and uncheck all other permissions (Create, Edit, Delete, etc.).
-   - Click `Save`
-   - Continue to add read permissions for any objects you want Airbyte to have access to.
-- To grant access to uninstalled connected apps, you need to enable additional permission.
-   - Click "System Permissions"
-   - Select “Edit”
-   - If [API Access Control](https://help.salesforce.com/s/articleView?id=xcloud.security_api_access_control_about.htm&language=en_US&type=5) is enabled, need to check the "Use Any API Client" permission. If API Access Control isn't enabled, need to check “Approve Uninstalled Connected Apps” permission.
-   - Click `Save`
-#### 3. Assign the Permission Set to the new User
-- From the Permission Sets page, click "Manage Assignments" next to the read-only permission set you just created.
-- Click "Add Assignments."
-- Find and select the user you created in Step 1.
-- Click `Assign`
+#### Step 1: Create a new user
+
+1. On the top right of the screen, click the gear icon and then click **Setup**.
+2. In the left navigation bar, under Administration, click **Users** > **Users**. Create a new User, entering details for the user's first name, last name, alias, and email. Filling in the email field auto-populates the username field and nickname.
+      1. Leave `role` unspecified
+      2. Select `Salesforce` for the User License
+      3. Select `Standard User` for Profile.
+      4. Decide whether to generate a new password and notify the user.
+      5. Select `save`
+
+#### Step 2: Create a new permission set
+
+1. Using the left navigation bar, select **Users** > **Permission Sets**
+2. Click `New` to create a new Permission Set.
+3. Give your permission set a descriptive label name (e.g., "Airbyte Read Only Access"). The API name auto-populates based on the label you give the permission set.
+4. For licence, leave this set to `–None—` and click `save`.
+5. Now that you see the permission set is created, define the permissions via Object Settings.
+   1. Click "Object Settings."
+   2. Select the `Object Name` for each object you want the user to have read-only access to (for example, Accounts, Contacts, Opportunities).
+   3. Select “Edit” and check the "Read" permission and clear all other permissions (Create, Edit, Delete, etc.)
+   4. Click `Save`
+   5. Continue to add read permissions for any objects you want Airbyte to have access to.
+6. To grant access to uninstalled connected apps, you need to enable additional permission.
+   1. Click "System Permissions"
+   2. Select “Edit”
+   3. If [API Access Control](https://help.salesforce.com/s/articleView?id=xcloud.security_api_access_control_about.htm&language=en_US&type=5) is enabled, need to check the "Use Any API Client" permission. If API Access Control isn't enabled, need to check “Approve Uninstalled Connected Apps” permission.
+   4. Click `Save`
+
+#### Step 3: Assign the permission set to the new user
+
+1. From the Permission Sets page, click "Manage Assignments" next to the read-only permission set you just created.
+2. Click "Add Assignments."
+3. Find and select the user you created in Step 1.
+4. Click `Assign`
 
 Log into the email you used above and verify your new Salesforce account user. You'll need to set a password as part of this process. Keep this password accessible.
 
 :::info
-**Profile vs. Permission Set:** Remember that the user's profile will provide their baseline permissions. The permission set adds or restricts permissions on top of that.
+**Profile vs. Permission Set:** remember that the user's profile provides their baseline permissions. The permission set adds or restricts permissions on top of that.
 **Object-Level vs. Field-Level Security:** This guide focuses on object-level read-only access. While setting up your permission set, you can stick with object-level security or define more granular controls by scrolling down within each object settings page to select read access for only needed fields.
 :::
 
 <!-- env:oss -->
 
-### For Airbyte Open Source: Obtain Salesforce OAuth credentials
+### Get Salesforce OAuth credentials (Airbyte Open Source only)
 
-If you are using Airbyte Open Source, you will need to obtain the following OAuth credentials to authenticate:
+If you are using Airbyte Open Source, obtain the following OAuth credentials to authenticate:
 
 - Client ID
 - Client Secret
@@ -83,17 +83,17 @@ If you are using Airbyte Open Source, you will need to obtain the following OAut
 
 To obtain these credentials, follow [this walkthrough](https://medium.com/@bpmmendis94/obtain-access-refresh-tokens-from-salesforce-rest-api-a324fe4ccd9b) with the following modifications:
 
-1.  If your Salesforce URL is not in the `X.salesforce.com` format, use your Salesforce domain name. For example, if your Salesforce URL is `awesomecompany.force.com` then use that instead of `awesomecompany.salesforce.com`.
-2.  When running a curl command, run it with the `-L` option to follow any redirects.
-3.  If you created a read-only user, use the user credentials when logging in to generate OAuth tokens.
+1. If your Salesforce URL is not in the `X.salesforce.com` format, use your Salesforce domain name. For example, if your Salesforce URL is `awesomecompany.force.com` then use that instead of `awesomecompany.salesforce.com`.
+2. When running a curl command, run it with the `-L` option to follow any redirects.
+3. If you created a read-only user, use the user credentials when logging in to generate OAuth tokens.
 
 <!-- /env:oss -->
 
-### Step 2: Set up the Salesforce connector in Airbyte
+### Set up the Salesforce connector in Airbyte
 
 <!-- env:cloud -->
 
-## For Airbyte Cloud:
+#### For Airbyte Cloud:
 
 1. [Log into your Airbyte Cloud](https://cloud.airbyte.com/workspaces) account.
 2. Click Sources and then click + New source.
@@ -110,7 +110,7 @@ To obtain these credentials, follow [this walkthrough](https://medium.com/@bpmme
 
 <!-- env:oss -->
 
-## For Airbyte Open Source:
+#### For Airbyte Open Source:
 
 1. Navigate to the Airbyte Open Source dashboard.
 2. In the left navigation bar, click **Sources**. In the top-right corner, click **+ New source**.
@@ -131,7 +131,7 @@ To obtain these credentials, follow [this walkthrough](https://medium.com/@bpmme
 
 The Salesforce source connector supports the following [sync modes](https://docs.airbyte.com/cloud/core-concepts/#connection-sync-modes):
 
-- (Recommended)[ Incremental Sync - Append + Deduped](https://docs.airbyte.com/understanding-airbyte/connections/incremental-append-deduped)
+- **[Incremental Sync - Append + Deduped](https://docs.airbyte.com/understanding-airbyte/connections/incremental-append-deduped) (recommended to handle Salesforce's [daily rate limits](https://developer.salesforce.com/docs/atlas.en-us.salesforce_app_limits_cheatsheet.meta/salesforce_app_limits_cheatsheet/salesforce_app_limits_platform_api.htm))**
 - [Full Refresh - Overwrite](https://docs.airbyte.com/understanding-airbyte/connections/full-refresh-overwrite/)
 - [Full Refresh - Append](https://docs.airbyte.com/understanding-airbyte/connections/full-refresh-append)
 - [Incremental Sync - Append](https://docs.airbyte.com/understanding-airbyte/connections/incremental-append)
@@ -142,7 +142,7 @@ The Salesforce connector supports reading both Standard Objects and Custom Objec
 
 Airbyte allows exporting all available Salesforce objects dynamically based on:
 
-- If the authenticated Salesforce user has the Role and Permissions to read and fetch objects. This would be set as part of the Permission Set you assign to the Airbyte user. See [Step 1](#step-1-optional-recommended-create-a-dedicated-salesforce-user) for more information.
+- If the authenticated Salesforce user has the Role and Permissions to read and fetch objects. This would be set as part of the Permission Set you assign to the Airbyte user. See [Create a dedicated Salesforce user](#dedicated-salesforce-user) for more information.
 - If the Salesforce object has the queryable property set to true. Airbyte can only fetch objects which are queryable. If you don’t see an object available via Airbyte, and it is queryable, check if it is API-accessible to the Salesforce user you authenticated with.
 
 ## Syncing Permissions Data from Salesforce
@@ -196,19 +196,17 @@ Expand to see details about Salesforce connector limitations and troubleshooting
 
 #### Rate limiting
 
-The Salesforce connector is restricted by Salesforce’s [Daily Rate Limits](https://developer.salesforce.com/docs/atlas.en-us.salesforce_app_limits_cheatsheet.meta/salesforce_app_limits_cheatsheet/salesforce_app_limits_platform_api.htm). The connector syncs data until it hits the daily rate limit, then ends the sync early with success status, and starts the next sync from where it left off. Note that picking up from where it ends will work only for incremental sync, which is why we recommend using the [Incremental Sync - Append + Deduped](https://docs.airbyte.com/understanding-airbyte/connections/incremental-append-deduped) sync mode.
+The Salesforce connector is restricted by Salesforce's [Daily Rate Limits](https://developer.salesforce.com/docs/atlas.en-us.salesforce_app_limits_cheatsheet.meta/salesforce_app_limits_cheatsheet/salesforce_app_limits_platform_api.htm). The connector syncs data until it hits the daily rate limit, then ends the sync early with success status, and starts the next sync from where it left off. Note that picking up from where it ends will work only for incremental sync, which is why we recommend using the [Incremental Sync - Append + Deduped](https://docs.airbyte.com/understanding-airbyte/connections/incremental-append-deduped) sync mode.
 
-#### A note on the BULK API vs REST API and their limitations
-
-## Syncing Formula Fields
+### Syncing Formula Fields
 
 The Salesforce connector syncs formula field outputs from Salesforce. If the formula of a field changes in Salesforce and no other field on the record is updated, you will need to reset the stream and sync a historical backfill to pull in all the updated values of the field.
 
-## Syncing Deletes
+### Syncing Deletes
 
 The Salesforce connector supports retrieving deleted records from the Salesforce recycle bin. For the streams which support it, a deleted record will be marked with `isDeleted=true`. To find out more about how Salesforce manages records in the recycle bin, please visit their [docs](https://help.salesforce.com/s/articleView?id=sf.home_delete.htm&type=5).
 
-## Usage of the BULK API vs REST API
+### Usage of the BULK API vs REST API
 
 Salesforce allows extracting data using either the [BULK API](https://developer.salesforce.com/docs/atlas.en-us.236.0.api_asynch.meta/api_asynch/asynch_api_intro.htm) or [REST API](https://developer.salesforce.com/docs/atlas.en-us.api_rest.meta/api_rest/intro_what_is_rest_api.htm). To achieve fast performance, Salesforce recommends using the BULK API for extracting larger amounts of data (more than 2,000 records). For this reason, the Salesforce connector uses the BULK API by default to extract any Salesforce objects, unless any of the following conditions are met:
 
@@ -238,19 +236,8 @@ Salesforce allows extracting data using either the [BULK API](https://developer.
 More information on the differences between various Salesforce APIs can be found [here](https://help.salesforce.com/s/articleView?id=sf.integrate_what_is_api.htm&type=5).
 
 :::info Force Using Bulk API
-If you set the `Force Use Bulk API` option to `true`, the connector will ignore unsupported properties and sync Stream using BULK API.
+If you set the `Force Use Bulk API` option to `true`, the connector will ignore unsupported properties and sync streams using BULK API.
 :::
-
-### Troubleshooting
-
-#### Tutorials
-
-Now that you have set up the Salesforce source connector, check out the following Salesforce tutorials:
-
-- [Replicate Salesforce data to BigQuery](https://airbyte.com/tutorials/replicate-salesforce-data-to-bigquery)
-- [Replicate Salesforce and Zendesk data to Keen for unified analytics](https://airbyte.com/tutorials/salesforce-zendesk-analytics)
-
-* Check out common troubleshooting issues for the Salesforce source connector on our [Airbyte Forum](https://github.com/airbytehq/airbyte/discussions).
 
 </details>
 
