@@ -33,9 +33,9 @@
 .heroTitle {
   font-size: 2.5rem;
   font-weight: 700;
-  margin-bottom: 2rem;
+  margin-bottom: 1.5rem;
+  margin-top:3rem;
   color: white;
-  text-align: center;
   max-width: 1200px;
   margin-left: auto;
   margin-right: auto;
@@ -82,16 +82,16 @@
   height: 48px;
   padding: 0.5rem;
   border-radius: 8px;
-  border: 1px solid rgba(255, 255, 255, 0.2);
-  background: rgba(255, 255, 255, 0.1);
+  border: 1px solid var(--ifm-color-primary-lightest);
+  background: var(--color-grey-40);
   transition: all 0.2s ease-out;
   text-decoration: none;
 }
 
 .connectorButton:hover {
-  border-color: rgba(255, 255, 255, 0.4);
-  background: rgba(255, 255, 255, 0.2);
-  box-shadow: 0 4px 12px rgba(0, 0, 0, 0.15);
+  background: var(--color-grey-40);
+  border-color: var(--ifm-color-primary);
+  box-shadow: 0 4px 12px rgba(97, 94, 255, 0.15);
   transform: translateY(-2px);
   text-decoration: none;
 }
