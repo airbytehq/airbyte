@@ -26,7 +26,14 @@ class IntegrationTestOperations(
         return streams
     }
 
+    @Deprecated("Use the correctly named 'read' function")
     fun sync(
+        catalog: ConfiguredAirbyteCatalog,
+        state: List<AirbyteStateMessage> = listOf(),
+        vararg featureFlags: FeatureFlag
+    ): BufferingOutputConsumer = read(catalog, state, *featureFlags)
+
+    fun read(
         catalog: ConfiguredAirbyteCatalog,
         state: List<AirbyteStateMessage> = listOf(),
         vararg featureFlags: FeatureFlag
