@@ -1,7 +1,7 @@
 import React from 'react';
 import Layout from '@theme/Layout';
 import styles from './index.module.css';
-import { Arcade } from '../components/Arcade';
+import { Navattic } from '../components/Navattic';
 
 export default function Home() {
   const PlatformIcon = () => (
@@ -141,8 +141,8 @@ export default function Home() {
               </p>
             </div>
             <div className={styles.heroRight}>
-              <Arcade 
-                id="8UUaeQOILatZ38Rjh8cs" 
+              <Navattic 
+                id="cmh9l52a9000104jof93wasau" 
                 title="Airbyte Demo: Get Started Creating Connections" 
                 paddingBottom="calc(61.416666666666664% + 41px)" 
               />
