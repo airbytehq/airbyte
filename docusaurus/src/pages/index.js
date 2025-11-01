@@ -1,6 +1,7 @@
 import React from 'react';
 import Layout from '@theme/Layout';
 import styles from './index.module.css';
+import { Arcade } from '../components/Arcade';
 import { Navattic } from '../components/Navattic';
 
 export default function Home() {
@@ -141,8 +142,8 @@ export default function Home() {
               </p>
             </div>
             <div className={styles.heroRight}>
-              <Navattic 
-                id="cmh9l52a9000104jof93wasau" 
+              <Arcade 
+                id="8UUaeQOILatZ38Rjh8cs" 
                 title="Airbyte Demo: Get Started Creating Connections" 
                 paddingBottom="calc(61.416666666666664% + 41px)" 
               />
@@ -169,6 +170,16 @@ export default function Home() {
                 </a>
               );
             })}
+          </div>
+        </section>
+
+        {/* Section 3: Interactive Demo */}
+        <section className={styles.navSection}>
+          <div className={styles.badgesContainer}>
+            <Navattic 
+              id="cmhfnvz6w000004jrbwla348h" 
+              title="Airbyte Interactive Product Tour"
+            />
           </div>
         </section>
 
