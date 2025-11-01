@@ -4,6 +4,7 @@ package io.airbyte.cdk.h2source
 import io.airbyte.cdk.command.JdbcSourceConfiguration
 import io.airbyte.cdk.command.SourceConfiguration
 import io.airbyte.cdk.command.SourceConfigurationFactory
+import io.airbyte.cdk.command.TableFilter
 import io.airbyte.cdk.ssh.SshConnectionOptions
 import io.airbyte.cdk.ssh.SshNoTunnelMethod
 import io.airbyte.cdk.ssh.SshTunnelMethodConfiguration
@@ -21,6 +22,7 @@ data class H2SourceConfiguration(
     override val sshConnectionOptions: SshConnectionOptions,
     override val jdbcUrlFmt: String,
     override val namespaces: Set<String>,
+    override val tableFilters: List<TableFilter>,
     val cursor: CursorConfiguration,
     val resumablePreferred: Boolean,
     override val maxConcurrency: Int,
@@ -45,13 +47,21 @@ class H2SourceConfigurationFactory :
     ): H2SourceConfiguration {
         val sshConnectionOptions: SshConnectionOptions =
             SshConnectionOptions.fromAdditionalProperties(pojo.getAdditionalProperties())
+
+        val configuredSchemas =
+            pojo.schemas?.takeUnless { it.isEmpty() }?.toSet() ?: setOf("PUBLIC")
+        val tableFilters = pojo.tableFilters ?: emptyList()
+
+        JdbcSourceConfiguration.validateTableFilters(configuredSchemas, tableFilters)
+
         return H2SourceConfiguration(
             realHost = pojo.host,
             realPort = pojo.port,
             sshTunnel = pojo.getTunnelMethodValue() ?: SshNoTunnelMethod,
             sshConnectionOptions = sshConnectionOptions,
             jdbcUrlFmt = "jdbc:h2:tcp://%s:%d/mem:${pojo.database}",
-            namespaces = pojo.schemas?.takeUnless { it.isEmpty() }?.toSet() ?: setOf("PUBLIC"),
+            namespaces = configuredSchemas,
+            tableFilters = tableFilters,
             cursor = pojo.getCursorConfigurationValue() ?: UserDefinedCursor,
             resumablePreferred = pojo.resumablePreferred != false,
             maxConcurrency = 1,

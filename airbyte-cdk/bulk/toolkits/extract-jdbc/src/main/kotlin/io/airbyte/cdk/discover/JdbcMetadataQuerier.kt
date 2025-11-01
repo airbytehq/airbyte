@@ -62,19 +62,16 @@ class JdbcMetadataQuerier(
         return null
     }
 
+    val tableFilters = config.tableFilters
+
     val memoizedTableNames: List<TableName> by lazy {
         log.info { "Querying table names for catalog discovery." }
         try {
             val allTables = mutableSetOf<TableName>()
             val dbmd: DatabaseMetaData = conn.metaData
-            for (namespace in config.namespaces + config.namespaces.map { it.uppercase() }) {
-                val (catalog: String?, schema: String?) =
-                    when (constants.namespaceKind) {
-                        NamespaceKind.CATALOG -> namespace to null
-                        NamespaceKind.SCHEMA -> null to namespace
-                        NamespaceKind.CATALOG_AND_SCHEMA -> namespace to namespace
-                    }
-                dbmd.getTables(catalog, schema, null, null).use { rs: ResultSet ->
+
+            fun addTablesFromQuery(catalog: String?, schema: String?, pattern: String?) {
+                dbmd.getTables(catalog, schema, pattern, null).use { rs: ResultSet ->
                     while (rs.next()) {
                         allTables.add(
                             TableName(
@@ -82,8 +79,34 @@ class JdbcMetadataQuerier(
                                 schema = rs.getString("TABLE_SCHEM"),
                                 name = rs.getString("TABLE_NAME"),
                                 type = rs.getString("TABLE_TYPE") ?: "",
-                            ),
+                            )
                         )
+                    }
+                }
+            }
+
+            for (namespace in config.namespaces + config.namespaces.map { it.uppercase() }) {
+                val (catalog: String?, schema: String?) =
+                    when (constants.namespaceKind) {
+                        NamespaceKind.CATALOG -> namespace to null
+                        NamespaceKind.SCHEMA -> null to namespace
+                        NamespaceKind.CATALOG_AND_SCHEMA -> namespace to namespace
+                    }
+
+                if (tableFilters.isEmpty()) {
+                    addTablesFromQuery(catalog, schema, null)
+                } else {
+                    val filtersForSchema =
+                        tableFilters.filter { it.schemaName.equals(schema, ignoreCase = true) }
+
+                    if (filtersForSchema.isEmpty()) {
+                        addTablesFromQuery(catalog, schema, null)
+                    } else {
+                        for (filter in filtersForSchema) {
+                            for (pattern in filter.patterns) {
+                                addTablesFromQuery(catalog, filter.schemaName, pattern)
+                            }
+                        }
                     }
                 }
             }
