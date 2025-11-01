@@ -1,7 +1,6 @@
 import React from 'react';
 import Layout from '@theme/Layout';
 import styles from './index.module.css';
-import { Arcade } from '../components/Arcade';
 import { Navattic } from '../components/Navattic';
 
 export default function Home() {
@@ -142,8 +141,8 @@ export default function Home() {
               </p>
             </div>
             <div className={styles.heroRight}>
-              <Arcade 
-                id="8UUaeQOILatZ38Rjh8cs" 
+              <Navattic 
+                id="cmh9l52a9000104jof93wasau" 
                 title="Airbyte Demo: Get Started Creating Connections" 
                 paddingBottom="calc(61.416666666666664% + 41px)" 
               />
@@ -151,21 +150,7 @@ export default function Home() {
           </div>
         </section>
 
-        {/* Section 2: Navattic Demo */}
-        <section className={styles.heroSection}>
-          <div className={styles.heroContainer}>
-            <div style={{ maxWidth: '800px', margin: '0 auto' }}>
-              <h2 style={{ textAlign: 'center', marginBottom: '2rem' }}>Interactive Product Tour</h2>
-              <Navattic 
-                id="cmh9l52a9000104jof93wasau" 
-                title="Airbyte Interactive Product Tour" 
-                paddingBottom="calc(61.416666666666664% + 41px)" 
-              />
-            </div>
-          </div>
-        </section>
-
-        {/* Section 3: Navigation Links */}
+        {/* Section 2: Navigation Links */}
         <section className={styles.navSection}>
           <div className={styles.navGrid}>
             {navLinks.map((item, index) => {

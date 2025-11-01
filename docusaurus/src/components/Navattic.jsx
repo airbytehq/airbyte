@@ -1,20 +1,30 @@
 export const Navattic = (props) => {
+  const { id, title, paddingBottom, aspectRatio = "16 / 9", height } = props;
+
+  const containerStyle = {
+    position: "relative",
+    marginBottom: "1em",
+    width: "100%",
+  };
+
+  if (height) {
+    containerStyle.height = height;
+  } else if (paddingBottom) {
+    containerStyle.paddingBottom = paddingBottom;
+    containerStyle.height = 0;
+  } else {
+    containerStyle.aspectRatio = aspectRatio;
+  }
+
   return (
-    <div
-      style={{
-        position: "relative",
-        marginBottom: "1em",
-        paddingBottom: props.paddingBottom,
-        height: 0,
-      }}
-    >
+    <div style={containerStyle}>
       <iframe
-        src={`https://capture.navattic.com/${props.id}`}
-        title={props.title}
+        src={`https://capture.navattic.com/${id}`}
+        title={title}
         loading="lazy"
         allowFullScreen
         allow="fullscreen"
-        data-navattic-demo-id={props.id}
+        data-navattic-demo-id={id}
         style={{
           position: "absolute",
           top: 0,
