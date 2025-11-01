@@ -142,11 +142,7 @@ export default function Home() {
               </p>
             </div>
             <div className={styles.heroRight}>
-              <Arcade 
-                id="8UUaeQOILatZ38Rjh8cs" 
-                title="Airbyte Demo: Get Started Creating Connections" 
-                paddingBottom="calc(61.416666666666664% + 41px)" 
-              />
+              {/* Reserved for future content */}
             </div>
           </div>
         </section>
