@@ -558,17 +558,21 @@ global:
 ```yaml title="values.yaml"
 global:
   storage:
-    secretName: ""
     type: minio # default storage is minio. Set to s3, gcs, or azure, according to what you use.
     bucket:
       log: airbyte-bucket
       state: airbyte-bucket
       workloadOutput: airbyte-bucket
       activityPayload: airbyte-bucket
+    
+    # Option 1: Provide credentials directly in values.yaml (credentials will be stored in Kubernetes secret)
     gcs:
       projectId: <project-id>
-      credentialsJson:  <base64-encoded>
+      credentialsJson: <raw-json-content>  # Provide the raw JSON service account key (not base64-encoded)
       credentialsJsonPath: /secrets/gcs-log-creds/gcp.json
+    
+    # Option 2: Use an external Kubernetes secret you've already created
+    # storageSecretName: <your-existing-secret-name>  # Uncomment and set this to use your own secret
 ```
 
 </TabItem>
