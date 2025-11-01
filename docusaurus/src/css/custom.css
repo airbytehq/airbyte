@@ -469,3 +469,34 @@ li.api-method.patch .menu__link::before {
   content: "patch";
   background-color: var(--openapi-code-orange);
 }
+
+/* Nested ordered list styling */
+/* Level 1: decimal (1, 2, 3, etc.) */
+article ol {
+  list-style-type: decimal;
+}
+
+/* Level 2: lower-alpha (a, b, c, etc.) */
+article ol ol {
+  list-style-type: lower-alpha;
+}
+
+/* Level 3: lower-roman (i, ii, iii, etc.) */
+article ol ol ol {
+  list-style-type: lower-roman;
+}
+
+/* Level 4 and beyond: cycle back to decimal */
+article ol ol ol ol {
+  list-style-type: decimal;
+}
+
+/* Level 5: cycle back to lower-alpha */
+article ol ol ol ol ol {
+  list-style-type: lower-alpha;
+}
+
+/* Level 6: cycle back to lower-roman */
+article ol ol ol ol ol ol {
+  list-style-type: lower-roman;
+}
