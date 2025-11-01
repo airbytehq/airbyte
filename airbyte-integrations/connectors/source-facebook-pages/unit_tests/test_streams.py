@@ -6,7 +6,7 @@ import pytest
 from source_facebook_pages.source import SourceFacebookPages
 
 
-@pytest.mark.parametrize("error_code", (400, 429, 500))
+@pytest.mark.parametrize("error_code", (429, 500, 502, 503, 504))
 def test_retries(mocker, requests_mock, error_code):
     mocker.patch("time.sleep")
     requests_mock.get("https://graph.facebook.com/1?fields=access_token&access_token=token", json={"access_token": "access"})
