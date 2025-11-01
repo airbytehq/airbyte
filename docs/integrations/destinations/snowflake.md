@@ -251,6 +251,7 @@ desired namespace.
 
 | Version         | Date       | Pull Request                                                        | Subject                                                                                                                                                                                |
 |:----------------|:-----------|:--------------------------------------------------------------------|:---------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------|
+| 4.0.21 | 2025-11-01 | [69135](https://github.com/airbytehq/airbyte/pull/69135) | Upgrade to Bulk CDK 0.1.61. |
 | 4.0.20          | 2025-10-28 | [68186](https://github.com/airbytehq/airbyte/pull/68186)            | Upgrade to CDK 0.1.59 |
 | 4.0.19          | 2025-10-28 | [68683](https://github.com/airbytehq/airbyte/pull/68683)            | Upgrade to CDK 0.1.58 (improve logging of unflushed states at end of sync) |
 | 4.0.18          | 2025-10-28 | [68125](https://github.com/airbytehq/airbyte/pull/68125)            | Internal refactoring; upgrade to CDK 0.1.56 |
