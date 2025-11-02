@@ -1,37 +1,31 @@
 #!/usr/bin/env bash
 
 # This script builds and optionally publishes Java connector Docker images.
+# Usage: ./build-and-publish-java-connectors-with-tag.sh --name <name> --release-type [pre-release | main-release] [--publish]
 #
 # Flag descriptions:
-#   --main-release: Publishes images with the exact version from metadata.yaml.
-#                   Only publishes if the image does not exists on Dockerhub.
-#                   Used for production releases on merge to master.
-#
-#   --pre-release:  Publishes images with a dev tag (version-dev.githash).
-#                   Only publishes if the image does not exists on Dockerhub.
-#                   Used for development/testing purposes.
+#   --name <name>:    Specifies the connector name (e.g., destination-bigquery).
+#                    
+#   --release-type:   Specifies the release type:
+#                     - pre-release: Builds with a dev tag (version-dev.githash).
+#                     - main-release: Builds with the exact version from metadata.yaml.
+#                     Defaults to pre-release if not specified.
 #
 #   --publish:      Actually publishes the images. Without this flag, the script runs in dry-run mode
 #                   and only shows what would be published without actually publishing.
 #
 # Usage examples:
-#   ./get-modified-connectors.sh --prev-commit --json | ./build-and-publish-java-connectors-with-tag.sh
+#   ./build-and-publish-java-connectors-with-tag.sh --name destination-bigquery --pre-release --publish
 #
 # Specific to this script:
 #   1) Default (pre-release) on a single connector
 #   ./build-and-publish-java-connectors-with-tag.sh foo-conn
 #   ./build-and-publish-java-connectors-with-tag.sh --name=foo-conn
 #
-#   2) Explicit main-release with multiple connectors
-#   ./build-and-publish-java-connectors-with-tag.sh --main-release foo-conn bar-conn
+#   2) Mixed: positional + pre-release
+#   ./build-and-publish-java-connectors-with-tag.sh --release-type=pre-release foo-conn
 #
-#   3) Pre-release (dev tag) via JSON pipe
-#   echo '{"connector":["foo-conn","bar-conn"]}' | ./build-and-publish-java-connectors-with-tag.sh --pre-release
-#
-#   4) Mixed: positional + pre-release
-#   ./build-and-publish-java-connectors-with-tag.sh --pre-release foo-conn
-#
-#   5) Enable actual publishing (default is dry-run mode)
+#   3) Enable actual publishing (default is dry-run mode)
 #   ./build-and-publish-java-connectors-with-tag.sh --publish foo-conn
 set -euo pipefail
 
@@ -69,52 +63,56 @@ dockerhub_tag_exists() {
   exit 1
 }
 
-# ---------- main loop ----------
 source "${BASH_SOURCE%/*}/lib/parse_args.sh"
+connector=$(get_only_connector)
 
-while read -r connector; do
-  meta="${CONNECTORS_DIR}/${connector}/metadata.yaml"
-  if [[ ! -f "$meta" ]]; then
-    echo "Error: metadata.yaml not found for ${connector}" >&2
-    exit 1
+meta="${CONNECTORS_DIR}/${connector}/metadata.yaml"
+if [[ ! -f "$meta" ]]; then
+  echo "Error: metadata.yaml not found for ${connector}" >&2
+  exit 1
+fi
+
+# Check if this is a Java connector
+if ! grep -qE 'language:\s*java' "$meta"; then
+  echo "ℹ️  Skipping ${connector} — this script only supports JVM connectors for now."
+  continue
+fi
+
+base_tag=$(yq -r '.data.dockerImageTag' "$meta")
+if [[ -z "$base_tag" || "$base_tag" == "null" ]]; then
+  echo "Error:  dockerImageTag missing in ${meta}" >&2
+  exit 1
+fi
+
+docker_repository=$(yq -r '.data.dockerRepository' "$meta")
+if [[ -z "$docker_repository" || "$docker_repository" == "null" ]]; then
+  echo "Error:  dockerRepository missing in ${meta}" >&2
+  exit 1
+fi
+
+if [[ "$publish_mode" == "main-release" ]]; then
+  docker_tag="$base_tag"
+else
+  docker_tag=$(generate_dev_tag "$base_tag")
+fi
+
+if $do_publish; then
+  echo "Building & publishing ${connector} to ${docker_repository} with tag ${docker_tag}"
+
+  if dockerhub_tag_exists "${docker_repository}" "$docker_tag"; then
+    echo "ℹ️  Skipping publish — tag ${docker_repository}:${docker_tag} already exists."
+    exit
   fi
 
-  # Check if this is a Java connector
-  if ! grep -qE 'language:\s*java' "$meta"; then
-    echo "ℹ️  Skipping ${connector} — this script only supports JVM connectors for now."
-    continue
-  fi
-
-  base_tag=$(yq -r '.data.dockerImageTag' "$meta")
-  if [[ -z "$base_tag" || "$base_tag" == "null" ]]; then
-    echo "Error:  dockerImageTag missing in ${meta}" >&2
-    exit 1
-  fi
-
-  if [[ "$publish_mode" == "main-release" ]]; then
-    docker_tag="$base_tag"
-  else
-    docker_tag=$(generate_dev_tag "$base_tag")
-  fi
-
-  if $do_publish; then
-    echo "Building & publishing ${connector} with tag ${docker_tag}"
-
-    if dockerhub_tag_exists "airbyte/${connector}" "$docker_tag"; then
-      echo "ℹ️  Skipping publish — tag airbyte/${connector}:${docker_tag} already exists."
-      continue
-    fi
-
-    echo "airbyte/${connector}:${docker_tag} image does not exists on Docker. Publishing..."
-    ./gradlew -Pdocker.publish \
-              -DciMode=true \
-              -Psbom=false \
-              -Pdocker.tag="${docker_tag}" \
-              ":${CONNECTORS_DIR//\//:}:${connector}:assemble"
-  else
-    echo "DRY RUN: Would build & publish ${connector} with tag ${docker_tag}"
-  fi
-done < <(get_connectors)
+  echo "${docker_repository}:${docker_tag} image does not exists on Docker. Publishing..."
+  ./gradlew -Pdocker.publish \
+            -DciMode=true \
+            -Psbom=false \
+            -Pdocker.tag="${docker_tag}" \
+            ":${CONNECTORS_DIR//\//:}:${connector}:assemble"
+else
+  echo "DRY RUN: Would build & publish ${connector} with tag ${docker_tag}"
+fi
 if $do_publish; then
   echo "Done building & publishing."
 else

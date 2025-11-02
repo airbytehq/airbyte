@@ -109,14 +109,14 @@ sealed class DefaultJdbcSplittablePartition(
         val querySpec =
             SelectQuerySpec(
                 SelectColumns(stream.fields + checkpointColumns),
-                FromSample(stream.name, stream.namespace, sampleRateInvPow2, sampleSize),
-                where,
+                FromSample(stream.name, stream.namespace, sampleRateInvPow2, sampleSize, where),
+                NoWhere, // WHERE is already in FromSample, don't duplicate in outer query
                 OrderBy(checkpointColumns),
             )
         return selectQueryGenerator.generate(querySpec.optimize())
     }
 
-    val where: Where
+    val where: WhereNode
         get() {
             val zippedLowerBound: List<Pair<Field, JsonNode>> =
                 lowerBound?.let { checkpointColumns.zip(it) } ?: listOf()
@@ -150,7 +150,24 @@ sealed class DefaultJdbcSplittablePartition(
                         } + listOf(lastLeaf),
                     )
                 }
-            return Where(And(Or(lowerBoundDisj), Or(upperBoundDisj)))
+            // Don't create WHERE clauses when there are no bounds
+            if (lowerBoundDisj.isEmpty() && upperBoundDisj.isEmpty()) {
+                return NoWhere
+            }
+
+            // Build WHERE clause components only for non-empty bounds
+            val clauses = mutableListOf<WhereClauseNode>()
+            if (lowerBoundDisj.isNotEmpty()) {
+                clauses.add(Or(lowerBoundDisj))
+            }
+            if (upperBoundDisj.isNotEmpty()) {
+                clauses.add(Or(upperBoundDisj))
+            }
+
+            return when (clauses.size) {
+                1 -> Where(clauses.first())
+                else -> Where(And(clauses))
+            }
         }
 
     open val isLowerBoundIncluded: Boolean = false

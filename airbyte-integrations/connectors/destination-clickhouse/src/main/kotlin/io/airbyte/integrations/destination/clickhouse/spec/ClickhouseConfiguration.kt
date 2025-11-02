@@ -22,9 +22,11 @@ data class ClickhouseConfiguration(
 ) : DestinationConfiguration() {
     val endpoint = "$protocol://$hostname:$port"
     val resolvedDatabase = database.ifEmpty { Defaults.DATABASE_NAME }
+    val resolvedRecordWindowSize = recordWindowSize ?: Defaults.RECORDS_PER_AGGREGATE
 
     object Defaults {
         const val DATABASE_NAME = "default"
+        const val RECORDS_PER_AGGREGATE = 100_000L
     }
 }
 

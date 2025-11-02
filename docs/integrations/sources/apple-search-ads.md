@@ -21,11 +21,10 @@ This page contains the setup guide and reference information for the Apple Ads s
 6. Enter the **Client ID** and the **Client Secret** from [Step 1](#step-1-set-up-apple-search-ads).
 7. For **Start Date** and **End Date**, enter the date in YYYY-MM-DD format. For DAILY reports, the Start Date can't be
    earlier than 90 days from today. If the End Date field is left blank, Airbyte will replicate data to today.
-8. When syncing large amounts of data over vast durations, you can customize **Exponential Backoff Factor** in order to
-   reduce the chance of synchronization failures in case of Apple's rate limit kicking in.
-9. You can also decrease the **Lookback Window** in order to sync smaller amounts of data on each incremental sync,
-   at the cost of missing late data attributions.
-10. Click **Set up source**.
+8. For **Time Zone**, select either UTC (Coordinated Universal Time) or ORTZ (Organization Time Zone). The default is UTC.
+9. For **Lookback Window**, enter the number of days (1-30) to re-fetch data during incremental syncs. The default is 30 days, which matches Apple Search Ads' attribution window. You can decrease this value to sync smaller amounts of data on each incremental sync, but this may result in missing late data attributions.
+10. For **Exponential Backoff Factor**, enter a value between 1 and 20 to control the delay between retry attempts when rate limits are encountered. The default is 5. Increase this value when syncing large amounts of data to reduce the chance of synchronization failures.
+11. Click **Set up source**.
 
 ## Supported sync modes
 
@@ -71,6 +70,13 @@ However, at this moment and as indicated in the stream names, the connector only
 
 | Version | Date       | Pull Request                                             | Subject                                                                              |
 |:--------|:-----------|:---------------------------------------------------------|:-------------------------------------------------------------------------------------|
+| 1.0.1 | 2025-10-29 | [68392](https://github.com/airbytehq/airbyte/pull/68392) | Update dependencies |
+| 1.0.0 | 2025-10-15 | [66557](https://github.com/airbytehq/airbyte/pull/66557) | Update `adgroups_report_daily` and `keywords_report_daily` to use global state cursor |
+| 0.8.10 | 2025-10-14 | [67979](https://github.com/airbytehq/airbyte/pull/67979) | Update dependencies |
+| 0.8.9 | 2025-10-07 | [67173](https://github.com/airbytehq/airbyte/pull/67173) | Update dependencies |
+| 0.8.8 | 2025-09-30 | [66272](https://github.com/airbytehq/airbyte/pull/66272) | Update dependencies |
+| 0.8.7 | 2025-09-12 | [TBD](https://github.com/airbytehq/airbyte/pull/TBD) | Update to CDK v7 |
+| 0.8.6 | 2025-08-23 | [65312](https://github.com/airbytehq/airbyte/pull/65312) | Update dependencies |
 | 0.8.5 | 2025-08-09 | [64663](https://github.com/airbytehq/airbyte/pull/64663) | Update dependencies |
 | 0.8.4 | 2025-07-19 | [63453](https://github.com/airbytehq/airbyte/pull/63453) | Update dependencies |
 | 0.8.3 | 2025-07-12 | [63087](https://github.com/airbytehq/airbyte/pull/63087) | Update dependencies |

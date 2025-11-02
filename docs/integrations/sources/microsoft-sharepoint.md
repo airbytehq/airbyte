@@ -269,7 +269,7 @@ If enabled, sends subdirectory folder structure along with source file names to 
 
 ### Multi-Site Support
 
-By providing a url to the site URL field, the connector will be able to access the files in the specific sharepoint site. 
+By providing a url to the site URL field, the connector will be able to access the files in the specific sharepoint site.
 The site url should be in the format `https://<tenant_name>.sharepoint.com/sites/<site>`. If no field is provided, the connector will access the files in the main site.
 To have the connector iterate all sub-sites provide the site url as `https://<tenant_name>.sharepoint.com/sites/`.
 
@@ -306,6 +306,7 @@ The connector is restricted by normal Microsoft Graph [requests limitation](http
 
 | Version | Date       | Pull Request                                             | Subject                                                                   |
 |:--------|:-----------|:---------------------------------------------------------|:--------------------------------------------------------------------------|
+| 0.10.4 | 2025-08-20 | [65118](https://github.com/airbytehq/airbyte/pull/65118) | Decertify connector |
 | 0.10.3 | 2025-07-13 | [60562](https://github.com/airbytehq/airbyte/pull/60562) | Update dependencies |
 | 0.10.2 | 2025-05-10 | [59113](https://github.com/airbytehq/airbyte/pull/59113) | Update dependencies |
 | 0.10.1 | 2025-05-07 | [59700](https://github.com/airbytehq/airbyte/pull/59711) | Fix edege case for unexcpeted uris. |

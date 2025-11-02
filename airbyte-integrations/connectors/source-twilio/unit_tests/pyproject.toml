@@ -1,0 +1,19 @@
+[build-system]
+requires = ["poetry-core>=1.0.0"]
+build-backend = "poetry.core.masonry.api"
+[tool.poetry]
+name = "source-twilio"
+version = "0.0.0"
+description = "Unit tests for source-twilio"
+authors = ["Airbyte <contact@airbyte.io>"]
+[tool.poetry.dependencies]
+python = "^3.10,<3.13"
+airbyte-cdk = "^6"
+pytest-mock = "^3.12.0"
+freezegun = "^1.4.0"
+requests-mock = "^1.9.3"
+pytest = "^8.0.0"
+[tool.pytest.ini_options]
+filterwarnings = [
+    "ignore:This class is experimental*"
+]

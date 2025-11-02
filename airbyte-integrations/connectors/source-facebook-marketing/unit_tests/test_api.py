@@ -2,7 +2,8 @@
 # Copyright (c) 2023 Airbyte, Inc., all rights reserved.
 #
 
-import pendulum
+from datetime import timedelta
+
 import pytest
 import source_facebook_marketing
 from facebook_business import FacebookAdsApi, FacebookSession
@@ -22,27 +23,27 @@ class TestMyFacebookAdsApi:
         [
             (
                 95,
-                pendulum.duration(minutes=5),
-                pendulum.duration(minutes=1),
+                timedelta(minutes=5),
+                timedelta(minutes=1),
                 96,
-                pendulum.duration(minutes=6),
-                pendulum.duration(minutes=6),
+                timedelta(minutes=6),
+                timedelta(minutes=6),
             ),
             (
                 95,
-                pendulum.duration(minutes=5),
-                pendulum.duration(minutes=2),
+                timedelta(minutes=5),
+                timedelta(minutes=2),
                 96,
-                pendulum.duration(minutes=1),
-                pendulum.duration(minutes=5),
+                timedelta(minutes=1),
+                timedelta(minutes=5),
             ),
             (
                 95,
-                pendulum.duration(minutes=5),
-                pendulum.duration(minutes=1),
+                timedelta(minutes=5),
+                timedelta(minutes=1),
                 93,
-                pendulum.duration(minutes=4),
-                pendulum.duration(minutes=4),
+                timedelta(minutes=4),
+                timedelta(minutes=4),
             ),
         ],
     )
@@ -67,36 +68,36 @@ class TestMyFacebookAdsApi:
         "min_pause_interval,usages_pause_intervals,expected_output",
         [
             (
-                pendulum.duration(minutes=1),  # min_pause_interval
+                timedelta(minutes=1),  # min_pause_interval
                 [
-                    (5, pendulum.duration(minutes=6)),
-                    (7, pendulum.duration(minutes=5)),
+                    (5, timedelta(minutes=6)),
+                    (7, timedelta(minutes=5)),
                 ],  # usages_pause_intervals
-                (7, pendulum.duration(minutes=6)),  # expected_output
+                (7, timedelta(minutes=6)),  # expected_output
             ),
             (
-                pendulum.duration(minutes=10),  # min_pause_interval
+                timedelta(minutes=10),  # min_pause_interval
                 [
-                    (5, pendulum.duration(minutes=6)),
-                    (7, pendulum.duration(minutes=5)),
+                    (5, timedelta(minutes=6)),
+                    (7, timedelta(minutes=5)),
                 ],  # usages_pause_intervals
-                (7, pendulum.duration(minutes=10)),  # expected_output
+                (7, timedelta(minutes=10)),  # expected_output
             ),
             (
-                pendulum.duration(minutes=10),  # min_pause_interval
+                timedelta(minutes=10),  # min_pause_interval
                 [  # usages_pause_intervals
-                    (9, pendulum.duration(minutes=6)),
+                    (9, timedelta(minutes=6)),
                 ],
-                (9, pendulum.duration(minutes=10)),  # expected_output
+                (9, timedelta(minutes=10)),  # expected_output
             ),
             (
-                pendulum.duration(minutes=10),  # min_pause_interval
+                timedelta(minutes=10),  # min_pause_interval
                 [  # usages_pause_intervals
-                    (-1, pendulum.duration(minutes=1)),
-                    (-2, pendulum.duration(minutes=10)),
-                    (-3, pendulum.duration(minutes=100)),
+                    (-1, timedelta(minutes=1)),
+                    (-2, timedelta(minutes=10)),
+                    (-3, timedelta(minutes=100)),
                 ],
-                (0, pendulum.duration(minutes=100)),  # expected_output
+                (0, timedelta(minutes=100)),  # expected_output
             ),
         ],
     )

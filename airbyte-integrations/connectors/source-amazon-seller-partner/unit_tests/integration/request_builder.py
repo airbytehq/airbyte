@@ -52,6 +52,10 @@ class RequestBuilder:
     def vendor_orders_endpoint(cls) -> RequestBuilder:
         return cls("vendor/orders/v1/purchaseOrders")
 
+    @classmethod
+    def vendor_orders_status_endpoint(cls) -> RequestBuilder:
+        return cls("vendor/orders/v1/purchaseOrdersStatus")
+
     def __init__(self, resource: str) -> None:
         self._resource = resource
         self._base_url = "https://sellingpartnerapi-na.amazon.com"

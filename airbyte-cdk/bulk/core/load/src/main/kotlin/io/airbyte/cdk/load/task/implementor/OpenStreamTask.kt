@@ -11,12 +11,15 @@ import io.airbyte.cdk.load.task.SelfTerminating
 import io.airbyte.cdk.load.task.Task
 import io.airbyte.cdk.load.task.TerminalCondition
 import io.airbyte.cdk.load.write.DestinationWriter
-import io.airbyte.cdk.load.write.StreamLoader
 import jakarta.inject.Singleton
-import kotlinx.coroutines.flow.fold
+import java.util.concurrent.ConcurrentHashMap
 
 /**
- * Wraps @[StreamLoader.start] and starts the spill-to-disk tasks.
+ * Consumes DestinationStreams from the openStreamQueue, creates/starts a StreamLoader for each, and
+ * registers it with the SyncManager.
+ *
+ * Duplicate streams across the entire sync are ignored: start() is called at most once per stream
+ * descriptor, even with multiple concurrent workers.
  *
  * TODO: There's no reason to wait on initialization to start spilling to disk.
  */
@@ -29,20 +32,19 @@ class OpenStreamTask(
     override val terminalCondition: TerminalCondition = SelfTerminating
 
     override suspend fun execute() {
-        openStreamQueue.consume().fold(mutableSetOf<DestinationStream.Descriptor>()) {
-            streamsSeen,
-            stream ->
-            val streamLoader = destinationWriter.createStreamLoader(stream)
-            val result = runCatching {
-                streamLoader.start()
-                streamLoader
+        val seen = ConcurrentHashMap.newKeySet<DestinationStream.Descriptor>()
+        openStreamQueue.consume().collect { stream ->
+            val desc = stream.mappedDescriptor
+
+            if (!seen.add(desc)) return@collect
+
+            val result: Result<io.airbyte.cdk.load.write.StreamLoader> = runCatching {
+                val loader = destinationWriter.createStreamLoader(stream)
+                loader.start()
+                loader
             }
             result.getOrThrow()
-            // in practice, if we're here, then `result` is by definition successful
-            // (because otherwise, getOrThrow would have thrown)
-            syncManager.registerStartedStreamLoader(stream.mappedDescriptor, result)
-            streamsSeen.add(stream.mappedDescriptor)
-            streamsSeen
+            syncManager.registerStartedStreamLoader(desc, result)
         }
     }
 }

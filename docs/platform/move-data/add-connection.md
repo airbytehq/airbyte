@@ -22,6 +22,8 @@ The unique needs of a destination account for why setting up some connections is
 
 ## Create an ELT connection
 
+<Navattic id="cmhfholey000504ic07qla001" />
+
 Follow these steps to create a connection to a database, warehouse, lake, or similar type of destination.
 
 1. Click **Connections** in the navigation.
@@ -58,10 +60,6 @@ Follow these steps to create a connection to a database, warehouse, lake, or sim
 9. Click **Set up connection**. Airbyte takes you to the page for that connection, where you can manage it and initiate syncs.
 
 ## Create a data activation connection
-
-:::info
-Data activation is in early access. If you'd like to be an early adopter, [fill out this form](https://form.typeform.com/to/tupSnN3D) and we'll contact you soon.
-:::
 
 Follow these steps to create a connection to a data activation destination.
 

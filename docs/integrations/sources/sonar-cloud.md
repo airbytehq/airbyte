@@ -30,6 +30,14 @@ This source can sync data from the [Sonar cloud API](https://sonarcloud.io/web_a
 
 | Version | Date                                                                  | Pull Request                                              | Subject                                                                         |
 | :------ | :-------------------------------------------------------------------- | :-------------------------------------------------------- | :------------------------------------------------------------------------------ |
+| 0.2.35 | 2025-10-29 | [68830](https://github.com/airbytehq/airbyte/pull/68830) | Update dependencies |
+| 0.2.34 | 2025-10-21 | [68236](https://github.com/airbytehq/airbyte/pull/68236) | Update dependencies |
+| 0.2.33 | 2025-10-14 | [67786](https://github.com/airbytehq/airbyte/pull/67786) | Update dependencies |
+| 0.2.32 | 2025-10-07 | [67452](https://github.com/airbytehq/airbyte/pull/67452) | Update dependencies |
+| 0.2.31 | 2025-09-30 | [66906](https://github.com/airbytehq/airbyte/pull/66906) | Update dependencies |
+| 0.2.30 | 2025-09-24 | [65670](https://github.com/airbytehq/airbyte/pull/65670) | Update dependencies |
+| 0.2.29 | 2025-08-23 | [65394](https://github.com/airbytehq/airbyte/pull/65394) | Update dependencies |
+| 0.2.28 | 2025-08-09 | [64802](https://github.com/airbytehq/airbyte/pull/64802) | Update dependencies |
 | 0.2.27 | 2025-08-02 | [64470](https://github.com/airbytehq/airbyte/pull/64470) | Update dependencies |
 | 0.2.26 | 2025-07-26 | [64005](https://github.com/airbytehq/airbyte/pull/64005) | Update dependencies |
 | 0.2.25 | 2025-07-19 | [63617](https://github.com/airbytehq/airbyte/pull/63617) | Update dependencies |

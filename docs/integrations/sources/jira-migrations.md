@@ -11,14 +11,7 @@ Users who do not have this stream enabled will not be affected and can safely up
 3. Disable the `pull_requests` stream
 4. In the main navbar, navigate to the **Sources** tab and select the affected Jira source. Set the `enable_experimental_streams` field to false and save your changes.
 
-:::note
-For **OSS users**, the **Pull Request** stream can still be synced by pinning this source to an earlier version:
-
-1. Select **Settings** in the main navbar.
-2. Select **Sources**, edit the entry for `source-jira` and set the **Default Version** to `3.5.4`
-
-This feature is not available in **Airbyte Cloud**
-:::
+If you're a self-managed user and can't upgrade to the new version yet, you can pin the connector to a specific version. [Help managing upgrades](/platform/next/managing-airbyte/connector-updates).
 
 ## Upgrading to 3.0.0
 

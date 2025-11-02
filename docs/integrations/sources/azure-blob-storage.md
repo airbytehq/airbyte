@@ -299,40 +299,48 @@ The Azure Blob Storage connector should not encounter any [Microsoft API limitat
 <details>
   <summary>Expand to review</summary>
 
-| Version | Date       | Pull Request                                             | Subject                                                                                      |
-|:--------|:-----------|:---------------------------------------------------------|:---------------------------------------------------------------------------------------------|
-| 0.6.12 | 2025-07-26 | [63800](https://github.com/airbytehq/airbyte/pull/63800) | Update dependencies |
-| 0.6.11 | 2025-07-19 | [63472](https://github.com/airbytehq/airbyte/pull/63472) | Update dependencies |
-| 0.6.10 | 2025-07-12 | [63067](https://github.com/airbytehq/airbyte/pull/63067) | Update dependencies |
-| 0.6.9 | 2025-07-05 | [62534](https://github.com/airbytehq/airbyte/pull/62534) | Update dependencies |
-| 0.6.8 | 2025-05-27 | [60867](https://github.com/airbytehq/airbyte/pull/60867) | Update dependencies |
-| 0.6.7 | 2025-05-24 | [60675](https://github.com/airbytehq/airbyte/pull/60675) | Update dependencies |
-| 0.6.6 | 2025-05-10 | [59806](https://github.com/airbytehq/airbyte/pull/59806) | Update dependencies |
-| 0.6.5 | 2025-05-03 | [59318](https://github.com/airbytehq/airbyte/pull/59318) | Update dependencies |
-| 0.6.4 | 2025-04-26 | [58728](https://github.com/airbytehq/airbyte/pull/58728) | Update dependencies |
-| 0.6.3 | 2025-04-19 | [58295](https://github.com/airbytehq/airbyte/pull/58295) | Update dependencies |
-| 0.6.2 | 2025-04-12 | [57627](https://github.com/airbytehq/airbyte/pull/57627) | Update dependencies |
-| 0.6.1 | 2025-04-05 | [43869](https://github.com/airbytehq/airbyte/pull/43869) | Update dependencies |
-| 0.6.0 | 2025-03-31 | [56466](https://github.com/airbytehq/airbyte/pull/56466) | Upgrading dependencies and CDK and Python to 3.11 |
-| 0.5.0 | 2025-01-02 | [50398](https://github.com/airbytehq/airbyte/pull/50398) | Add client_credentials auth for Azure Service Principals |
-| 0.4.4 | 2024-06-06 | [39275](https://github.com/airbytehq/airbyte/pull/39275) | [autopull] Upgrade base image to v1.2.2 |
-| 0.4.3 | 2024-05-29 | [38701](https://github.com/airbytehq/airbyte/pull/38701) | Avoid error on empty stream when running discover |
-| 0.4.2 | 2024-04-23 | [37504](https://github.com/airbytehq/airbyte/pull/37504) | Update specification |
-| 0.4.1 | 2024-04-22 | [37467](https://github.com/airbytehq/airbyte/pull/37467) | Fix start date filter |
-| 0.4.0 | 2024-04-05 | [36825](https://github.com/airbytehq/airbyte/pull/36825) | Add oauth 2.0 support |
-| 0.3.6 | 2024-04-03 | [36542](https://github.com/airbytehq/airbyte/pull/36542) | Use Latest CDK; add integration tests |
-| 0.3.5 | 2024-03-26 | [36487](https://github.com/airbytehq/airbyte/pull/36487) | Manage dependencies with Poetry. |
-| 0.3.4 | 2024-02-06 | [34936](https://github.com/airbytehq/airbyte/pull/34936) | Bump CDK version to avoid missing SyncMode errors |
-| 0.3.3 | 2024-01-30 | [34681](https://github.com/airbytehq/airbyte/pull/34681) | Unpin CDK version to make compatible with the Concurrent CDK |
-| 0.3.2 | 2024-01-30 | [34661](https://github.com/airbytehq/airbyte/pull/34661) | Pin CDK version until upgrade for compatibility with the Concurrent CDK |
-| 0.3.1 | 2024-01-10 | [34084](https://github.com/airbytehq/airbyte/pull/34084) | Fix bug for running check with document file format |
-| 0.3.0 | 2023-12-14 | [33411](https://github.com/airbytehq/airbyte/pull/33411) | Bump CDK version to auto-set primary key for document file streams and support raw txt files |
-| 0.2.5 | 2023-12-06 | [33187](https://github.com/airbytehq/airbyte/pull/33187) | Bump CDK version to hide source-defined primary key |
-| 0.2.4 | 2023-11-16 | [32608](https://github.com/airbytehq/airbyte/pull/32608) | Improve document file type parser |
-| 0.2.3 | 2023-11-13 | [32357](https://github.com/airbytehq/airbyte/pull/32357) | Improve spec schema |
-| 0.2.2 | 2023-10-30 | [31904](https://github.com/airbytehq/airbyte/pull/31904) | Update CDK to support document file types |
-| 0.2.1 | 2023-10-18 | [31543](https://github.com/airbytehq/airbyte/pull/31543) | Base image migration: remove Dockerfile and use the python-connector-base image |
-| 0.2.0 | 2023-10-10 | [31336](https://github.com/airbytehq/airbyte/pull/31336) | Migrate to File-based CDK. Add support of CSV, Parquet and Avro files |
-| 0.1.0 | 2023-02-17 | [23222](https://github.com/airbytehq/airbyte/pull/23222) | Initial release with full-refresh and incremental sync with JSONL files |
+| Version    | Date       | Pull Request                                             | Subject                                                                                      |
+|:-----------|:-----------|:---------------------------------------------------------|:---------------------------------------------------------------------------------------------|
+| 0.8.1 | 2025-10-29 | [68376](https://github.com/airbytehq/airbyte/pull/68376) | Update dependencies |
+| 0.8.0 | 2025-10-23 | [68615](https://github.com/airbytehq/airbyte/pull/68615) | Update dependencies |
+| 0.7.0 | 2025-10-27 | [68663](https://github.com/airbytehq/airbyte/pull/68663) | Promoting release candidate 0.7.0-rc.1 to a main version. |
+| 0.7.0-rc.1 | 2025-10-21 | [68161](https://github.com/airbytehq/airbyte/pull/68161) | Update to airbyte-cdk ^v7                                                                    |
+| 0.6.16     | 2025-10-14 | [68015](https://github.com/airbytehq/airbyte/pull/68015) | Update dependencies                                                                          |
+| 0.6.15     | 2025-10-07 | [67171](https://github.com/airbytehq/airbyte/pull/67171) | Update dependencies                                                                          |
+| 0.6.14     | 2025-09-30 | [66167](https://github.com/airbytehq/airbyte/pull/66167) | Update dependencies                                                                          |
+| 0.6.13     | 2025-08-23 | [65326](https://github.com/airbytehq/airbyte/pull/65326) | Update dependencies                                                                          |
+| 0.6.12     | 2025-07-26 | [63800](https://github.com/airbytehq/airbyte/pull/63800) | Update dependencies                                                                          |
+| 0.6.11     | 2025-07-19 | [63472](https://github.com/airbytehq/airbyte/pull/63472) | Update dependencies                                                                          |
+| 0.6.10     | 2025-07-12 | [63067](https://github.com/airbytehq/airbyte/pull/63067) | Update dependencies                                                                          |
+| 0.6.9      | 2025-07-05 | [62534](https://github.com/airbytehq/airbyte/pull/62534) | Update dependencies                                                                          |
+| 0.6.8      | 2025-05-27 | [60867](https://github.com/airbytehq/airbyte/pull/60867) | Update dependencies                                                                          |
+| 0.6.7      | 2025-05-24 | [60675](https://github.com/airbytehq/airbyte/pull/60675) | Update dependencies                                                                          |
+| 0.6.6      | 2025-05-10 | [59806](https://github.com/airbytehq/airbyte/pull/59806) | Update dependencies                                                                          |
+| 0.6.5      | 2025-05-03 | [59318](https://github.com/airbytehq/airbyte/pull/59318) | Update dependencies                                                                          |
+| 0.6.4      | 2025-04-26 | [58728](https://github.com/airbytehq/airbyte/pull/58728) | Update dependencies                                                                          |
+| 0.6.3      | 2025-04-19 | [58295](https://github.com/airbytehq/airbyte/pull/58295) | Update dependencies                                                                          |
+| 0.6.2      | 2025-04-12 | [57627](https://github.com/airbytehq/airbyte/pull/57627) | Update dependencies                                                                          |
+| 0.6.1      | 2025-04-05 | [43869](https://github.com/airbytehq/airbyte/pull/43869) | Update dependencies                                                                          |
+| 0.6.0      | 2025-03-31 | [56466](https://github.com/airbytehq/airbyte/pull/56466) | Upgrading dependencies and CDK and Python to 3.11                                            |
+| 0.5.0      | 2025-01-02 | [50398](https://github.com/airbytehq/airbyte/pull/50398) | Add client_credentials auth for Azure Service Principals                                     |
+| 0.4.4      | 2024-06-06 | [39275](https://github.com/airbytehq/airbyte/pull/39275) | [autopull] Upgrade base image to v1.2.2                                                      |
+| 0.4.3      | 2024-05-29 | [38701](https://github.com/airbytehq/airbyte/pull/38701) | Avoid error on empty stream when running discover                                            |
+| 0.4.2      | 2024-04-23 | [37504](https://github.com/airbytehq/airbyte/pull/37504) | Update specification                                                                         |
+| 0.4.1      | 2024-04-22 | [37467](https://github.com/airbytehq/airbyte/pull/37467) | Fix start date filter                                                                        |
+| 0.4.0      | 2024-04-05 | [36825](https://github.com/airbytehq/airbyte/pull/36825) | Add oauth 2.0 support                                                                        |
+| 0.3.6      | 2024-04-03 | [36542](https://github.com/airbytehq/airbyte/pull/36542) | Use Latest CDK; add integration tests                                                        |
+| 0.3.5      | 2024-03-26 | [36487](https://github.com/airbytehq/airbyte/pull/36487) | Manage dependencies with Poetry.                                                             |
+| 0.3.4      | 2024-02-06 | [34936](https://github.com/airbytehq/airbyte/pull/34936) | Bump CDK version to avoid missing SyncMode errors                                            |
+| 0.3.3      | 2024-01-30 | [34681](https://github.com/airbytehq/airbyte/pull/34681) | Unpin CDK version to make compatible with the Concurrent CDK                                 |
+| 0.3.2      | 2024-01-30 | [34661](https://github.com/airbytehq/airbyte/pull/34661) | Pin CDK version until upgrade for compatibility with the Concurrent CDK                      |
+| 0.3.1      | 2024-01-10 | [34084](https://github.com/airbytehq/airbyte/pull/34084) | Fix bug for running check with document file format                                          |
+| 0.3.0      | 2023-12-14 | [33411](https://github.com/airbytehq/airbyte/pull/33411) | Bump CDK version to auto-set primary key for document file streams and support raw txt files |
+| 0.2.5      | 2023-12-06 | [33187](https://github.com/airbytehq/airbyte/pull/33187) | Bump CDK version to hide source-defined primary key                                          |
+| 0.2.4      | 2023-11-16 | [32608](https://github.com/airbytehq/airbyte/pull/32608) | Improve document file type parser                                                            |
+| 0.2.3      | 2023-11-13 | [32357](https://github.com/airbytehq/airbyte/pull/32357) | Improve spec schema                                                                          |
+| 0.2.2      | 2023-10-30 | [31904](https://github.com/airbytehq/airbyte/pull/31904) | Update CDK to support document file types                                                    |
+| 0.2.1      | 2023-10-18 | [31543](https://github.com/airbytehq/airbyte/pull/31543) | Base image migration: remove Dockerfile and use the python-connector-base image              |
+| 0.2.0      | 2023-10-10 | [31336](https://github.com/airbytehq/airbyte/pull/31336) | Migrate to File-based CDK. Add support of CSV, Parquet and Avro files                        |
+| 0.1.0      | 2023-02-17 | [23222](https://github.com/airbytehq/airbyte/pull/23222) | Initial release with full-refresh and incremental sync with JSONL files                      |
 
 </details>

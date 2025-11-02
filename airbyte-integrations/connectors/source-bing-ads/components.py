@@ -1,10 +1,14 @@
 # Copyright (c) 2025 Airbyte, Inc., all rights reserved.
+import csv
+import gzip
 from copy import deepcopy
 from dataclasses import dataclass
 from datetime import datetime, timezone
 from functools import cached_property
-from typing import Any, Dict, Iterable, List, Mapping, MutableMapping, Optional
+from io import StringIO
+from typing import Any, Dict, Generator, Iterable, List, Mapping, MutableMapping, Optional
 
+from airbyte_cdk.sources.declarative.decoders.decoder import Decoder
 from airbyte_cdk.sources.declarative.extractors.record_filter import RecordFilter
 from airbyte_cdk.sources.declarative.migrations.state_migration import StateMigration
 from airbyte_cdk.sources.declarative.partition_routers.substream_partition_router import SubstreamPartitionRouter
@@ -265,10 +269,16 @@ class BulkDatetimeToRFC3339(RecordTransformation):
         stream_slice: Optional[StreamSlice] = None,
     ) -> None:
         original_value = record["Modified Time"]
-        if original_value is not None:
-            record["Modified Time"] = (
-                datetime.strptime(original_value, "%m/%d/%Y %H:%M:%S.%f").replace(tzinfo=timezone.utc).isoformat(timespec="milliseconds")
-            )
+        if original_value is not None and original_value != "":
+            try:
+                record["Modified Time"] = (
+                    datetime.strptime(original_value, "%m/%d/%Y %H:%M:%S.%f")
+                    .replace(tzinfo=timezone.utc)
+                    .isoformat(timespec="milliseconds")
+                )
+            except ValueError:
+                pass  # Keep original value if parsing fails
+        # Don't set to None - leave original value unchanged
 
 
 @dataclass
@@ -413,3 +423,47 @@ class CustomReportTransformation(RecordTransformation):
                     "TimePeriod": stream_slice["end_time"],
                 }
             )
+
+
+@dataclass
+class BingAdsGzipCsvDecoder(Decoder):
+    """
+    Custom decoder that always attempts GZip decompression before parsing CSV data.
+    This is needed because Bing Ads now sends GZip compressed files from Azure Blob Storage
+    without proper compression headers, so the standard GzipDecoder fails to detect compression.
+    """
+
+    def is_stream_response(self) -> bool:
+        return False
+
+    def decode(self, response) -> Generator[MutableMapping[str, Any], None, None]:
+        """
+        Always attempt GZip decompression first, then fall back to plain CSV if that fails.
+        """
+
+        try:
+            # First, try to decompress as GZip
+            decompressed_content = gzip.decompress(response.content)
+            # Parse as CSV with utf-8-sig encoding (handles BOM)
+            text_content = decompressed_content.decode("utf-8-sig")
+            csv_reader = csv.DictReader(StringIO(text_content))
+
+            for row in csv_reader:
+                yield row
+
+        except (gzip.BadGzipFile, OSError):
+            # If GZip decompression fails, try parsing as plain CSV
+            try:
+                text_content = response.content.decode("utf-8-sig")
+                csv_reader = csv.DictReader(StringIO(text_content))
+
+                for row in csv_reader:
+                    yield row
+
+            except Exception as e:
+                # If both fail, log the error and yield empty
+                import logging
+
+                logger = logging.getLogger(__name__)
+                logger.error(f"Failed to parse response as either GZip or plain CSV: {e}")
+                yield {}

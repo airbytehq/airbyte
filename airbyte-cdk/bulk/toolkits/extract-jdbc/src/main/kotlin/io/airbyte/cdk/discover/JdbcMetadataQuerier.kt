@@ -322,6 +322,14 @@ class JdbcMetadataQuerier(
     )
 
     override fun extraChecks() {
+        try {
+            val metadata = conn.metaData
+            log.info {
+                "Connected to database: ${metadata.databaseProductName} version ${metadata.databaseProductVersion}"
+            }
+        } catch (e: SQLException) {
+            log.warn(e) { "Unable to retrieve database version information" }
+        }
         checkQueries.executeAll(conn)
     }
 

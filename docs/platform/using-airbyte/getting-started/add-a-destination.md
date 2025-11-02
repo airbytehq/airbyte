@@ -23,7 +23,7 @@ Add a new destination connector to Airbyte.
 
 5. Click **Set up destination**. Airbyte tests the destination to ensure it can make a connection. Once the test completes, Airbyte takes you to that connector's Connections page, which is empty at this point.
 
-<Arcade id="qeqpYHmsne7855bFou5Z" title="Set up a new source" paddingBottom="calc(50%)" />
+<Navattic id="cmhfhih81000204la4795erqd" />
 
 ## Modify a destination connector
 

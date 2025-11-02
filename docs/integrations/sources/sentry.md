@@ -63,8 +63,19 @@ Please be aware: this also means that any change older than 90 days will not be 
 <details>
   <summary>Expand to review</summary>
 
-| Version | Date       | Pull Request                                             | Subject                                                                    |
-|:--------|:-----------|:---------------------------------------------------------|:---------------------------------------------------------------------------|
+| Version | Date       | Pull Request                                             | Subject                                                                                                                                                                |
+|:--------|:-----------|:---------------------------------------------------------|:-----------------------------------------------------------------------------------------------------------------------------------------------------------------------|
+| 0.9.9 | 2025-10-29 | [68882](https://github.com/airbytehq/airbyte/pull/68882) | Update dependencies |
+| 0.9.8 | 2025-10-22 | [68591](https://github.com/airbytehq/airbyte/pull/68591) | Add `suggestedStreams` |
+| 0.9.7 | 2025-10-21 | [68468](https://github.com/airbytehq/airbyte/pull/68468) | Update dependencies |
+| 0.9.6 | 2025-10-14 | [67945](https://github.com/airbytehq/airbyte/pull/67945) | Update dependencies |
+| 0.9.5 | 2025-10-07 | [67221](https://github.com/airbytehq/airbyte/pull/67221) | Update dependencies |
+| 0.9.4 | 2025-09-30 | [66859](https://github.com/airbytehq/airbyte/pull/66859) | Update dependencies |
+| 0.9.3 | 2025-09-23 | [66627](https://github.com/airbytehq/airbyte/pull/66627) | Update dependencies |
+| 0.9.2 | 2025-09-09 | [66114](https://github.com/airbytehq/airbyte/pull/66114) | Update dependencies |
+| 0.9.1 | 2025-08-24 | [65501](https://github.com/airbytehq/airbyte/pull/65501) | Update dependencies |
+| 0.9.0 | 2025-08-11 | [64879](https://github.com/airbytehq/airbyte/pull/64879) | Update events stream to use start and query params instead of filtering on source side |
+| 0.8.17 | 2025-08-09 | [64850](https://github.com/airbytehq/airbyte/pull/64850) | Update dependencies |
 | 0.8.16 | 2025-08-02 | [64455](https://github.com/airbytehq/airbyte/pull/64455) | Update dependencies |
 | 0.8.15 | 2025-07-26 | [63965](https://github.com/airbytehq/airbyte/pull/63965) | Update dependencies |
 | 0.8.14 | 2025-07-20 | [63667](https://github.com/airbytehq/airbyte/pull/63667) | Update dependencies |

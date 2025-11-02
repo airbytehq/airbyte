@@ -32,7 +32,7 @@ definitions:
         type: InlineSchemaLoader
         schema:
           $ref: "#/schemas/channel_annotations_a1"
-    channel_basic_a2:
+    channel_basic_a3:
       type: DeclarativeStream
       retriever:
         $ref: "#/definitions/base_retriever"
@@ -40,8 +40,8 @@ definitions:
           $ref: "#/definitions/base_retriever/creation_requester"
           request_body_json:
             name: Airbyte reporting job
-            reportTypeId: channel_basic_a2
-      name: channel_basic_a2
+            reportTypeId: channel_basic_a3
+      name: channel_basic_a3
       primary_key:
         - date
         - channel_id
@@ -52,7 +52,7 @@ definitions:
       schema_loader:
         type: InlineSchemaLoader
         schema:
-          $ref: "#/schemas/channel_basic_a2"
+          $ref: "#/schemas/channel_basic_a3"
     channel_cards_a1:
       type: DeclarativeStream
       retriever:
@@ -76,7 +76,7 @@ definitions:
         type: InlineSchemaLoader
         schema:
           $ref: "#/schemas/channel_cards_a1"
-    channel_combined_a2:
+    channel_combined_a3:
       type: DeclarativeStream
       retriever:
         $ref: "#/definitions/base_retriever"
@@ -84,8 +84,8 @@ definitions:
           $ref: "#/definitions/base_retriever/creation_requester"
           request_body_json:
             name: Airbyte reporting job
-            reportTypeId: channel_combined_a2
-      name: channel_combined_a2
+            reportTypeId: channel_combined_a3
+      name: channel_combined_a3
       primary_key:
         - date
         - channel_id
@@ -100,7 +100,7 @@ definitions:
       schema_loader:
         type: InlineSchemaLoader
         schema:
-          $ref: "#/schemas/channel_combined_a2"
+          $ref: "#/schemas/channel_combined_a3"
     channel_demographics_a1:
       type: DeclarativeStream
       retriever:
@@ -124,7 +124,7 @@ definitions:
         type: InlineSchemaLoader
         schema:
           $ref: "#/schemas/channel_demographics_a1"
-    channel_device_os_a2:
+    channel_device_os_a3:
       type: DeclarativeStream
       retriever:
         $ref: "#/definitions/base_retriever"
@@ -132,8 +132,8 @@ definitions:
           $ref: "#/definitions/base_retriever/creation_requester"
           request_body_json:
             name: Airbyte reporting job
-            reportTypeId: channel_device_os_a2
-      name: channel_device_os_a2
+            reportTypeId: channel_device_os_a3
+      name: channel_device_os_a3
       primary_key:
         - date
         - channel_id
@@ -146,7 +146,7 @@ definitions:
       schema_loader:
         type: InlineSchemaLoader
         schema:
-          $ref: "#/schemas/channel_device_os_a2"
+          $ref: "#/schemas/channel_device_os_a3"
     channel_end_screens_a1:
       type: DeclarativeStream
       retriever:
@@ -170,7 +170,7 @@ definitions:
         type: InlineSchemaLoader
         schema:
           $ref: "#/schemas/channel_end_screens_a1"
-    channel_playback_location_a2:
+    channel_playback_location_a3:
       type: DeclarativeStream
       retriever:
         $ref: "#/definitions/base_retriever"
@@ -178,8 +178,8 @@ definitions:
           $ref: "#/definitions/base_retriever/creation_requester"
           request_body_json:
             name: Airbyte reporting job
-            reportTypeId: channel_playback_location_a2
-      name: channel_playback_location_a2
+            reportTypeId: channel_playback_location_a3
+      name: channel_playback_location_a3
       primary_key:
         - date
         - channel_id
@@ -192,8 +192,8 @@ definitions:
       schema_loader:
         type: InlineSchemaLoader
         schema:
-          $ref: "#/schemas/channel_playback_location_a2"
-    channel_province_a2:
+          $ref: "#/schemas/channel_playback_location_a3"
+    channel_province_a3:
       type: DeclarativeStream
       retriever:
         $ref: "#/definitions/base_retriever"
@@ -201,8 +201,8 @@ definitions:
           $ref: "#/definitions/base_retriever/creation_requester"
           request_body_json:
             name: Airbyte reporting job
-            reportTypeId: channel_province_a2
-      name: channel_province_a2
+            reportTypeId: channel_province_a3
+      name: channel_province_a3
       primary_key:
         - date
         - channel_id
@@ -214,7 +214,7 @@ definitions:
       schema_loader:
         type: InlineSchemaLoader
         schema:
-          $ref: "#/schemas/channel_province_a2"
+          $ref: "#/schemas/channel_province_a3"
     channel_sharing_service_a1:
       type: DeclarativeStream
       retriever:
@@ -237,7 +237,7 @@ definitions:
         type: InlineSchemaLoader
         schema:
           $ref: "#/schemas/channel_sharing_service_a1"
-    channel_subtitles_a2:
+    channel_subtitles_a3:
       type: DeclarativeStream
       retriever:
         $ref: "#/definitions/base_retriever"
@@ -245,8 +245,8 @@ definitions:
           $ref: "#/definitions/base_retriever/creation_requester"
           request_body_json:
             name: Airbyte reporting job
-            reportTypeId: channel_subtitles_a2
-      name: channel_subtitles_a2
+            reportTypeId: channel_subtitles_a3
+      name: channel_subtitles_a3
       primary_key:
         - date
         - channel_id
@@ -258,8 +258,8 @@ definitions:
       schema_loader:
         type: InlineSchemaLoader
         schema:
-          $ref: "#/schemas/channel_subtitles_a2"
-    channel_traffic_source_a2:
+          $ref: "#/schemas/channel_subtitles_a3"
+    channel_traffic_source_a3:
       type: DeclarativeStream
       retriever:
         $ref: "#/definitions/base_retriever"
@@ -267,8 +267,8 @@ definitions:
           $ref: "#/definitions/base_retriever/creation_requester"
           request_body_json:
             name: Airbyte reporting job
-            reportTypeId: channel_traffic_source_a2
-      name: channel_traffic_source_a2
+            reportTypeId: channel_traffic_source_a3
+      name: channel_traffic_source_a3
       primary_key:
         - date
         - channel_id
@@ -281,8 +281,8 @@ definitions:
       schema_loader:
         type: InlineSchemaLoader
         schema:
-          $ref: "#/schemas/channel_traffic_source_a2"
-    playlist_basic_a1:
+          $ref: "#/schemas/channel_traffic_source_a3"
+    playlist_basic_a2:
       type: DeclarativeStream
       retriever:
         $ref: "#/definitions/base_retriever"
@@ -290,8 +290,8 @@ definitions:
           $ref: "#/definitions/base_retriever/creation_requester"
           request_body_json:
             name: Airbyte reporting job
-            reportTypeId: playlist_basic_a1
-      name: playlist_basic_a1
+            reportTypeId: playlist_basic_a2
+      name: playlist_basic_a2
       primary_key:
         - date
         - channel_id
@@ -303,8 +303,8 @@ definitions:
       schema_loader:
         type: InlineSchemaLoader
         schema:
-          $ref: "#/schemas/playlist_basic_a1"
-    playlist_combined_a1:
+          $ref: "#/schemas/playlist_basic_a2"
+    playlist_combined_a2:
       type: DeclarativeStream
       retriever:
         $ref: "#/definitions/base_retriever"
@@ -312,8 +312,8 @@ definitions:
           $ref: "#/definitions/base_retriever/creation_requester"
           request_body_json:
             name: Airbyte reporting job
-            reportTypeId: playlist_combined_a1
-      name: playlist_combined_a1
+            reportTypeId: playlist_combined_a2
+      name: playlist_combined_a2
       primary_key:
         - date
         - channel_id
@@ -329,8 +329,8 @@ definitions:
       schema_loader:
         type: InlineSchemaLoader
         schema:
-          $ref: "#/schemas/playlist_combined_a1"
-    playlist_device_os_a1:
+          $ref: "#/schemas/playlist_combined_a2"
+    playlist_device_os_a2:
       type: DeclarativeStream
       retriever:
         $ref: "#/definitions/base_retriever"
@@ -338,8 +338,8 @@ definitions:
           $ref: "#/definitions/base_retriever/creation_requester"
           request_body_json:
             name: Airbyte reporting job
-            reportTypeId: playlist_device_os_a1
-      name: playlist_device_os_a1
+            reportTypeId: playlist_device_os_a2
+      name: playlist_device_os_a2
       primary_key:
         - date
         - channel_id
@@ -353,8 +353,8 @@ definitions:
       schema_loader:
         type: InlineSchemaLoader
         schema:
-          $ref: "#/schemas/playlist_device_os_a1"
-    playlist_playback_location_a1:
+          $ref: "#/schemas/playlist_device_os_a2"
+    playlist_playback_location_a2:
       type: DeclarativeStream
       retriever:
         $ref: "#/definitions/base_retriever"
@@ -362,8 +362,8 @@ definitions:
           $ref: "#/definitions/base_retriever/creation_requester"
           request_body_json:
             name: Airbyte reporting job
-            reportTypeId: playlist_playback_location_a1
-      name: playlist_playback_location_a1
+            reportTypeId: playlist_playback_location_a2
+      name: playlist_playback_location_a2
       primary_key:
         - date
         - channel_id
@@ -377,8 +377,8 @@ definitions:
       schema_loader:
         type: InlineSchemaLoader
         schema:
-          $ref: "#/schemas/playlist_playback_location_a1"
-    playlist_province_a1:
+          $ref: "#/schemas/playlist_playback_location_a2"
+    playlist_province_a2:
       type: DeclarativeStream
       retriever:
         $ref: "#/definitions/base_retriever"
@@ -386,8 +386,8 @@ definitions:
           $ref: "#/definitions/base_retriever/creation_requester"
           request_body_json:
             name: Airbyte reporting job
-            reportTypeId: playlist_province_a1
-      name: playlist_province_a1
+            reportTypeId: playlist_province_a2
+      name: playlist_province_a2
       primary_key:
         - date
         - channel_id
@@ -400,8 +400,8 @@ definitions:
       schema_loader:
         type: InlineSchemaLoader
         schema:
-          $ref: "#/schemas/playlist_province_a1"
-    playlist_traffic_source_a1:
+          $ref: "#/schemas/playlist_province_a2"
+    playlist_traffic_source_a2:
       type: DeclarativeStream
       retriever:
         $ref: "#/definitions/base_retriever"
@@ -409,8 +409,8 @@ definitions:
           $ref: "#/definitions/base_retriever/creation_requester"
           request_body_json:
             name: Airbyte reporting job
-            reportTypeId: playlist_traffic_source_a1
-      name: playlist_traffic_source_a1
+            reportTypeId: playlist_traffic_source_a2
+      name: playlist_traffic_source_a2
       primary_key:
         - date
         - channel_id
@@ -424,7 +424,7 @@ definitions:
       schema_loader:
         type: InlineSchemaLoader
         schema:
-          $ref: "#/schemas/playlist_traffic_source_a1"
+          $ref: "#/schemas/playlist_traffic_source_a2"
   base_retriever:
     type: AsyncRetriever
     creation_requester:
@@ -510,23 +510,23 @@ definitions:
 
 streams:
   - $ref: "#/definitions/streams/channel_annotations_a1"
-  - $ref: "#/definitions/streams/channel_basic_a2"
+  - $ref: "#/definitions/streams/channel_basic_a3"
   - $ref: "#/definitions/streams/channel_cards_a1"
-  - $ref: "#/definitions/streams/channel_combined_a2"
+  - $ref: "#/definitions/streams/channel_combined_a3"
   - $ref: "#/definitions/streams/channel_demographics_a1"
-  - $ref: "#/definitions/streams/channel_device_os_a2"
+  - $ref: "#/definitions/streams/channel_device_os_a3"
   - $ref: "#/definitions/streams/channel_end_screens_a1"
-  - $ref: "#/definitions/streams/channel_playback_location_a2"
-  - $ref: "#/definitions/streams/channel_province_a2"
+  - $ref: "#/definitions/streams/channel_playback_location_a3"
+  - $ref: "#/definitions/streams/channel_province_a3"
   - $ref: "#/definitions/streams/channel_sharing_service_a1"
-  - $ref: "#/definitions/streams/channel_subtitles_a2"
-  - $ref: "#/definitions/streams/channel_traffic_source_a2"
-  - $ref: "#/definitions/streams/playlist_basic_a1"
-  - $ref: "#/definitions/streams/playlist_combined_a1"
-  - $ref: "#/definitions/streams/playlist_device_os_a1"
-  - $ref: "#/definitions/streams/playlist_playback_location_a1"
-  - $ref: "#/definitions/streams/playlist_province_a1"
-  - $ref: "#/definitions/streams/playlist_traffic_source_a1"
+  - $ref: "#/definitions/streams/channel_subtitles_a3"
+  - $ref: "#/definitions/streams/channel_traffic_source_a3"
+  - $ref: "#/definitions/streams/playlist_basic_a2"
+  - $ref: "#/definitions/streams/playlist_combined_a2"
+  - $ref: "#/definitions/streams/playlist_device_os_a2"
+  - $ref: "#/definitions/streams/playlist_playback_location_a2"
+  - $ref: "#/definitions/streams/playlist_province_a2"
+  - $ref: "#/definitions/streams/playlist_traffic_source_a2"
 
 spec:
   type: Spec
@@ -601,23 +601,23 @@ spec:
 metadata:
   autoImportSchema:
     channel_annotations_a1: false
-    channel_basic_a2: false
+    channel_basic_a3: false
     channel_cards_a1: false
-    channel_combined_a2: false
+    channel_combined_a3: false
     channel_demographics_a1: false
-    channel_device_os_a2: false
+    channel_device_os_a3: false
     channel_end_screens_a1: false
-    channel_playback_location_a2: false
-    channel_province_a2: false
+    channel_playback_location_a3: false
+    channel_province_a3: false
     channel_sharing_service_a1: false
-    channel_subtitles_a2: false
-    channel_traffic_source_a2: false
-    playlist_basic_a1: false
-    playlist_combined_a1: false
-    playlist_device_os_a1: false
-    playlist_playback_location_a1: false
-    playlist_province_a1: false
-    playlist_traffic_source_a1: false
+    channel_subtitles_a3: false
+    channel_traffic_source_a3: false
+    playlist_basic_a2: false
+    playlist_combined_a2: false
+    playlist_device_os_a2: false
+    playlist_playback_location_a2: false
+    playlist_province_a2: false
+    playlist_traffic_source_a2: false
   yamlComponents:
     global:
       - authenticator
@@ -688,7 +688,7 @@ schemas:
         type:
           - "null"
           - string
-  channel_basic_a2:
+  channel_basic_a3:
     type: object
     $schema: http://json-schema.org/draft-07/schema#
     additionalProperties: true
@@ -882,7 +882,7 @@ schemas:
         type:
           - "null"
           - string
-  channel_combined_a2:
+  channel_combined_a3:
     type: object
     $schema: http://json-schema.org/draft-07/schema#
     additionalProperties: true
@@ -988,7 +988,7 @@ schemas:
         type:
           - "null"
           - string
-  channel_device_os_a2:
+  channel_device_os_a3:
     type: object
     $schema: http://json-schema.org/draft-07/schema#
     additionalProperties: true
@@ -1094,7 +1094,7 @@ schemas:
         type:
           - "null"
           - string
-  channel_playback_location_a2:
+  channel_playback_location_a3:
     type: object
     $schema: http://json-schema.org/draft-07/schema#
     additionalProperties: true
@@ -1153,7 +1153,7 @@ schemas:
         type:
           - "null"
           - number
-  channel_province_a2:
+  channel_province_a3:
     type: object
     $schema: http://json-schema.org/draft-07/schema#
     additionalProperties: true
@@ -1295,7 +1295,7 @@ schemas:
         type:
           - "null"
           - string
-  channel_subtitles_a2:
+  channel_subtitles_a3:
     type: object
     $schema: http://json-schema.org/draft-07/schema#
     additionalProperties: true
@@ -1350,7 +1350,7 @@ schemas:
         type:
           - "null"
           - number
-  channel_traffic_source_a2:
+  channel_traffic_source_a3:
     type: object
     $schema: http://json-schema.org/draft-07/schema#
     additionalProperties: true
@@ -1409,7 +1409,7 @@ schemas:
         type:
           - "null"
           - number
-  playlist_basic_a1:
+  playlist_basic_a2:
     type: object
     $schema: http://json-schema.org/draft-07/schema#
     additionalProperties: true
@@ -1464,7 +1464,7 @@ schemas:
         type:
           - "null"
           - number
-  playlist_combined_a1:
+  playlist_combined_a2:
     type: object
     $schema: http://json-schema.org/draft-07/schema#
     additionalProperties: true
@@ -1535,7 +1535,7 @@ schemas:
         type:
           - "null"
           - number
-  playlist_device_os_a1:
+  playlist_device_os_a2:
     type: object
     $schema: http://json-schema.org/draft-07/schema#
     additionalProperties: true
@@ -1598,7 +1598,7 @@ schemas:
         type:
           - "null"
           - number
-  playlist_playback_location_a1:
+  playlist_playback_location_a2:
     type: object
     $schema: http://json-schema.org/draft-07/schema#
     additionalProperties: true
@@ -1661,7 +1661,7 @@ schemas:
         type:
           - "null"
           - number
-  playlist_province_a1:
+  playlist_province_a2:
     type: object
     $schema: http://json-schema.org/draft-07/schema#
     additionalProperties: true
@@ -1720,7 +1720,7 @@ schemas:
         type:
           - "null"
           - number
-  playlist_traffic_source_a1:
+  playlist_traffic_source_a2:
     type: object
     $schema: http://json-schema.org/draft-07/schema#
     additionalProperties: true

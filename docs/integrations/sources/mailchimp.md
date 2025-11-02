@@ -126,6 +126,15 @@ Now that you have set up the Mailchimp source connector, check out the following
 
 | Version | Date       | Pull Request                                             | Subject                                                                   |
 |--------|------------|----------------------------------------------------------|---------------------------------------------------------------------------|
+| 2.1.11 | 2025-10-29 | [68941](https://github.com/airbytehq/airbyte/pull/68941) | Update dependencies |
+| 2.1.10 | 2025-10-21 | [68319](https://github.com/airbytehq/airbyte/pull/68319) | Update dependencies |
+| 2.1.9 | 2025-10-14 | [68062](https://github.com/airbytehq/airbyte/pull/68062) | Update dependencies |
+| 2.1.8 | 2025-10-07 | [67516](https://github.com/airbytehq/airbyte/pull/67516) | Update dependencies |
+| 2.1.7 | 2025-09-30 | [66812](https://github.com/airbytehq/airbyte/pull/66812) | Update dependencies |
+| 2.1.6 | 2025-09-24 | [66653](https://github.com/airbytehq/airbyte/pull/66653) | Update dependencies |
+| 2.1.5 | 2025-09-09 | [66042](https://github.com/airbytehq/airbyte/pull/66042) | Update dependencies |
+| 2.1.4 | 2025-08-26 | [65557](https://github.com/airbytehq/airbyte/pull/65557) | Update dependencies |
+| 2.1.3 | 2025-08-23 | [65361](https://github.com/airbytehq/airbyte/pull/65361) | Update dependencies |
 | 2.1.2 | 2025-08-09 | [64625](https://github.com/airbytehq/airbyte/pull/64625) | Update dependencies |
 | 2.1.1 | 2025-08-02 | [61114](https://github.com/airbytehq/airbyte/pull/61114) | Update dependencies |
 | 2.1.0 | 2025-07-21 | [63702](https://github.com/airbytehq/airbyte/pull/63702) | Promoting release candidate 2.1.0-rc.1 to a main version. |

@@ -2,7 +2,7 @@
 
 ## Sync overview
 
-The Gong source supports both Full Refresh only.
+The Gong source supports both Full Refresh and Incremental Sync.
 
 This source can sync data for the [Gong API](https://us-14321.app.gong.io/settings/api/documentation#overview).
 
@@ -32,8 +32,7 @@ By default Gong limits your company's access to the service to 3 API calls per s
 ## Requirements
 
 - **Gong API keys**. See the [Gong docs](https://us-14321.app.gong.io/settings/api/documentation#overview) for information on how to obtain the API keys.
-- **Start Date**. To fetch data from. This just applies to Incremental syncs. Default value is 90 days from today.
-
+- **Start Date**. Date to fetch data from. This just applies to Incremental syncs. Default value is 90 days from today.
 
 ## Changelog
 

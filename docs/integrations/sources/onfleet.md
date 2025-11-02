@@ -32,6 +32,14 @@ You can find more information about the API here https://docs.onfleet.com/refere
 
 | Version          | Date              | Pull Request | Subject        |
 |------------------|-------------------|--------------|----------------|
+| 0.0.39 | 2025-10-29 | [68733](https://github.com/airbytehq/airbyte/pull/68733) | Update dependencies |
+| 0.0.38 | 2025-10-21 | [68350](https://github.com/airbytehq/airbyte/pull/68350) | Update dependencies |
+| 0.0.37 | 2025-10-14 | [67733](https://github.com/airbytehq/airbyte/pull/67733) | Update dependencies |
+| 0.0.36 | 2025-10-07 | [67423](https://github.com/airbytehq/airbyte/pull/67423) | Update dependencies |
+| 0.0.35 | 2025-09-30 | [66935](https://github.com/airbytehq/airbyte/pull/66935) | Update dependencies |
+| 0.0.34 | 2025-09-23 | [66616](https://github.com/airbytehq/airbyte/pull/66616) | Update dependencies |
+| 0.0.33 | 2025-09-09 | [65800](https://github.com/airbytehq/airbyte/pull/65800) | Update dependencies |
+| 0.0.32 | 2025-08-23 | [65211](https://github.com/airbytehq/airbyte/pull/65211) | Update dependencies |
 | 0.0.31 | 2025-08-09 | [64773](https://github.com/airbytehq/airbyte/pull/64773) | Update dependencies |
 | 0.0.30 | 2025-08-02 | [64242](https://github.com/airbytehq/airbyte/pull/64242) | Update dependencies |
 | 0.0.29 | 2025-07-26 | [63811](https://github.com/airbytehq/airbyte/pull/63811) | Update dependencies |

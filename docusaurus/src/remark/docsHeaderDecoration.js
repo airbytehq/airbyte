@@ -3,7 +3,7 @@ const { isDocsPage, getRegistryEntry } = require("./utils");
 const {
   getLatestPythonCDKVersion,
   parseCDKVersion,
-} = require("../connector_registry");
+} = require("../scripts/connector_registry");
 const visit = require("unist-util-visit").visit;
 
 /**

@@ -5,6 +5,7 @@ import itertools
 import json
 import logging
 import tempfile
+import urllib.parse
 from datetime import datetime, timedelta
 from io import IOBase, StringIO
 from typing import Iterable, List, Optional
@@ -14,10 +15,11 @@ import smart_open
 from google.cloud import storage
 from google.oauth2 import credentials, service_account
 
+from airbyte_cdk.sources.file_based.config.abstract_file_based_spec import DeliverRawFiles
 from airbyte_cdk.sources.file_based.exceptions import ErrorListingFiles, FileBasedSourceError
 from airbyte_cdk.sources.file_based.file_based_stream_reader import AbstractFileBasedStreamReader, FileReadMode
 from source_gcs.config import Config
-from source_gcs.helpers import GCSRemoteFile
+from source_gcs.helpers import GCSUploadableRemoteFile
 from source_gcs.zip_helper import ZipHelper
 
 
@@ -77,7 +79,7 @@ class SourceGCSStreamReader(AbstractFileBasedStreamReader):
     def gcs_client(self) -> storage.Client:
         return self._initialize_gcs_client()
 
-    def get_matching_files(self, globs: List[str], prefix: Optional[str], logger: logging.Logger) -> Iterable[GCSRemoteFile]:
+    def get_matching_files(self, globs: List[str], prefix: Optional[str], logger: logging.Logger) -> Iterable[GCSUploadableRemoteFile]:
         """
         Retrieve all files matching the specified glob patterns in GCS.
         """
@@ -103,10 +105,11 @@ class SourceGCSStreamReader(AbstractFileBasedStreamReader):
                         else:
                             uri = blob.generate_signed_url(expiration=timedelta(days=7), version="v4")
 
-                        file_extension = ".".join(blob.name.split(".")[1:])
-                        remote_file = GCSRemoteFile(uri=uri, last_modified=last_modified, mime_type=file_extension)
+                        remote_file = GCSUploadableRemoteFile(
+                            uri=uri, blob=blob, last_modified=last_modified, mime_type=".".join(blob.name.split(".")[1:])
+                        )
 
-                        if file_extension == "zip":
+                        if remote_file.mime_type == "zip" and self.config.delivery_method.delivery_type != DeliverRawFiles.delivery_type:
                             yield from ZipHelper(blob, remote_file, self.tmp_dir).get_gcs_remote_files()
                         else:
                             yield remote_file
@@ -122,7 +125,7 @@ class SourceGCSStreamReader(AbstractFileBasedStreamReader):
             prefix=prefix,
         ) from exc
 
-    def open_file(self, file: GCSRemoteFile, mode: FileReadMode, encoding: Optional[str], logger: logging.Logger) -> IOBase:
+    def open_file(self, file: GCSUploadableRemoteFile, mode: FileReadMode, encoding: Optional[str], logger: logging.Logger) -> IOBase:
         """
         Open and yield a remote file from GCS for reading.
         """
