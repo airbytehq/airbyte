@@ -6,19 +6,22 @@ import functools
 import json
 import time
 from pathlib import Path
+from typing import Any
 
 import pytest
 import requests
 from source_zoho_crm.streams import IncrementalZohoCrmStream, ZohoStreamFactory
 
-
 HERE = Path(__file__).parent
 
 
 @pytest.fixture()
-def config():
-    with open(HERE.parent / "secrets/config.json", "r") as file:
-        return json.loads(file.read())
+def config() -> dict[str, Any]:
+    try:
+        with open(HERE.parent / "secrets/config.json", "r") as file:
+            return json.loads(file.read())
+    except FileNotFoundError:
+        return {}
 
 
 @pytest.fixture
