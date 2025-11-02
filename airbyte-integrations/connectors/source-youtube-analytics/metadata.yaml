@@ -8,7 +8,7 @@ data:
   connectorSubtype: api
   connectorType: source
   definitionId: afa734e4-3571-11ec-991a-1e0031268139
-  dockerImageTag: 1.0.0
+  dockerImageTag: 1.1.0
   dockerRepository: airbyte/source-youtube-analytics
   documentationUrl: https://docs.airbyte.com/integrations/sources/youtube-analytics
   githubIssueLabel: source-youtube-analytics
@@ -17,7 +17,7 @@ data:
   name: YouTube Analytics
   remoteRegistries:
     pypi:
-      enabled: true
+      enabled: false
       packageName: airbyte-source-youtube-analytics
   registryOverrides:
     cloud:
@@ -32,8 +32,8 @@ data:
         upgradeDeadline: "2025-11-12"
   supportLevel: community
   tags:
-    - language:python
-    - cdk:python
+    - cdk:low-code
+    - language:manifest-only
   connectorTestSuitesOptions:
     - suite: acceptanceTests
       testSecrets:
@@ -43,5 +43,5 @@ data:
             type: GSM
             alias: airbyte-connector-testing-secret-store
   connectorBuildOptions:
-    baseImage: docker.io/airbyte/python-connector-base:4.0.0@sha256:d9894b6895923b379f3006fa251147806919c62b7d9021b5cd125bb67d7bbe22
+    baseImage: docker.io/airbyte/source-declarative-manifest:6.41.1@sha256:f256b6f008ec07a37e3e6bce3ada17bec4197c1bc66c41c4b756980c8cb587ac
 metadataSpecVersion: "1.0"
