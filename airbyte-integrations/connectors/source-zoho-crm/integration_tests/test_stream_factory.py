@@ -22,7 +22,14 @@ def config() -> dict[str, Any]:
         with open(HERE.parent / "secrets/config.json", "r") as file:
             return json.loads(file.read())
     except FileNotFoundError:
-        return {}
+        return {
+            "client_id": "client_id",
+            "client_secret": "client_secret",
+            "refresh_token": "refresh_token",
+            "dc_region": "US",
+            "environment": "Developer",
+            "edition": "Free",
+        }
 
 
 @pytest.fixture
