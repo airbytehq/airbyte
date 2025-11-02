@@ -83,7 +83,7 @@ def test_backoff_time(stream_factory):
     response_mock = Mock()
     stream = stream_factory()
     expected_backoff_time = None
-    assert stream.backoff_time(response_mock) == expected_backoff_time
+    assert stream.get_backoff_strategy().backoff_time(response_mock) == expected_backoff_time
 
 
 def test_dynamic_attrs(stream_factory):
