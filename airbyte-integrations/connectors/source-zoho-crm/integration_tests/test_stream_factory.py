@@ -6,7 +6,6 @@ import functools
 import json
 import time
 from pathlib import Path
-from typing import Any
 
 import pytest
 import requests
@@ -17,19 +16,9 @@ HERE = Path(__file__).parent
 
 
 @pytest.fixture()
-def config() -> dict[str, Any]:
-    try:
-        with open(HERE.parent / "secrets/config.json", "r") as file:
-            return json.loads(file.read())
-    except FileNotFoundError:
-        return {
-            "client_id": "client_id",
-            "client_secret": "client_secret",
-            "refresh_token": "refresh_token",
-            "dc_region": "US",
-            "environment": "Developer",
-            "edition": "Free",
-        }
+def config():
+    with open(HERE / "secrets/config.json", "r") as file:
+        return json.loads(file.read())
 
 
 @pytest.fixture
