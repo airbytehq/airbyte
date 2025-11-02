@@ -17,7 +17,7 @@ include = "source_zoho_crm"
 
 [tool.poetry.dependencies]
 python = "^3.9,<3.12"
-airbyte-cdk = "1"
+airbyte-cdk = "^1"
 
 [tool.poetry.scripts]
 source-zoho-crm = "source_zoho_crm.run:run"
