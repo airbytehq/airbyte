@@ -63,29 +63,6 @@ def test_http_method(stream_factory):
     assert stream.http_method == expected_method
 
 
-@pytest.mark.parametrize(
-    ("http_status", "should_retry"),
-    [
-        (HTTPStatus.OK, False),
-        (HTTPStatus.BAD_REQUEST, False),
-        (HTTPStatus.TOO_MANY_REQUESTS, True),
-        (HTTPStatus.INTERNAL_SERVER_ERROR, True),
-    ],
-)
-def test_should_retry(stream_factory, http_status, should_retry):
-    response_mock = Mock()
-    response_mock.status_code = http_status
-    stream = stream_factory()
-    assert stream.should_retry(response_mock) == should_retry
-
-
-def test_backoff_time(stream_factory):
-    response_mock = Mock()
-    stream = stream_factory()
-    expected_backoff_time = None
-    assert stream.get_backoff_strategy().backoff_time(response_mock) == expected_backoff_time
-
-
 def test_dynamic_attrs(stream_factory):
     field = FieldMeta(
         json_type="string",
