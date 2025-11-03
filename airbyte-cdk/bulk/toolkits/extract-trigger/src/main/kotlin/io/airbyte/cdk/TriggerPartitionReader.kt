@@ -104,15 +104,6 @@ abstract class TriggerPartitionReader<P : JdbcPartition<*>>(
         partitionId = generatePartitionId(4)
     }
 
-    /** If configured max feed read time elapsed we exit with a transient error */
-    protected fun checkMaxReadTimeElapsed() {
-        sharedState.configuration.maxSnapshotReadDuration?.let {
-            if (Duration.between(sharedState.snapshotReadStartTime, Instant.now()) > it) {
-                throw TransientErrorException("Shutting down snapshot reader: max duration elapsed")
-            }
-        }
-    }
-
     protected fun outputPendingMessages() {
         if (streamState.streamFeedBootstrap.dataChannelMedium == STDIO) {
             return
@@ -186,11 +177,6 @@ class TriggerNonResumablePartitionReader<P : JdbcPartition<*>>(
 
     override suspend fun run() {
         outputPendingMessages()
-        /* Don't start read if we've gone over max duration.
-        We check for elapsed duration before reading and not while because
-        existing exiting with an exception skips checkpoint(), so any work we
-        did before time has elapsed will be wasted. */
-        checkMaxReadTimeElapsed()
 
         // Check if partition is for trigger based CDC. We don't do cleanup for user defined cursor
         if (
