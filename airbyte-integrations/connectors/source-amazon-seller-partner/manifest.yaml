@@ -1141,6 +1141,7 @@ definitions:
         status_mapping:
           failed:
             - FATAL
+            - CANCELLED
           running:
             - IN_PROGRESS
             - IN_QUEUE
@@ -1148,7 +1149,6 @@ definitions:
             - non_existing_status  # statuses https://developer-docs.amazon.com/sp-api/reference/getreports no actual status for timeout cancelled can mean that there is no data
           completed:
             - DONE
-            - CANCELLED
         creation_requester:
           $ref: "#/definitions/basic_async_retriever/creation_requester"
           api_budget:
@@ -1159,7 +1159,7 @@ definitions:
                 # https://github.com/amzn/selling-partner-api-models/discussions/3726
                 rates:
                   - limit: 1
-                    interval: PT10M
+                    interval: PT30M
                 matchers:
                   - method: POST
                     url_path_pattern: "reports/2021-06-30/reports"
