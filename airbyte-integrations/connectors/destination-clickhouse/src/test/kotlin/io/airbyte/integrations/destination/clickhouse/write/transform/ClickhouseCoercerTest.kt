@@ -24,7 +24,6 @@ import io.airbyte.integrations.destination.clickhouse.write.transform.Clickhouse
 import io.airbyte.integrations.destination.clickhouse.write.transform.ClickhouseCoercer.Constants.DATE32_MIN
 import io.airbyte.integrations.destination.clickhouse.write.transform.ClickhouseCoercer.Constants.DECIMAL128_MAX
 import io.airbyte.integrations.destination.clickhouse.write.transform.ClickhouseCoercer.Constants.DECIMAL128_MIN
-import io.airbyte.integrations.destination.clickhouse.write.transform.ClickhouseCoercer.Constants.DECIMAL_SCALE_MULTIPLIER
 import io.airbyte.integrations.destination.clickhouse.write.transform.ClickhouseCoercer.Constants.INT64_MAX
 import io.airbyte.integrations.destination.clickhouse.write.transform.ClickhouseCoercer.Constants.INT64_MIN
 import io.airbyte.integrations.destination.clickhouse.write.transform.ClickhouseCoercerTest.Fixtures.toAirbyteDateValue
@@ -234,16 +233,8 @@ class ClickhouseCoercerTest {
                 Arguments.of("42"),
                 Arguments.of("-10000000000000000.33"),
                 Arguments.of("100000000000000000.3"),
-                Arguments.of(
-                    DECIMAL128_MIN.divide(DECIMAL_SCALE_MULTIPLIER)
-                        .add(BigDecimal.valueOf(1))
-                        .toString()
-                ),
-                Arguments.of(
-                    DECIMAL128_MAX.divide(DECIMAL_SCALE_MULTIPLIER)
-                        .subtract(BigDecimal.valueOf(1))
-                        .toString()
-                ),
+                Arguments.of(DECIMAL128_MIN.add(BigDecimal.valueOf(1)).toString()),
+                Arguments.of(DECIMAL128_MAX.subtract(BigDecimal.valueOf(1)).toString()),
                 Arguments.of("1"),
                 Arguments.of("80327031.865312"),
                 Arguments.of("-80327031.8954"),
