@@ -26,8 +26,6 @@ import io.airbyte.cdk.read.Stream
 import io.airbyte.cdk.read.UnlimitedTimePartitionReader
 import io.airbyte.protocol.models.v0.AirbyteStateMessage
 import io.airbyte.protocol.models.v0.AirbyteStreamStatusTraceMessage
-import java.time.Duration
-import java.time.Instant
 import java.util.concurrent.atomic.AtomicBoolean
 import java.util.concurrent.atomic.AtomicLong
 import java.util.concurrent.atomic.AtomicReference
