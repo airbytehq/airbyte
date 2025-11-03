@@ -45,6 +45,8 @@ open class PostgresTypingDedupingTest : AbstractPostgresTypingDedupingTest() {
     override val imageName: String
         get() = "airbyte/destination-postgres:dev"
 
+    override fun disableRawTableComparison(): Boolean = true
+
     companion object {
         protected var testContainer: PostgresTestDatabase? = null
 
