@@ -126,6 +126,7 @@ class ClickhouseCoercer : ValueCoercer {
         val DECIMAL128_MAX = BigDecimal("100000000000000000000000000000000000000")
         val DECIMAL128_MIN = BigDecimal("-100000000000000000000000000000000000000")
 
+        // 9 is the scale we set for all decimals
         val DECIMAL_SCALE_MULTIPLIER = BigDecimal.TEN.pow(9)
 
         // used by both date 32 and date time 64
