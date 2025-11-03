@@ -251,6 +251,7 @@ desired namespace.
 
 | Version         | Date       | Pull Request                                                        | Subject                                                                                                                                                                                |
 |:----------------|:-----------|:--------------------------------------------------------------------|:---------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------|
+| 4.0.22          | 2025-11-03 | [69147](https://github.com/airbytehq/airbyte/pull/69147)            | Upgrade to CDK 0.1.62 to improve handling of unrecognized JSON schema |
 | 4.0.21          | 2025-10-30 | [69100](https://github.com/airbytehq/airbyte/pull/69100)            | Upgrade to CDK 0.1.61 to fix state index bug |
 | 4.0.20          | 2025-10-28 | [68186](https://github.com/airbytehq/airbyte/pull/68186)            | Upgrade to CDK 0.1.59 |
 | 4.0.19          | 2025-10-28 | [68683](https://github.com/airbytehq/airbyte/pull/68683)            | Upgrade to CDK 0.1.58 (improve logging of unflushed states at end of sync) |
