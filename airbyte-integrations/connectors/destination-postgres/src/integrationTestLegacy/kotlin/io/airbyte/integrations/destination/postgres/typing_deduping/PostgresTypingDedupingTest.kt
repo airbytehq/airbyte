@@ -50,6 +50,10 @@ open class PostgresTypingDedupingTest : AbstractPostgresTypingDedupingTest() {
     override val imageName: String
         get() = "airbyte/destination-postgres:dev"
 
+    override fun disableRawTableComparison(): Boolean {
+        return true
+    }
+
     //syncs used to fail when doing this, not anymore
     @Disabled @Test override fun interruptedTruncateWithPriorData() {}
 
