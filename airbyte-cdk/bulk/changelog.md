@@ -1,6 +1,6 @@
 ## Version 0.1.62
 
-extract cdk: add table filtering infrastructure to jdbc toolkit
+load cdk: correctly parse empty schemas
 
 ## Version 0.1.61
 

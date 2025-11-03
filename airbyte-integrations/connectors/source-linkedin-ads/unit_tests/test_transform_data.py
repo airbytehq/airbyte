@@ -2,7 +2,7 @@
 # Copyright (c) 2023 Airbyte, Inc., all rights reserved.
 #
 
-from samples.test_data_for_tranform import input_test_data, output_test_data
+from .samples.test_data_for_tranform import input_test_data, output_test_data
 
 
 def test_transform_data(components_module):
