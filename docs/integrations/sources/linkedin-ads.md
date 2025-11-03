@@ -160,6 +160,8 @@ For Ad Analytics Streams such as `Ad Analytics by Campaign` and `Ad Analytics by
 
 ## Performance considerations
 
+### Rate limits
+
 LinkedIn Ads has Official Rate Limits for API Usage, [more information here](https://docs.microsoft.com/en-us/linkedin/shared/api-guide/concepts/rate-limits?context=linkedin/marketing/context). Rate limited requests will receive a 429 response. These limits reset at midnight UTC every day. In rare cases, LinkedIn may also return a 429 response as part of infrastructure protection. API service will return to normal automatically. In such cases, you will receive the following error message:
 
 ```text
@@ -173,6 +175,14 @@ This is expected when the connector hits the 429 - Rate Limit Exceeded HTTP Erro
 ```
 
 After 5 unsuccessful attempts - the connector will stop the sync operation. In such cases check your Rate Limits [on this page](https://www.linkedin.com/developers/apps) &gt; Choose your app &gt; Analytics.
+
+### Ad analytics streams
+
+LinkedIn Ads supports a number of different streams that provide metrics about the effectiveness of ads for a specified date range across various properties and dimensions such as `clicks`, `follows`, `impressions`, `reactions`, `totalEngagements`, and others. Fetching the entire set of properties per ad object can lead to increased sync times.
+
+In order to improve sync performance, when configuring your connection, only select the columns that you need replicated into your downstream destination. Fewer columns selected should reduce the duration of syncs.
+
+:::caution The LinkedIn Ads API will not return records that do not have no values for any of the dimensions you specify. Please take caution selecting columns as you may see fewer or more records depending on your selection.:::
 
 ## Data type map
 
@@ -202,7 +212,11 @@ No workaround has been identified to manage this issue as of 2025, February.
 
 | Version    | Date       | Pull Request                                             | Subject                                                                                                                                                                |
 |:-----------|:-----------|:---------------------------------------------------------|:-----------------------------------------------------------------------------------------------------------------------------------------------------------------------|
-| 5.5.2 | 2025-07-16 | [63336](https://github.com/airbytehq/airbyte/pull/63336) | Promoting release candidate 5.5.2-rc.1 to a main version. |
+| 5.6.0-rc.1 | 2025-10-29 | [68614](https://github.com/airbytehq/airbyte/pull/68614)     | Upgrade to latest CDK to only include the selected columns of the schema in API requests for ad analytics streams                                                      |
+| 5.5.5      | 2025-10-27 | [68626](https://github.com/airbytehq/airbyte/pull/68626)     | Increase concurrency and introduce initial attempt at API budget                                                                                                       |
+| 5.5.4      | 2025-10-21 | [64967](https://github.com/airbytehq/airbyte/pull/64967) | Update dependencies                                                                                                                                                    |
+| 5.5.3      | 2025-10-09 | [67564](https://github.com/airbytehq/airbyte/pull/67564) | Upgrade to CDK v7.                                                                                                                                                     |
+| 5.5.2      | 2025-07-16 | [63336](https://github.com/airbytehq/airbyte/pull/63336) | Promoting release candidate 5.5.2-rc.1 to a main version.                                                                                                              |
 | 5.5.2-rc.1 | 2025-06-23 | [60996](https://github.com/airbytehq/airbyte/pull/60996) | Fix to properly manage pagination for `Lead forms` and `Lead form responses` streams                                                                                   |
 | 5.5.1      | 2025-06-18 | [61639](https://github.com/airbytehq/airbyte/pull/61639) | Reduce default concurrency level to 3 and enable configurability via `num_workers` config property                                                                     |
 | 5.5.0      | 2025-04-28 | [59116](https://github.com/airbytehq/airbyte/pull/59116) | Promoting release candidate 5.5.0-rc.1 to a main version.                                                                                                              |

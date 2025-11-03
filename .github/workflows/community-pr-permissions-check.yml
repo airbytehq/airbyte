@@ -1,0 +1,80 @@
+name: Community PR Permission Check
+
+# This workflow checks if a PR is from an organization fork or doesn't allow maintainer edits.
+# These conditions prevent maintainers from pushing fixes directly to the PR branch.
+# If either condition is detected, it posts a comment asking the contributor to fix the issue.
+
+on:
+  pull_request_target:
+    types:
+      - opened
+      - reopened
+
+jobs:
+  check-fork-permissions:
+    name: PR Permissions Check
+    permissions:
+      contents: read
+      pull-requests: write
+    runs-on: ubuntu-24.04
+    # Only run for PRs from forks (not internal PRs)
+    if: github.event.pull_request.head.repo.fork == true
+    steps:
+      - name: Checkout Repo
+        uses: actions/checkout@08eba0b27e820071cde6df949e0beb9ba4906955 # v4.3.0
+        with:
+          ref: master
+          repository: airbytehq/airbyte
+
+      - name: Examine PR Fork Permissions
+        id: check
+        run: |
+          # Get PR details from GitHub context
+          IS_ORG_FORK="false"
+          MISSING_MAINTAINER_EDIT="false"
+
+          OWNER_TYPE="${{ github.event.pull_request.head.repo.owner.type }}"
+          MAINTAINER_CAN_MODIFY="${{ github.event.pull_request.maintainer_can_modify }}"
+
+          echo "Owner type: $OWNER_TYPE"
+          echo "Maintainer can modify: $MAINTAINER_CAN_MODIFY"
+
+          # Check if fork is from an organization
+          if [ "$OWNER_TYPE" = "Organization" ]; then
+            IS_ORG_FORK="true"
+            echo "✗ PR is from an organization fork"
+          elif [ "$MAINTAINER_CAN_MODIFY" = "false" ]; then
+            MISSING_MAINTAINER_EDIT="true"
+            echo "✗ PR does not allow maintainer edits"
+          else
+            echo "✓ PR allows maintainer edits and is from a personal fork"
+          fi
+
+          # Set outputs
+          echo "is_org_fork=$IS_ORG_FORK" >> $GITHUB_OUTPUT
+          echo "missing_maintainer_edit=$MISSING_MAINTAINER_EDIT" >> $GITHUB_OUTPUT
+
+      - name: Render Comment Template
+        if: steps.check.outputs.is_org_fork == 'true' || steps.check.outputs.missing_maintainer_edit == 'true'
+        id: template
+        uses: chuhlomin/render-template@f828bb5c72a3e3af89cb79808cea490166c6f1ce # v1.4
+        with:
+          template: .github/pr-fork-permission-warning.md
+          vars: |
+            is_org_fork: "${{ steps.check.outputs.is_org_fork }}"
+            missing_maintainer_edit: "${{ steps.check.outputs.missing_maintainer_edit }}"
+            repo_name: ${{ github.event.pull_request.head.repo.full_name }}
+            pr_author: ${{ github.event.pull_request.user.login }}
+
+      - name: Post Comment to PR (Issues Detected)
+        if: steps.check.outputs.is_org_fork == 'true' || steps.check.outputs.missing_maintainer_edit == 'true'
+        uses: peter-evans/create-or-update-comment@71345be0265236311c031f5c7866368bd1eff043 # v4.0.0
+        with:
+          issue-number: ${{ github.event.pull_request.number }}
+          body: ${{ steps.template.outputs.result }}
+
+      - name: Check Failure (Issues Detected)
+        if: steps.check.outputs.is_org_fork == 'true' || steps.check.outputs.missing_maintainer_edit == 'true'
+        run: |
+          echo "❌ PR has fork permission issues that need to be resolved"
+          exit 1

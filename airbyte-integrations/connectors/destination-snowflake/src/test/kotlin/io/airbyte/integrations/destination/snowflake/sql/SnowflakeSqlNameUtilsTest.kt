@@ -4,7 +4,7 @@
 
 package io.airbyte.integrations.destination.snowflake.sql
 
-import io.airbyte.cdk.load.orchestration.db.TableName
+import io.airbyte.cdk.load.table.TableName
 import io.airbyte.integrations.destination.snowflake.db.toSnowflakeCompatibleName
 import io.airbyte.integrations.destination.snowflake.spec.SnowflakeConfiguration
 import io.mockk.every
@@ -93,19 +93,5 @@ internal class SnowflakeSqlNameUtilsTest {
             )
         val fullyQualifiedName = snowflakeSqlNameUtils.fullyQualifiedStageName(tableName, true)
         assertEquals(expectedName, fullyQualifiedName)
-    }
-
-    @Test
-    fun testFullyQualifiedFormatName() {
-        val databaseName = "test-database"
-        val namespace = "test-namespace"
-        every { snowflakeConfiguration.database } returns databaseName
-
-        val expectedNamespace =
-            snowflakeSqlNameUtils.combineParts(
-                listOf(databaseName.toSnowflakeCompatibleName(), namespace, STAGE_FORMAT_NAME)
-            )
-        val fullyQualifiedNamespace = snowflakeSqlNameUtils.fullyQualifiedFormatName(namespace)
-        assertEquals(expectedNamespace, fullyQualifiedNamespace)
     }
 }

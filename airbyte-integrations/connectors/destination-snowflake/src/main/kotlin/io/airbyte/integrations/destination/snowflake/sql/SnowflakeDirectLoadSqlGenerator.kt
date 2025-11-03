@@ -7,9 +7,9 @@ package io.airbyte.integrations.destination.snowflake.sql
 import io.airbyte.cdk.load.command.Dedupe
 import io.airbyte.cdk.load.command.DestinationStream
 import io.airbyte.cdk.load.message.Meta.Companion.COLUMN_NAME_AB_EXTRACTED_AT
-import io.airbyte.cdk.load.orchestration.db.CDC_DELETED_AT_COLUMN
-import io.airbyte.cdk.load.orchestration.db.ColumnNameMapping
-import io.airbyte.cdk.load.orchestration.db.TableName
+import io.airbyte.cdk.load.table.CDC_DELETED_AT_COLUMN
+import io.airbyte.cdk.load.table.ColumnNameMapping
+import io.airbyte.cdk.load.table.TableName
 import io.airbyte.cdk.load.util.UUIDGenerator
 import io.airbyte.integrations.destination.snowflake.db.ColumnDefinition
 import io.airbyte.integrations.destination.snowflake.db.toSnowflakeCompatibleName
@@ -20,7 +20,7 @@ import io.airbyte.integrations.destination.snowflake.write.load.CSV_LINE_DELIMIT
 import io.github.oshai.kotlinlogging.KotlinLogging
 import jakarta.inject.Singleton
 
-internal const val COUNT_TOTAL_ALIAS = "total"
+internal const val COUNT_TOTAL_ALIAS = "TOTAL"
 
 private val log = KotlinLogging.logger {}
 
@@ -41,7 +41,7 @@ class SnowflakeDirectLoadSqlGenerator(
     private val snowflakeSqlNameUtils: SnowflakeSqlNameUtils,
 ) {
     fun countTable(tableName: TableName): String {
-        return "SELECT COUNT(*) AS ${COUNT_TOTAL_ALIAS.quote()} FROM ${snowflakeSqlNameUtils.fullyQualifiedName(tableName)}".andLog()
+        return "SELECT COUNT(*) AS $COUNT_TOTAL_ALIAS FROM ${snowflakeSqlNameUtils.fullyQualifiedName(tableName)}".andLog()
     }
 
     fun createNamespace(namespace: String): String {
@@ -316,37 +316,9 @@ class SnowflakeDirectLoadSqlGenerator(
             .andLog()
     }
 
-    fun createFileFormat(namespace: String): String {
-        val formatName = snowflakeSqlNameUtils.fullyQualifiedFormatName(namespace)
-        // We need the ESCAPE and ESCAPE_UNENCLOSED_FIELD options set,
-        // otherwise snowflake defaults to `\`.
-        //  Which causes weird behavior on string fields with a trailing `\` in the value.
-        return """
-            CREATE OR REPLACE FILE FORMAT $formatName
-            TYPE = 'CSV'
-            COMPRESSION = GZIP
-            FIELD_DELIMITER = '$CSV_FIELD_SEPARATOR'
-            RECORD_DELIMITER = '$CSV_LINE_DELIMITER'
-            FIELD_OPTIONALLY_ENCLOSED_BY = '"'
-            TRIM_SPACE = TRUE
-            ERROR_ON_COLUMN_COUNT_MISMATCH = FALSE
-            REPLACE_INVALID_CHARACTERS = TRUE
-            ESCAPE = NONE
-            ESCAPE_UNENCLOSED_FIELD = NONE
-        """
-            .trimIndent()
-            .andLog()
-    }
-
     fun createSnowflakeStage(tableName: TableName): String {
         val stageName = snowflakeSqlNameUtils.fullyQualifiedStageName(tableName)
-        val formatName = snowflakeSqlNameUtils.fullyQualifiedFormatName(tableName.namespace)
-        return """
-            CREATE STAGE IF NOT EXISTS $stageName
-                FILE_FORMAT = $formatName;
-        """
-            .trimIndent()
-            .andLog()
+        return "CREATE STAGE IF NOT EXISTS $stageName".andLog()
     }
 
     fun putInStage(tableName: TableName, tempFilePath: String): String {
@@ -363,12 +335,22 @@ class SnowflakeDirectLoadSqlGenerator(
 
     fun copyFromStage(tableName: TableName, filename: String): String {
         val stageName = snowflakeSqlNameUtils.fullyQualifiedStageName(tableName, true)
-        val formatName = snowflakeSqlNameUtils.fullyQualifiedFormatName(tableName.namespace)
 
         return """
             COPY INTO ${snowflakeSqlNameUtils.fullyQualifiedName(tableName)}
             FROM '@$stageName'
-            FILE_FORMAT = $formatName
+            FILE_FORMAT = (
+                TYPE = 'CSV'
+                COMPRESSION = GZIP
+                FIELD_DELIMITER = '$CSV_FIELD_SEPARATOR'
+                RECORD_DELIMITER = '$CSV_LINE_DELIMITER'
+                FIELD_OPTIONALLY_ENCLOSED_BY = '"'
+                TRIM_SPACE = TRUE
+                ERROR_ON_COLUMN_COUNT_MISMATCH = FALSE
+                REPLACE_INVALID_CHARACTERS = TRUE
+                ESCAPE = NONE
+                ESCAPE_UNENCLOSED_FIELD = NONE
+            )
             ON_ERROR = 'ABORT_STATEMENT'
             PURGE = TRUE
             files = ('$filename')

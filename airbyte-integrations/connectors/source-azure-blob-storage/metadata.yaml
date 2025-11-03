@@ -8,11 +8,11 @@ data:
     ql: 400
     sl: 300
   connectorBuildOptions:
-    baseImage: docker.io/airbyte/python-connector-base:4.0.2@sha256:9fdb1888c4264cf6fee473649ecb593f56f58e5d0096a87ee0b231777e2e3e73
+    baseImage: docker.io/airbyte/python-connector-base:4.1.0@sha256:1d1aa21d34e851df4e8a87b391c27724c06e2597608e7161f4d167be853bd7b6
   connectorSubtype: file
   connectorType: source
   definitionId: fdaaba68-4875-4ed9-8fcd-4ae1e0a25093
-  dockerImageTag: 0.6.15
+  dockerImageTag: 0.8.1
   dockerRepository: airbyte/source-azure-blob-storage
   documentationUrl: https://docs.airbyte.com/integrations/sources/azure-blob-storage
   githubIssueLabel: source-azure-blob-storage
@@ -30,6 +30,9 @@ data:
     oss:
       enabled: true
   releaseStage: generally_available
+  releases:
+    rolloutConfiguration:
+      enableProgressiveRollout: false
   supportLevel: certified
   tags:
     - language:python
