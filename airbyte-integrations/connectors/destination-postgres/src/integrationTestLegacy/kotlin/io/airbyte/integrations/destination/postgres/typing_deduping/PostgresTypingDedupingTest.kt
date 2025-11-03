@@ -49,6 +49,10 @@ open class PostgresTypingDedupingTest : AbstractPostgresTypingDedupingTest() {
 
     override fun disableRawTableComparison(): Boolean = true
 
+    // older versions of the connector used to error out in this scenario. This is not
+    // true for newer versions of the connector
+    @Disabled @Test override fun interruptedTruncateWithPriorData() {}
+
     // migrations not supported on most recent version of the connector
     @Disabled @Test override fun testMixedCaseRawTableV1V2Migration() {}
     @Disabled @Test override fun testAirbyteMetaAndGenerationIdMigration() {}
