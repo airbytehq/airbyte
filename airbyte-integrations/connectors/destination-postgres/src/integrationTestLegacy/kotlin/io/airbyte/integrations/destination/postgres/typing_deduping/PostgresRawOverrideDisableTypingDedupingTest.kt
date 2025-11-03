@@ -19,8 +19,13 @@ class PostgresRawOverrideDisableTypingDedupingTest : PostgresTypingDedupingTest(
     override val rawSchema: String
         get() = "overridden_raw_dataset"
 
+    // when disable_type_dedupe = true, we only output to raw table
     override fun disableFinalTableComparison(): Boolean {
         return true
+    }
+
+    override fun disableRawTableComparison(): Boolean {
+        return false
     }
 
     @Disabled @Test override fun identicalNameSimultaneousSync() {}
