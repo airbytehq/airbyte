@@ -36,7 +36,7 @@ class StateStatsEnricherTest {
 
     @BeforeEach
     fun setUp() {
-        every { metricTracker.get() } returns emptyMap()
+        every { metricTracker.drain() } returns emptyMap()
         stateStatsEnricher = StateStatsEnricher(statsStore, namespaceMapper, metricTracker)
     }
 

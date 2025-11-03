@@ -35,7 +35,7 @@ class StateStatsEnricher(
     fun enrichTopLevelDestinationStats(msg: CheckpointMessage, count: Long): CheckpointMessage {
         // TODO: set this using the count above once we get to total rejected
         // records.
-        msg.updateStats(destinationStats = msg.sourceStats, additionalStats = metricTracker.get())
+        msg.updateStats(destinationStats = msg.sourceStats, additionalStats = metricTracker.drain())
 
         return msg
     }
