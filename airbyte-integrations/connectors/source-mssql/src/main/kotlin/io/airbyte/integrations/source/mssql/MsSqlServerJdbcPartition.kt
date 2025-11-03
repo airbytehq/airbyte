@@ -48,6 +48,29 @@ import java.util.Base64
 private val log = KotlinLogging.logger {}
 
 /**
+ * Determines the effective cursor checkpoint value by comparing cursor cutoff time with upper
+ * bound. Returns cutoff time if it's less than upper bound, otherwise returns upper bound (or
+ * fallback if null).
+ */
+private fun getEffectiveCursorCheckpoint(
+    cursorCutoffTime: JsonNode?,
+    cursorUpperBound: JsonNode?,
+    fallback: JsonNode
+): JsonNode {
+    return if (
+        cursorCutoffTime != null &&
+            !cursorCutoffTime.isNull &&
+            cursorUpperBound != null &&
+            !cursorUpperBound.isNull &&
+            cursorCutoffTime.asText() < cursorUpperBound.asText()
+    ) {
+        cursorCutoffTime
+    } else {
+        cursorUpperBound ?: fallback
+    }
+}
+
+/**
  * Converts a state value string to a JsonNode based on the field type. This function handles type
  * conversions and date formatting for state checkpoints.
  */
@@ -56,10 +79,14 @@ fun stateValueToJsonNode(field: Field, stateValue: String?): JsonNode {
         is LeafAirbyteSchemaType ->
             return when (field.type.airbyteSchemaType as LeafAirbyteSchemaType) {
                 LeafAirbyteSchemaType.INTEGER -> {
-                    Jsons.valueToTree(stateValue?.takeIf { it.isNotEmpty() }?.toBigInteger())
+                    Jsons.valueToTree(
+                        stateValue?.takeIf { it.isNotEmpty() && it != "null" }?.toBigInteger()
+                    )
                 }
                 LeafAirbyteSchemaType.NUMBER -> {
-                    Jsons.valueToTree(stateValue?.takeIf { it.isNotEmpty() }?.toDouble())
+                    Jsons.valueToTree(
+                        stateValue?.takeIf { it.isNotEmpty() && it != "null" }?.toBigDecimal()
+                    )
                 }
                 LeafAirbyteSchemaType.BINARY -> {
                     val ba = Base64.getDecoder().decode(stateValue!!)
@@ -168,7 +195,7 @@ class MsSqlServerJdbcNonResumableSnapshotWithCursorPartition(
         get() =
             MsSqlServerJdbcStreamStateValue.cursorIncrementalCheckpoint(
                 cursor,
-                cursorCheckpoint = streamState.cursorUpperBound!!,
+                cursorCheckpoint = streamState.cursorUpperBound ?: Jsons.nullNode(),
             )
 
     override val cursorUpperBoundQuery: SelectQuery
@@ -379,8 +406,8 @@ sealed class MsSqlServerJdbcCursorPartition(
     MsSqlServerJdbcResumablePartition(selectQueryGenerator, streamState, checkpointColumns),
     JdbcCursorPartition<DefaultJdbcStreamState> {
 
-    val cursorUpperBound: JsonNode
-        get() = explicitCursorUpperBound ?: streamState.cursorUpperBound!!
+    val cursorUpperBound: JsonNode?
+        get() = explicitCursorUpperBound ?: streamState.cursorUpperBound
 
     override val cursorUpperBoundQuery: SelectQuery
         get() = selectQueryGenerator.generate(cursorUpperBoundQuerySpec.optimize())
@@ -429,27 +456,11 @@ class MsSqlServerJdbcSnapshotWithCursorPartition(
     override val upperBound: List<JsonNode>? = null
 
     override val completeState: OpaqueStateValue
-        get() {
-            // Handle cursor cutoff time first
-            val effectiveCursorCheckpoint =
-                if (
-                    cursorCutoffTime != null &&
-                        !cursorCutoffTime.isNull &&
-                        !cursorUpperBound.isNull &&
-                        cursorCutoffTime.asText() < cursorUpperBound.asText()
-                ) {
-                    cursorCutoffTime
-                } else {
-                    cursorUpperBound
-                }
-
-            // Since this is the initial partition (that can be split),
-            // completion means moving to cursor incremental mode
-            return MsSqlServerJdbcStreamStateValue.cursorIncrementalCheckpoint(
+        get() =
+            MsSqlServerJdbcStreamStateValue.cursorIncrementalCheckpoint(
                 cursor,
-                effectiveCursorCheckpoint,
+                getEffectiveCursorCheckpoint(cursorCutoffTime, cursorUpperBound, Jsons.nullNode()),
             )
-        }
 
     override fun incompleteState(lastRecord: ObjectNode): OpaqueStateValue =
         MsSqlServerJdbcStreamStateValue.snapshotWithCursorCheckpoint(
@@ -478,25 +489,16 @@ class MsSqlServerJdbcSplittableSnapshotWithCursorPartition(
         cursorCutoffTime
     ) {
     override val completeState: OpaqueStateValue
-        get() {
-            // Handle cursor cutoff time first
-            val effectiveCursorCheckpoint =
-                if (
-                    cursorCutoffTime != null &&
-                        !cursorCutoffTime.isNull &&
-                        !cursorUpperBound.isNull &&
-                        cursorCutoffTime.asText() < cursorUpperBound.asText()
-                ) {
-                    cursorCutoffTime
-                } else {
-                    cursorUpperBound
-                }
-
-            return when (upperBound) {
+        get() =
+            when (upperBound) {
                 null ->
                     MsSqlServerJdbcStreamStateValue.cursorIncrementalCheckpoint(
                         cursor,
-                        effectiveCursorCheckpoint,
+                        getEffectiveCursorCheckpoint(
+                            cursorCutoffTime,
+                            cursorUpperBound,
+                            Jsons.nullNode()
+                        ),
                     )
                 else ->
                     MsSqlServerJdbcStreamStateValue.snapshotWithCursorCheckpoint(
@@ -505,7 +507,6 @@ class MsSqlServerJdbcSplittableSnapshotWithCursorPartition(
                         cursor,
                     )
             }
-        }
 
     override fun incompleteState(lastRecord: ObjectNode): OpaqueStateValue =
         MsSqlServerJdbcStreamStateValue.snapshotWithCursorCheckpoint(
@@ -537,29 +538,15 @@ class MsSqlServerJdbcCursorIncrementalPartition(
         cursorCutoffTime
     ) {
     override val lowerBound: List<JsonNode> = listOf(cursorLowerBound)
-    override val upperBound: List<JsonNode>
-        get() = listOf(cursorUpperBound)
+    override val upperBound: List<JsonNode>?
+        get() = cursorUpperBound?.let { listOf(it) }
 
     override val completeState: OpaqueStateValue
-        get() {
-            // When we have a cutoff time that's less than the upper bound,
-            // use the cutoff as the checkpoint since that's where we actually stopped reading
-            val effectiveCheckpoint =
-                if (
-                    cursorCutoffTime != null &&
-                        !cursorCutoffTime.isNull &&
-                        !cursorUpperBound.isNull &&
-                        cursorCutoffTime.asText() < cursorUpperBound.asText()
-                ) {
-                    cursorCutoffTime
-                } else {
-                    cursorUpperBound
-                }
-            return MsSqlServerJdbcStreamStateValue.cursorIncrementalCheckpoint(
+        get() =
+            MsSqlServerJdbcStreamStateValue.cursorIncrementalCheckpoint(
                 cursor,
-                cursorCheckpoint = effectiveCheckpoint,
+                getEffectiveCursorCheckpoint(cursorCutoffTime, cursorUpperBound, cursorLowerBound),
             )
-        }
 
     override fun incompleteState(lastRecord: ObjectNode): OpaqueStateValue =
         MsSqlServerJdbcStreamStateValue.cursorIncrementalCheckpoint(
@@ -577,9 +564,8 @@ fun MsSqlServerJdbcRfrSnapshotPartition.split(
 
     val inners: List<List<JsonNode>> =
         splitPointValues.mapNotNull { sv ->
-            val pkField = checkpointColumns.firstOrNull()
-            if (pkField != null && sv.pkValue != null) {
-                listOf(stateValueToJsonNode(pkField, sv.pkValue))
+            if (sv.pkValue != null) {
+                listOf(sv.pkValue)
             } else null
         }
 
@@ -665,9 +651,8 @@ fun MsSqlServerJdbcSnapshotWithCursorPartition.split(
 
     val inners: List<List<JsonNode>> =
         splitPointValues.mapNotNull { sv ->
-            val pkField = checkpointColumns.firstOrNull()
-            if (pkField != null && sv.pkValue != null) {
-                listOf(stateValueToJsonNode(pkField, sv.pkValue))
+            if (sv.pkValue != null) {
+                listOf(sv.pkValue)
             } else null
         }
 

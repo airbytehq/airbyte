@@ -22,7 +22,7 @@ To access the connection dashboard:
 
 Here's an example of how you can put this dashboard to work.
 
-<Arcade id="u3EEEqQoPRA4aoAAFFLO" title="Connection page dashboard" paddingBottom="calc(60% + 41px)" />
+<Navattic id="cmhfdqt0c000204jne5j4hmbd" />
 
 ## Review one connection's status
 
