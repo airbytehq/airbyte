@@ -6,7 +6,7 @@ package io.airbyte.integrations.destination.gcs_data_lake
 
 import io.airbyte.cdk.load.data.icerberg.parquet.IcebergWriteTest
 import io.airbyte.cdk.load.test.util.NoopDestinationCleaner
-import io.airbyte.cdk.load.toolkits.iceberg.parquet.SimpleTableIdGenerator
+import io.airbyte.integrations.destination.gcs_data_lake.catalog.BigLakeTableIdGenerator
 import io.airbyte.integrations.destination.gcs_data_lake.spec.GcsDataLakeSpecification
 import java.nio.file.Files
 import org.junit.jupiter.api.Test
@@ -19,12 +19,12 @@ class BigLakeWriteTest :
             GcsDataLakeTestUtil.getCatalog(GcsDataLakeTestUtil.getConfig(spec))
         },
         destinationCleaner = NoopDestinationCleaner, // TODO: Implement proper cleaner
-        tableIdGenerator = SimpleTableIdGenerator("test_database"),
+        tableIdGenerator = BigLakeTableIdGenerator("test_database"),
     ) {
 
     @Test
-    override fun testBasicTypes() {
-        super.testBasicTypes()
+    override fun testFunkyCharacters() {
+        super.testFunkyCharacters()
     }
 
     @Test

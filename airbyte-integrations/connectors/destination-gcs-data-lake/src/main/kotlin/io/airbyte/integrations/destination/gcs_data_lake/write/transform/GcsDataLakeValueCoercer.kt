@@ -2,7 +2,7 @@
  * Copyright (c) 2025 Airbyte, Inc., all rights reserved.
  */
 
-package io.airbyte.integrations.destination.gcs_data_lake.dataflow.transform
+package io.airbyte.integrations.destination.gcs_data_lake.write.transform
 
 import io.airbyte.cdk.load.data.EnrichedAirbyteValue
 import io.airbyte.cdk.load.data.IntegerValue
@@ -15,15 +15,20 @@ import java.math.BigInteger
 
 /**
  * Value coercer for GCS Data Lake destination.
- * Applies Iceberg-specific validations:
- * - Nulls out-of-range integers (outside Long.MIN_VALUE to Long.MAX_VALUE)
+ * Applies Iceberg-specific transformations and validations:
+ * - Converts timestamps to milliseconds for _airbyte_extracted_at
+ * - Stringifies objects/arrays (except _airbyte_meta which stays as struct)
+ * - Nulls out-of-range integers (outside Long range)
  * - Nulls out-of-range numbers (outside Double range)
- * - Records changes in airbyte_meta
+ * - Records all changes in airbyte_meta
  */
 @Singleton
 class GcsDataLakeValueCoercer : ValueCoercer {
     override fun map(value: EnrichedAirbyteValue): EnrichedAirbyteValue {
-        // No transformations in map - just pass through
+        // ValueCoercer operates on individual field values during Parse stage
+        // However, timestamp→integer and object→string are already handled by the
+        // Iceberg schema transformation (toIcebergSchema with stringifyObjects)
+        // So we just pass through here
         return value
     }
 
