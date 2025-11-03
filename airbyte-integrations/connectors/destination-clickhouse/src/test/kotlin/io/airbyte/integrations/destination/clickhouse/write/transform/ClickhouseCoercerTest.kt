@@ -24,6 +24,7 @@ import io.airbyte.integrations.destination.clickhouse.write.transform.Clickhouse
 import io.airbyte.integrations.destination.clickhouse.write.transform.ClickhouseCoercer.Constants.DATE32_MIN
 import io.airbyte.integrations.destination.clickhouse.write.transform.ClickhouseCoercer.Constants.DECIMAL128_MAX
 import io.airbyte.integrations.destination.clickhouse.write.transform.ClickhouseCoercer.Constants.DECIMAL128_MIN
+import io.airbyte.integrations.destination.clickhouse.write.transform.ClickhouseCoercer.Constants.DECIMAL_SCALE_MULTIPLIER
 import io.airbyte.integrations.destination.clickhouse.write.transform.ClickhouseCoercer.Constants.INT64_MAX
 import io.airbyte.integrations.destination.clickhouse.write.transform.ClickhouseCoercer.Constants.INT64_MIN
 import io.airbyte.integrations.destination.clickhouse.write.transform.ClickhouseCoercerTest.Fixtures.toAirbyteDateValue
@@ -41,8 +42,8 @@ import java.time.LocalDateTime
 import java.time.LocalTime
 import java.time.OffsetTime
 import java.time.ZoneOffset
-import kotlin.test.Test
 import kotlin.test.assertEquals
+import org.junit.jupiter.api.Test
 import org.junit.jupiter.api.extension.ExtendWith
 import org.junit.jupiter.params.ParameterizedTest
 import org.junit.jupiter.params.provider.Arguments
@@ -233,8 +234,16 @@ class ClickhouseCoercerTest {
                 Arguments.of("42"),
                 Arguments.of("-10000000000000000.33"),
                 Arguments.of("100000000000000000.3"),
-                Arguments.of(DECIMAL128_MIN.add(BigDecimal.valueOf(1)).toString()),
-                Arguments.of(DECIMAL128_MAX.subtract(BigDecimal.valueOf(1)).toString()),
+                Arguments.of(
+                    DECIMAL128_MIN.divide(DECIMAL_SCALE_MULTIPLIER)
+                        .add(BigDecimal.valueOf(1))
+                        .toString()
+                ),
+                Arguments.of(
+                    DECIMAL128_MAX.divide(DECIMAL_SCALE_MULTIPLIER)
+                        .subtract(BigDecimal.valueOf(1))
+                        .toString()
+                ),
                 Arguments.of("1"),
                 Arguments.of("80327031.865312"),
                 Arguments.of("-80327031.8954"),
@@ -250,6 +259,7 @@ class ClickhouseCoercerTest {
                 Arguments.of("100000000000000000000000000000000000001"),
                 Arguments.of("999999999999999999999999999999999999999.9"),
                 Arguments.of("-999999999999999999999999999999999999999.12"),
+                Arguments.of("3.4028234663852886E+37"),
             )
 
         @JvmStatic

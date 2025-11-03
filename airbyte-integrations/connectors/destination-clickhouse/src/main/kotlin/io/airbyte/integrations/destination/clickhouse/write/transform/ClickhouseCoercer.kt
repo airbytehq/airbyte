@@ -26,6 +26,7 @@ import io.airbyte.integrations.destination.clickhouse.write.transform.Clickhouse
 import io.airbyte.integrations.destination.clickhouse.write.transform.ClickhouseCoercer.Constants.DATETIME64_MIN
 import io.airbyte.integrations.destination.clickhouse.write.transform.ClickhouseCoercer.Constants.DECIMAL128_MAX
 import io.airbyte.integrations.destination.clickhouse.write.transform.ClickhouseCoercer.Constants.DECIMAL128_MIN
+import io.airbyte.integrations.destination.clickhouse.write.transform.ClickhouseCoercer.Constants.DECIMAL_SCALE_MULTIPLIER
 import io.airbyte.integrations.destination.clickhouse.write.transform.ClickhouseCoercer.Constants.INT64_MAX
 import io.airbyte.integrations.destination.clickhouse.write.transform.ClickhouseCoercer.Constants.INT64_MIN
 import io.airbyte.protocol.models.v0.AirbyteRecordMessageMetaChange
@@ -69,12 +70,14 @@ class ClickhouseCoercer : ValueCoercer {
 
     override fun validate(value: EnrichedAirbyteValue): EnrichedAirbyteValue {
         when (val abValue = value.abValue) {
-            is NumberValue ->
-                if (abValue.value <= DECIMAL128_MIN || abValue.value >= DECIMAL128_MAX) {
+            is NumberValue -> {
+                val scaled = abValue.value.multiply(DECIMAL_SCALE_MULTIPLIER)
+                if (scaled <= DECIMAL128_MIN || scaled >= DECIMAL128_MAX) {
                     value.nullify(
                         AirbyteRecordMessageMetaChange.Reason.DESTINATION_FIELD_SIZE_LIMITATION
                     )
                 }
+            }
             is IntegerValue ->
                 if (abValue.value < INT64_MIN || abValue.value > INT64_MAX) {
                     value.nullify(
@@ -122,6 +125,8 @@ class ClickhouseCoercer : ValueCoercer {
         // compiler warning which we don't tolerate in CI :smithers:
         val DECIMAL128_MAX = BigDecimal("100000000000000000000000000000000000000")
         val DECIMAL128_MIN = BigDecimal("-100000000000000000000000000000000000000")
+
+        val DECIMAL_SCALE_MULTIPLIER = BigDecimal.TEN.pow(9)
 
         // used by both date 32 and date time 64
         val DATE32_MAX_RAW = LocalDate.of(2299, 12, 31)
