@@ -2,7 +2,7 @@ data:
   connectorSubtype: file
   connectorType: destination
   definitionId: 4816b78f-1489-44c1-9060-4b19d5fa9362
-  dockerImageTag: 1.9.2
+  dockerImageTag: 1.9.4
   dockerRepository: airbyte/destination-s3
   githubIssueLabel: destination-s3
   icon: s3.svg
@@ -10,7 +10,7 @@ data:
   name: S3
   connectorIPCOptions:
     dataChannel:
-      version: "0.0.1"
+      version: "0.0.2"
       supportedSerialization: ["JSONL", "PROTOBUF"]
       supportedTransport: ["SOCKET", "STDIO"]
   connectorBuildOptions:
@@ -33,7 +33,6 @@ data:
     jobSpecific:
       - jobType: sync
         resourceRequirements:
-          memory_limit: 2Gi
           memory_request: 2Gi
   documentationUrl: https://docs.airbyte.com/integrations/destinations/s3
   tags:

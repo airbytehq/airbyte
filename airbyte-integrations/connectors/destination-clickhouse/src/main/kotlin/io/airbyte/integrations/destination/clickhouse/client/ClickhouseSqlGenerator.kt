@@ -28,9 +28,8 @@ import io.airbyte.cdk.load.message.Meta.Companion.COLUMN_NAME_AB_EXTRACTED_AT
 import io.airbyte.cdk.load.message.Meta.Companion.COLUMN_NAME_AB_GENERATION_ID
 import io.airbyte.cdk.load.message.Meta.Companion.COLUMN_NAME_AB_META
 import io.airbyte.cdk.load.message.Meta.Companion.COLUMN_NAME_AB_RAW_ID
-import io.airbyte.cdk.load.orchestration.db.CDC_DELETED_AT_COLUMN
-import io.airbyte.cdk.load.orchestration.db.ColumnNameMapping
-import io.airbyte.cdk.load.orchestration.db.TableName
+import io.airbyte.cdk.load.table.ColumnNameMapping
+import io.airbyte.cdk.load.table.TableName
 import io.airbyte.integrations.destination.clickhouse.client.ClickhouseSqlGenerator.Companion.DATETIME_WITH_PRECISION
 import io.airbyte.integrations.destination.clickhouse.client.ClickhouseSqlGenerator.Companion.DECIMAL_WITH_PRECISION_AND_SCALE
 import io.airbyte.integrations.destination.clickhouse.model.AlterationSummary
@@ -214,105 +213,6 @@ class ClickhouseSqlGenerator(
                 $columnNames
             FROM `${sourceTableName.namespace}`.`${sourceTableName.name}`
             """
-            .trimIndent()
-            .andLog()
-    }
-
-    fun upsertTable(
-        stream: DestinationStream,
-        columnNameMapping: ColumnNameMapping,
-        sourceTableName: TableName,
-        targetTableName: TableName
-    ): String {
-        val importType = stream.importType as Dedupe
-        val pkEquivalent =
-            importType.primaryKey.joinToString(" AND ") { fieldPath ->
-                val fieldName = fieldPath.first()
-                val columnName = columnNameMapping[fieldName]!!
-                """(target_table.`$columnName` = new_record.`$columnName` OR (target_table.`$columnName` IS NULL AND new_record.`$columnName` IS NULL))"""
-            }
-
-        val columnList: String =
-            stream.schema.asColumns().keys.joinToString("\n") { fieldName ->
-                val columnName = columnNameMapping[fieldName]!!
-                "`$columnName`,"
-            }
-        val newRecordColumnList: String =
-            stream.schema.asColumns().keys.joinToString("\n") { fieldName ->
-                val columnName = columnNameMapping[fieldName]!!
-                "new_record.`$columnName`,"
-            }
-        val selectSourceRecords = selectDedupedRecords(stream, sourceTableName, columnNameMapping)
-
-        val cursorComparison: String
-        if (importType.cursor.isNotEmpty()) {
-            val cursorFieldName = importType.cursor.first()
-            val cursorColumnName = columnNameMapping[cursorFieldName]!!
-            val cursor = "`$cursorColumnName`"
-            // Build a condition for "new_record is more recent than target_table":
-            cursorComparison = // First, compare the cursors.
-            ("""
-             (
-               target_table.$cursor < new_record.$cursor
-               OR (target_table.$cursor = new_record.$cursor AND target_table.$COLUMN_NAME_AB_EXTRACTED_AT < new_record.$COLUMN_NAME_AB_EXTRACTED_AT)
-               OR (target_table.$cursor IS NULL AND new_record.$cursor IS NULL AND target_table.$COLUMN_NAME_AB_EXTRACTED_AT < new_record.$COLUMN_NAME_AB_EXTRACTED_AT)
-               OR (target_table.$cursor IS NULL AND new_record.$cursor IS NOT NULL)
-             )
-             """.trimIndent())
-        } else {
-            // If there's no cursor, then we just take the most-recently-emitted record
-            cursorComparison =
-                "target_table.$COLUMN_NAME_AB_EXTRACTED_AT < new_record.$COLUMN_NAME_AB_EXTRACTED_AT"
-        }
-
-        val cdcDeleteClause: String
-        val cdcSkipInsertClause: String
-        if (stream.schema.asColumns().containsKey(CDC_DELETED_AT_COLUMN)) {
-            // Execute CDC deletions if there's already a record
-            cdcDeleteClause =
-                "WHEN MATCHED AND new_record._ab_cdc_deleted_at IS NOT NULL AND $cursorComparison THEN DELETE"
-            // And skip insertion entirely if there's no matching record.
-            // (This is possible if a single T+D batch contains both an insertion and deletion for
-            // the same PK)
-            cdcSkipInsertClause = "AND new_record._ab_cdc_deleted_at IS NULL"
-        } else {
-            cdcDeleteClause = ""
-            cdcSkipInsertClause = ""
-        }
-
-        val columnAssignments: String =
-            stream.schema.asColumns().keys.joinToString("\n") { fieldName ->
-                val column = columnNameMapping[fieldName]!!
-                "`$column` = new_record.`$column`,"
-            }
-
-        return """
-               MERGE `${targetTableName.namespace}`.`${targetTableName.name}` target_table
-               USING (
-                 $selectSourceRecords
-               ) new_record
-               ON $pkEquivalent
-               $cdcDeleteClause
-               WHEN MATCHED AND $cursorComparison THEN UPDATE SET
-                 $columnAssignments
-                 $COLUMN_NAME_AB_META = new_record.$COLUMN_NAME_AB_META,
-                 $COLUMN_NAME_AB_RAW_ID = new_record.$COLUMN_NAME_AB_RAW_ID,
-                 $COLUMN_NAME_AB_EXTRACTED_AT = new_record.$COLUMN_NAME_AB_EXTRACTED_AT,
-                 $COLUMN_NAME_AB_GENERATION_ID = new_record.$COLUMN_NAME_AB_GENERATION_ID
-               WHEN NOT MATCHED $cdcSkipInsertClause THEN INSERT (
-                 $columnList
-                 $COLUMN_NAME_AB_META,
-                 $COLUMN_NAME_AB_RAW_ID,
-                 $COLUMN_NAME_AB_EXTRACTED_AT,
-                 $COLUMN_NAME_AB_GENERATION_ID
-               ) VALUES (
-                 $newRecordColumnList
-                 new_record.$COLUMN_NAME_AB_META,
-                 new_record.$COLUMN_NAME_AB_RAW_ID,
-                 new_record.$COLUMN_NAME_AB_EXTRACTED_AT,
-                 new_record.$COLUMN_NAME_AB_GENERATION_ID
-               );
-               """
             .trimIndent()
             .andLog()
     }

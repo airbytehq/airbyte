@@ -5,10 +5,10 @@ data:
   connectorSubtype: api
   connectorType: source
   definitionId: 5cb7e5fe-38c2-11ec-8d3d-0242ac130003
-  dockerImageTag: 2.1.13-rc.2
+  dockerImageTag: 2.1.17
   dockerRepository: airbyte/source-pinterest
   connectorBuildOptions:
-    baseImage: docker.io/airbyte/source-declarative-manifest:7.2.2@sha256:588e3aaeae219b31b47da458972e559556e3501c6b6ab9f858ff83e6c8f6dc7a
+    baseImage: docker.io/airbyte/source-declarative-manifest:7.4.1@sha256:71df19e2ee555ca5b14abbec01d50104c79c9b84cb9cc323284d24333361900a
   githubIssueLabel: source-pinterest
   icon: pinterest.svg
   license: ELv2
@@ -26,7 +26,7 @@ data:
   releaseStage: generally_available
   releases:
     rolloutConfiguration:
-      enableProgressiveRollout: true
+      enableProgressiveRollout: false
     breakingChanges:
       2.0.0:
         message: "This release introduces updated format of state for incremental streams. Users will need to reset affected streams after upgrading. Please see migration guide for more details."

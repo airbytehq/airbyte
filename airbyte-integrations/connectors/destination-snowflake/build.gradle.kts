@@ -43,7 +43,8 @@ dependencies {
     implementation("net.snowflake:snowflake-jdbc-thin:$snowflakeJdbcThinVersion")
     implementation("com.zaxxer:HikariCP:$hikariCpVersion")
     implementation("com.google.guava:guava:32.1.1-jre")
-    implementation("org.apache.commons:commons-csv:1.14.1")
+    implementation("de.siegmar:fastcsv:4.0.0")
+    implementation("io.micronaut.cache:micronaut-cache-caffeine:4.3.1")
 
     testImplementation("io.mockk:mockk:1.14.5")
     testImplementation("org.junit.jupiter:junit-jupiter-api:$junitVersion")
@@ -52,7 +53,5 @@ dependencies {
     testRuntimeOnly("org.junit.platform:junit-platform-launcher:$junitPlatformVersion")
     testRuntimeOnly("org.junit.jupiter:junit-jupiter-engine:$junitVersion")
 
-    integrationTestImplementation("com.zaxxer:HikariCP:$hikariCpVersion")
-    integrationTestImplementation("net.snowflake:snowflake-jdbc-thin:$snowflakeJdbcThinVersion")
     integrationTestImplementation(project(":airbyte-cdk:java:airbyte-cdk:airbyte-cdk-dependencies"))
 }

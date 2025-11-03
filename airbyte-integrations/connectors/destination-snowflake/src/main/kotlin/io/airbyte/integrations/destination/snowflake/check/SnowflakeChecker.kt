@@ -13,11 +13,12 @@ import io.airbyte.cdk.load.data.FieldType
 import io.airbyte.cdk.load.data.ObjectType
 import io.airbyte.cdk.load.data.StringType
 import io.airbyte.cdk.load.message.Meta
-import io.airbyte.cdk.load.orchestration.db.ColumnNameMapping
-import io.airbyte.cdk.load.orchestration.db.TableName
+import io.airbyte.cdk.load.table.ColumnNameMapping
+import io.airbyte.cdk.load.table.TableName
 import io.airbyte.integrations.destination.snowflake.client.SnowflakeAirbyteClient
 import io.airbyte.integrations.destination.snowflake.db.toSnowflakeCompatibleName
 import io.airbyte.integrations.destination.snowflake.spec.SnowflakeConfiguration
+import io.airbyte.integrations.destination.snowflake.sql.SnowflakeColumnUtils
 import io.airbyte.integrations.destination.snowflake.write.load.SnowflakeInsertBuffer
 import jakarta.inject.Singleton
 import java.time.OffsetDateTime
@@ -30,6 +31,7 @@ internal const val CHECK_COLUMN_NAME = "test_key"
 class SnowflakeChecker(
     private val snowflakeAirbyteClient: SnowflakeAirbyteClient,
     private val snowflakeConfiguration: SnowflakeConfiguration,
+    private val snowflakeColumnUtils: SnowflakeColumnUtils,
 ) : DestinationCheckerV2 {
 
     override fun check() {
@@ -42,7 +44,7 @@ class SnowflakeChecker(
                 Meta.AirbyteMetaFields.META.fieldName to
                     AirbyteValue.from(emptyMap<String, String>()),
                 Meta.AirbyteMetaFields.GENERATION_ID.fieldName to AirbyteValue.from(0),
-                CHECK_COLUMN_NAME to AirbyteValue.from("test-value")
+                CHECK_COLUMN_NAME.toSnowflakeCompatibleName() to AirbyteValue.from("test-value")
             )
         val outputSchema = snowflakeConfiguration.schema.toSnowflakeCompatibleName()
         val tableName =
@@ -80,6 +82,7 @@ class SnowflakeChecker(
                         columns = columns,
                         snowflakeClient = snowflakeAirbyteClient,
                         snowflakeConfiguration = snowflakeConfiguration,
+                        snowflakeColumnUtils = snowflakeColumnUtils,
                     )
 
                 snowflakeInsertBuffer.accumulate(data)

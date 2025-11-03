@@ -77,6 +77,11 @@
       "statusCode": 301
     },
     {
+      "source": "/connector-support-levels",
+      "destination": "/integrations/connector-support-levels",
+      "statusCode": 301
+    },
+    {
       "source": "/project-overview/product-support-levels",
       "destination": "/integrations/connector-support-levels",
       "statusCode": 301
@@ -277,6 +282,11 @@
       "statusCode": 301
     },
     {
+      "source": "/integrations/destinations/clickhouse-v2",
+      "destination": "/integrations/destinations/clickhouse",
+      "statusCode": 301
+    },
+    {
       "source": "/getting-started",
       "destination": "/platform",
       "statusCode": 301
@@ -474,6 +484,16 @@
     {
       "source": "/platform/next/embedded-setup",
       "destination": "/embedded",
+      "statusCode": 301
+    },
+    {
+      "source": "/platform/contributing-to-airbyte/change-cdk-connector",
+      "destination": "/platform/connector-development/connector-breaking-changes",
+      "statusCode": 301
+    },
+    {
+      "source": "/platform/contributing-to-airbyte/submit-new-connector",
+      "destination": "/platform/connector-development/submit-new-connector",
       "statusCode": 301
     }
   ]

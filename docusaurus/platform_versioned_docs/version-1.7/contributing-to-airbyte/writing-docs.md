@@ -331,8 +331,19 @@ AI tools like ChatGPT and GitHub Copilot are good at describing code. For open s
 The documentation runs two linters, Vale and MarkDownLint. Vale lints for style, writing, and grammar. MarkDownLint lints for MarkDown structure. For example, Vale tells you when you use passive language and MarkDownLint tells you that you've skipped a heading level. Together, these linters provide broad protection against most common readability, accessibility, and rendering problems.
 
 :::note
-Vale and MarkDownLint are newly implemented. They might still generate false positives or false negatives. Currently, Airbyte doesn't enforce them on pull requests. This might happen in the future. For now, just do your best to comply with the linters' recommendations.
+Vale and MarkDownLint are newly implemented. They might still generate false positives or false negatives. For now, just do your best to comply with the linters' recommendations.
 :::
+
+### Linters in CI
+
+Both Vale and MarkDownLint run automatically on pull requests through the [Reviewdog workflow](https://github.com/airbytehq/airbyte/blob/master/.github/workflows/reviewdog.yml). When you open or update a pull request that modifies documentation in `docs/**/*.md`, the workflow:
+
+- Runs Vale with a minimum alert level of **warning** (errors and warnings are reported, suggestions are not)
+- Runs MarkDownLint to check for structural issues
+- Posts any violations as annotations on the "Files Changed" page in your pull request
+- Does not fail the build (compliance is optional but recommended)
+
+Running the linters locally before opening a pull request is optional but recommended. When you run the linters locally as described in the sections below, you'll see all violation levels including **suggestions**, which provide additional guidance that isn't shown in CI. This gives you the opportunity to improve your documentation beyond the minimum requirements before submitting for review.
 
 ### Lint with Vale
 

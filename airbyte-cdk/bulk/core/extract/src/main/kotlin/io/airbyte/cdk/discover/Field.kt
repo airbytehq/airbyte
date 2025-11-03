@@ -2,6 +2,7 @@
 package io.airbyte.cdk.discover
 
 import io.airbyte.cdk.data.AirbyteSchemaType
+import io.airbyte.cdk.data.CdcOffsetDateTimeCodec
 import io.airbyte.cdk.data.DoubleCodec
 import io.airbyte.cdk.data.JsonDecoder
 import io.airbyte.cdk.data.JsonEncoder
@@ -64,8 +65,8 @@ interface MetaField : FieldOrMetaField {
 enum class CommonMetaField(
     override val type: FieldType,
 ) : MetaField {
-    CDC_UPDATED_AT(CdcStringMetaFieldType),
-    CDC_DELETED_AT(CdcStringMetaFieldType),
+    CDC_UPDATED_AT(CdcOffsetDateTimeStringMetaFieldType),
+    CDC_DELETED_AT(CdcOffsetDateTimeStringMetaFieldType),
     ;
 
     override val id: String
@@ -76,6 +77,12 @@ data object CdcStringMetaFieldType : LosslessFieldType {
     override val airbyteSchemaType: AirbyteSchemaType = LeafAirbyteSchemaType.STRING
     override val jsonEncoder: JsonEncoder<String> = JsonStringCodec
     override val jsonDecoder: JsonDecoder<String> = JsonStringCodec
+}
+
+data object CdcOffsetDateTimeStringMetaFieldType : LosslessFieldType {
+    override val airbyteSchemaType: AirbyteSchemaType = LeafAirbyteSchemaType.STRING
+    override val jsonEncoder: JsonEncoder<OffsetDateTime> = CdcOffsetDateTimeCodec
+    override val jsonDecoder: JsonDecoder<OffsetDateTime> = CdcOffsetDateTimeCodec
 }
 
 data object CdcIntegerMetaFieldType : LosslessFieldType {
