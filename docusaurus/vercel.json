@@ -282,6 +282,11 @@
       "statusCode": 301
     },
     {
+      "source": "/integrations/destinations/clickhouse-v2",
+      "destination": "/integrations/destinations/clickhouse",
+      "statusCode": 301
+    },
+    {
       "source": "/getting-started",
       "destination": "/platform",
       "statusCode": 301
