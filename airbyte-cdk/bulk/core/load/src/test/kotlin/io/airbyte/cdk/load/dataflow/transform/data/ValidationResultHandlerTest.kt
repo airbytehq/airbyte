@@ -4,6 +4,7 @@
 
 package io.airbyte.cdk.load.dataflow.transform.data
 
+import io.airbyte.cdk.load.command.DestinationStream
 import io.airbyte.cdk.load.data.EnrichedAirbyteValue
 import io.airbyte.cdk.load.data.NullValue
 import io.airbyte.cdk.load.data.StringType
@@ -19,6 +20,7 @@ internal class ValidationResultHandlerTest {
 
     @Test
     fun testHandleValidationResult() {
+        val stream = DestinationStream.Descriptor(namespace = "namespace", name = "name")
         val abValue = StringValue("test value")
         val enrichedValue =
             EnrichedAirbyteValue(
@@ -30,11 +32,12 @@ internal class ValidationResultHandlerTest {
             )
         val handler = ValidationResultHandler(mockk(relaxed = true))
 
-        assertEquals(enrichedValue, handler.handle(ValidationResult.Valid, enrichedValue))
+        assertEquals(enrichedValue, handler.handle(stream, ValidationResult.Valid, enrichedValue))
         assertEquals(
             NullValue,
             handler
                 .handle(
+                    stream,
                     ValidationResult.ShouldNullify(Reason.DESTINATION_SERIALIZATION_ERROR),
                     enrichedValue
                 )
@@ -46,6 +49,7 @@ internal class ValidationResultHandlerTest {
             truncatedValue,
             handler
                 .handle(
+                    stream,
                     ValidationResult.ShouldTruncate(
                         truncatedValue,
                         Reason.DESTINATION_FIELD_SIZE_LIMITATION
@@ -58,6 +62,7 @@ internal class ValidationResultHandlerTest {
 
     @Test
     fun testNullify() {
+        val stream = DestinationStream.Descriptor(namespace = "namespace", name = "name")
         val abValue = StringValue("test value")
         val enrichedValue =
             EnrichedAirbyteValue(
@@ -68,7 +73,7 @@ internal class ValidationResultHandlerTest {
                 airbyteMetaField = null,
             )
         val handler = ValidationResultHandler(mockk(relaxed = true))
-        val nullifiedValue = handler.nullify(enrichedValue)
+        val nullifiedValue = handler.nullify(stream, enrichedValue)
         assertEquals(NullValue, nullifiedValue.abValue)
         assertEquals(1, nullifiedValue.changes.size)
         assertEquals(Change.NULLED, nullifiedValue.changes.first().change)
@@ -76,6 +81,7 @@ internal class ValidationResultHandlerTest {
 
     @Test
     fun testTruncate() {
+        val stream = DestinationStream.Descriptor(namespace = "namespace", name = "name")
         val abValue = StringValue("This is a very long string that needs truncation")
         val enrichedValue =
             EnrichedAirbyteValue(
@@ -87,7 +93,7 @@ internal class ValidationResultHandlerTest {
             )
         val newValue = StringValue("This is a...")
         val handler = ValidationResultHandler(mockk(relaxed = true))
-        val truncatedValue = handler.truncate(enrichedValue, newValue)
+        val truncatedValue = handler.truncate(stream, enrichedValue, newValue)
         assertEquals(newValue, truncatedValue.abValue)
         assertEquals(1, truncatedValue.changes.size)
         assertEquals(Change.TRUNCATED, truncatedValue.changes.first().change)

@@ -32,6 +32,7 @@ class JsonConverter(
                     .let { coercer.map(it) }
                     .let { value ->
                         validationResultHandler.handle(
+                            stream = msg.stream.mappedDescriptor,
                             result = coercer.validate(value),
                             value = value
                         )

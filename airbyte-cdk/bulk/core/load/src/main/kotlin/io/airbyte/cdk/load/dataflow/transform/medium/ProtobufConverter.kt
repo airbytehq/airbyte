@@ -136,6 +136,7 @@ class ProtobufConverter(
             val mappedValue = coercer.map(enrichedValue)
             val validatedValue =
                 validationResultHandler.handle(
+                    stream = stream.mappedDescriptor,
                     result = coercer.validate(mappedValue),
                     value = mappedValue
                 )
