@@ -13,6 +13,7 @@ import io.airbyte.cdk.load.data.json.toJson
 import io.airbyte.cdk.load.message.Meta
 import io.airbyte.cdk.load.message.Meta.Companion.COLUMN_NAME_AB_LOADED_AT
 import io.airbyte.cdk.load.message.Meta.Companion.COLUMN_NAME_DATA
+import io.airbyte.cdk.load.util.Jsons
 import io.airbyte.cdk.load.util.serializeToString
 
 internal val RAW_META_COLUMNS =
@@ -48,12 +49,7 @@ class PostgresRawRecordFormatter(
 
         // Do not output null values in the JSON raw output
         val filteredRecord = record.filter { (k, v) -> v !is NullValue && !RAW_META_COLUMNS.contains(k) }
-        // Convert AirbyteValue to JsonNode to avoid double-encoding
-        val jsonObject = JsonNodeFactory.instance.objectNode()
-        filteredRecord.forEach { (key, value) ->
-            jsonObject.replace(key, value.toJson())
-        }
-        val jsonData = jsonObject.serializeToString()
+        val jsonData =  Jsons.writeValueAsString(filteredRecord)
 
         // Iterate through columns in the exact order they appear in the table
         columns.forEach { column ->

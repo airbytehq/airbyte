@@ -20,6 +20,7 @@ import java.time.LocalTime
 import java.time.OffsetDateTime
 import java.time.OffsetTime
 import java.time.ZonedDateTime
+import java.time.format.DateTimeFormatter
 
 sealed interface AirbyteValue {
     val airbyteType: AirbyteType
@@ -118,7 +119,7 @@ value class TimestampWithTimezoneValue(val value: OffsetDateTime) :
     AirbyteValue, Comparable<TimestampWithTimezoneValue> {
     constructor(timestamp: String) : this(OffsetDateTime.parse(timestamp))
     override fun compareTo(other: TimestampWithTimezoneValue): Int = value.compareTo(other.value)
-    @JsonValue fun toJson() = value.toString()
+    @JsonValue fun toJson() = value.format(DateTimeFormatter.ISO_OFFSET_DATE_TIME)
 }
 
 @JvmInline
