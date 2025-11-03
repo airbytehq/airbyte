@@ -976,22 +976,24 @@ abstract class BaseTypingDedupingTest {
         pushStatusMessages(catalog2, sync2, AirbyteStreamStatus.COMPLETE)
         endSync(sync2, outFuture2)
 
-        // For simplicity, just assert on raw record count.
-        // Seems safe to assume that if we have the right number of records on both tables,
-        // that we wrote the data correctly.
-        val rawRecords1 = dumpRawTableRecords(namespace1, streamName)
-        val rawRecords2 = dumpRawTableRecords(namespace2, streamName)
-        Assertions.assertAll(
-            Executable {
-                Assertions.assertEquals(messages1.size.toLong(), rawRecords1.size.toLong())
-            },
-            Executable {
-                Assertions.assertEquals(
-                    2 * nTimes * messages2.size.toLong(),
-                    rawRecords2.size.toLong()
-                )
-            },
-        )
+        if(!disableRawTableComparison()) {
+            // For simplicity, just assert on raw record count.
+            // Seems safe to assume that if we have the right number of records on both tables,
+            // that we wrote the data correctly.
+            val rawRecords1 = dumpRawTableRecords(namespace1, streamName)
+            val rawRecords2 = dumpRawTableRecords(namespace2, streamName)
+            Assertions.assertAll(
+                Executable {
+                    Assertions.assertEquals(messages1.size.toLong(), rawRecords1.size.toLong())
+                },
+                Executable {
+                    Assertions.assertEquals(
+                        2 * nTimes * messages2.size.toLong(),
+                        rawRecords2.size.toLong()
+                    )
+                },
+            )
+        }
 
         if (!disableFinalTableComparison()) {
             Assertions.assertAll(
@@ -1505,13 +1507,13 @@ abstract class BaseTypingDedupingTest {
         disableFinalTableComparison: Boolean,
         disableRawTableComparison: Boolean
     ) {
-        val actualRawRecords = dumpRawTableRecords(streamNamespace, streamName)
-
         if (!disableFinalTableComparison) {
-            DIFFER!!.diffFinalTableRecords(expectedRawRecords, actualRawRecords)
+            val actualFinalRecords = dumpFinalTableRecords(streamNamespace, streamName)
+            DIFFER!!.diffFinalTableRecords(expectedFinalRecords, actualFinalRecords)
         }
 
         if(!disableRawTableComparison) {
+            val actualRawRecords = dumpRawTableRecords(streamNamespace, streamName)
             DIFFER!!.diffRawTableRecords(expectedRawRecords, actualRawRecords)
         }
     }
