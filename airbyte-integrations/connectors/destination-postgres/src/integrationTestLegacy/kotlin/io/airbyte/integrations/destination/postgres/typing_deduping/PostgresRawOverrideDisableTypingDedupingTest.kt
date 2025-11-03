@@ -32,7 +32,11 @@ class PostgresRawOverrideDisableTypingDedupingTest : PostgresTypingDedupingTest(
 
     @Disabled @Test override fun testVarcharLimitOver64K() {}
 
-    // this tests that the fully qualified raw table name is lowercased.
+    // this test assumes that fields that are not in the schema will show up
+    // on the raw table. This is only true for older versions of the connector.
+    @Disabled @ParameterizedTest @ValueSource(longs = []) override fun testIncrementalSyncDropOneColumn(inputGenerationId: Long) {}
+
+    // this test assumes that the fully qualified raw table name is lowercased.
     // This was only a restriction in older versions of the connector.
     @Disabled @Test override fun testMixedCasedSchema() {}
 
