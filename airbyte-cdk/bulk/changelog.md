@@ -1,3 +1,7 @@
+## Version 0.1.63
+
+extract cdk: add table filtering handling for jdbc connectors
+
 ## Version 0.1.62
 
 load cdk: correctly parse empty schemas
