@@ -38,47 +38,53 @@ class GcsDataLakeAggregate(
     }
 
     override fun accept(record: RecordDTO) {
-        // Use toolkit's AirbyteValueToIcebergRecord converter directly
+        // Convert RecordDTO to Iceberg Record
+        // Note: ValueCoercer has already nulled out-of-range integers in Parse stage
+        // Here we handle Iceberg-schema-specific conversions that depend on field types
         val converter = io.airbyte.cdk.load.data.iceberg.parquet.AirbyteValueToIcebergRecord()
         val icebergRecord = org.apache.iceberg.data.GenericRecord.create(schema)
 
         schema.asStruct().fields().forEach { field ->
             val airbyteValue = record.fields[field.name()]
             if (airbyteValue != null) {
-                // Pre-process values before conversion:
-                val coercedValue = when {
-                    // 1. Coerce TimestampValue to IntegerValue for LONG fields
-                    //    (handles _airbyte_extracted_at which is timestamp-as-milliseconds)
-                    field.type().typeId() == org.apache.iceberg.types.Type.TypeID.LONG &&
-                        (airbyteValue is TimestampWithTimezoneValue ||
-                            airbyteValue is TimestampWithoutTimezoneValue) -> {
-                        val millis = when (airbyteValue) {
-                            is TimestampWithTimezoneValue ->
-                                airbyteValue.value.toInstant().toEpochMilli()
-                            is TimestampWithoutTimezoneValue ->
-                                airbyteValue.value.atOffset(ZoneOffset.UTC).toInstant().toEpochMilli()
-                            else -> 0L
-                        }
-                        IntegerValue(BigInteger.valueOf(millis))
-                    }
-                    // 2. Stringify ObjectValue/ArrayValue ONLY if Iceberg field type is STRING
-                    //    Don't stringify if it's STRUCT (e.g., _airbyte_meta should remain as struct)
-                    //    Note: Out-of-range integers are handled by GcsDataLakeValueCoercer in parse stage
-                    field.type().typeId() == org.apache.iceberg.types.Type.TypeID.STRING &&
-                        airbyteValue is ObjectValue -> StringValue(airbyteValue.serializeToString())
-                    field.type().typeId() == org.apache.iceberg.types.Type.TypeID.STRING &&
-                        airbyteValue is ArrayValue -> StringValue(airbyteValue.serializeToString())
-                    // 3. Keep everything else as-is (including structs for _airbyte_meta)
-                    else -> airbyteValue
-                }
-
-                val convertedValue = converter.convert(coercedValue, field.type())
+                // Apply Iceberg-schema-dependent transformations
+                val transformedValue = transformForIcebergSchema(airbyteValue, field)
+                val convertedValue = converter.convert(transformedValue, field.type())
                 icebergRecord.setField(field.name(), convertedValue)
             }
         }
 
         val wrappedRecord = RecordWrapper(delegate = icebergRecord, operation = Operation.INSERT)
         writer.write(wrappedRecord)
+    }
+
+    /**
+     * Transform AirbyteValue based on Iceberg schema field type.
+     * These transformations require knowledge of the Iceberg schema,
+     * so they can't happen in ValueCoercer (which operates in Parse stage).
+     */
+    private fun transformForIcebergSchema(
+        value: io.airbyte.cdk.load.data.AirbyteValue,
+        field: org.apache.iceberg.types.Types.NestedField
+    ): io.airbyte.cdk.load.data.AirbyteValue {
+        return when {
+            // Timestamp → Integer for LONG fields (_airbyte_extracted_at)
+            field.type().typeId() == org.apache.iceberg.types.Type.TypeID.LONG &&
+                (value is TimestampWithTimezoneValue || value is TimestampWithoutTimezoneValue) -> {
+                val millis = when (value) {
+                    is TimestampWithTimezoneValue -> value.value.toInstant().toEpochMilli()
+                    is TimestampWithoutTimezoneValue -> value.value.atOffset(ZoneOffset.UTC).toInstant().toEpochMilli()
+                    else -> 0L
+                }
+                IntegerValue(BigInteger.valueOf(millis))
+            }
+            // Object/Array → String for STRING fields (data fields, not _airbyte_meta)
+            field.type().typeId() == org.apache.iceberg.types.Type.TypeID.STRING && value is ObjectValue ->
+                StringValue(value.serializeToString())
+            field.type().typeId() == org.apache.iceberg.types.Type.TypeID.STRING && value is ArrayValue ->
+                StringValue(value.serializeToString())
+            else -> value
+        }
     }
 
     override suspend fun flush() {
