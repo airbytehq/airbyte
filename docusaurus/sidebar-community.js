@@ -15,14 +15,8 @@ const contributeToAirbyte = {
     "contributing-to-airbyte/issues-and-requests",
     "contributing-to-airbyte/developing-locally",
     "contributing-to-airbyte/writing-docs",
-    {
-      type: "category",
-      label: "Resources",
-      items: [
-        "contributing-to-airbyte/resources/pull-requests-handbook",
-        "contributing-to-airbyte/resources/qa-checks",
-      ],
-    },
+    "contributing-to-airbyte/resources/pull-requests-handbook",
+    "contributing-to-airbyte/resources/qa-checks",
   ],
 };
 
@@ -46,7 +40,7 @@ module.exports = {
     {
       type: "category",
       collapsible: false,
-      label: "Community & Support",
+      label: "Community & support",
       link: {
         type: "doc",
         id: "README",
@@ -58,7 +52,7 @@ module.exports = {
         licenses,
         {
           type: "link",
-          label: "Roadmap",
+          label: "Public roadmap",
           href: "https://go.airbyte.com/roadmap",
         },
       ],

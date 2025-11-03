@@ -455,7 +455,7 @@ const config: Config = {
           position: "left",
           docsPluginId: "ai-agents",
           sidebarId: "ai-agents",
-          label: "AI Agents",
+          label: "AI agents",
         },
         {
           type: "docSidebar",

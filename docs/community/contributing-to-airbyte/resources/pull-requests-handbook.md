@@ -1,55 +1,68 @@
-# Pull Request Handbook
+# Pull request handbook
 
-### Pull Request Title Convention
+This topic explains how to title and describe your pull requests, and how to handle connector versioning.
 
-When creating a pull request follow the naming conventions depending on the change being made.
-In general, the pull request title starts with an emoji with the connector you're doing the changes, eg (✨ Source E-Commerce: add new stream `Users`).
+## Pull request title conventions
+
+When creating a pull request, follow the naming conventions depending on the change you're making. In general, the pull request title starts with an emoji, the the connector name, then the changes. For example: ✨ Source E-Commerce: add new stream `Users`.
+
 Airbyte uses this pattern to automatically assign team reviews and build the product release notes.
 
-| Pull Request Type                      | Emoji | Examples                                               |
-| -------------------------------------- | ----- | ------------------------------------------------------ |
-| New Connector (Source or Destination)  | 🎉    | 🎉 New Destination: Database                           |
-| Add a feature to an existing connector | ✨    | ✨ Source E-Commerce: add new stream `Users`           |
-| Fix a bug                              | 🐛    | 🐛 Source E-Commerce: fix start date parameter in spec |
-| Documentation (updates or new entries) | 📝    | 📝 Fix Database connector changelog                    |
-| It's a breaking change                 | 🚨    | 🚨🚨🐛 Source Kafka: fix a complex bug                 |
+| Pull Request Type                      | Emoji | Examples                                                |
+| -------------------------------------- | ----- | ------------------------------------------------------- |
+| New Connector (Source or Destination)  | 🎉   | 🎉 New Destination: Database                           |
+| Add a feature to an existing connector | ✨    | ✨ Source E-Commerce: add new stream `Users`            |
+| Fix a bug                              | 🐛   | 🐛 Source E-Commerce: fix start date parameter in spec |
+| Documentation (updates or new entries) | 📝   | 📝 Fix Database connector changelog                    |
+| It's a breaking change                 | 🚨   | 🚨🚨🐛 Source Kafka: fix a complex bug               |
 
-For more information about [breaking changes](#breaking-changes-to-connectors). A maintainer will help and instruct about possible breaking changes.
+[More information about breaking changes](#breaking-changes-to-connectors). A maintainer can help and instruct you about possible breaking changes.
 
-Any refactors, cleanups, etc.. that are not visible improvements to the user should not have emojis.
+Don't add an emoji to any refactors, cleanups, etc. that aren't visible improvements to connector users.
 
-If your code change is doing more than one change type at once, we strongly recommend to break it into multiple pull requests. It helps us to review and merge your contribution.
+If your code change is doing more than one change type at once, break it into multiple pull requests. This helps maintainers to review and merge your contribution.
 
 ## Descriptions
 
-**Context**: Provide enough information \(or a link to enough information\) in the description so team members with no context can understand what the issue or PR is trying to accomplish. This usually means you should include two things:
+In pull request descriptions, provide enough information (or a link to enough information) that team members with no context can understand what the PR is trying to accomplish. This means you should include three things:
 
-1. Some background information motivating the problem
+1. Some background information motivating you to solve this problem
+
 2. A description of the problem itself
-3. Good places to start reading and file changes that can be skipped
 
-   Some examples:
+3. Good places to start reading and file changes that reviewers can skip
 
-_insufficient context_: `Create an OpenAPI to JSON schema generator`. Unclear what the value or problem being solved here is.
+### Insufficient context example
 
-_good context_:
+This description isn't clear about what problem you're solving or what value there is in this work.
 
-```text
-When creating or updating connectors, we spend a lot of time manually transcribing JSON Schema files based on OpenAPI docs. This is ncessary because OpenAPI and JSON schema are very similar but not perfectly compatible. This process is automatable. Therefore we should create a program which converts from OpenAPI to JSONSchema format.
+```
+Create an OpenAPI to JSON schema generator.
 ```
 
-## Semantic Versioning for Connectors
+### Sufficient context example
 
-Changes to connector behavior should always be accompanied by a version bump and a changelog entry. We use [semantic versioning](https://semver.org/) to version changes to connectors. Since connectors are a bit different from APIs, we have our own take on semantic versioning, focusing on maintaining the best user experience of using a connector.
+This description equips reviewers to understand and make assessments about the decisions you've made in your PR.
 
-- Major: a version in which a change is made which requires manual intervention (update to config or configured catalog) for an existing connection to continue to succeed, or one in which data that was previously being synced will no longer be synced
-  - Note that a category of "user intervention" is a schema change in the destination, as users will be required to update downstream reports and tools. A change that leads to a different final table in the destination is a breaking change
-- Minor: a version that introduces user-facing functionality in a backwards compatible manner
-- Patch: a version that introduces backwards compatible bug fixes or performance improvements
+```text
+When creating or updating connectors, we spend a lot of time manually transcribing JSON Schema files based on OpenAPI docs. This is necessary because OpenAPI and JSON schema are very similar but not perfectly compatible. This process is automatable. Therefore we should create a program which converts from OpenAPI to JSONSchema format.
+```
+
+## Semantic versioning for connectors
+
+Changes to connector behavior require a version bump and a changelog entry. Airbyte uses [semantic versioning](https://semver.org/). Since connectors are a bit different from APIs, Airbyte has its own take on semantic versioning, focusing on maintaining the best user experience of using a connector.
+
+- **Major**: a version that requires manual intervention to update configurations to prevent an existing connection from failing, or one in which data the connector previously synced is no longer synced. This includes a schema change or different namespace in the final destination, because users must update downstream reports and tools.
+
+- **Minor**: a version that introduces new user-facing capabilities in a backwards-compatible manner.
+
+- **Patch**: a version that introduces backwards-compatible bug fixes or performance improvements.
 
 ### Examples
 
-Here are some examples of code changes and their respective version changes:
+Here are some examples of code changes and their respective version changes.
+
+If your situation isn't covered by any of these examples, note this in your pull request description. Your reviewing can help you pick the correct type of version change.
 
 | Change                                                                                        | Impact                                                                                                           | Version Change |
 | --------------------------------------------------------------------------------------------- | ---------------------------------------------------------------------------------------------------------------- | -------------- |
@@ -66,5 +79,3 @@ Here are some examples of code changes and their respective version changes:
 | Updating the format of the connector's `STATE`                                                | Incremental streams will automatically run a full refresh only for the next sync                                 | Patch          |
 | Optimizing a connector's performance                                                          | Syncs will be faster                                                                                             | Patch          |
 | Fixing a bug in a connector                                                                   | Some syncs that would have failed will now succeed                                                               | Patch          |
-
-Trying to contribute, and don't see the change you want to make in this list? Call it out in your PR and your reviewer will help you pick the correct type of version change. Feel free to contribute the results back to this list!

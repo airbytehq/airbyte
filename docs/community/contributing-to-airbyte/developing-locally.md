@@ -6,4 +6,4 @@ For connector contributions:
 
 - In most cases, use the [Connector Builder](/platform/connector-development/connector-builder-ui/overview).
 
-- For complex situations the Connector Builder can't support, see [Developing Connectors Locally](/platform/next/connector-development/local-connector-development).
+- For complex situations the Connector Builder can't support, see [Developing connectors locally](/platform/next/connector-development/local-connector-development).
