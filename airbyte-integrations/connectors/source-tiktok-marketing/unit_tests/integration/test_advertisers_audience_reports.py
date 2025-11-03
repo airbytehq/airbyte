@@ -30,7 +30,7 @@ class TestAdvertiserAudienceReportsLifetime(TestCase):
             config.with_include_deleted()
         return config.build()
 
-    def _mock_response(self, http_mocker: HttpMocker, include_deleted: bool = False):
+    def _mock_response(self, http_mocker: HttpMocker):
         mock_advertisers_slices(http_mocker, self.config())
         query_params = {
             "service_type": "AUCTION",
@@ -56,18 +56,22 @@ class TestAdvertiserAudienceReportsLifetime(TestCase):
     @freeze_time("2024-12-12")
     def test_basic_read(self, http_mocker: HttpMocker):
         self._mock_response(http_mocker)
+        config = self.config()
 
-        output = read(get_source(config=self.config(), state=None), self.config(), self.catalog())
+        output = read(get_source(config=config, state=None), config, self.catalog())
+
         assert len(output.records) == 2
 
     @HttpMocker()
     @freeze_time("2024-12-12")
     def test_basic_read_include_deleted(self, http_mocker: HttpMocker):
-        self._mock_response(http_mocker, True)
+        """
+        Note that the previous behavior was to add a `filtering` parameter but this got removed as it was resulting in data being missed
+        from the reports (see https://github.com/airbytehq/airbyte/pull/65623).
+        """
+        self._mock_response(http_mocker)
+        config = self.config(include_deleted=True)
 
-        output = read(
-            get_source(config=self.config(include_deleted=True), state=None),
-            self.config(include_deleted=True),
-            self.catalog(),
-        )
+        output = read(get_source(config=config, state=None), config, self.catalog())
+
         assert len(output.records) == 2
