@@ -464,7 +464,7 @@ class MySqlSourceJdbcPartitionFactory(
         val lowerBound =
             when (lowerBound.isNullOrEmpty()) {
                 true -> effectiveLowerBound
-                false -> type.jsonDecoder.decode(lowerBound[0])
+                false -> type.jsonDecoder.decode(lowerBound!![0])
             }
         return calculateBoundaries(opaqueStateValues, lowerBound, upperBound)?.map { (l, u) ->
             MySqlSourceJdbcSplittableSnapshotWithCursorPartition(
@@ -489,7 +489,7 @@ class MySqlSourceJdbcPartitionFactory(
         val lowerBound =
             when (lowerBound.isNullOrEmpty()) {
                 true -> effectiveLowerBound
-                false -> type.jsonDecoder.decode(lowerBound[0])
+                false -> type.jsonDecoder.decode(lowerBound!![0])
             }
 
         return calculateBoundaries(opaqueStateValues, lowerBound, upperBound)?.map { (l, u) ->
@@ -512,7 +512,7 @@ class MySqlSourceJdbcPartitionFactory(
         val lowerBound =
             when (lowerBound.isNullOrEmpty()) {
                 true -> effectiveLowerBound
-                false -> type.jsonDecoder.decode(lowerBound[0])
+                false -> type.jsonDecoder.decode(lowerBound!![0])
             }
 
         return calculateBoundaries(opaqueStateValues, lowerBound, upperBound)?.map { (l, u) ->
@@ -535,7 +535,7 @@ class MySqlSourceJdbcPartitionFactory(
         val lowerBound =
             when (lowerBound.isNullOrEmpty()) {
                 true -> effectiveLowerBound
-                false -> type.jsonDecoder.decode(lowerBound[0])
+                false -> type.jsonDecoder.decode(lowerBound!![0])
             }
 
         return calculateBoundaries(opaqueStateValues, lowerBound, upperBound)?.map { (l, u) ->
@@ -569,8 +569,6 @@ class MySqlSourceJdbcPartitionFactory(
                 internalCalculateBoundaries(opaqueStateValues, lowerBound, upperBound)
             lowerBound is OffsetDateTime? && upperBound is OffsetDateTime ->
                 internalCalculateBoundaries(opaqueStateValues, lowerBound, upperBound)
-            /*lowerBound is GuidString? && upperBound is GuidString ->
-            internalCalculateBoundaries(num, lowerBound, upperBound)*/
             else -> null
         }
 
