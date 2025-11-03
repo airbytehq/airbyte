@@ -32,6 +32,14 @@ class StateHistogramStore {
         return expectedCount == flushedCount
     }
 
+    // mirrors isComplete. Purely for debugging purposes.
+    fun whyIsStateIncomplete(key: StateKey): String {
+        val expectedCount = expected.get(key)
+        val partitionFlushCounts = key.partitionKeys.map { flushed.get(it) ?: 0 }
+        val flushedCount = partitionFlushCounts.sum()
+        return "expectedCount $expectedCount does not equal flushedCount $flushedCount (by partition: $partitionFlushCounts)"
+    }
+
     fun remove(key: StateKey): Long? {
         key.partitionKeys.forEach { flushed.remove(it) }
         return expected.remove(key)

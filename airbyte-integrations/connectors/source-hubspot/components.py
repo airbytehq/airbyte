@@ -583,6 +583,10 @@ class HubspotAssociationsExtractor(RecordExtractor):
             elif extracted:
                 raise ValueError(f"field_path should always point towards a list field in the response body")
 
+            # If no records were extracted, no need to call the associations retriever
+            if not records:
+                continue
+
             records_by_pk = {record["id"]: record for record in records}
             record_ids = [{"id": record["id"]} for record in records]
 

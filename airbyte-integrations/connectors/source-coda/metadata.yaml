@@ -6,11 +6,11 @@ data:
     hosts:
       - https://coda.io/
   connectorBuildOptions:
-    baseImage: docker.io/airbyte/source-declarative-manifest:7.3.4@sha256:ebf5c159101614ec9ab3a5183c92781c397b998d15c0b7e2e561ec1e00397fa4
+    baseImage: docker.io/airbyte/source-declarative-manifest:7.4.1@sha256:71df19e2ee555ca5b14abbec01d50104c79c9b84cb9cc323284d24333361900a
   connectorSubtype: api
   connectorType: source
   definitionId: 27f910fd-f832-4b2e-bcfd-6ab342e434d8
-  dockerImageTag: 1.3.37
+  dockerImageTag: 1.3.39
   dockerRepository: airbyte/source-coda
   documentationUrl: https://docs.airbyte.com/integrations/sources/coda
   githubIssueLabel: source-coda

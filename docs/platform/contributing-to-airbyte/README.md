@@ -25,8 +25,7 @@ Airbyte evaluates contributions outside this scope on a case-by-case basis. Reac
 Contributions to Airbyte connectors may take some time to review, as they can affect many users. To assist us during code review, include as much information as possible in your pull request, including examples, use cases, documentation links, and more.
 
 :::warning
-Airbyte is undergoing a major revamp of the shared core Java destinations codebase, with plans to release a new CDK in April 2025.
-We are actively working on improving usability, speed (through asynchronous loading), and implementing [Typing and Deduplication](/platform/using-airbyte/core-concepts/typing-deduping) (Destinations V2). We're not actively reviewing/accepting new Java connectors for now.
+Airbyte is revamping its core Java destinations codebase. We're not reviewing/accepting new Java connectors at this time.
 :::
 
 ### Contributions we don't accept
@@ -49,15 +48,25 @@ We are actively working on improving usability, speed (through asynchronous load
 
 You can check the status of your contribution in this [Github Project](https://github.com/orgs/airbytehq/projects/108/views/4). It will provide you what Sprint your contribution was assigned and when you can expect a review.
 
+### Pull Request permission requirements
+
+When submitting a pull request, please ensure that Airbyte maintainers have write access to your branch. This allows us to apply formatting fixes, security-related patches, and dependency updates directly, which significantly speeds up the review and approval process.
+
+To enable write access on your PR from Airbyte maintainers, please check the "Allow edits from maintainers" box when submitting from your PR. You must also create your PR from a fork in your **personal GitHub account** rather than an organization account, or else you will not see this option. The requirement to create from your personal fork is based on GitHub's additional security restrictions for PRs created from organization forks. For more information about the GitHub security model, please see the [GitHub documentation page regarding PRs from forks](https://docs.github.com/en/pull-requests/collaborating-with-pull-requests/working-with-forks/allowing-changes-to-a-pull-request-branch-created-from-a-fork).
+
+For more details on contribution requirements, please see our [contribution workflow documentation](https://docs.airbyte.com/platform/contributing-to-airbyte#standard-contribution-workflow).
+
 :::warning
-Do not submit a pull request using the master branch from your forked repository.
-The team will not be able to run integration tests and your pull request will be closed.
+Do not submit a pull request using the default branch of your forked repository. This will block Airbyte maintainers from pushing changes to your branch.
 :::
 
-Guidelines to common code contributions:
+## Connector contributions
 
-- [Contribute a code change to an existing connector](change-cdk-connector.md)
-- [Contribute a new connector](submit-new-connector.md)
+Guidelines for connector contributions included in the [Connector Development Guide](../connector-development/README.md):
+
+- [Contribute a New Connector](../connector-development/submit-new-connector.md) - Guide to submitting a new connector to Airbyte.
+- [Developing Connectors Locally](../connector-development/local-connector-development.md) - Guide to setting up your local environment for connector development.
+- [Breaking Changes in Connectors](../connector-development/connector-breaking-changes.md) - Guide to breaking changes and version updates.
 
 ## Documentation contributions
 
