@@ -32,6 +32,10 @@ class PostgresRawOverrideDisableTypingDedupingTest : PostgresTypingDedupingTest(
 
     @Disabled @Test override fun testVarcharLimitOver64K() {}
 
+    // this tests that the fully qualified raw table name is lowercased.
+    // This was only a restriction in older versions of the connector.
+    @Disabled @Test override fun testMixedCasedSchema() {}
+
     // disabling dedup tests since dedup not supported when setting `disable_type_dedupe` to true.
     @Disabled @ParameterizedTest @ValueSource(longs = []) override fun incrementalDedup(inputGenerationId: Long) {}
     @Disabled @ParameterizedTest @ValueSource(longs = []) override fun largeDedupSync(inputGenerationId: Long) {}
