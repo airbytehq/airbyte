@@ -277,7 +277,6 @@ public abstract class AbstractPostgresTypingDedupingTest extends JdbcTypingDedup
                 getStreamNamespace(),
                 Names.toAlphanumericAndUnderscore(getStreamName())));
     String finalTableName = getStreamNamespace() + "." + Names.toAlphanumericAndUnderscore(getStreamName());
-    //I think this is the right thing to do, since this is actually where raw tables are created.
     if (!disableRawTableComparison()) {
       getDatabase().execute("CREATE VIEW " + getRawSchema() + ".v1 AS SELECT * FROM " + rawTableName);
     } // Second sync
