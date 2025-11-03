@@ -1,7 +1,7 @@
 import DocCardList from '@theme/DocCardList';
 
-# Community & Support
+# Community & support
 
-Welcome to the Airbyte community! This section contains resources for getting support, contributing to Airbyte, and understanding our community guidelines.
+Welcome to the Airbyte community. This section contains resources for getting support, contributing to Airbyte, and understanding Airbyte's community guidelines.
 
 <DocCardList />

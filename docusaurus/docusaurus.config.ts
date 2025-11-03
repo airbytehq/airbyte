@@ -462,7 +462,7 @@ const config: Config = {
           position: "left",
           docsPluginId: "community",
           sidebarId: "community",
-          label: "Community & Support",
+          label: "Community & support",
         },
         {
           href: "https://status.airbyte.com",
