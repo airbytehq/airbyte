@@ -492,7 +492,7 @@ abstract class BaseTypingDedupingTest {
     @ParameterizedTest
     @ValueSource(longs = [0L, 42L])
     @Throws(Exception::class)
-    fun incrementalDedup(inputGenerationId: Long) {
+    open fun incrementalDedup(inputGenerationId: Long) {
         val catalog =
             io.airbyte.protocol.models.v0
                 .ConfiguredAirbyteCatalog()
@@ -592,7 +592,7 @@ abstract class BaseTypingDedupingTest {
     @ParameterizedTest
     @ValueSource(longs = [0L, 42L])
     @Throws(Exception::class)
-    fun incrementalDedupDefaultNamespace(inputGenerationId: Long) {
+    open fun incrementalDedupDefaultNamespace(inputGenerationId: Long) {
         val catalog =
             io.airbyte.protocol.models.v0
                 .ConfiguredAirbyteCatalog()
@@ -772,7 +772,7 @@ abstract class BaseTypingDedupingTest {
      */
     @Test
     @Throws(Exception::class)
-    fun incrementalDedupIdenticalName() {
+    open fun incrementalDedupIdenticalName() {
         val namespace1 = streamNamespace + "_1"
         val namespace2 = streamNamespace + "_2"
         val catalog =
@@ -995,7 +995,7 @@ abstract class BaseTypingDedupingTest {
     @ParameterizedTest
     @ValueSource(longs = [0L, 42L])
     @Throws(Exception::class)
-    fun incrementalDedupChangeCursor(inputGenerationId: Long) {
+    open fun incrementalDedupChangeCursor(inputGenerationId: Long) {
         val mangledSchema = SCHEMA.deepCopy<JsonNode>()
         (mangledSchema["properties"] as ObjectNode).remove("updated_at")
         (mangledSchema["properties"] as ObjectNode).set<JsonNode>(
