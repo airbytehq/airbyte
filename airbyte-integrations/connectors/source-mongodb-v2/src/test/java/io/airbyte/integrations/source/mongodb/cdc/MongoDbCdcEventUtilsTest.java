@@ -148,12 +148,16 @@ class MongoDbCdcEventUtilsTest {
     assertEquals("test3", transformed.get("field10").asText());
     assertEquals(OBJECT_ID, transformed.get("field11").asText());
     assertEquals("code", transformed.get("field12").asText());
-    assertEquals("code2", transformed.get("field13").get("code").asText());
-    assertEquals("scope", transformed.get("field13").get("scope").get("scope").asText());
+    assertTrue(transformed.get("field13").isTextual());
+    final JsonNode field13Parsed = Jsons.deserialize(transformed.get("field13").asText());
+    assertEquals("code2", field13Parsed.get("code").asText());
+    assertTrue(field13Parsed.get("scope").isTextual());
     assertEquals("pattern", transformed.get("field14").asText());
     assertTrue(transformed.has("field15"));
     assertEquals(JsonNodeType.NULL, transformed.get("field15").getNodeType());
-    assertEquals("value", transformed.get("field16").get("key").asText());
+    assertTrue(transformed.get("field16").isTextual());
+    final JsonNode field16Parsed = Jsons.deserialize(transformed.get("field16").asText());
+    assertEquals("value", field16Parsed.get("key").asText());
     // Assert that UUIDs can be serialized. Currently, they will be represented as base 64 encoded
     // strings. Since the original mongo source
     // may have these UUIDs written by a variety of sources, each with different encodings - we cannot
@@ -252,6 +256,82 @@ class MongoDbCdcEventUtilsTest {
     assertTrue(abDataNode.has("field15"));
     assertEquals(JsonNodeType.NULL, abDataNode.get("field15").getNodeType());
     assertTrue(abDataNode.has("field16"));
+  }
+
+  @Test
+  void testArraySerializedToJsonString() {
+    final Document document = new Document("_id", "123")
+        .append("arrayField", java.util.List.of(
+            new Document("chID", "1").append("chName", "name1"),
+            new Document("chID", "2").append("chName", "name2")
+        ));
+
+    final JsonNode result = MongoDbCdcEventUtils.toJsonNode(document, Set.of("_id", "arrayField"));
+
+    assertNotNull(result);
+    assertTrue(result.has("arrayField"));
+    assertTrue(result.get("arrayField").isTextual(), "Array should be serialized as a JSON string");
+    
+    final String arrayJsonString = result.get("arrayField").asText();
+    final JsonNode parsedArray = Jsons.deserialize(arrayJsonString);
+    assertTrue(parsedArray.isArray());
+    assertEquals(2, parsedArray.size());
+  }
+
+  @Test
+  void testSingleObjectSerializedToJsonString() {
+    final Document document = new Document("_id", "123")
+        .append("objectField", new Document("chID", "1").append("chName", "name1"));
+
+    final JsonNode result = MongoDbCdcEventUtils.toJsonNode(document, Set.of("_id", "objectField"));
+
+    assertNotNull(result);
+    assertTrue(result.has("objectField"));
+    assertTrue(result.get("objectField").isTextual(), "Object should be serialized as a JSON string");
+    
+    final String objectJsonString = result.get("objectField").asText();
+    final JsonNode parsedObject = Jsons.deserialize(objectJsonString);
+    assertTrue(parsedObject.isObject());
+    assertEquals("1", parsedObject.get("chID").asText());
+    assertEquals("name1", parsedObject.get("chName").asText());
+  }
+
+  @Test
+  void testNestedDocumentsSerializedToJsonString() {
+    final Document document = new Document("_id", "123")
+        .append("nested", new Document("level1", new Document("level2", "value")));
+
+    final JsonNode result = MongoDbCdcEventUtils.toJsonNode(document, Set.of("_id", "nested"));
+
+    assertNotNull(result);
+    assertTrue(result.has("nested"));
+    assertTrue(result.get("nested").isTextual(), "Nested document should be serialized as a JSON string");
+    
+    final String nestedJsonString = result.get("nested").asText();
+    final JsonNode parsedNested = Jsons.deserialize(nestedJsonString);
+    assertTrue(parsedNested.isObject());
+    assertTrue(parsedNested.has("level1"));
+  }
+
+  @Test
+  void testMixedArrayWithObjectsAndPrimitivesSerializedToJsonString() {
+    final Document document = new Document("_id", "123")
+        .append("mixedArray", java.util.List.of(
+            "string value",
+            123,
+            new Document("key", "value")
+        ));
+
+    final JsonNode result = MongoDbCdcEventUtils.toJsonNode(document, Set.of("_id", "mixedArray"));
+
+    assertNotNull(result);
+    assertTrue(result.has("mixedArray"));
+    assertTrue(result.get("mixedArray").isTextual(), "Mixed array should be serialized as a JSON string");
+    
+    final String arrayJsonString = result.get("mixedArray").asText();
+    final JsonNode parsedArray = Jsons.deserialize(arrayJsonString);
+    assertTrue(parsedArray.isArray());
+    assertEquals(3, parsedArray.size());
   }
 
 }

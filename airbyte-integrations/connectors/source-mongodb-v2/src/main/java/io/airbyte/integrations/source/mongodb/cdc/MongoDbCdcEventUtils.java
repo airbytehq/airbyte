@@ -189,12 +189,18 @@ public class MongoDbCdcEventUtils {
       if (shouldIncludeField(fieldName, includedFields, allowAllFields)) {
         if (DOCUMENT.equals(fieldType)) {
           /*
-           * Recursion in used to parse inner documents. Pass the allow all column name so all nested fields
-           * are processed.
+           * Serialize nested documents to JSON strings to avoid schema mismatch issues.
+           * This follows the Fivetran approach where BSON_DOCUMENT → JSON (string).
            */
-          jsonNodes.set(fieldName, readDocument(reader, (ObjectNode) Jsons.jsonNode(Collections.emptyMap()), Set.of(), true));
+          final var nestedDoc = readDocument(reader, (ObjectNode) Jsons.jsonNode(Collections.emptyMap()), Set.of(), true);
+          jsonNodes.put(fieldName, nestedDoc.toString());
         } else if (ARRAY.equals(fieldType)) {
-          jsonNodes.set(fieldName, readArray(reader, includedFields, fieldName));
+          /*
+           * Serialize arrays to JSON strings to avoid schema mismatch issues.
+           * This follows the Fivetran approach where ARRAY → JSON (string).
+           */
+          final var array = readArray(reader, includedFields, fieldName);
+          jsonNodes.put(fieldName, array.toString());
         } else {
           readField(reader, jsonNodes, fieldName, fieldType);
         }
@@ -298,7 +304,8 @@ public class MongoDbCdcEventUtils {
   private static void readJavaScriptWithScope(final ObjectNode o, final BsonReader reader, final String fieldName) {
     final var code = reader.readJavaScriptWithScope();
     final var scope = readDocument(reader, (ObjectNode) Jsons.jsonNode(Collections.emptyMap()), Set.of("scope"), false);
-    o.set(fieldName, Jsons.jsonNode(ImmutableMap.of("code", code, "scope", scope)));
+    final var jsWithScope = Jsons.jsonNode(ImmutableMap.of("code", code, "scope", scope.toString()));
+    o.put(fieldName, jsWithScope.toString());
   }
 
   private static String readRegularExpression(final BsonRegularExpression regularExpression) {

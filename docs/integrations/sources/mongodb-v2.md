@@ -210,6 +210,7 @@ For more information regarding configuration parameters, please see [MongoDb Doc
 
 | Version | Date       | Pull Request                                             | Subject                                                                                                  |
 |:--------|:-----------|:---------------------------------------------------------|:---------------------------------------------------------------------------------------------------------|
+| 2.0.5   | 2025-11-03 | [TBD](https://github.com/airbytehq/airbyte/pull/TBD) | Fix DESTINATION_SERIALIZATION_ERROR by serializing arrays and objects to JSON strings.                              |
 | 2.0.4   | 2025-08-28 | [65579](https://github.com/airbytehq/airbyte/pull/65579) | Add validation to ensure state format consistency.                              |
 | 2.0.3   | 2025-08-12 | [64900](https://github.com/airbytehq/airbyte/pull/64900) | Fix hardcoded read preferences to allow specification in connection string.                              |
 | 2.0.2   | 2025-07-14 | [62938](https://github.com/airbytehq/airbyte/pull/62938) | Only require a single database read permission when configured to sync a single database.                 |
