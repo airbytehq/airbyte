@@ -538,13 +538,14 @@ class MySqlSourceJdbcPartitionFactory(
                 false -> type.jsonDecoder.decode(lowerBound[0])
             }
 
-        return calculateBoundaries(opaqueStateValues, lowerBound, upperBound)?.map { (l, u) ->
+        return calculateBoundaries(opaqueStateValues, lowerBound, upperBound)?.entries?.mapIndexed { index, (l, u) ->
             MySqlSourceJdbcSplittableCdcRfrSnapshotPartition(
                 selectQueryGenerator,
                 streamState,
                 checkpointColumns,
                 listOf(stateValueToJsonNode(checkpointColumns[0], l.toString())),
                 u?.let { listOf(stateValueToJsonNode(checkpointColumns[0], u.toString())) },
+                index == 0
             )
         }
     }
