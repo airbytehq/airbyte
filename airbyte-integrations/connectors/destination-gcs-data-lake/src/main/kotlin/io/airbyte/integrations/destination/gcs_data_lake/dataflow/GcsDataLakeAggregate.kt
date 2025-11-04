@@ -4,6 +4,7 @@
 
 package io.airbyte.integrations.destination.gcs_data_lake.dataflow
 
+import io.airbyte.cdk.load.command.Dedupe
 import io.airbyte.cdk.load.command.DestinationStream
 import io.airbyte.cdk.load.data.ArrayValue
 import io.airbyte.cdk.load.data.IntegerValue
@@ -37,6 +38,13 @@ class GcsDataLakeAggregate(
         val commitLock: Any = Any()
     }
 
+    private val operationType =
+        if (stream.importType is Dedupe) {
+            Operation.UPDATE
+        } else {
+            Operation.INSERT
+        }
+
     override fun accept(record: RecordDTO) {
         // Convert RecordDTO to Iceberg Record
         // Note: ValueCoercer has already nulled out-of-range integers in Parse stage
@@ -55,7 +63,7 @@ class GcsDataLakeAggregate(
             }
         }
 
-        val wrappedRecord = RecordWrapper(delegate = icebergRecord, operation = Operation.INSERT)
+        val wrappedRecord = RecordWrapper(delegate = icebergRecord, operation = operationType)
         writer.write(wrappedRecord)
     }
 
