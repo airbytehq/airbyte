@@ -10,7 +10,7 @@ The DataGen connector produces different schemas depending on the selected data 
 
 #### Incremental type
 
-Generates a simple stream with monotonically increasing integers, useful for testing incremental sync behavior:
+Generates a simple stream with monotonically increasing integers. Despite the name, this type is not related to incremental sync support—it refers to the incrementing pattern of the data itself:
 
 ```sql
 CREATE TABLE "incremental" (
@@ -20,7 +20,7 @@ CREATE TABLE "incremental" (
 
 #### All Types type
 
-Generates a stream containing one column for each Airbyte data type, useful for testing destination type handling:
+Generates a stream containing one column for each Airbyte data type, useful for testing destination type handling. This type is faster than the Incremental type and recommended for performance and speed testing:
 
 ```sql
 CREATE TABLE "all types" (
@@ -45,7 +45,6 @@ CREATE TABLE "all types" (
 | Feature           | Supported | Notes |
 |:------------------|:----------|:------|
 | Full Refresh Sync | Yes       |       |
-| Incremental Sync  | Yes       | Maintains state between syncs |
 
 ### Requirements
 
