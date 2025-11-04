@@ -46,7 +46,7 @@ class BigLakeWriteTest :
         recordMangler = IcebergExpectedRecordMapper,
         isStreamSchemaRetroactive = true,
         isStreamSchemaRetroactiveForUnknownTypeToString = false,
-        dedupBehavior = DedupBehavior(),
+        dedupBehavior = DedupBehavior(DedupBehavior.CdcDeletionMode.SOFT_DELETE),
         stringifySchemalessObjects = true,
         schematizedObjectBehavior = SchematizedNestedValueBehavior.STRINGIFY,
         schematizedArrayBehavior = SchematizedNestedValueBehavior.PASS_THROUGH,
@@ -59,6 +59,11 @@ class BigLakeWriteTest :
         nullEqualsUnset = true,
         configUpdater = IcebergConfigUpdater,
     ) {
+
+    @Test
+    override fun testDedupChangePk() {
+        super.testDedupChangePk()
+    }
 
     @Test
     override fun testUnions() {
