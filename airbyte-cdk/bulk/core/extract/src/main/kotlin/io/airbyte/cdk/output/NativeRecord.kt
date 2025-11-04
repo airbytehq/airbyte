@@ -14,7 +14,7 @@ import io.airbyte.cdk.data.JsonEncoder
 import io.airbyte.cdk.data.NullCodec
 import io.airbyte.cdk.data.OffsetDateTimeCodec
 import io.airbyte.cdk.data.UrlCodec
-import io.airbyte.cdk.discover.FieldOrMetaField
+import io.airbyte.cdk.discover.DataOrMetaField
 import io.airbyte.cdk.protocol.AirbyteValueProtobufEncoder
 import io.airbyte.cdk.util.Jsons
 import io.airbyte.protocol.protobuf.AirbyteRecordMessage
@@ -22,6 +22,8 @@ import io.airbyte.protocol.protobuf.AirbyteRecordMessage.AirbyteRecordMessagePro
 import java.math.BigDecimal
 import java.net.URL
 import java.time.OffsetDateTime
+import java.time.OffsetTime
+import java.util.Base64
 
 // A value of a field along with its encoder
 class FieldValueEncoder<R>(val fieldValue: R?, val jsonEncoder: JsonEncoder<in R>) {
@@ -43,11 +45,51 @@ fun NativeRecordPayload.toJson(parentNode: ObjectNode = Jsons.objectNode()): Obj
     return parentNode
 }
 
+/*interface ConnectorJsonEncoder {
+    fun toProtobufEncoder(): ProtoEncoder<*>
+}
+
+fun <T> JsonEncoder<T>.toProtobufEncoder(): ProtoEncoder<*> {
+    return when (this) {
+        is ConnectorJsonEncoder -> toProtobufEncoder()
+        is LongCodec, -> longProtoEncoder
+        is IntCodec, -> intProtoEncoder
+        is TextCodec, -> textProtoEncoder
+        is BooleanCodec, -> booleanProtoEncoder
+        is OffsetDateTimeCodec, -> offsetDateTimeProtoEncoder
+        is FloatCodec, -> floatProtoEncoder
+        is NullCodec, -> nullProtoEncoder
+        is BinaryCodec, -> binaryProtoEncoder
+        is BigDecimalCodec, -> bigDecimalProtoEncoder
+        is BigDecimalIntegerCodec, -> bigDecimalProtoEncoder
+        is ShortCodec, -> shortProtoEncoder
+        is ByteCodec, -> byteProtoEncoder
+        is DoubleCodec, -> doubleProtoEncoder
+        is JsonBytesCodec, -> binaryProtoEncoder
+        is JsonStringCodec, -> textProtoEncoder
+        is UrlCodec, -> urlProtoEncoder
+        is LocalDateCodec, -> localDateProtoEncoder
+        is LocalTimeCodec, -> localTimeProtoEncoder
+        is LocalDateTimeCodec, -> localDateTimeProtoEncoder
+        is OffsetTimeCodec, -> offsetTimeProtoEncoder
+        is ArrayEncoder<*>, -> arrayProtoEncoder
+        else -> anyProtoEncoder
+    }
+}
+
+fun interface ProtoEncoder<T> {
+    fun encode(
+        builder: AirbyteRecordMessage.AirbyteValueProtobuf.Builder,
+        decoded: T
+    ): AirbyteRecordMessage.AirbyteValueProtobuf.Builder
+}*/
+
 /**
  * Transforms a field value into a protobuf-compatible representation. Handles special conversions
  * for types that need preprocessing before protobuf encoding, such as ByteBuffer -> Base64 String,
  * BigDecimal -> BigInteger, URL -> String, etc.
  */
+
 fun <R> valueForProtobufEncoding(fve: FieldValueEncoder<R>): Any? {
     return fve.fieldValue?.let { value ->
         when (fve.jsonEncoder) {
@@ -63,7 +105,7 @@ fun <R> valueForProtobufEncoding(fve: FieldValueEncoder<R>): Any? {
 }
 
 fun NativeRecordPayload.toProtobuf(
-    schema: Set<FieldOrMetaField>,
+    schema: Set<DataOrMetaField>,
     recordMessageBuilder: AirbyteRecordMessageProtobuf.Builder,
     valueBuilder: AirbyteRecordMessage.AirbyteValueProtobuf.Builder
 ): AirbyteRecordMessageProtobuf.Builder {
