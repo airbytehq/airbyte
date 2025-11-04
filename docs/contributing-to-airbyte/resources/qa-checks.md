@@ -421,18 +421,6 @@ _Applies to connector with any Airbyte usage level_
 Connectors must use our Python connector base image (`docker.io/airbyte/python-connector-base`), declared through the `connectorBuildOptions.baseImage` in their `metadata.yaml`.
 This is to ensure that all connectors use a base image which is maintained and has security updates.
 
-## 🧪 Testing
-
-### Medium to High Use Connectors must enable acceptance tests
-
-_Applies to the following connector types: source_
-_Applies to the following connector languages: java, low-code, python, manifest-only_
-_Applies to connector with any support level_
-_Applies to connector with any internal support level_
-_Applies to connector with medium, high Airbyte usage level_
-
-Medium to High Use Connectors must enable acceptance tests via the `connectorTestSuitesOptions.suite:acceptanceTests` in their respective metadata.yaml file to ensure that the connector is working as expected.
-
 ## 🔢 Version
 
 ### Connector Version Increment Check
