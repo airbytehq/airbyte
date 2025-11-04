@@ -1,6 +1,6 @@
 # ClickHouse
 
-A fresh implementation of ClickHouse leveraging our new CDK. 
+A fresh implementation of ClickHouse leveraging our new CDK.
 
 ## Improvements over v1
 * All sync modes supported
@@ -104,7 +104,10 @@ You can also use a pre-existing user but we highly recommend creating a dedicate
 
 | Version    | Date       | Pull Request                                               | Subject                                                                        |
 |:-----------|:-----------|:-----------------------------------------------------------|:-------------------------------------------------------------------------------|
-| 2.1.7      | 2025-10-21 | [67153](https://github.com/airbytehq/airbyte/pull/67153)   | Implement new proto schema implementation |
+| 2.1.10     | 2025-11-03 | [69154](https://github.com/airbytehq/airbyte/pull/69154)   | Fix decimal validation                                                         |
+| 2.1.9      | 2025-10-30 | [69100](https://github.com/airbytehq/airbyte/pull/69100)   | Upgrade to CDK 0.1.61 to fix state index bug                                   |
+| 2.1.8      | 2025-10-28 | [68186](https://github.com/airbytehq/airbyte/pull/68186)   | Upgrade to CDK 0.1.59                                                          |
+| 2.1.7      | 2025-10-21 | [67153](https://github.com/airbytehq/airbyte/pull/67153)   | Implement new proto schema implementation                                      |
 | 2.1.6      | 2025-10-16 | [68144](https://github.com/airbytehq/airbyte/pull/68144)   | Implement TableOperationsSuite component tests.                                |
 | 2.1.5      | 2025-10-09 | [67598](https://github.com/airbytehq/airbyte/pull/67598)   | Improve handling of heavily interleaved streams.                               |
 | 2.1.4      | 2025-09-29 | [66743](https://github.com/airbytehq/airbyte/pull/66743)   | Activate speed mode.                                                           |

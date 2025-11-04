@@ -62,19 +62,16 @@ class JdbcMetadataQuerier(
         return null
     }
 
+    val tableFilters = config.tableFilters
+
     val memoizedTableNames: List<TableName> by lazy {
         log.info { "Querying table names for catalog discovery." }
         try {
             val allTables = mutableSetOf<TableName>()
             val dbmd: DatabaseMetaData = conn.metaData
-            for (namespace in config.namespaces + config.namespaces.map { it.uppercase() }) {
-                val (catalog: String?, schema: String?) =
-                    when (constants.namespaceKind) {
-                        NamespaceKind.CATALOG -> namespace to null
-                        NamespaceKind.SCHEMA -> null to namespace
-                        NamespaceKind.CATALOG_AND_SCHEMA -> namespace to namespace
-                    }
-                dbmd.getTables(catalog, schema, null, null).use { rs: ResultSet ->
+
+            fun addTablesFromQuery(catalog: String?, schema: String?, pattern: String?) {
+                dbmd.getTables(catalog, schema, pattern, null).use { rs: ResultSet ->
                     while (rs.next()) {
                         allTables.add(
                             TableName(
@@ -82,8 +79,34 @@ class JdbcMetadataQuerier(
                                 schema = rs.getString("TABLE_SCHEM"),
                                 name = rs.getString("TABLE_NAME"),
                                 type = rs.getString("TABLE_TYPE") ?: "",
-                            ),
+                            )
                         )
+                    }
+                }
+            }
+
+            for (namespace in config.namespaces + config.namespaces.map { it.uppercase() }) {
+                val (catalog: String?, schema: String?) =
+                    when (constants.namespaceKind) {
+                        NamespaceKind.CATALOG -> namespace to null
+                        NamespaceKind.SCHEMA -> null to namespace
+                        NamespaceKind.CATALOG_AND_SCHEMA -> namespace to namespace
+                    }
+
+                if (tableFilters.isEmpty()) {
+                    addTablesFromQuery(catalog, schema, null)
+                } else {
+                    val filtersForSchema =
+                        tableFilters.filter { it.schemaName.equals(schema, ignoreCase = true) }
+
+                    if (filtersForSchema.isEmpty()) {
+                        addTablesFromQuery(catalog, schema, null)
+                    } else {
+                        for (filter in filtersForSchema) {
+                            for (pattern in filter.patterns) {
+                                addTablesFromQuery(catalog, filter.schemaName, pattern)
+                            }
+                        }
                     }
                 }
             }
@@ -106,10 +129,9 @@ class JdbcMetadataQuerier(
             val dbmd: DatabaseMetaData = conn.metaData
             memoizedTableNames
                 .filter { it.namespace() != null }
-                .map { it.catalog to it.schema }
-                .distinct()
-                .forEach { (catalog: String?, schema: String?) ->
-                    dbmd.getPseudoColumns(catalog, schema, null, null).use { rs: ResultSet ->
+                .forEach { table ->
+                    dbmd.getPseudoColumns(table.catalog, table.schema, table.name, null).use {
+                        rs: ResultSet ->
                         while (rs.next()) {
                             val (tableName: TableName, metadata: ColumnMetadata) =
                                 columnMetadataFromResultSet(rs, isPseudoColumn = true)
@@ -117,7 +139,8 @@ class JdbcMetadataQuerier(
                             results.add(joinedTableName to metadata)
                         }
                     }
-                    dbmd.getColumns(catalog, schema, null, null).use { rs: ResultSet ->
+                    dbmd.getColumns(table.catalog, table.schema, table.name, null).use {
+                        rs: ResultSet ->
                         while (rs.next()) {
                             val (tableName: TableName, metadata: ColumnMetadata) =
                                 columnMetadataFromResultSet(rs, isPseudoColumn = false)

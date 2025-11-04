@@ -26,6 +26,7 @@ API Reference: https://studio.nebius.com/docs/api-reference
 
 | Version          | Date              | Pull Request | Subject        |
 |------------------|-------------------|--------------|----------------|
+| 0.0.23 | 2025-10-29 | [68727](https://github.com/airbytehq/airbyte/pull/68727) | Update dependencies |
 | 0.0.22 | 2025-10-21 | [68385](https://github.com/airbytehq/airbyte/pull/68385) | Update dependencies |
 | 0.0.21 | 2025-10-14 | [67729](https://github.com/airbytehq/airbyte/pull/67729) | Update dependencies |
 | 0.0.20 | 2025-10-07 | [66928](https://github.com/airbytehq/airbyte/pull/66928) | Update dependencies |
