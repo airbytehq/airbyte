@@ -17,15 +17,14 @@ class TestDestinationOpenGaussDataVec(unittest.TestCase):
     def setUp(self):
         self.config = {
             "processing": {"text_fields": ["str_col"], "metadata_fields": [], "chunk_size": 1000},
-            "embedding": {"mode": "fake"},
+            "embedding": {"mode": "openai", "openai_key": "mykey"},
             "indexing": {
-                "host": "localhost",
-                "database": "postgres",
-                "username": "hly",
-                "password": "Hly12345",
-                "port": 8888,
-                "schema": "public",
-                "default_schema": "public",
+                "host": "MYACCOUNT",
+                "database": "MYDATABASE",
+                "username": "MYUSERNAME",
+                "password": "MYPASSWORD",
+                "port": 5432,
+                "default_schema": "MYSCHEMA",
             },
         }
         self.config_model = ConfigModel.parse_obj(self.config)

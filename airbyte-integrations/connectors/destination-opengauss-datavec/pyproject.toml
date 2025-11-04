@@ -7,7 +7,7 @@ name = "airbyte-destination-opengauss-datavec"
 version = "0.1.0"
 description = "Airbyte destination implementation for OpenGauss with vector support"
 authors = ["hly <liyanhu03@163.com>"]
-license = "MIT"
+license = "ELv2"
 readme = "README.md"
 
 [[tool.poetry.packages]]

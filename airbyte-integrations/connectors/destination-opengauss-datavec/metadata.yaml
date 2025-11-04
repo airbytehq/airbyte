@@ -12,21 +12,20 @@ data:
   connectorSubtype: vectorstore
   connectorType: destination
   definitionId: 3ea1b85a-564c-46f9-9eae-632b845fcebe
-  dockerImageTag: dev
+  dockerImageTag: 0.1.0
   dockerRepository: airbyte/destination-opengauss-datavec
   documentationUrl: https://docs.airbyte.com/integrations/destinations/opengauss-datavec
   githubIssueLabel: destination-opengauss-datavec
   icon: icon.svg
-  license: MIT
+  license: ELv2
   name: openGauss Datavec
-  # 必须有，否则不能通过qa_checks
-  remoteRegistries:
-    pypi:
-      enabled: true
-      packageName: airbyte-destination-opengauss-datavec
+  # remoteRegistries:
+  #   pypi:
+  #     enabled: true
+  #     packageName: airbyte-destination-opengauss-datavec
   registryOverrides:
     cloud:
-      enabled: false
+      enabled: true
     oss:
       enabled: true
   releaseDate: 2025-08-30
@@ -45,17 +44,5 @@ data:
   # used for Airbyte's official CI/CD processes during pr and airbyte-ci.
     - suite: unitTests
     - suite: integrationTests
-      testSecrets:
-        - name: SECRET_DESTINATION-OPENGAUSS-DATAVEC_CREDS
-          fileName: config.json
-          secretStore:
-            type: GSM
-            alias: airbyte-connector-testing-secret-store
     - suite: acceptanceTests
-      testSecrets:
-        - name: SECRET_DESTINATION-OPENGAUSS-DATAVEC_CREDS
-          fileName: config.json
-          secretStore:
-            type: GSM
-            alias: airbyte-connector-testing-secret-store
 metadataSpecVersion: "1.0"

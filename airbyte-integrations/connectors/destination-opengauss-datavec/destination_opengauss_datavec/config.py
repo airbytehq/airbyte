@@ -18,7 +18,7 @@ class OpenGaussDatavecIndexingModel(BaseModel):
         title="Database",
         order=2,
         description="Enter the name of the database that you want to sync data into",
-        examples=["AIRBYTE_DATABASE"],
+        examples=["AIRBYTE_DATABASE", "postgres"],
     )
     username: str = Field(
         ...,
@@ -32,6 +32,7 @@ class OpenGaussDatavecIndexingModel(BaseModel):
         title="Password",
         order=4,
         description="Enter the password of the user you want to use to access the database",
+        airbyte_secret=True,
     )
 
     port: int = Field(
