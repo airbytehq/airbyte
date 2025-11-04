@@ -22,14 +22,25 @@ import kotlin.use
 private val log = KotlinLogging.logger {}
 
 /**
- * Delegates to [JdbcMetadataQuerier] except for [fields].
+ * Delegates to [JdbcMetadataQuerier] except for table and column discovery methods.
  *
- * We cache the results of these UDT-related queries as they are not column-specific.
+ * Overrides [streamNamespaces], [streamNames], [fields], and [primaryKey] to use filtered table
+ * discovery, preventing the base class from querying all tables in the schema. This is critical for
+ * performance when table filters are configured.
  */
 class SapHanaSourceMetadataQuerier(
     val base: JdbcMetadataQuerier,
     config: SapHanaSourceConfiguration
 ) : MetadataQuerier by base {
+
+    override fun streamNamespaces(): List<String> =
+        memoizedTableNames.mapNotNull { it.namespace() }.distinct()
+
+    override fun streamNames(streamNamespace: String?): List<StreamIdentifier> =
+        memoizedTableNames
+            .filter { it.namespace() == streamNamespace }
+            .map { StreamDescriptor().withName(it.name).withNamespace(it.namespace()) }
+            .map(StreamIdentifier::from)
 
     override fun fields(streamID: StreamIdentifier): List<Field> {
         val table: TableName = findTableName(streamID) ?: return listOf()
@@ -55,10 +66,9 @@ class SapHanaSourceMetadataQuerier(
             val dbmd: DatabaseMetaData = base.conn.metaData
             memoizedTableNames
                 .filter { it.namespace() != null }
-                .map { it.catalog to it.schema }
-                .distinct()
-                .forEach { (catalog: String?, schema: String?) ->
-                    dbmd.getPseudoColumns(catalog, schema, null, null).use { rs: ResultSet ->
+                .forEach { table ->
+                    dbmd.getPseudoColumns(table.catalog, table.schema, table.name, null).use {
+                        rs: ResultSet ->
                         while (rs.next()) {
                             val (tableName: TableName, metadata: ColumnMetadata) =
                                 columnMetadataFromResultSet(rs, isPseudoColumn = true)
@@ -66,7 +76,8 @@ class SapHanaSourceMetadataQuerier(
                             results.add(joinedTableName to metadata)
                         }
                     }
-                    dbmd.getColumns(catalog, schema, null, null).use { rs: ResultSet ->
+                    dbmd.getColumns(table.catalog, table.schema, table.name, null).use {
+                        rs: ResultSet ->
                         while (rs.next()) {
                             val (tableName: TableName, metadata: ColumnMetadata) =
                                 columnMetadataFromResultSet(rs, isPseudoColumn = false)
@@ -176,13 +187,11 @@ class SapHanaSourceMetadataQuerier(
     fun findTableName(
         streamID: StreamIdentifier,
     ): TableName? =
-        memoizedTableNames.find {
-            it.name == streamID.name && (it.schema ?: it.catalog) == streamID.namespace
-        }
+        memoizedTableNames.find { it.name == streamID.name && it.namespace() == streamID.namespace }
 
     val memoizedPrimaryKeys: Map<TableName, List<List<String>>> by lazy {
         val results = mutableListOf<AllPrimaryKeysRow>()
-        val schemas: List<String> = base.streamNamespaces()
+        val schemas: List<String> = streamNamespaces()
         val sql: String = PK_QUERY_FMTSTR.format(schemas.joinToString { "\'$it\'" })
         log.info { "Querying SAP HANA system tables for all primary keys for catalog discovery." }
         try {
@@ -206,7 +215,7 @@ class SapHanaSourceMetadataQuerier(
                 .groupBy {
                     val desc =
                         StreamDescriptor().withName(it.tableName).withNamespace(it.schemaName)
-                    base.findTableName(StreamIdentifier.from(desc))
+                    findTableName(StreamIdentifier.from(desc))
                 }
                 .mapNotNull { (table, rowsByTable) ->
                     if (table == null) return@mapNotNull null
@@ -235,7 +244,7 @@ class SapHanaSourceMetadataQuerier(
     override fun primaryKey(
         streamID: StreamIdentifier,
     ): List<List<String>> {
-        val table: TableName = base.findTableName(streamID) ?: return listOf()
+        val table: TableName = findTableName(streamID) ?: return listOf()
         return memoizedPrimaryKeys[table] ?: listOf()
     }
 
