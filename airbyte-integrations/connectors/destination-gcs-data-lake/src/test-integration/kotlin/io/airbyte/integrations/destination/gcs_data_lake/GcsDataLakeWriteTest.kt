@@ -19,6 +19,7 @@ import io.airbyte.integrations.destination.gcs_data_lake.spec.GcsDataLakeSpecifi
 import java.nio.file.Files
 import kotlin.test.assertContains
 import org.junit.jupiter.api.Assumptions.assumeTrue
+import org.junit.jupiter.api.Disabled
 import org.junit.jupiter.api.Test
 
 /**
@@ -75,6 +76,7 @@ class BigLakeWriteTest :
         super.testFunkyCharacters()
     }
 
+//    @Disabled
     @Test
     override fun testDedup() {
         super.testDedup()

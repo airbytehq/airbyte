@@ -5,6 +5,7 @@
 package io.airbyte.integrations.destination.gcs_data_lake.write
 
 import edu.umd.cs.findbugs.annotations.SuppressFBWarnings
+import io.airbyte.cdk.load.command.Dedupe
 import io.airbyte.cdk.load.command.DestinationStream
 import io.airbyte.cdk.load.dataflow.transform.ColumnNameMapper
 import io.airbyte.cdk.load.message.Meta
@@ -84,8 +85,52 @@ class GcsDataLakeStreamLoader(
                 }
             }
 
-        // Preserve the identifier field IDs from the original schema
-        return Schema(mappedFields, schema.identifierFieldIds())
+        // Don't set identifier fields during table creation - BigLake corrupts them.
+        // We'll reconcile them after the table is created.
+        return Schema(mappedFields, emptySet())
+    }
+
+    /**
+     * Reconcile identifier field IDs after BigLake creates the table.
+     * BigLake reassigns field IDs, so we need to find which IDs it assigned to our primary key columns.
+     */
+    private fun reconcileIdentifierFields(table: Table): Schema {
+        val actualSchema = table.schema()
+
+        // Get the primary key column names (mapped names, as they appear in the table)
+        val primaryKeyNames = when (val importType = stream.importType) {
+            is Dedupe -> {
+                importType.primaryKey.flatten().map { originalName ->
+                    if (Meta.COLUMN_NAMES.contains(originalName)) {
+                        originalName
+                    } else {
+                        columnNameMapper.getMappedColumnName(stream, originalName)
+                    }
+                }.toSet()
+            }
+            else -> emptySet()
+        }
+
+        if (primaryKeyNames.isEmpty()) {
+            // No deduplication, return schema as-is
+            return actualSchema
+        }
+
+        // Find the field IDs that BigLake assigned to these columns
+        val actualIdentifierIds = mutableSetOf<Int>()
+        actualSchema.asStruct().fields().forEach { field ->
+            if (primaryKeyNames.contains(field.name())) {
+                actualIdentifierIds.add(field.fieldId())
+            }
+        }
+
+        logger.info {
+            "Reconciling identifier fields: primary keys=$primaryKeyNames, " +
+                "BigLake-assigned IDs=$actualIdentifierIds"
+        }
+
+        // Return schema with reconciled identifier IDs
+        return Schema(actualSchema.asStruct().fields(), actualIdentifierIds)
     }
 
     @SuppressFBWarnings(
@@ -107,6 +152,32 @@ class GcsDataLakeStreamLoader(
                 schema = incomingSchema
             )
 
+        // Reconcile identifier fields after BigLake creates the table
+        // BigLake reassigns field IDs, so we need to update the schema with the correct field names
+        val primaryKeyNames = when (val importType = stream.importType) {
+            is Dedupe -> {
+                importType.primaryKey.flatten().map { originalName ->
+                    if (Meta.COLUMN_NAMES.contains(originalName)) {
+                        originalName
+                    } else {
+                        columnNameMapper.getMappedColumnName(stream, originalName)
+                    }
+                }
+            }
+            else -> emptyList()
+        }
+
+        if (primaryKeyNames.isNotEmpty()) {
+            logger.info {
+                "Setting identifier fields to primary keys: $primaryKeyNames"
+            }
+            table.updateSchema()
+                .setIdentifierFields(primaryKeyNames)
+                .commit()
+            // Refresh to get the updated schema with identifier fields
+            table.refresh()
+        }
+
         // Note that if we have columnTypeChangeBehavior OVERWRITE, we don't commit the schema
         // change immediately. This is intentional.
         // If we commit the schema change right now, then affected columns might become unqueryable.
@@ -118,6 +189,15 @@ class GcsDataLakeStreamLoader(
         // incrementally, and if the entire sync is in a transaction, we might crash before we can
         // commit that transaction.
         targetSchema = computeOrExecuteSchemaUpdate().schema
+
+        // After schema updates, refresh the table to ensure we have the latest schema with identifier fields
+        table.refresh()
+        targetSchema = table.schema()
+
+        logger.info {
+            "Final target schema has ${targetSchema.identifierFieldIds().size} identifier fields: ${targetSchema.identifierFieldIds()}"
+        }
+
         try {
             logger.info {
                 "maybe creating branch $stagingBranchName for stream ${stream.mappedDescriptor}"
