@@ -39,7 +39,7 @@ Your backend should implement the token fetching implementation for your widget.
 **1. Request an app token:** an app token is a JSON Web Token (JWT) associated with you, the organization administrator, that you use to request a widget token, the token for your end user.
 
 ```bash title="Request an application token"
-curl -X POST https://api.airbyte.ai/account/applications/token \
+curl -X POST https://api.airbyte.ai/api/v1/account/applications/token \
   -H "Content-Type: application/json" \
   -d '{
     "client_id": "your_client_id",
@@ -50,7 +50,7 @@ curl -X POST https://api.airbyte.ai/account/applications/token \
 **2. Add a way to request a widget token:** a widget token is a string that contains an encoded version of both a JWT and the URL the widget uses to open. To request a widget token, make a request like the following:
 
 ```bash title="Request a widget token"
-curl -X POST https://api.airbyte.ai/embedded/widget_token \
+curl -X POST https://api.airbyte.ai/api/v1/embedded/widget-token \
   -H "Content-Type: application/json" \
   -H "Authorization: Bearer YOUR_APPLICATION_TOKEN" \
   -d '{
@@ -88,14 +88,14 @@ import { AirbyteEmbeddedWidget } from "@airbyte-embedded/airbyte-embedded-widget
 export const EmbeddedSection: React.FC = () => {
   const handleConnectData = async () => {
     try {
-    // Fetch the widget token via your backend implementation
+      // Fetch the widget token via your backend implementation
       const { data } = await apiClient.getAirbyteWidgetToken({
         workspace_name: "unique_user_identifier",
         allowed_origin: "your_url",
         selected_source_template_tags: ["pro"],
         selected_source_template_tags_mode: "all",
         selected_connection_template_tags: ["pro"],
-        selected_connection_template_tags_mode: "all"
+        selected_connection_template_tags_mode: "all",
       });
 
       const widget = new AirbyteEmbeddedWidget({

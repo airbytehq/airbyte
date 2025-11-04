@@ -3,7 +3,7 @@
 ## Documentation
 
 This is the repository for the DataGen source connector.
-For information about how to use this connector within Airbyte, see [User Documentation](https://docs.airbyte.io/integrations/sources/datagen)
+For information about how to use this connector within Airbyte, see [User Documentation](https://docs.airbyte.com/integrations/sources/datagen)
 
 ## Local development
 

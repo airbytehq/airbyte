@@ -1,74 +1,43 @@
 # End-to-End Testing (DataGen)
 
-## Overview
+The DataGen source connector generates synthetic data for testing and development purposes. This connector is designed for end-to-end testing of data destinations and for testing Airbyte configurations in speed mode without requiring access to an external data source.
 
-The DataGen source connector generates synthetic data for testing and benchmarking Airbyte destinations. Use this connector to validate destination behavior, test data pipeline performance, and develop without connecting to production data sources.
+## Prerequisites
 
-### Output schema
-
-The DataGen connector produces different schemas depending on the selected data generation type.
-
-#### Incremental type
-
-Generates a simple stream with monotonically increasing integers. Despite the name, this type is not related to incremental sync support—it refers to the incrementing pattern of the data itself:
-
-```sql
-CREATE TABLE "incremental" (
-    "id" int8
-);
-```
-
-#### All Types type
-
-Generates a stream containing one column for each Airbyte data type, useful for testing destination type handling. This type is faster than the Incremental type and recommended for performance and speed testing:
-
-```sql
-CREATE TABLE "all types" (
-    "id" int8,
-    "string" text,
-    "boolean" boolean,
-    "number" float8,
-    "big integer" numeric,
-    "big decimal" numeric,
-    "date" date,
-    "time with time zone" time with time zone,
-    "time without time zone" time,
-    "timestamp with time zone" timestamptz,
-    "timestamp without time zone" timestamp,
-    "json" jsonb,
-    "array" int8[]
-);
-```
-
-### Features
-
-| Feature           | Supported | Notes |
-|:------------------|:----------|:------|
-| Full Refresh Sync | Yes       |       |
-
-### Requirements
-
-None. This connector generates data locally without external dependencies.
+No prerequisites are required to use this connector. DataGen generates data locally and does not connect to any external systems.
 
 ## Setup guide
 
-1. In the navigation bar, click **Sources**.
-2. Select **End-to-End Testing (DataGen)** from the source list.
-3. Enter a **Source name**.
-4. Choose a **Data Generation Type**:
-   - **Incremental**: Generates simple sequential integers
-   - **All Types**: Generates one column per Airbyte data type
-5. Set **Max Records** (default: 100, range: 1 to 100 billion).
-6. Optionally configure **Max Concurrency** to control data generation performance.
-7. Click **Set up source**.
+1. Log in to your Airbyte Cloud or Airbyte Open Source account.
+2. Click **Sources** and then click **+ New source**.
+3. On the Set up the source page, select **DataGen** from the Source type dropdown.
+4. Enter a name for your DataGen source.
+5. Configure the data generation settings:
+   - **Data Generation Type**: Choose either **Incremental** or **All Types**.
+   - **Max Record**: Specify the total number of records to generate (minimum 1, maximum 100 billion). Default is 100.
+   - **Max Concurrency** (optional): Set the maximum number of concurrent data generators. Leave empty to let Airbyte optimize performance automatically.
+6. Click **Set up source**.
 
-### Configuration options
+## Supported sync modes
 
-| Option | Description | Default | Required |
-|:-------|:------------|:--------|:---------|
-| Data Generation Type | Pattern for data generation: `Incremental` or `All Types` | Incremental | Yes |
-| Max Records | Number of records to generate | 100 | Yes |
-| Max Concurrency | Maximum number of concurrent data generators (leave empty to let Airbyte optimize) | Auto | No |
+The DataGen source connector supports the following sync mode:
+
+| Feature           | Supported? |
+|:------------------|:-----------|
+| Full Refresh Sync | Yes        |
+| Incremental Sync  | No         |
+
+## Supported data generation types
+
+The connector supports two data generation patterns:
+
+### Incremental
+
+Generates a stream named `increment` with a single column named `id` that contains monotonically increasing integers. Despite the name, this mode is not specifically designed for testing incremental syncs—the name refers to the incrementing pattern of the data itself.
+
+### All types
+
+Generates a stream named `all types` with columns for various Airbyte data types, including id, string, boolean, number, big integer, big decimal, date, time (with and without time zones), timestamp (with and without time zones), and JSON. This mode is useful for testing type handling and schema compatibility across different destinations. This mode is also faster than the Incremental mode, making it better suited for performance and speed testing.
 
 ## Changelog
 
@@ -77,6 +46,11 @@ None. This connector generates data locally without external dependencies.
 
 | Version | Date       | Pull Request                                             | Subject                            |
 |:--------|:-----------|:---------------------------------------------------------|:-----------------------------------|
+| 0.1.6   | 2025-10-23 | [68611](https://github.com/airbytehq/airbyte/pull/68611) | Update cdk version                 |
+| 0.1.5   | 2025-10-21 | [68581](https://github.com/airbytehq/airbyte/pull/68581) | Update dataChannel version         |
+| 0.1.4   | 2025-10-15 | [68131](https://github.com/airbytehq/airbyte/pull/68131) | Increment naming fix               |
+| 0.1.3   | 2025-10-15 | [68129](https://github.com/airbytehq/airbyte/pull/68129) | Increment encoding fix             |
+| 0.1.2   | 2025-10-13 | [67720](https://github.com/airbytehq/airbyte/pull/67720) | Removal of Array type              |
 | 0.1.1   | 2025-10-08 | [67110](https://github.com/airbytehq/airbyte/pull/67110) | Addition of proto types            |
 | 0.1.0   | 2025-09-16 | [66331](https://github.com/airbytehq/airbyte/pull/66331) | Creation of initial DataGen Source |
 </details>

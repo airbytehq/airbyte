@@ -176,7 +176,7 @@ To see connector limitations, or troubleshoot your MySQL connector, see more [in
 
 ## Data Type Mapping
 
-MySQL data types are mapped to the following data types when synchronizing data. You can check test example values [here](https://github.com/airbytehq/airbyte/blob/master/airbyte-integrations/connectors/source-mysql/src/test-integration/java/io/airbyte/integrations/io/airbyte/integration_tests/sources/MySqlSourceDatatypeTest.java). If you can't find the data type you are looking for, feel free to add a new test.
+MySQL data types are mapped to the following data types when synchronizing data. You can check test example values [here](https://github.com/airbytehq/airbyte/blob/master/airbyte-integrations/connectors/source-mysql/src/test/kotlin/io/airbyte/integrations/source/mysql/MySqlSourceDatatypeIntegrationTest.kt). If you can't find the data type you are looking for, feel free to add a new test.
 If you do not see a type in this list, assume that it is coerced into a string. We are happy to take feedback on preferred mappings.
 
 Any database or table encoding combination of charset and collation is supported. Charset setting however will not be carried over to destination and data will be encoded with whatever is configured by the destination. Please note that byte arrays are not yet supported.
@@ -190,12 +190,12 @@ Any database or table encoding combination of charset and collation is supported
 | `bit(>1)`                                 | base64 binary string   |                                                                                                                |
 | `boolean`                                 | boolean                |                                                                                                                |
 | `tinyint(1)`                              | boolean                |                                                                                                                |
-| `tinyint(>1)`                             | number                 |                                                                                                                |
-| `tinyint(>=1) unsigned`                   | number                 |                                                                                                                |
-| `smallint`                                | number                 |                                                                                                                |
-| `mediumint`                               | number                 |                                                                                                                |
-| `int`                                     | number                 |                                                                                                                |
-| `bigint`                                  | number                 |                                                                                                                |
+| `tinyint(>1)`                             | integer                |                                                                                                                |
+| `tinyint(>=1) unsigned`                   | integer                |                                                                                                                |
+| `smallint`                                | integer                |                                                                                                                |
+| `mediumint`                               | integer                |                                                                                                                |
+| `int`                                     | integer                |                                                                                                                |
+| `bigint`                                  | integer                |                                                                                                                |
 | `float`                                   | number                 |                                                                                                                |
 | `double`                                  | number                 |                                                                                                                |
 | `decimal`                                 | number                 |                                                                                                                |
@@ -204,7 +204,7 @@ Any database or table encoding combination of charset and collation is supported
 | `date`                                    | string                 | ISO 8601 date string. ZERO-DATE value will be converted to NULL. If column is mandatory, convert to EPOCH.     |
 | `datetime`, `timestamp`                   | string                 | ISO 8601 datetime string. ZERO-DATE value will be converted to NULL. If column is mandatory, convert to EPOCH. |
 | `time`                                    | string                 | ISO 8601 time string. Values are in range between 00:00:00 and 23:59:59.                                       |
-| `year`                                    | year string            | [Doc](https://dev.mysql.com/doc/refman/8.0/en/year.html)                                                       |
+| `year`                                    | integer                | [Doc](https://dev.mysql.com/doc/refman/8.0/en/year.html)                                                       |
 | `char`, `varchar` with non-binary charset | string                 |                                                                                                                |
 | `tinyblob`                                | base64 binary string   |                                                                                                                |
 | `blob`                                    | base64 binary string   |                                                                                                                |
@@ -230,7 +230,10 @@ Any database or table encoding combination of charset and collation is supported
 
 | Version     | Date       | Pull Request                                               | Subject                                                                                                                                         |
 |:------------|:-----------|:-----------------------------------------------------------|:------------------------------------------------------------------------------------------------------------------------------------------------|
-| 3.50.9      | 2025-10-06  | [67151](https://github.com/airbytehq/airbyte/pull/66515)   | Fix CDC decorating fields encoding to Protobuf                                                                                                  |
+| 3.51.2      | 2025-11-2  | [69104](https://github.com/airbytehq/airbyte/pull/69104)   | Better partitioning for tables with GUID string primary key.                                                                                    |
+| 3.51.1      | 2025-10-24 | [68652](https://github.com/airbytehq/airbyte/pull/68652)   | Bump CDK version to the latest to resolve issue with database Views in CDC mode.                                                                |
+| 3.51.0      | 2025-10-15 | [68094](https://github.com/airbytehq/airbyte/pull/66515)   | Bump to the latest CDK for improved Protobuf encoding in socket mode.                                                                           |
+| 3.50.9      | 2025-10-06 | [67151](https://github.com/airbytehq/airbyte/pull/66515)   | Fix CDC decorating fields encoding to Protobuf                                                                                                  |
 | 3.50.8      | 2025-09-18 | [66515](https://github.com/airbytehq/airbyte/pull/66515)   | Fix division by zero in partition creation when sampling produces no split boundaries.                                                          |
 | 3.50.7      | 2025-09-10 | [66179](https://github.com/airbytehq/airbyte/pull/66179)   | Bump to the latest CDK fixing protobuf encoding of certain column types                                                                         |
 | 3.50.6      | 2025-08-08 | [64569](https://github.com/airbytehq/airbyte/pull/64569)   | Moved db version logging from connector to new CDK version                                                                                      |

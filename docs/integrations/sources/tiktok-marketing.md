@@ -140,14 +140,19 @@ Reports synced by this connector can use either hourly, daily, or lifetime granu
 The connector is restricted by [requests limitation](https://business-api.tiktok.com/portal/docs?rid=fgvgaumno25&id=1740029171730433). This connector should not run into TikTok Marketing API limitations under normal usage. Please [create an issue](https://github.com/airbytehq/airbyte/issues) if you see any rate limit issues that are not automatically retried successfully.
 
 ## Changelog
-
+| 4.8.9      | 2025-10-30 | [69101](https://github.com/airbytehq/airbyte/pull/69101) | Revert aggressive rate limiting |
 <details>
   <summary>Expand to review</summary>
 
 
 | Version    | Date       | Pull Request                                              | Subject                                                                                                                                                                |
 |:-----------|:-----------|:----------------------------------------------------------|:-----------------------------------------------------------------------------------------------------------------------------------------------------------------------|
-| 4.8.4      | 2025-10-08 | [67430](https://github.com/airbytehq/airbyte/pull/67430) | Promoting release candidate 4.8.4 to a main version. |
+| 4.8.9      | 2025-10-30 | [69101](https://github.com/airbytehq/airbyte/pull/69101) | Revert aggressive rate limiting |
+| 4.8.8      | 2025-10-29 | [69082](https://github.com/airbytehq/airbyte/pull/69082) | Aggressively fail on rate limiting issues |
+| 4.8.7      | 2025-10-29 | [69081](https://github.com/airbytehq/airbyte/pull/69081) | Reduce concurrency |
+| 4.8.6      | 2025-10-29 | [69075](https://github.com/airbytehq/airbyte/pull/69075) | Add API Budget |
+| 4.8.5      | 2025-10-29 | [69074](https://github.com/airbytehq/airbyte/pull/69074) | Improving on rate limiting issue. |
+| 4.8.4      | 2025-10-08 | [67432](https://github.com/airbytehq/airbyte/pull/67432) | Promoting release candidate 4.8.4 to a main version. |
 | 4.8.4-rc.1      | 2025-09-30 | [66823](https://github.com/airbytehq/airbyte/pull/66823) | Up CDK version to 7. |
 | 4.8.3      | 2025-09-23 | [66584](https://github.com/airbytehq/airbyte/pull/66584) | Promoting release candidate 4.8.3-rc.1 to a main version. |
 | 4.8.3-rc.1 | 2025-09-16 | [62058] | Add new video metrics in `ads_reports` streams |

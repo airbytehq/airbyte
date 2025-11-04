@@ -6,11 +6,11 @@ data:
     hosts:
       - api.sendgrid.com
   connectorBuildOptions:
-    baseImage: docker.io/airbyte/source-declarative-manifest:7.3.1@sha256:04afd30e90f276dae049019427cd519c126203e92a9993de262ff29f73bd8955
+    baseImage: docker.io/airbyte/source-declarative-manifest:7.4.1@sha256:71df19e2ee555ca5b14abbec01d50104c79c9b84cb9cc323284d24333361900a
   connectorSubtype: api
   connectorType: source
   definitionId: fbb5fbe2-16ad-4cf4-af7d-ff9d9c316c87
-  dockerImageTag: 1.3.14
+  dockerImageTag: 1.3.18
   releases:
     breakingChanges:
       1.0.0:
@@ -33,6 +33,17 @@ data:
     oss:
       enabled: true
   releaseStage: generally_available
+  suggestedStreams:
+    streams:
+      - blocks
+      - invalid_emails
+      - bounces
+      - spam_reports
+      - global_suppressions
+      - singlesends
+      - singlesend_stats
+      - suppression_groups
+      - campaigns
   supportLevel: certified
   tags:
     - language:manifest-only

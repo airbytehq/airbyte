@@ -14,7 +14,7 @@ import io.airbyte.cdk.load.data.FieldType
 import io.airbyte.cdk.load.data.IntegerType
 import io.airbyte.cdk.load.data.ObjectType
 import io.airbyte.cdk.load.data.ObjectTypeWithoutSchema
-import io.airbyte.cdk.load.orchestration.db.ColumnNameMapping
+import io.airbyte.cdk.load.table.ColumnNameMapping
 import io.airbyte.integrations.destination.bigquery.write.typing_deduping.direct_load_tables.BigqueryDirectLoadSqlGenerator
 import kotlin.test.assertEquals
 import org.junit.jupiter.api.Test
