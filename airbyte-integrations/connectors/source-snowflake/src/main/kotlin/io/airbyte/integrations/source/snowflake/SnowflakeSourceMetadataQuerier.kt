@@ -65,8 +65,7 @@ class SnowflakeSourceMetadataQuerier(
             memoizedTableNames
                 .filter { it.namespace() != null }
                 .forEach { table ->
-                    dbmd.getColumns(table.catalog, table.schema, null, null).use {
-                        rs: ResultSet ->
+                    dbmd.getColumns(table.catalog, table.schema, null, null).use { rs: ResultSet ->
                         while (rs.next()) {
                             val (tableName: TableName, metadata: ColumnMetadata) =
                                 columnMetadataFromResultSet(rs, isPseudoColumn = false)
@@ -337,29 +336,27 @@ class SnowflakeSourceMetadataQuerier(
         try {
             val dbmd: DatabaseMetaData = base.conn.metaData
 
-            memoizedTableNames
-                .forEach { table ->
-                    dbmd.getPrimaryKeys(table.catalog, table.schema, null).use {
-                        rs: ResultSet ->
-                        while (rs.next()) {
-                            val primaryKey =
-                                PrimaryKeyRow(
-                                    name = rs.getString("PK_NAME"),
-                                    columnName = rs.getString("COLUMN_NAME"),
-                                    ordinal = rs.getInt("KEY_SEQ"),
-                                )
-                            val tableName =
-                                TableName(
-                                    catalog = rs.getString("TABLE_CAT"),
-                                    schema = rs.getString("TABLE_SCHEM"),
-                                    name = rs.getString("TABLE_NAME"),
-                                    type = "",
-                                )
-                            val joinedTableName: TableName = joinMap[tableName] ?: continue
-                            results.getOrPut(joinedTableName) { mutableListOf() }.add(primaryKey)
-                        }
+            memoizedTableNames.forEach { table ->
+                dbmd.getPrimaryKeys(table.catalog, table.schema, null).use { rs: ResultSet ->
+                    while (rs.next()) {
+                        val primaryKey =
+                            PrimaryKeyRow(
+                                name = rs.getString("PK_NAME"),
+                                columnName = rs.getString("COLUMN_NAME"),
+                                ordinal = rs.getInt("KEY_SEQ"),
+                            )
+                        val tableName =
+                            TableName(
+                                catalog = rs.getString("TABLE_CAT"),
+                                schema = rs.getString("TABLE_SCHEM"),
+                                name = rs.getString("TABLE_NAME"),
+                                type = "",
+                            )
+                        val joinedTableName: TableName = joinMap[tableName] ?: continue
+                        results.getOrPut(joinedTableName) { mutableListOf() }.add(primaryKey)
                     }
                 }
+            }
             log.info { "Discovered ${results.size} primary keys." }
             return@lazy results.mapValues { (_, pkCols: MutableList<PrimaryKeyRow>) ->
                 pkCols.sortedBy { it.ordinal }.map { listOf(it.columnName) }

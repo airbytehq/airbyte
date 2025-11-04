@@ -67,12 +67,7 @@ class SnowflakeSourceMetadataQuerierTableFilterTest {
             // Mock pattern matching (simplified - just exact matches and prefix matches for
             // testing)
             every {
-                dbmd.getTables(
-                    namespace,
-                    schema,
-                    match { !tables.contains(it) },
-                    null
-                )
+                dbmd.getTables(namespace, schema, match { !tables.contains(it) }, null)
             } answers
                 {
                     val pattern = arg<String>(2)
@@ -87,9 +82,7 @@ class SnowflakeSourceMetadataQuerierTableFilterTest {
                 }
 
             // Also mock lowercase schema for case insensitivity
-            every {
-                dbmd.getTables(namespace, schema.lowercase(), match { true }, null)
-            } answers
+            every { dbmd.getTables(namespace, schema.lowercase(), match { true }, null) } answers
                 {
                     val pattern = arg<String>(2)
                     val matchingTables =
