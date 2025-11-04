@@ -48,45 +48,43 @@ class GcsDataLakeStreamLoader(
             ColumnTypeChangeBehavior.SAFE_SUPERTYPE
         }
 
-    private val incomingSchema = icebergUtil.toIcebergSchema(stream = stream).let { schema ->
-        // Transform the schema to use mapped column names that match what the
-        // ColumnNameMapper will produce during record processing
-        transformSchemaWithMappedNames(schema)
-    }
-
-    /**
-     * Transforms an Iceberg schema to use mapped column names.
-     * This ensures the Iceberg schema field names match the names that the ColumnNameMapper
-     * produces when transforming records in the converters.
-     *
-     * Note: Airbyte metadata columns are not mapped, as they're already valid and not part
-     * of the user's schema in the TableCatalog.
-     */
-    private fun transformSchemaWithMappedNames(schema: Schema): Schema {
-        val mappedFields = schema.asStruct().fields().map { field ->
-            val originalName = field.name()
-
-            // Skip Airbyte metadata columns - they're already valid and not in the catalog
-            if (Meta.COLUMN_NAMES.contains(originalName)) {
-                return@map field
-            }
-
-            val mappedName = columnNameMapper.getMappedColumnName(stream, originalName)
-
-            if (mappedName != originalName) {
-                // Create a new field with the mapped name but same type and properties
-                Types.NestedField.of(
-                    field.fieldId(),
-                    field.isOptional,
-                    mappedName,
-                    field.type(),
-                    field.doc()
-                )
-            } else {
-                field
-            }
+    private val incomingSchema =
+        icebergUtil.toIcebergSchema(stream = stream).let { schema ->
+            // Transform the schema to use mapped column names for BigLake compatibility.
+            // BigLake rejects table creation with special characters in column names.
+            transformSchemaWithMappedNames(schema)
         }
 
+    /**
+     * Transforms an Iceberg schema to use mapped column names. This ensures column names are
+     * BigLake-compatible (alphanumeric + underscore only).
+     */
+    private fun transformSchemaWithMappedNames(schema: Schema): Schema {
+        val mappedFields =
+            schema.asStruct().fields().map { field ->
+                val originalName = field.name()
+
+                // Skip Airbyte metadata columns - they're already valid
+                if (Meta.COLUMN_NAMES.contains(originalName)) {
+                    return@map field
+                }
+
+                val mappedName = columnNameMapper.getMappedColumnName(stream, originalName)
+
+                if (mappedName != originalName) {
+                    Types.NestedField.of(
+                        field.fieldId(),
+                        field.isOptional,
+                        mappedName,
+                        field.type(),
+                        field.doc()
+                    )
+                } else {
+                    field
+                }
+            }
+
+        // Preserve the identifier field IDs from the original schema
         return Schema(mappedFields, schema.identifierFieldIds())
     }
 
@@ -151,7 +149,24 @@ class GcsDataLakeStreamLoader(
             // In principle, this doesn't matter, but the iceberg SDK throws an error about
             // stale table metadata without this.
             table.refresh()
-            computeOrExecuteSchemaUpdate().pendingUpdate?.commit()
+            val schemaUpdateResult = computeOrExecuteSchemaUpdate()
+            val pendingUpdate = schemaUpdateResult.pendingUpdate
+            if (pendingUpdate != null) {
+                logger.info {
+                    "Committing schema update for stream ${stream.mappedDescriptor}. " +
+                        "Schema has ${schemaUpdateResult.schema.columns().size} columns."
+                }
+                try {
+                    pendingUpdate.commit()
+                } catch (e: Exception) {
+                    logger.error(e) {
+                        "Failed to commit schema update for stream ${stream.mappedDescriptor}. " +
+                            "Existing table schema: ${table.schema().columns().map { it.name() }}. " +
+                            "Incoming schema: ${incomingSchema.columns().map { it.name() }}."
+                    }
+                    throw e
+                }
+            }
             table.manageSnapshots().replaceBranch(mainBranchName, stagingBranchName).commit()
 
             if (stream.isSingleGenerationTruncate()) {

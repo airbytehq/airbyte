@@ -7,7 +7,6 @@ package io.airbyte.integrations.destination.gcs_data_lake.catalog
 import io.airbyte.cdk.load.command.DestinationStream
 import io.airbyte.cdk.load.data.Transformations
 import io.airbyte.cdk.load.orchestration.db.FinalTableNameGenerator
-import io.airbyte.cdk.load.orchestration.db.RawTableNameGenerator
 import io.airbyte.cdk.load.table.TableName
 import io.airbyte.cdk.load.toolkits.iceberg.parquet.TableIdGenerator
 import io.airbyte.cdk.load.toolkits.iceberg.parquet.tableIdOf
@@ -32,8 +31,7 @@ private fun sanitizeBigLakeName(name: String): String {
 }
 
 /**
- * BigLake table ID generator that sanitizes names.
- * BigLake doesn't support:
+ * BigLake table ID generator that sanitizes names. BigLake doesn't support:
  * - Special characters (converts to alphanumeric+underscore)
  * - Table names starting with numbers (prefixes with underscore)
  */
@@ -46,20 +44,22 @@ class BigLakeTableIdGenerator(private val databaseName: String) : TableIdGenerat
 }
 
 @Factory
-class GcsDataLakeTableIdGeneratorFactory(private val gcsDataLakeConfiguration: GcsDataLakeConfiguration) {
+class GcsDataLakeTableIdGeneratorFactory(
+    private val gcsDataLakeConfiguration: GcsDataLakeConfiguration
+) {
     @Singleton
-    fun create(): TableIdGenerator =
-        BigLakeTableIdGenerator(gcsDataLakeConfiguration.databaseName)
+    fun create(): TableIdGenerator = BigLakeTableIdGenerator(gcsDataLakeConfiguration.databaseName)
 
     /**
-     * Provides FinalTableNameGenerator for TableCatalog.
-     * GCS Data Lake only has one table per stream (no separate raw/final tables),
-     * so this generates the same sanitized name for all tables.
+     * Provides FinalTableNameGenerator for TableCatalog. GCS Data Lake only has one table per
+     * stream (no separate raw/final tables), so this generates the same sanitized name for all
+     * tables.
      */
     @Singleton
     fun createFinalTableNameGenerator(): FinalTableNameGenerator =
         FinalTableNameGenerator { stream ->
-            val namespace = sanitizeBigLakeName(stream.namespace ?: gcsDataLakeConfiguration.databaseName)
+            val namespace =
+                sanitizeBigLakeName(stream.namespace ?: gcsDataLakeConfiguration.databaseName)
             val name = sanitizeBigLakeName(stream.name)
             TableName(namespace = namespace, name = name)
         }
