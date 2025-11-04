@@ -48,5 +48,7 @@ object GcsDataLakeTestUtil {
     }
 
     fun getTableIdGenerator(config: GcsDataLakeConfiguration) =
-        io.airbyte.integrations.destination.gcs_data_lake.catalog.BigLakeTableIdGenerator(config.databaseName)
+        io.airbyte.integrations.destination.gcs_data_lake.catalog.BigLakeTableIdGenerator(
+            config.databaseName
+        )
 }

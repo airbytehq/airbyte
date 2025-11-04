@@ -25,11 +25,6 @@ data:
   dockerRepository: airbyte/destination-gcs-data-lake
   documentationUrl: https://docs.airbyte.com/integrations/destinations/gcs-data-lake
   githubIssueLabel: destination-gcs-data-lake
-  connectorIPCOptions:
-    dataChannel:
-      version: "0.0.2"
-      supportedSerialization: ["JSONL", "PROTOBUF"]
-      supportedTransport: ["SOCKET", "STDIO"]
   icon: icon.svg
   license: ELv2
   name: GCS Data Lake
