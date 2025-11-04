@@ -6,6 +6,8 @@ package io.airbyte.integrations.destination.snowflake.sql
 
 import io.airbyte.cdk.load.command.Dedupe
 import io.airbyte.cdk.load.command.DestinationStream
+import io.airbyte.cdk.load.component.ColumnType
+import io.airbyte.cdk.load.component.ColumnTypeChange
 import io.airbyte.cdk.load.data.FieldType
 import io.airbyte.cdk.load.data.ObjectType
 import io.airbyte.cdk.load.data.StringType
@@ -17,7 +19,6 @@ import io.airbyte.cdk.load.table.CDC_DELETED_AT_COLUMN
 import io.airbyte.cdk.load.table.ColumnNameMapping
 import io.airbyte.cdk.load.table.TableName
 import io.airbyte.cdk.load.util.UUIDGenerator
-import io.airbyte.integrations.destination.snowflake.db.ColumnDefinition
 import io.airbyte.integrations.destination.snowflake.db.toSnowflakeCompatibleName
 import io.airbyte.integrations.destination.snowflake.spec.CdcDeletionMode
 import io.airbyte.integrations.destination.snowflake.spec.SnowflakeConfiguration
@@ -632,9 +633,10 @@ new_record."_AIRBYTE_GENERATION_ID"
         val uuid = UUID.randomUUID()
         every { uuidGenerator.v4() } returns uuid
         val tableName = TableName(namespace = "namespace", name = "name")
-        val addedColumns = setOf(ColumnDefinition("COL1", "TEXT"))
-        val deletedColumns = setOf(ColumnDefinition("COL2", "TEXT"))
-        val modifiedColumns = setOf(ColumnDefinition("COL3", "TEXT"))
+        val addedColumns = mapOf("COL1" to ColumnType("TEXT", true))
+        val deletedColumns = mapOf("COL2" to ColumnType("TEXT", true))
+        val modifiedColumns =
+            mapOf("COL3" to ColumnTypeChange(ColumnType("NUMBER", true), ColumnType("TEXT", true)))
         val sql =
             snowflakeDirectLoadSqlGenerator.alterTable(
                 tableName,
@@ -651,9 +653,11 @@ new_record."_AIRBYTE_GENERATION_ID"
                 """ALTER TABLE $expectedTableName DROP COLUMN "COL2";""",
                 """ALTER TABLE $expectedTableName ADD COLUMN "COL3_${uuid}" TEXT;""",
                 """UPDATE $expectedTableName SET "COL3_${uuid}" = CAST("COL3" AS TEXT);""",
-                """ALTER TABLE $expectedTableName
+                """
+                ALTER TABLE $expectedTableName
                 RENAME COLUMN "COL3" TO "COL3_${uuid}_backup";""".trimIndent(),
-                """ALTER TABLE $expectedTableName
+                """
+                ALTER TABLE $expectedTableName
                 RENAME COLUMN "COL3_${uuid}" TO "COL3";""".trimIndent(),
                 """ALTER TABLE $expectedTableName DROP COLUMN "COL3_${uuid}_backup";"""
             ),

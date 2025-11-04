@@ -419,14 +419,16 @@ class SnowflakeDirectLoadSqlGenerator(
                 )
                 val backupColumn = "${tempColumn}_backup"
                 clauses.add(
-                    """ALTER TABLE $prettyTableName
-                            RENAME COLUMN "$name" TO "$backupColumn";
-                        """.trimIndent()
+                    """
+                    ALTER TABLE $prettyTableName
+                    RENAME COLUMN "$name" TO "$backupColumn";
+                    """.trimIndent()
                 )
                 clauses.add(
-                    """ALTER TABLE $prettyTableName
-                            RENAME COLUMN "$tempColumn" TO "$name";
-                        """.trimIndent()
+                    """
+                    ALTER TABLE $prettyTableName
+                    RENAME COLUMN "$tempColumn" TO "$name";
+                    """.trimIndent()
                 )
                 clauses.add(
                     "ALTER TABLE $prettyTableName DROP COLUMN ${backupColumn.quote()};".andLog()

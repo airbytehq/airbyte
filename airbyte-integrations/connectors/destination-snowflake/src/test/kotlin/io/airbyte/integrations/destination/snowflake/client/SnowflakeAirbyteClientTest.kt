@@ -8,6 +8,7 @@ import io.airbyte.cdk.ConfigErrorException
 import io.airbyte.cdk.load.command.DestinationStream
 import io.airbyte.cdk.load.command.NamespaceMapper
 import io.airbyte.cdk.load.command.Overwrite
+import io.airbyte.cdk.load.component.ColumnType
 import io.airbyte.cdk.load.config.NamespaceDefinitionType
 import io.airbyte.cdk.load.data.AirbyteType
 import io.airbyte.cdk.load.data.FieldType
@@ -573,7 +574,10 @@ internal class SnowflakeAirbyteClientTest {
         val result = client.getColumnsFromDb(tableName)
 
         val expectedColumns =
-            setOf(ColumnDefinition("COL1", "VARCHAR"), ColumnDefinition("COL2", "NUMBER"))
+            mapOf(
+                "COL1" to ColumnType("VARCHAR", true),
+                "COL2" to ColumnType("NUMBER", false),
+            )
 
         assertEquals(expectedColumns, result)
     }
@@ -620,9 +624,9 @@ internal class SnowflakeAirbyteClientTest {
         val result = client.getColumnsFromStream(stream, columnNameMapping)
 
         val expectedColumns =
-            setOf(
-                ColumnDefinition("COL1_MAPPED", "VARCHAR"),
-                ColumnDefinition("COL2_MAPPED", "NUMBER")
+            mapOf(
+                "COL1_MAPPED" to ColumnType("VARCHAR", false),
+                "COL2_MAPPED" to ColumnType("NUMBER", false),
             )
 
         assertEquals(expectedColumns, result)
