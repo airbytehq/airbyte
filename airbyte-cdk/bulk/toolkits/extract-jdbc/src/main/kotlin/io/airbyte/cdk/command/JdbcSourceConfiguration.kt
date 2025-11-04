@@ -49,10 +49,7 @@ interface JdbcSourceConfiguration : SourceConfiguration {
          * @param tableFilters The list of table filters to validate
          * @throws ConfigErrorException if any filter references a schema not in configuredSchemas
          */
-        fun validateTableFilters(
-            configuredSchemas: Set<String>,
-            tableFilters: List<TableFilter>
-        ) {
+        fun validateTableFilters(configuredSchemas: Set<String>, tableFilters: List<TableFilter>) {
             if (tableFilters.isEmpty()) return
             if (configuredSchemas.isEmpty()) return
 

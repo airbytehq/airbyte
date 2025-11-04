@@ -129,10 +129,9 @@ class JdbcMetadataQuerier(
             val dbmd: DatabaseMetaData = conn.metaData
             memoizedTableNames
                 .filter { it.namespace() != null }
-                .map { it.catalog to it.schema }
-                .distinct()
-                .forEach { (catalog: String?, schema: String?) ->
-                    dbmd.getPseudoColumns(catalog, schema, null, null).use { rs: ResultSet ->
+                .forEach { table ->
+                    dbmd.getPseudoColumns(table.catalog, table.schema, table.name, null).use {
+                        rs: ResultSet ->
                         while (rs.next()) {
                             val (tableName: TableName, metadata: ColumnMetadata) =
                                 columnMetadataFromResultSet(rs, isPseudoColumn = true)
@@ -140,7 +139,8 @@ class JdbcMetadataQuerier(
                             results.add(joinedTableName to metadata)
                         }
                     }
-                    dbmd.getColumns(catalog, schema, null, null).use { rs: ResultSet ->
+                    dbmd.getColumns(table.catalog, table.schema, table.name, null).use {
+                        rs: ResultSet ->
                         while (rs.next()) {
                             val (tableName: TableName, metadata: ColumnMetadata) =
                                 columnMetadataFromResultSet(rs, isPseudoColumn = false)
