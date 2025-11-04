@@ -34,6 +34,16 @@ To get started with the PyAirbyte MCP server:
 
 For detailed instructions on each step, see the [PyAirbyte MCP documentation](https://airbytehq.github.io/PyAirbyte/airbyte/mcp.html).
 
+## Helpful Prompts
+
+Here are some things you can do with the PyAirbyte MCP server, across local and Airbyte Cloud use cases:
+
+1. "Use your MCP tools to list all available Airbyte connectors."
+2. "Use your MCP tools to get information about the Airbyte Stripe connector."
+3. "Use your MCP tools to list all variables you have access to in the dotenv secrets file."
+4. "Use your MCP tools to check your connection to your Airbyte Cloud workspace."
+5. "Use your MCP tools to list all available destinations in my Airbyte Cloud workspace."
+
 ## Contributing to the Airbyte MCP Server
 
 - [PyAirbyte Contributing Guide](https://github.com/airbytehq/PyAirbyte/blob/main/docs/CONTRIBUTING.md)
