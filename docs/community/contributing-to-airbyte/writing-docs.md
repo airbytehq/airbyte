@@ -19,7 +19,7 @@ Before you contribute, familiarize yourself with these concepts.
 
 ### Read Airbyte's code of conduct
 
-Read the Airbyte Community [code of conduct](/platform/community/code-of-conduct).
+Read the Airbyte Community [code of conduct](/community/code-of-conduct).
 
 ### Learn Docusaurus basics
 
@@ -161,7 +161,7 @@ You can only use these templates for platform docs. Docs for connectors have the
 
 ## Write connector docs {#connector-docs}
 
-If you're writing docs for a data source or destination, there are special rules you must follow. See the [Connector Documentation Guide](../connector-development/writing-connector-docs.md). Platform documentation is less formulaic.
+If you're writing docs for a data source or destination, there are special rules you must follow. See the [Connector Documentation Guide](/platform/connector-development/writing-connector-docs). Platform documentation is less formulaic.
 
 ## Multiple instances and versions
 
@@ -214,7 +214,7 @@ Details panels are a great way to render content that's not relevant to everyone
 
 ### Product badges
 
-Certain Airbyte products reserve some platform features. To avoid confusion and indicate which products a topic applies to, pages can display badges in a prominent location under the title. [This page is an example](../using-airbyte/getting-started/oss-quickstart).
+Certain Airbyte products reserve some platform features. To avoid confusion and indicate which products a topic applies to, pages can display badges in a prominent location under the title. [This page is an example](/platform/using-airbyte/getting-started/oss-quickstart).
 
 To enable badges, include `products` in the Markdown metadata. The following values are possible, and you can combine them as needed.
 
