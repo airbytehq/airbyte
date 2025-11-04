@@ -49,18 +49,23 @@ class GcsDataLakeStreamLoader(
             ColumnTypeChangeBehavior.SAFE_SUPERTYPE
         }
 
-    private val incomingSchema =
+    private val incomingSchema = computeIncomingSchema(false)
+
+    private fun computeIncomingSchema(withIdentifierFields: Boolean) =
         icebergUtil.toIcebergSchema(stream = stream).let { schema ->
             // Transform the schema to use mapped column names for BigLake compatibility.
             // BigLake rejects table creation with special characters in column names.
-            transformSchemaWithMappedNames(schema)
+            transformSchemaWithMappedNames(schema, withIdentifierFields)
         }
 
     /**
      * Transforms an Iceberg schema to use mapped column names. This ensures column names are
      * BigLake-compatible (alphanumeric + underscore only).
      */
-    private fun transformSchemaWithMappedNames(schema: Schema): Schema {
+    private fun transformSchemaWithMappedNames(
+        schema: Schema,
+        withIdentifierFields: Boolean
+    ): Schema {
         val mappedFields =
             schema.asStruct().fields().map { field ->
                 val originalName = field.name()
@@ -87,29 +92,40 @@ class GcsDataLakeStreamLoader(
 
         // Don't set identifier fields during table creation - BigLake corrupts them.
         // We'll reconcile them after the table is created.
-        return Schema(mappedFields, emptySet())
+        return Schema(
+            mappedFields,
+            if (withIdentifierFields) {
+                schema.identifierFieldIds()
+            } else {
+                emptySet()
+            },
+        )
     }
 
     /**
-     * Reconcile identifier field IDs after BigLake creates the table.
-     * BigLake reassigns field IDs, so we need to find which IDs it assigned to our primary key columns.
+     * Reconcile identifier field IDs after BigLake creates the table. BigLake reassigns field IDs,
+     * so we need to find which IDs it assigned to our primary key columns.
      */
     private fun reconcileIdentifierFields(table: Table): Schema {
         val actualSchema = table.schema()
 
         // Get the primary key column names (mapped names, as they appear in the table)
-        val primaryKeyNames = when (val importType = stream.importType) {
-            is Dedupe -> {
-                importType.primaryKey.flatten().map { originalName ->
-                    if (Meta.COLUMN_NAMES.contains(originalName)) {
-                        originalName
-                    } else {
-                        columnNameMapper.getMappedColumnName(stream, originalName)
-                    }
-                }.toSet()
+        val primaryKeyNames =
+            when (val importType = stream.importType) {
+                is Dedupe -> {
+                    importType.primaryKey
+                        .flatten()
+                        .map { originalName ->
+                            if (Meta.COLUMN_NAMES.contains(originalName)) {
+                                originalName
+                            } else {
+                                columnNameMapper.getMappedColumnName(stream, originalName)
+                            }
+                        }
+                        .toSet()
+                }
+                else -> emptySet()
             }
-            else -> emptySet()
-        }
 
         if (primaryKeyNames.isEmpty()) {
             // No deduplication, return schema as-is
@@ -149,31 +165,28 @@ class GcsDataLakeStreamLoader(
             icebergUtil.createTable(
                 streamDescriptor = stream.mappedDescriptor,
                 catalog = catalog,
-                schema = incomingSchema
+                schema = incomingSchema,
             )
 
         // Reconcile identifier fields after BigLake creates the table
         // BigLake reassigns field IDs, so we need to update the schema with the correct field names
-        val primaryKeyNames = when (val importType = stream.importType) {
-            is Dedupe -> {
-                importType.primaryKey.flatten().map { originalName ->
-                    if (Meta.COLUMN_NAMES.contains(originalName)) {
-                        originalName
-                    } else {
-                        columnNameMapper.getMappedColumnName(stream, originalName)
+        val primaryKeyNames =
+            when (val importType = stream.importType) {
+                is Dedupe -> {
+                    importType.primaryKey.flatten().map { originalName ->
+                        if (Meta.COLUMN_NAMES.contains(originalName)) {
+                            originalName
+                        } else {
+                            columnNameMapper.getMappedColumnName(stream, originalName)
+                        }
                     }
                 }
+                else -> emptyList()
             }
-            else -> emptyList()
-        }
 
         if (primaryKeyNames.isNotEmpty()) {
-            logger.info {
-                "Setting identifier fields to primary keys: $primaryKeyNames"
-            }
-            table.updateSchema()
-                .setIdentifierFields(primaryKeyNames)
-                .commit()
+            logger.info { "Setting identifier fields to primary keys: $primaryKeyNames" }
+            table.updateSchema().setIdentifierFields(primaryKeyNames).commit()
             // Refresh to get the updated schema with identifier fields
             table.refresh()
         }
@@ -190,7 +203,8 @@ class GcsDataLakeStreamLoader(
         // commit that transaction.
         targetSchema = computeOrExecuteSchemaUpdate().schema
 
-        // After schema updates, refresh the table to ensure we have the latest schema with identifier fields
+        // After schema updates, refresh the table to ensure we have the latest schema with
+        // identifier fields
         table.refresh()
         targetSchema = table.schema()
 
@@ -274,7 +288,7 @@ class GcsDataLakeStreamLoader(
     private fun computeOrExecuteSchemaUpdate() =
         icebergTableSynchronizer.maybeApplySchemaChanges(
             table,
-            incomingSchema,
+            computeIncomingSchema(true),
             columnTypeChangeBehavior,
         )
 }
