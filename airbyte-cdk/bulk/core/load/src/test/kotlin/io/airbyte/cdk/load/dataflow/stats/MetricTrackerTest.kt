@@ -45,12 +45,18 @@ internal class MetricTrackerTest {
         assertEquals(3.0, metrics[metric.metricName])
         assertEquals(5.0, metrics[ObservabilityMetrics.TRUNCATED_VALUE_COUNT.metricName])
 
-        // Validate that the underlying map has been cleared and re-initialized
-        assertEquals(2, metricTracker.get(stream).size)
-        assertEquals(0.0, metricTracker.get(stream)[metric.metricName])
-        assertEquals(
-            0.0,
-            metricTracker.get(stream)[ObservabilityMetrics.TRUNCATED_VALUE_COUNT.metricName]
-        )
+        // Validate that the underlying map has been cleared
+        assertEquals(0, metricTracker.get(stream).size)
+    }
+
+    @Test
+    fun testDrainAllDefaultValues() {
+        val stream = DestinationStream.Descriptor(namespace = "namespace", name = "name")
+        val metricTracker = MetricTracker()
+
+        val metrics = metricTracker.drain(stream)
+
+        assertEquals(ObservabilityMetrics.entries.size, metrics.size)
+        ObservabilityMetrics.entries.forEach { metric -> assertEquals(0.0, metrics[metric.metricName]) }
     }
 }
