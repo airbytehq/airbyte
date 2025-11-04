@@ -10,6 +10,7 @@ import io.airbyte.cdk.ClockFactory
 import io.airbyte.cdk.StreamIdentifier
 import io.airbyte.cdk.command.JdbcSourceConfiguration
 import io.airbyte.cdk.command.OpaqueStateValue
+import io.airbyte.cdk.command.TableFilter
 import io.airbyte.cdk.discover.Field
 import io.airbyte.cdk.discover.MetaField
 import io.airbyte.cdk.discover.MetaFieldDecorator
@@ -141,6 +142,8 @@ object TestFixtures {
         override val jdbcProperties: Map<String, String>
             get() = TODO("Not yet implemented")
         override val namespaces: Set<String>
+            get() = TODO("Not yet implemented")
+        override val tableFilters: List<TableFilter>
             get() = TODO("Not yet implemented")
         override val realPort: Int
             get() = TODO("Not yet implemented")

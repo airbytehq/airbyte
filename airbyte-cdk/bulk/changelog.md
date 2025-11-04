@@ -1,3 +1,7 @@
+## Version 0.1.64
+
+extract cdk: add table filtering to jdbc connectors
+
 ## Version 0.1.63
 
 introduce extract-trigger toolkit for trigger-based CDC
