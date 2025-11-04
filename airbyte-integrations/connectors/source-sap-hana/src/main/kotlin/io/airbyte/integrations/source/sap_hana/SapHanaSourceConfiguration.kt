@@ -2,12 +2,14 @@
 package io.airbyte.integrations.source.sap_hana
 
 import io.airbyte.cdk.ConfigErrorException
+import io.airbyte.cdk.command.ConfigurationSpecificationSupplier
 import io.airbyte.cdk.command.JdbcSourceConfiguration
 import io.airbyte.cdk.command.SourceConfiguration
 import io.airbyte.cdk.command.SourceConfigurationFactory
 import io.airbyte.cdk.ssh.SshConnectionOptions
 import io.airbyte.cdk.ssh.SshTunnelMethodConfiguration
 import io.github.oshai.kotlinlogging.KotlinLogging
+import io.micronaut.context.annotation.Factory
 import jakarta.inject.Singleton
 import java.io.File
 import java.io.FileOutputStream
@@ -47,6 +49,18 @@ data class SapHanaSourceConfiguration(
 
     override fun isCdc(): Boolean {
         return cdc != null
+    }
+
+    // Required for Micronaut to inject a SapHanaSourceConfiguration bean directly
+    @Factory
+    private class MicronautFactory {
+        @Singleton
+        fun sapHanaSourceConfig(
+            factory:
+                SourceConfigurationFactory<
+                    SapHanaSourceConfigurationSpecification, SapHanaSourceConfiguration>,
+            supplier: ConfigurationSpecificationSupplier<SapHanaSourceConfigurationSpecification>,
+        ): SapHanaSourceConfiguration = factory.make(supplier.get())
     }
 }
 

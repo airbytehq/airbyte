@@ -10,6 +10,7 @@ import io.airbyte.cdk.discover.DiscoveredStream
 import io.airbyte.cdk.discover.Field
 import io.airbyte.cdk.jdbc.IntFieldType
 import io.airbyte.cdk.jdbc.StringFieldType
+import io.airbyte.cdk.operations.TriggerStreamFactory
 import io.airbyte.cdk.output.BufferingOutputConsumer
 import io.airbyte.protocol.models.v0.AirbyteRecordMessage
 import io.airbyte.protocol.models.v0.AirbyteStateMessage
@@ -159,6 +160,11 @@ class SapHanaSourceCursorBasedIntegrationTest {
                 setCursorMethodValue(UserDefinedCursorConfigurationSpecification)
             }
 
+        // Create an instance of the trigger config to access CURSOR_FIELD
+        val triggerConfig: SapHanaTriggerTableConfig by lazy {
+            SapHanaTriggerTableConfig(SapHanaSourceConfigurationFactory().make(config))
+        }
+
         fun getConfiguredCatalog(): ConfiguredAirbyteCatalog {
             val desc = StreamDescriptor().withName(tableNames[0]).withNamespace(schemaNames[0])
             val discoveredStream =
@@ -168,7 +174,7 @@ class SapHanaSourceCursorBasedIntegrationTest {
                     primaryKeyColumnIDs = listOf(listOf("ID"))
                 )
             val stream: AirbyteStream =
-                SapHanaSourceOperations()
+                TriggerStreamFactory(triggerConfig)
                     .create(SapHanaSourceConfigurationFactory().make(config), discoveredStream)
             val configuredStream: ConfiguredAirbyteStream =
                 CatalogHelpers.toDefaultConfiguredStream(stream)

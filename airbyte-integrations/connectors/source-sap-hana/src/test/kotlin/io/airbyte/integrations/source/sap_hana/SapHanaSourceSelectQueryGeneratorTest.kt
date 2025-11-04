@@ -28,6 +28,7 @@ import io.airbyte.cdk.read.SelectQuerySpec
 import io.airbyte.cdk.read.Where
 import io.airbyte.cdk.read.optimize
 import io.airbyte.cdk.util.Jsons
+import io.airbyte.integrations.source.sap_hana.operations.SapHanaSourceSelectQueryGenerator
 import org.junit.jupiter.api.Assertions
 import org.junit.jupiter.api.Test
 
@@ -158,7 +159,7 @@ class SapHanaSourceSelectQueryGeneratorTest {
                 select.columns,
                 bindings.map { SelectQuery.Binding(it.first, it.second) },
             )
-        val actual: SelectQuery = SapHanaSourceOperations().generate(this.optimize())
+        val actual: SelectQuery = SapHanaSourceSelectQueryGenerator().generate(this.optimize())
         Assertions.assertEquals(expected, actual)
     }
 }

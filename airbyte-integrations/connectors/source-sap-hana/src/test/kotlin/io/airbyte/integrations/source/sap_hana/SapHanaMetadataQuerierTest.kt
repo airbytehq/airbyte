@@ -3,6 +3,8 @@ package io.airbyte.integrations.source.sap_hana
 
 import io.airbyte.cdk.check.JdbcCheckQueries
 import io.airbyte.cdk.jdbc.DefaultJdbcConstants
+import io.airbyte.integrations.source.sap_hana.operations.SapHanaSourceFieldTypeMapper
+import io.airbyte.integrations.source.sap_hana.operations.SapHanaSourceSelectQueryGenerator
 import java.sql.SQLException
 import org.junit.jupiter.api.AfterEach
 import org.junit.jupiter.api.Assertions.assertEquals
@@ -20,8 +22,8 @@ class SapHanaMetadataQuerierTest {
 
     val hanaQuerierFactory =
         SapHanaSourceMetadataQuerier.Factory(
-            selectQueryGenerator = SapHanaSourceOperations(),
-            fieldTypeMapper = SapHanaSourceOperations(),
+            selectQueryGenerator = SapHanaSourceSelectQueryGenerator(),
+            fieldTypeMapper = SapHanaSourceFieldTypeMapper(),
             checkQueries = JdbcCheckQueries(),
             constants = DefaultJdbcConstants(),
         )
