@@ -12,6 +12,7 @@ import io.airbyte.cdk.command.OpaqueStateValue
 import io.airbyte.cdk.discover.Field
 import io.airbyte.cdk.discover.MetaField
 import io.airbyte.cdk.discover.MetaFieldDecorator
+import io.airbyte.cdk.discover.TableName
 import io.airbyte.cdk.jdbc.BinaryStreamFieldType
 import io.airbyte.cdk.jdbc.DefaultJdbcConstants
 import io.airbyte.cdk.jdbc.IntFieldType
@@ -31,6 +32,7 @@ import io.airbyte.cdk.read.Stream
 import io.airbyte.cdk.read.StreamFeedBootstrap
 import io.airbyte.cdk.util.Jsons
 import io.airbyte.protocol.models.v0.StreamDescriptor
+import io.mockk.every
 import io.mockk.mockk
 import java.time.OffsetDateTime
 import java.util.Base64
@@ -48,10 +50,22 @@ class MsSqlServerJdbcPartitionFactoryTest {
         private val cdcSharedState = sharedState(global = true)
         private val config = mockk<MsSqlServerSourceConfiguration>(relaxed = true)
 
+        val metadataQuerier = mockk<MsSqlSourceMetadataQuerier>(relaxed = true)
+
         val msSqlServerJdbcPartitionFactory =
-            MsSqlServerJdbcPartitionFactory(sharedState, selectQueryGenerator, config)
+            MsSqlServerJdbcPartitionFactory(
+                sharedState,
+                selectQueryGenerator,
+                config,
+                metadataQuerier
+            )
         val msSqlServerCdcJdbcPartitionFactory =
-            MsSqlServerJdbcPartitionFactory(cdcSharedState, selectQueryGenerator, config)
+            MsSqlServerJdbcPartitionFactory(
+                cdcSharedState,
+                selectQueryGenerator,
+                config,
+                metadataQuerier
+            )
 
         val fieldId = Field("id", IntFieldType)
         val stream =
@@ -515,5 +529,107 @@ class MsSqlServerJdbcPartitionFactoryTest {
         assertEquals(13, cursorLowerBound.decimalValue().toInt())
         // Verify it's BigDecimal, not Double
         assertTrue(cursorLowerBound.isBigDecimal)
+    }
+
+    @Test
+    fun testViewDetectionForTable() {
+        // Test that regular tables are correctly identified as non-views
+        val tableStream =
+            Stream(
+                id =
+                    StreamIdentifier.from(
+                        StreamDescriptor().withNamespace("dbo").withName("regular_table")
+                    ),
+                schema = setOf(fieldId),
+                configuredSyncMode = ConfiguredSyncMode.INCREMENTAL,
+                configuredPrimaryKey = listOf(fieldId),
+                configuredCursor = fieldId,
+            )
+
+        // Mock the metadata querier to return a TABLE type
+        val mockMetadataQuerier = mockk<MsSqlSourceMetadataQuerier>()
+        every { mockMetadataQuerier.findTableName(tableStream.id) } returns
+            TableName(name = "regular_table", schema = "dbo", type = "TABLE")
+
+        val factoryWithMockedQuerier =
+            MsSqlServerJdbcPartitionFactory(
+                sharedState,
+                selectQueryGenerator,
+                config,
+                mockMetadataQuerier
+            )
+
+        val partition = factoryWithMockedQuerier.create(streamFeedBootstrap(tableStream))
+        // Regular tables with primary keys should use resumable partitions which support sampling
+        assertTrue(partition is MsSqlServerJdbcSnapshotWithCursorPartition)
+    }
+
+    @Test
+    fun testViewDetectionForView() {
+        // Test that views use non-resumable partitions to avoid sampling entirely
+        val viewStream =
+            Stream(
+                id =
+                    StreamIdentifier.from(
+                        StreamDescriptor().withNamespace("dbo").withName("vw_test_view")
+                    ),
+                schema = setOf(fieldId),
+                configuredSyncMode = ConfiguredSyncMode.INCREMENTAL,
+                configuredPrimaryKey = listOf(fieldId),
+                configuredCursor = fieldId,
+            )
+
+        // Mock the metadata querier to return a VIEW type
+        val mockMetadataQuerier = mockk<MsSqlSourceMetadataQuerier>()
+        every { mockMetadataQuerier.findTableName(viewStream.id) } returns
+            TableName(name = "vw_test_view", schema = "dbo", type = "VIEW")
+
+        val factoryWithMockedQuerier =
+            MsSqlServerJdbcPartitionFactory(
+                sharedState,
+                selectQueryGenerator,
+                config,
+                mockMetadataQuerier
+            )
+
+        val partition = factoryWithMockedQuerier.create(streamFeedBootstrap(viewStream))
+
+        // Views should use non-resumable partitions to skip sampling entirely
+        assertTrue(
+            partition is MsSqlServerJdbcNonResumableSnapshotWithCursorPartition,
+            "Views should use non-resumable partitions to avoid sampling"
+        )
+    }
+
+    @Test
+    fun testViewDetectionWithNullTableName() {
+        // Test that when metadata querier returns null, we default to treating it as a table
+        val unknownStream =
+            Stream(
+                id =
+                    StreamIdentifier.from(
+                        StreamDescriptor().withNamespace("dbo").withName("unknown_object")
+                    ),
+                schema = setOf(fieldId),
+                configuredSyncMode = ConfiguredSyncMode.INCREMENTAL,
+                configuredPrimaryKey = listOf(fieldId),
+                configuredCursor = fieldId,
+            )
+
+        // Mock the metadata querier to return null (object not found)
+        val mockMetadataQuerier = mockk<MsSqlSourceMetadataQuerier>()
+        every { mockMetadataQuerier.findTableName(unknownStream.id) } returns null
+
+        val factoryWithMockedQuerier =
+            MsSqlServerJdbcPartitionFactory(
+                sharedState,
+                selectQueryGenerator,
+                config,
+                mockMetadataQuerier
+            )
+
+        val partition = factoryWithMockedQuerier.create(streamFeedBootstrap(unknownStream))
+        // Unknown objects (when metadata returns null) should default to resumable partitions
+        assertTrue(partition is MsSqlServerJdbcSnapshotWithCursorPartition)
     }
 }

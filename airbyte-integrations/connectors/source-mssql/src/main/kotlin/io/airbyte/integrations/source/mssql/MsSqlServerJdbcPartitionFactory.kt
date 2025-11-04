@@ -35,6 +35,7 @@ class MsSqlServerJdbcPartitionFactory(
     override val sharedState: DefaultJdbcSharedState,
     val selectQueryGenerator: MsSqlSourceOperations,
     val config: MsSqlServerSourceConfiguration,
+    val metadataQuerier: MsSqlSourceMetadataQuerier,
 ) :
     JdbcPartitionFactory<
         DefaultJdbcSharedState,
@@ -49,6 +50,12 @@ class MsSqlServerJdbcPartitionFactory(
         streamStates.getOrPut(streamFeedBootstrap.feed.id) {
             DefaultJdbcStreamState(sharedState, streamFeedBootstrap)
         }
+
+    /** Detects if a stream corresponds to a SQL Server VIEW (vs a TABLE) */
+    private fun isView(stream: Stream): Boolean {
+        val tableName = metadataQuerier.findTableName(stream.id) ?: return false
+        return tableName.type.equals("VIEW", ignoreCase = true)
+    }
 
     private fun findPkUpperBound(stream: Stream, pkChosenFromCatalog: List<Field>): JsonNode {
         // find upper bound using maxPk query
@@ -74,6 +81,7 @@ class MsSqlServerJdbcPartitionFactory(
     private fun coldStart(streamState: DefaultJdbcStreamState): MsSqlServerJdbcPartition {
         val stream: Stream = streamState.stream
         val pkChosenFromCatalog: List<Field> = stream.configuredPrimaryKey ?: listOf()
+        val isView = isView(stream)
 
         if (stream.configuredSyncMode == ConfiguredSyncMode.FULL_REFRESH) {
             if (pkChosenFromCatalog.isEmpty()) {
@@ -118,7 +126,9 @@ class MsSqlServerJdbcPartitionFactory(
         // Calculate cutoff time for cursor if exclude today's data is enabled
         val cursorCutoffTime = getCursorCutoffTime(cursorChosenFromCatalog)
 
-        if (pkChosenFromCatalog.isEmpty()) {
+        // Views can't be sampled with TABLESAMPLE, so use non-resumable partitions
+        // which skip the sampling step entirely
+        if (isView || pkChosenFromCatalog.isEmpty()) {
             return MsSqlServerJdbcNonResumableSnapshotWithCursorPartition(
                 selectQueryGenerator,
                 streamState,
@@ -171,7 +181,6 @@ class MsSqlServerJdbcPartitionFactory(
         }
 
         val isCursorBased: Boolean = !sharedState.configuration.global
-
         val pkChosenFromCatalog: List<Field> = stream.configuredPrimaryKey ?: listOf()
 
         if (
@@ -209,7 +218,7 @@ class MsSqlServerJdbcPartitionFactory(
                     streamState,
                     pkChosenFromCatalog,
                     lowerBound = if (pkLowerBound.isNull) null else listOf(pkLowerBound),
-                    upperBound = listOf(upperBound)
+                    upperBound = listOf(upperBound),
                 )
             }
 
@@ -255,7 +264,7 @@ class MsSqlServerJdbcPartitionFactory(
                     streamState,
                     pkChosenFromCatalog,
                     lowerBound = if (pkLowerBound.isNull) null else listOf(pkLowerBound),
-                    upperBound = listOf(upperBound)
+                    upperBound = listOf(upperBound),
                 )
             }
 
