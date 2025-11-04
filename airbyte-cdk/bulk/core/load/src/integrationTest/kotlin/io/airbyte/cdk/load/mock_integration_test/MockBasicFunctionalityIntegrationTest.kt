@@ -33,6 +33,7 @@ import io.airbyte.cdk.load.write.SchematizedNestedValueBehavior
 import io.airbyte.cdk.load.write.UnionBehavior
 import io.airbyte.cdk.load.write.UnknownTypesBehavior
 import io.airbyte.cdk.load.write.Untyped
+import io.airbyte.protocol.models.v0.AdditionalStats
 import io.airbyte.protocol.models.v0.AirbyteGlobalState
 import io.airbyte.protocol.models.v0.AirbyteMessage
 import io.airbyte.protocol.models.v0.AirbyteStateMessage
@@ -251,7 +252,9 @@ abstract class BaseMockBasicFunctionalityIntegrationTest(
                 .withType(AirbyteStateMessage.AirbyteStateType.GLOBAL)
                 .withSourceStats(AirbyteStateStats().withRecordCount(1.0))
                 // Attach our new destination record count
-                .withDestinationStats(AirbyteStateStats().withRecordCount(1.0))
+                .withDestinationStats(
+                    AirbyteStateStats().withRecordCount(1.0).withAdditionalStats(AdditionalStats())
+                )
                 // attach stats for speed mode
                 .withAdditionalProperty("committedRecordsCount", 1)
                 .also { stateMessage ->

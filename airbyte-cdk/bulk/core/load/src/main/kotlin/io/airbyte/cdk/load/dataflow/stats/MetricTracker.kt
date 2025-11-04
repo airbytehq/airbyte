@@ -9,13 +9,12 @@ import jakarta.inject.Singleton
 import java.util.concurrent.ConcurrentHashMap
 
 /**
- * A thread-safe utility class designed to track and manage metrics for different
- * destination streams. Metrics are categorized by stream descriptors and identified
- * by metric names.
+ * A thread-safe utility class designed to track and manage metrics for different destination
+ * streams. Metrics are categorized by stream descriptors and identified by metric names.
  *
- * The class supports adding numeric metric values, retrieving metrics for specific streams,
- * and draining (retrieving and clearing) metrics for a stream. If metric values are missing
- * for predefined metric names, default values of 0.0 are used.
+ * The class supports adding numeric metric values, retrieving metrics for specific streams, and
+ * draining (retrieving and clearing) metrics for a stream. If metric values are missing for
+ * predefined metric names, default values of 0.0 are used.
  */
 @Singleton
 class MetricTracker {
@@ -26,9 +25,9 @@ class MetricTracker {
     private val lock: Any = Any()
 
     /**
-     * Adds a metric value to the specified stream descriptor and metric. If the metric
-     * does not already exist for the given stream, it will be initialized with the given value.
-     * Later calls will update the existing value by adding the provided value.
+     * Adds a metric value to the specified stream descriptor and metric. If the metric does not
+     * already exist for the given stream, it will be initialized with the given value. Later calls
+     * will update the existing value by adding the provided value.
      *
      * @param stream the stream descriptor used to identify the metrics data.
      * @param metric the metric name and related metadata to be added or updated.
@@ -48,18 +47,21 @@ class MetricTracker {
      *
      * @param stream the stream descriptor used to identify the metrics to retrieve.
      * @return a map containing the metrics data, where keys represent metric names
+     * ```
      *         and values are their corresponding numeric values. If no metrics are
      *         found for the provided stream, an empty map is returned.
+     * ```
      */
     fun get(stream: DestinationStream.Descriptor): Map<String, Double> =
         synchronized(lock) { metrics[stream]?.toMap() ?: mutableMapOf() }
 
     /**
-     * Drains and returns the current metrics data for the specified stream descriptor. After retrieval,
-     * the metrics for the provided stream are cleared.
+     * Drains and returns the current metrics data for the specified stream descriptor. After
+     * retrieval, the metrics for the provided stream are cleared.
      *
      * @param stream the stream descriptor associated with the metrics to be drained.
-     * @return a map containing the drained metrics data, where keys are metric names and values are their respective numeric values.
+     * @return a map containing the drained metrics data, where keys are metric names and values are
+     * their respective numeric values.
      */
     fun drain(stream: DestinationStream.Descriptor): Map<String, Double> {
         synchronized(lock) {
@@ -71,28 +73,30 @@ class MetricTracker {
     }
 
     /**
-     * Adds default values for any missing metrics in the provided map. If a metric
-     * defined in the [ObservabilityMetrics] enum is absent in the given map, it will
-     * be initialized with a default value of 0.0.
+     * Adds default values for any missing metrics in the provided map. If a metric defined in the
+     * [ObservabilityMetrics] enum is absent in the given map, it will be initialized with a default
+     * value of 0.0.
      *
      * @param metrics the map of metrics to be updated with default values. The keys
+     * ```
      *                are metric names and the values are their respective numeric values.
-     * @return a new mutable map containing the updated metrics with default values for
+     * @return
+     * ```
+     * a new mutable map containing the updated metrics with default values for
+     * ```
      *         any missing entries.
+     * ```
      */
     private fun addDefaultValues(metrics: Map<String, Double>): Map<String, Double> {
         val copy = metrics.toMutableMap()
-        ObservabilityMetrics.entries.forEach {
-            copy.putIfAbsent(it.metricName, 0.0)
-        }
+        ObservabilityMetrics.entries.forEach { copy.putIfAbsent(it.metricName, 0.0) }
         return copy
     }
 }
 
 /**
- * Enum representing the available observability metrics.
- * Each metric is associated with a specific metric name used for tracking
- * system behavior and performance.
+ * Enum representing the available observability metrics. Each metric is associated with a specific
+ * metric name used for tracking system behavior and performance.
  *
  * @property metricName The name of the metric used in tracking.
  */

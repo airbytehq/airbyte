@@ -57,6 +57,8 @@ internal class MetricTrackerTest {
         val metrics = metricTracker.drain(stream)
 
         assertEquals(ObservabilityMetrics.entries.size, metrics.size)
-        ObservabilityMetrics.entries.forEach { metric -> assertEquals(0.0, metrics[metric.metricName]) }
+        ObservabilityMetrics.entries.forEach { metric ->
+            assertEquals(0.0, metrics[metric.metricName])
+        }
     }
 }
