@@ -32,7 +32,7 @@ jobs:
         id: list-connectors
         run: |
           json_array=$(tools/bin/bulk-cdk/get-certified-connectors.sh)
-          echo 'connectors=["destination-dev-null"]' >> $GITHUB_OUTPUT
+          echo "connectors=$json_array" >> $GITHUB_OUTPUT
           echo "Found bulk CDK connectors to upgrade: $json_array"
 
   upgrade-connector-cdk:
