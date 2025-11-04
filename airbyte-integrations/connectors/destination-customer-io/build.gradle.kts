@@ -5,12 +5,13 @@
 plugins {
     id("application")
     id("airbyte-bulk-connector")
+    id("io.airbyte.gradle.docker")
+    id("airbyte-connector-docker-convention")
 }
 
 airbyteBulkConnector {
     core = "load"
     toolkits = listOf("load-csv", "load-dlq", "load-http", "load-low-code")
-    cdk = "local"
 }
 
 application {

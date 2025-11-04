@@ -1,5 +1,5 @@
 /*
- * Copyright (c) 2024 Airbyte, Inc., all rights reserved.
+ * Copyright (c) 2025 Airbyte, Inc., all rights reserved.
  */
 
 package io.airbyte.cdk.load.state
@@ -8,150 +8,98 @@ import io.airbyte.cdk.load.command.MockDestinationCatalogFactory.Companion.strea
 import io.airbyte.cdk.load.command.MockDestinationCatalogFactory.Companion.stream2
 import io.airbyte.cdk.load.message.BatchState
 import kotlinx.coroutines.channels.Channel
-import kotlinx.coroutines.delay
 import kotlinx.coroutines.launch
 import kotlinx.coroutines.test.runTest
 import org.junit.jupiter.api.Assertions
 import org.junit.jupiter.api.Test
 import org.junit.jupiter.api.assertDoesNotThrow
+import org.junit.jupiter.api.assertThrows
 
 class StreamManagerTest {
-    @Test
-    fun testCountRecordsAndCheckpoint() {
-        val manager1 = StreamManager(stream1)
-        val manager2 = StreamManager(stream2)
 
-        Assertions.assertEquals(1, manager1.inferNextCheckpointKey().checkpointIndex.value)
-        Assertions.assertEquals(1, manager2.inferNextCheckpointKey().checkpointIndex.value)
-
-        // Incrementing once yields (n, n)
-        repeat(10) { manager1.incrementReadCount() }
-        val (index, count) = manager1.markCheckpoint()
-
-        Assertions.assertEquals(10, index)
-        Assertions.assertEquals(10, count)
-
-        Assertions.assertEquals(2, manager1.inferNextCheckpointKey().checkpointIndex.value)
-        Assertions.assertEquals(1, manager2.inferNextCheckpointKey().checkpointIndex.value)
-
-        // Incrementing a second time yields (n + m, m)
-        repeat(5) { manager1.incrementReadCount() }
-        val (index2, count2) = manager1.markCheckpoint()
-
-        Assertions.assertEquals(15, index2)
-        Assertions.assertEquals(5, count2)
-
-        Assertions.assertEquals(3, manager1.inferNextCheckpointKey().checkpointIndex.value)
-        Assertions.assertEquals(1, manager2.inferNextCheckpointKey().checkpointIndex.value)
-
-        // Never incrementing yields (0, 0)
-        val (index3, count3) = manager2.markCheckpoint()
-
-        Assertions.assertEquals(3, manager1.inferNextCheckpointKey().checkpointIndex.value)
-        Assertions.assertEquals(2, manager2.inferNextCheckpointKey().checkpointIndex.value)
-
-        Assertions.assertEquals(0, index3)
-        Assertions.assertEquals(0, count3)
-
-        // Incrementing twice in a row yields (n + m + 0, 0)
-        val (index4, count4) = manager1.markCheckpoint()
-
-        Assertions.assertEquals(4, manager1.inferNextCheckpointKey().checkpointIndex.value)
-        Assertions.assertEquals(2, manager2.inferNextCheckpointKey().checkpointIndex.value)
-
-        Assertions.assertEquals(15, index4)
-        Assertions.assertEquals(0, count4)
-    }
+    private fun checkpoint(id: String) = CheckpointId(id)
 
     @Test
-    fun testMarkSucceeded() = runTest {
+    fun `markProcessingSucceeded requires end-of-stream`() = runTest {
         val manager = StreamManager(stream1)
         val channel = Channel<Boolean>(Channel.UNLIMITED)
+        val ck = checkpoint("c1")
 
+        // Start waiting
         launch { channel.send(manager.awaitStreamResult() is StreamProcessingSucceeded) }
 
-        delay(500)
-        Assertions.assertTrue(channel.tryReceive().isFailure)
-        Assertions.assertThrows(IllegalStateException::class.java) {
-            manager.markProcessingSucceeded()
-        }
+        repeat(5) { manager.incrementReadCount(ck) }
+
+        // Cannot mark success before end-of-stream
+        assertThrows<IllegalStateException> { manager.markProcessingSucceeded() }
+
+        // Mark end-of-stream and then success
         manager.markEndOfStream(true)
-
         manager.markProcessingSucceeded()
-        Assertions.assertTrue(channel.receive())
 
+        Assertions.assertTrue(channel.receive())
         Assertions.assertEquals(StreamProcessingSucceeded, manager.awaitStreamResult())
     }
 
     @Test
-    fun testMarkFailure() = runTest {
+    fun `markProcessingFailed can happen before end-of-stream`() = runTest {
         val manager = StreamManager(stream1)
         val channel = Channel<Boolean>(Channel.UNLIMITED)
 
         launch { channel.send(manager.awaitStreamResult() is StreamProcessingSucceeded) }
 
-        delay(500)
-        Assertions.assertTrue(channel.tryReceive().isFailure)
         manager.markProcessingFailed(Exception("test"))
         Assertions.assertFalse(channel.receive())
-
         Assertions.assertTrue(manager.awaitStreamResult() is StreamProcessingFailed)
     }
 
     @Test
-    fun testCannotUpdateOrCloseReadClosedStream() {
+    fun `cannot increment after end-of-stream`() {
         val manager = StreamManager(stream1)
+        val ck = checkpoint("c1")
 
-        // Can't mark success before end-of-stream
-        Assertions.assertThrows(IllegalStateException::class.java) {
-            manager.markProcessingSucceeded()
-        }
-
-        manager.incrementReadCount()
+        manager.incrementReadCount(ck)
         manager.markEndOfStream(true)
 
-        // Can't update after end-of-stream
-        Assertions.assertThrows(IllegalStateException::class.java) { manager.incrementReadCount() }
-        Assertions.assertThrows(IllegalStateException::class.java) { manager.markEndOfStream(true) }
+        assertThrows<IllegalStateException> { manager.incrementReadCount(ck) }
+        assertThrows<IllegalStateException> { manager.markEndOfStream(true) }
 
-        // Can close now
-        Assertions.assertDoesNotThrow(manager::markProcessingSucceeded)
+        // Now success is allowed
+        assertDoesNotThrow { manager.markProcessingSucceeded() }
     }
 
     @Test
-    fun `test persisted counts`() {
+    fun `persisted counts without rejected records`() {
         val manager = StreamManager(stream1)
-        val checkpointId = manager.inferNextCheckpointKey().checkpointId
+        val ck = checkpoint("c1")
 
-        repeat(10) { manager.incrementReadCount() }
-        manager.markCheckpoint()
+        repeat(10) { manager.incrementReadCount(ck) }
 
-        Assertions.assertFalse(manager.areRecordsPersistedForCheckpoint(checkpointId))
+        Assertions.assertFalse(manager.areRecordsPersistedForCheckpoint(ck))
         manager.incrementCheckpointCounts(
             BatchState.PERSISTED,
-            mapOf(checkpointId to CheckpointValue(5, 5)),
+            mapOf(ck to CheckpointValue(records = 5, serializedBytes = 5)),
         )
-        Assertions.assertFalse(manager.areRecordsPersistedForCheckpoint(checkpointId))
+        Assertions.assertFalse(manager.areRecordsPersistedForCheckpoint(ck))
         manager.incrementCheckpointCounts(
             BatchState.PERSISTED,
-            mapOf(checkpointId to CheckpointValue(5, 5)),
+            mapOf(ck to CheckpointValue(records = 5, serializedBytes = 5)),
         )
-        Assertions.assertTrue(manager.areRecordsPersistedForCheckpoint(checkpointId))
+        Assertions.assertTrue(manager.areRecordsPersistedForCheckpoint(ck))
     }
 
     @Test
-    fun `test persisted counts with rejected records`() {
+    fun `persisted counts with rejected records`() {
         val manager = StreamManager(stream1)
-        val checkpointId = manager.inferNextCheckpointKey().checkpointId
+        val ck = checkpoint("c1")
 
-        repeat(10) { manager.incrementReadCount() }
-        manager.markCheckpoint()
+        repeat(10) { manager.incrementReadCount(ck) }
 
-        Assertions.assertFalse(manager.areRecordsPersistedForCheckpoint(checkpointId))
+        Assertions.assertFalse(manager.areRecordsPersistedForCheckpoint(ck))
         manager.incrementCheckpointCounts(
             BatchState.PERSISTED,
             mapOf(
-                checkpointId to
+                ck to
                     CheckpointValue(
                         records = 3,
                         serializedBytes = 5,
@@ -159,11 +107,11 @@ class StreamManagerTest {
                     )
             ),
         )
-        Assertions.assertFalse(manager.areRecordsPersistedForCheckpoint(checkpointId))
+        Assertions.assertFalse(manager.areRecordsPersistedForCheckpoint(ck))
         manager.incrementCheckpointCounts(
             BatchState.PERSISTED,
             mapOf(
-                checkpointId to
+                ck to
                     CheckpointValue(
                         records = 4,
                         serializedBytes = 5,
@@ -171,103 +119,92 @@ class StreamManagerTest {
                     )
             ),
         )
-        Assertions.assertTrue(manager.areRecordsPersistedForCheckpoint(checkpointId))
+        Assertions.assertTrue(manager.areRecordsPersistedForCheckpoint(ck))
     }
 
     @Test
-    fun `test persisted count for multiple checkpoints`() {
+    fun `persisted counts for multiple checkpoints`() {
         val manager = StreamManager(stream1)
+        val ck1 = checkpoint("c1")
+        val ck2 = checkpoint("c2")
 
-        val checkpointId1 = manager.inferNextCheckpointKey().checkpointId
-        repeat(10) { manager.incrementReadCount() }
-        manager.markCheckpoint()
+        repeat(10) { manager.incrementReadCount(ck1) }
+        repeat(15) { manager.incrementReadCount(ck2) }
 
-        val checkpointId2 = manager.inferNextCheckpointKey().checkpointId
-        repeat(15) { manager.incrementReadCount() }
-        manager.markCheckpoint()
-
-        Assertions.assertFalse(manager.areRecordsPersistedForCheckpoint(checkpointId1))
-        Assertions.assertFalse(manager.areRecordsPersistedForCheckpoint(checkpointId2))
+        Assertions.assertFalse(manager.areRecordsPersistedForCheckpoint(ck1))
+        Assertions.assertFalse(manager.areRecordsPersistedForCheckpoint(ck2))
 
         manager.incrementCheckpointCounts(
             BatchState.PERSISTED,
-            mapOf(checkpointId1 to CheckpointValue(10, 10)),
+            mapOf(ck1 to CheckpointValue(10, 10)),
         )
-        Assertions.assertTrue(manager.areRecordsPersistedForCheckpoint(checkpointId1))
-        Assertions.assertFalse(manager.areRecordsPersistedForCheckpoint(checkpointId2))
+        Assertions.assertTrue(manager.areRecordsPersistedForCheckpoint(ck1))
+        Assertions.assertFalse(manager.areRecordsPersistedForCheckpoint(ck2))
 
         manager.incrementCheckpointCounts(
             BatchState.PERSISTED,
-            mapOf(checkpointId2 to CheckpointValue(15, 15)),
+            mapOf(ck2 to CheckpointValue(15, 15)),
         )
-        Assertions.assertTrue(manager.areRecordsPersistedForCheckpoint(checkpointId1))
-        Assertions.assertTrue(manager.areRecordsPersistedForCheckpoint(checkpointId2))
+        Assertions.assertTrue(manager.areRecordsPersistedForCheckpoint(ck1))
+        Assertions.assertTrue(manager.areRecordsPersistedForCheckpoint(ck2))
     }
 
     @Test
-    fun `test persisted count for multiple checkpoints out of order`() {
+    fun `persisted counts for multiple checkpoints out of order`() {
         val manager = StreamManager(stream1)
+        val ck1 = checkpoint("c1")
+        val ck2 = checkpoint("c2")
 
-        val checkpointId1 = manager.inferNextCheckpointKey().checkpointId
+        repeat(10) { manager.incrementReadCount(ck1) }
+        repeat(15) { manager.incrementReadCount(ck2) }
 
-        repeat(10) { manager.incrementReadCount() }
-        manager.markCheckpoint()
-
-        val checkpointId2 = manager.inferNextCheckpointKey().checkpointId
-        repeat(15) { manager.incrementReadCount() }
-
-        manager.markCheckpoint()
-
-        Assertions.assertFalse(manager.areRecordsPersistedForCheckpoint(checkpointId1))
-        Assertions.assertFalse(manager.areRecordsPersistedForCheckpoint(checkpointId2))
+        Assertions.assertFalse(manager.areRecordsPersistedForCheckpoint(ck1))
+        Assertions.assertFalse(manager.areRecordsPersistedForCheckpoint(ck2))
 
         manager.incrementCheckpointCounts(
             BatchState.PERSISTED,
-            mapOf(checkpointId2 to CheckpointValue(15, 15)),
+            mapOf(ck2 to CheckpointValue(15, 15)),
         )
-        Assertions.assertFalse(manager.areRecordsPersistedForCheckpoint(checkpointId1))
-        Assertions.assertTrue(manager.areRecordsPersistedForCheckpoint(checkpointId2))
+        Assertions.assertFalse(manager.areRecordsPersistedForCheckpoint(ck1))
+        Assertions.assertTrue(manager.areRecordsPersistedForCheckpoint(ck2))
 
         manager.incrementCheckpointCounts(
             BatchState.PERSISTED,
-            mapOf(checkpointId1 to CheckpointValue(10, 10)),
+            mapOf(ck1 to CheckpointValue(10, 10)),
         )
-        Assertions.assertTrue(manager.areRecordsPersistedForCheckpoint(checkpointId1))
-        Assertions.assertTrue(manager.areRecordsPersistedForCheckpoint(checkpointId2))
+        Assertions.assertTrue(manager.areRecordsPersistedForCheckpoint(ck1))
+        Assertions.assertTrue(manager.areRecordsPersistedForCheckpoint(ck2))
     }
 
     @Test
-    fun `test completion implies persistence`() {
+    fun `completion implies persistence`() {
         val manager = StreamManager(stream1)
+        val ck = checkpoint("c1")
 
-        val checkpointId1 = manager.inferNextCheckpointKey().checkpointId
+        repeat(10) { manager.incrementReadCount(ck) }
 
-        repeat(10) { manager.incrementReadCount() }
-        manager.markCheckpoint()
-
-        Assertions.assertFalse(manager.areRecordsPersistedForCheckpoint(checkpointId1))
+        Assertions.assertFalse(manager.areRecordsPersistedForCheckpoint(ck))
         manager.incrementCheckpointCounts(
             BatchState.COMPLETE,
-            mapOf(checkpointId1 to CheckpointValue(4, 4)),
+            mapOf(ck to CheckpointValue(4, 4)),
         )
-        Assertions.assertFalse(manager.areRecordsPersistedForCheckpoint(checkpointId1))
+        Assertions.assertFalse(manager.areRecordsPersistedForCheckpoint(ck))
         manager.incrementCheckpointCounts(
             BatchState.COMPLETE,
-            mapOf(checkpointId1 to CheckpointValue(6, 6)),
+            mapOf(ck to CheckpointValue(6, 6)),
         )
-        Assertions.assertTrue(manager.areRecordsPersistedForCheckpoint(checkpointId1))
+        Assertions.assertTrue(manager.areRecordsPersistedForCheckpoint(ck))
 
-        // Can still count persisted (but without effect)
+        // Additional persisted counts do not break anything
         manager.incrementCheckpointCounts(
             BatchState.PERSISTED,
-            mapOf(checkpointId1 to CheckpointValue(10, 10)),
+            mapOf(ck to CheckpointValue(10, 10)),
         )
-        Assertions.assertTrue(manager.areRecordsPersistedForCheckpoint(checkpointId1))
+        Assertions.assertTrue(manager.areRecordsPersistedForCheckpoint(ck))
     }
 
     @Test
-    fun `test completion check`() {
-        // All three steps are required, but they can happen in any order.
+    fun `batch processing completion requires end-of-stream and complete counts`() {
         val cases =
             listOf(
                 listOf("1", "2", "end"),
@@ -280,14 +217,11 @@ class StreamManagerTest {
 
         cases.forEach { steps ->
             val manager = StreamManager(stream1)
-            val checkpointId1 = manager.inferNextCheckpointKey().checkpointId
+            val ck1 = checkpoint("c1")
+            val ck2 = checkpoint("c2")
 
-            repeat(10) { manager.incrementReadCount() }
-            manager.markCheckpoint()
-
-            val checkpointId2 = manager.inferNextCheckpointKey().checkpointId
-            repeat(20) { manager.incrementReadCount() }
-            manager.markCheckpoint()
+            repeat(10) { manager.incrementReadCount(ck1) }
+            repeat(20) { manager.incrementReadCount(ck2) }
 
             steps.forEachIndexed { index, step ->
                 when (step) {
@@ -295,7 +229,7 @@ class StreamManagerTest {
                         manager.incrementCheckpointCounts(
                             BatchState.COMPLETE,
                             mapOf(
-                                checkpointId1 to
+                                ck1 to
                                     CheckpointValue(
                                         records = 9,
                                         serializedBytes = 10,
@@ -306,7 +240,7 @@ class StreamManagerTest {
                     "2" ->
                         manager.incrementCheckpointCounts(
                             BatchState.COMPLETE,
-                            mapOf(checkpointId2 to CheckpointValue(20, 20)),
+                            mapOf(ck2 to CheckpointValue(20, 20)),
                         )
                     "end" -> manager.markEndOfStream(true)
                 }
@@ -326,30 +260,41 @@ class StreamManagerTest {
     }
 
     @Test
-    fun `do not throw when counting before marking`() {
-        val manager1 = StreamManager(stream1)
+    fun `committedCount returns max across states`() {
+        val manager = StreamManager(stream1)
+        val ck = checkpoint("c1")
 
-        Assertions.assertEquals(1, manager1.inferNextCheckpointKey().checkpointIndex.value)
+        repeat(10) { manager.incrementReadCount(ck) }
 
-        repeat(10) { manager1.incrementReadCount() }
-        manager1.incrementCheckpointCounts(
+        manager.incrementCheckpointCounts(
             BatchState.PERSISTED,
-            mapOf(manager1.inferNextCheckpointKey().checkpointId to CheckpointValue(10, 10)),
+            mapOf(ck to CheckpointValue(records = 4, serializedBytes = 100, rejectedRecords = 1)),
         )
-        assertDoesNotThrow { manager1.markCheckpoint() }
+        manager.incrementCheckpointCounts(
+            BatchState.COMPLETE,
+            mapOf(ck to CheckpointValue(records = 5, serializedBytes = 90, rejectedRecords = 2)),
+        )
+
+        val committed = manager.committedCount(ck)
+        Assertions.assertEquals(5, committed.records)
+        Assertions.assertEquals(100, committed.serializedBytes)
+        Assertions.assertEquals(2, committed.rejectedRecords)
     }
 
     @Test
-    fun `throw if inferNextCheckpointKey called when disabled`() {
-        val manager1 = StreamManager(stream1, requireCheckpointKeyOnState = true)
-        Assertions.assertThrows(IllegalStateException::class.java) {
-            manager1.inferNextCheckpointKey()
-        }
+    fun `hadNonzeroRecords reflects read state`() {
+        val m1 = StreamManager(stream1)
+        val ck1 = checkpoint("c1")
+        Assertions.assertFalse(m1.hadNonzeroRecords())
+        m1.incrementReadCount(ck1)
+        Assertions.assertTrue(m1.hadNonzeroRecords())
     }
 
     @Test
-    fun `throw if force marking a checkpoint when disabled`() {
-        val manager1 = StreamManager(stream1, requireCheckpointKeyOnState = true)
-        Assertions.assertThrows(IllegalStateException::class.java) { manager1.markCheckpoint() }
+    fun `areRecordsPersistedForCheckpoint does not throw`() {
+        val manager = StreamManager(stream2)
+        val ck = checkpoint("c-socket")
+        // No read counts set, but should not throw
+        Assertions.assertDoesNotThrow { manager.areRecordsPersistedForCheckpoint(ck) }
     }
 }

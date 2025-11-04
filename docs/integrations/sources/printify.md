@@ -25,6 +25,16 @@ API Reference: https://developers.printify.com/#catalog
 
 | Version          | Date              | Pull Request | Subject        |
 |------------------|-------------------|--------------|----------------|
+| 0.0.23 | 2025-10-29 | [68978](https://github.com/airbytehq/airbyte/pull/68978) | Update dependencies |
+| 0.0.22 | 2025-10-21 | [68380](https://github.com/airbytehq/airbyte/pull/68380) | Update dependencies |
+| 0.0.21 | 2025-10-14 | [67823](https://github.com/airbytehq/airbyte/pull/67823) | Update dependencies |
+| 0.0.20 | 2025-10-07 | [67495](https://github.com/airbytehq/airbyte/pull/67495) | Update dependencies |
+| 0.0.19 | 2025-09-30 | [66417](https://github.com/airbytehq/airbyte/pull/66417) | Update dependencies |
+| 0.0.18 | 2025-09-09 | [65829](https://github.com/airbytehq/airbyte/pull/65829) | Update dependencies |
+| 0.0.17 | 2025-08-23 | [65187](https://github.com/airbytehq/airbyte/pull/65187) | Update dependencies |
+| 0.0.16 | 2025-08-16 | [64969](https://github.com/airbytehq/airbyte/pull/64969) | Update dependencies |
+| 0.0.15 | 2025-08-02 | [64199](https://github.com/airbytehq/airbyte/pull/64199) | Update dependencies |
+| 0.0.14 | 2025-07-26 | [63923](https://github.com/airbytehq/airbyte/pull/63923) | Update dependencies |
 | 0.0.13 | 2025-07-19 | [63391](https://github.com/airbytehq/airbyte/pull/63391) | Update dependencies |
 | 0.0.12 | 2025-07-12 | [63244](https://github.com/airbytehq/airbyte/pull/63244) | Update dependencies |
 | 0.0.11 | 2025-07-05 | [62560](https://github.com/airbytehq/airbyte/pull/62560) | Update dependencies |

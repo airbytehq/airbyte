@@ -309,7 +309,17 @@ Airbyte batches requests to the API in order to efficiently pull data and respec
 
 | Version    | Date       | Pull Request                                             | Subject                                                                                                                                                                |
 |------------|------------|----------------------------------------------------------|------------------------------------------------------------------------------------------------------------------------------------------------------------------------|
-| 0.12.2 | 2025-07-22 | [63334](https://github.com/airbytehq/airbyte/pull/63334) | Feature: Deduplicate Headers|
+| 0.12.12 | 2025-10-29 | [68759](https://github.com/airbytehq/airbyte/pull/68759) | Update dependencies |
+| 0.12.11 | 2025-10-21 | [68254](https://github.com/airbytehq/airbyte/pull/68254) | Update dependencies |
+| 0.12.10 | 2025-10-16 | [67531](https://github.com/airbytehq/airbyte/pull/67531) | Add error handling for unexpected data in sheets causing 500 responses. |
+| 0.12.9 | 2025-10-14 | [67876](https://github.com/airbytehq/airbyte/pull/67876) | Update dependencies |
+| 0.12.8 | 2025-10-07 | [67395](https://github.com/airbytehq/airbyte/pull/67395) | Update dependencies |
+| 0.12.7 | 2025-09-30 | [65383](https://github.com/airbytehq/airbyte/pull/65383) | Update dependencies |
+| 0.12.6 | 2025-09-10 | [66012](https://github.com/airbytehq/airbyte/pull/66012) | Update to CDK v7 |
+| 0.12.5 | 2025-08-09 | [64633](https://github.com/airbytehq/airbyte/pull/64633) | Update dependencies |
+| 0.12.4 | 2025-08-02 | [64179](https://github.com/airbytehq/airbyte/pull/64179) | Update dependencies |
+| 0.12.3 | 2025-07-26 | [63822](https://github.com/airbytehq/airbyte/pull/63822) | Update dependencies |
+| 0.12.2 | 2025-07-22 | [63334](https://github.com/airbytehq/airbyte/pull/63334) | Feature: Deduplicate Headers |
 | 0.12.1 | 2025-07-19 | [55490](https://github.com/airbytehq/airbyte/pull/55490) | Update dependencies |
 | 0.12.0 | 2025-07-15 | [63305](https://github.com/airbytehq/airbyte/pull/63305) | Promoting release candidate 0.12.0-rc.2 to a main version. |
 | 0.12.0-rc.2| 2025-07-11 | [62931](https://github.com/airbytehq/airbyte/pull/62931) | Fix: handle empty `propeties_to_match` in SchmemaMatchingExtractor |

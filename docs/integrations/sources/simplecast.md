@@ -27,6 +27,16 @@ Say hello to the modern end-to-end podcasting platform. Simplecast remains the e
 
 | Version          | Date              | Pull Request | Subject        |
 |------------------|-------------------|--------------|----------------|
+| 0.0.38 | 2025-10-29 | [68777](https://github.com/airbytehq/airbyte/pull/68777) | Update dependencies |
+| 0.0.37 | 2025-10-21 | [68263](https://github.com/airbytehq/airbyte/pull/68263) | Update dependencies |
+| 0.0.36 | 2025-10-14 | [67790](https://github.com/airbytehq/airbyte/pull/67790) | Update dependencies |
+| 0.0.35 | 2025-10-07 | [67434](https://github.com/airbytehq/airbyte/pull/67434) | Update dependencies |
+| 0.0.34 | 2025-09-30 | [66901](https://github.com/airbytehq/airbyte/pull/66901) | Update dependencies |
+| 0.0.33 | 2025-09-24 | [66262](https://github.com/airbytehq/airbyte/pull/66262) | Update dependencies |
+| 0.0.32 | 2025-09-09 | [66111](https://github.com/airbytehq/airbyte/pull/66111) | Update dependencies |
+| 0.0.31 | 2025-08-24 | [65485](https://github.com/airbytehq/airbyte/pull/65485) | Update dependencies |
+| 0.0.30 | 2025-08-09 | [64825](https://github.com/airbytehq/airbyte/pull/64825) | Update dependencies |
+| 0.0.29 | 2025-08-02 | [64420](https://github.com/airbytehq/airbyte/pull/64420) | Update dependencies |
 | 0.0.28 | 2025-07-19 | [63642](https://github.com/airbytehq/airbyte/pull/63642) | Update dependencies |
 | 0.0.27 | 2025-07-05 | [62669](https://github.com/airbytehq/airbyte/pull/62669) | Update dependencies |
 | 0.0.26 | 2025-06-28 | [61460](https://github.com/airbytehq/airbyte/pull/61460) | Update dependencies |

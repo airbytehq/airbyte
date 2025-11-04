@@ -17,16 +17,18 @@ import io.airbyte.cdk.output.StandardOutputConsumer
 import io.airbyte.cdk.output.sockets.NativeRecordPayload
 import io.airbyte.cdk.output.sockets.SocketJsonOutputConsumer
 import io.airbyte.cdk.output.sockets.SocketProtobufOutputConsumer
-import io.airbyte.cdk.output.sockets.nullProtoEncoder
 import io.airbyte.cdk.output.sockets.toJson
 import io.airbyte.cdk.output.sockets.toProtobuf
+import io.airbyte.cdk.output.sockets.valueForProtobufEncoding
+import io.airbyte.cdk.protocol.AirbyteValueProtobufEncoder
 import io.airbyte.cdk.util.Jsons
 import io.airbyte.protocol.models.v0.AirbyteMessage
 import io.airbyte.protocol.models.v0.AirbyteRecordMessage
 import io.airbyte.protocol.models.v0.AirbyteRecordMessageMeta
 import io.airbyte.protocol.models.v0.AirbyteRecordMessageMetaChange
 import io.airbyte.protocol.protobuf.AirbyteMessage.AirbyteMessageProtobuf
-import io.airbyte.protocol.protobuf.AirbyteRecordMessage.*
+import io.airbyte.protocol.protobuf.AirbyteRecordMessage.AirbyteRecordMessageProtobuf
+import io.airbyte.protocol.protobuf.AirbyteRecordMessage.AirbyteValueProtobuf
 import io.airbyte.protocol.protobuf.AirbyteRecordMessageMetaOuterClass
 import java.time.Clock
 import java.time.ZoneOffset
@@ -231,7 +233,9 @@ sealed class FeedBootstrap<T : Feed>(
             changes: Map<Field, FieldValueChange>?
         ) {
             if (changes.isNullOrEmpty()) {
-                acceptWithoutChanges(recordData.toProtobuf(defaultRecordData, valueVBuilder))
+                acceptWithoutChanges(
+                    recordData.toProtobuf(stream.schema, defaultRecordData, valueVBuilder)
+                )
             } else {
                 val rm = AirbyteRecordMessageMetaOuterClass.AirbyteRecordMessageMeta.newBuilder()
                 val c =
@@ -243,7 +247,10 @@ sealed class FeedBootstrap<T : Feed>(
                         .setReason(fieldValueChange.protobufReason())
                     rm.addChanges(c)
                 }
-                acceptWithChanges(recordData.toProtobuf(defaultRecordData, valueVBuilder), rm)
+                acceptWithChanges(
+                    recordData.toProtobuf(stream.schema, defaultRecordData, valueVBuilder),
+                    rm
+                )
             }
         }
 
@@ -294,10 +301,42 @@ sealed class FeedBootstrap<T : Feed>(
                     }
                 }
                 .also { builder ->
+                    val decoratingFields: NativeRecordPayload = mutableMapOf()
+                    if (feed is Stream && precedingGlobalFeed != null || isTriggerBasedCdc) {
+                        metaFieldDecorator.decorateRecordData(
+                            timestamp =
+                                socketProtobufOutputConsumer.recordEmittedAt.atOffset(
+                                    ZoneOffset.UTC
+                                ),
+                            globalStateValue =
+                                if (precedingGlobalFeed != null)
+                                    stateManager.scoped(precedingGlobalFeed).current()
+                                else null,
+                            stream,
+                            decoratingFields
+                        )
+                    }
+
+                    // Unlike STDIO mode, in socket mode we always include all scehma fields
+                    // Including decorating field even when it has NULL value.
+                    // This is necessary because in PROTOBUF mode we don't have field names so
+                    // the sorted order of fields is used to determine the field position on the
+                    // other side.
+                    val encoder = AirbyteValueProtobufEncoder()
                     stream.schema
                         .sortedBy { it.id }
-                        .forEach { _ ->
-                            builder.addData(nullProtoEncoder.encode(valueVBuilder, true))
+                        .forEach { field ->
+                            val decodedValueForProto =
+                                decoratingFields[field.id]?.let { fve ->
+                                    valueForProtobufEncoding(fve)
+                                }
+                            builder.addData(
+                                encoder.encode(
+                                    decodedValueForProto,
+                                    field.type.airbyteSchemaType,
+                                    valueVBuilder.clear()
+                                )
+                            )
                         }
                 }
 

@@ -90,6 +90,15 @@ The Exchange Rates API has rate limits that vary per pricing plan. The free plan
 
 | Version | Date       | Pull Request                                             | Subject                                                                                                             |
 | :------ | :--------- | :------------------------------------------------------- | :------------------------------------------------------------------------------------------------------------------ |
+| 1.4.37 | 2025-10-29 | [68716](https://github.com/airbytehq/airbyte/pull/68716) | Update dependencies |
+| 1.4.36 | 2025-10-21 | [68560](https://github.com/airbytehq/airbyte/pull/68560) | Update dependencies |
+| 1.4.35 | 2025-10-14 | [67766](https://github.com/airbytehq/airbyte/pull/67766) | Update dependencies |
+| 1.4.34 | 2025-10-07 | [67277](https://github.com/airbytehq/airbyte/pull/67277) | Update dependencies |
+| 1.4.33 | 2025-09-30 | [65808](https://github.com/airbytehq/airbyte/pull/65808) | Update dependencies |
+| 1.4.32 | 2025-08-23 | [65295](https://github.com/airbytehq/airbyte/pull/65295) | Update dependencies |
+| 1.4.31 | 2025-08-09 | [64761](https://github.com/airbytehq/airbyte/pull/64761) | Update dependencies |
+| 1.4.30 | 2025-08-02 | [64335](https://github.com/airbytehq/airbyte/pull/64335) | Update dependencies |
+| 1.4.29 | 2025-07-26 | [64014](https://github.com/airbytehq/airbyte/pull/64014) | Update dependencies |
 | 1.4.28 | 2025-07-19 | [63607](https://github.com/airbytehq/airbyte/pull/63607) | Update dependencies |
 | 1.4.27 | 2025-07-12 | [62957](https://github.com/airbytehq/airbyte/pull/62957) | Update dependencies |
 | 1.4.26 | 2025-07-05 | [62781](https://github.com/airbytehq/airbyte/pull/62781) | Update dependencies |

@@ -1,0 +1,70 @@
+/*
+ * Copyright (c) 2024 Airbyte, Inc., all rights reserved.
+ */
+
+plugins {
+    id("application")
+    id("airbyte-bulk-connector")
+    id("io.airbyte.gradle.docker")
+    id("airbyte-connector-docker-convention")
+}
+
+airbyteBulkConnector {
+    core = "load"
+    toolkits = listOf("load-csv", "load-dlq", "load-http", "load-low-code")
+}
+
+application {
+    mainClass = "io.airbyte.integrations.destination.hubspot.HubSpotDestination"
+
+    applicationDefaultJvmArgs = listOf(
+        "-XX:+ExitOnOutOfMemoryError", "-XX:MaxRAMPercentage=75.0",
+        // Uncomment to attach a live profiler.
+//        "-Djava.rmi.server.hostname=localhost",
+//            "-Dcom.sun.management.jmxremote=true",
+//            "-Dcom.sun.management.jmxremote.port=6000",
+//            "-Dcom.sun.management.jmxremote.rmi.port=6000",
+//            "-Dcom.sun.management.jmxremote.local.only=false",
+//            "-Dcom.sun.management.jmxremote.authenticate=false",
+//            "-Dcom.sun.management.jmxremote.ssl=false",
+    )
+
+    // Uncomment and replace to run locally
+    //applicationDefaultJvmArgs = listOf("-XX:+ExitOnOutOfMemoryError", "-XX:MaxRAMPercentage=75.0", "--add-opens", "java.base/sun.nio.ch=ALL-UNNAMED", "--add-opens", "java.base/sun.security.action=ALL-UNNAMED", "--add-opens", "java.base/java.lang=ALL-UNNAMED")
+}
+
+val junitVersion = "5.11.4"
+val testContainersVersion = "1.20.5"
+
+configurations.configureEach {
+    // Exclude additional SLF4J providers from all classpaths
+    exclude(mapOf("group" to "org.slf4j", "module" to  "slf4j-reload4j"))
+}
+
+// Uncomment to run locally
+//tasks.run.configure {
+//    standardInput = System.`in`
+//}
+
+dependencies {
+    implementation("io.github.oshai:kotlin-logging-jvm:7.0.0")
+    implementation("jakarta.inject:jakarta.inject-api:2.0.1")
+    implementation("com.github.spotbugs:spotbugs-annotations:4.9.0")
+    implementation("io.micronaut:micronaut-inject:4.7.12")
+    implementation("org.apache.commons:commons-lang3:3.17.0")
+
+    // FIXME not sure why but these were not picked as transient dependencies so I copied/pasted them from load-http
+    implementation("com.squareup.okhttp3:okhttp:4.12.0")
+    implementation("dev.failsafe:failsafe-okhttp:3.3.2")
+
+    testImplementation("io.mockk:mockk:1.13.16")
+    testImplementation("org.junit.jupiter:junit-jupiter-api:$junitVersion")
+    testImplementation("org.junit.jupiter:junit-jupiter-params:$junitVersion")
+    testRuntimeOnly("org.junit.jupiter:junit-jupiter-engine:$junitVersion")
+
+    integrationTestImplementation("org.testcontainers:mssqlserver:$testContainersVersion")
+}
+
+tasks.named<Test>("test") {
+    systemProperties(mapOf("mockk.junit.extension.keepmocks" to "true", "mockk.junit.extension.requireParallelTesting" to "true"))
+}

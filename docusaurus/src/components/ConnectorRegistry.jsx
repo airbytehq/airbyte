@@ -1,8 +1,8 @@
 import { usePluginData } from "@docusaurus/useGlobalData";
 import TabItem from "@theme/TabItem";
 import Tabs from "@theme/Tabs";
-import React, { useEffect, useState } from "react";
-import { REGISTRY_URL } from "../connector_registry";
+import { useEffect, useState } from "react";
+import { REGISTRY_URL } from "../constants";
 import styles from "./ConnectorRegistry.module.css";
 
 const iconStyle = { maxWidth: 25, maxHeight: 25 };
@@ -30,7 +30,7 @@ function connectorSort(a, b) {
   if (a.name_oss > b.name_oss) return 1;
 }
 
-function ConnectorTable({ connectors, connectorSupportLevel }) {
+function ConnectorTable({ connectors, connectorSupportLevel, enterpriseConnectors = [] }) {
   return (
     <table>
       <thead>
@@ -45,11 +45,17 @@ function ConnectorTable({ connectors, connectorSupportLevel }) {
       <tbody>
         {connectors
           .sort(connectorSort)
-          .filter(
-            (c) =>
-              connectorSupportLevel === "enterprise" ||
-              c.supportLevel_oss === connectorSupportLevel,
-          )
+          .filter((c) => {
+            if (connectorSupportLevel === "enterprise") {
+              return true;
+            }
+            
+            const isEnterpriseConnector = enterpriseConnectors.some(
+              ec => ec && c && (ec.definitionId === c.definitionId || ec.name_oss === c.name_oss)
+            );
+            
+            return !isEnterpriseConnector && c.supportLevel_oss === connectorSupportLevel;
+          })
           .map((connector) => {
             const docsLink = connector.documentationUrl_oss?.replace(
               "https://docs.airbyte.com",
@@ -153,18 +159,21 @@ export default function ConnectorRegistry({ type }) {
         <ConnectorTable
           connectors={connectors}
           connectorSupportLevel={"certified"}
+          enterpriseConnectors={enterpriseConnectors}
         />
       </TabItem>
       <TabItem value="community" label="Marketplace" default>
         <ConnectorTable
           connectors={connectors}
           connectorSupportLevel={"community"}
+          enterpriseConnectors={enterpriseConnectors}
         />
       </TabItem>
       <TabItem value="enterprise" label="Enterprise" default>
         <ConnectorTable
           connectors={enterpriseConnectors}
           connectorSupportLevel={"enterprise"}
+          enterpriseConnectors={enterpriseConnectors}
         />
       </TabItem>
       {/* There are no archived connectors to show at the moment, so hiding for now */}

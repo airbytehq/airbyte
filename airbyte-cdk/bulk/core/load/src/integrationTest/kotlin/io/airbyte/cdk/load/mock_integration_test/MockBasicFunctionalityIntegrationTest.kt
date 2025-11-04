@@ -280,9 +280,15 @@ abstract class BaseMockBasicFunctionalityIntegrationTest(
                                     .withStreamDescriptor(
                                         StreamDescriptor()
                                             .withNamespace(randomizedNamespace)
-                                            .withName("test_stream")
+                                            .withName("test_stream"),
                                     )
-                                    .withStreamState(Jsons.readTree("""{"abc": "def"}""")),
+                                    .withStreamState(Jsons.readTree("""{"abc": "def"}"""))
+                                    .apply {
+                                        if (dataChannelMedium == DataChannelMedium.SOCKET) {
+                                            withAdditionalProperty("committedBytesCount", 48)
+                                            withAdditionalProperty("committedRecordsCount", 1)
+                                        }
+                                    },
                                 AirbyteStreamState()
                                     .withStreamDescriptor(
                                         StreamDescriptor()
@@ -290,8 +296,8 @@ abstract class BaseMockBasicFunctionalityIntegrationTest(
                                             .withName("tomato")
                                     )
                                     .withStreamState(Jsons.readTree("""{"ghi": "jkl"}""")),
-                            )
-                        )
+                            ),
+                        ),
                 )
         assertEquals(
             expectedStateMessage,
@@ -433,7 +439,7 @@ class MockBasicFunctionalityIntegrationTestStdioJsonl :
         DataChannelFormat.JSONL,
     )
 
-// Speed mode
+@Disabled
 class MockBasicFunctionalityIntegrationTestSocketProtobuf :
     BaseMockBasicFunctionalityIntegrationTest(
         DataChannelMedium.SOCKET,

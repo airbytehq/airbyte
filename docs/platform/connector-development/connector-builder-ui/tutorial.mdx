@@ -1,6 +1,6 @@
 # Connector Builder tutorial
 
-In tis tutorial, you'll create an Airbyte connector using the Connector Builder UI to read and extract data from an API called the Exchange Rates API. The steps here are a foundation you can use to build connectors for any API you might be interested in. You can complete this tutorial in 30-45 minutes.
+In this tutorial, you'll create an Airbyte connector using the Connector Builder UI to read and extract data from an API called the Exchange Rates API. The steps here are a foundation you can use to build connectors for any API you might be interested in. You can complete this tutorial in 30-45 minutes.
 
 [Here's the API documentation](https://apilayer.com/marketplace/exchangerates_data-api) for the Exchange Rates API. Feel free to review it, but you don't need to know it well. In this tutorial, you'll read data from the following endpoints:
 
@@ -47,7 +47,7 @@ You need access to Airbyte, if you don't already have it. Do one of the followin
 
 ### Create a Connector Builder project
 
-<Arcade id="pHZZYzww0smsCHN9wuuS" title="Use the Connection Dashboard to diagnose unhealthy syncs" paddingBottom="calc(50% + 0px)" />
+<Navattic id="cmhfio6ec000004l80ac69w3k" />
 
 When developing a connector using the Connector Builder UI, Airbyte saves the current state of your work as a connector builder project. These projects are saved as part of your Airbyte workspace and are separate from your sources, destinations, and connections.
 
@@ -63,9 +63,9 @@ When developing a connector using the Connector Builder UI, Airbyte saves the cu
 
 Your connector builder project is now set up.
 
-### Setting up Global Configuration and Inputs
+### Set up global configuration and inputs
 
-<Arcade id="YkuAGpCNlYucNB2Lp4NG" title="Use the Connection Dashboard to diagnose unhealthy syncs" paddingBottom="calc(50% + 0px)" />
+<Navattic id="cmhfjhphb000304jl6baicl3x" />
 
 On the **Global Configuration** page, you set up general settings applying to all streams: which streams to test when running a [check](/platform/understanding-airbyte/airbyte-protocol#check) operation, concurrency levels, and API budgets for manage rate limiting. For now, you don't have any global configurations to make.
 
@@ -89,9 +89,9 @@ On the **Inputs** page, you manage inputs that users of your connector have to f
 
 5. Enter your API key for testing purposes. This API Key is not part of the connector itself. Instead, users of your connector will enter their own API key as part of the source configuration.
 
-### Setting up and testing a stream
+### Set up and test a stream
 
-<Arcade id="phfYAWDplEnaU1eEV7p9" title="Use the Connection Dashboard to diagnose unhealthy syncs" paddingBottom="calc(50% + 0px)" />
+<Navattic id="cmhfk2pl9002i04l20e5t1zzd" />
 
 Set up a new stream and tell your connector how to retrieve records from this source.
 
@@ -107,9 +107,11 @@ Set up a new stream and tell your connector how to retrieve records from this so
 
     1. Set **API Key** to `{{ config['api_key'] }}`. This allows the stream to use the API key input you created earlier when you test it. If someone else uses your connector later, the connector uses the API key they input, not yours.
 
-    2. Turn on **Inject API Key Into Outgoing HTTP Request**. Set **Field Path** to `apikey`, and set **Inject Into** to `header`.
+    2. Turn on **Inject API Key Into Outgoing HTTP Request**.
 
-6. Click **Test** to test the stream. 
+    3. Set **Inject Into** to `Header` and set **Header Name** to `apikey`.
+
+6. Click **Test** to test the stream.
 
 The API returns a response that looks like this.
 
@@ -146,7 +148,7 @@ In this step, you'll enhance your connector to accept more user inputs and retur
 
 ### Make the base currency configurable
 
-<Arcade id="XLt48Lyju0wJhZZaa6wU" title="Use the Connection Dashboard to diagnose unhealthy syncs" paddingBottom="calc(50% + 0px)" />
+<Navattic id="cmhfkxu4n007304jo95p08xyh" />
 
 The Exchange Rates API allows you to configure a different base currency using a query parameter. Make that a user input so anyone using this connector can input their preferred currency, the same as their API key.
 

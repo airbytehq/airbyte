@@ -35,6 +35,17 @@ Docs : https://www.zoho.com/billing/api/v1/introduction/#overview
 
 | Version          | Date              | Pull Request | Subject        |
 |------------------|-------------------|--------------|----------------|
+| 0.0.36 | 2025-10-29 | [68967](https://github.com/airbytehq/airbyte/pull/68967) | Update dependencies |
+| 0.0.35 | 2025-10-21 | [68459](https://github.com/airbytehq/airbyte/pull/68459) | Update dependencies |
+| 0.0.34 | 2025-10-14 | [67992](https://github.com/airbytehq/airbyte/pull/67992) | Update dependencies |
+| 0.0.33 | 2025-10-07 | [67242](https://github.com/airbytehq/airbyte/pull/67242) | Update dependencies |
+| 0.0.32 | 2025-09-30 | [66844](https://github.com/airbytehq/airbyte/pull/66844) | Update dependencies |
+| 0.0.31 | 2025-09-24 | [66476](https://github.com/airbytehq/airbyte/pull/66476) | Update dependencies |
+| 0.0.30 | 2025-09-09 | [65663](https://github.com/airbytehq/airbyte/pull/65663) | Update dependencies |
+| 0.0.29 | 2025-08-24 | [65477](https://github.com/airbytehq/airbyte/pull/65477) | Update dependencies |
+| 0.0.28 | 2025-08-09 | [64821](https://github.com/airbytehq/airbyte/pull/64821) | Update dependencies |
+| 0.0.27 | 2025-08-02 | [64389](https://github.com/airbytehq/airbyte/pull/64389) | Update dependencies |
+| 0.0.26 | 2025-07-26 | [64076](https://github.com/airbytehq/airbyte/pull/64076) | Update dependencies |
 | 0.0.25 | 2025-07-20 | [63653](https://github.com/airbytehq/airbyte/pull/63653) | Update dependencies |
 | 0.0.24 | 2025-07-12 | [63187](https://github.com/airbytehq/airbyte/pull/63187) | Update dependencies |
 | 0.0.23 | 2025-07-05 | [62706](https://github.com/airbytehq/airbyte/pull/62706) | Update dependencies |

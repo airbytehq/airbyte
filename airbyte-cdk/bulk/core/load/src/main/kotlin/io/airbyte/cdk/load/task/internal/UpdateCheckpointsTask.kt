@@ -6,6 +6,7 @@ package io.airbyte.cdk.load.task.internal
 
 import io.airbyte.cdk.load.message.CheckpointMessageWrapped
 import io.airbyte.cdk.load.message.GlobalCheckpointWrapped
+import io.airbyte.cdk.load.message.GlobalSnapshotCheckpointWrapped
 import io.airbyte.cdk.load.message.MessageQueue
 import io.airbyte.cdk.load.message.StreamCheckpointWrapped
 import io.airbyte.cdk.load.state.CheckpointManager
@@ -42,6 +43,13 @@ class UpdateCheckpointsTask(
                         stream,
                         checkpointKey,
                         it.replace(message)
+                    )
+                }
+                is GlobalSnapshotCheckpointWrapped -> {
+                    val (checkpointKey, message) = it.value
+                    checkpointManager.addGlobalCheckpoint(
+                        checkpointKey = checkpointKey,
+                        checkpointMessage = it.replace(message)
                     )
                 }
                 is GlobalCheckpointWrapped -> {

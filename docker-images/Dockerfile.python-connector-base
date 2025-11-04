@@ -1,7 +1,5 @@
-# Migrated from airbyte-ci/connectors/base_images/README.md
-
 # https://hub.docker.com/_/python/tags?name=3.11.13-slim-bookworm
-ARG BASE_IMAGE=docker.io/python:3.11.13-slim-bookworm@sha256:139020233cc412efe4c8135b0efe1c7569dc8b28ddd88bddb109b764f8977e30
+ARG BASE_IMAGE=docker.io/python:3.13.9-slim-bookworm@sha256:ee6c0814498e24cc54424475b9611edb99072250b2b30f9fb83d9256a1469b7a
 FROM ${BASE_IMAGE}
 
 # Set the timezone to UTC

@@ -491,6 +491,14 @@ spec:
         paths:
           - backend:
               service:
+                # format is ${RELEASE_NAME}-airbyte-keycloak-svc 
+                name: airbyte-enterprise-airbyte-keycloak-svc 
+                port: 
+                  number: 8180 
+            path: /auth
+            pathType: Prefix
+          - backend:
+              service:
                 # format is ${RELEASE_NAME}-airbyte-connector-builder-server-svc
                 name: airbyte-enterprise-airbyte-connector-builder-server-svc
                 port:
@@ -536,6 +544,13 @@ spec:
     - host: airbyte.example.com # replace with your host
       http:
         paths:
+          - backend:
+              service:
+                name: airbyte-enterprise-airbyte-keycloak-svc
+                port:
+                  number: 8180
+            path: /auth
+            pathType: Prefix
           - backend:
               service:
                 name: airbyte-enterprise-airbyte-connector-builder-server-svc

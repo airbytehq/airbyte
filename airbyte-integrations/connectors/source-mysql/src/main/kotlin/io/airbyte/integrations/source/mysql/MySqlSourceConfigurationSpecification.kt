@@ -151,13 +151,14 @@ class MySqlSourceConfigurationSpecification : ConfigurationSpecification() {
 
     @JsonProperty("concurrency")
     @JsonSchemaTitle("Concurrency")
+    // Hidden and maintened for backwards compatibility.
     @JsonSchemaInject(json = """{"order":12,"airbyte_hidden":true}""")
     @JsonSchemaDefault("1")
     @JsonPropertyDescription("Maximum number of concurrent queries to the database.")
     var concurrency: Int? = 1
 
     @JsonProperty("max_db_connections")
-    @JsonSchemaTitle("Max Database Connections")
+    @JsonSchemaTitle("Max Concurrent Queries to Database")
     @JsonSchemaInject(json = """{"order":12}""")
     @JsonPropertyDescription(
         "Maximum number of concurrent queries to the database. Leave empty to let Airbyte optimize performance."

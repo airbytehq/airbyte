@@ -8,13 +8,18 @@ import io.airbyte.cdk.load.command.Append
 import io.airbyte.cdk.load.command.DestinationCatalog
 import io.airbyte.cdk.load.command.DestinationStream
 import io.airbyte.cdk.load.command.NamespaceMapper
+import io.airbyte.cdk.load.config.NamespaceDefinitionType
 import io.airbyte.cdk.load.data.ObjectTypeWithEmptySchema
 import io.airbyte.cdk.load.file.TimeProvider
 import io.airbyte.cdk.load.message.CheckpointMessage
+import io.airbyte.cdk.load.message.GlobalSnapshotCheckpoint
 import io.mockk.Ordering
+import io.mockk.Runs
 import io.mockk.coEvery
 import io.mockk.coVerify
+import io.mockk.every
 import io.mockk.impl.annotations.MockK
+import io.mockk.just
 import io.mockk.mockk
 import kotlinx.coroutines.test.runTest
 import org.junit.jupiter.api.BeforeEach
@@ -62,7 +67,14 @@ class CheckpointManagerUTest {
     }
 
     private fun makeCheckpointManager(): CheckpointManager {
-        return CheckpointManager(catalog, syncManager, outputConsumer, timeProvider)
+        return CheckpointManager(
+            catalog,
+            syncManager,
+            outputConsumer,
+            timeProvider,
+            true,
+            NamespaceMapper(NamespaceDefinitionType.SOURCE)
+        )
     }
 
     private fun makeKey(index: Int, id: String? = null) =
@@ -172,5 +184,86 @@ class CheckpointManagerUTest {
         coVerify(exactly = 1) { outputConsumer.invoke(message1, any(), any(), any()) }
     }
 
-    private fun mockMessage(): Reserved<CheckpointMessage> = Reserved(value = mockk(relaxed = true))
+    @Test
+    fun testGlobalSnapshotCheckpoints() = runTest {
+        val checkpointManager = makeCheckpointManager()
+        val checkpointKey1 = makeKey(1, "one")
+        val checkpointKey2 = makeKey(2, "two")
+        val checkpointKey3 = makeKey(3, "three")
+        val globalSnapshotCheckpoint1 =
+            mockk<GlobalSnapshotCheckpoint> {
+                every { streamCheckpoints } returns
+                    mapOf(stream1.mappedDescriptor to checkpointKey3)
+                every { sourceStats } returns CheckpointMessage.Stats(0)
+                every { updateStats(any()) } just Runs
+                every { checkpoints } returns emptyList()
+            }
+        val globalSnapshotCheckpoint2 =
+            mockk<GlobalSnapshotCheckpoint> {
+                every { streamCheckpoints } returns
+                    mapOf(stream2.mappedDescriptor to checkpointKey2)
+                every { sourceStats } returns CheckpointMessage.Stats(0)
+                every { updateStats(any()) } just Runs
+                every { checkpoints } returns emptyList()
+            }
+        val message1 = mockMessage(globalSnapshotCheckpoint1)
+        val message2 = mockMessage(globalSnapshotCheckpoint2)
+
+        coEvery {
+            streamManager1.areRecordsPersistedForCheckpoint(checkpointKey3.checkpointId)
+        } returns true
+        coEvery {
+            streamManager2.areRecordsPersistedForCheckpoint(checkpointKey2.checkpointId)
+        } returns true
+
+        checkpointManager.addGlobalCheckpoint(checkpointKey2, message2)
+
+        checkpointManager.addGlobalCheckpoint(checkpointKey1, message1)
+
+        checkpointManager.flushReadyCheckpointMessages()
+
+        coVerify(exactly = 1) { outputConsumer.invoke(message1, any(), any(), any()) }
+        coVerify(exactly = 1) { outputConsumer.invoke(message2, any(), any(), any()) }
+    }
+
+    @Test
+    fun testGlobalSnapshotCheckpointsOnlyOneStreamUpToDate() = runTest {
+        val checkpointManager = makeCheckpointManager()
+        val checkpointKey1 = makeKey(1, "one")
+        val checkpointKey2 = makeKey(2, "two")
+        val checkpointKey3 = makeKey(3, "three")
+        val globalSnapshotCheckpoint1 =
+            mockk<GlobalSnapshotCheckpoint> {
+                every { streamCheckpoints } returns
+                    mapOf(stream1.mappedDescriptor to checkpointKey3)
+                every { sourceStats } returns CheckpointMessage.Stats(0)
+            }
+        val globalSnapshotCheckpoint2 =
+            mockk<GlobalSnapshotCheckpoint> {
+                every { streamCheckpoints } returns
+                    mapOf(stream2.mappedDescriptor to checkpointKey2)
+                every { sourceStats } returns CheckpointMessage.Stats(0)
+            }
+        val message1 = mockMessage(globalSnapshotCheckpoint1)
+        val message2 = mockMessage(globalSnapshotCheckpoint2)
+
+        coEvery {
+            streamManager1.areRecordsPersistedForCheckpoint(checkpointKey3.checkpointId)
+        } returns false
+        coEvery {
+            streamManager2.areRecordsPersistedForCheckpoint(checkpointKey2.checkpointId)
+        } returns false
+
+        checkpointManager.addGlobalCheckpoint(checkpointKey2, message2)
+
+        checkpointManager.addGlobalCheckpoint(checkpointKey1, message1)
+
+        checkpointManager.flushReadyCheckpointMessages()
+
+        coVerify(exactly = 0) { outputConsumer.invoke(any(), any(), any(), any()) }
+    }
+
+    private fun mockMessage(
+        checkpointMessage: CheckpointMessage? = null
+    ): Reserved<CheckpointMessage> = Reserved(value = checkpointMessage ?: mockk(relaxed = true))
 }

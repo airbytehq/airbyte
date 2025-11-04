@@ -27,6 +27,16 @@ The Airbyte connector for Eventee enables seamless integration and automated dat
 
 | Version          | Date              | Pull Request | Subject        |
 |------------------|-------------------|--------------|----------------|
+| 0.0.39 | 2025-10-29 | [68731](https://github.com/airbytehq/airbyte/pull/68731) | Update dependencies |
+| 0.0.38 | 2025-10-21 | [68556](https://github.com/airbytehq/airbyte/pull/68556) | Update dependencies |
+| 0.0.37 | 2025-10-14 | [67742](https://github.com/airbytehq/airbyte/pull/67742) | Update dependencies |
+| 0.0.36 | 2025-10-07 | [67279](https://github.com/airbytehq/airbyte/pull/67279) | Update dependencies |
+| 0.0.35 | 2025-09-30 | [66290](https://github.com/airbytehq/airbyte/pull/66290) | Update dependencies |
+| 0.0.34 | 2025-09-09 | [65874](https://github.com/airbytehq/airbyte/pull/65874) | Update dependencies |
+| 0.0.33 | 2025-08-23 | [65243](https://github.com/airbytehq/airbyte/pull/65243) | Update dependencies |
+| 0.0.32 | 2025-08-09 | [64755](https://github.com/airbytehq/airbyte/pull/64755) | Update dependencies |
+| 0.0.31 | 2025-08-02 | [64399](https://github.com/airbytehq/airbyte/pull/64399) | Update dependencies |
+| 0.0.30 | 2025-07-26 | [63977](https://github.com/airbytehq/airbyte/pull/63977) | Update dependencies |
 | 0.0.29 | 2025-07-19 | [63608](https://github.com/airbytehq/airbyte/pull/63608) | Update dependencies |
 | 0.0.28 | 2025-07-12 | [62963](https://github.com/airbytehq/airbyte/pull/62963) | Update dependencies |
 | 0.0.27 | 2025-07-05 | [62816](https://github.com/airbytehq/airbyte/pull/62816) | Update dependencies |

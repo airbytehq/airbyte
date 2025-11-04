@@ -27,6 +27,16 @@ The Airbyte connector for [Spotler CRM](https://spotler.com/) enables seamless d
 
 | Version          | Date              | Pull Request | Subject        |
 |------------------|-------------------|--------------|----------------|
+| 0.0.36 | 2025-10-29 | [68835](https://github.com/airbytehq/airbyte/pull/68835) | Update dependencies |
+| 0.0.35 | 2025-10-21 | [68544](https://github.com/airbytehq/airbyte/pull/68544) | Update dependencies |
+| 0.0.34 | 2025-10-14 | [67886](https://github.com/airbytehq/airbyte/pull/67886) | Update dependencies |
+| 0.0.33 | 2025-10-07 | [67454](https://github.com/airbytehq/airbyte/pull/67454) | Update dependencies |
+| 0.0.32 | 2025-09-30 | [66892](https://github.com/airbytehq/airbyte/pull/66892) | Update dependencies |
+| 0.0.31 | 2025-09-23 | [66263](https://github.com/airbytehq/airbyte/pull/66263) | Update dependencies |
+| 0.0.30 | 2025-09-09 | [65675](https://github.com/airbytehq/airbyte/pull/65675) | Update dependencies |
+| 0.0.29 | 2025-08-24 | [65504](https://github.com/airbytehq/airbyte/pull/65504) | Update dependencies |
+| 0.0.28 | 2025-08-16 | [64991](https://github.com/airbytehq/airbyte/pull/64991) | Update dependencies |
+| 0.0.27 | 2025-07-26 | [64000](https://github.com/airbytehq/airbyte/pull/64000) | Update dependencies |
 | 0.0.26 | 2025-07-19 | [63647](https://github.com/airbytehq/airbyte/pull/63647) | Update dependencies |
 | 0.0.25 | 2025-07-12 | [63079](https://github.com/airbytehq/airbyte/pull/63079) | Update dependencies |
 | 0.0.24 | 2025-07-05 | [62743](https://github.com/airbytehq/airbyte/pull/62743) | Update dependencies |

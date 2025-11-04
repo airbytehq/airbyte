@@ -2,26 +2,69 @@
 products: all
 ---
 
-# Add a Source
+# Add and manage sources
 
-Setting up a new source in Airbyte is a quick and simple process! When viewing the Airbyte UI, you'll see the main navigation bar on the left side of your screen. Click the **Sources** tab to bring up a list of all available sources.
+A source is the database, API, or other system from which you sync data. Adding a source connector is the first step when you want to start syncing data with Airbyte.
 
-<Arcade id="k63e0sDIzPWtM0wQjNSC" title="Getting Started (Source)" paddingBottom="calc(61.42578125% + 41px)" />
+## Add a source connector
 
-You can use the provided search bar, or simply scroll down the list to find the source you want to replicate data from. Let's use a demo source, Faker, as an example. Clicking on the **Sample Data (Faker)** card will bring us to its setup page.
+Add a new source connector to Airbyte.
 
-![](./assets/getting-started-faker-source.png)
+1. In the left navigation, click **Sources**.
 
-The left half of the page contains a set of fields that you will have to fill out. In the **Source name** field, you can enter a name of your choosing to help you identify this instance of the connector. By default, this will be set to the name of the source (ie, `Sample Data (Faker)`).
+2. Click **New Source**.
 
-Each connector in Airbyte will have its own set of authentication methods and configurable parameters. In the case of Sample Data (Faker), you can adjust the number of records you want returned in your `Users` data, and optionally adjust additional configuration settings. You can always refer to your source's provided setup guide for specific instructions on filling out each field.
+3. Find the source you want to add. If you're not sure yet, click the **Marketplace** tab, then click **Sample Data (Faker)**. Faker is a popular test source that generates random data.
 
-:::info
-Some sources will have an **Optional Fields** tab. You can open this tab to view and configure any additional optional parameters that exist for the source, but you do not have to do so to successfully set up the connector.
+4. Configure your connector using the form on the left side of your screen. Every connector has different options and settings, but you normally enter things like authentication information and the location where you store your data. Use the documentation panel on the right side of your screen for help populating the form.
+
+5. Click **Set up source**. Airbyte tests the source to ensure it can make a connection. Once the test completes, Airbyte takes you to the New Connection page, where you can set up a new destination connector, or choose one you previously created.
+
+<Navattic id="cmhfh6qf4000004kz0e7sa8a5" />
+
+## Modify a source connector
+
+After you set up a source connector, you can modify it.
+
+1. In the left navigation, click **Sources**.
+
+2. Find and click the source connector you want to modify.
+
+3. Configure your connector using the form on the left side of your screen. Every connector has different options and settings, but you normally enter things like authentication information and the location where you store your data. Use the documentation panel on the right side of your screen for help populating the form.
+
+4. Click **Test and save**. Airbyte tests the source to ensure it can make a connection.
+
+## Delete a source connector
+
+You can delete a source you no longer need. 
+
+:::danger
+Deleting a source connector also deletes any connections that rely on it. Data that's already in your destination isn't affected. However, reestablishing this connection later requires a full re-sync.
 :::
 
-Once you've filled out all the required fields, click the **Set up source** button and Airbyte will run a check to verify the connection. If you're using the [API](https://reference.airbyte.com/reference/createsource#/) or [Terraform](../../terraform-documentation) to manage your infrastructure, click the **Copy JSON** button to copy your configuration as a JSON string that you can paste into your code.
+1. In the left navigation, click **Sources**.
 
-Happy replicating!
+2. Find and click the source connector you want to modify.
 
-Can't find the connectors that you want? Try your hand at easily building one yourself using our [Connector Builder](../../connector-development/connector-builder-ui/overview.md)!
+3. Click **Delete this source**.
+
+4. In the dialog, type the name of the connector, then click **Delete**.
+
+## Reusing source connectors
+
+Connectors are reusable. In most cases, you only need to set up the connector once, and you can use it in as many connections as you need to.
+
+In a few cases, you might need to set up the same source connector multiple times. For example, if you are pulling data from multiple accounts that have unique authentication, you need a separate connector for each account.
+
+## If you don't see the connector you need
+
+If Airbyte doesn't have the connector you need, [you can create your own](../../connector-development/). In most cases, you want to use the Connector Builder, a no-code/low-code development environment in Airbyte's UI.
+
+## Other ways to manage sources
+
+Airbyte has other options to manage connectors, too.
+
+- [Airbyte API](https://reference.airbyte.com/reference/createsource#/)
+- [Terraform](../../terraform-documentation)
+
+In these cases, you can speed up the process by entering your values into the UI, then clicking the **Copy JSON** button. This copies your configuration as a JSON string that you can paste into your code.

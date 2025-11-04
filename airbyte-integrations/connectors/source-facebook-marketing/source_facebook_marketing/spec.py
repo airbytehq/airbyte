@@ -25,7 +25,12 @@ _REMOVED_FIELDS = ["conversion_lead_rate", "cost_per_conversion_lead", "adset_st
 adjusted_ads_insights_fields = {key: value for key, value in AdsInsights.Field.__dict__.items() if key not in _REMOVED_FIELDS}
 ValidFields = Enum("ValidEnums", adjusted_ads_insights_fields)
 
-ValidBreakdowns = Enum("ValidBreakdowns", AdsInsights.Breakdowns.__dict__)
+# Copy public breakdowns from the library
+base_breakdowns = dict(AdsInsights.Breakdowns.__dict__)
+
+# Add the missing one: https://github.com/airbytehq/oncall/issues/9525
+base_breakdowns["user_segment_key"] = "user_segment_key"
+ValidBreakdowns = Enum("ValidBreakdowns", base_breakdowns)
 ValidActionBreakdowns = Enum("ValidActionBreakdowns", AdsInsights.ActionBreakdowns.__dict__)
 ValidCampaignStatuses = Enum("ValidCampaignStatuses", Campaign.EffectiveStatus.__dict__)
 ValidAdSetStatuses = Enum("ValidAdSetStatuses", AdSet.EffectiveStatus.__dict__)
@@ -260,9 +265,20 @@ class ConnectorConfig(BaseConfig):
         description="Set to active if you want to fetch the thumbnail_url and store the result in thumbnail_data_url for each Ad Creative.",
     )
 
+    default_ads_insights_action_breakdowns: Optional[List[ValidActionBreakdowns]] = Field(
+        title="Action breakdowns for the Built-in Ads Insight stream",
+        order=8,
+        default=[
+            AdsInsights.ActionBreakdowns.action_type,
+            AdsInsights.ActionBreakdowns.action_target_id,
+            AdsInsights.ActionBreakdowns.action_destination,
+        ],
+        description="Action breakdowns for the Built-in Ads Insights stream that will be used in the request. You can override default values or remove them to make it empty if needed.",
+    )
+
     custom_insights: Optional[List[InsightConfig]] = Field(
         title="Custom Insights",
-        order=8,
+        order=9,
         description=(
             "A list which contains ad statistics entries, each entry must have a name and can contains fields, "
             'breakdowns or action_breakdowns. Click on "add" to fill this field.'

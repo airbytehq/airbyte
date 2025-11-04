@@ -53,6 +53,16 @@ The following fields are required fields for the connector to work:
 
 | Version | Date       | Pull Request                                             | Subject                                                                         |
 | :------ | :--------- | :------------------------------------------------------- | :------------------------------------------------------------------------------ |
+| 0.2.38 | 2025-10-29 | [68931](https://github.com/airbytehq/airbyte/pull/68931) | Update dependencies |
+| 0.2.37 | 2025-10-21 | [68247](https://github.com/airbytehq/airbyte/pull/68247) | Update dependencies |
+| 0.2.36 | 2025-10-14 | [67485](https://github.com/airbytehq/airbyte/pull/67485) | Update dependencies |
+| 0.2.35 | 2025-09-30 | [66962](https://github.com/airbytehq/airbyte/pull/66962) | Update dependencies |
+| 0.2.34 | 2025-09-23 | [66424](https://github.com/airbytehq/airbyte/pull/66424) | Update dependencies |
+| 0.2.33 | 2025-09-09 | [65824](https://github.com/airbytehq/airbyte/pull/65824) | Update dependencies |
+| 0.2.32 | 2025-08-23 | [65232](https://github.com/airbytehq/airbyte/pull/65232) | Update dependencies |
+| 0.2.31 | 2025-08-09 | [64669](https://github.com/airbytehq/airbyte/pull/64669) | Update dependencies |
+| 0.2.30 | 2025-08-02 | [64226](https://github.com/airbytehq/airbyte/pull/64226) | Update dependencies |
+| 0.2.29 | 2025-07-26 | [63932](https://github.com/airbytehq/airbyte/pull/63932) | Update dependencies |
 | 0.2.28 | 2025-07-19 | [63387](https://github.com/airbytehq/airbyte/pull/63387) | Update dependencies |
 | 0.2.27 | 2025-07-12 | [63220](https://github.com/airbytehq/airbyte/pull/63220) | Update dependencies |
 | 0.2.26 | 2025-07-05 | [62603](https://github.com/airbytehq/airbyte/pull/62603) | Update dependencies |

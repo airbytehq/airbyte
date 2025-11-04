@@ -78,6 +78,17 @@ The connector is restricted by normal OneSignal [rate limits](https://documentat
 
 | Version | Date       | Pull Request                                             | Subject                                      |
 | :------ | :--------- | :------------------------------------------------------- | :------------------------------------------- |
+| 1.2.40 | 2025-10-29 | [68699](https://github.com/airbytehq/airbyte/pull/68699) | Update dependencies |
+| 1.2.39 | 2025-10-21 | [68357](https://github.com/airbytehq/airbyte/pull/68357) | Update dependencies |
+| 1.2.38 | 2025-10-14 | [67769](https://github.com/airbytehq/airbyte/pull/67769) | Update dependencies |
+| 1.2.37 | 2025-10-07 | [67418](https://github.com/airbytehq/airbyte/pull/67418) | Update dependencies |
+| 1.2.36 | 2025-09-30 | [66933](https://github.com/airbytehq/airbyte/pull/66933) | Update dependencies |
+| 1.2.35 | 2025-09-23 | [66618](https://github.com/airbytehq/airbyte/pull/66618) | Update dependencies |
+| 1.2.34 | 2025-09-09 | [65751](https://github.com/airbytehq/airbyte/pull/65751) | Update dependencies |
+| 1.2.33 | 2025-08-23 | [65224](https://github.com/airbytehq/airbyte/pull/65224) | Update dependencies |
+| 1.2.32 | 2025-08-09 | [64719](https://github.com/airbytehq/airbyte/pull/64719) | Update dependencies |
+| 1.2.31 | 2025-08-02 | [64257](https://github.com/airbytehq/airbyte/pull/64257) | Update dependencies |
+| 1.2.30 | 2025-07-26 | [63870](https://github.com/airbytehq/airbyte/pull/63870) | Update dependencies |
 | 1.2.29 | 2025-07-19 | [63415](https://github.com/airbytehq/airbyte/pull/63415) | Update dependencies |
 | 1.2.28 | 2025-07-12 | [63263](https://github.com/airbytehq/airbyte/pull/63263) | Update dependencies |
 | 1.2.27 | 2025-07-05 | [62555](https://github.com/airbytehq/airbyte/pull/62555) | Update dependencies |

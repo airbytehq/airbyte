@@ -57,6 +57,17 @@ This directory contains the manifest-only connector for source-zoho-desk
 
 | Version          | Date              | Pull Request | Subject        |
 |------------------|-------------------|--------------|----------------|
+| 0.0.37 | 2025-10-29 | [68986](https://github.com/airbytehq/airbyte/pull/68986) | Update dependencies |
+| 0.0.36 | 2025-10-21 | [68499](https://github.com/airbytehq/airbyte/pull/68499) | Update dependencies |
+| 0.0.35 | 2025-10-14 | [68022](https://github.com/airbytehq/airbyte/pull/68022) | Update dependencies |
+| 0.0.34 | 2025-10-07 | [67235](https://github.com/airbytehq/airbyte/pull/67235) | Update dependencies |
+| 0.0.33 | 2025-09-30 | [66854](https://github.com/airbytehq/airbyte/pull/66854) | Update dependencies |
+| 0.0.32 | 2025-09-24 | [66464](https://github.com/airbytehq/airbyte/pull/66464) | Update dependencies |
+| 0.0.31 | 2025-09-09 | [65657](https://github.com/airbytehq/airbyte/pull/65657) | Update dependencies |
+| 0.0.30 | 2025-08-24 | [65441](https://github.com/airbytehq/airbyte/pull/65441) | Update dependencies |
+| 0.0.29 | 2025-08-09 | [64807](https://github.com/airbytehq/airbyte/pull/64807) | Update dependencies |
+| 0.0.28 | 2025-08-02 | [64311](https://github.com/airbytehq/airbyte/pull/64311) | Update dependencies |
+| 0.0.27 | 2025-07-26 | [64083](https://github.com/airbytehq/airbyte/pull/64083) | Update dependencies |
 | 0.0.26 | 2025-07-19 | [63633](https://github.com/airbytehq/airbyte/pull/63633) | Update dependencies |
 | 0.0.25 | 2025-07-12 | [63199](https://github.com/airbytehq/airbyte/pull/63199) | Update dependencies |
 | 0.0.24 | 2025-07-05 | [62672](https://github.com/airbytehq/airbyte/pull/62672) | Update dependencies |

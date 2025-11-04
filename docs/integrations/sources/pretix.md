@@ -39,8 +39,19 @@
 <details>
   <summary>Expand to review</summary>
 
-| Version          | Date              | Pull Request | Subject        |
-|------------------|-------------------|--------------|----------------|
+| Version | Date              | Pull Request | Subject        |
+|---------|-------------------|--------------|----------------|
+| 0.0.40 | 2025-10-29 | [68948](https://github.com/airbytehq/airbyte/pull/68948) | Update dependencies |
+| 0.0.39 | 2025-10-21 | [68219](https://github.com/airbytehq/airbyte/pull/68219) | Update dependencies |
+| 0.0.38 | 2025-10-14 | [67488](https://github.com/airbytehq/airbyte/pull/67488) | Update dependencies |
+| 0.0.37 | 2025-09-30 | [66959](https://github.com/airbytehq/airbyte/pull/66959) | Update dependencies |
+| 0.0.36 | 2025-09-23 | [66418](https://github.com/airbytehq/airbyte/pull/66418) | Update dependencies |
+| 0.0.35 | 2025-09-09 | [65875](https://github.com/airbytehq/airbyte/pull/65875) | Update dependencies |
+| 0.0.34 | 2025-09-05 | [65966](https://github.com/airbytehq/airbyte/pull/65966) | Update to CDK v7.0.0 |
+| 0.0.33 | 2025-08-23 | [65174](https://github.com/airbytehq/airbyte/pull/65174) | Update dependencies |
+| 0.0.32 | 2025-08-09 | [64746](https://github.com/airbytehq/airbyte/pull/64746) | Update dependencies |
+| 0.0.31 | 2025-08-02 | [64246](https://github.com/airbytehq/airbyte/pull/64246) | Update dependencies |
+| 0.0.30 | 2025-07-26 | [63841](https://github.com/airbytehq/airbyte/pull/63841) | Update dependencies |
 | 0.0.29 | 2025-07-19 | [63425](https://github.com/airbytehq/airbyte/pull/63425) | Update dependencies |
 | 0.0.28 | 2025-07-12 | [62661](https://github.com/airbytehq/airbyte/pull/62661) | Update dependencies |
 | 0.0.27 | 2025-06-28 | [62336](https://github.com/airbytehq/airbyte/pull/62336) | Update dependencies |
@@ -69,6 +80,6 @@
 | 0.0.4 | 2024-12-14 | [49720](https://github.com/airbytehq/airbyte/pull/49720) | Update dependencies |
 | 0.0.3 | 2024-12-12 | [49357](https://github.com/airbytehq/airbyte/pull/49357) | Update dependencies |
 | 0.0.2 | 2024-12-11 | [49073](https://github.com/airbytehq/airbyte/pull/49073) | Starting with this version, the Docker image is now rootless. Please note that this and future versions will not be compatible with Airbyte versions earlier than 0.64 |
-| 0.0.1 | 2024-11-09 | | Initial release by [@parthiv11](https://github.com/parthiv11) via Connector Builder |
+| 0.0.1   | 2024-11-09 | | Initial release by [@parthiv11](https://github.com/parthiv11) via Connector Builder |
 
 </details>

@@ -113,7 +113,7 @@ data class Meta(
                 ),
             ),
         ),
-        GENERATION_ID(COLUMN_NAME_AB_META, IntegerType),
+        GENERATION_ID(COLUMN_NAME_AB_GENERATION_ID, IntegerType),
     }
 
     companion object {
@@ -160,7 +160,7 @@ data class Meta(
                     // Handle both cases here.
                     try {
                         IntegerValue(BigInteger(value))
-                    } catch (e: Exception) {
+                    } catch (_: Exception) {
                         TimestampWithTimezoneValue(
                             OffsetDateTime.parse(
                                 value,
@@ -471,9 +471,9 @@ data class DestinationFileStreamComplete(
 /** State. */
 sealed interface CheckpointMessage : DestinationMessage {
     companion object {
-        private const val COMMITTED_RECORDS_COUNT = "committedRecordsCount"
-        private const val COMMITTED_BYTES_COUNT = "committedBytesCount"
-        private const val REJECTED_RECORDS_COUNT = "rejectedRecordsCount"
+        const val COMMITTED_RECORDS_COUNT = "committedRecordsCount"
+        const val COMMITTED_BYTES_COUNT = "committedBytesCount"
+        const val REJECTED_RECORDS_COUNT = "rejectedRecordsCount"
     }
     data class Stats(
         val recordCount: Long,
@@ -484,20 +484,46 @@ sealed interface CheckpointMessage : DestinationMessage {
         val unmappedNamespace: String?,
         val unmappedName: String,
         val state: JsonNode?,
+        val additionalProperties: LinkedHashMap<String, Any> = LinkedHashMap()
     ) {
+        val unmappedDescriptor = DestinationStream.Descriptor(unmappedNamespace, unmappedName)
+
         fun asProtocolObject(): AirbyteStreamState =
             AirbyteStreamState()
                 .withStreamDescriptor(
-                    StreamDescriptor().withNamespace(unmappedNamespace).withName(unmappedName)
+                    StreamDescriptor().withNamespace(unmappedNamespace).withName(unmappedName),
                 )
-                .also {
-                    if (state != null) {
-                        it.streamState = state
+                .also { state ->
+                    if (this.state != null) {
+                        state.streamState = this.state
+                    }
+
+                    if (additionalProperties.isNotEmpty()) {
+                        additionalProperties.forEach {
+                            state.additionalProperties[it.key] = it.value
+                        }
                     }
                 }
+
+        fun updateStats(committedRecords: Long, bytes: Long, rejectedRecords: Long = 0) {
+            additionalProperties.apply {
+                put(COMMITTED_RECORDS_COUNT, committedRecords)
+                put(COMMITTED_BYTES_COUNT, bytes)
+                if (rejectedRecords > 0) {
+                    put(REJECTED_RECORDS_COUNT, rejectedRecords)
+                }
+            }
+        }
     }
 
     val checkpointKey: CheckpointKey?
+    val checkpointIdRaw: String?
+        get() = checkpointKey?.checkpointId?.value
+    val checkpointOrdinalRaw: Int?
+        get() = checkpointKey?.checkpointIndex?.value
+    val checkpointPartitionIds: List<String>
+        get() = checkpointIdRaw?.let { listOf(it) } ?: listOf()
+    val checkpoints: List<Checkpoint>
 
     val sourceStats: Stats?
     val destinationStats: Stats?
@@ -571,6 +597,7 @@ data class StreamCheckpoint(
         unmappedName: String,
         blob: String,
         sourceRecordCount: Long,
+        additionalProperties: Map<String, Any> = emptyMap(),
         destinationRecordCount: Long? = null,
         checkpointKey: CheckpointKey? = null,
         totalRecords: Long? = null,
@@ -583,12 +610,15 @@ data class StreamCheckpoint(
         ),
         Stats(sourceRecordCount),
         destinationRecordCount?.let { Stats(it) },
-        emptyMap(),
+        additionalProperties,
         serializedSizeBytes = 0L,
         checkpointKey = checkpointKey,
         totalRecords = totalRecords,
         totalBytes = totalBytes
     )
+
+    override val checkpoints: List<Checkpoint>
+        get() = emptyList()
 
     override fun updateStats(
         destinationStats: Stats?,
@@ -617,7 +647,7 @@ data class GlobalCheckpoint(
     val state: JsonNode?,
     override val sourceStats: Stats?,
     override var destinationStats: Stats? = null,
-    val checkpoints: List<Checkpoint> = emptyList(),
+    override val checkpoints: List<Checkpoint> = emptyList(),
     override val additionalProperties: Map<String, Any>,
     val originalTypeField: AirbyteStateMessage.AirbyteStateType? =
         AirbyteStateMessage.AirbyteStateType.GLOBAL,
@@ -665,6 +695,55 @@ data class GlobalCheckpoint(
     }
 }
 
+data class GlobalSnapshotCheckpoint(
+    val state: JsonNode?,
+    override val sourceStats: Stats?,
+    override var destinationStats: Stats? = null,
+    override val checkpoints: List<Checkpoint> = emptyList(),
+    override val additionalProperties: Map<String, Any>,
+    val originalTypeField: AirbyteStateMessage.AirbyteStateType? =
+        AirbyteStateMessage.AirbyteStateType.GLOBAL,
+    override val serializedSizeBytes: Long,
+    override val checkpointKey: CheckpointKey? = null,
+    override var totalRecords: Long? = null,
+    override var totalBytes: Long? = null,
+    override var totalRejectedRecords: Long? = null,
+    val streamCheckpoints: Map<DestinationStream.Descriptor, CheckpointKey>
+) : CheckpointMessage {
+
+    override val checkpointPartitionIds: List<String>
+        get() = buildList {
+            streamCheckpoints.values.mapTo(this) { it.checkpointId.value }
+            checkpointKey?.checkpointId?.value?.let { add(it) }
+        }
+
+    override fun updateStats(
+        destinationStats: Stats?,
+        totalRecords: Long?,
+        totalBytes: Long?,
+        totalRejectedRecords: Long?
+    ) {
+        destinationStats?.let { this.destinationStats = it }
+        totalRecords?.let { this.totalRecords = it }
+        totalBytes?.let { this.totalBytes = it }
+        totalRejectedRecords?.let { this.totalRejectedRecords = it }
+    }
+    override fun withDestinationStats(stats: Stats) = copy(destinationStats = stats)
+
+    override fun asProtocolMessage(): AirbyteMessage {
+        val stateMessage =
+            AirbyteStateMessage()
+                .withType(originalTypeField)
+                .withGlobal(
+                    AirbyteGlobalState()
+                        .withSharedState(state)
+                        .withStreamStates(checkpoints.map { it.asProtocolObject() }),
+                )
+        decorateStateMessage(stateMessage)
+        return AirbyteMessage().withType(AirbyteMessage.Type.STATE).withState(stateMessage)
+    }
+}
+
 /** Catchall for anything unimplemented. */
 data object Undefined : DestinationMessage {
     override fun asProtocolMessage(): AirbyteMessage {
@@ -677,7 +756,7 @@ data object Undefined : DestinationMessage {
 }
 
 /**
- * For messages we recognize but do not want to process. Different from [Undefined] mainly in that
+ * For messages, we recognize but do not want to process. Different from [Undefined] mainly in that
  * we don't log a warning.
  */
 data object Ignored : DestinationMessage {

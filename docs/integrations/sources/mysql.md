@@ -91,10 +91,10 @@ To fill out the required information:
 
 <!-- env:cloud -->
 
-#### Step 4: (Airbyte Cloud Only) Allow inbound traffic from Airbyte IPs.
+#### Step 4: (Airbyte Cloud Only) Allow inbound traffic from Airbyte IPs
 
 If you are on Airbyte Cloud, you will always need to modify your database configuration to allow inbound traffic from Airbyte IPs. You can find a list of all IPs that need to be allowlisted in
-our [Airbyte Security docs](../../platform/operating-airbyte/security#network-security-1).
+our [Airbyte Security docs](../../platform/operating-airbyte/ip-allowlist).
 
 Now, click `Set up source` in the Airbyte UI. Airbyte will now test connecting to your database. Once this succeeds, you've configured an Airbyte MySQL source!
 
@@ -176,7 +176,7 @@ To see connector limitations, or troubleshoot your MySQL connector, see more [in
 
 ## Data Type Mapping
 
-MySQL data types are mapped to the following data types when synchronizing data. You can check test example values [here](https://github.com/airbytehq/airbyte/blob/master/airbyte-integrations/connectors/source-mysql/src/test-integration/java/io/airbyte/integrations/io/airbyte/integration_tests/sources/MySqlSourceDatatypeTest.java). If you can't find the data type you are looking for, feel free to add a new test.
+MySQL data types are mapped to the following data types when synchronizing data. You can check test example values [here](https://github.com/airbytehq/airbyte/blob/master/airbyte-integrations/connectors/source-mysql/src/test/kotlin/io/airbyte/integrations/source/mysql/MySqlSourceDatatypeIntegrationTest.kt). If you can't find the data type you are looking for, feel free to add a new test.
 If you do not see a type in this list, assume that it is coerced into a string. We are happy to take feedback on preferred mappings.
 
 Any database or table encoding combination of charset and collation is supported. Charset setting however will not be carried over to destination and data will be encoded with whatever is configured by the destination. Please note that byte arrays are not yet supported.
@@ -190,12 +190,12 @@ Any database or table encoding combination of charset and collation is supported
 | `bit(>1)`                                 | base64 binary string   |                                                                                                                |
 | `boolean`                                 | boolean                |                                                                                                                |
 | `tinyint(1)`                              | boolean                |                                                                                                                |
-| `tinyint(>1)`                             | number                 |                                                                                                                |
-| `tinyint(>=1) unsigned`                   | number                 |                                                                                                                |
-| `smallint`                                | number                 |                                                                                                                |
-| `mediumint`                               | number                 |                                                                                                                |
-| `int`                                     | number                 |                                                                                                                |
-| `bigint`                                  | number                 |                                                                                                                |
+| `tinyint(>1)`                             | integer                |                                                                                                                |
+| `tinyint(>=1) unsigned`                   | integer                |                                                                                                                |
+| `smallint`                                | integer                |                                                                                                                |
+| `mediumint`                               | integer                |                                                                                                                |
+| `int`                                     | integer                |                                                                                                                |
+| `bigint`                                  | integer                |                                                                                                                |
 | `float`                                   | number                 |                                                                                                                |
 | `double`                                  | number                 |                                                                                                                |
 | `decimal`                                 | number                 |                                                                                                                |
@@ -204,7 +204,7 @@ Any database or table encoding combination of charset and collation is supported
 | `date`                                    | string                 | ISO 8601 date string. ZERO-DATE value will be converted to NULL. If column is mandatory, convert to EPOCH.     |
 | `datetime`, `timestamp`                   | string                 | ISO 8601 datetime string. ZERO-DATE value will be converted to NULL. If column is mandatory, convert to EPOCH. |
 | `time`                                    | string                 | ISO 8601 time string. Values are in range between 00:00:00 and 23:59:59.                                       |
-| `year`                                    | year string            | [Doc](https://dev.mysql.com/doc/refman/8.0/en/year.html)                                                       |
+| `year`                                    | integer                | [Doc](https://dev.mysql.com/doc/refman/8.0/en/year.html)                                                       |
 | `char`, `varchar` with non-binary charset | string                 |                                                                                                                |
 | `tinyblob`                                | base64 binary string   |                                                                                                                |
 | `blob`                                    | base64 binary string   |                                                                                                                |
@@ -230,15 +230,24 @@ Any database or table encoding combination of charset and collation is supported
 
 | Version     | Date       | Pull Request                                               | Subject                                                                                                                                         |
 |:------------|:-----------|:-----------------------------------------------------------|:------------------------------------------------------------------------------------------------------------------------------------------------|
-| 3.50.3 | 2025-07-18 | [63349](https://github.com/airbytehq/airbyte/pull/63349) | Make concurrency level match number of sockets in speed mode |
-| 3.50.2 | 2025-07-17 | [62932](https://github.com/airbytehq/airbyte/pull/62932) | CDC fixes |
-| 3.50.1-rc.1 | 2025-07-08 | [62862](https://github.com/airbytehq/airbyte/pull/62862) | Prepare to enable speed improvements                                                                                                            |
-| 3.50.0      | 2025-07-08 | [62863](https://github.com/airbytehq/airbyte/pull/62863) | Promoting release candidate 3.50.0-rc.1 to a main version.                                                                                      |
+| 3.51.2      | 2025-11-2  | [69104](https://github.com/airbytehq/airbyte/pull/69104)   | Better partitioning for tables with GUID string primary key.                                                                                    |
+| 3.51.1      | 2025-10-24 | [68652](https://github.com/airbytehq/airbyte/pull/68652)   | Bump CDK version to the latest to resolve issue with database Views in CDC mode.                                                                |
+| 3.51.0      | 2025-10-15 | [68094](https://github.com/airbytehq/airbyte/pull/66515)   | Bump to the latest CDK for improved Protobuf encoding in socket mode.                                                                           |
+| 3.50.9      | 2025-10-06 | [67151](https://github.com/airbytehq/airbyte/pull/66515)   | Fix CDC decorating fields encoding to Protobuf                                                                                                  |
+| 3.50.8      | 2025-09-18 | [66515](https://github.com/airbytehq/airbyte/pull/66515)   | Fix division by zero in partition creation when sampling produces no split boundaries.                                                          |
+| 3.50.7      | 2025-09-10 | [66179](https://github.com/airbytehq/airbyte/pull/66179)   | Bump to the latest CDK fixing protobuf encoding of certain column types                                                                         |
+| 3.50.6      | 2025-08-08 | [64569](https://github.com/airbytehq/airbyte/pull/64569)   | Moved db version logging from connector to new CDK version                                                                                      |
+| 3.50.5      | 2025-07-30 | [63377](https://github.com/airbytehq/airbyte/pull/63377)   | Global state compatibility in speed mode                                                                                                        |
+| 3.50.4      | 2025-07-30 | [64134](https://github.com/airbytehq/airbyte/pull/64134)   | Log db version for mysql                                                                                                                        |
+| 3.50.3      | 2025-07-18 | [63349](https://github.com/airbytehq/airbyte/pull/63349)   | Make concurrency level match number of sockets in speed mode                                                                                    |
+| 3.50.2      | 2025-07-17 | [62932](https://github.com/airbytehq/airbyte/pull/62932)   | CDC fixes                                                                                                                                       |
+| 3.50.1-rc.1 | 2025-07-08 | [62862](https://github.com/airbytehq/airbyte/pull/62862)   | Prepare to enable speed improvements                                                                                                            |
+| 3.50.0      | 2025-07-08 | [62863](https://github.com/airbytehq/airbyte/pull/62863)   | Promoting release candidate 3.50.0-rc.1 to a main version.                                                                                      |
 | 3.50.0-rc.1 | 2025-07-08 | [60993](https://github.com/airbytehq/airbyte/pull/60993)   | Prepare to enable speed improvements                                                                                                            |
-| 3.12.0      | 2025-06-26 | [60993](https://github.com/airbytehq/airbyte/pull/60993)   | Boosted Mode                                                                                                                                    
-| 3.11.21     | 2025-05-30 | [61014](https://github.com/airbytehq/airbyte/pull/61014)   | Fix merge error. Point to a published CDK                                                                                                       
-| 3.11.20     | 2025-05-29 | [60218](https://github.com/airbytehq/airbyte/pull/60218)   | Testing concurrent read.                                                                                                                        
-| 3.11.19     | 2025-05-11 | [60214](https://github.com/airbytehq/airbyte/pull/60214)   | Migrate to new Gradle flow.                                                                                                                     
+| 3.12.0      | 2025-06-26 | [60993](https://github.com/airbytehq/airbyte/pull/60993)   | Boosted Mode                                                                                                                                    |
+| 3.11.21     | 2025-05-30 | [61014](https://github.com/airbytehq/airbyte/pull/61014)   | Fix merge error. Point to a published CDK                                                                                                       |
+| 3.11.20     | 2025-05-29 | [60218](https://github.com/airbytehq/airbyte/pull/60218)   | Testing concurrent read.                                                                                                                        |
+| 3.11.19     | 2025-05-11 | [60214](https://github.com/airbytehq/airbyte/pull/60214)   | Migrate to new Gradle flow.                                                                                                                     |
 | 3.11.18     | 2025-05-02 | [59732](https://github.com/airbytehq/airbyte/pull/59732)   | Fix a bug that caused the sync to go into a loop in some cases.                                                                                 |
 | 3.11.17     | 2025-05-02 | [59683](https://github.com/airbytehq/airbyte/pull/59683)   | CDK version bump.                                                                                                                               |
 | 3.11.16     | 2025-05-02 | [59223](https://github.com/airbytehq/airbyte/pull/59223)   | Improve handling of big int and decimal values preventing it from represented with scientific notation                                          |

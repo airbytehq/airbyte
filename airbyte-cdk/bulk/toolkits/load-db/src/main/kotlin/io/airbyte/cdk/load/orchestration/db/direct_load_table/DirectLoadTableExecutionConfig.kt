@@ -4,7 +4,7 @@
 
 package io.airbyte.cdk.load.orchestration.db.direct_load_table
 
-import io.airbyte.cdk.load.orchestration.db.TableName
+import io.airbyte.cdk.load.table.TableName
 
 data class DirectLoadTableExecutionConfig(
     val tableName: TableName,

@@ -45,6 +45,7 @@ Download all your data from FreeAgent, a friendly and easy to use cloud based ac
 | Projects | url | DefaultPaginator | ✅ |  ✅  |
 | Tasks | url | DefaultPaginator | ✅ |  ✅  |
 | Timeslips | url | DefaultPaginator | ✅ |  ✅  |
+| Project Notes | | DefaultPaginator | ✅ |  ❌  |
 
 ## Changelog
 
@@ -53,6 +54,17 @@ Download all your data from FreeAgent, a friendly and easy to use cloud based ac
 
 | Version | Date | Pull Request | Subject |
 |---------|------|--------------|---------|
+| 0.1.2 | 2025-10-29 | [68832](https://github.com/airbytehq/airbyte/pull/68832) | Update dependencies |
+| 0.1.1 | 2025-10-21 | [68451](https://github.com/airbytehq/airbyte/pull/68451) | Update dependencies |
+| 0.1.0 | 2025-10-07 | [67023](https://github.com/airbytehq/airbyte/pull/67023) | Added Project Notes stream and reworked Payslips stream to use payroll periods as parent instead of accounting periods. Non-breaking change |
+| 0.0.37 | 2025-10-14 | [68060](https://github.com/airbytehq/airbyte/pull/68060) | Update dependencies |
+| 0.0.36 | 2025-10-07 | [67306](https://github.com/airbytehq/airbyte/pull/67306) | Update dependencies |
+| 0.0.35 | 2025-09-30 | [66763](https://github.com/airbytehq/airbyte/pull/66763) | Update dependencies |
+| 0.0.34 | 2025-09-24 | [65887](https://github.com/airbytehq/airbyte/pull/65887) | Update dependencies |
+| 0.0.33 | 2025-08-23 | [65265](https://github.com/airbytehq/airbyte/pull/65265) | Update dependencies |
+| 0.0.32 | 2025-08-09 | [64775](https://github.com/airbytehq/airbyte/pull/64775) | Update dependencies |
+| 0.0.31 | 2025-08-02 | [64373](https://github.com/airbytehq/airbyte/pull/64373) | Update dependencies |
+| 0.0.30 | 2025-07-26 | [64041](https://github.com/airbytehq/airbyte/pull/64041) | Update dependencies |
 | 0.0.29 | 2025-07-19 | [63553](https://github.com/airbytehq/airbyte/pull/63553) | Update dependencies |
 | 0.0.28 | 2025-07-12 | [63010](https://github.com/airbytehq/airbyte/pull/63010) | Update dependencies |
 | 0.0.27 | 2025-07-05 | [62801](https://github.com/airbytehq/airbyte/pull/62801) | Update dependencies |

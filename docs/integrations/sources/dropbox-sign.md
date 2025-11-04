@@ -23,6 +23,15 @@ See the [API docs](https://developers.hellosign.com/api/reference/authentication
 
 | Version | Date | Pull Request | Subject |
 |---------|------|--------------|---------|
+| 0.0.39 | 2025-10-29 | [68748](https://github.com/airbytehq/airbyte/pull/68748) | Update dependencies |
+| 0.0.38 | 2025-10-21 | [68576](https://github.com/airbytehq/airbyte/pull/68576) | Update dependencies |
+| 0.0.37 | 2025-10-14 | [67724](https://github.com/airbytehq/airbyte/pull/67724) | Update dependencies |
+| 0.0.36 | 2025-10-07 | [67280](https://github.com/airbytehq/airbyte/pull/67280) | Update dependencies |
+| 0.0.35 | 2025-09-30 | [65845](https://github.com/airbytehq/airbyte/pull/65845) | Update dependencies |
+| 0.0.34 | 2025-08-23 | [65242](https://github.com/airbytehq/airbyte/pull/65242) | Update dependencies |
+| 0.0.33 | 2025-08-16 | [64757](https://github.com/airbytehq/airbyte/pull/64757) | Update dependencies |
+| 0.0.32 | 2025-08-02 | [64331](https://github.com/airbytehq/airbyte/pull/64331) | Update dependencies |
+| 0.0.31 | 2025-07-26 | [63935](https://github.com/airbytehq/airbyte/pull/63935) | Update dependencies |
 | 0.0.30 | 2025-07-19 | [63598](https://github.com/airbytehq/airbyte/pull/63598) | Update dependencies |
 | 0.0.29 | 2025-07-12 | [63019](https://github.com/airbytehq/airbyte/pull/63019) | Update dependencies |
 | 0.0.28 | 2025-07-05 | [62813](https://github.com/airbytehq/airbyte/pull/62813) | Update dependencies |

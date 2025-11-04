@@ -27,6 +27,16 @@ The SparkPost connector for Airbyte enables seamless integration with SparkPostâ
 
 | Version          | Date              | Pull Request | Subject        |
 |------------------|-------------------|--------------|----------------|
+| 0.0.37 | 2025-10-29 | [68783](https://github.com/airbytehq/airbyte/pull/68783) | Update dependencies |
+| 0.0.36 | 2025-10-21 | [68261](https://github.com/airbytehq/airbyte/pull/68261) | Update dependencies |
+| 0.0.35 | 2025-10-14 | [67755](https://github.com/airbytehq/airbyte/pull/67755) | Update dependencies |
+| 0.0.34 | 2025-10-07 | [67438](https://github.com/airbytehq/airbyte/pull/67438) | Update dependencies |
+| 0.0.33 | 2025-09-30 | [66903](https://github.com/airbytehq/airbyte/pull/66903) | Update dependencies |
+| 0.0.32 | 2025-09-24 | [66271](https://github.com/airbytehq/airbyte/pull/66271) | Update dependencies |
+| 0.0.31 | 2025-09-09 | [65714](https://github.com/airbytehq/airbyte/pull/65714) | Update dependencies |
+| 0.0.30 | 2025-08-24 | [65459](https://github.com/airbytehq/airbyte/pull/65459) | Update dependencies |
+| 0.0.29 | 2025-08-09 | [64830](https://github.com/airbytehq/airbyte/pull/64830) | Update dependencies |
+| 0.0.28 | 2025-08-02 | [64415](https://github.com/airbytehq/airbyte/pull/64415) | Update dependencies |
 | 0.0.27 | 2025-07-19 | [63648](https://github.com/airbytehq/airbyte/pull/63648) | Update dependencies |
 | 0.0.26 | 2025-07-05 | [62748](https://github.com/airbytehq/airbyte/pull/62748) | Update dependencies |
 | 0.0.25 | 2025-06-28 | [62223](https://github.com/airbytehq/airbyte/pull/62223) | Update dependencies |

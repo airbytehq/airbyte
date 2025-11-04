@@ -260,6 +260,9 @@ class MondayGraphqlRequester(HttpRequester):
             self._ensure_type(int, teams_limit)
             arguments = self._get_object_arguments(**object_arguments)
             query = f"{{id,name,picture_url,users(limit:{teams_limit}){{id}}}}"
+            if not arguments:
+                # when providing empty arguments in () API returns error
+                return f"{object_name}{query}"
             return f"{object_name}({arguments}){query}"
         return self._build_query(object_name=object_name, field_schema=field_schema, **object_arguments)
 
@@ -298,13 +301,13 @@ class MondayGraphqlRequester(HttpRequester):
         headers["API-Version"] = "2024-10"
         return headers
 
-    def get_request_params(
+    def get_request_body_json(  # type: ignore
         self,
         *,
         stream_state: Optional[StreamState] = None,
         stream_slice: Optional[StreamSlice] = None,
         next_page_token: Optional[Mapping[str, Any]] = None,
-    ) -> MutableMapping[str, Any]:
+    ) -> Optional[Mapping[str, Any]]:
         """
         Combines queries to a single GraphQL query.
         """
@@ -338,7 +341,7 @@ class MondayGraphqlRequester(HttpRequester):
             limit=limit or None,
             page=page,
         )
-        return {"query": f"query{{{query}}}"}
+        return {"query": f"{{{query}}}"}
 
     # We are using an LRU cache in should_retry() method which requires all incoming arguments (including self) to be hashable.
     # Dataclasses by default are not hashable, so we need to define __hash__(). Alternatively, we can set @dataclass(frozen=True),

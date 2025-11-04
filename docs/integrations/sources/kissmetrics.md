@@ -29,7 +29,19 @@ Refer `https://support.kissmetrics.io/reference/authorization` for more details.
   <summary>Expand to review</summary>
 
 | Version | Date | Pull Request | Subject |
-| ------------------ | ------------ | --- | ---------------- |
+|---------| ------------ | --- | ---------------- |
+| 0.0.41 | 2025-10-29 | [68766](https://github.com/airbytehq/airbyte/pull/68766) | Update dependencies |
+| 0.0.40 | 2025-10-21 | [68318](https://github.com/airbytehq/airbyte/pull/68318) | Update dependencies |
+| 0.0.39 | 2025-10-14 | [67956](https://github.com/airbytehq/airbyte/pull/67956) | Update dependencies |
+| 0.0.38 | 2025-10-07 | [67372](https://github.com/airbytehq/airbyte/pull/67372) | Update dependencies |
+| 0.0.37 | 2025-09-30 | [66808](https://github.com/airbytehq/airbyte/pull/66808) | Update dependencies |
+| 0.0.36 | 2025-09-24 | [66644](https://github.com/airbytehq/airbyte/pull/66644) | Update dependencies |
+| 0.0.35 | 2025-09-09 | [66047](https://github.com/airbytehq/airbyte/pull/66047) | Update dependencies |
+| 0.0.34 | 2025-09-05 | [65966](https://github.com/airbytehq/airbyte/pull/65966) | Update to CDK v7.0.0 |
+| 0.0.33 | 2025-08-23 | [65336](https://github.com/airbytehq/airbyte/pull/65336) | Update dependencies |
+| 0.0.32 | 2025-08-09 | [64606](https://github.com/airbytehq/airbyte/pull/64606) | Update dependencies |
+| 0.0.31 | 2025-08-02 | [64174](https://github.com/airbytehq/airbyte/pull/64174) | Update dependencies |
+| 0.0.30 | 2025-07-26 | [63903](https://github.com/airbytehq/airbyte/pull/63903) | Update dependencies |
 | 0.0.29 | 2025-07-19 | [63516](https://github.com/airbytehq/airbyte/pull/63516) | Update dependencies |
 | 0.0.28 | 2025-07-12 | [63147](https://github.com/airbytehq/airbyte/pull/63147) | Update dependencies |
 | 0.0.27 | 2025-07-05 | [62558](https://github.com/airbytehq/airbyte/pull/62558) | Update dependencies |

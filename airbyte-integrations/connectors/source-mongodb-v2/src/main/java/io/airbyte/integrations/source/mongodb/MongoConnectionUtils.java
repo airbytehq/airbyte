@@ -36,8 +36,11 @@ public class MongoConnectionUtils {
         .build();
 
     final MongoClientSettings.Builder mongoClientSettingsBuilder = MongoClientSettings.builder()
-        .applyConnectionString(mongoConnectionString)
-        .readPreference(ReadPreference.secondaryPreferred());
+        .applyConnectionString(mongoConnectionString);
+
+    if (mongoConnectionString.getReadPreference() == null) {
+      mongoClientSettingsBuilder.readPreference(ReadPreference.secondaryPreferred());
+    }
 
     if (config.hasAuthCredentials()) {
       final String authSource = config.getAuthSource();

@@ -20,6 +20,7 @@ import io.airbyte.cdk.load.data.json.toJson
 import io.airbyte.cdk.load.message.CheckpointMessage.Checkpoint
 import io.airbyte.cdk.load.message.CheckpointMessage.Stats
 import io.airbyte.cdk.load.message.Meta.Companion.CHECKPOINT_ID_NAME
+import io.airbyte.cdk.load.message.Meta.Companion.CHECKPOINT_INDEX_NAME
 import io.airbyte.cdk.load.state.CheckpointId
 import io.airbyte.cdk.load.state.CheckpointKey
 import io.airbyte.cdk.load.util.deserializeToNode
@@ -231,9 +232,10 @@ data class InputGlobalCheckpoint(
                     )
                     .also {
                         if (checkpointKey != null) {
-                            it.additionalProperties["partition_id"] =
+                            it.additionalProperties[CHECKPOINT_ID_NAME] =
                                 checkpointKey.checkpointId.value
-                            it.additionalProperties["id"] = checkpointKey.checkpointIndex.value
+                            it.additionalProperties[CHECKPOINT_INDEX_NAME] =
+                                checkpointKey.checkpointIndex.value
                         }
                         if (sourceRecordCount != null) {
                             it.sourceStats =
