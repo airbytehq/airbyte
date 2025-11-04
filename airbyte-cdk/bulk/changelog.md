@@ -1,3 +1,10 @@
+## Version 0.1.64
+
+**Load CDK**
+
+* Added: Support for reporting of additional stats in destination state messages.
+* Changed: Refactor coercer interface to separate out coercion and validation.
+
 ## Version 0.1.63
 
 introduce extract-trigger toolkit for trigger-based CDC
