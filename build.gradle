@@ -245,11 +245,7 @@ static def isInCi() {
 }
 
 static def getJavaCompilerArgs() {
-    if (isInCi()) {
-        return [""]
-    } else {
-        return []
-    }
+    return []
 }
 
 static def getKotlinCompilerArgs() {
