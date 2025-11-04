@@ -70,7 +70,7 @@ class SnowflakeSourceMetadataQuerierTableFilterTest {
                 dbmd.getTables(
                     namespace,
                     schema,
-                    match { it != null && !tables.contains(it) },
+                    match { !tables.contains(it) },
                     null
                 )
             } answers
@@ -88,7 +88,7 @@ class SnowflakeSourceMetadataQuerierTableFilterTest {
 
             // Also mock lowercase schema for case insensitivity
             every {
-                dbmd.getTables(namespace, schema.lowercase(), match { it != null }, null)
+                dbmd.getTables(namespace, schema.lowercase(), match { true }, null)
             } answers
                 {
                     val pattern = arg<String>(2)
