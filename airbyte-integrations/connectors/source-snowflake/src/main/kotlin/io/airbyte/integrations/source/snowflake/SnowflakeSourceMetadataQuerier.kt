@@ -64,10 +64,9 @@ class SnowflakeSourceMetadataQuerier(
             val dbmd: DatabaseMetaData = base.conn.metaData
             memoizedTableNames
                 .filter { it.namespace() != null }
-                .map { it.catalog to it.schema }
-                .distinct()
-                .forEach { (catalog: String?, schema: String?) ->
-                    dbmd.getColumns(catalog, schema, null, null).use { rs: ResultSet ->
+                .forEach { table ->
+                    dbmd.getColumns(table.catalog, table.schema, null, null).use {
+                        rs: ResultSet ->
                         while (rs.next()) {
                             val (tableName: TableName, metadata: ColumnMetadata) =
                                 columnMetadataFromResultSet(rs, isPseudoColumn = false)
@@ -339,10 +338,9 @@ class SnowflakeSourceMetadataQuerier(
             val dbmd: DatabaseMetaData = base.conn.metaData
 
             memoizedTableNames
-                .map { it.catalog to it.schema }
-                .distinct()
-                .forEach { (catalog: String?, schema: String?) ->
-                    dbmd.getPrimaryKeys(catalog, schema, null).use { rs: ResultSet ->
+                .forEach { table ->
+                    dbmd.getPrimaryKeys(table.catalog, table.schema, null).use {
+                        rs: ResultSet ->
                         while (rs.next()) {
                             val primaryKey =
                                 PrimaryKeyRow(
