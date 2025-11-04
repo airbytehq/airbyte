@@ -1,3 +1,7 @@
+## Version 0.1.65
+
+extract cdk: fix bug when getting table metadata that cause timeout
+
 ## Version 0.1.64
 
 extract cdk: add table filtering to jdbc connectors
