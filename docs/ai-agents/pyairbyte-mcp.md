@@ -16,6 +16,7 @@ For complete setup instructions, troubleshooting guidance, and detailed document
 **[PyAirbyte MCP Server Documentation](https://airbytehq.github.io/PyAirbyte/airbyte/mcp.html)**
 
 The PyAirbyte documentation includes:
+
 - Step-by-step setup instructions
 - Environment configuration requirements
 - Security model and safety features
