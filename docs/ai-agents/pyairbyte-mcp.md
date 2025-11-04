@@ -29,7 +29,7 @@ To get started with the PyAirbyte MCP server:
 
 1. Install `uv`: `brew install uv`
 2. Create a dotenv secrets file with your Airbyte Cloud credentials and connector configurations
-3. Register the MCP server with your MCP client using `uvx --from=airbyte@latest airbyte-mcp`
+3. Register the MCP server with your MCP client using `uvx --python=3.11 --from=airbyte@latest airbyte-mcp`
 4. Test the connection using your MCP client
 
 For detailed instructions on each step, see the [PyAirbyte MCP documentation](https://airbytehq.github.io/PyAirbyte/airbyte/mcp.html).
