@@ -200,6 +200,7 @@ class EnrichedAirbyteValue(
      *
      * @param reason The [Reason] for nullification, defaults to DESTINATION_SERIALIZATION_ERROR
      */
+    @Deprecated(message = "Deprecated in favor of the new data flow pipeline")
     fun nullify(reason: Reason = Reason.DESTINATION_SERIALIZATION_ERROR) {
         val nullChange = Meta.Change(field = name, change = Change.NULLED, reason = reason)
 
@@ -213,6 +214,7 @@ class EnrichedAirbyteValue(
      * @param reason The [Reason] for truncation, defaults to DESTINATION_RECORD_SIZE_LIMITATION
      * @param newValue The new (truncated) value to use
      */
+    @Deprecated(message = "Deprecated in favor of the new data flow pipeline")
     fun truncate(
         newValue: AirbyteValue,
         reason: Reason = Reason.DESTINATION_RECORD_SIZE_LIMITATION
