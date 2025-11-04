@@ -345,7 +345,6 @@ Google Search Console only retains data for websites from the last 16 months. An
 | 0.1.1       | 2021-09-22 | [6315](https://github.com/airbytehq/airbyte/pull/6315)   | Verify access to all sites when performing connection check                                                                                                            |
 | 0.1.0       | 2021-09-03 | [5350](https://github.com/airbytehq/airbyte/pull/5350)   | Initial Release                                                                                                                                                        |
 
-
 </details>
 
 </HideInUI>
