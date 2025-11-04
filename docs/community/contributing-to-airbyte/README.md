@@ -6,7 +6,7 @@ description: "We love contributions to Airbyte, big or small."
 
 Thank you for your interest in contributing! Contributions are very welcome. We appreciate first time contributors and we are happy help you get started. Join our [community Slack](https://slack.airbyte.io) and feel free to reach out with questions in [`#dev-and-contribuions` channel](https://airbytehq.slack.com/archives/C054V9JFTC6).
 
-If you're interacting in Slack, codebases, mailing lists, events, or any other Airbyte activity, you must follow the [Code of Conduct](/platform/community/code-of-conduct). Please review it before getting started.
+If you're interacting in Slack, codebases, mailing lists, events, or any other Airbyte activity, you must follow the [Code of Conduct](/community/code-of-conduct). Please review it before getting started.
 
 ## Code Contributions
 
@@ -54,7 +54,7 @@ When submitting a pull request, please ensure that Airbyte maintainers have writ
 
 To enable write access on your PR from Airbyte maintainers, please check the "Allow edits from maintainers" box when submitting from your PR. You must also create your PR from a fork in your **personal GitHub account** rather than an organization account, or else you will not see this option. The requirement to create from your personal fork is based on GitHub's additional security restrictions for PRs created from organization forks. For more information about the GitHub security model, please see the [GitHub documentation page regarding PRs from forks](https://docs.github.com/en/pull-requests/collaborating-with-pull-requests/working-with-forks/allowing-changes-to-a-pull-request-branch-created-from-a-fork).
 
-For more details on contribution requirements, please see our [contribution workflow documentation](https://docs.airbyte.com/platform/contributing-to-airbyte#standard-contribution-workflow).
+For more details on contribution requirements, please see our [contribution workflow documentation](https://docs.airbyte.com/community/contributing-to-airbyte#standard-contribution-workflow).
 
 :::warning
 Do not submit a pull request using the default branch of your forked repository. This will block Airbyte maintainers from pushing changes to your branch.
@@ -62,11 +62,11 @@ Do not submit a pull request using the default branch of your forked repository.
 
 ## Connector contributions
 
-Guidelines for connector contributions included in the [Connector Development Guide](../connector-development/README.md):
+Guidelines for connector contributions included in the [Connector Development Guide](/platform/connector-development):
 
-- [Contribute a New Connector](../connector-development/submit-new-connector.md) - Guide to submitting a new connector to Airbyte.
-- [Developing Connectors Locally](../connector-development/local-connector-development.md) - Guide to setting up your local environment for connector development.
-- [Breaking Changes in Connectors](../connector-development/connector-breaking-changes.md) - Guide to breaking changes and version updates.
+- [Contribute a New Connector](/platform/connector-development/submit-new-connector) - Guide to submitting a new connector to Airbyte.
+- [Developing Connectors Locally](/platform/connector-development/local-connector-development) - Guide to setting up your local environment for connector development.
+- [Breaking Changes in Connectors](/platform/connector-development/connector-breaking-changes) - Guide to breaking changes and version updates.
 
 ## Documentation contributions
 

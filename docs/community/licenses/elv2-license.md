@@ -1,5 +1,7 @@
 # ELv2
 
+<!-- vale off -->
+
 Elastic License 2.0 \(ELv2\)
 
 **Acceptance** By using the software, you agree to all of the terms and conditions below.
@@ -35,3 +37,5 @@ _your licenses_ are all the licenses granted to you for the software under these
 _use_ means anything you do with the software requiring one of your licenses.
 
 _trademark_ means trademarks, service marks, and similar rights.
+
+<!-- vale on -->

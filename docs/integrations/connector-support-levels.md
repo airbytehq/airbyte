@@ -50,7 +50,7 @@ maintenance/upgrades are owned by the customer.
 - Should be used with caution in production.
 - Might not be feature complete and may experience backward-incompatible, breaking changes with no notice.
 - Are available to everyone.
-- Can [be improved by people like you](../platform/contributing-to-airbyte/).
+- Can [be improved by people like you](/community/contributing-to-airbyte/).
 
 ## Custom connectors
 
