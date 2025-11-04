@@ -1181,6 +1181,41 @@ definitions:
       cursor_filter: "start_time"
       primary_key: "id"
 
+  conversation_log_stream:
+    $ref: "#/definitions/base_stream"
+    name: "conversation_log"
+    primary_key: "id"
+    schema_loader:
+      type: InlineSchemaLoader
+      schema:
+        $ref: "#/schemas/conversation_log"
+    retriever:
+      $ref: "#/definitions/retriever"
+      requester:
+        $ref: "#/definitions/retriever/requester"
+        path: "tickets/{{ stream_partition.ticket_id }}/conversation_log"
+      paginator:
+        $ref: "#/definitions/links_next_paginator"
+      partition_router:
+        type: SubstreamPartitionRouter
+        parent_stream_configs:
+          - type: ParentStreamConfig
+            parent_key: "id"
+            partition_field: "ticket_id"
+            stream:
+              $ref: "#/definitions/tickets_stream"
+            incremental_dependency: true
+      record_selector:
+        type: RecordSelector
+        extractor:
+          type: DpathExtractor
+          field_path:
+            - events  # Extract from events array
+    $parameters:
+      name: "conversation_log"
+      primary_key: "id"
+
+
 streams:
   # Full refresh streams
   - $ref: "#/definitions/account_attributes_stream"
@@ -1225,6 +1260,7 @@ streams:
   - $ref: "#/definitions/triggers_stream"
   - $ref: "#/definitions/users_stream"
   - $ref: "#/definitions/users_identities_stream"
+  - $ref: "#/definitions/conversation_log_stream"
   # todo: The following streams are enterprise-only streams. However, the low-code CDK does not support
   #  ConditionalStreams based on an API endpoint. These should be under that component once the CDK supports it.
   # - $ref: "#/definitions/ticket_forms_stream"
@@ -7135,3 +7171,78 @@ schemas:
         type:
           - "null"
           - number
+  conversation_log:
+    $schema: https://json-schema.org/draft-07/schema#
+    type:
+      - "null"
+      - object
+    properties:
+      id:
+        description: Unique identifier for the log item.
+        type:
+          - "null"
+          - integer
+      ticket_id:
+        description: The ID of the ticket associated with this log item.
+        type:
+          - "null"
+          - integer
+      conversation_id:
+        description: The ID of the conversation associated with this log item.
+        type:
+          - "null"
+          - string
+      type:
+        description: The type of log item (e.g., message, status_change, assignment).
+        type:
+          - "null"
+          - string
+      created_at:
+        description: The timestamp when the log item was created.
+        type:
+          - "null"
+          - string
+        format: date-time
+      author_id:
+        description: The ID of the user who created the log item.
+        type:
+          - "null"
+          - integer
+      body:
+        description: The content/body of the log item.
+        type:
+          - "null"
+          - string
+      html_body:
+        description: The HTML formatted content of the log item.
+        type:
+          - "null"
+          - string
+      plain_body:
+        description: The plain text content of the log item.
+        type:
+          - "null"
+          - string
+      public:
+        description: Whether the log item is public or private.
+        type:
+          - "null"
+          - boolean
+      attachments:
+        description: List of attachments associated with the log item.
+        type:
+          - "null"
+          - array
+        items:
+          type: object
+      via:
+        description: Information about how the log item was created.
+        type:
+          - "null"
+          - object
+      metadata:
+        description: Additional metadata for the log item.
+        type:
+          - "null"
+          - object
+        additionalProperties: true
