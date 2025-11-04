@@ -256,6 +256,7 @@ class MySqlSourceJdbcSplittableCdcRfrSnapshotPartition(
     override val lowerBound: List<JsonNode>?,
     override val upperBound: List<JsonNode>?,
 ) : MySqlSourceJdbcResumablePartition(selectQueryGenerator, streamState, primaryKey) {
+    override val isLowerBoundIncluded: Boolean = lowerBound != null
     override val completeState: OpaqueStateValue
         get() =
             when (upperBound) {
