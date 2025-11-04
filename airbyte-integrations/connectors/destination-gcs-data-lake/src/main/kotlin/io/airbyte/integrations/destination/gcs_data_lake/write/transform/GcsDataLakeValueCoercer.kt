@@ -6,8 +6,12 @@ package io.airbyte.integrations.destination.gcs_data_lake.write.transform
 
 import io.airbyte.cdk.load.data.EnrichedAirbyteValue
 import io.airbyte.cdk.load.data.IntegerValue
+import io.airbyte.cdk.load.data.NullValue
 import io.airbyte.cdk.load.data.NumberValue
+import io.airbyte.cdk.load.data.StringValue
+import io.airbyte.cdk.load.data.UnionType
 import io.airbyte.cdk.load.dataflow.transform.ValueCoercer
+import io.airbyte.cdk.load.util.serializeToString
 import io.airbyte.protocol.models.v0.AirbyteRecordMessageMetaChange.Reason
 import jakarta.inject.Singleton
 import java.math.BigDecimal
@@ -16,19 +20,23 @@ import java.math.BigInteger
 /**
  * Value coercer for GCS Data Lake destination.
  * Applies Iceberg-specific transformations and validations:
- * - Converts timestamps to milliseconds for _airbyte_extracted_at
- * - Stringifies objects/arrays (except _airbyte_meta which stays as struct)
+ * - Stringifies union values (required for UnionBehavior.STRINGIFY)
  * - Nulls out-of-range integers (outside Long range)
  * - Nulls out-of-range numbers (outside Double range)
  * - Records all changes in airbyte_meta
+ *
+ * Note: Object/array stringification is handled by Iceberg schema transformation
+ * (toIcebergSchema with stringifyObjects), not here.
  */
 @Singleton
 class GcsDataLakeValueCoercer : ValueCoercer {
     override fun map(value: EnrichedAirbyteValue): EnrichedAirbyteValue {
-        // ValueCoercer operates on individual field values during Parse stage
-        // However, timestamp→integer and object→string are already handled by the
-        // Iceberg schema transformation (toIcebergSchema with stringifyObjects)
-        // So we just pass through here
+        // Stringify union values - this happens during Parse stage where we still
+        // have type information to know which fields are unions
+        // Note: Null values should NOT be stringified - they stay as NullValue
+        if (value.type is UnionType && value.abValue !is NullValue) {
+            value.abValue = StringValue(value.abValue.serializeToString())
+        }
         return value
     }
 
