@@ -6,7 +6,7 @@ import DocCardList from '@theme/DocCardList';
 
 # Workspaces
 
-Each organization consists of one or more **workspaces**. A workspace groups sources, destinations, connections. You can also use workspaces to assign access and permissions. You can use a single workspace for everything, or you can divide your organization into multiple workspaces.
+Each organization consists of one or more **workspaces**. A workspace groups sources, destinations, and connections. You can also use workspaces to assign access and permissions. You can use a single workspace for everything, or you can divide your organization into multiple workspaces.
 
 ![The Connections page in a workspace](../../images/workspace-homepage.png)
 
