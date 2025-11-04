@@ -73,13 +73,7 @@ class SourceSFTPBulkStreamReader(AbstractFileBasedStreamReader):
         # Iterate through directories and subdirectories
         while directories:
             current_dir = directories.pop()
-            try:
-                items = self.sftp_client.sftp_connection.listdir_attr(current_dir)
-            except Exception as e:
-                logger.warning(f"Failed to list files in directory: {e}")
-                continue
-
-            for item in items:
+            for item in self.sftp_client.sftp_connection.listdir_iter(current_dir):
                 if item.st_mode and stat.S_ISDIR(item.st_mode):
                     directories.append(f"{current_dir}/{item.filename}")
                 else:
