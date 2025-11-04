@@ -5899,7 +5899,7 @@ spec:
 # If time allows it, we can definitely try to scope this number a bit better empirically.
 concurrency_level:
   type: ConcurrencyLevel
-  default_concurrency: "{{ config.get('concurrency_level', 3) }}"
+  default_concurrency: "{{ config.get('concurrency_level', 4) }}"
   max_concurrency: 20
 
 metadata:
