@@ -7,7 +7,6 @@ package io.airbyte.integrations.destination.gcs_data_lake.dataflow
 import io.airbyte.cdk.load.command.DestinationStream
 import io.airbyte.cdk.load.data.ArrayValue
 import io.airbyte.cdk.load.data.IntegerValue
-import io.airbyte.cdk.load.data.NullValue
 import io.airbyte.cdk.load.data.ObjectValue
 import io.airbyte.cdk.load.data.StringValue
 import io.airbyte.cdk.load.data.TimestampWithTimezoneValue
@@ -46,6 +45,7 @@ class GcsDataLakeAggregate(
         val icebergRecord = org.apache.iceberg.data.GenericRecord.create(schema)
 
         schema.asStruct().fields().forEach { field ->
+            // Schema has mapped column names, record.fields also has mapped names
             val airbyteValue = record.fields[field.name()]
             if (airbyteValue != null) {
                 // Apply Iceberg-schema-dependent transformations
@@ -60,12 +60,12 @@ class GcsDataLakeAggregate(
     }
 
     /**
-     * Transform AirbyteValue based on Iceberg schema field type.
-     * These transformations require knowledge of the Iceberg schema,
-     * so they can't happen in ValueCoercer (which operates in Parse stage).
+     * Transform AirbyteValue based on Iceberg schema field type. These transformations require
+     * knowledge of the Iceberg schema, so they can't happen in ValueCoercer (which operates in
+     * Parse stage).
      *
-     * Note: Union stringification is handled by ValueCoercer (during Parse stage).
-     * Here we only handle Object/Array stringification for STRING fields.
+     * Note: Union stringification is handled by ValueCoercer (during Parse stage). Here we only
+     * handle Object/Array stringification for STRING fields.
      */
     private fun transformForIcebergSchema(
         value: io.airbyte.cdk.load.data.AirbyteValue,
@@ -75,19 +75,21 @@ class GcsDataLakeAggregate(
             // Timestamp → Integer for LONG fields (_airbyte_extracted_at)
             field.type().typeId() == org.apache.iceberg.types.Type.TypeID.LONG &&
                 (value is TimestampWithTimezoneValue || value is TimestampWithoutTimezoneValue) -> {
-                val millis = when (value) {
-                    is TimestampWithTimezoneValue -> value.value.toInstant().toEpochMilli()
-                    is TimestampWithoutTimezoneValue -> value.value.atOffset(ZoneOffset.UTC).toInstant().toEpochMilli()
-                    else -> 0L
-                }
+                val millis =
+                    when (value) {
+                        is TimestampWithTimezoneValue -> value.value.toInstant().toEpochMilli()
+                        is TimestampWithoutTimezoneValue ->
+                            value.value.atOffset(ZoneOffset.UTC).toInstant().toEpochMilli()
+                        else -> 0L
+                    }
                 IntegerValue(BigInteger.valueOf(millis))
             }
             // Object/Array → String for STRING fields (for stringifySchemalessObjects behavior)
             // Note: Union values are already stringified by ValueCoercer
-            field.type().typeId() == org.apache.iceberg.types.Type.TypeID.STRING && value is ObjectValue ->
-                StringValue(value.serializeToString())
-            field.type().typeId() == org.apache.iceberg.types.Type.TypeID.STRING && value is ArrayValue ->
-                StringValue(value.serializeToString())
+            field.type().typeId() == org.apache.iceberg.types.Type.TypeID.STRING &&
+                value is ObjectValue -> StringValue(value.serializeToString())
+            field.type().typeId() == org.apache.iceberg.types.Type.TypeID.STRING &&
+                value is ArrayValue -> StringValue(value.serializeToString())
             else -> value
         }
     }

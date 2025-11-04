@@ -18,15 +18,15 @@ import java.math.BigDecimal
 import java.math.BigInteger
 
 /**
- * Value coercer for GCS Data Lake destination.
- * Applies Iceberg-specific transformations and validations:
+ * Value coercer for GCS Data Lake destination. Applies Iceberg-specific transformations and
+ * validations:
  * - Stringifies union values (required for UnionBehavior.STRINGIFY)
  * - Nulls out-of-range integers (outside Long range)
  * - Nulls out-of-range numbers (outside Double range)
  * - Records all changes in airbyte_meta
  *
- * Note: Object/array stringification is handled by Iceberg schema transformation
- * (toIcebergSchema with stringifyObjects), not here.
+ * Note: Object/array stringification is handled by Iceberg schema transformation (toIcebergSchema
+ * with stringifyObjects), not here.
  */
 @Singleton
 class GcsDataLakeValueCoercer : ValueCoercer {
