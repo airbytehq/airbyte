@@ -101,9 +101,11 @@ class BigqueryBatchStandardInsertsLoader(
             "Finished loading data into table ${writeChannelConfiguration.destinationTable.toPrettyString()}. ${stats.outputRows} rows loaded; ${stats.badRecords} bad records."
         }
         if (stats.badRecords > 0) {
-            logger.warn {
+            // This should be impossible: the load job uses the default setting of maxBadRecords=0,
+            // so the job is supposed to fail if there were any bad records.
+            throw RuntimeException(
                 "${writeChannelConfiguration.destinationTable.toPrettyString()}: Nonzero bad records detected: ${stats.badRecords}"
-            }
+            )
         }
     }
 

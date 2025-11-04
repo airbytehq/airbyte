@@ -1,6 +1,18 @@
+## Version 0.1.64
+
+extract cdk: add table filtering to jdbc connectors
+
+## Version 0.1.63
+
+introduce extract-trigger toolkit for trigger-based CDC
+
+## Version 0.1.62
+
+load cdk: correctly parse empty schemas
+
 ## Version 0.1.61
 
-extract cdk: added table filtering support for jdbc sources
+Fix bug related to state messages indexing in the dataflow CDK
 
 ## Version 0.1.60
 
