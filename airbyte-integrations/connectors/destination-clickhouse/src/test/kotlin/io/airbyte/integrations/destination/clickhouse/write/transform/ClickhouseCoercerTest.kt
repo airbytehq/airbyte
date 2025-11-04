@@ -41,8 +41,8 @@ import java.time.LocalDateTime
 import java.time.LocalTime
 import java.time.OffsetTime
 import java.time.ZoneOffset
-import kotlin.test.Test
 import kotlin.test.assertEquals
+import org.junit.jupiter.api.Test
 import org.junit.jupiter.api.extension.ExtendWith
 import org.junit.jupiter.params.ParameterizedTest
 import org.junit.jupiter.params.provider.Arguments
@@ -250,6 +250,7 @@ class ClickhouseCoercerTest {
                 Arguments.of("100000000000000000000000000000000000001"),
                 Arguments.of("999999999999999999999999999999999999999.9"),
                 Arguments.of("-999999999999999999999999999999999999999.12"),
+                Arguments.of("3.4028234663852886E+37"),
             )
 
         @JvmStatic
