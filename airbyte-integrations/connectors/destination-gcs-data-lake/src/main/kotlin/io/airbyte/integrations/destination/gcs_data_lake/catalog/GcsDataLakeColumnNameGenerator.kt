@@ -1,3 +1,7 @@
+/*
+ * Copyright (c) 2025 Airbyte, Inc., all rights reserved.
+ */
+
 package io.airbyte.integrations.destination.gcs_data_lake.catalog
 
 import io.airbyte.cdk.load.data.Transformations
@@ -11,8 +15,8 @@ import jakarta.inject.Singleton
  * - Only alphanumeric characters (a-z, A-Z, 0-9) and underscores (_)
  * - Must start with a letter or underscore
  *
- * This implementation uses [Transformations.toAlphanumericAndUnderscore] to ensure
- * all column names meet these requirements.
+ * This implementation uses [Transformations.toAlphanumericAndUnderscore] to ensure all column names
+ * meet these requirements.
  */
 @Singleton
 class GcsDataLakeColumnNameGenerator : ColumnNameGenerator {

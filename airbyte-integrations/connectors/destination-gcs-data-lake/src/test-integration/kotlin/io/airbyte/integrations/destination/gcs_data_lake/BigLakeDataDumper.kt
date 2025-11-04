@@ -49,8 +49,8 @@ class BigLakeDataDumper(
     }
 
     /**
-     * Builds a mapping from sanitized column names to their original names.
-     * This allows us to reverse the transformation when reading data.
+     * Builds a mapping from sanitized column names to their original names. This allows us to
+     * reverse the transformation when reading data.
      */
     private fun buildReverseMapping(stream: DestinationStream): Map<String, String> {
         val mapping = mutableMapOf<String, String>()
@@ -65,9 +65,7 @@ class BigLakeDataDumper(
         return mapping
     }
 
-    /**
-     * Recursively reverse-maps field names in an ObjectValue from sanitized to original names.
-     */
+    /** Recursively reverse-maps field names in an ObjectValue from sanitized to original names. */
     private fun reverseMapFieldNames(
         obj: ObjectValue,
         reverseMapping: Map<String, String>

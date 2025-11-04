@@ -22,13 +22,11 @@ import org.junit.jupiter.api.Assumptions.assumeTrue
 import org.junit.jupiter.api.Test
 
 /**
- * BigLake write test that uses a custom data dumper to handle column name mapping.
+ * BigLake write test with column name mapping.
  *
- * BigLake requires column names to be sanitized (alphanumeric + underscore only), so we:
- * 1. Write data with sanitized column names
- * 2. Read data back with sanitized names (via IcebergDataDumper)
- * 3. Reverse-map sanitized names to originals (via BigLakeDataDumper)
- * 4. Compare with expected values using original names
+ * Column names are sanitized (alphanumeric + underscore) in the Iceberg schema for BigLake
+ * compatibility. The BigLakeDataDumper reverse-maps column names when reading data for test
+ * validation.
  */
 class BigLakeWriteTest :
     BasicFunctionalityIntegrationTest(
@@ -56,10 +54,7 @@ class BigLakeWriteTest :
         supportFileTransfer = false,
         commitDataIncrementally = false,
         allTypesBehavior =
-            StronglyTyped(
-                integerCanBeLarge = false,
-                nestedFloatLosesPrecision = false
-            ),
+            StronglyTyped(integerCanBeLarge = false, nestedFloatLosesPrecision = false),
         unknownTypesBehavior = UnknownTypesBehavior.PASS_THROUGH,
         nullEqualsUnset = true,
         configUpdater = IcebergConfigUpdater,
@@ -78,6 +73,11 @@ class BigLakeWriteTest :
     @Test
     override fun testFunkyCharacters() {
         super.testFunkyCharacters()
+    }
+
+    @Test
+    override fun testDedup() {
+        super.testDedup()
     }
 
     @Test
@@ -117,7 +117,7 @@ class BigLakeWriteTest :
     }
 
     @Test
-    override fun testOverwriteSchemaEvolution() {
-        super.testOverwriteSchemaEvolution()
+    override fun testAppendSchemaEvolution() {
+        super.testAppendSchemaEvolution()
     }
 }
