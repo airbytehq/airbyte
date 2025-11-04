@@ -140,31 +140,32 @@ Reports synced by this connector can use either hourly, daily, or lifetime granu
 The connector is restricted by [requests limitation](https://business-api.tiktok.com/portal/docs?rid=fgvgaumno25&id=1740029171730433). This connector should not run into TikTok Marketing API limitations under normal usage. Please [create an issue](https://github.com/airbytehq/airbyte/issues) if you see any rate limit issues that are not automatically retried successfully.
 
 ## Changelog
-| 4.8.9      | 2025-10-30 | [69101](https://github.com/airbytehq/airbyte/pull/69101) | Revert aggressive rate limiting |
+
 <details>
   <summary>Expand to review</summary>
 
 
 | Version    | Date       | Pull Request                                              | Subject                                                                                                                                                                |
 |:-----------|:-----------|:----------------------------------------------------------|:-----------------------------------------------------------------------------------------------------------------------------------------------------------------------|
-| 4.8.9      | 2025-10-30 | [69101](https://github.com/airbytehq/airbyte/pull/69101) | Revert aggressive rate limiting |
-| 4.8.8      | 2025-10-29 | [69082](https://github.com/airbytehq/airbyte/pull/69082) | Aggressively fail on rate limiting issues |
-| 4.8.7      | 2025-10-29 | [69081](https://github.com/airbytehq/airbyte/pull/69081) | Reduce concurrency |
-| 4.8.6      | 2025-10-29 | [69075](https://github.com/airbytehq/airbyte/pull/69075) | Add API Budget |
-| 4.8.5      | 2025-10-29 | [69074](https://github.com/airbytehq/airbyte/pull/69074) | Improving on rate limiting issue. |
-| 4.8.4      | 2025-10-08 | [67432](https://github.com/airbytehq/airbyte/pull/67432) | Promoting release candidate 4.8.4 to a main version. |
-| 4.8.4-rc.1      | 2025-09-30 | [66823](https://github.com/airbytehq/airbyte/pull/66823) | Up CDK version to 7. |
-| 4.8.3      | 2025-09-23 | [66584](https://github.com/airbytehq/airbyte/pull/66584) | Promoting release candidate 4.8.3-rc.1 to a main version. |
-| 4.8.3-rc.1 | 2025-09-16 | [62058] | Add new video metrics in `ads_reports` streams |
-| 4.8.2      | 2025-09-15 | [66233](https://github.com/airbytehq/airbyte/pull/66233) | Promoting release candidate 4.8.2-rc.1 to a main version. |
-| 4.8.2-rc.1 | 2025-09-11 | [65527](https://github.com/airbytehq/airbyte/pull/65527) | Fix missing records for hourly streams: remove record filter|
-| 4.8.1      | 2025-09-10 | [66161](https://github.com/airbytehq/airbyte/pull/66161) | Promoting release candidate 4.8.1-rc.1 to a main version. |
-| 4.8.1-rc.1 | 2025-09-05 | [65602](https://github.com/airbytehq/airbyte/pull/65602) | Add record filter to `ads` stream to filter records without `modify_time`.|
-| 4.8.0      | 2025-06-24 | [62048](https://github.com/airbytehq/airbyte/pull/62048) | Promoting release candidate 4.8.0-rc.1 to a main version. |
-| 4.8.0-rc.1 | 2025-06-16 | [61580](https://github.com/airbytehq/airbyte/pull/61580)  | Convert to manifest-only format                                                                                                                               |
+| 4.8.10     | 2025-11-04 | [69170](https://github.com/airbytehq/airbyte/pull/69170) | Revert api budget and concurrency back to a safe number                                                                                                                |
+| 4.8.9      | 2025-10-30 | [69101](https://github.com/airbytehq/airbyte/pull/69101) | Revert aggressive rate limiting                                                                                                                                        |
+| 4.8.8      | 2025-10-29 | [69082](https://github.com/airbytehq/airbyte/pull/69082) | Aggressively fail on rate limiting issues                                                                                                                              |
+| 4.8.7      | 2025-10-29 | [69081](https://github.com/airbytehq/airbyte/pull/69081) | Reduce concurrency                                                                                                                                                     |
+| 4.8.6      | 2025-10-29 | [69075](https://github.com/airbytehq/airbyte/pull/69075) | Add API Budget                                                                                                                                                         |
+| 4.8.5      | 2025-10-29 | [69074](https://github.com/airbytehq/airbyte/pull/69074) | Improving on rate limiting issue.                                                                                                                                      |
+| 4.8.4      | 2025-10-08 | [67432](https://github.com/airbytehq/airbyte/pull/67432) | Promoting release candidate 4.8.4 to a main version.                                                                                                                   |
+| 4.8.4-rc.1 | 2025-09-30 | [66823](https://github.com/airbytehq/airbyte/pull/66823) | Up CDK version to 7.                                                                                                                                                   |
+| 4.8.3      | 2025-09-23 | [66584](https://github.com/airbytehq/airbyte/pull/66584) | Promoting release candidate 4.8.3-rc.1 to a main version.                                                                                                              |
+| 4.8.3-rc.1 | 2025-09-16 | [62058] | Add new video metrics in `ads_reports` streams                                                                                                                         |
+| 4.8.2      | 2025-09-15 | [66233](https://github.com/airbytehq/airbyte/pull/66233) | Promoting release candidate 4.8.2-rc.1 to a main version.                                                                                                              |
+| 4.8.2-rc.1 | 2025-09-11 | [65527](https://github.com/airbytehq/airbyte/pull/65527) | Fix missing records for hourly streams: remove record filter                                                                                                           |
+| 4.8.1      | 2025-09-10 | [66161](https://github.com/airbytehq/airbyte/pull/66161) | Promoting release candidate 4.8.1-rc.1 to a main version.                                                                                                              |
+| 4.8.1-rc.1 | 2025-09-05 | [65602](https://github.com/airbytehq/airbyte/pull/65602) | Add record filter to `ads` stream to filter records without `modify_time`.                                                                                             |
+| 4.8.0      | 2025-06-24 | [62048](https://github.com/airbytehq/airbyte/pull/62048) | Promoting release candidate 4.8.0-rc.1 to a main version.                                                                                                              |
+| 4.8.0-rc.1 | 2025-06-16 | [61580](https://github.com/airbytehq/airbyte/pull/61580)  | Convert to manifest-only format                                                                                                                                        |
 | 4.7.0      | 2025-03-10 | [55681](https://github.com/airbytehq/airbyte/pull/55681)  | Ads / AdGroups report by country streams                                                                                                                               |
-| 4.6.2      | 2024-10-30 | [48003](https://github.com/airbytehq/airbyte/pull/48003) | Add new metrics to ads_reports_daily stream |
-| 4.6.1      | 2025-03-22 | [51959](https://github.com/airbytehq/airbyte/pull/51959) | Update dependencies |
+| 4.6.2      | 2024-10-30 | [48003](https://github.com/airbytehq/airbyte/pull/48003) | Add new metrics to ads_reports_daily stream                                                                                                                            |
+| 4.6.1      | 2025-03-22 | [51959](https://github.com/airbytehq/airbyte/pull/51959) | Update dependencies                                                                                                                                                    |
 | 4.6.0      | 2025-03-09 | [55669](https://github.com/airbytehq/airbyte/pull/55669)  | Add `Pixels`, `PixelInstantPageEvents`, `PixelEventsStatistics` streams                                                                                                |
 | 4.5.0      | 2025-03-07 | [45081](https://github.com/airbytehq/airbyte/pull/45081)  | Add SparkAds stream                                                                                                                                                    |
 | 4.4.0      | 2025-03-07 | [55242](https://github.com/airbytehq/airbyte/pull/55242)  | Promoting release candidate 4.4.0-rc3 to a main version.                                                                                                               |
