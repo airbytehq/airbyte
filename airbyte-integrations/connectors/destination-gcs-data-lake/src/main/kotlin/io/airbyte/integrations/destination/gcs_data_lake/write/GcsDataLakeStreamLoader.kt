@@ -6,6 +6,8 @@ package io.airbyte.integrations.destination.gcs_data_lake.write
 
 import edu.umd.cs.findbugs.annotations.SuppressFBWarnings
 import io.airbyte.cdk.load.command.DestinationStream
+import io.airbyte.cdk.load.dataflow.transform.ColumnNameMapper
+import io.airbyte.cdk.load.message.Meta
 import io.airbyte.cdk.load.state.StreamProcessingFailed
 import io.airbyte.cdk.load.toolkits.iceberg.parquet.ColumnTypeChangeBehavior
 import io.airbyte.cdk.load.toolkits.iceberg.parquet.IcebergTableSynchronizer
@@ -19,6 +21,7 @@ import io.github.oshai.kotlinlogging.KotlinLogging
 import org.apache.iceberg.Schema
 import org.apache.iceberg.Table
 import org.apache.iceberg.UpdateSchema
+import org.apache.iceberg.types.Types
 
 private val logger = KotlinLogging.logger {}
 
@@ -29,6 +32,7 @@ class GcsDataLakeStreamLoader(
     private val icebergTableSynchronizer: IcebergTableSynchronizer,
     private val gcsDataLakeCatalogUtil: GcsDataLakeCatalogUtil,
     private val icebergUtil: IcebergUtil,
+    private val columnNameMapper: ColumnNameMapper,
     private val stagingBranchName: String,
     private val mainBranchName: String,
     private val streamStateStore: StreamStateStore<GcsDataLakeStreamState>,
@@ -43,7 +47,48 @@ class GcsDataLakeStreamLoader(
         } else {
             ColumnTypeChangeBehavior.SAFE_SUPERTYPE
         }
-    private val incomingSchema = icebergUtil.toIcebergSchema(stream = stream)
+
+    private val incomingSchema = icebergUtil.toIcebergSchema(stream = stream).let { schema ->
+        // Transform the schema to use mapped column names that match what the
+        // ColumnNameMapper will produce during record processing
+        transformSchemaWithMappedNames(schema)
+    }
+
+    /**
+     * Transforms an Iceberg schema to use mapped column names.
+     * This ensures the Iceberg schema field names match the names that the ColumnNameMapper
+     * produces when transforming records in the converters.
+     *
+     * Note: Airbyte metadata columns are not mapped, as they're already valid and not part
+     * of the user's schema in the TableCatalog.
+     */
+    private fun transformSchemaWithMappedNames(schema: Schema): Schema {
+        val mappedFields = schema.asStruct().fields().map { field ->
+            val originalName = field.name()
+
+            // Skip Airbyte metadata columns - they're already valid and not in the catalog
+            if (Meta.COLUMN_NAMES.contains(originalName)) {
+                return@map field
+            }
+
+            val mappedName = columnNameMapper.getMappedColumnName(stream, originalName)
+
+            if (mappedName != originalName) {
+                // Create a new field with the mapped name but same type and properties
+                Types.NestedField.of(
+                    field.fieldId(),
+                    field.isOptional,
+                    mappedName,
+                    field.type(),
+                    field.doc()
+                )
+            } else {
+                field
+            }
+        }
+
+        return Schema(mappedFields, schema.identifierFieldIds())
+    }
 
     @SuppressFBWarnings(
         "RCN_REDUNDANT_NULLCHECK_OF_NONNULL_VALUE",

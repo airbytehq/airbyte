@@ -7,6 +7,7 @@ package io.airbyte.integrations.destination.gcs_data_lake.write
 import io.airbyte.cdk.ConfigErrorException
 import io.airbyte.cdk.load.command.DestinationCatalog
 import io.airbyte.cdk.load.command.DestinationStream
+import io.airbyte.cdk.load.dataflow.transform.ColumnNameMapper
 import io.airbyte.cdk.load.toolkits.iceberg.parquet.IcebergTableSynchronizer
 import io.airbyte.cdk.load.toolkits.iceberg.parquet.TableIdGenerator
 import io.airbyte.cdk.load.toolkits.iceberg.parquet.io.IcebergUtil
@@ -26,6 +27,7 @@ class GcsDataLakeWriter(
     private val icebergTableSynchronizer: IcebergTableSynchronizer,
     private val catalog: DestinationCatalog,
     private val tableIdGenerator: TableIdGenerator,
+    private val columnNameMapper: ColumnNameMapper,
     private val streamStateStore: StreamStateStore<GcsDataLakeStreamState>
 ) : DestinationWriter {
     override suspend fun setup() {
@@ -68,6 +70,7 @@ class GcsDataLakeWriter(
             icebergTableSynchronizer,
             gcsDataLakeCatalogUtil,
             icebergUtil,
+            columnNameMapper,
             stagingBranchName =
                 io.airbyte.integrations.destination.gcs_data_lake.spec.DEFAULT_STAGING_BRANCH,
             mainBranchName = icebergConfiguration.mainBranchName,
