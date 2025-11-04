@@ -67,6 +67,7 @@ import io.airbyte.cdk.load.test.util.destination_process.DestinationUncleanExitE
 import io.airbyte.cdk.load.util.Jsons
 import io.airbyte.cdk.load.util.deserializeToNode
 import io.airbyte.cdk.load.util.serializeToString
+import io.airbyte.protocol.models.v0.AdditionalStats
 import io.airbyte.protocol.models.v0.AirbyteMessage
 import io.airbyte.protocol.models.v0.AirbyteRecordMessageFileReference
 import io.airbyte.protocol.models.v0.AirbyteRecordMessageMetaChange
@@ -860,7 +861,7 @@ abstract class BasicFunctionalityIntegrationTest(
             stateMessagesFromFirstStream[0].sourceStats,
         )
         assertEquals(
-            AirbyteStateStats().withRecordCount(1.0),
+            AirbyteStateStats().withRecordCount(1.0).withAdditionalStats(AdditionalStats()),
             stateMessagesFromFirstStream[0].destinationStats,
         )
         assertEquals(
