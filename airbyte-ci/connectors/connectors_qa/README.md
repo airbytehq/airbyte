@@ -108,6 +108,9 @@ poe lint
 
 ## Changelog
 
+### 1.10.3
+Remove check that connectors enable the deprecated "acceptanceTests" test suite.
+
 ### 1.10.2
 Update Python version requirement from 3.10 to 3.11.
 
