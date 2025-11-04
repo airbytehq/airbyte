@@ -5899,7 +5899,7 @@ spec:
 # If time allows it, we can definitely try to scope this number a bit better empirically.
 concurrency_level:
   type: ConcurrencyLevel
-  default_concurrency: "{{ config.get('concurrency_level', 1) }}"
+  default_concurrency: "{{ config.get('concurrency_level', 2) }}"
   max_concurrency: 20
 
 metadata:
@@ -5917,6 +5917,4 @@ api_budget:
         - method: GET
           url_path_pattern: .*
   status_codes_for_ratelimit_hit:
-    - 40100
-  path_for_status_code:
-    - code
+    - 429
