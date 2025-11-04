@@ -1,3 +1,11 @@
+## Version 0.1.63
+
+introduce extract-trigger toolkit for trigger-based CDC
+
+## Version 0.1.62
+
+load cdk: correctly parse empty schemas
+
 ## Version 0.1.61
 
 Fix bug related to state messages indexing in the dataflow CDK
