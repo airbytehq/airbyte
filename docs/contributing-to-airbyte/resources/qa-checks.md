@@ -334,7 +334,7 @@ _Applies to connector with any support level_
 _Applies to connector with any internal support level_
 _Applies to connector with any Airbyte usage level_
 
-Connectors must be licensed under the MIT or Elv2 license. This is to ensure that all connectors are licensed under a permissive license. More details in our [License FAQ](https://docs.airbyte.com/community/licenses/license-faq).
+Connectors must be licensed under the MIT or Elv2 license. This is to ensure that all connectors are licensed under a permissive license. More details in our [License FAQ](https://docs.airbyte.com/developer-guides/licenses/license-faq).
 
 ### Connector license in metadata.yaml and pyproject.toml file must match
 
@@ -354,7 +354,7 @@ _Applies to connector with any support level_
 _Applies to connector with any internal support level_
 _Applies to connector with any Airbyte usage level_
 
-Connector version must follow the Semantic Versioning scheme. This is to ensure that all connectors follow a consistent versioning scheme. Refer to our [Semantic Versioning for Connectors](https://docs.airbyte.com/community/contributing-to-airbyte/resources/pull-requests-handbook#semantic-versioning-for-connectors) for more details.
+Connector version must follow the Semantic Versioning scheme. This is to ensure that all connectors follow a consistent versioning scheme. Refer to our [Semantic Versioning for Connectors](https://docs.airbyte.com/contributing-to-airbyte/#semantic-versioning-for-connectors) for more details.
 
 ### Connector version in metadata.yaml and pyproject.toml file must match
 
