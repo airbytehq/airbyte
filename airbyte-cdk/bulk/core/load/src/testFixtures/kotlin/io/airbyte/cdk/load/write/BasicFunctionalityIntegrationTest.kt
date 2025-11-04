@@ -633,7 +633,7 @@ abstract class BasicFunctionalityIntegrationTest(
                 )
 
                 assertEquals(
-                    AirbyteStateStats().withRecordCount(2.0),
+                    AirbyteStateStats().withRecordCount(2.0).withAdditionalStats(AdditionalStats()),
                     outer.destinationStats,
                 )
 
@@ -913,7 +913,7 @@ abstract class BasicFunctionalityIntegrationTest(
             stateMessagesFromSecondStream[0].sourceStats,
         )
         assertEquals(
-            AirbyteStateStats().withRecordCount(2.0),
+            AirbyteStateStats().withRecordCount(2.0).withAdditionalStats(AdditionalStats()),
             stateMessagesFromSecondStream[0].destinationStats,
         )
         assertEquals(
@@ -936,7 +936,7 @@ abstract class BasicFunctionalityIntegrationTest(
             stateMessagesFromSecondStream[1].sourceStats,
         )
         assertEquals(
-            AirbyteStateStats().withRecordCount(1.0),
+            AirbyteStateStats().withRecordCount(1.0).withAdditionalStats(AdditionalStats()),
             stateMessagesFromSecondStream[1].destinationStats,
         )
         assertEquals(
@@ -965,7 +965,7 @@ abstract class BasicFunctionalityIntegrationTest(
             stateMessagesFromThirdStream[0].sourceStats,
         )
         assertEquals(
-            AirbyteStateStats().withRecordCount(1.0),
+            AirbyteStateStats().withRecordCount(1.0).withAdditionalStats(AdditionalStats()),
             stateMessagesFromThirdStream[0].destinationStats,
         )
         assertEquals(
@@ -988,7 +988,7 @@ abstract class BasicFunctionalityIntegrationTest(
             stateMessagesFromSecondStream[1].sourceStats,
         )
         assertEquals(
-            AirbyteStateStats().withRecordCount(1.0),
+            AirbyteStateStats().withRecordCount(1.0).withAdditionalStats(AdditionalStats()),
             stateMessagesFromSecondStream[1].destinationStats,
         )
         assertEquals(
@@ -1424,7 +1424,7 @@ abstract class BasicFunctionalityIntegrationTest(
                 )
 
                 assertEquals(
-                    AirbyteStateStats().withRecordCount(3.0),
+                    AirbyteStateStats().withRecordCount(3.0).withAdditionalStats(AdditionalStats()),
                     outer.destinationStats,
                 )
 
@@ -1500,7 +1500,7 @@ abstract class BasicFunctionalityIntegrationTest(
                 )
 
                 assertEquals(
-                    AirbyteStateStats().withRecordCount(3.0),
+                    AirbyteStateStats().withRecordCount(3.0).withAdditionalStats(AdditionalStats()),
                     outer.destinationStats,
                 )
 
