@@ -312,18 +312,8 @@
       "statusCode": 301
     },
     {
-      "source": "/project-overview/licenses/README.md",
-      "destination": "/community/licenses",
-      "statusCode": 301
-    },
-    {
       "source": "/project-overview/licenses/README",
       "destination": "/community/licenses",
-      "statusCode": 301
-    },
-    {
-      "source": "/project-overview/licenses/license-faq.md",
-      "destination": "/community/licenses/license-faq",
       "statusCode": 301
     },
     {
@@ -332,28 +322,13 @@
       "statusCode": 301
     },
     {
-      "source": "/project-overview/licenses/elv2-license.md",
-      "destination": "/community/licenses/elv2-license",
-      "statusCode": 301
-    },
-    {
       "source": "/project-overview/licenses/elv2-license",
       "destination": "/community/licenses/elv2-license",
       "statusCode": 301
     },
     {
-      "source": "/project-overview/licenses/mit-license.md",
-      "destination": "/community/licenses/mit-license",
-      "statusCode": 301
-    },
-    {
       "source": "/project-overview/licenses/mit-license",
       "destination": "/community/licenses/mit-license",
-      "statusCode": 301
-    },
-    {
-      "source": "/project-overview/licenses/examples.md",
-      "destination": "/community/licenses/examples",
       "statusCode": 301
     },
     {
@@ -577,18 +552,8 @@
       "statusCode": 301
     },
     {
-      "source": "/platform/developer-guides/licenses/README.md",
-      "destination": "/community/licenses",
-      "statusCode": 301
-    },
-    {
       "source": "/platform/developer-guides/licenses/README",
       "destination": "/community/licenses",
-      "statusCode": 301
-    },
-    {
-      "source": "/platform/developer-guides/licenses/license-faq.md",
-      "destination": "/community/licenses/license-faq",
       "statusCode": 301
     },
     {
@@ -597,28 +562,13 @@
       "statusCode": 301
     },
     {
-      "source": "/platform/developer-guides/licenses/elv2-license.md",
-      "destination": "/community/licenses/elv2-license",
-      "statusCode": 301
-    },
-    {
       "source": "/platform/developer-guides/licenses/elv2-license",
       "destination": "/community/licenses/elv2-license",
       "statusCode": 301
     },
     {
-      "source": "/platform/developer-guides/licenses/mit-license.md",
-      "destination": "/community/licenses/mit-license",
-      "statusCode": 301
-    },
-    {
       "source": "/platform/developer-guides/licenses/mit-license",
       "destination": "/community/licenses/mit-license",
-      "statusCode": 301
-    },
-    {
-      "source": "/platform/developer-guides/licenses/examples.md",
-      "destination": "/community/licenses/examples",
       "statusCode": 301
     },
     {
