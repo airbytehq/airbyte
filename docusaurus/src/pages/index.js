@@ -2,6 +2,7 @@ import React from 'react';
 import Layout from '@theme/Layout';
 import styles from './index.module.css';
 import { Arcade } from '../components/Arcade';
+import { Navattic } from '../components/Navattic';
 
 export default function Home() {
   const PlatformIcon = () => (
@@ -96,13 +97,13 @@ export default function Home() {
       icon: ConnectorsIcon,
     },
     {
-      title: 'Release Notes',
+      title: 'Release notes',
       link: '/release_notes/',
       description: 'See what\'s new. Airbyte releases new Self-Managed versions regularly. Airbyte Cloud customers always have the latest enhancements.',
       icon: ReleaseNotesIcon,
     },
     {
-      title: 'AI Agents',
+      title: 'AI agents',
       link: '/ai-agents/',
       description: 'Explore AI Agent tools and capabilities for building intelligent data pipelines.',
       icon: AIAgentsIcon,
@@ -114,8 +115,8 @@ export default function Home() {
       icon: DevelopersIcon,
     },
     {
-      title: 'Community and Support',
-      link: '/platform/community/getting-support',
+      title: 'Community and support',
+      link: '/community',
       description: 'Get help using, and contribute to, Airbyte.',
       icon: CommunityIcon,
     },
@@ -129,9 +130,9 @@ export default function Home() {
       <div className={styles.homePage}>
         {/* Section 1: Hero with purple background */}
         <section className={styles.heroSection}>
+          <h1 className={styles.heroTitle}>Airbyte documentation</h1>
           <div className={styles.heroContainer}>
             <div className={styles.heroLeft}>
-              <h1 className={styles.heroTitle}>Airbyte documentation</h1>
               <p className={styles.heroDescription}>
                 Airbyte is an open source data integration and activation platform. 
                 It helps you consolidate data from hundreds of sources into your data 
@@ -141,11 +142,207 @@ export default function Home() {
               </p>
             </div>
             <div className={styles.heroRight}>
-              <Arcade 
-                id="8UUaeQOILatZ38Rjh8cs" 
-                title="Airbyte Demo: Get Started Creating Connections" 
-                paddingBottom="calc(61.416666666666664% + 41px)" 
-              />
+              <div className={styles.popularConnectors}>
+                <h3 className={styles.popularTitle}>Popular sources</h3>
+                <div className={styles.connectorButtons}>
+                  <a 
+                    href="/integrations/sources/postgres" 
+                    className={styles.connectorButton}
+                    aria-label="Postgres"
+                    title="Postgres"
+                  >
+                    <img 
+                      src="https://connectors.airbyte.com/files/metadata/airbyte/source-postgres/latest/icon.svg" 
+                      alt="Postgres" 
+                      className={styles.connectorIcon}
+                    />
+                  </a>
+                  <a 
+                    href="/integrations/sources/facebook-marketing" 
+                    className={styles.connectorButton}
+                    aria-label="Facebook Marketing"
+                    title="Facebook Marketing"
+                  >
+                    <img 
+                      src="https://connectors.airbyte.com/files/metadata/airbyte/source-facebook-marketing/latest/icon.svg" 
+                      alt="Facebook Marketing" 
+                      className={styles.connectorIcon}
+                    />
+                  </a>
+                  <a 
+                    href="/integrations/sources/salesforce" 
+                    className={styles.connectorButton}
+                    aria-label="Salesforce"
+                    title="Salesforce"
+                  >
+                    <img 
+                      src="https://connectors.airbyte.com/files/metadata/airbyte/source-salesforce/latest/icon.svg" 
+                      alt="Salesforce" 
+                      className={styles.connectorIcon}
+                    />
+                  </a>
+                  <a 
+                    href="/integrations/sources/mysql" 
+                    className={styles.connectorButton}
+                    aria-label="MySQL"
+                    title="MySQL"
+                  >
+                    <img 
+                      src="https://connectors.airbyte.com/files/metadata/airbyte/source-mysql/latest/icon.svg" 
+                      alt="MySQL" 
+                      className={styles.connectorIcon}
+                    />
+                  </a>
+                  <a 
+                    href="/integrations/sources/google-sheets" 
+                    className={styles.connectorButton}
+                    aria-label="Google Sheets"
+                    title="Google Sheets"
+                  >
+                    <img 
+                      src="https://connectors.airbyte.com/files/metadata/airbyte/source-google-sheets/latest/icon.svg" 
+                      alt="Google Sheets" 
+                      className={styles.connectorIcon}
+                    />
+                  </a>
+                  <a 
+                    href="/integrations/sources/linkedin-ads" 
+                    className={styles.connectorButton}
+                    aria-label="LinkedIn Ads"
+                    title="LinkedIn Ads"
+                  >
+                    <img 
+                      src="https://connectors.airbyte.com/files/metadata/airbyte/source-linkedin-ads/latest/icon.svg" 
+                      alt="LinkedIn Ads" 
+                      className={styles.connectorIcon}
+                    />
+                  </a>
+                  <a 
+                    href="/integrations/sources/mssql" 
+                    className={styles.connectorButton}
+                    aria-label="MSSQL"
+                    title="MSSQL"
+                  >
+                    <img 
+                      src="https://connectors.airbyte.com/files/metadata/airbyte/source-mssql/latest/icon.svg" 
+                      alt="MSSQL" 
+                      className={styles.connectorIcon}
+                    />
+                  </a>
+                  <a 
+                    href="/integrations/sources/s3" 
+                    className={styles.connectorButton}
+                    aria-label="S3"
+                    title="S3"
+                  >
+                    <img 
+                      src="https://connectors.airbyte.com/files/metadata/airbyte/source-s3/latest/icon.svg" 
+                      alt="S3" 
+                      className={styles.connectorIcon}
+                    />
+                  </a>
+                </div>
+
+                <h3 className={styles.popularTitle}>Popular destinations</h3>
+                <div className={styles.connectorButtons}>
+                  <a 
+                    href="/integrations/destinations/s3" 
+                    className={styles.connectorButton}
+                    aria-label="S3"
+                    title="S3"
+                  >
+                    <img 
+                      src="https://connectors.airbyte.com/files/metadata/airbyte/destination-s3/latest/icon.svg" 
+                      alt="S3" 
+                      className={styles.connectorIcon}
+                    />
+                  </a>
+                  <a 
+                    href="/integrations/destinations/postgres" 
+                    className={styles.connectorButton}
+                    aria-label="Postgres"
+                    title="Postgres"
+                  >
+                    <img 
+                      src="https://connectors.airbyte.com/files/metadata/airbyte/destination-postgres/latest/icon.svg" 
+                      alt="Postgres" 
+                      className={styles.connectorIcon}
+                    />
+                  </a>
+                  <a 
+                    href="/integrations/destinations/snowflake" 
+                    className={styles.connectorButton}
+                    aria-label="Snowflake"
+                    title="Snowflake"
+                  >
+                    <img 
+                      src="https://connectors.airbyte.com/files/metadata/airbyte/destination-snowflake/latest/icon.svg" 
+                      alt="Snowflake" 
+                      className={styles.connectorIcon}
+                    />
+                  </a>
+                  <a 
+                    href="/integrations/destinations/bigquery" 
+                    className={styles.connectorButton}
+                    aria-label="BigQuery"
+                    title="BigQuery"
+                  >
+                    <img 
+                      src="https://connectors.airbyte.com/files/metadata/airbyte/destination-bigquery/latest/icon.svg" 
+                      alt="BigQuery" 
+                      className={styles.connectorIcon}
+                    />
+                  </a>
+                  <a 
+                    href="/integrations/destinations/databricks" 
+                    className={styles.connectorButton}
+                    aria-label="Databricks"
+                    title="Databricks"
+                  >
+                    <img 
+                      src="https://connectors.airbyte.com/files/metadata/airbyte/destination-databricks/latest/icon.svg" 
+                      alt="Databricks" 
+                      className={styles.connectorIcon}
+                    />
+                  </a>
+                  <a 
+                    href="/integrations/destinations/s3-data-lake" 
+                    className={styles.connectorButton}
+                    aria-label="S3 Data Lake"
+                    title="S3 Data Lake"
+                  >
+                    <img 
+                      src="https://connectors.airbyte.com/files/metadata/airbyte/destination-s3-data-lake/latest/icon.svg" 
+                      alt="S3 Data Lake" 
+                      className={styles.connectorIcon}
+                    />
+                  </a>
+                  <a 
+                    href="/integrations/destinations/clickhouse" 
+                    className={styles.connectorButton}
+                    aria-label="ClickHouse"
+                    title="ClickHouse"
+                  >
+                    <img 
+                      src="https://connectors.airbyte.com/files/metadata/airbyte/destination-clickhouse/latest/icon.svg" 
+                      alt="ClickHouse" 
+                      className={styles.connectorIcon}
+                    />
+                  </a>
+                  <a 
+                    href="/integrations/destinations/mssql" 
+                    className={styles.connectorButton}
+                    aria-label="MSSQL"
+                    title="MSSQL"
+                  >
+                    <img 
+                      src="https://connectors.airbyte.com/files/metadata/airbyte/destination-mssql/latest/icon.svg" 
+                      alt="MSSQL" 
+                      className={styles.connectorIcon}
+                    />
+                  </a>
+                </div>
+              </div>
             </div>
           </div>
         </section>
@@ -172,6 +369,16 @@ export default function Home() {
           </div>
         </section>
 
+        {/* Section 3: Interactive Demo */}
+        <section className={styles.navSection}>
+          <div className={styles.badgesContainer}>
+            <Navattic 
+              id="cmhfnvz6w000004jrbwla348h" 
+              title="Airbyte Interactive Product Tour"
+            />
+          </div>
+        </section>
+
         {/* GitHub Badges */}
         <section className={styles.badgesSection}>
           <div className={styles.badgesContainer}>
@@ -181,16 +388,16 @@ export default function Home() {
                 alt="GitHub stars" 
               />
             </a>{' '}
-            <a href="https://docs.airbyte.com/platform/next/developer-guides/licenses/mit-license">
+            <a href="/community/developer-guides/licenses/mit-license">
               <img 
                 src="https://img.shields.io/static/v1?label=license&message=MIT&color=brightgreen" 
-                alt="License" 
+                alt="MIT License" 
               />
             </a>{' '}
-            <a href="https://docs.airbyte.com/platform/next/developer-guides/licenses/elv2-license">
+            <a href="/community/developer-guides/licenses/elv2-license">
               <img 
                 src="https://img.shields.io/static/v1?label=license&message=ELv2&color=brightgreen" 
-                alt="License" 
+                alt="ELv2 License" 
               />
             </a>
           </div>
