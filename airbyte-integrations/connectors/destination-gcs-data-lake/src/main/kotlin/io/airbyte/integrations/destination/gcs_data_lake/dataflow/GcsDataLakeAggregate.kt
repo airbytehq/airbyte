@@ -7,6 +7,7 @@ package io.airbyte.integrations.destination.gcs_data_lake.dataflow
 import io.airbyte.cdk.load.command.DestinationStream
 import io.airbyte.cdk.load.data.ArrayValue
 import io.airbyte.cdk.load.data.IntegerValue
+import io.airbyte.cdk.load.data.NullValue
 import io.airbyte.cdk.load.data.ObjectValue
 import io.airbyte.cdk.load.data.StringValue
 import io.airbyte.cdk.load.data.TimestampWithTimezoneValue
@@ -62,6 +63,9 @@ class GcsDataLakeAggregate(
      * Transform AirbyteValue based on Iceberg schema field type.
      * These transformations require knowledge of the Iceberg schema,
      * so they can't happen in ValueCoercer (which operates in Parse stage).
+     *
+     * Note: Union stringification is handled by ValueCoercer (during Parse stage).
+     * Here we only handle Object/Array stringification for STRING fields.
      */
     private fun transformForIcebergSchema(
         value: io.airbyte.cdk.load.data.AirbyteValue,
@@ -78,7 +82,8 @@ class GcsDataLakeAggregate(
                 }
                 IntegerValue(BigInteger.valueOf(millis))
             }
-            // Object/Array → String for STRING fields (data fields, not _airbyte_meta)
+            // Object/Array → String for STRING fields (for stringifySchemalessObjects behavior)
+            // Note: Union values are already stringified by ValueCoercer
             field.type().typeId() == org.apache.iceberg.types.Type.TypeID.STRING && value is ObjectValue ->
                 StringValue(value.serializeToString())
             field.type().typeId() == org.apache.iceberg.types.Type.TypeID.STRING && value is ArrayValue ->
