@@ -148,7 +148,6 @@ class JdbcMetadataQuerier(
                             results.add(joinedTableName to metadata)
                         }
                     }
-
                 }
             log.info { "Discovered ${results.size} column(s) and pseudo-column(s)." }
         } catch (e: Exception) {
