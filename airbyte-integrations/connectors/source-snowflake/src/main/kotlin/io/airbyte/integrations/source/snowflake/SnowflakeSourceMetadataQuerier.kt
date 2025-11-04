@@ -235,24 +235,33 @@ class SnowflakeSourceMetadataQuerier(
                         // Filter out system schemas, invalid schemas, and tables with invalid names
                         val schemaName = tableName.schema
                         val tableNameStr = tableName.name
-                        if (schemaName != "\"\"" &&  // Filter out schema containing two double-quotes
-                            !tableNameStr.startsWith("\"\"") &&  // Filter out table names starting with two double-quotes
-                            !EXCLUDED_NAMESPACES.contains(schemaName?.uppercase())) {
+                        if (
+                            schemaName !=
+                                "\"\"" && // Filter out schema containing two double-quotes
+                            !tableNameStr.startsWith(
+                                    "\"\""
+                                ) && // Filter out table names starting with two double-quotes
+                                !EXCLUDED_NAMESPACES.contains(schemaName?.uppercase())
+                        ) {
                             allTables.add(tableName)
                         }
                     }
                 }
             }
 
-            for (namespace in base.config.namespaces + base.config.namespaces.map { it.uppercase() }) {
+            for (namespace in
+                base.config.namespaces + base.config.namespaces.map { it.uppercase() }) {
                 if (tableFilters.isEmpty()) {
                     addTablesFromQuery(namespace, this.schema, null)
                 } else {
-                    val filtersForSchema = if (this.schema == null) {
-                        tableFilters
-                    } else {
-                        tableFilters.filter { it.schemaName.equals(this.schema, ignoreCase = true) }
-                    }
+                    val filtersForSchema =
+                        if (this.schema == null) {
+                            tableFilters
+                        } else {
+                            tableFilters.filter {
+                                it.schemaName.equals(this.schema, ignoreCase = true)
+                            }
+                        }
 
                     if (filtersForSchema.isEmpty()) {
                         addTablesFromQuery(namespace, this.schema, null)
@@ -266,22 +275,32 @@ class SnowflakeSourceMetadataQuerier(
 
                         // If schema is null, also discover all tables from unfiltered schemas
                         if (this.schema == null) {
-                            val filteredSchemaNames = filtersForSchema.map { it.schemaName.uppercase() }.toSet()
+                            val filteredSchemaNames =
+                                filtersForSchema.map { it.schemaName.uppercase() }.toSet()
                             dbmd.getTables(namespace, null, null, null).use { rs: ResultSet ->
                                 while (rs.next()) {
-                                    val tableName = TableName(
-                                        catalog = rs.getString("TABLE_CAT"),
-                                        schema = rs.getString("TABLE_SCHEM"),
-                                        name = rs.getString("TABLE_NAME"),
-                                        type = rs.getString("TABLE_TYPE") ?: "",
-                                    )
+                                    val tableName =
+                                        TableName(
+                                            catalog = rs.getString("TABLE_CAT"),
+                                            schema = rs.getString("TABLE_SCHEM"),
+                                            name = rs.getString("TABLE_NAME"),
+                                            type = rs.getString("TABLE_TYPE") ?: "",
+                                        )
                                     // Only add if schema is not in the filtered list
                                     val schemaName = tableName.schema
                                     val tableNameStr = tableName.name
-                                    if (schemaName != "\"\"" &&  // Filter out schema containing two double-quotes
-                                        !tableNameStr.startsWith("\"\"") &&  // Filter out table names starting with two double-quotes
-                                        !filteredSchemaNames.contains(schemaName?.uppercase()) &&
-                                        !EXCLUDED_NAMESPACES.contains(schemaName?.uppercase())) {
+                                    if (
+                                        schemaName != "\"\"" && // Filter out schema containing two
+                                            // double-quotes
+                                            !tableNameStr.startsWith(
+                                                "\"\""
+                                            ) && // Filter out table names starting with two
+                                            // double-quotes
+                                            !filteredSchemaNames.contains(
+                                                schemaName?.uppercase()
+                                            ) &&
+                                            !EXCLUDED_NAMESPACES.contains(schemaName?.uppercase())
+                                    ) {
                                         allTables.add(tableName)
                                     }
                                 }
@@ -290,7 +309,9 @@ class SnowflakeSourceMetadataQuerier(
                     }
                 }
             }
-            log.info { "Discovered ${allTables.size} table(s) in namespaces ${base.config.namespaces}." }
+            log.info {
+                "Discovered ${allTables.size} table(s) in namespaces ${base.config.namespaces}."
+            }
 
             // Validate table filters when schema is null (dynamic discovery)
             if (this.schema == null && tableFilters.isNotEmpty()) {

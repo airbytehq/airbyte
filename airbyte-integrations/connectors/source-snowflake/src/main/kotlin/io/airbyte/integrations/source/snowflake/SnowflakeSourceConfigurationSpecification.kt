@@ -92,7 +92,7 @@ class SnowflakeSourceConfigurationSpecification : ConfigurationSpecification() {
     @JsonSchemaTitle("Table Filters")
     @JsonPropertyDescription(
         "Optional filters to include only specific tables from the schema. " +
-                "Works in combination with the 'Schema' config above."
+            "Works in combination with the 'Schema' config above."
     )
     @JsonSchemaInject(json = """{"order":6}""")
     var tableFilters: List<TableFilter>? = null
