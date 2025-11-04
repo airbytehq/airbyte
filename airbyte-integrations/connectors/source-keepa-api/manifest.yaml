@@ -1,0 +1,224 @@
+version: 7.4.1
+
+type: DeclarativeSource
+
+description: >-
+  Retrieves detailed Amazon product metadata and time-series history directly
+  from the Keepa API.
+
+  Supports querying by ASIN and exposes parameters such as offers, pricing,
+  stock, reviews, buybox, A+ content, and more.
+
+  Ideal for e-commerce analytics, competitive research, and price tracking
+  pipelines.
+
+check:
+  type: CheckStream
+  stream_names:
+    - Keepa Product (Raw)
+
+definitions:
+  linked:
+    DeclarativeStream: {}
+
+streams:
+  - type: DeclarativeStream
+    retriever:
+      type: SimpleRetriever
+      record_selector:
+        type: RecordSelector
+        extractor:
+          type: DpathExtractor
+          field_path:
+            - products
+        transform_before_filtering: false
+      requester:
+        type: HttpRequester
+        http_method: GET
+        url: https://api.keepa.com/product
+        request_parameters:
+          key: "{{ config['api_key'] }}"
+          domain: "{{ config.get('domain_id', 1) }}"
+          asin: "{{ stream_partition['asin'] }}"
+          history: "{{ config.get('history', 1) }}"
+          rating: "{{ config.get('rating', 1) }}"
+          stats: "{{ config.get('stats_days', 180) }}"
+          buybox: "{{ config.get('buybox', 1) }}"
+          stock: "{{ config.get('stock', 1) }}"
+          offers: "{{ config.get('offers', 1) }}"
+          days: "{{ config.get('days', 2) }}"
+          aplus: "{{ config.get('aplus', 1) }}"
+          videos: "{{ config.get('videos', 1) }}"
+          historical-variations: "{{ config.get('historical_variations', 1) }}"
+          rental: "{{ config.get('rental', 0) }}"
+        error_handler:
+          type: DefaultErrorHandler
+          max_retries: 5
+          backoff_strategies:
+            - type: ExponentialBackoffStrategy
+              factor: 2
+            - type: ConstantBackoffStrategy
+              backoff_time_in_seconds: 2
+            - type: ConstantBackoffStrategy
+              backoff_time_in_seconds: 60
+          response_filters:
+            - type: HttpResponseFilter
+              action: RETRY
+              failure_type: transient_error
+              error_message_contains: ""
+              http_codes:
+                - 429
+                - 500
+                - 503
+      decoder:
+        type: JsonDecoder
+      partition_router:
+        type: ListPartitionRouter
+        cursor_field: asin
+        values: "{{ config['asins'] }}"
+    name: Keepa Product (Raw)
+    primary_key: asin
+    schema_loader:
+      type: InlineSchemaLoader
+      schema:
+        type: object
+        additionalProperties: true
+        properties:
+          asin:
+            type:
+              - string
+              - "null"
+    transformations: []
+
+spec:
+  type: Spec
+  connection_specification:
+    type: object
+    $schema: http://json-schema.org/draft-07/schema#
+    required:
+      - api_key
+      - asins
+    properties:
+      api_key:
+        type: string
+        description: >-
+          Keepa API credential sent as key query param. Example:
+          k3ePa_ABCDEFG123456
+        title: API key
+        airbyte_secret: true
+        order: 0
+      asins:
+        type: array
+        description: >-
+          List of ASINs; connector calls Keepa once per ASIN. Example:
+          ["B0088PUEPK","B0F6XSV7XB"]
+        title: Amazon Product ASIN's
+        order: 1
+      domain_id:
+        type: integer
+        description: >-
+          Amazon locale code (1=com, 2=co.uk, 3=de, 4=fr, 5=co.jp, 6=ca, 8=it,
+          9=es, 10=in, 11=com.mx) Example: 1
+        title: Domain ID
+        default: 1
+        order: 2
+      days:
+        type: integer
+        description: >-
+          History length to return; 0 = all time, small values for daily runs. 1
+          day, 2 days, 3 days... Example: 2
+        title: Days window
+        default: 2
+        order: 3
+      stats_days:
+        type: integer
+        description: "Window (days) for the stats block Keepa returns. Example: 180"
+        title: Stats days
+        default: 180
+        order: 4
+      history:
+        type: integer
+        description: "1 to include CSV price/rank histories; 0 to omit. Example: 1"
+        title: Include history
+        default: 1
+        order: 5
+      historical_variations:
+        type: integer
+        description: "1 maps to Keepa param historical-variations=1; 0 to omit. Example: 1"
+        title: Include historical variations
+        default: 1
+        order: 6
+      offers:
+        type: integer
+        description: >-
+          ≥20 enables offer-dependent channels; 0 disables. Offer dependent
+          channels: rating, buybox, stock, aplus, videos, and rental. Example:
+          20
+        title: Include offers
+        default: 20
+        order: 7
+      rating:
+        type: integer
+        description: >-
+          1 to include the reviews object; 0 to omit. CSV rating channels
+          require offers > 0. Example: 1 
+        title: Include rating/reviews
+        default: 1
+        order: 8
+      buybox:
+        type: integer
+        description: >-
+          1 to include buy box time series; 0 to omit. Requires to be offers > 0
+          for use. Example: 1
+        title: Include buy box histories
+        default: 1
+        order: 9
+      stock:
+        type: integer
+        description: >-
+          1 to include stock-related channels; 0 to omit. Requires to be offers
+          > 0 for use. Example: 1
+        title: Include stock signals
+        default: 1
+        order: 10
+      aplus:
+        type: integer
+        description: >-
+          1 to return A+ content metadata; 0 to omit. Requires to be offers > 0
+          for use. Example: 1
+        title: Include A+ content
+        default: 1
+        order: 11
+      videos:
+        type: integer
+        description: >-
+          1 to include product video metadata; 0 to omit. Requires to be offers
+          > 0 for use. Example: 1
+        title: Include videos metadata
+        default: 1
+        order: 12
+      rental:
+        type: integer
+        description: >-
+          1 to include rental data (rare); 0 to omit. Requires to be offers > 0
+          for use. Example: 0
+        title: Include rental fields
+        default: 1
+        order: 13
+    additionalProperties: true
+
+metadata:
+  testedStreams:
+    stream_0:
+      streamHash: ad11f9fa446b445a056b0f48d54e74059e0bc977
+    Keepa Product (Raw):
+      streamHash: e68f6102a4149b37e5b8e9f8769bff9d9e8d8928
+      isStale: false
+      hasResponse: true
+      responsesAreSuccessful: true
+      hasRecords: true
+      primaryKeysArePresent: true
+      primaryKeysAreUnique: true
+  autoImportSchema:
+    Keepa Product (Raw): false
+    Keepa Usage (Tokens): true
