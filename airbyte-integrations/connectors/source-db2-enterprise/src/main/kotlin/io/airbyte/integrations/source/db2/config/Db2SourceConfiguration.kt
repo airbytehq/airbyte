@@ -2,6 +2,7 @@
 package io.airbyte.integrations.source.db2.config
 
 import io.airbyte.cdk.ConfigErrorException
+import io.airbyte.cdk.command.ConfigurationSpecificationSupplier
 import io.airbyte.cdk.command.JdbcSourceConfiguration
 import io.airbyte.cdk.command.SourceConfiguration
 import io.airbyte.cdk.command.SourceConfigurationFactory
@@ -9,6 +10,7 @@ import io.airbyte.cdk.jdbc.SSLCertificateUtils
 import io.airbyte.cdk.ssh.SshConnectionOptions
 import io.airbyte.cdk.ssh.SshTunnelMethodConfiguration
 import io.github.oshai.kotlinlogging.KotlinLogging
+import io.micronaut.context.annotation.Factory
 import jakarta.inject.Singleton
 import java.io.File
 import java.net.URI
@@ -41,6 +43,18 @@ data class Db2SourceConfiguration(
 
     override fun isCdc(): Boolean {
         return cdc != null
+    }
+
+    // Required for Micronaut to inject a Db2SourceConfiguration bean directly
+    @Factory
+    private class MicronautFactory {
+        @Singleton
+        fun db2SourceConfig(
+            factory:
+                SourceConfigurationFactory<
+                    Db2SourceConfigurationSpecification, Db2SourceConfiguration>,
+            supplier: ConfigurationSpecificationSupplier<Db2SourceConfigurationSpecification>,
+        ): Db2SourceConfiguration = factory.make(supplier.get())
     }
 }
 
