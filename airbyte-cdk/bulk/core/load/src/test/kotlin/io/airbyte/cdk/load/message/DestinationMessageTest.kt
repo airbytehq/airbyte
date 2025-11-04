@@ -22,6 +22,7 @@ import io.airbyte.cdk.load.util.UUIDGenerator
 import io.airbyte.cdk.load.util.deserializeToClass
 import io.airbyte.cdk.load.util.deserializeToNode
 import io.airbyte.cdk.load.util.serializeToString
+import io.airbyte.protocol.models.v0.AdditionalStats
 import io.airbyte.protocol.models.v0.AirbyteGlobalState
 import io.airbyte.protocol.models.v0.AirbyteMessage
 import io.airbyte.protocol.models.v0.AirbyteRecordMessage
@@ -131,7 +132,7 @@ class DestinationMessageTest {
     @MethodSource("roundTrippableMessages")
     fun testRoundTripRecord(message: AirbyteMessage) {
         val roundTripped = convert(factory(false), message).asProtocolMessage()
-        Assertions.assertEquals(message, roundTripped)
+        assertEquals(message, roundTripped)
     }
 
     @ParameterizedTest
@@ -163,12 +164,17 @@ class DestinationMessageTest {
 
         val parsedMessage = convert(factory(false), inputMessage) as StreamCheckpoint
 
-        Assertions.assertEquals(
+        assertEquals(
             // we represent the state message ID as a long, but jackson sees that 1234 can be Int,
             // and Int(1234) != Long(1234). (and additionalProperties is just a Map<String, Any?>)
             // So we just compare the serialized protocol messages.
             inputMessage
-                .also { it.state.destinationStats = AirbyteStateStats().withRecordCount(3.0) }
+                .also {
+                    it.state.destinationStats =
+                        AirbyteStateStats()
+                            .withRecordCount(3.0)
+                            .withAdditionalStats(AdditionalStats())
+                }
                 .serializeToString(),
             parsedMessage
                 .withDestinationStats(CheckpointMessage.Stats(3))
@@ -203,9 +209,14 @@ class DestinationMessageTest {
 
         val parsedMessage = convert(factory(false), inputMessage) as GlobalCheckpoint
 
-        Assertions.assertEquals(
+        assertEquals(
             inputMessage
-                .also { it.state.destinationStats = AirbyteStateStats().withRecordCount(3.0) }
+                .also {
+                    it.state.destinationStats =
+                        AirbyteStateStats()
+                            .withRecordCount(3.0)
+                            .withAdditionalStats(AdditionalStats())
+                }
                 .serializeToString(),
             parsedMessage
                 .withDestinationStats(CheckpointMessage.Stats(3))
@@ -241,7 +252,12 @@ class DestinationMessageTest {
         assertEquals(parsedMessage.checkpointKey?.checkpointId!!.value, "PARTITION_ID")
         assertEquals(
             inputMessage
-                .also { it.state.destinationStats = AirbyteStateStats().withRecordCount(3.0) }
+                .also {
+                    it.state.destinationStats =
+                        AirbyteStateStats()
+                            .withRecordCount(3.0)
+                            .withAdditionalStats(AdditionalStats())
+                }
                 .serializeToString(),
             parsedMessage
                 .withDestinationStats(CheckpointMessage.Stats(3))
@@ -283,7 +299,12 @@ class DestinationMessageTest {
         assertEquals(parsedMessage.checkpointKey?.checkpointId!!.value, "PARTITION_ID")
         assertEquals(
             inputMessage
-                .also { it.state.destinationStats = AirbyteStateStats().withRecordCount(3.0) }
+                .also {
+                    it.state.destinationStats =
+                        AirbyteStateStats()
+                            .withRecordCount(3.0)
+                            .withAdditionalStats(AdditionalStats())
+                }
                 .serializeToString(),
             parsedMessage
                 .withDestinationStats(CheckpointMessage.Stats(3))
@@ -765,7 +786,12 @@ class DestinationMessageTest {
 
         assertEquals(
             inputMessage
-                .also { it.state.destinationStats = AirbyteStateStats().withRecordCount(3.0) }
+                .also {
+                    it.state.destinationStats =
+                        AirbyteStateStats()
+                            .withRecordCount(3.0)
+                            .withAdditionalStats(AdditionalStats())
+                }
                 .serializeToString(),
             parsedMessage
                 .withDestinationStats(CheckpointMessage.Stats(3))
