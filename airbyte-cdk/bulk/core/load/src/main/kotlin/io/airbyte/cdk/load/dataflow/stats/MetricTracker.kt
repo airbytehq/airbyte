@@ -101,6 +101,6 @@ class MetricTracker {
  * @property metricName The name of the metric used in tracking.
  */
 enum class ObservabilityMetrics(val metricName: String) {
-    NULLED_VALUE_COUNT("NulledValueCount"),
-    TRUNCATED_VALUE_COUNT("TruncatedValueCount")
+    NULLED_VALUE_COUNT("nulledValueCount"),
+    TRUNCATED_VALUE_COUNT("truncatedValueCount")
 }
