@@ -186,9 +186,18 @@ class GcsDataLakeStreamLoader(
 
         if (primaryKeyNames.isNotEmpty()) {
             logger.info { "Setting identifier fields to primary keys: $primaryKeyNames" }
-            table.updateSchema().setIdentifierFields(primaryKeyNames).commit()
-            // Refresh to get the updated schema with identifier fields
-            table.refresh()
+            // Only set identifier fields if the table was just created.
+            // For existing tables with PK changes, let the IcebergTableSynchronizer handle it
+            // (it will set identifier fields after schema evolution in computeOrExecuteSchemaUpdate)
+            if (table.history().isEmpty() || table.schema().identifierFieldIds().isEmpty()) {
+                table.updateSchema().setIdentifierFields(primaryKeyNames).commit()
+                // Refresh to get the updated schema with identifier fields
+                table.refresh()
+            } else {
+                logger.info {
+                    "Table already has identifier fields. Will let schema synchronizer handle PK changes."
+                }
+            }
         }
 
         // Note that if we have columnTypeChangeBehavior OVERWRITE, we don't commit the schema
