@@ -395,7 +395,7 @@ class ValidateReportOptionsListOptionNameUniqueness(ValidationStrategy):
                     option_names.append(option["option_name"])
 
 
-class CreationLimiterSession(requests.Session):
+class LimiterSessionWithUpdatingToken(requests.Session):
     def __init__(
         self,
         api_budget: AbstractAPIBudget,
@@ -412,7 +412,7 @@ class CreationLimiterSession(requests.Session):
         Especially, needed for GET_AMAZON_FULFILLED_SHIPMENTS_DATA_GENERAL report 
         due to waiting limit time for create report operation is 1 request per 30 minutes.
         """
-        if self.auth.token_has_expired():
+        if isinstance(self.auth, AmazonSPOauthAuthenticator) and self.auth.token_has_expired():
             updated_token = self.auth.get_auth_header()
             request.headers.update(updated_token)
 
@@ -421,13 +421,13 @@ class CreationLimiterSession(requests.Session):
         return response
 
 
-class CreationHttpClient(HttpClient):
+class ReportHttpClient(HttpClient):
     def _request_session(self) -> requests.Session:
-        return CreationLimiterSession(api_budget=self._api_budget)
+        return LimiterSessionWithUpdatingToken(api_budget=self._api_budget)
 
 
 @dataclass
-class CreationCustomRequester(HttpRequester):
+class RequesterWithLimiterSession(HttpRequester):
     request_headers: Optional[str] = None
     request_body_json: Optional[Mapping[str, Any]] = None
     api_budget: Optional[Mapping[str, Any]] = None
@@ -456,7 +456,7 @@ class CreationCustomRequester(HttpRequester):
         else:
             backoff_strategies = None
 
-        self._http_client = CreationHttpClient(
+        self._http_client = ReportHttpClient(
             name=self.name,
             logger=self.logger,
             error_handler=self.error_handler,

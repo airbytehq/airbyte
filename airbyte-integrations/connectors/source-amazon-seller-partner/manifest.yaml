@@ -2692,7 +2692,7 @@ definitions:
         - processingStatus
     creation_requester:
       type: CustomRequester
-      class_name: source_declarative_manifest.components.CreationCustomRequester
+      class_name: source_declarative_manifest.components.RequesterWithLimiterSession
       api_budget:
         type: HTTPAPIBudget
         policies:
@@ -2724,7 +2724,8 @@ definitions:
         dataEndTime: "{{ stream_slice.cursor_slice.end_time }}"
 
     polling_requester:
-      type: HttpRequester
+      type: CustomRequester
+      class_name: source_declarative_manifest.components.RequesterWithLimiterSession
       path: reports/2021-06-30/reports/{{creation_response['reportId']}}
       url_base: "{{ config['endpoint'] }}"
       authenticator: "#/definitions/authenticator"
@@ -2733,7 +2734,8 @@ definitions:
         content-type: "application/json"
 
     download_target_requester:
-      type: HttpRequester
+      type: CustomRequester
+      class_name: source_declarative_manifest.components.RequesterWithLimiterSession
       path: reports/2021-06-30/documents/{{ polling_response['reportDocumentId'] }}
       url_base: "{{ config['endpoint'] }}"
       authenticator: "#/definitions/authenticator"
@@ -2748,7 +2750,8 @@ definitions:
         content-type: "application/json"
 
     download_requester:
-      type: HttpRequester
+      type: CustomRequester
+      class_name: source_declarative_manifest.components.RequesterWithLimiterSession
       path: "{{ download_target }}"
       url_base: "{{ config['endpoint'] }}"
       http_method: GET
