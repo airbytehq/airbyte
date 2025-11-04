@@ -597,7 +597,7 @@ abstract class BasicFunctionalityIntegrationTest(
                 )
 
                 assertEquals(
-                    AirbyteStateStats().withRecordCount(1.0),
+                    AirbyteStateStats().withRecordCount(1.0).withAdditionalStats(AdditionalStats()),
                     outer.destinationStats,
                 )
 
@@ -884,7 +884,7 @@ abstract class BasicFunctionalityIntegrationTest(
             stateMessagesFromFirstStream[1].sourceStats,
         )
         assertEquals(
-            AirbyteStateStats().withRecordCount(1.0),
+            AirbyteStateStats().withRecordCount(1.0).withAdditionalStats(AdditionalStats()),
             stateMessagesFromFirstStream[1].destinationStats,
         )
         assertEquals(
@@ -1348,7 +1348,7 @@ abstract class BasicFunctionalityIntegrationTest(
                 )
 
                 assertEquals(
-                    AirbyteStateStats().withRecordCount(4.0),
+                    AirbyteStateStats().withRecordCount(4.0).withAdditionalStats(AdditionalStats()),
                     outer.destinationStats,
                 )
 
