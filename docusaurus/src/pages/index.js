@@ -97,13 +97,13 @@ export default function Home() {
       icon: ConnectorsIcon,
     },
     {
-      title: 'Release Notes',
+      title: 'Release notes',
       link: '/release_notes/',
       description: 'See what\'s new. Airbyte releases new Self-Managed versions regularly. Airbyte Cloud customers always have the latest enhancements.',
       icon: ReleaseNotesIcon,
     },
     {
-      title: 'AI Agents',
+      title: 'AI agents',
       link: '/ai-agents/',
       description: 'Explore AI Agent tools and capabilities for building intelligent data pipelines.',
       icon: AIAgentsIcon,
@@ -115,8 +115,8 @@ export default function Home() {
       icon: DevelopersIcon,
     },
     {
-      title: 'Community and Support',
-      link: '/community/getting-support',
+      title: 'Community and support',
+      link: '/community',
       description: 'Get help using, and contribute to, Airbyte.',
       icon: CommunityIcon,
     },
@@ -388,16 +388,16 @@ export default function Home() {
                 alt="GitHub stars" 
               />
             </a>{' '}
-            <a href="https://docs.airbyte.com/platform/next/developer-guides/licenses/mit-license">
+            <a href="/community/developer-guides/licenses/mit-license">
               <img 
                 src="https://img.shields.io/static/v1?label=license&message=MIT&color=brightgreen" 
-                alt="License" 
+                alt="MIT License" 
               />
             </a>{' '}
-            <a href="https://docs.airbyte.com/platform/next/developer-guides/licenses/elv2-license">
+            <a href="/community/developer-guides/licenses/elv2-license">
               <img 
                 src="https://img.shields.io/static/v1?label=license&message=ELv2&color=brightgreen" 
-                alt="License" 
+                alt="ELv2 License" 
               />
             </a>
           </div>
