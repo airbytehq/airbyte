@@ -3,7 +3,7 @@ An Airbyte source for the Track Property Management System (PMS)
 Enterprise-class property management solutions for vacation rental companies  
 
 Website: https://tnsinc.com/  
-API Docs: hhttps://developer.trackhs.com  
+API Docs: https://developer.trackhs.com  
 Authentication Docs: https://developer.trackhs.com/docs/authentication#authentication  
 
 ## Configuration
