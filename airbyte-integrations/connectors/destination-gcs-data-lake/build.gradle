@@ -20,9 +20,9 @@ application {
 }
 
 ext {
-    apacheIcebergVersion = '1.10.0'
-    googleCloudStorageVersion = '2.40.0'
-    googleAuthVersion = '1.23.0'
+    apacheIcebergVersion = '1.7.0'
+    googleCloudStorageVersion = '2.59.0'
+    googleAuthVersion = '1.40.0'
     junitVersion = '5.11.3'
 }
 
