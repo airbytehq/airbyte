@@ -21,6 +21,7 @@ class StateStatsEnricher(
     private val statsStore: CommittedStatsStore,
     private val namespaceMapper: NamespaceMapper,
     private val metricTracker: MetricTracker,
+    private val metricStats: MetricStatsStore,
 ) {
     // Enriches provided state message with stats associated with the given state key.
     fun enrich(msg: CheckpointMessage, key: StateKey): CheckpointMessage {
@@ -83,7 +84,9 @@ class StateStatsEnricher(
             )
         val (committed, cumulative) = statsStore.commitStats(desc, key)
 
-        enrichTopLevelDestinationStats(msg, desc, committed.count)
+        val additionalStats = metricStats.drainStats(key.partitionKeys)[desc]
+
+        enrichTopLevelDestinationStats(msg, committed.count, additionalStats)
         enrichTopLevelStats(msg, cumulative)
 
         return msg
@@ -94,6 +97,8 @@ class StateStatsEnricher(
         msg: CheckpointMessage,
         key: StateKey,
     ): CheckpointMessage {
+        val additionalStatsByStream = metricStats.drainStats(key.partitionKeys)
+
         val (committed, cumulative) =
             msg.checkpoints
                 .map {
@@ -103,8 +108,13 @@ class StateStatsEnricher(
                             name = it.unmappedName,
                         )
                     val result = statsStore.commitStats(desc, key)
+                    val additionalStats = additionalStatsByStream[desc]
                     // Side effect: We update the checkpoints in place before summing
-                    it.updateStats(result.cumulativeStats.count, result.cumulativeStats.bytes)
+                    it.updateStats(
+                        result.cumulativeStats.count,
+                        result.cumulativeStats.bytes,
+                        additionalStats,
+                    )
                     result
                 }
                 .fold(CommitStatsResult()) { acc, c -> acc.merge(c) }
