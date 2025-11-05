@@ -62,18 +62,32 @@ class SnowflakeSourceMetadataQuerier(
         log.info { "Querying column names for catalog discovery." }
         try {
             val dbmd: DatabaseMetaData = base.conn.metaData
-            memoizedTableNames
-                .filter { it.namespace() != null }
-                .forEach { table ->
-                    dbmd.getColumns(table.catalog, table.schema, null, null).use { rs: ResultSet ->
-                        while (rs.next()) {
-                            val (tableName: TableName, metadata: ColumnMetadata) =
-                                columnMetadataFromResultSet(rs, isPseudoColumn = false)
-                            val joinedTableName: TableName = joinMap[tableName] ?: continue
-                            results.add(joinedTableName to metadata)
-                        }
+
+            fun addColumnsFromQuery(
+                catalog: String?,
+                schema: String?,
+                tablePattern: String?,
+            ) {
+                dbmd.getColumns(catalog, schema, tablePattern, null).use { rs: ResultSet ->
+                    while (rs.next()) {
+                        val (tableName: TableName, metadata: ColumnMetadata) =
+                            columnMetadataFromResultSet(rs, isPseudoColumn = false)
+                        val joinedTableName: TableName = joinMap[tableName] ?: continue
+                        results.add(joinedTableName to metadata)
                     }
                 }
+            }
+
+            for (namespace in base.config.namespaces + base.config.namespaces.map { it.uppercase() }) {
+                val patterns = base.tableFiltersBySchema[this.schema]
+                if (patterns != null && patterns.isNotEmpty()) {
+                    for (pattern in patterns) {
+                        addColumnsFromQuery(namespace, this.schema, pattern)
+                    }
+                } else {
+                    addColumnsFromQuery(namespace, this.schema, null)
+                }
+            }
             log.info { "Discovered ${results.size} column(s)." }
         } catch (e: Exception) {
             throw RuntimeException("Column name discovery query failed: ${e.message}", e)
@@ -198,11 +212,11 @@ class SnowflakeSourceMetadataQuerier(
     }
 
     override fun streamNamespaces(): List<String> =
-        memoizedTableNames.mapNotNull { it.schema }.distinct()
+        memoizedTableNames.mapNotNull { it.namespace() }.distinct()
 
     override fun streamNames(streamNamespace: String?): List<StreamIdentifier> {
         return memoizedTableNames
-            .filter { it.schema == streamNamespace }
+            .filter { it.namespace() == streamNamespace }
             .map { StreamDescriptor().withName(it.name).withNamespace(it.schema) }
             .map(StreamIdentifier::from)
     }
@@ -210,7 +224,7 @@ class SnowflakeSourceMetadataQuerier(
     fun findTableName(
         streamID: StreamIdentifier,
     ): TableName? =
-        memoizedTableNames.find { it.name == streamID.name && it.schema == streamID.namespace }
+        memoizedTableNames.find { it.name == streamID.name && it.namespace() == streamID.namespace }
 
     val tableFilters = base.config.tableFilters
 
@@ -307,9 +321,7 @@ class SnowflakeSourceMetadataQuerier(
                     }
                 }
             }
-            log.info {
-                "Discovered ${allTables.size} table(s) in namespaces ${base.config.namespaces}."
-            }
+            log.info { "Discovered ${allTables.size} tables and views." }
 
             // Validate table filters when schema is null (dynamic discovery)
             if (this.schema == null && tableFilters.isNotEmpty()) {
