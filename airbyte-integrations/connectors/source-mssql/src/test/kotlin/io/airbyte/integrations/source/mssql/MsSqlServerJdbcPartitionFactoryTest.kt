@@ -50,21 +50,33 @@ class MsSqlServerJdbcPartitionFactoryTest {
         private val cdcSharedState = sharedState(global = true)
         private val config = mockk<MsSqlServerSourceConfiguration>(relaxed = true)
 
-        val metadataQuerier = mockk<MsSqlSourceMetadataQuerier>(relaxed = true)
+        val metadataQuerier =
+            mockk<MsSqlSourceMetadataQuerier>(relaxed = true) {
+                // Mock getOrderedColumnForSync to return the first PK column by default
+                every { getOrderedColumnForSync(any()) } answers
+                    {
+                        // For most tests, return "id" (the first PK column)
+                        fieldId.id
+                    }
+            }
+        val metadataQuerierFactory =
+            mockk<MsSqlSourceMetadataQuerier.Factory>(relaxed = true) {
+                every { session(any()) } returns metadataQuerier
+            }
 
         val msSqlServerJdbcPartitionFactory =
             MsSqlServerJdbcPartitionFactory(
                 sharedState,
                 selectQueryGenerator,
                 config,
-                metadataQuerier
+                metadataQuerierFactory
             )
         val msSqlServerCdcJdbcPartitionFactory =
             MsSqlServerJdbcPartitionFactory(
                 cdcSharedState,
                 selectQueryGenerator,
                 config,
-                metadataQuerier
+                metadataQuerierFactory
             )
 
         val fieldId = Field("id", IntFieldType)
@@ -551,12 +563,17 @@ class MsSqlServerJdbcPartitionFactoryTest {
         every { mockMetadataQuerier.findTableName(tableStream.id) } returns
             TableName(name = "regular_table", schema = "dbo", type = "TABLE")
 
+        val mockMetadataQuerierFactory =
+            mockk<MsSqlSourceMetadataQuerier.Factory>() {
+                every { session(any()) } returns mockMetadataQuerier
+            }
+
         val factoryWithMockedQuerier =
             MsSqlServerJdbcPartitionFactory(
                 sharedState,
                 selectQueryGenerator,
                 config,
-                mockMetadataQuerier
+                mockMetadataQuerierFactory
             )
 
         val partition = factoryWithMockedQuerier.create(streamFeedBootstrap(tableStream))
@@ -584,12 +601,17 @@ class MsSqlServerJdbcPartitionFactoryTest {
         every { mockMetadataQuerier.findTableName(viewStream.id) } returns
             TableName(name = "vw_test_view", schema = "dbo", type = "VIEW")
 
+        val mockMetadataQuerierFactory =
+            mockk<MsSqlSourceMetadataQuerier.Factory>() {
+                every { session(any()) } returns mockMetadataQuerier
+            }
+
         val factoryWithMockedQuerier =
             MsSqlServerJdbcPartitionFactory(
                 sharedState,
                 selectQueryGenerator,
                 config,
-                mockMetadataQuerier
+                mockMetadataQuerierFactory
             )
 
         val partition = factoryWithMockedQuerier.create(streamFeedBootstrap(viewStream))
@@ -620,12 +642,17 @@ class MsSqlServerJdbcPartitionFactoryTest {
         val mockMetadataQuerier = mockk<MsSqlSourceMetadataQuerier>()
         every { mockMetadataQuerier.findTableName(unknownStream.id) } returns null
 
+        val mockMetadataQuerierFactory =
+            mockk<MsSqlSourceMetadataQuerier.Factory>() {
+                every { session(any()) } returns mockMetadataQuerier
+            }
+
         val factoryWithMockedQuerier =
             MsSqlServerJdbcPartitionFactory(
                 sharedState,
                 selectQueryGenerator,
                 config,
-                mockMetadataQuerier
+                mockMetadataQuerierFactory
             )
 
         val partition = factoryWithMockedQuerier.create(streamFeedBootstrap(unknownStream))
