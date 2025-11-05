@@ -343,6 +343,7 @@ abstract class BasicFunctionalityIntegrationTest(
     dataChannelMedium: DataChannelMedium = DataChannelMedium.STDIO,
     dataChannelFormat: DataChannelFormat = DataChannelFormat.JSONL,
     val testSpeedModeStatsEmission: Boolean = true,
+    val includesAdditionalStats: Boolean = true,
 ) :
     IntegrationTest(
         additionalMicronautEnvs = additionalMicronautEnvs,
@@ -1586,9 +1587,11 @@ abstract class BasicFunctionalityIntegrationTest(
                             totalRecords = 1L,
                             totalBytes = expectedBytes,
                             additionalStats =
-                                ObservabilityMetrics.entries
-                                    .associate { it.metricName to 0.0 }
-                                    .toMutableMap()
+                                if (includesAdditionalStats)
+                                    ObservabilityMetrics.entries
+                                        .associate { it.metricName to 0.0 }
+                                        .toMutableMap()
+                                else mutableMapOf(),
                         )
                         .asProtocolMessage()
                 assertEquals(
