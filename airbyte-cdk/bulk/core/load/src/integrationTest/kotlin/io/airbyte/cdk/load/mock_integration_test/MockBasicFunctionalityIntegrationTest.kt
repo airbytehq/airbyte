@@ -80,6 +80,7 @@ abstract class BaseMockBasicFunctionalityIntegrationTest(
             } else {
                 UnknownTypesBehavior.PASS_THROUGH
             },
+        includesAdditionalStats = false,
     ) {
     @Test
     override fun testBasicWrite() {

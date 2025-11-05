@@ -1,3 +1,9 @@
+## Version 0.1.67
+
+**Load CDK**
+
+* Fix expectations in basic integration tests related to additional stats.
+
 ## Version 0.1.66
 
 **Load CDK**
