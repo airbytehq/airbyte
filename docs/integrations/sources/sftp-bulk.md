@@ -40,7 +40,7 @@ To set up key pair authentication, follow these steps:
 
 3. Use the `ssh-copy-id` command in your terminal to copy the public key to the server.
 
-```
+```bash
 ssh-copy-id <username>@<server_ip_address>
 ```
 
@@ -51,7 +51,7 @@ Depending on factors such as your operating system and the specific SSH implemen
 
 4. You should now be able to connect to the server via the private key. You can test this by using the `ssh` command:
 
-```
+```bash
 ssh <username>@<server_ip_address>
 ```
 
@@ -60,7 +60,7 @@ For more information on SSH key pair authentication, please refer to the
 
 ### Set up the SFTP Bulk connector in Airbyte
 
-### For Airbyte Cloud:
+### For Airbyte Cloud
 
 1. [Log into your Airbyte Cloud](https://cloud.airbyte.com/workspaces) account.
 2. Click Sources and then click + New source.
@@ -85,7 +85,8 @@ If your SFTP server uses SSH key-based authentication, you'll need to provide yo
    5. Save the file.
 
 3. **(Optional but recommended)** If you're on macOS or Linux, set restricted permissions so only you can read it:
-   ```
+
+   ```bash
    chmod 600 ssh.pem
    ```
 
@@ -105,7 +106,7 @@ The file must be in PEM format, a plain text file containing your private key be
 12. (Optional) Specify the **Port**. The default port for SFTP is 22. If your remote server is using a different port, enter it here.
 13. (Optional) Determine the **Folder Path**. This determines the directory to search for files in, and defaults to "/". If you prefer to specify a specific folder path, specify the directory on the remote server to be synced. For example, given the file structure:
 
-```
+```text
 Root
 | - logs
 |   | - 2021
@@ -118,7 +119,7 @@ Root
 
 An input of `/logs/2022` will only replicate data contained within the specified folder, ignoring the `/files` and `/logs/2021` folders. Leaving this field blank will replicate all applicable files in the remote server's designated entry point. You may choose to enter a [regular expression](https://docs.oracle.com/javase/8/docs/api/java/util/regex/Pattern.html) to specify a naming pattern for the files to be replicated. Consider the following example:
 
-```
+```regex
 log-([0-9]{4})([0-9]{2})([0-9]{2})
 ```
 
@@ -126,7 +127,7 @@ This pattern will filter for files that match the format `log-YYYYMMDD`, where `
 
 14. Click **Set up source** to complete setup. A test will run to verify the configuration.
 
-### For Airbyte Open Source:
+### For Airbyte Open Source
 
 1. Navigate to the Airbyte Open Source dashboard.
 2. Click Sources and then click + New source.
@@ -137,7 +138,7 @@ This pattern will filter for files that match the format `log-YYYYMMDD`, where `
 
 <FieldAnchor field="delivery_method.delivery_type">
 
-Choose a [delivery method](../../platform/using-airbyte/delivery-methods) for your data. 
+Choose a [delivery method](../../platform/using-airbyte/delivery-methods) for your data.
 
 </FieldAnchor>
 
@@ -147,7 +148,7 @@ If enabled, sends subdirectory folder structure along with source file names to 
 
 #### File-specific Configuration
 
-Depending on your **File Type** selection, you will be presented with a few configuration options specific to that file type. 
+Depending on your **File Type** selection, you will be presented with a few configuration options specific to that file type.
 
 For JSONL, Parquet, and Document File Type formats, you can specify the **Glob** pattern used to specify which files should be selected from the file system. If your provided Folder Path already ends in a slash, you need to add that double slash to the glob where appropriate.
 
@@ -179,9 +180,10 @@ If you need to sync files larger than 1 GB, consider one of the following approa
 - Split large files into smaller chunks before uploading them to your SFTP server
 - Use the **Replicate Records** delivery method instead, which parses and streams file contents as structured records (available for CSV, JSON, Parquet, and other structured formats)
 
-For more information about delivery methods and their limitations, see the [Delivery Methods documentation](../../platform/using-airbyte/delivery-methods#supported-versions-and-limitations).
+For more information about delivery methods and their limitations, see the [Delivery Methods documentation](/platform/using-airbyte/delivery-methods#supported-versions-and-limitations).
 
 ## Changelog
+
 <details>
   <summary>Expand to review</summary>
 

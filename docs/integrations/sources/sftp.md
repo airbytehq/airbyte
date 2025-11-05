@@ -28,7 +28,7 @@ To set up key pair authentication, you may use the following steps as a guide:
 
 3. Use the `ssh-copy-id` command in your terminal to copy the public key to the server.
 
-```
+```bash
 ssh-copy-id <username>@<server_ip_address>
 ```
 
@@ -39,7 +39,7 @@ Depending on factors such as your operating system and the specific SSH implemen
 
 4. You should now be able to connect to the server via the private key. You can test this by using the `ssh` command:
 
-```
+```bash
 ssh <username>@<server_ip_address>
 ```
 
@@ -72,7 +72,8 @@ If your SFTP server uses SSH key-based authentication, you'll need to provide yo
    5. Save the file.
 
 3. **(Optional but recommended)** If you're on macOS or Linux, set restricted permissions so only you can read it:
-   ```
+
+   ```bash
    chmod 600 ssh.pem
    ```
 
@@ -95,7 +96,7 @@ The **Optional fields** can be used to further configure the SFTP source connect
 1. **File Types**: Enter the desired file types to replicate as comma-separated values. Currently, only CSV and JSON are supported. The default value is `csv,json`.
 2. **Folder Path**: Enter a folder path to specify the directory on the remote server to be synced. For example, given the file structure:
 
-```
+```text
 Root
 | - logs
 |   | - 2021
@@ -110,7 +111,7 @@ An input of `/logs/2022` will only replicate data contained within the specified
 
 3. **File Pattern**: Enter a [regular expression](https://docs.oracle.com/javase/8/docs/api/java/util/regex/Pattern.html) to specify a naming pattern for the files to be replicated. Consider the following example:
 
-```
+```regex
 log-([0-9]{4})([0-9]{2})([0-9]{2})
 ```
 
@@ -134,6 +135,7 @@ This source provides a single stream per file with a dynamic schema. The current
 More formats \(e.g. Apache Avro\) will be supported in the future.
 
 ## Changelog
+
 <details>
   <summary>Expand to review</summary>
 
