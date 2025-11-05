@@ -20,6 +20,7 @@ import io.airbyte.cdk.db.DataTypeUtils;
 import io.airbyte.commons.json.Jsons;
 import io.airbyte.commons.util.MoreIterators;
 import java.util.Collections;
+import java.util.List;
 import java.util.Map;
 import java.util.Optional;
 import java.util.Set;
@@ -135,6 +136,14 @@ public class MongoDbCdcEventUtils {
     return normalizeObjectId(objectNode);
   }
 
+  public static ObjectNode transformDataTypes(final String json, final Set<String> configuredFields, final JsonNode schema) {
+    final ObjectNode objectNode = (ObjectNode) Jsons.jsonNode(Collections.emptyMap());
+    final Document document = Document.parse(json);
+    formatDocument(document, objectNode, configuredFields);
+    final ObjectNode normalized = normalizeObjectId(objectNode);
+    return (ObjectNode) applySchemaCoercion(normalized, schema);
+  }
+
   public static ObjectNode transformDataTypesNoSchema(final String json) {
     final ObjectNode objectNode = (ObjectNode) Jsons.jsonNode(Collections.emptyMap());
     final Document document = Document.parse(json);
@@ -146,6 +155,23 @@ public class MongoDbCdcEventUtils {
     final ObjectNode objectNode = (ObjectNode) Jsons.jsonNode(Collections.emptyMap());
     formatDocument(document, objectNode, columnNames);
     return normalizeObjectId(objectNode);
+  }
+
+  /**
+   * Transforms a MongoDB document to a JsonNode with schema-aware type coercion.
+   * This method handles MongoDB's flexible schema where fields can be stored as either
+   * single objects or arrays depending on cardinality.
+   *
+   * @param document The MongoDB document to transform
+   * @param columnNames The set of column names to include
+   * @param schema The JSON schema for the stream
+   * @return The transformed JsonNode with type coercion applied
+   */
+  public static JsonNode toJsonNode(final Document document, final Set<String> columnNames, final JsonNode schema) {
+    final ObjectNode objectNode = (ObjectNode) Jsons.jsonNode(Collections.emptyMap());
+    formatDocument(document, objectNode, columnNames);
+    final ObjectNode normalized = normalizeObjectId(objectNode);
+    return applySchemaCoercion(normalized, schema);
   }
 
   public static JsonNode toJsonNodeNoSchema(final Document document) {
@@ -321,6 +347,89 @@ public class MongoDbCdcEventUtils {
         LOGGER.debug("WARNING Field list out of sync, Document doesn't contain field: {}", fieldName);
       }
     }
+  }
+
+  /**
+   * Applies schema-aware type coercion to handle MongoDB's flexible schema.
+   * This method wraps single objects in arrays when the schema expects an array type,
+   * which fixes DESTINATION_SERIALIZATION_ERROR when MongoDB stores a field as an object
+   * (single item) but the schema expects an array (multiple items).
+   *
+   * @param data The data node to coerce
+   * @param schema The JSON schema for the stream
+   * @return The coerced data node
+   */
+  private static JsonNode applySchemaCoercion(final JsonNode data, final JsonNode schema) {
+    if (data == null || schema == null || !data.isObject()) {
+      return data;
+    }
+
+    final ObjectNode result = (ObjectNode) Jsons.jsonNode(Collections.emptyMap());
+    final JsonNode properties = schema.get("properties");
+    
+    if (properties == null || !properties.isObject()) {
+      return data;
+    }
+
+    data.fields().forEachRemaining(entry -> {
+      final String fieldName = entry.getKey();
+      final JsonNode fieldValue = entry.getValue();
+      final JsonNode fieldSchema = properties.get(fieldName);
+
+      if (fieldSchema != null && fieldValue != null && !fieldValue.isNull()) {
+        final JsonNode coercedValue = coerceFieldValue(fieldValue, fieldSchema);
+        result.set(fieldName, coercedValue);
+      } else {
+        result.set(fieldName, fieldValue);
+      }
+    });
+
+    return result;
+  }
+
+  /**
+   * Coerces a single field value based on its schema.
+   *
+   * @param value The field value
+   * @param fieldSchema The schema for this field
+   * @return The coerced value
+   */
+  private static JsonNode coerceFieldValue(final JsonNode value, final JsonNode fieldSchema) {
+    final JsonNode typeNode = fieldSchema.get("type");
+    
+    if (typeNode == null) {
+      return value;
+    }
+
+    if (typeNode.isArray()) {
+      for (final JsonNode type : typeNode) {
+        if (type.isTextual()) {
+          final String typeStr = type.asText();
+          if ("array".equals(typeStr) && value.isObject()) {
+            LOGGER.debug("Coercing object to array for field with union type schema");
+            return Jsons.jsonNode(List.of(value));
+          } else if ("object".equals(typeStr) && value.isArray() && value.size() == 1) {
+            LOGGER.debug("Coercing single-element array to object for field with union type schema");
+            return value.get(0);
+          }
+        }
+      }
+      return value;
+    }
+
+    if (typeNode.isTextual()) {
+      final String type = typeNode.asText();
+      
+      if ("array".equals(type) && value.isObject()) {
+        LOGGER.debug("Coercing object to array for field");
+        return Jsons.jsonNode(List.of(value));
+      } else if ("object".equals(type) && value.isArray() && value.size() == 1) {
+        LOGGER.debug("Coercing single-element array to object for field");
+        return value.get(0);
+      }
+    }
+
+    return value;
   }
 
   /**

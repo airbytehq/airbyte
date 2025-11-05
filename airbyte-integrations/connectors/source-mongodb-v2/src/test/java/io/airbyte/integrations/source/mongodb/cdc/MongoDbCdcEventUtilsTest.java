@@ -254,4 +254,168 @@ class MongoDbCdcEventUtilsTest {
     assertTrue(abDataNode.has("field16"));
   }
 
+  @Test
+  void testToJsonNodeWithSchemaCoercionObjectToArray() {
+    final Document document = new Document("_id", new BsonObjectId(new ObjectId(OBJECT_ID)))
+        .append("assetItemCharacterstics", new Document("chID", "123-456-789")
+            .append("chName", "name")
+            .append("valueDetail", "[9999]"));
+
+    final JsonNode schema = Jsons.jsonNode(Map.of(
+        "type", "object",
+        "properties", Map.of(
+            "_id", Map.of("type", "string"),
+            "assetItemCharacterstics", Map.of(
+                "type", "array",
+                "items", Map.of(
+                    "type", "object",
+                    "properties", Map.of(
+                        "chID", Map.of("type", "string"),
+                        "chName", Map.of("type", "string"),
+                        "valueDetail", Map.of("type", "string")
+                    )
+                )
+            )
+        )
+    ));
+
+    final JsonNode result = MongoDbCdcEventUtils.toJsonNode(document, Set.of("_id", "assetItemCharacterstics"), schema);
+
+    assertNotNull(result);
+    assertEquals(OBJECT_ID, result.get("_id").asText());
+    assertTrue(result.get("assetItemCharacterstics").isArray());
+    assertEquals(1, result.get("assetItemCharacterstics").size());
+    assertEquals("123-456-789", result.get("assetItemCharacterstics").get(0).get("chID").asText());
+    assertEquals("name", result.get("assetItemCharacterstics").get(0).get("chName").asText());
+    assertEquals("[9999]", result.get("assetItemCharacterstics").get(0).get("valueDetail").asText());
+  }
+
+  @Test
+  void testToJsonNodeWithSchemaCoercionArrayToObject() {
+    final Document document = new Document("_id", new BsonObjectId(new ObjectId(OBJECT_ID)))
+        .append("singleItem", java.util.List.of(new Document("key", "value")));
+
+    final JsonNode schema = Jsons.jsonNode(Map.of(
+        "type", "object",
+        "properties", Map.of(
+            "_id", Map.of("type", "string"),
+            "singleItem", Map.of(
+                "type", "object",
+                "properties", Map.of(
+                    "key", Map.of("type", "string")
+                )
+            )
+        )
+    ));
+
+    final JsonNode result = MongoDbCdcEventUtils.toJsonNode(document, Set.of("_id", "singleItem"), schema);
+
+    assertNotNull(result);
+    assertEquals(OBJECT_ID, result.get("_id").asText());
+    assertTrue(result.get("singleItem").isObject());
+    assertEquals("value", result.get("singleItem").get("key").asText());
+  }
+
+  @Test
+  void testToJsonNodeWithSchemaCoercionUnionType() {
+    final Document document = new Document("_id", new BsonObjectId(new ObjectId(OBJECT_ID)))
+        .append("flexibleField", new Document("key", "value"));
+
+    final JsonNode schema = Jsons.jsonNode(Map.of(
+        "type", "object",
+        "properties", Map.of(
+            "_id", Map.of("type", "string"),
+            "flexibleField", Map.of(
+                "type", java.util.List.of("null", "array"),
+                "items", Map.of(
+                    "type", "object",
+                    "properties", Map.of(
+                        "key", Map.of("type", "string")
+                    )
+                )
+            )
+        )
+    ));
+
+    final JsonNode result = MongoDbCdcEventUtils.toJsonNode(document, Set.of("_id", "flexibleField"), schema);
+
+    assertNotNull(result);
+    assertEquals(OBJECT_ID, result.get("_id").asText());
+    assertTrue(result.get("flexibleField").isArray());
+    assertEquals(1, result.get("flexibleField").size());
+    assertEquals("value", result.get("flexibleField").get(0).get("key").asText());
+  }
+
+  @Test
+  void testToJsonNodeWithSchemaCoercionNoChange() {
+    final Document document = new Document("_id", new BsonObjectId(new ObjectId(OBJECT_ID)))
+        .append("arrayField", java.util.List.of(
+            new Document("key1", "value1"),
+            new Document("key2", "value2")
+        ));
+
+    final JsonNode schema = Jsons.jsonNode(Map.of(
+        "type", "object",
+        "properties", Map.of(
+            "_id", Map.of("type", "string"),
+            "arrayField", Map.of(
+                "type", "array",
+                "items", Map.of(
+                    "type", "object",
+                    "properties", Map.of(
+                        "key1", Map.of("type", "string"),
+                        "key2", Map.of("type", "string")
+                    )
+                )
+            )
+        )
+    ));
+
+    final JsonNode result = MongoDbCdcEventUtils.toJsonNode(document, Set.of("_id", "arrayField"), schema);
+
+    assertNotNull(result);
+    assertEquals(OBJECT_ID, result.get("_id").asText());
+    assertTrue(result.get("arrayField").isArray());
+    assertEquals(2, result.get("arrayField").size());
+    assertEquals("value1", result.get("arrayField").get(0).get("key1").asText());
+    assertEquals("value2", result.get("arrayField").get(1).get("key2").asText());
+  }
+
+  @Test
+  void testTransformDataTypesWithSchemaCoercion() {
+    final Document document = new Document("_id", new BsonObjectId(new ObjectId(OBJECT_ID)))
+        .append("assetItemCharacterstics", new Document("chID", "123-456-789")
+            .append("chName", "name")
+            .append("valueDetail", "[9999]"));
+
+    final JsonNode schema = Jsons.jsonNode(Map.of(
+        "type", "object",
+        "properties", Map.of(
+            "_id", Map.of("type", "string"),
+            "assetItemCharacterstics", Map.of(
+                "type", "array",
+                "items", Map.of(
+                    "type", "object",
+                    "properties", Map.of(
+                        "chID", Map.of("type", "string"),
+                        "chName", Map.of("type", "string"),
+                        "valueDetail", Map.of("type", "string")
+                    )
+                )
+            )
+        )
+    ));
+
+    final String documentAsJson = document.toJson();
+    final ObjectNode result = MongoDbCdcEventUtils.transformDataTypes(documentAsJson, Set.of("_id", "assetItemCharacterstics"), schema);
+
+    assertNotNull(result);
+    assertEquals(OBJECT_ID, result.get("_id").asText());
+    assertTrue(result.get("assetItemCharacterstics").isArray());
+    assertEquals(1, result.get("assetItemCharacterstics").size());
+    assertEquals("123-456-789", result.get("assetItemCharacterstics").get(0).get("chID").asText());
+    assertEquals("name", result.get("assetItemCharacterstics").get(0).get("chName").asText());
+    assertEquals("[9999]", result.get("assetItemCharacterstics").get(0).get("valueDetail").asText());
+  }
+
 }

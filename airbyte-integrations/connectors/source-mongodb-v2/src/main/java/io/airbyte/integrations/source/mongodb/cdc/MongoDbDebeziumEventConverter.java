@@ -46,6 +46,8 @@ public class MongoDbDebeziumEventConverter implements DebeziumEventConverter {
     final Set<String> configuredFields = isEnforceSchema ? getConfiguredMongoDbCollectionFields(source, configuredAirbyteCatalog, cdcMetadataInjector)
         : null;
 
+    final JsonNode streamSchema = isEnforceSchema ? getStreamSchema(source, configuredAirbyteCatalog, cdcMetadataInjector) : null;
+
     /*
      * Delete events need to be handled separately from other CrUD events, as depending on the version
      * of the MongoDB server, the contents Debezium event data will be different. See
@@ -53,8 +55,8 @@ public class MongoDbDebeziumEventConverter implements DebeziumEventConverter {
      */
     final JsonNode data = switch (operation) {
       case "c", "i", "u" -> formatMongoDbDebeziumData(
-          before, after, source, debeziumEventKey, cdcMetadataInjector, configuredFields, isEnforceSchema);
-      case "d" -> formatMongoDbDeleteDebeziumData(before, debeziumEventKey, source, cdcMetadataInjector, configuredFields, isEnforceSchema);
+          before, after, source, debeziumEventKey, cdcMetadataInjector, configuredFields, streamSchema, isEnforceSchema);
+      case "d" -> formatMongoDbDeleteDebeziumData(before, debeziumEventKey, source, cdcMetadataInjector, configuredFields, streamSchema, isEnforceSchema);
       default -> throw new IllegalArgumentException("Unsupported MongoDB change event operation '" + operation + "'.");
     };
 
@@ -67,18 +69,19 @@ public class MongoDbDebeziumEventConverter implements DebeziumEventConverter {
                                                     final JsonNode debeziumEventKey,
                                                     final CdcMetadataInjector cdcMetadataInjector,
                                                     final Set<String> configuredFields,
+                                                    final JsonNode streamSchema,
                                                     final boolean isEnforceSchema) {
 
     if ((before == null || before.isNull()) && (after == null || after.isNull())) {
       // In case a mongodb document was updated and then deleted, the update change event will not have
       // any information ({after: null})
       // We are going to treat it as a delete.
-      return formatMongoDbDeleteDebeziumData(before, debeziumEventKey, source, cdcMetadataInjector, configuredFields, isEnforceSchema);
+      return formatMongoDbDeleteDebeziumData(before, debeziumEventKey, source, cdcMetadataInjector, configuredFields, streamSchema, isEnforceSchema);
     } else {
       final String eventJson = (after.isNull() ? before : after).asText();
       return DebeziumEventConverter.addCdcMetadata(
           isEnforceSchema
-              ? MongoDbCdcEventUtils.transformDataTypes(eventJson, configuredFields)
+              ? MongoDbCdcEventUtils.transformDataTypes(eventJson, configuredFields, streamSchema)
               : MongoDbCdcEventUtils.transformDataTypesNoSchema(eventJson),
           source, cdcMetadataInjector, false);
     }
@@ -89,6 +92,7 @@ public class MongoDbDebeziumEventConverter implements DebeziumEventConverter {
                                                           final JsonNode source,
                                                           final CdcMetadataInjector cdcMetadataInjector,
                                                           final Set<String> configuredFields,
+                                                          final JsonNode streamSchema,
                                                           final boolean isEnforceSchema) {
     final String eventJson;
 
@@ -111,7 +115,7 @@ public class MongoDbDebeziumEventConverter implements DebeziumEventConverter {
 
     return DebeziumEventConverter.addCdcMetadata(
         isEnforceSchema
-            ? MongoDbCdcEventUtils.transformDataTypes(eventJson, configuredFields)
+            ? MongoDbCdcEventUtils.transformDataTypes(eventJson, configuredFields, streamSchema)
             : MongoDbCdcEventUtils.transformDataTypesNoSchema(eventJson),
         source, cdcMetadataInjector, true);
   }
@@ -126,6 +130,18 @@ public class MongoDbDebeziumEventConverter implements DebeziumEventConverter {
         .map(CatalogHelpers::getTopLevelFieldNames)
         .flatMap(Set::stream)
         .collect(Collectors.toSet());
+  }
+
+  private static JsonNode getStreamSchema(final JsonNode source,
+                                          final ConfiguredAirbyteCatalog configuredAirbyteCatalog,
+                                          final CdcMetadataInjector cdcMetadataInjector) {
+    final String streamNamespace = cdcMetadataInjector.namespace(source);
+    final String streamName = cdcMetadataInjector.name(source);
+    return configuredAirbyteCatalog.getStreams().stream()
+        .filter(s -> streamName.equals(s.getStream().getName()) && streamNamespace.equals(s.getStream().getNamespace()))
+        .map(s -> s.getStream().getJsonSchema())
+        .findFirst()
+        .orElse(null);
   }
 
 }
