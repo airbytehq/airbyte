@@ -35,6 +35,7 @@ This Airbyte connector for **Invoiced** enables seamless data integration betwee
 
 | Version          | Date              | Pull Request | Subject        |
 |------------------|-------------------|--------------|----------------|
+| 0.0.42 | 2025-10-29 | [68790](https://github.com/airbytehq/airbyte/pull/68790) | Update dependencies |
 | 0.0.41 | 2025-10-21 | [68512](https://github.com/airbytehq/airbyte/pull/68512) | Update dependencies |
 | 0.0.40 | 2025-10-14 | [67961](https://github.com/airbytehq/airbyte/pull/67961) | Update dependencies |
 | 0.0.39 | 2025-10-07 | [67370](https://github.com/airbytehq/airbyte/pull/67370) | Update dependencies |

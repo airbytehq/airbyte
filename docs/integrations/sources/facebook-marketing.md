@@ -262,19 +262,19 @@ The Facebook Marketing source connector supports the following [sync modes](http
 
 ## Supported Streams
 
-| Stream Name                                       | API Docs                                                                                                        | Supports Full Refresh | Supports Incremental |
-| :------------------------------------------------ | :-------------------------------------------------------------------------------------------------------------- | :-------------------- |:--------------------------- |
-| activities                                         | [Latest](https://developers.facebook.com/docs/marketing-api/reference/ad-activity)                              | ✅                    | ✅                          |
-| ad_account                                         | [Latest](https://developers.facebook.com/docs/marketing-api/business-asset-management/guides/ad-accounts)       | ✅                    | ❌                          |
-| ad_creatives                                       | [Latest](https://developers.facebook.com/docs/marketing-api/reference/ad-creative#fields)                       | ✅                    | ❌                          |
-| ad_sets                                            | [Latest](https://developers.facebook.com/docs/marketing-api/reference/ad-campaign#fields)                       | ✅                    | ✅                          |
-| ads                                                | [Latest](https://developers.facebook.com/docs/marketing-api/reference/adgroup#fields)                           | ✅                    | ✅                          |
-| ads_insights                                       | [Latest](https://developers.facebook.com/docs/marketing-api/reference/adgroup/insights/)                        | ✅                    | ✅                          |
-| campaigns                                         | [Latest](https://developers.facebook.com/docs/marketing-api/reference/ad-campaign-group#fields)                 | ✅                    | ✅                          |
-| custom_conversions                                | [Latest](https://developers.facebook.com/docs/marketing-api/reference/custom-conversion)                        | ✅                    | ❌                          |
-| custom_audiences                                  | [Latest](https://developers.facebook.com/docs/marketing-api/reference/custom-audience)                          | ✅                    | ❌                          |
-| images                                            | [Latest](https://developers.facebook.com/docs/marketing-api/reference/ad-image)                                 | ✅                    | ✅                          |
-| videos                                            | [Latest](https://developers.facebook.com/docs/marketing-api/reference/video)                                    | ✅                    | ✅                          |
+| Stream Name        | API Docs                                                                                                  | Supports Full Refresh | Supports Incremental |
+| :----------------- | :-------------------------------------------------------------------------------------------------------- | :-------------------- | :------------------- |
+| activities         | [Latest](https://developers.facebook.com/docs/marketing-api/reference/ad-activity)                        | ✅                    | ✅                   |
+| ad_account         | [Latest](https://developers.facebook.com/docs/marketing-api/business-asset-management/guides/ad-accounts) | ✅                    | ❌                   |
+| ad_creatives       | [Latest](https://developers.facebook.com/docs/marketing-api/reference/ad-creative#fields)                  | ✅                    | ❌                   |
+| ad_sets            | [Latest](https://developers.facebook.com/docs/marketing-api/reference/ad-campaign#fields)                  | ✅                    | ✅                   |
+| ads                | [Latest](https://developers.facebook.com/docs/marketing-api/reference/adgroup#fields)                      | ✅                    | ✅                   |
+| ads_insights       | [Latest](https://developers.facebook.com/docs/marketing-api/reference/adgroup/insights/)                  | ✅                    | ✅                   |
+| campaigns          | [Latest](https://developers.facebook.com/docs/marketing-api/reference/ad-campaign-group#fields)            | ✅                    | ✅                   |
+| custom_conversions | [Latest](https://developers.facebook.com/docs/marketing-api/reference/custom-conversion)                  | ✅                    | ❌                   |
+| custom_audiences   | [Latest](https://developers.facebook.com/docs/marketing-api/reference/custom-audience)                    | ✅                    | ❌                   |
+| images             | [Latest](https://developers.facebook.com/docs/marketing-api/reference/ad-image)                           | ✅                    | ✅                   |
+| videos             | [Latest](https://developers.facebook.com/docs/marketing-api/reference/video)                              | ✅                    | ✅                   |
 
 **Notes on Streams:**
 
@@ -340,13 +340,46 @@ The Facebook Marketing connector uses the `lookback_window` parameter to repeate
 
 ## Troubleshooting
 
-**Handling "_Please reduce the amount of data you're asking for, then retry your request_" response from Facebook Graph API**
+### Handling "Please reduce the amount of data you're asking for, then retry your request"
 
 This response indicates that the Facebook Graph API requires you to reduce the fields (amount of data) requested. To resolve this issue:
 
 1. **Go to the Schema Tab**: Navigate to the schema tab of your connection.
 2. **Select the Source**: Click on the source that is having issues with synchronization.
 3. **Toggle Fields**: Unselect (toggle off) the fields you do not require. This action will ensure that these fields are not requested from the Graph API.
+
+### Missing purchases or purchase value metrics
+
+You may notice that Purchases or purchase value fields in the Ads Insights stream appear incomplete or under-reported for certain date ranges. This issue has been observed across multiple platforms, including direct Facebook API calls. It's not specific to Airbyte, but linked to intermittent upstream API behavior.
+
+#### What’s happening
+
+API users have reported missing purchase metrics on [Reddit](https://www.reddit.com/r/FacebookAds/comments/1mhhdp8/facebook_ads_api_missing_purchases/) and in the Facebook Developer and Community forums. In some cases, action values like `offsite_conversion.fb_pixel_purchase` appear correctly at the ad or ad set level, but disappear at the campaign or account level. API users documented similar API behavior in the [Facebook Developer Community](https://developers.facebook.com/community/threads/1643941119652822/) several years ago. It appears to have resurfaced more frequently as of 2025.
+
+#### Why it happens
+
+Facebook’s Ads Insights API dynamically aggregates and filters metrics. Purchase data may be missing or inconsistent for the following reasons.
+
+- Attribution window processing: Facebook re-attributes purchases up to 28 days after an impression or click, meaning recent data can fluctuate or appear missing until finalized.
+
+- Complex breakdowns or field combinations: including multiple breakdowns like `action_type`, `action_target_id`, and `action_destination` can result in partial or truncated responses.
+
+- Intermittent API-side behavior: Facebook's data availability and aggregation logic can vary between endpoints and attribution windows, leading to temporary inconsistencies.
+
+- Throughput and rate limits: when you exceed API throughput or many queries run concurrently, Facebook may return partial datasets or suppress some metrics.
+
+#### How to resolve the issue
+
+1. Refresh recent data: update the Start Date on the source connector to just before the data discrepancy begins and then trigger a "Refresh and Retain" sync from the connection's settings tab. Many customers see missing metrics restored after doing this.
+
+2. Simplify breakdowns: temporarily remove Action breakdowns like `action_type`, `action_target_id`, and `action_destination` from the Ads Insights stream configuration, then re-sync. Reintroduce them gradually.
+
+3. Reduce query size: For custom report streams, sync fewer fields or a narrower date range first, verify the results, then expand incrementally.
+
+4. Limit concurrency: if you have multiple Facebook Marketing connections using the same access token to authenticate, try staggering their sync schedules to reduce contention and avoid hitting Facebook API limits. This only works across multiple connections. No method exists to stagger syncs within a single connection that includes multiple ad accounts.
+
+5. Verify with Facebook Ads Manager: compare values directly in Facebook Ads Manager at the ad or ad set level, where action values often appear correctly even if they’re missing in aggregated results.
+
 </HideInUI>
 
 ## Changelog
@@ -356,6 +389,7 @@ This response indicates that the Facebook Graph API requires you to reduce the f
 
 | Version    | Date       | Pull Request                                             | Subject                                                                                                                                                                                                                                                                                           |
 |:-----------|:-----------|:---------------------------------------------------------|:--------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------|
+| 4.1.1      | 2025-11-04 | [69169](https://github.com/airbytehq/airbyte/pull/69169) | Finalize progressive rollout.                                                                                                                                                                                                                                                          |
 | 4.1.1-rc.1 | 2025-10-27 | [68632](https://github.com/airbytehq/airbyte/pull/68632) | Performance improvement on normalization                                                                                                                                                                                                                                                          |
 | 4.1.0      | 2025-10-06 | [67081](https://github.com/airbytehq/airbyte/pull/67081) | Promoting release candidate 4.1.0-rc.2 to a main version.                                                                                                                                                                                                                                         |
 | 4.1.0-rc.2 | 2025-10-02 | [66976](https://github.com/airbytehq/airbyte/pull/66976) | Add missing breakdown `user_segment_key`                                                                                                                                                                                                                                                          |
