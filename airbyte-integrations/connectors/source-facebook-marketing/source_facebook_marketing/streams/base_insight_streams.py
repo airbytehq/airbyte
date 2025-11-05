@@ -41,11 +41,7 @@ class AdsInsights(FBMarketingIncrementalStream):
     ]
 
     breakdowns = []
-    action_breakdowns = [
-        "action_type",
-        "action_target_id",
-        "action_destination",
-    ]
+    action_breakdowns = []
 
     object_breakdowns = {
         "body_asset": "body_asset_id",

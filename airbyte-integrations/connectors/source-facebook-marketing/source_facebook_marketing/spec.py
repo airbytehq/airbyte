@@ -268,11 +268,7 @@ class ConnectorConfig(BaseConfig):
     default_ads_insights_action_breakdowns: Optional[List[ValidActionBreakdowns]] = Field(
         title="Action breakdowns for the Built-in Ads Insight stream",
         order=8,
-        default=[
-            AdsInsights.ActionBreakdowns.action_type,
-            AdsInsights.ActionBreakdowns.action_target_id,
-            AdsInsights.ActionBreakdowns.action_destination,
-        ],
+        default=[],
         description="Action breakdowns for the Built-in Ads Insights stream that will be used in the request. You can override default values or remove them to make it empty if needed.",
     )
 
