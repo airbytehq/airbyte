@@ -286,28 +286,6 @@ class MongoDbCdcEventUtilsTest {
   }
 
   @Test
-  void testToJsonNodeWithSchemaCoercionArrayToObject() {
-    final Document document = new Document("_id", new BsonObjectId(new ObjectId(OBJECT_ID)))
-        .append("singleItem", java.util.List.of(new Document("key", "value")));
-
-    final JsonNode schema = Jsons.jsonNode(Map.of(
-        "type", "object",
-        "properties", Map.of(
-            "_id", Map.of("type", "string"),
-            "singleItem", Map.of(
-                "type", "object",
-                "properties", Map.of(
-                    "key", Map.of("type", "string"))))));
-
-    final JsonNode result = MongoDbCdcEventUtils.toJsonNode(document, Set.of("_id", "singleItem"), schema);
-
-    assertNotNull(result);
-    assertEquals(OBJECT_ID, result.get("_id").asText());
-    assertTrue(result.get("singleItem").isObject());
-    assertEquals("value", result.get("singleItem").get("key").asText());
-  }
-
-  @Test
   void testToJsonNodeWithSchemaCoercionUnionType() {
     final Document document = new Document("_id", new BsonObjectId(new ObjectId(OBJECT_ID)))
         .append("flexibleField", new Document("key", "value"));

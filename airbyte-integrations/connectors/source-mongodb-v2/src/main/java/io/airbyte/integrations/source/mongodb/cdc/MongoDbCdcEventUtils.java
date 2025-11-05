@@ -408,9 +408,6 @@ public class MongoDbCdcEventUtils {
           if ("array".equals(typeStr) && value.isObject()) {
             LOGGER.debug("Coercing object to array for field with union type schema");
             return Jsons.jsonNode(List.of(value));
-          } else if ("object".equals(typeStr) && value.isArray() && value.size() == 1) {
-            LOGGER.debug("Coercing single-element array to object for field with union type schema");
-            return value.get(0);
           }
         }
       }
@@ -423,9 +420,6 @@ public class MongoDbCdcEventUtils {
       if ("array".equals(type) && value.isObject()) {
         LOGGER.debug("Coercing object to array for field");
         return Jsons.jsonNode(List.of(value));
-      } else if ("object".equals(type) && value.isArray() && value.size() == 1) {
-        LOGGER.debug("Coercing single-element array to object for field");
-        return value.get(0);
       }
     }
 
