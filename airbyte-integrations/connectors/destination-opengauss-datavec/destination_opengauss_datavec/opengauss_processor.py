@@ -1,4 +1,4 @@
-# Copyright (c) 2024 Airbyte, Inc., all rights reserved.
+# Copyright (c) 2025 Airbyte, Inc., all rights reserved.
 """An OpenGauss DataVec implementation of the SQL processor."""
 
 from __future__ import annotations

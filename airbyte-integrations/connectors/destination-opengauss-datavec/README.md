@@ -1,20 +1,20 @@
-# OpenGauss DataVec Destination
+# openGauss DataVec Destination
 
-This is the repository for the OpenGauss DataVec destination connector, written in Python.
-For information about how to use this connector within Airbyte, see [the documentation](https://docs.airbyte.com/integrations/destinations/opengauss-datavec).(todo)
+This is the repository for the openGauss DataVec destination connector, written in Python.
+For information about how to use this connector within Airbyte, see [the documentation](https://docs.airbyte.com/integrations/destinations/opengauss-datavec).
 
 ## Overview
 
-This destination allows you to sync data to OpenGauss database with vector storage capabilities using the DataVec extension. It supports:
+This destination allows you to sync data to openGauss database with vector storage capabilities:
 
 - **Vector Embeddings**: Store text data as vector embeddings using various embedding providers (OpenAI, Cohere, Azure OpenAI, etc.)
 - **Multiple Sync Modes**: Full refresh, incremental append, and append with deduplication
 - **Flexible Text Processing**: Configurable text chunking and field mapping
-- **OpenGauss DataVec Integration**: Native support for OpenGauss vector operations and distance functions
+- **openGauss DataVec Integration**: Native support for openGauss vector operations and distance functions
 
 ## Prerequisites
 
-- OpenGauss database with DataVec extension installed
+- openGauss database with DataVec extension installed
 - Database user with appropriate permissions
 - API key for chosen embedding provider (or use fake embeddings for testing)
 
@@ -23,7 +23,7 @@ This destination allows you to sync data to OpenGauss database with vector stora
 ### Prerequisites
 **To iterate on this connector, make sure to complete this prerequisites section.**
 
-#### Minimum Python version required `= 3.9.0`
+#### Minimum Python version required `= 3.10.0`
 
 ### Installing the connector
 From this connector directory, run:

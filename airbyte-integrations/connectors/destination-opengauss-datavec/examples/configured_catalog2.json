@@ -13,7 +13,7 @@
         "default_cursor_field": ["column_name"]
       },
       "sync_mode": "full_refresh",
-      "destination_sync_mode": "append_dedup"
+      "destination_sync_mode": "append"
     }
   ]
 }

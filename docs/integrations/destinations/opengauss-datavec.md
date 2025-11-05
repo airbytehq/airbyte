@@ -1,8 +1,8 @@
-# OpenGauss DataVec Destination
+# openGauss DataVec Destination
 
 ## Overview
 
-This page guides you through the process of setting up the OpenGauss DataVec destination connector.
+This page guides you through the process of setting up the openGauss DataVec destination connector.
 
 There are three parts to this:
 * Processing - split up individual records in chunks so they will fit the context window and decide which fields to use as context and which are supplementary metadata.
@@ -13,14 +13,14 @@ There are three parts to this:
   * Fake `random vectors with 1536 embedding dimensions`
   * OpenAI-compatible
   * Coming soon: Hugging Face's `e5-base-v2`.
-* OpenGauss Connection - where to store the vectors. This configures a vector store using OpenGauss tables having the `VECTOR` data type which is achieved by installing the DataVec extension.
+* openGauss Connection - where to store the vectors. This configures a vector store using openGauss tables having the `VECTOR` data type which is provided by the DataVec vector engine (a built-in kernel feature of openGauss).
 
 ## Prerequisites
 
-To use the OpenGauss DataVec destination, you'll need:
+To use the openGauss DataVec destination, you'll need:
 
 - An account with API access depending on which embedding method you want to use.
-- An openGauss database with vector engine support. See the [OpenGauss DataVec documentation](https://docs.opengauss.org/zh/docs/latest/docs/DataVec/DataVec-Overview.html) for installation instructions.
+- An openGauss database with vector engine support. See the [openGauss DataVec documentation](https://docs.opengauss.org/zh/docs/latest/docs/DataVec/DataVec-Overview.html) for installation instructions.
 
 You'll need the following information to configure the destination:
 
@@ -37,14 +37,14 @@ You'll need the following information to configure the destination:
 
 ### Configure Network Access
 
-Make sure your OpenGauss database can be accessed by Airbyte. If your database is within a VPC, you
+Make sure your openGauss database can be accessed by Airbyte. If your database is within a VPC, you
 may need to allow access from the IP you're using to expose Airbyte.
 
-## Step 1: Set up OpenGauss
+## Step 1: Set up openGauss
 
 ### **Permissions**
 
-You need an OpenGauss user with the following permissions:
+You need an openGauss user with the following permissions:
 
 - can create tables and write rows.
 - can create schemas e.g:
@@ -58,7 +58,7 @@ GRANT CREATE, TEMPORARY ON DATABASE <database> TO airbyte_user;
 
 You can also use a pre-existing user but we highly recommend creating a dedicated user for Airbyte.
 
-## Step 2: Set up the OpenGauss DataVec connector in Airbyte
+## Step 2: Set up the openGauss DataVec connector in Airbyte
 
 ### Target Database
 
@@ -94,7 +94,7 @@ From
 
 :::info
 
-Airbyte OpenGauss DataVec destination will create raw tables and schemas using the Unquoted identifiers by
+Airbyte openGauss DataVec destination will create raw tables and schemas using the Unquoted identifiers by
 replacing any special characters with an underscore. All final tables and their corresponding
 columns are created using Quoted identifiers preserving the case sensitivity. Special characters in final
 tables are replaced with underscores.
@@ -104,13 +104,13 @@ tables are replaced with underscores.
 1. [Log into your Airbyte Cloud](https://cloud.airbyte.com/workspaces) account.
 2. In the left navigation bar, click **Destinations**. In the top-right corner, click **new
    destination**.
-3. On the Set up the destination page, enter the name for the OpenGauss DataVec connector and select
-   **OpenGauss DataVec** from the Destination type dropdown.
+3. On the Set up the destination page, enter the name for the openGauss DataVec connector and select
+   **openGauss DataVec** from the Destination type dropdown.
 4. Enter a name for your source.
 5. Enter processing information.
 6. Enter embedding information.
 7. For the **Host**, **Port**, and **DB Name**, enter the hostname, port number, and name for your
-   OpenGauss database.
+   openGauss database.
 8. Enter the **Default Schemas**.
 
 :::note
@@ -165,7 +165,7 @@ For testing purposes, it's also possible to use the [Fake embeddings](https://py
 ### Indexing/Data Storage 
 
 - For the **Host**, **Port**, and **DB Name**, enter the hostname, port number, and name for your
-  OpenGauss database.
+  openGauss database.
 - List the **Default Schemas**.
 
 All streams will be indexed/stored into a table with the same name. The table will be created if it doesn't exist. The table will have the following columns: 
@@ -184,6 +184,6 @@ All streams will be indexed/stored into a table with the same name. The table wi
 
 | Version | Date       | Pull Request                                                  | Subject                                                                                                                                              |
 |:--------| :--------- |:--------------------------------------------------------------|:-----------------------------------------------------------------------------------------------------------------------------------------------------|
-| 0.1.0   | 2025-09-01 | TBD     | Add support for openGauss DateVec as a Vector Destination. |
+| 0.1.0   | 2025-09-01 |      | Add support for openGauss DateVec as a Vector Destination. |
 
 </details>
