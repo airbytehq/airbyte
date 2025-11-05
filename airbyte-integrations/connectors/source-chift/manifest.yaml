@@ -5,12 +5,11 @@ type: DeclarativeSource
 description: >-
   Chift is a tool that allows for the integration of financial data into SaaS
   products.
+
 check:
   type: CheckStream
   stream_names:
     - consumers
-    - connections
-    - syncs
 
 definitions:
   streams:
@@ -86,6 +85,13 @@ definitions:
         type: InlineSchemaLoader
         schema:
           $ref: "#/schemas/connections"
+      transformations:
+        - type: AddFields
+          fields:
+            - type: AddedFieldDefinition
+              path:
+                - consumerid
+              value: "{{ stream_partition.parent_id }}"
   base_requester:
     type: HttpRequester
     url_base: https://api.chift.eu
@@ -159,7 +165,7 @@ metadata:
       responsesAreSuccessful: true
     connections:
       hasRecords: true
-      streamHash: a3b802343a0df039fc4e7d1b4c8dc99ec69a1c6d
+      streamHash: 654088bf639287791880bdd88582e496aeef0386
       hasResponse: true
       primaryKeysAreUnique: true
       primaryKeysArePresent: true
@@ -539,20 +545,20 @@ schemas:
         type:
           - object
           - "null"
+        properties:
+          folder_id:
+            type:
+              - string
+              - "null"
       name:
         type:
           - string
           - "null"
-      agent:
-        type:
-          - object
-          - "null"
-        properties:
-          status:
-            type:
-              - string
-              - "null"
       status:
+        type:
+          - string
+          - "null"
+      consumerid:
         type:
           - string
           - "null"
