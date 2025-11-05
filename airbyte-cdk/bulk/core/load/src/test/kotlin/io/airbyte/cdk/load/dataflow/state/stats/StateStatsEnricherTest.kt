@@ -8,6 +8,7 @@ import io.airbyte.cdk.load.command.DestinationStream
 import io.airbyte.cdk.load.command.NamespaceMapper
 import io.airbyte.cdk.load.dataflow.state.PartitionKey
 import io.airbyte.cdk.load.dataflow.state.StateKey
+import io.airbyte.cdk.load.dataflow.stats.MetricTracker
 import io.airbyte.cdk.load.message.CheckpointMessage
 import io.airbyte.cdk.load.message.GlobalCheckpoint
 import io.airbyte.cdk.load.message.GlobalSnapshotCheckpoint
@@ -29,11 +30,14 @@ class StateStatsEnricherTest {
 
     @MockK private lateinit var namespaceMapper: NamespaceMapper
 
+    @MockK private lateinit var metricTracker: MetricTracker
+
     private lateinit var stateStatsEnricher: StateStatsEnricher
 
     @BeforeEach
     fun setUp() {
-        stateStatsEnricher = StateStatsEnricher(statsStore, namespaceMapper)
+        every { metricTracker.drain(any()) } returns emptyMap()
+        stateStatsEnricher = StateStatsEnricher(statsStore, namespaceMapper, metricTracker)
     }
 
     @Test
@@ -174,11 +178,12 @@ class StateStatsEnricherTest {
 
     @Test
     fun `#enrichTopLevelDestinationStats`() {
+        val stream = DestinationStream.Descriptor(namespace = "namespace", name = "name")
         val checkpoint = mockk<CheckpointMessage>(relaxed = true)
         val sourceStats = CheckpointMessage.Stats(recordCount = 100)
         every { checkpoint.sourceStats } returns sourceStats
 
-        val result = stateStatsEnricher.enrichTopLevelDestinationStats(checkpoint, 50L)
+        val result = stateStatsEnricher.enrichTopLevelDestinationStats(checkpoint, stream, 50L)
 
         assertEquals(checkpoint, result)
         verify { checkpoint.updateStats(destinationStats = sourceStats) }

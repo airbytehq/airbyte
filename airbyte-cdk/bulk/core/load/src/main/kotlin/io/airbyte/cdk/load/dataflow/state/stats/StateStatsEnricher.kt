@@ -5,8 +5,10 @@
 package io.airbyte.cdk.load.dataflow.state.stats
 
 import com.google.common.annotations.VisibleForTesting
+import io.airbyte.cdk.load.command.DestinationStream
 import io.airbyte.cdk.load.command.NamespaceMapper
 import io.airbyte.cdk.load.dataflow.state.StateKey
+import io.airbyte.cdk.load.dataflow.stats.MetricTracker
 import io.airbyte.cdk.load.message.CheckpointMessage
 import io.airbyte.cdk.load.message.GlobalCheckpoint
 import io.airbyte.cdk.load.message.GlobalSnapshotCheckpoint
@@ -18,6 +20,7 @@ import jakarta.inject.Singleton
 class StateStatsEnricher(
     private val statsStore: CommittedStatsStore,
     private val namespaceMapper: NamespaceMapper,
+    private val metricTracker: MetricTracker,
 ) {
     // Enriches provided state message with stats associated with the given state key.
     fun enrich(msg: CheckpointMessage, key: StateKey): CheckpointMessage {
@@ -30,12 +33,30 @@ class StateStatsEnricher(
 
     @VisibleForTesting
     @Suppress("UNUSED_PARAMETER")
-    fun enrichTopLevelDestinationStats(msg: CheckpointMessage, count: Long): CheckpointMessage {
+    fun enrichTopLevelDestinationStats(
+        msg: CheckpointMessage,
+        desc: DestinationStream.Descriptor,
+        count: Long
+    ): CheckpointMessage {
         // TODO: set this using the count above once we get to total rejected
         // records.
         msg.updateStats(
             destinationStats = msg.sourceStats,
+            additionalStats = metricTracker.drain(desc)
         )
+
+        return msg
+    }
+
+    @VisibleForTesting
+    @Suppress("UNUSED_PARAMETER")
+    fun enrichTopLevelDestinationStatsGlobalState(
+        msg: CheckpointMessage,
+        count: Long
+    ): CheckpointMessage {
+        // TODO: set this using the count above once we get to total rejected
+        // records.
+        msg.updateStats(destinationStats = msg.sourceStats)
 
         return msg
     }
@@ -62,7 +83,7 @@ class StateStatsEnricher(
             )
         val (committed, cumulative) = statsStore.commitStats(desc, key)
 
-        enrichTopLevelDestinationStats(msg, committed.count)
+        enrichTopLevelDestinationStats(msg, desc, committed.count)
         enrichTopLevelStats(msg, cumulative)
 
         return msg
@@ -88,7 +109,7 @@ class StateStatsEnricher(
                 }
                 .fold(CommitStatsResult()) { acc, c -> acc.merge(c) }
 
-        enrichTopLevelDestinationStats(msg, committed.count)
+        enrichTopLevelDestinationStatsGlobalState(msg, committed.count)
         enrichTopLevelStats(msg, cumulative)
 
         return msg

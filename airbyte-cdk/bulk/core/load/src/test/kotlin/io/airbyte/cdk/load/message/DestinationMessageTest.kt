@@ -52,7 +52,7 @@ import org.junit.jupiter.params.provider.Arguments
 import org.junit.jupiter.params.provider.CsvSource
 import org.junit.jupiter.params.provider.MethodSource
 
-class DestinationMessageTest {
+internal class DestinationMessageTest {
     private val uuidGenerator = UUIDGenerator()
 
     private fun factory(
@@ -131,7 +131,7 @@ class DestinationMessageTest {
     @MethodSource("roundTrippableMessages")
     fun testRoundTripRecord(message: AirbyteMessage) {
         val roundTripped = convert(factory(false), message).asProtocolMessage()
-        Assertions.assertEquals(message, roundTripped)
+        assertEquals(message, roundTripped)
     }
 
     @ParameterizedTest
@@ -163,7 +163,7 @@ class DestinationMessageTest {
 
         val parsedMessage = convert(factory(false), inputMessage) as StreamCheckpoint
 
-        Assertions.assertEquals(
+        assertEquals(
             // we represent the state message ID as a long, but jackson sees that 1234 can be Int,
             // and Int(1234) != Long(1234). (and additionalProperties is just a Map<String, Any?>)
             // So we just compare the serialized protocol messages.
@@ -203,7 +203,7 @@ class DestinationMessageTest {
 
         val parsedMessage = convert(factory(false), inputMessage) as GlobalCheckpoint
 
-        Assertions.assertEquals(
+        assertEquals(
             inputMessage
                 .also { it.state.destinationStats = AirbyteStateStats().withRecordCount(3.0) }
                 .serializeToString(),
