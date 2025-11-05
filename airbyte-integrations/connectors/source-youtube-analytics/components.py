@@ -1,105 +1,90 @@
 #
 # Copyright (c) 2023 Airbyte, Inc., all rights reserved.
 #
-
+import csv
+import io
 from dataclasses import dataclass
-from typing import Any, Iterable, Mapping, MutableMapping, Optional
+from typing import Any, Callable, Generator, Mapping, MutableMapping, Optional, Union
 
 import requests
 
-from airbyte_cdk.sources.declarative.extractors.record_extractor import RecordExtractor
+from airbyte_cdk import Decoder
 from airbyte_cdk.sources.declarative.requesters.http_requester import HttpRequester
-from airbyte_cdk.sources.declarative.requesters.request_options.interpolated_request_options_provider import (
-    InterpolatedRequestOptionsProvider,
-    RequestInput,
-)
 from airbyte_cdk.sources.types import StreamSlice, StreamState
-from airbyte_cdk.utils.mapping_helpers import get_interpolation_context
 
 
 @dataclass
-class CreationRequester(HttpRequester):
-    # CreationRequester checks if the job exists first before attempting to create the job
-    # This is because If the job exists, creating the job returns an error
-    # CreationRequester achieves this by first pulling a list of all jobs. It then checks if the job is in the list.
-    # If the job is not in the list, CreationRequester goes ahead to create the job as configured.
-    # Essentially, CreationRequester sends two requests in the worst case.
+class CustomDecoder(Decoder):
+    def is_stream_response(self) -> bool:
+        return False
 
-    request_body_json: Optional[RequestInput] = None
-
-    def __post_init__(self, parameters: Mapping[str, Any]) -> None:
-        self.request_options_provider = InterpolatedRequestOptionsProvider(
-            request_body_json=self.request_body_json,
-            config=self.config,
-            parameters=parameters or {},
-        )
-        super().__post_init__(parameters)
-
-    def send_request(self, **kwargs):
-        jobs_response = self.get_existing_jobs_response()
-        stream_name = self.name.split(" - ")[-1]
-        if stream_name not in [job["reportTypeId"] for job in jobs_response.json().get("jobs", [])]:
-            super().send_request(**kwargs)
-            jobs_response = self.get_existing_jobs_response()
-        return jobs_response
-
-    def get_existing_jobs_response(self):
-        request, jobs_response = self._http_client.send_request(
-            http_method="GET",
-            url=self._join_url(self.get_url_base(), "jobs"),
-            request_kwargs={"stream": self.stream_response},
-        )
-        return jobs_response
+    def decode(self, response: requests.Response) -> Generator[MutableMapping[str, Any], None, None]:
+        fp = io.StringIO(response.text)
+        reader = csv.DictReader(fp)
+        for record in reader:
+            yield record
 
 
 @dataclass
-class PollingRequester(HttpRequester):
-    # PollingRequester gets the job id first before pulling the job's reports
-    # It achieves this by first pulling a list of all jobs, extracting the job and getting its id
-    # PollingRequester then uses the id to pull the job's reports
-    # Essentially, PollingRequester sends two requests in cases.
+class JobRequester(HttpRequester):
+    """
+    Sends request to create a report job if it doesn't exist yet.
+    """
 
-    def get_path(
+    JOB_NAME = "Airbyte reporting job"
+
+    def send_request(
         self,
-        *,
         stream_state: Optional[StreamState] = None,
         stream_slice: Optional[StreamSlice] = None,
         next_page_token: Optional[Mapping[str, Any]] = None,
-    ) -> str:
-        interpolation_context = get_interpolation_context(
-            stream_state=stream_state,
-            stream_slice=stream_slice,
-            next_page_token=next_page_token,
+        path: Optional[str] = None,
+        request_headers: Optional[Mapping[str, Any]] = None,
+        request_params: Optional[Mapping[str, Any]] = None,
+        request_body_data: Optional[Union[Mapping[str, Any], str]] = None,
+        request_body_json: Optional[Mapping[str, Any]] = None,
+        log_formatter: Optional[Callable[[requests.Response], Any]] = None,
+    ) -> Optional[requests.Response]:
+        response = super().send_request(
+            stream_state,
+            stream_slice,
+            next_page_token,
+            path,
+            request_headers,
+            request_params,
+            request_body_data,
+            request_body_json,
+            log_formatter,
         )
 
-        interpolation_context["creation_response"] = [
-            job for job in interpolation_context["creation_response"]["jobs"] if job["reportTypeId"] == self.name.split(" - ")[-1]
-        ][0]
+        stream_job = [r for r in response.json()["jobs"] if r["reportTypeId"] == self._parameters["report_id"]]
 
-        path = str(self._path.eval(self.config, **interpolation_context))
-        return path.lstrip("/")
+        if not stream_job:
+            self._http_client.send_request(
+                http_method="post",
+                url=self._get_url(
+                    path=path,
+                    stream_state=stream_state,
+                    stream_slice=stream_slice,
+                    next_page_token=next_page_token,
+                ),
+                request_kwargs={"stream": self.stream_response},
+                headers=self._request_headers(stream_state, stream_slice, next_page_token, request_headers),
+                json={"name": self.JOB_NAME, "reportTypeId": self._parameters["report_id"]},
+                dedupe_query_params=True,
+                log_formatter=log_formatter,
+                exit_on_rate_limit=self._exit_on_rate_limit,
+            )
+            response = super().send_request(
+                stream_state,
+                stream_slice,
+                next_page_token,
+                path,
+                request_headers,
+                request_params,
+                request_body_data,
+                request_body_json,
+                log_formatter,
+            )
 
-
-@dataclass
-class StatusExtractor(RecordExtractor):
-    # The API doesn't explicitly state the status of the job's reports creation.
-    # Hence, StatusExtractor improvises by returning "running" if the reports are not available i.e the reports list is empty
-    # It then returns "completed" if the reports list contains items.
-
-    def extract_records(self, response: requests.Response) -> Iterable[MutableMapping[Any, Any]]:
-        reports = response.json().get("reports", [])
-        if not reports:
-            yield "running"
-        else:
-            yield "completed"
-
-
-@dataclass
-class DownloadTargetExtractor(RecordExtractor):
-    # There are usually more than one report url for a job returned as items in a json
-    # DownloadTargetExtractor extracts these urls as a list
-
-    def extract_records(self, response: requests.Response) -> Iterable[MutableMapping[Any, Any]]:
-        reports = response.json().get("reports", {})
-        for report in reports:
-            yield report["downloadUrl"]
+        return response

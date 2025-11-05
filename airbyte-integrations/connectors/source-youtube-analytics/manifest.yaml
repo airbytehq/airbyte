@@ -9,15 +9,54 @@ check:
 
 definitions:
   streams:
+    jobs:
+      type: DeclarativeStream
+      name: jobs
+      retriever:
+        type: SimpleRetriever
+        requester:
+          $ref: "#/definitions/base_requester"
+          type: CustomRequester
+          class_name: source_declarative_manifest.components.JobRequester
+          path: jobs
+        record_selector:
+          type: RecordSelector
+          extractor:
+            type: DpathExtractor
+            field_path:
+              - jobs
+          record_filter:
+            type: RecordFilter
+            condition: "{{ record['reportTypeId'] == parameters['report_type_id'] }}"
+    report:
+      type: DeclarativeStream
+      name: report
+      retriever:
+        type: SimpleRetriever
+        requester:
+          $ref: "#/definitions/base_requester"
+          path: jobs/{{ stream_partition['id'] }}/reports
+          request_parameters:
+            startTimeAtOrAfter: "{{ format_datetime(now_utc() - duration('P3D'), '%Y-%m-%dT%H:%M:%S.%fZ') }}"
+        record_selector:
+          type: RecordSelector
+          extractor:
+            type: DpathExtractor
+            field_path:
+              - reports
+        partition_router:
+          type: SubstreamPartitionRouter
+          parent_stream_configs:
+            - type: ParentStreamConfig
+              parent_key: id
+              partition_field: id
+              stream:
+                $ref: "#/definitions/streams/jobs"
+    
     channel_annotations_a1:
       type: DeclarativeStream
       retriever:
         $ref: "#/definitions/base_retriever"
-        creation_requester:
-          $ref: "#/definitions/base_retriever/creation_requester"
-          request_body_json:
-            name: Airbyte reporting job
-            reportTypeId: channel_annotations_a1
       name: channel_annotations_a1
       primary_key:
         - date
@@ -28,6 +67,8 @@ definitions:
         - country_code
         - annotation_type
         - annotation_id
+      $parameters:
+        report_type_id: channel_annotations_a1
       schema_loader:
         type: InlineSchemaLoader
         schema:
@@ -36,11 +77,6 @@ definitions:
       type: DeclarativeStream
       retriever:
         $ref: "#/definitions/base_retriever"
-        creation_requester:
-          $ref: "#/definitions/base_retriever/creation_requester"
-          request_body_json:
-            name: Airbyte reporting job
-            reportTypeId: channel_basic_a3
       name: channel_basic_a3
       primary_key:
         - date
@@ -49,6 +85,8 @@ definitions:
         - live_or_on_demand
         - subscribed_status
         - country_code
+      $parameters:
+        report_type_id: channel_basic_a3
       schema_loader:
         type: InlineSchemaLoader
         schema:
@@ -57,11 +95,6 @@ definitions:
       type: DeclarativeStream
       retriever:
         $ref: "#/definitions/base_retriever"
-        creation_requester:
-          $ref: "#/definitions/base_retriever/creation_requester"
-          request_body_json:
-            name: Airbyte reporting job
-            reportTypeId: channel_cards_a1
       name: channel_cards_a1
       primary_key:
         - date
@@ -72,6 +105,8 @@ definitions:
         - country_code
         - card_type
         - card_id
+      $parameters:
+        report_type_id: channel_cards_a1
       schema_loader:
         type: InlineSchemaLoader
         schema:
@@ -80,11 +115,6 @@ definitions:
       type: DeclarativeStream
       retriever:
         $ref: "#/definitions/base_retriever"
-        creation_requester:
-          $ref: "#/definitions/base_retriever/creation_requester"
-          request_body_json:
-            name: Airbyte reporting job
-            reportTypeId: channel_combined_a3
       name: channel_combined_a3
       primary_key:
         - date
@@ -97,6 +127,8 @@ definitions:
         - traffic_source_type
         - device_type
         - operating_system
+      $parameters:
+        report_type_id: channel_combined_a3
       schema_loader:
         type: InlineSchemaLoader
         schema:
@@ -105,11 +137,6 @@ definitions:
       type: DeclarativeStream
       retriever:
         $ref: "#/definitions/base_retriever"
-        creation_requester:
-          $ref: "#/definitions/base_retriever/creation_requester"
-          request_body_json:
-            name: Airbyte reporting job
-            reportTypeId: channel_demographics_a1
       name: channel_demographics_a1
       primary_key:
         - date
@@ -120,6 +147,8 @@ definitions:
         - country_code
         - age_group
         - gender
+      $parameters:
+        report_type_id: channel_demographics_a1
       schema_loader:
         type: InlineSchemaLoader
         schema:
@@ -128,11 +157,6 @@ definitions:
       type: DeclarativeStream
       retriever:
         $ref: "#/definitions/base_retriever"
-        creation_requester:
-          $ref: "#/definitions/base_retriever/creation_requester"
-          request_body_json:
-            name: Airbyte reporting job
-            reportTypeId: channel_device_os_a3
       name: channel_device_os_a3
       primary_key:
         - date
@@ -143,6 +167,8 @@ definitions:
         - country_code
         - device_type
         - operating_system
+      $parameters:
+        report_type_id: channel_device_os_a3
       schema_loader:
         type: InlineSchemaLoader
         schema:
@@ -151,11 +177,6 @@ definitions:
       type: DeclarativeStream
       retriever:
         $ref: "#/definitions/base_retriever"
-        creation_requester:
-          $ref: "#/definitions/base_retriever/creation_requester"
-          request_body_json:
-            name: Airbyte reporting job
-            reportTypeId: channel_end_screens_a1
       name: channel_end_screens_a1
       primary_key:
         - date
@@ -166,6 +187,8 @@ definitions:
         - country_code
         - end_screen_element_type
         - end_screen_element_id
+      $parameters:
+        report_type_id: channel_end_screens_a1
       schema_loader:
         type: InlineSchemaLoader
         schema:
@@ -174,11 +197,6 @@ definitions:
       type: DeclarativeStream
       retriever:
         $ref: "#/definitions/base_retriever"
-        creation_requester:
-          $ref: "#/definitions/base_retriever/creation_requester"
-          request_body_json:
-            name: Airbyte reporting job
-            reportTypeId: channel_playback_location_a3
       name: channel_playback_location_a3
       primary_key:
         - date
@@ -189,6 +207,8 @@ definitions:
         - country_code
         - playback_location_type
         - playback_location_detail
+      $parameters:
+        report_type_id: channel_playback_location_a3
       schema_loader:
         type: InlineSchemaLoader
         schema:
@@ -197,11 +217,6 @@ definitions:
       type: DeclarativeStream
       retriever:
         $ref: "#/definitions/base_retriever"
-        creation_requester:
-          $ref: "#/definitions/base_retriever/creation_requester"
-          request_body_json:
-            name: Airbyte reporting job
-            reportTypeId: channel_province_a3
       name: channel_province_a3
       primary_key:
         - date
@@ -211,6 +226,8 @@ definitions:
         - subscribed_status
         - country_code
         - province_code
+      $parameters:
+        report_type_id: channel_province_a3
       schema_loader:
         type: InlineSchemaLoader
         schema:
@@ -219,11 +236,6 @@ definitions:
       type: DeclarativeStream
       retriever:
         $ref: "#/definitions/base_retriever"
-        creation_requester:
-          $ref: "#/definitions/base_retriever/creation_requester"
-          request_body_json:
-            name: Airbyte reporting job
-            reportTypeId: channel_sharing_service_a1
       name: channel_sharing_service_a1
       primary_key:
         - date
@@ -233,6 +245,8 @@ definitions:
         - subscribed_status
         - country_code
         - sharing_service
+      $parameters:
+        report_type_id: channel_sharing_service_a1
       schema_loader:
         type: InlineSchemaLoader
         schema:
@@ -241,11 +255,6 @@ definitions:
       type: DeclarativeStream
       retriever:
         $ref: "#/definitions/base_retriever"
-        creation_requester:
-          $ref: "#/definitions/base_retriever/creation_requester"
-          request_body_json:
-            name: Airbyte reporting job
-            reportTypeId: channel_subtitles_a3
       name: channel_subtitles_a3
       primary_key:
         - date
@@ -255,6 +264,8 @@ definitions:
         - subscribed_status
         - country_code
         - subtitle_language
+      $parameters:
+        report_type_id: channel_subtitles_a3
       schema_loader:
         type: InlineSchemaLoader
         schema:
@@ -263,11 +274,6 @@ definitions:
       type: DeclarativeStream
       retriever:
         $ref: "#/definitions/base_retriever"
-        creation_requester:
-          $ref: "#/definitions/base_retriever/creation_requester"
-          request_body_json:
-            name: Airbyte reporting job
-            reportTypeId: channel_traffic_source_a3
       name: channel_traffic_source_a3
       primary_key:
         - date
@@ -278,6 +284,8 @@ definitions:
         - country_code
         - traffic_source_type
         - traffic_source_detail
+      $parameters:
+        report_type_id: channel_traffic_source_a3
       schema_loader:
         type: InlineSchemaLoader
         schema:
@@ -286,11 +294,6 @@ definitions:
       type: DeclarativeStream
       retriever:
         $ref: "#/definitions/base_retriever"
-        creation_requester:
-          $ref: "#/definitions/base_retriever/creation_requester"
-          request_body_json:
-            name: Airbyte reporting job
-            reportTypeId: playlist_basic_a2
       name: playlist_basic_a2
       primary_key:
         - date
@@ -300,6 +303,8 @@ definitions:
         - live_or_on_demand
         - subscribed_status
         - country_code
+      $parameters:
+        report_type_id: playlist_basic_a2
       schema_loader:
         type: InlineSchemaLoader
         schema:
@@ -308,11 +313,6 @@ definitions:
       type: DeclarativeStream
       retriever:
         $ref: "#/definitions/base_retriever"
-        creation_requester:
-          $ref: "#/definitions/base_retriever/creation_requester"
-          request_body_json:
-            name: Airbyte reporting job
-            reportTypeId: playlist_combined_a2
       name: playlist_combined_a2
       primary_key:
         - date
@@ -326,6 +326,8 @@ definitions:
         - traffic_source_type
         - device_type
         - operating_system
+      $parameters:
+        report_type_id: playlist_combined_a2
       schema_loader:
         type: InlineSchemaLoader
         schema:
@@ -334,11 +336,6 @@ definitions:
       type: DeclarativeStream
       retriever:
         $ref: "#/definitions/base_retriever"
-        creation_requester:
-          $ref: "#/definitions/base_retriever/creation_requester"
-          request_body_json:
-            name: Airbyte reporting job
-            reportTypeId: playlist_device_os_a2
       name: playlist_device_os_a2
       primary_key:
         - date
@@ -350,6 +347,8 @@ definitions:
         - country_code
         - device_type
         - operating_system
+      $parameters:
+        report_type_id: playlist_device_os_a2
       schema_loader:
         type: InlineSchemaLoader
         schema:
@@ -358,11 +357,6 @@ definitions:
       type: DeclarativeStream
       retriever:
         $ref: "#/definitions/base_retriever"
-        creation_requester:
-          $ref: "#/definitions/base_retriever/creation_requester"
-          request_body_json:
-            name: Airbyte reporting job
-            reportTypeId: playlist_playback_location_a2
       name: playlist_playback_location_a2
       primary_key:
         - date
@@ -374,6 +368,8 @@ definitions:
         - country_code
         - playback_location_type
         - playback_location_detail
+      $parameters:
+        report_type_id: playlist_playback_location_a2
       schema_loader:
         type: InlineSchemaLoader
         schema:
@@ -382,11 +378,6 @@ definitions:
       type: DeclarativeStream
       retriever:
         $ref: "#/definitions/base_retriever"
-        creation_requester:
-          $ref: "#/definitions/base_retriever/creation_requester"
-          request_body_json:
-            name: Airbyte reporting job
-            reportTypeId: playlist_province_a2
       name: playlist_province_a2
       primary_key:
         - date
@@ -397,6 +388,8 @@ definitions:
         - subscribed_status
         - country_code
         - province_code
+      $parameters:
+        report_type_id: playlist_province_a2
       schema_loader:
         type: InlineSchemaLoader
         schema:
@@ -405,11 +398,6 @@ definitions:
       type: DeclarativeStream
       retriever:
         $ref: "#/definitions/base_retriever"
-        creation_requester:
-          $ref: "#/definitions/base_retriever/creation_requester"
-          request_body_json:
-            name: Airbyte reporting job
-            reportTypeId: playlist_traffic_source_a2
       name: playlist_traffic_source_a2
       primary_key:
         - date
@@ -421,54 +409,13 @@ definitions:
         - country_code
         - traffic_source_type
         - traffic_source_detail
+      $parameters:
+        report_type_id: playlist_traffic_source_a2
       schema_loader:
         type: InlineSchemaLoader
         schema:
           $ref: "#/schemas/playlist_traffic_source_a2"
-  base_retriever:
-    type: AsyncRetriever
-    creation_requester:
-      type: CustomRequester
-      class_name: source_declarative_manifest.components.CreationRequester
-      $ref: "#/definitions/base_requester"
-      path: jobs
-      http_method: POST
-    polling_requester:
-      type: CustomRequester
-      class_name: source_declarative_manifest.components.PollingRequester
-      $ref: "#/definitions/base_requester"
-      path: jobs/{{ creation_response['id'] }}/reports
-      http_method: GET
-    status_extractor:
-      type: CustomRecordExtractor
-      class_name: source_declarative_manifest.components.StatusExtractor
-    status_mapping:
-      failed:
-        - failed
-      running:
-        - running
-      timeout:
-        - timeout
-      completed:
-        - completed
-    download_target_extractor:
-      type: CustomRecordExtractor
-      class_name: source_declarative_manifest.components.DownloadTargetExtractor
-    download_requester:
-      $ref: "#/definitions/base_requester"
-      path: "{{ download_target }}"
-      http_method: GET
-      request_headers:
-        Accept-Encoding: gzip
-    download_decoder:
-      type: GzipDecoder
-      decoder:
-        type: CsvDecoder
-    record_selector:
-      type: RecordSelector
-      extractor:
-        type: DpathExtractor
-        field_path: []
+
   base_requester:
     type: HttpRequester
     url_base: https://youtubereporting.googleapis.com/v1/
@@ -507,6 +454,29 @@ definitions:
       backoff_strategies:
         - type: ConstantBackoffStrategy
           backoff_time_in_seconds: 30
+  base_retriever:
+    type: SimpleRetriever
+    requester:
+      $ref: "#/definitions/base_requester"
+      url_base: "{{ stream_partition['extra_fields']['downloadUrl'] }}"
+    record_selector:
+      type: RecordSelector
+      extractor:
+        type: DpathExtractor
+        field_path: [ ]
+    partition_router:
+      type: SubstreamPartitionRouter
+      parent_stream_configs:
+        - type: ParentStreamConfig
+          parent_key: id
+          partition_field: id
+          extra_fields:
+            - [ "downloadUrl" ]
+          stream:
+            $ref: "#/definitions/streams/report"
+    decoder:
+      type: CustomDecoder
+      class_name: source_declarative_manifest.components.CustomDecoder
 
 streams:
   - $ref: "#/definitions/streams/channel_annotations_a1"
