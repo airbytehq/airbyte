@@ -20,6 +20,7 @@ import io.airbyte.cdk.load.data.TimeWithoutTimezoneValue
 import io.airbyte.cdk.load.data.TimestampWithTimezoneValue
 import io.airbyte.cdk.load.data.TimestampWithoutTimezoneValue
 import io.airbyte.cdk.load.data.UnionType
+import io.airbyte.cdk.load.dataflow.transform.ValidationResult
 import io.airbyte.integrations.destination.clickhouse.write.transform.ClickhouseCoercer.Constants.DATE32_MAX
 import io.airbyte.integrations.destination.clickhouse.write.transform.ClickhouseCoercer.Constants.DATE32_MIN
 import io.airbyte.integrations.destination.clickhouse.write.transform.ClickhouseCoercer.Constants.DECIMAL128_MAX
@@ -60,9 +61,7 @@ class ClickhouseCoercerTest {
 
         val result = coercer.validate(input)
 
-        assertEquals(input, result)
-        assertEquals(input.abValue, result.abValue)
-        assertEquals(mutableListOf(), result.changes)
+        assertEquals(ValidationResult.Valid, result)
     }
 
     @ParameterizedTest
@@ -72,10 +71,10 @@ class ClickhouseCoercerTest {
 
         val result = coercer.validate(input)
 
-        assertEquals(NullValue, result.abValue)
+        assertEquals(ValidationResult.ShouldNullify::class, result::class)
         assertEquals(
             AirbyteRecordMessageMetaChange.Reason.DESTINATION_FIELD_SIZE_LIMITATION,
-            result.changes[0].reason
+            (result as ValidationResult.ShouldNullify).reason
         )
     }
 
@@ -86,9 +85,7 @@ class ClickhouseCoercerTest {
 
         val result = coercer.validate(input)
 
-        assertEquals(input, result)
-        assertEquals(input.abValue, result.abValue)
-        assertEquals(mutableListOf(), result.changes)
+        assertEquals(ValidationResult.Valid, result)
     }
 
     @ParameterizedTest
@@ -98,10 +95,10 @@ class ClickhouseCoercerTest {
 
         val result = coercer.validate(input)
 
-        assertEquals(NullValue, result.abValue)
+        assertEquals(ValidationResult.ShouldNullify::class, result::class)
         assertEquals(
             AirbyteRecordMessageMetaChange.Reason.DESTINATION_FIELD_SIZE_LIMITATION,
-            result.changes[0].reason
+            (result as ValidationResult.ShouldNullify).reason
         )
     }
 
@@ -113,9 +110,7 @@ class ClickhouseCoercerTest {
 
         val result = coercer.validate(input)
 
-        assertEquals(input, result)
-        assertEquals(input.abValue, result.abValue)
-        assertEquals(mutableListOf(), result.changes)
+        assertEquals(ValidationResult.Valid, result)
     }
 
     @ParameterizedTest
@@ -126,10 +121,10 @@ class ClickhouseCoercerTest {
 
         val result = coercer.validate(input)
 
-        assertEquals(NullValue, result.abValue)
+        assertEquals(ValidationResult.ShouldNullify::class, result::class)
         assertEquals(
             AirbyteRecordMessageMetaChange.Reason.DESTINATION_FIELD_SIZE_LIMITATION,
-            result.changes[0].reason
+            (result as ValidationResult.ShouldNullify).reason
         )
     }
 
@@ -143,9 +138,7 @@ class ClickhouseCoercerTest {
 
         val result = coercer.validate(input)
 
-        assertEquals(input, result)
-        assertEquals(input.abValue, result.abValue)
-        assertEquals(mutableListOf(), result.changes)
+        assertEquals(ValidationResult.Valid, result)
     }
 
     @ParameterizedTest
@@ -156,10 +149,10 @@ class ClickhouseCoercerTest {
 
         val result = coercer.validate(input)
 
-        assertEquals(NullValue, result.abValue)
+        assertEquals(ValidationResult.ShouldNullify::class, result::class)
         assertEquals(
             AirbyteRecordMessageMetaChange.Reason.DESTINATION_FIELD_SIZE_LIMITATION,
-            result.changes[0].reason
+            (result as ValidationResult.ShouldNullify).reason
         )
     }
 
@@ -173,9 +166,7 @@ class ClickhouseCoercerTest {
 
         val result = coercer.validate(input)
 
-        assertEquals(input, result)
-        assertEquals(input.abValue, result.abValue)
-        assertEquals(mutableListOf(), result.changes)
+        assertEquals(ValidationResult.Valid, result)
     }
 
     @ParameterizedTest
@@ -188,10 +179,10 @@ class ClickhouseCoercerTest {
 
         val result = coercer.validate(input)
 
-        assertEquals(NullValue, result.abValue)
+        assertEquals(ValidationResult.ShouldNullify::class, result::class)
         assertEquals(
             AirbyteRecordMessageMetaChange.Reason.DESTINATION_FIELD_SIZE_LIMITATION,
-            result.changes[0].reason
+            (result as ValidationResult.ShouldNullify).reason
         )
     }
 
