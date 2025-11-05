@@ -28,14 +28,15 @@ To set up key pair authentication, you may use the following steps as a guide:
 
 3. Use the `ssh-copy-id` command in your terminal to copy the public key to the server.
 
-```bash
-ssh-copy-id <username>@<server_ip_address>
-```
+   ```bash
+   ssh-copy-id <username>@<server_ip_address>
+   ```
 
-Be sure to replace your specific values for your username and the server's IP address.
-:::note
-Depending on factors such as your operating system and the specific SSH implementation your remote server uses, you may not be able to use the `ssh-copy-id` command. If so, please consult your server administrator for the appropriate steps to copy the public key to the server.
-:::
+   Be sure to replace your specific values for your username and the server's IP address.
+
+   :::note
+   Depending on factors such as your operating system and the specific SSH implementation your remote server uses, you may not be able to use the `ssh-copy-id` command. If so, please consult your server administrator for the appropriate steps to copy the public key to the server.
+   :::
 
 4. You should now be able to connect to the server via the private key. You can test this by using the `ssh` command:
 
@@ -56,7 +57,8 @@ For more information on SSH key pair authentication, please refer to the
    <!-- /env:cloud -->
 4. Enter a **Source name** of your choosing.
 5. Enter your **Username**, as well as the **Host Address** and **Port**. The default port for SFTP is 22. If your remote server is using a different port, please enter it here.
-6. In the **Authentication** section, use the dropdown menu to select **Password Authentication** or **SSH Key Authentication**, then fill in the required credentials.
+6. In the **Authentication** section, use the dropdown menu to select **Password Authentication** or **SSH Key Authentication**, then fill in the required credentials. If using SSH Key Authentication, see the section below for detailed setup instructions.
+7. If you wish to configure additional optional settings, please refer to the next section. Otherwise, click **Set up source** and wait for the tests to complete.
 
 #### SSH Key Authentication Setup
 
@@ -87,8 +89,6 @@ Once uploaded, Airbyte will use this file to authenticate securely with your SFT
 The file must be in PEM format, a plain text file containing your private key between the BEGIN and END lines. Do not paste the key directly into the field; Airbyte requires a file upload.
 :::
 
-7. If you wish to configure additional optional settings, please refer to the next section. Otherwise, click **Set up source** and wait for the tests to complete.
-
 ## Optional fields
 
 The **Optional fields** can be used to further configure the SFTP source connector. If you do not wish to set additional configurations, these fields can be left at their default settings.
@@ -96,26 +96,26 @@ The **Optional fields** can be used to further configure the SFTP source connect
 1. **File Types**: Enter the desired file types to replicate as comma-separated values. Currently, only CSV and JSON are supported. The default value is `csv,json`.
 2. **Folder Path**: Enter a folder path to specify the directory on the remote server to be synced. For example, given the file structure:
 
-```text
-Root
-| - logs
-|   | - 2021
-|   | - 2022
-|
-| - files
-|   | - 2021
-|   | - 2022
-```
+   ```text
+   Root
+   | - logs
+   |   | - 2021
+   |   | - 2022
+   |
+   | - files
+   |   | - 2021
+   |   | - 2022
+   ```
 
-An input of `/logs/2022` will only replicate data contained within the specified folder, ignoring the `/files` and `/logs/2021` folders. Leaving this field blank will replicate all applicable files in the remote server's designated entry point.
+   An input of `/logs/2022` will only replicate data contained within the specified folder, ignoring the `/files` and `/logs/2021` folders. Leaving this field blank will replicate all applicable files in the remote server's designated entry point.
 
 3. **File Pattern**: Enter a [regular expression](https://docs.oracle.com/javase/8/docs/api/java/util/regex/Pattern.html) to specify a naming pattern for the files to be replicated. Consider the following example:
 
-```regex
-log-([0-9]{4})([0-9]{2})([0-9]{2})
-```
+   ```regex
+   log-([0-9]{4})([0-9]{2})([0-9]{2})
+   ```
 
-This pattern will filter for files that match the format `log-YYYYMMDD`, where `YYYY`, `MM`, and `DD` represent four-digit, two-digit, and two-digit numbers, respectively. For example, `log-20230713`. Leaving this field blank will replicate all files not filtered by the previous two fields.
+   This pattern will filter for files that match the format `log-YYYYMMDD`, where `YYYY`, `MM`, and `DD` represent four-digit, two-digit, and two-digit numbers, respectively. For example, `log-20230713`. Leaving this field blank will replicate all files not filtered by the previous two fields.
 
 ## Supported sync modes
 

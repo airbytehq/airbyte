@@ -40,14 +40,15 @@ To set up key pair authentication, follow these steps:
 
 3. Use the `ssh-copy-id` command in your terminal to copy the public key to the server.
 
-```bash
-ssh-copy-id <username>@<server_ip_address>
-```
+   ```bash
+   ssh-copy-id <username>@<server_ip_address>
+   ```
 
-Be sure to replace your specific values for your username and the server's IP address.
-:::note
-Depending on factors such as your operating system and the specific SSH implementation your remote server uses, you may not be able to use the `ssh-copy-id` command. If so, please consult your server administrator for the appropriate steps to copy the public key to the server.
-:::
+   Be sure to replace your specific values for your username and the server's IP address.
+
+   :::note
+   Depending on factors such as your operating system and the specific SSH implementation your remote server uses, you may not be able to use the `ssh-copy-id` command. If so, please consult your server administrator for the appropriate steps to copy the public key to the server.
+   :::
 
 4. You should now be able to connect to the server via the private key. You can test this by using the `ssh` command:
 
@@ -69,7 +70,33 @@ For more information on SSH key pair authentication, please refer to the
 5. Choose a [delivery method](../../platform/using-airbyte/delivery-methods) for your data.
 6. Enter the **Host Address**.
 7. Enter your **Username**
-8. Enter your authentication credentials for the SFTP server (**Password** or **Private Key**).
+8. Enter your authentication credentials for the SFTP server (**Password** or **Private Key**). If using Private Key authentication, see the SSH Key Authentication Setup section below for detailed instructions.
+9. In the section titled "The list of streams to sync", enter a **Stream Name**. This will be the name of the stream that will be created in your destination. Add additional streams by clicking "Add".
+10. For each stream, select in the dropdown menu the **File Type** you wish to sync. Depending on the format chosen, you'll see a set of options specific to the file type. You can read more about specifics to each file type below.
+11. (Optional) Provide a **Start Date** using the provided datepicker, or by entering the date in the format `YYYY-MM-DDTHH:mm:ss.SSSSSSZ`. Incremental syncs will only sync files modified/added after this date.
+12. (Optional) Specify the **Port**. The default port for SFTP is 22. If your remote server is using a different port, enter it here.
+13. (Optional) Determine the **Folder Path**. This determines the directory to search for files in, and defaults to "/". If you prefer to specify a specific folder path, specify the directory on the remote server to be synced. For example, given the file structure:
+
+    ```text
+    Root
+    | - logs
+    |   | - 2021
+    |   | - 2022
+    |
+    | - files
+    |   | - 2021
+    |   | - 2022
+    ```
+
+    An input of `/logs/2022` will only replicate data contained within the specified folder, ignoring the `/files` and `/logs/2021` folders. Leaving this field blank will replicate all applicable files in the remote server's designated entry point. You may choose to enter a [regular expression](https://docs.oracle.com/javase/8/docs/api/java/util/regex/Pattern.html) to specify a naming pattern for the files to be replicated. Consider the following example:
+
+    ```regex
+    log-([0-9]{4})([0-9]{2})([0-9]{2})
+    ```
+
+    This pattern will filter for files that match the format `log-YYYYMMDD`, where `YYYY`, `MM`, and `DD` represent four-digit, two-digit, and two-digit numbers, respectively. For example, `log-20230713`. Leaving this field blank will replicate all files not filtered by the previous two fields.
+
+14. Click **Set up source** to complete setup. A test will run to verify the configuration.
 
 #### SSH Key Authentication Setup
 
@@ -99,33 +126,6 @@ Once uploaded, Airbyte will use this file to authenticate securely with your SFT
 :::note
 The file must be in PEM format, a plain text file containing your private key between the BEGIN and END lines. Do not paste the key directly into the field; Airbyte requires a file upload.
 :::
-
-9. In the section titled "The list of streams to sync", enter a **Stream Name**. This will be the name of the stream that will be created in your destination. Add additional streams by clicking "Add".
-10. For each stream, select in the dropdown menu the **File Type** you wish to sync. Depending on the format chosen, you'll see a set of options specific to the file type. You can read more about specifics to each file type below.
-11. (Optional) Provide a **Start Date** using the provided datepicker, or by entering the date in the format `YYYY-MM-DDTHH:mm:ss.SSSSSSZ`. Incremental syncs will only sync files modified/added after this date.
-12. (Optional) Specify the **Port**. The default port for SFTP is 22. If your remote server is using a different port, enter it here.
-13. (Optional) Determine the **Folder Path**. This determines the directory to search for files in, and defaults to "/". If you prefer to specify a specific folder path, specify the directory on the remote server to be synced. For example, given the file structure:
-
-```text
-Root
-| - logs
-|   | - 2021
-|   | - 2022
-|
-| - files
-|   | - 2021
-|   | - 2022
-```
-
-An input of `/logs/2022` will only replicate data contained within the specified folder, ignoring the `/files` and `/logs/2021` folders. Leaving this field blank will replicate all applicable files in the remote server's designated entry point. You may choose to enter a [regular expression](https://docs.oracle.com/javase/8/docs/api/java/util/regex/Pattern.html) to specify a naming pattern for the files to be replicated. Consider the following example:
-
-```regex
-log-([0-9]{4})([0-9]{2})([0-9]{2})
-```
-
-This pattern will filter for files that match the format `log-YYYYMMDD`, where `YYYY`, `MM`, and `DD` represent four-digit, two-digit, and two-digit numbers, respectively. For example, `log-20230713`. Leaving this field blank will replicate all files not filtered by the previous two fields.
-
-14. Click **Set up source** to complete setup. A test will run to verify the configuration.
 
 ### For Airbyte Open Source
 
