@@ -78,7 +78,8 @@ class SnowflakeSourceMetadataQuerier(
                 }
             }
 
-            for (namespace in base.config.namespaces + base.config.namespaces.map { it.uppercase() }) {
+            for (namespace in
+                base.config.namespaces + base.config.namespaces.map { it.uppercase() }) {
                 val patterns = base.tableFiltersBySchema[this.schema]
                 if (patterns != null && patterns.isNotEmpty()) {
                     for (pattern in patterns) {
