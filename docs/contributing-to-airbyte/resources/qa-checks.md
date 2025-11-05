@@ -334,7 +334,7 @@ _Applies to connector with any support level_
 _Applies to connector with any internal support level_
 _Applies to connector with any Airbyte usage level_
 
-Connectors must be licensed under the MIT or Elv2 license. This is to ensure that all connectors are licensed under a permissive license. More details in our [License FAQ](https://docs.airbyte.com/community/licenses/license-faq).
+Connectors must be licensed under the MIT or Elv2 license. This is to ensure that all connectors are licensed under a permissive license. More details in our [License FAQ](https://docs.airbyte.com/developer-guides/licenses/license-faq).
 
 ### Connector license in metadata.yaml and pyproject.toml file must match
 
@@ -354,7 +354,7 @@ _Applies to connector with any support level_
 _Applies to connector with any internal support level_
 _Applies to connector with any Airbyte usage level_
 
-Connector version must follow the Semantic Versioning scheme. This is to ensure that all connectors follow a consistent versioning scheme. Refer to our [Semantic Versioning for Connectors](https://docs.airbyte.com/community/contributing-to-airbyte/resources/pull-requests-handbook#semantic-versioning-for-connectors) for more details.
+Connector version must follow the Semantic Versioning scheme. This is to ensure that all connectors follow a consistent versioning scheme. Refer to our [Semantic Versioning for Connectors](https://docs.airbyte.com/contributing-to-airbyte/#semantic-versioning-for-connectors) for more details.
 
 ### Connector version in metadata.yaml and pyproject.toml file must match
 
@@ -420,18 +420,6 @@ _Applies to connector with any Airbyte usage level_
 
 Connectors must use our Python connector base image (`docker.io/airbyte/python-connector-base`), declared through the `connectorBuildOptions.baseImage` in their `metadata.yaml`.
 This is to ensure that all connectors use a base image which is maintained and has security updates.
-
-## 🧪 Testing
-
-### Medium to High Use Connectors must enable acceptance tests
-
-_Applies to the following connector types: source_
-_Applies to the following connector languages: java, low-code, python, manifest-only_
-_Applies to connector with any support level_
-_Applies to connector with any internal support level_
-_Applies to connector with medium, high Airbyte usage level_
-
-Medium to High Use Connectors must enable acceptance tests via the `connectorTestSuitesOptions.suite:acceptanceTests` in their respective metadata.yaml file to ensure that the connector is working as expected.
 
 ## 🔢 Version
 
