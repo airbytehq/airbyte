@@ -188,7 +188,8 @@ class GcsDataLakeStreamLoader(
             logger.info { "Setting identifier fields to primary keys: $primaryKeyNames" }
             // Only set identifier fields if the table was just created.
             // For existing tables with PK changes, let the IcebergTableSynchronizer handle it
-            // (it will set identifier fields after schema evolution in computeOrExecuteSchemaUpdate)
+            // (it will set identifier fields after schema evolution in
+            // computeOrExecuteSchemaUpdate)
             if (table.history().isEmpty() || table.schema().identifierFieldIds().isEmpty()) {
                 table.updateSchema().setIdentifierFields(primaryKeyNames).commit()
                 // Refresh to get the updated schema with identifier fields
@@ -213,9 +214,14 @@ class GcsDataLakeStreamLoader(
         targetSchema = computeOrExecuteSchemaUpdate().schema
 
         // After schema updates, refresh the table to ensure we have the latest schema with
-        // identifier fields
-        table.refresh()
-        targetSchema = table.schema()
+        // identifier fields.
+        // IMPORTANT: In OVERWRITE mode, the schema update is computed but NOT committed yet
+        // (it's pending for commit at close time). So we must NOT overwrite targetSchema with
+        // table.schema(), which would give us the OLD schema. The writer MUST use the NEW schema.
+        if (columnTypeChangeBehavior == ColumnTypeChangeBehavior.SAFE_SUPERTYPE) {
+            table.refresh()
+            targetSchema = table.schema()
+        }
 
         logger.info {
             "Final target schema has ${targetSchema.identifierFieldIds().size} identifier fields: ${targetSchema.identifierFieldIds()}"
@@ -299,5 +305,9 @@ class GcsDataLakeStreamLoader(
             table,
             computeIncomingSchema(true),
             columnTypeChangeBehavior,
+            // BigLake requires separate commits when replacing a column (delete+add same name).
+            // It rejects schema updates that delete and add a column with the same name
+            // in a single transaction, even with different field IDs.
+            requireSeparateCommitsForColumnReplace = true,
         )
 }

@@ -14,14 +14,12 @@ import io.airbyte.cdk.load.data.icerberg.parquet.IcebergConfigUpdater
 import io.airbyte.cdk.load.data.icerberg.parquet.IcebergDataDumper
 import io.airbyte.cdk.load.data.icerberg.parquet.IcebergExpectedRecordMapper
 import io.airbyte.cdk.load.message.InputRecord
-import io.airbyte.cdk.load.test.util.NoopDestinationCleaner
 import io.airbyte.cdk.load.test.util.OutputRecord
 import io.airbyte.cdk.load.write.*
 import io.airbyte.integrations.destination.gcs_data_lake.catalog.BigLakeTableIdGenerator
 import io.airbyte.integrations.destination.gcs_data_lake.spec.GcsDataLakeSpecification
 import java.nio.file.Files
 import kotlin.test.assertContains
-import org.junit.jupiter.api.Assumptions
 import org.junit.jupiter.api.Assumptions.assumeTrue
 import org.junit.jupiter.api.Test
 
@@ -46,7 +44,7 @@ class BigLakeWriteTest :
                         }
                     )
             ),
-        destinationCleaner = NoopDestinationCleaner, // TODO: Implement proper cleaner
+        destinationCleaner = GcsDataLakeCleaner,
         recordMangler = IcebergExpectedRecordMapper,
         isStreamSchemaRetroactive = true,
         isStreamSchemaRetroactiveForUnknownTypeToString = false,
@@ -129,6 +127,11 @@ class BigLakeWriteTest :
     @Test
     override fun testOverwriteSchemaEvolution() {
         super.testOverwriteSchemaEvolution()
+    }
+
+    @Test
+    override fun testTruncateRefreshChangeSyncMode() {
+        super.testTruncateRefreshChangeSyncMode()
     }
 
     /**
