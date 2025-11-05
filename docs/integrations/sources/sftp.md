@@ -83,7 +83,7 @@ If your SFTP server uses SSH key-based authentication, you'll need to provide yo
    1. In the SFTP source setup form, find the **SSH Private Key** field under **SSH Key Authentication**.
    2. Click **Upload file** and select your saved `ssh.pem` file.
 
-Once uploaded, Airbyte will use this file to authenticate securely with your SFTP server.
+Once uploaded, Airbyte uses this file to authenticate securely with your SFTP server.
 
 :::note
 The file must be in PEM format, a plain text file containing your private key between the BEGIN and END lines. Do not paste the key directly into the field; Airbyte requires a file upload.
@@ -107,7 +107,7 @@ The **Optional fields** can be used to further configure the SFTP source connect
    |   | - 2022
    ```
 
-   An input of `/logs/2022` will only replicate data contained within the specified folder, ignoring the `/files` and `/logs/2021` folders. Leaving this field blank will replicate all applicable files in the remote server's designated entry point.
+   An input of `/logs/2022` replicates only data contained within the specified folder, ignoring the `/files` and `/logs/2021` folders. Leaving this field blank replicates all applicable files in the remote server's designated entry point.
 
 3. **File Pattern**: Enter a [regular expression](https://docs.oracle.com/javase/8/docs/api/java/util/regex/Pattern.html) to specify a naming pattern for the files to be replicated. Consider the following example:
 
@@ -115,7 +115,7 @@ The **Optional fields** can be used to further configure the SFTP source connect
    log-([0-9]{4})([0-9]{2})([0-9]{2})
    ```
 
-   This pattern will filter for files that match the format `log-YYYYMMDD`, where `YYYY`, `MM`, and `DD` represent four-digit, two-digit, and two-digit numbers, respectively. For example, `log-20230713`. Leaving this field blank will replicate all files not filtered by the previous two fields.
+   This pattern filters for files that match the format `log-YYYYMMDD`, where `YYYY`, `MM`, and `DD` represent four-digit, two-digit, and two-digit numbers, respectively. For example, `log-20230713`. Leaving this field blank replicates all files not filtered by the previous two fields.
 
 ## Supported sync modes
 

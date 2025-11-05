@@ -24,7 +24,7 @@ The SFTP Bulk connector offers several features that are not available in the st
 
 #### Step 1: Set up SFTP authentication
 
-To set up the SFTP connector, you will need to select _one_ of the following authentication methods:
+To set up the SFTP connector, select _one_ of the following authentication methods:
 
 - Your username and password credentials associated with the server.
 - A private/public key pair.
@@ -71,7 +71,7 @@ For more information on SSH key pair authentication, please refer to the
 6. Enter the **Host Address**.
 7. Enter your **Username**
 8. Enter your authentication credentials for the SFTP server (**Password** or **Private Key**). If using Private Key authentication, see the SSH Key Authentication Setup section below for detailed instructions.
-9. In the section titled "The list of streams to sync", enter a **Stream Name**. This will be the name of the stream that will be created in your destination. Add additional streams by clicking "Add".
+9. In the section titled `The list of streams to sync`, enter a **Stream Name**. This is the name of the stream that is created in your destination. Add additional streams by clicking **Add**.
 10. For each stream, select in the dropdown menu the **File Type** you wish to sync. Depending on the format chosen, you'll see a set of options specific to the file type. You can read more about specifics to each file type below.
 11. (Optional) Provide a **Start Date** using the provided datepicker, or by entering the date in the format `YYYY-MM-DDTHH:mm:ss.SSSSSSZ`. Incremental syncs will only sync files modified/added after this date.
 12. (Optional) Specify the **Port**. The default port for SFTP is 22. If your remote server is using a different port, enter it here.
@@ -88,15 +88,15 @@ For more information on SSH key pair authentication, please refer to the
     |   | - 2022
     ```
 
-    An input of `/logs/2022` will only replicate data contained within the specified folder, ignoring the `/files` and `/logs/2021` folders. Leaving this field blank will replicate all applicable files in the remote server's designated entry point. You may choose to enter a [regular expression](https://docs.oracle.com/javase/8/docs/api/java/util/regex/Pattern.html) to specify a naming pattern for the files to be replicated. Consider the following example:
+    An input of `/logs/2022` replicates only data contained within the specified folder, ignoring the `/files` and `/logs/2021` folders. Leaving this field blank replicates all applicable files in the remote server's designated entry point. You may choose to enter a [regular expression](https://docs.oracle.com/javase/8/docs/api/java/util/regex/Pattern.html) to specify a naming pattern for the files to be replicated. Consider the following example:
 
     ```regex
     log-([0-9]{4})([0-9]{2})([0-9]{2})
     ```
 
-    This pattern will filter for files that match the format `log-YYYYMMDD`, where `YYYY`, `MM`, and `DD` represent four-digit, two-digit, and two-digit numbers, respectively. For example, `log-20230713`. Leaving this field blank will replicate all files not filtered by the previous two fields.
+    This pattern filters for files that match the format `log-YYYYMMDD`, where `YYYY`, `MM`, and `DD` represent four-digit, two-digit, and two-digit numbers, respectively. For example, `log-20230713`. Leaving this field blank replicates all files not filtered by the previous two fields.
 
-14. Click **Set up source** to complete setup. A test will run to verify the configuration.
+14. Click **Set up source** to complete setup. A test runs to verify the configuration.
 
 #### SSH Key Authentication Setup
 
@@ -121,7 +121,7 @@ If your SFTP server uses SSH key-based authentication, you'll need to provide yo
    1. In the SFTP Bulk source setup form, find the **Private key** field.
    2. Click **Upload file** and select your saved `ssh.pem` file.
 
-Once uploaded, Airbyte will use this file to authenticate securely with your SFTP server.
+Once uploaded, Airbyte uses this file to authenticate securely with your SFTP server.
 
 :::note
 The file must be in PEM format, a plain text file containing your private key between the BEGIN and END lines. Do not paste the key directly into the field; Airbyte requires a file upload.
@@ -144,11 +144,11 @@ Choose a [delivery method](../../platform/using-airbyte/delivery-methods) for yo
 
 ##### Preserve Sub-Directories in File Paths
 
-If enabled, sends subdirectory folder structure along with source file names to the destination. Otherwise, files will be synced by their names only. This option is ignored when file-based replication is not enabled.
+If enabled, sends subdirectory folder structure along with source file names to the destination. Otherwise, files are synced by their names only. This option is ignored when file-based replication is not enabled.
 
 #### File-specific Configuration
 
-Depending on your **File Type** selection, you will be presented with a few configuration options specific to that file type.
+Depending on your **File Type** selection, you are presented with a few configuration options specific to that file type.
 
 For JSONL, Parquet, and Document File Type formats, you can specify the **Glob** pattern used to specify which files should be selected from the file system. If your provided Folder Path already ends in a slash, you need to add that double slash to the glob where appropriate.
 
@@ -173,7 +173,7 @@ This source provides a single stream per file with a dynamic schema. The current
 
 ## File Size Limitations
 
-When using the SFTP Bulk connector with the **Copy Raw Files** delivery method, individual files are subject to a maximum size limit of 1.5 GB (1,500,000,000 bytes) per file. This limitation applies to the raw file transfer process where files are copied without parsing their contents. Note that this limit was increased from 1 GB in version 1.6.0 (December 2024).
+When using the SFTP Bulk connector with the **Copy Raw Files** delivery method, individual files are subject to a maximum size limit of 1.5 GB (1,500,000,000 bytes) per file. This limitation applies to the raw file transfer process where files are copied without parsing their contents.
 
 If you need to sync files larger than 1.5 GB, consider the following approach:
 
