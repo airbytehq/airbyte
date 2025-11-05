@@ -9,6 +9,7 @@ from typing import Any, Callable, Generator, Mapping, MutableMapping, Optional, 
 import requests
 
 from airbyte_cdk import Decoder
+from airbyte_cdk.sources.declarative.migrations.state_migration import StateMigration
 from airbyte_cdk.sources.declarative.requesters.http_requester import HttpRequester
 from airbyte_cdk.sources.types import StreamSlice, StreamState
 
@@ -88,3 +89,20 @@ class JobRequester(HttpRequester):
             )
 
         return response
+
+
+class ReportsStateMigration(StateMigration):
+    def should_migrate(self, stream_state: Mapping[str, Any]) -> bool:
+        return True
+
+    def migrate(self, stream_state: Mapping[str, Any]) -> Mapping[str, Any]:
+        if stream_state.get("date"):
+            # old format state before migration to low code
+            cursor_value = stream_state["date"]
+            stream_state["state"]["date"] = cursor_value
+        else:
+            cursor_value = stream_state["state"]
+
+        stream_state["parent_state"]["report"]["state"] = cursor_value
+        stream_state["parent_state"]["report"]["lookback_window"] = 0
+        return stream_state

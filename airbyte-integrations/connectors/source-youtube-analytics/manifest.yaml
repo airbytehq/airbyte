@@ -36,8 +36,6 @@ definitions:
         requester:
           $ref: "#/definitions/base_requester"
           path: jobs/{{ stream_partition['id'] }}/reports
-          request_parameters:
-            startTimeAtOrAfter: "{{ format_datetime(now_utc() - duration('P3D'), '%Y-%m-%dT%H:%M:%S.%fZ') }}"
         record_selector:
           type: RecordSelector
           extractor:
@@ -52,11 +50,39 @@ definitions:
               partition_field: id
               stream:
                 $ref: "#/definitions/streams/jobs"
-    
-    channel_annotations_a1:
+      incremental_sync:
+        type: DatetimeBasedCursor
+        cursor_field: date
+        cursor_datetime_formats:
+          - "%Y-%m-%dT%H:%M:%S.%fZ"
+          - "%Y%m%d"
+        datetime_format: "%Y-%m-%dT%H:%M:%S.%fZ"
+        global_substream_cursor: true
+        start_datetime:
+          datetime: "{{ format_datetime(now_utc() - duration('P365D'), '%Y-%m-%dT%H:%M:%S.%fZ') if not config.get('testing_period') else format_datetime(now_utc() - duration(config.get('testing_period')), '%Y-%m-%dT%H:%M:%S.%fZ')}}"
+        start_time_option:
+          field_name: startTimeAtOrAfter
+          inject_into: "request_parameter"
+
+    base_report_stream:
       type: DeclarativeStream
       retriever:
         $ref: "#/definitions/base_retriever"
+      incremental_sync:
+        type: DatetimeBasedCursor
+        cursor_field: date
+        cursor_datetime_formats:
+          - "%Y%m%d"
+        datetime_format: "%Y%m%d"
+        global_substream_cursor: true
+        start_datetime:
+          datetime: "{{ format_datetime(now_utc() - duration('P365D'), '%Y%m%d') }}"
+      state_migrations:
+        - type: CustomStateMigration
+          class_name: source_declarative_manifest.components.ReportsStateMigration
+    
+    channel_annotations_a1:
+      $ref: "#/definitions/streams/base_report_stream"
       name: channel_annotations_a1
       primary_key:
         - date
@@ -74,9 +100,7 @@ definitions:
         schema:
           $ref: "#/schemas/channel_annotations_a1"
     channel_basic_a3:
-      type: DeclarativeStream
-      retriever:
-        $ref: "#/definitions/base_retriever"
+      $ref: "#/definitions/streams/base_report_stream"
       name: channel_basic_a3
       primary_key:
         - date
@@ -92,9 +116,7 @@ definitions:
         schema:
           $ref: "#/schemas/channel_basic_a3"
     channel_cards_a1:
-      type: DeclarativeStream
-      retriever:
-        $ref: "#/definitions/base_retriever"
+      $ref: "#/definitions/streams/base_report_stream"
       name: channel_cards_a1
       primary_key:
         - date
@@ -112,9 +134,7 @@ definitions:
         schema:
           $ref: "#/schemas/channel_cards_a1"
     channel_combined_a3:
-      type: DeclarativeStream
-      retriever:
-        $ref: "#/definitions/base_retriever"
+      $ref: "#/definitions/streams/base_report_stream"
       name: channel_combined_a3
       primary_key:
         - date
@@ -134,9 +154,7 @@ definitions:
         schema:
           $ref: "#/schemas/channel_combined_a3"
     channel_demographics_a1:
-      type: DeclarativeStream
-      retriever:
-        $ref: "#/definitions/base_retriever"
+      $ref: "#/definitions/streams/base_report_stream"
       name: channel_demographics_a1
       primary_key:
         - date
@@ -154,9 +172,7 @@ definitions:
         schema:
           $ref: "#/schemas/channel_demographics_a1"
     channel_device_os_a3:
-      type: DeclarativeStream
-      retriever:
-        $ref: "#/definitions/base_retriever"
+      $ref: "#/definitions/streams/base_report_stream"
       name: channel_device_os_a3
       primary_key:
         - date
@@ -174,9 +190,7 @@ definitions:
         schema:
           $ref: "#/schemas/channel_device_os_a3"
     channel_end_screens_a1:
-      type: DeclarativeStream
-      retriever:
-        $ref: "#/definitions/base_retriever"
+      $ref: "#/definitions/streams/base_report_stream"
       name: channel_end_screens_a1
       primary_key:
         - date
@@ -194,9 +208,7 @@ definitions:
         schema:
           $ref: "#/schemas/channel_end_screens_a1"
     channel_playback_location_a3:
-      type: DeclarativeStream
-      retriever:
-        $ref: "#/definitions/base_retriever"
+      $ref: "#/definitions/streams/base_report_stream"
       name: channel_playback_location_a3
       primary_key:
         - date
@@ -214,9 +226,7 @@ definitions:
         schema:
           $ref: "#/schemas/channel_playback_location_a3"
     channel_province_a3:
-      type: DeclarativeStream
-      retriever:
-        $ref: "#/definitions/base_retriever"
+      $ref: "#/definitions/streams/base_report_stream"
       name: channel_province_a3
       primary_key:
         - date
@@ -233,9 +243,7 @@ definitions:
         schema:
           $ref: "#/schemas/channel_province_a3"
     channel_sharing_service_a1:
-      type: DeclarativeStream
-      retriever:
-        $ref: "#/definitions/base_retriever"
+      $ref: "#/definitions/streams/base_report_stream"
       name: channel_sharing_service_a1
       primary_key:
         - date
@@ -252,9 +260,7 @@ definitions:
         schema:
           $ref: "#/schemas/channel_sharing_service_a1"
     channel_subtitles_a3:
-      type: DeclarativeStream
-      retriever:
-        $ref: "#/definitions/base_retriever"
+      $ref: "#/definitions/streams/base_report_stream"
       name: channel_subtitles_a3
       primary_key:
         - date
@@ -271,9 +277,7 @@ definitions:
         schema:
           $ref: "#/schemas/channel_subtitles_a3"
     channel_traffic_source_a3:
-      type: DeclarativeStream
-      retriever:
-        $ref: "#/definitions/base_retriever"
+      $ref: "#/definitions/streams/base_report_stream"
       name: channel_traffic_source_a3
       primary_key:
         - date
@@ -291,9 +295,7 @@ definitions:
         schema:
           $ref: "#/schemas/channel_traffic_source_a3"
     playlist_basic_a2:
-      type: DeclarativeStream
-      retriever:
-        $ref: "#/definitions/base_retriever"
+      $ref: "#/definitions/streams/base_report_stream"
       name: playlist_basic_a2
       primary_key:
         - date
@@ -310,9 +312,7 @@ definitions:
         schema:
           $ref: "#/schemas/playlist_basic_a2"
     playlist_combined_a2:
-      type: DeclarativeStream
-      retriever:
-        $ref: "#/definitions/base_retriever"
+      $ref: "#/definitions/streams/base_report_stream"
       name: playlist_combined_a2
       primary_key:
         - date
@@ -333,9 +333,7 @@ definitions:
         schema:
           $ref: "#/schemas/playlist_combined_a2"
     playlist_device_os_a2:
-      type: DeclarativeStream
-      retriever:
-        $ref: "#/definitions/base_retriever"
+      $ref: "#/definitions/streams/base_report_stream"
       name: playlist_device_os_a2
       primary_key:
         - date
@@ -354,9 +352,7 @@ definitions:
         schema:
           $ref: "#/schemas/playlist_device_os_a2"
     playlist_playback_location_a2:
-      type: DeclarativeStream
-      retriever:
-        $ref: "#/definitions/base_retriever"
+      $ref: "#/definitions/streams/base_report_stream"
       name: playlist_playback_location_a2
       primary_key:
         - date
@@ -375,9 +371,7 @@ definitions:
         schema:
           $ref: "#/schemas/playlist_playback_location_a2"
     playlist_province_a2:
-      type: DeclarativeStream
-      retriever:
-        $ref: "#/definitions/base_retriever"
+      $ref: "#/definitions/streams/base_report_stream"
       name: playlist_province_a2
       primary_key:
         - date
@@ -395,9 +389,7 @@ definitions:
         schema:
           $ref: "#/schemas/playlist_province_a2"
     playlist_traffic_source_a2:
-      type: DeclarativeStream
-      retriever:
-        $ref: "#/definitions/base_retriever"
+      $ref: "#/definitions/streams/base_report_stream"
       name: playlist_traffic_source_a2
       primary_key:
         - date
@@ -474,6 +466,7 @@ definitions:
             - [ "downloadUrl" ]
           stream:
             $ref: "#/definitions/streams/report"
+          incremental_dependency: true
     decoder:
       type: CustomDecoder
       class_name: source_declarative_manifest.components.CustomDecoder
