@@ -1753,3 +1753,14 @@ schemas:
         type:
           - "null"
           - number
+
+api_budget:
+  type: HTTPAPIBudget
+  policies:
+    - type: MovingWindowCallRatePolicy
+      rates:
+        # Default FreeQuotaRequestsPerMinutePerProject is 60 reqs/min
+        - limit: 60
+          interval: PT1M
+      matchers: [] # all requests
+  status_codes_for_ratelimit_hit: [429]
