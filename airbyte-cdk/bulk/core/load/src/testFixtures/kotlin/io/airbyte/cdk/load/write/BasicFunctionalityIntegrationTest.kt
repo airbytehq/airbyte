@@ -67,7 +67,6 @@ import io.airbyte.cdk.load.test.util.destination_process.DestinationUncleanExitE
 import io.airbyte.cdk.load.util.Jsons
 import io.airbyte.cdk.load.util.deserializeToNode
 import io.airbyte.cdk.load.util.serializeToString
-import io.airbyte.protocol.models.v0.AdditionalStats
 import io.airbyte.protocol.models.v0.AirbyteMessage
 import io.airbyte.protocol.models.v0.AirbyteRecordMessageFileReference
 import io.airbyte.protocol.models.v0.AirbyteRecordMessageMetaChange
@@ -597,7 +596,7 @@ abstract class BasicFunctionalityIntegrationTest(
                 )
 
                 assertEquals(
-                    AirbyteStateStats().withRecordCount(1.0).withAdditionalStats(AdditionalStats()),
+                    AirbyteStateStats().withRecordCount(1.0),
                     outer.destinationStats,
                 )
 
@@ -633,7 +632,7 @@ abstract class BasicFunctionalityIntegrationTest(
                 )
 
                 assertEquals(
-                    AirbyteStateStats().withRecordCount(2.0).withAdditionalStats(AdditionalStats()),
+                    AirbyteStateStats().withRecordCount(2.0),
                     outer.destinationStats,
                 )
 
@@ -861,7 +860,7 @@ abstract class BasicFunctionalityIntegrationTest(
             stateMessagesFromFirstStream[0].sourceStats,
         )
         assertEquals(
-            AirbyteStateStats().withRecordCount(1.0).withAdditionalStats(AdditionalStats()),
+            AirbyteStateStats().withRecordCount(1.0),
             stateMessagesFromFirstStream[0].destinationStats,
         )
         assertEquals(
@@ -884,7 +883,7 @@ abstract class BasicFunctionalityIntegrationTest(
             stateMessagesFromFirstStream[1].sourceStats,
         )
         assertEquals(
-            AirbyteStateStats().withRecordCount(1.0).withAdditionalStats(AdditionalStats()),
+            AirbyteStateStats().withRecordCount(1.0),
             stateMessagesFromFirstStream[1].destinationStats,
         )
         assertEquals(
@@ -913,7 +912,7 @@ abstract class BasicFunctionalityIntegrationTest(
             stateMessagesFromSecondStream[0].sourceStats,
         )
         assertEquals(
-            AirbyteStateStats().withRecordCount(2.0).withAdditionalStats(AdditionalStats()),
+            AirbyteStateStats().withRecordCount(2.0),
             stateMessagesFromSecondStream[0].destinationStats,
         )
         assertEquals(
@@ -936,7 +935,7 @@ abstract class BasicFunctionalityIntegrationTest(
             stateMessagesFromSecondStream[1].sourceStats,
         )
         assertEquals(
-            AirbyteStateStats().withRecordCount(1.0).withAdditionalStats(AdditionalStats()),
+            AirbyteStateStats().withRecordCount(1.0),
             stateMessagesFromSecondStream[1].destinationStats,
         )
         assertEquals(
@@ -965,7 +964,7 @@ abstract class BasicFunctionalityIntegrationTest(
             stateMessagesFromThirdStream[0].sourceStats,
         )
         assertEquals(
-            AirbyteStateStats().withRecordCount(1.0).withAdditionalStats(AdditionalStats()),
+            AirbyteStateStats().withRecordCount(1.0),
             stateMessagesFromThirdStream[0].destinationStats,
         )
         assertEquals(
@@ -988,7 +987,7 @@ abstract class BasicFunctionalityIntegrationTest(
             stateMessagesFromSecondStream[1].sourceStats,
         )
         assertEquals(
-            AirbyteStateStats().withRecordCount(1.0).withAdditionalStats(AdditionalStats()),
+            AirbyteStateStats().withRecordCount(1.0),
             stateMessagesFromSecondStream[1].destinationStats,
         )
         assertEquals(
@@ -1348,7 +1347,7 @@ abstract class BasicFunctionalityIntegrationTest(
                 )
 
                 assertEquals(
-                    AirbyteStateStats().withRecordCount(4.0).withAdditionalStats(AdditionalStats()),
+                    AirbyteStateStats().withRecordCount(4.0),
                     outer.destinationStats,
                 )
 
@@ -1424,7 +1423,7 @@ abstract class BasicFunctionalityIntegrationTest(
                 )
 
                 assertEquals(
-                    AirbyteStateStats().withRecordCount(3.0).withAdditionalStats(AdditionalStats()),
+                    AirbyteStateStats().withRecordCount(3.0),
                     outer.destinationStats,
                 )
 
@@ -1500,7 +1499,7 @@ abstract class BasicFunctionalityIntegrationTest(
                 )
 
                 assertEquals(
-                    AirbyteStateStats().withRecordCount(3.0).withAdditionalStats(AdditionalStats()),
+                    AirbyteStateStats().withRecordCount(3.0),
                     outer.destinationStats,
                 )
 

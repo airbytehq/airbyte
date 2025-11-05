@@ -22,7 +22,6 @@ import io.airbyte.cdk.load.util.UUIDGenerator
 import io.airbyte.cdk.load.util.deserializeToClass
 import io.airbyte.cdk.load.util.deserializeToNode
 import io.airbyte.cdk.load.util.serializeToString
-import io.airbyte.protocol.models.v0.AdditionalStats
 import io.airbyte.protocol.models.v0.AirbyteGlobalState
 import io.airbyte.protocol.models.v0.AirbyteMessage
 import io.airbyte.protocol.models.v0.AirbyteRecordMessage
@@ -53,7 +52,7 @@ import org.junit.jupiter.params.provider.Arguments
 import org.junit.jupiter.params.provider.CsvSource
 import org.junit.jupiter.params.provider.MethodSource
 
-class DestinationMessageTest {
+internal class DestinationMessageTest {
     private val uuidGenerator = UUIDGenerator()
 
     private fun factory(
@@ -169,12 +168,7 @@ class DestinationMessageTest {
             // and Int(1234) != Long(1234). (and additionalProperties is just a Map<String, Any?>)
             // So we just compare the serialized protocol messages.
             inputMessage
-                .also {
-                    it.state.destinationStats =
-                        AirbyteStateStats()
-                            .withRecordCount(3.0)
-                            .withAdditionalStats(AdditionalStats())
-                }
+                .also { it.state.destinationStats = AirbyteStateStats().withRecordCount(3.0) }
                 .serializeToString(),
             parsedMessage
                 .withDestinationStats(CheckpointMessage.Stats(3))
@@ -211,12 +205,7 @@ class DestinationMessageTest {
 
         assertEquals(
             inputMessage
-                .also {
-                    it.state.destinationStats =
-                        AirbyteStateStats()
-                            .withRecordCount(3.0)
-                            .withAdditionalStats(AdditionalStats())
-                }
+                .also { it.state.destinationStats = AirbyteStateStats().withRecordCount(3.0) }
                 .serializeToString(),
             parsedMessage
                 .withDestinationStats(CheckpointMessage.Stats(3))
@@ -252,12 +241,7 @@ class DestinationMessageTest {
         assertEquals(parsedMessage.checkpointKey?.checkpointId!!.value, "PARTITION_ID")
         assertEquals(
             inputMessage
-                .also {
-                    it.state.destinationStats =
-                        AirbyteStateStats()
-                            .withRecordCount(3.0)
-                            .withAdditionalStats(AdditionalStats())
-                }
+                .also { it.state.destinationStats = AirbyteStateStats().withRecordCount(3.0) }
                 .serializeToString(),
             parsedMessage
                 .withDestinationStats(CheckpointMessage.Stats(3))
@@ -299,12 +283,7 @@ class DestinationMessageTest {
         assertEquals(parsedMessage.checkpointKey?.checkpointId!!.value, "PARTITION_ID")
         assertEquals(
             inputMessage
-                .also {
-                    it.state.destinationStats =
-                        AirbyteStateStats()
-                            .withRecordCount(3.0)
-                            .withAdditionalStats(AdditionalStats())
-                }
+                .also { it.state.destinationStats = AirbyteStateStats().withRecordCount(3.0) }
                 .serializeToString(),
             parsedMessage
                 .withDestinationStats(CheckpointMessage.Stats(3))
@@ -786,12 +765,7 @@ class DestinationMessageTest {
 
         assertEquals(
             inputMessage
-                .also {
-                    it.state.destinationStats =
-                        AirbyteStateStats()
-                            .withRecordCount(3.0)
-                            .withAdditionalStats(AdditionalStats())
-                }
+                .also { it.state.destinationStats = AirbyteStateStats().withRecordCount(3.0) }
                 .serializeToString(),
             parsedMessage
                 .withDestinationStats(CheckpointMessage.Stats(3))

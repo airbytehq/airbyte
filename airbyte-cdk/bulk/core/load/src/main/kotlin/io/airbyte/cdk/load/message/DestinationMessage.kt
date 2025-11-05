@@ -563,11 +563,15 @@ sealed interface CheckpointMessage : DestinationMessage {
                     if (it.rejectedRecordCount > 0) {
                         withRejectedRecordCount(it.rejectedRecordCount.toDouble())
                     }
-                    withAdditionalStats(
-                        AdditionalStats().apply {
-                            additionalStatsToAdd.forEach { additionalProperties[it.key] = it.value }
-                        }
-                    )
+                    if (additionalStatsToAdd.isNotEmpty()) {
+                        withAdditionalStats(
+                            AdditionalStats().apply {
+                                additionalStatsToAdd.forEach {
+                                    additionalProperties[it.key] = it.value
+                                }
+                            }
+                        )
+                    }
                 }
         }
         additionalProperties.forEach { (key, value) -> message.withAdditionalProperty(key, value) }
