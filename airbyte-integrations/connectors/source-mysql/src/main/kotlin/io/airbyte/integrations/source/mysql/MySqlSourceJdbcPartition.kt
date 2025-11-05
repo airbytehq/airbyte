@@ -365,6 +365,7 @@ class MySqlSourceJdbcSplittableSnapshotWithCursorPartition(
     override val upperBound: List<JsonNode>?,
     cursor: Field,
     cursorUpperBound: JsonNode?,
+    override val isLowerBoundIncluded: Boolean
 ) :
     MySqlSourceJdbcCursorPartition(
         selectQueryGenerator,

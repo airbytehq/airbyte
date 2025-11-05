@@ -466,7 +466,7 @@ class MySqlSourceJdbcPartitionFactory(
                 true -> effectiveLowerBound
                 false -> type.jsonDecoder.decode(lowerBound[0])
             }
-        return calculateBoundaries(opaqueStateValues, lowerBound, upperBound)?.map { (l, u) ->
+        return calculateBoundaries(opaqueStateValues, lowerBound, upperBound)?.entries?.mapIndexed { index, (l, u) ->
             MySqlSourceJdbcSplittableSnapshotWithCursorPartition(
                 selectQueryGenerator,
                 streamState,
@@ -475,7 +475,9 @@ class MySqlSourceJdbcPartitionFactory(
                 u?.let { listOf(stateValueToJsonNode(checkpointColumns[0], u.toString())) },
                 //                listOf(stateValueToJsonNode(checkpointColumns[0], u.toString())),
                 cursor,
-                cursorUpperBound
+                cursorUpperBound,
+                // The first partition includes the lower bound
+                index == 0
             )
         }
     }
@@ -545,6 +547,7 @@ class MySqlSourceJdbcPartitionFactory(
                 checkpointColumns,
                 listOf(stateValueToJsonNode(checkpointColumns[0], l.toString())),
                 u?.let { listOf(stateValueToJsonNode(checkpointColumns[0], u.toString())) },
+                // The first partition includes the lower bound
                 index == 0
             )
         }
