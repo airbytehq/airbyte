@@ -9,11 +9,11 @@ data:
       - advertising-api-eu.amazon.com
       - advertising-api-fe.amazon.com
   connectorBuildOptions:
-    baseImage: docker.io/airbyte/source-declarative-manifest:7.2.2@sha256:588e3aaeae219b31b47da458972e559556e3501c6b6ab9f858ff83e6c8f6dc7a
+    baseImage: docker.io/airbyte/source-declarative-manifest:7.4.1@sha256:71df19e2ee555ca5b14abbec01d50104c79c9b84cb9cc323284d24333361900a
   connectorSubtype: api
   connectorType: source
   definitionId: c6b0a29e-1da9-4512-9002-7bfd0cba2246
-  dockerImageTag: 7.3.6
+  dockerImageTag: 7.3.7
   dockerRepository: airbyte/source-amazon-ads
   documentationUrl: https://docs.airbyte.com/integrations/sources/amazon-ads
   githubIssueLabel: source-amazon-ads

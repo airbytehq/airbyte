@@ -5,7 +5,6 @@
 package io.airbyte.cdk.load.component
 
 import io.airbyte.cdk.load.command.DestinationStream
-import io.airbyte.cdk.load.data.AirbyteValue
 import io.airbyte.cdk.load.table.ColumnNameMapping
 import io.airbyte.cdk.load.table.TableName
 
@@ -19,17 +18,11 @@ import io.airbyte.cdk.load.table.TableName
  */
 interface TableOperationsClient {
 
-    /** Tests database connectivity. */
-    suspend fun ping() = Unit
-
     /** Creates a new namespace (database/schema). */
     suspend fun createNamespace(namespace: String) = Unit
 
     /** Checks if a namespace exists. */
     suspend fun namespaceExists(namespace: String) = false
-
-    /** Drops a namespace if it exists. */
-    suspend fun dropNamespace(namespace: String) = Unit
 
     /** Creates a table with the given schema and column mapping. */
     suspend fun createTable(
@@ -71,16 +64,4 @@ interface TableOperationsClient {
         sourceTableName: TableName,
         targetTableName: TableName,
     )
-
-    /**
-     * TEST ONLY: Inserts records directly into a table for test verification. Do not use in
-     * production code - use appropriate streaming mechanisms instead.
-     */
-    suspend fun insertRecords(table: TableName, records: List<Map<String, AirbyteValue>>) = Unit
-
-    /**
-     * TEST ONLY: Reads all records from a table for test verification. Do not use in production
-     * code - this loads entire table into memory.
-     */
-    suspend fun readTable(table: TableName): List<Map<String, Any>> = listOf()
 }
