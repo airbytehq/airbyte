@@ -57,7 +57,7 @@ class JobRequester(HttpRequester):
             log_formatter,
         )
 
-        stream_job = [r for r in response.json()["jobs"] if r["reportTypeId"] == self._parameters["report_id"]]
+        stream_job = [r for r in response.json()["jobs"] if r["reportTypeId"] == self._parameters["report_type_id"]]
 
         if not stream_job:
             self._http_client.send_request(
