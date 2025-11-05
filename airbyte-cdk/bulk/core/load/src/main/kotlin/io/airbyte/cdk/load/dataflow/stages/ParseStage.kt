@@ -17,14 +17,16 @@ class ParseStage(
     private val munger: RecordMunger,
 ) : DataFlowStage {
     override suspend fun apply(input: DataFlowStageIO): DataFlowStageIO {
+        val partitionKey = input.partitionKey!!
         val raw = input.raw!!
-        val fields = munger.transformForDest(raw)
+        // pass this key down somehow, or pull the validation up so you can associate it to the counters
+        val fields = munger.transformForDest(raw, partitionKey)
 
         return input.apply {
             munged =
                 RecordDTO(
                     fields = fields,
-                    partitionKey = input.partitionKey!!,
+                    partitionKey = partitionKey,
                     sizeBytes = raw.serializedSizeBytes,
                     emittedAtMs = raw.rawData.emittedAtMs,
                 )
