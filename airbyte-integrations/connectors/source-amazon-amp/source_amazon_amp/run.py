@@ -3,13 +3,13 @@
 import sys
 
 # from .source import SourceAmazonAmp
-from source_amazon_amp.source_amazon_amp import SourceAmazonAMP
+from source_amazon_amp.source_amazon_amp import SourceAmazonAmp
 
 from airbyte_cdk.entrypoint import launch
 
 
 def run():
-    source = SourceAmazonAMP()
+    source = SourceAmazonAmp()
     launch(source, sys.argv[1:])
 
 

@@ -136,7 +136,7 @@ class RulesStream(BaseAmazonAMPStream):
                 }
 
 
-class SourceAmazonAMP(Source):
+class SourceAmazonAmp(Source):
     def __init__(self):
         self.logger = init_logger("source_amazon_amp")
 
