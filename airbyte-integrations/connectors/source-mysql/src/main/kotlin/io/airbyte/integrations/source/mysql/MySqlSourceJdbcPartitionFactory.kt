@@ -466,20 +466,21 @@ class MySqlSourceJdbcPartitionFactory(
                 true -> effectiveLowerBound
                 false -> type.jsonDecoder.decode(lowerBound[0])
             }
-        return calculateBoundaries(opaqueStateValues, lowerBound, upperBound)?.entries?.mapIndexed { index, (l, u) ->
-            MySqlSourceJdbcSplittableSnapshotWithCursorPartition(
-                selectQueryGenerator,
-                streamState,
-                checkpointColumns,
-                listOf(stateValueToJsonNode(checkpointColumns[0], l.toString())),
-                u?.let { listOf(stateValueToJsonNode(checkpointColumns[0], u.toString())) },
-                //                listOf(stateValueToJsonNode(checkpointColumns[0], u.toString())),
-                cursor,
-                cursorUpperBound,
-                // The first partition includes the lower bound
-                index == 0
-            )
-        }
+        return calculateBoundaries(opaqueStateValues, lowerBound, upperBound)
+            ?.entries
+            ?.mapIndexed { index, (l, u) ->
+                MySqlSourceJdbcSplittableSnapshotWithCursorPartition(
+                    selectQueryGenerator,
+                    streamState,
+                    checkpointColumns,
+                    listOf(stateValueToJsonNode(checkpointColumns[0], l.toString())),
+                    u?.let { listOf(stateValueToJsonNode(checkpointColumns[0], u.toString())) },
+                    cursor,
+                    cursorUpperBound,
+                    // The first partition includes the lower bound
+                    index == 0
+                )
+            }
     }
 
     private fun MySqlSourceJdbcRfrSnapshotPartition.split(
@@ -540,17 +541,19 @@ class MySqlSourceJdbcPartitionFactory(
                 false -> type.jsonDecoder.decode(lowerBound[0])
             }
 
-        return calculateBoundaries(opaqueStateValues, lowerBound, upperBound)?.entries?.mapIndexed { index, (l, u) ->
-            MySqlSourceJdbcSplittableCdcRfrSnapshotPartition(
-                selectQueryGenerator,
-                streamState,
-                checkpointColumns,
-                listOf(stateValueToJsonNode(checkpointColumns[0], l.toString())),
-                u?.let { listOf(stateValueToJsonNode(checkpointColumns[0], u.toString())) },
-                // The first partition includes the lower bound
-                index == 0
-            )
-        }
+        return calculateBoundaries(opaqueStateValues, lowerBound, upperBound)
+            ?.entries
+            ?.mapIndexed { index, (l, u) ->
+                MySqlSourceJdbcSplittableCdcRfrSnapshotPartition(
+                    selectQueryGenerator,
+                    streamState,
+                    checkpointColumns,
+                    listOf(stateValueToJsonNode(checkpointColumns[0], l.toString())),
+                    u?.let { listOf(stateValueToJsonNode(checkpointColumns[0], u.toString())) },
+                    // The first partition includes the lower bound
+                    index == 0
+                )
+            }
     }
 
     private fun <T> calculateBoundaries(
