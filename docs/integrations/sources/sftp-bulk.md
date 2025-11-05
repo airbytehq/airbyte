@@ -173,12 +173,13 @@ This source provides a single stream per file with a dynamic schema. The current
 
 ## File Size Limitations
 
-When using the SFTP Bulk connector with the **Copy Raw Files** delivery method, individual files are subject to a maximum size limit of 1 GB per file. This limitation applies to the raw file transfer process where files are copied without parsing their contents.
+When using the SFTP Bulk connector with the **Copy Raw Files** delivery method, individual files are subject to a maximum size limit of 1.5 GB (1,500,000,000 bytes) per file. This limitation applies to the raw file transfer process where files are copied without parsing their contents. Note that this limit was increased from 1 GB in version 1.6.0 (December 2024).
 
-If you need to sync files larger than 1 GB, consider one of the following approaches:
+If you need to sync files larger than 1.5 GB, consider the following approach:
 
 - Split large files into smaller chunks before uploading them to your SFTP server
-- Use the **Replicate Records** delivery method instead, which parses and streams file contents as structured records (available for CSV, JSON, Parquet, and other structured formats)
+
+The **Replicate Records** delivery method is not a workaround for large file sizes. Replicate Records only works with structured file formats (CSV, JSONL, Parquet, Avro, etc.) that the connector can parse into individual records. It does not support unstructured files or binary formats, and files processed through Replicate Records are still subject to the same size limitations.
 
 For more information about delivery methods and their limitations, see the [Delivery Methods documentation](/platform/using-airbyte/delivery-methods#supported-versions-and-limitations).
 
