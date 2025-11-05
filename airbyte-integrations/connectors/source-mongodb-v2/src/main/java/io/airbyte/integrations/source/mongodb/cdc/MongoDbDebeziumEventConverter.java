@@ -56,7 +56,8 @@ public class MongoDbDebeziumEventConverter implements DebeziumEventConverter {
     final JsonNode data = switch (operation) {
       case "c", "i", "u" -> formatMongoDbDebeziumData(
           before, after, source, debeziumEventKey, cdcMetadataInjector, configuredFields, streamSchema, isEnforceSchema);
-      case "d" -> formatMongoDbDeleteDebeziumData(before, debeziumEventKey, source, cdcMetadataInjector, configuredFields, streamSchema, isEnforceSchema);
+      case "d" -> formatMongoDbDeleteDebeziumData(before, debeziumEventKey, source, cdcMetadataInjector, configuredFields, streamSchema,
+          isEnforceSchema);
       default -> throw new IllegalArgumentException("Unsupported MongoDB change event operation '" + operation + "'.");
     };
 

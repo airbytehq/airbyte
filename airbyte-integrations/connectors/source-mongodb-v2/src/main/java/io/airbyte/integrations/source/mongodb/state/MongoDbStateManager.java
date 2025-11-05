@@ -256,8 +256,8 @@ public class MongoDbStateManager implements SourceStateMessageProducer<Document>
   public AirbyteMessage processRecordMessage(final ConfiguredAirbyteStream stream, final Document document) {
     final var fields = CatalogHelpers.getTopLevelFieldNames(stream).stream().collect(Collectors.toSet());
 
-    final var jsonNode = isEnforceSchema 
-        ? MongoDbCdcEventUtils.toJsonNode(document, fields, stream.getStream().getJsonSchema()) 
+    final var jsonNode = isEnforceSchema
+        ? MongoDbCdcEventUtils.toJsonNode(document, fields, stream.getStream().getJsonSchema())
         : MongoDbCdcEventUtils.toJsonNodeNoSchema(document);
 
     final var lastId = document.get(MongoConstants.ID_FIELD);

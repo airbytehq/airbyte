@@ -158,9 +158,9 @@ public class MongoDbCdcEventUtils {
   }
 
   /**
-   * Transforms a MongoDB document to a JsonNode with schema-aware type coercion.
-   * This method handles MongoDB's flexible schema where fields can be stored as either
-   * single objects or arrays depending on cardinality.
+   * Transforms a MongoDB document to a JsonNode with schema-aware type coercion. This method handles
+   * MongoDB's flexible schema where fields can be stored as either single objects or arrays depending
+   * on cardinality.
    *
    * @param document The MongoDB document to transform
    * @param columnNames The set of column names to include
@@ -350,10 +350,10 @@ public class MongoDbCdcEventUtils {
   }
 
   /**
-   * Applies schema-aware type coercion to handle MongoDB's flexible schema.
-   * This method wraps single objects in arrays when the schema expects an array type,
-   * which fixes DESTINATION_SERIALIZATION_ERROR when MongoDB stores a field as an object
-   * (single item) but the schema expects an array (multiple items).
+   * Applies schema-aware type coercion to handle MongoDB's flexible schema. This method wraps single
+   * objects in arrays when the schema expects an array type, which fixes
+   * DESTINATION_SERIALIZATION_ERROR when MongoDB stores a field as an object (single item) but the
+   * schema expects an array (multiple items).
    *
    * @param data The data node to coerce
    * @param schema The JSON schema for the stream
@@ -366,7 +366,7 @@ public class MongoDbCdcEventUtils {
 
     final ObjectNode result = (ObjectNode) Jsons.jsonNode(Collections.emptyMap());
     final JsonNode properties = schema.get("properties");
-    
+
     if (properties == null || !properties.isObject()) {
       return data;
     }
@@ -396,7 +396,7 @@ public class MongoDbCdcEventUtils {
    */
   private static JsonNode coerceFieldValue(final JsonNode value, final JsonNode fieldSchema) {
     final JsonNode typeNode = fieldSchema.get("type");
-    
+
     if (typeNode == null) {
       return value;
     }
@@ -419,7 +419,7 @@ public class MongoDbCdcEventUtils {
 
     if (typeNode.isTextual()) {
       final String type = typeNode.asText();
-      
+
       if ("array".equals(type) && value.isObject()) {
         LOGGER.debug("Coercing object to array for field");
         return Jsons.jsonNode(List.of(value));

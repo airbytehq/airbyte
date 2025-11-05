@@ -272,12 +272,7 @@ class MongoDbCdcEventUtilsTest {
                     "properties", Map.of(
                         "chID", Map.of("type", "string"),
                         "chName", Map.of("type", "string"),
-                        "valueDetail", Map.of("type", "string")
-                    )
-                )
-            )
-        )
-    ));
+                        "valueDetail", Map.of("type", "string")))))));
 
     final JsonNode result = MongoDbCdcEventUtils.toJsonNode(document, Set.of("_id", "assetItemCharacterstics"), schema);
 
@@ -302,11 +297,7 @@ class MongoDbCdcEventUtilsTest {
             "singleItem", Map.of(
                 "type", "object",
                 "properties", Map.of(
-                    "key", Map.of("type", "string")
-                )
-            )
-        )
-    ));
+                    "key", Map.of("type", "string"))))));
 
     final JsonNode result = MongoDbCdcEventUtils.toJsonNode(document, Set.of("_id", "singleItem"), schema);
 
@@ -330,12 +321,7 @@ class MongoDbCdcEventUtilsTest {
                 "items", Map.of(
                     "type", "object",
                     "properties", Map.of(
-                        "key", Map.of("type", "string")
-                    )
-                )
-            )
-        )
-    ));
+                        "key", Map.of("type", "string")))))));
 
     final JsonNode result = MongoDbCdcEventUtils.toJsonNode(document, Set.of("_id", "flexibleField"), schema);
 
@@ -351,8 +337,7 @@ class MongoDbCdcEventUtilsTest {
     final Document document = new Document("_id", new BsonObjectId(new ObjectId(OBJECT_ID)))
         .append("arrayField", java.util.List.of(
             new Document("key1", "value1"),
-            new Document("key2", "value2")
-        ));
+            new Document("key2", "value2")));
 
     final JsonNode schema = Jsons.jsonNode(Map.of(
         "type", "object",
@@ -364,12 +349,7 @@ class MongoDbCdcEventUtilsTest {
                     "type", "object",
                     "properties", Map.of(
                         "key1", Map.of("type", "string"),
-                        "key2", Map.of("type", "string")
-                    )
-                )
-            )
-        )
-    ));
+                        "key2", Map.of("type", "string")))))));
 
     final JsonNode result = MongoDbCdcEventUtils.toJsonNode(document, Set.of("_id", "arrayField"), schema);
 
@@ -399,12 +379,7 @@ class MongoDbCdcEventUtilsTest {
                     "properties", Map.of(
                         "chID", Map.of("type", "string"),
                         "chName", Map.of("type", "string"),
-                        "valueDetail", Map.of("type", "string")
-                    )
-                )
-            )
-        )
-    ));
+                        "valueDetail", Map.of("type", "string")))))));
 
     final String documentAsJson = document.toJson();
     final ObjectNode result = MongoDbCdcEventUtils.transformDataTypes(documentAsJson, Set.of("_id", "assetItemCharacterstics"), schema);
