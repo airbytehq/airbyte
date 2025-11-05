@@ -206,8 +206,9 @@ class PostgresAirbyteClient(
     private fun <T> executeQuery(sql: String, resultProcessor: (ResultSet) -> T): T =
         dataSource.connection.use { connection ->
             connection.createStatement().use { statement ->
-                val resultSet = statement.executeQuery(sql)
-                resultProcessor(resultSet)
+                statement.executeQuery(sql).use { resultSet ->
+                    resultProcessor(resultSet)
+                }
             }
         }
 }
