@@ -18,22 +18,28 @@ import java.util.UUID
 @Singleton
 class PostgresFinalTableNameGenerator(private val config: PostgresConfiguration) :
     FinalTableNameGenerator {
-    override fun getTableName(streamDescriptor: DestinationStream.Descriptor) =
-        TableName(
-            namespace =
-                (config.internalTableSchema ?: (streamDescriptor.namespace ?: config.schema))
+    override fun getTableName(streamDescriptor: DestinationStream.Descriptor): TableName {
+        val namespace = streamDescriptor.namespace ?: config.schema
+        return if(!config.legacyRawTablesOnly) {
+            TableName(
+                namespace = namespace.toPostgresCompatibleName(),
+                name = streamDescriptor.name.toPostgresCompatibleName(),
+            )
+        } else {
+            TableName(
+                namespace = config.internalTableSchema!!
+                    .lowercase()
                     .toPostgresCompatibleName(),
-            name =
-                if (config.internalTableSchema.isNullOrBlank()) {
-                    streamDescriptor.name.toPostgresCompatibleName()
-                } else {
+                name =
                     TypingDedupingUtil.concatenateRawTableName(
-                        streamDescriptor.namespace ?: config.schema,
-                        streamDescriptor.name
+                        namespace = namespace,
+                        name = streamDescriptor.name,
                     )
-                        .toPostgresCompatibleName()
-                },
-        )
+                        .lowercase()
+                        .toPostgresCompatibleName(),
+            )
+        }
+    }
 }
 
 @Singleton
