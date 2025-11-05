@@ -16,7 +16,7 @@ The SFTP Bulk connector offers several features that are not available in the st
 
 - Access to a remote server that supports SFTP
 - Host address
-- Valid username and password associated with the host server
+- Valid username and authentication credentials (password or SSH private key)
 
 ## Setup guide
 
@@ -24,7 +24,7 @@ The SFTP Bulk connector offers several features that are not available in the st
 
 #### Step 1: Set up SFTP authentication
 
-To set up the SFTP connector, you will need to select at least _one_ of the following authentication methods:
+To set up the SFTP connector, you will need to select _one_ of the following authentication methods:
 
 - Your username and password credentials associated with the server.
 - A private/public key pair.
@@ -69,12 +69,41 @@ For more information on SSH key pair authentication, please refer to the
 5. Choose a [delivery method](../../platform/using-airbyte/delivery-methods) for your data.
 6. Enter the **Host Address**.
 7. Enter your **Username**
-8. Enter your authentication credentials for the SFTP server (**Password** or **Private Key**). If you are authenticating with a private key, you can upload the file containing the private key (usually named `rsa_id`) using the Upload file button.
-9. In the section titled "The list of streams to sync", enter a **Stream Name**. This will be the name of the stream that will be created in your destination. Add additional streams by clicking "Add". 
+8. Enter your authentication credentials for the SFTP server (**Password** or **Private Key**).
+
+#### SSH Key Authentication Setup
+
+If your SFTP server uses SSH key-based authentication, you'll need to provide your private key file (`.pem` or similar format) during setup. Follow these steps to create and upload it correctly:
+
+1. **Locate your private key text.** This is the block of text that begins with `-----BEGIN OPENSSH PRIVATE KEY-----` or `-----BEGIN RSA PRIVATE KEY-----` and ends with `-----END OPENSSH PRIVATE KEY-----` or `-----END RSA PRIVATE KEY-----`.
+
+2. **Create a PEM file:**
+   1. Open any text editor or IDE (for example, PyCharm, VS Code, or a terminal text editor).
+   2. Create a new file named `ssh.pem`.
+   3. Paste the entire private key text into the file, including the BEGIN and END lines.
+   4. Make sure there are no quotes or extra spaces before or after the key.
+   5. Save the file.
+
+3. **(Optional but recommended)** If you're on macOS or Linux, set restricted permissions so only you can read it:
+   ```
+   chmod 600 ssh.pem
+   ```
+
+4. **Upload the file in Airbyte Cloud:**
+   1. In the SFTP Bulk source setup form, find the **Private key** field.
+   2. Click **Upload file** and select your saved `ssh.pem` file.
+
+Once uploaded, Airbyte will use this file to authenticate securely with your SFTP server.
+
+:::note
+The file must be in PEM format, a plain text file containing your private key between the BEGIN and END lines. Do not paste the key directly into the field; Airbyte requires a file upload.
+:::
+
+9. In the section titled "The list of streams to sync", enter a **Stream Name**. This will be the name of the stream that will be created in your destination. Add additional streams by clicking "Add".
 10. For each stream, select in the dropdown menu the **File Type** you wish to sync. Depending on the format chosen, you'll see a set of options specific to the file type. You can read more about specifics to each file type below.
 11. (Optional) Provide a **Start Date** using the provided datepicker, or by entering the date in the format `YYYY-MM-DDTHH:mm:ss.SSSSSSZ`. Incremental syncs will only sync files modified/added after this date.
-12. (Optional) Specify the **Host Address**. The default port for SFTP is 2​2. If your remote server is using a different port, enter it here.
-(Optional) Determine the **Folder Path**. This determines the directory to search for files in, and defaults to "/". If you prefer to specify a specific folder path, specify the directory on the remote server to be synced. For example, given the file structure:
+12. (Optional) Specify the **Port**. The default port for SFTP is 22. If your remote server is using a different port, enter it here.
+13. (Optional) Determine the **Folder Path**. This determines the directory to search for files in, and defaults to "/". If you prefer to specify a specific folder path, specify the directory on the remote server to be synced. For example, given the file structure:
 
 ```
 Root
@@ -93,7 +122,7 @@ An input of `/logs/2022` will only replicate data contained within the specified
 log-([0-9]{4})([0-9]{2})([0-9]{2})
 ```
 
-This pattern will filter for files that match the format `log-YYYYMMDD`, where `YYYY`, `MM`, and `DD` represented four-digit, two-digit, and two-digit numbers, respectively. For example, `log-20230713`. Leaving this field blank will replicate all files not filtered by the previous two fields.
+This pattern will filter for files that match the format `log-YYYYMMDD`, where `YYYY`, `MM`, and `DD` represent four-digit, two-digit, and two-digit numbers, respectively. For example, `log-20230713`. Leaving this field blank will replicate all files not filtered by the previous two fields.
 
 14. Click **Set up source** to complete setup. A test will run to verify the configuration.
 
@@ -139,7 +168,18 @@ The SFTP Bulk source connector supports the following [sync modes](https://docs.
 
 ## Supported Streams
 
-This source provides a single stream per file with a dynamic schema. The current supported type files are Avro, CSV, JSONL, Parquet, and Document File Type Format. 
+This source provides a single stream per file with a dynamic schema. The current supported type files are Avro, CSV, JSONL, Parquet, and Document File Type Format.
+
+## File Size Limitations
+
+When using the SFTP Bulk connector with the **Copy Raw Files** delivery method, individual files are subject to a maximum size limit of 1 GB per file. This limitation applies to the raw file transfer process where files are copied without parsing their contents.
+
+If you need to sync files larger than 1 GB, consider one of the following approaches:
+
+- Split large files into smaller chunks before uploading them to your SFTP server
+- Use the **Replicate Records** delivery method instead, which parses and streams file contents as structured records (available for CSV, JSON, Parquet, and other structured formats)
+
+For more information about delivery methods and their limitations, see the [Delivery Methods documentation](../../platform/using-airbyte/delivery-methods#supported-versions-and-limitations).
 
 ## Changelog
 <details>

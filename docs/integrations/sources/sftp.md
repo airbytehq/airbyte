@@ -6,7 +6,7 @@ This page contains the setup guide and reference information for the SFTP source
 
 - Access to a remote server that supports SFTP
 - Host address
-- Valid username and password associated with the host server
+- Valid username and authentication credentials (password or SSH private key)
 
 ## Setup guide
 
@@ -56,7 +56,36 @@ For more information on SSH key pair authentication, please refer to the
    <!-- /env:cloud -->
 4. Enter a **Source name** of your choosing.
 5. Enter your **Username**, as well as the **Host Address** and **Port**. The default port for SFTP is 22. If your remote server is using a different port, please enter it here.
-6. In the **Authentication** section, use the dropdown menu to select **Password Authentication** or **SSH Key Authentication**, then fill in the required credentials. If you are authenticating with a private key, you can upload the file containing the private key (usually named `rsa_id`) using the **Upload file** button.
+6. In the **Authentication** section, use the dropdown menu to select **Password Authentication** or **SSH Key Authentication**, then fill in the required credentials.
+
+#### SSH Key Authentication Setup
+
+If your SFTP server uses SSH key-based authentication, you'll need to provide your private key file (`.pem` or similar format) during setup. Follow these steps to create and upload it correctly:
+
+1. **Locate your private key text.** This is the block of text that begins with `-----BEGIN OPENSSH PRIVATE KEY-----` or `-----BEGIN RSA PRIVATE KEY-----` and ends with `-----END OPENSSH PRIVATE KEY-----` or `-----END RSA PRIVATE KEY-----`.
+
+2. **Create a PEM file:**
+   1. Open any text editor or IDE (for example, PyCharm, VS Code, or a terminal text editor).
+   2. Create a new file named `ssh.pem`.
+   3. Paste the entire private key text into the file, including the BEGIN and END lines.
+   4. Make sure there are no quotes or extra spaces before or after the key.
+   5. Save the file.
+
+3. **(Optional but recommended)** If you're on macOS or Linux, set restricted permissions so only you can read it:
+   ```
+   chmod 600 ssh.pem
+   ```
+
+4. **Upload the file in Airbyte:**
+   1. In the SFTP source setup form, find the **SSH Private Key** field under **SSH Key Authentication**.
+   2. Click **Upload file** and select your saved `ssh.pem` file.
+
+Once uploaded, Airbyte will use this file to authenticate securely with your SFTP server.
+
+:::note
+The file must be in PEM format, a plain text file containing your private key between the BEGIN and END lines. Do not paste the key directly into the field; Airbyte requires a file upload.
+:::
+
 7. If you wish to configure additional optional settings, please refer to the next section. Otherwise, click **Set up source** and wait for the tests to complete.
 
 ## Optional fields
@@ -85,7 +114,7 @@ An input of `/logs/2022` will only replicate data contained within the specified
 log-([0-9]{4})([0-9]{2})([0-9]{2})
 ```
 
-This pattern will filter for files that match the format `log-YYYYMMDD`, where `YYYY`, `MM`, and `DD` represented four-digit, two-digit, and two-digit numbers, respectively. For example, `log-20230713`. Leaving this field blank will replicate all files not filtered by the previous two fields.
+This pattern will filter for files that match the format `log-YYYYMMDD`, where `YYYY`, `MM`, and `DD` represent four-digit, two-digit, and two-digit numbers, respectively. For example, `log-20230713`. Leaving this field blank will replicate all files not filtered by the previous two fields.
 
 ## Supported sync modes
 
