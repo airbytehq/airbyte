@@ -25,7 +25,7 @@ data:
   releases:
     breakingChanges:
       0.1.0:
-        upgradeDeadline: "2025-10-20"
+        upgradeDeadline: "2025-11-20"
         message: "Development
           development"
   remoteRegistries:
