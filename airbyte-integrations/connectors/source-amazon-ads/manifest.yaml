@@ -42,19 +42,24 @@ definitions:
     response_filters:
       - predicate: "{{ 'KDP authors do not have access to Sponsored Brands functionality' in response.details }}"
         action: FAIL
+        failure_type: config_error
         error_message: "{{ response.details }}"
       - predicate: "{{ 'Not authorized to access scope' in response.details }}"
         action: FAIL
+        failure_type: config_error
         error_message: "{{ response.details }}"
       - predicate: "{{ 'Tactic T00020 is not supported for report API in marketplace' in response.details }}"
         action: FAIL
+        failure_type: config_error
         error_message: "{{ response.details }}"
       - predicate: "{{ 'Report date is too far in the past' in response.details }}"
         action: FAIL
+        failure_type: config_error
         error_message: "{{ response.details }}"
       - type: HttpResponseFilter
         http_codes: [ 425 ]
         action: FAIL
+        failure_type: config_error
         error_message: "Amazon detected duplicate report requests. This occurs when syncing the same report types with different time granularities simultaneously. To fix: create a separate source with only the needed report streams and set Number of concurrent workers to 2 for sequential processing."
 
   report_polling_error_handler:

@@ -32,6 +32,9 @@ Airbyte connector for [Pabbly Subscriptions Billing](https://www.pabbly.com/subs
 
 | Version          | Date              | Pull Request | Subject        |
 |------------------|-------------------|--------------|----------------|
+| 0.0.37 | 2025-10-29 | [69024](https://github.com/airbytehq/airbyte/pull/69024) | Update dependencies |
+| 0.0.36 | 2025-10-21 | [68308](https://github.com/airbytehq/airbyte/pull/68308) | Update dependencies |
+| 0.0.35 | 2025-10-14 | [67741](https://github.com/airbytehq/airbyte/pull/67741) | Update dependencies |
 | 0.0.34 | 2025-10-07 | [67350](https://github.com/airbytehq/airbyte/pull/67350) | Update dependencies |
 | 0.0.33 | 2025-09-30 | [66381](https://github.com/airbytehq/airbyte/pull/66381) | Update dependencies |
 | 0.0.32 | 2025-09-09 | [65773](https://github.com/airbytehq/airbyte/pull/65773) | Update dependencies |

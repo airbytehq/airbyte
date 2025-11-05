@@ -8,7 +8,11 @@ Occasionally, new versions of Airbyte introduce breaking changes. This page inve
 
 When you upgrade your Self-Managed instance of Airbyte to a version with a breaking change, you may need to take mitigating action. If you are upgrading multiple versions at once, complete the mitigaton steps for the versions you are skipping as well.
 
-## Self-Managed Community
+## Core
+
+### 1.8.x to 2.0.x
+
+- If you deploy with abctl, version 2.0 requires abctl version 0.30.2 or later. [Upgrade to version 0.30.2 or later](/platform/operator-guides/upgrading-airbyte#upgrade-abctl) before deploying Airbyte version 2.0.
 
 ### 1.7.x to 1.8.x
 

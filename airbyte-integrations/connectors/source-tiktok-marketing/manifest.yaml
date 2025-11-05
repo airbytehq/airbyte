@@ -5899,9 +5899,22 @@ spec:
 # If time allows it, we can definitely try to scope this number a bit better empirically.
 concurrency_level:
   type: ConcurrencyLevel
-  default_concurrency: "{{ config.get('concurrency_level', 3) }}"
+  default_concurrency: "{{ config.get('concurrency_level', 4) }}"
   max_concurrency: 20
 
 metadata:
   autoImportSchema:
     advertiser_ids: true
+
+api_budget:
+  type: HTTPAPIBudget
+  policies:
+    - type: MovingWindowCallRatePolicy
+      rates:
+        - limit: 100
+          interval: PT10S
+      matchers:
+        - method: GET
+          url_path_pattern: .*
+  status_codes_for_ratelimit_hit:
+    - 429

@@ -9,6 +9,7 @@ import io.airbyte.cdk.load.command.aws.AwsAssumeRoleCredentials
 import io.airbyte.cdk.load.command.iceberg.parquet.GlueCatalogConfiguration
 import io.airbyte.cdk.load.command.iceberg.parquet.IcebergCatalogConfiguration
 import io.airbyte.cdk.load.command.iceberg.parquet.NessieCatalogConfiguration
+import io.airbyte.cdk.load.command.iceberg.parquet.PolarisCatalogConfiguration
 import io.airbyte.cdk.load.command.iceberg.parquet.RestCatalogConfiguration
 import io.airbyte.cdk.load.toolkits.iceberg.parquet.io.IcebergUtil
 import io.airbyte.integrations.destination.s3_data_lake.ACCESS_KEY_ID
@@ -96,6 +97,9 @@ class S3DataLakeUtil(
                 //                System.setProperty(AWS_REGION, region)
                 buildRestProperties(config, catalogConfig, s3Properties, region)
             }
+            is PolarisCatalogConfiguration -> {
+                buildPolarisProperties(config, catalogConfig, s3Properties, region)
+            }
             else ->
                 throw IllegalArgumentException(
                     "Unsupported catalog type: ${catalogConfig::class.java.name}"
@@ -129,6 +133,39 @@ class S3DataLakeUtil(
             )
 
         return restProperties + s3Properties
+    }
+
+    private fun buildPolarisProperties(
+        config: S3DataLakeConfiguration,
+        catalogConfig: PolarisCatalogConfiguration,
+        s3Properties: Map<String, String>,
+        region: String?
+    ): Map<String, String> {
+        val awsAccessKeyId =
+            requireNotNull(config.awsAccessKeyConfiguration.accessKeyId) {
+                "AWS Access Key ID is required for Polaris configuration"
+            }
+        val awsSecretAccessKey =
+            requireNotNull(config.awsAccessKeyConfiguration.secretAccessKey) {
+                "AWS Secret Access Key is required for Polaris configuration"
+            }
+
+        val credential =
+            "${requireNotNull(catalogConfig.clientId)}:${requireNotNull(catalogConfig.clientSecret)}"
+        val restProperties =
+            mapOfNotNull(
+                CatalogUtil.ICEBERG_CATALOG_TYPE to ICEBERG_CATALOG_TYPE_REST,
+                AwsClientProperties.CLIENT_REGION to region,
+                URI to catalogConfig.serverUri,
+                "credential" to credential,
+                "scope" to "PRINCIPAL_ROLE:ALL",
+                CatalogProperties.WAREHOUSE_LOCATION to catalogConfig.catalogName,
+                S3FileIOProperties.ACCESS_KEY_ID to awsAccessKeyId,
+                S3FileIOProperties.SECRET_ACCESS_KEY to awsSecretAccessKey,
+            )
+
+        return restProperties +
+            s3Properties.filterKeys { it != CatalogProperties.WAREHOUSE_LOCATION }
     }
 
     private fun buildS3Properties(

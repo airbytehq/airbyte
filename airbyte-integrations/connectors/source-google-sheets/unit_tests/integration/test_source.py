@@ -71,7 +71,7 @@ class TestSourceCheck(GoogleSheetsBaseTest):
             error=AirbyteErrorTraceMessage(
                 message=error_message,
                 internal_message=ANY,
-                failure_type=FailureType.system_error,
+                failure_type=FailureType.config_error,
                 stack_trace=ANY,
             ),
         )

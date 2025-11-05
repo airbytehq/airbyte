@@ -236,7 +236,12 @@ Google Cloud Storage (GCS) supports following file formats:
 
 | Version    | Date       | Pull Request                                             | Subject                                                                                                                                                                |
 |:-----------|:-----------|:---------------------------------------------------------|:-----------------------------------------------------------------------------------------------------------------------------------------------------------------------|
-| 0.9.0      | 2025-10-07 | [67340](https://github.com/airbytehq/airbyte/pull/67340) | Promoting release candidate 0.9.0-rc.1 to a main version.                                                                                                              |
+| 0.10.2 | 2025-11-04 | [69159](https://github.com/airbytehq/airbyte/pull/69159) | Update dependencies |
+| 0.10.1 | 2025-10-29 | [69054](https://github.com/airbytehq/airbyte/pull/69054) | Update dependencies |
+| 0.10.0 | 2025-10-23 | [68619](https://github.com/airbytehq/airbyte/pull/68619) | Update dependencies |
+| 0.9.2 | 2025-10-21 | [68330](https://github.com/airbytehq/airbyte/pull/68330) | Update dependencies |
+| 0.9.1 | 2025-10-14 | [68032](https://github.com/airbytehq/airbyte/pull/68032) | Update dependencies |
+| 0.9.0 | 2025-10-07 | [67340](https://github.com/airbytehq/airbyte/pull/67340) | Promoting release candidate 0.9.0-rc.1 to a main version. |
 | 0.9.0-rc.1 | 2025-10-06 | [66671](https://github.com/airbytehq/airbyte/pull/66671) | Update to latest airbyte cdk                                                                                                                                           |
 | 0.8.31     | 2025-09-30 | [66303](https://github.com/airbytehq/airbyte/pull/66303) | Update dependencies                                                                                                                                                    |
 | 0.8.30     | 2025-09-09 | [66088](https://github.com/airbytehq/airbyte/pull/66088) | Update dependencies                                                                                                                                                    |

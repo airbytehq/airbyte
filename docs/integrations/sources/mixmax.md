@@ -44,6 +44,9 @@ Visit `https://developer.mixmax.com/reference/getting-started-with-the-api` for 
 
 | Version | Date | Pull Request | Subject |
 | ------------------ | ------------ | --- | ---------------- |
+| 0.1.18 | 2025-10-29 | [69041](https://github.com/airbytehq/airbyte/pull/69041) | Update dependencies |
+| 0.1.17 | 2025-10-21 | [68419](https://github.com/airbytehq/airbyte/pull/68419) | Update dependencies |
+| 0.1.16 | 2025-10-14 | [67821](https://github.com/airbytehq/airbyte/pull/67821) | Update dependencies |
 | 0.1.15 | 2025-10-07 | [67386](https://github.com/airbytehq/airbyte/pull/67386) | Update dependencies |
 | 0.1.14 | 2025-09-30 | [66334](https://github.com/airbytehq/airbyte/pull/66334) | Update dependencies |
 | 0.1.13 | 2025-09-09 | [65803](https://github.com/airbytehq/airbyte/pull/65803) | Update dependencies |

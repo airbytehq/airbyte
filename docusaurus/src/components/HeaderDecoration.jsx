@@ -1,7 +1,5 @@
 import dayjs from "dayjs";
 import relativeTime from "dayjs/plugin/relativeTime";
-import React from "react";
-import { getSupportLevelDisplay } from "../connector_registry";
 import { Callout } from "./Callout";
 import { Chip } from "./Chip";
 import { CopyPageButton } from "./CopyPageButton/CopyPageButton";
@@ -194,6 +192,21 @@ const boolStringToBool = (boolString) => {
 
   return null;
 };
+
+ const getSupportLevelDisplay=(rawSupportLevel) => {
+  switch (rawSupportLevel) {
+    case "certified":
+      return "Airbyte";
+    case "community":
+      return "Marketplace";
+    case "enterprise":
+      return "Enterprise";
+    case "archived":
+      return "Archived";
+    default:
+      return null;
+  }
+}
 
 // COMPONENTS
 

@@ -222,8 +222,8 @@ class StateKeyClientTest {
 
         // Then
         assertEquals(StateKey(1L, listOf(PartitionKey("namespace-users-1"))), result1)
-        assertEquals(StateKey(2L, listOf(PartitionKey("products-1"))), result2)
-        assertEquals(StateKey(3L, listOf(PartitionKey("namespace-users-2"))), result3)
+        assertEquals(StateKey(1L, listOf(PartitionKey("products-1"))), result2)
+        assertEquals(StateKey(2L, listOf(PartitionKey("namespace-users-2"))), result3)
     }
 
     @Test

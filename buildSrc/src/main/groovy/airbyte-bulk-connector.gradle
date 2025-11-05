@@ -239,6 +239,16 @@ class AirbyteBulkConnectorPlugin implements Plugin<Project> {
                     // If a test fails, but succeeds on retry - don't fail the task
                     failOnPassedAfterRetry = false
                 }
+                reports {
+                    junitXml {
+                        // Without this flag, the generated test report will list each test attempt.
+                        // This would cause Github to see the report as containing "failed tests,"
+                        // even though the test eventually succeeded.
+                        // So we tell gradle to merge those attempts together, which should tell Github
+                        // to view the overall run as successful.
+                        mergeReruns = true
+                    }
+                }
 
                 // Always re-run integration tests no matter what.
                 outputs.upToDateWhen { false }

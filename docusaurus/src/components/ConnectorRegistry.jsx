@@ -1,8 +1,8 @@
 import { usePluginData } from "@docusaurus/useGlobalData";
 import TabItem from "@theme/TabItem";
 import Tabs from "@theme/Tabs";
-import React, { useEffect, useState } from "react";
-import { REGISTRY_URL } from "../connector_registry";
+import { useEffect, useState } from "react";
+import { REGISTRY_URL } from "../constants";
 import styles from "./ConnectorRegistry.module.css";
 
 const iconStyle = { maxWidth: 25, maxHeight: 25 };

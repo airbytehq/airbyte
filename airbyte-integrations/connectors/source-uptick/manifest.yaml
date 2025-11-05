@@ -27,7 +27,7 @@ definitions:
           - type: WaitTimeFromHeader
             header: Retry-After
       request_headers:
-        User-Agent: Airbyte (Connector Version 0.3.2)
+        User-Agent: Airbyte (Connector Version 0.3.5)
     SimpleRetriever:
       requester:
         $ref: "#/definitions/linked/HttpRequester"
@@ -133,7 +133,7 @@ streams:
         request_parameters:
           ordering: -updated
           show_deleted: "true"
-          fields[Task]: id,created,updated,deleted,ref,description,is_active,inactive_date,extra_fields,due,due_after,pm_date,tolerance_start,tolerance_end,invoiced_date,name,scope_of_works,address,coord_lat,coord_lng,access_note,access_window,access_procedure,access_schedule,access_code,internal_note,workorder_url,technician_note,partner_uid,priority,sla_incident_notification_at,sla_due_inprogress,sla_due_inspected,charge_type,notes,invoice_note,estimated_duration,authorisation_name,authorisation_note,authorisation_ref,authorisation_amount,authorisation_date,contractor_note,status_changed_inprogress,status_changed_inspected,status_changed_complete,app_link,timezone,bulk_email_last_sent_at,contractor_authorisation_limit,category,servicegroup,client,property,billingcard,assigned_to,assigned_office,salesperson,technician,round,tags,branch,supporting_technicians,costcentre,parent_task,author,contractor,contractor_assigned_technician,updated_by,status,zone,required_accreditationtypes,project,projectsectiontask,sla,callout
+          fields[Task]: id,created,updated,deleted,ref,description,is_active,inactive_date,extra_fields,due,due_after,pm_date,tolerance_start,tolerance_end,invoiced_date,name,scope_of_works,address,coord_lat,coord_lng,access_note,access_window,access_procedure,access_schedule,access_code,internal_note,workorder_url,technician_note,partner_uid,priority,sla_incident_notification_at,sla_due_inprogress,sla_due_inspected,charge_type,notes,invoice_note,estimated_duration,authorisation_name,authorisation_note,authorisation_ref,authorisation_amount,authorisation_date,contractor_note,status_changed_inprogress,status_changed_inspected,status_changed_complete,app_link,timezone,bulk_email_last_sent_at,contractor_authorisation_limit,category,servicegroup,client,property,billingcard,assigned_to,assigned_office,salesperson,technician,round,tags,branch,supporting_technicians,costcentre,parent_task,author,contractor,contractor_assigned_technician,updated_by,status,zone,required_accreditationtypes,project,sla,callout
     schema_loader:
       type: InlineSchemaLoader
       schema:
@@ -332,6 +332,7 @@ streams:
           app_link:
             type:
               - string
+              - "null"
           timezone:
             type:
               - string
@@ -349,6 +350,7 @@ streams:
           category_id:
             type:
               - integer
+              - "null"
           servicegroup_id:
             type:
               - integer
@@ -422,6 +424,7 @@ streams:
           status_id:
             type:
               - string
+              - "null"
           zone_id:
             type:
               - integer
@@ -433,9 +436,6 @@ streams:
             type:
               - integer
               - "null"
-          projectsectiontask_id:
-            type:
-              - integer
           sla_id:
             type:
               - integer
@@ -634,7 +634,7 @@ streams:
           - type: AddedFieldDefinition
             path:
               - app_link
-            value: '{{ record["attributes"]["app_link"] }}'
+            value: '{{ record["attributes"]["app_link"] or "None"}}'
           - type: AddedFieldDefinition
             path:
               - timezone
@@ -650,7 +650,7 @@ streams:
           - type: AddedFieldDefinition
             path:
               - category_id
-            value: '{{ record["relationships"]["category"]["data"]["id"] }}'
+            value: '{{ record["relationships"]["category"]["data"]["id"] or "None"}}'
           - type: AddedFieldDefinition
             path:
               - servicegroup_id
@@ -728,7 +728,7 @@ streams:
           - type: AddedFieldDefinition
             path:
               - status_id
-            value: '{{ record["relationships"]["status"]["data"]["id"] }}'
+            value: '{{ record["relationships"]["status"]["data"]["id"] or "None"}}'
           - type: AddedFieldDefinition
             path:
               - zone_id
@@ -741,10 +741,6 @@ streams:
             path:
               - project_id
             value: '{{ record["relationships"]["project"]["data"]["id"] or "None"}}'
-          - type: AddedFieldDefinition
-            path:
-              - projectsectiontask_id
-            value: '{{ record["relationships"]["projectsectiontask"]["data"]["id"] }}'
           - type: AddedFieldDefinition
             path:
               - sla_id
@@ -950,6 +946,7 @@ streams:
           pricetier_id:
             type:
               - integer
+              - "null"
     transformations:
       - type: AddFields
         fields:
@@ -1096,7 +1093,7 @@ streams:
           - type: AddedFieldDefinition
             path:
               - pricetier_id
-            value: '{{ record["relationships"]["pricetier"]["data"]["id"] }}'
+            value: '{{ record["relationships"]["pricetier"]["data"]["id"] or "None"}}'
   - type: DeclarativeStream
     name: clientgroups
     primary_key:
@@ -1758,6 +1755,7 @@ streams:
           upload_path:
             type:
               - string
+              - "null"
           property_access_schedule:
             type:
               - string
@@ -1832,7 +1830,7 @@ streams:
           - type: AddedFieldDefinition
             path:
               - upload_path
-            value: '{{ record["attributes"]["upload_path"] }}'
+            value: '{{ record["attributes"]["upload_path"] or "None"}}'
           - type: AddedFieldDefinition
             path:
               - property_access_schedule
@@ -3024,17 +3022,21 @@ streams:
           billed_quantity:
             type:
               - string
+              - "null"
             format: decimal
           docketed_quantity:
             type:
               - string
+              - "null"
             format: decimal
           has_dockets:
             type:
               - boolean
+              - "null"
           purchaseorder_id:
             type:
               - integer
+              - "null"
           product_id:
             type:
               - integer
@@ -3105,19 +3107,19 @@ streams:
           - type: AddedFieldDefinition
             path:
               - billed_quantity
-            value: '{{ record["attributes"]["billed_quantity"] }}'
+            value: '{{ record["attributes"]["billed_quantity"] or "None"}}'
           - type: AddedFieldDefinition
             path:
               - docketed_quantity
-            value: '{{ record["attributes"]["docketed_quantity"] }}'
+            value: '{{ record["attributes"]["docketed_quantity"] or "None"}}'
           - type: AddedFieldDefinition
             path:
               - has_dockets
-            value: '{{ record["attributes"]["has_dockets"] }}'
+            value: '{{ record["attributes"]["has_dockets"] or "None"}}'
           - type: AddedFieldDefinition
             path:
               - purchaseorder_id
-            value: '{{ record["relationships"]["purchaseorder"]["data"]["id"] }}'
+            value: '{{ record["relationships"]["purchaseorder"]["data"]["id"] or "None"}}'
           - type: AddedFieldDefinition
             path:
               - product_id
@@ -3194,6 +3196,7 @@ streams:
           purchaseorderbill_id:
             type:
               - integer
+              - "null"
           purchaseorderlineitem_id:
             type:
               - integer
@@ -3260,7 +3263,7 @@ streams:
           - type: AddedFieldDefinition
             path:
               - purchaseorderbill_id
-            value: '{{ record["relationships"]["purchaseorderbill"]["data"]["id"] }}'
+            value: '{{ record["relationships"]["purchaseorderbill"]["data"]["id"] or "None"}}'
           - type: AddedFieldDefinition
             path:
               - purchaseorderlineitem_id
@@ -3285,7 +3288,7 @@ streams:
         request_parameters:
           ordering: -updated
           show_deleted: "true"
-          fields[AccreditationType]: id,name,type,property_specific,extra_fields
+          fields[AccreditationType]: id,created,updated,name,type,property_specific,extra_fields
     schema_loader:
       type: InlineSchemaLoader
       schema:
@@ -3296,6 +3299,16 @@ streams:
           id:
             type:
               - integer
+          created:
+            type:
+              - string
+            format: date-time
+            airbyte_type: timestamp_with_timezone
+          updated:
+            type:
+              - string
+            format: date-time
+            airbyte_type: timestamp_with_timezone
           name:
             type:
               - string
@@ -3315,6 +3328,14 @@ streams:
             path:
               - id
             value: '{{ record["id"] }}'
+          - type: AddedFieldDefinition
+            path:
+              - created
+            value: '{{ record["attributes"]["created"] }}'
+          - type: AddedFieldDefinition
+            path:
+              - updated
+            value: '{{ record["attributes"]["updated"] }}'
           - type: AddedFieldDefinition
             path:
               - name
@@ -3369,6 +3390,7 @@ streams:
           status:
             type:
               - string
+              - "null"
           expiry:
             type:
               - string
@@ -3387,9 +3409,11 @@ streams:
           accreditationtype_id:
             type:
               - integer
+              - "null"
           technician_id:
             type:
               - integer
+              - "null"
     transformations:
       - type: AddFields
         fields:
@@ -3408,7 +3432,7 @@ streams:
           - type: AddedFieldDefinition
             path:
               - status
-            value: '{{ record["attributes"]["status"] }}'
+            value: '{{ record["attributes"]["status"] or "None"}}'
           - type: AddedFieldDefinition
             path:
               - expiry
@@ -3428,11 +3452,11 @@ streams:
           - type: AddedFieldDefinition
             path:
               - accreditationtype_id
-            value: '{{ record["relationships"]["accreditationtype"]["data"]["id"] }}'
+            value: '{{ record["relationships"]["accreditationtype"]["data"]["id"] or "None"}}'
           - type: AddedFieldDefinition
             path:
               - technician_id
-            value: '{{ record["relationships"]["technician"]["data"]["id"] }}'
+            value: '{{ record["relationships"]["technician"]["data"]["id"] or "None"}}'
   - type: DeclarativeStream
     name: branches
     primary_key:
@@ -3494,9 +3518,11 @@ streams:
           property_count:
             type:
               - integer
+              - "null"
           user_count:
             type:
               - integer
+              - "null"
           material_markup:
             type:
               - string
@@ -3561,11 +3587,11 @@ streams:
           - type: AddedFieldDefinition
             path:
               - property_count
-            value: '{{ record["attributes"]["property_count"] }}'
+            value: '{{ record["attributes"]["property_count"] or "None"}}'
           - type: AddedFieldDefinition
             path:
               - user_count
-            value: '{{ record["attributes"]["user_count"] }}'
+            value: '{{ record["attributes"]["user_count"] or "None"}}'
           - type: AddedFieldDefinition
             path:
               - material_markup
@@ -3600,7 +3626,7 @@ streams:
         request_parameters:
           ordering: -updated
           show_deleted: "true"
-          fields[CreditNote]: id,status,date,subtotal,tax,total,description,number,partner_uid,extra_fields,invoice,lineitems
+          fields[CreditNote]: id,created,updated,deleted,status,date,subtotal,tax,total,description,number,partner_uid,extra_fields,invoice,lineitems
     schema_loader:
       type: InlineSchemaLoader
       schema:
@@ -3611,6 +3637,22 @@ streams:
           id:
             type:
               - integer
+          created:
+            type:
+              - string
+            format: date-time
+            airbyte_type: timestamp_with_timezone
+          updated:
+            type:
+              - string
+            format: date-time
+            airbyte_type: timestamp_with_timezone
+          deleted:
+            type:
+              - string
+              - "null"
+            format: date-time
+            airbyte_type: timestamp_with_timezone
           status:
             type:
               - string
@@ -3646,6 +3688,7 @@ streams:
           invoice_id:
             type:
               - integer
+              - "null"
           lineitems:
             type:
               - array
@@ -3656,6 +3699,18 @@ streams:
             path:
               - id
             value: '{{ record["id"] }}'
+          - type: AddedFieldDefinition
+            path:
+              - created
+            value: '{{ record["attributes"]["created"] }}'
+          - type: AddedFieldDefinition
+            path:
+              - updated
+            value: '{{ record["attributes"]["updated"] }}'
+          - type: AddedFieldDefinition
+            path:
+              - deleted
+            value: '{{ record["attributes"]["deleted"] or "None"}}'
           - type: AddedFieldDefinition
             path:
               - status
@@ -3695,7 +3750,7 @@ streams:
           - type: AddedFieldDefinition
             path:
               - invoice_id
-            value: '{{ record["relationships"]["invoice"]["data"]["id"] }}'
+            value: '{{ record["relationships"]["invoice"]["data"]["id"] or "None"}}'
           - type: AddedFieldDefinition
             path:
               - lineitems
@@ -3714,7 +3769,7 @@ streams:
         request_parameters:
           ordering: -updated
           show_deleted: "true"
-          fields[CreditNoteLineItem]: id,account_code,description,unit_price,quantity,subtotal,tax,total,taxcode,taxrate,creditnote,product
+          fields[CreditNoteLineItem]: id,created,updated,deleted,account_code,description,unit_price,quantity,subtotal,tax,total,taxcode,taxrate,creditnote,product
     schema_loader:
       type: InlineSchemaLoader
       schema:
@@ -3725,6 +3780,22 @@ streams:
           id:
             type:
               - integer
+          created:
+            type:
+              - string
+            format: date-time
+            airbyte_type: timestamp_with_timezone
+          updated:
+            type:
+              - string
+            format: date-time
+            airbyte_type: timestamp_with_timezone
+          deleted:
+            type:
+              - string
+              - "null"
+            format: date-time
+            airbyte_type: timestamp_with_timezone
           account_code:
             type:
               - string
@@ -3761,6 +3832,7 @@ streams:
           creditnote_id:
             type:
               - integer
+              - "null"
           product_id:
             type:
               - integer
@@ -3772,6 +3844,18 @@ streams:
             path:
               - id
             value: '{{ record["id"] }}'
+          - type: AddedFieldDefinition
+            path:
+              - created
+            value: '{{ record["attributes"]["created"] }}'
+          - type: AddedFieldDefinition
+            path:
+              - updated
+            value: '{{ record["attributes"]["updated"] }}'
+          - type: AddedFieldDefinition
+            path:
+              - deleted
+            value: '{{ record["attributes"]["deleted"] or "None"}}'
           - type: AddedFieldDefinition
             path:
               - account_code
@@ -3811,7 +3895,7 @@ streams:
           - type: AddedFieldDefinition
             path:
               - creditnote_id
-            value: '{{ record["relationships"]["creditnote"]["data"]["id"] }}'
+            value: '{{ record["relationships"]["creditnote"]["data"]["id"] or "None"}}'
           - type: AddedFieldDefinition
             path:
               - product_id
@@ -3900,19 +3984,24 @@ streams:
           quoted_date:
             type:
               - string
+              - "null"
             format: date
           quote_ref:
             type:
               - string
+              - "null"
           quote_status:
             type:
               - string
+              - "null"
           type_id:
             type:
               - integer
+              - "null"
           asset_id:
             type:
               - integer
+              - "null"
           assigned_contractor_id:
             type:
               - integer
@@ -3997,23 +4086,23 @@ streams:
           - type: AddedFieldDefinition
             path:
               - quoted_date
-            value: '{{ record["attributes"]["quoted_date"] }}'
+            value: '{{ record["attributes"]["quoted_date"] or "None"}}'
           - type: AddedFieldDefinition
             path:
               - quote_ref
-            value: '{{ record["attributes"]["quote_ref"] }}'
+            value: '{{ record["attributes"]["quote_ref"] or "None"}}'
           - type: AddedFieldDefinition
             path:
               - quote_status
-            value: '{{ record["attributes"]["quote_status"] }}'
+            value: '{{ record["attributes"]["quote_status"] or "None"}}'
           - type: AddedFieldDefinition
             path:
               - type_id
-            value: '{{ record["relationships"]["type"]["data"]["id"] }}'
+            value: '{{ record["relationships"]["type"]["data"]["id"] or "None"}}'
           - type: AddedFieldDefinition
             path:
               - asset_id
-            value: '{{ record["relationships"]["asset"]["data"]["id"] }}'
+            value: '{{ record["relationships"]["asset"]["data"]["id"] or "None"}}'
           - type: AddedFieldDefinition
             path:
               - assigned_contractor_id
@@ -4141,6 +4230,7 @@ streams:
           asset_count:
             type:
               - integer
+              - "null"
           is_majorservice_applicable:
             type:
               - boolean
@@ -4271,7 +4361,7 @@ streams:
           - type: AddedFieldDefinition
             path:
               - asset_count
-            value: '{{ record["attributes"]["asset_count"] }}'
+            value: '{{ record["attributes"]["asset_count"] or "None"}}'
           - type: AddedFieldDefinition
             path:
               - is_majorservice_applicable
@@ -4369,6 +4459,7 @@ streams:
           type_id:
             type:
               - integer
+              - "null"
           default_replacement_product_id:
             type:
               - integer
@@ -4415,7 +4506,7 @@ streams:
           - type: AddedFieldDefinition
             path:
               - type_id
-            value: '{{ record["relationships"]["type"]["data"]["id"] }}'
+            value: '{{ record["relationships"]["type"]["data"]["id"] or "None"}}'
           - type: AddedFieldDefinition
             path:
               - default_replacement_product_id
@@ -4598,6 +4689,7 @@ streams:
           type_id:
             type:
               - integer
+              - "null"
           variant_id:
             type:
               - integer
@@ -4609,6 +4701,7 @@ streams:
           property_id:
             type:
               - integer
+              - "null"
           contractor_id:
             type:
               - integer
@@ -4623,12 +4716,14 @@ streams:
           floorplan_location_id:
             type:
               - integer
+              - "null"
           last_service_result:
             type:
               - string
           highest_severity:
             type:
               - string
+              - "null"
     transformations:
       - type: AddFields
         fields:
@@ -4799,7 +4894,7 @@ streams:
           - type: AddedFieldDefinition
             path:
               - type_id
-            value: '{{ record["relationships"]["type"]["data"]["id"] }}'
+            value: '{{ record["relationships"]["type"]["data"]["id"] or "None"}}'
           - type: AddedFieldDefinition
             path:
               - variant_id
@@ -4811,7 +4906,7 @@ streams:
           - type: AddedFieldDefinition
             path:
               - property_id
-            value: '{{ record["relationships"]["property"]["data"]["id"] }}'
+            value: '{{ record["relationships"]["property"]["data"]["id"] or "None"}}'
           - type: AddedFieldDefinition
             path:
               - contractor_id
@@ -4827,7 +4922,7 @@ streams:
           - type: AddedFieldDefinition
             path:
               - floorplan_location_id
-            value: '{{ record["relationships"]["floorplan_location"]["data"]["id"] }}'
+            value: '{{ record["relationships"]["floorplan_location"]["data"]["id"] or "None"}}'
           - type: AddedFieldDefinition
             path:
               - last_service_result
@@ -4835,7 +4930,7 @@ streams:
           - type: AddedFieldDefinition
             path:
               - highest_severity
-            value: '{{ record["attributes"]["highest_severity"] }}'
+            value: '{{ record["attributes"]["highest_severity"] or "None"}}'
   - type: DeclarativeStream
     name: products
     primary_key:
@@ -4930,6 +5025,7 @@ streams:
           current_price:
             type:
               - string
+              - "null"
           category:
             type:
               - string
@@ -4950,6 +5046,7 @@ streams:
           autocomplete_label:
             type:
               - string
+              - "null"
           tracking_categories:
             type:
               - object
@@ -4979,11 +5076,13 @@ streams:
           last_used:
             type:
               - string
+              - "null"
             format: date-time
             airbyte_type: timestamp_with_timezone
           latest_unit_cost:
             type:
               - string
+              - "null"
             format: decimal
     transformations:
       - type: AddFields
@@ -5071,7 +5170,7 @@ streams:
           - type: AddedFieldDefinition
             path:
               - current_price
-            value: '{{ record["attributes"]["current_price"] }}'
+            value: '{{ record["attributes"]["current_price"] or "None"}}'
           - type: AddedFieldDefinition
             path:
               - category
@@ -5095,7 +5194,7 @@ streams:
           - type: AddedFieldDefinition
             path:
               - autocomplete_label
-            value: '{{ record["attributes"]["autocomplete_label"] }}'
+            value: '{{ record["attributes"]["autocomplete_label"] or "None"}}'
           - type: AddedFieldDefinition
             path:
               - tracking_categories
@@ -5133,11 +5232,11 @@ streams:
           - type: AddedFieldDefinition
             path:
               - last_used
-            value: '{{ record["attributes"]["last_used"] }}'
+            value: '{{ record["attributes"]["last_used"] or "None"}}'
           - type: AddedFieldDefinition
             path:
               - latest_unit_cost
-            value: '{{ record["attributes"]["latest_unit_cost"] }}'
+            value: '{{ record["attributes"]["latest_unit_cost"] or "None"}}'
   - type: DeclarativeStream
     name: rounds
     primary_key:
@@ -5197,9 +5296,11 @@ streams:
           task_count:
             type:
               - string
+              - "null"
           task_breakdown:
             type:
               - string
+              - "null"
           chieftan_id:
             type:
               - integer
@@ -5250,11 +5351,11 @@ streams:
           - type: AddedFieldDefinition
             path:
               - task_count
-            value: '{{ record["attributes"]["task_count"] }}'
+            value: '{{ record["attributes"]["task_count"] or "None"}}'
           - type: AddedFieldDefinition
             path:
               - task_breakdown
-            value: '{{ record["attributes"]["task_breakdown"] }}'
+            value: '{{ record["attributes"]["task_breakdown"] or "None"}}'
           - type: AddedFieldDefinition
             path:
               - chieftan_id
@@ -5323,6 +5424,7 @@ streams:
           type_id:
             type:
               - integer
+              - "null"
           started:
             type:
               - string
@@ -5419,6 +5521,7 @@ streams:
           technician_id:
             type:
               - integer
+              - "null"
           sell_product_id:
             type:
               - integer
@@ -5437,20 +5540,25 @@ streams:
           duration:
             type:
               - integer
+              - "null"
           duration_hours:
             type:
               - string
+              - "null"
             format: decimal
           status:
             type:
               - string
+              - "null"
           payroll_date:
             type:
               - string
+              - "null"
             format: date
           appointment_attendance:
             type:
               - string
+              - "null"
           is_suspicious_started:
             type:
               - boolean
@@ -5491,7 +5599,7 @@ streams:
           - type: AddedFieldDefinition
             path:
               - type_id
-            value: '{{ record["relationships"]["type"]["data"]["id"] }}'
+            value: '{{ record["relationships"]["type"]["data"]["id"] or "None"}}'
           - type: AddedFieldDefinition
             path:
               - started
@@ -5575,7 +5683,7 @@ streams:
           - type: AddedFieldDefinition
             path:
               - technician_id
-            value: '{{ record["relationships"]["technician"]["data"]["id"] }}'
+            value: '{{ record["relationships"]["technician"]["data"]["id"] or "None"}}'
           - type: AddedFieldDefinition
             path:
               - sell_product_id
@@ -5595,23 +5703,23 @@ streams:
           - type: AddedFieldDefinition
             path:
               - duration
-            value: '{{ record["attributes"]["duration"] }}'
+            value: '{{ record["attributes"]["duration"] or "None"}}'
           - type: AddedFieldDefinition
             path:
               - duration_hours
-            value: '{{ record["attributes"]["duration_hours"] }}'
+            value: '{{ record["attributes"]["duration_hours"] or "None"}}'
           - type: AddedFieldDefinition
             path:
               - status
-            value: '{{ record["attributes"]["status"] }}'
+            value: '{{ record["attributes"]["status"] or "None"}}'
           - type: AddedFieldDefinition
             path:
               - payroll_date
-            value: '{{ record["attributes"]["payroll_date"] }}'
+            value: '{{ record["attributes"]["payroll_date"] or "None"}}'
           - type: AddedFieldDefinition
             path:
               - appointment_attendance
-            value: '{{ record["attributes"]["appointment_attendance"] }}'
+            value: '{{ record["attributes"]["appointment_attendance"] or "None"}}'
           - type: AddedFieldDefinition
             path:
               - is_suspicious_started
@@ -5732,6 +5840,7 @@ streams:
           asset_count:
             type:
               - string
+              - "null"
     transformations:
       - type: AddFields
         fields:
@@ -5840,4 +5949,4 @@ streams:
           - type: AddedFieldDefinition
             path:
               - asset_count
-            value: '{{ record["attributes"]["asset_count"] }}'
+            value: '{{ record["attributes"]["asset_count"] or "None"}}'

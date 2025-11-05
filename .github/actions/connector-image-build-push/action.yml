@@ -20,10 +20,9 @@ inputs:
     description: "Override the image tag (optional). If not provided, the tag will be derived from the connector metadata.yaml."
     required: false
     default: ""
-  push-latest:
-    description: "if pushing the image, to a remote registry, also push it with the latest tag"
+  push-latest-tag:
+    description: "Override the default behavior and if publishing an image, determine whether to tag it with latest in addition to the version tag. If not provided, the action will determine based on release-type."
     required: false
-    default: "false"
   dry-run:
     description: "Dry run mode (build but do not push)"
     required: false
@@ -131,6 +130,9 @@ runs:
 
         # Check if this is a release candidate
         IS_RELEASE_CANDIDATE=$(poe -qq get-version | grep -q 'rc' && echo "true" || echo "false")
+        if [[ "$IS_RELEASE_CANDIDATE" == "true" ]]; then
+          echo "ℹ️ Detected release candidate version: $CONNECTOR_VERSION"
+        fi
 
         # Determine the image tags to use 
         if [[ "${{ inputs.tag-override }}" ]]; then
@@ -146,18 +148,18 @@ runs:
         fi
 
         # Determine whether to push with latest tag
-        if [[ "${{ inputs.push-latest }}" == "true" || "${{ inputs.push-latest }}" == "false" ]]; then
+        if [[ "${{ inputs.push-latest-tag }}" == "true" || "${{ inputs.push-latest-tag }}" == "false" ]]; then
           # Use explicit input value
-          PUSH_LATEST="${{ inputs.push-latest }}"
-          echo "🏷 Using explicit push-latest setting: $PUSH_LATEST"
+          PUSH_LATEST_TAG="${{ inputs.push-latest-tag }}"
+          echo "🏷 Using explicit push-latest-tag setting: $PUSH_LATEST_TAG"
         else
           # Auto-determine based on release-type and release candidate status
-          if [[ "${{ inputs.release-type }}" == "pre-release" || "$IS_RELEASE_CANDIDATE" == "true" ]]; then
-            PUSH_LATEST="false"
-            echo "🏷 Skipping latest tag for pre-release or release candidate build"
-          else
-            PUSH_LATEST="true"
+          if [[ "${{ inputs.release-type }}" == "main-release" && "$IS_RELEASE_CANDIDATE" == "false" ]]; then
+            PUSH_LATEST_TAG="true"
             echo "🏷 Will push with latest tag for main release"
+          else
+            PUSH_LATEST_TAG="false"
+            echo "🏷 Skipping latest tag for pre-release or release candidate build"
           fi
         fi
 
@@ -187,7 +189,7 @@ runs:
 
         # Get all tags to use for image pushing
         DOCKER_TAGS="${FULL_IMAGE_NAME}"
-        if [[ "$PUSH_LATEST" == "true" ]]; then
+        if [[ "$PUSH_LATEST_TAG" == "true" ]]; then
           DOCKER_TAGS="${DOCKER_TAGS},${{ inputs.registry }}/${CONNECTOR_NAME}:latest"
         fi
 
@@ -199,7 +201,7 @@ runs:
         echo "  Registry: ${{ inputs.registry }}"
         echo "  Full Image Name: $FULL_IMAGE_NAME"
         echo "  Release Type: ${{ inputs.release-type }}"
-        echo "  Push Latest: $PUSH_LATEST"
+        echo "  Push Latest Tag: $PUSH_LATEST_TAG"
         echo "  Dry Run: ${{ inputs.dry-run }}"
         echo "  Force Publish: ${{ inputs.force-publish }}" 
 

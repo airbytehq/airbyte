@@ -105,6 +105,37 @@ data class RestCatalogConfiguration(
 ) : CatalogConfiguration
 
 /**
+ * Polaris catalog configuration details.
+ *
+ * Stores information required to connect to an Apache Polaris server.
+ */
+@JsonSchemaTitle("Polaris Catalog Configuration")
+@JsonSchemaDescription(
+    "Apache Polaris-specific configuration details for connecting an Iceberg catalog."
+)
+data class PolarisCatalogConfiguration(
+    @JsonSchemaTitle("Polaris Server URI")
+    @JsonPropertyDescription("The base URL of the Polaris server.")
+    val serverUri: String,
+    @JsonSchemaTitle("Polaris Catalog Name")
+    @JsonPropertyDescription("The name of the catalog in Polaris.")
+    val catalogName: String,
+    @JsonSchemaTitle("Client ID")
+    @JsonPropertyDescription("The OAuth Client ID for authenticating with the Polaris server.")
+    val clientId: String,
+    @JsonSchemaTitle("Client Secret")
+    @JsonPropertyDescription("The OAuth Client Secret for authenticating with the Polaris server.")
+    val clientSecret: String,
+    @get:JsonSchemaTitle("Namespace")
+    @get:JsonPropertyDescription(
+        """The namespace to be used in the Table identifier.
+           This will ONLY be used if the `Destination Namespace` setting for the connection is set to
+           `Destination-defined` or `Source-defined`"""
+    )
+    val namespace: String,
+) : CatalogConfiguration
+
+/**
  * Provides a way to retrieve the unified Iceberg catalog configuration.
  *
  * Classes implementing this interface should supply the IcebergCatalogConfiguration instance
