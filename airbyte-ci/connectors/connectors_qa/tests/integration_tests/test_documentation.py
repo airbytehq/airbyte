@@ -9,7 +9,7 @@ from asyncclick.testing import CliRunner
 
 from connectors_qa.cli import generate_documentation
 
-DOCUMENTATION_FILE_PATH_IN_AIRBYTE_REPO = Path("docs/contributing-to-airbyte/resources/qa-checks.md")
+DOCUMENTATION_FILE_PATH_IN_AIRBYTE_REPO = Path("docs/community/contributing-to-airbyte/resources/qa-checks.md")
 
 
 @pytest.fixture
