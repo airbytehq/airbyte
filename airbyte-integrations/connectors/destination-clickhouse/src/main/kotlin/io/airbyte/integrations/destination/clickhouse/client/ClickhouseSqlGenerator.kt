@@ -374,7 +374,7 @@ fun AirbyteType.toDialectType(enableJson: Boolean): String =
 
 fun typeDecl(type: String, nullable: Boolean) =
     if (nullable) {
-        "Nullable($type)"
+        type.sqlNullable()
     } else {
         type
     }
