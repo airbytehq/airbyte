@@ -1,3 +1,32 @@
+## Version 0.1.67
+
+**Load CDK**
+
+* Fix expectations in basic integration tests related to additional stats.
+
+## Version 0.1.66
+
+**Load CDK**
+
+* Added: Support for reporting of additional stats in destination state messages.
+* Changed: Refactor coercer interface to separate out coercion and validation.
+
+## Version 0.1.65
+
+extract cdk: fix bug when getting table metadata that cause timeout
+
+## Version 0.1.64
+
+extract cdk: add table filtering to jdbc connectors
+
+## Version 0.1.63
+
+introduce extract-trigger toolkit for trigger-based CDC
+
+## Version 0.1.62
+
+load cdk: correctly parse empty schemas
+
 ## Version 0.1.61
 
 Fix bug related to state messages indexing in the dataflow CDK
