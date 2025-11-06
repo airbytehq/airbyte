@@ -144,6 +144,8 @@ Arrays and Unions are converted to String for compatibility. If you need to quer
 
 ## Changelog
 
+<!-- vale off -->
+
 <details>
   <summary>Expand to review</summary>
 
@@ -192,3 +194,5 @@ Arrays and Unions are converted to String for compatibility. If you need to quer
 | 0.1.0      | 2025-06-23 | [\#62024](https://github.com/airbytehq/airbyte/pull/62024) | Release first beta version.                                                    |
 
 </details>
+
+<!-- vale on -->
