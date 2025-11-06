@@ -59,6 +59,9 @@ coverage.xml
 .pytest_cache/
 cover/
 
+# Node.js
+node_modules/
+
 # dbt
 profiles.yml
 
@@ -118,3 +121,4 @@ airbyte-integrations/connectors/**/airbyte-cdk-load/
 
 # AI
 AGENT.md
+.claude/settings.local.json
