@@ -239,6 +239,9 @@ class AirbyteBulkConnectorPlugin implements Plugin<Project> {
                         }
                         // If a test fails, but succeeds on retry - don't fail the task
                         failOnPassedAfterRetry = false
+                        // If a test fails, but is skipped on retry (e.g., due to failed assumptions) - don't fail the task.
+                        // This handles cases where tests use Assumptions.assumeTrue() to conditionally skip themselves.
+                        failOnSkippedAfterRetry = false
                     }
                 }
                 reports {
