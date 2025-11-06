@@ -1,3 +1,7 @@
+## Version 0.1.69
+
+extract cdk: fix case sensitivity for table filtering in jdbc connectors
+
 ## Version 0.1.68
 
 **Load CDK**
