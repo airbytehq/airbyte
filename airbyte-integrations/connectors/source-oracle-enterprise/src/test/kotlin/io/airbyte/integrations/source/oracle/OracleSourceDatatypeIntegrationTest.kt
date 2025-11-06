@@ -150,7 +150,7 @@ class OracleSourceDatatypeIntegrationTest {
         fun startAndProvisionTestContainer() {
             dbContainer =
                 OracleContainerFactory.exclusive(
-                    "gvenzl/oracle-free:latest-faststart",
+                    "gvenzl/oracle-free:23.6-full-faststart",
                     OracleContainerFactory.WithCdc,
                 )
         }

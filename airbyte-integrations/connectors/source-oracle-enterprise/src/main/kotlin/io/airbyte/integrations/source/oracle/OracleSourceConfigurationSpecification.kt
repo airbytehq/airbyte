@@ -107,7 +107,7 @@ class OracleSourceConfigurationSpecification : ConfigurationSpecification() {
     @JsonSchemaTitle("Schemas")
     @JsonSchemaArrayWithUniqueItems("schemas")
     @JsonPropertyDescription("The list of schemas to sync from. Defaults to user. Case sensitive.")
-    @JsonSchemaInject(json = """{"order":6,"always_show":true,"uniqueItems":true}""")
+    @JsonSchemaInject(json = """{"order":6,"uniqueItems":true}""")
     var schemas: List<String>? = null
 
     @JsonProperty("table_filters")
@@ -116,7 +116,7 @@ class OracleSourceConfigurationSpecification : ConfigurationSpecification() {
         "Inclusion filters for table selection per schema. " +
             "If no filters are specified for a schema, all tables in that schema will be synced."
     )
-    @JsonSchemaInject(json = """{"order":7, "always_show":true}""")
+    @JsonSchemaInject(json = """{"order":7}""")
     var filters: List<TableFilter>? = null
 
     @JsonProperty("jdbc_url_params")

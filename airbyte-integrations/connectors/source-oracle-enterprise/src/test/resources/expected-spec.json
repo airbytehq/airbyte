@@ -79,7 +79,6 @@
         "description": "The list of schemas to sync from. Defaults to user. Case sensitive.",
         "title": "Schemas",
         "order": 6,
-        "always_show": true,
         "uniqueItems": true
       },
       "table_filters": {
@@ -110,8 +109,7 @@
         },
         "description": "Inclusion filters for table selection per schema. If no filters are specified for a schema, all tables in that schema will be synced.",
         "title": "Table Name Filters",
-        "order": 7,
-        "always_show": true
+        "order": 7
       },
       "jdbc_url_params": {
         "type": "string",

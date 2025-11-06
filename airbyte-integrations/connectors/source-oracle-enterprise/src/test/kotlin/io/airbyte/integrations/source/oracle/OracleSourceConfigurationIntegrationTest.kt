@@ -66,7 +66,7 @@ class OracleSourceConfigurationIntegrationTest {
         fun startAndProvisionTestContainer() {
             dbContainer =
                 OracleContainerFactory.exclusive(
-                    "gvenzl/oracle-free:full-faststart",
+                    "gvenzl/oracle-free:23.6-full-faststart",
                     OracleContainerFactory.WithSslAndNne,
                 )
         }

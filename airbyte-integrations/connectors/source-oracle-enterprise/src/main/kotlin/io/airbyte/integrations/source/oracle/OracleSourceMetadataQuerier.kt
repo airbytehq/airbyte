@@ -244,25 +244,66 @@ class OracleSourceMetadataQuerier(
         log.info { "Querying column names for catalog discovery." }
         try {
             val dbmd: DatabaseMetaData = base.conn.metaData
+
+            fun addColumnsFromQuery(
+                catalog: String?,
+                schema: String?,
+                tablePattern: String?,
+                isPseudo: Boolean
+            ) {
+                val resultSet =
+                    if (isPseudo) {
+                        dbmd.getPseudoColumns(catalog, schema, tablePattern, null)
+                    } else {
+                        dbmd.getColumns(catalog, schema, tablePattern, null)
+                    }
+
+                resultSet.use { rs: ResultSet ->
+                    while (rs.next()) {
+                        val (tableName: TableName, metadata: ColumnMetadata) =
+                            columnMetadataFromResultSet(rs, isPseudoColumn = isPseudo)
+                        val joinedTableName: TableName = joinMap[tableName] ?: continue
+                        results.add(joinedTableName to metadata)
+                    }
+                }
+            }
+
             memoizedTableNames
                 .filter { it.namespace() != null }
                 .map { it.catalog to it.schema }
                 .distinct()
                 .forEach { (catalog: String?, schema: String?) ->
-                    dbmd.getPseudoColumns(catalog, schema, null, null).use { rs: ResultSet ->
-                        while (rs.next()) {
-                            val (tableName: TableName, metadata: ColumnMetadata) =
-                                columnMetadataFromResultSet(rs, isPseudoColumn = true)
-                            val joinedTableName: TableName = joinMap[tableName] ?: continue
-                            results.add(joinedTableName to metadata)
-                        }
-                    }
-                    dbmd.getColumns(catalog, schema, null, null).use { rs: ResultSet ->
-                        while (rs.next()) {
-                            val (tableName: TableName, metadata: ColumnMetadata) =
-                                columnMetadataFromResultSet(rs, isPseudoColumn = false)
-                            val joinedTableName: TableName = joinMap[tableName] ?: continue
-                            results.add(joinedTableName to metadata)
+                    if (tableFilters.isEmpty()) {
+                        // No filters, get all columns for this schema
+                        addColumnsFromQuery(catalog, schema, null, isPseudo = true)
+                        addColumnsFromQuery(catalog, schema, null, isPseudo = false)
+                    } else {
+                        // Check if there are filters for this specific schema
+                        val filtersForSchema =
+                            tableFilters.filter { it.schemaName.equals(schema, ignoreCase = true) }
+
+                        if (filtersForSchema.isEmpty()) {
+                            // No filters for this schema, get all columns
+                            addColumnsFromQuery(catalog, schema, null, isPseudo = true)
+                            addColumnsFromQuery(catalog, schema, null, isPseudo = false)
+                        } else {
+                            // Apply the filters for this schema
+                            for (filter in filtersForSchema) {
+                                for (pattern in filter.patterns) {
+                                    addColumnsFromQuery(
+                                        catalog,
+                                        filter.schemaName,
+                                        pattern,
+                                        isPseudo = true
+                                    )
+                                    addColumnsFromQuery(
+                                        catalog,
+                                        filter.schemaName,
+                                        pattern,
+                                        isPseudo = false
+                                    )
+                                }
+                            }
                         }
                     }
                 }
@@ -426,9 +467,12 @@ class OracleSourceMetadataQuerier(
             .map { StreamDescriptor().withName(it.name).withNamespace(it.namespace()) }
             .map(StreamIdentifier::from)
 
+    override fun streamNamespaces(): List<String> =
+        memoizedTableNames.mapNotNull { it.namespace() }.distinct()
+
     val memoizedPrimaryKeys: Map<TableName, List<List<String>>> by lazy {
         val results = mutableListOf<AllPrimaryKeysRow>()
-        val schemas: List<String> = base.streamNamespaces()
+        val schemas: List<String> = streamNamespaces()
         val sql: String = PK_QUERY_FMTSTR.format(schemas.joinToString { "\'$it\'" })
         log.info { "Querying Oracle system tables for all primary keys for catalog discovery." }
         try {
@@ -451,7 +495,7 @@ class OracleSourceMetadataQuerier(
             return@lazy results
                 .groupBy {
                     val desc = StreamDescriptor().withName(it.tableName).withNamespace(it.owner)
-                    base.findTableName(StreamIdentifier.from(desc))
+                    findTableName(StreamIdentifier.from(desc))
                 }
                 .mapNotNull { (table, rowsByTable) ->
                     if (table == null) return@mapNotNull null
@@ -480,7 +524,7 @@ class OracleSourceMetadataQuerier(
     override fun primaryKey(
         streamID: StreamIdentifier,
     ): List<List<String>> {
-        val table: TableName = base.findTableName(streamID) ?: return listOf()
+        val table: TableName = findTableName(streamID) ?: return listOf()
         return memoizedPrimaryKeys[table] ?: listOf()
     }
 
