@@ -29,12 +29,12 @@ class CommittedStatsStoreTest {
     fun `acceptStats should store stats for a stream`() {
         // Given
         val counts = PartitionHistogram()
-        counts.increment(Fixtures.partition1, 10L)
-        counts.increment(Fixtures.partition2, 20L)
+        counts.increment(Fixtures.partition1, 10.0)
+        counts.increment(Fixtures.partition2, 20.0)
 
         val bytes = PartitionHistogram()
-        bytes.increment(Fixtures.partition1, 100L)
-        bytes.increment(Fixtures.partition2, 200L)
+        bytes.increment(Fixtures.partition1, 100.0)
+        bytes.increment(Fixtures.partition2, 200.0)
 
         // When
         store.acceptStats(Fixtures.descriptor, counts, bytes)
@@ -49,10 +49,10 @@ class CommittedStatsStoreTest {
     @Test
     fun `acceptStats should merge multiple stats for the same stream`() {
         // Given
-        val counts1 = PartitionHistogram().apply { increment(Fixtures.partition1, 10L) }
-        val bytes1 = PartitionHistogram().apply { increment(Fixtures.partition1, 100L) }
-        val counts2 = PartitionHistogram().apply { increment(Fixtures.partition1, 5L) }
-        val bytes2 = PartitionHistogram().apply { increment(Fixtures.partition1, 50L) }
+        val counts1 = PartitionHistogram().apply { increment(Fixtures.partition1, 10.0) }
+        val bytes1 = PartitionHistogram().apply { increment(Fixtures.partition1, 100.0) }
+        val counts2 = PartitionHistogram().apply { increment(Fixtures.partition1, 5.0) }
+        val bytes2 = PartitionHistogram().apply { increment(Fixtures.partition1, 50.0) }
 
         // When
         store.acceptStats(Fixtures.descriptor, counts1, bytes1)
@@ -69,12 +69,12 @@ class CommittedStatsStoreTest {
     fun `commitStats should remove live stats and accumulate cumulative stats`() {
         // Given
         val counts = PartitionHistogram()
-        counts.increment(Fixtures.partition1, 10L)
-        counts.increment(Fixtures.partition2, 20L)
+        counts.increment(Fixtures.partition1, 10.0)
+        counts.increment(Fixtures.partition2, 20.0)
 
         val bytes = PartitionHistogram()
-        bytes.increment(Fixtures.partition1, 100L)
-        bytes.increment(Fixtures.partition2, 200L)
+        bytes.increment(Fixtures.partition1, 100.0)
+        bytes.increment(Fixtures.partition2, 200.0)
         store.acceptStats(Fixtures.descriptor, counts, bytes)
 
         // When - commit only Fixtures.partition1
@@ -102,14 +102,14 @@ class CommittedStatsStoreTest {
     fun `commitStats should handle multiple partitions in single state key`() {
         // Given
         val counts = PartitionHistogram()
-        counts.increment(Fixtures.partition1, 10L)
-        counts.increment(Fixtures.partition2, 20L)
-        counts.increment(Fixtures.partition3, 30L)
+        counts.increment(Fixtures.partition1, 10.0)
+        counts.increment(Fixtures.partition2, 20.0)
+        counts.increment(Fixtures.partition3, 30.0)
 
         val bytes = PartitionHistogram()
-        bytes.increment(Fixtures.partition1, 100L)
-        bytes.increment(Fixtures.partition2, 200L)
-        bytes.increment(Fixtures.partition3, 300L)
+        bytes.increment(Fixtures.partition1, 100.0)
+        bytes.increment(Fixtures.partition2, 200.0)
+        bytes.increment(Fixtures.partition3, 300.0)
 
         store.acceptStats(Fixtures.descriptor, counts, bytes)
 
@@ -133,8 +133,8 @@ class CommittedStatsStoreTest {
     @Test
     fun `commitStats should handle empty state key`() {
         // Given
-        val counts = PartitionHistogram().apply { increment(Fixtures.partition1, 10L) }
-        val bytes = PartitionHistogram().apply { increment(Fixtures.partition1, 100L) }
+        val counts = PartitionHistogram().apply { increment(Fixtures.partition1, 10.0) }
+        val bytes = PartitionHistogram().apply { increment(Fixtures.partition1, 100.0) }
         store.acceptStats(Fixtures.descriptor, counts, bytes)
 
         // When - commit with empty partition list
@@ -151,8 +151,8 @@ class CommittedStatsStoreTest {
     @Test
     fun `commitStats should handle non-existent partition`() {
         // Given
-        val counts = PartitionHistogram().apply { increment(Fixtures.partition1, 10L) }
-        val bytes = PartitionHistogram().apply { increment(Fixtures.partition1, 100L) }
+        val counts = PartitionHistogram().apply { increment(Fixtures.partition1, 10.0) }
+        val bytes = PartitionHistogram().apply { increment(Fixtures.partition1, 100.0) }
         store.acceptStats(Fixtures.descriptor, counts, bytes)
 
         // When - try to commit non-existent partition
@@ -173,10 +173,10 @@ class CommittedStatsStoreTest {
         val descriptor2 = DestinationStream.Descriptor("namespace2", "stream2")
         val partition = Fixtures.partition1
 
-        val counts1 = PartitionHistogram().apply { increment(partition, 10L) }
-        val bytes1 = PartitionHistogram().apply { increment(partition, 100L) }
-        val counts2 = PartitionHistogram().apply { increment(partition, 20L) }
-        val bytes2 = PartitionHistogram().apply { increment(partition, 200L) }
+        val counts1 = PartitionHistogram().apply { increment(partition, 10.0) }
+        val bytes1 = PartitionHistogram().apply { increment(partition, 100.0) }
+        val counts2 = PartitionHistogram().apply { increment(partition, 20.0) }
+        val bytes2 = PartitionHistogram().apply { increment(partition, 200.0) }
 
         store.acceptStats(descriptor1, counts1, bytes1)
         store.acceptStats(descriptor2, counts2, bytes2)
@@ -197,8 +197,8 @@ class CommittedStatsStoreTest {
     fun `removeLiveStats with single partition should remove and return stats`() {
         // Given
         val partition = Fixtures.partition1
-        val counts = PartitionHistogram().apply { increment(partition, 10L) }
-        val bytes = PartitionHistogram().apply { increment(partition, 100L) }
+        val counts = PartitionHistogram().apply { increment(partition, 10.0) }
+        val bytes = PartitionHistogram().apply { increment(partition, 100.0) }
         store.acceptStats(Fixtures.descriptor, counts, bytes)
 
         // When
@@ -219,12 +219,12 @@ class CommittedStatsStoreTest {
     fun `removeLiveStats with StateKey should aggregate multiple partitions`() {
         // Given
         val counts = PartitionHistogram()
-        counts.increment(Fixtures.partition1, 10L)
-        counts.increment(Fixtures.partition2, 20L)
+        counts.increment(Fixtures.partition1, 10.0)
+        counts.increment(Fixtures.partition2, 20.0)
 
         val bytes = PartitionHistogram()
-        bytes.increment(Fixtures.partition1, 100L)
-        bytes.increment(Fixtures.partition2, 200L)
+        bytes.increment(Fixtures.partition1, 100.0)
+        bytes.increment(Fixtures.partition2, 200.0)
 
         store.acceptStats(Fixtures.descriptor, counts, bytes)
 
@@ -266,20 +266,20 @@ class CommittedStatsStoreTest {
         // Given
         val stats1 =
             PartitionStats(
-                counts = PartitionHistogram().apply { increment(Fixtures.partition1, 10L) },
-                bytes = PartitionHistogram().apply { increment(Fixtures.partition1, 100L) }
+                counts = PartitionHistogram().apply { increment(Fixtures.partition1, 10.0) },
+                bytes = PartitionHistogram().apply { increment(Fixtures.partition1, 100.0) }
             )
         val stats2 =
             PartitionStats(
                 counts =
                     PartitionHistogram().apply {
-                        increment(Fixtures.partition1, 5L)
-                        increment(Fixtures.partition2, 20L)
+                        increment(Fixtures.partition1, 5.0)
+                        increment(Fixtures.partition2, 20.0)
                     },
                 bytes =
                     PartitionHistogram().apply {
-                        increment(Fixtures.partition1, 50L)
-                        increment(Fixtures.partition2, 200L)
+                        increment(Fixtures.partition1, 50.0)
+                        increment(Fixtures.partition2, 200.0)
                     }
             )
 
@@ -287,10 +287,10 @@ class CommittedStatsStoreTest {
         val merged = stats1.merge(stats2)
 
         // Then
-        assertEquals(15L, merged.counts.get(Fixtures.partition1))
-        assertEquals(20L, merged.counts.get(Fixtures.partition2))
-        assertEquals(150L, merged.bytes.get(Fixtures.partition1))
-        assertEquals(200L, merged.bytes.get(Fixtures.partition2))
+        assertEquals(15L, merged.counts.get(Fixtures.partition1)?.toLong())
+        assertEquals(20L, merged.counts.get(Fixtures.partition2)?.toLong())
+        assertEquals(150L, merged.bytes.get(Fixtures.partition1)?.toLong())
+        assertEquals(200L, merged.bytes.get(Fixtures.partition2)?.toLong())
     }
 
     @Test
@@ -303,8 +303,8 @@ class CommittedStatsStoreTest {
             threads.add(
                 Thread {
                     val partition = PartitionKey("p$i")
-                    val counts = PartitionHistogram().apply { increment(partition, i.toLong()) }
-                    val bytes = PartitionHistogram().apply { increment(partition, i * 10L) }
+                    val counts = PartitionHistogram().apply { increment(partition, i.toDouble()) }
+                    val bytes = PartitionHistogram().apply { increment(partition, i * 10.0) }
                     store.acceptStats(Fixtures.descriptor, counts, bytes)
                 }
             )

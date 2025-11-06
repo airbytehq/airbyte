@@ -1,3 +1,9 @@
+## Version 0.1.68
+
+**Load CDK**
+
+* Refactor additional state statistic tracking.
+
 ## Version 0.1.67
 
 **Load CDK**
