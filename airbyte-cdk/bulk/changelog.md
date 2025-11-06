@@ -1,6 +1,8 @@
 ## Version 0.1.69
 
-extract cdk: fix case sensitivity for table filtering in jdbc connectors
+**Load CDK**
+
+* Changed: Update the IcebergTableSynchronizer to allow for individual update operations commit in preparation for BigLake
 
 ## Version 0.1.68
 
