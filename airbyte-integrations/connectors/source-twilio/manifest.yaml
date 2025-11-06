@@ -32,7 +32,7 @@ definitions:
           http_codes:
             - 404
           error_message: >-
-              Skipping this slice—data may be available in later slices or for other accounts/subaccounts.
+            Skipping this slice—data may be available in later slices or for other accounts/subaccounts.
   base_stream:
     type: DeclarativeStream
     primary_key:
