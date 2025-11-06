@@ -1,54 +1,82 @@
-# Clickhouse Migration Guide
+# ClickHouse Migration Guide
 
-## SSH Support :warning:
+## SSH Support
 
-SSH is implementation for the new connector is in Beta. If you upgrade and SSH
-does not work for you, please reach out to support.
+:::warning
+SSH tunneling support for the ClickHouse connector is currently in **Beta**. If you encounter issues with SSH tunneling after upgrading, please contact Airbyte support.
+:::
 
 ## Upgrading to 2.0.0
 
-This version differs from 1.0.0 radically. Whereas 1.0.0 wrote all your data
-as JSON to raw tables in airbyte_internal database, 2.0.0 will properly separate
-your schema into typed columns and write to the specified database in the
-configuration and the un-prefixed table name. You will no longer see
-`airbyte_internal.{database}_raw__stream_{table}` and will instead see
-`{database}.{table}`.
+Version 2.0.0 represents a fundamental architectural change from version 1.0.0:
 
-While is treated as a "breaking change", connections should continue to function
-with no changes, albeit writing data to a completely different location and in a
-different form. So any downstream pipelines will need updating to ingest the new
-data location / format.
+**Version 1.0.0 behavior:**
+- Wrote all data as JSON to raw tables in the `airbyte_internal` database
+- Used table names like `airbyte_internal.{database}_raw__stream_{table}`
 
-## Migrating existing data to the new format
+**Version 2.0.0 behavior:**
+- Writes data to typed columns matching your source schema
+- Creates tables in the configured database with clean table names: `{database}.{table}`
+- No longer uses the `airbyte_internal` database or `_raw__stream_` prefixes
 
-Unfortunately Airbyte has no way to migrate the existing raw tables to the new
-typed format. The only "out of the box" way to get your data into the new format
-is to re-sync it from scratch.
+While this is a breaking change, existing connections continue to function after upgrading. However, data is written to a completely different location in a different format. **You must update any downstream pipelines** (SQL queries, BI dashboards, data transformations) to reference the new table locations and schema structure.
 
-## Removing the old tables
+## Migrating Existing Data to the New Format
 
-Because the new destination has no knowledge of the old destination's table
-naming semantics, we will not remove existing data. If you would like to, you
-will need to delete all the tables saved in the old format, which for most
-people should be under `airbyte_internal.{database}_raw__`, but may vary based
-on your specific configuration.
+Airbyte cannot automatically migrate data from the v1 raw table format to the v2 typed table format. To get your data into the new format, you must perform a full refresh sync from your source.
 
-## Gotchas
+**Migration steps:**
+1. Upgrade your ClickHouse destination connector to version 2.0.0 or later
+2. Update your downstream pipelines to reference the new table locations
+3. Trigger a full refresh sync to populate the new typed tables
+4. Verify the new tables contain the expected data
+5. Update any remaining downstream dependencies
+6. Remove the old raw tables (see below)
 
-### Namespaces and the default database
+## Removing Old Tables
 
-In V2 namespaces are treated as equivalent to a ClickHouse "database". This
-means if you set a custom namespace for your connection that will be the
-database the connector will use for queries instead of the "database"
-configured in the Destination settings.
+The v2 connector does not automatically remove tables created by v1. After successfully migrating to v2 and verifying your data, you can manually remove the old raw tables.
 
-Previously, namespaces where added as a prefix to the table name. If you have
-existing connections configured in this fashion you may want to remove them.
+For most users, old tables are located in the `airbyte_internal` database with names matching the pattern `airbyte_internal.{database}_raw__stream_{table}`. However, the exact location may vary based on your v1 configuration.
 
-### Hostname
+To remove old tables:
 
-If the "Hostname" property in your configuration contains the protocol ("http
-or "https"), you will need to remove it.
+```sql
+-- List tables in the airbyte_internal database
+SHOW TABLES FROM airbyte_internal;
 
-The previous versions incidentally tolerated the protocol being stored in the
-hostname field.
+-- Drop individual tables
+DROP TABLE airbyte_internal.{database}_raw__stream_{table};
+
+-- Or drop the entire airbyte_internal database if it only contains old Airbyte tables
+DROP DATABASE airbyte_internal;
+```
+
+:::caution
+Always verify that you have successfully migrated your data before removing old tables. Once dropped, the data cannot be recovered without re-syncing from your source.
+:::
+
+## Important Configuration Changes
+
+### Namespaces and Databases
+
+In version 2.0.0, namespaces are treated as ClickHouse databases. If you configure a custom namespace for your connection, the connector uses that namespace as the database name instead of the database specified in the destination settings.
+
+**Version 1.0.0 behavior:**
+- Namespaces were added as prefixes to table names
+- Example: namespace `my_namespace` created tables like `default.my_namespace_table_name`
+
+**Version 2.0.0 behavior:**
+- Namespaces map directly to ClickHouse databases
+- Example: namespace `my_namespace` creates tables like `my_namespace.table_name`
+
+If you have existing connections that use custom namespaces, review your configuration and update downstream pipelines accordingly.
+
+### Hostname Configuration
+
+The hostname field in version 2.0.0 must **not** include the protocol prefix (`http://` or `https://`).
+
+**Incorrect:** `https://my-clickhouse-server.com`  
+**Correct:** `my-clickhouse-server.com`
+
+Version 1.0.0 incidentally tolerated protocols in the hostname field, but version 2.0.0 requires clean hostnames. If your configuration includes a protocol in the hostname, remove it before upgrading or the connection check will fail.
