@@ -33,11 +33,11 @@ Airbyte cannot automatically migrate data from the v1 raw table format to the v2
 2. Trigger a full refresh sync to populate the new typed tables
 3. Verify the new tables contain the expected data
 4. Update your downstream pipelines to reference the new table locations
-5. Remove the old v1 raw tables (see below)
+5. Optional: Remove the old v1 raw tables (see below)
 
-### Removing the Old v1 Raw Tables
+### Optional: Removing the Old v1 Raw Tables
 
-The v2 connector does not automatically remove tables created by the v1 connector. After successfully migrating to v2 and verifying your data, you can manually remove the old raw tables created by v1.
+The v2 connector does not automatically remove tables created by the v1 connector. After successfully migrating to v2 and verifying your data, you can optionally remove the old raw tables created by v1 to free up storage space.
 
 For most users, old tables are located in the `airbyte_internal` database with names matching the pattern `airbyte_internal.{database}_raw__stream_{table}`. However, the exact location may vary based on your v1 configuration.
 
@@ -58,7 +58,7 @@ DROP TABLE airbyte_internal.{database}_raw__stream_{table};
 DROP DATABASE airbyte_internal;
 ```
 
-## Important Configuration Changes
+## Gotchas
 
 ### Namespaces and Databases
 
