@@ -29,7 +29,8 @@ definitions:
             Twilio rate limit reached (429). Backoff based on 'retry-after' header, then exponential backoff fallback.
         - type: HttpResponseFilter
           action: IGNORE
-          predicate: "{{ 'was not found' in response }}"
+          http_codes:
+            - 404
           error_message: >-
               Skipping this slice—data may be available in later slices or for other accounts/subaccounts.
   base_stream:
