@@ -27,7 +27,12 @@ definitions:
             - 429
           error_message: >-
             Twilio rate limit reached (429). Backoff based on 'retry-after' header, then exponential backoff fallback.
-
+        - type: HttpResponseFilter
+          action: IGNORE
+          http_codes:
+            - 404
+          error_message: >-
+            Skipping this slice—data may be available in later slices or for other accounts/subaccounts.
   base_stream:
     type: DeclarativeStream
     primary_key:
