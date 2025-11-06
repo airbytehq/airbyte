@@ -1,4 +1,4 @@
-version: 6.41.3
+version: 6.48.15
 
 type: DeclarativeSource
 
@@ -549,6 +549,181 @@ definitions:
         type: InlineSchemaLoader
         schema:
           $ref: "#/schemas/keywords_report_daily"
+    ads:
+      type: DeclarativeStream
+      name: ads
+      primary_key:
+        - id
+      retriever:
+        type: SimpleRetriever
+        requester:
+          $ref: "#/definitions/base_requester"
+          path: >-
+            /campaigns/{{ stream_slice.parent_slice.campaign_id }}/adgroups/{{
+            stream_slice.adgroup_id }}/ads
+          http_method: GET
+          request_headers:
+            X-AP-Context: orgId={{ config.org_id }}
+          error_handler:
+            type: CompositeErrorHandler
+            error_handlers:
+              - type: DefaultErrorHandler
+                backoff_strategies:
+                  - type: ExponentialBackoffStrategy
+                response_filters:
+                  - type: HttpResponseFilter
+                    action: RETRY
+                    http_codes:
+                      - 500
+                      - 429
+        record_selector:
+          type: RecordSelector
+          extractor:
+            type: DpathExtractor
+            field_path:
+              - data
+        paginator:
+          type: DefaultPaginator
+          page_token_option:
+            type: RequestOption
+            field_name: offset
+            inject_into: request_parameter
+          page_size_option:
+            type: RequestOption
+            field_name: limit
+            inject_into: request_parameter
+          pagination_strategy:
+            type: OffsetIncrement
+            page_size: 1000
+        partition_router:
+          type: SubstreamPartitionRouter
+          parent_stream_configs:
+            - type: ParentStreamConfig
+              parent_key: id
+              partition_field: adgroup_id
+              stream:
+                $ref: "#/definitions/streams/adgroups"
+        decoder:
+          type: JsonDecoder
+      schema_loader:
+        type: InlineSchemaLoader
+        schema:
+          $ref: "#/schemas/ads"
+    ads_report_daily:
+      type: DeclarativeStream
+      name: ads_report_daily
+      retriever:
+        type: SimpleRetriever
+        requester:
+          $ref: "#/definitions/base_requester"
+          path: /reports/campaigns/{{ stream_slice['campaign_id'] }}/ads
+          http_method: POST
+          request_headers:
+            X-AP-Context: orgId={{ config.org_id }}
+          request_body_json:
+            endTime: "{{ stream_slice.end_time }}"
+            groupBy: "[ 'countryOrRegion' ]"
+            selector: >-
+              { "orderBy": [ { "field": "countryOrRegion", "sortOrder":
+              "ASCENDING" } ] }
+            timeZone: "{{ config['timezone'] or 'UTC' }}"
+            startTime: "{{ stream_slice.start_time }}"
+            granularity: DAILY
+          error_handler:
+            type: DefaultErrorHandler
+            max_retries: 10
+            response_filters:
+              - type: HttpResponseFilter
+                action: IGNORE
+                predicate: >-
+                  {{ 'CAMPAIGN DOES NOT CONTAIN KEYWORD' in
+                  response.error.errors[0].message }}
+              - type: HttpResponseFilter
+                action: RETRY
+                http_codes:
+                  - 500
+                  - 429
+            backoff_strategies:
+              - type: ExponentialBackoffStrategy
+                factor: "{{ config.backoff_factor }}"
+        record_selector:
+          type: RecordSelector
+          extractor:
+            type: DpathExtractor
+            field_path:
+              - data
+              - reportingDataResponse
+              - row
+        paginator:
+          type: DefaultPaginator
+          page_token_option:
+            type: RequestOption
+            field_path:
+              - selector
+              - pagination
+              - offset
+            inject_into: body_json
+          page_size_option:
+            type: RequestOption
+            field_path:
+              - selector
+              - pagination
+              - limit
+            inject_into: body_json
+          pagination_strategy:
+            type: OffsetIncrement
+            page_size: 1000
+        partition_router:
+          type: SubstreamPartitionRouter
+          parent_stream_configs:
+            - type: ParentStreamConfig
+              parent_key: id
+              partition_field: campaign_id
+              stream:
+                $ref: "#/definitions/streams/campaigns"
+        decoder:
+          type: JsonDecoder
+      incremental_sync:
+        type: DatetimeBasedCursor
+        cursor_field: date
+        lookback_window: P{{ config.lookback_window }}D
+        cursor_datetime_formats:
+          - "%Y-%m-%d"
+        datetime_format: "%Y-%m-%d"
+        start_datetime:
+          type: MinMaxDatetime
+          datetime: "{{ config.start_date }}"
+          datetime_format: "%Y-%m-%d"
+        end_datetime:
+          type: MinMaxDatetime
+          datetime: "{{ config.end_date or today_utc() }}"
+          datetime_format: "%Y-%m-%d"
+        step: P1D
+        cursor_granularity: P1D
+        global_substream_cursor: true
+      transformations:
+        - type: AddFields
+          fields:
+            - type: AddedFieldDefinition
+              path:
+                - countryorregion
+              value: "{{ record.metadata.countryOrRegion }}"
+        - type: AddFields
+          fields:
+            - type: AddedFieldDefinition
+              path:
+                - date
+              value: "{{ stream_slice.start_date }}"
+        - type: AddFields
+          fields:
+            - type: AddedFieldDefinition
+              path:
+                - adId
+              value: "{{ record.metadata.adId }}"
+      schema_loader:
+        type: InlineSchemaLoader
+        schema:
+          $ref: "#/schemas/ads_report_daily"
   base_requester:
     type: HttpRequester
     url_base: https://api.searchads.apple.com/api/v5
@@ -567,6 +742,8 @@ streams:
   - $ref: "#/definitions/streams/campaigns_report_daily"
   - $ref: "#/definitions/streams/adgroups_report_daily"
   - $ref: "#/definitions/streams/keywords_report_daily"
+  - $ref: "#/definitions/streams/ads"
+  - $ref: "#/definitions/streams/ads_report_daily"
 
 spec:
   type: Spec
@@ -673,55 +850,61 @@ metadata:
     campaigns_report_daily: false
     adgroups_report_daily: false
     keywords_report_daily: false
-  yamlComponents:
-    streams:
-      campaigns_report_daily:
-        - errorHandler
-      adgroups_report_daily:
-        - errorHandler
-      keywords_report_daily:
-        - errorHandler
-    global:
-      - authenticator
+    ads: true
+    ads_report_daily: true
   testedStreams:
     campaigns:
-      streamHash: 695200dfcda5d952c3d0c21948db4780caa38393
-      hasResponse: true
-      responsesAreSuccessful: true
       hasRecords: true
-      primaryKeysArePresent: true
+      streamHash: 14a00ce755695de8dc193eb1a19491e468b753e9
+      hasResponse: true
       primaryKeysAreUnique: true
+      primaryKeysArePresent: true
+      responsesAreSuccessful: true
     adgroups:
+      hasRecords: true
       streamHash: fe4a079447f9e32ab0e6bd33cbb87620aa946b70
       hasResponse: true
-      responsesAreSuccessful: true
-      hasRecords: true
-      primaryKeysArePresent: true
       primaryKeysAreUnique: true
+      primaryKeysArePresent: true
+      responsesAreSuccessful: true
     keywords:
-      streamHash: 8419d91ef05fe6a37e6a731972cc63f7db413ec3
-      hasResponse: true
-      responsesAreSuccessful: true
       hasRecords: true
-      primaryKeysArePresent: true
+      streamHash: 7bc6565891b12d47684dd135576639b4dc2aba1e
+      hasResponse: true
       primaryKeysAreUnique: true
+      primaryKeysArePresent: true
+      responsesAreSuccessful: true
     campaigns_report_daily:
-      streamHash: 0f716882a4c4cf2af1d32eaa5e4bfae1df650d1b
-      hasResponse: true
-      responsesAreSuccessful: true
       hasRecords: true
-      primaryKeysArePresent: true
+      streamHash: 9f09efe0663862f9675ee9a02c7aaec8e9c7b59f
+      hasResponse: true
       primaryKeysAreUnique: true
+      primaryKeysArePresent: true
+      responsesAreSuccessful: true
     adgroups_report_daily:
-      streamHash: 55fd5a511833be4580713815c5bb721ad241f03b
+      hasRecords: true
+      streamHash: 8a54839404513a2fb36425e8b18b404320788ebc
       hasResponse: true
-      responsesAreSuccessful: true
-      hasRecords: true
-      primaryKeysArePresent: true
       primaryKeysAreUnique: true
+      primaryKeysArePresent: true
+      responsesAreSuccessful: true
     keywords_report_daily:
+      hasRecords: false
+      streamHash: 769430fd94c04e7c700c117c5925a437ff4aec14
+      hasResponse: true
+      primaryKeysAreUnique: true
+      primaryKeysArePresent: true
+      responsesAreSuccessful: true
+    ads:
       hasRecords: true
-      streamHash: 236c9e467ad57836f09f2bc7adc815eecbdf7d77
+      streamHash: c78be559d72e8ecdcb07d49d99112ef6f80f0ae1
+      hasResponse: true
+      primaryKeysAreUnique: true
+      primaryKeysArePresent: true
+      responsesAreSuccessful: true
+    ads_report_daily:
+      hasRecords: true
+      streamHash: 92792b2b53e7c2d2ac91955197da57bdbf769cec
       hasResponse: true
       primaryKeysAreUnique: true
       primaryKeysArePresent: true
@@ -1332,3 +1515,271 @@ schemas:
         type: integer
       other:
         type: boolean
+  ads:
+    type: object
+    $schema: http://json-schema.org/schema#
+    additionalProperties: true
+    properties:
+      adGroupId:
+        type:
+          - number
+          - "null"
+      campaignId:
+        type:
+          - number
+          - "null"
+      creationTime:
+        type:
+          - string
+          - "null"
+      creativeId:
+        type:
+          - number
+          - "null"
+      creativeType:
+        type:
+          - string
+          - "null"
+      deleted:
+        type:
+          - boolean
+          - "null"
+      id:
+        type: number
+      modificationTime:
+        type:
+          - string
+          - "null"
+      name:
+        type:
+          - string
+          - "null"
+      orgId:
+        type:
+          - number
+          - "null"
+      servingStateReasons:
+        type:
+          - array
+          - "null"
+        items:
+          type:
+            - string
+            - "null"
+      servingStatus:
+        type:
+          - string
+          - "null"
+      status:
+        type:
+          - string
+          - "null"
+    required:
+      - id
+  ads_report_daily:
+    type: object
+    $schema: http://json-schema.org/schema#
+    additionalProperties: true
+    properties:
+      metadata:
+        type:
+          - object
+          - "null"
+        properties:
+          adDisplayStatus:
+            type:
+              - string
+              - "null"
+          adGroupId:
+            type:
+              - number
+              - "null"
+          adId:
+            type:
+              - number
+              - "null"
+          adName:
+            type:
+              - string
+              - "null"
+          adStatus:
+            type:
+              - string
+              - "null"
+          campaignId:
+            type:
+              - number
+              - "null"
+          countryOrRegion:
+            type:
+              - string
+              - "null"
+          creationTime:
+            type:
+              - string
+              - "null"
+          creativeId:
+            type:
+              - number
+              - "null"
+          creativeType:
+            type:
+              - string
+              - "null"
+          deleted:
+            type:
+              - boolean
+              - "null"
+          modificationTime:
+            type:
+              - string
+              - "null"
+          orgId:
+            type:
+              - number
+              - "null"
+          productPageId:
+            type:
+              - string
+              - "null"
+          status:
+            type:
+              - string
+              - "null"
+      adId:
+        type:
+          - number
+          - "null"
+      countryorregion:
+        type:
+          - string
+          - "null"
+      date:
+        type: string
+      granularity:
+        type:
+          - array
+          - "null"
+        items:
+          type:
+            - object
+            - "null"
+          properties:
+            avgCPT:
+              type:
+                - object
+                - "null"
+              properties:
+                amount:
+                  type:
+                    - string
+                    - "null"
+                currency:
+                  type:
+                    - string
+                    - "null"
+            date:
+              type:
+                - string
+                - "null"
+            impressions:
+              type:
+                - number
+                - "null"
+            localSpend:
+              type:
+                - object
+                - "null"
+              properties:
+                amount:
+                  type:
+                    - string
+                    - "null"
+                currency:
+                  type:
+                    - string
+                    - "null"
+            tapInstallCPI:
+              type:
+                - object
+                - "null"
+              properties:
+                amount:
+                  type:
+                    - string
+                    - "null"
+                currency:
+                  type:
+                    - string
+                    - "null"
+            tapInstallRate:
+              type:
+                - number
+                - "null"
+            tapInstalls:
+              type:
+                - number
+                - "null"
+            tapNewDownloads:
+              type:
+                - number
+                - "null"
+            tapRedownloads:
+              type:
+                - number
+                - "null"
+            taps:
+              type:
+                - number
+                - "null"
+            totalAvgCPI:
+              type:
+                - object
+                - "null"
+              properties:
+                amount:
+                  type:
+                    - string
+                    - "null"
+                currency:
+                  type:
+                    - string
+                    - "null"
+            totalInstallRate:
+              type:
+                - number
+                - "null"
+            totalInstalls:
+              type:
+                - number
+                - "null"
+            totalNewDownloads:
+              type:
+                - number
+                - "null"
+            totalRedownloads:
+              type:
+                - number
+                - "null"
+            ttr:
+              type:
+                - number
+                - "null"
+            viewInstalls:
+              type:
+                - number
+                - "null"
+            viewNewDownloads:
+              type:
+                - number
+                - "null"
+            viewRedownloads:
+              type:
+                - number
+                - "null"
+      other:
+        type:
+          - boolean
+          - "null"
+    required:
+      - date
