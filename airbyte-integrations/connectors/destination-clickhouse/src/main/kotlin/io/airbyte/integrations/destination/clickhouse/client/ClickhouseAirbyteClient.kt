@@ -17,6 +17,7 @@ import io.airbyte.cdk.load.command.Dedupe
 import io.airbyte.cdk.load.command.DestinationStream
 import io.airbyte.cdk.load.component.ColumnChangeset
 import io.airbyte.cdk.load.component.ColumnType
+import io.airbyte.cdk.load.component.TableColumns
 import io.airbyte.cdk.load.component.TableOperationsClient
 import io.airbyte.cdk.load.component.TableSchemaEvolutionClient
 import io.airbyte.cdk.load.message.Meta.Companion.COLUMN_NAMES
@@ -100,7 +101,7 @@ class ClickhouseAirbyteClient(
 
     override suspend fun discoverSchema(
         tableName: TableName
-    ): Pair<io.airbyte.cdk.load.component.TableSchema, Any?> {
+    ): io.airbyte.cdk.load.component.TableSchema {
         val tableSchema: TableSchema = client.getTableSchema(tableName.name, tableName.namespace)
 
         log.info { "Fetch the clickhouse table schema: $tableSchema" }
@@ -120,12 +121,10 @@ class ClickhouseAirbyteClient(
 
         log.info { "Found Clickhouse columns: $tableSchemaWithoutAirbyteColumns" }
 
-        return Pair(
-            io.airbyte.cdk.load.component.TableSchema(
-                tableSchemaWithoutAirbyteColumns.associate {
-                    it.columnName to ColumnType(it.dataType.getDataTypeAsString(), it.isNullable)
-                }
-            ),
+        return io.airbyte.cdk.load.component.TableSchema(
+            tableSchemaWithoutAirbyteColumns.associate {
+                it.columnName to ColumnType(it.dataType.getDataTypeAsString(), it.isNullable)
+            },
             null,
         )
     }
@@ -133,7 +132,7 @@ class ClickhouseAirbyteClient(
     override fun computeSchema(
         stream: DestinationStream,
         columnNameMapping: ColumnNameMapping
-    ): Pair<io.airbyte.cdk.load.component.TableSchema, Any?> {
+    ): io.airbyte.cdk.load.component.TableSchema {
         val importType = stream.importType
         val primaryKey =
             if (importType is Dedupe) {
@@ -152,24 +151,22 @@ class ClickhouseAirbyteClient(
             } else {
                 emptySet()
             }
-        return Pair(
-            io.airbyte.cdk.load.component.TableSchema(
-                stream.schema
-                    .asColumns()
-                    .map { (fieldName, fieldType) ->
-                        val clickhouseCompatibleName = columnNameMapping[fieldName]!!
-                        val nullable =
-                            !primaryKey.contains(clickhouseCompatibleName) &&
-                                !cursor.contains(clickhouseCompatibleName)
-                        val type = fieldType.type.toDialectType(clickhouseConfiguration.enableJson)
-                        clickhouseCompatibleName to
-                            ColumnType(
-                                type = type,
-                                nullable = nullable,
-                            )
-                    }
-                    .toMap()
-            ),
+        return io.airbyte.cdk.load.component.TableSchema(
+            stream.schema
+                .asColumns()
+                .map { (fieldName, fieldType) ->
+                    val clickhouseCompatibleName = columnNameMapping[fieldName]!!
+                    val nullable =
+                        !primaryKey.contains(clickhouseCompatibleName) &&
+                            !cursor.contains(clickhouseCompatibleName)
+                    val type = fieldType.type.toDialectType(clickhouseConfiguration.enableJson)
+                    clickhouseCompatibleName to
+                        ColumnType(
+                            type = type,
+                            nullable = nullable,
+                        )
+                }
+                .toMap(),
             null,
         )
     }
@@ -185,7 +182,7 @@ class ClickhouseAirbyteClient(
         stream: DestinationStream,
         columnNameMapping: ColumnNameMapping,
         tableName: TableName,
-        expectedSchema: io.airbyte.cdk.load.component.TableSchema,
+        expectedColumns: TableColumns,
         expectedAdditionalInfo: Any?,
         columnChangeset: ColumnChangeset,
         additionalSchemaInfoChangeset: Any?,
