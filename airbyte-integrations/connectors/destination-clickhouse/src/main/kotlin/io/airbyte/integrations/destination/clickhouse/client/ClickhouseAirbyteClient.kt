@@ -15,9 +15,9 @@ import edu.umd.cs.findbugs.annotations.SuppressFBWarnings
 import io.airbyte.cdk.ConfigErrorException
 import io.airbyte.cdk.load.command.Dedupe
 import io.airbyte.cdk.load.command.DestinationStream
+import io.airbyte.cdk.load.component.ColumnChangeset
 import io.airbyte.cdk.load.component.ColumnType
 import io.airbyte.cdk.load.component.TableOperationsClient
-import io.airbyte.cdk.load.component.TableSchemaDiff
 import io.airbyte.cdk.load.component.TableSchemaEvolutionClient
 import io.airbyte.cdk.load.message.Meta.Companion.COLUMN_NAMES
 import io.airbyte.cdk.load.orchestration.db.TempTableNameGenerator
@@ -42,7 +42,7 @@ class ClickhouseAirbyteClient(
     private val sqlGenerator: ClickhouseSqlGenerator,
     private val tempTableNameGenerator: TempTableNameGenerator,
     private val clickhouseConfiguration: ClickhouseConfiguration,
-) : TableOperationsClient, TableSchemaEvolutionClient<Unit, Unit> {
+) : TableOperationsClient, TableSchemaEvolutionClient {
 
     override suspend fun createNamespace(namespace: String) {
         val statement = sqlGenerator.createNamespace(namespace)
@@ -100,7 +100,7 @@ class ClickhouseAirbyteClient(
 
     override suspend fun discoverSchema(
         tableName: TableName
-    ): Pair<io.airbyte.cdk.load.component.TableSchema, Unit> {
+    ): Pair<io.airbyte.cdk.load.component.TableSchema, Any?> {
         val tableSchema: TableSchema = client.getTableSchema(tableName.name, tableName.namespace)
 
         log.info { "Fetch the clickhouse table schema: $tableSchema" }
@@ -126,14 +126,14 @@ class ClickhouseAirbyteClient(
                     it.columnName to ColumnType(it.dataType.getDataTypeAsString(), it.isNullable)
                 }
             ),
-            Unit,
+            null,
         )
     }
 
     override fun computeSchema(
         stream: DestinationStream,
         columnNameMapping: ColumnNameMapping
-    ): Pair<io.airbyte.cdk.load.component.TableSchema, Unit> {
+    ): Pair<io.airbyte.cdk.load.component.TableSchema, Any?> {
         val importType = stream.importType
         val primaryKey =
             if (importType is Dedupe) {
@@ -170,22 +170,25 @@ class ClickhouseAirbyteClient(
                     }
                     .toMap()
             ),
-            Unit,
+            null,
         )
     }
 
-    override fun diff(actualSchemaInfo: Unit, expectedSchemaInfo: Unit) {
-        return
+    override fun computeAdditionalChangeset(
+        actualSchemaInfo: Any?,
+        expectedSchemaInfo: Any?
+    ): Any? {
+        return null
     }
 
-    override suspend fun applySchemaDiff(
+    override suspend fun applyChangeset(
         stream: DestinationStream,
         columnNameMapping: ColumnNameMapping,
         tableName: TableName,
         expectedSchema: io.airbyte.cdk.load.component.TableSchema,
-        expectedAdditionalInfo: Unit,
-        diff: TableSchemaDiff,
-        additionalSchemaInfoDiff: Unit,
+        expectedAdditionalInfo: Any?,
+        columnChangeset: ColumnChangeset,
+        additionalSchemaInfoChangeset: Any?,
     ) {
         // This is a bit hacky, and relies on the fact that we make all
         // non-pk/cursor columns nullable.
@@ -194,8 +197,9 @@ class ClickhouseAirbyteClient(
         // this indicates a change in the PK/cursor, and therefore we need to
         // reconfigure the table engine.
         val anyNullabilityChange =
-            diff.columnsToChange.values.any { it.originalType.nullable != it.newType.nullable } ||
-                diff.columnsToDrop.values.any { !it.nullable }
+            columnChangeset.columnsToChange.values.any {
+                it.originalType.nullable != it.newType.nullable
+            } || columnChangeset.columnsToDrop.values.any { !it.nullable }
 
         if (anyNullabilityChange) {
             log.info {
@@ -205,10 +209,10 @@ class ClickhouseAirbyteClient(
                 stream,
                 tableName,
                 columnNameMapping,
-                diff,
+                columnChangeset,
             )
-        } else if (!diff.isNoop()) {
-            execute(sqlGenerator.alterTable(diff, tableName))
+        } else if (!columnChangeset.isNoop()) {
+            execute(sqlGenerator.alterTable(columnChangeset, tableName))
         }
     }
 
@@ -216,7 +220,7 @@ class ClickhouseAirbyteClient(
         stream: DestinationStream,
         properTableName: TableName,
         columnNameMapping: ColumnNameMapping,
-        diff: TableSchemaDiff,
+        columnChangeset: ColumnChangeset,
     ) {
         val tempTableName = tempTableNameGenerator.generate(properTableName)
         execute(sqlGenerator.createNamespace(tempTableName.namespace))
@@ -229,7 +233,7 @@ class ClickhouseAirbyteClient(
             ),
         )
         copyIntersectionColumn(
-            diff.columnsToChange.keys + diff.columnsToRetain.keys,
+            columnChangeset.columnsToChange.keys + columnChangeset.columnsToRetain.keys,
             columnNameMapping,
             properTableName,
             tempTableName

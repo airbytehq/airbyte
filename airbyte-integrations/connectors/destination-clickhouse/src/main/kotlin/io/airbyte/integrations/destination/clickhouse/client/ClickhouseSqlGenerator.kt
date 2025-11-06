@@ -7,8 +7,8 @@ package io.airbyte.integrations.destination.clickhouse.client
 import com.clickhouse.data.ClickHouseDataType
 import io.airbyte.cdk.load.command.Dedupe
 import io.airbyte.cdk.load.command.DestinationStream
+import io.airbyte.cdk.load.component.ColumnChangeset
 import io.airbyte.cdk.load.component.ColumnType
-import io.airbyte.cdk.load.component.TableSchemaDiff
 import io.airbyte.cdk.load.data.AirbyteType
 import io.airbyte.cdk.load.data.ArrayType
 import io.airbyte.cdk.load.data.ArrayTypeWithoutSchema
@@ -312,7 +312,7 @@ class ClickhouseSqlGenerator(
             .joinToString(",\n")
     }
 
-    fun alterTable(alterationSummary: TableSchemaDiff, tableName: TableName): String {
+    fun alterTable(alterationSummary: ColumnChangeset, tableName: TableName): String {
         val builder =
             StringBuilder()
                 .append("ALTER TABLE `${tableName.namespace}`.`${tableName.name}`")
