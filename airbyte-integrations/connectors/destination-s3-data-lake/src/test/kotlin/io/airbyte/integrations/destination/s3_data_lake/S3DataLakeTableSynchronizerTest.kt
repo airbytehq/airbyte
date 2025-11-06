@@ -97,7 +97,7 @@ class S3DataLakeTableSynchronizerTest {
             )
 
         // We expect the original schema to be returned
-        assertThat(result).isEqualTo(SchemaUpdateResult(existingSchema, pendingUpdate = null))
+        assertThat(result).isEqualTo(SchemaUpdateResult(existingSchema, pendingUpdates = emptyList()))
 
         // Verify that no calls to updateSchema() manipulation were made
         verify(exactly = 0) { mockUpdateSchema.deleteColumn(any()) }
@@ -132,7 +132,7 @@ class S3DataLakeTableSynchronizerTest {
         // The final returned schema is the table's schema after refresh
         // Since we aren't actually applying changes, just assert that it's whatever the mock
         // returns
-        assertThat(result).isEqualTo(SchemaUpdateResult(mockNewSchema, pendingUpdate = null))
+        assertThat(result).isEqualTo(SchemaUpdateResult(mockNewSchema, pendingUpdates = emptyList()))
     }
 
     @Test
@@ -406,7 +406,7 @@ class S3DataLakeTableSynchronizerTest {
 
         every { mockTable.schema() } returns existingSchema
 
-        val (schema, pendingUpdate) =
+        val (schema, pendingUpdates) =
             synchronizer.maybeApplySchemaChanges(
                 mockTable,
                 incomingSchema,
@@ -422,6 +422,6 @@ class S3DataLakeTableSynchronizerTest {
         confirmVerified(mockUpdateSchema)
 
         assertThat(schema).isSameAs(mockNewSchema)
-        assertThat(pendingUpdate).isNotNull
+        assertThat(pendingUpdates).hasSize(1)
     }
 }
