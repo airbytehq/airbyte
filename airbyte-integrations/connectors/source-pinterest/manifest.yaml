@@ -4472,7 +4472,7 @@ dynamic_streams:
 check:
   type: CheckStream
   stream_names:
-    - boards
+    - ad_accounts
 
 # The rate limit for our app is 100 calls per second, with additional endpoint-specific limits. Reference: https://developers.pinterest.com/docs/reference/rate-limits/
 concurrency_level:
