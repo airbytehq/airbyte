@@ -786,6 +786,10 @@ schemas:
         type:
           - "null"
           - number
+      engaged_views:
+        type:
+          - "null"
+          - integer
   channel_cards_a1:
     type: object
     $schema: http://json-schema.org/draft-07/schema#
@@ -912,6 +916,10 @@ schemas:
         type:
           - "null"
           - number
+      engaged_views:
+        type:
+          - "null"
+          - integer
   channel_demographics_a1:
     type: object
     $schema: http://json-schema.org/draft-07/schema#
@@ -1010,6 +1018,10 @@ schemas:
         type:
           - "null"
           - number
+      engaged_views:
+        type:
+          - "null"
+          - integer
   channel_end_screens_a1:
     type: object
     $schema: http://json-schema.org/draft-07/schema#
@@ -1116,6 +1128,10 @@ schemas:
         type:
           - "null"
           - number
+      engaged_views:
+        type:
+          - "null"
+          - integer
   channel_province_a3:
     type: object
     $schema: http://json-schema.org/draft-07/schema#
@@ -1223,6 +1239,10 @@ schemas:
         type:
           - "null"
           - number
+      engaged_views:
+        type:
+          - "null"
+          - integer
   channel_sharing_service_a1:
     type: object
     $schema: http://json-schema.org/draft-07/schema#
@@ -1313,6 +1333,14 @@ schemas:
         type:
           - "null"
           - number
+      engaged_views:
+        type:
+          - "null"
+          - integer
+      subtitle_language_autotranslated:
+        type:
+          - "null"
+          - string
   channel_traffic_source_a3:
     type: object
     $schema: http://json-schema.org/draft-07/schema#
@@ -1372,6 +1400,10 @@ schemas:
         type:
           - "null"
           - number
+      engaged_views:
+        type:
+          - "null"
+          - integer
   playlist_basic_a2:
     type: object
     $schema: http://json-schema.org/draft-07/schema#
@@ -1427,6 +1459,10 @@ schemas:
         type:
           - "null"
           - number
+      engaged_views:
+        type:
+          - "null"
+          - integer
   playlist_combined_a2:
     type: object
     $schema: http://json-schema.org/draft-07/schema#
@@ -1498,6 +1534,10 @@ schemas:
         type:
           - "null"
           - number
+      engaged_views:
+        type:
+          - "null"
+          - integer
   playlist_device_os_a2:
     type: object
     $schema: http://json-schema.org/draft-07/schema#
@@ -1561,6 +1601,10 @@ schemas:
         type:
           - "null"
           - number
+      engaged_views:
+        type:
+          - "null"
+          - integer
   playlist_playback_location_a2:
     type: object
     $schema: http://json-schema.org/draft-07/schema#
@@ -1624,6 +1668,10 @@ schemas:
         type:
           - "null"
           - number
+      engaged_views:
+        type:
+          - "null"
+          - integer
   playlist_province_a2:
     type: object
     $schema: http://json-schema.org/draft-07/schema#
@@ -1683,6 +1731,10 @@ schemas:
         type:
           - "null"
           - number
+      engaged_views:
+        type:
+          - "null"
+          - integer
   playlist_traffic_source_a2:
     type: object
     $schema: http://json-schema.org/draft-07/schema#
@@ -1746,6 +1798,10 @@ schemas:
         type:
           - "null"
           - number
+      engaged_views:
+        type:
+          - "null"
+          - integer
 
 api_budget:
   type: HTTPAPIBudget
