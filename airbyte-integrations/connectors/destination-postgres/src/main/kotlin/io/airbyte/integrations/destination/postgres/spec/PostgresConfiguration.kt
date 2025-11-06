@@ -20,7 +20,7 @@ data class PostgresConfiguration(
     val sslMode: SslMode?,
     val jdbcUrlParams: String?,
     val cdcDeletionMode: CdcDeletionMode,
-    val legacyRawTablesOnly: Boolean?,
+    val legacyRawTablesOnly: Boolean,
     val internalTableSchema: String?,
     val dropCascade: Boolean?,
     val unconstrainedNumber: Boolean?,

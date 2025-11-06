@@ -92,7 +92,7 @@ public abstract class AbstractPostgresTypingDedupingTest extends JdbcTypingDedup
 
     final List<JsonNode> expectedRawRecords1 = readRecords("dat/sync1_expectedrecords_raw.jsonl");
     final List<JsonNode> expectedFinalRecords1 = readRecords("dat/sync1_expectedrecords_nondedup_final.jsonl");
-    verifySyncResult(expectedRawRecords1, expectedFinalRecords1, disableFinalTableComparison());
+    verifySyncResult(expectedRawRecords1, expectedFinalRecords1);
   }
 
   @Test
@@ -125,7 +125,7 @@ public abstract class AbstractPostgresTypingDedupingTest extends JdbcTypingDedup
     runSync(catalog, messages2);
     final List<JsonNode> expectedRawRecords2 = readRecords("dat/sync2_mixedcase_expectedrecords_raw.jsonl");
     final List<JsonNode> expectedFinalRecords2 = readRecords("dat/sync2_mixedcase_expectedrecords_fullrefresh_append_final.jsonl");
-    verifySyncResult(expectedRawRecords2, expectedFinalRecords2, disableFinalTableComparison());
+    verifySyncResult(expectedRawRecords2, expectedFinalRecords2);
   }
 
   @Test
@@ -159,7 +159,7 @@ public abstract class AbstractPostgresTypingDedupingTest extends JdbcTypingDedup
 
     final List<JsonNode> expectedRawRecords2 = readRecords("dat/sync2_expectedrecords_mixed_meta_raw.jsonl");
     final List<JsonNode> expectedFinalRecords2 = readRecords("dat/sync2_expectedrecords_fullrefresh_append_mixed_meta_final.jsonl");
-    verifySyncResult(expectedRawRecords2, expectedFinalRecords2, disableFinalTableComparison());
+    verifySyncResult(expectedRawRecords2, expectedFinalRecords2);
   }
 
   @Test
@@ -197,7 +197,7 @@ public abstract class AbstractPostgresTypingDedupingTest extends JdbcTypingDedup
 
     final List<JsonNode> expectedRawRecords2 = readRecords("dat/sync2_expectedrecords_mixed_meta_raw.jsonl");
     final List<JsonNode> expectedFinalRecords2 = readRecords("dat/sync2_expectedrecords_incremental_dedup_meta_final.jsonl");
-    verifySyncResult(expectedRawRecords2, expectedFinalRecords2, disableFinalTableComparison());
+    verifySyncResult(expectedRawRecords2, expectedFinalRecords2);
   }
 
   @Override
@@ -269,7 +269,7 @@ public abstract class AbstractPostgresTypingDedupingTest extends JdbcTypingDedup
     runSync(catalog1, messages1);
     var expectedRawRecords1 = readRecords("dat/sync1_expectedrecords_raw.jsonl");
     var expectedFinalRecords1 = readRecords("dat/sync1_expectedrecords_nondedup_final.jsonl");
-    verifySyncResult(expectedRawRecords1, expectedFinalRecords1, disableFinalTableComparison());
+    verifySyncResult(expectedRawRecords1, expectedFinalRecords1);
 
     String rawTableName = getRawSchema() + "." +
         getNameTransformer().convertStreamName(
@@ -277,7 +277,9 @@ public abstract class AbstractPostgresTypingDedupingTest extends JdbcTypingDedup
                 getStreamNamespace(),
                 Names.toAlphanumericAndUnderscore(getStreamName())));
     String finalTableName = getStreamNamespace() + "." + Names.toAlphanumericAndUnderscore(getStreamName());
-    getDatabase().execute("CREATE VIEW " + getStreamNamespace() + ".v1 AS SELECT * FROM " + rawTableName);
+    if (!disableRawTableComparison()) {
+      getDatabase().execute("CREATE VIEW " + getRawSchema() + ".v1 AS SELECT * FROM " + rawTableName);
+    } // Second sync
     if (!disableFinalTableComparison()) {
       getDatabase().execute("CREATE VIEW " + getStreamNamespace() + ".v2 AS SELECT * FROM " + finalTableName);
     } // Second sync
@@ -311,7 +313,7 @@ public abstract class AbstractPostgresTypingDedupingTest extends JdbcTypingDedup
       ((ObjectNode) record).put(JavaBaseConstants.COLUMN_NAME_AB_EXTRACTED_AT, "1970-01-01T00:00:02.000000Z");
       ((ObjectNode) record).put(JavaBaseConstants.COLUMN_NAME_AB_GENERATION_ID, 44);
     }
-    verifySyncResult(expectedRawRecords1, expectedFinalRecords1, disableFinalTableComparison());
+    verifySyncResult(expectedRawRecords1, expectedFinalRecords1);
 
   }
 
@@ -375,7 +377,7 @@ public abstract class AbstractPostgresTypingDedupingTest extends JdbcTypingDedup
               "{\"changes\":" + originalChanges + "}"));
       record.remove(JavaBaseConstants.COLUMN_NAME_AB_GENERATION_ID);
     }
-    verifySyncResult(expectedRawRecords2, expectedFinalRecords2, disableFinalTableComparison());
+    verifySyncResult(expectedRawRecords2, expectedFinalRecords2);
 
     // Verify that we didn't trigger a soft reset.
     // There should be two unique loaded_at values in the raw table.
@@ -426,7 +428,7 @@ public abstract class AbstractPostgresTypingDedupingTest extends JdbcTypingDedup
     List<JsonNode> expectedRawRecords2 = readRecords("dat/sync2_expectedrecords_overwrite_raw.jsonl");
     List<JsonNode> expectedFinalRecords2 =
         readRecords("dat/sync2_expectedrecords_fullrefresh_overwrite_final.jsonl");
-    verifySyncResult(expectedRawRecords2, expectedFinalRecords2, disableFinalTableComparison());
+    verifySyncResult(expectedRawRecords2, expectedFinalRecords2);
   }
 
 }

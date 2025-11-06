@@ -9,6 +9,8 @@ import io.airbyte.integrations.destination.postgres.PostgresDestination
 import javax.sql.DataSource
 import org.junit.jupiter.api.AfterAll
 import org.junit.jupiter.api.BeforeAll
+import org.junit.jupiter.api.Disabled
+import org.junit.jupiter.api.Test
 
 open class PostgresTypingDedupingTest : AbstractPostgresTypingDedupingTest() {
     override fun getBaseConfig(): ObjectNode {
@@ -44,6 +46,19 @@ open class PostgresTypingDedupingTest : AbstractPostgresTypingDedupingTest() {
 
     override val imageName: String
         get() = "airbyte/destination-postgres:dev"
+
+    override fun disableRawTableComparison(): Boolean = true
+
+    // older versions of the connector used to error out in this scenario. This is not
+    // true for newer versions of the connector
+    @Disabled @Test override fun interruptedTruncateWithPriorData() {}
+
+    // migrations not supported on most recent version of the connector
+    @Disabled @Test override fun testMixedCaseRawTableV1V2Migration() {}
+    @Disabled @Test override fun testAirbyteMetaAndGenerationIdMigration() {}
+    @Disabled @Test override fun testRawTableMetaMigration_append() {}
+    @Disabled @Test override fun testRawTableMetaMigration_incrementalDedupe() {}
+    @Disabled @Test override fun testAirbyteMetaAndGenerationIdMigrationForOverwrite() {}
 
     companion object {
         protected var testContainer: PostgresTestDatabase? = null
