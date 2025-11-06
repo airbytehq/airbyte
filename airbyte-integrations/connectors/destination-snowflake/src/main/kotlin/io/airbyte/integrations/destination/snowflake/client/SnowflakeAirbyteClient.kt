@@ -9,6 +9,7 @@ import io.airbyte.cdk.ConfigErrorException
 import io.airbyte.cdk.load.command.DestinationStream
 import io.airbyte.cdk.load.component.ColumnChangeset
 import io.airbyte.cdk.load.component.ColumnType
+import io.airbyte.cdk.load.component.TableColumns
 import io.airbyte.cdk.load.component.TableOperationsClient
 import io.airbyte.cdk.load.component.TableSchema
 import io.airbyte.cdk.load.component.TableSchemaEvolutionClient
@@ -197,20 +198,20 @@ class SnowflakeAirbyteClient(
         super.ensureSchemaMatches(stream, tableName, columnNameMapping)
     }
 
-    override suspend fun discoverSchema(tableName: TableName): Pair<TableSchema, Unit> {
-        return Pair(
-            TableSchema(getColumnsFromDb(tableName)),
-            Unit,
+    override suspend fun discoverSchema(tableName: TableName): TableSchema {
+        return TableSchema(
+            getColumnsFromDb(tableName),
+            null,
         )
     }
 
     override fun computeSchema(
         stream: DestinationStream,
         columnNameMapping: ColumnNameMapping
-    ): Pair<TableSchema, Unit> {
-        return Pair(
-            TableSchema(getColumnsFromStream(stream, columnNameMapping)),
-            Unit,
+    ): TableSchema {
+        return TableSchema(
+            getColumnsFromStream(stream, columnNameMapping),
+            null,
         )
     }
 
@@ -225,7 +226,7 @@ class SnowflakeAirbyteClient(
         stream: DestinationStream,
         columnNameMapping: ColumnNameMapping,
         tableName: TableName,
-        expectedSchema: TableSchema,
+        expectedColumns: TableColumns,
         expectedAdditionalInfo: Any?,
         columnChangeset: ColumnChangeset,
         additionalSchemaInfoChangeset: Any?,
