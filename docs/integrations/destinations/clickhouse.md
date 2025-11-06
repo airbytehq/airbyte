@@ -127,7 +127,7 @@ In Airbyte, configure the ClickHouse destination with the following information:
 - **Port**: HTTP port for ClickHouse (default: 8443 for HTTPS, 8123 for HTTP)
 - **Protocol**: Connection protocol (HTTPS recommended for production)
 - **Database**: Target database name (default: `default`)
-- **Username**: The ClickHouse user you created (e.g., `airbyte_user`)
+- **Username**: The ClickHouse user you created (for example, `airbyte_user`)
 - **Password**: The password for the ClickHouse user
 - **Enable JSON**: Whether to use ClickHouse's JSON type for object fields (recommended if your ClickHouse version supports it)
 
