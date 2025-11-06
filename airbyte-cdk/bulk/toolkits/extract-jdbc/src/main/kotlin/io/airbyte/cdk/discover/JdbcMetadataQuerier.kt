@@ -97,9 +97,10 @@ class JdbcMetadataQuerier(
                         NamespaceKind.CATALOG_AND_SCHEMA -> namespace to namespace
                     }
 
-                val patterns = tableFiltersBySchema.entries
-                    .firstOrNull { it.key.equals(namespace, ignoreCase = true) }
-                    ?.value
+                val patterns =
+                    tableFiltersBySchema.entries
+                        .firstOrNull { it.key.equals(namespace, ignoreCase = true) }
+                        ?.value
                 if (patterns != null && patterns.isNotEmpty()) {
                     for (pattern in patterns) {
                         addTablesFromQuery(catalog, schema, pattern)
