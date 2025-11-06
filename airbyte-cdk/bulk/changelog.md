@@ -1,3 +1,7 @@
+## Version 0.1.70
+
+load cdk: split up ensurSchemaMatches into smaller functions
+
 ## Version 0.1.69
 
 **Load CDK**
