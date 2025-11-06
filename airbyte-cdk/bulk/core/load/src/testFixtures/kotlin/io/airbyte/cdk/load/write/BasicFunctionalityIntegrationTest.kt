@@ -5222,13 +5222,14 @@ abstract class BasicFunctionalityIntegrationTest(
         }
     }
 
-    private fun expectedAdditionalStats(): AdditionalStats {
-        val expectedAdditionalStats = AdditionalStats()
-        StateAdditionalStatsStore.ObservabilityMetrics.entries.forEach {
-            expectedAdditionalStats.withAdditionalProperty(it.metricName, 0.0)
-        }
-        return expectedAdditionalStats
-    }
+    private fun expectedAdditionalStats(): AdditionalStats? =
+        if (useDataFlowPipeline) {
+            val expectedAdditionalStats = AdditionalStats()
+            StateAdditionalStatsStore.ObservabilityMetrics.entries.forEach {
+                expectedAdditionalStats.withAdditionalProperty(it.metricName, 0.0)
+            }
+            expectedAdditionalStats
+        } else null
 
     protected fun namespaceMapperForMedium(): NamespaceMapper {
         return when (dataChannelMedium) {
