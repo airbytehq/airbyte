@@ -32,7 +32,7 @@ For optimal deduplication in Incremental - Append + Deduped sync mode, use a cur
 - Date
 - Timestamp (DateTime64)
 
-If you use a different cursor column type (such as String), the connector will fall back to using the `_airbyte_extracted_at` timestamp for deduplication ordering. This fallback may not accurately reflect your source data's natural ordering, and you'll see a warning in the sync logs.
+If you use a different cursor column type (such as String), the connector will fall back to using the `_airbyte_extracted_at` timestamp for deduplication ordering. This fallback may not accurately reflect the natural ordering of your source data, and you'll see a warning in the sync logs.
 
 ## Requirements
 
