@@ -46,7 +46,7 @@ class SnowflakeAirbyteClient(
     // Unlike other destinations, when creating a table, we only need the column types.
     // So just use Unit instead of providing any "additional information" about a table.
     TableOperationsClient,
-    TableSchemaEvolutionClient<Unit, Unit> {
+    TableSchemaEvolutionClient {
 
     private val airbyteColumnNames =
         snowflakeColumnUtils.getFormattedDefaultColumnNames(false).toSet()
@@ -218,8 +218,8 @@ class SnowflakeAirbyteClient(
         )
     }
 
-    override fun diff(actualSchemaInfo: Unit, expectedSchemaInfo: Unit) {
-        return
+    override fun diff(actualSchemaInfo: Any?, expectedSchemaInfo: Any?): Any? {
+        return null
     }
 
     override suspend fun applySchemaDiff(
@@ -227,9 +227,9 @@ class SnowflakeAirbyteClient(
         columnNameMapping: ColumnNameMapping,
         tableName: TableName,
         expectedSchema: TableSchema,
-        expectedAdditionalInfo: Unit,
+        expectedAdditionalInfo: Any?,
         diff: TableSchemaDiff,
-        additionalSchemaInfoDiff: Unit,
+        additionalSchemaInfoDiff: Any?,
     ) {
         if (
             diff.columnsToAdd.isNotEmpty() ||
