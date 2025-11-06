@@ -78,6 +78,8 @@ dependencies {
     implementation(project(":airbyte-cdk:java:airbyte-cdk:airbyte-cdk-core"))
     implementation(project(":airbyte-cdk:java:airbyte-cdk:airbyte-cdk-db-destinations"))
     implementation(project(":airbyte-cdk:java:airbyte-cdk:airbyte-cdk-typing-deduping"))
+    integrationTestLegacyImplementation(project(":airbyte-cdk:java:airbyte-cdk:airbyte-cdk-typing-deduping"))
+    integrationTestLegacyImplementation testFixtures((project(":airbyte-cdk:java:airbyte-cdk:airbyte-cdk-typing-deduping")))
     implementation(project(":airbyte-cdk:java:airbyte-cdk:airbyte-cdk-datastore-postgres"))
 
     testImplementation("io.mockk:mockk:1.14.5")
@@ -117,9 +119,7 @@ dependencies {
     integrationTestLegacyImplementation(testFixtures('io.airbyte.cdk:airbyte-cdk-datastore-bigquery:0.46.0')) {
         exclude group: 'io.airbyte.airbyte-protocol', module: 'protocol-models'
     }
-    integrationTestLegacyImplementation(testFixtures('io.airbyte.cdk:airbyte-cdk-db-destinations:0.46.0')) {
-        exclude group: 'io.airbyte.airbyte-protocol', module: 'protocol-models'
-    }
+    integrationTestLegacyImplementation testFixtures(project(":airbyte-cdk:java:airbyte-cdk:airbyte-cdk-db-destinations"))
     integrationTestLegacyImplementation(testFixtures('io.airbyte.cdk:airbyte-cdk-dependencies:0.46.0')) {
         exclude group: 'io.airbyte.airbyte-protocol', module: 'protocol-models'
     }

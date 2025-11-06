@@ -13,6 +13,7 @@ import io.airbyte.cdk.load.data.TimestampWithTimezoneValue
 import io.airbyte.cdk.load.data.TimestampWithoutTimezoneValue
 import io.airbyte.cdk.load.data.UnionType
 import io.airbyte.cdk.load.data.UnknownType
+import io.airbyte.cdk.load.dataflow.transform.ValidationResult
 import io.airbyte.cdk.load.dataflow.transform.ValueCoercer
 import io.airbyte.cdk.load.util.serializeToString
 import io.airbyte.protocol.models.v0.AirbyteRecordMessageMetaChange
@@ -64,23 +65,23 @@ class PostgresValueCoercer : ValueCoercer {
         return value
     }
 
-    override fun validate(value: EnrichedAirbyteValue): EnrichedAirbyteValue {
+    override fun validate(value: EnrichedAirbyteValue): ValidationResult =
         when (val abValue = value.abValue) {
             is IntegerValue -> {
                 // Validate against BIGINT range
                 if (abValue.value !in BIGINT_RANGE) {
-                    value.nullify(
+                    ValidationResult.ShouldNullify(
                         AirbyteRecordMessageMetaChange.Reason.DESTINATION_FIELD_SIZE_LIMITATION
                     )
-                }
+                } else ValidationResult.Valid
             }
             is NumberValue -> {
                 // Validate against NUMERIC range
                 if (abValue.value < NUMERIC_MIN || abValue.value > NUMERIC_MAX) {
-                    value.nullify(
+                    ValidationResult.ShouldNullify(
                         AirbyteRecordMessageMetaChange.Reason.DESTINATION_FIELD_SIZE_LIMITATION
                     )
-                }
+                } else ValidationResult.Valid
             }
             is StringValue -> {
                 // PostgreSQL doesn't allow null bytes (\u0000) in text fields
@@ -95,32 +96,30 @@ class PostgresValueCoercer : ValueCoercer {
                 // PostgreSQL uses UTF-8, so we check character count * 4 (max bytes per UTF-8 char)
                 val currentValue = (value.abValue as StringValue).value
                 if (currentValue.length * 4 > TEXT_LIMIT_BYTES) {
-                    value.nullify(
+                    ValidationResult.ShouldNullify(
                         AirbyteRecordMessageMetaChange.Reason.DESTINATION_FIELD_SIZE_LIMITATION
                     )
-                }
+                } else ValidationResult.Valid
             }
             is TimestampWithTimezoneValue -> {
                 val seconds = abValue.value.toEpochSecond()
                 if (seconds < TIMESTAMP_MIN_EPOCH_SECONDS || seconds > TIMESTAMP_MAX_EPOCH_SECONDS) {
-                    value.nullify(
+                    ValidationResult.ShouldNullify(
                         AirbyteRecordMessageMetaChange.Reason.DESTINATION_FIELD_SIZE_LIMITATION
                     )
-                }
+                } else ValidationResult.Valid
             }
             is TimestampWithoutTimezoneValue -> {
                 val seconds = abValue.value.toEpochSecond(java.time.ZoneOffset.UTC)
                 if (seconds < TIMESTAMP_MIN_EPOCH_SECONDS || seconds > TIMESTAMP_MAX_EPOCH_SECONDS) {
-                    value.nullify(
+                    ValidationResult.ShouldNullify(
                         AirbyteRecordMessageMetaChange.Reason.DESTINATION_FIELD_SIZE_LIMITATION
                     )
-                }
+                } else ValidationResult.Valid
             }
             else -> {
-                // Other types don't need validation
+               ValidationResult.Valid
             }
         }
 
-        return value
-    }
 }
