@@ -32,10 +32,12 @@ internal val INT_MAX = BigInteger("99999999999999999999999999999999999999") // 3
 internal val INT_MIN = BigInteger("-99999999999999999999999999999999999999") // 38 9s
 internal val INT_RANGE = INT_MIN..INT_MAX
 
-// https://docs.snowflake.com/en/sql-reference/data-types-numeric#label-data-type-float
-internal val FLOAT_MAX = BigDecimal("9007199254740991")
-internal val FLOAT_MIN = BigDecimal("-9007199254740991")
-internal val FLOAT_RANGE = FLOAT_MIN..FLOAT_MAX
+// https://docs.snowflake.com/en/sql-reference/data-types-numeric#number
+// NUMBER(38,9) can store up to 29 integer digits and 9 decimal digits
+// Max value: 99999999999999999999999999999.999999999 (29 integer digits + 9 decimal digits)
+internal val DECIMAL_MAX = BigDecimal("99999999999999999999999999999.999999999")
+internal val DECIMAL_MIN = BigDecimal("-99999999999999999999999999999.999999999")
+internal val DECIMAL_RANGE = DECIMAL_MIN..DECIMAL_MAX
 
 // https://docs.snowflake.com/en/sql-reference/data-types-semistructured#characteristics-of-a-variant-value
 internal const val VARIANT_LIMIT_BYTES = 128 * 1024 * 1024
@@ -51,7 +53,7 @@ fun isValid(value: AirbyteValue): Boolean {
         is ArrayValue,
         is ObjectValue -> isVariantValid(value.toCsvValue().toString())
         is IntegerValue -> value.value in INT_RANGE
-        is NumberValue -> value.value in FLOAT_RANGE
+        is NumberValue -> value.value in DECIMAL_RANGE
         is StringValue -> isVarcharValid(value.value)
         else -> true
     }
