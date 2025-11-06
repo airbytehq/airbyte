@@ -4,12 +4,11 @@
 
 package io.airbyte.cdk.load.dataflow.transform.medium
 
-import com.fasterxml.jackson.core.io.BigDecimalParser
-import com.fasterxml.jackson.core.io.BigIntegerParser
 import io.airbyte.cdk.load.command.DestinationStream
 import io.airbyte.cdk.load.data.AirbyteValue
 import io.airbyte.cdk.load.data.AirbyteValueProxy.FieldAccessor
 import io.airbyte.cdk.load.data.ArrayType
+import io.airbyte.cdk.load.data.ArrayTypeWithoutSchema
 import io.airbyte.cdk.load.data.ArrayValue
 import io.airbyte.cdk.load.data.BooleanType
 import io.airbyte.cdk.load.data.BooleanValue
@@ -22,7 +21,10 @@ import io.airbyte.cdk.load.data.NullValue
 import io.airbyte.cdk.load.data.NumberType
 import io.airbyte.cdk.load.data.NumberValue
 import io.airbyte.cdk.load.data.ObjectType
+import io.airbyte.cdk.load.data.ObjectTypeWithEmptySchema
+import io.airbyte.cdk.load.data.ObjectTypeWithoutSchema
 import io.airbyte.cdk.load.data.ObjectValue
+import io.airbyte.cdk.load.data.ProtobufTypeMismatchException
 import io.airbyte.cdk.load.data.StringType
 import io.airbyte.cdk.load.data.StringValue
 import io.airbyte.cdk.load.data.TimeTypeWithTimezone
@@ -38,17 +40,22 @@ import io.airbyte.cdk.load.data.UnknownType
 import io.airbyte.cdk.load.data.json.toAirbyteValue
 import io.airbyte.cdk.load.dataflow.transform.ColumnNameMapper
 import io.airbyte.cdk.load.dataflow.transform.ValueCoercer
+import io.airbyte.cdk.load.dataflow.transform.data.ValidationResultHandler
 import io.airbyte.cdk.load.dataflow.transform.defaults.NoOpColumnNameMapper
 import io.airbyte.cdk.load.message.DestinationRecordProtobufSource
 import io.airbyte.cdk.load.message.DestinationRecordRaw
 import io.airbyte.cdk.load.message.Meta
 import io.airbyte.cdk.load.util.Jsons
-import io.airbyte.cdk.load.util.serializeToString
+import io.airbyte.cdk.protocol.AirbyteValueProtobufDecoder
 import io.airbyte.protocol.models.v0.AirbyteRecordMessageMetaChange
 import io.airbyte.protocol.protobuf.AirbyteRecordMessage.AirbyteValueProtobuf
 import java.math.BigDecimal
+import java.math.BigInteger
 import java.time.Instant
+import java.time.LocalDate
+import java.time.LocalTime
 import java.time.OffsetDateTime
+import java.time.OffsetTime
 import java.time.ZoneOffset
 import java.util.concurrent.ConcurrentHashMap
 import javax.inject.Singleton
@@ -61,9 +68,11 @@ import javax.inject.Singleton
 class ProtobufConverter(
     private val columnNameMapper: ColumnNameMapper,
     private val coercer: ValueCoercer,
+    private val validationResultHandler: ValidationResultHandler,
 ) {
 
     private val isNoOpMapper = columnNameMapper is NoOpColumnNameMapper
+    private val decoder = AirbyteValueProtobufDecoder()
 
     private val perStreamMappedNames =
         ConcurrentHashMap<DestinationStream.Descriptor, Array<String>>()
@@ -115,11 +124,22 @@ class ProtobufConverter(
                     airbyteMetaField = null
                 )
 
-            val airbyteValue = extractTypedValue(protobufValue, accessor, enrichedValue)
+            val airbyteValue =
+                extractTypedValue(
+                    protobufValue = protobufValue,
+                    accessor = accessor,
+                    enrichedValue = enrichedValue,
+                    streamName = stream.unmappedDescriptor.name
+                )
             enrichedValue.abValue = airbyteValue
 
             val mappedValue = coercer.map(enrichedValue)
-            val validatedValue = coercer.validate(mappedValue)
+            val validatedValue =
+                validationResultHandler.handle(
+                    stream = stream.mappedDescriptor,
+                    result = coercer.validate(mappedValue),
+                    value = mappedValue
+                )
 
             allParsingFailures.addAll(validatedValue.changes)
 
@@ -186,15 +206,18 @@ class ProtobufConverter(
     private fun extractTypedValue(
         protobufValue: AirbyteValueProtobuf?,
         accessor: FieldAccessor,
-        enrichedValue: EnrichedAirbyteValue
+        enrichedValue: EnrichedAirbyteValue,
+        streamName: String
     ): AirbyteValue {
-        if (protobufValue == null || protobufValue.isNull) {
+        if (
+            protobufValue == null || protobufValue.valueCase == AirbyteValueProtobuf.ValueCase.NULL
+        ) {
             return NullValue
         }
 
         return try {
             // Step 1: Extract raw value from protobuf using the right method based on type
-            val rawValue = extractRawValue(protobufValue, accessor)
+            val rawValue = extractRawValue(protobufValue, accessor, streamName)
 
             // Step 2: Decide final target type (check for destination override first)
             val targetClass =
@@ -202,6 +225,8 @@ class ProtobufConverter(
 
             // Step 3: Create AirbyteValue of the target type using the raw value
             createAirbyteValue(rawValue, targetClass)
+        } catch (e: ProtobufTypeMismatchException) {
+            throw e
         } catch (_: Exception) {
             // Add parsing error to metadata
             enrichedValue.changes.add(
@@ -217,43 +242,102 @@ class ProtobufConverter(
 
     private fun extractRawValue(
         protobufValue: AirbyteValueProtobuf,
-        accessor: FieldAccessor
+        accessor: FieldAccessor,
+        streamName: String
     ): Any? {
+        // Validate that the protobuf value type matches the expected AirbyteType
+        validateProtobufType(protobufValue, accessor.type, streamName, accessor.name)
+
+        // Use the centralized decoder for all scalar and temporal types
+        val decodedValue = decoder.decode(protobufValue)
+
+        // For complex types (arrays, objects, unions), handle separately
         return when (accessor.type) {
-            is BooleanType -> protobufValue.boolean
-            is StringType -> protobufValue.string
-            is IntegerType -> {
-                if (protobufValue.hasBigInteger()) {
-                    BigIntegerParser.parseWithFastParser(protobufValue.bigInteger)
-                } else {
-                    protobufValue.integer.toBigInteger()
-                }
-            }
-            is NumberType -> {
-                if (protobufValue.hasBigDecimal()) {
-                    BigDecimalParser.parseWithFastParser(protobufValue.bigDecimal)
-                } else if (protobufValue.hasNumber()) {
-                    protobufValue.number.toBigDecimal()
-                } else {
-                    null
-                }
-            }
-            is DateType -> protobufValue.date
-            is TimestampTypeWithTimezone -> protobufValue.timestampWithTimezone
-            is TimestampTypeWithoutTimezone -> protobufValue.timestampWithoutTimezone
-            is TimeTypeWithTimezone -> protobufValue.timeWithTimezone
-            is TimeTypeWithoutTimezone -> protobufValue.timeWithoutTimezone
             is UnionType,
             is ArrayType,
             is ObjectType -> {
-                val jsonNode = Jsons.readTree(protobufValue.json.toByteArray())
-                jsonNode.toAirbyteValue()
+                if (decodedValue is String) {
+                    // If decoder returned a JSON string, parse it
+                    val jsonNode = Jsons.readTree(decodedValue.toByteArray())
+                    jsonNode.toAirbyteValue()
+                } else {
+                    decodedValue
+                }
             }
             is UnknownType -> null
-            else -> {
-                val jsonNode = Jsons.readTree(protobufValue.json.toByteArray())
-                jsonNode.serializeToString()
+            else -> decodedValue
+        }
+    }
+
+    /**
+     * Validates that the protobuf value case matches the expected AirbyteType.
+     *
+     * @throws ProtobufTypeMismatchException if there's a type mismatch
+     */
+    private fun validateProtobufType(
+        value: AirbyteValueProtobuf,
+        expectedType: io.airbyte.cdk.load.data.AirbyteType,
+        streamName: String,
+        columnName: String
+    ) {
+        val valueCase = value.valueCase
+
+        // Null values are always valid
+        if (
+            valueCase == AirbyteValueProtobuf.ValueCase.NULL ||
+                valueCase == AirbyteValueProtobuf.ValueCase.VALUE_NOT_SET ||
+                valueCase == null
+        ) {
+            return
+        }
+
+        // Check if the value case matches the expected type
+        val isValid =
+            when (expectedType) {
+                is StringType -> valueCase == AirbyteValueProtobuf.ValueCase.STRING
+                is BooleanType -> valueCase == AirbyteValueProtobuf.ValueCase.BOOLEAN
+                is IntegerType ->
+                    valueCase == AirbyteValueProtobuf.ValueCase.INTEGER ||
+                        valueCase == AirbyteValueProtobuf.ValueCase.BIG_INTEGER
+                is NumberType ->
+                    valueCase == AirbyteValueProtobuf.ValueCase.NUMBER ||
+                        valueCase == AirbyteValueProtobuf.ValueCase.BIG_DECIMAL
+                is DateType -> valueCase == AirbyteValueProtobuf.ValueCase.DATE
+                is TimeTypeWithTimezone ->
+                    valueCase == AirbyteValueProtobuf.ValueCase.TIME_WITH_TIMEZONE
+                is TimeTypeWithoutTimezone ->
+                    valueCase == AirbyteValueProtobuf.ValueCase.TIME_WITHOUT_TIMEZONE
+                is TimestampTypeWithTimezone ->
+                    valueCase == AirbyteValueProtobuf.ValueCase.TIMESTAMP_WITH_TIMEZONE
+                is TimestampTypeWithoutTimezone ->
+                    valueCase == AirbyteValueProtobuf.ValueCase.TIMESTAMP_WITHOUT_TIMEZONE
+                is ArrayType,
+                is ArrayTypeWithoutSchema,
+                is ObjectType,
+                is ObjectTypeWithEmptySchema,
+                is ObjectTypeWithoutSchema -> valueCase == AirbyteValueProtobuf.ValueCase.JSON
+                is UnionType -> {
+                    // For union types, the value must match at least one of the options
+                    valueCase == AirbyteValueProtobuf.ValueCase.JSON ||
+                        expectedType.options.any { option ->
+                            try {
+                                validateProtobufType(value, option, streamName, columnName)
+                                true
+                            } catch (_: ProtobufTypeMismatchException) {
+                                false
+                            }
+                        }
+                }
+                is UnknownType -> true // Unknown types accept any value
             }
+
+        if (!isValid) {
+            throw ProtobufTypeMismatchException(
+                streamName = streamName,
+                columnName = columnName,
+                expectedType = expectedType,
+                actualValueCase = valueCase
+            )
         }
     }
 
@@ -288,14 +372,38 @@ class ProtobufConverter(
         return when (targetClass) {
             BooleanValue::class.java -> BooleanValue(rawValue as Boolean)
             StringValue::class.java -> StringValue(rawValue.toString())
-            IntegerValue::class.java -> IntegerValue(rawValue as java.math.BigInteger)
+            IntegerValue::class.java -> IntegerValue(rawValue as BigInteger)
             NumberValue::class.java -> NumberValue(rawValue as BigDecimal)
-            DateValue::class.java -> DateValue(rawValue as String)
-            TimestampWithTimezoneValue::class.java -> TimestampWithTimezoneValue(rawValue as String)
+            DateValue::class.java ->
+                when (rawValue) {
+                    is LocalDate -> DateValue(rawValue)
+                    is String -> DateValue(rawValue)
+                    else -> DateValue(rawValue.toString())
+                }
+            TimestampWithTimezoneValue::class.java ->
+                when (rawValue) {
+                    is OffsetDateTime -> TimestampWithTimezoneValue(rawValue)
+                    is String -> TimestampWithTimezoneValue(rawValue)
+                    else -> TimestampWithTimezoneValue(rawValue.toString())
+                }
             TimestampWithoutTimezoneValue::class.java ->
-                TimestampWithoutTimezoneValue(rawValue as String)
-            TimeWithTimezoneValue::class.java -> TimeWithTimezoneValue(rawValue as String)
-            TimeWithoutTimezoneValue::class.java -> TimeWithoutTimezoneValue(rawValue as String)
+                when (rawValue) {
+                    is java.time.LocalDateTime -> TimestampWithoutTimezoneValue(rawValue)
+                    is String -> TimestampWithoutTimezoneValue(rawValue)
+                    else -> TimestampWithoutTimezoneValue(rawValue.toString())
+                }
+            TimeWithTimezoneValue::class.java ->
+                when (rawValue) {
+                    is OffsetTime -> TimeWithTimezoneValue(rawValue)
+                    is String -> TimeWithTimezoneValue(rawValue)
+                    else -> TimeWithTimezoneValue(rawValue.toString())
+                }
+            TimeWithoutTimezoneValue::class.java ->
+                when (rawValue) {
+                    is LocalTime -> TimeWithoutTimezoneValue(rawValue)
+                    is String -> TimeWithoutTimezoneValue(rawValue)
+                    else -> TimeWithoutTimezoneValue(rawValue.toString())
+                }
             NullValue::class.java -> NullValue
             AirbyteValue::class.java ->
                 rawValue as AirbyteValue // Already an AirbyteValue (JSON types)

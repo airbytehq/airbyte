@@ -106,7 +106,7 @@ jobs:
       ec2-instance-id: ${{ steps.start-ec2-runner.outputs.ec2-instance-id }}
     steps:
       - name: Checkout Airbyte
-        uses: actions/checkout@v3
+        uses: actions/checkout@f43a0e5ff2bd294095638e18286ca9a3d1956744 # v3.6.0
         with:
           repository: ${{ inputs.repo }}
           ref: ${{ inputs.gitref }}
@@ -129,7 +129,7 @@ jobs:
     steps:
       - name: Link comment to workflow run
         if: inputs.comment-id
-        uses: peter-evans/create-or-update-comment@v1
+        uses: peter-evans/create-or-update-comment@a35cf36e5301d70b76f316e867e7788a55a31dae # v1.4.5
         with:
           comment-id: ${{ inputs.comment-id }}
           body: |
@@ -140,7 +140,7 @@ jobs:
             > :runner: ${{inputs.connector}} https://github.com/${{github.repository}}/actions/runs/${{github.run_id}}.
       - name: Search for valid connector name format
         id: regex
-        uses: AsasInnab/regex-action@v1
+        uses: AsasInnab/regex-action@93439ac11aa6a032a673c8711231d8cef044daaa # v1
         with:
           regex_pattern: "^(connectors/)?[a-zA-Z0-9-_]+$"
           regex_flags: "i" # required to be set for this plugin
@@ -155,18 +155,18 @@ jobs:
           inputs.connector != 'connectors/source-mongodb-v2' }}"
         run: echo "Only connectors/source-postgres, source-mysql, source-mongodb-v2 and destination-snowflake currently supported by harness" && exit 1
       - name: Checkout Airbyte
-        uses: actions/checkout@v3
+        uses: actions/checkout@f43a0e5ff2bd294095638e18286ca9a3d1956744 # v3.6.0
         with:
           repository: ${{ inputs.repo }}
           ref: ${{ inputs.gitref }}
           fetch-depth: 0 # This is to fetch the main branch in case we are running on a different branch.
       - name: Install Java
-        uses: actions/setup-java@v3
+        uses: actions/setup-java@17f84c3641ba7b8f6deff6309fc4c864478f5d62 # v3.14.1
         with:
           distribution: "zulu"
           java-version: "21"
       - name: Install Python
-        uses: actions/setup-python@v4
+        uses: actions/setup-python@7f4fc3e22c37d6ff65e88745f38bd3157c663f7c # v4.9.1
         with:
           python-version: "3.11"
           check-latest: true
@@ -210,7 +210,7 @@ jobs:
         env:
           GCP_GSM_CREDENTIALS: ${{ secrets.GCP_GSM_CREDENTIALS }}
       - name: KIND Kubernetes Cluster Setup
-        uses: helm/kind-action@v1.4.0
+        uses: helm/kind-action@9e8295d178de23cbfbd8fa16cf844eec1d773a07 # v1.4.0
         with:
           config: "./tools/bin/${{ steps.which-harness.outputs.harness_type }}-kind-cluster-config.yaml"
       - name: Run harness
@@ -246,7 +246,7 @@ jobs:
           echo "$EOF" >> $GITHUB_OUTPUT
       - name: Link comment to workflow run
         if: inputs.comment-id
-        uses: peter-evans/create-or-update-comment@v2
+        uses: peter-evans/create-or-update-comment@67dcc547d311b736a8e6c5c236542148a47adc3d # v2.1.1
         with:
           reactions: "+1"
           comment-id: ${{ inputs.comment-id }}
@@ -268,20 +268,20 @@ jobs:
     if: ${{ always() }} # required to stop the runner even if the error happened in the previous jobs
     steps:
       - name: Configure AWS credentials
-        uses: aws-actions/configure-aws-credentials@v1
+        uses: aws-actions/configure-aws-credentials@67fbcbb121271f7775d2e7715933280b06314838 # v1.7.0
         with:
           aws-access-key-id: ${{ secrets.SELF_RUNNER_AWS_ACCESS_KEY_ID }}
           aws-secret-access-key: ${{ secrets.SELF_RUNNER_AWS_SECRET_ACCESS_KEY }}
           aws-region: us-east-2
       - name: Checkout Airbyte
-        uses: actions/checkout@v3
+        uses: actions/checkout@f43a0e5ff2bd294095638e18286ca9a3d1956744 # v3.6.0
       - name: Check PAT rate limits
         run: |
           ./tools/bin/find_non_rate_limited_PAT \
             ${{ secrets.GH_PAT_BUILD_RUNNER_OSS }} \
             ${{ secrets.GH_PAT_BUILD_RUNNER_BACKUP }}
       - name: Stop EC2 runner
-        uses: supertopher/ec2-github-runner@base64v1.0.10
+        uses: supertopher/ec2-github-runner@0a62b16b7a86a45725a1755884f8cee7a5068ad8 #base64v1.0.10
         with:
           mode: stop
           github-token: ${{ env.PAT }}

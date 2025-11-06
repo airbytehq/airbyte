@@ -36,7 +36,7 @@ jobs:
 
       - name: Append comment with job run link
         id: first-comment-action
-        uses: peter-evans/create-or-update-comment@v4
+        uses: peter-evans/create-or-update-comment@71345be0265236311c031f5c7866368bd1eff043 # v4.0.0
         with:
           comment-id: ${{ github.event.inputs.comment-id }}
           issue-number: ${{ github.event.inputs.pr }}
@@ -44,7 +44,7 @@ jobs:
             > Update CDK version job started for `${{ github.event.inputs.connector }}`. Check the [job logs](${{ steps.resolve-job-vars.outputs.run-url }}) for details.
 
       - name: Checkout Airbyte
-        uses: actions/checkout@v4
+        uses: actions/checkout@08eba0b27e820071cde6df949e0beb9ba4906955 # v4.3.0
         with:
           submodules: true # Needed for airbyte-enterprise connectors (no-op otherwise)
 
@@ -71,13 +71,13 @@ jobs:
           fi
 
       - name: Setup Java
-        uses: actions/setup-java@v4
+        uses: actions/setup-java@c5195efecf7bdfc987ee8bae7a71cb8b11521c00 # v4.7.1
         with:
           distribution: "zulu"
           java-version: "21"
 
       - name: Setup Gradle
-        uses: gradle/actions/setup-gradle@v4
+        uses: gradle/actions/setup-gradle@748248ddd2a24f49513d8f472f81c3a07d4d50e1 # v4.4.4
 
       - name: Run CDK upgrade
         run: ./gradlew ":airbyte-integrations:connectors:${{ github.event.inputs.connector }}:upgradeCdk"
@@ -98,7 +98,7 @@ jobs:
           git push
 
       - name: Append success comment
-        uses: peter-evans/create-or-update-comment@v4
+        uses: peter-evans/create-or-update-comment@71345be0265236311c031f5c7866368bd1eff043 # v4.0.0
         if: steps.git-diff.outputs.changes == 'true'
         with:
           comment-id: ${{ steps.first-comment-action.outputs.comment-id }}
@@ -107,7 +107,7 @@ jobs:
             > ✅ Successfully updated CDK version for `${{ github.event.inputs.connector }}`.
 
       - name: Append success comment (no-op)
-        uses: peter-evans/create-or-update-comment@v4
+        uses: peter-evans/create-or-update-comment@71345be0265236311c031f5c7866368bd1eff043 # v4.0.0
         if: steps.git-diff.outputs.changes != 'true'
         with:
           comment-id: ${{ steps.first-comment-action.outputs.comment-id }}
@@ -116,7 +116,7 @@ jobs:
             > ✅ CDK version for `${{ github.event.inputs.connector }}` was already up to date (no changes made).
 
       - name: Append validation failure comment
-        uses: peter-evans/create-or-update-comment@v4
+        uses: peter-evans/create-or-update-comment@71345be0265236311c031f5c7866368bd1eff043 # v4.0.0
         if: failure() && steps.validate-connector.outputs.error
         with:
           comment-id: ${{ steps.first-comment-action.outputs.comment-id }}
@@ -125,7 +125,7 @@ jobs:
             > 🔴 **Validation Error**: ${{ steps.validate-connector.outputs.error }}
 
       - name: Append failure comment
-        uses: peter-evans/create-or-update-comment@v4
+        uses: peter-evans/create-or-update-comment@71345be0265236311c031f5c7866368bd1eff043 # v4.0.0
         if: failure() && !steps.validate-connector.outputs.error
         with:
           comment-id: ${{ steps.first-comment-action.outputs.comment-id }}

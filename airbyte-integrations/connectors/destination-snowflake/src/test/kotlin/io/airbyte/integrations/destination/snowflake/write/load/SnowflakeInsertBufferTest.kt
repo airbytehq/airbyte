@@ -9,7 +9,7 @@ import io.airbyte.cdk.load.data.IntegerValue
 import io.airbyte.cdk.load.data.NullValue
 import io.airbyte.cdk.load.data.StringValue
 import io.airbyte.cdk.load.message.Meta
-import io.airbyte.cdk.load.orchestration.db.TableName
+import io.airbyte.cdk.load.table.TableName
 import io.airbyte.integrations.destination.snowflake.client.SnowflakeAirbyteClient
 import io.airbyte.integrations.destination.snowflake.spec.SnowflakeConfiguration
 import io.airbyte.integrations.destination.snowflake.sql.SnowflakeColumnUtils
@@ -41,7 +41,7 @@ internal class SnowflakeInsertBufferTest {
     fun testAccumulate() {
         val tableName = mockk<TableName>(relaxed = true)
         val column = "columnName"
-        val columns = listOf(column)
+        val columns = linkedMapOf(column to "NUMBER(38,0)")
         val snowflakeAirbyteClient = mockk<SnowflakeAirbyteClient>(relaxed = true)
         val record = createRecord(column)
         val buffer =
@@ -64,7 +64,7 @@ internal class SnowflakeInsertBufferTest {
     fun testAccumulateRaw() {
         val tableName = mockk<TableName>(relaxed = true)
         val column = "columnName"
-        val columns = listOf(column)
+        val columns = linkedMapOf(column to "NUMBER(38,0)")
         val snowflakeAirbyteClient = mockk<SnowflakeAirbyteClient>(relaxed = true)
         val record = createRecord(column)
         val buffer =
@@ -89,7 +89,7 @@ internal class SnowflakeInsertBufferTest {
     fun testFlush() {
         val tableName = mockk<TableName>(relaxed = true)
         val column = "columnName"
-        val columns = listOf(column)
+        val columns = linkedMapOf(column to "NUMBER(38,0)")
         val snowflakeAirbyteClient = mockk<SnowflakeAirbyteClient>(relaxed = true)
         val record = createRecord(column)
         val buffer =
@@ -109,7 +109,10 @@ internal class SnowflakeInsertBufferTest {
 
         coVerify(exactly = 1) { snowflakeAirbyteClient.putInStage(tableName, any()) }
         coVerify(exactly = 1) {
-            snowflakeAirbyteClient.copyFromStage(tableName, match { it.endsWith(".csv.gz") })
+            snowflakeAirbyteClient.copyFromStage(
+                tableName,
+                match { it.endsWith("$CSV_FILE_EXTENSION$FILE_SUFFIX") }
+            )
         }
     }
 
@@ -117,7 +120,7 @@ internal class SnowflakeInsertBufferTest {
     fun testFlushRaw() {
         val tableName = mockk<TableName>(relaxed = true)
         val column = "columnName"
-        val columns = listOf(column)
+        val columns = linkedMapOf(column to "NUMBER(38,0)")
         val snowflakeAirbyteClient = mockk<SnowflakeAirbyteClient>(relaxed = true)
         val record = createRecord(column)
         val buffer =
@@ -139,7 +142,10 @@ internal class SnowflakeInsertBufferTest {
 
         coVerify(exactly = 1) { snowflakeAirbyteClient.putInStage(tableName, any()) }
         coVerify(exactly = 1) {
-            snowflakeAirbyteClient.copyFromStage(tableName, match { it.endsWith(".csv.gz") })
+            snowflakeAirbyteClient.copyFromStage(
+                tableName,
+                match { it.endsWith("$CSV_FILE_EXTENSION$FILE_SUFFIX") }
+            )
         }
     }
 
@@ -151,7 +157,7 @@ internal class SnowflakeInsertBufferTest {
         val buffer =
             SnowflakeInsertBuffer(
                 tableName = tableName,
-                columns = listOf("COLUMN1", "COLUMN2"),
+                columns = linkedMapOf("COLUMN1" to "NUMBER(38,0)", "COLUMN2" to "NUMBER(38,0)"),
                 snowflakeClient = snowflakeAirbyteClient,
                 snowflakeConfiguration = snowflakeConfiguration,
                 flushLimit = 1,
@@ -177,7 +183,7 @@ internal class SnowflakeInsertBufferTest {
         val buffer =
             SnowflakeInsertBuffer(
                 tableName = tableName,
-                columns = listOf("COLUMN1", "COLUMN2"),
+                columns = linkedMapOf("COLUMN1" to "NUMBER(38,0)", "COLUMN2" to "NUMBER(38,0)"),
                 snowflakeClient = snowflakeAirbyteClient,
                 snowflakeConfiguration = snowflakeConfiguration,
                 flushLimit = 1,

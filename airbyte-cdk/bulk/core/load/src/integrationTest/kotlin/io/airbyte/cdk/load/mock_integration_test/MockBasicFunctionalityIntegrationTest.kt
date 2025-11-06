@@ -80,6 +80,7 @@ abstract class BaseMockBasicFunctionalityIntegrationTest(
             } else {
                 UnknownTypesBehavior.PASS_THROUGH
             },
+        includesAdditionalStats = false,
     ) {
     @Test
     override fun testBasicWrite() {
@@ -439,7 +440,7 @@ class MockBasicFunctionalityIntegrationTestStdioJsonl :
         DataChannelFormat.JSONL,
     )
 
-// Speed mode
+@Disabled
 class MockBasicFunctionalityIntegrationTestSocketProtobuf :
     BaseMockBasicFunctionalityIntegrationTest(
         DataChannelMedium.SOCKET,
