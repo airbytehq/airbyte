@@ -83,7 +83,7 @@ class IcebergTableSynchronizer(
 
         if (!diff.hasChanges()) {
             // If no differences, return the existing schema as-is.
-            return SchemaUpdateResult(existingSchema, pendingUpdate = null)
+            return SchemaUpdateResult(existingSchema, pendingUpdates = emptyList())
         }
 
         val update: UpdateSchema = table.updateSchema().allowIncompatibleChanges()
@@ -216,9 +216,10 @@ class IcebergTableSynchronizer(
             val finalSchema = addUpdate.apply()
             return if (columnTypeChangeBehavior.commitImmediately) {
                 addUpdate.commit()
-                SchemaUpdateResult(finalSchema, pendingUpdate = null)
+                SchemaUpdateResult(finalSchema, pendingUpdates = emptyList())
             } else {
-                SchemaUpdateResult(finalSchema, addUpdate)
+                // Return both updates in order: first the delete (update), then the add (addUpdate)
+                SchemaUpdateResult(finalSchema, pendingUpdates = listOf(update, addUpdate))
             }
         }
 
@@ -227,11 +228,11 @@ class IcebergTableSynchronizer(
         val newSchema: Schema = update.apply()
         if (columnTypeChangeBehavior.commitImmediately) {
             update.commit()
-            return SchemaUpdateResult(newSchema, pendingUpdate = null)
+            return SchemaUpdateResult(newSchema, pendingUpdates = emptyList())
         } else {
-            return SchemaUpdateResult(newSchema, update)
+            return SchemaUpdateResult(newSchema, pendingUpdates = listOf(update))
         }
     }
 }
 
-data class SchemaUpdateResult(val schema: Schema, val pendingUpdate: UpdateSchema?)
+data class SchemaUpdateResult(val schema: Schema, val pendingUpdates: List<UpdateSchema>)
