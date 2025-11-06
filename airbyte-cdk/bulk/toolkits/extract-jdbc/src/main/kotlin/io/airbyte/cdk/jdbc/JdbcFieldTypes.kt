@@ -273,7 +273,7 @@ data object OffsetTimeFieldType :
 data object OffsetDateTimeFieldType :
     LosslessJdbcFieldType<OffsetDateTime, OffsetDateTime>(
         LeafAirbyteSchemaType.TIMESTAMP_WITH_TIMEZONE,
-        ObjectGetter(OffsetDateTime::class.java),
+        TimestampTzGetter,
         OffsetDateTimeCodec,
         OffsetDateTimeCodec,
         AnyAccessor,

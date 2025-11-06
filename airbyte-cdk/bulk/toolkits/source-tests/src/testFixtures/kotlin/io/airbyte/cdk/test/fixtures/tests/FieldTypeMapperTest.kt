@@ -65,7 +65,7 @@ abstract class FieldTypeMapperTest {
             DynamicTest.dynamicTest("discover-and-read-all", actual)
         val testCases: List<DynamicNode> =
             testCases.map {
-                DynamicContainer.dynamicContainer(it.id, dynamicTests(actual, it.tableName))
+                DynamicContainer.dynamicContainer(it.testName, dynamicTests(actual, it.tableName))
             }
         return listOf(discoverAndReadAllTest) + testCases
     }
@@ -210,24 +210,21 @@ abstract class FieldTypeMapperTest {
         val sqlType: String,
         val values: Map<String, String>,
         val airbyteSchemaType: AirbyteSchemaType = LeafAirbyteSchemaType.STRING,
+        val testName: String =
+            sqlType
+                .replace("\\[]".toRegex(), "_array")
+                .replace("[^a-zA-Z0-9]".toRegex(), " ")
+                .trim()
+                .replace(" +".toRegex(), "_")
+                .uppercase()
     ) {
         companion object {
             val testAssetResourceNamer = TestAssetResourceNamer()
         }
 
-        val id: String
-            get() =
-                sqlType
-                    .replace("\\[]".toRegex(), "_array")
-                    .replace("[^a-zA-Z0-9]".toRegex(), " ")
-                    .trim()
-                    .replace(" +".toRegex(), "_")
-                    .uppercase()
-
         val tableName = testAssetResourceNamer.getName()
 
-        val columnName: String
-            get() = "COL_$id"
+        val columnName = "TYPE_COL"
 
         val dml: List<String>
             get() {

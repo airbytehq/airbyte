@@ -22,8 +22,6 @@ import io.airbyte.protocol.protobuf.AirbyteRecordMessage.AirbyteRecordMessagePro
 import java.math.BigDecimal
 import java.net.URL
 import java.time.OffsetDateTime
-import java.time.OffsetTime
-import java.util.Base64
 
 // A value of a field along with its encoder
 class FieldValueEncoder<R>(val fieldValue: R?, val jsonEncoder: JsonEncoder<in R>) {
@@ -89,7 +87,6 @@ fun interface ProtoEncoder<T> {
  * for types that need preprocessing before protobuf encoding, such as ByteBuffer -> Base64 String,
  * BigDecimal -> BigInteger, URL -> String, etc.
  */
-
 fun <R> valueForProtobufEncoding(fve: FieldValueEncoder<R>): Any? {
     return fve.fieldValue?.let { value ->
         when (fve.jsonEncoder) {
