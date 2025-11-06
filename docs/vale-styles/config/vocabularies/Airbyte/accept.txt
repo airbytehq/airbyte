@@ -78,7 +78,6 @@ PostgreSQL
 Postgres
 NetSuite
 ClickHouse
-clickhouse
 
 # Companies, products, and jargon
 
@@ -100,15 +99,7 @@ MinIO
 [Nn]amespaces
 [Ii]nitialisms
 \bCPU(?:s)?\b
-hostname
-hostnames
-dataflow
-permissioning
-dedup
-PKs
-stringification
-proto
-data's
+\bhostname(?:s)?\b
 
 # API and technical terms
 
