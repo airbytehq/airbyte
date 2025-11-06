@@ -197,7 +197,9 @@ class IcebergTableSynchronizer(
         // If we're doing separate commits for column replacements, commit the delete operations now
         if (requireSeparateCommitsForColumnReplace && columnsToReplaceInSecondCommit.isNotEmpty()) {
             // Commit the first update (with deletes but not adds for replaced columns)
-            update.commit()
+            if (columnTypeChangeBehavior.commitImmediately) {
+                update.commit()
+            }
 
             // Refresh table to get updated schema after delete
             table.refresh()
