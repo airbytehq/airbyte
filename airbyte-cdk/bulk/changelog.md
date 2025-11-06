@@ -1,3 +1,9 @@
+## Version 0.1.69
+
+**Load CDK**
+
+* Changed: Update the IcebergTableSynchronizer to allow for individual update operations commit in preparation for BigLake
+
 ## Version 0.1.68
 
 **Load CDK**
