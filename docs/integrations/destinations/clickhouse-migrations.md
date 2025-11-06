@@ -3,12 +3,12 @@
 ## SSH Support
 
 :::warning
-SSH tunneling support for the ClickHouse connector is currently in **Beta**. If you encounter issues with SSH tunneling after upgrading, please contact Airbyte support.
+SSH tunneling support for the ClickHouse connector is currently in **Beta**.
 :::
 
 ## Upgrading to 2.0.0
 
-Version 2.0.0 represents a fundamental architectural change from version 1.0.0:
+Version 2.0.0 represents a fundamental architectural change from version 1.0.0.
 
 **Version 1.0.0 behavior:**
 
@@ -30,17 +30,20 @@ Airbyte cannot automatically migrate data from the v1 raw table format to the v2
 **Migration steps:**
 
 1. Upgrade your ClickHouse destination connector to version 2.0.0 or later
-2. Update your downstream pipelines to reference the new table locations
-3. Trigger a full refresh sync to populate the new typed tables
-4. Verify the new tables contain the expected data
-5. Update any remaining downstream dependencies
-6. Remove the old raw tables (see below)
+2. Trigger a full refresh sync to populate the new typed tables
+3. Verify the new tables contain the expected data
+4. Update your downstream pipelines to reference the new table locations
+5. Remove the old raw tables (see below)
 
 ## Removing Old Tables
 
 The v2 connector does not automatically remove tables created by v1. After successfully migrating to v2 and verifying your data, you can manually remove the old raw tables.
 
 For most users, old tables are located in the `airbyte_internal` database with names matching the pattern `airbyte_internal.{database}_raw__stream_{table}`. However, the exact location may vary based on your v1 configuration.
+
+:::caution
+Always verify that you have successfully migrated your data before removing old tables. Once dropped, the data cannot be recovered without re-syncing from your source.
+:::
 
 To remove old tables:
 
@@ -54,10 +57,6 @@ DROP TABLE airbyte_internal.{database}_raw__stream_{table};
 -- Or drop the entire airbyte_internal database if it only contains old Airbyte tables
 DROP DATABASE airbyte_internal;
 ```
-
-:::caution
-Always verify that you have successfully migrated your data before removing old tables. Once dropped, the data cannot be recovered without re-syncing from your source.
-:::
 
 ## Important Configuration Changes
 
