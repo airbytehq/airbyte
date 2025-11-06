@@ -61,19 +61,15 @@ interface TableSchemaEvolutionClient {
         tableName: TableName,
         columnNameMapping: ColumnNameMapping,
     ) {
-        val (actualSchema, actualAdditionalInfo) = discoverSchema(tableName)
-        val (expectedSchema, expectedAdditionalInfo) = computeSchema(stream, columnNameMapping)
+        val (actualSchema) = discoverSchema(tableName)
+        val (expectedSchema) = computeSchema(stream, columnNameMapping)
         val columnChangeset = computeChangeset(actualSchema, expectedSchema)
-        val additionalChangeset =
-            computeAdditionalChangeset(actualAdditionalInfo, expectedAdditionalInfo)
         applyChangeset(
             stream,
             columnNameMapping,
             tableName,
             expectedSchema,
-            expectedAdditionalInfo,
             columnChangeset,
-            additionalChangeset
         )
     }
 
@@ -116,15 +112,6 @@ interface TableSchemaEvolutionClient {
     }
 
     /**
-     * This function computes a changeset between two "additional info" structs. This is the `Any?`
-     * value returned from [discoverSchema].
-     *
-     * If your destination doesn't return anything interesting in that field, you should just
-     * `return null` from this function.
-     */
-    fun computeAdditionalChangeset(actualSchemaInfo: Any?, expectedSchemaInfo: Any?): Any?
-
-    /**
      * Execute the changeset against the destination. After this method completes, a call to
      * [discoverSchema] should return an identical schema as [computeSchema].
      */
@@ -139,9 +126,7 @@ interface TableSchemaEvolutionClient {
         columnNameMapping: ColumnNameMapping,
         tableName: TableName,
         expectedColumns: TableColumns,
-        expectedAdditionalInfo: Any?,
         columnChangeset: ColumnChangeset,
-        additionalSchemaInfoChangeset: Any?,
     )
 }
 
@@ -153,14 +138,11 @@ interface TableSchemaEvolutionClient {
 typealias TableColumns = Map<String, ColumnType>
 
 /**
- * [additionalInfo] should be used for anything not represented in the [TableColumns] object. For
- * example, you may want to configure a partitioning/clustering key on the table, based on the sync
- * mode - so you would want to return the existing table's partition/cluster keys from
- * [TableSchemaEvolutionClient.discoverSchema].
- *
- * Most destinations will just use `null` for that value.
+ * Eventually we might need some sort of struct to track anything not represented in the
+ * [TableColumns] object. For example, Bigquery's partitioning/clustering key, Iceberg's identifier
+ * fields.
  */
-data class TableSchema(val columns: TableColumns, val additionalInfo: Any?)
+data class TableSchema(val columns: TableColumns)
 
 data class ColumnType(
     /**
