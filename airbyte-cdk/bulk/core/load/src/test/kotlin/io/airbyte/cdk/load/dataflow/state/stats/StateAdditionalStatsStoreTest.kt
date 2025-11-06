@@ -14,7 +14,7 @@ internal class StateAdditionalStatsStoreTest {
     @Test
     fun testAddingMetricValue() {
         val partitionKey1 = PartitionKey("partition-1")
-        val partitionKey2 = PartitionKey("partition-1")
+        val partitionKey2 = PartitionKey("partition-2")
         val stream = DestinationStream.Descriptor(namespace = "namespace", name = "name")
         val metric = StateAdditionalStatsStore.ObservabilityMetrics.NULLED_VALUE_COUNT
         val store = StateAdditionalStatsStore()
@@ -38,14 +38,43 @@ internal class StateAdditionalStatsStoreTest {
             value = 5.0
         )
 
-        val stats = store.drain(listOf(partitionKey1, partitionKey2), stream)
-        assertEquals(2, stats.toMap().size)
-        assertEquals(2.0, stats.get(metric.metricName))
+        val stats = store.drain(listOf(partitionKey1, partitionKey2))
+        assertEquals(2, stats.getValue(stream).toMap().size)
+        assertEquals(2.0, stats.getValue(stream).get(metric.metricName))
         assertEquals(
             5.0,
-            stats.get(
-                StateAdditionalStatsStore.ObservabilityMetrics.TRUNCATED_VALUE_COUNT.metricName
-            )
+            stats
+                .getValue(stream)
+                .get(
+                    StateAdditionalStatsStore.ObservabilityMetrics.TRUNCATED_VALUE_COUNT.metricName
+                )
+        )
+    }
+
+    @Test
+    fun testDrainAllPartialDefaultValues() {
+        val partitionKey = PartitionKey("partition-1")
+        val stream = DestinationStream.Descriptor(namespace = "namespace", name = "name")
+        val metric = StateAdditionalStatsStore.ObservabilityMetrics.NULLED_VALUE_COUNT
+        val store = StateAdditionalStatsStore()
+
+        store.add(
+            partitionKey = partitionKey,
+            streamDescriptor = stream,
+            metric = metric,
+            value = 1.0
+        )
+
+        val stats = store.drain(listOf(partitionKey))
+        assertEquals(2, stats.getValue(stream).toMap().size)
+        assertEquals(1.0, stats.getValue(stream).get(metric.metricName))
+        assertEquals(
+            0.0,
+            stats
+                .getValue(stream)
+                .get(
+                    StateAdditionalStatsStore.ObservabilityMetrics.TRUNCATED_VALUE_COUNT.metricName
+                )
         )
     }
 
@@ -55,14 +84,10 @@ internal class StateAdditionalStatsStoreTest {
         val stream = DestinationStream.Descriptor(namespace = "namespace", name = "name")
         val store = StateAdditionalStatsStore()
 
-        val stats = store.drain(partitionKeys, stream)
+        val stats = store.drain(partitionKeys)
 
-        assertEquals(
-            StateAdditionalStatsStore.ObservabilityMetrics.entries.size,
-            stats.toMap().size
-        )
         StateAdditionalStatsStore.ObservabilityMetrics.entries.forEach { metric ->
-            assertEquals(0.0, stats.get(metric.metricName))
+            assertEquals(0.0, stats.getValue(stream).get(metric.metricName))
         }
     }
 }

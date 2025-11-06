@@ -43,7 +43,8 @@ class StateStatsEnricher(
         // records.
         msg.updateStats(
             destinationStats = msg.sourceStats,
-            additionalStats = stateAdditionalStatsStore.drain(partitionKeys, desc).toMap(),
+            // Use getValue to ensure the default histogram is returned if the stream is no present
+            additionalStats = stateAdditionalStatsStore.drain(partitionKeys).getValue(desc).toMap(),
         )
 
         return msg

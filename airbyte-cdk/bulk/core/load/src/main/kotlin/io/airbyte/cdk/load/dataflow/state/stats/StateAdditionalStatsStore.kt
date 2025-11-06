@@ -61,14 +61,18 @@ class StateAdditionalStatsStore {
      */
     fun drain(
         partitionKeys: List<PartitionKey>,
-        stream: DestinationStream.Descriptor
-    ): Histogram<String> {
+    ): Map<DestinationStream.Descriptor, AdditionalStatsHistogram> {
+        val accumulator =
+            mutableMapOf<DestinationStream.Descriptor, AdditionalStatsHistogram>().withDefault {
+                populateWithDefaultValues(AdditionalStatsHistogram())
+            }
+
         return partitionKeys
-            .mapNotNull { store[it] }
-            .ifEmpty { listOf(ConcurrentHashMap()) }
-            .fold(AdditionalStatsHistogram()) { acc, perStreamStats ->
-                val streamStats = perStreamStats.remove(stream)
-                streamStats?.let { acc.merge(it) } ?: acc
+            .mapNotNull { store.remove(it) }
+            .fold(accumulator) { acc, perStreamStats ->
+                perStreamStats.forEach { (stream, histogram) ->
+                    acc.merge(stream, histogram, AdditionalStatsHistogram::merge)
+                }
                 addDefaultValues(acc)
             }
     }
@@ -85,7 +89,17 @@ class StateAdditionalStatsStore {
      * ```
      * The updated histogram with default values for missing metrics.
      */
-    private fun addDefaultValues(histogram: AdditionalStatsHistogram): AdditionalStatsHistogram {
+    private fun addDefaultValues(
+        stats: MutableMap<DestinationStream.Descriptor, AdditionalStatsHistogram>
+    ): MutableMap<DestinationStream.Descriptor, AdditionalStatsHistogram> {
+        stats.forEach { (_, histogram) -> populateWithDefaultValues(histogram) }
+        return stats
+    }
+
+    private fun populateWithDefaultValues(
+        histogram: AdditionalStatsHistogram
+    ): AdditionalStatsHistogram {
+        println("Populating...")
         ObservabilityMetrics.entries.forEach {
             if (histogram.get(it.metricName) == null) {
                 histogram.increment(it.metricName, 0.0)

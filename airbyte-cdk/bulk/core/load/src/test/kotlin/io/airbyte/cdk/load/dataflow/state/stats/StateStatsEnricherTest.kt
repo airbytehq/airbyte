@@ -6,7 +6,7 @@ package io.airbyte.cdk.load.dataflow.state.stats
 
 import io.airbyte.cdk.load.command.DestinationStream
 import io.airbyte.cdk.load.command.NamespaceMapper
-import io.airbyte.cdk.load.dataflow.state.Histogram
+import io.airbyte.cdk.load.dataflow.state.AdditionalStatsHistogram
 import io.airbyte.cdk.load.dataflow.state.PartitionKey
 import io.airbyte.cdk.load.dataflow.state.StateKey
 import io.airbyte.cdk.load.message.CheckpointMessage
@@ -36,7 +36,10 @@ class StateStatsEnricherTest {
 
     @BeforeEach
     fun setUp() {
-        every { stateAdditionalStatsStore.drain(any(), any()) } returns Histogram()
+        every { stateAdditionalStatsStore.drain(any()) } returns
+            emptyMap<DestinationStream.Descriptor, AdditionalStatsHistogram>().withDefault {
+                AdditionalStatsHistogram()
+            }
         stateStatsEnricher =
             StateStatsEnricher(statsStore, namespaceMapper, stateAdditionalStatsStore)
     }
