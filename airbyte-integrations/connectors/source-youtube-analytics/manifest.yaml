@@ -42,6 +42,9 @@ definitions:
             type: DpathExtractor
             field_path:
               - reports
+            record_filter:
+              type: RecordFilter
+              condition: "{{ record['startTime'] >= stream_interval['start_time'] }}"
         partition_router:
           type: SubstreamPartitionRouter
           parent_stream_configs:
@@ -59,7 +62,7 @@ definitions:
         datetime_format: "%Y-%m-%dT%H:%M:%S.%fZ"
         global_substream_cursor: true
         start_datetime:
-          datetime: "{{ format_datetime(now_utc() - duration('P365D'), '%Y-%m-%dT%H:%M:%S.%fZ') if not config.get('testing_period') else format_datetime(now_utc() - duration(config.get('testing_period')), '%Y-%m-%dT%H:%M:%S.%fZ')}}"
+          datetime: "{{ format_datetime(now_utc() - duration('P365D'), '%Y-%m-%dT00:00:00.000000Z') if not config.get('testing_period') else format_datetime(now_utc() - duration(config.get('testing_period')), '%Y-%m-%dT00:00:00.000000Z')}}"
         start_time_option:
           field_name: startTimeAtOrAfter
           inject_into: "request_parameter"
@@ -77,6 +80,13 @@ definitions:
         global_substream_cursor: true
         start_datetime:
           datetime: "{{ format_datetime(now_utc() - duration('P365D'), '%Y%m%d') }}"
+      transformations:
+        - type: AddFields
+          fields:
+            - path:
+                - date
+              value: >-
+                {{ record['date'] | int }}
       state_migrations:
         - type: CustomStateMigration
           class_name: source_declarative_manifest.components.ReportsStateMigration

@@ -93,16 +93,20 @@ class JobRequester(HttpRequester):
 
 class ReportsStateMigration(StateMigration):
     def should_migrate(self, stream_state: Mapping[str, Any]) -> bool:
-        return True
+        return stream_state.get("state") or stream_state.get("date")
 
     def migrate(self, stream_state: Mapping[str, Any]) -> Mapping[str, Any]:
         if stream_state.get("date"):
             # old format state before migration to low code
-            cursor_value = stream_state["date"]
-            stream_state["state"]["date"] = cursor_value
-        else:
-            cursor_value = stream_state["state"]
+            cursor_value = str(stream_state["date"])
+            stream_state = {
+                "state": {"date": cursor_value},
+                "parent_state": {"report": {"state": {"date": cursor_value}, "lookback_window": 0}},
+            }
+            return stream_state
 
+        cursor_value = stream_state["state"]
+        cursor_value["date"] = str(cursor_value["date"])
         stream_state["parent_state"]["report"]["state"] = cursor_value
         stream_state["parent_state"]["report"]["lookback_window"] = 0
         return stream_state
