@@ -7,6 +7,9 @@ package io.airbyte.cdk.load.component
 import io.airbyte.cdk.load.command.DestinationStream
 import io.airbyte.cdk.load.table.ColumnNameMapping
 import io.airbyte.cdk.load.table.TableName
+import kotlin.collections.component1
+import kotlin.collections.component2
+import kotlin.collections.contains
 
 /**
  * Database-specific schema evolution operations.
@@ -60,7 +63,7 @@ interface TableSchemaEvolutionClient {
     ) {
         val (actualSchema, actualAdditionalInfo) = discoverSchema(tableName)
         val (expectedSchema, expectedAdditionalInfo) = computeSchema(stream, columnNameMapping)
-        val columnChangeset = actualSchema.computeChangeset(expectedSchema)
+        val columnChangeset = computeChangeset(actualSchema, expectedSchema)
         val additionalChangeset =
             computeAdditionalChangeset(actualAdditionalInfo, expectedAdditionalInfo)
         applyChangeset(
@@ -77,24 +80,40 @@ interface TableSchemaEvolutionClient {
     /**
      * Query the destination and discover the schema of an existing table. If this method includes
      * the `_airbyte_*` columns, then [computeSchema] MUST also include those columns.
-     *
-     * The `Any?` return value should be used for anything not represented in the [TableSchema]
-     * object. For example, you may want to configure a partitioning/clustering key on the table,
-     * based on the sync mode - so you would want to return the existing table's partition/cluster
-     * keys.
-     *
-     * Most destinations will likely just use `null` for that value.
      */
-    suspend fun discoverSchema(tableName: TableName): Pair<TableSchema, Any?>
+    suspend fun discoverSchema(tableName: TableName): TableSchema
 
     /**
      * Compute the schema that we _expect_ the table to have, given the [stream]. This should _not_
      * query the destination in any way.
      */
-    fun computeSchema(
-        stream: DestinationStream,
-        columnNameMapping: ColumnNameMapping
-    ): Pair<TableSchema, Any?>
+    fun computeSchema(stream: DestinationStream, columnNameMapping: ColumnNameMapping): TableSchema
+
+    /** Generate a changeset which, when applied to `this`, will result in [expectedColumns]. */
+    fun computeChangeset(
+        actualColumns: TableColumns,
+        expectedColumns: TableColumns
+    ): ColumnChangeset {
+        return ColumnChangeset(
+            columnsToAdd = expectedColumns.filter { !actualColumns.contains(it.key) },
+            columnsToDrop = actualColumns.filter { !expectedColumns.contains(it.key) },
+            columnsToChange =
+                actualColumns
+                    .filter { (name, actualType) ->
+                        expectedColumns.containsKey(name) && expectedColumns[name] != actualType
+                    }
+                    .mapValues { (name, actualType) ->
+                        ColumnTypeChange(
+                            originalType = actualType,
+                            newType = expectedColumns[name]!!,
+                        )
+                    },
+            columnsToRetain =
+                actualColumns.filter { (name, actualType) ->
+                    expectedColumns.containsKey(name) && expectedColumns[name] == actualType
+                },
+        )
+    }
 
     /**
      * This function computes a changeset between two "additional info" structs. This is the `Any?`
@@ -119,47 +138,29 @@ interface TableSchemaEvolutionClient {
         stream: DestinationStream,
         columnNameMapping: ColumnNameMapping,
         tableName: TableName,
-        expectedSchema: TableSchema,
+        expectedColumns: TableColumns,
         expectedAdditionalInfo: Any?,
         columnChangeset: ColumnChangeset,
         additionalSchemaInfoChangeset: Any?,
     )
 }
 
-data class TableSchema(
-    /**
-     * A map from column name to type. Note that the column name should be as it appears in the
-     * destination: for example, Snowflake upcases all identifiers, so these column names should be
-     * upcased.
-     */
-    val columns: Map<String, ColumnType>
-) {
-    /** Generate a changeset which, when applied to `this`, will result in [expectedSchema]. */
-    fun computeChangeset(expectedSchema: TableSchema): ColumnChangeset {
-        val actualColumns = this.columns
-        val expectedColumns = expectedSchema.columns
+/**
+ * A map from column name to type. Note that the column name should be as it appears in the
+ * destination: for example, Snowflake upcases all identifiers, so these column names should be
+ * upcased.
+ */
+typealias TableColumns = Map<String, ColumnType>
 
-        return ColumnChangeset(
-            columnsToAdd = expectedColumns.filter { !actualColumns.contains(it.key) },
-            columnsToDrop = actualColumns.filter { !expectedColumns.contains(it.key) },
-            columnsToChange =
-                actualColumns
-                    .filter { (name, actualType) ->
-                        expectedColumns.containsKey(name) && expectedColumns[name] != actualType
-                    }
-                    .mapValues { (name, actualType) ->
-                        ColumnTypeChange(
-                            originalType = actualType,
-                            newType = expectedColumns[name]!!,
-                        )
-                    },
-            columnsToRetain =
-                actualColumns.filter { (name, actualType) ->
-                    expectedColumns.containsKey(name) && expectedColumns[name] == actualType
-                },
-        )
-    }
-}
+/**
+ * [additionalInfo] should be used for anything not represented in the [TableColumns] object. For
+ * example, you may want to configure a partitioning/clustering key on the table, based on the sync
+ * mode - so you would want to return the existing table's partition/cluster keys from
+ * [TableSchemaEvolutionClient.discoverSchema].
+ *
+ * Most destinations will just use `null` for that value.
+ */
+data class TableSchema(val columns: TableColumns, val additionalInfo: Any?)
 
 data class ColumnType(
     /**
@@ -181,7 +182,7 @@ data class ColumnType(
 )
 
 /**
- * As with [TableSchema], all maps are keyed by the column name as it appears in the destination.
+ * As with [TableColumns], all maps are keyed by the column name as it appears in the destination.
  */
 data class ColumnChangeset(
     val columnsToAdd: Map<String, ColumnType>,
