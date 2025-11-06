@@ -42,11 +42,7 @@ class SnowflakeAirbyteClient(
     private val sqlGenerator: SnowflakeDirectLoadSqlGenerator,
     private val snowflakeColumnUtils: SnowflakeColumnUtils,
     private val snowflakeConfiguration: SnowflakeConfiguration,
-) :
-    // Unlike other destinations, when creating a table, we only need the column types.
-    // So just use Unit instead of providing any "additional information" about a table.
-    TableOperationsClient,
-    TableSchemaEvolutionClient {
+) : TableOperationsClient, TableSchemaEvolutionClient {
 
     private val airbyteColumnNames =
         snowflakeColumnUtils.getFormattedDefaultColumnNames(false).toSet()
