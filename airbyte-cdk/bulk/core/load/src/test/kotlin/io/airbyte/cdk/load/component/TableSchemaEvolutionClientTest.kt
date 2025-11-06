@@ -24,21 +24,12 @@ class TableSchemaEvolutionClientTest {
                 throw NotImplementedError()
             }
 
-            override fun computeAdditionalChangeset(
-                actualSchemaInfo: Any?,
-                expectedSchemaInfo: Any?
-            ): Any? {
-                return null
-            }
-
             override suspend fun applyChangeset(
                 stream: DestinationStream,
                 columnNameMapping: ColumnNameMapping,
                 tableName: TableName,
                 expectedColumns: TableColumns,
-                expectedAdditionalInfo: Any?,
                 columnChangeset: ColumnChangeset,
-                additionalSchemaInfoChangeset: Any?
             ) {
                 throw NotImplementedError()
             }
