@@ -414,7 +414,7 @@ sealed class MsSqlServerJdbcCursorPartition(
 
     val cursorUpperBoundQuerySpec: SelectQuerySpec
         get() =
-            if (cursorCutoffTime != null && checkpointColumns.contains(cursor)) {
+            if (cursorCutoffTime != null) {
                 // When excluding today's data, apply cutoff constraint to upper bound query too
                 SelectQuerySpec(
                     SelectColumnMaxValue(cursor),
@@ -425,9 +425,25 @@ sealed class MsSqlServerJdbcCursorPartition(
                 SelectQuerySpec(SelectColumnMaxValue(cursor), from)
             }
 
+    // Override samplingQuery to avoid TABLESAMPLE for cursor-based operations
+    // TABLESAMPLE fails on views and isn't needed for cursor-based incremental reads
+    // which are typically small (only new/changed data)
+    override fun samplingQuery(sampleRateInvPow2: Int): SelectQuery {
+        val sampleSize: Int = streamState.sharedState.maxSampleSize
+        val querySpec =
+            SelectQuerySpec(
+                SelectColumns(stream.fields + checkpointColumns),
+                from,
+                NoWhere,
+                OrderBy(checkpointColumns),
+                Limit(sampleSize.toLong())
+            )
+        return selectQueryGenerator.generate(querySpec.optimize())
+    }
+
     override val additionalWhereClause: WhereClauseNode?
         get() =
-            if (cursorCutoffTime != null && checkpointColumns.contains(cursor)) {
+            if (cursorCutoffTime != null) {
                 // Add an additional constraint for the cutoff time
                 Lesser(cursor, cursorCutoffTime)
             } else {

@@ -61,10 +61,21 @@ class MsSqlServerJdbcPartitionFactory(
         return tableName.type.equals("VIEW", ignoreCase = true)
     }
 
-    private fun findPkUpperBound(stream: Stream, pkChosenFromCatalog: List<Field>): JsonNode {
+    /**
+     * Returns the ordered column (from clustered index or PK) as a single-element list, or null if
+     * no ordered column is available. This is used for resumable partitioning.
+     */
+    private fun getOrderedColumnAsList(stream: Stream): List<Field>? {
+        val orderedColumnName = metadataQuerier.getOrderedColumnForSync(stream.id) ?: return null
+        val orderedColumn = stream.fields.find { it.id == orderedColumnName } ?: return null
+        return listOf(orderedColumn)
+    }
+
+    private fun findPkUpperBound(stream: Stream): JsonNode {
         // find upper bound using maxPk query
         // Use the ordered column for sync (prefers clustered index for SQL Server performance)
-        val orderedColumnForSync = getOrderedColumnForSync(stream, pkChosenFromCatalog)
+        val orderedColumnName = metadataQuerier.getOrderedColumnForSync(stream.id)!!
+        val orderedColumnForSync = stream.fields.find { it.id == orderedColumnName }!!
 
         val jdbcConnectionFactory = JdbcConnectionFactory(config)
         val from = From(stream.name, stream.namespace)
@@ -85,56 +96,25 @@ class MsSqlServerJdbcPartitionFactory(
         }
     }
 
-    /**
-     * Selects the optimal column to use for ordered column (OC) syncing. Prefers single-column
-     * clustered index for SQL Server performance, falls back to first primary key column.
-     *
-     * This method delegates the column selection logic to the metadata querier and maps the result
-     * to a Field object from the catalog.
-     */
-    private fun getOrderedColumnForSync(stream: Stream, pkChosenFromCatalog: List<Field>): Field {
-        if (pkChosenFromCatalog.isEmpty()) {
-            throw IllegalStateException(
-                "Cannot determine ordered column for sync: no PK columns available for stream ${stream.id}"
-            )
-        }
-
-        val orderedColumnName =
-            metadataQuerier.getOrderedColumnForSync(stream.id)
-                ?: throw IllegalStateException(
-                    "Metadata querier could not determine ordered column for stream ${stream.id}"
-                )
-
-        // Find the corresponding Field in the catalog
-        val field =
-            pkChosenFromCatalog.find { it.id == orderedColumnName }
-                ?: throw IllegalStateException(
-                    "Ordered column '$orderedColumnName' from metadata querier not found in catalog for stream ${stream.id}. " +
-                        "Available PK columns: ${pkChosenFromCatalog.map { it.id }}"
-                )
-
-        return field
-    }
-
     private fun coldStart(streamState: DefaultJdbcStreamState): MsSqlServerJdbcPartition {
         val stream: Stream = streamState.stream
-        val pkChosenFromCatalog: List<Field> = stream.configuredPrimaryKey ?: listOf()
         val isView = isView(stream)
+        val orderedColumns = getOrderedColumnAsList(stream)
 
         if (stream.configuredSyncMode == ConfiguredSyncMode.FULL_REFRESH) {
-            if (pkChosenFromCatalog.isEmpty()) {
+            if (orderedColumns == null) {
                 return MsSqlServerJdbcNonResumableSnapshotPartition(
                     selectQueryGenerator,
                     streamState,
                 )
             }
 
-            val upperBound = findPkUpperBound(stream, pkChosenFromCatalog)
+            val upperBound = findPkUpperBound(stream)
             return if (sharedState.configuration.global) {
                 MsSqlServerJdbcCdcRfrSnapshotPartition(
                     selectQueryGenerator,
                     streamState,
-                    pkChosenFromCatalog,
+                    orderedColumns,
                     lowerBound = null,
                     upperBound = listOf(upperBound),
                 )
@@ -142,7 +122,7 @@ class MsSqlServerJdbcPartitionFactory(
                 MsSqlServerJdbcRfrSnapshotPartition(
                     selectQueryGenerator,
                     streamState,
-                    pkChosenFromCatalog,
+                    orderedColumns,
                     lowerBound = null,
                     upperBound = listOf(upperBound),
                 )
@@ -150,11 +130,8 @@ class MsSqlServerJdbcPartitionFactory(
         }
 
         if (sharedState.configuration.global) {
-            if (pkChosenFromCatalog.isEmpty()) {
-                // CDC requires PK for state tracking, use non-resumable snapshot
-                log.warn {
-                    "Table ${stream.name} has no primary key. CDC snapshots require PKs. Using non-resumable snapshot."
-                }
+            // CDC mode: try to use ordered column for resumable snapshots
+            if (orderedColumns == null) {
                 return MsSqlServerJdbcNonResumableSnapshotPartition(
                     selectQueryGenerator,
                     streamState,
@@ -163,7 +140,7 @@ class MsSqlServerJdbcPartitionFactory(
             return MsSqlServerJdbcCdcSnapshotPartition(
                 selectQueryGenerator,
                 streamState,
-                pkChosenFromCatalog,
+                orderedColumns,
                 lowerBound = null,
             )
         }
@@ -176,7 +153,7 @@ class MsSqlServerJdbcPartitionFactory(
 
         // Views can't be sampled with TABLESAMPLE, so use non-resumable partitions
         // which skip the sampling step entirely
-        if (isView || pkChosenFromCatalog.isEmpty()) {
+        if (isView || orderedColumns == null) {
             return MsSqlServerJdbcNonResumableSnapshotWithCursorPartition(
                 selectQueryGenerator,
                 streamState,
@@ -184,10 +161,11 @@ class MsSqlServerJdbcPartitionFactory(
                 cursorCutoffTime = cursorCutoffTime,
             )
         }
+
         return MsSqlServerJdbcSnapshotWithCursorPartition(
             selectQueryGenerator,
             streamState,
-            pkChosenFromCatalog,
+            orderedColumns,
             lowerBound = null,
             cursorChosenFromCatalog,
             cursorUpperBound = null,
@@ -231,15 +209,15 @@ class MsSqlServerJdbcPartitionFactory(
         }
 
         val isCursorBased: Boolean = !sharedState.configuration.global
-        val pkChosenFromCatalog: List<Field> = stream.configuredPrimaryKey ?: listOf()
+        val orderedColumns = getOrderedColumnAsList(stream)
 
-        if (
-            pkChosenFromCatalog.isEmpty() &&
-                stream.configuredSyncMode == ConfiguredSyncMode.FULL_REFRESH
-        ) {
-            return handleFullRefreshWithoutPk(streamState)
+        if (stream.configuredSyncMode == ConfiguredSyncMode.FULL_REFRESH) {
+            if (orderedColumns == null) {
+                return handleFullRefreshWithoutPk(streamState)
+            }
         }
 
+        // CDC sync
         if (!isCursorBased) {
             val sv: MsSqlServerCdcInitialSnapshotStateValue =
                 Jsons.treeToValue(
@@ -248,21 +226,20 @@ class MsSqlServerJdbcPartitionFactory(
                 )
 
             if (stream.configuredSyncMode == ConfiguredSyncMode.FULL_REFRESH) {
-                if (pkChosenFromCatalog.isEmpty()) {
+                if (orderedColumns == null) {
                     return handleFullRefreshWithoutPk(streamState)
                 }
 
-                val upperBound = findPkUpperBound(stream, pkChosenFromCatalog)
+                val upperBound = findPkUpperBound(stream)
                 if (sv.pkVal == upperBound.asText()) {
                     return null
                 }
-                val orderedColumnForSync = getOrderedColumnForSync(stream, pkChosenFromCatalog)
-                val pkLowerBound: JsonNode = stateValueToJsonNode(orderedColumnForSync, sv.pkVal)
+                val pkLowerBound: JsonNode = stateValueToJsonNode(orderedColumns.first(), sv.pkVal)
 
                 return MsSqlServerJdbcRfrSnapshotPartition(
                     selectQueryGenerator,
                     streamState,
-                    pkChosenFromCatalog,
+                    orderedColumns,
                     lowerBound = if (pkLowerBound.isNull) null else listOf(pkLowerBound),
                     upperBound = listOf(upperBound),
                 )
@@ -276,28 +253,35 @@ class MsSqlServerJdbcPartitionFactory(
             } else {
                 // This branch indicates snapshot is incomplete. We need to resume based on previous
                 // snapshot state.
-                val pkField = pkChosenFromCatalog.first()
-                val pkLowerBound: JsonNode = stateValueToJsonNode(pkField, sv.pkVal)
+                if (orderedColumns == null) {
+                    log.warn {
+                        "Table ${stream.name} has no PK or clustered index. Cannot resume CDC snapshot."
+                    }
+                    return MsSqlServerJdbcNonResumableSnapshotPartition(
+                        selectQueryGenerator,
+                        streamState,
+                    )
+                }
+                val pkLowerBound: JsonNode = stateValueToJsonNode(orderedColumns.first(), sv.pkVal)
 
                 return MsSqlServerJdbcCdcSnapshotPartition(
                     selectQueryGenerator,
                     streamState,
-                    pkChosenFromCatalog,
+                    orderedColumns,
                     listOf(pkLowerBound),
                 )
             }
-        } else {
+        } else { // Cursor-based sync
             val sv: MsSqlServerJdbcStreamStateValue =
                 MsSqlServerStateMigration.parseStateValue(opaqueStateValue)
 
             if (stream.configuredSyncMode == ConfiguredSyncMode.FULL_REFRESH) {
-                if (pkChosenFromCatalog.isEmpty()) {
+                if (orderedColumns == null) {
                     return handleFullRefreshWithoutPk(streamState)
                 }
 
-                val upperBound = findPkUpperBound(stream, pkChosenFromCatalog)
-                val orderedColumnForSync = getOrderedColumnForSync(stream, pkChosenFromCatalog)
-                val pkLowerBound: JsonNode = extractPkLowerBound(sv.pkValue, orderedColumnForSync)
+                val upperBound = findPkUpperBound(stream)
+                val pkLowerBound: JsonNode = extractPkLowerBound(sv.pkValue, orderedColumns.first())
 
                 if (!pkLowerBound.isNull && areValuesEqual(pkLowerBound, upperBound)) {
                     return null
@@ -306,19 +290,20 @@ class MsSqlServerJdbcPartitionFactory(
                 return MsSqlServerJdbcRfrSnapshotPartition(
                     selectQueryGenerator,
                     streamState,
-                    pkChosenFromCatalog,
+                    orderedColumns,
                     lowerBound = if (pkLowerBound.isNull) null else listOf(pkLowerBound),
                     upperBound = listOf(upperBound),
                 )
             }
 
-            // Check if we're in PK read phase by checking if pk_name is set
+            // Resume from full refresh
             if (sv.pkName != null) {
                 // Still in snapshot phase (PK read)
-                // If no PK columns, fall back to non-resumable snapshot with cursor
-                if (pkChosenFromCatalog.isEmpty()) {
-                    val cursorChosenFromCatalog: Field =
-                        stream.configuredCursor as? Field ?: throw ConfigErrorException("no cursor")
+                val cursorChosenFromCatalog: Field =
+                    stream.configuredCursor as? Field ?: throw ConfigErrorException("no cursor")
+
+                // Views can't be sampled with TABLESAMPLE, so use non-resumable partitions
+                if (isView(stream) || orderedColumns == null) {
                     return MsSqlServerJdbcNonResumableSnapshotWithCursorPartition(
                         selectQueryGenerator,
                         streamState,
@@ -327,17 +312,13 @@ class MsSqlServerJdbcPartitionFactory(
                     )
                 }
 
-                val orderedColumnForSync = getOrderedColumnForSync(stream, pkChosenFromCatalog)
-                val pkLowerBound: JsonNode = extractPkLowerBound(sv.pkValue, orderedColumnForSync)
-
-                val cursorChosenFromCatalog: Field =
-                    stream.configuredCursor as? Field ?: throw ConfigErrorException("no cursor")
+                val pkLowerBound: JsonNode = extractPkLowerBound(sv.pkValue, orderedColumns.first())
 
                 // Still in primary_key read phase (snapshot with cursor)
                 return MsSqlServerJdbcSnapshotWithCursorPartition(
                     selectQueryGenerator,
                     streamState,
-                    pkChosenFromCatalog,
+                    orderedColumns,
                     lowerBound = listOf(pkLowerBound),
                     cursorChosenFromCatalog,
                     cursorUpperBound = null,
@@ -354,6 +335,7 @@ class MsSqlServerJdbcPartitionFactory(
                 return null
             }
 
+            // Cursor read phase (incremental read)
             val cursor: Field? = stream.fields.find { it.id == sv.cursorField.first() }
             if (cursor == null) {
                 log.warn {

@@ -55,8 +55,17 @@ class MsSqlServerJdbcPartitionFactoryTest {
                 // Mock getOrderedColumnForSync to return the first PK column by default
                 every { getOrderedColumnForSync(any()) } answers
                     {
-                        // For most tests, return "id" (the first PK column)
-                        fieldId.id
+                        val streamId = firstArg<StreamIdentifier>()
+                        // For full_refresh tests without PK/CI, return null
+                        if (
+                            streamId.name == "full_refresh_table" ||
+                                streamId.name == "cdc_full_refresh_table"
+                        ) {
+                            null
+                        } else {
+                            // For most tests, return "id" (the first PK column or clustered index)
+                            fieldId.id
+                        }
                     }
             }
         val metadataQuerierFactory =
@@ -80,6 +89,7 @@ class MsSqlServerJdbcPartitionFactoryTest {
             )
 
         val fieldId = Field("id", IntFieldType)
+        val fieldName = Field("name", io.airbyte.cdk.jdbc.StringFieldType)
         val stream =
             Stream(
                 id =
@@ -228,7 +238,9 @@ class MsSqlServerJdbcPartitionFactoryTest {
             )
         val jdbcPartition =
             msSqlServerJdbcPartitionFactory.create(streamFeedBootstrap(streamWithoutPk))
-        assertTrue(jdbcPartition is MsSqlServerJdbcNonResumableSnapshotWithCursorPartition)
+        // With our changes, if there's a clustered index (which the mock returns "id"),
+        // we use resumable snapshots even without a configured PK
+        assertTrue(jdbcPartition is MsSqlServerJdbcSnapshotWithCursorPartition)
     }
 
     @Test
@@ -562,6 +574,7 @@ class MsSqlServerJdbcPartitionFactoryTest {
         val mockMetadataQuerier = mockk<MsSqlSourceMetadataQuerier>()
         every { mockMetadataQuerier.findTableName(tableStream.id) } returns
             TableName(name = "regular_table", schema = "dbo", type = "TABLE")
+        every { mockMetadataQuerier.getOrderedColumnForSync(any()) } returns fieldId.id
 
         val mockMetadataQuerierFactory =
             mockk<MsSqlSourceMetadataQuerier.Factory>() {
@@ -600,6 +613,7 @@ class MsSqlServerJdbcPartitionFactoryTest {
         val mockMetadataQuerier = mockk<MsSqlSourceMetadataQuerier>()
         every { mockMetadataQuerier.findTableName(viewStream.id) } returns
             TableName(name = "vw_test_view", schema = "dbo", type = "VIEW")
+        every { mockMetadataQuerier.getOrderedColumnForSync(any()) } returns fieldId.id
 
         val mockMetadataQuerierFactory =
             mockk<MsSqlSourceMetadataQuerier.Factory>() {
@@ -641,6 +655,7 @@ class MsSqlServerJdbcPartitionFactoryTest {
         // Mock the metadata querier to return null (object not found)
         val mockMetadataQuerier = mockk<MsSqlSourceMetadataQuerier>()
         every { mockMetadataQuerier.findTableName(unknownStream.id) } returns null
+        every { mockMetadataQuerier.getOrderedColumnForSync(any()) } returns fieldId.id
 
         val mockMetadataQuerierFactory =
             mockk<MsSqlSourceMetadataQuerier.Factory>() {
@@ -658,5 +673,151 @@ class MsSqlServerJdbcPartitionFactoryTest {
         val partition = factoryWithMockedQuerier.create(streamFeedBootstrap(unknownStream))
         // Unknown objects (when metadata returns null) should default to resumable partitions
         assertTrue(partition is MsSqlServerJdbcSnapshotWithCursorPartition)
+    }
+
+    @Test
+    fun testViewWithConfiguredPkResumingFromState() {
+        // This test covers the critical bug: a view with a configured PK resuming from state
+        // should use non-resumable partitions to avoid TABLESAMPLE
+        val viewStream =
+            Stream(
+                id =
+                    StreamIdentifier.from(
+                        StreamDescriptor().withNamespace("dbo").withName("VW_FICHES_PRODUITS")
+                    ),
+                schema = setOf(fieldId, fieldName),
+                configuredSyncMode = ConfiguredSyncMode.INCREMENTAL,
+                configuredPrimaryKey = listOf(fieldId),
+                configuredCursor = fieldName,
+            )
+
+        // State indicating we're in the middle of a snapshot (pk_name is set)
+        val stateValue: OpaqueStateValue =
+            Jsons.readTree(
+                """
+                {
+                  "version": 3,
+                  "state_type": "cursor_based",
+                  "pk_name": "id",
+                  "pk_val": "100",
+                  "cursor_field": ["name"],
+                  "cursor": null
+                }
+                """
+            )
+
+        // Mock the metadata querier to return a VIEW type
+        val mockMetadataQuerier = mockk<MsSqlSourceMetadataQuerier>()
+        every { mockMetadataQuerier.findTableName(viewStream.id) } returns
+            TableName(name = "VW_FICHES_PRODUITS", schema = "dbo", type = "VIEW")
+        every { mockMetadataQuerier.getOrderedColumnForSync(any()) } returns fieldId.id
+
+        val mockMetadataQuerierFactory =
+            mockk<MsSqlSourceMetadataQuerier.Factory>() {
+                every { session(any()) } returns mockMetadataQuerier
+            }
+
+        val factoryWithMockedQuerier =
+            MsSqlServerJdbcPartitionFactory(
+                sharedState,
+                selectQueryGenerator,
+                config,
+                mockMetadataQuerierFactory
+            )
+
+        val partition = factoryWithMockedQuerier.create(streamFeedBootstrap(viewStream, stateValue))
+
+        // Views with configured PK resuming from state MUST use non-resumable partitions
+        // to avoid TABLESAMPLE which fails on views
+        assertTrue(
+            partition is MsSqlServerJdbcNonResumableSnapshotWithCursorPartition,
+            "Views with configured PK resuming from state should use non-resumable partitions to avoid TABLESAMPLE"
+        )
+    }
+
+    @Test
+    fun testViewWithoutConfiguredPk() {
+        // Test that views without a configured PK also use non-resumable partitions
+        val viewStream =
+            Stream(
+                id =
+                    StreamIdentifier.from(
+                        StreamDescriptor().withNamespace("dbo").withName("vw_simple_view")
+                    ),
+                schema = setOf(fieldId, fieldName),
+                configuredSyncMode = ConfiguredSyncMode.INCREMENTAL,
+                configuredPrimaryKey = null,
+                configuredCursor = fieldName,
+            )
+
+        // Mock the metadata querier to return a VIEW type
+        val mockMetadataQuerier = mockk<MsSqlSourceMetadataQuerier>()
+        every { mockMetadataQuerier.findTableName(viewStream.id) } returns
+            TableName(name = "vw_simple_view", schema = "dbo", type = "VIEW")
+        every { mockMetadataQuerier.getOrderedColumnForSync(any()) } returns null
+
+        val mockMetadataQuerierFactory =
+            mockk<MsSqlSourceMetadataQuerier.Factory>() {
+                every { session(any()) } returns mockMetadataQuerier
+            }
+
+        val factoryWithMockedQuerier =
+            MsSqlServerJdbcPartitionFactory(
+                sharedState,
+                selectQueryGenerator,
+                config,
+                mockMetadataQuerierFactory
+            )
+
+        val partition = factoryWithMockedQuerier.create(streamFeedBootstrap(viewStream))
+
+        // Views without configured PK should also use non-resumable partitions
+        assertTrue(
+            partition is MsSqlServerJdbcNonResumableSnapshotWithCursorPartition,
+            "Views without configured PK should use non-resumable partitions"
+        )
+    }
+
+    @Test
+    fun testViewInFullRefreshMode() {
+        // Test that views in full refresh mode also avoid resumable partitions
+        val viewStream =
+            Stream(
+                id =
+                    StreamIdentifier.from(
+                        StreamDescriptor().withNamespace("dbo").withName("vw_fullrefresh_view")
+                    ),
+                schema = setOf(fieldId, fieldName),
+                configuredSyncMode = ConfiguredSyncMode.FULL_REFRESH,
+                configuredPrimaryKey = null,
+                configuredCursor = null,
+            )
+
+        // Mock the metadata querier to return a VIEW type
+        val mockMetadataQuerier = mockk<MsSqlSourceMetadataQuerier>()
+        every { mockMetadataQuerier.findTableName(viewStream.id) } returns
+            TableName(name = "vw_fullrefresh_view", schema = "dbo", type = "VIEW")
+        every { mockMetadataQuerier.getOrderedColumnForSync(any()) } returns null
+
+        val mockMetadataQuerierFactory =
+            mockk<MsSqlSourceMetadataQuerier.Factory>() {
+                every { session(any()) } returns mockMetadataQuerier
+            }
+
+        val factoryWithMockedQuerier =
+            MsSqlServerJdbcPartitionFactory(
+                sharedState,
+                selectQueryGenerator,
+                config,
+                mockMetadataQuerierFactory
+            )
+
+        val partition = factoryWithMockedQuerier.create(streamFeedBootstrap(viewStream))
+
+        // Views in full refresh without PK should use non-resumable partitions
+        assertTrue(
+            partition is MsSqlServerJdbcNonResumableSnapshotPartition,
+            "Views in full refresh mode should use non-resumable partitions"
+        )
     }
 }
