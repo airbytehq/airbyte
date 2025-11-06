@@ -36,6 +36,8 @@ definitions:
         requester:
           $ref: "#/definitions/base_requester"
           path: jobs/{{ stream_partition['id'] }}/reports
+          request_parameters:
+            startTimeAtOrAfter: "{{ stream_interval['start_time'] if '1990-01-01T00:00:00.000000Z' != stream_interval['start_time'] else '' }}"
         record_selector:
           type: RecordSelector
           extractor:
@@ -62,10 +64,7 @@ definitions:
         datetime_format: "%Y-%m-%dT%H:%M:%S.%fZ"
         global_substream_cursor: true
         start_datetime:
-          datetime: "{{ format_datetime(now_utc() - duration('P365D'), '%Y-%m-%dT00:00:00.000000Z') if not config.get('testing_period') else format_datetime(now_utc() - duration(config.get('testing_period')), '%Y-%m-%dT00:00:00.000000Z')}}"
-        start_time_option:
-          field_name: startTimeAtOrAfter
-          inject_into: "request_parameter"
+          datetime: "{{ '1990-01-01T00:00:00.000000Z' if not config.get('testing_period') else format_datetime(now_utc() - duration(config.get('testing_period')), '%Y-%m-%dT00:00:00.000000Z')}}"
 
     base_report_stream:
       type: DeclarativeStream
@@ -79,7 +78,7 @@ definitions:
         datetime_format: "%Y%m%d"
         global_substream_cursor: true
         start_datetime:
-          datetime: "{{ format_datetime(now_utc() - duration('P365D'), '%Y%m%d') }}"
+          datetime: "19900101"
       transformations:
         - type: AddFields
           fields:
