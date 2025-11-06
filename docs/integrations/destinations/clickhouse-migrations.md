@@ -11,10 +11,12 @@ SSH tunneling support for the ClickHouse connector is currently in **Beta**. If 
 Version 2.0.0 represents a fundamental architectural change from version 1.0.0:
 
 **Version 1.0.0 behavior:**
+
 - Wrote all data as JSON to raw tables in the `airbyte_internal` database
 - Used table names like `airbyte_internal.{database}_raw__stream_{table}`
 
 **Version 2.0.0 behavior:**
+
 - Writes data to typed columns matching your source schema
 - Creates tables in the configured database with clean table names: `{database}.{table}`
 - No longer uses the `airbyte_internal` database or `_raw__stream_` prefixes
@@ -26,6 +28,7 @@ While this is a breaking change, existing connections continue to function after
 Airbyte cannot automatically migrate data from the v1 raw table format to the v2 typed table format. To get your data into the new format, you must perform a full refresh sync from your source.
 
 **Migration steps:**
+
 1. Upgrade your ClickHouse destination connector to version 2.0.0 or later
 2. Update your downstream pipelines to reference the new table locations
 3. Trigger a full refresh sync to populate the new typed tables
@@ -63,10 +66,12 @@ Always verify that you have successfully migrated your data before removing old 
 In version 2.0.0, namespaces are treated as ClickHouse databases. If you configure a custom namespace for your connection, the connector uses that namespace as the database name instead of the database specified in the destination settings.
 
 **Version 1.0.0 behavior:**
+
 - Namespaces were added as prefixes to table names
 - Example: namespace `my_namespace` created tables like `default.my_namespace_table_name`
 
 **Version 2.0.0 behavior:**
+
 - Namespaces map directly to ClickHouse databases
 - Example: namespace `my_namespace` creates tables like `my_namespace.table_name`
 

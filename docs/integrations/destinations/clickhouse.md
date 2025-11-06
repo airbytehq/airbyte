@@ -8,10 +8,10 @@ This is a complete rewrite of the ClickHouse destination connector built on Airb
 
 Version 2.0.0 represents a complete architectural redesign of the ClickHouse destination connector with significant improvements:
 
-* **All sync modes supported**: Full Refresh (Overwrite and Append) and Incremental (Append and Append + Deduped) sync modes are now fully supported.
-* **Direct Load with typed columns**: Data is written directly to typed columns matching your source schema, rather than storing everything as JSON in raw tables. This improves query performance and reduces storage requirements.
-* **Improved performance**: The new architecture uses ClickHouse's native binary protocol and batch inserts for significantly faster data loading.
-* **Active maintenance**: Built on Airbyte's modern CDK framework with ongoing development and support from the Airbyte team.
+- **All sync modes supported**: Full Refresh (Overwrite and Append) and Incremental (Append and Append + Deduped) sync modes are now fully supported.
+- **Direct Load with typed columns**: Data is written directly to typed columns matching your source schema, rather than storing everything as JSON in raw tables. This improves query performance and reduces storage requirements.
+- **Improved performance**: The new architecture uses ClickHouse's native binary protocol and batch inserts for significantly faster data loading.
+- **Active maintenance**: Built on Airbyte's modern CDK framework with ongoing development and support from the Airbyte team.
 
 ## Features
 
@@ -187,4 +187,5 @@ If your ClickHouse instance is not directly accessible from Airbyte, you can use
 | 0.1.2      | 2025-06-23 | [\#62028](https://github.com/airbytehq/airbyte/pull/62028) | Enable the registry in OSS and cloud.                                          |
 | 0.1.1      | 2025-06-23 | [\#62022](https://github.com/airbytehq/airbyte/pull/62022) | Publish first beta version and pin the CDK version.                            |
 | 0.1.0      | 2025-06-23 | [\#62024](https://github.com/airbytehq/airbyte/pull/62024) | Release first beta version.                                                    |
+
 </details>
