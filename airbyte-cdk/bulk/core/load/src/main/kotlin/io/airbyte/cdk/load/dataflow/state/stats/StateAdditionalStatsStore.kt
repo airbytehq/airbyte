@@ -22,7 +22,8 @@ class StateAdditionalStatsStore {
 
     private val store =
         ConcurrentHashMap<
-            PartitionKey, ConcurrentHashMap<DestinationStream.Descriptor, AdditionalStatsHistogram>>()
+            PartitionKey, ConcurrentHashMap<DestinationStream.Descriptor, AdditionalStatsHistogram>
+        >()
 
     /**
      * Adds a value to the histogram associated with the given partition and stream descriptor for
