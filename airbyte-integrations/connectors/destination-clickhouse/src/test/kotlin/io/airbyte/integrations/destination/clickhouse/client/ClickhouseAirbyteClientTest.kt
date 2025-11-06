@@ -131,9 +131,7 @@ class ClickhouseAirbyteClientTest {
             columnMapping,
             mockTableName,
             mapOf("new_col" to ColumnType("String", true)),
-            expectedAdditionalInfo = null,
             columnChangeset,
-            additionalSchemaInfoChangeset = null,
         )
 
         coVerifyOrder {
@@ -190,9 +188,7 @@ class ClickhouseAirbyteClientTest {
             columnMapping,
             finalTableName,
             emptyMap(),
-            expectedAdditionalInfo = null,
             columnChangeset,
-            additionalSchemaInfoChangeset = null,
         )
 
         coVerify(exactly = 0) { clickhouseSqlGenerator.alterTable(any(), any()) }
@@ -279,7 +275,6 @@ class ClickhouseAirbyteClientTest {
                 mapOf(
                     "field_1" to ColumnType("String", true),
                 ),
-                null,
             )
         val actual = clickhouseAirbyteClient.computeSchema(stream, columnMapping)
         Assertions.assertEquals(expected, actual)

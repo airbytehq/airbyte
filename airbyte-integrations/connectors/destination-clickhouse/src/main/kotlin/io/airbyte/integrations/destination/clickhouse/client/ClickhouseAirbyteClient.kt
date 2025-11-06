@@ -125,7 +125,6 @@ class ClickhouseAirbyteClient(
             tableSchemaWithoutAirbyteColumns.associate {
                 it.columnName to ColumnType(it.dataType.getDataTypeAsString(), it.isNullable)
             },
-            null,
         )
     }
 
@@ -167,15 +166,7 @@ class ClickhouseAirbyteClient(
                         )
                 }
                 .toMap(),
-            null,
         )
-    }
-
-    override fun computeAdditionalChangeset(
-        actualSchemaInfo: Any?,
-        expectedSchemaInfo: Any?
-    ): Any? {
-        return null
     }
 
     override suspend fun applyChangeset(
@@ -183,9 +174,7 @@ class ClickhouseAirbyteClient(
         columnNameMapping: ColumnNameMapping,
         tableName: TableName,
         expectedColumns: TableColumns,
-        expectedAdditionalInfo: Any?,
         columnChangeset: ColumnChangeset,
-        additionalSchemaInfoChangeset: Any?,
     ) {
         // This is a bit hacky, and relies on the fact that we make all
         // non-pk/cursor columns nullable.
