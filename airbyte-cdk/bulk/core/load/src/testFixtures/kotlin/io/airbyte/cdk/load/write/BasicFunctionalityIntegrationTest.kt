@@ -42,7 +42,7 @@ import io.airbyte.cdk.load.data.TimestampWithTimezoneValue
 import io.airbyte.cdk.load.data.UnionType
 import io.airbyte.cdk.load.data.UnknownType
 import io.airbyte.cdk.load.data.json.toAirbyteValue
-import io.airbyte.cdk.load.dataflow.stats.ObservabilityMetrics
+import io.airbyte.cdk.load.dataflow.state.stats.StateAdditionalStatsStore
 import io.airbyte.cdk.load.message.CheckpointMessage
 import io.airbyte.cdk.load.message.InputGlobalCheckpoint
 import io.airbyte.cdk.load.message.InputRecord
@@ -1588,7 +1588,7 @@ abstract class BasicFunctionalityIntegrationTest(
                             totalBytes = expectedBytes,
                             additionalStats =
                                 if (includesAdditionalStats)
-                                    ObservabilityMetrics.entries
+                                    StateAdditionalStatsStore.ObservabilityMetrics.entries
                                         .associate { it.metricName to 0.0 }
                                         .toMutableMap()
                                 else mutableMapOf(),
@@ -5224,7 +5224,7 @@ abstract class BasicFunctionalityIntegrationTest(
 
     private fun expectedAdditionalStats(): AdditionalStats {
         val expectedAdditionalStats = AdditionalStats()
-        ObservabilityMetrics.entries.forEach {
+        StateAdditionalStatsStore.ObservabilityMetrics.entries.forEach {
             expectedAdditionalStats.withAdditionalProperty(it.metricName, 0.0)
         }
         return expectedAdditionalStats

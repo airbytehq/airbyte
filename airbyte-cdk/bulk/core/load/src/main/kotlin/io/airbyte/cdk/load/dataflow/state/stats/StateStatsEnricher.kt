@@ -7,8 +7,8 @@ package io.airbyte.cdk.load.dataflow.state.stats
 import com.google.common.annotations.VisibleForTesting
 import io.airbyte.cdk.load.command.DestinationStream
 import io.airbyte.cdk.load.command.NamespaceMapper
+import io.airbyte.cdk.load.dataflow.state.PartitionKey
 import io.airbyte.cdk.load.dataflow.state.StateKey
-import io.airbyte.cdk.load.dataflow.stats.MetricTracker
 import io.airbyte.cdk.load.message.CheckpointMessage
 import io.airbyte.cdk.load.message.GlobalCheckpoint
 import io.airbyte.cdk.load.message.GlobalSnapshotCheckpoint
@@ -20,7 +20,7 @@ import jakarta.inject.Singleton
 class StateStatsEnricher(
     private val statsStore: CommittedStatsStore,
     private val namespaceMapper: NamespaceMapper,
-    private val metricTracker: MetricTracker,
+    private val stateAdditionalStatsStore: StateAdditionalStatsStore,
 ) {
     // Enriches provided state message with stats associated with the given state key.
     fun enrich(msg: CheckpointMessage, key: StateKey): CheckpointMessage {
@@ -36,13 +36,14 @@ class StateStatsEnricher(
     fun enrichTopLevelDestinationStats(
         msg: CheckpointMessage,
         desc: DestinationStream.Descriptor,
+        partitionKeys: List<PartitionKey>,
         count: Long
     ): CheckpointMessage {
         // TODO: set this using the count above once we get to total rejected
         // records.
         msg.updateStats(
             destinationStats = msg.sourceStats,
-            additionalStats = metricTracker.drain(desc)
+            additionalStats = stateAdditionalStatsStore.drain(partitionKeys, desc).toMap(),
         )
 
         return msg
@@ -83,7 +84,7 @@ class StateStatsEnricher(
             )
         val (committed, cumulative) = statsStore.commitStats(desc, key)
 
-        enrichTopLevelDestinationStats(msg, desc, committed.count)
+        enrichTopLevelDestinationStats(msg, desc, key.partitionKeys, committed.count)
         enrichTopLevelStats(msg, cumulative)
 
         return msg
