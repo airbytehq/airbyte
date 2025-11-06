@@ -301,6 +301,10 @@ The Azure Blob Storage connector should not encounter any [Microsoft API limitat
 
 | Version    | Date       | Pull Request                                             | Subject                                                                                      |
 |:-----------|:-----------|:---------------------------------------------------------|:---------------------------------------------------------------------------------------------|
+| 0.8.2 | 2025-11-04 | [69156](https://github.com/airbytehq/airbyte/pull/69156) | Update dependencies |
+| 0.8.1 | 2025-10-29 | [68376](https://github.com/airbytehq/airbyte/pull/68376) | Update dependencies |
+| 0.8.0 | 2025-10-23 | [68615](https://github.com/airbytehq/airbyte/pull/68615) | Update dependencies |
+| 0.7.0 | 2025-10-27 | [68663](https://github.com/airbytehq/airbyte/pull/68663) | Promoting release candidate 0.7.0-rc.1 to a main version. |
 | 0.7.0-rc.1 | 2025-10-21 | [68161](https://github.com/airbytehq/airbyte/pull/68161) | Update to airbyte-cdk ^v7                                                                    |
 | 0.6.16     | 2025-10-14 | [68015](https://github.com/airbytehq/airbyte/pull/68015) | Update dependencies                                                                          |
 | 0.6.15     | 2025-10-07 | [67171](https://github.com/airbytehq/airbyte/pull/67171) | Update dependencies                                                                          |

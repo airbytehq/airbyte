@@ -77,6 +77,8 @@ The Monday connector should not run into Monday API limitations under normal usa
 
 | Version    | Date       | Pull Request                                              | Subject                                                                                                                                                                |
 |:-----------|:-----------|:----------------------------------------------------------|:-----------------------------------------------------------------------------------------------------------------------------------------------------------------------|
+| 2.4.13 | 2025-10-29 | [69048](https://github.com/airbytehq/airbyte/pull/69048) | Update dependencies |
+| 2.4.12 | 2025-10-22 | [68591](https://github.com/airbytehq/airbyte/pull/68591) | Add `suggestedStreams` |
 | 2.4.11 | 2025-10-21 | [68416](https://github.com/airbytehq/airbyte/pull/68416) | Update dependencies |
 | 2.4.10 | 2025-10-14 | [67840](https://github.com/airbytehq/airbyte/pull/67840) | Update dependencies |
 | 2.4.9 | 2025-10-07 | [67393](https://github.com/airbytehq/airbyte/pull/67393) | Update dependencies |

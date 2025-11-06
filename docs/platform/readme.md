@@ -27,9 +27,11 @@ Airbyte is available as a self-managed, hybrid, or fully managed cloud solution.
 
 ### Cloud and hybrid plans
 
-<Grid columns="3">
+<Grid columns="2">
 
 <CardWithIcon title="Standard" description="A cloud solution that provides a fully managed experience for data replication. Focus on moving data while Airbyte manages the infrastructure. Free 30-day trial." ctaText="Sign up" ctaLink="https://cloud.airbyte.com/signup" icon="fa-cloud" />
+
+<CardWithIcon title="Plus" description="A cloud solution with all the capabilities of Standard, plus higher priority support and predictable, capacity-based annual pricing." ctaText="Talk to Sales" ctaLink="https://airbyte.com/company/talk-to-sales" icon="fa-lock" />
 
 <CardWithIcon title="Pro" description="A cloud solution for organizations looking to scale efficiently. Role based access control, single sign on, and more ensure Pro is a robust solution that can grow with your team." ctaText="Talk to Sales" ctaLink="https://airbyte.com/company/talk-to-sales" icon="fa-lock" />
 
@@ -43,7 +45,7 @@ Once your Airbyte instance is up and running, there's a way to use Airbyte that'
 
 ### User interface
 
-Self-managed and cloud plans come with a carefully-crafted user interface that walks you through setting up connections and automating syncs. This is a great choice if you're not a developer, aren't concerned about version control, or you're just seeing what Airbyte can do for you.
+Self-managed and cloud plans come with a carefully crafted user interface that walks you through setting up connections and automating syncs. This is a great choice if you're not a developer, aren't concerned about version control, or you're just seeing what Airbyte can do for you.
 
 ### API and Python SDK {#api-sdk}
 

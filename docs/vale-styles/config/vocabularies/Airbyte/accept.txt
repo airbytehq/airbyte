@@ -21,6 +21,9 @@ Plus
 Pro
 Enterprise Flex
 Self-Managed Enterprise
+Elastic License 2.0
+ELv2
+MIT
 
 #
 # Common terms Airbyte uses
@@ -64,6 +67,7 @@ SQL
 IP[s]
 CDC
 CRM[s]
+FAQ
 
 # Airbyte connectors
 
@@ -71,6 +75,7 @@ Nessie
 S3 Data Lake
 PostgreSQL
 Postgres
+NetSuite
 
 # Companies, products, and jargon
 
