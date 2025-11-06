@@ -199,27 +199,14 @@ class SnowflakeAirbyteClient(
     }
 
     override suspend fun discoverSchema(tableName: TableName): TableSchema {
-        return TableSchema(
-            getColumnsFromDb(tableName),
-            null,
-        )
+        return TableSchema(getColumnsFromDb(tableName))
     }
 
     override fun computeSchema(
         stream: DestinationStream,
         columnNameMapping: ColumnNameMapping
     ): TableSchema {
-        return TableSchema(
-            getColumnsFromStream(stream, columnNameMapping),
-            null,
-        )
-    }
-
-    override fun computeAdditionalChangeset(
-        actualSchemaInfo: Any?,
-        expectedSchemaInfo: Any?
-    ): Any? {
-        return null
+        return TableSchema(getColumnsFromStream(stream, columnNameMapping))
     }
 
     override suspend fun applyChangeset(
@@ -227,9 +214,7 @@ class SnowflakeAirbyteClient(
         columnNameMapping: ColumnNameMapping,
         tableName: TableName,
         expectedColumns: TableColumns,
-        expectedAdditionalInfo: Any?,
         columnChangeset: ColumnChangeset,
-        additionalSchemaInfoChangeset: Any?,
     ) {
         if (
             columnChangeset.columnsToAdd.isNotEmpty() ||
