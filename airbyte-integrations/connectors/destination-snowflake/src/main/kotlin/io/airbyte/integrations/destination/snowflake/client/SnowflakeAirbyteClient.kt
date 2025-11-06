@@ -7,10 +7,10 @@ package io.airbyte.integrations.destination.snowflake.client
 import edu.umd.cs.findbugs.annotations.SuppressFBWarnings
 import io.airbyte.cdk.ConfigErrorException
 import io.airbyte.cdk.load.command.DestinationStream
+import io.airbyte.cdk.load.component.ColumnChangeset
 import io.airbyte.cdk.load.component.ColumnType
 import io.airbyte.cdk.load.component.TableOperationsClient
 import io.airbyte.cdk.load.component.TableSchema
-import io.airbyte.cdk.load.component.TableSchemaDiff
 import io.airbyte.cdk.load.component.TableSchemaEvolutionClient
 import io.airbyte.cdk.load.table.ColumnNameMapping
 import io.airbyte.cdk.load.table.TableName
@@ -218,34 +218,37 @@ class SnowflakeAirbyteClient(
         )
     }
 
-    override fun diff(actualSchemaInfo: Any?, expectedSchemaInfo: Any?): Any? {
+    override fun computeAdditionalChangeset(
+        actualSchemaInfo: Any?,
+        expectedSchemaInfo: Any?
+    ): Any? {
         return null
     }
 
-    override suspend fun applySchemaDiff(
+    override suspend fun applyChangeset(
         stream: DestinationStream,
         columnNameMapping: ColumnNameMapping,
         tableName: TableName,
         expectedSchema: TableSchema,
         expectedAdditionalInfo: Any?,
-        diff: TableSchemaDiff,
-        additionalSchemaInfoDiff: Any?,
+        columnChangeset: ColumnChangeset,
+        additionalSchemaInfoChangeset: Any?,
     ) {
         if (
-            diff.columnsToAdd.isNotEmpty() ||
-                diff.columnsToDrop.isNotEmpty() ||
-                diff.columnsToChange.isNotEmpty()
+            columnChangeset.columnsToAdd.isNotEmpty() ||
+                columnChangeset.columnsToDrop.isNotEmpty() ||
+                columnChangeset.columnsToChange.isNotEmpty()
         ) {
             log.info { "Summary of the table alterations:" }
-            log.info { "Added columns: ${diff.columnsToAdd}" }
-            log.info { "Deleted columns: ${diff.columnsToDrop}" }
-            log.info { "Modified columns: ${diff.columnsToChange}" }
+            log.info { "Added columns: ${columnChangeset.columnsToAdd}" }
+            log.info { "Deleted columns: ${columnChangeset.columnsToDrop}" }
+            log.info { "Modified columns: ${columnChangeset.columnsToChange}" }
             sqlGenerator
                 .alterTable(
                     tableName,
-                    diff.columnsToAdd,
-                    diff.columnsToDrop,
-                    diff.columnsToChange,
+                    columnChangeset.columnsToAdd,
+                    columnChangeset.columnsToDrop,
+                    columnChangeset.columnsToChange,
                 )
                 .forEach { execute(it) }
         }
