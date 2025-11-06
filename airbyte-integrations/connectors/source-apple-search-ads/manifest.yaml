@@ -850,8 +850,20 @@ metadata:
     campaigns_report_daily: false
     adgroups_report_daily: false
     keywords_report_daily: false
-    ads: true
-    ads_report_daily: true
+    ads: false
+    ads_report_daily: false
+  yamlComponents:
+    streams:
+      campaigns_report_daily:
+        - errorHandler
+      adgroups_report_daily:
+        - errorHandler
+      keywords_report_daily:
+        - errorHandler
+      ads_report_daily:
+        - errorHandler
+    global:
+      - authenticator
   testedStreams:
     campaigns:
       hasRecords: true
