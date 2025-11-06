@@ -9,7 +9,7 @@ import org.junit.jupiter.api.Test
 
 class TableSchemaTest {
     @Test
-    fun testDiff() {
+    fun testComputeChangeset() {
         val schema1 =
             TableSchema(
                 mapOf(
@@ -37,10 +37,10 @@ class TableSchemaTest {
                 )
             )
 
-        val diff = schema1.diff(schema2)
+        val diff = schema1.computeChangeset(schema2)
 
         assertEquals(
-            TableSchemaDiff(
+            ColumnChangeset(
                 columnsToAdd =
                     mapOf(
                         "to_add_nullable" to ColumnType("i", true),

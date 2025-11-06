@@ -60,16 +60,17 @@ interface TableSchemaEvolutionClient {
     ) {
         val (actualSchema, actualAdditionalInfo) = discoverSchema(tableName)
         val (expectedSchema, expectedAdditionalInfo) = computeSchema(stream, columnNameMapping)
-        val schemaDiff = actualSchema.diff(expectedSchema)
-        val additionalInfoDiff = diff(actualAdditionalInfo, expectedAdditionalInfo)
-        applySchemaDiff(
+        val columnChangeset = actualSchema.computeChangeset(expectedSchema)
+        val additionalChangeset =
+            computeAdditionalChangeset(actualAdditionalInfo, expectedAdditionalInfo)
+        applyChangeset(
             stream,
             columnNameMapping,
             tableName,
             expectedSchema,
             expectedAdditionalInfo,
-            schemaDiff,
-            additionalInfoDiff
+            columnChangeset,
+            additionalChangeset
         )
     }
 
@@ -96,19 +97,19 @@ interface TableSchemaEvolutionClient {
     ): Pair<TableSchema, Any?>
 
     /**
-     * This function computes a diff between two "additional info" structs. This is the `Any?` value
-     * returned from [discoverSchema].
+     * This function computes a changeset between two "additional info" structs. This is the `Any?`
+     * value returned from [discoverSchema].
      *
      * If your destination doesn't return anything interesting in that field, you should just
      * `return null` from this function.
      */
-    fun diff(actualSchemaInfo: Any?, expectedSchemaInfo: Any?): Any?
+    fun computeAdditionalChangeset(actualSchemaInfo: Any?, expectedSchemaInfo: Any?): Any?
 
     /**
-     * Execute the diff against the destination. After this method completes, a call to
+     * Execute the changeset against the destination. After this method completes, a call to
      * [discoverSchema] should return an identical schema as [computeSchema].
      */
-    suspend fun applySchemaDiff(
+    suspend fun applyChangeset(
         // Eventually it would be nice for the stream+columnnamemapping to go away,
         // but that would require computeSchema() to include the airbyte columns,
         // and we're not consistent about doing that (and there's some CDK work needed
@@ -120,8 +121,8 @@ interface TableSchemaEvolutionClient {
         tableName: TableName,
         expectedSchema: TableSchema,
         expectedAdditionalInfo: Any?,
-        diff: TableSchemaDiff,
-        additionalSchemaInfoDiff: Any?,
+        columnChangeset: ColumnChangeset,
+        additionalSchemaInfoChangeset: Any?,
     )
 }
 
@@ -133,12 +134,12 @@ data class TableSchema(
      */
     val columns: Map<String, ColumnType>
 ) {
-    /** Generate a diff which, when applied to `this`, will result in [expectedSchema]. */
-    fun diff(expectedSchema: TableSchema): TableSchemaDiff {
+    /** Generate a changeset which, when applied to `this`, will result in [expectedSchema]. */
+    fun computeChangeset(expectedSchema: TableSchema): ColumnChangeset {
         val actualColumns = this.columns
         val expectedColumns = expectedSchema.columns
 
-        return TableSchemaDiff(
+        return ColumnChangeset(
             columnsToAdd = expectedColumns.filter { !actualColumns.contains(it.key) },
             columnsToDrop = actualColumns.filter { !expectedColumns.contains(it.key) },
             columnsToChange =
@@ -182,7 +183,7 @@ data class ColumnType(
 /**
  * As with [TableSchema], all maps are keyed by the column name as it appears in the destination.
  */
-data class TableSchemaDiff(
+data class ColumnChangeset(
     val columnsToAdd: Map<String, ColumnType>,
     val columnsToDrop: Map<String, ColumnType>,
     val columnsToChange: Map<String, ColumnTypeChange>,
