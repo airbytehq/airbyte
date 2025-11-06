@@ -37,12 +37,15 @@ class TestUsageRecords404Handling:
     def test_usage_records_ignores_404_responses(self, http_mocker: HttpMocker, caplog):
         """Test that the sync ignores 404 responses and logs the appropriate message."""
         http_mocker.get(
-            HttpRequest(url=f"{BASE}/Accounts.json"),
+            HttpRequest(url=f"{BASE}/Accounts.json", query_params={"PageSize": "1000"}),
             HttpResponse(body=json.dumps(ACCOUNTS_JSON), status_code=200),
         )
 
         http_mocker.get(
-            HttpRequest(url=f"{BASE}/Accounts/AC123/Usage/Records/Daily.json"),
+            HttpRequest(
+                url=f"{BASE}/Accounts/AC123/Usage/Records/Daily.json",
+                query_params={"PageSize": "1000", "StartDate": "2022-11-15", "EndDate": "2022-11-16"},
+            ),
             HttpResponse(
                 body=json.dumps({"code": 20404, "message": "The requested resource was not found"}),
                 status_code=404,
@@ -75,12 +78,15 @@ class TestUsageRecords404Handling:
             ],
         }
         http_mocker.get(
-            HttpRequest(url=f"{BASE}/Accounts.json"),
+            HttpRequest(url=f"{BASE}/Accounts.json", query_params={"PageSize": "1000"}),
             HttpResponse(body=json.dumps(accounts_json), status_code=200),
         )
 
         http_mocker.get(
-            HttpRequest(url=f"{BASE}/Accounts/AC001/Usage/Records/Daily.json"),
+            HttpRequest(
+                url=f"{BASE}/Accounts/AC001/Usage/Records/Daily.json",
+                query_params={"PageSize": "1000", "StartDate": "2022-11-15", "EndDate": "2022-11-16"},
+            ),
             HttpResponse(
                 body=json.dumps(
                     {
@@ -101,7 +107,10 @@ class TestUsageRecords404Handling:
         )
 
         http_mocker.get(
-            HttpRequest(url=f"{BASE}/Accounts/AC002/Usage/Records/Daily.json"),
+            HttpRequest(
+                url=f"{BASE}/Accounts/AC002/Usage/Records/Daily.json",
+                query_params={"PageSize": "1000", "StartDate": "2022-11-15", "EndDate": "2022-11-16"},
+            ),
             HttpResponse(
                 body=json.dumps({"code": 20404, "message": "The requested resource was not found"}),
                 status_code=404,
@@ -109,7 +118,10 @@ class TestUsageRecords404Handling:
         )
 
         http_mocker.get(
-            HttpRequest(url=f"{BASE}/Accounts/AC003/Usage/Records/Daily.json"),
+            HttpRequest(
+                url=f"{BASE}/Accounts/AC003/Usage/Records/Daily.json",
+                query_params={"PageSize": "1000", "StartDate": "2022-11-15", "EndDate": "2022-11-16"},
+            ),
             HttpResponse(
                 body=json.dumps({"code": 20404, "message": "The requested resource was not found"}),
                 status_code=404,
@@ -117,7 +129,10 @@ class TestUsageRecords404Handling:
         )
 
         http_mocker.get(
-            HttpRequest(url=f"{BASE}/Accounts/AC004/Usage/Records/Daily.json"),
+            HttpRequest(
+                url=f"{BASE}/Accounts/AC004/Usage/Records/Daily.json",
+                query_params={"PageSize": "1000", "StartDate": "2022-11-15", "EndDate": "2022-11-16"},
+            ),
             HttpResponse(
                 body=json.dumps(
                     {
@@ -155,12 +170,15 @@ class TestUsageRecords404Handling:
     def test_usage_records_incremental_with_404_handling(self, http_mocker: HttpMocker):
         """Test that incremental sync handles 404 responses correctly."""
         http_mocker.get(
-            HttpRequest(url=f"{BASE}/Accounts.json"),
+            HttpRequest(url=f"{BASE}/Accounts.json", query_params={"PageSize": "1000"}),
             HttpResponse(body=json.dumps(ACCOUNTS_JSON), status_code=200),
         )
 
         http_mocker.get(
-            HttpRequest(url=f"{BASE}/Accounts/AC123/Usage/Records/Daily.json"),
+            HttpRequest(
+                url=f"{BASE}/Accounts/AC123/Usage/Records/Daily.json",
+                query_params={"PageSize": "1000", "StartDate": "2022-11-15", "EndDate": "2022-11-16"},
+            ),
             HttpResponse(
                 body=json.dumps({"code": 20404, "message": "The requested resource was not found"}),
                 status_code=404,
