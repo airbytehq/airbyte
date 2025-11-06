@@ -4,16 +4,16 @@ The ClickHouse destination connector syncs data from Airbyte sources to [ClickHo
 
 This is a complete rewrite of the ClickHouse destination connector built on Airbyte's Bulk CDK framework, replacing the legacy v1 connector.
 
-## Improvements over v1
+## How version 2 improves on version 1
 
 Version 2.0.0 represents a complete architectural redesign of the ClickHouse destination connector with significant improvements:
 
 - **All sync modes supported**: Full Refresh (Overwrite and Append) and Incremental (Append and Append + Deduped) sync modes are now fully supported.
-- **Direct Load with typed columns**: Data is written directly to typed columns matching your source schema, rather than storing everything as JSON in raw tables. This improves query performance and reduces storage requirements.
+- **[Direct Load](/platform/using-airbyte/core-concepts/direct-load-tables) with typed columns**: Data is written directly to typed columns matching your source schema, rather than storing everything as JSON in raw tables. This improves query performance and reduces storage requirements.
 - **Improved performance**: The new architecture uses ClickHouse's native binary protocol and batch inserts for significantly faster data loading.
 - **Active maintenance**: Built on Airbyte's modern CDK framework with ongoing development and support from the Airbyte team.
 
-## Features
+## Supported sync modes
 
 All sync modes are supported.
 
@@ -24,7 +24,7 @@ All sync modes are supported.
 | Incremental - Append + Deduped | Yes                  | Leverages `ReplacingMergeTree` |
 | Namespaces                     | Yes                  |                                |
 
-### Deduplication
+## Deduplication
 
 For optimal deduplication in Incremental - Append + Deduped sync mode, use a cursor column with one of these types:
 
@@ -34,26 +34,8 @@ For optimal deduplication in Incremental - Append + Deduped sync mode, use a cur
 
 If you use a different cursor column type (such as String), the connector will fall back to using the `_airbyte_extracted_at` timestamp for deduplication ordering. This fallback may not accurately reflect your source data's natural ordering, and you'll see a warning in the sync logs.
 
-### Output Schema
+## Requirements
 
-Each stream is written to its own table in ClickHouse. Tables are created in either the configured default database (typically `default`) or in a database corresponding to the namespace specified for the stream.
-
-Airbyte data types are converted to ClickHouse types as follows:
-
-- **Decimal** types → `Decimal(38, 9)` (38 digit precision with 9 decimal places)
-- **Timestamp** types → `DateTime64(3)` (millisecond precision)
-- **Object** types → `JSON` (if JSON is enabled in the connector configuration); otherwise → `String`
-- **Integer** types → `Int64`
-- **Boolean** types → `Bool`
-- **String** types → `String`
-- **Union** types → `String`
-- **Array** types → `String`
-
-:::note
-Arrays and Unions are converted to String for compatibility. If you need to query these as structured data, you can use ClickHouse's JSON functions to parse the string values.
-:::
-
-### Requirements
 
 To use the ClickHouse destination connector, you need:
 
@@ -62,19 +44,25 @@ To use the ClickHouse destination connector, you need:
 - Network access from Airbyte to your ClickHouse instance
 - A ClickHouse user with appropriate permissions (see below)
 
-### Setup Guide
+## Setup Guide
 
-#### 1. Configure Network Access
+### 1. Configure Network Access
 
 Ensure your ClickHouse database is accessible from Airbyte:
 
-- **ClickHouse Cloud**: Whitelist Airbyte's IP addresses in your ClickHouse Cloud settings
-- **Self-hosted ClickHouse**: Configure your firewall to allow connections from Airbyte
-- **VPC/Private Network**: If your ClickHouse instance is in a VPC, you may need to set up VPC peering or use SSH tunneling (see SSH Tunnel section below)
+- **Airbyte Cloud + ClickHouse Cloud**: Whitelist Airbyte Cloud's IP addresses in your ClickHouse Cloud settings
+- **Airbyte Cloud + Self-hosted ClickHouse**: Configure your firewall to allow inbound connections on port 8443 (HTTPS) or 8123 (HTTP) from Airbyte Cloud's IP addresses
+- **Self-hosted Airbyte + ClickHouse Cloud**: Whitelist your Airbyte server's public IP address in ClickHouse Cloud settings
+- **Self-hosted Airbyte + Self-hosted ClickHouse**: Ensure port 8443 (HTTPS) or 8123 (HTTP) is accessible from your Airbyte host. If both are in the same private network, configure security groups or firewall rules to allow traffic between them
+- **Private-only environments**: If you cannot expose ClickHouse publicly, use SSH Tunneling (Beta) via a bastion host that can reach ClickHouse
 
-#### 2. Create a Dedicated User with Permissions
+### 2. Create a Dedicated User with Permissions
 
-Create a dedicated ClickHouse user for Airbyte with the following permissions:
+:::tip
+We strongly recommend creating a dedicated ClickHouse user for Airbyte rather than using an existing user. This improves security and makes it easier to audit Airbyte's database operations.
+:::
+
+Create a ClickHouse user for Airbyte with the following permissions:
 
 - Create and manage databases
 - Create, alter, drop, and truncate tables
@@ -115,11 +103,7 @@ GRANT DROP TABLE ON {namespace}.* TO airbyte_user;
 
 Replace `{namespace}` with each custom namespace you plan to use.
 
-:::tip
-While you can use an existing ClickHouse user, we strongly recommend creating a dedicated user for Airbyte. This improves security and makes it easier to audit Airbyte's database operations.
-:::
-
-#### 3. Configure the Connector
+### 3. Configure the Connector
 
 In Airbyte, configure the ClickHouse destination with the following information:
 
@@ -131,13 +115,32 @@ In Airbyte, configure the ClickHouse destination with the following information:
 - **Password**: The password for the ClickHouse user
 - **Enable JSON**: Whether to use ClickHouse's JSON type for object fields (recommended if your ClickHouse version supports it)
 
-#### 4. SSH Tunnel (Optional)
+### 4. SSH Tunnel (Optional)
 
 :::warning
-SSH tunneling support is currently in **Beta**. If you encounter issues with SSH tunneling, please contact Airbyte support.
+SSH tunneling support is currently in **Beta**.
 :::
 
 If your ClickHouse instance is not directly accessible from Airbyte, you can use SSH tunneling to establish a secure connection. Configure the SSH tunnel settings in the connector configuration with your SSH host, port, username, and authentication method (password or private key).
+
+## Output Schema
+
+Each stream is written to its own table in ClickHouse. Tables are created in either the configured default database (typically `default`) or in a database corresponding to the namespace specified for the stream.
+
+Airbyte data types are converted to ClickHouse types as follows:
+
+- **Decimal** types → `Decimal(38, 9)` (38 digit precision with 9 decimal places)
+- **Timestamp** types → `DateTime64(3)` (millisecond precision)
+- **Object** types → `JSON` (if JSON is enabled in the connector configuration); otherwise → `String`
+- **Integer** types → `Int64`
+- **Boolean** types → `Bool`
+- **String** types → `String`
+- **Union** types → `String`
+- **Array** types → `String`
+
+:::note
+Arrays and Unions are converted to String for compatibility. If you need to query these as structured data, you can use ClickHouse's JSON functions to parse the string values.
+:::
 
 ## Changelog
 
