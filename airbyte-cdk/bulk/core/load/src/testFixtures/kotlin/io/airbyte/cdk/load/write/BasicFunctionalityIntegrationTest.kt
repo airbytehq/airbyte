@@ -343,7 +343,7 @@ abstract class BasicFunctionalityIntegrationTest(
     dataChannelMedium: DataChannelMedium = DataChannelMedium.STDIO,
     dataChannelFormat: DataChannelFormat = DataChannelFormat.JSONL,
     val testSpeedModeStatsEmission: Boolean = true,
-    val includesAdditionalStats: Boolean = true,
+    val useDataFlowPipeline: Boolean = false,
 ) :
     IntegrationTest(
         additionalMicronautEnvs = additionalMicronautEnvs,
@@ -1587,7 +1587,7 @@ abstract class BasicFunctionalityIntegrationTest(
                             totalRecords = 1L,
                             totalBytes = expectedBytes,
                             additionalStats =
-                                if (includesAdditionalStats)
+                                if (useDataFlowPipeline)
                                     StateAdditionalStatsStore.ObservabilityMetrics.entries
                                         .associate { it.metricName to 0.0 }
                                         .toMutableMap()
