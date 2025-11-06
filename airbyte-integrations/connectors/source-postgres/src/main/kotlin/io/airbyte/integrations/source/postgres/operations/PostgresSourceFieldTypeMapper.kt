@@ -1,37 +1,29 @@
 /* Copyright (c) 2025 Airbyte, Inc., all rights reserved. */
 package io.airbyte.integrations.source.postgres.operations
 
-import io.airbyte.cdk.data.BigDecimalCodec
-import io.airbyte.cdk.data.BigDecimalIntegerCodec
-import io.airbyte.cdk.data.LeafAirbyteSchemaType
-import io.airbyte.cdk.data.LocalDateCodec
-import io.airbyte.cdk.data.LocalDateTimeCodec
-import io.airbyte.cdk.data.OffsetDateTimeCodec
 import io.airbyte.cdk.discover.FieldType
 import io.airbyte.cdk.discover.JdbcMetadataQuerier
 import io.airbyte.cdk.discover.SystemType
-import io.airbyte.cdk.jdbc.AnyAccessor
 import io.airbyte.cdk.jdbc.ArrayFieldType
-import io.airbyte.cdk.jdbc.BigDecimalAccessor
+import io.airbyte.cdk.jdbc.BigDecimalFieldType
 import io.airbyte.cdk.jdbc.BinaryStreamFieldType
 import io.airbyte.cdk.jdbc.BooleanFieldType
-import io.airbyte.cdk.jdbc.DateAccessor
 import io.airbyte.cdk.jdbc.DoubleFieldType
 import io.airbyte.cdk.jdbc.FloatFieldType
 import io.airbyte.cdk.jdbc.IntFieldType
 import io.airbyte.cdk.jdbc.JdbcFieldType
+import io.airbyte.cdk.jdbc.LocalDateFieldType
+import io.airbyte.cdk.jdbc.LocalDateTimeFieldType
 import io.airbyte.cdk.jdbc.LocalTimeFieldType
 import io.airbyte.cdk.jdbc.LongFieldType
 import io.airbyte.cdk.jdbc.NullFieldType
-import io.airbyte.cdk.jdbc.ObjectGetter
+import io.airbyte.cdk.jdbc.OffsetDateTimeFieldType
 import io.airbyte.cdk.jdbc.PokemonFieldType
 import io.airbyte.cdk.jdbc.ShortFieldType
 import io.airbyte.cdk.jdbc.StringFieldType
-import io.airbyte.cdk.jdbc.TimestampAccessor
 import io.airbyte.integrations.source.postgres.operations.types.BoxFieldType
 import io.airbyte.integrations.source.postgres.operations.types.CircleFieldType
 import io.airbyte.integrations.source.postgres.operations.types.HstoreFieldType
-import io.airbyte.integrations.source.postgres.operations.types.InfFieldType
 import io.airbyte.integrations.source.postgres.operations.types.LineFieldType
 import io.airbyte.integrations.source.postgres.operations.types.LsegFieldType
 import io.airbyte.integrations.source.postgres.operations.types.PathFieldType
@@ -40,7 +32,6 @@ import io.airbyte.integrations.source.postgres.operations.types.PolygonFieldType
 import io.micronaut.context.annotation.Primary
 import jakarta.inject.Singleton
 import java.sql.JDBCType
-import java.time.OffsetDateTime
 
 @Singleton
 @Primary
@@ -71,53 +62,14 @@ class PostgresSourceFieldTypeMapper : JdbcMetadataQuerier.FieldTypeMapper {
             JDBCType.DOUBLE -> DoubleFieldType
             JDBCType.NUMERIC,
             JDBCType.DECIMAL -> {
-                if (type.precision != 0 && type.scale == 0)
-                    InfFieldType(
-                        LeafAirbyteSchemaType.INTEGER,
-                        BigDecimalAccessor,
-                        BigDecimalIntegerCodec,
-                        BigDecimalIntegerCodec,
-                        BigDecimalAccessor
-                    )
-                else
-                    InfFieldType(
-                        LeafAirbyteSchemaType.NUMBER,
-                        BigDecimalAccessor,
-                        BigDecimalCodec,
-                        BigDecimalCodec,
-                        BigDecimalAccessor
-                    )
+                if (type.precision != 0 && type.scale == 0) IntFieldType else BigDecimalFieldType
             }
-
-            // These types can contain infinity, -infinity and NaN, but the internal java.time type
-            // does not, so they require special handling with boxing/unboxing
-            JDBCType.DATE ->
-                InfFieldType(
-                    LeafAirbyteSchemaType.DATE,
-                    DateAccessor,
-                    LocalDateCodec,
-                    LocalDateCodec,
-                    DateAccessor
-                )
+            JDBCType.DATE -> LocalDateFieldType
             JDBCType.TIMESTAMP ->
                 // JDBC driver reports timestamptz as TIMESTAMP instead of TIMESTAMP_WITH_TIMEZONE
                 // for complex and historical reasons
-                if (type.scalarTypeName == "timestamptz")
-                    InfFieldType(
-                        LeafAirbyteSchemaType.TIMESTAMP_WITH_TIMEZONE,
-                        ObjectGetter(OffsetDateTime::class.java),
-                        OffsetDateTimeCodec,
-                        OffsetDateTimeCodec,
-                        AnyAccessor,
-                    )
-                else
-                    InfFieldType(
-                        LeafAirbyteSchemaType.TIMESTAMP_WITHOUT_TIMEZONE,
-                        TimestampAccessor,
-                        LocalDateTimeCodec,
-                        LocalDateTimeCodec,
-                        TimestampAccessor
-                    )
+                if (type.scalarTypeName == "timestamptz") OffsetDateTimeFieldType
+                else LocalDateTimeFieldType
             JDBCType.TIME -> LocalTimeFieldType
             JDBCType.CHAR,
             JDBCType.VARCHAR -> StringFieldType
@@ -152,8 +104,8 @@ class PostgresSourceFieldTypeMapper : JdbcMetadataQuerier.FieldTypeMapper {
 
         init {
             // TODO: Better user-facing message? Alert Extract team?
-            require(systemType.typeName != null) { "systemType type name must not be null" }
-            require(systemType.jdbcType != null) { "systemType jdbcType name must not be null" }
+            requireNotNull(systemType.typeName)
+            requireNotNull(systemType.jdbcType)
         }
 
         // Postgres reports the JDBC type of all arrays as JDBCType.ARRAY. Here, we use the
