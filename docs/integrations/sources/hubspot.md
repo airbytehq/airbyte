@@ -108,7 +108,7 @@ To set up a Private App, you must manually configure scopes to ensure Airbyte ca
 
 </FieldAnchor>
 
-7. (Optional) Set the lookback window in minutes to re-fetch data for a specified number of minutes before the state from the previous sync. This helps to capture any records that may have been created or updated with past timestamps.
+7. (Optional) Set the lookback window in minutes to re-fetch data for a specified number of minutes before the state from the previous sync. This helps to capture missing records.
 8. Click **Set up source** and wait for the tests to complete.
 <!-- /env:cloud -->
 
@@ -124,7 +124,7 @@ To set up a Private App, you must manually configure scopes to ensure Airbyte ca
    - (Not Recommended:) To authenticate using OAuth, select **OAuth** and enter your Client ID, Client Secret, and Refresh Token.
 5. (Optional) For **Start date**, use the provided datepicker or enter the date in the following format:
    `yyyy-mm-ddThh:mm:ssZ`. The data added on and after this date will be replicated. If not set, "2006-06-01T00:00:00Z" (Hubspot creation date) will be used as start date. It's recommended to provide relevant to your data start date value to optimize synchronization.
-6. (Optional) Set the lookback window in minutes to re-fetch data for a specified number of minutes before the state from the previous sync. This helps to capture any records that may have been created or updated with past timestamps.
+6. (Optional) Set the lookback window in minutes to re-fetch data for a specified number of minutes before the state from the previous sync. This helps to capture missing records.
 7. Click **Set up source** and wait for the tests to complete.
 
 <FieldAnchor field="enable_experimental_streams">
@@ -329,8 +329,8 @@ If you use [custom properties](https://knowledge.hubspot.com/properties/create-a
 - Check out common troubleshooting issues for the Hubspot source connector on our [Airbyte Forum](https://github.com/airbytehq/airbyte/discussions).
 
 - **Missing records** in CRMSearch streams (`deals`, `companies`, `engagements_calls`, `engagements_emails`, `engagements_meetings`, `engagements_notes`, `engagements_tasks`, `contacts`, `deal_splits`, `leads`, `tickets`): 
-  - If you notice missing records during incremental syncs, it may be due to irregularities in Hubspot's API behavior. Sometimes Hubspot creates record with timestamps in the past, which can lead to those records being missed during incremental syncs.
-  - To mitigate this, you can configure a lookback window in the source settings. This setting allows the connector to re-fetch data for a specified number of minutes before the state from the previous sync, helping to capture any records that may have been created or updated with past timestamps.
+  - If you notice missing records during incremental syncs, it may be due to irregularities in Hubspot's API behavior.
+  - To mitigate this, you can configure a lookback window in the source settings. This setting allows the connector to re-fetch data for a specified number of minutes before the state from the previous sync, helping to capture missing records.
 
 </details>
 
