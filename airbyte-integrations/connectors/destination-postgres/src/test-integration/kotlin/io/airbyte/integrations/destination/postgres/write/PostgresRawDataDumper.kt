@@ -241,10 +241,15 @@ class PostgresRawDataDumper(
 
                 // The internal schema (airbyte_internal) is used for raw tables
                 // Use "airbyte_internal" as the default if internalTableSchema is not set
-                val rawNamespace = config.internalTableSchema ?: "airbyte_internal"
-                val rawName = TypingDedupingUtil.concatenateRawTableName(sourceNamespace, sourceName)
-                    .toPostgresCompatibleName()
-                val quotedTableName = "\"$rawNamespace\".\"$rawName\""
+                val rawNamespace = config.internalTableSchema?.lowercase()?.toPostgresCompatibleName()
+                    ?: "airbyte_internal"
+
+                val rawName =
+                    TypingDedupingUtil.concatenateRawTableName(sourceNamespace, sourceName)
+                        .lowercase()
+                        .toPostgresCompatibleName()
+
+                val fullyQualifiedTableName = "$rawNamespace.$rawName"
 
                 // Check if table exists first
                 val tableExistsQuery = """
@@ -264,7 +269,7 @@ class PostgresRawDataDumper(
                     return output
                 }
 
-                val resultSet = statement.executeQuery("SELECT * FROM $quotedTableName")
+                val resultSet = statement.executeQuery("SELECT * FROM $fullyQualifiedTableName")
 
                 // Check if the table has the _airbyte_data column (legacy raw table mode)
                 // or individual typed columns (typed table mode)
