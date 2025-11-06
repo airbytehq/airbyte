@@ -130,7 +130,7 @@ class ClickhouseAirbyteClientTest {
             stream,
             columnMapping,
             mockTableName,
-            TableSchema(mapOf("new_col" to ColumnType("String", true))),
+            mapOf("new_col" to ColumnType("String", true)),
             expectedAdditionalInfo = null,
             columnChangeset,
             additionalSchemaInfoChangeset = null,
@@ -189,7 +189,7 @@ class ClickhouseAirbyteClientTest {
             stream,
             columnMapping,
             finalTableName,
-            TableSchema(emptyMap()),
+            emptyMap(),
             expectedAdditionalInfo = null,
             columnChangeset,
             additionalSchemaInfoChangeset = null,
@@ -275,11 +275,9 @@ class ClickhouseAirbyteClientTest {
         val columnMapping = ColumnNameMapping(mapOf("field 1" to "field_1"))
 
         val expected =
-            Pair(
-                TableSchema(
-                    mapOf(
-                        "field_1" to ColumnType("String", true),
-                    )
+            TableSchema(
+                mapOf(
+                    "field_1" to ColumnType("String", true),
                 ),
                 null,
             )
