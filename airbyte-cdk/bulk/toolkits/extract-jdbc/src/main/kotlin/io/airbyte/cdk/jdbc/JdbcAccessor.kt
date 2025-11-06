@@ -311,7 +311,7 @@ data object DateAccessor : JdbcAccessor<LocalDate> {
         val dateStr = rs.getString(colIdx)
         return when {
             rs.wasNull() -> null
-            dateStr in setOf("infinity", "-infinity") ->
+            dateStr == "infinity" || dateStr == "-infinity" ->
                 throw IllegalStateException("Date '$dateStr' is not supported")
             else -> rs.getDate(colIdx).toLocalDate()
         }
@@ -349,7 +349,7 @@ data object TimestampAccessor : JdbcAccessor<LocalDateTime> {
         val timestampStr = rs.getString(colIdx)
         return when {
             rs.wasNull() -> null
-            timestampStr in setOf("infinity", "-infinity") ->
+            timestampStr == "infinity" || timestampStr == "-infinity" ->
                 throw IllegalStateException("Timestamp '$timestampStr' is not supported")
             else -> rs.getTimestamp(colIdx).toLocalDateTime()
         }
@@ -372,7 +372,7 @@ data object TimestampTzGetter : JdbcGetter<OffsetDateTime> {
         val timestampStr = rs.getString(colIdx)
         return when {
             rs.wasNull() -> null
-            timestampStr in setOf("infinity", "-infinity") ->
+            timestampStr == "infinity" || timestampStr == "-infinity" ->
                 throw IllegalStateException("Timestamp '$timestampStr' is not supported")
             else -> rs.getObject(colIdx, OffsetDateTime::class.java)
         }
