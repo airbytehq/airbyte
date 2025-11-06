@@ -25,7 +25,7 @@ import io.airbyte.cdk.load.table.TableName
  *
  * @see TableOperationsClient for standard SQL-based table operations
  */
-interface TableSchemaEvolutionClient<AdditionalSchemaInfo, AdditionalSchemaInfoDiff> {
+interface TableSchemaEvolutionClient {
     /**
      * Ensures the destination table schema matches the expected stream schema through introspection
      * and reconciliation.
@@ -77,45 +77,32 @@ interface TableSchemaEvolutionClient<AdditionalSchemaInfo, AdditionalSchemaInfoD
      * Query the destination and discover the schema of an existing table. If this method includes
      * the `_airbyte_*` columns, then [computeSchema] MUST also include those columns.
      *
-     * [AdditionalSchemaInfo] should be used for anything not represented in the [TableSchema]
+     * The `Any?` return value should be used for anything not represented in the [TableSchema]
      * object. For example, you may want to configure a partitioning/clustering key on the table,
-     * based on the sync mode - this can be provided via AdditionalSchemaInfo.
+     * based on the sync mode - so you would want to return the existing table's partition/cluster
+     * keys.
      *
-     * Most destinations will likely use [Unit] for their additional info.
+     * Most destinations will likely just use `null` for that value.
      */
-    suspend fun discoverSchema(tableName: TableName): Pair<TableSchema, AdditionalSchemaInfo> {
-        throw NotImplementedError()
-    }
+    suspend fun discoverSchema(tableName: TableName): Pair<TableSchema, Any?>
 
     /**
      * Compute the schema that we _expect_ the table to have, given the [stream]. This should _not_
      * query the destination in any way.
-     *
-     * See [discoverSchema] for an explanation of [AdditionalSchemaInfo].
      */
     fun computeSchema(
         stream: DestinationStream,
         columnNameMapping: ColumnNameMapping
-    ): Pair<TableSchema, AdditionalSchemaInfo> {
-        throw NotImplementedError()
-    }
+    ): Pair<TableSchema, Any?>
 
     /**
-     * See [discoverSchema] for an explanation of [AdditionalSchemaInfo].
+     * This function computes a diff between two "additional info" structs. This is the `Any?` value
+     * returned from [discoverSchema].
      *
-     * This function computes a diff between two "additional info" structs.
-     *
-     * If your destination uses [Unit] as its additional info, you should use this implementation:
-     * ```kotlin
-     * fun diff(actualSchemaInfo: Unit, expectedSchemaInfo: Unit) = Unit
-     * ```
+     * If your destination doesn't return anything interesting in that field, you should just
+     * `return null` from this function.
      */
-    fun diff(
-        actualSchemaInfo: AdditionalSchemaInfo,
-        expectedSchemaInfo: AdditionalSchemaInfo
-    ): AdditionalSchemaInfoDiff {
-        throw NotImplementedError()
-    }
+    fun diff(actualSchemaInfo: Any?, expectedSchemaInfo: Any?): Any?
 
     /**
      * Execute the diff against the destination. After this method completes, a call to
@@ -132,12 +119,10 @@ interface TableSchemaEvolutionClient<AdditionalSchemaInfo, AdditionalSchemaInfoD
         columnNameMapping: ColumnNameMapping,
         tableName: TableName,
         expectedSchema: TableSchema,
-        expectedAdditionalInfo: AdditionalSchemaInfo,
+        expectedAdditionalInfo: Any?,
         diff: TableSchemaDiff,
-        additionalSchemaInfoDiff: AdditionalSchemaInfoDiff
-    ) {
-        throw NotImplementedError()
-    }
+        additionalSchemaInfoDiff: Any?,
+    )
 }
 
 data class TableSchema(

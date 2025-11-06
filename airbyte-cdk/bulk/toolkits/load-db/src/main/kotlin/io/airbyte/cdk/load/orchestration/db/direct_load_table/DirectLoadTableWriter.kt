@@ -29,7 +29,7 @@ class DirectLoadTableWriter(
     private val names: TableCatalog,
     private val stateGatherer: DatabaseInitialStatusGatherer<DirectLoadInitialStatus>,
     private val destinationHandler: DatabaseHandler,
-    private val schemaEvolutionClient: TableSchemaEvolutionClient<*, *>,
+    private val schemaEvolutionClient: TableSchemaEvolutionClient,
     private val tableOperationsClient: TableOperationsClient,
     private val streamStateStore: StreamStateStore<DirectLoadTableExecutionConfig>,
     private val tempTableNameGenerator: TempTableNameGenerator,
