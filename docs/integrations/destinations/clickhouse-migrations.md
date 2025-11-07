@@ -42,7 +42,7 @@ The v2 connector does not automatically remove tables created by the v1 connecto
 For most users, old tables are located in the `airbyte_internal` database with names matching the pattern `airbyte_internal.{database}_raw__stream_{table}`. However, the exact location may vary based on your v1 configuration.
 
 :::caution
-Before removing any tables, pause all Airbyte connections that write to this ClickHouse instance and verify that no syncs are running. The v2 ClickHouse destination uses the `airbyte_internal` database for temporary scratch space (for example, streams running in `dedup` mode, truncate refreshes, and overwrite syncs). Dropping the entire `airbyte_internal` database can interrupt active syncs and cause data loss. Only drop the specific v1 raw tables you no longer need.
+The v2 ClickHouse destination uses the `airbyte_internal` database for temporary scratch space (for example, streams running in `dedup` mode, truncate refreshes, and overwrite syncs). Dropping the entire `airbyte_internal` database can interrupt active syncs and cause data loss. Only drop the specific v1 raw tables you no longer need.
 :::
 
 To remove old v1 tables:
