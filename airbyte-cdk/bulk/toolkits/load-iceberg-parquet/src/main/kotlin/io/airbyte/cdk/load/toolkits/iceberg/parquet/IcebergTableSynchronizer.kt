@@ -64,19 +64,26 @@ class IcebergTableSynchronizer(
      *
      * @param table The Iceberg table to update.
      * @param incomingSchema The schema describing incoming data.
+     * @param columnTypeChangeBehavior How to handle column type changes.
+     * @param requireSeparateCommitsForColumnReplace If true, when replacing a column (deleting and
+     * re-adding with the same name but different type), the delete and add operations are committed
+     * separately. This is required for some catalogs (like BigLake) that don't support deleting and
+     * adding a column with the same name in a single commit, even with different field IDs. Default
+     * is false for backward compatibility.
      * @return The updated [Schema], after changes have been applied and committed.
      */
     fun maybeApplySchemaChanges(
         table: Table,
         incomingSchema: Schema,
         columnTypeChangeBehavior: ColumnTypeChangeBehavior,
+        requireSeparateCommitsForColumnReplace: Boolean = false,
     ): SchemaUpdateResult {
         val existingSchema = table.schema()
         val diff = comparator.compareSchemas(incomingSchema, existingSchema)
 
         if (!diff.hasChanges()) {
             // If no differences, return the existing schema as-is.
-            return SchemaUpdateResult(existingSchema, pendingUpdate = null)
+            return SchemaUpdateResult(existingSchema, pendingUpdates = emptyList())
         }
 
         val update: UpdateSchema = table.updateSchema().allowIncompatibleChanges()
@@ -85,6 +92,9 @@ class IcebergTableSynchronizer(
         diff.removedColumns.forEach { removedColumn -> update.deleteColumn(removedColumn) }
 
         // 2) Update types => find a supertype for each changed column
+        val columnsToReplaceInSecondCommit =
+            mutableMapOf<String, org.apache.iceberg.types.Types.NestedField>()
+
         diff.updatedDataTypes.forEach { columnName ->
             val existingField =
                 existingSchema.findField(columnName)
@@ -110,10 +120,20 @@ class IcebergTableSynchronizer(
                 }
                 ColumnTypeChangeBehavior.OVERWRITE -> {
                     // Even when allowIncompatibleChanges is enabled, Iceberg still doesn't allow
-                    // arbitrary type changes.
-                    // So we have to drop+add the column here.
-                    update.deleteColumn(columnName)
-                    update.addColumn(columnName, incomingField.type())
+                    // arbitrary type changes via updateColumn().
+                    // So we have to drop+add the column (replace it).
+
+                    if (requireSeparateCommitsForColumnReplace) {
+                        // For catalogs like BigLake that don't support delete+add in single commit,
+                        // we only delete here and will add in a separate update later.
+                        update.deleteColumn(columnName)
+                        // Store the field to add back later
+                        columnsToReplaceInSecondCommit[columnName] = incomingField
+                    } else {
+                        // Standard Iceberg behavior: delete+add in single commit
+                        update.deleteColumn(columnName)
+                        update.addColumn(columnName, incomingField.type())
+                    }
                 }
             }
         }
@@ -174,16 +194,45 @@ class IcebergTableSynchronizer(
             update.setIdentifierFields(updatedIdentifierFields)
         }
 
+        // If we're doing separate commits for column replacements, commit the delete operations now
+        if (requireSeparateCommitsForColumnReplace && columnsToReplaceInSecondCommit.isNotEmpty()) {
+            // Commit the first update (with deletes but not adds for replaced columns)
+            if (columnTypeChangeBehavior.commitImmediately) {
+                update.commit()
+            }
+
+            // Refresh table to get updated schema after delete
+            table.refresh()
+
+            // Create a new update for adding the replaced columns back with their new types
+            val addUpdate = table.updateSchema().allowIncompatibleChanges()
+
+            // Add back the replaced columns with their new types
+            columnsToReplaceInSecondCommit.forEach { (columnName, field) ->
+                addUpdate.addColumn(null, columnName, field.type())
+            }
+
+            // Apply and return this second update
+            val finalSchema = addUpdate.apply()
+            return if (columnTypeChangeBehavior.commitImmediately) {
+                addUpdate.commit()
+                SchemaUpdateResult(finalSchema, pendingUpdates = emptyList())
+            } else {
+                // Return both updates in order: first the delete (update), then the add (addUpdate)
+                SchemaUpdateResult(finalSchema, pendingUpdates = listOf(update, addUpdate))
+            }
+        }
+
         // `apply` just validates that the schema change is valid, it doesn't actually commit().
         // It returns the schema that the table _would_ have after committing.
         val newSchema: Schema = update.apply()
         if (columnTypeChangeBehavior.commitImmediately) {
             update.commit()
-            return SchemaUpdateResult(newSchema, pendingUpdate = null)
+            return SchemaUpdateResult(newSchema, pendingUpdates = emptyList())
         } else {
-            return SchemaUpdateResult(newSchema, update)
+            return SchemaUpdateResult(newSchema, pendingUpdates = listOf(update))
         }
     }
 }
 
-data class SchemaUpdateResult(val schema: Schema, val pendingUpdate: UpdateSchema?)
+data class SchemaUpdateResult(val schema: Schema, val pendingUpdates: List<UpdateSchema>)
