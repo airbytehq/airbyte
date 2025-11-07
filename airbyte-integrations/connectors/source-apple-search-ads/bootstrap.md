@@ -5,7 +5,7 @@ Apple Search Ads is a REST based API. Connector is implemented with the [Airbyte
 Connector has base streams including attributes about entities in the API (e.g: what campaigns, which adgroups, etc…), and all of them support full refresh only:
 
 - [Campaigns](https://developer.apple.com/documentation/apple_ads/get-all-campaigns)
-- [AdGroups](https://developer.apple.com/documentation/apple_search_ads/get_all_ad_groups)
+- [AdGroups](https://developer.apple.com/documentation/apple_ads/get-all-ad-groups)
 - [Keywords](https://developer.apple.com/documentation/apple_ads/get-all-targeting-keywords-in-an-ad-group)
 - [Ads](https://developer.apple.com/documentation/apple_ads/get-all-ads)
 

@@ -42,7 +42,7 @@ The Apple Ads source connector supports the following streams. For more informat
 ### Base streams
 
 - [campaigns](https://developer.apple.com/documentation/apple_ads/get-all-campaigns)
-- [adgroups](https://developer.apple.com/documentation/apple_search_ads/get_all_ad_groups)
+- [adgroups](https://developer.apple.com/documentation/apple_ads/get-all-ad-groups)
 - [keywords](https://developer.apple.com/documentation/apple_ads/get-all-targeting-keywords-in-an-ad-group)
 - [ads](https://developer.apple.com/documentation/apple_ads/get-all-ads)
 
