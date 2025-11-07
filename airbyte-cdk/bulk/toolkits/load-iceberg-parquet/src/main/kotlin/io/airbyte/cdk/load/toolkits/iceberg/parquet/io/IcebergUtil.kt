@@ -243,7 +243,7 @@ class IcebergUtil(private val tableIdGenerator: TableIdGenerator) {
         return builder.build()
     }
 
-    private fun getOperation(
+    fun getOperation(
         record: EnrichedDestinationRecordAirbyteValue,
         importType: ImportType,
     ): Operation =
