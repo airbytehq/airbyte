@@ -53,7 +53,9 @@ class TestDestinationOpenGaussDataVec(unittest.TestCase):
         MockedOpenGaussDataVecProcessor.return_value = mock_processor
 
         indexer_error_message = "Indexer Error"
-        mock_processor.sql_config.get_sql_engine().connect.side_effect = Exception(indexer_error_message)
+        mock_processor.sql_config.get_sql_engine().connect.side_effect = Exception(
+            indexer_error_message
+        )
 
         destination = DestinationOpenGaussDataVec()
         result = destination.check(self.logger, self.config)

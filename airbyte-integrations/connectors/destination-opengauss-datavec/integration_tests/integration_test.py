@@ -7,10 +7,10 @@ import json
 import logging
 from typing import Any
 
-from airbyte_cdk.models.airbyte_protocol import AirbyteStateType
 import psycopg2
 from airbyte_cdk.destinations.vector_db_based.test_utils import BaseIntegrationTest
 from airbyte_cdk.models import DestinationSyncMode, Status
+from airbyte_cdk.models.airbyte_protocol import AirbyteStateType
 
 from destination_opengauss_datavec.destination import DestinationOpenGaussDataVec
 

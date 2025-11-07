@@ -358,10 +358,10 @@ class SqlProcessorBase(RecordProcessorBase):
         # The max length for an identifier in postgres is 63 characters.
         # We use a part of the stream name for readability, and a hash for uniqueness to avoid collisions.
         hash_suffix = hashlib.md5(normalized_name.encode("utf-8")).hexdigest()
-        
+
         # 63 characters max, 1 for the underscore, 32 for the hash
         truncate_limit = 63 - 1 - 32
-        
+
         truncated_name = normalized_name[:truncate_limit]
 
         return f"{truncated_name}_{hash_suffix}"

@@ -9,8 +9,8 @@ from typing import Any, Union
 
 import dpath
 import sqlalchemy
-from airbyte.secrets import SecretString
 from airbyte._processors.file.jsonl import JsonlWriter
+from airbyte.secrets import SecretString
 from airbyte_cdk.destinations.vector_db_based import embedder
 from airbyte_cdk.destinations.vector_db_based.document_processor import (
     DocumentProcessor as DocumentSplitter,
@@ -19,14 +19,21 @@ from airbyte_cdk.destinations.vector_db_based.document_processor import (
     ProcessingConfigModel as DocumentSplitterConfig,
 )
 from airbyte_cdk.models import AirbyteRecordMessage
+
+# OpenGauss DataVec vector type definition
+from opengauss_sqlalchemy.usertype import Vector
+from overrides import overrides
 from sqlalchemy import (
+    delete,
     insert,
     select,
-    delete,
 )
-from overrides import overrides
 from typing_extensions import Protocol
+
 from destination_opengauss_datavec.common.catalog.catalog_providers import CatalogProvider
+
+# Import the SQL config base class
+from destination_opengauss_datavec.common.sql.sql_processor import SqlConfig, SqlProcessorBase
 from destination_opengauss_datavec.globals import (
     CHUNK_ID_COLUMN,
     DOCUMENT_CONTENT_COLUMN,
@@ -34,13 +41,6 @@ from destination_opengauss_datavec.globals import (
     EMBEDDING_COLUMN,
     METADATA_COLUMN,
 )
-
-
-# OpenGauss DataVec vector type definition
-from opengauss_sqlalchemy.usertype import Vector
-
-# Import the SQL config base class
-from destination_opengauss_datavec.common.sql.sql_processor import SqlConfig, SqlProcessorBase
 
 
 class OpenGaussConfig(SqlConfig):
@@ -64,7 +64,7 @@ class OpenGaussConfig(SqlConfig):
         password: Union[SecretString, str],
         schema_name: str = "public",
     ):
-        # Initialize parent SqlConfig  
+        # Initialize parent SqlConfig
         super().__init__(
             schema_name=schema_name,
             host=host,
@@ -95,6 +95,7 @@ class OpenGaussConfig(SqlConfig):
 
 class EmbeddingConfig(Protocol):
     """A protocol for embedding configuration."""
+
     mode: str
 
 
@@ -165,9 +166,7 @@ class OpenGaussDataVecProcessor(SqlProcessorBase):
         )
 
         select_all_from_temp = select(temp_table)
-        insert_statement = insert(final_table).from_select(
-            columns_list, select_all_from_temp
-        )
+        insert_statement = insert(final_table).from_select(columns_list, select_all_from_temp)
 
         with self.get_sql_connection() as conn:
             # This is a transactional operation to avoid "outages"

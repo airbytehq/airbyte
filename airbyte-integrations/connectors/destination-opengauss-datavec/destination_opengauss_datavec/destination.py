@@ -21,9 +21,8 @@ from airbyte_cdk.models import (
 )
 
 from destination_opengauss_datavec import opengauss_processor
-from destination_opengauss_datavec.config import ConfigModel
 from destination_opengauss_datavec.common.catalog.catalog_providers import CatalogProvider
-
+from destination_opengauss_datavec.config import ConfigModel
 
 BATCH_SIZE = 150
 
@@ -79,6 +78,10 @@ class DestinationOpenGaussDataVec(Destination):
         return ConnectorSpecification(
             documentationUrl="https://docs.airbyte.com/integrations/destinations/opengauss-datavec",
             supportsIncremental=True,
-            supported_destination_sync_modes=[DestinationSyncMode.overwrite, DestinationSyncMode.append, DestinationSyncMode.append_dedup],
+            supported_destination_sync_modes=[
+                DestinationSyncMode.overwrite,
+                DestinationSyncMode.append,
+                DestinationSyncMode.append_dedup,
+            ],
             connectionSpecification=ConfigModel.schema(),  # type: ignore[attr-defined]
         )

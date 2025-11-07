@@ -25,7 +25,10 @@ from airbyte_cdk.models import (
     Type,
 )
 
-from destination_opengauss_datavec.common.state.state_writers import StateWriterBase, StdOutStateWriter
+from destination_opengauss_datavec.common.state.state_writers import (
+    StateWriterBase,
+    StdOutStateWriter,
+)
 
 if TYPE_CHECKING:
     from collections.abc import Iterable, Iterator

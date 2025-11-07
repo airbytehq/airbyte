@@ -49,7 +49,6 @@ class OpenGaussDatavecIndexingModel(BaseModel):
         examples=["AIRBYTE_SCHEMA"],
     )
 
-
     class Config:
         title = "Indexing"
         schema_extra = {
