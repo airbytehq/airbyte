@@ -1,4 +1,4 @@
-version: 4.6.2
+version: 6.48.15
 
 type: DeclarativeSource
 
@@ -31,10 +31,10 @@ definitions:
             type: CompositeErrorHandler
             error_handlers:
               - type: DefaultErrorHandler
-                max_retries: 3
+                max_retries: 10
                 backoff_strategies:
-                  - type: ExponentialBackoffStrategy
-                    factor: 2
+                  - type: WaitTimeFromHeader
+                    header: retry-after
                 response_filters:
                   - type: HttpResponseFilter
                     action: RATE_LIMITED
@@ -53,8 +53,10 @@ definitions:
             type: RequestPath
           pagination_strategy:
             type: CursorPagination
-            cursor_value: '{{ response.get("_pagination", {}).get("next", {}) }}'
+            cursor_value: "{{ response.get(\"_pagination\", {}).get(\"next\", {}) }}"
             stop_condition: "{{ not response.get('_pagination', {}).get('next') }}"
+        decoder:
+          type: JsonDecoder
       incremental_sync:
         type: DatetimeBasedCursor
         cursor_field: emitted_at
@@ -64,7 +66,7 @@ definitions:
         datetime_format: "%s"
         start_datetime:
           type: MinMaxDatetime
-          datetime: '{{ config["start_date"] }}'
+          datetime: "{{ config[\"start_date\"] }}"
           datetime_format: "%Y-%m-%dT%H:%M:%SZ"
         end_datetime:
           type: MinMaxDatetime
@@ -89,10 +91,10 @@ definitions:
             type: CompositeErrorHandler
             error_handlers:
               - type: DefaultErrorHandler
-                max_retries: 3
+                max_retries: 10
                 backoff_strategies:
-                  - type: ExponentialBackoffStrategy
-                    factor: 2
+                  - type: WaitTimeFromHeader
+                    header: retry-after
                 response_filters:
                   - type: HttpResponseFilter
                     action: RATE_LIMITED
@@ -111,8 +113,10 @@ definitions:
             type: RequestPath
           pagination_strategy:
             type: CursorPagination
-            cursor_value: '{{ response.get("_pagination", {}).get("next", {}) }}'
+            cursor_value: "{{ response.get(\"_pagination\", {}).get(\"next\", {}) }}"
             stop_condition: "{{ not response.get('_pagination', {}).get('next') }}"
+        decoder:
+          type: JsonDecoder
       schema_loader:
         type: InlineSchemaLoader
         schema:
@@ -134,8 +138,8 @@ definitions:
               - type: DefaultErrorHandler
                 max_retries: 3
                 backoff_strategies:
-                  - type: ExponentialBackoffStrategy
-                    factor: 2
+                  - type: WaitTimeFromHeader
+                    header: retry-after
                 response_filters:
                   - type: HttpResponseFilter
                     action: RATE_LIMITED
@@ -154,7 +158,7 @@ definitions:
             type: RequestPath
           pagination_strategy:
             type: CursorPagination
-            cursor_value: '{{ response.get("_pagination", {}).get("next", {}) }}'
+            cursor_value: "{{ response.get(\"_pagination\", {}).get(\"next\", {}) }}"
             stop_condition: "{{ not response.get('_pagination', {}).get('next') }}"
         partition_router:
           type: SubstreamPartitionRouter
@@ -164,6 +168,8 @@ definitions:
               partition_field: inbox_id
               stream:
                 $ref: "#/definitions/streams/inboxes"
+        decoder:
+          type: JsonDecoder
       schema_loader:
         type: InlineSchemaLoader
         schema:
@@ -171,8 +177,6 @@ definitions:
     inboxes_conversations:
       type: DeclarativeStream
       name: inboxes_conversations
-      primary_key:
-        - id
       retriever:
         type: SimpleRetriever
         requester:
@@ -187,8 +191,8 @@ definitions:
               - type: DefaultErrorHandler
                 max_retries: 3
                 backoff_strategies:
-                  - type: ExponentialBackoffStrategy
-                    factor: 2
+                  - type: WaitTimeFromHeader
+                    header: retry-after
                 response_filters:
                   - type: HttpResponseFilter
                     action: RATE_LIMITED
@@ -207,7 +211,7 @@ definitions:
             type: RequestPath
           pagination_strategy:
             type: CursorPagination
-            cursor_value: '{{ response.get("_pagination", {}).get("next", {}) }}'
+            cursor_value: "{{ response.get(\"_pagination\", {}).get(\"next\", {}) }}"
             stop_condition: "{{ not response.get('_pagination', {}).get('next') }}"
         partition_router:
           type: SubstreamPartitionRouter
@@ -217,6 +221,8 @@ definitions:
               partition_field: inbox_id
               stream:
                 $ref: "#/definitions/streams/inboxes"
+        decoder:
+          type: JsonDecoder
       incremental_sync:
         type: DatetimeBasedCursor
         cursor_field: created_at
@@ -226,7 +232,7 @@ definitions:
         datetime_format: "%ms"
         start_datetime:
           type: MinMaxDatetime
-          datetime: '{{ config["start_date"] }}'
+          datetime: "{{ config[\"start_date\"] }}"
           datetime_format: "%Y-%m-%dT%H:%M:%SZ"
         end_datetime:
           type: MinMaxDatetime
@@ -239,8 +245,6 @@ definitions:
     inboxes_teammates:
       type: DeclarativeStream
       name: inboxes_teammates
-      primary_key:
-        - id
       retriever:
         type: SimpleRetriever
         requester:
@@ -253,8 +257,8 @@ definitions:
               - type: DefaultErrorHandler
                 max_retries: 3
                 backoff_strategies:
-                  - type: ExponentialBackoffStrategy
-                    factor: 2
+                  - type: WaitTimeFromHeader
+                    header: retry-after
                 response_filters:
                   - type: HttpResponseFilter
                     action: RATE_LIMITED
@@ -273,7 +277,7 @@ definitions:
             type: RequestPath
           pagination_strategy:
             type: CursorPagination
-            cursor_value: '{{ response.get("_pagination", {}).get("next", {}) }}'
+            cursor_value: "{{ response.get(\"_pagination\", {}).get(\"next\", {}) }}"
             stop_condition: "{{ not response.get('_pagination', {}).get('next') }}"
         partition_router:
           type: SubstreamPartitionRouter
@@ -283,6 +287,8 @@ definitions:
               partition_field: inbox_id
               stream:
                 $ref: "#/definitions/streams/inboxes"
+        decoder:
+          type: JsonDecoder
       schema_loader:
         type: InlineSchemaLoader
         schema:
@@ -306,8 +312,8 @@ definitions:
               - type: DefaultErrorHandler
                 max_retries: 3
                 backoff_strategies:
-                  - type: ExponentialBackoffStrategy
-                    factor: 2
+                  - type: WaitTimeFromHeader
+                    header: retry-after
                 response_filters:
                   - type: HttpResponseFilter
                     action: RATE_LIMITED
@@ -326,8 +332,10 @@ definitions:
             type: RequestPath
           pagination_strategy:
             type: CursorPagination
-            cursor_value: '{{ response.get("_pagination", {}).get("next", {}) }}'
+            cursor_value: "{{ response.get(\"_pagination\", {}).get(\"next\", {}) }}"
             stop_condition: "{{ not response.get('_pagination', {}).get('next') }}"
+        decoder:
+          type: JsonDecoder
       incremental_sync:
         type: DatetimeBasedCursor
         cursor_field: created_at
@@ -337,7 +345,7 @@ definitions:
         datetime_format: "%ms"
         start_datetime:
           type: MinMaxDatetime
-          datetime: '{{ config["start_date"] }}'
+          datetime: "{{ config[\"start_date\"] }}"
           datetime_format: "%Y-%m-%dT%H:%M:%SZ"
         end_datetime:
           type: MinMaxDatetime
@@ -366,8 +374,8 @@ definitions:
               - type: DefaultErrorHandler
                 max_retries: 3
                 backoff_strategies:
-                  - type: ExponentialBackoffStrategy
-                    factor: 2
+                  - type: WaitTimeFromHeader
+                    header: retry-after
                 response_filters:
                   - type: HttpResponseFilter
                     action: RATE_LIMITED
@@ -386,7 +394,7 @@ definitions:
             type: RequestPath
           pagination_strategy:
             type: CursorPagination
-            cursor_value: '{{ response.get("_pagination", {}).get("next", {}) }}'
+            cursor_value: "{{ response.get(\"_pagination\", {}).get(\"next\", {}) }}"
             stop_condition: "{{ not response.get('_pagination', {}).get('next') }}"
         partition_router:
           type: SubstreamPartitionRouter
@@ -396,6 +404,8 @@ definitions:
               partition_field: conversation_id
               stream:
                 $ref: "#/definitions/streams/conversations"
+        decoder:
+          type: JsonDecoder
       incremental_sync:
         type: DatetimeBasedCursor
         cursor_field: emitted_at
@@ -405,7 +415,7 @@ definitions:
         datetime_format: "%s"
         start_datetime:
           type: MinMaxDatetime
-          datetime: '{{ config["start_date"] }}'
+          datetime: "{{ config[\"start_date\"] }}"
           datetime_format: "%Y-%m-%dT%H:%M:%SZ"
         end_datetime:
           type: MinMaxDatetime
@@ -418,8 +428,6 @@ definitions:
     conversations_followers:
       type: DeclarativeStream
       name: conversations_followers
-      primary_key:
-        - id
       retriever:
         type: SimpleRetriever
         requester:
@@ -432,8 +440,8 @@ definitions:
               - type: DefaultErrorHandler
                 max_retries: 3
                 backoff_strategies:
-                  - type: ExponentialBackoffStrategy
-                    factor: 2
+                  - type: WaitTimeFromHeader
+                    header: retry-after
                 response_filters:
                   - type: HttpResponseFilter
                     action: RATE_LIMITED
@@ -452,7 +460,7 @@ definitions:
             type: RequestPath
           pagination_strategy:
             type: CursorPagination
-            cursor_value: '{{ response.get("_pagination", {}).get("next", {}) }}'
+            cursor_value: "{{ response.get(\"_pagination\", {}).get(\"next\", {}) }}"
             stop_condition: "{{ not response.get('_pagination', {}).get('next') }}"
         partition_router:
           type: SubstreamPartitionRouter
@@ -462,6 +470,8 @@ definitions:
               partition_field: conversation_id
               stream:
                 $ref: "#/definitions/streams/conversations"
+        decoder:
+          type: JsonDecoder
       schema_loader:
         type: InlineSchemaLoader
         schema:
@@ -481,8 +491,8 @@ definitions:
               - type: DefaultErrorHandler
                 max_retries: 3
                 backoff_strategies:
-                  - type: ExponentialBackoffStrategy
-                    factor: 2
+                  - type: WaitTimeFromHeader
+                    header: retry-after
                 response_filters:
                   - type: HttpResponseFilter
                     action: RATE_LIMITED
@@ -501,7 +511,7 @@ definitions:
             type: RequestPath
           pagination_strategy:
             type: CursorPagination
-            cursor_value: '{{ response.get("_pagination", {}).get("next", {}) }}'
+            cursor_value: "{{ response.get(\"_pagination\", {}).get(\"next\", {}) }}"
             stop_condition: "{{ not response.get('_pagination', {}).get('next') }}"
         partition_router:
           type: SubstreamPartitionRouter
@@ -511,6 +521,8 @@ definitions:
               partition_field: conversation_id
               stream:
                 $ref: "#/definitions/streams/conversations"
+        decoder:
+          type: JsonDecoder
       schema_loader:
         type: InlineSchemaLoader
         schema:
@@ -534,8 +546,8 @@ definitions:
               - type: DefaultErrorHandler
                 max_retries: 3
                 backoff_strategies:
-                  - type: ExponentialBackoffStrategy
-                    factor: 2
+                  - type: WaitTimeFromHeader
+                    header: retry-after
                 response_filters:
                   - type: HttpResponseFilter
                     action: RATE_LIMITED
@@ -554,7 +566,7 @@ definitions:
             type: RequestPath
           pagination_strategy:
             type: CursorPagination
-            cursor_value: '{{ response.get("_pagination", {}).get("next", {}) }}'
+            cursor_value: "{{ response.get(\"_pagination\", {}).get(\"next\", {}) }}"
             stop_condition: "{{ not response.get('_pagination', {}).get('next') }}"
         partition_router:
           type: SubstreamPartitionRouter
@@ -564,6 +576,8 @@ definitions:
               partition_field: conversation_id
               stream:
                 $ref: "#/definitions/streams/conversations"
+        decoder:
+          type: JsonDecoder
       incremental_sync:
         type: DatetimeBasedCursor
         cursor_field: created_at
@@ -573,7 +587,7 @@ definitions:
         datetime_format: "%ms"
         start_datetime:
           type: MinMaxDatetime
-          datetime: '{{ config["start_date"] }}'
+          datetime: "{{ config[\"start_date\"] }}"
           datetime_format: "%Y-%m-%dT%H:%M:%SZ"
         end_datetime:
           type: MinMaxDatetime
@@ -602,8 +616,8 @@ definitions:
               - type: DefaultErrorHandler
                 max_retries: 3
                 backoff_strategies:
-                  - type: ExponentialBackoffStrategy
-                    factor: 2
+                  - type: WaitTimeFromHeader
+                    header: retry-after
                 response_filters:
                   - type: HttpResponseFilter
                     action: RATE_LIMITED
@@ -622,8 +636,10 @@ definitions:
             type: RequestPath
           pagination_strategy:
             type: CursorPagination
-            cursor_value: '{{ response.get("_pagination", {}).get("next", {}) }}'
+            cursor_value: "{{ response.get(\"_pagination\", {}).get(\"next\", {}) }}"
             stop_condition: "{{ not response.get('_pagination', {}).get('next') }}"
+        decoder:
+          type: JsonDecoder
       schema_loader:
         type: InlineSchemaLoader
         schema:
@@ -647,8 +663,8 @@ definitions:
               - type: DefaultErrorHandler
                 max_retries: 3
                 backoff_strategies:
-                  - type: ExponentialBackoffStrategy
-                    factor: 2
+                  - type: WaitTimeFromHeader
+                    header: retry-after
                 response_filters:
                   - type: HttpResponseFilter
                     action: RATE_LIMITED
@@ -667,8 +683,10 @@ definitions:
             type: RequestPath
           pagination_strategy:
             type: CursorPagination
-            cursor_value: '{{ response.get("_pagination", {}).get("next", {}) }}'
+            cursor_value: "{{ response.get(\"_pagination\", {}).get(\"next\", {}) }}"
             stop_condition: "{{ not response.get('_pagination', {}).get('next') }}"
+        decoder:
+          type: JsonDecoder
       incremental_sync:
         type: DatetimeBasedCursor
         cursor_field: updated_at
@@ -678,7 +696,7 @@ definitions:
         datetime_format: "%s"
         start_datetime:
           type: MinMaxDatetime
-          datetime: '{{ config["start_date"] }}'
+          datetime: "{{ config[\"start_date\"] }}"
           datetime_format: "%Y-%m-%dT%H:%M:%SZ"
         end_datetime:
           type: MinMaxDatetime
@@ -707,8 +725,8 @@ definitions:
               - type: DefaultErrorHandler
                 max_retries: 3
                 backoff_strategies:
-                  - type: ExponentialBackoffStrategy
-                    factor: 2
+                  - type: WaitTimeFromHeader
+                    header: retry-after
                 response_filters:
                   - type: HttpResponseFilter
                     action: RATE_LIMITED
@@ -727,7 +745,7 @@ definitions:
             type: RequestPath
           pagination_strategy:
             type: CursorPagination
-            cursor_value: '{{ response.get("_pagination", {}).get("next", {}) }}'
+            cursor_value: "{{ response.get(\"_pagination\", {}).get(\"next\", {}) }}"
             stop_condition: "{{ not response.get('_pagination', {}).get('next') }}"
         partition_router:
           type: SubstreamPartitionRouter
@@ -737,6 +755,8 @@ definitions:
               partition_field: account_id
               stream:
                 $ref: "#/definitions/streams/accounts"
+        decoder:
+          type: JsonDecoder
       incremental_sync:
         type: DatetimeBasedCursor
         cursor_field: updated_at
@@ -746,7 +766,7 @@ definitions:
         datetime_format: "%s"
         start_datetime:
           type: MinMaxDatetime
-          datetime: '{{ config["start_date"] }}'
+          datetime: "{{ config[\"start_date\"] }}"
           datetime_format: "%Y-%m-%dT%H:%M:%SZ"
         end_datetime:
           type: MinMaxDatetime
@@ -775,8 +795,8 @@ definitions:
               - type: DefaultErrorHandler
                 max_retries: 3
                 backoff_strategies:
-                  - type: ExponentialBackoffStrategy
-                    factor: 2
+                  - type: WaitTimeFromHeader
+                    header: retry-after
                 response_filters:
                   - type: HttpResponseFilter
                     action: RATE_LIMITED
@@ -795,8 +815,10 @@ definitions:
             type: RequestPath
           pagination_strategy:
             type: CursorPagination
-            cursor_value: '{{ response.get("_pagination", {}).get("next", {}) }}'
+            cursor_value: "{{ response.get(\"_pagination\", {}).get(\"next\", {}) }}"
             stop_condition: "{{ not response.get('_pagination', {}).get('next') }}"
+        decoder:
+          type: JsonDecoder
       incremental_sync:
         type: DatetimeBasedCursor
         cursor_field: updated_at
@@ -806,7 +828,7 @@ definitions:
         datetime_format: "%s"
         start_datetime:
           type: MinMaxDatetime
-          datetime: '{{ config["start_date"] }}'
+          datetime: "{{ config[\"start_date\"] }}"
           datetime_format: "%Y-%m-%dT%H:%M:%SZ"
         end_datetime:
           type: MinMaxDatetime
@@ -833,8 +855,8 @@ definitions:
               - type: DefaultErrorHandler
                 max_retries: 3
                 backoff_strategies:
-                  - type: ExponentialBackoffStrategy
-                    factor: 2
+                  - type: WaitTimeFromHeader
+                    header: retry-after
                 response_filters:
                   - type: HttpResponseFilter
                     action: RATE_LIMITED
@@ -853,8 +875,10 @@ definitions:
             type: RequestPath
           pagination_strategy:
             type: CursorPagination
-            cursor_value: '{{ response.get("_pagination", {}).get("next", {}) }}'
+            cursor_value: "{{ response.get(\"_pagination\", {}).get(\"next\", {}) }}"
             stop_condition: "{{ not response.get('_pagination', {}).get('next') }}"
+        decoder:
+          type: JsonDecoder
       schema_loader:
         type: InlineSchemaLoader
         schema:
@@ -862,8 +886,6 @@ definitions:
     company_tags:
       type: DeclarativeStream
       name: company_tags
-      primary_key:
-        - id
       retriever:
         type: SimpleRetriever
         requester:
@@ -878,8 +900,8 @@ definitions:
               - type: DefaultErrorHandler
                 max_retries: 3
                 backoff_strategies:
-                  - type: ExponentialBackoffStrategy
-                    factor: 2
+                  - type: WaitTimeFromHeader
+                    header: retry-after
                 response_filters:
                   - type: HttpResponseFilter
                     action: RATE_LIMITED
@@ -898,7 +920,7 @@ definitions:
             type: RequestPath
           pagination_strategy:
             type: CursorPagination
-            cursor_value: '{{ response.get("_pagination", {}).get("next", {}) }}'
+            cursor_value: "{{ response.get(\"_pagination\", {}).get(\"next\", {}) }}"
             stop_condition: "{{ not response.get('_pagination', {}).get('next') }}"
         partition_router:
           type: SubstreamPartitionRouter
@@ -908,6 +930,8 @@ definitions:
               partition_field: teammate_id
               stream:
                 $ref: "#/definitions/streams/teammates"
+        decoder:
+          type: JsonDecoder
       incremental_sync:
         type: DatetimeBasedCursor
         cursor_field: updated_at
@@ -917,7 +941,7 @@ definitions:
         datetime_format: "%s"
         start_datetime:
           type: MinMaxDatetime
-          datetime: '{{ config["start_date"] }}'
+          datetime: "{{ config[\"start_date\"] }}"
           datetime_format: "%Y-%m-%dT%H:%M:%SZ"
         end_datetime:
           type: MinMaxDatetime
@@ -944,8 +968,8 @@ definitions:
               - type: DefaultErrorHandler
                 max_retries: 3
                 backoff_strategies:
-                  - type: ExponentialBackoffStrategy
-                    factor: 2
+                  - type: WaitTimeFromHeader
+                    header: retry-after
                 response_filters:
                   - type: HttpResponseFilter
                     action: RATE_LIMITED
@@ -964,8 +988,10 @@ definitions:
             type: RequestPath
           pagination_strategy:
             type: CursorPagination
-            cursor_value: '{{ response.get("_pagination", {}).get("next", {}) }}'
+            cursor_value: "{{ response.get(\"_pagination\", {}).get(\"next\", {}) }}"
             stop_condition: "{{ not response.get('_pagination', {}).get('next') }}"
+        decoder:
+          type: JsonDecoder
       schema_loader:
         type: InlineSchemaLoader
         schema:
@@ -989,8 +1015,8 @@ definitions:
               - type: DefaultErrorHandler
                 max_retries: 3
                 backoff_strategies:
-                  - type: ExponentialBackoffStrategy
-                    factor: 2
+                  - type: WaitTimeFromHeader
+                    header: retry-after
                 response_filters:
                   - type: HttpResponseFilter
                     action: RATE_LIMITED
@@ -1009,8 +1035,10 @@ definitions:
             type: RequestPath
           pagination_strategy:
             type: CursorPagination
-            cursor_value: '{{ response.get("_pagination", {}).get("next", {}) }}'
+            cursor_value: "{{ response.get(\"_pagination\", {}).get(\"next\", {}) }}"
             stop_condition: "{{ not response.get('_pagination', {}).get('next') }}"
+        decoder:
+          type: JsonDecoder
       incremental_sync:
         type: DatetimeBasedCursor
         cursor_field: updated_at
@@ -1020,7 +1048,7 @@ definitions:
         datetime_format: "%s"
         start_datetime:
           type: MinMaxDatetime
-          datetime: '{{ config["start_date"] }}'
+          datetime: "{{ config[\"start_date\"] }}"
           datetime_format: "%Y-%m-%dT%H:%M:%SZ"
         end_datetime:
           type: MinMaxDatetime
@@ -1049,8 +1077,8 @@ definitions:
               - type: DefaultErrorHandler
                 max_retries: 3
                 backoff_strategies:
-                  - type: ExponentialBackoffStrategy
-                    factor: 2
+                  - type: WaitTimeFromHeader
+                    header: retry-after
                 response_filters:
                   - type: HttpResponseFilter
                     action: RATE_LIMITED
@@ -1069,7 +1097,7 @@ definitions:
             type: RequestPath
           pagination_strategy:
             type: CursorPagination
-            cursor_value: '{{ response.get("_pagination", {}).get("next", {}) }}'
+            cursor_value: "{{ response.get(\"_pagination\", {}).get(\"next\", {}) }}"
             stop_condition: "{{ not response.get('_pagination', {}).get('next') }}"
         partition_router:
           type: SubstreamPartitionRouter
@@ -1079,6 +1107,8 @@ definitions:
               partition_field: tag_id
               stream:
                 $ref: "#/definitions/streams/tags"
+        decoder:
+          type: JsonDecoder
       incremental_sync:
         type: DatetimeBasedCursor
         cursor_field: updated_at
@@ -1088,7 +1118,7 @@ definitions:
         datetime_format: "%s"
         start_datetime:
           type: MinMaxDatetime
-          datetime: '{{ config["start_date"] }}'
+          datetime: "{{ config[\"start_date\"] }}"
           datetime_format: "%Y-%m-%dT%H:%M:%SZ"
         end_datetime:
           type: MinMaxDatetime
@@ -1117,8 +1147,8 @@ definitions:
               - type: DefaultErrorHandler
                 max_retries: 3
                 backoff_strategies:
-                  - type: ExponentialBackoffStrategy
-                    factor: 2
+                  - type: WaitTimeFromHeader
+                    header: retry-after
                 response_filters:
                   - type: HttpResponseFilter
                     action: RATE_LIMITED
@@ -1137,7 +1167,7 @@ definitions:
             type: RequestPath
           pagination_strategy:
             type: CursorPagination
-            cursor_value: '{{ response.get("_pagination", {}).get("next", {}) }}'
+            cursor_value: "{{ response.get(\"_pagination\", {}).get(\"next\", {}) }}"
             stop_condition: "{{ not response.get('_pagination', {}).get('next') }}"
         partition_router:
           type: SubstreamPartitionRouter
@@ -1147,6 +1177,8 @@ definitions:
               partition_field: teammate_id
               stream:
                 $ref: "#/definitions/streams/teammates"
+        decoder:
+          type: JsonDecoder
       incremental_sync:
         type: DatetimeBasedCursor
         cursor_field: updated_at
@@ -1156,7 +1188,7 @@ definitions:
         datetime_format: "%s"
         start_datetime:
           type: MinMaxDatetime
-          datetime: '{{ config["start_date"] }}'
+          datetime: "{{ config[\"start_date\"] }}"
           datetime_format: "%Y-%m-%dT%H:%M:%SZ"
         end_datetime:
           type: MinMaxDatetime
@@ -1183,8 +1215,8 @@ definitions:
               - type: DefaultErrorHandler
                 max_retries: 3
                 backoff_strategies:
-                  - type: ExponentialBackoffStrategy
-                    factor: 2
+                  - type: WaitTimeFromHeader
+                    header: retry-after
                 response_filters:
                   - type: HttpResponseFilter
                     action: RATE_LIMITED
@@ -1203,8 +1235,10 @@ definitions:
             type: RequestPath
           pagination_strategy:
             type: CursorPagination
-            cursor_value: '{{ response.get("_pagination", {}).get("next", {}) }}'
+            cursor_value: "{{ response.get(\"_pagination\", {}).get(\"next\", {}) }}"
             stop_condition: "{{ not response.get('_pagination', {}).get('next') }}"
+        decoder:
+          type: JsonDecoder
       schema_loader:
         type: InlineSchemaLoader
         schema:
@@ -1228,8 +1262,8 @@ definitions:
               - type: DefaultErrorHandler
                 max_retries: 3
                 backoff_strategies:
-                  - type: ExponentialBackoffStrategy
-                    factor: 2
+                  - type: WaitTimeFromHeader
+                    header: retry-after
                 response_filters:
                   - type: HttpResponseFilter
                     action: RATE_LIMITED
@@ -1248,7 +1282,7 @@ definitions:
             type: RequestPath
           pagination_strategy:
             type: CursorPagination
-            cursor_value: '{{ response.get("_pagination", {}).get("next", {}) }}'
+            cursor_value: "{{ response.get(\"_pagination\", {}).get(\"next\", {}) }}"
             stop_condition: "{{ not response.get('_pagination', {}).get('next') }}"
         partition_router:
           type: SubstreamPartitionRouter
@@ -1258,6 +1292,8 @@ definitions:
               partition_field: team_id
               stream:
                 $ref: "#/definitions/streams/teams"
+        decoder:
+          type: JsonDecoder
       incremental_sync:
         type: DatetimeBasedCursor
         cursor_field: updated_at
@@ -1267,7 +1303,7 @@ definitions:
         datetime_format: "%s"
         start_datetime:
           type: MinMaxDatetime
-          datetime: '{{ config["start_date"] }}'
+          datetime: "{{ config[\"start_date\"] }}"
           datetime_format: "%Y-%m-%dT%H:%M:%SZ"
         end_datetime:
           type: MinMaxDatetime
@@ -1294,8 +1330,8 @@ definitions:
               - type: DefaultErrorHandler
                 max_retries: 3
                 backoff_strategies:
-                  - type: ExponentialBackoffStrategy
-                    factor: 2
+                  - type: WaitTimeFromHeader
+                    header: retry-after
                 response_filters:
                   - type: HttpResponseFilter
                     action: RATE_LIMITED
@@ -1314,8 +1350,10 @@ definitions:
             type: RequestPath
           pagination_strategy:
             type: CursorPagination
-            cursor_value: '{{ response.get("_pagination", {}).get("next", {}) }}'
+            cursor_value: "{{ response.get(\"_pagination\", {}).get(\"next\", {}) }}"
             stop_condition: "{{ not response.get('_pagination', {}).get('next') }}"
+        decoder:
+          type: JsonDecoder
       schema_loader:
         type: InlineSchemaLoader
         schema:
@@ -1339,8 +1377,8 @@ definitions:
               - type: DefaultErrorHandler
                 max_retries: 3
                 backoff_strategies:
-                  - type: ExponentialBackoffStrategy
-                    factor: 2
+                  - type: WaitTimeFromHeader
+                    header: retry-after
                 response_filters:
                   - type: HttpResponseFilter
                     action: RATE_LIMITED
@@ -1359,7 +1397,7 @@ definitions:
             type: RequestPath
           pagination_strategy:
             type: CursorPagination
-            cursor_value: '{{ response.get("_pagination", {}).get("next", {}) }}'
+            cursor_value: "{{ response.get(\"_pagination\", {}).get(\"next\", {}) }}"
             stop_condition: "{{ not response.get('_pagination', {}).get('next') }}"
         partition_router:
           type: SubstreamPartitionRouter
@@ -1369,6 +1407,8 @@ definitions:
               partition_field: conversation_id
               stream:
                 $ref: "#/definitions/streams/conversations"
+        decoder:
+          type: JsonDecoder
       incremental_sync:
         type: DatetimeBasedCursor
         cursor_field: created_at
@@ -1378,7 +1418,7 @@ definitions:
         datetime_format: "%s"
         start_datetime:
           type: MinMaxDatetime
-          datetime: '{{ config["start_date"] }}'
+          datetime: "{{ config[\"start_date\"] }}"
           datetime_format: "%Y-%m-%dT%H:%M:%SZ"
         end_datetime:
           type: MinMaxDatetime
@@ -1405,8 +1445,8 @@ definitions:
               - type: DefaultErrorHandler
                 max_retries: 3
                 backoff_strategies:
-                  - type: ExponentialBackoffStrategy
-                    factor: 2
+                  - type: WaitTimeFromHeader
+                    header: retry-after
                 response_filters:
                   - type: HttpResponseFilter
                     action: RATE_LIMITED
@@ -1425,7 +1465,7 @@ definitions:
             type: RequestPath
           pagination_strategy:
             type: CursorPagination
-            cursor_value: '{{ response.get("_pagination", {}).get("next", {}) }}'
+            cursor_value: "{{ response.get(\"_pagination\", {}).get(\"next\", {}) }}"
             stop_condition: "{{ not response.get('_pagination', {}).get('next') }}"
         partition_router:
           type: SubstreamPartitionRouter
@@ -1435,6 +1475,8 @@ definitions:
               partition_field: contact_id
               stream:
                 $ref: "#/definitions/streams/contacts"
+        decoder:
+          type: JsonDecoder
       incremental_sync:
         type: DatetimeBasedCursor
         cursor_field: created_at
@@ -1444,7 +1486,7 @@ definitions:
         datetime_format: "%s"
         start_datetime:
           type: MinMaxDatetime
-          datetime: '{{ config["start_date"] }}'
+          datetime: "{{ config[\"start_date\"] }}"
           datetime_format: "%Y-%m-%dT%H:%M:%SZ"
         end_datetime:
           type: MinMaxDatetime
@@ -1471,8 +1513,8 @@ definitions:
               - type: DefaultErrorHandler
                 max_retries: 3
                 backoff_strategies:
-                  - type: ExponentialBackoffStrategy
-                    factor: 2
+                  - type: WaitTimeFromHeader
+                    header: retry-after
                 response_filters:
                   - type: HttpResponseFilter
                     action: RATE_LIMITED
@@ -1491,7 +1533,7 @@ definitions:
             type: RequestPath
           pagination_strategy:
             type: CursorPagination
-            cursor_value: '{{ response.get("_pagination", {}).get("next", {}) }}'
+            cursor_value: "{{ response.get(\"_pagination\", {}).get(\"next\", {}) }}"
             stop_condition: "{{ not response.get('_pagination', {}).get('next') }}"
         partition_router:
           type: SubstreamPartitionRouter
@@ -1501,6 +1543,8 @@ definitions:
               partition_field: teammate_id
               stream:
                 $ref: "#/definitions/streams/teammates"
+        decoder:
+          type: JsonDecoder
       schema_loader:
         type: InlineSchemaLoader
         schema:
@@ -1520,8 +1564,8 @@ definitions:
               - type: DefaultErrorHandler
                 max_retries: 3
                 backoff_strategies:
-                  - type: ExponentialBackoffStrategy
-                    factor: 2
+                  - type: WaitTimeFromHeader
+                    header: retry-after
                 response_filters:
                   - type: HttpResponseFilter
                     action: RATE_LIMITED
@@ -1540,7 +1584,7 @@ definitions:
             type: RequestPath
           pagination_strategy:
             type: CursorPagination
-            cursor_value: '{{ response.get("_pagination", {}).get("next", {}) }}'
+            cursor_value: "{{ response.get(\"_pagination\", {}).get(\"next\", {}) }}"
             stop_condition: "{{ not response.get('_pagination', {}).get('next') }}"
         partition_router:
           type: SubstreamPartitionRouter
@@ -1550,6 +1594,8 @@ definitions:
               partition_field: team_id
               stream:
                 $ref: "#/definitions/streams/teams"
+        decoder:
+          type: JsonDecoder
       schema_loader:
         type: InlineSchemaLoader
         schema:
@@ -1573,8 +1619,8 @@ definitions:
               - type: DefaultErrorHandler
                 max_retries: 3
                 backoff_strategies:
-                  - type: ExponentialBackoffStrategy
-                    factor: 2
+                  - type: WaitTimeFromHeader
+                    header: retry-after
                 response_filters:
                   - type: HttpResponseFilter
                     action: RATE_LIMITED
@@ -1593,8 +1639,10 @@ definitions:
             type: RequestPath
           pagination_strategy:
             type: CursorPagination
-            cursor_value: '{{ response.get("_pagination", {}).get("next", {}) }}'
+            cursor_value: "{{ response.get(\"_pagination\", {}).get(\"next\", {}) }}"
             stop_condition: "{{ not response.get('_pagination', {}).get('next') }}"
+        decoder:
+          type: JsonDecoder
       incremental_sync:
         type: DatetimeBasedCursor
         cursor_field: updated_at
@@ -1604,7 +1652,7 @@ definitions:
         datetime_format: "%s"
         start_datetime:
           type: MinMaxDatetime
-          datetime: '{{ config["start_date"] }}'
+          datetime: "{{ config[\"start_date\"] }}"
           datetime_format: "%Y-%m-%dT%H:%M:%SZ"
         end_datetime:
           type: MinMaxDatetime
@@ -1631,8 +1679,8 @@ definitions:
               - type: DefaultErrorHandler
                 max_retries: 3
                 backoff_strategies:
-                  - type: ExponentialBackoffStrategy
-                    factor: 2
+                  - type: WaitTimeFromHeader
+                    header: retry-after
                 response_filters:
                   - type: HttpResponseFilter
                     action: RATE_LIMITED
@@ -1651,7 +1699,7 @@ definitions:
             type: RequestPath
           pagination_strategy:
             type: CursorPagination
-            cursor_value: '{{ response.get("_pagination", {}).get("next", {}) }}'
+            cursor_value: "{{ response.get(\"_pagination\", {}).get(\"next\", {}) }}"
             stop_condition: "{{ not response.get('_pagination', {}).get('next') }}"
         partition_router:
           type: SubstreamPartitionRouter
@@ -1661,6 +1709,8 @@ definitions:
               partition_field: knowledge_base_id
               stream:
                 $ref: "#/definitions/streams/knowledge_bases"
+        decoder:
+          type: JsonDecoder
       incremental_sync:
         type: DatetimeBasedCursor
         cursor_field: updated_at
@@ -1670,7 +1720,7 @@ definitions:
         datetime_format: "%s"
         start_datetime:
           type: MinMaxDatetime
-          datetime: '{{ config["start_date"] }}'
+          datetime: "{{ config[\"start_date\"] }}"
           datetime_format: "%Y-%m-%dT%H:%M:%SZ"
         end_datetime:
           type: MinMaxDatetime
@@ -1697,8 +1747,8 @@ definitions:
               - type: DefaultErrorHandler
                 max_retries: 3
                 backoff_strategies:
-                  - type: ExponentialBackoffStrategy
-                    factor: 2
+                  - type: WaitTimeFromHeader
+                    header: retry-after
                 response_filters:
                   - type: HttpResponseFilter
                     action: RATE_LIMITED
@@ -1717,7 +1767,7 @@ definitions:
             type: RequestPath
           pagination_strategy:
             type: CursorPagination
-            cursor_value: '{{ response.get("_pagination", {}).get("next", {}) }}'
+            cursor_value: "{{ response.get(\"_pagination\", {}).get(\"next\", {}) }}"
             stop_condition: "{{ not response.get('_pagination', {}).get('next') }}"
         partition_router:
           type: SubstreamPartitionRouter
@@ -1727,6 +1777,8 @@ definitions:
               partition_field: knowledge_base_id
               stream:
                 $ref: "#/definitions/streams/knowledge_bases"
+        decoder:
+          type: JsonDecoder
       incremental_sync:
         type: DatetimeBasedCursor
         cursor_field: updated_at
@@ -1736,7 +1788,7 @@ definitions:
         datetime_format: "%s"
         start_datetime:
           type: MinMaxDatetime
-          datetime: '{{ config["start_date"] }}'
+          datetime: "{{ config[\"start_date\"] }}"
           datetime_format: "%Y-%m-%dT%H:%M:%SZ"
         end_datetime:
           type: MinMaxDatetime
@@ -1765,8 +1817,8 @@ definitions:
               - type: DefaultErrorHandler
                 max_retries: 3
                 backoff_strategies:
-                  - type: ExponentialBackoffStrategy
-                    factor: 2
+                  - type: WaitTimeFromHeader
+                    header: retry-after
                 response_filters:
                   - type: HttpResponseFilter
                     action: RATE_LIMITED
@@ -1785,8 +1837,10 @@ definitions:
             type: RequestPath
           pagination_strategy:
             type: CursorPagination
-            cursor_value: '{{ response.get("_pagination", {}).get("next", {}) }}'
+            cursor_value: "{{ response.get(\"_pagination\", {}).get(\"next\", {}) }}"
             stop_condition: "{{ not response.get('_pagination', {}).get('next') }}"
+        decoder:
+          type: JsonDecoder
       incremental_sync:
         type: DatetimeBasedCursor
         cursor_field: updated_at
@@ -1796,7 +1850,7 @@ definitions:
         datetime_format: "%s"
         start_datetime:
           type: MinMaxDatetime
-          datetime: '{{ config["start_date"] }}'
+          datetime: "{{ config[\"start_date\"] }}"
           datetime_format: "%Y-%m-%dT%H:%M:%SZ"
         end_datetime:
           type: MinMaxDatetime
@@ -1823,8 +1877,8 @@ definitions:
               - type: DefaultErrorHandler
                 max_retries: 3
                 backoff_strategies:
-                  - type: ExponentialBackoffStrategy
-                    factor: 2
+                  - type: WaitTimeFromHeader
+                    header: retry-after
                 response_filters:
                   - type: HttpResponseFilter
                     action: RATE_LIMITED
@@ -1843,7 +1897,7 @@ definitions:
             type: RequestPath
           pagination_strategy:
             type: CursorPagination
-            cursor_value: '{{ response.get("_pagination", {}).get("next", {}) }}'
+            cursor_value: "{{ response.get(\"_pagination\", {}).get(\"next\", {}) }}"
             stop_condition: "{{ not response.get('_pagination', {}).get('next') }}"
         partition_router:
           type: SubstreamPartitionRouter
@@ -1853,6 +1907,8 @@ definitions:
               partition_field: team_id
               stream:
                 $ref: "#/definitions/streams/teams"
+        decoder:
+          type: JsonDecoder
       schema_loader:
         type: InlineSchemaLoader
         schema:
@@ -1876,8 +1932,8 @@ definitions:
               - type: DefaultErrorHandler
                 max_retries: 3
                 backoff_strategies:
-                  - type: ExponentialBackoffStrategy
-                    factor: 2
+                  - type: WaitTimeFromHeader
+                    header: retry-after
                 response_filters:
                   - type: HttpResponseFilter
                     action: RATE_LIMITED
@@ -1896,8 +1952,10 @@ definitions:
             type: RequestPath
           pagination_strategy:
             type: CursorPagination
-            cursor_value: '{{ response.get("_pagination", {}).get("next", {}) }}'
+            cursor_value: "{{ response.get(\"_pagination\", {}).get(\"next\", {}) }}"
             stop_condition: "{{ not response.get('_pagination', {}).get('next') }}"
+        decoder:
+          type: JsonDecoder
       incremental_sync:
         type: DatetimeBasedCursor
         cursor_field: updated_at
@@ -1907,7 +1965,7 @@ definitions:
         datetime_format: "%s"
         start_datetime:
           type: MinMaxDatetime
-          datetime: '{{ config["start_date"] }}'
+          datetime: "{{ config[\"start_date\"] }}"
           datetime_format: "%Y-%m-%dT%H:%M:%SZ"
         end_datetime:
           type: MinMaxDatetime
@@ -1934,8 +1992,8 @@ definitions:
               - type: DefaultErrorHandler
                 max_retries: 3
                 backoff_strategies:
-                  - type: ExponentialBackoffStrategy
-                    factor: 2
+                  - type: WaitTimeFromHeader
+                    header: retry-after
                 response_filters:
                   - type: HttpResponseFilter
                     action: RATE_LIMITED
@@ -1954,7 +2012,7 @@ definitions:
             type: RequestPath
           pagination_strategy:
             type: CursorPagination
-            cursor_value: '{{ response.get("_pagination", {}).get("next", {}) }}'
+            cursor_value: "{{ response.get(\"_pagination\", {}).get(\"next\", {}) }}"
             stop_condition: "{{ not response.get('_pagination', {}).get('next') }}"
         partition_router:
           type: SubstreamPartitionRouter
@@ -1964,6 +2022,8 @@ definitions:
               partition_field: teammate_id
               stream:
                 $ref: "#/definitions/streams/teammates"
+        decoder:
+          type: JsonDecoder
       schema_loader:
         type: InlineSchemaLoader
         schema:
@@ -1987,8 +2047,8 @@ definitions:
               - type: DefaultErrorHandler
                 max_retries: 3
                 backoff_strategies:
-                  - type: ExponentialBackoffStrategy
-                    factor: 2
+                  - type: WaitTimeFromHeader
+                    header: retry-after
                 response_filters:
                   - type: HttpResponseFilter
                     action: RATE_LIMITED
@@ -2007,7 +2067,7 @@ definitions:
             type: RequestPath
           pagination_strategy:
             type: CursorPagination
-            cursor_value: '{{ response.get("_pagination", {}).get("next", {}) }}'
+            cursor_value: "{{ response.get(\"_pagination\", {}).get(\"next\", {}) }}"
             stop_condition: "{{ not response.get('_pagination', {}).get('next') }}"
         partition_router:
           type: SubstreamPartitionRouter
@@ -2017,6 +2077,8 @@ definitions:
               partition_field: team_id
               stream:
                 $ref: "#/definitions/streams/teams"
+        decoder:
+          type: JsonDecoder
       incremental_sync:
         type: DatetimeBasedCursor
         cursor_field: updated_at
@@ -2026,7 +2088,7 @@ definitions:
         datetime_format: "%s"
         start_datetime:
           type: MinMaxDatetime
-          datetime: '{{ config["start_date"] }}'
+          datetime: "{{ config[\"start_date\"] }}"
           datetime_format: "%Y-%m-%dT%H:%M:%SZ"
         end_datetime:
           type: MinMaxDatetime
@@ -2041,7 +2103,7 @@ definitions:
     url_base: https://api2.frontapp.com/
     authenticator:
       type: BearerAuthenticator
-      api_token: '{{ config["api_key"] }}'
+      api_token: "{{ config[\"api_key\"] }}"
 
 streams:
   - $ref: "#/definitions/streams/events"
@@ -2091,21 +2153,21 @@ spec:
     properties:
       api_key:
         type: string
+        order: 0
         title: API Key
         airbyte_secret: true
-        order: 0
       start_date:
         type: string
+        order: 1
         title: Start date
         format: date-time
         pattern: ^[0-9]{4}-[0-9]{2}-[0-9]{2}T[0-9]{2}:[0-9]{2}:[0-9]{2}Z$
-        order: 1
       page_limit:
         type: string
         description: Page limit for the responses
+        order: 2
         title: Page limit
         default: "50"
-        order: 2
     additionalProperties: true
 
 metadata:
@@ -2147,245 +2209,245 @@ metadata:
     teams_message_templates: true
   testedStreams:
     events:
-      streamHash: 8763b24a8a4fab0ee36210fe4dea6df6704a58ad
+      streamHash: 6e63a1ea9e7192f26b3aaa4bb38fdac9f366f43b
       hasResponse: true
       responsesAreSuccessful: true
       hasRecords: true
       primaryKeysArePresent: true
       primaryKeysAreUnique: true
     inboxes:
-      streamHash: ccfafe04fab65a323c5f128f449015e3138932e8
+      streamHash: 78a36da997627cab599a2d3bcb1d7e69bf8401fc
       hasResponse: true
       responsesAreSuccessful: true
       hasRecords: true
       primaryKeysArePresent: true
       primaryKeysAreUnique: true
     inboxes_channels:
-      streamHash: 776006ec048015c5050bb4ba116d444fdd41f0a3
+      streamHash: 8c568163fab5cfc0f14c4fd754075f8976b4e9ea
       hasResponse: true
       responsesAreSuccessful: true
       hasRecords: true
       primaryKeysArePresent: true
       primaryKeysAreUnique: true
     inboxes_conversations:
-      streamHash: 7f3768152ece70759ab54e87551029dac6554e9e
+      streamHash: 144f5a1df11a22cc1d13820a1a8c2a681d93efa2
       hasResponse: true
       responsesAreSuccessful: true
       hasRecords: true
       primaryKeysArePresent: true
       primaryKeysAreUnique: true
     inboxes_teammates:
-      streamHash: 759d4aa9072b9a27a0c8f0a749dbd9ed3480d42f
+      streamHash: 43830a098df5432aa1b7d2e2167fd5617a6580d4
       hasResponse: true
       responsesAreSuccessful: true
       hasRecords: true
       primaryKeysArePresent: true
       primaryKeysAreUnique: true
     conversations:
-      streamHash: 3fe9feed03dd9e4f80add7d2023211adb3bbc731
+      streamHash: 1b6f4cc372a14748e72e21c4c5e1272e79fec3d6
       hasResponse: true
       responsesAreSuccessful: true
       hasRecords: true
       primaryKeysArePresent: true
       primaryKeysAreUnique: true
     conversations_events:
-      streamHash: 9d38e704e3059709b92097df3bcecd1d46c42c55
+      streamHash: 437a66ee5c37f431a07eb02110eeb05793c321e7
       hasResponse: true
       responsesAreSuccessful: true
       hasRecords: true
       primaryKeysArePresent: true
       primaryKeysAreUnique: true
     conversations_followers:
-      streamHash: 3f7c7abd4a90eb3ccbe9fe574d3e85d995e284bf
+      streamHash: eef2832dcb4ea3caa6b4794897bd89e0fa77050e
       hasResponse: true
       responsesAreSuccessful: true
       hasRecords: true
       primaryKeysArePresent: true
       primaryKeysAreUnique: true
     conversations_inboxes:
-      streamHash: c04fac92a2a79f256e7fcddee9f0ac1ebe5ca72a
+      streamHash: 2c378cbe23f93900b4c66c3410775143836694f6
       hasResponse: true
       responsesAreSuccessful: true
       hasRecords: true
       primaryKeysArePresent: true
       primaryKeysAreUnique: true
     conversations_messages:
-      streamHash: 4c9117b15f2e568d8a7fc964fc50eeb17c5a7d0e
+      streamHash: b804efee1c016ad7807e9aa437891463880525ae
       hasResponse: true
       responsesAreSuccessful: true
       hasRecords: true
       primaryKeysArePresent: true
       primaryKeysAreUnique: true
     links:
-      streamHash: 349ff49de35c11125591b0f5153f98bf62a84e8d
+      streamHash: 02fbf160dfdacc853917197c50bada7065d24e51
       hasResponse: true
       responsesAreSuccessful: true
       hasRecords: true
       primaryKeysArePresent: true
       primaryKeysAreUnique: true
     accounts:
-      streamHash: 6bfc980bc1097267f5d4a738bad844e028174436
+      streamHash: b6fdc698c74bf6c21b9ddbb84f39d996d3e740c4
       hasResponse: true
       responsesAreSuccessful: true
       hasRecords: true
       primaryKeysArePresent: true
       primaryKeysAreUnique: true
     accounts_contacts:
-      streamHash: 3314e83f63586e0ecc021e372a21339eb9e1708a
+      streamHash: 0751089f841fa991f1e212751058f093bae8f3d8
       hasResponse: true
       responsesAreSuccessful: true
       hasRecords: true
       primaryKeysArePresent: true
       primaryKeysAreUnique: true
     contacts:
-      streamHash: 4b9188d48d7d3675fd70701cc13fa0974abbeaf3
+      streamHash: ba16ba90bd99a670836d2e17d7ecef4bfbbb0977
       hasResponse: true
       responsesAreSuccessful: true
       hasRecords: true
       primaryKeysArePresent: true
       primaryKeysAreUnique: true
     channels:
-      streamHash: 7bce9c3212161c97afe70093b60b48c87b12cdf9
+      streamHash: 6e77603042f1a16a3ad1656a97a6180b54f16d10
       hasResponse: true
       responsesAreSuccessful: true
       hasRecords: true
       primaryKeysArePresent: true
       primaryKeysAreUnique: true
     company_tags:
-      streamHash: c20a9a13efdf976b95d3d6786a56bf10257d8ef1
+      streamHash: 249b09c667297a29669af07a6dea03ccfab7a6cc
       hasResponse: true
       responsesAreSuccessful: true
       hasRecords: true
       primaryKeysArePresent: true
       primaryKeysAreUnique: true
     teammates:
-      streamHash: 80da0a398e42e31a10dae69ec8f034e65915a082
+      streamHash: 7841d66e901f1c34561e8835e26c750ded2dd3af
       hasResponse: true
       responsesAreSuccessful: true
       hasRecords: true
       primaryKeysArePresent: true
       primaryKeysAreUnique: true
     tags:
-      streamHash: ec297329b1fb74a54021e37ead7eca7e35f37fe7
+      streamHash: c12f91d290c4c204f014a8973f9c5a4a68828342
       hasResponse: true
       responsesAreSuccessful: true
       hasRecords: true
       primaryKeysArePresent: true
       primaryKeysAreUnique: true
     tags_children:
-      streamHash: bb92b7d7bcfb19be47abb15916b44b18bd1a745d
+      streamHash: dad4126593067c4498ee695d79c984616499f6fb
       hasResponse: true
       responsesAreSuccessful: true
       hasRecords: true
       primaryKeysArePresent: true
       primaryKeysAreUnique: true
     teammates_tags:
-      streamHash: b746adcba31f8842964b5388d911f50050eb4089
+      streamHash: 998f28e3200b6eb2490f6773b3e0fb9d82fe303a
       hasResponse: true
       responsesAreSuccessful: true
       hasRecords: true
       primaryKeysArePresent: true
       primaryKeysAreUnique: true
     teams:
-      streamHash: ef84a17900406262094001a6c1e4157a639cb9b6
+      streamHash: 164c79d79f54571a0dcf6edd94c10fa949fb5fa6
       hasResponse: true
       responsesAreSuccessful: true
       hasRecords: true
       primaryKeysArePresent: true
       primaryKeysAreUnique: true
     teams_tags:
-      streamHash: ab51090dff3c43d8708771fcf6b54dd4a524c976
+      streamHash: 6831129fe7c3a21dd9d386e65d0b6b28e45a426b
       hasResponse: true
       responsesAreSuccessful: true
       hasRecords: true
       primaryKeysArePresent: true
       primaryKeysAreUnique: true
     contact_groups:
-      streamHash: afe88d167d005fe56aa9cc567e959e44acbee34e
+      streamHash: 2595249fadcb5b15a3798782b9ffad405241b55b
       hasResponse: true
       responsesAreSuccessful: true
       hasRecords: true
       primaryKeysArePresent: true
       primaryKeysAreUnique: true
     conversations_drafts:
-      streamHash: f150684526dd62b12908cef47811b557a8c120ad
+      streamHash: c97976a6cf71b174addc26f8bc8ddf2b8fbc172d
       hasResponse: true
       responsesAreSuccessful: true
       hasRecords: true
       primaryKeysArePresent: true
       primaryKeysAreUnique: true
     contacts_notes:
-      streamHash: 2ea6410e6225b8b10b746cfbb9f3080ea4a3381d
+      streamHash: 13bdc8b7de5a40896f88f6c385a18de57363a21b
       hasResponse: true
       responsesAreSuccessful: true
       hasRecords: true
       primaryKeysArePresent: true
       primaryKeysAreUnique: true
     teammates_contact_groups:
-      streamHash: b95815402d33cf05192216d5029922c6878d5184
+      streamHash: 7201729b30714c6af9c1b57151c95e8da6df6b74
       hasResponse: true
       responsesAreSuccessful: true
       hasRecords: true
       primaryKeysArePresent: true
       primaryKeysAreUnique: true
     teams_contact_groups:
-      streamHash: 1fb134248abefda30e4f3a90d583b5fbe4f3d4a1
+      streamHash: 49629ffaeb74e2aae80717f3b9c1c066af2a008c
       hasResponse: true
       responsesAreSuccessful: true
       hasRecords: true
       primaryKeysArePresent: true
       primaryKeysAreUnique: true
     knowledge_bases:
-      streamHash: 969d9bc06efb925b396134d4acb3329c834ad341
+      streamHash: bbbfcae3794a1e9c549e64dea9bf4446a8bbbb71
       hasResponse: true
       responsesAreSuccessful: true
       hasRecords: true
       primaryKeysArePresent: true
       primaryKeysAreUnique: true
     knowledge_bases_articles:
-      streamHash: 53782f24dcf75ceff43cde4f51678fa0edc2d77d
+      streamHash: 63cb2edbec971bc7a0a5c706b6191e82bbade33b
       hasResponse: true
       responsesAreSuccessful: true
       hasRecords: true
       primaryKeysArePresent: true
       primaryKeysAreUnique: true
     knowledge_bases_categories:
-      streamHash: 6752124f21596f2f347f2b7bcfcec6256cca7a47
+      streamHash: ee03bd08e41c3e44b429f3ca6322c1f21630c997
       hasResponse: true
       responsesAreSuccessful: true
       hasRecords: true
       primaryKeysArePresent: true
       primaryKeysAreUnique: true
     message_template_folders:
-      streamHash: 21e43119af71f2d313786e94e014602f9d161ef9
+      streamHash: f4453c37b68cf095b7a339516e81f0f785b3afd7
       hasResponse: true
       responsesAreSuccessful: true
       hasRecords: true
       primaryKeysArePresent: true
       primaryKeysAreUnique: true
     teams_signatures:
-      streamHash: e52e4696f894fc4674b443c416fbf8e2796b6150
+      streamHash: 6029e3e689599d81407e8c82f7aec77f5d49b3ce
       hasResponse: true
       responsesAreSuccessful: true
       hasRecords: true
       primaryKeysArePresent: true
       primaryKeysAreUnique: true
     message_templates:
-      streamHash: 087a259777fdcf9ad6325035dd332e807ea739a1
+      streamHash: 1360c5a425c747cfc2839095af044182fd5018fd
       hasResponse: true
       responsesAreSuccessful: true
       hasRecords: true
       primaryKeysArePresent: true
       primaryKeysAreUnique: true
     teammates_message_templates:
-      streamHash: a41b9efbf0680193347303f2212d8592b984c6b2
+      streamHash: 42983b6ebca34ac8ef9a94744250d4e753df98a8
       hasResponse: true
       responsesAreSuccessful: true
       hasRecords: true
       primaryKeysArePresent: true
       primaryKeysAreUnique: true
     teams_message_templates:
-      streamHash: 912c3b103e8d6a9d3f0cc05871a09b50e31c4cbf
+      streamHash: 37a44649af611172d56a7ed19a224985cced209a
       hasResponse: true
       responsesAreSuccessful: true
       hasRecords: true
@@ -2464,6 +2526,10 @@ schemas:
               - object
               - "null"
             properties:
+              type:
+                type:
+                  - string
+                  - "null"
               _links:
                 type:
                   - object
@@ -2490,6 +2556,11 @@ schemas:
                 type:
                   - object
                   - "null"
+                properties:
+                  Manager:
+                    type:
+                      - string
+                      - "null"
               email:
                 type:
                   - string
@@ -2542,6 +2613,40 @@ schemas:
             type:
               - array
               - "null"
+            items:
+              type:
+                - object
+                - "null"
+              properties:
+                type:
+                  type:
+                    - string
+                    - "null"
+                _links:
+                  type:
+                    - object
+                    - "null"
+                  properties:
+                    self:
+                      type:
+                        - string
+                        - "null"
+                custom_fields:
+                  type:
+                    - object
+                    - "null"
+                external_url:
+                  type:
+                    - string
+                    - "null"
+                id:
+                  type:
+                    - string
+                    - "null"
+                name:
+                  type:
+                    - string
+                    - "null"
           recipient:
             type:
               - object
@@ -2577,7 +2682,50 @@ schemas:
             type:
               - array
               - "null"
+            items:
+              type:
+                - object
+                - "null"
+              properties:
+                _links:
+                  type:
+                    - object
+                    - "null"
+                  properties:
+                    owner:
+                      type:
+                        - string
+                        - "null"
+                    related:
+                      type:
+                        - object
+                        - "null"
+                      properties:
+                        owner:
+                          type:
+                            - string
+                            - "null"
+                created_at:
+                  type:
+                    - number
+                    - "null"
+                scheduled_at:
+                  type:
+                    - number
+                    - "null"
+                updated_at:
+                  type:
+                    - number
+                    - "null"
           status:
+            type:
+              - string
+              - "null"
+          status_category:
+            type:
+              - string
+              - "null"
+          status_id:
             type:
               - string
               - "null"
@@ -2608,11 +2756,19 @@ schemas:
                         - object
                         - "null"
                       properties:
+                        children:
+                          type:
+                            - string
+                            - "null"
                         conversations:
                           type:
                             - string
                             - "null"
                         owner:
+                          type:
+                            - string
+                            - "null"
+                        parent_tag:
                           type:
                             - string
                             - "null"
@@ -2648,6 +2804,14 @@ schemas:
                   type:
                     - number
                     - "null"
+          ticket_ids:
+            type:
+              - array
+              - "null"
+          updated_at:
+            type:
+              - number
+              - "null"
           waiting_since:
             type:
               - number
@@ -2672,6 +2836,58 @@ schemas:
                   - "null"
           data:
             anyOf:
+              - type: object
+                properties:
+                  type:
+                    type: string
+                  _links:
+                    type: object
+                    properties:
+                      owner:
+                        type: string
+                      related:
+                        type: object
+                        properties:
+                          conversations:
+                            type: string
+                          inboxes:
+                            type: string
+                          owner:
+                            type: string
+                      self:
+                        type: string
+                  actions:
+                    type: array
+                    items:
+                      type: string
+                  created_at:
+                    type: number
+                  custom_fields:
+                    type: object
+                  email:
+                    type: string
+                  first_name:
+                    type: string
+                  id:
+                    type: string
+                  is_admin:
+                    type: boolean
+                  is_available:
+                    type: boolean
+                  is_blocked:
+                    type: boolean
+                  is_private:
+                    type: boolean
+                  last_name:
+                    type: string
+                  name:
+                    type: string
+                  scheduled_at:
+                    type: number
+                  updated_at:
+                    type: number
+                  username:
+                    type: string
               - type: array
                 items:
                   type: object
@@ -2708,48 +2924,6 @@ schemas:
                       type: string
                     send_as:
                       type: string
-              - type: object
-                properties:
-                  _links:
-                    type: object
-                    properties:
-                      related:
-                        type: object
-                        properties:
-                          conversations:
-                            type: string
-                          inboxes:
-                            type: string
-                          owner:
-                            type: string
-                      self:
-                        type: string
-                  actions:
-                    type: array
-                    items:
-                      type: string
-                  custom_fields:
-                    type: object
-                  email:
-                    type: string
-                  first_name:
-                    type: string
-                  id:
-                    type: string
-                  is_admin:
-                    type: boolean
-                  is_available:
-                    type: boolean
-                  is_blocked:
-                    type: boolean
-                  is_private:
-                    type: boolean
-                  last_name:
-                    type: string
-                  name:
-                    type: string
-                  username:
-                    type: string
       target:
         type:
           - object
@@ -2773,6 +2947,10 @@ schemas:
                 type:
                   - string
                   - "null"
+              description:
+                type:
+                  - string
+                  - "null"
               metadata:
                 type:
                   - object
@@ -2787,6 +2965,10 @@ schemas:
                       - object
                       - "null"
                     properties:
+                      children:
+                        type:
+                          - string
+                          - "null"
                       conversation:
                         type:
                           - string
@@ -2803,11 +2985,19 @@ schemas:
                         type:
                           - string
                           - "null"
+                      message_replied_to:
+                        type:
+                          - string
+                          - "null"
                       message_seen:
                         type:
                           - string
                           - "null"
                       owner:
+                        type:
+                          - string
+                          - "null"
+                      parent_tag:
                         type:
                           - string
                           - "null"
@@ -2819,11 +3009,53 @@ schemas:
                 type:
                   - array
                   - "null"
+                items:
+                  type:
+                    - object
+                    - "null"
+                  properties:
+                    metadata:
+                      type:
+                        - object
+                        - "null"
+                      properties:
+                        cid:
+                          type:
+                            - string
+                            - "null"
+                        is_inline:
+                          type:
+                            - boolean
+                            - "null"
+                    content_type:
+                      type:
+                        - string
+                        - "null"
+                    filename:
+                      type:
+                        - string
+                        - "null"
+                    id:
+                      type:
+                        - string
+                        - "null"
+                    size:
+                      type:
+                        - number
+                        - "null"
+                    url:
+                      type:
+                        - string
+                        - "null"
               author:
                 type:
                   - object
                   - "null"
                 properties:
+                  type:
+                    type:
+                      - string
+                      - "null"
                   _links:
                     type:
                       - object
@@ -2902,6 +3134,10 @@ schemas:
                 type:
                   - string
                   - "null"
+              external_url:
+                type:
+                  - string
+                  - "null"
               first_name:
                 type:
                   - string
@@ -2950,6 +3186,10 @@ schemas:
                 type:
                   - string
                   - "null"
+              message_uid:
+                type:
+                  - string
+                  - "null"
               name:
                 type:
                   - string
@@ -2993,6 +3233,57 @@ schemas:
                       type:
                         - string
                         - "null"
+              signature:
+                type:
+                  - object
+                  - "null"
+                properties:
+                  _links:
+                    type:
+                      - object
+                      - "null"
+                    properties:
+                      related:
+                        type:
+                          - object
+                          - "null"
+                        properties:
+                          owner:
+                            type:
+                              - string
+                              - "null"
+                      self:
+                        type:
+                          - string
+                          - "null"
+                  body:
+                    type:
+                      - string
+                      - "null"
+                  id:
+                    type:
+                      - string
+                      - "null"
+                  is_default:
+                    type:
+                      - boolean
+                      - "null"
+                  is_private:
+                    type:
+                      - boolean
+                      - "null"
+                  is_visible_for_all_teammate_channels:
+                    type:
+                      - boolean
+                      - "null"
+                  name:
+                    type:
+                      - string
+                      - "null"
+                  sender_info:
+                    type:
+                      - string
+                      - "null"
               subject:
                 type:
                   - string
@@ -3141,9 +3432,25 @@ schemas:
             type:
               - boolean
               - "null"
+          compose_mode:
+            type:
+              - string
+              - "null"
+          contact_type:
+            type:
+              - string
+              - "null"
+          reply_mode:
+            type:
+              - string
+              - "null"
           undo_send_time:
             type:
               - number
+              - "null"
+          webhook_url:
+            type:
+              - string
               - "null"
     required:
       - id
@@ -3199,6 +3506,10 @@ schemas:
           - object
           - "null"
         properties:
+          type:
+            type:
+              - string
+              - "null"
           _links:
             type:
               - object
@@ -3225,6 +3536,11 @@ schemas:
             type:
               - object
               - "null"
+            properties:
+              Manager:
+                type:
+                  - string
+                  - "null"
           email:
             type:
               - string
@@ -3264,7 +3580,9 @@ schemas:
           - object
           - "null"
       id:
-        type: string
+        type:
+          - string
+          - "null"
       is_private:
         type:
           - boolean
@@ -3273,6 +3591,40 @@ schemas:
         type:
           - array
           - "null"
+        items:
+          type:
+            - object
+            - "null"
+          properties:
+            type:
+              type:
+                - string
+                - "null"
+            _links:
+              type:
+                - object
+                - "null"
+              properties:
+                self:
+                  type:
+                    - string
+                    - "null"
+            custom_fields:
+              type:
+                - object
+                - "null"
+            external_url:
+              type:
+                - string
+                - "null"
+            id:
+              type:
+                - string
+                - "null"
+            name:
+              type:
+                - string
+                - "null"
       recipient:
         type:
           - object
@@ -3287,7 +3639,11 @@ schemas:
                 type:
                   - object
                   - "null"
-                properties: {}
+                properties:
+                  contact:
+                    type:
+                      - string
+                      - "null"
           handle:
             type:
               - string
@@ -3304,7 +3660,50 @@ schemas:
         type:
           - array
           - "null"
+        items:
+          type:
+            - object
+            - "null"
+          properties:
+            _links:
+              type:
+                - object
+                - "null"
+              properties:
+                owner:
+                  type:
+                    - string
+                    - "null"
+                related:
+                  type:
+                    - object
+                    - "null"
+                  properties:
+                    owner:
+                      type:
+                        - string
+                        - "null"
+            created_at:
+              type:
+                - number
+                - "null"
+            scheduled_at:
+              type:
+                - number
+                - "null"
+            updated_at:
+              type:
+                - number
+                - "null"
       status:
+        type:
+          - string
+          - "null"
+      status_category:
+        type:
+          - string
+          - "null"
+      status_id:
         type:
           - string
           - "null"
@@ -3335,11 +3734,19 @@ schemas:
                     - object
                     - "null"
                   properties:
+                    children:
+                      type:
+                        - string
+                        - "null"
                     conversations:
                       type:
                         - string
                         - "null"
                     owner:
+                      type:
+                        - string
+                        - "null"
+                    parent_tag:
                       type:
                         - string
                         - "null"
@@ -3375,18 +3782,29 @@ schemas:
               type:
                 - number
                 - "null"
+      ticket_ids:
+        type:
+          - array
+          - "null"
+      updated_at:
+        type:
+          - number
+          - "null"
       waiting_since:
         type:
           - number
           - "null"
     required:
-      - id
       - created_at
   inboxes_teammates:
     type: object
     $schema: http://json-schema.org/schema#
     additionalProperties: true
     properties:
+      type:
+        type:
+          - string
+          - "null"
       _links:
         type:
           - object
@@ -3413,6 +3831,11 @@ schemas:
         type:
           - object
           - "null"
+        properties:
+          Manager:
+            type:
+              - string
+              - "null"
       email:
         type:
           - string
@@ -3422,7 +3845,9 @@ schemas:
           - string
           - "null"
       id:
-        type: string
+        type:
+          - string
+          - "null"
       is_admin:
         type:
           - boolean
@@ -3443,8 +3868,6 @@ schemas:
         type:
           - string
           - "null"
-    required:
-      - id
   conversations:
     type: object
     $schema: http://json-schema.org/schema#
@@ -3497,6 +3920,10 @@ schemas:
           - object
           - "null"
         properties:
+          type:
+            type:
+              - string
+              - "null"
           _links:
             type:
               - object
@@ -3523,6 +3950,11 @@ schemas:
             type:
               - object
               - "null"
+            properties:
+              Manager:
+                type:
+                  - string
+                  - "null"
           email:
             type:
               - string
@@ -3571,6 +4003,40 @@ schemas:
         type:
           - array
           - "null"
+        items:
+          type:
+            - object
+            - "null"
+          properties:
+            type:
+              type:
+                - string
+                - "null"
+            _links:
+              type:
+                - object
+                - "null"
+              properties:
+                self:
+                  type:
+                    - string
+                    - "null"
+            custom_fields:
+              type:
+                - object
+                - "null"
+            external_url:
+              type:
+                - string
+                - "null"
+            id:
+              type:
+                - string
+                - "null"
+            name:
+              type:
+                - string
+                - "null"
       recipient:
         type:
           - object
@@ -3606,7 +4072,50 @@ schemas:
         type:
           - array
           - "null"
+        items:
+          type:
+            - object
+            - "null"
+          properties:
+            _links:
+              type:
+                - object
+                - "null"
+              properties:
+                owner:
+                  type:
+                    - string
+                    - "null"
+                related:
+                  type:
+                    - object
+                    - "null"
+                  properties:
+                    owner:
+                      type:
+                        - string
+                        - "null"
+            created_at:
+              type:
+                - number
+                - "null"
+            scheduled_at:
+              type:
+                - number
+                - "null"
+            updated_at:
+              type:
+                - number
+                - "null"
       status:
+        type:
+          - string
+          - "null"
+      status_category:
+        type:
+          - string
+          - "null"
+      status_id:
         type:
           - string
           - "null"
@@ -3637,11 +4146,19 @@ schemas:
                     - object
                     - "null"
                   properties:
+                    children:
+                      type:
+                        - string
+                        - "null"
                     conversations:
                       type:
                         - string
                         - "null"
                     owner:
+                      type:
+                        - string
+                        - "null"
+                    parent_tag:
                       type:
                         - string
                         - "null"
@@ -3677,6 +4194,14 @@ schemas:
               type:
                 - number
                 - "null"
+      ticket_ids:
+        type:
+          - array
+          - "null"
+      updated_at:
+        type:
+          - number
+          - "null"
       waiting_since:
         type:
           - number
@@ -3754,6 +4279,10 @@ schemas:
               - object
               - "null"
             properties:
+              type:
+                type:
+                  - string
+                  - "null"
               _links:
                 type:
                   - object
@@ -3832,6 +4361,40 @@ schemas:
             type:
               - array
               - "null"
+            items:
+              type:
+                - object
+                - "null"
+              properties:
+                type:
+                  type:
+                    - string
+                    - "null"
+                _links:
+                  type:
+                    - object
+                    - "null"
+                  properties:
+                    self:
+                      type:
+                        - string
+                        - "null"
+                custom_fields:
+                  type:
+                    - object
+                    - "null"
+                external_url:
+                  type:
+                    - string
+                    - "null"
+                id:
+                  type:
+                    - string
+                    - "null"
+                name:
+                  type:
+                    - string
+                    - "null"
           recipient:
             type:
               - object
@@ -3867,7 +4430,50 @@ schemas:
             type:
               - array
               - "null"
+            items:
+              type:
+                - object
+                - "null"
+              properties:
+                _links:
+                  type:
+                    - object
+                    - "null"
+                  properties:
+                    owner:
+                      type:
+                        - string
+                        - "null"
+                    related:
+                      type:
+                        - object
+                        - "null"
+                      properties:
+                        owner:
+                          type:
+                            - string
+                            - "null"
+                created_at:
+                  type:
+                    - number
+                    - "null"
+                scheduled_at:
+                  type:
+                    - number
+                    - "null"
+                updated_at:
+                  type:
+                    - number
+                    - "null"
           status:
+            type:
+              - string
+              - "null"
+          status_category:
+            type:
+              - string
+              - "null"
+          status_id:
             type:
               - string
               - "null"
@@ -3898,11 +4504,19 @@ schemas:
                         - object
                         - "null"
                       properties:
+                        children:
+                          type:
+                            - string
+                            - "null"
                         conversations:
                           type:
                             - string
                             - "null"
                         owner:
+                          type:
+                            - string
+                            - "null"
+                        parent_tag:
                           type:
                             - string
                             - "null"
@@ -3938,6 +4552,14 @@ schemas:
                   type:
                     - number
                     - "null"
+          ticket_ids:
+            type:
+              - array
+              - "null"
+          updated_at:
+            type:
+              - number
+              - "null"
           waiting_since:
             type:
               - number
@@ -3964,9 +4586,13 @@ schemas:
             anyOf:
               - type: object
                 properties:
+                  type:
+                    type: string
                   _links:
                     type: object
                     properties:
+                      owner:
+                        type: string
                       related:
                         type: object
                         properties:
@@ -3982,6 +4608,8 @@ schemas:
                     type: array
                     items:
                       type: string
+                  created_at:
+                    type: number
                   custom_fields:
                     type: object
                   email:
@@ -4002,6 +4630,10 @@ schemas:
                     type: string
                   name:
                     type: string
+                  scheduled_at:
+                    type: number
+                  updated_at:
+                    type: number
                   username:
                     type: string
               - type: array
@@ -4063,6 +4695,10 @@ schemas:
                 type:
                   - string
                   - "null"
+              description:
+                type:
+                  - string
+                  - "null"
               metadata:
                 type:
                   - object
@@ -4077,6 +4713,10 @@ schemas:
                       - object
                       - "null"
                     properties:
+                      children:
+                        type:
+                          - string
+                          - "null"
                       conversation:
                         type:
                           - string
@@ -4093,11 +4733,19 @@ schemas:
                         type:
                           - string
                           - "null"
+                      message_replied_to:
+                        type:
+                          - string
+                          - "null"
                       message_seen:
                         type:
                           - string
                           - "null"
                       owner:
+                        type:
+                          - string
+                          - "null"
+                      parent_tag:
                         type:
                           - string
                           - "null"
@@ -4109,11 +4757,53 @@ schemas:
                 type:
                   - array
                   - "null"
+                items:
+                  type:
+                    - object
+                    - "null"
+                  properties:
+                    metadata:
+                      type:
+                        - object
+                        - "null"
+                      properties:
+                        cid:
+                          type:
+                            - string
+                            - "null"
+                        is_inline:
+                          type:
+                            - boolean
+                            - "null"
+                    content_type:
+                      type:
+                        - string
+                        - "null"
+                    filename:
+                      type:
+                        - string
+                        - "null"
+                    id:
+                      type:
+                        - string
+                        - "null"
+                    size:
+                      type:
+                        - number
+                        - "null"
+                    url:
+                      type:
+                        - string
+                        - "null"
               author:
                 type:
                   - object
                   - "null"
                 properties:
+                  type:
+                    type:
+                      - string
+                      - "null"
                   _links:
                     type:
                       - object
@@ -4192,6 +4882,10 @@ schemas:
                 type:
                   - string
                   - "null"
+              external_url:
+                type:
+                  - string
+                  - "null"
               first_name:
                 type:
                   - string
@@ -4240,6 +4934,10 @@ schemas:
                 type:
                   - string
                   - "null"
+              message_uid:
+                type:
+                  - string
+                  - "null"
               name:
                 type:
                   - string
@@ -4283,6 +4981,53 @@ schemas:
                       type:
                         - string
                         - "null"
+              signature:
+                type:
+                  - object
+                  - "null"
+                properties:
+                  _links:
+                    type:
+                      - object
+                      - "null"
+                    properties:
+                      related:
+                        type:
+                          - object
+                          - "null"
+                        properties:
+                          owner:
+                            type:
+                              - string
+                              - "null"
+                      self:
+                        type:
+                          - string
+                          - "null"
+                  body:
+                    type:
+                      - string
+                      - "null"
+                  id:
+                    type:
+                      - string
+                      - "null"
+                  is_default:
+                    type:
+                      - boolean
+                      - "null"
+                  is_private:
+                    type:
+                      - boolean
+                      - "null"
+                  is_visible_for_all_teammate_channels:
+                    type:
+                      - boolean
+                      - "null"
+                  name:
+                    type:
+                      - string
+                      - "null"
               subject:
                 type:
                   - string
@@ -4307,6 +5052,10 @@ schemas:
     $schema: http://json-schema.org/schema#
     additionalProperties: true
     properties:
+      type:
+        type:
+          - string
+          - "null"
       _links:
         type:
           - object
@@ -4342,7 +5091,9 @@ schemas:
           - string
           - "null"
       id:
-        type: string
+        type:
+          - string
+          - "null"
       is_admin:
         type:
           - boolean
@@ -4363,8 +5114,6 @@ schemas:
         type:
           - string
           - "null"
-    required:
-      - id
   conversations_inboxes:
     type: object
     $schema: http://json-schema.org/schema#
@@ -4459,6 +5208,10 @@ schemas:
                 type:
                   - string
                   - "null"
+              message_replied_to:
+                type:
+                  - string
+                  - "null"
               message_seen:
                 type:
                   - string
@@ -4471,11 +5224,53 @@ schemas:
         type:
           - array
           - "null"
+        items:
+          type:
+            - object
+            - "null"
+          properties:
+            metadata:
+              type:
+                - object
+                - "null"
+              properties:
+                cid:
+                  type:
+                    - string
+                    - "null"
+                is_inline:
+                  type:
+                    - boolean
+                    - "null"
+            content_type:
+              type:
+                - string
+                - "null"
+            filename:
+              type:
+                - string
+                - "null"
+            id:
+              type:
+                - string
+                - "null"
+            size:
+              type:
+                - number
+                - "null"
+            url:
+              type:
+                - string
+                - "null"
       author:
         type:
           - object
           - "null"
         properties:
+          type:
+            type:
+              - string
+              - "null"
           _links:
             type:
               - object
@@ -4554,6 +5349,10 @@ schemas:
         type:
           - boolean
           - "null"
+      message_uid:
+        type:
+          - string
+          - "null"
       recipients:
         type:
           - array
@@ -4589,6 +5388,53 @@ schemas:
               type:
                 - string
                 - "null"
+      signature:
+        type:
+          - object
+          - "null"
+        properties:
+          _links:
+            type:
+              - object
+              - "null"
+            properties:
+              related:
+                type:
+                  - object
+                  - "null"
+                properties:
+                  owner:
+                    type:
+                      - string
+                      - "null"
+              self:
+                type:
+                  - string
+                  - "null"
+          body:
+            type:
+              - string
+              - "null"
+          id:
+            type:
+              - string
+              - "null"
+          is_default:
+            type:
+              - boolean
+              - "null"
+          is_private:
+            type:
+              - boolean
+              - "null"
+          is_visible_for_all_teammate_channels:
+            type:
+              - boolean
+              - "null"
+          name:
+            type:
+              - string
+              - "null"
       subject:
         type:
           - string
@@ -4639,10 +5485,6 @@ schemas:
     $schema: http://json-schema.org/schema#
     additionalProperties: true
     properties:
-      description:
-        type:
-          - string
-          - "null"
       _links:
         type:
           - object
@@ -4669,9 +5511,38 @@ schemas:
         type:
           - object
           - "null"
+        properties:
+          back_office_url:
+            type:
+              - string
+              - "null"
+          csm_email:
+            type:
+              - string
+              - "null"
+          deal_stage:
+            type:
+              - string
+              - "null"
+          hubspot_deal_url:
+            type:
+              - string
+              - "null"
+          may_created_at:
+            type:
+              - number
+              - "null"
+          role:
+            type:
+              - string
+              - "null"
       domains:
         type:
           - array
+          - "null"
+      external_id:
+        type:
+          - string
           - "null"
       id:
         type: string
@@ -4720,10 +5591,6 @@ schemas:
           - object
           - "null"
         properties:
-          description:
-            type:
-              - string
-              - "null"
           _links:
             type:
               - object
@@ -4750,9 +5617,22 @@ schemas:
             type:
               - object
               - "null"
+            properties:
+              csm_email:
+                type:
+                  - string
+                  - "null"
+              may_created_at:
+                type:
+                  - number
+                  - "null"
           domains:
             type:
               - array
+              - "null"
+          external_id:
+            type:
+              - string
               - "null"
           id:
             type:
@@ -4770,6 +5650,27 @@ schemas:
         type:
           - object
           - "null"
+        properties:
+          back_office_url:
+            type:
+              - string
+              - "null"
+          first_name:
+            type:
+              - string
+              - "null"
+          last_name:
+            type:
+              - string
+              - "null"
+          may_created_at:
+            type:
+              - number
+              - "null"
+          payment_method:
+            type:
+              - string
+              - "null"
       groups:
         type:
           - array
@@ -4798,6 +5699,10 @@ schemas:
           - boolean
           - "null"
       links:
+        type:
+          - array
+          - "null"
+      lists:
         type:
           - array
           - "null"
@@ -4841,6 +5746,82 @@ schemas:
             type:
               - string
               - "null"
+      account:
+        type:
+          - object
+          - "null"
+        properties:
+          _links:
+            type:
+              - object
+              - "null"
+            properties:
+              related:
+                type:
+                  - object
+                  - "null"
+                properties:
+                  contacts:
+                    type:
+                      - string
+                      - "null"
+              self:
+                type:
+                  - string
+                  - "null"
+          created_at:
+            type:
+              - number
+              - "null"
+          custom_fields:
+            type:
+              - object
+              - "null"
+            properties:
+              back_office_url:
+                type:
+                  - string
+                  - "null"
+              csm_email:
+                type:
+                  - string
+                  - "null"
+              deal_stage:
+                type:
+                  - string
+                  - "null"
+              hubspot_deal_url:
+                type:
+                  - string
+                  - "null"
+              may_created_at:
+                type:
+                  - number
+                  - "null"
+              role:
+                type:
+                  - string
+                  - "null"
+          domains:
+            type:
+              - array
+              - "null"
+          external_id:
+            type:
+              - string
+              - "null"
+          id:
+            type:
+              - string
+              - "null"
+          name:
+            type:
+              - string
+              - "null"
+          updated_at:
+            type:
+              - number
+              - "null"
       avatar_url:
         type:
           - string
@@ -4849,6 +5830,35 @@ schemas:
         type:
           - object
           - "null"
+        properties:
+          Nom:
+            type:
+              - string
+              - "null"
+          N° de téléphone:
+            type:
+              - string
+              - "null"
+          back_office_url:
+            type:
+              - string
+              - "null"
+          first_name:
+            type:
+              - string
+              - "null"
+          last_name:
+            type:
+              - string
+              - "null"
+          may_created_at:
+            type:
+              - number
+              - "null"
+          payment_method:
+            type:
+              - string
+              - "null"
       groups:
         type:
           - array
@@ -4877,6 +5887,10 @@ schemas:
           - boolean
           - "null"
       links:
+        type:
+          - array
+          - "null"
+      lists:
         type:
           - array
           - "null"
@@ -4951,9 +5965,25 @@ schemas:
             type:
               - boolean
               - "null"
+          compose_mode:
+            type:
+              - string
+              - "null"
+          contact_type:
+            type:
+              - string
+              - "null"
+          reply_mode:
+            type:
+              - string
+              - "null"
           undo_send_time:
             type:
               - number
+              - "null"
+          webhook_url:
+            type:
+              - string
               - "null"
     required:
       - id
@@ -4962,10 +5992,6 @@ schemas:
     $schema: http://json-schema.org/schema#
     additionalProperties: true
     properties:
-      description:
-        type:
-          - string
-          - "null"
       _links:
         type:
           - object
@@ -4988,12 +6014,10 @@ schemas:
         type:
           - number
           - "null"
-      highlight:
+      id:
         type:
           - string
           - "null"
-      id:
-        type: string
       is_private:
         type:
           - boolean
@@ -5009,13 +6033,16 @@ schemas:
       updated_at:
         type: number
     required:
-      - id
       - updated_at
   teammates:
     type: object
     $schema: http://json-schema.org/schema#
     additionalProperties: true
     properties:
+      type:
+        type:
+          - string
+          - "null"
       _links:
         type:
           - object
@@ -5042,6 +6069,11 @@ schemas:
         type:
           - object
           - "null"
+        properties:
+          Manager:
+            type:
+              - string
+              - "null"
       email:
         type:
           - string
@@ -5163,6 +6195,10 @@ schemas:
                 type:
                   - string
                   - "null"
+              owner:
+                type:
+                  - string
+                  - "null"
               parent_tag:
                 type:
                   - string
@@ -5203,10 +6239,6 @@ schemas:
     $schema: http://json-schema.org/schema#
     additionalProperties: true
     properties:
-      description:
-        type:
-          - string
-          - "null"
       _links:
         type:
           - object
@@ -5232,10 +6264,6 @@ schemas:
       created_at:
         type:
           - number
-          - "null"
-      highlight:
-        type:
-          - string
           - "null"
       id:
         type: string
@@ -5297,11 +6325,19 @@ schemas:
               - object
               - "null"
             properties:
+              children:
+                type:
+                  - string
+                  - "null"
               conversations:
                 type:
                   - string
                   - "null"
               owner:
+                type:
+                  - string
+                  - "null"
+              parent_tag:
                 type:
                   - string
                   - "null"
@@ -5418,11 +6454,53 @@ schemas:
         type:
           - array
           - "null"
+        items:
+          type:
+            - object
+            - "null"
+          properties:
+            metadata:
+              type:
+                - object
+                - "null"
+              properties:
+                cid:
+                  type:
+                    - string
+                    - "null"
+                is_inline:
+                  type:
+                    - boolean
+                    - "null"
+            content_type:
+              type:
+                - string
+                - "null"
+            filename:
+              type:
+                - string
+                - "null"
+            id:
+              type:
+                - string
+                - "null"
+            size:
+              type:
+                - number
+                - "null"
+            url:
+              type:
+                - string
+                - "null"
       author:
         type:
           - object
           - "null"
         properties:
+          type:
+            type:
+              - string
+              - "null"
           _links:
             type:
               - object
@@ -5505,6 +6583,10 @@ schemas:
         type:
           - boolean
           - "null"
+      message_uid:
+        type:
+          - string
+          - "null"
       recipients:
         type:
           - array
@@ -5523,7 +6605,11 @@ schemas:
                   type:
                     - object
                     - "null"
-                  properties: {}
+                  properties:
+                    contact:
+                      type:
+                        - string
+                        - "null"
             handle:
               type:
                 - string
@@ -5536,6 +6622,57 @@ schemas:
               type:
                 - string
                 - "null"
+      signature:
+        type:
+          - object
+          - "null"
+        properties:
+          _links:
+            type:
+              - object
+              - "null"
+            properties:
+              related:
+                type:
+                  - object
+                  - "null"
+                properties:
+                  owner:
+                    type:
+                      - string
+                      - "null"
+              self:
+                type:
+                  - string
+                  - "null"
+          body:
+            type:
+              - string
+              - "null"
+          id:
+            type:
+              - string
+              - "null"
+          is_default:
+            type:
+              - boolean
+              - "null"
+          is_private:
+            type:
+              - boolean
+              - "null"
+          is_visible_for_all_teammate_channels:
+            type:
+              - boolean
+              - "null"
+          name:
+            type:
+              - string
+              - "null"
+          sender_info:
+            type:
+              - string
+              - "null"
       subject:
         type:
           - string
@@ -5571,6 +6708,10 @@ schemas:
           - object
           - "null"
         properties:
+          type:
+            type:
+              - string
+              - "null"
           _links:
             type:
               - object
@@ -5784,6 +6925,10 @@ schemas:
               - object
               - "null"
             properties:
+              category:
+                type:
+                  - string
+                  - "null"
               content:
                 type:
                   - string
@@ -5812,6 +6957,10 @@ schemas:
           type:
             - string
             - "null"
+      slug:
+        type:
+          - string
+          - "null"
       updated_at:
         type: number
     required:
@@ -5843,6 +6992,10 @@ schemas:
                 type:
                   - string
                   - "null"
+              parent_category:
+                type:
+                  - string
+                  - "null"
           self:
             type:
               - string
@@ -5867,6 +7020,10 @@ schemas:
           type:
             - string
             - "null"
+      slug:
+        type:
+          - string
+          - "null"
       updated_at:
         type: number
     required:
@@ -5886,6 +7043,10 @@ schemas:
               - object
               - "null"
             properties:
+              child_answers:
+                type:
+                  - string
+                  - "null"
               child_folders:
                 type:
                   - string
@@ -5999,6 +7160,44 @@ schemas:
         type:
           - array
           - "null"
+        items:
+          type:
+            - object
+            - "null"
+          properties:
+            metadata:
+              type:
+                - object
+                - "null"
+              properties:
+                cid:
+                  type:
+                    - string
+                    - "null"
+                is_inline:
+                  type:
+                    - boolean
+                    - "null"
+            content_type:
+              type:
+                - string
+                - "null"
+            filename:
+              type:
+                - string
+                - "null"
+            id:
+              type:
+                - string
+                - "null"
+            size:
+              type:
+                - number
+                - "null"
+            url:
+              type:
+                - string
+                - "null"
       body:
         type:
           - string
@@ -6009,6 +7208,14 @@ schemas:
           - "null"
       id:
         type: string
+      inbox_ids:
+        type:
+          - array
+          - "null"
+        items:
+          type:
+            - string
+            - "null"
       is_available_for_all_inboxes:
         type:
           - boolean
@@ -6112,6 +7319,44 @@ schemas:
         type:
           - array
           - "null"
+        items:
+          type:
+            - object
+            - "null"
+          properties:
+            metadata:
+              type:
+                - object
+                - "null"
+              properties:
+                cid:
+                  type:
+                    - string
+                    - "null"
+                is_inline:
+                  type:
+                    - boolean
+                    - "null"
+            content_type:
+              type:
+                - string
+                - "null"
+            filename:
+              type:
+                - string
+                - "null"
+            id:
+              type:
+                - string
+                - "null"
+            size:
+              type:
+                - number
+                - "null"
+            url:
+              type:
+                - string
+                - "null"
       body:
         type:
           - string
@@ -6122,6 +7367,14 @@ schemas:
           - "null"
       id:
         type: string
+      inbox_ids:
+        type:
+          - array
+          - "null"
+        items:
+          type:
+            - string
+            - "null"
       is_available_for_all_inboxes:
         type:
           - boolean
