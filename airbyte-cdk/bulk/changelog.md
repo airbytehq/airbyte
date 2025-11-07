@@ -1,3 +1,9 @@
+## Version 0.1.70
+
+**Load CDK**
+
+* Changed: Make getOperation in icebergUtil public
+
 ## Version 0.1.69
 
 **Load CDK**
