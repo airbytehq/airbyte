@@ -30,7 +30,7 @@ Follow these steps to set up your GCS storage and BigLake catalog permissions.
 
 1. In the Google Cloud Console, navigate to **IAM & Admin** > **Service Accounts**
 2. Click **CREATE SERVICE ACCOUNT**
-3. Give it a name (e.g., `airbyte-gcs-data-lake`)
+3. Give it a name (for example: `airbyte-gcs-data-lake`)
 4. Grant the following roles:
    - **Storage Admin** - For full GCS bucket access
    - **BigQuery Data Editor** - For BigLake catalog operations
@@ -45,16 +45,16 @@ Follow these steps to set up your GCS storage and BigLake catalog permissions.
 
 In Airbyte, configure the following fields:
 
-| Field | Required | Description |
-|-------|----------|-------------|
-| **GCS Bucket Name** | Yes | The name of your GCS bucket (e.g., `my-data-lake`) |
-| **Service Account JSON** | Yes | The complete JSON content from your service account key file |
+| Field | Required | Description                                                          |
+|-------|----------|----------------------------------------------------------------------|
+| **GCS Bucket Name** | Yes | The name of your GCS bucket (for example: `my-data-lake`)            |
+| **Service Account JSON** | Yes | The complete JSON content from your service account key file         |
 | **GCP Project ID** | No | The GCP project ID. If not specified, extracted from service account |
-| **GCP Location** | Yes | The GCP location/region (e.g., `us`, `us-central1`, `eu`) |
-| **Warehouse Location** | Yes | Root path for Iceberg data in GCS (e.g., `gs://my-bucket/warehouse`) |
-| **BigLake Catalog Name** | Yes | Name of your BigLake catalog (from the setup step) |
-| **BigLake Database** | Yes | Default database/namespace for tables |
-| **Main Branch Name** | No | Iceberg branch name (default: `main`) |
+| **GCP Location** | Yes | The GCP location/region (for example: `us`, `us-central1`, `eu`)            |
+| **Warehouse Location** | Yes | Root path for Iceberg data in GCS (for example: `gs://my-bucket/warehouse`) |
+| **BigLake Catalog Name** | Yes | Name of your BigLake catalog (from the setup step)                   |
+| **BigLake Database** | Yes | Default database/namespace for tables                                |
+| **Main Branch Name** | No | Iceberg branch name (default: `main`)                                |
 
 ## Output schema
 
@@ -124,9 +124,9 @@ Iceberg supports [Git-like semantics](https://iceberg.apache.org/docs/latest/bra
 
 ### Branch replacement
 
-At the end of stream sync, we replace the current `main` branch with the `airbyte_staging` branch we were working on. We intentionally avoid fast-forwarding to better handle potential compaction issues.
+At the end of stream sync, the current `main` branch is replaced with the `airbyte_staging` branch. Fast-forwarding is intentionally avoided to better handle potential compaction issues.
 
-**Important Warning**: Any changes made to the `main` branch outside of Airbyte's operations after a sync begins will be lost during this process.
+**Important Warning**: any changes made to the `main` branch outside of Airbyte's operations after a sync begins is going to be lost during this process.
 
 ## Compaction
 
@@ -137,7 +137,7 @@ During a truncate refresh sync, the system deletes all files that don't belong t
 - Files without generation IDs (compacted files)
 - Files from previous generations
 
-If compaction runs simultaneously with the sync, it will delete files from the current generation, causing data loss. The system identifies generations by parsing file names for generation IDs.
+If compaction runs simultaneously with the sync, it would delete files from the current generation, causing data loss.
 :::
 
 ## Changelog
