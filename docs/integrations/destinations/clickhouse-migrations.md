@@ -23,7 +23,7 @@ Version 2.0.0 represents a fundamental architectural change from version 1.0.0.
 
 While this is a breaking change, existing connections continue to function after upgrading. However, data is written to a completely different location in a different format. **You must update any downstream pipelines** (SQL queries, BI dashboards, data transformations) to reference the new table locations and schema structure.
 
-## Migrating Existing Data to the New Format
+### Migrating Existing Data to the New Format
 
 Airbyte cannot automatically migrate data from the v1 raw table format to the v2 typed table format. To get your data into the new format, you must perform a full refresh sync from your source.
 
@@ -35,7 +35,7 @@ Airbyte cannot automatically migrate data from the v1 raw table format to the v2
 4. Update your downstream pipelines to reference the new table locations
 5. Optional: Remove the old v1 raw tables (see below)
 
-### Optional: Removing the Old v1 Raw Tables
+#### Optional: Removing the Old v1 Raw Tables
 
 The v2 connector does not automatically remove tables created by the v1 connector. After successfully migrating to v2 and verifying your data, you can optionally remove the old raw tables created by v1 to free up storage space.
 
@@ -58,9 +58,11 @@ DROP TABLE airbyte_internal.{database}_raw__stream_{table};
 DROP DATABASE airbyte_internal;
 ```
 
-## Gotchas
+### Gotchas
 
-### Namespaces and Databases
+Users commonly encounter the following issues when migrating to version 2. Use these steps to understand and resolve them.
+
+#### Namespaces and Databases
 
 In version 2.0.0, namespaces are treated as ClickHouse databases. If you configure a custom namespace for your connection, the connector uses that namespace as the database name instead of the database specified in the destination settings.
 
@@ -76,7 +78,7 @@ In version 2.0.0, namespaces are treated as ClickHouse databases. If you configu
 
 If you have existing connections that use custom namespaces, review your configuration and update downstream pipelines accordingly.
 
-### Hostname Configuration
+#### Hostname Configuration
 
 The hostname field in version 2.0.0 must **not** include the protocol prefix (`http://` or `https://`).
 
