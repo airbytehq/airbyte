@@ -17,12 +17,14 @@ definitions:
   base_retriever:
     type: SimpleBidirectionalRetriever
 
+    operation_profile: rest_crudl_v1
+
     base_requester:
       $ref: "#/definitions/base_requester"
 
     # New singleton record selector for individual object retrievals.
-    # This is the default selector used in 'fetch', 'create', and 'update' operations.
-    # Below the default behavior and therefore optional to specify:
+    # This is the default selector used in 'read_one', 'create_one', and 'update_one' operations.
+    # Below shows the default behavior and is therefore optional to specify:
     singleton_record_selector:
       type: RecordSelector
       extractor:
@@ -30,7 +32,8 @@ definitions:
         field_path: []  # Single object response
       schema_normalization: Default
 
-    # Previous 'record_selector' renamed to `multi_record_selector` for clarity:
+    # Previous 'record_selector' renamed to `multi_record_selector` for clarity.
+    # Used for 'read_many' operations:
     multi_record_selector:
       type: RecordSelector
       extractor:
@@ -51,9 +54,21 @@ definitions:
       - update_many  # Fall back to `update_one` in a loop.
       - delete_many  # Fall back to `delete_one` in a loop.
 
+    # Note on $ref merge semantics: Using $ref with inline field overrides performs
+    # shallow merge. Overriding nested dicts (e.g., request_headers, error_handler)
+    # replaces the entire dict, not deep-merge. To preserve base values, don't override
+    # or repeat them explicitly.
+    #
+    # Note on path_suffix: This is a planned CDK feature for ergonomic path appending.
+    # When implemented, it will handle trailing/leading slash normalization and URL encoding.
+    # Until then, use full path overrides: path: "{{ base_path }}/{{ record.id }}" (important-comment)
+    #
+    # Note on primary key injection: A planned pk() macro will allow {{ pk(record) }}
+    # to automatically extract the primary key value without hardcoding field names.
+    # For now, use {{ record.id }} explicitly.
     operation_overrides:
-      read_many: {} # No overrides needed.
-      read_one: {} # No overrides needed.
+      read_many: {} # No overrides needed - uses profile defaults.
+      read_one: {} # No overrides needed - uses profile defaults.
       create_one:
         requester:
           $ref: "#/definitions/base_requester"
@@ -63,9 +78,11 @@ definitions:
             type: RequestBodyJsonObject
             value: "{{ record }}"
       update_one:
+        # Stripe-specific override: Stripe uses POST for updates instead of standard PATCH.
+        # The CDK default (from rest_crudl_v1 profile) would be PATCH.
         requester:
           $ref: "#/definitions/base_requester"
-          http_method: POST
+          http_method: POST  # Stripe-specific (CDK default: PATCH)
           # Can override `path` or `path_suffix` as needed.
           # In this case, we only want to append to the existing `path':
           path_suffix: "/{{ record.id }}"
@@ -77,6 +94,8 @@ definitions:
           $ref: "#/definitions/base_requester"
           http_method: DELETE
           path_suffix: "/{{ record.id }}"
+        # No record_selector by default - many APIs return 204 No Content.
+        # Stripe may return an object; opt-in to singleton_record_selector if needed. (important-comment)
 
   base_requester:
     type: HttpRequester
