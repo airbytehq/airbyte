@@ -57,13 +57,16 @@ definitions:
       create_one:
         requester_overrides:
           http_method: POST
-          path_suffix: ""  # POST to the 'read_many' endpoint.
+          # Intentionally not overriding `path` here:
+          # path: ..  # POST to the 'read_many' endpoint.
           request_body:
             type: RequestBodyJsonObject
             value: "{{ record }}"
       update_one:
         requester_overrides:
           http_method: POST
+          # Can override `path` or `path_suffix` as needed.
+          # In this case, we only want to append to the existing `path':
           path_suffix: "/{{ record.id }}"
           request_body:
             type: RequestBodyJsonObject
