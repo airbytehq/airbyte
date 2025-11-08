@@ -12,6 +12,8 @@ This information is only relevant if you deploy Airbyte using Helm chart V2. If 
 
 <!-- SEE END OF FILE FOR INSTRUCTIONS ON HOW TO UPDATE THIS CHANGELOG -->
 
+<!-- vale off -->
+
 ## Version 2.0.19
 
 No configurable changes in this version.
@@ -350,9 +352,13 @@ Initial release of the V2 Helm Chart with comprehensive user-configurable option
 
 **Migration from V1**: see the V2 Migration Guide for complete migration instructions from V1 to V2 charts.
 
+<!-- vale on -->
+
 <!-- 
 
+-------------------------
 HOW TO UPDATE THIS FILE
+-------------------------
 
 Anyone can compare a published Helm chart to the previous version to generate a change log. This is an excellent task to delegate to an AI, though you should run a manual spot check to ensure it hasn't "interpreted" the result.
 
