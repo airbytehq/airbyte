@@ -22,7 +22,7 @@ definitions:
 
     # New singleton record selector for individual object retrievals.
     # This is the default selector used in 'fetch', 'create', and 'update' operations.
-    # Below the default behavior and therefor optional to specify:
+    # Below the default behavior and therefore optional to specify:
     singleton_record_selector:
       type: RecordSelector
       extractor:
@@ -58,12 +58,16 @@ definitions:
         requester_overrides:
           http_method: POST
           path_suffix: ""  # POST to the 'read_many' endpoint.
-          request_body_json: "{{ record }}"
+          request_body:
+            type: RequestBodyJsonObject
+            value: "{{ record }}"
       update_one:
         requester_overrides:
           http_method: POST
           path_suffix: "/{{ record.id }}"
-          request_body_json: "{{ record }}"
+          request_body:
+            type: RequestBodyJsonObject
+            value: "{{ record }}"
       delete_one:
         requester_overrides:
           http_method: DELETE
