@@ -312,6 +312,7 @@ class SourceAmazonAmp(Source):
             },
         )
 
+
 def get_aws_credentials(config: dict) -> dict:
     if config.get("access_key") and config.get("secret_key"):
         return {
