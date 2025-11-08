@@ -15,19 +15,53 @@ definitions:
       $ref: "#/definitions/base_retriever"
 
   base_retriever:
-    type: SimpleRetriever
-    requester:
+    type: SimpleBidirectionalRetriever
+    
+    base_requester:
       $ref: "#/definitions/base_requester"
-    record_selector:
-      type: RecordSelector
-      extractor:
-        type: DpathExtractor
-        field_path:
-          - data
-      transform_before_filtering: true
-      schema_normalization: Default
-    paginator:
-      $ref: "#/definitions/base_paginator"
+    
+    list:
+      record_selector:
+        type: RecordSelector
+        extractor:
+          type: DpathExtractor
+          field_path:
+            - data
+        transform_before_filtering: true
+        schema_normalization: Default
+      paginator:
+        $ref: "#/definitions/base_paginator"
+    
+    fetch:
+      record_selector:
+        type: RecordSelector
+        extractor:
+          type: DpathExtractor
+          field_path: []  # Single object, not wrapped in "data"
+        schema_normalization: Default
+    
+    create:
+      requester:
+        http_method: POST
+        request_body_json: "{{ record }}"
+      record_selector:
+        type: RecordSelector
+        extractor:
+          type: DpathExtractor
+          field_path: []  # Single object response
+        schema_normalization: Default
+    
+    update:
+      requester:
+        path: "{{ stream_slice.get('path') or parameters.get('path') }}/{{ record.id }}"
+        http_method: POST
+        request_body_json: "{{ record }}"
+      record_selector:
+        type: RecordSelector
+        extractor:
+          type: DpathExtractor
+          field_path: []  # Single object response
+        schema_normalization: Default
 
   base_requester:
     type: HttpRequester
