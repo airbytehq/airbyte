@@ -16,52 +16,58 @@ definitions:
 
   base_retriever:
     type: SimpleBidirectionalRetriever
-    
+
     base_requester:
       $ref: "#/definitions/base_requester"
-    
-    list:
-      record_selector:
-        type: RecordSelector
-        extractor:
-          type: DpathExtractor
-          field_path:
-            - data
-        transform_before_filtering: true
-        schema_normalization: Default
-      paginator:
-        $ref: "#/definitions/base_paginator"
-    
-    fetch:
-      record_selector:
-        type: RecordSelector
-        extractor:
-          type: DpathExtractor
-          field_path: []  # Single object, not wrapped in "data"
-        schema_normalization: Default
-    
-    create:
-      requester:
-        http_method: POST
-        request_body_json: "{{ record }}"
-      record_selector:
-        type: RecordSelector
-        extractor:
-          type: DpathExtractor
-          field_path: []  # Single object response
-        schema_normalization: Default
-    
-    update:
-      requester:
-        path: "{{ stream_slice.get('path') or parameters.get('path') }}/{{ record.id }}"
-        http_method: POST
-        request_body_json: "{{ record }}"
-      record_selector:
-        type: RecordSelector
-        extractor:
-          type: DpathExtractor
-          field_path: []  # Single object response
-        schema_normalization: Default
+
+    # New singleton record selector for individual object retrievals.
+    # This is the default selector used in 'fetch', 'create', and 'update' operations.
+    # Below the default behavior and therefor optional to specify:
+    singleton_record_selector:
+      type: RecordSelector
+      extractor:
+        type: DpathExtractor
+        field_path: []  # Single object response
+      schema_normalization: Default
+
+    # Previous 'record_selector' renamed to `multi_record_selector` for clarity:
+    multi_record_selector:
+      type: RecordSelector
+      extractor:
+        type: DpathExtractor
+        field_path:
+          - data
+      transform_before_filtering: true
+      schema_normalization: Default
+
+    # Only really used for 'read_many' operations.
+    paginator:
+      $ref: "#/definitions/base_paginator"
+
+    unsupported_operations:
+      # With the exception of `read_many`, unsupported 'many' operations fall
+      # back to sequential 'one' operations:
+      - create_many  # Fall back to `create_one` in a loop.
+      - update_many  # Fall back to `update_one` in a loop.
+      - delete_many  # Fall back to `delete_one` in a loop.
+
+    operation_overrides:
+      read_many: {} # No overrides needed.
+      read_one: {} # No overrides needed.
+      create_one: {}
+        requester_overrides:
+          http_method: POST
+          path_suffix: ""  # POST to the 'read_many' endpoint.
+          request_body_json: "{{ record }}"
+      update_one: {}
+        requester_overrides:
+          http_method: POST
+          path_suffix: "/{{ record.id }}"
+          request_body_json: "{{ record }}"
+      delete_one: {}
+        requester_overrides:
+          http_method: DELETE
+          path_suffix: "/{{ record.id }}"
 
   base_requester:
     type: HttpRequester
@@ -98,8 +104,8 @@ definitions:
               http_codes:
                 - 404
               error_message: >-
-                Data was not found. Error message: {{ response['error']['message'] }} If this is a path for getting 
-                child attributes like /v1/checkout/sessions/<session_id>/line_items when running the incremental sync, 
+                Data was not found. Error message: {{ response['error']['message'] }} If this is a path for getting
+                child attributes like /v1/checkout/sessions/<session_id>/line_items when running the incremental sync,
                 you may safely ignore this warning.
   bearer_authenticator:
     type: BearerAuthenticator
@@ -892,7 +898,7 @@ definitions:
       $parameters:
         name: setup_intents
       full_refresh_stream:
-        $ref: "#/definitions/entity_stream"   
+        $ref: "#/definitions/entity_stream"
         retriever:
           $ref: "#/definitions/base_retriever"
           $parameters:
