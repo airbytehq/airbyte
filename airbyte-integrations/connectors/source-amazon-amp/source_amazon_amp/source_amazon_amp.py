@@ -1,11 +1,11 @@
 # Copyright (c) 2025 Airbyte, Inc., all rights reserved.
 
-import boto3
 import datetime
 import hashlib
 import hmac
 from typing import Iterable
 
+import boto3
 import requests
 
 from airbyte_cdk.logger import init_logger
@@ -101,7 +101,7 @@ class BaseAmazonAMPStream:
             access_key=creds["access_key"],
             secret_key=creds["secret_key"],
             region=config["region"],
-            session_token=creds.get("session_token")
+            session_token=creds.get("session_token"),
         )
         self.base_url = f"https://aps-workspaces.{config['region']}.amazonaws.com/workspaces/{config['workspace_id']}"
 
@@ -323,9 +323,7 @@ def get_aws_credentials(config: dict) -> dict:
     session = boto3.Session()
     credentials = session.get_credentials()
     if not credentials:
-        raise ValueError(
-            "AWS credentials not found. Provide access_key and secret_key or configure IRSA with metadata access."
-        )
+        raise ValueError("AWS credentials not found. Provide access_key and secret_key or configure IRSA with metadata access.")
     cred = credentials.get_frozen_credentials()
     if not all([cred.access_key, cred.secret_key]):
         raise ValueError("Incomplete AWS credentials received from environment.")
