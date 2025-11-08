@@ -54,17 +54,17 @@ definitions:
     operation_overrides:
       read_many: {} # No overrides needed.
       read_one: {} # No overrides needed.
-      create_one: {}
+      create_one:
         requester_overrides:
           http_method: POST
           path_suffix: ""  # POST to the 'read_many' endpoint.
           request_body_json: "{{ record }}"
-      update_one: {}
+      update_one:
         requester_overrides:
           http_method: POST
           path_suffix: "/{{ record.id }}"
           request_body_json: "{{ record }}"
-      delete_one: {}
+      delete_one:
         requester_overrides:
           http_method: DELETE
           path_suffix: "/{{ record.id }}"
