@@ -79,8 +79,9 @@ Required properties are 'AMP Workspace ID', 'AWS Region', 'AWS IAM Access Key ID
 <details>
   <summary>Expand to review</summary>
 
-| Version | Date       | Pull Request                                              | Subject                           |
-| :------ | :--------- | :-------------------------------------------------------- | :-------------------------------- |
-| 0.1.0   | 2025-09-23 | [\#0000](https://github.com/airbytehq/airbyte/pull/0000)  | Initial version                   |
+| Version | Date       | Pull Request                                              | Subject                            |
+| :------ | :--------- | :-------------------------------------------------------- | :--------------------------------- |
+| 0.1.1   | 2025-11-08 | [67112](https://github.com/airbytehq/airbyte/pull/67112)  | Added logging with service account |
+| 0.1.0   | 2025-09-23 | [\#0000](https://github.com/airbytehq/airbyte/pull/0000)  | Initial version                    |
 
 </details>
