@@ -6,7 +6,7 @@ products: oss-*
 
 This page documents changes to configurable values in Airbyte Helm charts starting with version 2.0.0.
 
-**In most cases, you don't need to take any action** as a result of these changes. Airbyte adds, removes, and changes configurations while developing capabilities and making internal architectural changes. In most cases, these changes don't affect your deployment. Monitor Airbyte's [platform release notes](../) and [breaking change list](../breaking-changes) instead. These pages notify you when you need to take specific upgrade actions.
+**In most cases, you don't need to take any action** as a result of the information on this page. Airbyte adds, removes, and changes configurations while developing capabilities and making internal architectural changes and this doesn't affect you. Monitor Airbyte's [platform release notes](../) and [breaking change list](../breaking-changes) instead. These pages notify you when new features are available or you need to take specific upgrade actions.
 
 This information is only relevant if you deploy Airbyte using Helm chart V2. If you're still using the V1 Helm chart, ignore this page.
 
