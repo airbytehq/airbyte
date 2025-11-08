@@ -297,17 +297,31 @@ class MsSqlSourceOperations :
             }
     }
 
-    fun Field.sql(): String = if (type is MsSqlServerHierarchyFieldType) "$id.ToString()" else "$id"
+    /**
+     * Quotes an identifier for SQL Server using square brackets. If the identifier contains a
+     * closing bracket ']', it will be escaped as ']]'. This protects against reserved keywords and
+     * special characters in identifier names.
+     */
+    fun String.quoted(): String = "[${this.replace("]", "]]")}]"
+
+    fun Field.sql(): String =
+        if (type is MsSqlServerHierarchyFieldType) "${id.quoted()}.ToString()" else id.quoted()
 
     fun FromNode.sql(): String =
         when (this) {
             NoFrom -> ""
-            is From -> if (this.namespace == null) "FROM $name" else "FROM $namespace.$name"
+            is From -> {
+                val ns = this.namespace
+                if (ns == null) "FROM ${name.quoted()}" else "FROM ${ns.quoted()}.${name.quoted()}"
+            }
             is FromSample -> {
+                val ns = this.namespace
                 if (sampleRateInv == 1L) {
-                    if (namespace == null) "FROM $name" else "FROM $namespace.$name"
+                    if (ns == null) "FROM ${name.quoted()}"
+                    else "FROM ${ns.quoted()}.${name.quoted()}"
                 } else {
-                    val tableName = if (namespace == null) name else "$namespace.$name"
+                    val tableName =
+                        if (ns == null) name.quoted() else "${ns.quoted()}.${name.quoted()}"
                     val samplePercent = sampleRatePercentage.toPlainString()
 
                     "FROM (SELECT TOP $sampleSize * FROM $tableName TABLESAMPLE ($samplePercent PERCENT) ORDER BY NEWID()) AS randomly_sampled"
