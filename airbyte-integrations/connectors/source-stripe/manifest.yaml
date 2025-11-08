@@ -22,17 +22,17 @@ definitions:
     base_requester:
       $ref: "#/definitions/base_requester"
 
-    # New singleton record selector for individual object retrievals.
-    # This is the default selector used in 'read_one', 'create_one', and 'update_one' operations.
-    # Below shows the default behavior and is therefore optional to specify:
-    singleton_record_selector:
+    # New `single_record_selector` is default for individual record operations,
+    # including `read_one`, `create_one`, and `update_one`.
+    # Below is the default behavior and therefore optional to specify:
+    single_record_selector:
       type: RecordSelector
       extractor:
         type: DpathExtractor
         field_path: []  # Single object response
       schema_normalization: Default
 
-    # Previous 'record_selector' renamed to `multi_record_selector` for clarity.
+    # Previous 'record_selector' simply renamed to `multi_record_selector` for clarity.
     # Used for 'read_many' operations:
     multi_record_selector:
       type: RecordSelector
@@ -43,7 +43,7 @@ definitions:
       transform_before_filtering: true
       schema_normalization: Default
 
-    # Only really used for 'read_many' operations.
+    # Paginator used for 'read_many' operations. (No change.)
     paginator:
       $ref: "#/definitions/base_paginator"
 
