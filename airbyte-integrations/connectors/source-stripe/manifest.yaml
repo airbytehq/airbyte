@@ -55,15 +55,16 @@ definitions:
       read_many: {} # No overrides needed.
       read_one: {} # No overrides needed.
       create_one:
-        requester_overrides:
+        requester:
+          $ref: "#/definitions/base_requester"
           http_method: POST
-          # Intentionally not overriding `path` here:
-          # path: ..  # POST to the 'read_many' endpoint.
+          # Intentionally not overriding `path` here - POST to the 'read_many' endpoint.
           request_body:
             type: RequestBodyJsonObject
             value: "{{ record }}"
       update_one:
-        requester_overrides:
+        requester:
+          $ref: "#/definitions/base_requester"
           http_method: POST
           # Can override `path` or `path_suffix` as needed.
           # In this case, we only want to append to the existing `path':
@@ -72,7 +73,8 @@ definitions:
             type: RequestBodyJsonObject
             value: "{{ record }}"
       delete_one:
-        requester_overrides:
+        requester:
+          $ref: "#/definitions/base_requester"
           http_method: DELETE
           path_suffix: "/{{ record.id }}"
 
