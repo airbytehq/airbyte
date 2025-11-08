@@ -1,5 +1,6 @@
 # Copyright (c) 2025 Airbyte, Inc., all rights reserved.
 
+import boto3
 import datetime
 import hashlib
 import hmac
@@ -23,9 +24,10 @@ from airbyte_cdk.sources import Source
 
 
 class SigV4Authenticator:
-    def __init__(self, access_key, secret_key, region, service="aps"):
+    def __init__(self, access_key, secret_key, region, session_token=None, service="aps"):
         self.access_key = access_key
         self.secret_key = secret_key
+        self.session_token = session_token
         self.region = region
         self.service = service
 
@@ -51,6 +53,10 @@ class SigV4Authenticator:
 
         canonical_headers = f"host:{parsed_url.netloc}\n" + f"x-amz-date:{amz_date}\n"
         signed_headers = "host;x-amz-date"
+
+        if self.session_token:
+            canonical_headers += f"x-amz-security-token:{self.session_token}\n"
+            signed_headers = "host;x-amz-date;x-amz-security-token"
 
         canonical_request = (
             method
@@ -81,11 +87,22 @@ class SigV4Authenticator:
 
         headers.update({"x-amz-date": amz_date, "Authorization": authorization_header, "host": parsed_url.netloc})
 
+        if self.session_token:
+            headers["x-amz-security-token"] = self.session_token
+
 
 class BaseAmazonAMPStream:
     def __init__(self, config: dict):
         self.config = config
-        self.auth = SigV4Authenticator(access_key=config["access_key"], secret_key=config["secret_key"], region=config["region"])
+
+        creds = get_aws_credentials(config)
+
+        self.auth = SigV4Authenticator(
+            access_key=creds["access_key"],
+            secret_key=creds["secret_key"],
+            region=config["region"],
+            session_token=creds.get("session_token")
+        )
         self.base_url = f"https://aps-workspaces.{config['region']}.amazonaws.com/workspaces/{config['workspace_id']}"
 
     def request(self, path: str) -> dict:
@@ -231,7 +248,7 @@ class SourceAmazonAmp(Source):
                 "$schema": "http://json-schema.org/draft-07/schema#",
                 "type": "object",
                 "title": "Amazon AMP Source Spec",
-                "required": ["workspace_id", "region", "access_key", "secret_key"],
+                "required": ["workspace_id", "region"],
                 "properties": {
                     "workspace_id": {"type": "string", "description": "ID of the AMP workspace", "title": "AMP Workspace ID", "order": 0},
                     "region": {
@@ -294,3 +311,26 @@ class SourceAmazonAmp(Source):
                 "additionalProperties": True,
             },
         )
+
+def get_aws_credentials(config: dict) -> dict:
+    if config.get("access_key") and config.get("secret_key"):
+        return {
+            "access_key": config["access_key"],
+            "secret_key": config["secret_key"],
+            "session_token": config.get("session_token"),
+        }
+
+    session = boto3.Session()
+    credentials = session.get_credentials()
+    if not credentials:
+        raise ValueError(
+            "AWS credentials not found. Provide access_key and secret_key or configure IRSA with metadata access."
+        )
+    cred = credentials.get_frozen_credentials()
+    if not all([cred.access_key, cred.secret_key]):
+        raise ValueError("Incomplete AWS credentials received from environment.")
+    return {
+        "access_key": cred.access_key,
+        "secret_key": cred.secret_key,
+        "session_token": cred.token,
+    }
