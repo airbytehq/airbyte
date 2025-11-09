@@ -11,6 +11,7 @@ from source_s3.source_files_abstract.formats.avro_spec import AvroFormat
 from source_s3.source_files_abstract.formats.csv_spec import CsvFormat
 from source_s3.source_files_abstract.formats.jsonl_spec import JsonlFormat
 from source_s3.source_files_abstract.formats.parquet_spec import ParquetFormat
+from source_s3.source_files_abstract.formats.lines_spec import LinesFormat
 
 
 SECONDS_FORMAT = "%Y-%m-%dT%H:%M:%SZ"
@@ -68,7 +69,7 @@ class LegacyConfigTransformer:
             raise ValueError("Timestamp could not be parsed when transforming legacy connector config") from e
 
     @classmethod
-    def _transform_file_format(cls, format_options: Union[CsvFormat, ParquetFormat, AvroFormat, JsonlFormat]) -> Mapping[str, Any]:
+    def _transform_file_format(cls, format_options: Union[CsvFormat, ParquetFormat, AvroFormat, JsonlFormat, LinesFormat]) -> Mapping[str, Any]:
         if isinstance(format_options, AvroFormat):
             return {"filetype": "avro"}
         elif isinstance(format_options, CsvFormat):
@@ -144,6 +145,8 @@ class LegacyConfigTransformer:
 
         elif isinstance(format_options, JsonlFormat):
             return {"filetype": "jsonl"}
+        elif isinstance(format_options, LinesFormat):
+            return {"filetype": "lines"}
         elif isinstance(format_options, ParquetFormat):
             return {"filetype": "parquet", "decimal_as_float": True}
         else:

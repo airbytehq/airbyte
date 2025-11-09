@@ -404,6 +404,17 @@ def test_convert_legacy_config(legacy_config, expected_config):
             None,
             id="test_avro_format",
         ),
+        pytest.param(
+            "lines",
+            {
+                "filetype": "lines",
+                "unexpected_field_behavior": "infer",
+                "block_size": 0,
+            },
+            {"filetype": "lines"},
+            None,
+            id="test_lines_format",
+        ),
     ],
 )
 def test_convert_file_format(file_type, legacy_format_config, expected_format_config, expected_error):

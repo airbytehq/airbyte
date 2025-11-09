@@ -6,7 +6,7 @@ import logging
 import time
 from datetime import datetime
 from io import IOBase
-from typing import Dict, Iterable, List, Optional, Set, cast
+from typing import Dict, Iterable, List, Optional, Set, Tuple, cast
 
 import boto3.session
 import pendulum
@@ -21,8 +21,10 @@ from botocore.session import get_session
 from typing_extensions import override
 
 from airbyte_cdk import FailureType
+from airbyte_cdk.models import AirbyteRecordMessageFileReference
 from airbyte_cdk.sources.file_based.exceptions import CustomFileBasedException, ErrorListingFiles, FileBasedSourceError, FileSizeLimitError
 from airbyte_cdk.sources.file_based.file_based_stream_reader import AbstractFileBasedStreamReader, FileReadMode
+from airbyte_cdk.sources.file_based.file_record_data import FileRecordData
 from airbyte_cdk.sources.file_based.remote_file import RemoteFile
 from source_s3.v4.config import Config
 from source_s3.v4.zip_reader import DecompressedStream, RemoteFileInsideArchive, ZipContentReader, ZipFileHandler
@@ -273,6 +275,42 @@ class SourceS3StreamReader(AbstractFileBasedStreamReader):
             Key=file.uri,
         )
         return cast(int, s3_object["ContentLength"])
+
+    @override
+    def upload(self, file: RemoteFile, local_directory: str, logger: logging.Logger) -> Tuple[FileRecordData, AirbyteRecordMessageFileReference]:
+        """
+        Upload method for S3 stream reader. This method handles downloading files from S3
+        and preparing them for processing. Required by AbstractFileBasedStreamReader.
+
+        Args:
+            file (RemoteFile): The remote file object containing URI and metadata.
+            local_directory (str): The local directory path where the file will be downloaded.
+            logger (logging.Logger): Logger for logging information and errors.
+
+        Returns:
+            Tuple containing FileRecordData and AirbyteRecordMessageFileReference.
+        """
+        # Download the file using the existing get_file method
+        file_info = self.get_file(file, local_directory, logger)
+        
+        # Create FileRecordData object
+        file_record_data = FileRecordData(
+            data={
+                "file_url": file_info["file_url"],
+                "file_relative_path": file_info["file_relative_path"],
+                "bytes": file_info["bytes"],
+                "last_modified": file.last_modified.strftime(self.DATE_TIME_FORMAT) if file.last_modified else None,
+            }
+        )
+        
+        # Create AirbyteRecordMessageFileReference object
+        file_reference = AirbyteRecordMessageFileReference(
+            staging_file_url=file_info["file_url"],
+            file_size_bytes=file_info["bytes"],
+            source_file_relative_path=file_info["file_relative_path"]
+        )
+        
+        return file_record_data, file_reference
 
     @staticmethod
     def _is_folder(file) -> bool:

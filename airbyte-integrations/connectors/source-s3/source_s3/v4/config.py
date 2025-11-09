@@ -2,7 +2,7 @@
 # Copyright (c) 2023 Airbyte, Inc., all rights reserved.
 #
 
-from typing import Any, Dict, Optional
+from typing import Any, Dict, List, Optional
 
 import dpath.util
 from pydantic.v1 import AnyUrl, Field, root_validator
@@ -11,12 +11,21 @@ from pydantic.v1.error_wrappers import ValidationError
 from airbyte_cdk import is_cloud_environment
 from airbyte_cdk.sources.file_based.config.abstract_file_based_spec import AbstractFileBasedSpec, DeliverRawFiles, DeliverRecords
 
+from source_s3.v4.stream_config import S3FileBasedStreamConfig
+
 
 class Config(AbstractFileBasedSpec):
     """
     NOTE: When this Spec is changed, legacy_config_transformer.py must also be modified to uptake the changes
     because it is responsible for converting legacy S3 v3 configs into v4 configs using the File-Based CDK.
     """
+
+    # Override streams to use S3FileBasedStreamConfig which includes XML support
+    streams: List[S3FileBasedStreamConfig] = Field(
+        title="The list of streams to sync",
+        description='Each instance of this configuration defines a <a href="https://docs.airbyte.com/cloud/core-concepts#stream">stream</a>. Use this to define which files belong in the stream, their format, and how they should be parsed and validated. When sending data to warehouse destination such as Snowflake or BigQuery, each stream is a separate table.',
+        order=10,
+    )
 
     @classmethod
     def documentation_url(cls) -> AnyUrl:

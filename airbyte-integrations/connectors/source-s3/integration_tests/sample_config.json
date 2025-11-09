@@ -1,0 +1,17 @@
+{
+  "bucket": "",
+  "start_date": "",
+  "aws_access_key_id": "",
+  "aws_secret_access_key": "",
+  "streams": [
+    {
+      "name": "activity_events",
+      "globs": [""],
+      "format": {
+        "filetype": "lines"
+      },
+      "validation_policy": "Emit Record",
+      "schemaless": true
+    }
+  ]
+}
