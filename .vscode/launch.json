@@ -609,11 +609,91 @@
             "python": "${workspaceFolder}/airbyte-integrations/connectors/source-aws-iam/.venv/bin/python"
         },
         {
+            "name": "Active Directory: Spec",
+            "type": "debugpy",
+            "request": "launch",
+            "program": "${workspaceFolder}/airbyte-integrations/connectors/source-active-directory/main.py",
+            "args": ["spec"],
+            "cwd": "${workspaceFolder}/airbyte-integrations/connectors/source-active-directory",
+            "console": "integratedTerminal",
+            "python": "${workspaceFolder}/airbyte-integrations/connectors/source-active-directory/.venv/bin/python"
+        },
+        {
+            "name": "Active Directory: Check",
+            "type": "debugpy",
+            "request": "launch",
+            "program": "${workspaceFolder}/airbyte-integrations/connectors/source-active-directory/main.py",
+            "args": ["check", "--config", "secrets/config.json"],
+            "cwd": "${workspaceFolder}/airbyte-integrations/connectors/source-active-directory",
+            "console": "integratedTerminal",
+            "python": "${workspaceFolder}/airbyte-integrations/connectors/source-active-directory/.venv/bin/python"
+        },
+        {
+            "name": "Active Directory: Discover",
+            "type": "debugpy",
+            "request": "launch",
+            "program": "${workspaceFolder}/airbyte-integrations/connectors/source-active-directory/main.py",
+            "args": ["discover", "--config", "secrets/config.json"],
+            "cwd": "${workspaceFolder}/airbyte-integrations/connectors/source-active-directory",
+            "console": "integratedTerminal",
+            "python": "${workspaceFolder}/airbyte-integrations/connectors/source-active-directory/.venv/bin/python"
+        },
+        {
             "name": "Active Directory: Read All Streams",
             "type": "debugpy",
             "request": "launch",
             "program": "${workspaceFolder}/airbyte-integrations/connectors/source-active-directory/main.py",
             "args": ["read", "--config", "secrets/config.json", "--catalog", "integration_tests/configured_catalog.json"],
+            "cwd": "${workspaceFolder}/airbyte-integrations/connectors/source-active-directory",
+            "console": "integratedTerminal",
+            "python": "${workspaceFolder}/airbyte-integrations/connectors/source-active-directory/.venv/bin/python"
+        },
+        {
+            "name": "Active Directory: Read ACLs Only",
+            "type": "debugpy",
+            "request": "launch",
+            "program": "${workspaceFolder}/airbyte-integrations/connectors/source-active-directory/main.py",
+            "args": ["read", "--config", "secrets/config.json", "--catalog", "integration_tests/acls_catalog.json"],
+            "cwd": "${workspaceFolder}/airbyte-integrations/connectors/source-active-directory",
+            "console": "integratedTerminal",
+            "python": "${workspaceFolder}/airbyte-integrations/connectors/source-active-directory/.venv/bin/python"
+        },
+        {
+            "name": "Active Directory: Read Users Only",
+            "type": "debugpy",
+            "request": "launch",
+            "program": "${workspaceFolder}/airbyte-integrations/connectors/source-active-directory/main.py",
+            "args": ["read", "--config", "secrets/config.json", "--catalog", "integration_tests/users_catalog.json"],
+            "cwd": "${workspaceFolder}/airbyte-integrations/connectors/source-active-directory",
+            "console": "integratedTerminal",
+            "python": "${workspaceFolder}/airbyte-integrations/connectors/source-active-directory/.venv/bin/python"
+        },
+        {
+            "name": "Active Directory: Read Groups Only",
+            "type": "debugpy",
+            "request": "launch",
+            "program": "${workspaceFolder}/airbyte-integrations/connectors/source-active-directory/main.py",
+            "args": ["read", "--config", "secrets/config.json", "--catalog", "integration_tests/groups_catalog.json"],
+            "cwd": "${workspaceFolder}/airbyte-integrations/connectors/source-active-directory",
+            "console": "integratedTerminal",
+            "python": "${workspaceFolder}/airbyte-integrations/connectors/source-active-directory/.venv/bin/python"
+        },
+        {
+            "name": "Active Directory: Read Computers Only",
+            "type": "debugpy",
+            "request": "launch",
+            "program": "${workspaceFolder}/airbyte-integrations/connectors/source-active-directory/main.py",
+            "args": ["read", "--config", "secrets/config.json", "--catalog", "integration_tests/computers_catalog.json"],
+            "cwd": "${workspaceFolder}/airbyte-integrations/connectors/source-active-directory",
+            "console": "integratedTerminal",
+            "python": "${workspaceFolder}/airbyte-integrations/connectors/source-active-directory/.venv/bin/python"
+        },
+        {
+            "name": "Active Directory: Read GPOs Only",
+            "type": "debugpy",
+            "request": "launch",
+            "program": "${workspaceFolder}/airbyte-integrations/connectors/source-active-directory/main.py",
+            "args": ["read", "--config", "secrets/config.json", "--catalog", "integration_tests/gpos_catalog.json"],
             "cwd": "${workspaceFolder}/airbyte-integrations/connectors/source-active-directory",
             "console": "integratedTerminal",
             "python": "${workspaceFolder}/airbyte-integrations/connectors/source-active-directory/.venv/bin/python"
@@ -633,6 +713,158 @@
             "cwd": "${workspaceFolder}/airbyte-integrations/connectors/source-salesforce",
             "console": "integratedTerminal",
             "python": "${workspaceFolder}/airbyte-integrations/connectors/source-salesforce/.venv/bin/python"
+        },
+        {
+            "name": "S3: Spec",
+            "type": "debugpy",
+            "request": "launch",
+            "program": "${workspaceFolder}/airbyte-integrations/connectors/source-s3/main.py",
+            "args": [
+                "spec"
+            ],
+            "cwd": "${workspaceFolder}/airbyte-integrations/connectors/source-s3",
+            "console": "integratedTerminal",
+            "python": "${workspaceFolder}/airbyte-integrations/connectors/source-s3/.venv/bin/python"
+        },
+        {
+            "name": "S3: Check",
+            "type": "debugpy",
+            "request": "launch",
+            "program": "${workspaceFolder}/airbyte-integrations/connectors/source-s3/main.py",
+            "args": [
+                "check",
+                "--config",
+                "integration_tests/sample_config.json"
+            ],
+            "cwd": "${workspaceFolder}/airbyte-integrations/connectors/source-s3",
+            "console": "integratedTerminal",
+            "python": "${workspaceFolder}/airbyte-integrations/connectors/source-s3/.venv/bin/python"
+        },
+        {
+            "name": "S3: Discover",
+            "type": "debugpy",
+            "request": "launch",
+            "program": "${workspaceFolder}/airbyte-integrations/connectors/source-s3/main.py",
+            "args": [
+                "discover",
+                "--config",
+                "integration_tests/sample_config.json"
+            ],
+            "cwd": "${workspaceFolder}/airbyte-integrations/connectors/source-s3",
+            "console": "integratedTerminal",
+            "python": "${workspaceFolder}/airbyte-integrations/connectors/source-s3/.venv/bin/python"
+        },
+        {
+            "name": "S3: Read All Streams",
+            "type": "debugpy",
+            "request": "launch",
+            "program": "${workspaceFolder}/airbyte-integrations/connectors/source-s3/main.py",
+            "args": [
+                "read",
+                "--config",
+                "integration_tests/sample_config.json",
+                "--catalog",
+                "configured_catalog.json"
+            ],
+            "cwd": "${workspaceFolder}/airbyte-integrations/connectors/source-s3",
+            "console": "integratedTerminal",
+            "python": "${workspaceFolder}/airbyte-integrations/connectors/source-s3/.venv/bin/python"
+        },
+        {
+            "name": "S3: Read CSV Only",
+            "type": "debugpy",
+            "request": "launch",
+            "program": "${workspaceFolder}/airbyte-integrations/connectors/source-s3/main.py",
+            "args": [
+                "read",
+                "--config",
+                "integration_tests/sample_config.json",
+                "--catalog",
+                "integration_tests/configured_catalogs/csv.json"
+            ],
+            "cwd": "${workspaceFolder}/airbyte-integrations/connectors/source-s3",
+            "console": "integratedTerminal",
+            "python": "${workspaceFolder}/airbyte-integrations/connectors/source-s3/.venv/bin/python"
+        },
+        {
+            "name": "S3: Read JSON Lines Only",
+            "type": "debugpy",
+            "request": "launch",
+            "program": "${workspaceFolder}/airbyte-integrations/connectors/source-s3/main.py",
+            "args": [
+                "read",
+                "--config",
+                "integration_tests/sample_config.json",
+                "--catalog",
+                "integration_tests/configured_catalogs/jsonl.json"
+            ],
+            "cwd": "${workspaceFolder}/airbyte-integrations/connectors/source-s3",
+            "console": "integratedTerminal",
+            "python": "${workspaceFolder}/airbyte-integrations/connectors/source-s3/.venv/bin/python"
+        },
+        {
+            "name": "S3: Read Parquet Only",
+            "type": "debugpy",
+            "request": "launch",
+            "program": "${workspaceFolder}/airbyte-integrations/connectors/source-s3/main.py",
+            "args": [
+                "read",
+                "--config",
+                "integration_tests/sample_config.json",
+                "--catalog",
+                "integration_tests/configured_catalogs/parquet.json"
+            ],
+            "cwd": "${workspaceFolder}/airbyte-integrations/connectors/source-s3",
+            "console": "integratedTerminal",
+            "python": "${workspaceFolder}/airbyte-integrations/connectors/source-s3/.venv/bin/python"
+        },
+        {
+            "name": "S3: Read Avro Only",
+            "type": "debugpy",
+            "request": "launch",
+            "program": "${workspaceFolder}/airbyte-integrations/connectors/source-s3/main.py",
+            "args": [
+                "read",
+                "--config",
+                "integration_tests/sample_config.json",
+                "--catalog",
+                "integration_tests/configured_catalogs/avro.json"
+            ],
+            "cwd": "${workspaceFolder}/airbyte-integrations/connectors/source-s3",
+            "console": "integratedTerminal",
+            "python": "${workspaceFolder}/airbyte-integrations/connectors/source-s3/.venv/bin/python"
+        },
+        {
+            "name": "S3: Read Raw Lines Only",
+            "type": "debugpy",
+            "request": "launch",
+            "program": "${workspaceFolder}/airbyte-integrations/connectors/source-s3/main.py",
+            "args": [
+                "read",
+                "--config",
+                "integration_tests/sample_config.json",
+                "--catalog",
+                "integration_tests/configured_catalogs/lines.json"
+            ],
+            "cwd": "${workspaceFolder}/airbyte-integrations/connectors/source-s3",
+            "console": "integratedTerminal",
+            "python": "${workspaceFolder}/airbyte-integrations/connectors/source-s3/.venv/bin/python"
+        },
+        {
+            "name": "S3: Read S3 Data Stream",
+            "type": "debugpy",
+            "request": "launch",
+            "program": "${workspaceFolder}/airbyte-integrations/connectors/source-s3/main.py",
+            "args": [
+                "read",
+                "--config",
+                "integration_tests/sample_config.json",
+                "--catalog",
+                "integration_tests/s3_data_catalog.json"
+            ],
+            "cwd": "${workspaceFolder}/airbyte-integrations/connectors/source-s3",
+            "console": "integratedTerminal",
+            "python": "${workspaceFolder}/airbyte-integrations/connectors/source-s3/.venv/bin/python"
         }
     ]
 }

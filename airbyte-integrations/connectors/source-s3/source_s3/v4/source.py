@@ -33,8 +33,11 @@ from airbyte_cdk.sources.file_based.stream import AbstractFileBasedStream
 from airbyte_cdk.sources.file_based.stream.cursor import AbstractFileBasedCursor
 from airbyte_cdk.sources.file_based.config.abstract_file_based_spec import AbstractFileBasedSpec
 from airbyte_cdk.sources.file_based.config.validate_config_transfer_modes import use_file_transfer, preserve_directory_structure
+from airbyte_cdk.sources.file_based.file_types import default_parsers
 
 from source_s3.source import SourceS3Spec
+from source_s3.v4.parsers.lines_format import LinesFormat
+from source_s3.v4.parsers.lines_parser import LinesParser
 from source_s3.utils import airbyte_message_to_json
 from source_s3.v4.config import Config
 from source_s3.v4.cursor import Cursor
@@ -253,6 +256,8 @@ class SourceS3(FileBasedSource):
             stream_reader=SourceS3StreamReader(),
             spec_class=Config,
             cursor_cls=Cursor,
+            # Add custom parsers including Lines
+            parsers={**default_parsers, LinesFormat: LinesParser()},
             # This is needed early. (We also will provide it again later.)
             catalog=configured_catalog,
             # These will be provided later, after we have wrapped proper error handling.

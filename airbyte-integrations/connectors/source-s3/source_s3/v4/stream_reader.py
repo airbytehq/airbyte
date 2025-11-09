@@ -6,7 +6,7 @@ import logging
 import time
 from datetime import datetime
 from io import IOBase
-from typing import Dict, Iterable, List, Optional, Set, cast
+from typing import Dict, Iterable, List, Optional, Set, Tuple, cast
 
 import boto3.session
 import pendulum
