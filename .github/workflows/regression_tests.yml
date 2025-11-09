@@ -57,6 +57,22 @@ jobs:
     runs-on: linux-24.04-large # Custom runner, defined in GitHub org settings
     timeout-minutes: 360 # 6 hours
     steps:
+      - name: Print inputs
+        run: |
+          echo "Job Inputs:"
+          echo "  Connector name: ${{ github.event.inputs.connector_name }}"
+            if [[ "${{ github.event.inputs.connection_id }}" == "auto" ]]; then
+            echo "  Connection ID: auto"
+            else
+            echo "  Connection ID: $(echo "${{ github.event.inputs.connection_id }}" | cut -c1-8)"
+            fi
+          echo "  PR URL: ${{ github.event.inputs.pr_url }}"
+          echo "  Streams: ${{ github.event.inputs.streams }}"
+          echo "  Should read with state: ${{ github.event.inputs.should_read_with_state }}"
+          echo "  Use local CDK: ${{ github.event.inputs.use_local_cdk }}"
+          echo "  Disable proxy: ${{ github.event.inputs.disable_proxy }}"
+          echo "  Connection subset: ${{ github.event.inputs.connection_subset }}"
+
       - name: Install Python
         id: install_python
         uses: actions/setup-python@7f4fc3e22c37d6ff65e88745f38bd3157c663f7c # v4.9.1
