@@ -1,5 +1,1 @@
-{
-  "base_url": "https://myorg.abc.com",
-  "start_date": "2022-07-22T00:00:00Z",
-  "token": "00uItIsFake_DoNotUseTheTokenEoxoRw_2"
-}
+{"base_url": "https://myorg.abc.com", "start_date": "2022-07-22T00:00:00Z", "token": "00uItIsFake_DoNotUseTheTokenEoxoRw_2", "domain": "myorg", "credentials": {"auth_type": "api_token", "api_token": "00uItIsFake_DoNotUseTheTokenEoxoRw_2"}}
