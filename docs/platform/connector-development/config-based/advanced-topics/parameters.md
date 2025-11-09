@@ -23,7 +23,7 @@ outer:
     k2: v2
 ```
 
-In the example above, if both outer and inner are types with a "MyKey" field, both of them will evaluate to "MyValue".
+In this example, if both outer and inner are types with a "MyKey" field, both of them evaluate to "MyValue."
 
 These parameters can be overwritten by subcomponents as a form of specialization:
 
@@ -37,7 +37,7 @@ outer:
     k2: v2
 ```
 
-In this example, "outer.MyKey" will evaluate to "MyValue", and "inner.MyKey" will evaluate to "YourValue".
+In this example, "outer.MyKey" evaluates to "MyValue," and "inner.MyKey" evaluates to "YourValue."
 
 The value can also be used for string interpolation:
 
@@ -49,7 +49,7 @@ outer:
     k2: "MyKey is {{ parameters['MyKey'] }}"
 ```
 
-In this example, outer.inner.k2 will evaluate to "MyKey is MyValue"
+In this example, outer.inner.k2 evaluates to "MyKey is MyValue."
 
 ## Automatic Parameter Propagation
 
@@ -58,14 +58,15 @@ Parameters are automatically applied to component fields when those fields are n
 ### How It Works
 
 When a component is processed:
+
 1. Parameters from parent components are merged with the current component's parameters
 2. Each parameter key is checked against the component's fields
-3. If a field with that name exists and is not already set (or is falsy), the parameter value is assigned to that field
+3. If a field with that name exists and is not already set (or evaluates to false), the parameter value is assigned to that field
 4. The merged parameters are then passed down to all child components recursively
 
 ### Precedence Rules
 
-- **Explicit values win**: If a field is explicitly set on a component, parameters will not override it
+- **Explicit values win**: If a field is explicitly set on a component, parameters do not override it
 - **Child parameters override parent parameters**: Parameters defined on a child component take precedence over those from parent components
 - **Exclusion rule**: When descending into a nested component, any parameter whose key matches the component's field name is temporarily excluded from propagation to avoid circular references
 
@@ -111,6 +112,7 @@ streams:
 ```
 
 In this example:
+
 - Both streams reference the same `base_stream` definition
 - Each stream provides different `$parameters` values for `path` and `name`
 - These parameters automatically propagate down through the component hierarchy: stream → retriever → requester
