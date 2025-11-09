@@ -59,21 +59,16 @@ definitions:
     ## - REST_CRUDL_POST_1999: Uses POST for updates (RFC 2616, 1999)
     ## - REST_CRUDL_PATCH_2010: Uses PATCH for updates (RFC 5789, 2010)
     ## When not set, users define interactions directly. Users can always override defaults even when set. (important-comment)
-
-    supported_operations:
-      # read_one:     True    ## Matches REST CRUDL defaults.
-      # read_many:    True    ## Matches REST CRUDL defaults.
-      # create_one:   True    ## Matches REST CRUDL defaults.
-      # create_many:  False   ## Default, falls back to `create_one` in a loop.
-      # update_one:   True    ## Matches REST CRUDL defaults.
-      # update_many:  False   ## Default, falls back to `update_one` in a loop.
-      # delete_one:   True    ## Matches REST CRUDL defaults.
-      # delete_many:  False   ## Default, falls back to `delete_one` in a loop.
-      # replace_many: False   ## Default, falls back to `replace_one` in a loop.
-
-      ## Only one override needed for Stripe's operation semantics:
-      replace_one:  False     ## Stripe doesn't support `PUT` full replacement.
-                              ## CDK will fall back to read_only+update_one with patch applied over most-recent record data.
+    
+    ## Filter which operation types to enable (applies on top of profile defaults):
+    standard_operations_subset: [read, create, update, delete]
+    ## Subset options: read, create, update, replace, delete
+    ## - read: Enables read_many and read_one
+    ## - create: Enables create_one (create_many falls back to create_one loop) (important-comment)
+    ## - update: Enables update_one (update_many falls back to update_one loop) (important-comment)
+    ## - replace: Enables replace_one (replace_many falls back to replace_one loop) (important-comment)
+    ## - delete: Enables delete_one (delete_many falls back to delete_one loop) (important-comment)
+    ## Note: 'replace' is omitted for Stripe since it doesn't support PUT full replacement. (important-comment)
 
 
     ## Standard REST CRUDL profile defaults:
