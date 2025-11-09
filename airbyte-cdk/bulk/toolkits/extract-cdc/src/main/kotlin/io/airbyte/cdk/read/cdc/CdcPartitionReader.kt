@@ -280,7 +280,8 @@ class CdcPartitionReader<T : Comparable<T>>(
 
             if (engineShuttingDown.get()) {
                 // If we're already shutting down, don't process any more events.
-                return
+//                return
+                log.info { "*** accept after shutdown: $changeEvent" }
             }
 
             val event = DebeziumEvent(changeEvent)
