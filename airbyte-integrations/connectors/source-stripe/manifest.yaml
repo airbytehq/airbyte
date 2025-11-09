@@ -27,7 +27,7 @@ definitions:
       $ref: "#/definitions/base_requester"
 
     # New `single_record_selector` is default for individual record operations,
-    # including `read_one`, `create_one`, and `update_one`.
+    # including `read_one`, `create_one`, `update_one`, and `replace_one`.
     # Below is the default behavior and therefore optional to specify:
     single_record_selector:
       type: RecordSelector
@@ -57,6 +57,8 @@ definitions:
       - create_many  # Fall back to `create_one` in a loop.
       - update_many  # Fall back to `update_one` in a loop.
       - delete_many  # Fall back to `delete_one` in a loop.
+      - replace_one  # Stripe only supports partial updates (update_one), not full replacement.
+      - replace_many  # Stripe only supports partial updates (update_many), not full replacement.
 
     # Note on $ref merge semantics: Using $ref with inline field overrides performs
     # shallow merge. Overriding nested dicts (e.g., request_headers, error_handler)
@@ -70,6 +72,24 @@ definitions:
     # Note on primary key injection: A planned pk() macro will allow {{ pk(record) }}
     # to automatically extract the primary key value without hardcoding field names.
     # For now, use {{ record.id }} explicitly.
+    #
+    # Note on update_one vs replace_one semantics: (important-comment)
+    # - update_one: Partial update (PATCH semantics). Only provided fields change;
+    #   unspecified fields are preserved. Maps to PATCH by default, or POST with
+    #   partial update semantics (like Stripe).
+    # - replace_one: Full replacement (PUT semantics). The supplied record is the
+    #   entire new resource; unspecified fields are cleared per API rules. Maps to
+    #   PUT by default. By default, we do NOT auto-null unspecified fields; we send
+    #   the provided record as-is and let the API's PUT semantics handle clearing.
+    #   Connectors can opt into explicit null clearing via replace_unset_strategy.
+    #
+    # Standard REST CRUDL profile defaults (standard_rest_api_profile: rest_crudl_v1):
+    # - read_many: GET /collection
+    # - read_one: GET /collection/{id}
+    # - create_one: POST /collection
+    # - update_one: PATCH /collection/{id} (partial update)
+    # - replace_one: PUT /collection/{id} (full replacement)
+    # - delete_one: DELETE /collection/{id}
     operation_overrides:
       read_many: {} # No overrides needed - uses profile defaults.
       read_one: {} # No overrides needed - uses profile defaults.
