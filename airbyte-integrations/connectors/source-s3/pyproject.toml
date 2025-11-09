@@ -47,3 +47,103 @@ include = [
     # Run `poe` or `poe --help` to see the list of available tasks.
     "${POE_GIT_DIR}/poe-tasks/poetry-connector-tasks.toml",
 ]
+
+# Local Docker build tasks for this connector
+[tool.poe.tasks.build]
+cmd = "docker build -t airbyte/source-s3:dev ."
+help = "Build a local dev image for source-s3 using the Dockerfile in this directory."
+
+[tool.poe.tasks.build-arm]
+cmd = "docker buildx build --platform linux/arm64 -t airbyte/source-s3:arm ."
+help = "Build an ARM64 image for source-s3."
+
+[tool.poe.tasks.build-amd]
+cmd = "docker buildx build --platform linux/amd64 -t airbyte/source-s3:amd ."
+help = "Build an AMD64 image for source-s3."
+
+[tool.poe.tasks.build-all]
+sequence = [
+    "build-arm",
+    "build-amd",
+]
+help = "Build both ARM64 and AMD64 images."
+
+[tool.poe.tasks.save-arm]
+cmd = "docker save airbyte/source-s3:arm -o s3-connector-arm.tar"
+help = "Save the ARM64 image to a tarball."
+
+[tool.poe.tasks.save-amd]
+cmd = "docker save airbyte/source-s3:amd -o s3-connector-amd.tar"
+help = "Save the AMD64 image to a tarball."
+
+# ECR push tasks (run where your Docker is logged into ECR)
+[tool.poe.tasks.ecr-tag-push-arm]
+shell = """
+VERSION=${VERSION:?Set VERSION, e.g. 1.0.0}
+REGISTRY=${REGISTRY:-794038212761.dkr.ecr.us-east-1.amazonaws.com/airbyte/source-s3/docker}
+docker tag airbyte/source-s3:arm ${REGISTRY}:${VERSION}-arm
+docker push ${REGISTRY}:${VERSION}-arm
+docker tag airbyte/source-s3:arm ${REGISTRY}:arm
+docker push ${REGISTRY}:arm
+"""
+help = "Tag and push the ARM image to ECR. Requires VERSION and optional REGISTRY env vars."
+
+[tool.poe.tasks.ecr-tag-push-amd]
+shell = """
+VERSION=${VERSION:?Set VERSION, e.g. 1.0.0}
+REGISTRY=${REGISTRY:-794038212761.dkr.ecr.us-east-1.amazonaws.com/airbyte/source-s3/docker}
+docker tag airbyte/source-s3:amd ${REGISTRY}:${VERSION}-amd
+docker push ${REGISTRY}:${VERSION}-amd
+docker tag airbyte/source-s3:amd ${REGISTRY}:amd
+docker push ${REGISTRY}:amd
+"""
+help = "Tag and push the AMD64 image to ECR. Requires VERSION and optional REGISTRY env vars."
+
+[tool.poe.tasks.ecr-push-all]
+sequence = [
+    "ecr-tag-push-arm",
+    "ecr-tag-push-amd",
+]
+help = "Push both ARM and AMD images to ECR."
+
+[tool.poe.tasks.manifest-push-version]
+shell = """
+VERSION=${VERSION:?Set VERSION, e.g. 1.0.0}
+REGISTRY=${REGISTRY:-794038212761.dkr.ecr.us-east-1.amazonaws.com/airbyte/source-s3/docker}
+docker manifest create ${REGISTRY}:${VERSION} \
+    --amend ${REGISTRY}:${VERSION}-arm \
+    --amend ${REGISTRY}:${VERSION}-amd
+docker manifest annotate ${REGISTRY}:${VERSION} ${REGISTRY}:${VERSION}-arm --os linux --arch arm64
+docker manifest annotate ${REGISTRY}:${VERSION} ${REGISTRY}:${VERSION}-amd --os linux --arch amd64
+docker manifest push ${REGISTRY}:${VERSION}
+"""
+help = "Create and push a versioned multi-arch manifest to ECR."
+
+[tool.poe.tasks.manifest-push-latest]
+shell = """
+REGISTRY=${REGISTRY:-794038212761.dkr.ecr.us-east-1.amazonaws.com/airbyte/source-s3/docker}
+docker manifest create ${REGISTRY}:latest \
+    --amend ${REGISTRY}:arm \
+    --amend ${REGISTRY}:amd
+docker manifest annotate ${REGISTRY}:latest ${REGISTRY}:arm --os linux --arch arm64
+docker manifest annotate ${REGISTRY}:latest ${REGISTRY}:amd --os linux --arch amd64
+docker manifest push ${REGISTRY}:latest
+"""
+help = "Create and push the latest multi-arch manifest to ECR."
+
+# One-shot end-to-end release task
+[tool.poe.tasks.release]
+shell = '''
+        VERSION="${VERSION}"
+        : "${VERSION:?Version is required, e.g. 1.0.0}"
+        export VERSION
+        poe build-all
+        poe ecr-tag-push-arm
+        poe ecr-tag-push-amd
+        poe manifest-push-version
+        poe manifest-push-latest
+'''
+args = [
+    { name = "VERSION", positional = true, help = "Version tag to publish (e.g. 1.0.0)" },
+]
+help = "Build both arches, push to ECR, and publish version+latest manifests. Usage: poe release 1.0.0"
