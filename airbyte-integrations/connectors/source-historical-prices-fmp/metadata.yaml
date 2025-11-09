@@ -1,0 +1,35 @@
+metadataSpecVersion: "1.0"
+data:
+  allowedHosts:
+    hosts:
+      - "financialmodelingprep.com"
+  registryOverrides:
+    oss:
+      enabled: true
+    cloud:
+      enabled: true
+  remoteRegistries:
+    pypi:
+      enabled: false
+      packageName: airbyte-source-historical-prices-fmp
+  connectorBuildOptions:
+    baseImage: docker.io/airbyte/source-declarative-manifest:6.61.6@sha256:a86098c6af1cf9d0b4484f33c973981a4d4f16740924ce9325b01ee4c8ca33df
+  connectorSubtype: api
+  connectorType: source
+  definitionId: 6f8a9dd0-8aae-4fef-874d-fd45c270b6de
+  dockerImageTag: 0.0.1
+  dockerRepository: airbyte/source-historical-prices-fmp
+  githubIssueLabel: source-historical-prices-fmp
+  icon: icon.svg
+  license: ELv2
+  name: Historical Prices FMP
+  releaseDate: 2025-09-03
+  releaseStage: alpha
+  supportLevel: community
+  documentationUrl: https://docs.airbyte.com/integrations/sources/historical-prices-fmp
+  tags:
+    - language:manifest-only
+    - cdk:low-code
+  ab_internal:
+    ql: 100
+    sl: 100
