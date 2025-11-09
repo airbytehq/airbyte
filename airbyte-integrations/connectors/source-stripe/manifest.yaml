@@ -17,7 +17,11 @@ definitions:
   base_retriever:
     type: SimpleBidirectionalRetriever
 
-    operation_profile: rest_crudl_v1
+    # Opt into standard REST API conventions by setting this profile.
+    # When set to 'rest_crudl_v1' (or other future enum values), the bidirectional
+    # retriever inherits applicable defaults for all operations. When not set, users
+    # define interactions directly. Users can always override defaults even when set.
+    standard_rest_api_profile: rest_crudl_v1
 
     base_requester:
       $ref: "#/definitions/base_requester"
@@ -79,7 +83,7 @@ definitions:
             value: "{{ record }}"
       update_one:
         # Stripe-specific override: Stripe uses POST for updates instead of standard PATCH.
-        # The CDK default (from rest_crudl_v1 profile) would be PATCH.
+        # The CDK default (from standard_rest_api_profile: rest_crudl_v1) would be PATCH.
         requester:
           $ref: "#/definitions/base_requester"
           http_method: POST  # Stripe-specific (CDK default: PATCH)
