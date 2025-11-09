@@ -26,9 +26,19 @@ definitions:
             type: DpathExtractor
             field_path: []
       schema_loader:
-        type: InlineSchemaLoader
-        schema:
-          $ref: "#/schemas/pokemon"
+        type: InferredSchemaLoader
+        record_sample_size: 1
+        retriever:
+          type: SimpleRetriever
+          requester:
+            $ref: "#/definitions/base_requester"
+            path: /{{config['pokemon_name']}}
+            http_method: GET
+          record_selector:
+            type: RecordSelector
+            extractor:
+              type: DpathExtractor
+              field_path: []
   base_requester:
     type: HttpRequester
     url_base: https://pokeapi.co/api/v2/pokemon
