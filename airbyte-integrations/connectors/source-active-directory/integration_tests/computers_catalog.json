@@ -1,0 +1,32 @@
+{
+  "streams": [
+    {
+      "stream": {
+        "name": "computers",
+        "json_schema": {
+          "$schema": "http://json-schema.org/draft-07/schema#",
+          "type": "object",
+          "properties": {
+            "id": {"type": ["string"], "description": "Computer's unique objectGUID identifier"},
+            "name": {"type": ["string", "null"], "description": "Computer's display name"},
+            "computer_name": {"type": ["string"], "description": "sAMAccountName"},
+            "dns_hostname": {"type": ["string", "null"], "description": "DNS hostname of the computer"},
+            "operating_system": {"type": ["string", "null"], "description": "Operating system name"},
+            "operating_system_version": {"type": ["string", "null"], "description": "Operating system version"},
+            "operating_system_service_pack": {"type": ["string", "null"], "description": "Operating system service pack"},
+            "distinguished_name": {"type": ["string", "null"], "description": "Distinguished name of the computer"},
+            "description": {"type": ["string", "null"], "description": "Computer description"},
+            "created_at": {"type": ["string"], "description": "Computer account creation time"},
+            "modified_at": {"type": ["string"], "description": "Last modification time"},
+            "last_logon": {"type": ["string", "null"], "description": "Last logon timestamp"},
+            "password_last_set": {"type": ["string", "null"], "description": "Password last set timestamp"},
+            "enabled": {"type": ["boolean"], "description": "Computer account enabled status"}
+          }
+        },
+        "supported_sync_modes": ["full_refresh"]
+      },
+      "sync_mode": "full_refresh",
+      "destination_sync_mode": "append"
+    }
+  ]
+}

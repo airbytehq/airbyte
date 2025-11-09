@@ -1,17 +1,20 @@
 import logging
+import ssl
 
 from typing import Any, List, Mapping, Optional, Tuple
 
 from airbyte_cdk import AbstractSource
 from airbyte_cdk.sources.streams import Stream
 
-from bloodhound.ad.authentication import ADAuthentication
-from ldap3 import Connection
+from ldap3 import Connection, Server, ALL, SIMPLE, Tls
 
 from .streams import (
+    ACLs,
+    Computers,
     Domains,
     Forest,
     ForestDomains,
+    GPOs,
     GroupMemberships,
     Groups,
     OrganizationalUnitObjects,
@@ -32,9 +35,12 @@ class SourceActiveDirectory(AbstractSource):
 
     def streams(self, config: Mapping[str, Any]) -> List[Stream]:
         return [
+            ACLs(conn=self._get_ldap_connection(config)),
+            Computers(conn=self._get_ldap_connection(config)),
             Forest(conn=self._get_ldap_connection(config)),
             Domains(conn=self._get_ldap_connection(config)),
             ForestDomains(conn=self._get_ldap_connection(config)),
+            GPOs(conn=self._get_ldap_connection(config)),
             Sites(conn=self._get_ldap_connection(config)),
             OrganizationalUnits(conn=self._get_ldap_connection(config)),
             Users(conn=self._get_ldap_connection(config)),
@@ -47,22 +53,32 @@ class SourceActiveDirectory(AbstractSource):
         username = config['username']
         password = config['password']
         domain = config['domain']
-
-        # Auth object
-        auth = ADAuthentication(
-            domain=domain,
-            username=username,
-            password=password,
-        )
-
         domain_ip = config['domain_ip']
+
+        user_dn = f"{username}@{domain}"
+
         try:
-            # Trying LDAPS
-            connection = auth.getLDAPConnection(ip=domain_ip)
+            # Try LDAPS first
+            tls_config = Tls(validate=ssl.CERT_NONE, version=ssl.PROTOCOL_TLSv1_2)
+            server = Server(f'ldaps://{domain_ip}', port=636, use_ssl=True, get_info=ALL, tls=tls_config)
+            conn = Connection(
+                server,
+                user=user_dn,
+                password=password,
+                auto_bind=True,
+                authentication=SIMPLE
+            )
+
         except Exception as e:
             logging.warning(f"LDAPS connection failed: {e}")
-            # Trying LDAP
-            connection = auth.getLDAPConnection(ip=domain_ip, protocol='ldap')
-
-        return connection
-
+            # Try LDAP (non-SSL)
+            server = Server(f'ldap://{domain_ip}',use_ssl=False, get_info=ALL)
+            conn = Connection(
+                server,
+                user=user_dn,
+                password=password,
+                authentication=SIMPLE,
+                auto_bind=True
+            )
+            
+        return conn

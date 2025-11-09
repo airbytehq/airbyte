@@ -2,6 +2,34 @@
   "streams": [
     {
       "stream": {
+        "name": "acls",
+        "json_schema": {
+          "$schema": "http://json-schema.org/draft-07/schema#",
+          "type": "object",
+          "properties": {
+            "id": {"type": ["string"], "description": "Unique identifier for this ACL entry"},
+            "resource_id": {"type": ["string"], "description": "ObjectGUID of the resource object"},
+            "resource_dn": {"type": ["string"], "description": "Distinguished name of the resource"},
+            "resource_type": {"type": ["string"], "description": "Object class of the resource"},
+            "principal_sid": {"type": ["string"], "description": "SID of the principal (user/group/computer)"},
+            "principal_id": {"type": ["string", "null"], "description": "ObjectGUID of the principal object"},
+            "principal_type": {"type": ["string"], "description": "Type of principal (User, Group, Computer, etc.)"},
+            "ace_type": {"type": ["string"], "description": "Access Control Entry type (Allow, Deny, etc.)"},
+            "permissions": {"type": ["array"], "items": {"type": "string"}, "description": "List of permissions granted"},
+            "access_mask": {"type": ["integer"], "description": "Raw access mask value"},
+            "inheritance_flags": {"type": ["array"], "items": {"type": "string"}, "description": "Inheritance flags"},
+            "is_inherited": {"type": ["boolean"], "description": "Whether this ACE is inherited"},
+            "created_at": {"type": ["string", "null"], "description": "Resource creation time"},
+            "modified_at": {"type": ["string", "null"], "description": "Resource last modification time"}
+          }
+        },
+        "supported_sync_modes": ["full_refresh"]
+      },
+      "sync_mode": "full_refresh",
+      "destination_sync_mode": "append"
+    },
+    {
+      "stream": {
         "name": "users",
         "json_schema": {
           "$schema": "http://json-schema.org/draft-07/schema#",
@@ -213,6 +241,75 @@
             "is_direct_child": {"type": ["boolean"], "description": "Whether the object is directly under this OU"},
             "created_at": {"type": ["string", "null"], "description": "Object creation time"},
             "modified_at": {"type": ["string", "null"], "description": "Object last modification time"}
+          }
+        },
+        "supported_sync_modes": ["full_refresh"]
+      },
+      "sync_mode": "full_refresh",
+      "destination_sync_mode": "append"
+    },
+    {
+      "stream": {
+        "name": "computers",
+        "json_schema": {
+          "$schema": "http://json-schema.org/draft-07/schema#",
+          "type": "object",
+          "properties": {
+            "id": {"type": ["string"], "description": "Computer's unique objectGUID identifier"},
+            "name": {"type": ["string", "null"], "description": "Computer's display name"},
+            "computer_name": {"type": ["string"], "description": "sAMAccountName"},
+            "dns_hostname": {"type": ["string", "null"], "description": "DNS hostname of the computer"},
+            "operating_system": {"type": ["string", "null"], "description": "Operating system name"},
+            "operating_system_version": {"type": ["string", "null"], "description": "Operating system version"},
+            "operating_system_service_pack": {"type": ["string", "null"], "description": "Operating system service pack"},
+            "distinguished_name": {"type": ["string", "null"], "description": "Distinguished name of the computer"},
+            "description": {"type": ["string", "null"], "description": "Computer description"},
+            "created_at": {"type": ["string"], "description": "Computer account creation time"},
+            "modified_at": {"type": ["string"], "description": "Last modification time"},
+            "last_logon": {"type": ["string", "null"], "description": "Last logon timestamp"},
+            "password_last_set": {"type": ["string", "null"], "description": "Password last set timestamp"},
+            "enabled": {"type": ["boolean"], "description": "Computer account enabled status"}
+          }
+        },
+        "supported_sync_modes": ["full_refresh"]
+      },
+      "sync_mode": "full_refresh",
+      "destination_sync_mode": "append"
+    },
+    {
+      "stream": {
+        "name": "gpos",
+        "json_schema": {
+          "$schema": "http://json-schema.org/draft-07/schema#",
+          "type": "object",
+          "properties": {
+            "id": {"type": ["string"], "description": "GPO's unique objectGUID identifier"},
+            "name": {"type": ["string", "null"], "description": "GPO display name"},
+            "dn": {"type": ["string", "null"], "description": "Distinguished name of the GPO"},
+            "flags": {"type": ["integer", "null"], "description": "GPO flags (enabled/disabled status)"},
+            "version_number": {"type": ["integer", "null"], "description": "GPO version number"},
+            "functionality_version": {"type": ["integer", "null"], "description": "GPO functionality version"},
+            "file_sys_path": {"type": ["string", "null"], "description": "File system path to GPO files"},
+            "machine_extension_names": {"type": ["array"], "items": {"type": "string"}, "description": "Machine extension GUIDs"},
+            "user_extension_names": {"type": ["array"], "items": {"type": "string"}, "description": "User extension GUIDs"},
+            "wql_filter": {"type": ["string", "null"], "description": "WMI filter for GPO"},
+            "created_at": {"type": ["string", "null"], "description": "GPO creation time"},
+            "modified_at": {"type": ["string", "null"], "description": "Last modification time"},
+            "machine_extensions_decoded": {"type": ["array"], "items": {"type": "object"}, "description": "Decoded machine extension information"},
+            "user_extensions_decoded": {"type": ["array"], "items": {"type": "object"}, "description": "Decoded user extension information"},
+            "gpo_status": {"type": ["object", "null"], "description": "Parsed GPO status and flags"},
+            "version_info": {"type": ["object", "null"], "description": "Detailed version information breakdown"},
+            "wmi_filters_content": {"type": ["array"], "items": {"type": "object"}, "description": "WMI filter details retrieved from LDAP"},
+            "remote_analysis": {"type": ["object", "null"], "description": "Remote scanning metadata and capabilities"},
+            "gpt_ini_content": {"type": ["object", "null"], "description": "GPT.INI file content (if accessible)"},
+            "machine_registry_content": {"type": ["object", "null"], "description": "Machine Registry.pol content (if accessible)"},
+            "user_registry_content": {"type": ["object", "null"], "description": "User Registry.pol content (if accessible)"},
+            "machine_scripts": {"type": ["array"], "items": {"type": "object"}, "description": "Machine startup/shutdown scripts (if accessible)"},
+            "user_scripts": {"type": ["array"], "items": {"type": "object"}, "description": "User logon/logoff scripts (if accessible)"},
+            "security_settings": {"type": ["object", "null"], "description": "Security settings from GptTmpl.inf (if accessible)"},
+            "administrative_templates": {"type": ["object", "null"], "description": "Administrative template settings (if accessible)"},
+            "folder_redirection": {"type": ["object", "null"], "description": "Folder redirection settings (if accessible)"},
+            "software_installation": {"type": ["array"], "items": {"type": "object"}, "description": "Software installation packages (if accessible)"}
           }
         },
         "supported_sync_modes": ["full_refresh"]
