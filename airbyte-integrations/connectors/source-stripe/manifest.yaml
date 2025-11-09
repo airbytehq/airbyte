@@ -362,6 +362,7 @@ definitions:
         $ref: "#/definitions/base_retriever"
         $parameters:
           path: events
+        standard_operations_subset: [read]
         http_deep_link_pattern: "https://dashboard.stripe.com/events/{id}"
       $parameters:
         path: events
@@ -385,6 +386,7 @@ definitions:
         $ref: "#/definitions/base_retriever"
         $parameters:
           path: balance_transactions
+        standard_operations_subset: [read]
         http_deep_link_pattern: "https://dashboard.stripe.com/balance/transactions/{id}"
       $parameters:
         path: balance_transactions
@@ -399,6 +401,7 @@ definitions:
         $ref: "#/definitions/base_retriever"
         $parameters:
           path: files
+        standard_operations_subset: [read]
         http_deep_link_pattern: "https://dashboard.stripe.com/files/{id}"
       $parameters:
         path: files
@@ -423,6 +426,7 @@ definitions:
           $ref: "#/definitions/base_retriever"
           $parameters:
             path: customers
+          standard_operations_subset: [read, create, update, delete]
           http_deep_link_pattern: "https://dashboard.stripe.com/customers/{id}"
         schema_loader:
           type: InlineSchemaLoader
@@ -450,6 +454,7 @@ definitions:
           $ref: "#/definitions/base_retriever"
           $parameters:
             path: subscriptions
+          standard_operations_subset: [read, create, update, delete]
           http_deep_link_pattern: "https://dashboard.stripe.com/subscriptions/{id}"
           requester:
             $ref: "#/definitions/base_requester"
@@ -481,6 +486,7 @@ definitions:
           $ref: "#/definitions/base_retriever"
           $parameters:
             path: invoices
+          standard_operations_subset: [read, create, update]
           http_deep_link_pattern: "https://dashboard.stripe.com/invoices/{id}"
           requester:
             $ref: "#/definitions/base_requester"
@@ -512,6 +518,7 @@ definitions:
           $ref: "#/definitions/base_retriever"
           $parameters:
             path: transfers
+          standard_operations_subset: [read, create, update]
           http_deep_link_pattern: "https://dashboard.stripe.com/transfers/{id}"
         schema_loader:
           type: InlineSchemaLoader
@@ -539,6 +546,7 @@ definitions:
           $ref: "#/definitions/base_retriever"
           $parameters:
             path: refunds
+          standard_operations_subset: [read, create, update]
           http_deep_link_pattern: "https://dashboard.stripe.com/payments/{charge}"
         schema_loader:
           type: InlineSchemaLoader
@@ -618,6 +626,7 @@ definitions:
           $ref: "#/definitions/base_retriever"
           $parameters:
             path: charges
+          standard_operations_subset: [read, create, update]
           http_deep_link_pattern: "https://dashboard.stripe.com/payments/{id}"
           requester:
             $ref: "#/definitions/base_requester"
@@ -649,6 +658,7 @@ definitions:
           $ref: "#/definitions/base_retriever"
           $parameters:
             path: coupons
+          standard_operations_subset: [read, create, update, delete]
           http_deep_link_pattern: "https://dashboard.stripe.com/coupons/{id}"
         schema_loader:
           type: InlineSchemaLoader
@@ -676,6 +686,7 @@ definitions:
           $ref: "#/definitions/base_retriever"
           $parameters:
             path: disputes
+          standard_operations_subset: [read, update]
           http_deep_link_pattern: "https://dashboard.stripe.com/disputes/{id}"
         schema_loader:
           type: InlineSchemaLoader
@@ -755,6 +766,7 @@ definitions:
           $ref: "#/definitions/base_retriever"
           $parameters:
             path: payouts
+          standard_operations_subset: [read, create, update]
           http_deep_link_pattern: "https://dashboard.stripe.com/payouts/{id}"
         schema_loader:
           type: InlineSchemaLoader
@@ -838,6 +850,7 @@ definitions:
           $ref: "#/definitions/base_retriever"
           $parameters:
             path: products
+          standard_operations_subset: [read, create, update, delete]
           http_deep_link_pattern: "https://dashboard.stripe.com/products/{id}"
         schema_loader:
           type: InlineSchemaLoader
@@ -865,6 +878,7 @@ definitions:
           $ref: "#/definitions/base_retriever"
           $parameters:
             path: reviews
+          standard_operations_subset: [read, update]
           http_deep_link_pattern: "https://dashboard.stripe.com/reviews/{id}"
         schema_loader:
           type: InlineSchemaLoader
@@ -918,6 +932,7 @@ definitions:
           $ref: "#/definitions/base_retriever"
           $parameters:
             path: payment_intents
+          standard_operations_subset: [read, create, update]
           http_deep_link_pattern: "https://dashboard.stripe.com/payments/{id}"
         schema_loader:
           type: InlineSchemaLoader
@@ -945,6 +960,7 @@ definitions:
           $ref: "#/definitions/base_retriever"
           $parameters:
             path: promotion_codes
+          standard_operations_subset: [read, create, update]
           http_deep_link_pattern: "https://dashboard.stripe.com/promotion_codes/{id}"
         schema_loader:
           type: InlineSchemaLoader
@@ -1050,6 +1066,7 @@ definitions:
           $ref: "#/definitions/base_retriever"
           $parameters:
             path: topups
+          standard_operations_subset: [read, create]
           http_deep_link_pattern: "https://dashboard.stripe.com/topups/{id}"
         schema_loader:
           type: InlineSchemaLoader
@@ -1103,6 +1120,7 @@ definitions:
           $ref: "#/definitions/base_retriever"
           $parameters:
             path: checkout/sessions
+          standard_operations_subset: [read, create]
           http_deep_link_pattern: "https://dashboard.stripe.com/checkout/sessions/{id}"
         schema_loader:
           type: InlineSchemaLoader
