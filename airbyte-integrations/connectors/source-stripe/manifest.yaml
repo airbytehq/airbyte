@@ -17,11 +17,15 @@ definitions:
   base_retriever:
     type: SimpleBidirectionalRetriever
 
-    # Opt into standard REST API conventions by setting this profile.
-    # When set to 'rest_crudl_v1' (or other future enum values), the bidirectional
-    # retriever inherits applicable defaults for all operations. When not set, users
-    # define interactions directly. Users can always override defaults even when set.
-    standard_rest_api_profile: rest_crudl_v1
+    # Opt into standard REST API conventions by setting this profile. (important-comment)
+    # When set to REST_CRUDL_POST_1999 or REST_CRUDL_PATCH_2010 (or other future enum values), (important-comment)
+    # the bidirectional retriever inherits applicable defaults for all operations.
+    # When not set, users define interactions directly. Users can always override defaults even when set. (important-comment)
+    #
+    # Profile options:
+    # - REST_CRUDL_POST_1999: Uses POST for updates (pre-PATCH, RFC 2616 HTTP/1.1 from 1999)
+    # - REST_CRUDL_PATCH_2010: Uses PATCH for updates (RFC 5789 from March 2010)
+    standard_operations_profile: REST_CRUDL_POST_1999
 
     base_requester:
       $ref: "#/definitions/base_requester"
@@ -83,13 +87,23 @@ definitions:
     #   the provided record as-is and let the API's PUT semantics handle clearing.
     #   Connectors can opt into explicit null clearing via replace_unset_strategy.
     #
-    # Standard REST CRUDL profile defaults (standard_rest_api_profile: rest_crudl_v1):
+    # Standard REST CRUDL profile defaults: (important-comment)
+    #
+    # REST_CRUDL_POST_1999 (pre-PATCH era, RFC 2616 HTTP/1.1 from 1999):
     # - read_many: GET /collection
     # - read_one: GET /collection/{id}
     # - create_one: POST /collection
-    # - update_one: PATCH /collection/{id} (partial update)
-    # - replace_one: PUT /collection/{id} (full replacement)
-    # - delete_one: DELETE /collection/{id}
+    # - update_one: POST /collection/{id} (partial update) (important-comment)
+    # - replace_one: PUT /collection/{id} (full replacement) (important-comment)
+    # - delete_one: DELETE /collection/{id} (important-comment)
+    #
+    # REST_CRUDL_PATCH_2010 (modern, RFC 5789 from March 2010):
+    # - read_many: GET /collection
+    # - read_one: GET /collection/{id}
+    # - create_one: POST /collection
+    # - update_one: PATCH /collection/{id} (partial update) (important-comment)
+    # - replace_one: PUT /collection/{id} (full replacement) (important-comment)
+    # - delete_one: DELETE /collection/{id} (important-comment)
     operation_overrides:
       read_many: {} # No overrides needed - uses profile defaults.
       read_one: {} # No overrides needed - uses profile defaults.
@@ -102,11 +116,10 @@ definitions:
             type: RequestBodyJsonObject
             value: "{{ record }}"
       update_one:
-        # Stripe-specific override: Stripe uses POST for updates instead of standard PATCH.
-        # The CDK default (from standard_rest_api_profile: rest_crudl_v1) would be PATCH.
+        # With REST_CRUDL_POST_1999 profile, POST is already the default for update_one.
+        # No http_method override needed - only path and body configuration required.
         requester:
           $ref: "#/definitions/base_requester"
-          http_method: POST  # Stripe-specific (CDK default: PATCH)
           # Can override `path` or `path_suffix` as needed.
           # In this case, we only want to append to the existing `path':
           path_suffix: "/{{ record.id }}"
