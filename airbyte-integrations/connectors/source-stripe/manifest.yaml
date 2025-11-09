@@ -358,6 +358,11 @@ definitions:
         type: InlineSchemaLoader
         schema:
           $ref: "#/schemas/events"
+      retriever:
+        $ref: "#/definitions/base_retriever"
+        $parameters:
+          path: events
+        http_deep_link_pattern: "https://dashboard.stripe.com/events/{id}"
       $parameters:
         path: events
         name: events
@@ -376,6 +381,11 @@ definitions:
         type: InlineSchemaLoader
         schema:
           $ref: "#/schemas/balance_transactions"
+      retriever:
+        $ref: "#/definitions/base_retriever"
+        $parameters:
+          path: balance_transactions
+        http_deep_link_pattern: "https://dashboard.stripe.com/balance/transactions/{id}"
       $parameters:
         path: balance_transactions
         name: balance_transactions
@@ -385,6 +395,11 @@ definitions:
         type: InlineSchemaLoader
         schema:
           $ref: "#/schemas/files"
+      retriever:
+        $ref: "#/definitions/base_retriever"
+        $parameters:
+          path: files
+        http_deep_link_pattern: "https://dashboard.stripe.com/files/{id}"
       $parameters:
         path: files
         name: files
@@ -408,6 +423,7 @@ definitions:
           $ref: "#/definitions/base_retriever"
           $parameters:
             path: customers
+          http_deep_link_pattern: "https://dashboard.stripe.com/customers/{id}"
         schema_loader:
           type: InlineSchemaLoader
           schema:
@@ -434,6 +450,7 @@ definitions:
           $ref: "#/definitions/base_retriever"
           $parameters:
             path: subscriptions
+          http_deep_link_pattern: "https://dashboard.stripe.com/subscriptions/{id}"
           requester:
             $ref: "#/definitions/base_requester"
             request_parameters:
@@ -464,6 +481,7 @@ definitions:
           $ref: "#/definitions/base_retriever"
           $parameters:
             path: invoices
+          http_deep_link_pattern: "https://dashboard.stripe.com/invoices/{id}"
           requester:
             $ref: "#/definitions/base_requester"
             request_parameters:
@@ -494,6 +512,7 @@ definitions:
           $ref: "#/definitions/base_retriever"
           $parameters:
             path: transfers
+          http_deep_link_pattern: "https://dashboard.stripe.com/transfers/{id}"
         schema_loader:
           type: InlineSchemaLoader
           schema:
@@ -520,6 +539,7 @@ definitions:
           $ref: "#/definitions/base_retriever"
           $parameters:
             path: refunds
+          http_deep_link_pattern: "https://dashboard.stripe.com/payments/{charge}"
         schema_loader:
           type: InlineSchemaLoader
           schema:
@@ -598,6 +618,7 @@ definitions:
           $ref: "#/definitions/base_retriever"
           $parameters:
             path: charges
+          http_deep_link_pattern: "https://dashboard.stripe.com/payments/{id}"
           requester:
             $ref: "#/definitions/base_requester"
             request_parameters:
@@ -628,6 +649,7 @@ definitions:
           $ref: "#/definitions/base_retriever"
           $parameters:
             path: coupons
+          http_deep_link_pattern: "https://dashboard.stripe.com/coupons/{id}"
         schema_loader:
           type: InlineSchemaLoader
           schema:
@@ -654,6 +676,7 @@ definitions:
           $ref: "#/definitions/base_retriever"
           $parameters:
             path: disputes
+          http_deep_link_pattern: "https://dashboard.stripe.com/disputes/{id}"
         schema_loader:
           type: InlineSchemaLoader
           schema:
@@ -732,6 +755,7 @@ definitions:
           $ref: "#/definitions/base_retriever"
           $parameters:
             path: payouts
+          http_deep_link_pattern: "https://dashboard.stripe.com/payouts/{id}"
         schema_loader:
           type: InlineSchemaLoader
           schema:
@@ -814,6 +838,7 @@ definitions:
           $ref: "#/definitions/base_retriever"
           $parameters:
             path: products
+          http_deep_link_pattern: "https://dashboard.stripe.com/products/{id}"
         schema_loader:
           type: InlineSchemaLoader
           schema:
@@ -840,6 +865,7 @@ definitions:
           $ref: "#/definitions/base_retriever"
           $parameters:
             path: reviews
+          http_deep_link_pattern: "https://dashboard.stripe.com/reviews/{id}"
         schema_loader:
           type: InlineSchemaLoader
           schema:
@@ -892,6 +918,7 @@ definitions:
           $ref: "#/definitions/base_retriever"
           $parameters:
             path: payment_intents
+          http_deep_link_pattern: "https://dashboard.stripe.com/payments/{id}"
         schema_loader:
           type: InlineSchemaLoader
           schema:
@@ -918,6 +945,7 @@ definitions:
           $ref: "#/definitions/base_retriever"
           $parameters:
             path: promotion_codes
+          http_deep_link_pattern: "https://dashboard.stripe.com/promotion_codes/{id}"
         schema_loader:
           type: InlineSchemaLoader
           schema:
@@ -1022,6 +1050,7 @@ definitions:
           $ref: "#/definitions/base_retriever"
           $parameters:
             path: topups
+          http_deep_link_pattern: "https://dashboard.stripe.com/topups/{id}"
         schema_loader:
           type: InlineSchemaLoader
           schema:
@@ -1074,6 +1103,7 @@ definitions:
           $ref: "#/definitions/base_retriever"
           $parameters:
             path: checkout/sessions
+          http_deep_link_pattern: "https://dashboard.stripe.com/checkout/sessions/{id}"
         schema_loader:
           type: InlineSchemaLoader
           schema:
