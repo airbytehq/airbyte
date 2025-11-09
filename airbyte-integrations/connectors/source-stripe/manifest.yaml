@@ -17,31 +17,11 @@ definitions:
   base_retriever:
     type: SimpleBidirectionalRetriever
 
-    # Opt into standard REST API conventions by setting this profile. (important-comment)
-    # When set to REST_CRUDL_POST_1999 or REST_CRUDL_PATCH_2010 (or other future enum values), (important-comment)
-    # the bidirectional retriever inherits applicable defaults for all operations.
-    # When not set, users define interactions directly. Users can always override defaults even when set. (important-comment)
-    #
-    # Profile options:
-    # - REST_CRUDL_POST_1999: Uses POST for updates (pre-PATCH, RFC 2616 HTTP/1.1 from 1999)
-    # - REST_CRUDL_PATCH_2010: Uses PATCH for updates (RFC 5789 from March 2010)
-    standard_operations_profile: REST_CRUDL_POST_1999
-
     base_requester:
       $ref: "#/definitions/base_requester"
 
-    # New `single_record_selector` is default for individual record operations,
-    # including `read_one`, `create_one`, `update_one`, and `replace_one`.
-    # Below is the default behavior and therefore optional to specify:
-    single_record_selector:
-      type: RecordSelector
-      extractor:
-        type: DpathExtractor
-        field_path: []  # Single object response
-      schema_normalization: Default
-
-    # Previous 'record_selector' simply renamed to `multi_record_selector` for clarity.
-    # Used for 'read_many' operations:
+    ## The 'record_selector' field is renamed to `multi_record_selector` for clarity.
+    ## Used for 'read_many' operations:
     multi_record_selector:
       type: RecordSelector
       extractor:
@@ -51,88 +31,89 @@ definitions:
       transform_before_filtering: true
       schema_normalization: Default
 
-    # Paginator used for 'read_many' operations. (No change.)
+    ## Paginator used for 'read_many' operations. (No change.)
     paginator:
       $ref: "#/definitions/base_paginator"
 
-    unsupported_operations:
-      # With the exception of `read_many`, unsupported 'many' operations fall
-      # back to sequential 'one' operations:
-      - create_many  # Fall back to `create_one` in a loop.
-      - update_many  # Fall back to `update_one` in a loop.
-      - delete_many  # Fall back to `delete_one` in a loop.
-      - replace_one  # Stripe only supports partial updates (update_one), not full replacement.
-      - replace_many  # Stripe only supports partial updates (update_many), not full replacement.
+    ## ------------------------------------------------
+    ## -- NEW: `single_record_selector` Configuration --
+    ## ------------------------------------------------
+    ## This is the default for individual record operations that return a
+    ## single object, including `read_one`, `create_one`, `update_one`,
+    ## and `replace_one`.
+    ## Below is the default behavior and therefore optional to specify:
+    # single_record_selector:
+    #   type: RecordSelector
+    #   extractor:
+    #     type: DpathExtractor
+    #     field_path: []  ## Single object response
+    #   schema_normalization: Default
 
-    # Note on $ref merge semantics: Using $ref with inline field overrides performs
-    # shallow merge. Overriding nested dicts (e.g., request_headers, error_handler)
-    # replaces the entire dict, not deep-merge. To preserve base values, don't override
-    # or repeat them explicitly.
-    #
-    # Note on path_suffix: This is a planned CDK feature for ergonomic path appending.
-    # When implemented, it will handle trailing/leading slash normalization and URL encoding.
-    # Until then, use full path overrides: path: "{{ base_path }}/{{ record.id }}" (important-comment)
-    #
-    # Note on primary key injection: A planned pk() macro will allow {{ pk(record) }}
-    # to automatically extract the primary key value without hardcoding field names.
-    # For now, use {{ record.id }} explicitly.
-    #
-    # Note on update_one vs replace_one semantics: (important-comment)
-    # - update_one: Partial update (PATCH semantics). Only provided fields change;
-    #   unspecified fields are preserved. Maps to PATCH by default, or POST with
-    #   partial update semantics (like Stripe).
-    # - replace_one: Full replacement (PUT semantics). The supplied record is the
-    #   entire new resource; unspecified fields are cleared per API rules. Maps to
-    #   PUT by default. By default, we do NOT auto-null unspecified fields; we send
-    #   the provided record as-is and let the API's PUT semantics handle clearing.
-    #   Connectors can opt into explicit null clearing via replace_unset_strategy.
-    #
-    # Standard REST CRUDL profile defaults: (important-comment)
-    #
-    # REST_CRUDL_POST_1999 (pre-PATCH era, RFC 2616 HTTP/1.1 from 1999):
-    # - read_many: GET /collection
-    # - read_one: GET /collection/{id}
-    # - create_one: POST /collection
-    # - update_one: POST /collection/{id} (partial update) (important-comment)
-    # - replace_one: PUT /collection/{id} (full replacement) (important-comment)
-    # - delete_one: DELETE /collection/{id} (important-comment)
-    #
-    # REST_CRUDL_PATCH_2010 (modern, RFC 5789 from March 2010):
-    # - read_many: GET /collection
-    # - read_one: GET /collection/{id}
-    # - create_one: POST /collection
-    # - update_one: PATCH /collection/{id} (partial update) (important-comment)
-    # - replace_one: PUT /collection/{id} (full replacement) (important-comment)
-    # - delete_one: DELETE /collection/{id} (important-comment)
-    operation_overrides:
-      read_many: {} # No overrides needed - uses profile defaults.
-      read_one: {} # No overrides needed - uses profile defaults.
-      create_one:
-        requester:
-          $ref: "#/definitions/base_requester"
-          http_method: POST
-          # Intentionally not overriding `path` here - POST to the 'read_many' endpoint.
-          request_body:
-            type: RequestBodyJsonObject
-            value: "{{ record }}"
-      update_one:
-        # With REST_CRUDL_POST_1999 profile, POST is already the default for update_one.
-        # No http_method override needed - only path and body configuration required.
-        requester:
-          $ref: "#/definitions/base_requester"
-          # Can override `path` or `path_suffix` as needed.
-          # In this case, we only want to append to the existing `path':
-          path_suffix: "/{{ record.id }}"
-          request_body:
-            type: RequestBodyJsonObject
-            value: "{{ record }}"
-      delete_one:
-        requester:
-          $ref: "#/definitions/base_requester"
-          http_method: DELETE
-          path_suffix: "/{{ record.id }}"
-        # No record_selector by default - many APIs return 204 No Content.
-        # Stripe may return an object; opt-in to singleton_record_selector if needed. (important-comment)
+    ## ----------------------------------
+    ## -- NEW: Operation Configurations --
+    ## ----------------------------------
+
+    ## Opt into standard REST API conventions by setting this profile:
+    standard_operations_profile: REST_CRUDL_POST_1999
+    ## Profile options:
+    ## - REST_CRUDL_POST_1999: Uses POST for updates (RFC 2616, 1999)
+    ## - REST_CRUDL_PATCH_2010: Uses PATCH for updates (RFC 5789, 2010)
+    ## When not set, users define interactions directly. Users can always override defaults even when set. (important-comment)
+
+    supported_operations:
+      # read_one:     True    ## Matches REST CRUDL defaults.
+      # read_many:    True    ## Matches REST CRUDL defaults.
+      # create_one:   True    ## Matches REST CRUDL defaults.
+      # create_many:  False   ## Default, falls back to `create_one` in a loop.
+      # update_one:   True    ## Matches REST CRUDL defaults.
+      # update_many:  False   ## Default, falls back to `update_one` in a loop.
+      # delete_one:   True    ## Matches REST CRUDL defaults.
+      # delete_many:  False   ## Default, falls back to `delete_one` in a loop.
+      # replace_many: False   ## Default, falls back to `replace_one` in a loop.
+
+      ## Only one override needed for Stripe's operation semantics:
+      replace_one:  False     ## Stripe doesn't support `PUT` full replacement.
+                              ## CDK will fall back to read_only+update_one with patch applied over most-recent record data.
+
+
+    ## Standard REST CRUDL profile defaults:
+    ##
+    ## REST_CRUDL_POST_1999 (RFC 2616 HTTP/1.1 circa 1999):
+    ## - read_many: GET /collection
+    ## - read_one: GET /collection/{id}
+    ## - create_one: POST /collection
+    ## - update_one: POST /collection/{id}
+    ## - replace_one: PUT /collection/{id}
+    ## - delete_one: DELETE /collection/{id}
+    ##
+    ## REST_CRUDL_PATCH_2010 (RFC 5789 circa 2010) Adds PATCH support:
+    ## - update_one: PATCH /collection/{id}
+
+    # operation_overrides:
+    #   ## Below are inherited from `REST_CRUDL_POST_1999`, shown for clarity:
+    #   read_many: {}  ## Use default `base_requestor`, `multi_record_selector`, and `paginator`
+    #   read_one: {}   ## Use default `base_requestor`, `single_record_selector`
+    #   create_one:
+    #     requester:
+    #       $ref: "#/definitions/base_requester"
+    #       http_method: POST
+    #       ## No need to override `path`, POST to the 'read_many' endpoint.
+    #       request_body:
+    #         type: RequestBodyJsonObject
+    #         value: "{{ record }}"
+    #   update_one:
+    #     requester:
+    #       $ref: "#/definitions/base_requester"
+    #       ## Override `path_suffix` (new) instead of `path` to keep things DRY:
+    #       path_suffix: "/{{ record.id }}"
+    #       request_body:
+    #         type: RequestBodyJsonObject
+    #         value: "{{ record }}"
+    #   delete_one:
+    #     requester:
+    #       $ref: "#/definitions/base_requester"
+    #       http_method: DELETE
+    #       path_suffix: "/{{ record.id }}"
 
   base_requester:
     type: HttpRequester
