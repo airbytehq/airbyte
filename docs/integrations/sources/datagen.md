@@ -46,6 +46,7 @@ Generates a stream named `all types` with columns for various Airbyte data types
 
 | Version | Date       | Pull Request                                             | Subject                            |
 |:--------|:-----------|:---------------------------------------------------------|:-----------------------------------|
+| 0.1.7 | 2025-11-01 | [69129](https://github.com/airbytehq/airbyte/pull/69129) | Upgrade to Bulk CDK 0.1.61. |
 | 0.1.6   | 2025-10-23 | [68611](https://github.com/airbytehq/airbyte/pull/68611) | Update cdk version                 |
 | 0.1.5   | 2025-10-21 | [68581](https://github.com/airbytehq/airbyte/pull/68581) | Update dataChannel version         |
 | 0.1.4   | 2025-10-15 | [68131](https://github.com/airbytehq/airbyte/pull/68131) | Increment naming fix               |
