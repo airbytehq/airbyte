@@ -10,6 +10,7 @@ import io.airbyte.cdk.load.data.NullValue
 import io.airbyte.cdk.load.data.NumberValue
 import io.airbyte.cdk.load.data.StringValue
 import io.airbyte.cdk.load.data.UnionType
+import io.airbyte.cdk.load.dataflow.transform.ValidationResult
 import io.airbyte.cdk.load.dataflow.transform.ValueCoercer
 import io.airbyte.cdk.load.util.serializeToString
 import io.airbyte.protocol.models.v0.AirbyteRecordMessageMetaChange.Reason
@@ -40,24 +41,24 @@ class GcsDataLakeValueCoercer : ValueCoercer {
         return value
     }
 
-    override fun validate(value: EnrichedAirbyteValue): EnrichedAirbyteValue {
+    override fun validate(value: EnrichedAirbyteValue): ValidationResult {
         // Validate and null out-of-range values
         when (val abValue = value.abValue) {
             is IntegerValue -> {
                 if (!isInLongRange(abValue.value)) {
-                    value.nullify(Reason.DESTINATION_FIELD_SIZE_LIMITATION)
+                    return ValidationResult.ShouldNullify(Reason.DESTINATION_FIELD_SIZE_LIMITATION)
                 }
             }
             is NumberValue -> {
                 if (!isInDoubleRange(abValue.value)) {
-                    value.nullify(Reason.DESTINATION_FIELD_SIZE_LIMITATION)
+                    return ValidationResult.ShouldNullify(Reason.DESTINATION_FIELD_SIZE_LIMITATION)
                 }
             }
             else -> {
                 // All other types are valid
             }
         }
-        return value
+        return ValidationResult.Valid
     }
 
     private fun isInLongRange(value: BigInteger): Boolean =

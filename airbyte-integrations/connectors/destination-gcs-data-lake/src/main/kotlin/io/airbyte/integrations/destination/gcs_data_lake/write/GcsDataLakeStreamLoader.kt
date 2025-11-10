@@ -259,14 +259,14 @@ class GcsDataLakeStreamLoader(
             // stale table metadata without this.
             table.refresh()
             val schemaUpdateResult = computeOrExecuteSchemaUpdate()
-            val pendingUpdate = schemaUpdateResult.pendingUpdate
-            if (pendingUpdate != null) {
+            val pendingUpdates = schemaUpdateResult.pendingUpdates
+            if (!pendingUpdates.isEmpty()) {
                 logger.info {
                     "Committing schema update for stream ${stream.mappedDescriptor}. " +
                         "Schema has ${schemaUpdateResult.schema.columns().size} columns."
                 }
                 try {
-                    pendingUpdate.commit()
+                    pendingUpdates.forEach { it.commit() }
                 } catch (e: Exception) {
                     logger.error(e) {
                         "Failed to commit schema update for stream ${stream.mappedDescriptor}. " +
