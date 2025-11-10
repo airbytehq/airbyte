@@ -1,5 +1,17 @@
 # Xero Migration Guide
 
+## Upgrading to 3.0.0
+
+Xero connector now only accepts OAuth2 authentication method.
+
+To get started, [create an OAuth2 app](https://developer.xero.com/app/manage) and make sure you select the “Auth Code” grant type. Your app is assigned a unique Client ID and you can then generate a Client Secret. The Client Secret is private and should not be shared.
+
+Then authorize your source with the required information. 
+1. Go to set up `The Source` page.
+2. Enter your Xero application's Client ID and Client Secret.
+3. Click `Reset saved source` button.
+
+
 ## Upgrading to 2.0.0
 
 You can now choose your preferred xero authentication method. You can choose between `client_credentials` and `bearer_token` authentication methods.
