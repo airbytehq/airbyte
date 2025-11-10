@@ -6,7 +6,7 @@ const sectionHeader = (title) => ({
 
 const contributeToAirbyte = {
   type: "category",
-  label: "Contribute to Airbyte",
+  label: "Contribute to Airbyte2",
   link: {
     type: "doc",
     id: "contributing-to-airbyte/README",
