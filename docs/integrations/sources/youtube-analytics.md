@@ -86,6 +86,7 @@ Quota usage is not an issue because data is retrieved once and then filtered, so
 
 | Version | Date       | Pull Request                                             | Subject                                        |
 | :------ | :--------- | :------------------------------------------------------- | :--------------------------------------------- |
+| 1.0.1 | 2025-11-04 | [64964](https://github.com/airbytehq/airbyte/pull/64964) | Update dependencies |
 | 1.0.0 | 2025-10-29 | [66558](https://github.com/airbytehq/airbyte/pull/66558) | Update deprecated channel and playlist BULK reports |
 | 0.2.0 | 2025-02-07 | [53196](https://github.com/airbytehq/airbyte/pull/53196) | Update check connection and empty responses |
 | 0.1.7 | 2025-02-26 | [54696](https://github.com/airbytehq/airbyte/pull/54696) | Update requests-mock dependency version |
