@@ -6,6 +6,7 @@ package io.airbyte.cdk.load.dataflow.state.stats
 
 import io.airbyte.cdk.load.command.DestinationStream
 import io.airbyte.cdk.load.command.NamespaceMapper
+import io.airbyte.cdk.load.dataflow.state.AdditionalStatsHistogram
 import io.airbyte.cdk.load.dataflow.state.PartitionKey
 import io.airbyte.cdk.load.dataflow.state.StateKey
 import io.airbyte.cdk.load.message.CheckpointMessage
@@ -29,11 +30,18 @@ class StateStatsEnricherTest {
 
     @MockK private lateinit var namespaceMapper: NamespaceMapper
 
+    @MockK private lateinit var stateAdditionalStatsStore: StateAdditionalStatsStore
+
     private lateinit var stateStatsEnricher: StateStatsEnricher
 
     @BeforeEach
     fun setUp() {
-        stateStatsEnricher = StateStatsEnricher(statsStore, namespaceMapper)
+        every { stateAdditionalStatsStore.drain(any()) } returns
+            emptyMap<DestinationStream.Descriptor, AdditionalStatsHistogram>().withDefault {
+                AdditionalStatsHistogram()
+            }
+        stateStatsEnricher =
+            StateStatsEnricher(statsStore, namespaceMapper, stateAdditionalStatsStore)
     }
 
     @Test
@@ -174,11 +182,20 @@ class StateStatsEnricherTest {
 
     @Test
     fun `#enrichTopLevelDestinationStats`() {
+        val partitionKeys =
+            listOf(PartitionKey(Fixtures.PARTITION1), PartitionKey(Fixtures.PARTITION2))
+        val stream = DestinationStream.Descriptor(namespace = "namespace", name = "name")
         val checkpoint = mockk<CheckpointMessage>(relaxed = true)
         val sourceStats = CheckpointMessage.Stats(recordCount = 100)
         every { checkpoint.sourceStats } returns sourceStats
 
-        val result = stateStatsEnricher.enrichTopLevelDestinationStats(checkpoint, 50L)
+        val result =
+            stateStatsEnricher.enrichTopLevelDestinationStats(
+                checkpoint,
+                stream,
+                partitionKeys,
+                50L
+            )
 
         assertEquals(checkpoint, result)
         verify { checkpoint.updateStats(destinationStats = sourceStats) }

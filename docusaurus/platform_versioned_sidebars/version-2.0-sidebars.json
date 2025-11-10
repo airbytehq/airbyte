@@ -582,7 +582,11 @@
               "label": "Resources",
               "items": [
                 "contributing-to-airbyte/resources/pull-requests-handbook",
-                "contributing-to-airbyte/resources/qa-checks"
+                {
+                  "type": "link",
+                  "label": "QA checks",
+                  "href": "/community/contributing-to-airbyte/resources/qa-checks"
+                }
               ]
             }
           ]

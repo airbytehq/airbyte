@@ -40,7 +40,7 @@ class MsSqlServerSourceSelectQueryGeneratorTest {
                 From("users", "dbo"),
                 limit = Limit(0),
             )
-            .assertSqlEquals("""SELECT TOP 0 id, name FROM dbo.users""")
+            .assertSqlEquals("""SELECT TOP 0 [id], [name] FROM [dbo].[users]""")
     }
 
     @Test
@@ -49,7 +49,7 @@ class MsSqlServerSourceSelectQueryGeneratorTest {
                 SelectColumnMaxValue(Field("updated_at", OffsetDateTimeFieldType)),
                 From("orders", "dbo"),
             )
-            .assertSqlEquals("""SELECT MAX(updated_at) FROM dbo.orders""")
+            .assertSqlEquals("""SELECT MAX([updated_at]) FROM [dbo].[orders]""")
     }
 
     @Test
@@ -63,7 +63,7 @@ class MsSqlServerSourceSelectQueryGeneratorTest {
                 ),
                 From("products", "dbo"),
             )
-            .assertSqlEquals("""SELECT id, description FROM dbo.products""")
+            .assertSqlEquals("""SELECT [id], [description] FROM [dbo].[products]""")
     }
 
     @Test
@@ -90,11 +90,11 @@ class MsSqlServerSourceSelectQueryGeneratorTest {
                 Limit(1000),
             )
             .assertSqlEquals(
-                """SELECT TOP 1000 pk1, pk2, pk3, data FROM """ +
-                    """dbo.composite_table WHERE (pk1 > ?) OR """ +
-                    """((pk1 = ?) AND (pk2 > ?)) OR """ +
-                    """((pk1 = ?) AND (pk2 = ?) AND (pk3 > ?)) """ +
-                    """ORDER BY pk1, pk2, pk3""",
+                """SELECT TOP 1000 [pk1], [pk2], [pk3], [data] FROM """ +
+                    """[dbo].[composite_table] WHERE ([pk1] > ?) OR """ +
+                    """(([pk1] = ?) AND ([pk2] > ?)) OR """ +
+                    """(([pk1] = ?) AND ([pk2] = ?) AND ([pk3] > ?)) """ +
+                    """ORDER BY [pk1], [pk2], [pk3]""",
                 v1 to IntFieldType,
                 v1 to IntFieldType,
                 v2 to IntFieldType,
@@ -117,9 +117,9 @@ class MsSqlServerSourceSelectQueryGeneratorTest {
                 Limit(500),
             )
             .assertSqlEquals(
-                """SELECT TOP 500 content, last_modified FROM """ +
-                    """dbo.documents """ +
-                    """WHERE (last_modified > ?) AND (last_modified <= ?) ORDER BY last_modified""",
+                """SELECT TOP 500 [content], [last_modified] FROM """ +
+                    """[dbo].[documents] """ +
+                    """WHERE ([last_modified] > ?) AND ([last_modified] <= ?) ORDER BY [last_modified]""",
                 lb to DoubleFieldType,
                 ub to DoubleFieldType,
             )
@@ -140,7 +140,7 @@ class MsSqlServerSourceSelectQueryGeneratorTest {
                 From("employees", "hr"),
             )
             .assertSqlEquals(
-                """SELECT employee_id, org_node.ToString(), employee_name FROM hr.employees"""
+                """SELECT [employee_id], [org_node].ToString(), [employee_name] FROM [hr].[employees]"""
             )
     }
 
@@ -157,7 +157,7 @@ class MsSqlServerSourceSelectQueryGeneratorTest {
                 From("simple_table", null),
                 limit = Limit(10),
             )
-            .assertSqlEquals("""SELECT TOP 10 col1, col2 FROM simple_table""")
+            .assertSqlEquals("""SELECT TOP 10 [col1], [col2] FROM [simple_table]""")
     }
 
     @Test
@@ -173,7 +173,7 @@ class MsSqlServerSourceSelectQueryGeneratorTest {
                 Limit(10000),
             )
             .assertSqlEquals(
-                """SELECT TOP 10000 sequence_id, payload FROM dbo.events WHERE sequence_id > ? ORDER BY sequence_id""",
+                """SELECT TOP 10000 [sequence_id], [payload] FROM [dbo].[events] WHERE [sequence_id] > ? ORDER BY [sequence_id]""",
                 startValue to LongFieldType,
             )
     }
@@ -201,10 +201,27 @@ class MsSqlServerSourceSelectQueryGeneratorTest {
                 Limit(100),
             )
             .assertSqlEquals(
-                """SELECT TOP 100 id, created_at, updated_at FROM dbo.records """ +
-                    """WHERE (created_at > ?) AND (updated_at <= ?) ORDER BY created_at, updated_at""",
+                """SELECT TOP 100 [id], [created_at], [updated_at] FROM [dbo].[records] """ +
+                    """WHERE ([created_at] > ?) AND ([updated_at] <= ?) ORDER BY [created_at], [updated_at]""",
                 createdAfter to OffsetDateTimeFieldType,
                 updatedBefore to OffsetDateTimeFieldType,
+            )
+    }
+
+    @Test
+    fun testSelectWithReservedKeywords() {
+        // Test with reserved SQL Server keywords as column names (e.g., "End", "Start")
+        val endField = Field("End", OffsetDateTimeFieldType)
+        val startField = Field("Start", OffsetDateTimeFieldType)
+        val orderField = Field("Order", IntFieldType)
+
+        SelectQuerySpec(
+                SelectColumns(listOf(Field("Id", IntFieldType), startField, endField, orderField)),
+                From("CustomerAgreementProfiles", "dbo"),
+                limit = Limit(100),
+            )
+            .assertSqlEquals(
+                """SELECT TOP 100 [Id], [Start], [End], [Order] FROM [dbo].[CustomerAgreementProfiles]"""
             )
     }
 

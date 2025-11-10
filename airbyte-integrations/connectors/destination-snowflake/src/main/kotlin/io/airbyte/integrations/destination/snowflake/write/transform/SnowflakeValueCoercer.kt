@@ -14,6 +14,7 @@ import io.airbyte.cdk.load.data.ObjectValue
 import io.airbyte.cdk.load.data.StringValue
 import io.airbyte.cdk.load.data.UnionType
 import io.airbyte.cdk.load.data.csv.toCsvValue
+import io.airbyte.cdk.load.dataflow.transform.ValidationResult
 import io.airbyte.cdk.load.dataflow.transform.ValueCoercer
 import io.airbyte.cdk.load.util.serializeToString
 import io.airbyte.protocol.models.v0.AirbyteRecordMessageMetaChange
@@ -84,11 +85,10 @@ class SnowflakeValueCoercer : ValueCoercer {
         return value
     }
 
-    override fun validate(value: EnrichedAirbyteValue): EnrichedAirbyteValue {
+    override fun validate(value: EnrichedAirbyteValue): ValidationResult =
         if (!isValid(value.abValue)) {
-            value.nullify(AirbyteRecordMessageMetaChange.Reason.DESTINATION_FIELD_SIZE_LIMITATION)
-        }
-
-        return value
-    }
+            ValidationResult.ShouldNullify(
+                AirbyteRecordMessageMetaChange.Reason.DESTINATION_FIELD_SIZE_LIMITATION
+            )
+        } else ValidationResult.Valid
 }

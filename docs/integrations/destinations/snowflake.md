@@ -251,6 +251,8 @@ desired namespace.
 
 | Version         | Date       | Pull Request                                                        | Subject                                                                                                                                                                                |
 |:----------------|:-----------|:--------------------------------------------------------------------|:---------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------|
+| 4.0.25          | 2025-11-06 | [69226](https://github.com/airbytehq/airbyte/pull/69226)  | Improved additional statistics handling                                        |
+| 4.0.24          | 2025-11-05 | [69200](https://github.com/airbytehq/airbyte/pull/69200/)           | Add support for observability metrics                                          |
 | 4.0.23          | 2025-11-03 | [69153](https://github.com/airbytehq/airbyte/pull/69153)            | Fix bug in connector spec |
 | 4.0.22          | 2025-11-03 | [69147](https://github.com/airbytehq/airbyte/pull/69147)            | Upgrade to CDK 0.1.62 to improve handling of unrecognized JSON schema |
 | 4.0.21          | 2025-10-30 | [69100](https://github.com/airbytehq/airbyte/pull/69100)            | Upgrade to CDK 0.1.61 to fix state index bug |

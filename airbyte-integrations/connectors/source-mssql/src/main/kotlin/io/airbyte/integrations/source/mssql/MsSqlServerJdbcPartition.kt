@@ -152,7 +152,7 @@ fun stateValueToJsonNode(field: Field, stateValue: String?): JsonNode {
 
 sealed class MsSqlServerJdbcPartition(
     val selectQueryGenerator: SelectQueryGenerator,
-    streamState: DefaultJdbcStreamState,
+    override val streamState: DefaultJdbcStreamState,
 ) : JdbcPartition<DefaultJdbcStreamState> {
     val stream: Stream = streamState.stream
     val from = From(stream.name, stream.namespace)
@@ -176,7 +176,7 @@ sealed class MsSqlServerJdbcPartition(
 
 class MsSqlServerJdbcNonResumableSnapshotPartition(
     selectQueryGenerator: SelectQueryGenerator,
-    override val streamState: DefaultJdbcStreamState,
+    streamState: DefaultJdbcStreamState,
 ) : MsSqlServerJdbcPartition(selectQueryGenerator, streamState) {
 
     override val completeState: OpaqueStateValue = MsSqlServerJdbcStreamStateValue.snapshotCompleted
@@ -184,7 +184,7 @@ class MsSqlServerJdbcNonResumableSnapshotPartition(
 
 class MsSqlServerJdbcNonResumableSnapshotWithCursorPartition(
     selectQueryGenerator: SelectQueryGenerator,
-    override val streamState: DefaultJdbcStreamState,
+    streamState: DefaultJdbcStreamState,
     val cursor: Field,
     val cursorCutoffTime: JsonNode? = null,
 ) :
@@ -322,7 +322,7 @@ sealed class MsSqlServerJdbcResumablePartition(
 /** RFR for cursor based read. */
 class MsSqlServerJdbcRfrSnapshotPartition(
     selectQueryGenerator: SelectQueryGenerator,
-    override val streamState: DefaultJdbcStreamState,
+    streamState: DefaultJdbcStreamState,
     primaryKey: List<Field>,
     override val lowerBound: List<JsonNode>?,
     override val upperBound: List<JsonNode>?,
@@ -351,7 +351,7 @@ class MsSqlServerJdbcRfrSnapshotPartition(
 /** RFR for CDC. */
 class MsSqlServerJdbcCdcRfrSnapshotPartition(
     selectQueryGenerator: SelectQueryGenerator,
-    override val streamState: DefaultJdbcStreamState,
+    streamState: DefaultJdbcStreamState,
     primaryKey: List<Field>,
     override val lowerBound: List<JsonNode>?,
     override val upperBound: List<JsonNode>?,
@@ -380,9 +380,9 @@ class MsSqlServerJdbcCdcRfrSnapshotPartition(
  */
 class MsSqlServerJdbcCdcSnapshotPartition(
     selectQueryGenerator: SelectQueryGenerator,
-    override val streamState: DefaultJdbcStreamState,
+    streamState: DefaultJdbcStreamState,
     primaryKey: List<Field>,
-    override val lowerBound: List<JsonNode>?
+    override val lowerBound: List<JsonNode>?,
 ) : MsSqlServerJdbcResumablePartition(selectQueryGenerator, streamState, primaryKey) {
     override val upperBound: List<JsonNode>? = null
     override val completeState: OpaqueStateValue
@@ -414,7 +414,7 @@ sealed class MsSqlServerJdbcCursorPartition(
 
     val cursorUpperBoundQuerySpec: SelectQuerySpec
         get() =
-            if (cursorCutoffTime != null && checkpointColumns.contains(cursor)) {
+            if (cursorCutoffTime != null) {
                 // When excluding today's data, apply cutoff constraint to upper bound query too
                 SelectQuerySpec(
                     SelectColumnMaxValue(cursor),
@@ -425,9 +425,25 @@ sealed class MsSqlServerJdbcCursorPartition(
                 SelectQuerySpec(SelectColumnMaxValue(cursor), from)
             }
 
+    // Override samplingQuery to avoid TABLESAMPLE for cursor-based operations
+    // TABLESAMPLE fails on views and isn't needed for cursor-based incremental reads
+    // which are typically small (only new/changed data)
+    override fun samplingQuery(sampleRateInvPow2: Int): SelectQuery {
+        val sampleSize: Int = streamState.sharedState.maxSampleSize
+        val querySpec =
+            SelectQuerySpec(
+                SelectColumns(stream.fields + checkpointColumns),
+                from,
+                NoWhere,
+                OrderBy(checkpointColumns),
+                Limit(sampleSize.toLong())
+            )
+        return selectQueryGenerator.generate(querySpec.optimize())
+    }
+
     override val additionalWhereClause: WhereClauseNode?
         get() =
-            if (cursorCutoffTime != null && checkpointColumns.contains(cursor)) {
+            if (cursorCutoffTime != null) {
                 // Add an additional constraint for the cutoff time
                 Lesser(cursor, cursorCutoffTime)
             } else {
@@ -437,7 +453,7 @@ sealed class MsSqlServerJdbcCursorPartition(
 
 class MsSqlServerJdbcSnapshotWithCursorPartition(
     selectQueryGenerator: SelectQueryGenerator,
-    override val streamState: DefaultJdbcStreamState,
+    streamState: DefaultJdbcStreamState,
     primaryKey: List<Field>,
     override val lowerBound: List<JsonNode>?,
     cursor: Field,
@@ -472,7 +488,7 @@ class MsSqlServerJdbcSnapshotWithCursorPartition(
 
 class MsSqlServerJdbcSplittableSnapshotWithCursorPartition(
     selectQueryGenerator: SelectQueryGenerator,
-    override val streamState: DefaultJdbcStreamState,
+    streamState: DefaultJdbcStreamState,
     primaryKey: List<Field>,
     override val lowerBound: List<JsonNode>?,
     override val upperBound: List<JsonNode>?,
@@ -522,7 +538,7 @@ class MsSqlServerJdbcSplittableSnapshotWithCursorPartition(
  */
 class MsSqlServerJdbcCursorIncrementalPartition(
     selectQueryGenerator: SelectQueryGenerator,
-    override val streamState: DefaultJdbcStreamState,
+    streamState: DefaultJdbcStreamState,
     cursor: Field,
     val cursorLowerBound: JsonNode,
     override val isLowerBoundIncluded: Boolean,

@@ -42,6 +42,7 @@ import io.airbyte.cdk.load.data.TimestampWithTimezoneValue
 import io.airbyte.cdk.load.data.UnionType
 import io.airbyte.cdk.load.data.UnknownType
 import io.airbyte.cdk.load.data.json.toAirbyteValue
+import io.airbyte.cdk.load.dataflow.state.stats.StateAdditionalStatsStore
 import io.airbyte.cdk.load.message.CheckpointMessage
 import io.airbyte.cdk.load.message.InputGlobalCheckpoint
 import io.airbyte.cdk.load.message.InputRecord
@@ -67,6 +68,7 @@ import io.airbyte.cdk.load.test.util.destination_process.DestinationUncleanExitE
 import io.airbyte.cdk.load.util.Jsons
 import io.airbyte.cdk.load.util.deserializeToNode
 import io.airbyte.cdk.load.util.serializeToString
+import io.airbyte.protocol.models.v0.AdditionalStats
 import io.airbyte.protocol.models.v0.AirbyteMessage
 import io.airbyte.protocol.models.v0.AirbyteRecordMessageFileReference
 import io.airbyte.protocol.models.v0.AirbyteRecordMessageMetaChange
@@ -341,6 +343,7 @@ abstract class BasicFunctionalityIntegrationTest(
     dataChannelMedium: DataChannelMedium = DataChannelMedium.STDIO,
     dataChannelFormat: DataChannelFormat = DataChannelFormat.JSONL,
     val testSpeedModeStatsEmission: Boolean = true,
+    val useDataFlowPipeline: Boolean = false,
 ) :
     IntegrationTest(
         additionalMicronautEnvs = additionalMicronautEnvs,
@@ -594,9 +597,10 @@ abstract class BasicFunctionalityIntegrationTest(
                     ),
                     outer.additionalProperties,
                 )
-
                 assertEquals(
-                    AirbyteStateStats().withRecordCount(1.0),
+                    AirbyteStateStats()
+                        .withRecordCount(1.0)
+                        .withAdditionalStats(expectedAdditionalStats()),
                     outer.destinationStats,
                 )
 
@@ -632,7 +636,9 @@ abstract class BasicFunctionalityIntegrationTest(
                 )
 
                 assertEquals(
-                    AirbyteStateStats().withRecordCount(2.0),
+                    AirbyteStateStats()
+                        .withRecordCount(2.0)
+                        .withAdditionalStats(expectedAdditionalStats()),
                     outer.destinationStats,
                 )
 
@@ -860,7 +866,7 @@ abstract class BasicFunctionalityIntegrationTest(
             stateMessagesFromFirstStream[0].sourceStats,
         )
         assertEquals(
-            AirbyteStateStats().withRecordCount(1.0),
+            AirbyteStateStats().withRecordCount(1.0).withAdditionalStats(expectedAdditionalStats()),
             stateMessagesFromFirstStream[0].destinationStats,
         )
         assertEquals(
@@ -883,7 +889,7 @@ abstract class BasicFunctionalityIntegrationTest(
             stateMessagesFromFirstStream[1].sourceStats,
         )
         assertEquals(
-            AirbyteStateStats().withRecordCount(1.0),
+            AirbyteStateStats().withRecordCount(1.0).withAdditionalStats(expectedAdditionalStats()),
             stateMessagesFromFirstStream[1].destinationStats,
         )
         assertEquals(
@@ -912,7 +918,7 @@ abstract class BasicFunctionalityIntegrationTest(
             stateMessagesFromSecondStream[0].sourceStats,
         )
         assertEquals(
-            AirbyteStateStats().withRecordCount(2.0),
+            AirbyteStateStats().withRecordCount(2.0).withAdditionalStats(expectedAdditionalStats()),
             stateMessagesFromSecondStream[0].destinationStats,
         )
         assertEquals(
@@ -935,7 +941,7 @@ abstract class BasicFunctionalityIntegrationTest(
             stateMessagesFromSecondStream[1].sourceStats,
         )
         assertEquals(
-            AirbyteStateStats().withRecordCount(1.0),
+            AirbyteStateStats().withRecordCount(1.0).withAdditionalStats(expectedAdditionalStats()),
             stateMessagesFromSecondStream[1].destinationStats,
         )
         assertEquals(
@@ -964,7 +970,7 @@ abstract class BasicFunctionalityIntegrationTest(
             stateMessagesFromThirdStream[0].sourceStats,
         )
         assertEquals(
-            AirbyteStateStats().withRecordCount(1.0),
+            AirbyteStateStats().withRecordCount(1.0).withAdditionalStats(expectedAdditionalStats()),
             stateMessagesFromThirdStream[0].destinationStats,
         )
         assertEquals(
@@ -987,7 +993,7 @@ abstract class BasicFunctionalityIntegrationTest(
             stateMessagesFromSecondStream[1].sourceStats,
         )
         assertEquals(
-            AirbyteStateStats().withRecordCount(1.0),
+            AirbyteStateStats().withRecordCount(1.0).withAdditionalStats(expectedAdditionalStats()),
             stateMessagesFromSecondStream[1].destinationStats,
         )
         assertEquals(
@@ -1579,7 +1585,13 @@ abstract class BasicFunctionalityIntegrationTest(
                             destinationRecordCount = 1,
                             checkpointKey = checkpointKeyForMedium(),
                             totalRecords = 1L,
-                            totalBytes = expectedBytes
+                            totalBytes = expectedBytes,
+                            additionalStats =
+                                if (useDataFlowPipeline)
+                                    StateAdditionalStatsStore.ObservabilityMetrics.entries
+                                        .associate { it.metricName to 0.0 }
+                                        .toMutableMap()
+                                else mutableMapOf(),
                         )
                         .asProtocolMessage()
                 assertEquals(
@@ -5209,6 +5221,15 @@ abstract class BasicFunctionalityIntegrationTest(
                 }
         }
     }
+
+    private fun expectedAdditionalStats(): AdditionalStats? =
+        if (useDataFlowPipeline) {
+            val expectedAdditionalStats = AdditionalStats()
+            StateAdditionalStatsStore.ObservabilityMetrics.entries.forEach {
+                expectedAdditionalStats.withAdditionalProperty(it.metricName, 0.0)
+            }
+            expectedAdditionalStats
+        } else null
 
     protected fun namespaceMapperForMedium(): NamespaceMapper {
         return when (dataChannelMedium) {

@@ -204,48 +204,31 @@ class MsSqlSourceMetadataQuerier(
     }
 
     /**
+     * Returns the primary key for discovery/catalog purposes.
+     *
+     * This returns the actual PRIMARY KEY constraint defined on the table, which represents the
+     * logical uniqueness constraint. This is used for catalog discovery and schema definition.
+     *
+     * Note: This is separate from the sync strategy (which column to use for ordered column
+     * loading), which is determined by [getOrderedColumnForSync].
+     *
      * The logic flow:
-     * 1. Check for clustered index
-     * 2. If single-column clustered index exists → Use it
-     * 3. If composite clustered index exists → Use primary key
-     * 4. If no clustered index exists → Use primary key
-     * 5. If no primary key exists → Check configured catalog for user-defined logical PK
-     * 6. If no logical PK exists → Return empty list
+     * 1. Check for primary key constraint
+     * 2. If primary key exists → Use it
+     * 3. If no primary key exists → Check configured catalog for user-defined logical PK
+     * 4. If no logical PK exists → Return empty list
      */
     override fun primaryKey(
         streamID: StreamIdentifier,
     ): List<List<String>> {
         val table: TableName = findTableName(streamID) ?: return listOf()
 
-        // First try to get clustered index keys
-        val clusteredIndexKeys = memoizedClusteredIndexKeys[table]
-
-        // Use clustered index if it exists and is a single column
-        // For composite clustered indexes, fall back to primary key
-        val databasePK =
-            when {
-                clusteredIndexKeys != null && clusteredIndexKeys.size == 1 -> {
-                    log.info {
-                        "Using single-column clustered index for table ${table.schema}.${table.name}"
-                    }
-                    clusteredIndexKeys
-                }
-                clusteredIndexKeys != null && clusteredIndexKeys.size > 1 -> {
-                    log.info {
-                        "Clustered index is composite for table ${table.schema}.${table.name}. Falling back to primary key."
-                    }
-                    memoizedPrimaryKeys[table]
-                }
-                else -> {
-                    log.info {
-                        "No clustered index found for table ${table.schema}.${table.name}. Using primary key."
-                    }
-                    memoizedPrimaryKeys[table]
-                }
-            }
-
-        // If we found a database PK, use it
+        // First try to get the actual primary key constraint
+        val databasePK = memoizedPrimaryKeys[table]
         if (!databasePK.isNullOrEmpty()) {
+            log.info {
+                "Found primary key for table ${table.schema}.${table.name}: ${databasePK.flatten()}"
+            }
             return databasePK
         }
 
@@ -261,7 +244,61 @@ class MsSqlSourceMetadataQuerier(
             return logicalPK
         }
 
+        log.info { "No primary key or logical PK found for table ${table.schema}.${table.name}" }
         return listOf()
+    }
+
+    /**
+     * Returns the column to use for ordered column (OC) syncing strategy.
+     *
+     * This determines which column should be used for incremental sync with ordered column loading,
+     * prioritizing SQL Server performance characteristics.
+     *
+     * The logic flow:
+     * 1. If single-column clustered index exists → Use it (best performance for SQL Server)
+     * 2. If composite clustered index or no clustered index → Use first column of primary key
+     * 3. If no primary key → Use first column of logical PK from configured catalog
+     * 4. If nothing available → Return null
+     *
+     * Note: This is separate from [primaryKey] which returns the full PK for discovery purposes.
+     */
+    fun getOrderedColumnForSync(streamID: StreamIdentifier): String? {
+        val table: TableName = findTableName(streamID) ?: return null
+
+        // Prefer single-column clustered index for best SQL Server performance
+        val clusteredIndexKeys = memoizedClusteredIndexKeys[table]
+        if (clusteredIndexKeys != null && clusteredIndexKeys.size == 1) {
+            val column = clusteredIndexKeys[0][0]
+            log.info {
+                "Using single-column clustered index for sync: ${table.schema}.${table.name} -> $column"
+            }
+            return column
+        }
+
+        // Fall back to first column of primary key
+        val databasePK = memoizedPrimaryKeys[table]
+        if (!databasePK.isNullOrEmpty()) {
+            val column = databasePK[0][0]
+            log.info {
+                "Clustered index is composite or not found. Using first PK column for sync: ${table.schema}.${table.name} -> $column"
+            }
+            return column
+        }
+
+        // Fall back to first column of logical PK
+        val logicalPK = getUserDefinedPrimaryKey(streamID)
+        if (logicalPK.isNotEmpty()) {
+            val column = logicalPK[0][0]
+            log.info {
+                "No physical primary key. Using first logical PK column for sync: ${table.schema}.${table.name} -> $column"
+            }
+            return column
+        }
+
+        log.warn {
+            "No suitable column found for ordered column sync: ${table.schema}.${table.name}"
+        }
+        return null
     }
 
     /**
@@ -357,27 +394,28 @@ class MsSqlSourceMetadataQuerier(
 
         const val CLUSTERED_INDEX_QUERY_FMTSTR =
             """
-        SELECT 
+        SELECT
             s.name as table_schema,
             t.name as table_name,
             i.name as index_name,
             ic.key_ordinal,
             c.name as column_name
-        FROM 
+        FROM
             sys.tables t
-        INNER JOIN 
+        INNER JOIN
             sys.schemas s ON t.schema_id = s.schema_id
-        INNER JOIN 
+        INNER JOIN
             sys.indexes i ON t.object_id = i.object_id
-        INNER JOIN 
+        INNER JOIN
             sys.index_columns ic ON i.object_id = ic.object_id AND i.index_id = ic.index_id
-        INNER JOIN 
+        INNER JOIN
             sys.columns c ON ic.object_id = c.object_id AND ic.column_id = c.column_id
-        WHERE 
+        WHERE
             s.name IN (%s)
             AND i.type = 1  -- Clustered index
+            AND i.is_unique = 1  -- Only unique indexes
             AND ic.is_included_column = 0  -- Only key columns, not included columns
-        ORDER BY 
+        ORDER BY
             s.name, t.name, ic.key_ordinal;
             """
 

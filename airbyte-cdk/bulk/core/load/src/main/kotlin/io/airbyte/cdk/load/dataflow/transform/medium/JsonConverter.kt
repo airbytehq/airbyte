@@ -7,25 +7,38 @@ package io.airbyte.cdk.load.dataflow.transform.medium
 import io.airbyte.cdk.load.data.AirbyteValue
 import io.airbyte.cdk.load.dataflow.transform.ColumnNameMapper
 import io.airbyte.cdk.load.dataflow.transform.ValueCoercer
-import io.airbyte.cdk.load.message.DestinationRecordRaw
+import io.airbyte.cdk.load.dataflow.transform.data.ValidationResultHandler
 import jakarta.inject.Singleton
 
 @Singleton
 class JsonConverter(
     private val columnNameMapper: ColumnNameMapper,
     private val coercer: ValueCoercer,
-) {
-    fun convert(msg: DestinationRecordRaw): HashMap<String, AirbyteValue> {
+    private val validationResultHandler: ValidationResultHandler,
+) : MediumConverter {
+    override fun convert(input: ConversionInput): Map<String, AirbyteValue> {
         val enriched =
-            msg.asEnrichedDestinationRecordAirbyteValue(extractedAtAsTimestampWithTimezone = true)
+            input.msg.asEnrichedDestinationRecordAirbyteValue(
+                extractedAtAsTimestampWithTimezone = true
+            )
 
         val munged = HashMap<String, AirbyteValue>()
         enriched.declaredFields.forEach { field ->
             val mappedKey =
-                columnNameMapper.getMappedColumnName(msg.stream, field.key)
-                    ?: field.key // fallback to original key
+                columnNameMapper.getMappedColumnName(input.msg.stream, field.key)
+                    ?: field.key // fallback to the original key
 
-            val mappedValue = field.value.let { coercer.map(it) }.let { coercer.validate(it) }
+            val mappedValue =
+                field.value
+                    .let { coercer.map(it) }
+                    .let { value ->
+                        validationResultHandler.handle(
+                            partitionKey = input.partitionKey,
+                            stream = input.msg.stream.mappedDescriptor,
+                            result = coercer.validate(value),
+                            value = value
+                        )
+                    }
 
             munged[mappedKey] = mappedValue.abValue
         }

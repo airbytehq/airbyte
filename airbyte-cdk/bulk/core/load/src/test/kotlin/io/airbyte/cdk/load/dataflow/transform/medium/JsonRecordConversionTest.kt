@@ -2,7 +2,7 @@
  * Copyright (c) 2025 Airbyte, Inc., all rights reserved.
  */
 
-package io.airbyte.cdk.load.dataflow.transform
+package io.airbyte.cdk.load.dataflow.transform.medium
 
 import io.airbyte.cdk.load.data.AirbyteValue
 import io.airbyte.cdk.load.data.BooleanType
@@ -15,8 +15,11 @@ import io.airbyte.cdk.load.data.ObjectValue
 import io.airbyte.cdk.load.data.StringType
 import io.airbyte.cdk.load.data.StringValue
 import io.airbyte.cdk.load.data.UnionType
-import io.airbyte.cdk.load.dataflow.transform.medium.JsonConverter
-import io.airbyte.cdk.load.dataflow.transform.medium.ProtobufConverter
+import io.airbyte.cdk.load.dataflow.state.PartitionKey
+import io.airbyte.cdk.load.dataflow.transform.ColumnNameMapper
+import io.airbyte.cdk.load.dataflow.transform.ValidationResult
+import io.airbyte.cdk.load.dataflow.transform.ValueCoercer
+import io.airbyte.cdk.load.dataflow.transform.data.ValidationResultHandler
 import io.airbyte.cdk.load.message.DestinationRecordRaw
 import io.airbyte.cdk.load.message.EnrichedDestinationRecordAirbyteValue
 import io.mockk.every
@@ -30,21 +33,19 @@ import org.junit.jupiter.api.Test
 import org.junit.jupiter.api.extension.ExtendWith
 
 @ExtendWith(MockKExtension::class)
-class JsonRecordMungerTest {
+class JsonRecordConversionTest {
     @MockK lateinit var columnNameMapper: ColumnNameMapper
 
     @MockK lateinit var valueCoercer: ValueCoercer
 
-    @MockK lateinit var protobufConverter: ProtobufConverter
+    private lateinit var validationResultHandler: ValidationResultHandler
 
     private lateinit var jsonConverter: JsonConverter
 
-    private lateinit var munger: RecordMunger
-
     @BeforeEach
     fun setup() {
-        jsonConverter = JsonConverter(columnNameMapper, valueCoercer)
-        munger = RecordMunger(jsonConverter, protobufConverter)
+        validationResultHandler = ValidationResultHandler(mockk(relaxed = true))
+        jsonConverter = JsonConverter(columnNameMapper, valueCoercer, validationResultHandler)
     }
 
     @Test
@@ -55,7 +56,7 @@ class JsonRecordMungerTest {
                 secondArg<String>() + "_munged"
             }
 
-        every { valueCoercer.validate(any<EnrichedAirbyteValue>()) } answers { firstArg() }
+        every { valueCoercer.validate(any<EnrichedAirbyteValue>()) } returns ValidationResult.Valid
 
         val stringfiedValue =
             Fixtures.mockCoercedValue(StringValue("{ \"json\": \"stringified\" }"))
@@ -106,7 +107,7 @@ class JsonRecordMungerTest {
                     )
             }
 
-        val output = munger.transformForDest(input)
+        val output = jsonConverter.convert(ConversionInput(input, PartitionKey("test-key")))
 
         // just validate we call the coercing logic here
         // if we refactor to do the coercing directly here, we need more comprehensive tests

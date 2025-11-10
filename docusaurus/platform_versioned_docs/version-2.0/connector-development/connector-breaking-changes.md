@@ -140,5 +140,5 @@ The `upgradeDeadline` field specifies the date by which users should upgrade (fo
 - [Semantic Versioning for Connectors](../contributing-to-airbyte/resources/pull-requests-handbook.md#semantic-versioning-for-connectors) - Guidelines for determining Major/Minor/Patch version changes
 - [Connector Metadata File](https://docs.airbyte.com/connector-development/connector-metadata-file/) - Technical reference for `breakingChanges` metadata format
 - [Pull Request Title Convention](../contributing-to-airbyte/resources/pull-requests-handbook.md#pull-request-title-convention) - How to format PR titles (use 🚨 emoji for breaking changes)
-- [QA Checks](../contributing-to-airbyte/resources/qa-checks.md) - Automated quality checks including breaking change requirements
+- [QA Checks](/community/contributing-to-airbyte/resources/qa-checks) - Automated quality checks including breaking change requirements
 - [Connector Breaking Change Release Playbook](https://docs.google.com/document/u/0/d/1VYQggHbL_PN0dDDu7rCyzBLGRtX-R3cpwXaY8QxEgzw/edit) - Internal process for Airbyte Engineers (requires access)

@@ -186,6 +186,7 @@ abstract class SnowflakeAcceptanceTest(
         recordMangler = recordMapper,
         nameMapper = nameMapper,
         coercesLegacyUnions = coercesLegacyUnions,
+        useDataFlowPipeline = true,
     ) {
 
     @Disabled override fun testUnions() {}

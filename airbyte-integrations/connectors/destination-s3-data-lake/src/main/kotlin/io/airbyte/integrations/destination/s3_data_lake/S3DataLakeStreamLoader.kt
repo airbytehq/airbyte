@@ -101,7 +101,8 @@ class S3DataLakeStreamLoader(
             // In principle, this doesn't matter, but the iceberg SDK throws an error about
             // stale table metadata without this.
             table.refresh()
-            computeOrExecuteSchemaUpdate().pendingUpdate?.commit()
+            // Commit all pending schema updates in order (important for two-phase commits)
+            computeOrExecuteSchemaUpdate().pendingUpdates.forEach { it.commit() }
             table.manageSnapshots().replaceBranch(mainBranchName, stagingBranchName).commit()
 
             if (stream.isSingleGenerationTruncate()) {

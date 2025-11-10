@@ -5,6 +5,7 @@
 package io.airbyte.cdk.load.dataflow.transform.defaults
 
 import io.airbyte.cdk.load.data.EnrichedAirbyteValue
+import io.airbyte.cdk.load.dataflow.transform.ValidationResult
 import io.airbyte.cdk.load.dataflow.transform.ValueCoercer
 import io.micronaut.context.annotation.Secondary
 import jakarta.inject.Singleton
@@ -18,5 +19,5 @@ import jakarta.inject.Singleton
 class NoOpCoercer : ValueCoercer {
     override fun map(value: EnrichedAirbyteValue): EnrichedAirbyteValue = value
 
-    override fun validate(value: EnrichedAirbyteValue): EnrichedAirbyteValue = value
+    override fun validate(value: EnrichedAirbyteValue): ValidationResult = ValidationResult.Valid
 }

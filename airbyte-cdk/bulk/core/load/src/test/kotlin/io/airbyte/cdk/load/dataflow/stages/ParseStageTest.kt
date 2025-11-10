@@ -10,7 +10,9 @@ import io.airbyte.cdk.load.command.NamespaceMapper
 import io.airbyte.cdk.load.data.StringValue
 import io.airbyte.cdk.load.dataflow.pipeline.DataFlowStageIO
 import io.airbyte.cdk.load.dataflow.state.PartitionKey
-import io.airbyte.cdk.load.dataflow.transform.RecordMunger
+import io.airbyte.cdk.load.dataflow.transform.medium.ConversionInput
+import io.airbyte.cdk.load.dataflow.transform.medium.JsonConverter
+import io.airbyte.cdk.load.dataflow.transform.medium.ProtobufConverter
 import io.airbyte.cdk.load.message.DestinationRecordJsonSource
 import io.airbyte.cdk.load.message.DestinationRecordRaw
 import io.airbyte.protocol.models.v0.AirbyteMessage
@@ -32,7 +34,9 @@ import org.junit.jupiter.api.extension.ExtendWith
 
 @ExtendWith(MockKExtension::class)
 class ParseStageTest {
-    @MockK private lateinit var munger: RecordMunger
+
+    @MockK private lateinit var jsonConverter: JsonConverter
+    @MockK private lateinit var protobufConverter: ProtobufConverter
 
     private lateinit var stage: ParseStage
     private lateinit var stream: DestinationStream
@@ -40,7 +44,7 @@ class ParseStageTest {
 
     @BeforeEach
     fun setup() {
-        stage = ParseStage(munger)
+        stage = ParseStage(jsonConverter, protobufConverter)
         stream =
             DestinationStream(
                 unmappedNamespace = "test-namespace",
@@ -72,7 +76,9 @@ class ParseStageTest {
                 DataFlowStageIO(raw = rawRecord, partitionKey = PartitionKey("test-partition"))
             val transformedFields =
                 mapOf("field1" to StringValue("value1"), "field2" to StringValue("42"))
-            every { munger.transformForDest(rawRecord) } returns transformedFields
+            every {
+                jsonConverter.convert(ConversionInput(input.raw!!, input.partitionKey!!))
+            } returns transformedFields
 
             // When
             val result = stage.apply(input)
@@ -87,7 +93,9 @@ class ParseStageTest {
             assertEquals(100L, mungedRecord.sizeBytes)
             assertEquals(12345L, mungedRecord.emittedAtMs)
 
-            verify(exactly = 1) { munger.transformForDest(rawRecord) }
+            verify(exactly = 1) {
+                jsonConverter.convert(ConversionInput(input.raw!!, input.partitionKey!!))
+            }
         }
 
     @Test
@@ -104,7 +112,7 @@ class ParseStageTest {
         // Given
         val input = DataFlowStageIO(raw = rawRecord, partitionKey = null)
         val transformedFields = mapOf("field1" to StringValue("value1"))
-        every { munger.transformForDest(rawRecord) } returns transformedFields
+        every { jsonConverter.convert(any()) } returns transformedFields
 
         // When & Then
         assertThrows<NullPointerException> { runBlocking { stage.apply(input) } }
