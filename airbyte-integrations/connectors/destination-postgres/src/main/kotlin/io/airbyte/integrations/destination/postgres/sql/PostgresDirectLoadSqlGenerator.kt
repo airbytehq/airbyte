@@ -16,6 +16,7 @@ import io.airbyte.integrations.destination.postgres.spec.CdcDeletionMode
 import io.airbyte.integrations.destination.postgres.spec.PostgresConfiguration
 import io.github.oshai.kotlinlogging.KotlinLogging
 import jakarta.inject.Singleton
+import java.security.MessageDigest
 import kotlin.collections.forEach
 
 internal const val COUNT_TOTAL_ALIAS = "total"
@@ -84,10 +85,11 @@ class PostgresDirectLoadSqlGenerator(
         tableName: TableName,
         columnNameMapping: ColumnNameMapping
     ): String {
-        val primaryKeyIndexStatement = getPrimaryKeysColumnNames(stream, columnNameMapping)
+        val primaryKeyColumns = getPrimaryKeysColumnNames(stream, columnNameMapping)
+        val primaryKeyIndexStatement = primaryKeyColumns
             .takeIf {  it.isNotEmpty() }
             ?.let {
-                "CREATE INDEX ${getPrimaryKeyIndexName(tableName)} ON ${getFullyQualifiedName(tableName)} (${it.joinToString(", ")});"
+                "CREATE INDEX ${getPrimaryKeyIndexName(tableName, it)} ON ${getFullyQualifiedName(tableName)} (${it.joinToString(", ")});"
             } ?: ""
 
         val cursorIndexStatement = getCursorColumnName(stream, columnNameMapping)?.let { cursorColumnName ->
@@ -136,8 +138,39 @@ class PostgresDirectLoadSqlGenerator(
         }
     }
 
-    private fun getPrimaryKeyIndexName(tableName: TableName): String =
-        quoteIdentifier(PRIMARY_KEY_INDEX_PREFIX + tableName.name)
+    /**
+     * Generates a deterministic hash from primary key column names.
+     * The columns are sorted to ensure consistent hash generation regardless of order.
+     *
+     * @param primaryKeyColumns List of primary key column names (already quoted)
+     * @return An 8-character hash string representing the primary key configuration
+     */
+    private fun generatePrimaryKeyHash(primaryKeyColumns: List<String>): String {
+        // Remove quotes and sort column names for consistent hashing
+        val normalizedColumns = primaryKeyColumns
+            .map { it.trim('"') }
+            .sorted()
+            .joinToString(",")
+
+        val md5Digest = MessageDigest.getInstance("MD5")
+        val hashBytes = md5Digest.digest(normalizedColumns.toByteArray())
+
+        // Convert to hex and take first 8 characters
+        return hashBytes.joinToString("") { "%02x".format(it) }.substring(0, 8)
+    }
+
+    /**
+     * Generates the primary key index name based on table name and primary key columns.
+     * The hash suffix ensures the index name uniquely identifies the primary key configuration.
+     *
+     * @param tableName The table name
+     * @param primaryKeyColumns List of primary key column names (already quoted)
+     * @return The quoted index name
+     */
+    private fun getPrimaryKeyIndexName(tableName: TableName, primaryKeyColumns: List<String>): String {
+        val hash = generatePrimaryKeyHash(primaryKeyColumns)
+        return quoteIdentifier("${PRIMARY_KEY_INDEX_PREFIX}${tableName.name}_$hash")
+    }
 
     private fun getCursorIndexName(tableName: TableName): String =
         quoteIdentifier(CURSOR_INDEX_PREFIX + tableName.name)
@@ -451,6 +484,53 @@ class PostgresDirectLoadSqlGenerator(
         WHERE table_schema = '${tableName.namespace}'
         AND table_name = '${tableName.name}';
         """.trimIndent().andLog()
+
+    /**
+     * Generates SQL to query for primary key indexes on a table.
+     * Returns indexes that match the primary key naming pattern.
+     *
+     * @param tableName The table to query indexes for
+     * @return SQL query that returns index names matching the primary key pattern
+     */
+    fun getPrimaryKeyIndexes(tableName: TableName): String =
+        """
+        SELECT indexname
+        FROM pg_indexes
+        WHERE schemaname = '${tableName.namespace}'
+        AND tablename = '${tableName.name}'
+        AND indexname LIKE '${PRIMARY_KEY_INDEX_PREFIX}${tableName.name}_%';
+        """.trimIndent().andLog()
+
+    /**
+     * Generates SQL to drop an index.
+     *
+     * @param indexName The name of the index to drop (unquoted)
+     * @return SQL statement to drop the index
+     */
+    fun dropIndex(indexName: String): String =
+        "DROP INDEX IF EXISTS ${quoteIdentifier(indexName)};".andLog()
+
+    /**
+     * Generates SQL to recreate the primary key index for a table.
+     * This is used when primary keys change during schema evolution.
+     *
+     * @param stream The destination stream
+     * @param tableName The table name
+     * @param columnNameMapping The column name mapping
+     * @return SQL statement to create the primary key index, or empty string if no primary keys
+     */
+    fun recreatePrimaryKeyIndex(
+        stream: DestinationStream,
+        tableName: TableName,
+        columnNameMapping: ColumnNameMapping
+    ): String {
+        val primaryKeyColumns = getPrimaryKeysColumnNames(stream, columnNameMapping)
+        return if (primaryKeyColumns.isNotEmpty()) {
+            "CREATE INDEX ${getPrimaryKeyIndexName(tableName, primaryKeyColumns)} ON ${getFullyQualifiedName(tableName)} (${primaryKeyColumns.joinToString(", ")});".andLog()
+        } else {
+            ""
+        }
+    }
 
     fun copyFromCsv(tableName: TableName): String =
         """

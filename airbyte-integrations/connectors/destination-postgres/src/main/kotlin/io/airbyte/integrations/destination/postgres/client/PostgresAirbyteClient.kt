@@ -125,6 +125,70 @@ class PostgresAirbyteClient(
                 .matchSchemas(tableName, addedColumns, deletedColumns, modifiedColumns, columnsInDb)
                 .forEach { execute(it) }
         }
+
+        // Handle primary key index changes
+        ensurePrimaryKeyIndexMatches(stream, tableName, columnNameMapping)
+    }
+
+    /**
+     * Ensures the primary key index matches the current stream configuration.
+     * If the primary keys have changed (detected by a different index hash),
+     * drops the old index and creates a new one.
+     */
+    private fun ensurePrimaryKeyIndexMatches(
+        stream: DestinationStream,
+        tableName: TableName,
+        columnNameMapping: ColumnNameMapping
+    ) {
+        // Get the expected primary key index SQL (which includes the new hash-based name)
+        val newIndexSql = sqlGenerator.recreatePrimaryKeyIndex(stream, tableName, columnNameMapping)
+
+        // If there are no primary keys in the stream, nothing to do
+        if (newIndexSql.isEmpty()) {
+            return
+        }
+
+        // Extract the expected index name from the SQL
+        // The SQL format is: CREATE INDEX "idx_pk_{table}_{hash}" ON ...
+        val expectedIndexName = newIndexSql.substringAfter("CREATE INDEX \"").substringBefore("\" ON")
+
+        // Get existing primary key indexes
+        val existingIndexes = getPrimaryKeyIndexes(tableName)
+
+        // If the expected index already exists, we're done
+        if (existingIndexes.contains(expectedIndexName)) {
+            log.info { "Primary key index $expectedIndexName already exists, no changes needed" }
+            return
+        }
+
+        // Drop all old primary key indexes
+        existingIndexes.forEach { oldIndexName ->
+            log.info { "Dropping old primary key index: $oldIndexName" }
+            execute(sqlGenerator.dropIndex(oldIndexName))
+        }
+
+        // Create the new primary key index
+        log.info { "Creating new primary key index: $expectedIndexName" }
+        execute(newIndexSql)
+    }
+
+    /**
+     * Retrieves the names of all primary key indexes for the given table.
+     * These are indexes that match the primary key naming pattern.
+     */
+    internal fun getPrimaryKeyIndexes(tableName: TableName): List<String> {
+        val sql = sqlGenerator.getPrimaryKeyIndexes(tableName)
+        dataSource.connection.use { connection ->
+            val statement = connection.createStatement()
+            return statement.use {
+                val rs = it.executeQuery(sql)
+                val indexes = mutableListOf<String>()
+                while (rs.next()) {
+                    indexes.add(rs.getString("indexname"))
+                }
+                indexes
+            }
+        }
     }
 
     internal fun getColumnsFromDb(tableName: TableName): Set<Column> {
