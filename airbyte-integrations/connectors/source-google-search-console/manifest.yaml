@@ -309,6 +309,29 @@ spec:
                 - query
 
 definitions:
+  search_analytics_error_handler:
+    type: DefaultErrorHandler
+    backoff_strategies:
+      - type: ConstantBackoffStrategy
+        backoff_time_in_seconds: 60
+      - type: ExponentialBackoffStrategy
+        factor: 2
+    response_filters:
+      - type: HttpResponseFilter
+        action: RATE_LIMITED
+        error_message_contains: "Search Analytics QPS quota exceeded"
+      - type: HttpResponseFilter
+        action: IGNORE
+        error_message_contains: "User does not have sufficient permission"
+        error_message: "{{ response['error']['message'] }}"
+      - type: HttpResponseFilter
+        action: FAIL
+        http_codes:
+          - 400
+        error_message: >-
+          Invalid aggregationType '{{ parameters.get('aggregationType') }}' used in the body of the API request. If you see this error, enable the
+          'always_use_aggregation_type_auto' config setting which will automatically use aggregationType=auto
+
   oauth_authenticator:
     type: OAuthAuthenticator
     client_id: "{{ config.get('authorization', {}).get('client_id') }}"
@@ -360,25 +383,7 @@ definitions:
           aggregationType: "{{ 'auto' if config.get('always_use_aggregation_type_auto') else parameters.get('aggregationType') }}"
           dataState: "{{ config.get('data_state', 'final') }}"
         error_handler:
-          type: DefaultErrorHandler
-          backoff_strategies:
-            - type: ConstantBackoffStrategy
-              wait_time_seconds: 60
-          response_filters:
-            - type: HttpResponseFilter
-              action: RATE_LIMITED
-              error_message_contains: "Search Analytics QPS quota exceeded"
-            - type: HttpResponseFilter
-              action: IGNORE
-              error_message_contains: "User does not have sufficient permission"
-              error_message: "{{ response['error']['message'] }}"
-            - type: HttpResponseFilter
-              action: FAIL
-              http_codes:
-                - 400
-              error_message: >-
-                Invalid aggregationType '{{ parameters.get('aggregationType') }}' used in the body of the API request. If you see this error, enable the
-                'always_use_aggregation_type_auto' config setting which will automatically use aggregationType=auto
+          $ref: "#/definitions/search_analytics_error_handler"
       paginator:
         type: DefaultPaginator
         page_token_option:
@@ -1020,25 +1025,7 @@ definitions:
           dataState: "{{ config.get('data_state', 'final') }}"
           dimensionFilterGroups: "{{ [{'groupType': 'and', 'filters': {'dimension': 'searchAppearance', 'operator': 'equals', 'expression': stream_partition.get('search_appearance')}}] }}"
         error_handler:
-          backoff_strategies:
-            - type: ConstantBackoffStrategy
-              wait_time_seconds: 60
-          type: DefaultErrorHandler
-          response_filters:
-            - type: HttpResponseFilter
-              action: RATE_LIMITED
-              error_message_contains: "Search Analytics QPS quota exceeded"
-            - type: HttpResponseFilter
-              action: IGNORE
-              error_message_contains: "User does not have sufficient permission"
-              error_message: "{{ response['error']['message'] }}"
-            - type: HttpResponseFilter
-              action: FAIL
-              http_codes:
-                - 400
-              error_message: >-
-                Invalid aggregationType '{{ parameters.get('aggregationType') }}' used in the body of the API request. If you see this error, enable the
-                'always_use_aggregation_type_auto' config setting which will automatically use aggregationType=auto
+          $ref: "#/definitions/search_analytics_error_handler"
       paginator:
         type: DefaultPaginator
         page_token_option:
@@ -1280,18 +1267,7 @@ dynamic_streams:
             aggregationType: auto
             dataState: "{{ config.get('data_state', 'final') }}"
           error_handler:
-            type: DefaultErrorHandler
-            backoff_strategies:
-              - type: ConstantBackoffStrategy
-                wait_time_seconds: 60
-            response_filters:
-              - type: HttpResponseFilter
-                action: RATE_LIMITED
-                error_message_contains: "Search Analytics QPS quota exceeded"
-              - type: HttpResponseFilter
-                action: IGNORE
-                error_message_contains: "User does not have sufficient permission"
-                error_message: "{{ response['error']['message'] }}"
+            $ref: "#/definitions/search_analytics_error_handler"
         paginator:
           type: DefaultPaginator
           page_token_option:
