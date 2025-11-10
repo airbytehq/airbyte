@@ -1,9 +1,15 @@
+## Version 0.1.73    
+
+**Load CDK**
+
+* More changes to `IcebergTableSynchronizer` to get BigLake working
+
 ## Version 0.1.72
 
 **Extract CDK**
 
 * Fix case sensitivity for table filtering.
-
+* 
 ## Version 0.1.71
 
 **Load CDK**
