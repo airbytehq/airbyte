@@ -1,0 +1,1260 @@
+version: 7.4.1
+
+type: DeclarativeSource
+
+description: >-
+  This getStream connector syncs chat channel data from getStream Chat end-point
+  to your destination. It supports both full refresh and incremental sync modes,
+  efficiently extracting channel metadata, member information, configuration
+  settings, and activity timestamps using cursor-based synchronization.
+  Authentication is handled securely via JWT tokens using your getStream API
+  credentials. Perfect for analyzing chat engagement patterns, monitoring
+  channel growth, and integrating chat data with your business analytics.
+
+check:
+  type: CheckStream
+  stream_names:
+    - channels
+
+streams:
+  - type: DeclarativeStream
+    name: channels
+    retriever:
+      type: SimpleRetriever
+      decoder:
+        type: JsonDecoder
+      paginator:
+        type: DefaultPaginator
+        page_size_option:
+          type: RequestOption
+          field_path:
+            - limit
+          inject_into: body_json
+        page_token_option:
+          type: RequestOption
+          field_path:
+            - offset
+          inject_into: body_json
+        pagination_strategy:
+          type: OffsetIncrement
+          page_size: 30
+          inject_on_first_request: false
+      requester:
+        type: HttpRequester
+        url: https://chat.stream-io-api.com/channels
+        http_method: POST
+        request_body:
+          type: RequestBodyJsonObject
+          value:
+            sort:
+              - field: last_message_at
+                direction: -1
+            filter_conditions:
+              last_message_at:
+                $gte: "{{ stream_slice.start_time }}"
+        authenticator:
+          type: JwtAuthenticator
+          algorithm: HS256
+          secret_key: "{{ config[\"secret_key\"] }}"
+          jwt_headers:
+            kid: ""
+            typ: ""
+            cty: ""
+          jwt_payload:
+            iss: ""
+            sub: ""
+            aud: ""
+          additional_jwt_payload:
+            user_id: "{{ config['user_id'] }}"
+          base64_encode_secret_key: false
+          token_duration: null
+          header_prefix: ""
+          passphrase: ""
+        request_headers:
+          Content-Type: application/json
+          Stream-Auth-Type: jwt
+        request_parameters:
+          api_key: "{{ config['api_key'] }}"
+      record_selector:
+        type: RecordSelector
+        extractor:
+          type: DpathExtractor
+          field_path:
+            - channels
+    primary_key: channel_id
+    schema_loader:
+      type: InlineSchemaLoader
+      schema:
+        type: object
+        $schema: http://json-schema.org/schema#
+        required:
+          - channel_id
+          - channel_updated_at
+        properties:
+          read:
+            type:
+              - array
+              - "null"
+            items:
+              type:
+                - object
+                - "null"
+              properties:
+                user:
+                  type:
+                    - object
+                    - "null"
+                  properties:
+                    id:
+                      type:
+                        - string
+                        - "null"
+                    name:
+                      type:
+                        - string
+                        - "null"
+                    role:
+                      type:
+                        - string
+                        - "null"
+                    email:
+                      type:
+                        - string
+                        - "null"
+                    image:
+                      type:
+                        - string
+                        - "null"
+                    teams:
+                      type:
+                        - array
+                        - "null"
+                    banned:
+                      type:
+                        - boolean
+                        - "null"
+                    online:
+                      type:
+                        - boolean
+                        - "null"
+                    language:
+                      type:
+                        - string
+                        - "null"
+                    last_name:
+                      type:
+                        - string
+                        - "null"
+                    created_at:
+                      type:
+                        - string
+                        - "null"
+                    first_name:
+                      type:
+                        - string
+                        - "null"
+                    staff_user:
+                      type:
+                        - boolean
+                        - "null"
+                    updated_at:
+                      type:
+                        - string
+                        - "null"
+                    last_active:
+                      type:
+                        - string
+                        - "null"
+                    dashboard_user:
+                      type:
+                        - boolean
+                        - "null"
+                    blocked_user_ids:
+                      type:
+                        - array
+                        - "null"
+                last_read:
+                  type:
+                    - string
+                    - "null"
+                unread_messages:
+                  type:
+                    - number
+                    - "null"
+                last_read_message_id:
+                  type:
+                    - string
+                    - "null"
+          channel:
+            type:
+              - object
+              - "null"
+            properties:
+              type:
+                type:
+                  - string
+                  - "null"
+              id:
+                type:
+                  - string
+                  - "null"
+              cid:
+                type:
+                  - string
+                  - "null"
+              name:
+                type:
+                  - string
+                  - "null"
+              config:
+                type:
+                  - object
+                  - "null"
+                properties:
+                  name:
+                    type:
+                      - string
+                      - "null"
+                  mutes:
+                    type:
+                      - boolean
+                      - "null"
+                  polls:
+                    type:
+                      - boolean
+                      - "null"
+                  quotes:
+                    type:
+                      - boolean
+                      - "null"
+                  search:
+                    type:
+                      - boolean
+                      - "null"
+                  automod:
+                    type:
+                      - string
+                      - "null"
+                  replies:
+                    type:
+                      - boolean
+                      - "null"
+                  uploads:
+                    type:
+                      - boolean
+                      - "null"
+                  commands:
+                    type:
+                      - array
+                      - "null"
+                    items:
+                      type:
+                        - object
+                        - "null"
+                      properties:
+                        description:
+                          type:
+                            - string
+                            - "null"
+                        set:
+                          type:
+                            - string
+                            - "null"
+                        args:
+                          type:
+                            - string
+                            - "null"
+                        name:
+                          type:
+                            - string
+                            - "null"
+                        created_at:
+                          type:
+                            - string
+                            - "null"
+                        updated_at:
+                          type:
+                            - string
+                            - "null"
+                  reactions:
+                    type:
+                      - boolean
+                      - "null"
+                  reminders:
+                    type:
+                      - boolean
+                      - "null"
+                  created_at:
+                    type:
+                      - string
+                      - "null"
+                  updated_at:
+                    type:
+                      - string
+                      - "null"
+                  read_events:
+                    type:
+                      - boolean
+                      - "null"
+                  custom_events:
+                    type:
+                      - boolean
+                      - "null"
+                  typing_events:
+                    type:
+                      - boolean
+                      - "null"
+                  connect_events:
+                    type:
+                      - boolean
+                      - "null"
+                  count_messages:
+                    type:
+                      - boolean
+                      - "null"
+                  url_enrichment:
+                    type:
+                      - boolean
+                      - "null"
+                  automod_behavior:
+                    type:
+                      - string
+                      - "null"
+                  shared_locations:
+                    type:
+                      - boolean
+                      - "null"
+                  message_retention:
+                    type:
+                      - string
+                      - "null"
+                  blocklist_behavior:
+                    type:
+                      - string
+                      - "null"
+                  max_message_length:
+                    type:
+                      - number
+                      - "null"
+                  push_notifications:
+                    type:
+                      - boolean
+                      - "null"
+                  mark_messages_pending:
+                    type:
+                      - boolean
+                      - "null"
+                  user_message_reminders:
+                    type:
+                      - boolean
+                      - "null"
+                  skip_last_msg_update_for_system_msgs:
+                    type:
+                      - boolean
+                      - "null"
+              frozen:
+                type:
+                  - boolean
+                  - "null"
+              hidden:
+                type:
+                  - boolean
+                  - "null"
+              blocked:
+                type:
+                  - boolean
+                  - "null"
+              disabled:
+                type:
+                  - boolean
+                  - "null"
+              created_at:
+                type:
+                  - string
+                  - "null"
+              created_by:
+                type:
+                  - object
+                  - "null"
+                properties:
+                  id:
+                    type:
+                      - string
+                      - "null"
+                  name:
+                    type:
+                      - string
+                      - "null"
+                  role:
+                    type:
+                      - string
+                      - "null"
+                  teams:
+                    type:
+                      - array
+                      - "null"
+                  banned:
+                    type:
+                      - boolean
+                      - "null"
+                  online:
+                    type:
+                      - boolean
+                      - "null"
+                  language:
+                    type:
+                      - string
+                      - "null"
+                  created_at:
+                    type:
+                      - string
+                      - "null"
+                  updated_at:
+                    type:
+                      - string
+                      - "null"
+                  last_active:
+                    type:
+                      - string
+                      - "null"
+                  blocked_user_ids:
+                    type:
+                      - array
+                      - "null"
+              updated_at:
+                type:
+                  - string
+                  - "null"
+              member_count:
+                type:
+                  - number
+                  - "null"
+              transactionId:
+                type:
+                  - string
+                  - "null"
+              externalOrderId:
+                type:
+                  - string
+                  - "null"
+              last_message_at:
+                type:
+                  - string
+                  - "null"
+              own_capabilities:
+                type:
+                  - array
+                  - "null"
+                items:
+                  type:
+                    - string
+                    - "null"
+              transactionChangeId:
+                type:
+                  - string
+                  - "null"
+          members:
+            type:
+              - array
+              - "null"
+            items:
+              type:
+                - object
+                - "null"
+              properties:
+                role:
+                  type:
+                    - string
+                    - "null"
+                user:
+                  type:
+                    - object
+                    - "null"
+                  properties:
+                    id:
+                      type:
+                        - string
+                        - "null"
+                    name:
+                      type:
+                        - string
+                        - "null"
+                    role:
+                      type:
+                        - string
+                        - "null"
+                    email:
+                      type:
+                        - string
+                        - "null"
+                    image:
+                      type:
+                        - string
+                        - "null"
+                    teams:
+                      type:
+                        - array
+                        - "null"
+                    banned:
+                      type:
+                        - boolean
+                        - "null"
+                    online:
+                      type:
+                        - boolean
+                        - "null"
+                    language:
+                      type:
+                        - string
+                        - "null"
+                    last_name:
+                      type:
+                        - string
+                        - "null"
+                    created_at:
+                      type:
+                        - string
+                        - "null"
+                    first_name:
+                      type:
+                        - string
+                        - "null"
+                    staff_user:
+                      type:
+                        - boolean
+                        - "null"
+                    updated_at:
+                      type:
+                        - string
+                        - "null"
+                    last_active:
+                      type:
+                        - string
+                        - "null"
+                    dashboard_user:
+                      type:
+                        - boolean
+                        - "null"
+                    blocked_user_ids:
+                      type:
+                        - array
+                        - "null"
+                banned:
+                  type:
+                    - boolean
+                    - "null"
+                status:
+                  type:
+                    - string
+                    - "null"
+                user_id:
+                  type:
+                    - string
+                    - "null"
+                created_at:
+                  type:
+                    - string
+                    - "null"
+                updated_at:
+                  type:
+                    - string
+                    - "null"
+                channel_role:
+                  type:
+                    - string
+                    - "null"
+                shadow_banned:
+                  type:
+                    - boolean
+                    - "null"
+                notifications_muted:
+                  type:
+                    - boolean
+                    - "null"
+          threads:
+            type:
+              - array
+              - "null"
+          messages:
+            type:
+              - array
+              - "null"
+            items:
+              type:
+                - object
+                - "null"
+              properties:
+                type:
+                  type:
+                    - string
+                    - "null"
+                id:
+                  type:
+                    - string
+                    - "null"
+                cid:
+                  type:
+                    - string
+                    - "null"
+                args:
+                  type:
+                    - string
+                    - "null"
+                html:
+                  type:
+                    - string
+                    - "null"
+                text:
+                  type:
+                    - string
+                    - "null"
+                user:
+                  type:
+                    - object
+                    - "null"
+                  properties:
+                    id:
+                      type:
+                        - string
+                        - "null"
+                    name:
+                      type:
+                        - string
+                        - "null"
+                    role:
+                      type:
+                        - string
+                        - "null"
+                    email:
+                      type:
+                        - string
+                        - "null"
+                    image:
+                      type:
+                        - string
+                        - "null"
+                    teams:
+                      type:
+                        - array
+                        - "null"
+                    banned:
+                      type:
+                        - boolean
+                        - "null"
+                    online:
+                      type:
+                        - boolean
+                        - "null"
+                    language:
+                      type:
+                        - string
+                        - "null"
+                    last_name:
+                      type:
+                        - string
+                        - "null"
+                    created_at:
+                      type:
+                        - string
+                        - "null"
+                    first_name:
+                      type:
+                        - string
+                        - "null"
+                    staff_user:
+                      type:
+                        - boolean
+                        - "null"
+                    updated_at:
+                      type:
+                        - string
+                        - "null"
+                    last_active:
+                      type:
+                        - string
+                        - "null"
+                    dashboard_user:
+                      type:
+                        - boolean
+                        - "null"
+                    blocked_user_ids:
+                      type:
+                        - array
+                        - "null"
+                member:
+                  type:
+                    - object
+                    - "null"
+                  properties:
+                    channel_role:
+                      type:
+                        - string
+                        - "null"
+                pinned:
+                  type:
+                    - boolean
+                    - "null"
+                silent:
+                  type:
+                    - boolean
+                    - "null"
+                status:
+                  type:
+                    - string
+                    - "null"
+                command:
+                  type:
+                    - string
+                    - "null"
+                shadowed:
+                  type:
+                    - boolean
+                    - "null"
+                created_at:
+                  type:
+                    - string
+                    - "null"
+                deleted_at:
+                  type:
+                    - string
+                    - "null"
+                updated_at:
+                  type:
+                    - string
+                    - "null"
+                attachments:
+                  type:
+                    - array
+                    - "null"
+                  items:
+                    type:
+                      - object
+                      - "null"
+                    properties:
+                      type:
+                        type:
+                          - string
+                          - "null"
+                      id:
+                        type:
+                          - string
+                          - "null"
+                      text:
+                        type:
+                          - string
+                          - "null"
+                      title:
+                        type:
+                          - string
+                          - "null"
+                      amount:
+                        type:
+                          - number
+                          - string
+                          - "null"
+                      fallback:
+                        type:
+                          - string
+                          - "null"
+                      asset_url:
+                        type:
+                          - string
+                          - "null"
+                      file_size:
+                        type:
+                          - number
+                          - "null"
+                      image_url:
+                        type:
+                          - string
+                          - "null"
+                      mime_type:
+                        type:
+                          - string
+                          - "null"
+                      thumb_url:
+                        type:
+                          - string
+                          - "null"
+                      title_link:
+                        type:
+                          - string
+                          - "null"
+                      author_name:
+                        type:
+                          - string
+                          - "null"
+                      upload_date:
+                        type:
+                          - number
+                          - "null"
+                      og_scrape_url:
+                        type:
+                          - string
+                          - "null"
+                      original_width:
+                        type:
+                          - number
+                          - "null"
+                      bankDescription:
+                        type:
+                          - string
+                          - "null"
+                      original_height:
+                        type:
+                          - number
+                          - "null"
+                reply_count:
+                  type:
+                    - number
+                    - "null"
+                command_info:
+                  type:
+                    - object
+                    - "null"
+                  properties:
+                    name:
+                      type:
+                        - string
+                        - "null"
+                originalText:
+                  type:
+                    - string
+                    - "null"
+                own_reactions:
+                  type:
+                    - array
+                    - "null"
+                mentioned_users:
+                  type:
+                    - array
+                    - "null"
+                reaction_counts:
+                  type:
+                    - object
+                    - "null"
+                  properties:
+                    like:
+                      type:
+                        - number
+                        - "null"
+                reaction_groups:
+                  type:
+                    - object
+                    - "null"
+                  properties:
+                    like:
+                      type:
+                        - object
+                        - "null"
+                      properties:
+                        count:
+                          type:
+                            - number
+                            - "null"
+                        sum_scores:
+                          type:
+                            - number
+                            - "null"
+                        last_reaction_at:
+                          type:
+                            - string
+                            - "null"
+                        first_reaction_at:
+                          type:
+                            - string
+                            - "null"
+                reaction_scores:
+                  type:
+                    - object
+                    - "null"
+                  properties:
+                    like:
+                      type:
+                        - number
+                        - "null"
+                latest_reactions:
+                  type:
+                    - array
+                    - "null"
+                  items:
+                    type:
+                      - object
+                      - "null"
+                    properties:
+                      type:
+                        type:
+                          - string
+                          - "null"
+                      user:
+                        type:
+                          - object
+                          - "null"
+                        properties:
+                          id:
+                            type:
+                              - string
+                              - "null"
+                          name:
+                            type:
+                              - string
+                              - "null"
+                          role:
+                            type:
+                              - string
+                              - "null"
+                          email:
+                            type:
+                              - string
+                              - "null"
+                          teams:
+                            type:
+                              - array
+                              - "null"
+                          banned:
+                            type:
+                              - boolean
+                              - "null"
+                          online:
+                            type:
+                              - boolean
+                              - "null"
+                          language:
+                            type:
+                              - string
+                              - "null"
+                          last_name:
+                            type:
+                              - string
+                              - "null"
+                          created_at:
+                            type:
+                              - string
+                              - "null"
+                          first_name:
+                            type:
+                              - string
+                              - "null"
+                          staff_user:
+                            type:
+                              - boolean
+                              - "null"
+                          updated_at:
+                            type:
+                              - string
+                              - "null"
+                          last_active:
+                            type:
+                              - string
+                              - "null"
+                          dashboard_user:
+                            type:
+                              - boolean
+                              - "null"
+                          blocked_user_ids:
+                            type:
+                              - array
+                              - "null"
+                      score:
+                        type:
+                          - number
+                          - "null"
+                      user_id:
+                        type:
+                          - string
+                          - "null"
+                      created_at:
+                        type:
+                          - string
+                          - "null"
+                      message_id:
+                        type:
+                          - string
+                          - "null"
+                      updated_at:
+                        type:
+                          - string
+                          - "null"
+                deleted_reply_count:
+                  type:
+                    - number
+                    - "null"
+                thread_participants:
+                  type:
+                    - array
+                    - "null"
+                  items:
+                    type:
+                      - object
+                      - "null"
+                    properties:
+                      id:
+                        type:
+                          - string
+                          - "null"
+                      name:
+                        type:
+                          - string
+                          - "null"
+                      role:
+                        type:
+                          - string
+                          - "null"
+                      email:
+                        type:
+                          - string
+                          - "null"
+                      teams:
+                        type:
+                          - array
+                          - "null"
+                      banned:
+                        type:
+                          - boolean
+                          - "null"
+                      online:
+                        type:
+                          - boolean
+                          - "null"
+                      language:
+                        type:
+                          - string
+                          - "null"
+                      last_name:
+                        type:
+                          - string
+                          - "null"
+                      created_at:
+                        type:
+                          - string
+                          - "null"
+                      first_name:
+                        type:
+                          - string
+                          - "null"
+                      staff_user:
+                        type:
+                          - boolean
+                          - "null"
+                      updated_at:
+                        type:
+                          - string
+                          - "null"
+                      last_active:
+                        type:
+                          - string
+                          - "null"
+                      dashboard_user:
+                        type:
+                          - boolean
+                          - "null"
+                      blocked_user_ids:
+                        type:
+                          - array
+                          - "null"
+                restricted_visibility:
+                  type:
+                    - array
+                    - "null"
+                message_text_updated_at:
+                  type:
+                    - string
+                    - "null"
+          channel_id:
+            type: string
+          membership:
+            type:
+              - object
+              - "null"
+            properties:
+              user:
+                type:
+                  - object
+                  - "null"
+                properties:
+                  id:
+                    type:
+                      - string
+                      - "null"
+                  name:
+                    type:
+                      - string
+                      - "null"
+                  role:
+                    type:
+                      - string
+                      - "null"
+                  email:
+                    type:
+                      - string
+                      - "null"
+                  image:
+                    type:
+                      - string
+                      - "null"
+                  teams:
+                    type:
+                      - array
+                      - "null"
+                  banned:
+                    type:
+                      - boolean
+                      - "null"
+                  online:
+                    type:
+                      - boolean
+                      - "null"
+                  language:
+                    type:
+                      - string
+                      - "null"
+                  last_name:
+                    type:
+                      - string
+                      - "null"
+                  created_at:
+                    type:
+                      - string
+                      - "null"
+                  first_name:
+                    type:
+                      - string
+                      - "null"
+                  staff_user:
+                    type:
+                      - boolean
+                      - "null"
+                  updated_at:
+                    type:
+                      - string
+                      - "null"
+                  last_active:
+                    type:
+                      - string
+                      - "null"
+                  dashboard_user:
+                    type:
+                      - boolean
+                      - "null"
+                  blocked_user_ids:
+                    type:
+                      - array
+                      - "null"
+              banned:
+                type:
+                  - boolean
+                  - "null"
+              status:
+                type:
+                  - string
+                  - "null"
+              created_at:
+                type:
+                  - string
+                  - "null"
+              updated_at:
+                type:
+                  - string
+                  - "null"
+              channel_role:
+                type:
+                  - string
+                  - "null"
+              shadow_banned:
+                type:
+                  - boolean
+                  - "null"
+              notifications_muted:
+                type:
+                  - boolean
+                  - "null"
+          pinned_messages:
+            type:
+              - array
+              - "null"
+          channel_updated_at:
+            type: string
+        additionalProperties: true
+    transformations:
+      - type: AddFields
+        fields:
+          - type: AddedFieldDefinition
+            path:
+              - channel_updated_at
+            value: "{{ record['channel']['last_message_at'] }}"
+      - type: AddFields
+        fields:
+          - type: AddedFieldDefinition
+            path:
+              - channel_id
+            value: "{{ record['channel']['id'] }}"
+    incremental_sync:
+      type: DatetimeBasedCursor
+      cursor_field: channel_updated_at
+      start_datetime:
+        type: MinMaxDatetime
+        datetime: "2025-08-01T00:00:00.000000Z"
+        datetime_format: "%Y-%m-%dT%H:%M:%S.%fZ"
+      datetime_format: "%Y-%m-%dT%H:%M:%S.%fZ"
+      cursor_datetime_formats:
+        - "%Y-%m-%dT%H:%M:%S.%fZ"
+      partition_field_end: ""
+      partition_field_start: ""
+
+spec:
+  type: Spec
+  connection_specification:
+    type: object
+    $schema: http://json-schema.org/draft-07/schema#
+    required:
+      - api_key
+      - secret_key
+      - user_id
+    properties:
+      api_key:
+        type: string
+        order: 0
+        title: API Key
+        default: qbpgvdqmr8je
+      user_id:
+        type: string
+        order: 2
+        title: User ID
+        default: 01680cea-ba49-4246-a9b3-98fa3f7b0685
+      secret_key:
+        type: string
+        order: 1
+        title: Secret Key
+        airbyte_secret: true
+    additionalProperties: true
+
+metadata:
+  assist: {}
+  testedStreams:
+    channels:
+      isStale: false
+      hasRecords: true
+      streamHash: 74c5d47c01138fbea2d1603d515ec986e96a7a3d
+      hasResponse: true
+      primaryKeysAreUnique: true
+      primaryKeysArePresent: true
+      responsesAreSuccessful: true
+  autoImportSchema:
+    channels: true
+  applied_migrations:
+    - migration: HttpRequesterUrlBaseToUrl
+      to_version: "*"
+      migrated_at: "2025-08-07T17:14:09.001698+00:00"
+      from_version: 6.48.15
+    - migration: HttpRequesterPathToUrl
+      to_version: "*"
+      migrated_at: "2025-08-07T17:14:09.003439+00:00"
+      from_version: 6.48.15
+    - migration: HttpRequesterRequestBodyJsonDataToRequestBody
+      to_version: "*"
+      migrated_at: "2025-08-07T17:14:09.005046+00:00"
+      from_version: 6.48.15
+
+concurrency_level:
+  type: ConcurrencyLevel
+  default_concurrency: 1
