@@ -364,9 +364,6 @@ definitions:
           backoff_strategies:
             - type: ConstantBackoffStrategy
               wait_time_seconds: 60
-            - type: ExponentialBackoffStrategy
-              factor: 2
-          max_retries: 6
           response_filters:
             - type: HttpResponseFilter
               action: RATE_LIMITED
@@ -1026,9 +1023,6 @@ definitions:
           backoff_strategies:
             - type: ConstantBackoffStrategy
               wait_time_seconds: 60
-            - type: ExponentialBackoffStrategy
-              factor: 2
-          max_retries: 6
           type: DefaultErrorHandler
           response_filters:
             - type: HttpResponseFilter
@@ -1290,9 +1284,6 @@ dynamic_streams:
             backoff_strategies:
               - type: ConstantBackoffStrategy
                 wait_time_seconds: 60
-              - type: ExponentialBackoffStrategy
-                factor: 2
-            max_retries: 6
             response_filters:
               - type: HttpResponseFilter
                 action: RATE_LIMITED
