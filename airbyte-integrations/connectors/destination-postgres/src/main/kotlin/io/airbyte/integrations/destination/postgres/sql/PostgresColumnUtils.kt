@@ -5,6 +5,7 @@
 package io.airbyte.integrations.destination.postgres.sql
 
 import com.google.common.annotations.VisibleForTesting
+import io.airbyte.cdk.load.command.Dedupe
 import io.airbyte.cdk.load.command.DestinationStream
 import io.airbyte.cdk.load.data.AirbyteType
 import io.airbyte.cdk.load.data.ArrayType
@@ -152,6 +153,23 @@ class PostgresColumnUtils(
             is UnknownType,
             is UnionType -> PostgresDataType.JSONB.typeName
         }
+
+    internal fun getPrimaryKeysColumnNames(stream: DestinationStream, columnNameMapping: ColumnNameMapping): List<String> {
+        return when (stream.importType) {
+            is Dedupe -> getPrimaryKeysColumnNames(stream.importType as Dedupe, columnNameMapping)
+            else -> listOf()
+        }
+    }
+
+    internal fun getPrimaryKeysColumnNames(
+        importType: Dedupe,
+        columnNameMapping: ColumnNameMapping
+    ): List<String> {
+        return importType.primaryKey.map { fieldPath ->
+            val primaryKeyColumnName = fieldPath.first() //only at the root level for Postgres
+            getTargetColumnName(primaryKeyColumnName, columnNameMapping )
+        }.toList()
+    }
 }
 
 data class Column(val columnName: String, val columnTypeName: String, val nullable: Boolean = true)

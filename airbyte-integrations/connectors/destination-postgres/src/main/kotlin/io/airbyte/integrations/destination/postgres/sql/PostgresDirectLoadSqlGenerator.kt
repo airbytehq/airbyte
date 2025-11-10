@@ -84,7 +84,7 @@ class PostgresDirectLoadSqlGenerator(
         tableName: TableName,
         columnNameMapping: ColumnNameMapping
     ): String {
-        val primaryKeyIndexStatement = getPrimaryKeysColumnNames(stream, columnNameMapping)
+        val primaryKeyIndexStatement = postgresColumnUtils.getPrimaryKeysColumnNames(stream, columnNameMapping)
             .takeIf {  it.isNotEmpty() }
             ?.let {
                 "CREATE INDEX ${getPrimaryKeyIndexName(tableName)} ON ${getFullyQualifiedName(tableName)} (${it.joinToString(", ")});"
@@ -101,23 +101,6 @@ class PostgresDirectLoadSqlGenerator(
             $cursorIndexStatement
             $extractedAtIndexStatement
         """.trimIndent()
-    }
-
-    private fun getPrimaryKeysColumnNames(stream: DestinationStream, columnNameMapping: ColumnNameMapping): List<String> {
-        return when (stream.importType) {
-            is Dedupe -> getPrimaryKeysColumnNames(stream.importType as Dedupe, columnNameMapping)
-            else -> listOf()
-        }
-    }
-
-    private fun getPrimaryKeysColumnNames(
-        importType: Dedupe,
-        columnNameMapping: ColumnNameMapping
-    ): List<String> {
-        return importType.primaryKey.map { fieldPath ->
-            val primaryKeyColumnName = fieldPath.first() //only at the root level for Postgres
-            getTargetColumnName(primaryKeyColumnName, columnNameMapping )
-        }.toList()
     }
 
     private fun getCursorColumnName(
@@ -212,7 +195,7 @@ class PostgresDirectLoadSqlGenerator(
             throw IllegalArgumentException("Cannot perform upsert without primary key")
         }
 
-        val primaryKeyTargetColumns = getPrimaryKeysColumnNames(importType, columnNameMapping)
+        val primaryKeyTargetColumns = postgresColumnUtils.getPrimaryKeysColumnNames(importType, columnNameMapping)
         val cursorTargetColumn = getCursorColumnName(importType.cursor, columnNameMapping)
         val allTargetColumns = getTargetColumnNames(stream, columnNameMapping)
 
