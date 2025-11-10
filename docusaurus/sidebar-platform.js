@@ -528,7 +528,6 @@ module.exports = {
           type: "category",
           label: "Integrating with Airbyte",
           items: [
-            "using-airbyte/configuring-api-access",
             "operator-guides/using-the-airflow-airbyte-operator",
             "operator-guides/using-prefect-task",
             "operator-guides/using-dagster-integration",
@@ -536,20 +535,8 @@ module.exports = {
             "operator-guides/using-orchestra-task",
           ],
         },
-        sectionHeader("Developer guides"),
-        {
-          type: "doc",
-          id: "api-documentation",
-        },
-        {
-          type: "doc",
-          id: "terraform-documentation",
-        },
-        {
-          type: "doc",
-          label: "Using PyAirbyte",
-          id: "using-airbyte/pyairbyte/getting-started",
-        },
+        sectionHeader("Advanced"),
+        "using-airbyte/configuring-api-access",
         understandingAirbyte,
       ],
     },

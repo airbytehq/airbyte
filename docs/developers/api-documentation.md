@@ -13,7 +13,7 @@ Our API is a reliable, easy-to-use interface for programmatically controlling th
 
 ## Configuring API Access
 
-View our documentation [here](using-airbyte/configuring-api-access.md) to learn how to start using the Airbyte API.
+View our documentation [here](/platform/using-airbyte/configuring-api-access) to learn how to start using the Airbyte API.
 
 ## Using the Airbyte API
 

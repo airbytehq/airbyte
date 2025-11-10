@@ -56,11 +56,11 @@ These are great choices for developers who want to automate the way you work wit
 
 ### Terraform
 
-Many people think of Airbyte and its connectors as infrastructure. Our [Terraform provider](/platform/terraform-documentation) ensures you can deploy and manage sources and destinations with Terraform, the same way you manage your other infrastructure today.
+Many people think of Airbyte and its connectors as infrastructure. Our [Terraform provider](/developers/terraform-documentation) ensures you can deploy and manage sources and destinations with Terraform, the same way you manage your other infrastructure today.
 
 ### PyAirbyte
 
-If you want to use Python to move data, our Python library, [PyAirbyte](/platform/using-airbyte/pyairbyte/getting-started), might be the best fit for you. It's a good choice if you're using Jupyter Notebook or iterating on an early prototype for a large data project and don't need to run a server. PyAirbyte isn't an SDK for managing Airbyte. If that's what you're looking for, use the [API or Python SDK](#api-sdk).
+If you want to use Python to move data, our Python library, [PyAirbyte](/developers/using-pyairbyte), might be the best fit for you. It's a good choice if you're using Jupyter Notebook or iterating on an early prototype for a large data project and don't need to run a server. PyAirbyte isn't an SDK for managing Airbyte. If that's what you're looking for, use the [API or Python SDK](#api-sdk).
 
 ## Why Airbyte?
 
@@ -69,7 +69,7 @@ Teams and organizations need efficient and timely data access to an ever-growing
 - **Wide connector availability:** Airbyte's connector catalog comes "out-of-the-box" with over 600 pre-built connectors. These connectors can be used to start replicating data from a source to a destination in just a few minutes.
 - **Long-tail connector coverage:** You can easily extend Airbyte's capability to support your custom use cases through Airbyte's [No-Code Connector Builder](/platform/connector-development/connector-builder-ui/overview).
 - **Robust platform** provides horizontal scaling required for large-scale data movement operations, available as [Cloud-managed](https://airbyte.com/product/airbyte-cloud) or [Self-managed](https://airbyte.com/product/airbyte-enterprise).
-- **Accessible User Interfaces** through the UI, [**PyAirbyte**](/platform/using-airbyte/pyairbyte/getting-started) (Python library), [**API**](/platform/api-documentation), and [**Terraform Provider**](/platform/terraform-documentation) to integrate with your preferred tooling and approach to infrastructure management.
+- **Accessible User Interfaces** through the UI, [**PyAirbyte**](/developers/using-pyairbyte) (Python library), [**API**](/developers/api-documentation), and [**Terraform Provider**](/developers/terraform-documentation) to integrate with your preferred tooling and approach to infrastructure management.
 
 Airbyte is suitable for a wide range of data integration use cases, including AI data infrastructure and EL(T) workloads. Airbyte is also [embeddable](https://airbyte.com/product/powered-by-airbyte) within your own app or platform to power your product.
 

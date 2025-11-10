@@ -215,6 +215,25 @@ const config: Config = {
         ],
       },
     ],
+    // This plugin controls Developers docs, which are not versioned
+    [
+      "@docusaurus/plugin-content-docs",
+      {
+        id: "developers",
+        path: "../docs/developers",
+        routeBasePath: "/developers",
+        sidebarPath: "./sidebar-developers.js",
+        editUrl: "https://github.com/airbytehq/airbyte/blob/master/docs",
+        remarkPlugins: [
+          plugins.docsHeaderDecoration,
+          plugins.enterpriseDocsHeaderInformation,
+          plugins.productInformation,
+          plugins.docMetaTags,
+          plugins.addButtonToTitle,
+          [plugins.npm2yarn, { sync: true }],
+        ],
+      },
+    ],
     // This plugin controls Community docs, which are not versioned
     [
       "@docusaurus/plugin-content-docs",
@@ -456,6 +475,13 @@ const config: Config = {
           docsPluginId: "ai-agents",
           sidebarId: "ai-agents",
           label: "AI agents",
+        },
+        {
+          type: "docSidebar",
+          position: "left",
+          docsPluginId: "developers",
+          sidebarId: "developers",
+          label: "Developers",
         },
         {
           type: "docSidebar",
