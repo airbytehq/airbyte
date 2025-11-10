@@ -69,22 +69,15 @@ class StateStore(
     fun getNextComplete(): CheckpointMessage? {
         return when (mode.get()) {
             null -> {
-                log.info { "No state messages to flush" }
                 null
             }
             Mode.GLOBAL -> {
                 val head = globalStates.firstKeyOrNull() ?: return noGlobalToFlush()
                 val expected = globalNextIndex.get()
                 if (head.id != expected) {
-                    log.info {
-                        "GLOBAL: state index ${head.id} != expected $expected; cannot flush"
-                    }
                     return null
                 }
                 if (!histogramStore.isComplete(head)) {
-                    log.info {
-                        "GLOBAL: records for state id ${head.id} have not been loaded; cannot flush"
-                    }
                     return null
                 }
 
@@ -99,15 +92,9 @@ class StateStore(
                     val head = stateMessages.queue.firstKeyOrNull() ?: continue
                     val expected = stateMessages.nextIndex.get()
                     if (head.id != expected) {
-                        log.info {
-                            "STREAM: state index ${head.id} for stream $desc != expected $expected; cannot flush"
-                        }
                         continue
                     }
                     if (!histogramStore.isComplete(head)) {
-                        log.info {
-                            "STREAM: records for state id ${head.id} for stream $desc have not been loaded; cannot flush"
-                        }
                         continue
                     }
                     if (stateToEmit == null) {
@@ -214,7 +201,6 @@ class StateStore(
     }
 
     private fun noGlobalToFlush(): Nothing? {
-        log.info { "No global state messages to flush" }
         return null
     }
 
