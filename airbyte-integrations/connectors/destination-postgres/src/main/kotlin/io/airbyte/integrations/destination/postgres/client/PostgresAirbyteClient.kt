@@ -132,7 +132,7 @@ class PostgresAirbyteClient(
 
     /**
      * Ensures the primary key index matches the current stream configuration.
-     * If the primary keys have changed (detected by a different index hash),
+     * If the primary keys have changed (detected by comparing columns in the index),
      * drops the old index and creates a new one.
      */
     private fun ensurePrimaryKeyIndexMatches(
@@ -140,54 +140,58 @@ class PostgresAirbyteClient(
         tableName: TableName,
         columnNameMapping: ColumnNameMapping
     ) {
-        // Get the expected primary key index SQL (which includes the new hash-based name)
-        val newIndexSql = sqlGenerator.recreatePrimaryKeyIndex(stream, tableName, columnNameMapping)
+        // Get the expected primary key columns from the stream
+        val expectedPrimaryKeyColumns = when (stream.importType) {
+            is io.airbyte.cdk.load.command.Dedupe -> {
+                (stream.importType as io.airbyte.cdk.load.command.Dedupe).primaryKey.map { fieldPath ->
+                    postgresColumnUtils.getTargetColumnName(fieldPath.first(), columnNameMapping)
+                }
+            }
+            else -> emptyList()
+        }
 
         // If there are no primary keys in the stream, nothing to do
-        if (newIndexSql.isEmpty()) {
+        if (expectedPrimaryKeyColumns.isEmpty()) {
             return
         }
 
-        // Extract the expected index name from the SQL
-        // The SQL format is: CREATE INDEX "idx_pk_{table}_{hash}" ON ...
-        val expectedIndexName = newIndexSql.substringAfter("CREATE INDEX \"").substringBefore("\" ON")
+        // Get the actual columns in the existing primary key index
+        val actualIndexColumns = getPrimaryKeyIndexColumns(tableName)
 
-        // Get existing primary key indexes
-        val existingIndexes = getPrimaryKeyIndexes(tableName)
-
-        // If the expected index already exists, we're done
-        if (existingIndexes.contains(expectedIndexName)) {
-            log.info { "Primary key index $expectedIndexName already exists, no changes needed" }
+        // Compare the actual columns with the expected columns
+        if (actualIndexColumns == expectedPrimaryKeyColumns) {
+            log.info { "Primary key index already matches expected columns: $expectedPrimaryKeyColumns" }
             return
         }
 
-        // Drop all old primary key indexes
-        existingIndexes.forEach { oldIndexName ->
-            log.info { "Dropping old primary key index: $oldIndexName" }
-            execute(sqlGenerator.dropIndex(oldIndexName))
-        }
+        log.info { "Primary key columns changed from $actualIndexColumns to $expectedPrimaryKeyColumns" }
 
-        // Create the new primary key index
-        log.info { "Creating new primary key index: $expectedIndexName" }
-        execute(newIndexSql)
+        // Drop the old index and create the new one
+        execute(sqlGenerator.dropIndex("idx_pk_${tableName.name}"))
+        execute(sqlGenerator.recreatePrimaryKeyIndex(stream, tableName, columnNameMapping))
     }
 
     /**
-     * Retrieves the names of all primary key indexes for the given table.
-     * These are indexes that match the primary key naming pattern.
+     * Retrieves the column names from the primary key index for the given table.
+     * Returns an empty list if the index doesn't exist.
      */
-    internal fun getPrimaryKeyIndexes(tableName: TableName): List<String> {
-        val sql = sqlGenerator.getPrimaryKeyIndexes(tableName)
-        dataSource.connection.use { connection ->
-            val statement = connection.createStatement()
-            return statement.use {
-                val rs = it.executeQuery(sql)
-                val indexes = mutableListOf<String>()
-                while (rs.next()) {
-                    indexes.add(rs.getString("indexname"))
+    internal fun getPrimaryKeyIndexColumns(tableName: TableName): List<String> {
+        val sql = sqlGenerator.getPrimaryKeyIndexColumns(tableName)
+        return try {
+            dataSource.connection.use { connection ->
+                val statement = connection.createStatement()
+                statement.use {
+                    val rs = it.executeQuery(sql)
+                    val columns = mutableListOf<String>()
+                    while (rs.next()) {
+                        columns.add(rs.getString("column_name"))
+                    }
+                    columns
                 }
-                indexes
             }
+        } catch (e: Exception) {
+            log.debug(e) { "Could not retrieve primary key index columns for table $tableName (index may not exist yet)" }
+            emptyList()
         }
     }
 
