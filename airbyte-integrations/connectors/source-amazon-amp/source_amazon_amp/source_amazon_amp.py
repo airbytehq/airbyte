@@ -259,12 +259,7 @@ class SourceAmazonAmp(Source):
                 ),
                 "required": ["workspace_id", "region"],
                 "properties": {
-                    "workspace_id": {
-                        "type": "string",
-                        "description": "ID of the AMP workspace",
-                        "title": "AMP Workspace ID",
-                        "order": 0
-                    },
+                    "workspace_id": {"type": "string", "description": "ID of the AMP workspace", "title": "AMP Workspace ID", "order": 0},
                     "region": {
                         "type": "string",
                         "enum": [
