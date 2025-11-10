@@ -28,7 +28,6 @@ from airbyte_cdk.sources import Source
 logger = logging.getLogger("airbyte")
 
 class SigV4Authenticator:
-    """Klasa do generowania podpisów AWS Signature Version 4."""
     def __init__(self, access_key: str, secret_key: str, region: str, service: str = "grafana"):
         self.access_key = access_key
         self.secret_key = secret_key
@@ -47,7 +46,6 @@ class SigV4Authenticator:
         return k_signing
 
     def add_auth(self, method: str, url: str, headers: Mapping[str, str], body: bytes = b""):
-        """Dodaje nagłówki SigV4 do żądania."""
         t = datetime.datetime.utcnow()
         amz_date = t.strftime("%Y%m%dT%H%M%SZ")
         date_stamp = t.strftime("%Y%m%d")
@@ -56,22 +54,18 @@ class SigV4Authenticator:
         canonical_uri = parsed_url.path or "/"
         canonical_querystring = parsed_url.query
         
-        # POPRAWKA: Netloc bez portu
         netloc = parsed_url.netloc
         if ":" in netloc:
              netloc = netloc.split(":")[0]
 
         payload_hash = hashlib.sha256(body or b"").hexdigest()
         
-        # Content-Type jest wymagany tylko dla POST/PUT/DELETE z ciałem
         if body and "Content-Type" not in headers:
             headers["Content-Type"] = "application/json"
 
-        # Headers do Canonical Request
         canonical_headers = f"host:{netloc}\n" + f"x-amz-date:{amz_date}\n"
         signed_headers = "host;x-amz-date"
         
-        # Jeśli Content-Type jest obecny, musi być podpisany
         if "Content-Type" in headers:
             canonical_headers += f"content-type:{headers['Content-Type'].strip().lower()}\n"
             signed_headers += ";content-type"
@@ -104,7 +98,6 @@ class SigV4Authenticator:
             f"SignedHeaders={signed_headers}, Signature={signature}"
         )
 
-        # Aktualizacja nagłówków
         headers["x-amz-date"] = amz_date
         headers["Authorization"] = authorization_header
         headers["host"] = netloc
@@ -112,12 +105,7 @@ class SigV4Authenticator:
         logger.debug(f"SigV4 Auth generated for {method} {canonical_uri}")
 
 
-# --- Zarządzanie Tokenem i Klasy Strumieni ---
-
 class BaseGrafanaStream:
-    """
-    Bazowa klasa strumienia z zarządzaniem tokenem SA dla workspace Amazon Grafana.
-    """
     token: Optional[str] = None
     token_id: Optional[str] = None
 
@@ -127,13 +115,11 @@ class BaseGrafanaStream:
         self.region = config["region"]
         self.service_account_id = config["service_account_id"]
 
-        # Tworzymy klienta boto3 dla grafana
         self.grafana_client = boto3.client("grafana",
                                            region_name=self.region,
                                            aws_access_key_id=config["aws_access_key_id"],
                                            aws_secret_access_key=config["aws_secret_access_key"])
 
-        # Token tworzony raz na klasę
         if BaseGrafanaStream.token is None:
             self._ensure_token_created()
 
@@ -149,10 +135,6 @@ class BaseGrafanaStream:
                 raise
 
     def _create_token(self) -> (str, str):
-        """
-        Tworzy token za pomocą boto3 (odpowiednik AWS CLI)
-        """
-        # Najpierw usuń istniejące tokeny o takiej samej nazwie, jeśli trzeba
         existing_tokens = self.grafana_client.list_workspace_service_account_tokens(
             workspaceId=self.workspace_id,
             serviceAccountId=self.service_account_id
@@ -167,7 +149,6 @@ class BaseGrafanaStream:
                     tokenId=t.get("id")
                 )
 
-        # Tworzymy nowy token ze stałą nazwą i czasem życia 1 godzina
         creates = self.grafana_client.create_workspace_service_account_token(
             workspaceId=self.workspace_id,
             serviceAccountId=self.service_account_id,
@@ -191,9 +172,6 @@ class BaseGrafanaStream:
             logger.warning(f"Failed to delete token id {token_id}: {e}")
 
     def request(self, path: str, method: str = "GET", body: Optional[bytes] = None) -> Any:
-        """
-        Wysyła żądanie do API Grafany autoryzowane Bearer tokenem SA.
-        """
         self._ensure_token_created()
 
         url = f"https://{self.workspace_id}.grafana-workspace.{self.region}.amazonaws.com{path}"
@@ -214,7 +192,6 @@ class BaseGrafanaStream:
     def read_records(self) -> Iterable[Mapping[str, Any]]:
         raise NotImplementedError()
 
-# --- Implementacje Strumieni Danych ---
 
 class UsersStream(BaseGrafanaStream):
     def read_records(self) -> Iterable[Mapping[str, Any]]:
@@ -230,15 +207,12 @@ class TeamsStream(BaseGrafanaStream):
         for team in data.get("teams", []):
             yield team
 
-# --- Główna Klasa Źródła Airbyte ---
 
 class SourceAmazonGrafana(Source):
     def check(self, logger, config) -> AirbyteConnectionStatus:
         try:
             stream = UsersStream(config)
-            # Pobierz pierwszy rekord, by przetestować połączenie
             next(stream.read_records())
-            # Po sprawdzeniu usuń token
             if stream.token_id:
                 stream._delete_token(stream.token_id)
             return AirbyteConnectionStatus(status=Status.SUCCEEDED)
