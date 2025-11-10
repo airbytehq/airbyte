@@ -160,7 +160,10 @@ class SourceAmazonAmp(Source):
     def check(self, logger, config) -> AirbyteConnectionStatus:
         try:
             stream = MetricNamesStream(config)
-            next(stream.read_records())
+            records = stream.read_records()
+            first_record = next(records, None)
+            if first_record is None:
+                logger.warn("No data returned from Amazon AMP. Workspace might be empty.")
             return AirbyteConnectionStatus(status=Status.SUCCEEDED)
         except Exception as e:
             logger.error(f"Connection check failed: {str(e)}", exc_info=True)
@@ -248,9 +251,20 @@ class SourceAmazonAmp(Source):
                 "$schema": "http://json-schema.org/draft-07/schema#",
                 "type": "object",
                 "title": "Amazon AMP Source Spec",
+                "description": (
+                    "You can authenticate with static AWS credentials (Access Key/Secret Key), "
+                    "or leave them empty to use Airbyte's service account (IRSA) if running inside Kubernetes. "
+                    "This means your Airbyte pod/service account must have IAM permissions for AMP. "
+                    "For most secure and automated setup, use IRSA with empty credentials fields."
+                ),
                 "required": ["workspace_id", "region"],
                 "properties": {
-                    "workspace_id": {"type": "string", "description": "ID of the AMP workspace", "title": "AMP Workspace ID", "order": 0},
+                    "workspace_id": {
+                        "type": "string",
+                        "description": "ID of the AMP workspace",
+                        "title": "AMP Workspace ID",
+                        "order": 0
+                    },
                     "region": {
                         "type": "string",
                         "enum": [
@@ -295,14 +309,20 @@ class SourceAmazonAmp(Source):
                     },
                     "access_key": {
                         "type": "string",
-                        "description": "The Access Key ID of the AWS IAM Role with AMP access",
+                        "description": (
+                            "The Access Key ID of the AWS IAM Role with AMP access. "
+                            "Leave empty to use Airbyte's service account (IRSA) if running inside Kubernetes."
+                        ),
                         "title": "AWS IAM Access Key ID",
                         "airbyte_secret": True,
                         "order": 2,
                     },
                     "secret_key": {
                         "type": "string",
-                        "description": "The Secret Key of the AWS IAM Role with AMP access",
+                        "description": (
+                            "The Access Key ID of the AWS IAM Role with AMP access. "
+                            "Leave empty to use Airbyte's service account (IRSA) if running inside Kubernetes."
+                        ),
                         "title": "AWS IAM Secret Key",
                         "airbyte_secret": True,
                         "order": 3,
