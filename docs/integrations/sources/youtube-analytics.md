@@ -5,7 +5,7 @@ This page contains the setup guide and reference information for the YouTube Ana
 ## Prerequisites
 
 YouTube does not start to generate a report until you create a [reporting job](https://developers.google.com/youtube/reporting/v1/reports#step-3:-create-a-reporting-job) for that report.
-Airbyte creates a reporting job for your report or uses current reporting job if it's already exists.
+Airbyte creates a reporting job for your report or uses the current reporting job if it already exists.
 The report will be available within 48 hours of creating the reporting job and will be for the day that the job was scheduled.
 For example, if you schedule a job on September 1, 2015, then the report for September 1, 2015, will be ready on September 3, 2015.
 The report for September 2, 2015, will be posted on September 4, 2015, and so forth.
@@ -30,12 +30,12 @@ Youtube also generates historical data reports covering the 30-day period prior 
 
 ### For Airbyte OSS:
 
-2. In the left navigation bar, click **Sources**. In the top-right corner, click **+new source**.
-3. On the Set up the source page, enter the name for the YouTube Analytics connector and select **YouTube Analytics** from the Source type dropdown.
-4. Select `client_id`
-5. Select `client_secret`
-6. Select `refresh_token`
-7. Click `Set up source`.
+1. In the left navigation bar, click **Sources**. In the top-right corner, click **+new source**.
+2. On the Set up the source page, enter the name for the YouTube Analytics connector and select **YouTube Analytics** from the Source type dropdown.
+3. Enter your `client_id`
+4. Enter your `client_secret`
+5. Enter your `refresh_token`
+6. Click `Set up source`.
 
 ## Supported sync modes
 
@@ -73,11 +73,13 @@ The YouTube Analytics source connector supports the following [sync modes](https
 
 ## Performance considerations
 
+The YouTube Reporting API has the following quota limits:
+
 - Free requests per day: 20,000
 - Free requests per 100 seconds: 100
 - Free requests per minute: 60
 
-Quota usage is not an issue because data is retrieved once and then filtered, sorted, and queried within the application.
+The connector retrieves bulk report data from YouTube's reporting jobs, which minimizes API quota usage compared to making individual queries for each metric.
 
 ## Changelog
 
