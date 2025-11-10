@@ -361,6 +361,12 @@ definitions:
           dataState: "{{ config.get('data_state', 'final') }}"
         error_handler:
           type: DefaultErrorHandler
+          backoff_strategies:
+            - type: ConstantBackoffStrategy
+              wait_time_seconds: 60
+            - type: ExponentialBackoffStrategy
+              factor: 2
+          max_retries: 6
           response_filters:
             - type: HttpResponseFilter
               action: RATE_LIMITED
@@ -1017,6 +1023,12 @@ definitions:
           dataState: "{{ config.get('data_state', 'final') }}"
           dimensionFilterGroups: "{{ [{'groupType': 'and', 'filters': {'dimension': 'searchAppearance', 'operator': 'equals', 'expression': stream_partition.get('search_appearance')}}] }}"
         error_handler:
+          backoff_strategies:
+            - type: ConstantBackoffStrategy
+              wait_time_seconds: 60
+            - type: ExponentialBackoffStrategy
+              factor: 2
+          max_retries: 6
           type: DefaultErrorHandler
           response_filters:
             - type: HttpResponseFilter
@@ -1275,6 +1287,12 @@ dynamic_streams:
             dataState: "{{ config.get('data_state', 'final') }}"
           error_handler:
             type: DefaultErrorHandler
+            backoff_strategies:
+              - type: ConstantBackoffStrategy
+                wait_time_seconds: 60
+              - type: ExponentialBackoffStrategy
+                factor: 2
+            max_retries: 6
             response_filters:
               - type: HttpResponseFilter
                 action: RATE_LIMITED
