@@ -115,10 +115,15 @@ class BaseGrafanaStream:
         self.region = config["region"]
         self.service_account_id = config["service_account_id"]
 
-        self.grafana_client = boto3.client("grafana",
-                                           region_name=self.region,
-                                           aws_access_key_id=config["aws_access_key_id"],
-                                           aws_secret_access_key=config["aws_secret_access_key"])
+        creds = get_aws_credentials(config)
+
+        self.grafana_client = boto3.client(
+            "grafana",
+            region_name=self.region,
+            aws_access_key_id=creds["access_key"],
+            aws_secret_access_key=creds["secret_key"],
+            aws_session_token=creds.get("session_token"),
+        )
 
         if BaseGrafanaStream.token is None:
             self._ensure_token_created()
@@ -303,9 +308,9 @@ class SourceAmazonGrafana(Source):
             connectionSpecification={
                 "type": "object",
                 "title": "Amazon Grafana Source Spec",
-                "required": ["workspace_id", "region", "service_account_id", "aws_access_key_id", "aws_secret_access_key"],
+                "required": ["workspace_id", "region", "service_account_id"],
                 "properties": {
-                    "workspace_id": {"type": "string", "description": "Grafana workspace ID", "order": 0},
+                    "workspace_id": {"type": "string", "description": "Grafana workspace ID", "title": "ID of Grafana workspace", "order": 0},
                     "region": {
                         "type": "string",
                         "enum": [
@@ -321,10 +326,56 @@ class SourceAmazonGrafana(Source):
                         "title": "AWS Region",
                         "order": 1,
                     },
-                    "service_account_id": {"type": "string", "description": "ID Service Account used for token generation", "order": 2},
-                    "aws_access_key_id": {"type": "string", "description": "AWS Access Key ID used for SigV4 authentication", "title": "AWS IAM Access Key ID", "airbyte_secret": True, "order": 3},
-                    "aws_secret_access_key": {"type": "string", "description": "AWS Secret Access Key used for SigV4 authentication", "title": "AWS IAM Secret Key", "airbyte_secret": True, "order": 4},
+                    "service_account_id": {
+                        "type": "string",
+                        "description": "ID Service Account used for token generation",
+                        "title": "AWS Grafana Service Account ID",
+                        "order": 2
+                    },
+                    "aws_access_key_id": {
+                        "type": "string",
+                        "description": (
+                            "AWS Access Key ID for authentication. "
+                            "Leave empty to use service account credentials (IRSA) if running inside Kubernetes."
+                        ),
+                        "title": "AWS IAM Access Key ID",
+                        "airbyte_secret": True,
+                        "order": 3,
+                    },
+                    "aws_secret_access_key": {
+                        "type": "string",
+                        "description": (
+                            "AWS Secret Access Key for authentication. "
+                            "Leave empty to use service account credentials (IRSA) if running inside Kubernetes."
+                        ),
+                        "title": "AWS IAM Secret Key",
+                        "airbyte_secret": True,
+                        "order": 4,
+                    },
                 },
                 "additionalProperties": True,
             },
         )
+
+def get_aws_credentials(config: dict) -> dict:
+    if config.get("aws_access_key_id") and config.get("aws_secret_access_key"):
+        return {
+            "access_key": config["aws_access_key_id"],
+            "secret_key": config["aws_secret_access_key"],
+            "session_token": config.get("aws_session_token"),
+        }
+
+    session = boto3.Session()
+    credentials = session.get_credentials()
+    if not credentials:
+        raise ValueError(
+            "AWS credentials not found. Provide AWS keys in config or configure IRSA with metadata access."
+        )
+    cred = credentials.get_frozen_credentials()
+    if not all([cred.access_key, cred.secret_key]):
+        raise ValueError("Incomplete AWS credentials received from environment.")
+    return {
+        "access_key": cred.access_key,
+        "secret_key": cred.secret_key,
+        "session_token": cred.token,
+    }
