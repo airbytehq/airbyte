@@ -194,14 +194,14 @@ class IcebergTableSynchronizer(
             update.setIdentifierFields(updatedIdentifierFields)
         }
 
-        // If we're doing separate commits for column replacements, commit the delete operations now
+        // If we're doing separate commits for column replacements, we must commit the delete
+        // immediately. This is required because BigLake needs separate transactions, and Iceberg's
+        // UpdateSchema API is stateless (each call to table.updateSchema() is based on the
+        // committed schema). We commit the delete first, then create the add operation.
         if (requireSeparateCommitsForColumnReplace && columnsToReplaceInSecondCommit.isNotEmpty()) {
-            // Commit the first update (with deletes but not adds for replaced columns)
-            if (columnTypeChangeBehavior.commitImmediately) {
-                update.commit()
-            }
-
-            // Refresh table to get updated schema after delete
+            // Commit the delete operation immediately
+            update.apply()
+            update.commit()
             table.refresh()
 
             // Create a new update for adding the replaced columns back with their new types
@@ -212,14 +212,13 @@ class IcebergTableSynchronizer(
                 addUpdate.addColumn(null, columnName, field.type())
             }
 
-            // Apply and return this second update
+            // Commit or defer the add operation based on columnTypeChangeBehavior
             val finalSchema = addUpdate.apply()
             return if (columnTypeChangeBehavior.commitImmediately) {
                 addUpdate.commit()
                 SchemaUpdateResult(finalSchema, pendingUpdates = emptyList())
             } else {
-                // Return both updates in order: first the delete (update), then the add (addUpdate)
-                SchemaUpdateResult(finalSchema, pendingUpdates = listOf(update, addUpdate))
+                SchemaUpdateResult(finalSchema, pendingUpdates = listOf(addUpdate))
             }
         }
 
