@@ -14,6 +14,7 @@ The S3 Data Lake connector requires two things.
     - REST
     - AWS Glue
     - Nessie
+    - Polaris
 
 ## Setup guide
 
@@ -56,9 +57,9 @@ Create a bucket policy.
     }
     ```
 
-    :::note
-    Object-level permissions alone aren't sufficient to authenticate. Include **bucket-level** permissions as provided in the preceding example.
-    :::
+   :::note
+   Object-level permissions alone aren't sufficient to authenticate. Include **bucket-level** permissions as provided in the preceding example.
+   :::
 
 4. Click **Next**, give your policy a descriptive name, then click **Create policy**.
 
@@ -191,7 +192,12 @@ Enter the URI of your REST catalog. You may also need to enter the default names
 
 4. If you have an existing Glue table, and you want to replace that table with an Airbyte-managed Iceberg table, drop the Glue table. If you don't, you'll encounter the error `Input Glue table is not an iceberg table: <your table name>`.
 
-    Dropping Glue tables from the console [may not immediately delete them](https://boto3.amazonaws.com/v1/documentation/api/latest/reference/services/glue/client/batch_delete_table.html). Either wait for AWS to finish their background processing, or use the AWS API to drop all table versions.
+   Dropping Glue tables from the console [may not immediately delete them](https://boto3.amazonaws.com/v1/documentation/api/latest/reference/services/glue/client/batch_delete_table.html). Either wait for AWS to finish their background processing, or use the AWS API to drop all table versions.
+
+5. If you are using [AWS Lake Formation](https://docs.aws.amazon.com/lake-formation/), you must grant some permissions via Lake Formation:
+    1. You must grant `Data location_access` on the S3 path.
+    2. If you intend to have the connector create the database(s) on your behalf, you must also grant `Create database` on the catalog.
+    3. (Advanced option) If you want to create the database(s) manually, and have the connector write into only those specific database(s), then you must grant `Create table, Describe` on the database(s).
 
 #### Nessie
 
@@ -200,6 +206,42 @@ To authenticate with Nessie, do two things.
 1. Set the URI of your Nessie catalog and an access token to authenticate to that catalog.
 
 2. Set the **Warehouse location** option to `s3://<bucket name>/path/within/bucket`.
+
+#### Polaris
+
+To authenticate with Apache Polaris, follow these steps.
+
+1. Set up your Polaris catalog and create a principal with the necessary permissions. Refer to the [Apache Polaris documentation](https://polaris.apache.org/) for detailed setup instructions.
+
+2. When creating a principal in Polaris, you'll receive OAuth credentials (Client ID and Client Secret). Keep these credentials secure.
+
+3. Grant the required privileges to your principal's catalog role. You can either:
+
+   **Option A: Grant the broad `CATALOG_MANAGE_CONTENT` privilege** (recommended for simplicity):
+    - This single privilege allows the connector to manage tables and namespaces in the catalog
+
+   **Option B: Grant specific granular privileges**:
+    - `TABLE_LIST` - List tables in a namespace
+    - `TABLE_CREATE` - Create new tables
+    - `TABLE_DROP` - Delete tables
+    - `TABLE_READ_PROPERTIES` - Read table metadata
+    - `TABLE_WRITE_PROPERTIES` - Update table metadata
+    - `TABLE_WRITE_DATA` - Write data to tables
+    - `NAMESPACE_LIST` - List namespaces
+    - `NAMESPACE_CREATE` - Create new namespaces
+    - `NAMESPACE_READ_PROPERTIES` - Read namespace metadata
+
+4. In the Airbyte connector configuration, provide the following information:
+
+    - **Polaris Server URI**: The base URL of your Polaris server. For example: `http://localhost:8181/api/catalog`
+    - **Catalog Name**: The name of the catalog you created in Polaris (e.g., `quickstart_catalog`)
+    - **Client ID**: The OAuth Client ID provided when creating the principal
+    - **Client Secret**: The OAuth Client Secret provided when creating the principal
+    - **Default namespace**: The namespace to be used for table identifiers when the destination namespace is set to "Destination-defined" or "Source-defined"
+
+5. Set the **Warehouse location** option to `s3://<bucket name>/path/within/bucket`.
+
+6. Ensure that your Polaris catalog has been configured with the appropriate storage credentials to access your S3 bucket.
 
 ## Output schema
 
@@ -242,6 +284,15 @@ You have the following options to manage schema evolution.
     - Manually edit your table schema in Iceberg directly.
     - [Refresh](../../platform/operator-guides/refreshes) your connection in Airbyte.
     - [Clear](../../platform/operator-guides/clear) your connection in Airbyte.
+
+### Naming
+
+Like most Airbyte destination connectors, the S3 Data Lake connector may modify identifiers (stream name/namespace, column names) for compatibility with the destination.
+
+In particular, when using AWS Glue, the connector will:
+
+- Lowercase all stream [table names and namespaces](https://docs.aws.amazon.com/glue/latest/webapi/API_Table.html)
+- Change any non-alphanumeric character in a table name/namespace to an [underscore](https://docs.aws.amazon.com/glue/latest/dg/define-database.html) for compatibility with Athena
 
 ## Deduplication
 
@@ -324,6 +375,11 @@ Now, you can identify the latest version of the 'Alice' record by querying wheth
 
 | Version | Date       | Pull Request                                               | Subject                                                                                                                         |
 |:--------|:-----------|:-----------------------------------------------------------|:--------------------------------------------------------------------------------------------------------------------------------|
+| 0.3.41  | 2025-11-06 | [69232](https://github.com/airbytehq/airbyte/pull/69232) | Upgrade to Bulk CDK 0.1.69. Changes to handle changes in commit patterns                                                        |
+| 0.3.40  | 2025-11-01 | [69133](https://github.com/airbytehq/airbyte/pull/69133) | Upgrade to Bulk CDK 0.1.61.                                                                                                     |
+| 0.3.39  | 2025-10-16 | [68108](https://github.com/airbytehq/airbyte/pull/68108)   | Implement Polaris support                                                                                                       |
+| 0.3.38  | 2025-10-07 | [67005](https://github.com/airbytehq/airbyte/pull/67005)   | Fix: Treat empty string role_arn as null to prevent misleading config errors                                                    |
+| 0.3.37  | 2025-10-07 | [67150](https://github.com/airbytehq/airbyte/pull/67150)   | Fix check operation to use unique table names, preventing conflicts with stale metadata and concurrent operations               |
 | 0.3.36  | 2025-09-25 | [66711](https://github.com/airbytehq/airbyte/pull/66711)   | CHECK operation uses configured default dataset instead of `airbyte_test_namespace`                                             |
 | 0.3.35  | 2025-07-23 | [63746](https://github.com/airbytehq/airbyte/pull/63746)   | Remove unnecessary properties from table                                                                                        |
 | 0.3.34  | 2025-07-11 | [62952](https://github.com/airbytehq/airbyte/pull/62952)   | Update CDK version                                                                                                              |

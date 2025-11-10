@@ -26,5 +26,7 @@ enum class SnowflakeDataType(val typeName: String) {
     TIMESTAMP_TZ("TIMESTAMP_TZ"),
 
     // Semi-structured types
+    ARRAY("ARRAY"),
+    OBJECT("OBJECT"),
     VARIANT("VARIANT"),
 }

@@ -13,11 +13,11 @@ data:
       enabled: false
       packageName: airbyte-source-bugsnag
   connectorBuildOptions:
-    baseImage: docker.io/airbyte/source-declarative-manifest:7.0.1@sha256:ff1e701c8f913cf24a0220f62c8e64cc1c3011ba0a636985f4db47fdab1391b6
+    baseImage: docker.io/airbyte/source-declarative-manifest:7.4.1@sha256:71df19e2ee555ca5b14abbec01d50104c79c9b84cb9cc323284d24333361900a
   connectorSubtype: api
   connectorType: source
   definitionId: fa6c7629-0556-4b29-9f2c-7f6f4e54e997
-  dockerImageTag: 0.0.28
+  dockerImageTag: 0.0.33
   dockerRepository: airbyte/source-bugsnag
   githubIssueLabel: source-bugsnag
   icon: icon.svg

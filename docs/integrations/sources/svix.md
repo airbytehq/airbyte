@@ -28,6 +28,11 @@ API Reference: https://api.svix.com/docs#section/Introduction
 
 | Version          | Date              | Pull Request | Subject        |
 |------------------|-------------------|--------------|----------------|
+| 0.0.19 | 2025-10-29 | [68993](https://github.com/airbytehq/airbyte/pull/68993) | Update dependencies |
+| 0.0.18 | 2025-10-21 | [68525](https://github.com/airbytehq/airbyte/pull/68525) | Update dependencies |
+| 0.0.17 | 2025-10-14 | [67884](https://github.com/airbytehq/airbyte/pull/67884) | Update dependencies |
+| 0.0.16 | 2025-10-07 | [67455](https://github.com/airbytehq/airbyte/pull/67455) | Update dependencies |
+| 0.0.15 | 2025-09-30 | [66881](https://github.com/airbytehq/airbyte/pull/66881) | Update dependencies |
 | 0.0.14 | 2025-09-23 | [66362](https://github.com/airbytehq/airbyte/pull/66362) | Update dependencies |
 | 0.0.13 | 2025-09-09 | [66122](https://github.com/airbytehq/airbyte/pull/66122) | Update dependencies |
 | 0.0.12 | 2025-08-23 | [64999](https://github.com/airbytehq/airbyte/pull/64999) | Update dependencies |

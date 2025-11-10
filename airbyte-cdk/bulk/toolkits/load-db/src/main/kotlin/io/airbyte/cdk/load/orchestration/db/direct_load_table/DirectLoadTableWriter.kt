@@ -9,6 +9,8 @@ import io.airbyte.cdk.load.command.Append
 import io.airbyte.cdk.load.command.Dedupe
 import io.airbyte.cdk.load.command.DestinationStream
 import io.airbyte.cdk.load.command.Overwrite
+import io.airbyte.cdk.load.component.TableOperationsClient
+import io.airbyte.cdk.load.component.TableSchemaEvolutionClient
 import io.airbyte.cdk.load.orchestration.db.DatabaseHandler
 import io.airbyte.cdk.load.orchestration.db.DatabaseInitialStatusGatherer
 import io.airbyte.cdk.load.orchestration.db.TempTableNameGenerator
@@ -27,8 +29,8 @@ class DirectLoadTableWriter(
     private val names: TableCatalog,
     private val stateGatherer: DatabaseInitialStatusGatherer<DirectLoadInitialStatus>,
     private val destinationHandler: DatabaseHandler,
-    private val nativeTableOperations: DirectLoadTableNativeOperations,
-    private val sqlTableOperations: DirectLoadTableSqlOperations,
+    private val schemaEvolutionClient: TableSchemaEvolutionClient,
+    private val tableOperationsClient: TableOperationsClient,
     private val streamStateStore: StreamStateStore<DirectLoadTableExecutionConfig>,
     private val tempTableNameGenerator: TempTableNameGenerator,
 ) : DestinationWriter {
@@ -58,8 +60,8 @@ class DirectLoadTableWriter(
                             realTableName = realTableName,
                             tempTableName = tempTableName,
                             columnNameMapping,
-                            nativeTableOperations,
-                            sqlTableOperations,
+                            schemaEvolutionClient,
+                            tableOperationsClient,
                             streamStateStore,
                         )
                     is Dedupe ->
@@ -69,8 +71,8 @@ class DirectLoadTableWriter(
                             realTableName = realTableName,
                             tempTableName = tempTableName,
                             columnNameMapping,
-                            nativeTableOperations,
-                            sqlTableOperations,
+                            schemaEvolutionClient,
+                            tableOperationsClient,
                             streamStateStore,
                         )
                     else -> throw SystemErrorException("Unsupported Sync Mode: $this")
@@ -85,8 +87,8 @@ class DirectLoadTableWriter(
                             realTableName = realTableName,
                             tempTableName = tempTableName,
                             columnNameMapping,
-                            nativeTableOperations,
-                            sqlTableOperations,
+                            schemaEvolutionClient,
+                            tableOperationsClient,
                             streamStateStore,
                         )
                     is Dedupe ->
@@ -96,8 +98,8 @@ class DirectLoadTableWriter(
                             realTableName = realTableName,
                             tempTableName = tempTableName,
                             columnNameMapping,
-                            nativeTableOperations,
-                            sqlTableOperations,
+                            schemaEvolutionClient,
+                            tableOperationsClient,
                             streamStateStore,
                             tempTableNameGenerator,
                         )

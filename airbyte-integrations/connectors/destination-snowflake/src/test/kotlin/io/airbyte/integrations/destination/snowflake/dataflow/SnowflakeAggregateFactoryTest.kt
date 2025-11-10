@@ -6,11 +6,12 @@ package io.airbyte.integrations.destination.snowflake.dataflow
 
 import io.airbyte.cdk.load.command.DestinationStream.Descriptor
 import io.airbyte.cdk.load.dataflow.aggregate.StoreKey
-import io.airbyte.cdk.load.orchestration.db.TableName
 import io.airbyte.cdk.load.orchestration.db.direct_load_table.DirectLoadTableExecutionConfig
+import io.airbyte.cdk.load.table.TableName
 import io.airbyte.cdk.load.write.StreamStateStore
 import io.airbyte.integrations.destination.snowflake.client.SnowflakeAirbyteClient
 import io.airbyte.integrations.destination.snowflake.spec.SnowflakeConfiguration
+import io.airbyte.integrations.destination.snowflake.sql.SnowflakeColumnUtils
 import io.mockk.every
 import io.mockk.mockk
 import org.junit.jupiter.api.Assertions.assertEquals
@@ -35,11 +36,13 @@ internal class SnowflakeAggregateFactoryTest {
         val snowflakeClient = mockk<SnowflakeAirbyteClient>(relaxed = true)
         val snowflakeConfiguration =
             mockk<SnowflakeConfiguration> { every { legacyRawTablesOnly } returns true }
+        val snowflakeColumnUtils = mockk<SnowflakeColumnUtils>(relaxed = true)
         val factory =
             SnowflakeAggregateFactory(
                 snowflakeClient = snowflakeClient,
                 streamStateStore = streamStore,
-                snowflakeConfiguration = snowflakeConfiguration
+                snowflakeConfiguration = snowflakeConfiguration,
+                snowflakeColumnUtils = snowflakeColumnUtils,
             )
         val aggregate = factory.create(key)
         assertNotNull(aggregate)
@@ -62,11 +65,13 @@ internal class SnowflakeAggregateFactoryTest {
         streamStore.put(descriptor, directLoadTableExecutionConfig)
         val snowflakeClient = mockk<SnowflakeAirbyteClient>(relaxed = true)
         val snowflakeConfiguration = mockk<SnowflakeConfiguration>(relaxed = true)
+        val snowflakeColumnUtils = mockk<SnowflakeColumnUtils>(relaxed = true)
         val factory =
             SnowflakeAggregateFactory(
                 snowflakeClient = snowflakeClient,
                 streamStateStore = streamStore,
-                snowflakeConfiguration = snowflakeConfiguration
+                snowflakeConfiguration = snowflakeConfiguration,
+                snowflakeColumnUtils = snowflakeColumnUtils,
             )
         val aggregate = factory.create(key)
         assertNotNull(aggregate)

@@ -74,6 +74,11 @@ The Greenhouse connector should not run into Greenhouse API limitations under no
 
 | Version    | Date       | Pull Request                                             | Subject                                                                                                                                                                |
 |:-----------|:-----------|:---------------------------------------------------------|:-----------------------------------------------------------------------------------------------------------------------------------------------------------------------|
+| 0.7.8 | 2025-10-29 | [68823](https://github.com/airbytehq/airbyte/pull/68823) | Update dependencies |
+| 0.7.7 | 2025-10-21 | [68226](https://github.com/airbytehq/airbyte/pull/68226) | Update dependencies |
+| 0.7.6 | 2025-10-14 | [67896](https://github.com/airbytehq/airbyte/pull/67896) | Update dependencies |
+| 0.7.5 | 2025-10-07 | [67399](https://github.com/airbytehq/airbyte/pull/67399) | Update dependencies |
+| 0.7.4 | 2025-09-30 | [66408](https://github.com/airbytehq/airbyte/pull/66408) | Update dependencies |
 | 0.7.3 | 2025-09-09 | [65896](https://github.com/airbytehq/airbyte/pull/65896) | Update dependencies |
 | 0.7.2 | 2025-08-28 | [64973](https://github.com/airbytehq/airbyte/pull/64973) | Update dependencies |
 | 0.7.1 | 2025-08-25 | [65510](https://github.com/airbytehq/airbyte/pull/65510) | Fix custom migrations to reference DeclarativeStream Pydantic model instead of runtime component |

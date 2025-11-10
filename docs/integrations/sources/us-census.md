@@ -45,6 +45,11 @@ In addition, to understand how to configure the dataset path and query parameter
 
 | Version | Date       | Pull Request                                             | Subject                                           |
 | :------ | :--------- | :------------------------------------------------------- | :------------------------------------------------ |
+| 0.4.8 | 2025-10-29 | [68887](https://github.com/airbytehq/airbyte/pull/68887) | Update dependencies |
+| 0.4.7 | 2025-10-21 | [68370](https://github.com/airbytehq/airbyte/pull/68370) | Update dependencies |
+| 0.4.6 | 2025-10-14 | [67852](https://github.com/airbytehq/airbyte/pull/67852) | Update dependencies |
+| 0.4.5 | 2025-10-07 | [67511](https://github.com/airbytehq/airbyte/pull/67511) | Update dependencies |
+| 0.4.4 | 2025-09-30 | [66834](https://github.com/airbytehq/airbyte/pull/66834) | Update dependencies |
 | 0.4.3 | 2025-09-23 | [61260](https://github.com/airbytehq/airbyte/pull/61260) | Update dependencies |
 | 0.4.2 | 2025-09-12 | [TBD](https://github.com/airbytehq/airbyte/pull/TBD) | Update to CDK v7 |
 | 0.4.1 | 2025-05-24 | [60744](https://github.com/airbytehq/airbyte/pull/60744) | Update dependencies |

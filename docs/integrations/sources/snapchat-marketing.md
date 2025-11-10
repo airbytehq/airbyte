@@ -143,6 +143,12 @@ Syncing data with an hourly granularity often generates large data volumes and c
 
 | Version    | Date       | Pull Request                                             | Subject                                                                        |
 |:-----------|:-----------|:---------------------------------------------------------|:-------------------------------------------------------------------------------|
+| 1.5.25 | 2025-10-29 | [68815](https://github.com/airbytehq/airbyte/pull/68815) | Update dependencies |
+| 1.5.24 | 2025-10-22 | [68591](https://github.com/airbytehq/airbyte/pull/68591) | Add `suggestedStreams` |
+| 1.5.23 | 2025-10-21 | [68234](https://github.com/airbytehq/airbyte/pull/68234) | Update dependencies |
+| 1.5.22 | 2025-10-14 | [67746](https://github.com/airbytehq/airbyte/pull/67746) | Update dependencies |
+| 1.5.21 | 2025-10-07 | [67447](https://github.com/airbytehq/airbyte/pull/67447) | Update dependencies |
+| 1.5.20 | 2025-09-30 | [66898](https://github.com/airbytehq/airbyte/pull/66898) | Update dependencies |
 | 1.5.19 | 2025-09-24 | [66264](https://github.com/airbytehq/airbyte/pull/66264) | Update dependencies |
 | 1.5.18 | 2025-09-09 | [65393](https://github.com/airbytehq/airbyte/pull/65393) | Update dependencies |
 | 1.5.17 | 2025-08-14 | [64940](https://github.com/airbytehq/airbyte/pull/64940) | Re-release connector with fixed docker image entrypoint |

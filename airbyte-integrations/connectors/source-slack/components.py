@@ -1,6 +1,7 @@
 # Copyright (c) 2025 Airbyte, Inc., all rights reserved.
 
 import logging
+from copy import deepcopy
 from dataclasses import dataclass
 from datetime import timedelta
 from functools import partial
@@ -16,6 +17,7 @@ from airbyte_cdk.sources.declarative.extractors import DpathExtractor
 from airbyte_cdk.sources.declarative.interpolation.interpolated_string import (
     InterpolatedString,
 )
+from airbyte_cdk.sources.declarative.migrations.state_migration import StateMigration
 from airbyte_cdk.sources.declarative.partition_routers import SinglePartitionRouter, SubstreamPartitionRouter
 from airbyte_cdk.sources.declarative.requesters import HttpRequester
 from airbyte_cdk.sources.declarative.requesters.request_options.interpolated_request_options_provider import (
@@ -35,7 +37,7 @@ from airbyte_cdk.sources.streams.call_rate import (
 from airbyte_cdk.sources.streams.core import StreamData
 from airbyte_cdk.sources.streams.http import HttpClient, HttpStream
 from airbyte_cdk.sources.streams.http.requests_native_auth import TokenAuthenticator
-from airbyte_cdk.sources.types import EmptyString, StreamState
+from airbyte_cdk.sources.types import Config, EmptyString, StreamState
 from airbyte_cdk.utils.datetime_helpers import ab_datetime_parse
 
 
@@ -98,7 +100,6 @@ class ChannelMembersExtractor(DpathExtractor):
 class ChannelsRetriever(SimpleRetriever):
     def __post_init__(self, parameters: Mapping[str, Any]):
         super().__post_init__(parameters)
-        self.stream_slicer = SinglePartitionRouter(parameters={})
         self.record_selector.transformations = []
 
     def should_join_to_channel(self, config: Mapping[str, Any], record: Record) -> bool:
@@ -156,7 +157,7 @@ class ChannelsRetriever(SimpleRetriever):
         return
 
 
-class ThreadsPartitionRouter(SubstreamPartitionRouter):
+class ThreadsStateMigration(StateMigration):
     """
     The logic for incrementally syncing threads is not very obvious, so buckle up.
     To get all messages in a thread, one must specify the channel and timestamp of the parent (first) message of that thread,
@@ -171,11 +172,19 @@ class ThreadsPartitionRouter(SubstreamPartitionRouter):
     Good luck.
     """
 
-    def set_initial_state(self, stream_state: StreamState) -> None:
-        if not stream_state:
-            return
+    config: Config
 
-        start_date_state = ab_datetime_parse(self.config["start_date"]).timestamp()  # start date is required
+    def __init__(self, config: Config):
+        self._config = config
+
+    def should_migrate(self, stream_state: Mapping[str, Any]) -> bool:
+        return True
+
+    def migrate(self, stream_state: Mapping[str, Any]) -> Mapping[str, Any]:
+        if not stream_state:
+            return {}
+
+        start_date_state = ab_datetime_parse(self._config["start_date"]).timestamp()  # start date is required
         # for migrated state
         if stream_state.get("states"):
             for state in stream_state["states"]:
@@ -184,13 +193,11 @@ class ThreadsPartitionRouter(SubstreamPartitionRouter):
         if stream_state.get("float_ts"):
             start_date_state = max(start_date_state, float(stream_state["float_ts"]))
 
-        lookback_window = timedelta(days=self.config.get("lookback_window", 0))  # lookback window in days
+        lookback_window = timedelta(days=self._config.get("lookback_window", 0))  # lookback window in days
         final_state = {"float_ts": (ab_datetime_parse(int(start_date_state)) - lookback_window).timestamp()}
-        # Set state for each parent stream with an incremental dependency
-        for parent_config in self.parent_stream_configs:
-            # Migrate child state to parent state format
-            start_date_state = self._migrate_child_state_to_parent_state(final_state)
-            parent_config.stream.state = start_date_state.get(parent_config.stream.name, {})
+        stream_state["parent_state"] = {"channel_messages": final_state}
+
+        return stream_state
 
 
 MESSAGES_AND_THREADS_RATE = Rate(limit=1, interval=timedelta(seconds=60))

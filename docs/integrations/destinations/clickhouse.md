@@ -1,6 +1,6 @@
 # ClickHouse
 
-A fresh implementation of ClickHouse leveraging our new CDK. 
+A fresh implementation of ClickHouse leveraging our new CDK.
 
 ## Improvements over v1
 * All sync modes supported
@@ -19,13 +19,23 @@ All sync modes are supported.
 | Incremental - Append + Deduped | Yes                  | Leverages `ReplacingMergeTree` |
 | Namespaces                     | Yes                  |                                |
 
+### Deduplication
+
+For optimal deduplication in Incremental - Append + Deduped sync mode, use a cursor column with one of these types:
+
+- Integer types (Int64, etc.)
+- Date
+- Timestamp (DateTime64)
+
+If you use a different cursor column type (such as String), the connector will fall back to using the `_airbyte_extracted_at` timestamp for deduplication ordering. This fallback may not accurately reflect your source data's natural ordering, and you'll see a warning in the sync logs.
+
 ### Output Schema
 
 Each stream will be output into its own table in ClickHouse in either the configured default database (`default`) or a database corresponding to the specified namespace on the stream.
 
 Airbyte types will be converted to ClickHouse types as follows:
 
-- Decimal types are NUMBER128(9) — 9 digit precision
+- Decimal types are Decimal(38, 9) — 38 digit precision with 9 decimal places
 - Timestamp are DateTime64(3) — millisecond precision
 - Object types are JSON **if JSON is enabled in the actor config**; otherwise they are converted to String
 - Integers are Int64
@@ -94,8 +104,16 @@ You can also use a pre-existing user but we highly recommend creating a dedicate
 
 | Version    | Date       | Pull Request                                               | Subject                                                                        |
 |:-----------|:-----------|:-----------------------------------------------------------|:-------------------------------------------------------------------------------|
-| 2.1.4      | 2025-09-29 | [66743](https://github.com/airbytehq/airbyte/pull/66743) | Activate speed mode.                                                           |
-| 2.1.3      | 2025-09-29 | [66743](https://github.com/airbytehq/airbyte/pull/66743) | Promoting release candidate 2.1.3-rc.1 to a main version.                      |
+| 2.1.12     | 2025-11-06 | [69226](https://github.com/airbytehq/airbyte/pull/69226)  | Improved additional statistics handling                                        |
+| 2.1.11     | 2025-11-05 | [69200](https://github.com/airbytehq/airbyte/pull/69200/)  | Add support for observability metrics                                          |
+| 2.1.10     | 2025-11-03 | [69154](https://github.com/airbytehq/airbyte/pull/69154)   | Fix decimal validation                                                         |
+| 2.1.9      | 2025-10-30 | [69100](https://github.com/airbytehq/airbyte/pull/69100)   | Upgrade to CDK 0.1.61 to fix state index bug                                   |
+| 2.1.8      | 2025-10-28 | [68186](https://github.com/airbytehq/airbyte/pull/68186)   | Upgrade to CDK 0.1.59                                                          |
+| 2.1.7      | 2025-10-21 | [67153](https://github.com/airbytehq/airbyte/pull/67153)   | Implement new proto schema implementation                                      |
+| 2.1.6      | 2025-10-16 | [68144](https://github.com/airbytehq/airbyte/pull/68144)   | Implement TableOperationsSuite component tests.                                |
+| 2.1.5      | 2025-10-09 | [67598](https://github.com/airbytehq/airbyte/pull/67598)   | Improve handling of heavily interleaved streams.                               |
+| 2.1.4      | 2025-09-29 | [66743](https://github.com/airbytehq/airbyte/pull/66743)   | Activate speed mode.                                                           |
+| 2.1.3      | 2025-09-29 | [66743](https://github.com/airbytehq/airbyte/pull/66743)   | Promoting release candidate 2.1.3-rc.1 to a main version.                      |
 | 2.1.3-rc.1 | 2025-09-25 | [66699](https://github.com/airbytehq/airbyte/pull/66699)   | Prepare for speed mode. Fix interleaved stream state handling.                 |
 | 2.1.2      | 2025-09-09 | [66143](https://github.com/airbytehq/airbyte/pull/66143)   | Improve schema propagation.                                                    |
 | 2.1.1      | 2025-09-09 | [66134](https://github.com/airbytehq/airbyte/pull/66134)   | Update the type we are setting for the number type to `Decimal(38, 9)`.        |

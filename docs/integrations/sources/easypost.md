@@ -34,6 +34,11 @@ This directory contains the manifest-only connector for [`source-easypost`](http
 
 | Version          | Date              | Pull Request | Subject        |
 |------------------|-------------------|--------------|----------------|
+| 0.0.36 | 2025-10-29 | [68714](https://github.com/airbytehq/airbyte/pull/68714) | Update dependencies |
+| 0.0.35 | 2025-10-21 | [68552](https://github.com/airbytehq/airbyte/pull/68552) | Update dependencies |
+| 0.0.34 | 2025-10-14 | [67773](https://github.com/airbytehq/airbyte/pull/67773) | Update dependencies |
+| 0.0.33 | 2025-10-07 | [67275](https://github.com/airbytehq/airbyte/pull/67275) | Update dependencies |
+| 0.0.32 | 2025-09-30 | [66284](https://github.com/airbytehq/airbyte/pull/66284) | Update dependencies |
 | 0.0.31 | 2025-09-09 | [65809](https://github.com/airbytehq/airbyte/pull/65809) | Update dependencies |
 | 0.0.30 | 2025-08-23 | [65259](https://github.com/airbytehq/airbyte/pull/65259) | Update dependencies |
 | 0.0.29 | 2025-08-09 | [64685](https://github.com/airbytehq/airbyte/pull/64685) | Update dependencies |
