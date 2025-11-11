@@ -625,8 +625,8 @@ internal class SnowflakeAirbyteClientTest {
 
         val expectedColumns =
             mapOf(
-                "COL1_MAPPED" to ColumnType("VARCHAR", false),
-                "COL2_MAPPED" to ColumnType("NUMBER", false),
+                "COL1_MAPPED" to ColumnType("VARCHAR", true),
+                "COL2_MAPPED" to ColumnType("NUMBER", true),
             )
 
         assertEquals(expectedColumns, result)
