@@ -261,14 +261,30 @@ const ConnectorMetadataCallout = ({
           <Chip className={isCloud ? styles.available : styles.unavailable}>
             <EnabledIcon isEnabled={isCloud} /> Standard
           </Chip>
-          <Chip className={isEnterprise || isCloud ? styles.available : styles.unavailable}>
+          <Chip className={isCloud ? styles.available : styles.unavailable}>
+            <EnabledIcon isEnabled={isCloud} /> Plus
+          </Chip>
+          <Chip
+            className={
+              isEnterprise || isCloud ? styles.available : styles.unavailable
+            }
+          >
             <EnabledIcon isEnabled={isEnterprise || isCloud} /> Pro
           </Chip>
-          <Chip className={isEnterprise || isCloud ? styles.available : styles.unavailable}>
+          <Chip
+            className={
+              isEnterprise || isCloud ? styles.available : styles.unavailable
+            }
+          >
             <EnabledIcon isEnabled={isEnterprise || isCloud} /> Enterprise Flex
           </Chip>
-          <Chip className={isEnterprise || isOss ? styles.available : styles.unavailable}>
-            <EnabledIcon isEnabled={isEnterprise || isOss} /> Self-Managed Enterprise
+          <Chip
+            className={
+              isEnterprise || isOss ? styles.available : styles.unavailable
+            }
+          >
+            <EnabledIcon isEnabled={isEnterprise || isOss} /> Self-Managed
+            Enterprise
           </Chip>
           <Chip className={isOss ? styles.available : styles.unavailable}>
             <EnabledIcon isEnabled={isOss} /> PyAirbyte
@@ -334,7 +350,12 @@ const ConnectorMetadataCallout = ({
   </Callout>
 );
 
-const ConnectorTitle = ({ iconUrl, originalTitle, isArchived, enterpriseConnector }) => (
+const ConnectorTitle = ({
+  iconUrl,
+  originalTitle,
+  isArchived,
+  enterpriseConnector,
+}) => (
   <div className={styles.header}>
     <img src={iconUrl} alt="" className={styles.connectorIcon} />
     <h1 data-enterprise-connector={enterpriseConnector}>
@@ -375,9 +396,7 @@ export const HeaderDecoration = ({
 
   return (
     <>
-      <div
-        className={styles.connectorHeader}
-      >
+      <div className={styles.connectorHeader}>
         <ConnectorTitle
           iconUrl={iconUrl}
           originalTitle={originalTitle}
