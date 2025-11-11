@@ -14,6 +14,13 @@ data:
   dockerImageTag: 4.8.11-rc.1
   dockerRepository: airbyte/source-tiktok-marketing
   documentationUrl: https://docs.airbyte.com/integrations/sources/tiktok-marketing
+  externalDocumentationUrls:
+    - title: Versioning docs
+      url: https://business-api.tiktok.com/portal/docs?id=1740029169927169
+      type: api_reference
+    - title: Changelog
+      url: https://business-api.tiktok.com/portal/docs?id=1740029165513730
+      type: api_release_history
   githubIssueLabel: source-tiktok-marketing
   icon: tiktok.svg
   license: ELv2
