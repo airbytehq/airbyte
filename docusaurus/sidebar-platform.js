@@ -445,7 +445,6 @@ module.exports = {
           },
           items: [
             "enterprise-setup/implementation-guide",
-            "enterprise-setup/api-access-config",
             "enterprise-setup/multi-region",
             "enterprise-setup/audit-logging",
             "enterprise-setup/scaling-airbyte",

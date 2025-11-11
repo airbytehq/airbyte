@@ -9,13 +9,22 @@ module.exports = {
         id: "README",
       },
       items: [
-        "get-an-application-key",
         "api-documentation",
         "terraform-documentation",
         {
           type: "doc",
-          label: "Using PyAirbyte",
+          label: "PyAirbyte",
           id: "using-pyairbyte",
+        },
+        {
+          type: 'link',
+          label: 'Python SDK',
+          href: 'https://github.com/airbytehq/airbyte-api-python-sdk',
+        },
+        {
+          type: 'link',
+          label: 'Java SDK',
+          href: 'https://github.com/airbytehq/airbyte-api-java-sdk',
         },
       ],
     },
