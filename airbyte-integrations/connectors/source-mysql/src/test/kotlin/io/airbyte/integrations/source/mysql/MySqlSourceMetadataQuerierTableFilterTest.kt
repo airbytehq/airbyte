@@ -37,14 +37,15 @@ class MySqlSourceMetadataQuerierTableFilterTest {
         @Timeout(value = 300)
         fun setupDatabase() {
             val config: MySqlSourceConfiguration =
-                MySqlSourceConfigurationFactory()
-                    .make(MySqlContainerFactory.config(dbContainer))
+                MySqlSourceConfigurationFactory().make(MySqlContainerFactory.config(dbContainer))
 
             val connectionFactory = JdbcConnectionFactory(config)
 
             connectionFactory.get().use { connection: Connection ->
                 connection.isReadOnly = false
-                connection.createStatement().use { it.execute("CREATE DATABASE IF NOT EXISTS test") }
+                connection.createStatement().use {
+                    it.execute("CREATE DATABASE IF NOT EXISTS test")
+                }
                 connection.createStatement().use { it.execute("USE test") }
 
                 // Create test tables
