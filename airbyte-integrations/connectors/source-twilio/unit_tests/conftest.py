@@ -3,6 +3,8 @@
 import sys
 from pathlib import Path
 
+import pytest
+
 from airbyte_cdk.sources.declarative.yaml_declarative_source import YamlDeclarativeSource
 from airbyte_cdk.test.catalog_builder import CatalogBuilder
 from airbyte_cdk.test.state_builder import StateBuilder
@@ -15,6 +17,11 @@ TEST_CONFIG = {
     "start_date": "2021-01-01T00:00:00Z",
     "lookback_window": 0,
 }
+
+
+@pytest.fixture
+def http_mocker() -> None:
+    """This fixture is needed to pass http_mocker parameter from the @HttpMocker decorator to a test"""
 
 
 def _get_manifest_path() -> Path:
