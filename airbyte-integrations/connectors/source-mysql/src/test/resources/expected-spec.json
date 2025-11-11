@@ -280,7 +280,7 @@
           },
           "required": ["schema_name", "table_name_patterns"]
         },
-        "description": "Optional filters to include only specific tables from specific schemas. Works in combination with the 'Schemas' config above.",
+        "description": "Optional filters to include only specific tables from the specified database. 'Schema Name' should be equivalent to the 'Database' specified above.",
         "title": "Table Filters",
         "order": 7
       },
