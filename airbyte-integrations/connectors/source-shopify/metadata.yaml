@@ -14,6 +14,20 @@ data:
   dockerImageTag: 3.0.13
   dockerRepository: airbyte/source-shopify
   documentationUrl: https://docs.airbyte.com/integrations/sources/shopify
+  externalDocumentationUrls:
+    - title: Versioning docs
+      url: https://shopify.dev/docs/api/usage/versioning
+      type: api_reference
+    - title: Changelog
+      url: https://shopify.dev/changelog
+      type: api_release_history
+    - title: Deprecated API calls made by Airbyte
+      url: https://dev.shopify.com/dashboard/129006130/apps/5841799/monitoring/api_health
+      type: api_deprecations
+      requiresLogin: true
+    - title: API versions overview
+      url: https://shopify.dev/docs/api/admin-rest
+      type: api_reference
   erdUrl: https://dbdocs.io/airbyteio/source-shopify?view=relationships
   githubIssueLabel: source-shopify
   icon: shopify.svg
