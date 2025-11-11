@@ -281,7 +281,7 @@ class SnowflakeAirbyteClient(
             .associate { column ->
                 // columnsAndTypes returns types as either `FOO` or `FOO NOT NULL`.
                 // so check for that suffix.
-                val nullable = column.columnType.endsWith(NOT_NULL)
+                val nullable = !column.columnType.endsWith(NOT_NULL)
                 val type =
                     column.columnType
                         .takeWhile { char ->
