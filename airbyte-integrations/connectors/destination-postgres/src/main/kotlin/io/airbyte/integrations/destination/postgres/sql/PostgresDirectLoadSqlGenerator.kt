@@ -71,16 +71,8 @@ class PostgresDirectLoadSqlGenerator(
         tableName: TableName,
         columnNameMapping: ColumnNameMapping
     ): String {
-        val primaryKeyIndexStatement = postgresColumnUtils.getPrimaryKeysColumnNames(stream, columnNameMapping)
-            .takeIf {  it.isNotEmpty() }
-            ?.let {
-                "CREATE INDEX ${getPrimaryKeyIndexName(tableName)} ON ${getFullyQualifiedName(tableName)} (${it.joinToString(", ")});"
-            } ?: ""
-
-        val cursorIndexStatement = getCursorColumnName(stream, columnNameMapping)?.let { cursorColumnName ->
-            "CREATE INDEX ${getCursorIndexName(tableName)} ON ${getFullyQualifiedName(tableName)} ($cursorColumnName);"
-        } ?: ""
-
+        val primaryKeyIndexStatement = createPrimaryKeyIndexStatement(stream, tableName, columnNameMapping)
+        val cursorIndexStatement = createCursorIndexStatement(stream, tableName, columnNameMapping)
         val extractedAtIndexStatement = "CREATE INDEX ON ${getFullyQualifiedName(tableName)} ($EXTRACTED_AT_COLUMN_NAME);"
 
         return """
@@ -90,20 +82,54 @@ class PostgresDirectLoadSqlGenerator(
         """
     }
 
-    private fun getCursorColumnName(
-        cursor: List<String>,
+    internal fun recreatePrimaryKeyIndex(
+        stream: DestinationStream,
+        tableName: TableName,
         columnNameMapping: ColumnNameMapping
-    ): String? {
-        return cursor
-            .firstOrNull()
-            ?.let { columnName -> getTargetColumnName(columnName, columnNameMapping) }
+    ): String {
+        val dropPrimaryKeyIndexStatement = dropIndex(getPrimaryKeyIndexName(tableName))
+        val primaryKeyIndexStatement = createPrimaryKeyIndexStatement(stream, tableName, columnNameMapping)
+
+        return """
+            $dropPrimaryKeyIndexStatement
+            $primaryKeyIndexStatement
+        """
     }
 
-    private fun getCursorColumnName(stream: DestinationStream, columnNameMapping: ColumnNameMapping): String? {
-        when (stream.importType) {
-            is Dedupe -> return getCursorColumnName((stream.importType as Dedupe).cursor, columnNameMapping)
-            else -> return null
-        }
+    private fun createPrimaryKeyIndexStatement(
+        stream: DestinationStream,
+        tableName: TableName,
+        columnNameMapping: ColumnNameMapping
+    ): String {
+        return postgresColumnUtils.getPrimaryKeysColumnNames(stream, columnNameMapping)
+            .takeIf { it.isNotEmpty() }
+            ?.let {
+                "CREATE INDEX ${getPrimaryKeyIndexName(tableName)} ON ${getFullyQualifiedName(tableName)} (${it.joinToString(", ")});"
+            } ?: ""
+    }
+
+    internal fun recreateCursorIndex(
+        stream: DestinationStream,
+        tableName: TableName,
+        columnNameMapping: ColumnNameMapping
+    ): String {
+        val dropCursorIndexStatement = dropIndex(getCursorIndexName(tableName))
+        val cursorIndexStatement = createCursorIndexStatement(stream, tableName, columnNameMapping)
+
+        return """
+            $dropCursorIndexStatement
+            $cursorIndexStatement
+        """
+    }
+
+    private fun createCursorIndexStatement(
+        stream: DestinationStream,
+        tableName: TableName,
+        columnNameMapping: ColumnNameMapping
+    ): String {
+        return postgresColumnUtils.getCursorColumnName(stream, columnNameMapping)?.let { cursorColumnName ->
+            "CREATE INDEX ${getCursorIndexName(tableName)} ON ${getFullyQualifiedName(tableName)} ($cursorColumnName);"
+        } ?: ""
     }
 
     private fun getPrimaryKeyIndexName(tableName: TableName): String =
@@ -179,7 +205,7 @@ class PostgresDirectLoadSqlGenerator(
         }
 
         val primaryKeyTargetColumns = postgresColumnUtils.getPrimaryKeysColumnNames(importType, columnNameMapping)
-        val cursorTargetColumn = getCursorColumnName(importType.cursor, columnNameMapping)
+        val cursorTargetColumn = postgresColumnUtils.getCursorColumnName(importType.cursor, columnNameMapping)
         val allTargetColumns = getTargetColumnNames(stream, columnNameMapping)
 
         val selectDedupedQuery = selectDeduped(primaryKeyTargetColumns, cursorTargetColumn, allTargetColumns, sourceTableName)
