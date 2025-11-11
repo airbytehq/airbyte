@@ -14,6 +14,7 @@ import io.airbyte.integrations.destination.postgres.sql.COUNT_TOTAL_ALIAS
 import io.airbyte.integrations.destination.postgres.sql.Column
 import io.airbyte.integrations.destination.postgres.sql.PostgresColumnUtils
 import io.airbyte.integrations.destination.postgres.sql.PostgresDirectLoadSqlGenerator
+import io.airbyte.integrations.destination.postgres.sql.PostgresDirectLoadSqlGenerator.Companion.andLog
 import io.github.oshai.kotlinlogging.KotlinLogging
 import jakarta.inject.Singleton
 import java.sql.ResultSet
@@ -121,35 +122,98 @@ class PostgresAirbyteClient(
             sqlGenerator
                 .matchSchemas(tableName, addedColumns, deletedColumns, modifiedColumns, columnsInDb)
                 .forEach { execute(it) }
+
+            ensurePrimaryKeyIndexMatches(stream, tableName, columnNameMapping)
+            ensureCursorIndexMatches(stream, tableName, columnNameMapping)
         }
     }
 
-    internal fun getColumnsFromDb(tableName: TableName): Set<Column> {
-        val sql =
-            sqlGenerator.getTableSchema(tableName)
-        dataSource.connection.use { connection ->
-            val statement = connection.createStatement()
-            return statement.use {
-                val rs: ResultSet = it.executeQuery(sql)
-                val columnsInDb: MutableSet<Column> = mutableSetOf()
-                val defaultColumnNames = postgresColumnUtils.defaultColumns().map { it.columnName }.toSet()
-                while (rs.next()) {
-                    //TODO: extract column_name and data_type as constants
-                    val columnName = rs.getString("column_name")
+    /**
+     * Ensures the primary key index matches the current stream configuration.
+     * If the primary keys have changed (detected by comparing columns in the index),
+     * drops the old index and creates a new one.
+     */
+    private fun ensurePrimaryKeyIndexMatches(
+        stream: DestinationStream,
+        tableName: TableName,
+        columnNameMapping: ColumnNameMapping
+    ) {
+        val streamPrimaryKeys = postgresColumnUtils.getPrimaryKeysColumnNames(stream, columnNameMapping)
 
-                    // Filter out airbyte columns
-                    if (defaultColumnNames.contains(columnName)) {
-                        continue
-                    }
-                    val dataType = rs.getString("data_type")
+        if (streamPrimaryKeys.isEmpty()) return
 
-                    columnsInDb.add(Column(columnName, dataType))
-                }
+        val existingPrimaryKeyIndexColumns = getPrimaryKeyIndexColumns(tableName)
 
-                columnsInDb
+        if (existingPrimaryKeyIndexColumns == streamPrimaryKeys) {
+            log.info { "Primary keys unchanged, no need to (re)create index" }
+            return
+        }
+
+        log.info { "Primary key columns changed from $existingPrimaryKeyIndexColumns to $streamPrimaryKeys" }
+
+
+        execute(sqlGenerator.recreatePrimaryKeyIndex(stream, tableName, columnNameMapping))
+    }
+
+    private fun getPrimaryKeyIndexColumns(tableName: TableName): List<String> =
+        getIndexColumns(sqlGenerator.getPrimaryKeyIndexColumns(tableName))
+
+    private fun getCursorIndexColumn(tableName: TableName): String? =
+        getIndexColumns(sqlGenerator.getCursorColumn(tableName)).firstOrNull()
+
+    private fun getIndexColumns(sql: String): List<String> =
+        executeQuery(sql) { resultSet ->
+            val columns = mutableListOf<String>()
+            while (resultSet.next()) {
+                columns.add(resultSet.getString("column_name"))
             }
+            columns
         }
+
+    /**
+     * Ensures the cursor index matches the current stream configuration.
+     * If the cursor has changed (detected by comparing columns in the index),
+     * drops the old index and creates a new one.
+     */
+    private fun ensureCursorIndexMatches(
+        stream: DestinationStream,
+        tableName: TableName,
+        columnNameMapping: ColumnNameMapping
+    ) {
+        val streamCursor = postgresColumnUtils.getCursorColumnName(stream, columnNameMapping)
+
+        if(streamCursor == null) return
+
+        val existingCursorIndexColumn = getCursorIndexColumn(tableName)
+
+        if(existingCursorIndexColumn == streamCursor) {
+            log.info { "Cursor unchanged, no need to (re)create index" }
+        }
+
+        log.info { "Cursor column changed from $existingCursorIndexColumn to $streamCursor" }
+
+        execute(sqlGenerator.recreateCursorIndex(stream, tableName, columnNameMapping))
     }
+
+    internal fun getColumnsFromDb(tableName: TableName): Set<Column> =
+        executeQuery(sqlGenerator.getTableSchema(tableName)) { rs ->
+            val columnsInDb: MutableSet<Column> = mutableSetOf()
+            val defaultColumnNames = postgresColumnUtils.defaultColumns().map { it.columnName }.toSet()
+            while (rs.next()) {
+                //TODO: extract column_name and data_type as constants
+                val columnName = rs.getString("column_name")
+
+                // Filter out airbyte columns
+                if (defaultColumnNames.contains(columnName)) {
+                    continue
+                }
+                val dataType = rs.getString("data_type")
+
+                columnsInDb.add(Column(columnName, dataType))
+            }
+
+            columnsInDb
+        }
 
     internal fun generateSchemaChanges(
         columnsInDb: Set<Column>,
