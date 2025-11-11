@@ -8,6 +8,8 @@ from typing import Callable, Dict, Optional
 from unittest.mock import MagicMock
 
 import pytest  # type: ignore[import-not-found]
+from source_google_drive.stream import GoogleDriveFileBasedStream
+from source_google_drive.stream_reader import GoogleDriveRemoteFile
 
 from airbyte_cdk.sources.file_based.config.avro_format import AvroFormat
 from airbyte_cdk.sources.file_based.config.csv_format import CsvFormat
@@ -16,9 +18,6 @@ from airbyte_cdk.sources.file_based.config.file_based_stream_config import FileB
 from airbyte_cdk.sources.file_based.config.jsonl_format import JsonlFormat
 from airbyte_cdk.sources.file_based.config.parquet_format import ParquetFormat
 from airbyte_cdk.sources.file_based.config.unstructured_format import UnstructuredFormat
-
-from source_google_drive.stream import GoogleDriveFileBasedStream
-from source_google_drive.stream_reader import GoogleDriveRemoteFile
 
 
 def _make_remote_file(

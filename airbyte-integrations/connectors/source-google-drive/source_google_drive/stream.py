@@ -79,11 +79,7 @@ class GoogleDriveFileBasedStream(DefaultFileBasedStream):
             return True
 
         extension = self._get_extension(remote_file.uri)
-        mime_candidates = {
-            value.lower()
-            for value in [remote_file.mime_type, getattr(remote_file, "original_mime_type", None)]
-            if value
-        }
+        mime_candidates = {value.lower() for value in [remote_file.mime_type, getattr(remote_file, "original_mime_type", None)] if value}
 
         if extension and extension in self._FILETYPE_EXTENSIONS[configured_filetype]:
             return True
