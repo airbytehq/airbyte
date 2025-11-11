@@ -1,2 +1,0 @@
-class FastTextModelNotFoundException(Exception):
-    pass

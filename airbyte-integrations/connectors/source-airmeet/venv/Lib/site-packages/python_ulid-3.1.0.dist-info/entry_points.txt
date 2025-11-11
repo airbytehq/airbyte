@@ -1,2 +1,0 @@
-[console_scripts]
-ulid = ulid.__main__:entrypoint

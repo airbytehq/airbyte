@@ -1,2 +1,0 @@
-[console_scripts]
-url-normalize = url_normalize.cli:main

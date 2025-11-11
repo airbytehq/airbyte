@@ -1,7 +1,15 @@
 import sys
-from airbyte_cdk.entrypoint import launch
-from source_airmeet import SourceAirmeet
+import json
+from source_airmeet.source import SourceAirmeet
+
+def load_config(config_file):
+    """ Load the config from a JSON file """
+    with open(config_file, 'r') as file:
+        return json.load(file)
 
 if __name__ == "__main__":
-    source = SourceAirmeet()
-    launch(source, sys.argv[1:])
+    # Load the configuration from the config.json file
+    config = load_config("secrets/config.json")
+    
+    # Pass the config dictionary to the check method
+    SourceAirmeet().check(config)

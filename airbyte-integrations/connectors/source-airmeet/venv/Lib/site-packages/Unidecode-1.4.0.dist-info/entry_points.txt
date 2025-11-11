@@ -1,3 +1,0 @@
-[console_scripts]
-unidecode = unidecode.util:main
-

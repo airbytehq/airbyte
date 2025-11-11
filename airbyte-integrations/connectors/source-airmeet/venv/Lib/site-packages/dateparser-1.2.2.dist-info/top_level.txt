@@ -1,4 +1,0 @@
-dateparser
-dateparser_cli
-dateparser_data
-dateparser_scripts
