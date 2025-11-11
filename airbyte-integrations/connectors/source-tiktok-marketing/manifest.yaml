@@ -526,11 +526,15 @@ definitions:
           dimensions: '{{ parameters["dimensions"] | string }}'
           metrics: '{{ (parameters.get("report_metrics", []) + ["spend", "cpc", "cpm", "impressions", "clicks", "ctr", "reach", "cost_per_1000_reached", "frequency", "video_play_actions", "video_watched_2s", "video_watched_6s", "average_video_play", "average_video_play_per_user", "video_views_p25", "video_views_p50", "video_views_p75", "video_views_p100", "profile_visits", "likes", "comments", "shares", "follows", "clicks_on_music_disc", "real_time_app_install", "real_time_app_install_cost", "app_install"]) | string }}'
           query_lifetime: "true"
-          filters: '{{ [
-            {"filter_value": ["STATUS_ALL"], "field_name": "ad_status", "filter_type": "IN"},
-            {"filter_value": ["STATUS_ALL"], "field_name": "campaign_status", "filter_type": "IN"},
-            {"filter_value": ["STATUS_ALL"], "field_name": "adgroup_status", "filter_type": "IN"},
-            ] | string if config.get("include_deleted", False)}}'
+          filtering: '{{ [{
+              "filter_value": "[\\\"STATUS_ALL\\\"]",
+              "field_name": (
+                "ad_status" if parameters["data_level"] == "AUCTION_AD" else
+                "adgroup_status" if parameters["data_level"] == "AUCTION_ADGROUP" else
+                "campaign_status" if parameters["data_level"] == "AUCTION_CAMPAIGN"
+              ),
+              "filter_type": "IN"
+            }] | string if config.get("include_deleted", False) and parameters["data_level"] in ["AUCTION_AD", "AUCTION_ADGROUP", "AUCTION_CAMPAIGN"]}}'
       paginator:
         $ref: "#/definitions/paginator_page_increment"
         pagination_strategy:
@@ -899,11 +903,15 @@ definitions:
         metrics: '{{ (parameters.get("report_metrics", []) + ["spend", "cpc", "cpm", "impressions", "clicks", "ctr"]) | string  }}'
         start_date: "{{ stream_interval['start_time'] }}"
         end_date: "{{ stream_interval['end_time'] }}"
-        filters: '{{ [
-          {"filter_value": ["STATUS_ALL"], "field_name": "ad_status", "filter_type": "IN"},
-          {"filter_value": ["STATUS_ALL"], "field_name": "campaign_status", "filter_type": "IN"},
-          {"filter_value": ["STATUS_ALL"], "field_name": "adgroup_status", "filter_type": "IN"},
-          ] | string if config.get("include_deleted", False)}}'
+        filtering: '{{ [{
+            "filter_value": "[\\\"STATUS_ALL\\\"]",
+            "field_name": (
+              "ad_status" if parameters["data_level"] == "AUCTION_AD" else
+              "adgroup_status" if parameters["data_level"] == "AUCTION_ADGROUP" else
+              "campaign_status" if parameters["data_level"] == "AUCTION_CAMPAIGN"
+            ),
+            "filter_type": "IN"
+          }] | string if config.get("include_deleted", False) and parameters["data_level"] in ["AUCTION_AD", "AUCTION_ADGROUP", "AUCTION_CAMPAIGN"]}}'
       authenticator:
         $ref: "#/definitions/authenticator"
       request_body_json: {}
@@ -1968,11 +1976,15 @@ definitions:
           start_date: '{{ day_delta(-365, "%Y-%m-%d") if config.get("start_date", "2016-09-01") < day_delta(-365, "%Y-%m-%d") else config["start_date"] }}'
           end_date: "{{ today_utc() }}"
           lifetime: "true"
-          filters: '{{ [
-            {"filter_value": ["STATUS_ALL"], "field_name": "ad_status", "filter_type": "IN"},
-            {"filter_value": ["STATUS_ALL"], "field_name": "campaign_status", "filter_type": "IN"},
-            {"filter_value": ["STATUS_ALL"], "field_name": "adgroup_status", "filter_type": "IN"},
-            ] | string if config.get("include_deleted", False)}}'
+          filtering: '{{ [{
+              "filter_value": "[\\\"STATUS_ALL\\\"]",
+              "field_name": (
+                "ad_status" if parameters["data_level"] == "AUCTION_AD" else
+                "adgroup_status" if parameters["data_level"] == "AUCTION_ADGROUP" else
+                "campaign_status" if parameters["data_level"] == "AUCTION_CAMPAIGN"
+              ),
+              "filter_type": "IN"
+            }] | string if config.get("include_deleted", False) and parameters["data_level"] in ["AUCTION_AD", "AUCTION_ADGROUP", "AUCTION_CAMPAIGN"]}}'
       record_selector:
         $ref: "#/definitions/record_selector"
       paginator:
