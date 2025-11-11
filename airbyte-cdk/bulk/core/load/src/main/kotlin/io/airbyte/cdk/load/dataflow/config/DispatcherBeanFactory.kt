@@ -46,14 +46,10 @@ class DispatcherBeanFactory {
     @OptIn(ExperimentalCoroutinesApi::class)
     @Named("streamInitDispatcher")
     @Singleton
-    fun streamInitDispatcher(
-        memConfig: MemoryAndParallelismConfig,
-    ) = Dispatchers.Default.limitedParallelism(memConfig.maxConcurrentLifecycleOperations)
+    fun streamInitDispatcher() = Dispatchers.Default.limitedParallelism(10)
 
     @OptIn(ExperimentalCoroutinesApi::class)
     @Named("streamFinalizeDispatcher")
     @Singleton
-    fun streamFinalizeDispatcher(
-        memConfig: MemoryAndParallelismConfig,
-    ) = Dispatchers.Default.limitedParallelism(memConfig.maxConcurrentLifecycleOperations)
+    fun streamFinalizeDispatcher() = Dispatchers.Default.limitedParallelism(10)
 }

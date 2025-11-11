@@ -39,7 +39,7 @@ jobs:
       ec2-instance-id: ${{ steps.start-ec2-runner.outputs.ec2-instance-id }}
     steps:
       - name: Checkout Airbyte
-        uses: actions/checkout@v3
+        uses: actions/checkout@f43a0e5ff2bd294095638e18286ca9a3d1956744 # v3.6.0
         with:
           repository: ${{ github.event.inputs.repo }}
           ref: ${{ github.event.inputs.gitref }}
@@ -64,7 +64,7 @@ jobs:
     steps:
       - name: Search for valid connector name format
         id: regex
-        uses: AsasInnab/regex-action@v1
+        uses: AsasInnab/regex-action@93439ac11aa6a032a673c8711231d8cef044daaa # v1
         with:
           regex_pattern: "^((connectors|bases)/)?[a-zA-Z0-9-_]+$"
           regex_flags: "i" # required to be set for this plugin
@@ -74,23 +74,23 @@ jobs:
         run: echo "The connector provided has an invalid format!" && exit 1
       - name: Link comment to workflow run
         if: github.event.inputs.comment-id
-        uses: peter-evans/create-or-update-comment@v1
+        uses: peter-evans/create-or-update-comment@a35cf36e5301d70b76f316e867e7788a55a31dae # v1.4.5
         with:
           comment-id: ${{ github.event.inputs.comment-id }}
           body: |
             > :clock2: ${{github.event.inputs.connector}} https://github.com/${{github.repository}}/actions/runs/${{github.run_id}}
       - name: Checkout Airbyte
-        uses: actions/checkout@v3
+        uses: actions/checkout@f43a0e5ff2bd294095638e18286ca9a3d1956744 # v3.6.0
         with:
           repository: ${{ github.event.inputs.repo }}
           ref: ${{ github.event.inputs.gitref }}
       - name: Install Java
-        uses: actions/setup-java@v3
+        uses: actions/setup-java@17f84c3641ba7b8f6deff6309fc4c864478f5d62 # v3.14.1
         with:
           distribution: "zulu"
           java-version: "21"
       - name: Install Python
-        uses: actions/setup-python@v4
+        uses: actions/setup-python@7f4fc3e22c37d6ff65e88745f38bd3157c663f7c # v4.9.1
         with:
           python-version: "3.11"
           check-latest: true
@@ -133,7 +133,7 @@ jobs:
           GCP_GSM_CREDENTIALS: ${{ secrets.GCP_GSM_CREDENTIALS }}
       - name: Archive test reports artifacts
         if: github.event.inputs.comment-id && failure()
-        uses: actions/upload-artifact@v4
+        uses: actions/upload-artifact@ea165f8d65b6e75b540449e92b4886f43607fa02 # v4.6.2
         with:
           name: test-reports
           path: |
@@ -147,7 +147,7 @@ jobs:
 
       - name: Test coverage reports artifacts
         if: github.event.inputs.comment-id && success()
-        uses: actions/upload-artifact@v4
+        uses: actions/upload-artifact@ea165f8d65b6e75b540449e92b4886f43607fa02 # v4.6.2
         with:
           name: test-reports
           path: |
@@ -155,7 +155,7 @@ jobs:
           retention-days: 3
       - name: Add Success Comment
         if: github.event.inputs.comment-id && success()
-        uses: peter-evans/create-or-update-comment@v1
+        uses: peter-evans/create-or-update-comment@a35cf36e5301d70b76f316e867e7788a55a31dae # v1.4.5
         with:
           comment-id: ${{ github.event.inputs.comment-id }}
           body: |
@@ -163,7 +163,7 @@ jobs:
             ${{env.PYTHON_UNITTEST_COVERAGE_REPORT}}
       - name: Add Failure Comment
         if: github.event.inputs.comment-id && failure()
-        uses: peter-evans/create-or-update-comment@v1
+        uses: peter-evans/create-or-update-comment@a35cf36e5301d70b76f316e867e7788a55a31dae # v1.4.5
         with:
           comment-id: ${{ github.event.inputs.comment-id }}
           body: |
@@ -180,20 +180,20 @@ jobs:
     if: ${{ always() }} # required to stop the runner even if the error happened in the previous jobs
     steps:
       - name: Configure AWS credentials
-        uses: aws-actions/configure-aws-credentials@v1
+        uses: aws-actions/configure-aws-credentials@67fbcbb121271f7775d2e7715933280b06314838 # v1.7.0
         with:
           aws-access-key-id: ${{ secrets.SELF_RUNNER_AWS_ACCESS_KEY_ID }}
           aws-secret-access-key: ${{ secrets.SELF_RUNNER_AWS_SECRET_ACCESS_KEY }}
           aws-region: us-east-2
       - name: Checkout Airbyte
-        uses: actions/checkout@v3
+        uses: actions/checkout@f43a0e5ff2bd294095638e18286ca9a3d1956744 # v3.6.0
       - name: Check PAT rate limits
         run: |
           ./tools/bin/find_non_rate_limited_PAT \
             ${{ secrets.GH_PAT_BUILD_RUNNER_OSS }} \
             ${{ secrets.GH_PAT_BUILD_RUNNER_BACKUP }}
       - name: Stop EC2 runner
-        uses: supertopher/ec2-github-runner@base64v1.0.10
+        uses: supertopher/ec2-github-runner@0a62b16b7a86a45725a1755884f8cee7a5068ad8 # base64v1.0.10
         with:
           mode: stop
           github-token: ${{ env.PAT }}

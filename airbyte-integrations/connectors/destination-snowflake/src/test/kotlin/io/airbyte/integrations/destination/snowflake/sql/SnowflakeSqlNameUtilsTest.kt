@@ -4,7 +4,8 @@
 
 package io.airbyte.integrations.destination.snowflake.sql
 
-import io.airbyte.cdk.load.orchestration.db.TableName
+import io.airbyte.cdk.load.table.TableName
+import io.airbyte.integrations.destination.snowflake.db.toSnowflakeCompatibleName
 import io.airbyte.integrations.destination.snowflake.spec.SnowflakeConfiguration
 import io.mockk.every
 import io.mockk.mockk
@@ -34,7 +35,11 @@ internal class SnowflakeSqlNameUtilsTest {
 
         val expectedName =
             snowflakeSqlNameUtils.combineParts(
-                listOf(databaseName, tableName.namespace, tableName.name)
+                listOf(
+                    databaseName.toSnowflakeCompatibleName(),
+                    tableName.namespace,
+                    tableName.name
+                )
             )
         val fullyQualifiedName = snowflakeSqlNameUtils.fullyQualifiedName(tableName)
         assertEquals(expectedName, fullyQualifiedName)
@@ -46,9 +51,8 @@ internal class SnowflakeSqlNameUtilsTest {
         val namespace = "test-namespace"
         every { snowflakeConfiguration.database } returns databaseName
 
-        val expectedNamespace = snowflakeSqlNameUtils.combineParts(listOf(databaseName, namespace))
         val fullyQualifiedNamespace = snowflakeSqlNameUtils.fullyQualifiedNamespace(namespace)
-        assertEquals(expectedNamespace, fullyQualifiedNamespace)
+        assertEquals("\"TEST-DATABASE\".\"test-namespace\"", fullyQualifiedNamespace)
     }
 
     @Test
@@ -61,21 +65,33 @@ internal class SnowflakeSqlNameUtilsTest {
 
         val expectedName =
             snowflakeSqlNameUtils.combineParts(
-                listOf(databaseName, namespace, "$STAGE_NAME_PREFIX$name")
+                listOf(
+                    databaseName.toSnowflakeCompatibleName(),
+                    namespace,
+                    "$STAGE_NAME_PREFIX$name"
+                )
             )
         val fullyQualifiedName = snowflakeSqlNameUtils.fullyQualifiedStageName(tableName)
         assertEquals(expectedName, fullyQualifiedName)
     }
 
     @Test
-    fun testFullyQualifiedFormatName() {
+    fun testFullyQualifiedStageNameWithEscape() {
         val databaseName = "test-database"
         val namespace = "test-namespace"
+        val name = "test=\"\"\'name"
+        val tableName = TableName(namespace = namespace, name = name)
         every { snowflakeConfiguration.database } returns databaseName
 
-        val expectedNamespace =
-            snowflakeSqlNameUtils.combineParts(listOf(databaseName, namespace, STAGE_FORMAT_NAME))
-        val fullyQualifiedNamespace = snowflakeSqlNameUtils.fullyQualifiedFormatName(namespace)
-        assertEquals(expectedNamespace, fullyQualifiedNamespace)
+        val expectedName =
+            snowflakeSqlNameUtils.combineParts(
+                listOf(
+                    databaseName.toSnowflakeCompatibleName(),
+                    namespace,
+                    "$STAGE_NAME_PREFIX${sqlEscape(name)}"
+                )
+            )
+        val fullyQualifiedName = snowflakeSqlNameUtils.fullyQualifiedStageName(tableName, true)
+        assertEquals(expectedName, fullyQualifiedName)
     }
 }
