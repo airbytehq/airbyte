@@ -1,3 +1,15 @@
+## Version 0.1.72
+
+**Extract CDK**
+
+* Fix case sensitivity for table filtering.
+
+## Version 0.1.71
+
+**Load CDK**
+
+* Remove noisy logs.
+
 ## Version 0.1.70
 
 **Load CDK**
