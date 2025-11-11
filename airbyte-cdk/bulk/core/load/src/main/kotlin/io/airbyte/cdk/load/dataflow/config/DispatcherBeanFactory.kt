@@ -7,6 +7,8 @@ package io.airbyte.cdk.load.dataflow.config
 import io.micronaut.context.annotation.Factory
 import jakarta.inject.Named
 import jakarta.inject.Singleton
+import java.time.Clock
+import java.time.Duration
 import java.util.concurrent.Executors
 import kotlinx.coroutines.CoroutineDispatcher
 import kotlinx.coroutines.CoroutineScope
@@ -52,4 +54,19 @@ class DispatcherBeanFactory {
     @Named("streamFinalizeDispatcher")
     @Singleton
     fun streamFinalizeDispatcher() = Dispatchers.Default.limitedParallelism(10)
+
+    /**
+     * Optional threshold for detecting stalled sources (sources that have stopped emitting records).
+     * Defaults to 10 minutes if not provided. Can be overridden by providing a Duration bean with this name.
+     */
+    @Named("sourceStallThreshold")
+    @Singleton
+    fun sourceStallThreshold(): Duration? = null
+
+    /**
+     * Clock for timestamp tracking. Defaults to system UTC clock.
+     * Can be overridden for testing purposes.
+     */
+    @Singleton
+    fun clock(): Clock = Clock.systemUTC()
 }

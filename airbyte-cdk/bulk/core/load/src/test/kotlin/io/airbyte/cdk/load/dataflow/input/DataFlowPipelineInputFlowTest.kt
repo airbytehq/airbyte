@@ -7,6 +7,7 @@ package io.airbyte.cdk.load.dataflow.input
 import io.airbyte.cdk.load.command.DestinationStream
 import io.airbyte.cdk.load.dataflow.finalization.StreamCompletionTracker
 import io.airbyte.cdk.load.dataflow.pipeline.DataFlowStageIO
+import io.airbyte.cdk.load.dataflow.state.MessageWatermarkTracker
 import io.airbyte.cdk.load.dataflow.state.PartitionKey
 import io.airbyte.cdk.load.dataflow.state.StateKeyClient
 import io.airbyte.cdk.load.dataflow.state.StateStore
@@ -20,6 +21,7 @@ import io.airbyte.cdk.load.message.Undefined
 import io.mockk.coVerify
 import io.mockk.every
 import io.mockk.mockk
+import java.time.Clock
 import java.util.UUID
 import kotlinx.coroutines.flow.flowOf
 import kotlinx.coroutines.flow.toList
@@ -44,6 +46,7 @@ class DataFlowPipelineInputFlowTest {
                 stateKeyClient,
                 completionTracker,
                 statsStore,
+                MessageWatermarkTracker(Clock.systemUTC()),
             )
 
         // When
@@ -87,6 +90,7 @@ class DataFlowPipelineInputFlowTest {
                 stateKeyClient,
                 completionTracker,
                 statsStore,
+                MessageWatermarkTracker(Clock.systemUTC()),
             )
 
         // When
@@ -131,6 +135,7 @@ class DataFlowPipelineInputFlowTest {
                 stateKeyClient,
                 completionTracker,
                 statsStore,
+                MessageWatermarkTracker(Clock.systemUTC()),
             )
 
         // When
@@ -157,6 +162,7 @@ class DataFlowPipelineInputFlowTest {
                 stateKeyClient,
                 completionTracker,
                 statsStore,
+                MessageWatermarkTracker(Clock.systemUTC()),
             )
 
         // When

@@ -6,6 +6,7 @@ package io.airbyte.cdk.load.dataflow.input
 
 import io.airbyte.cdk.load.dataflow.finalization.StreamCompletionTracker
 import io.airbyte.cdk.load.dataflow.pipeline.DataFlowStageIO
+import io.airbyte.cdk.load.dataflow.state.MessageWatermarkTracker
 import io.airbyte.cdk.load.dataflow.state.StateKeyClient
 import io.airbyte.cdk.load.dataflow.state.StateStore
 import io.airbyte.cdk.load.dataflow.state.stats.EmittedStatsStore
@@ -29,6 +30,7 @@ class DataFlowPipelineInputFlow(
     private val stateKeyClient: StateKeyClient,
     private val completionTracker: StreamCompletionTracker,
     private val statsStore: EmittedStatsStore,
+    private val watermarkTracker: MessageWatermarkTracker,
 ) : Flow<DataFlowStageIO> {
     val log = KotlinLogging.logger {}
 
@@ -36,6 +38,9 @@ class DataFlowPipelineInputFlow(
         collector: FlowCollector<DataFlowStageIO>,
     ) {
         inputFlow.collect {
+            // Update watermark for any message received
+            watermarkTracker.updateWatermark()
+
             when (it) {
                 is CheckpointMessage -> stateStore.accept(it)
                 is DestinationRecord -> {

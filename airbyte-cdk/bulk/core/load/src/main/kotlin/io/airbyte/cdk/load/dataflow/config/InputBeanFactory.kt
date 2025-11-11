@@ -15,6 +15,7 @@ import io.airbyte.cdk.load.dataflow.pipeline.DataFlowPipeline
 import io.airbyte.cdk.load.dataflow.pipeline.DataFlowStage
 import io.airbyte.cdk.load.dataflow.pipeline.PipelineCompletionHandler
 import io.airbyte.cdk.load.dataflow.stages.AggregateStage
+import io.airbyte.cdk.load.dataflow.state.MessageWatermarkTracker
 import io.airbyte.cdk.load.dataflow.state.StateHistogramStore
 import io.airbyte.cdk.load.dataflow.state.StateKeyClient
 import io.airbyte.cdk.load.dataflow.state.StateStore
@@ -104,6 +105,7 @@ class InputBeanFactory {
         stateKeyClient: StateKeyClient,
         completionTracker: StreamCompletionTracker,
         statsStore: EmittedStatsStore,
+        watermarkTracker: MessageWatermarkTracker,
     ): List<DataFlowPipelineInputFlow> =
         messageFlows.map {
             DataFlowPipelineInputFlow(
@@ -112,6 +114,7 @@ class InputBeanFactory {
                 stateKeyClient = stateKeyClient,
                 completionTracker = completionTracker,
                 statsStore = statsStore,
+                watermarkTracker = watermarkTracker,
             )
         }
 

@@ -16,6 +16,7 @@ import io.mockk.just
 import io.mockk.mockk
 import io.mockk.verify
 import io.mockk.verifyOrder
+import java.time.Clock
 import kotlin.time.Duration.Companion.seconds
 import kotlin.time.toJavaDuration
 import kotlinx.coroutines.CoroutineScope
@@ -46,18 +47,23 @@ class StateReconcilerTest {
 
     private lateinit var stateReconciler: StateReconciler
 
+    private lateinit var watermarkTracker: MessageWatermarkTracker
+
     @BeforeEach
     fun setUp() {
         testScope = TestScope(StandardTestDispatcher())
         reconcilerScope = CoroutineScope(testScope.coroutineContext)
+        watermarkTracker = MessageWatermarkTracker(Clock.systemUTC())
 
         stateReconciler =
             StateReconciler(
                 stateStore,
                 emittedStatsStore,
                 consumer,
+                watermarkTracker,
                 reconcilerScope,
                 interval.toJavaDuration(),
+                null, // sourceStallThreshold
             )
     }
 
@@ -153,8 +159,10 @@ class StateReconcilerTest {
                 stateStore,
                 emittedStatsStore,
                 consumer,
+                watermarkTracker,
                 this.backgroundScope,
                 interval.toJavaDuration(),
+                null, // sourceStallThreshold
             )
 
         // When
@@ -196,8 +204,10 @@ class StateReconcilerTest {
                 stateStore,
                 emittedStatsStore,
                 consumer,
+                watermarkTracker,
                 this.backgroundScope,
                 interval.toJavaDuration(),
+                null, // sourceStallThreshold
             )
 
         // Start the reconciler

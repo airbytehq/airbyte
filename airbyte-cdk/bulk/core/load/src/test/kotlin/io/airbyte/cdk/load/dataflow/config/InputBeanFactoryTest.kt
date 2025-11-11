@@ -11,6 +11,7 @@ import io.airbyte.cdk.load.dataflow.finalization.StreamCompletionTracker
 import io.airbyte.cdk.load.dataflow.input.DataFlowPipelineInputFlow
 import io.airbyte.cdk.load.dataflow.input.JsonDestinationMessageInputFlow
 import io.airbyte.cdk.load.dataflow.pipeline.DataFlowStage
+import io.airbyte.cdk.load.dataflow.state.MessageWatermarkTracker
 import io.airbyte.cdk.load.dataflow.state.StateHistogramStore
 import io.airbyte.cdk.load.dataflow.state.StateKeyClient
 import io.airbyte.cdk.load.dataflow.state.StateStore
@@ -19,6 +20,7 @@ import io.airbyte.cdk.load.dataflow.state.stats.EmittedStatsStore
 import io.airbyte.cdk.load.file.ClientSocket
 import io.airbyte.cdk.load.message.DestinationMessageFactory
 import io.airbyte.cdk.load.message.ProtocolMessageDeserializer
+import java.time.Clock
 import io.mockk.every
 import io.mockk.impl.annotations.MockK
 import io.mockk.junit5.MockKExtension
@@ -216,6 +218,7 @@ class InputBeanFactoryTest {
                 stateKeyClient = stateKeyClient,
                 completionTracker = completionTracker,
                 statsStore = emittedStatsStore,
+                watermarkTracker = MessageWatermarkTracker(Clock.systemUTC()),
             )
 
         // Then
@@ -321,6 +324,7 @@ class InputBeanFactoryTest {
                 stateKeyClient = stateKeyClient,
                 completionTracker = completionTracker,
                 statsStore = emittedStatsStore,
+                watermarkTracker = MessageWatermarkTracker(Clock.systemUTC()),
             )
 
         val pipes =
