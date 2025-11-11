@@ -21,13 +21,16 @@ import javax.sql.DataSource
 
 private val log = KotlinLogging.logger {}
 
-
 @Singleton
 class PostgresAirbyteClient(
     private val dataSource: DataSource,
     private val sqlGenerator: PostgresDirectLoadSqlGenerator,
     private val postgresColumnUtils: PostgresColumnUtils
 ) : TableSchemaEvolutionClient, TableOperationsClient {
+
+    companion object {
+        private const val COLUMN_NAME_COLUMN = "column_name"
+    }
 
     override suspend fun countTable(tableName: TableName): Long? =
         try {
@@ -169,7 +172,7 @@ class PostgresAirbyteClient(
         executeQuery(sql) { resultSet ->
             val columns = mutableListOf<String>()
             while (resultSet.next()) {
-                columns.add(resultSet.getString("column_name"))
+                columns.add(resultSet.getString(COLUMN_NAME_COLUMN))
             }
             columns
         }
@@ -205,8 +208,7 @@ class PostgresAirbyteClient(
             val columnsInDb: MutableSet<Column> = mutableSetOf()
             val defaultColumnNames = postgresColumnUtils.defaultColumns().map { it.columnName }.toSet()
             while (rs.next()) {
-                //TODO: extract column_name and data_type as constants
-                val columnName = rs.getString("column_name")
+                val columnName = rs.getString(COLUMN_NAME_COLUMN)
 
                 // Filter out airbyte columns
                 if (defaultColumnNames.contains(columnName)) {
@@ -260,7 +262,7 @@ class PostgresAirbyteClient(
             val columns = mutableListOf<String>()
             while (resultSet.next()) {
                 //TODO: extract column_name as a constant
-                columns.add(resultSet.getString("column_name"))
+                columns.add(resultSet.getString(COLUMN_NAME_COLUMN))
             }
             columns
         }
