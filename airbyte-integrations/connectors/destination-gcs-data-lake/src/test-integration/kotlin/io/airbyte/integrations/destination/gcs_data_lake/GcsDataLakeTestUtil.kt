@@ -34,7 +34,7 @@ object GcsDataLakeTestUtil {
 
     fun getCatalog(
         config: GcsDataLakeConfiguration,
-        tableIdGenerator: TableIdGenerator = SimpleTableIdGenerator(config.databaseName),
+        tableIdGenerator: TableIdGenerator = SimpleTableIdGenerator(config.namespace),
     ): Catalog {
         // Create utility instances for test
         val icebergUtil = IcebergUtil(tableIdGenerator)
@@ -46,9 +46,4 @@ object GcsDataLakeTestUtil {
             properties
         )
     }
-
-    fun getTableIdGenerator(config: GcsDataLakeConfiguration) =
-        io.airbyte.integrations.destination.gcs_data_lake.catalog.BigLakeTableIdGenerator(
-            config.databaseName
-        )
 }

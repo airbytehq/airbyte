@@ -48,7 +48,7 @@ class GcsDataLakeTableIdGeneratorFactory(
     private val gcsDataLakeConfiguration: GcsDataLakeConfiguration
 ) {
     @Singleton
-    fun create(): TableIdGenerator = BigLakeTableIdGenerator(gcsDataLakeConfiguration.databaseName)
+    fun create(): TableIdGenerator = BigLakeTableIdGenerator(gcsDataLakeConfiguration.namespace)
 
     /**
      * Provides FinalTableNameGenerator for TableCatalog. GCS Data Lake only has one table per
@@ -59,7 +59,7 @@ class GcsDataLakeTableIdGeneratorFactory(
     fun createFinalTableNameGenerator(): FinalTableNameGenerator =
         FinalTableNameGenerator { stream ->
             val namespace =
-                sanitizeBigLakeName(stream.namespace ?: gcsDataLakeConfiguration.databaseName)
+                sanitizeBigLakeName(stream.namespace ?: gcsDataLakeConfiguration.namespace)
             val name = sanitizeBigLakeName(stream.name)
             TableName(namespace = namespace, name = name)
         }

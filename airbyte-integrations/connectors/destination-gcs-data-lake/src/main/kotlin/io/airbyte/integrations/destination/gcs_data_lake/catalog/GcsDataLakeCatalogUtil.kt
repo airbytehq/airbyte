@@ -6,84 +6,117 @@ package io.airbyte.integrations.destination.gcs_data_lake.catalog
 
 import io.airbyte.cdk.load.command.DestinationStream
 import io.airbyte.cdk.load.toolkits.iceberg.parquet.io.IcebergUtil
+import io.airbyte.integrations.destination.gcs_data_lake.spec.BigLakeCatalogConfiguration
 import io.airbyte.integrations.destination.gcs_data_lake.spec.GcsDataLakeConfiguration
-import io.github.oshai.kotlinlogging.KotlinLogging
+import io.airbyte.integrations.destination.gcs_data_lake.spec.PolarisCatalogConfiguration
 import jakarta.inject.Singleton
 import org.apache.iceberg.CatalogProperties
 import org.apache.iceberg.CatalogUtil
 import org.apache.iceberg.catalog.Catalog
 import org.apache.iceberg.gcp.GCPProperties
 
-private val logger = KotlinLogging.logger {}
-
 /**
- * Utility for configuring Apache Iceberg with BigLake catalog on GCS.
+ * Utility for configuring Apache Iceberg with various catalog types on GCS.
  *
- * BigLake can be accessed via two approaches:
- * 1. Direct BigLakeCatalog implementation (org.apache.iceberg.gcp.biglake.BigLakeCatalog)
- * 2. REST catalog API (https://biglake.googleapis.com/v1)
- *
- * This implementation uses the REST catalog approach as it's more standard and compatible with the
- * broader Iceberg ecosystem.
+ * Supports:
+ * - BigLake: Google Cloud's Iceberg REST catalog
+ * - Polaris: Apache Polaris catalog
  */
 @Singleton
 class GcsDataLakeCatalogUtil(
     private val icebergUtil: IcebergUtil,
 ) {
+    fun <K, V : Any> mapOfNotNull(vararg pairs: Pair<K, V?>): Map<K, V> =
+        pairs.mapNotNull { (k, v) -> v?.let { k to it } }.toMap()
+
     fun createNamespace(streamDescriptor: DestinationStream.Descriptor, catalog: Catalog) {
         icebergUtil.createNamespace(streamDescriptor, catalog)
     }
 
     /**
-     * Creates the Iceberg [Catalog] configuration properties for BigLake.
-     *
-     * Configures both BigLake REST catalog and GCS FileIO for object storage. Obtains OAuth token
-     * from service account and sets it directly in the Authorization header.
+     * Creates the Iceberg [Catalog] configuration properties from the destination's configuration.
      *
      * @param config The destination's configuration
      * @return The Iceberg [Catalog] configuration properties.
      */
     fun toCatalogProperties(config: GcsDataLakeConfiguration): Map<String, String> {
+        val catalogConfig = config.gcsCatalogConfiguration
+
+        val gcsProperties = buildGcsProperties(config, catalogConfig)
+
+        return when (val catalogConfiguration = catalogConfig.catalogConfiguration) {
+            is BigLakeCatalogConfiguration ->
+                buildBigLakeProperties(config, catalogConfiguration, gcsProperties)
+            is PolarisCatalogConfiguration ->
+                buildPolarisProperties(config, catalogConfiguration, gcsProperties)
+        }
+    }
+
+    private fun buildGcsProperties(
+        config: GcsDataLakeConfiguration,
+        catalogConfig:
+            io.airbyte.integrations.destination.gcs_data_lake.spec.GcsCatalogConfiguration,
+    ): Map<String, String> {
         // Get OAuth2 access token from Google credentials
         val credentials = config.googleCredentials
         credentials.refreshIfExpired()
         val accessToken = credentials.accessToken.tokenValue
 
         return buildMap {
-            // Catalog type: REST (BigLake implements Iceberg REST protocol)
-            put(CatalogUtil.ICEBERG_CATALOG_TYPE, CatalogUtil.ICEBERG_CATALOG_TYPE_REST)
-
-            // BigLake REST catalog endpoint with prefix for the specific catalog
-            // Format:
-            // https://biglake.googleapis.com/iceberg/v1/restcatalog/projects/{project}/catalogs/{catalog}
-            val catalogPrefix = "projects/${config.projectId}/catalogs/${config.catalogName}"
-            put(CatalogProperties.URI, "https://biglake.googleapis.com/iceberg/v1/restcatalog")
-            put("prefix", catalogPrefix)
-
-            // Set OAuth Bearer token directly in Authorization header
-            // This bypasses GoogleAuthManager and directly authenticates REST requests
-            put("header.Authorization", "Bearer $accessToken")
-
-            // User project header for billing
-            put("header.x-goog-user-project", config.projectId)
-
-            // GCS FileIO configuration
             put(CatalogProperties.FILE_IO_IMPL, "org.apache.iceberg.gcp.gcs.GCSFileIO")
-            put(CatalogProperties.WAREHOUSE_LOCATION, config.warehouseLocation)
+            put(CatalogProperties.WAREHOUSE_LOCATION, catalogConfig.warehouseLocation)
 
             // GCP configuration
             put(GCPProperties.GCS_PROJECT_ID, config.projectId)
-
-            // Pass credentials JSON directly to GCSFileIO
             put(GCPProperties.GCS_OAUTH2_TOKEN, accessToken)
 
+            // Add optional GCS endpoint if provided (for emulator testing)
             config.gcsEndpoint?.let { endpoint ->
                 put(GCPProperties.GCS_SERVICE_HOST, endpoint)
-                put(GCPProperties.GCS_NO_AUTH, "true") // For emulator testing
+                put(GCPProperties.GCS_NO_AUTH, "true")
             }
-
-            // BigLake-specific properties
-            put("gcp.location", config.gcpLocation)
         }
+    }
+
+    private fun buildBigLakeProperties(
+        config: GcsDataLakeConfiguration,
+        catalogConfig: BigLakeCatalogConfiguration,
+        gcsProperties: Map<String, String>
+    ): Map<String, String> {
+        // Get OAuth2 access token for REST catalog authentication
+        val credentials = config.googleCredentials
+        credentials.refreshIfExpired()
+        val accessToken = credentials.accessToken.tokenValue
+
+        val bigLakeProperties =
+            mapOfNotNull(
+                CatalogUtil.ICEBERG_CATALOG_TYPE to CatalogUtil.ICEBERG_CATALOG_TYPE_REST,
+                CatalogProperties.URI to "https://biglake.googleapis.com/iceberg/v1/restcatalog",
+                "prefix" to "projects/${config.projectId}/catalogs/${catalogConfig.catalogName}",
+                "header.Authorization" to "Bearer $accessToken",
+                "header.x-goog-user-project" to config.projectId,
+                "gcp.location" to catalogConfig.gcpLocation,
+            )
+
+        return bigLakeProperties + gcsProperties
+    }
+
+    private fun buildPolarisProperties(
+        config: GcsDataLakeConfiguration,
+        catalogConfig: PolarisCatalogConfiguration,
+        gcsProperties: Map<String, String>
+    ): Map<String, String> {
+        val credential = "${catalogConfig.clientId}:${catalogConfig.clientSecret}"
+        val polarisProperties =
+            mapOfNotNull(
+                CatalogUtil.ICEBERG_CATALOG_TYPE to CatalogUtil.ICEBERG_CATALOG_TYPE_REST,
+                CatalogProperties.URI to catalogConfig.serverUri,
+                "credential" to credential,
+                "scope" to "PRINCIPAL_ROLE:ALL",
+                CatalogProperties.WAREHOUSE_LOCATION to catalogConfig.catalogName,
+            )
+
+        return polarisProperties +
+            gcsProperties.filterKeys { it != CatalogProperties.WAREHOUSE_LOCATION }
     }
 }
