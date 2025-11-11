@@ -200,7 +200,6 @@ class IcebergTableSynchronizer(
         // committed schema). We commit the delete first, then create the add operation.
         if (requireSeparateCommitsForColumnReplace && columnsToReplaceInSecondCommit.isNotEmpty()) {
             // Commit the delete operation immediately
-            update.apply()
             update.commit()
             table.refresh()
 
