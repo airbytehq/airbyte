@@ -214,6 +214,13 @@ class PostgresAirbyteClient(
         }
     }
 
-    private fun execute(query: String) =
-        dataSource.connection.use { connection -> connection.createStatement().use { it.execute(query) }}
+    private fun execute(query: String) {
+        log.info { query.trimIndent() }
+        dataSource.connection.use { connection ->
+            connection.createStatement().use {
+                it.execute(query)
+            }
+        }
+    }
+
 }
