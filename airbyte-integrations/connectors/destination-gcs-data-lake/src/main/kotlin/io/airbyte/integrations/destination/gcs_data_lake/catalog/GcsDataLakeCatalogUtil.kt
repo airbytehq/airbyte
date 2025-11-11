@@ -48,7 +48,7 @@ class GcsDataLakeCatalogUtil(
             is BigLakeCatalogConfiguration ->
                 buildBigLakeProperties(config, catalogConfiguration, gcsProperties)
             is PolarisCatalogConfiguration ->
-                buildPolarisProperties(config, catalogConfiguration, gcsProperties)
+                buildPolarisProperties(catalogConfiguration, gcsProperties)
         }
     }
 
@@ -102,7 +102,6 @@ class GcsDataLakeCatalogUtil(
     }
 
     private fun buildPolarisProperties(
-        config: GcsDataLakeConfiguration,
         catalogConfig: PolarisCatalogConfiguration,
         gcsProperties: Map<String, String>
     ): Map<String, String> {
