@@ -170,6 +170,22 @@ class PostgresColumnUtils(
             getTargetColumnName(primaryKeyColumnName, columnNameMapping )
         }.toList()
     }
+
+    internal fun getCursorColumnName(stream: DestinationStream, columnNameMapping: ColumnNameMapping): String? {
+        return when (stream.importType) {
+            is Dedupe -> getCursorColumnName((stream.importType as Dedupe).cursor, columnNameMapping)
+            else -> null
+        }
+    }
+
+    internal fun getCursorColumnName(
+        cursor: List<String>,
+        columnNameMapping: ColumnNameMapping
+    ): String? {
+        return cursor
+            .firstOrNull()
+            ?.let { columnName -> getTargetColumnName(columnName, columnNameMapping) }
+    }
 }
 
 data class Column(val columnName: String, val columnTypeName: String, val nullable: Boolean = true)
