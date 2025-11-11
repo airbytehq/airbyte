@@ -16,6 +16,7 @@
         "supported_sync_modes": ["full_refresh", "incremental"]
       },
       "sync_mode": "incremental",
+      "cursor_field": ["date_modified_gmt"],
       "destination_sync_mode": "append"
     },
     {
