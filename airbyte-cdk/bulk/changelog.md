@@ -1,6 +1,6 @@
 ## Version 0.1.73
 
-load cdk: split up ensurSchemaMatches into smaller functions
+load cdk: split up ensureSchemaMatches into smaller functions
 
 ## Version 0.1.72
 
