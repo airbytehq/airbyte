@@ -332,7 +332,10 @@ class CdcPartitionReader<T : Comparable<T>>(
 
             // Emit the record at the end of the happy path.
             when (engineShuttingDown.get()) {
+                // While the engine is shutting down, we emit records in our thread to prevent debezium from unexpectedly killing the thread.
+                // As this may lead to corrupt hald records or to causing an unexpected socket closure.
                 true -> runBlocking(Dispatchers.IO) { recordAcceptor.invoke(deserializedRecord.data, deserializedRecord.changes) }
+                // While the engine is running normally, we can emit records synchronously for better performance.
                 false -> recordAcceptor.invoke(deserializedRecord.data, deserializedRecord.changes)
             }
             return EventType.RECORD_EMITTED
