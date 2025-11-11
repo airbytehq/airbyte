@@ -454,6 +454,7 @@ WHERE actor_definition_id ='b5ea17b1-f170-46dc-bc31-cc744ca984c1' AND (configura
 
 | Version    | Date       | Pull Request                                                                                                      | Subject                                                                                                                                         |
 |:-----------|:-----------|:------------------------------------------------------------------------------------------------------------------|:------------------------------------------------------------------------------------------------------------------------------------------------|
+| 4.3.0-rc.6 | 2025-11-11  | [69284](https://github.com/airbytehq/airbyte/pull/69284) | Improve CDC shutdown to prevent loss of records in high velocty tables |
 | 4.3.0-rc.5 | 2025-11-08 | [69248](https://github.com/airbytehq/airbyte/pull/69248) | Add SQL Server identifier quoting to fix reserved keyword issues |
 | 4.3.0-rc.4 | 2025-11-05 | [69194](https://github.com/airbytehq/airbyte/pull/69194) | Fix composite primary key discovery to show all PK columns; separate PK discovery from sync strategy |
 | 4.3.0-rc.3 | 2025-10-31 | [69097](https://github.com/airbytehq/airbyte/pull/69097) | Fix connector state value type from string to json object                                                                                                  |
