@@ -1,0 +1,22 @@
+#
+# Copyright (c) 2025 Airbyte, Inc., all rights reserved.
+#
+
+manifest_migrations:
+  - version: "*"
+    migrations:
+      - name: http_requester_url_base_to_url
+        order: 1
+        description: |
+          This migration updates the `url_base` field in the `http_requester` spec to `url`.
+          The `url_base` field is deprecated and will be removed in a future version.
+      - name: http_requester_path_to_url
+        order: 2
+        description: |
+          This migration updates the `path` field in the `http_requester` spec to `url`.
+          The `path` field is deprecated and will be removed in a future version.
+      - name: http_requester_request_body_json_data_to_request_body
+        order: 3
+        description: |
+          This migration updates the `request_body_json_data` field in the `http_requester` spec to `request_body`.
+          The `request_body_json_data` field is deprecated and will be removed in a future version.

@@ -1,0 +1,2 @@
+[console_scripts]
+genson = genson.__main__:main

@@ -1,0 +1,5 @@
+[console_scripts]
+airbyte-cdk=airbyte_cdk.cli.airbyte_cdk:cli
+manifest-server=airbyte_cdk.manifest_server.cli.run:run
+source-declarative-manifest=airbyte_cdk.cli.source_declarative_manifest:run
+

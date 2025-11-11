@@ -1,0 +1,21 @@
+Metadata-Version: 2.4
+Name: serpyco-rs
+Version: 1.17.1
+Classifier: License :: OSI Approved :: MIT License
+Classifier: Operating System :: MacOS
+Classifier: Operating System :: Microsoft :: Windows
+Classifier: Operating System :: POSIX :: Linux
+Classifier: Programming Language :: Python :: 3
+Classifier: Programming Language :: Python :: 3.9
+Classifier: Programming Language :: Python :: 3.10
+Classifier: Programming Language :: Python :: 3.11
+Classifier: Programming Language :: Python :: 3.12
+Classifier: Programming Language :: Python :: 3.13
+Classifier: Programming Language :: Python :: Implementation :: CPython
+Classifier: Programming Language :: Python
+Classifier: Programming Language :: Rust
+Requires-Dist: attributes-doc
+Requires-Dist: typing-extensions
+License-File: LICENSE
+Home-Page: https://github.com/ermakov-oleg/serpyco-rs
+Requires-Python: >=3.9

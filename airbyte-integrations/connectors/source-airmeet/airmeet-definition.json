@@ -1,0 +1,7 @@
+{
+  "name": "Airmeet",
+  "dockerRepository": "airbyte/source-airmeet",
+  "dockerImageTag": "dev",
+  "documentationUrl": "https://docs.airbyte.com/integrations/sources/airmeet",
+  "icon": "airmeet.svg"
+}

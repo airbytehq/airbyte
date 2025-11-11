@@ -1,0 +1,24 @@
+{
+  "$schema": "http://json-schema.org/draft-07/schema#",
+  "type": "object",
+  "properties": {
+    "email": {
+      "type": ["null", "string"]
+    },
+    "utm_source": {
+      "type": ["null", "string"]
+    },
+    "utm_medium": {
+      "type": ["null", "string"]
+    },
+    "utm_campaign": {
+      "type": ["null", "string"]
+    },
+    "utm_term": {
+      "type": ["null", "string"]
+    },
+    "utm_content": {
+      "type": ["null", "string"]
+    }
+  }
+}

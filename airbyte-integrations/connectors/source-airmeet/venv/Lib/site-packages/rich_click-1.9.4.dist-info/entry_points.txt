@@ -1,0 +1,2 @@
+[console_scripts]
+rich-click = rich_click.cli:main

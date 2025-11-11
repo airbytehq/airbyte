@@ -1,0 +1,12 @@
+bracex-2.6.dist-info/INSTALLER,sha256=zuuue4knoyJ-UwPPXg8fezS7VCrXJQrAP7zeNuwvFQg,4
+bracex-2.6.dist-info/METADATA,sha256=j8Q9eIo71nV_O0rNbScbWumw76RnlKahM07j03vbG3s,3560
+bracex-2.6.dist-info/RECORD,,
+bracex-2.6.dist-info/WHEEL,sha256=qtCwoSJWgHk21S1Kb4ihdzI2rlJ1ZKaIurTj_ngOhyQ,87
+bracex-2.6.dist-info/licenses/LICENSE.md,sha256=SJ3J8IsGQvUTlyCG8lbWsNgLQVRWtEsp6ax990StkVY,1074
+bracex/__init__.py,sha256=L683NA5NRSAB0GIka4j0P9OIEJML-SkCPYwl7mTktKo,15316
+bracex/__main__.py,sha256=Ut7h_TW9bgX_FC3FYY6sXMqDmqpcnB_bMpan0xiQRk8,2484
+bracex/__meta__.py,sha256=CzEBcYdeUrKb1aHz33A7vwJU0tCjpvBjbSFNdcsRZ64,6766
+bracex/__pycache__/__init__.cpython-311.pyc,,
+bracex/__pycache__/__main__.cpython-311.pyc,,
+bracex/__pycache__/__meta__.cpython-311.pyc,,
+bracex/py.typed,sha256=47DEQpj8HBSa-_TImW-5JCeuQeRkm5NMpJWZG3hSuFU,0

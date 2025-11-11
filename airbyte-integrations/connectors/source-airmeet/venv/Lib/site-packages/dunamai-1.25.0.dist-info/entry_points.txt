@@ -1,0 +1,3 @@
+[console_scripts]
+dunamai=dunamai.__main__:main
+

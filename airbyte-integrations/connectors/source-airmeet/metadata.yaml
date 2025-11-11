@@ -1,0 +1,22 @@
+data:
+  connectorSubtype: api
+  connectorType: source
+  definitionId: 12345678-1234-1234-1234-123456789abc
+  dockerImageTag: 0.1.0
+  dockerRepository: airbyte/source-airmeet
+  githubIssueLabel: source-airmeet
+  icon: airmeet.svg
+  license: MIT
+  name: Airmeet
+  registries:
+    oss:
+      enabled: true
+    cloud:
+      enabled: false
+  releaseStage: alpha
+  supportLevel: community
+  documentationUrl: https://docs.airbyte.com/integrations/sources/airmeet
+  tags:
+    - language:python
+    - cdk:python
+metadataSpecVersion: "1.0"

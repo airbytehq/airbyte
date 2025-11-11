@@ -1,0 +1,2 @@
+class PaginationResetRequiredException(Exception):
+    pass
