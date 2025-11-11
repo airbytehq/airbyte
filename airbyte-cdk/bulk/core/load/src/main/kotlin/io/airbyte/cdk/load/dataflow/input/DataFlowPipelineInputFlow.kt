@@ -38,8 +38,13 @@ class DataFlowPipelineInputFlow(
         collector: FlowCollector<DataFlowStageIO>,
     ) {
         inputFlow.collect {
-            // Update watermark for any message received
-            watermarkTracker.updateWatermark()
+            // Update watermark with the message's emittedAt timestamp
+            val emittedAtMs = when (it) {
+                is DestinationRecord -> it.message.emittedAtMs
+                is DestinationRecordStreamComplete -> it.emittedAtMs
+                else -> null
+            }
+            emittedAtMs?.let { watermarkTracker.updateWatermark(it) }
 
             when (it) {
                 is CheckpointMessage -> stateStore.accept(it)

@@ -67,6 +67,7 @@ class DataFlowPipelineInputFlowTest {
         every { stream.unmappedDescriptor } returns desc
         val message = mockk<DestinationRecordSource>()
         every { message.fileReference } returns null
+        every { message.emittedAtMs } returns System.currentTimeMillis()
         val serializedBytes = 151251L
         val destinationRecord =
             DestinationRecord(

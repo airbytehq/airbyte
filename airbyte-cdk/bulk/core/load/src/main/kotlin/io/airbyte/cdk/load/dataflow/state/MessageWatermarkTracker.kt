@@ -6,8 +6,7 @@ package io.airbyte.cdk.load.dataflow.state
 
 import jakarta.inject.Singleton
 import java.time.Clock
-import java.time.Instant
-import java.util.concurrent.atomic.AtomicReference
+import java.util.concurrent.atomic.AtomicLong
 
 /**
  * Tracks the timestamp of the last message received from the source.
@@ -15,23 +14,32 @@ import java.util.concurrent.atomic.AtomicReference
  * This is used to detect when sources have stalled and stopped emitting records, which can cause
  * the destination to pause. By tracking the watermark (last message timestamp), we can identify
  * and log when no messages have been received for an extended period.
+ *
+ * Performance optimization: Uses the emittedAtMs timestamp already present on messages, avoiding
+ * any clock system calls. This has zero performance overhead in the hot path.
  */
 @Singleton
-class MessageWatermarkTracker(private val clock: Clock = Clock.systemUTC()) {
-    private val lastMessageTimestamp = AtomicReference<Instant?>(null)
+class MessageWatermarkTracker(
+    private val clock: Clock = Clock.systemUTC()
+) {
+    private val lastMessageTimestampMs = AtomicLong(0L)
 
     /**
-     * Updates the watermark to the current time, indicating a message was just received.
+     * Updates the watermark with the given message timestamp.
+     *
+     * @param emittedAtMs The emittedAt timestamp from the message in milliseconds since epoch
      */
-    fun updateWatermark() {
-        lastMessageTimestamp.set(clock.instant())
+    fun updateWatermark(emittedAtMs: Long) {
+        lastMessageTimestampMs.set(emittedAtMs)
     }
 
     /**
-     * Gets the timestamp of the last message received, or null if no messages have been received yet.
+     * Gets the timestamp of the last message received in milliseconds since epoch,
+     * or null if no messages have been received yet.
      */
-    fun getLastMessageTimestamp(): Instant? {
-        return lastMessageTimestamp.get()
+    fun getLastMessageTimestampMs(): Long? {
+        val timestamp = lastMessageTimestampMs.get()
+        return if (timestamp == 0L) null else timestamp
     }
 
     /**
@@ -41,9 +49,10 @@ class MessageWatermarkTracker(private val clock: Clock = Clock.systemUTC()) {
      * @return true if no messages have been received within the threshold period, false otherwise
      */
     fun isStalled(thresholdMillis: Long): Boolean {
-        val lastTimestamp = lastMessageTimestamp.get() ?: return false
-        val now = clock.instant()
-        return now.toEpochMilli() - lastTimestamp.toEpochMilli() > thresholdMillis
+        val lastTimestampMs = lastMessageTimestampMs.get()
+        if (lastTimestampMs == 0L) return false
+        val nowMs = clock.instant().toEpochMilli()
+        return nowMs - lastTimestampMs > thresholdMillis
     }
 
     /**
@@ -52,8 +61,9 @@ class MessageWatermarkTracker(private val clock: Clock = Clock.systemUTC()) {
      * @return the duration in milliseconds, or null if no messages have been received yet
      */
     fun getMillisSinceLastMessage(): Long? {
-        val lastTimestamp = lastMessageTimestamp.get() ?: return null
-        val now = clock.instant()
-        return now.toEpochMilli() - lastTimestamp.toEpochMilli()
+        val lastTimestampMs = lastMessageTimestampMs.get()
+        if (lastTimestampMs == 0L) return null
+        val nowMs = clock.instant().toEpochMilli()
+        return nowMs - lastTimestampMs
     }
 }
