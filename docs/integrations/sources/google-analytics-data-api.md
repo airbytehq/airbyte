@@ -270,7 +270,7 @@ The Google Analytics connector is subject to Google Analytics Data API quotas. P
 
 | Version        | Date       | Pull Request                                             | Subject                                                                                                                                                                |
 |:---------------|:-----------|:---------------------------------------------------------|:-----------------------------------------------------------------------------------------------------------------------------------------------------------------------|
-| 2.9.16 | 2025-11-11 | [69278](https://github.com/airbytehq/airbyte/pull/69278) | Flag authentication issues as config_error |
+| 2.9.16 | 2025-11-11 | [69279](https://github.com/airbytehq/airbyte/pull/69279) | Flag authentication issues as config_error |
 | 2.9.15 | 2025-10-29 | [69011](https://github.com/airbytehq/airbyte/pull/69011) | Update dependencies |
 | 2.9.14 | 2025-10-21 | [68302](https://github.com/airbytehq/airbyte/pull/68302) | Update dependencies |
 | 2.9.13 | 2025-10-14 | [tbd](https://github.com/airbytehq/airbyte/pull/tbd)     | Promoting release candidate 2.9.13-rc.1 to a main version. |
