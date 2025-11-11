@@ -323,19 +323,27 @@ class CdcPartitionReader<T : Comparable<T>>(
             val deserializedRecord: DeserializedRecord =
                 readerOps.deserializeRecord(event.key, event.value, stream)
                     ?: return EventType.RECORD_DISCARDED_BY_DESERIALIZE
-            val recordAcceptor = outputMessageRouter.recordAcceptors[streamId] ?: run {
-                log.warn {
-                    "No record acceptor found for stream $streamId, skipping record emission."
-                }
-                return EventType.RECORD_DISCARDED_BY_STREAM_ID
-            }
+            val recordAcceptor =
+                outputMessageRouter.recordAcceptors[streamId]
+                    ?: run {
+                        log.warn {
+                            "No record acceptor found for stream $streamId, skipping record emission."
+                        }
+                        return EventType.RECORD_DISCARDED_BY_STREAM_ID
+                    }
 
             // Emit the record at the end of the happy path.
             when (engineShuttingDown.get()) {
-                // While the engine is shutting down, we emit records in our thread to prevent debezium from unexpectedly killing the thread.
-                // As this may lead to corrupt hald records or to causing an unexpected socket closure.
-                true -> runBlocking(Dispatchers.IO) { recordAcceptor.invoke(deserializedRecord.data, deserializedRecord.changes) }
-                // While the engine is running normally, we can emit records synchronously for better performance.
+                // While the engine is shutting down, we emit records in our thread to prevent
+                // debezium from unexpectedly killing the thread.
+                // As this may lead to corrupt hald records or to causing an unexpected socket
+                // closure.
+                true ->
+                    runBlocking(Dispatchers.IO) {
+                        recordAcceptor.invoke(deserializedRecord.data, deserializedRecord.changes)
+                    }
+                // While the engine is running normally, we can emit records synchronously for
+                // better performance.
                 false -> recordAcceptor.invoke(deserializedRecord.data, deserializedRecord.changes)
             }
             return EventType.RECORD_EMITTED
