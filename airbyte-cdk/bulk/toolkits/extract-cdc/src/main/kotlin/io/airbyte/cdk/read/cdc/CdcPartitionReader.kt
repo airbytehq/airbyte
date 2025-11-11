@@ -286,7 +286,6 @@ class CdcPartitionReader<T : Comparable<T>>(
 
             val event = DebeziumEvent(changeEvent)
             val eventType: EventType = emitRecord(event)
-            engineShuttingDown.set(true) // TEMP
             // Update counters.
             updateCounters(event, eventType)
             // Look for reasons to close down the engine.
@@ -338,21 +337,10 @@ class CdcPartitionReader<T : Comparable<T>>(
             }
 
             // Emit the record at the end of the happy path.
-            if (engineShuttingDown.get()) {
-                runBlocking(Dispatchers.IO) { recordAcceptor.invoke(deserializedRecord.data, deserializedRecord.changes) }
-            } else {
-                recordAcceptor.invoke(deserializedRecord.data, deserializedRecord.changes)
+            when (engineShuttingDown.get()) {
+                true -> runBlocking(Dispatchers.IO) { recordAcceptor.invoke(deserializedRecord.data, deserializedRecord.changes) }
+                false -> recordAcceptor.invoke(deserializedRecord.data, deserializedRecord.changes)
             }
-            /*outputMessageRouter.recordAcceptors[streamId]?.invoke(
-                deserializedRecord.data,
-                deserializedRecord.changes
-            )
-                ?: run {
-                    log.warn {
-                        "No record acceptor found for stream $streamId, skipping record emission."
-                    }
-                    return EventType.RECORD_DISCARDED_BY_STREAM_ID
-                }*/
             return EventType.RECORD_EMITTED
         }
 
