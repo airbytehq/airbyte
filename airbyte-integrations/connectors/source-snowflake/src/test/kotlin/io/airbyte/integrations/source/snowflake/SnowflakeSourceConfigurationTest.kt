@@ -69,7 +69,7 @@ class SnowflakeSourceConfigurationTest {
         assertEquals(setOf("TEST_DATABASE"), config.namespaces)
 
         // Verify that schema field is null
-        assertEquals(null, config.schemas.first())
+        assertEquals(null, config.schemas.firstOrNull())
 
         // Verify that schema is not in JDBC properties
         assertTrue(!config.jdbcProperties.containsKey("schema"))
