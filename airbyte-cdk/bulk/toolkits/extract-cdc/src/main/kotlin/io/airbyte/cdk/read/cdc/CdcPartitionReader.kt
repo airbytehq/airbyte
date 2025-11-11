@@ -278,12 +278,6 @@ class CdcPartitionReader<T : Comparable<T>>(
                 watchdogJob?.cancel()
             }
 
-            if (engineShuttingDown.get()) {
-                // If we're already shutting down, don't process any more events.
-//                return
-                log.info { "*** accept after shutdown: $changeEvent" }
-            }
-
             val event = DebeziumEvent(changeEvent)
             val eventType: EventType = emitRecord(event)
             // Update counters.
