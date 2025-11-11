@@ -230,7 +230,7 @@ Any database or table encoding combination of charset and collation is supported
 
 | Version     | Date       | Pull Request                                               | Subject                                                                                                                                         |
 |:------------|:-----------|:-----------------------------------------------------------|:------------------------------------------------------------------------------------------------------------------------------------------------|
-| 3.51.4      | 2025-11-11 | [69177](https://github.com/airbytehq/airbyte/pull/69177)   | Improve CDC shutdown to prevent loss of records in high velocty tables.                                                                         |
+| 3.51.4      | 2025-11-11 | [69284](https://github.com/airbytehq/airbyte/pull/69284)   | Improve CDC shutdown to prevent loss of records in high velocty tables.                                                                         |
 | 3.51.3      | 2025-11-05 | [69177](https://github.com/airbytehq/airbyte/pull/69177)   | Fix a bug in CDC snapshot queries leading to omission of the first record in some cases.                                                        |
 | 3.51.2      | 2025-11-02 | [69104](https://github.com/airbytehq/airbyte/pull/69104)   | Better partitioning for tables with GUID string primary key.                                                                                    |
 | 3.51.1      | 2025-10-24 | [68652](https://github.com/airbytehq/airbyte/pull/68652)   | Bump CDK version to the latest to resolve issue with database Views in CDC mode.                                                                |
