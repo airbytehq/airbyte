@@ -314,8 +314,6 @@ definitions:
     backoff_strategies:
       - type: ConstantBackoffStrategy
         backoff_time_in_seconds: 60
-      - type: ExponentialBackoffStrategy
-        factor: 2
     response_filters:
       - type: HttpResponseFilter
         action: RATE_LIMITED
