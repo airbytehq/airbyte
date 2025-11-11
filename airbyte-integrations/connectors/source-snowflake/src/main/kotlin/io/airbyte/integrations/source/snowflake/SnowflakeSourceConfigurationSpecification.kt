@@ -80,12 +80,20 @@ class SnowflakeSourceConfigurationSpecification : ConfigurationSpecification() {
     @JsonSchemaInject(json = """{"order":4}""")
     lateinit var database: String
 
-    @JsonProperty("schema")
-    @JsonSchemaTitle("Schema")
+    @JsonProperty("schemas")
+    @JsonSchemaTitle("Schemas")
     @JsonPropertyDescription(
-        "The source Snowflake schema tables. Leave empty to access tables from multiple schemas."
+        "The list of schemas to sync from. If not specified, all accessible schemas will be synced."
     )
     @JsonSchemaInject(json = """{"order":5}""")
+    var schemas: List<String>? = null
+
+    @JsonProperty("schema")
+    @JsonPropertyDescription(
+        "Deprecated: Use 'schemas' instead. The source Snowflake schema tables. " +
+            "This field is kept for backwards compatibility with existing connections."
+    )
+    @JsonSchemaInject(json = """{"airbyte_hidden":true}""")
     var schema: String? = null
 
     @JsonProperty("table_filters")

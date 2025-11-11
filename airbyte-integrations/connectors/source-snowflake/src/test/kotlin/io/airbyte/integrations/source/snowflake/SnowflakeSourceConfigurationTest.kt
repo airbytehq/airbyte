@@ -37,7 +37,7 @@ class SnowflakeSourceConfigurationTest {
         assertEquals(setOf("TEST_DATABASE"), config.namespaces)
 
         // Verify that schema is stored separately in the configuration
-        assertEquals("PUBLIC", config.schema)
+        assertEquals("PUBLIC", config.schemas.first())
 
         // Verify that schema is also set in JDBC properties
         assertEquals("PUBLIC", config.jdbcProperties["schema"])
@@ -69,7 +69,7 @@ class SnowflakeSourceConfigurationTest {
         assertEquals(setOf("TEST_DATABASE"), config.namespaces)
 
         // Verify that schema field is null
-        assertEquals(null, config.schema)
+        assertEquals(null, config.schemas.first())
 
         // Verify that schema is not in JDBC properties
         assertTrue(!config.jdbcProperties.containsKey("schema"))
@@ -97,7 +97,7 @@ class SnowflakeSourceConfigurationTest {
 
         val config1 = factory.makeWithoutExceptionHandling(spec1)
         assertEquals(setOf("TEST_DATABASE"), config1.namespaces)
-        assertEquals("TPCH_SF1", config1.schema)
+        assertEquals("TPCH_SF1", config1.schemas.first())
 
         // Test with another schema
         val spec2 =
@@ -116,7 +116,7 @@ class SnowflakeSourceConfigurationTest {
 
         val config2 = factory.makeWithoutExceptionHandling(spec2)
         assertEquals(setOf("TEST_DATABASE"), config2.namespaces)
-        assertEquals("INFORMATION_SCHEMA", config2.schema)
+        assertEquals("INFORMATION_SCHEMA", config2.schemas.first())
     }
 
     @Test
@@ -141,7 +141,7 @@ class SnowflakeSourceConfigurationTest {
 
         // Verify database is in namespaces, schema is separate
         assertEquals(setOf("TEST_DATABASE"), config.namespaces)
-        assertEquals("PUBLIC", config.schema)
+        assertEquals("PUBLIC", config.schemas.first())
 
         // Verify JDBC params are parsed
         assertEquals("airbyte", config.jdbcProperties["application"])
@@ -173,7 +173,7 @@ class SnowflakeSourceConfigurationTest {
 
         // Verify that namespaces contains the database, schema is separate
         assertEquals(setOf("TEST_DATABASE"), config.namespaces)
-        assertEquals("CUSTOM_SCHEMA", config.schema)
+        assertEquals("CUSTOM_SCHEMA", config.schemas.first())
 
         // Verify key pair settings
         assertEquals("testuser", config.jdbcProperties["user"])

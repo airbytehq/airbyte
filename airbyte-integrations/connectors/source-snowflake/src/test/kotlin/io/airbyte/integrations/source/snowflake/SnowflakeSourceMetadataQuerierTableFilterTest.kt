@@ -152,7 +152,7 @@ class SnowflakeSourceMetadataQuerierTableFilterTest {
         every { config.namespaces } returns setOf("TEST_DATABASE")
         every { config.tableFilters } returns tableFilters
         every { config.checkPrivileges } returns false
-        every { config.schema } returns schema
+        every { config.schemas } returns (schema?.let { listOf(it) } ?: emptyList())
 
         val constants = DefaultJdbcConstants()
         val selectQueryGenerator = mockk<SelectQueryGenerator>()
@@ -172,7 +172,7 @@ class SnowflakeSourceMetadataQuerierTableFilterTest {
                 jdbcConnectionFactory
             )
 
-        return SnowflakeSourceMetadataQuerier(base, schema)
+        return SnowflakeSourceMetadataQuerier(base)
     }
 
     @Test

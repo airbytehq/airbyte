@@ -44,9 +44,11 @@ import kotlin.use
  */
 class SnowflakeSourceMetadataQuerier(
     val base: JdbcMetadataQuerier,
-    val schema: String? = null,
 ) : MetadataQuerier by base {
     private val log = KotlinLogging.logger {}
+
+    private val config = base.config as SnowflakeSourceConfiguration
+    private val schemas = config.schemas
 
     fun TableName.namespace(): String? =
         when (base.constants.namespaceKind) {
@@ -78,15 +80,31 @@ class SnowflakeSourceMetadataQuerier(
                 }
             }
 
-            for (namespace in
-                base.config.namespaces + base.config.namespaces.map { it.uppercase() }) {
-                val patterns = base.tableFiltersBySchema[this.schema]
-                if (patterns != null && patterns.isNotEmpty()) {
-                    for (pattern in patterns) {
-                        addColumnsFromQuery(namespace, this.schema, pattern)
-                    }
+            val catalog = base.config.namespaces.first()
+
+            if (schemas.isEmpty()) {
+                if (base.tableFiltersBySchema.isEmpty()) {
+                    addColumnsFromQuery(catalog, null, null)
                 } else {
-                    addColumnsFromQuery(namespace, this.schema, null)
+                    // Apply filters where they exist
+                    for ((schemaName, patterns) in base.tableFiltersBySchema) {
+                        for (pattern in patterns) {
+                            addColumnsFromQuery(catalog, schemaName, pattern)
+                        }
+                    }
+                    // Also discover columns from unfiltered schemas
+                    addColumnsFromQuery(catalog, null, null)
+                }
+            } else {
+                for (schema in schemas) {
+                    val patterns = base.tableFiltersBySchema[schema]
+                    if (patterns != null && patterns.isNotEmpty()) {
+                        for (pattern in patterns) {
+                            addColumnsFromQuery(catalog, schema, pattern)
+                        }
+                    } else {
+                        addColumnsFromQuery(catalog, schema, null)
+                    }
                 }
             }
             log.info { "Discovered ${results.size} column(s)." }
@@ -227,8 +245,6 @@ class SnowflakeSourceMetadataQuerier(
     ): TableName? =
         memoizedTableNames.find { it.name == streamID.name && it.namespace() == streamID.namespace }
 
-    val tableFilters = base.config.tableFilters
-
     val memoizedTableNames: List<TableName> by lazy {
         log.info { "Querying table names for catalog discovery." }
         try {
@@ -262,78 +278,54 @@ class SnowflakeSourceMetadataQuerier(
                 }
             }
 
-            for (namespace in
-                base.config.namespaces + base.config.namespaces.map { it.uppercase() }) {
-                if (tableFilters.isEmpty()) {
-                    addTablesFromQuery(namespace, this.schema, null)
+            val catalog = base.config.namespaces.first()
+
+            if (schemas.isEmpty()) {
+                if (base.tableFiltersBySchema.isEmpty()) {
+                    addTablesFromQuery(catalog, null, null)
                 } else {
-                    val filtersForSchema =
-                        if (this.schema == null) {
-                            tableFilters
-                        } else {
-                            tableFilters.filter {
-                                it.schemaName.equals(this.schema, ignoreCase = true)
-                            }
+                    for ((schemaName, patterns) in base.tableFiltersBySchema) {
+                        for (pattern in patterns) {
+                            addTablesFromQuery(catalog, schemaName, pattern)
                         }
+                    }
 
-                    if (filtersForSchema.isEmpty()) {
-                        addTablesFromQuery(namespace, this.schema, null)
-                    } else {
-                        // Apply filters to specified schemas
-                        for (filter in filtersForSchema) {
-                            for (pattern in filter.patterns) {
-                                addTablesFromQuery(namespace, filter.schemaName, pattern)
-                            }
-                        }
-
-                        // If schema is null, also discover all tables from unfiltered schemas
-                        if (this.schema == null) {
-                            val filteredSchemaNames =
-                                filtersForSchema.map { it.schemaName.uppercase() }.toSet()
-                            dbmd.getTables(namespace, null, null, null).use { rs: ResultSet ->
-                                while (rs.next()) {
-                                    val tableName =
-                                        TableName(
-                                            catalog = rs.getString("TABLE_CAT"),
-                                            schema = rs.getString("TABLE_SCHEM"),
-                                            name = rs.getString("TABLE_NAME"),
-                                            type = rs.getString("TABLE_TYPE") ?: "",
-                                        )
-                                    // Only add if schema is not in the filtered list
-                                    val schemaName = tableName.schema
-                                    val tableNameStr = tableName.name
-                                    if (
-                                        schemaName != "\"\"" && // Filter out schema containing two
-                                            // double-quotes
-                                            !tableNameStr.startsWith(
-                                                "\"\""
-                                            ) && // Filter out table names starting with two
-                                            // double-quotes
-                                            !filteredSchemaNames.contains(
-                                                schemaName?.uppercase()
-                                            ) &&
-                                            !EXCLUDED_NAMESPACES.contains(schemaName?.uppercase())
-                                    ) {
-                                        allTables.add(tableName)
-                                    }
-                                }
+                    val filteredSchemaNames = base.tableFiltersBySchema.keys.map { it.uppercase() }.toSet()
+                    dbmd.getTables(catalog, null, null, null).use { rs: ResultSet ->
+                        while (rs.next()) {
+                            val tableName =
+                                TableName(
+                                    catalog = rs.getString("TABLE_CAT"),
+                                    schema = rs.getString("TABLE_SCHEM"),
+                                    name = rs.getString("TABLE_NAME"),
+                                    type = rs.getString("TABLE_TYPE") ?: "",
+                                )
+                            val schemaName = tableName.schema
+                            val tableNameStr = tableName.name
+                            if (
+                                schemaName != "\"\"" &&
+                                    !tableNameStr.startsWith("\"\"") &&
+                                    !filteredSchemaNames.contains(schemaName?.uppercase()) &&
+                                    !EXCLUDED_NAMESPACES.contains(schemaName?.uppercase())
+                            ) {
+                                allTables.add(tableName)
                             }
                         }
                     }
                 }
-            }
-            log.info { "Discovered ${allTables.size} tables and views." }
-
-            // Validate table filters when schema is null (dynamic discovery)
-            if (this.schema == null && tableFilters.isNotEmpty()) {
-                val discoveredSchemas = allTables.mapNotNull { it.schema?.uppercase() }.toSet()
-                val filterSchemas = tableFilters.map { it.schemaName.uppercase() }.toSet()
-                val missingSchemas = filterSchemas - discoveredSchemas - EXCLUDED_NAMESPACES
-
-                if (missingSchemas.isNotEmpty()) {
-                    log.warn { "Table filters reference schemas that were not discovered." }
+            } else {
+                for (schema in schemas) {
+                    val patterns = base.tableFiltersBySchema[schema]
+                    if (patterns != null && patterns.isNotEmpty()) {
+                        for (pattern in patterns) {
+                            addTablesFromQuery(catalog, schema, pattern)
+                        }
+                    } else {
+                        addTablesFromQuery(catalog, schema, null)
+                    }
                 }
             }
+            log.info { "Discovered ${allTables.size} tables and views." }
 
             return@lazy allTables.toList().sortedBy { "${it.namespace()}.${it.name}.${it.type}" }
         } catch (e: Exception) {
@@ -411,7 +403,7 @@ class SnowflakeSourceMetadataQuerier(
                         checkQueries,
                         jdbcConnectionFactory,
                     )
-                return SnowflakeSourceMetadataQuerier(base, config.schema)
+                return SnowflakeSourceMetadataQuerier(base)
             }
         }
 

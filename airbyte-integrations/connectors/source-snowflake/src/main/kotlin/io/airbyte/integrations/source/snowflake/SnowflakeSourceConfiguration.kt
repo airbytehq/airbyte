@@ -32,7 +32,7 @@ data class SnowflakeSourceConfiguration(
     override val jdbcUrlFmt: String,
     override val jdbcProperties: Map<String, String>,
     override val namespaces: Set<String> = emptySet(),
-    val schema: String? = null,
+    val schemas: List<String> = emptyList(),
     override val tableFilters: List<TableFilter>,
     val incremental: IncrementalConfiguration,
     override val maxConcurrency: Int,
@@ -118,8 +118,16 @@ class SnowflakeSourceConfigurationFactory :
 
         val tableFilters = pojo.tableFilters ?: emptyList()
 
-        pojo.schema?.let { schema ->
-            JdbcSourceConfiguration.validateTableFilters(setOf(schema), tableFilters)
+        // Handle both new 'schemas' field and legacy 'schema' field for backwards compatibility
+        val schemas: List<String> = when {
+            !pojo.schemas.isNullOrEmpty() -> pojo.schemas!!
+            pojo.schema != null -> listOf(pojo.schema!!)
+            else -> emptyList() // Empty = discover all schemas
+        }
+
+        // Validate table filters if schemas are specified
+        if (schemas.isNotEmpty()) {
+            JdbcSourceConfiguration.validateTableFilters(schemas.toSet(), tableFilters)
         }
 
         val checkpointTargetInterval: Duration =
@@ -138,7 +146,7 @@ class SnowflakeSourceConfigurationFactory :
             jdbcUrlFmt = jdbcUrlFmt,
             jdbcProperties = jdbcProperties,
             namespaces = setOf(pojo.database),
-            schema = pojo.schema,
+            schemas = schemas,
             tableFilters = tableFilters,
             incremental = incrementalConfiguration,
             checkpointTargetInterval = checkpointTargetInterval,
