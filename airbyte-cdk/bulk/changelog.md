@@ -1,3 +1,9 @@
+## Version 0.1.73
+
+**Extract CDK**
+
+* Improve handling of debezium engine shutdown.
+
 ## Version 0.1.72
 
 **Extract CDK**
