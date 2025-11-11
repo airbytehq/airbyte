@@ -57,6 +57,11 @@ class ClickhouseDirectLoadWriterWithJson :
      * behaving like the other warehouses
      */
     @Disabled("Unfit for clickhouse with Json") override fun testContainerTypes() {}
+
+    @Test
+    override fun testDedupChangePk() {
+        super.testDedupChangePk()
+    }
 }
 
 class ClickhouseDirectLoadWriterWithJsonProto :
