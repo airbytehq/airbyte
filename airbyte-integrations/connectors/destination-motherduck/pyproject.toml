@@ -1,6 +1,6 @@
 [tool.poetry]
 name = "airbyte-destination-motherduck"
-version = "0.1.26"
+version = "0.1.27"
 description = "Destination implementation for MotherDuck."
 authors = ["Guen Prawiroatmodjo, Simon Späti, Airbyte"]
 license = "ELv2"
