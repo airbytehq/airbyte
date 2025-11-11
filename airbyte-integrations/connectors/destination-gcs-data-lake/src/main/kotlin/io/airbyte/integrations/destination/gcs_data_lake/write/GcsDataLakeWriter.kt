@@ -73,7 +73,7 @@ class GcsDataLakeWriter(
             columnNameMapper,
             stagingBranchName =
                 io.airbyte.integrations.destination.gcs_data_lake.spec.DEFAULT_STAGING_BRANCH,
-            mainBranchName = icebergConfiguration.mainBranchName,
+            mainBranchName = icebergConfiguration.gcsCatalogConfiguration.mainBranchName,
             streamStateStore = streamStateStore,
         )
     }

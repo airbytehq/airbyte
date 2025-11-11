@@ -16,9 +16,7 @@ import jakarta.inject.Singleton
 
 @Singleton
 @JsonSchemaTitle("GCS Data Lake Destination Specification")
-@JsonSchemaDescription(
-    "Configuration for GCS Data Lake destination using Apache Iceberg format with BigLake catalog"
-)
+@JsonSchemaDescription("Configuration for GCS Data Lake destination using Apache Iceberg format")
 class GcsDataLakeSpecification : ConfigurationSpecification() {
 
     @get:JsonSchemaTitle("GCS Bucket Name")
@@ -47,7 +45,7 @@ class GcsDataLakeSpecification : ConfigurationSpecification() {
 
     @get:JsonSchemaTitle("GCP Project ID")
     @get:JsonPropertyDescription(
-        "The GCP project ID where BigLake resources are located. If not specified, it will be extracted from the service account credentials."
+        "The GCP project ID where resources are located. If not specified, it will be extracted from the service account credentials."
     )
     @get:JsonProperty("gcp_project_id")
     @get:JsonSchemaInject(json = """{"order": 2}""")
@@ -87,47 +85,27 @@ class GcsDataLakeSpecification : ConfigurationSpecification() {
     )
     val warehouseLocation: String = ""
 
-    @get:JsonSchemaTitle("BigLake Catalog Name")
-    @get:JsonPropertyDescription(
-        """The name of the BigLake catalog to use. This should match the catalog you created in BigLake metastore."""
-    )
-    @get:JsonProperty("catalog_name")
-    @get:JsonSchemaInject(
-        json =
-            """
-            {
-                "examples": ["integration-test-biglake", "default"],
-                "always_show": true,
-                "order": 5
-            }
-        """
-    )
-    val catalogName: String = "integration-test-biglake"
-
-    @get:JsonSchemaTitle("BigLake Database")
-    @get:JsonPropertyDescription(
-        """The default database/namespace to use for tables. This will be used if the stream namespace is null (when "Destination Namespace" is set to "Destination-defined" or "Source-defined")."""
-    )
-    @get:JsonProperty("database_name")
-    @get:JsonSchemaInject(
-        json =
-            """
-            {
-                "examples": ["default", "airbyte_data"],
-                "always_show": true,
-                "order": 6
-            }
-        """
-    )
-    val databaseName: String = "default"
-
     @get:JsonSchemaTitle("Main Branch Name")
     @get:JsonPropertyDescription(
         """The primary or default branch name in the catalog. Most query engines will use "main" by default. See <a href="https://iceberg.apache.org/docs/latest/branching/">Iceberg documentation</a> for more information."""
     )
     @get:JsonProperty("main_branch_name")
-    @get:JsonSchemaInject(json = """{"order": 7}""")
+    @get:JsonSchemaInject(json = """{"order": 5}""")
     val mainBranchName: String = "main"
+
+    @get:JsonSchemaTitle("Default Namespace")
+    @get:JsonPropertyDescription(
+        """The default namespace to use for tables. This will ONLY be used if the `Destination Namespace` setting is set to `Destination-defined` or `Source-defined`"""
+    )
+    @get:JsonProperty("namespace")
+    @get:JsonSchemaInject(json = """{"examples": ["default", "airbyte_data"], "order": 6}""")
+    val namespace: String = "default"
+
+    @get:JsonSchemaTitle("Catalog Type")
+    @get:JsonPropertyDescription("Specifies the type of Iceberg catalog (BigLake or Polaris).")
+    @get:JsonProperty("catalog_type")
+    @get:JsonSchemaInject(json = """{"always_show": true, "order": 7}""")
+    val catalogType: GcsCatalogType = BigLakeCatalogSpec(catalogName = "integration-test-biglake")
 
     @get:JsonSchemaTitle("GCS Endpoint (Optional)")
     @get:JsonPropertyDescription(
@@ -136,6 +114,34 @@ class GcsDataLakeSpecification : ConfigurationSpecification() {
     @get:JsonProperty("gcs_endpoint")
     @get:JsonSchemaInject(json = """{"order": 8}""")
     val gcsEndpoint: String? = null
+
+    fun toGcsCatalogConfiguration(): GcsCatalogConfiguration {
+        val catalogConfig =
+            when (catalogType) {
+                is BigLakeCatalogSpec -> {
+                    val spec = catalogType as BigLakeCatalogSpec
+                    BigLakeCatalogConfiguration(
+                        catalogName = spec.catalogName,
+                        gcpLocation = gcpLocation
+                    )
+                }
+                is PolarisCatalogSpec -> {
+                    val spec = catalogType as PolarisCatalogSpec
+                    PolarisCatalogConfiguration(
+                        serverUri = spec.serverUri,
+                        catalogName = spec.catalogName,
+                        clientId = spec.clientId,
+                        clientSecret = spec.clientSecret,
+                    )
+                }
+            }
+
+        return GcsCatalogConfiguration(
+            warehouseLocation = warehouseLocation,
+            mainBranchName = mainBranchName,
+            catalogConfiguration = catalogConfig
+        )
+    }
 }
 
 @Singleton

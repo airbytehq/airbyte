@@ -22,7 +22,7 @@ import org.apache.iceberg.types.Types
  * table.
  *
  * This checker validates:
- * - BigLake catalog connectivity
+ * - Catalog connectivity (BigLake or Polaris)
  * - GCS bucket access and permissions
  * - Ability to create namespaces and tables
  * - Proper cleanup of test resources
@@ -62,8 +62,8 @@ class GcsDataLakeChecker(
                 catalogProperties
             )
 
-        // Use the configured database name as the default namespace
-        val defaultNamespace = config.databaseName
+        // Get the default namespace from the configuration
+        val defaultNamespace = config.namespace
 
         // Use a unique table name to avoid conflicts with existing tables or stale metadata
         val uniqueTestTableName = "${TEST_TABLE}_${UUID.randomUUID().toString().replace("-", "_")}"

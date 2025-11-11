@@ -21,11 +21,9 @@ data class GcsDataLakeConfiguration(
     val serviceAccountJson: String,
     val gcpProjectId: String?,
     val gcpLocation: String,
-    val warehouseLocation: String,
-    val catalogName: String,
-    val databaseName: String,
-    val mainBranchName: String,
     val gcsEndpoint: String?,
+    val namespace: String,
+    val gcsCatalogConfiguration: GcsCatalogConfiguration,
     // Partitioning is enabled, so we can run more than one worker for parallel processing
     override val numProcessRecordsWorkers: Int = 2
 ) : DestinationConfiguration() {
@@ -73,11 +71,9 @@ class GcsDataLakeConfigurationFactory :
             serviceAccountJson = pojo.serviceAccountJson,
             gcpProjectId = pojo.gcpProjectId,
             gcpLocation = pojo.gcpLocation,
-            warehouseLocation = pojo.warehouseLocation,
-            catalogName = pojo.catalogName,
-            databaseName = pojo.databaseName,
-            mainBranchName = pojo.mainBranchName,
             gcsEndpoint = pojo.gcsEndpoint,
+            namespace = pojo.namespace,
+            gcsCatalogConfiguration = pojo.toGcsCatalogConfiguration(),
         )
     }
 }
