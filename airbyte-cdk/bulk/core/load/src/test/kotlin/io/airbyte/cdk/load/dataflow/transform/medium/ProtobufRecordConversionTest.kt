@@ -2,37 +2,53 @@
  * Copyright (c) 2025 Airbyte, Inc., all rights reserved.
  */
 
-package io.airbyte.cdk.load.dataflow.transform
+package io.airbyte.cdk.load.dataflow.transform.medium
 
+import com.google.protobuf.NullValue
 import io.airbyte.cdk.data.LeafAirbyteSchemaType
 import io.airbyte.cdk.load.command.DestinationStream
 import io.airbyte.cdk.load.command.computeUnknownColumnChanges
-import io.airbyte.cdk.load.data.*
+import io.airbyte.cdk.load.data.AirbyteType
 import io.airbyte.cdk.load.data.AirbyteValueProxy
 import io.airbyte.cdk.load.data.ArrayType
+import io.airbyte.cdk.load.data.ArrayValue
 import io.airbyte.cdk.load.data.BooleanType
+import io.airbyte.cdk.load.data.BooleanValue
 import io.airbyte.cdk.load.data.DateType
+import io.airbyte.cdk.load.data.DateValue
+import io.airbyte.cdk.load.data.EnrichedAirbyteValue
 import io.airbyte.cdk.load.data.FieldType
 import io.airbyte.cdk.load.data.IntegerType
+import io.airbyte.cdk.load.data.IntegerValue
 import io.airbyte.cdk.load.data.NumberType
+import io.airbyte.cdk.load.data.NumberValue
 import io.airbyte.cdk.load.data.ObjectType
+import io.airbyte.cdk.load.data.ObjectValue
+import io.airbyte.cdk.load.data.ProtobufTypeMismatchException
 import io.airbyte.cdk.load.data.StringType
+import io.airbyte.cdk.load.data.StringValue
 import io.airbyte.cdk.load.data.TimeTypeWithTimezone
 import io.airbyte.cdk.load.data.TimeTypeWithoutTimezone
+import io.airbyte.cdk.load.data.TimeWithTimezoneValue
+import io.airbyte.cdk.load.data.TimeWithoutTimezoneValue
 import io.airbyte.cdk.load.data.TimestampTypeWithTimezone
 import io.airbyte.cdk.load.data.TimestampTypeWithoutTimezone
+import io.airbyte.cdk.load.data.TimestampWithTimezoneValue
+import io.airbyte.cdk.load.data.TimestampWithoutTimezoneValue
 import io.airbyte.cdk.load.data.UnionType
 import io.airbyte.cdk.load.data.UnknownType
+import io.airbyte.cdk.load.dataflow.state.PartitionKey
+import io.airbyte.cdk.load.dataflow.transform.ColumnNameMapper
+import io.airbyte.cdk.load.dataflow.transform.ValidationResult
+import io.airbyte.cdk.load.dataflow.transform.ValueCoercer
 import io.airbyte.cdk.load.dataflow.transform.data.ValidationResultHandler
-import io.airbyte.cdk.load.dataflow.transform.medium.JsonConverter
-import io.airbyte.cdk.load.dataflow.transform.medium.ProtobufConverter
 import io.airbyte.cdk.load.message.DestinationRecordProtobufSource
 import io.airbyte.cdk.load.message.DestinationRecordRaw
 import io.airbyte.cdk.load.message.Meta
 import io.airbyte.cdk.protocol.AirbyteValueProtobufEncoder
 import io.airbyte.protocol.models.Jsons
 import io.airbyte.protocol.models.v0.AirbyteRecordMessageMetaChange
-import io.airbyte.protocol.protobuf.AirbyteMessage.AirbyteMessageProtobuf
+import io.airbyte.protocol.protobuf.AirbyteMessage
 import io.airbyte.protocol.protobuf.AirbyteRecordMessage
 import io.airbyte.protocol.protobuf.AirbyteRecordMessageMetaOuterClass
 import io.mockk.every
@@ -49,13 +65,16 @@ import java.time.OffsetTime
 import java.time.ZoneOffset
 import java.util.UUID
 import org.junit.jupiter.api.AfterEach
-import org.junit.jupiter.api.Assertions.*
+import org.junit.jupiter.api.Assertions.assertEquals
+import org.junit.jupiter.api.Assertions.assertNotNull
+import org.junit.jupiter.api.Assertions.assertThrows
+import org.junit.jupiter.api.Assertions.assertTrue
 import org.junit.jupiter.api.BeforeEach
 import org.junit.jupiter.api.Test
 import org.junit.jupiter.api.extension.ExtendWith
 
 @ExtendWith(MockKExtension::class)
-class ProtobufRecordMungerTest {
+class ProtobufRecordConversionTest {
 
     private val encoder = AirbyteValueProtobufEncoder()
     private val uuid: UUID = UUID.fromString("11111111-1111-1111-1111-111111111111")
@@ -70,7 +89,7 @@ class ProtobufRecordMungerTest {
     private var protoSource: DestinationRecordProtobufSource? = null
     private lateinit var record: DestinationRecordRaw
     private lateinit var fieldAccessors: Array<AirbyteValueProxy.FieldAccessor>
-    private lateinit var munger: RecordMunger
+    private lateinit var converter: ProtobufConverter
 
     @BeforeEach
     fun setUp() {
@@ -79,7 +98,7 @@ class ProtobufRecordMungerTest {
                 override fun getMappedColumnName(
                     stream: DestinationStream,
                     columnName: String
-                ): String? {
+                ): String {
                     return "mapped_$columnName"
                 }
             }
@@ -214,7 +233,8 @@ class ProtobufRecordMungerTest {
                 .setMeta(metaProto)
                 .build()
 
-        val airbyteMessageProto = AirbyteMessageProtobuf.newBuilder().setRecord(recordProto).build()
+        val airbyteMessageProto =
+            AirbyteMessage.AirbyteMessageProtobuf.newBuilder().setRecord(recordProto).build()
 
         protoSource = DestinationRecordProtobufSource(airbyteMessageProto)
 
@@ -253,8 +273,8 @@ class ProtobufRecordMungerTest {
 
         stream = mockk {
             every { this@mockk.airbyteValueProxyFieldAccessors } returns fieldAccessors
-            every { this@mockk.syncId } returns this@ProtobufRecordMungerTest.syncId
-            every { this@mockk.generationId } returns this@ProtobufRecordMungerTest.generationId
+            every { this@mockk.syncId } returns this@ProtobufRecordConversionTest.syncId
+            every { this@mockk.generationId } returns this@ProtobufRecordConversionTest.generationId
             every { this@mockk.schema } returns dummyType
             every { this@mockk.mappedDescriptor } returns DestinationStream.Descriptor("", "dummy")
             every { this@mockk.unmappedDescriptor } returns
@@ -271,25 +291,21 @@ class ProtobufRecordMungerTest {
                         callOriginal()
                     }
                 every { this@mockk.airbyteRawId } returns uuid
-                every { this@mockk.schema } returns this@ProtobufRecordMungerTest.stream.schema
+                every { this@mockk.schema } returns this@ProtobufRecordConversionTest.stream.schema
                 every { this@mockk.schemaFields } returns
-                    (this@ProtobufRecordMungerTest.stream.schema as ObjectType).properties
+                    (this@ProtobufRecordConversionTest.stream.schema as ObjectType).properties
                 every { this@mockk.rawData } returns protoSource!!
-                every { this@mockk.stream } returns this@ProtobufRecordMungerTest.stream
+                every { this@mockk.stream } returns this@ProtobufRecordConversionTest.stream
             }
 
-        munger =
-            RecordMunger(
-                JsonConverter(columnNameMapper, valueCoercer, validationResultHandler),
-                ProtobufConverter(columnNameMapper, valueCoercer, validationResultHandler),
-            )
+        converter = ProtobufConverter(columnNameMapper, valueCoercer, validationResultHandler)
     }
 
     @AfterEach fun tearDown() = unmockkAll()
 
     @Test
     fun `transforms protobuf record with all field types`() {
-        val result = munger.transformForDest(record)
+        val result = converter.convert(ConversionInput(record, PartitionKey("test-key")))
 
         assertEquals(16, result.size)
 
@@ -422,60 +438,60 @@ class ProtobufRecordMungerTest {
         val nullProtoValues =
             mutableListOf(
                 AirbyteRecordMessage.AirbyteValueProtobuf.newBuilder()
-                    .setNull(com.google.protobuf.NullValue.NULL_VALUE)
+                    .setNull(NullValue.NULL_VALUE)
                     .build(), // bool_col
                 AirbyteRecordMessage.AirbyteValueProtobuf.newBuilder()
-                    .setNull(com.google.protobuf.NullValue.NULL_VALUE)
+                    .setNull(NullValue.NULL_VALUE)
                     .build(), // int_col
                 AirbyteRecordMessage.AirbyteValueProtobuf.newBuilder()
-                    .setNull(com.google.protobuf.NullValue.NULL_VALUE)
+                    .setNull(NullValue.NULL_VALUE)
                     .build(), // num_col
                 AirbyteRecordMessage.AirbyteValueProtobuf.newBuilder()
-                    .setNull(com.google.protobuf.NullValue.NULL_VALUE)
+                    .setNull(NullValue.NULL_VALUE)
                     .build(), // string_col
                 AirbyteRecordMessage.AirbyteValueProtobuf.newBuilder()
-                    .setNull(com.google.protobuf.NullValue.NULL_VALUE)
+                    .setNull(NullValue.NULL_VALUE)
                     .build(), // date_col
                 AirbyteRecordMessage.AirbyteValueProtobuf.newBuilder()
-                    .setNull(com.google.protobuf.NullValue.NULL_VALUE)
+                    .setNull(NullValue.NULL_VALUE)
                     .build(), // time_tz_col
                 AirbyteRecordMessage.AirbyteValueProtobuf.newBuilder()
-                    .setNull(com.google.protobuf.NullValue.NULL_VALUE)
+                    .setNull(NullValue.NULL_VALUE)
                     .build(), // time_no_tz_col
                 AirbyteRecordMessage.AirbyteValueProtobuf.newBuilder()
-                    .setNull(com.google.protobuf.NullValue.NULL_VALUE)
+                    .setNull(NullValue.NULL_VALUE)
                     .build(), // ts_tz_col
                 AirbyteRecordMessage.AirbyteValueProtobuf.newBuilder()
-                    .setNull(com.google.protobuf.NullValue.NULL_VALUE)
+                    .setNull(NullValue.NULL_VALUE)
                     .build(), // ts_no_tz_col
                 AirbyteRecordMessage.AirbyteValueProtobuf.newBuilder()
-                    .setNull(com.google.protobuf.NullValue.NULL_VALUE)
+                    .setNull(NullValue.NULL_VALUE)
                     .build(), // array_col
                 AirbyteRecordMessage.AirbyteValueProtobuf.newBuilder()
-                    .setNull(com.google.protobuf.NullValue.NULL_VALUE)
+                    .setNull(NullValue.NULL_VALUE)
                     .build(), // obj_col
                 AirbyteRecordMessage.AirbyteValueProtobuf.newBuilder()
-                    .setNull(com.google.protobuf.NullValue.NULL_VALUE)
+                    .setNull(NullValue.NULL_VALUE)
                     .build(), // union_col
                 AirbyteRecordMessage.AirbyteValueProtobuf.newBuilder()
-                    .setNull(com.google.protobuf.NullValue.NULL_VALUE)
+                    .setNull(NullValue.NULL_VALUE)
                     .build(), // unknown_col
             )
 
         val nullRecord = buildModifiedRecord(nullProtoValues)
         every { record.rawData } returns nullRecord
 
-        val result = munger.transformForDest(record)
+        val result = converter.convert(ConversionInput(record, PartitionKey("test-key")))
 
         // All user fields should be excluded when null
         assertTrue(result.containsKey("mapped_bool_col"))
-        assertTrue(result.get("mapped_bool_col") is NullValue)
+        assertTrue(result.get("mapped_bool_col") is io.airbyte.cdk.load.data.NullValue)
         assertTrue(result.containsKey("mapped_int_col"))
-        assertTrue(result.get("mapped_int_col") is NullValue)
+        assertTrue(result.get("mapped_int_col") is io.airbyte.cdk.load.data.NullValue)
         assertTrue(result.containsKey("mapped_num_col"))
-        assertTrue(result.get("mapped_num_col") is NullValue)
+        assertTrue(result.get("mapped_num_col") is io.airbyte.cdk.load.data.NullValue)
         assertTrue(result.containsKey("mapped_string_col"))
-        assertTrue(result.get("mapped_string_col") is NullValue)
+        assertTrue(result.get("mapped_string_col") is io.airbyte.cdk.load.data.NullValue)
 
         // Meta fields should still be present
         assertTrue(result.containsKey(Meta.COLUMN_NAME_AB_RAW_ID))
@@ -519,10 +535,10 @@ class ProtobufRecordMungerTest {
         val oversizedRecord = buildModifiedRecord(oversizedProtoValues.map { it.build() })
         every { record.rawData } returns oversizedRecord
 
-        val result = munger.transformForDest(record)
+        val result = converter.convert(ConversionInput(record, PartitionKey("test-key")))
 
         assertTrue(result.containsKey("mapped_int_col"))
-        assertTrue(result.get("mapped_int_col") is NullValue)
+        assertTrue(result.get("mapped_int_col") is io.airbyte.cdk.load.data.NullValue)
 
         // Check that error was tracked in meta object
         val metaValue = result[Meta.COLUMN_NAME_AB_META] as ObjectValue
@@ -583,11 +599,11 @@ class ProtobufRecordMungerTest {
         val invalidRecord = buildModifiedRecord(invalidTimestampProtoValues.map { it.build() })
         every { record.rawData } returns invalidRecord
 
-        val result = munger.transformForDest(record)
+        val result = converter.convert(ConversionInput(record, PartitionKey("test-key")))
 
         // Timestamp field should be excluded due to parsing error
         assertTrue(result.containsKey("mapped_ts_tz_col"))
-        assertTrue(result.get("mapped_ts_tz_col") is NullValue)
+        assertTrue(result.get("mapped_ts_tz_col") is io.airbyte.cdk.load.data.NullValue)
 
         // Check that error was tracked in meta object
         val metaValue = result[Meta.COLUMN_NAME_AB_META] as ObjectValue
@@ -608,7 +624,7 @@ class ProtobufRecordMungerTest {
 
     @Test
     fun `produces correct map structure`() {
-        val result = munger.transformForDest(record)
+        val result = converter.convert(ConversionInput(record, PartitionKey("test-key")))
 
         // Should be a map with expected keys
         assertTrue(result.isNotEmpty())
@@ -658,7 +674,7 @@ class ProtobufRecordMungerTest {
             buildModifiedRecord(emptyComplexTypesProtoValues.map { it.build() })
         every { record.rawData } returns emptyComplexRecord
 
-        val result = munger.transformForDest(record)
+        val result = converter.convert(ConversionInput(record, PartitionKey("test-key")))
 
         // Verify empty array and object as AirbyteValue objects
         val emptyArrayValue = result["mapped_array_col"] as ArrayValue
@@ -709,7 +725,7 @@ class ProtobufRecordMungerTest {
         // Assert that ProtobufTypeMismatchException is thrown
         val exception =
             assertThrows(ProtobufTypeMismatchException::class.java) {
-                munger.transformForDest(record)
+                converter.convert(ConversionInput(record, PartitionKey("test-key")))
             }
 
         // Verify the error message contains expected information
@@ -729,7 +745,7 @@ class ProtobufRecordMungerTest {
                 .addAllData(protoValues)
                 .build()
 
-        val msg = AirbyteMessageProtobuf.newBuilder().setRecord(recordProto).build()
+        val msg = AirbyteMessage.AirbyteMessageProtobuf.newBuilder().setRecord(recordProto).build()
         return DestinationRecordProtobufSource(msg)
     }
 
