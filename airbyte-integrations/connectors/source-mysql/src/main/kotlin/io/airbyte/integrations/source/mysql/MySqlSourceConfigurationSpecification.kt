@@ -76,6 +76,15 @@ class MySqlSourceConfigurationSpecification : ConfigurationSpecification() {
     @JsonSchemaInject(json = """{"order":6,"always_show":true}""")
     lateinit var database: String
 
+    @JsonProperty("table_filters")
+    @JsonSchemaTitle("Table Filters")
+    @JsonPropertyDescription(
+        "Optional filters to include only specific tables from the specified database. " +
+            "'Schema Name' should be equivalent to the 'Database' specified above."
+    )
+    @JsonSchemaInject(json = """{"order":7}""")
+    var tableFilters: List<TableFilter>? = null
+
     @JsonProperty("jdbc_url_params")
     @JsonSchemaTitle("JDBC URL Params")
     @JsonPropertyDescription(
@@ -85,15 +94,6 @@ class MySqlSourceConfigurationSpecification : ConfigurationSpecification() {
     )
     @JsonSchemaInject(json = """{"order":8}""")
     var jdbcUrlParams: String? = null
-
-    @JsonProperty("table_filters")
-    @JsonSchemaTitle("Table Filters")
-    @JsonPropertyDescription(
-        "Optional filters to include only specific tables from specific schemas. " +
-            "Works in combination with the 'Schemas' config above."
-    )
-    @JsonSchemaInject(json = """{"order":7}""")
-    var tableFilters: List<TableFilter>? = null
 
     @JsonIgnore
     @ConfigurationBuilder(configurationPrefix = "ssl_mode")
