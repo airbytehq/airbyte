@@ -444,6 +444,44 @@ class PostgresDirectLoadSqlGenerator(
         AND table_name = '${tableName.name}';
         """
 
+    /**
+     * Generates SQL to query for the columns in the primary key index.
+     * The query returns column names in the order they appear in the index.
+     *
+     * @param tableName The table to query the index for
+     * @return SQL query that returns column names in the primary key index
+     */
+    fun getPrimaryKeyIndexColumns(tableName: TableName): String =
+        getIndexColumns(
+           indexName = getPrimaryKeyIndexName(tableName),
+            namespace = getNamespace(tableName)
+        )
+
+    /**
+     * Generates SQL to query for the column in the cursor index.
+     *
+     * @param tableName The table to query the index for
+     * @return SQL query that returns column name in the cursor index
+     */
+    fun getCursorColumn(tableName: TableName): String =
+        getIndexColumns(
+            indexName = getCursorIndexName(tableName),
+            namespace = getNamespace(tableName)
+        )
+
+
+    private fun getIndexColumns(indexName: String, namespace: String): String =
+        """
+        SELECT a.attname AS column_name
+        FROM pg_index i
+        JOIN pg_attribute a ON a.attrelid = i.indrelid AND a.attnum = ANY(i.indkey)
+        JOIN pg_class c ON c.oid = i.indexrelid
+        JOIN pg_namespace n ON n.oid = c.relnamespace
+        WHERE c.relname = $indexName
+        AND n.nspname = $namespace
+        ORDER BY array_position(i.indkey, a.attnum);
+        """
+
     private fun dropIndex(indexName: String): String =
         "DROP INDEX IF EXISTS ${quoteIdentifier(indexName)};"
 
