@@ -309,6 +309,9 @@ The connector is restricted by normal Microsoft Graph [requests limitation](http
 
 | Version | Date       | Pull Request                                           | Subject                                                                   |
 |:--------|:-----------|:-------------------------------------------------------|:--------------------------------------------------------------------------|
+| 0.4.0 | 2025-10-24 | [302](https://github.com/airbytehq/airbyte-enterprise/pull/302) | Update dependencies |
+| 0.3.0 | 2025-04-30 | [199](https://github.com/airbytehq/airbyte-enterprise/pull/199) | Add logic to define scopes in set up page |
+| 0.2.1 | 2025-04-30 | [217](https://github.com/airbytehq/airbyte-enterprise/pull/217) | Bump memory for check |
 | 0.2.0 | 2025-04-30 | [144](https://github.com/airbytehq/airbyte-enterprise/pull/144) | Adapt file-transfer records to latest protocol, requires platform >= 1.7.0, destination-s3 >= 1.8.0 |
 | 0.1.0 | 2025-04-10 | [134](https://github.com/airbytehq/airbyte-enterprise/pull/134) | New source |
 
