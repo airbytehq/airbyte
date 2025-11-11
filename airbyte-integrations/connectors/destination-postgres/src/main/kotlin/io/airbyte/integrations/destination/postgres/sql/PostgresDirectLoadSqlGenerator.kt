@@ -71,8 +71,10 @@ class PostgresDirectLoadSqlGenerator(
         tableName: TableName,
         columnNameMapping: ColumnNameMapping
     ): String {
-        val primaryKeyIndexStatement = createPrimaryKeyIndexStatement(stream, tableName, columnNameMapping)
-        val cursorIndexStatement = createCursorIndexStatement(stream, tableName, columnNameMapping)
+        val primaryKeyColumnNames = postgresColumnUtils.getPrimaryKeysColumnNames(stream, columnNameMapping)
+        val primaryKeyIndexStatement = createPrimaryKeyIndexStatement(primaryKeyColumnNames, tableName)
+        val cursorColumnName = postgresColumnUtils.getCursorColumnName(stream, columnNameMapping)
+        val cursorIndexStatement = createCursorIndexStatement(cursorColumnName, tableName)
         val extractedAtIndexStatement = "CREATE INDEX ON ${getFullyQualifiedName(tableName)} ($EXTRACTED_AT_COLUMN_NAME);"
 
         return """
@@ -83,12 +85,11 @@ class PostgresDirectLoadSqlGenerator(
     }
 
     internal fun recreatePrimaryKeyIndex(
-        stream: DestinationStream,
-        tableName: TableName,
-        columnNameMapping: ColumnNameMapping
+        primaryKeyColumnNames: List<String>,
+        tableName: TableName
     ): String {
         val dropPrimaryKeyIndexStatement = dropIndex(getPrimaryKeyIndexName(tableName))
-        val primaryKeyIndexStatement = createPrimaryKeyIndexStatement(stream, tableName, columnNameMapping)
+        val primaryKeyIndexStatement = createPrimaryKeyIndexStatement(primaryKeyColumnNames, tableName)
 
         return """
             $dropPrimaryKeyIndexStatement
@@ -97,11 +98,10 @@ class PostgresDirectLoadSqlGenerator(
     }
 
     private fun createPrimaryKeyIndexStatement(
-        stream: DestinationStream,
-        tableName: TableName,
-        columnNameMapping: ColumnNameMapping
+        primaryKeyColumnNames: List<String>,
+        tableName: TableName
     ): String {
-        return postgresColumnUtils.getPrimaryKeysColumnNames(stream, columnNameMapping)
+        return primaryKeyColumnNames
             .takeIf { it.isNotEmpty() }
             ?.let {
                 "CREATE INDEX ${getPrimaryKeyIndexName(tableName)} ON ${getFullyQualifiedName(tableName)} (${it.joinToString(", ")});"
@@ -109,12 +109,11 @@ class PostgresDirectLoadSqlGenerator(
     }
 
     internal fun recreateCursorIndex(
-        stream: DestinationStream,
-        tableName: TableName,
-        columnNameMapping: ColumnNameMapping
+        cursorColumnName: String?,
+        tableName: TableName
     ): String {
         val dropCursorIndexStatement = dropIndex(getCursorIndexName(tableName))
-        val cursorIndexStatement = createCursorIndexStatement(stream, tableName, columnNameMapping)
+        val cursorIndexStatement = createCursorIndexStatement(cursorColumnName, tableName)
 
         return """
             $dropCursorIndexStatement
@@ -123,12 +122,11 @@ class PostgresDirectLoadSqlGenerator(
     }
 
     private fun createCursorIndexStatement(
-        stream: DestinationStream,
-        tableName: TableName,
-        columnNameMapping: ColumnNameMapping
+        cursorColumnName: String?,
+        tableName: TableName
     ): String {
-        return postgresColumnUtils.getCursorColumnName(stream, columnNameMapping)?.let { cursorColumnName ->
-            "CREATE INDEX ${getCursorIndexName(tableName)} ON ${getFullyQualifiedName(tableName)} ($cursorColumnName);"
+        return cursorColumnName?.let {
+            "CREATE INDEX ${getCursorIndexName(tableName)} ON ${getFullyQualifiedName(tableName)} ($it);"
         } ?: ""
     }
 
@@ -498,8 +496,12 @@ class PostgresDirectLoadSqlGenerator(
         columnsToAdd: Set<Column>,
         columnsToRemove: Set<Column>,
         columnsToModify: Set<Column>,
-        columnsInDb: Set<Column>
-    ): Set<String> {
+        columnsInDb: Set<Column>,
+        recreatePrimaryKeyIndex: Boolean,
+        primaryKeyColumnNames: List<String>,
+        recreateCursorIndex: Boolean,
+        cursorColumnName: String?
+        ): String {
         val clauses = mutableSetOf<String>()
         val fullyQualifiedTableName = getFullyQualifiedName(tableName)
         columnsToAdd.forEach {
@@ -527,7 +529,20 @@ class PostgresDirectLoadSqlGenerator(
             }
             clauses.add("ALTER TABLE $fullyQualifiedTableName ALTER COLUMN ${getName(newColumn)} TYPE $newType $usingClause;")
         }
-        return clauses
+
+        if (recreatePrimaryKeyIndex) {
+            clauses.add(recreatePrimaryKeyIndex(primaryKeyColumnNames, tableName))
+        }
+
+        if(recreateCursorIndex) {
+            clauses.add(recreateCursorIndex(cursorColumnName, tableName))
+        }
+
+        return """
+            BEGIN TRANSACTION;
+            ${clauses.joinToString("\n")}
+            COMMIT;
+        """
     }
 
     private fun getFullyQualifiedName(tableName: TableName): String =

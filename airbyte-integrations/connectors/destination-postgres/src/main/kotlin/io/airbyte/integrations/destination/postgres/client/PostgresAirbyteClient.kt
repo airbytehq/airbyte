@@ -14,7 +14,6 @@ import io.airbyte.integrations.destination.postgres.sql.COUNT_TOTAL_ALIAS
 import io.airbyte.integrations.destination.postgres.sql.Column
 import io.airbyte.integrations.destination.postgres.sql.PostgresColumnUtils
 import io.airbyte.integrations.destination.postgres.sql.PostgresDirectLoadSqlGenerator
-import io.airbyte.integrations.destination.postgres.sql.PostgresDirectLoadSqlGenerator.Companion.andLog
 import io.github.oshai.kotlinlogging.KotlinLogging
 import jakarta.inject.Singleton
 import java.sql.ResultSet
@@ -119,40 +118,45 @@ class PostgresAirbyteClient(
             log.info { "Added columns: $addedColumns" }
             log.info { "Deleted columns: $deletedColumns" }
             log.info { "Modified columns: $modifiedColumns" }
-            sqlGenerator
-                .matchSchemas(tableName, addedColumns, deletedColumns, modifiedColumns, columnsInDb)
-                .forEach { execute(it) }
 
-            ensurePrimaryKeyIndexMatches(stream, tableName, columnNameMapping)
-            ensureCursorIndexMatches(stream, tableName, columnNameMapping)
+            execute(sqlGenerator.matchSchemas(
+                tableName = tableName,
+                columnsToAdd = addedColumns,
+                columnsToRemove = deletedColumns,
+                columnsToModify = modifiedColumns,
+                columnsInDb = columnsInDb,
+                recreatePrimaryKeyIndex = shouldRecreatePrimaryKeyIndex(stream, tableName, columnNameMapping),
+                primaryKeyColumnNames =  postgresColumnUtils.getPrimaryKeysColumnNames(stream, columnNameMapping),
+                recreateCursorIndex =  shouldRecreateCursorIndex(stream, tableName, columnNameMapping),
+                cursorColumnName = postgresColumnUtils.getCursorColumnName(stream, columnNameMapping),
+            ))
         }
     }
 
     /**
-     * Ensures the primary key index matches the current stream configuration.
+     * Checks if the primary key index matches the current stream configuration.
      * If the primary keys have changed (detected by comparing columns in the index),
-     * drops the old index and creates a new one.
+     * then this will return true, otherwise returns false.
+     *
+     * This function will also return false if the stream doesn't have any primary keys
      */
-    private fun ensurePrimaryKeyIndexMatches(
+    private fun shouldRecreatePrimaryKeyIndex(
         stream: DestinationStream,
         tableName: TableName,
         columnNameMapping: ColumnNameMapping
-    ) {
+    ): Boolean {
         val streamPrimaryKeys = postgresColumnUtils.getPrimaryKeysColumnNames(stream, columnNameMapping)
-
-        if (streamPrimaryKeys.isEmpty()) return
+        if (streamPrimaryKeys.isEmpty()) return false
 
         val existingPrimaryKeyIndexColumns = getPrimaryKeyIndexColumns(tableName)
 
-        if (existingPrimaryKeyIndexColumns == streamPrimaryKeys) {
-            log.info { "Primary keys unchanged, no need to (re)create index" }
-            return
+        return (existingPrimaryKeyIndexColumns != streamPrimaryKeys).also { shouldRecreate ->
+            if (shouldRecreate) {
+                log.info { "Primary key columns changed from $existingPrimaryKeyIndexColumns to $streamPrimaryKeys" }
+            } else {
+                log.info { "Primary keys unchanged, no need to (re)create index" }
+            }
         }
-
-        log.info { "Primary key columns changed from $existingPrimaryKeyIndexColumns to $streamPrimaryKeys" }
-
-
-        execute(sqlGenerator.recreatePrimaryKeyIndex(stream, tableName, columnNameMapping))
     }
 
     private fun getPrimaryKeyIndexColumns(tableName: TableName): List<String> =
@@ -171,28 +175,29 @@ class PostgresAirbyteClient(
         }
 
     /**
-     * Ensures the cursor index matches the current stream configuration.
+     * Checks if the cursor index matches the current stream configuration.
      * If the cursor has changed (detected by comparing columns in the index),
-     * drops the old index and creates a new one.
+     * then this will return true, otherwise returns false.
+     *
+     * This function will also return false if the stream doesn't have a cursor
      */
-    private fun ensureCursorIndexMatches(
+    private fun shouldRecreateCursorIndex(
         stream: DestinationStream,
         tableName: TableName,
         columnNameMapping: ColumnNameMapping
-    ) {
+    ): Boolean {
         val streamCursor = postgresColumnUtils.getCursorColumnName(stream, columnNameMapping)
-
-        if(streamCursor == null) return
+            ?: return false
 
         val existingCursorIndexColumn = getCursorIndexColumn(tableName)
 
-        if(existingCursorIndexColumn == streamCursor) {
-            log.info { "Cursor unchanged, no need to (re)create index" }
+        return (existingCursorIndexColumn != streamCursor).also { shouldRecreate ->
+            if (shouldRecreate) {
+                log.info { "Cursor column changed from $existingCursorIndexColumn to $streamCursor" }
+            } else {
+                log.info { "Cursor unchanged, no need to (re)create index" }
+            }
         }
-
-        log.info { "Cursor column changed from $existingCursorIndexColumn to $streamCursor" }
-
-        execute(sqlGenerator.recreateCursorIndex(stream, tableName, columnNameMapping))
     }
 
     internal fun getColumnsFromDb(tableName: TableName): Set<Column> =
