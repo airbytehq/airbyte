@@ -59,11 +59,15 @@ object PolarisEnvironment {
     // Lazy-loaded service account credentials from file
     private val GCS_SERVICE_ACCOUNT_CREDS: String by lazy {
         if (!GCS_SA_FILE.exists()) {
-            error("Service account file not found: ${GCS_SA_FILE.absolutePath}. Please update the file with your GCS credentials.")
+            error(
+                "Service account file not found: ${GCS_SA_FILE.absolutePath}. Please update the file with your GCS credentials."
+            )
         }
         val content = GCS_SA_FILE.readText().trim()
         if (content.contains("TODO")) {
-            error("Please update ${GCS_SA_FILE.absolutePath} with your actual GCS service account credentials")
+            error(
+                "Please update ${GCS_SA_FILE.absolutePath} with your actual GCS service account credentials"
+            )
         }
         // Escape the JSON for embedding in a JSON string
         content.replace("\\", "\\\\").replace("\"", "\\\"").replace("\n", "")

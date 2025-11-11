@@ -1,3 +1,7 @@
+/*
+ * Copyright (c) 2025 Airbyte, Inc., all rights reserved.
+ */
+
 package io.airbyte.integrations.destination.gcs_data_lake
 
 import io.airbyte.cdk.load.test.util.NoopDestinationCleaner
@@ -13,6 +17,7 @@ import org.junit.jupiter.api.parallel.Execution
 import org.junit.jupiter.api.parallel.ExecutionMode
 
 @Execution(ExecutionMode.SAME_THREAD)
+@Disabled("Tests doesnt work in CI")
 class GcsPolarisWriteTest :
     BasicFunctionalityIntegrationTest(
         configContents = getConfig(),
