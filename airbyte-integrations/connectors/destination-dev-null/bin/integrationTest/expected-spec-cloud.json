@@ -1,0 +1,34 @@
+{
+  "documentationUrl" : "https://docs.airbyte.com/integrations/destinations/dev-null",
+  "connectionSpecification" : {
+    "$schema" : "http://json-schema.org/draft-07/schema#",
+    "title" : "E2E Test Destination Spec",
+    "type" : "object",
+    "additionalProperties" : true,
+    "properties" : {
+      "test_destination" : {
+        "oneOf" : [ {
+          "title" : "Silent",
+          "type" : "object",
+          "additionalProperties" : true,
+          "properties" : {
+            "test_destination_type" : {
+              "type" : "string",
+              "enum" : [ "SILENT" ],
+              "default" : "SILENT"
+            }
+          },
+          "required" : [ "test_destination_type" ]
+        } ],
+        "description" : "The type of destination to be used",
+        "title" : "Test Destination",
+        "type" : "object"
+      }
+    },
+    "required" : [ "test_destination" ]
+  },
+  "supportsIncremental" : true,
+  "supportsNormalization" : false,
+  "supportsDBT" : false,
+  "supported_destination_sync_modes" : [ "overwrite", "append", "append_dedup" ]
+}

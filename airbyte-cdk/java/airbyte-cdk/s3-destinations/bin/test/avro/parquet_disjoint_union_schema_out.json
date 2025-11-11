@@ -1,0 +1,141 @@
+{
+  "type": "object",
+  "properties": {
+    "union_of_string_and_integer": {
+      "type": "object",
+      "properties": {
+        "type": {
+          "type": "type_name"
+        },
+        "string": {
+          "type": "string"
+        },
+        "integer": {
+          "type": "integer"
+        }
+      }
+    },
+    "union_of_integer_and_object": {
+      "type": "object",
+      "properties": {
+        "type": {
+          "type": "type_name"
+        },
+        "integer": {
+          "type": "integer"
+        },
+        "object": {
+          "type": "object",
+          "properties": {
+            "nested_number": {
+              "type": "integer"
+            },
+            "nested_timestamp": {
+              "type": "string",
+              "format": "date-time",
+              "airbyte_type": "timestamp_without_timezone"
+            }
+          }
+        }
+      }
+    },
+    "union_of_array_and_object": {
+      "type": "object",
+      "properties": {
+        "type": {
+          "type": "type_name"
+        },
+        "array": {
+          "type": "array",
+          "items": {
+            "type": "boolean"
+          }
+        },
+        "object": {
+          "type": "object",
+          "properties": {
+            "nested_number": {
+              "type": "number"
+            },
+            "nested_timestamp": {
+              "type": "string",
+              "format": "time",
+              "airbyte_type": "time_with_timezone"
+            }
+          }
+        }
+      }
+    },
+    "union_of_schemaless_object_and_array": {
+      "type": "object",
+      "properties": {
+        "type": {
+          "type": "type_name"
+        },
+        "object": {
+          "type": "object"
+        },
+        "array": {
+          "type": "array"
+        }
+      }
+    },
+    "union_of_object_with_nested_union_etc": {
+      "type": "object",
+      "properties": {
+        "type": {
+          "type": "type_name"
+        },
+        "string": {
+          "type": "string"
+        },
+        "object": {
+          "type": "object",
+          "properties": {
+            "nested_string": {
+              "type": "string"
+            },
+            "nested_union": {
+              "type": "object",
+              "properties": {
+                "type": {
+                  "type": "type_name"
+                },
+                "string": {
+                  "type": "string"
+                },
+                "object": {
+                  "type": "object",
+                  "properties": {
+                    "nested_nested_string": {
+                      "type": "string"
+                    },
+                    "nested_nested_union": {
+                      "type": "object",
+                      "properties": {
+                        "type": {
+                          "type": "type_name"
+                        },
+                        "string": {
+                          "type": "string"
+                        },
+                        "object": {
+                          "type": "object",
+                          "properties": {
+                            "nested_nested_nested_string": {
+                              "type": "string"
+                            }
+                          }
+                        }
+                      }
+                    }
+                  }
+                }
+              }
+            }
+          }
+        }
+      }
+    }
+  }
+}

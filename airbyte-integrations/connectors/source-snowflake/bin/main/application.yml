@@ -1,0 +1,103 @@
+---
+airbyte:
+  connector:
+    data-channel:
+      medium: ${DATA_CHANNEL_MEDIUM:STDIO}
+      format: ${DATA_CHANNEL_FORMAT:JSONL}
+      socket-paths: ${DATA_CHANNEL_SOCKET_PATHS}
+    output:
+      buffer-byte-size-threshold-for-flush: 4096
+
+    extract:
+      jdbc:
+        mode: concurrent
+        with-sampling: true
+        table-sample-size: 1024
+        throughput-bytes-per-second: 10000000
+        min-fetch-size: 10
+        default-fetch-size: 1000
+        max-fetch-size: 10000000
+        memory-capacity-ratio: 0.6
+        estimated-record-overhead-bytes: 16
+        estimated-field-overhead-bytes: 16
+        namespace-kind: CATALOG_AND_SCHEMA
+
+    check:
+      jdbc:
+        # The following queries are run during the CHECK operation [0].
+        # A query which returns anything will cause the check to fail.
+        # NULL values and empty strings are ignored.
+        #
+        # [0] https://github.com/airbytehq/airbyte/blob/master/airbyte-cdk/bulk/toolkits/extract-jdbc/src/main/kotlin/io/airbyte/cdk/check/JdbcCheckQueries.kt
+        #
+        queries:
+          - >-
+            SELECT 1 WHERE 1 = 0;
+    exception-classifiers:
+      regex:
+        rules:
+          - pattern: socket is closed
+            input-example: "Socket is closed"
+            error: transient
+            group: Transient Connection Error
+            output: Connection to database closed unexpectedly (TCP socket was closed). This is often a temporary network issue.
+
+          - pattern: (?i)JWT token is invalid
+            input-example: "JWT token is invalid."
+            error: transient
+            group: Authentication Error
+            output: The session token has expired. This is a temporary issue and the connection will be re-established automatically.
+            reference-links:
+              - https://docs.snowflake.com/en/user-guide/jdbc-configure
+
+      jdbc:
+        # The following rules are for the JdbcExceptionClassifier and are based on
+        # Snowflake's specific vendor error codes from a SQLException.
+        rules:
+          # --- Configuration Errors ---
+
+          - code: 260004
+            # Incorrect username or password was specified.
+            error: config
+            group: Connection Error
+            output: Invalid credentials. Please check your username and password.
+
+          - code: 2003
+            # SQL compilation error: ... object ... does not exist or not authorized.
+            error: config
+            group: Configuration Error
+            output: An object (e.g., table, schema, or database) does not exist or the provided role does not have sufficient privileges to access it.
+
+          - code: 401
+            # No active warehouse selected in the current session. Select an active warehouse with the 'USE WAREHOUSE' command.
+            error: config
+            group: Configuration Error
+            output: No active warehouse is selected. Please specify a warehouse in the connection settings.
+
+          - code: 2043
+            # SQL compilation error: ... Object does not exist or not authorized.
+            # A more specific version of 2003, often for databases or schemas.
+            error: config
+            group: Configuration Error
+            output: The specified database or schema does not exist, or the role is not authorized to access it.
+
+          # --- Transient Errors ---
+
+          - code: 604
+            # Statement reached its statement_timeout_in_seconds limit.
+            error: transient
+            group: Query Timeout
+            output: The query timed out. This may be due to a temporary load on the warehouse. You can increase the statement timeout parameter if this persists.
+
+          - code: 390400
+            # Communication link failure.
+            # A generic network error.
+            error: transient
+            group: Connection Error
+            output: A network communication error occurred. This is typically a temporary issue.
+
+          - code: 390113
+            # Operation failed because of a transient error. Please try again.
+            error: transient
+            group: Transient Error
+            output: Snowflake reported a transient internal error. Retrying the operation should succeed.

@@ -18,11 +18,11 @@ packages = [
 
 [tool.poetry.dependencies]
 python = "^3.11,<3.12"
-# Update airbyte-cdk version here
-airbyte-cdk = "^7.4.1"  # Example version change to 0.80.0 or your desired version
+airbyte-cdk = "^5"
 requests = "^2.31.0"
 
 [tool.poetry.group.dev.dependencies]
 pytest = "^7"
 pytest-mock = "^3.6"
 requests-mock = "^1.11"
+responses = "^0.23"  # Add this

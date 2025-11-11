@@ -1,0 +1,119 @@
+{
+  "oneOf": [
+    {
+      "title": "No Tunnel",
+      "type": "object",
+      "additionalProperties": true,
+      "description": "No ssh tunnel needed to connect to database",
+      "properties": {
+        "tunnel_method": {
+          "type": "string",
+          "enum": ["NO_TUNNEL"],
+          "default": "NO_TUNNEL"
+        }
+      },
+      "required": ["tunnel_method"]
+    },
+    {
+      "title": "SSH Key Authentication",
+      "type": "object",
+      "additionalProperties": true,
+      "description": "Connect through a jump server tunnel host using username and ssh key",
+      "properties": {
+        "tunnel_method": {
+          "type": "string",
+          "enum": ["SSH_KEY_AUTH"],
+          "default": "SSH_KEY_AUTH"
+        },
+        "tunnel_host": {
+          "type": "string",
+          "description": "Hostname of the jump server host that allows inbound ssh tunnel.",
+          "title": "SSH Tunnel Jump Server Host",
+          "order": 1
+        },
+        "tunnel_port": {
+          "type": "integer",
+          "default": 22,
+          "description": "Port on the proxy/jump server that accepts inbound ssh connections.",
+          "title": "SSH Connection Port",
+          "order": 2,
+          "minimum": 0,
+          "maximum": 65536
+        },
+        "tunnel_user": {
+          "type": "string",
+          "description": "OS-level username for logging into the jump server host",
+          "title": "SSH Login Username",
+          "order": 3
+        },
+        "ssh_key": {
+          "type": "string",
+          "description": "OS-level user account ssh key credentials in RSA PEM format ( created with ssh-keygen -t rsa -m PEM -f myuser_rsa )",
+          "title": "SSH Private Key",
+          "order": 4,
+          "multiline": true,
+          "airbyte_secret": true
+        }
+      },
+      "required": [
+        "tunnel_method",
+        "tunnel_host",
+        "tunnel_port",
+        "tunnel_user",
+        "ssh_key"
+      ]
+    },
+    {
+      "title": "Password Authentication",
+      "type": "object",
+      "additionalProperties": true,
+      "description": "Connect through a jump server tunnel host using username and password authentication",
+      "properties": {
+        "tunnel_method": {
+          "type": "string",
+          "enum": ["SSH_PASSWORD_AUTH"],
+          "default": "SSH_PASSWORD_AUTH"
+        },
+        "tunnel_host": {
+          "type": "string",
+          "description": "Hostname of the jump server host that allows inbound ssh tunnel.",
+          "title": "SSH Tunnel Jump Server Host",
+          "order": 1
+        },
+        "tunnel_port": {
+          "type": "integer",
+          "default": 22,
+          "description": "Port on the proxy/jump server that accepts inbound ssh connections.",
+          "title": "SSH Connection Port",
+          "order": 2,
+          "minimum": 0,
+          "maximum": 65536
+        },
+        "tunnel_user": {
+          "type": "string",
+          "description": "OS-level username for logging into the jump server host",
+          "title": "SSH Login Username",
+          "order": 3
+        },
+        "tunnel_user_password": {
+          "type": "string",
+          "description": "OS-level password for logging into the jump server host",
+          "title": "Password",
+          "order": 4,
+          "airbyte_secret": true
+        }
+      },
+      "required": [
+        "tunnel_method",
+        "tunnel_host",
+        "tunnel_port",
+        "tunnel_user",
+        "tunnel_user_password"
+      ]
+    }
+  ],
+  "description": "Whether to initiate an SSH tunnel before connecting to the database, and if so, which kind of authentication to use.",
+  "title": "SSH Tunnel Method",
+  "order": 9,
+  "type": "object"
+}

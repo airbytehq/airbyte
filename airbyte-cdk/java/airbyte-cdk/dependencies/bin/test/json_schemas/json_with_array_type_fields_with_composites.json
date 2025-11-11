@@ -1,0 +1,32 @@
+{
+  "type": ["object", "array", "string"],
+  "anyOf": [
+    {
+      "type": "object",
+      "properties": {
+        "company": {
+          "type": "string",
+          "description": "company name"
+        }
+      }
+    },
+    {
+      "type": "object",
+      "properties": {
+        "organization": {
+          "type": "string",
+          "description": "organization name"
+        }
+      }
+    }
+  ],
+  "items": {
+    "type": "object",
+    "properties": {
+      "user": {
+        "type": "string",
+        "description": "username"
+      }
+    }
+  }
+}

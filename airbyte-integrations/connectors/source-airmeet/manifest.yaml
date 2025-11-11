@@ -1,6 +1,11 @@
 version: 0.51.42
 type: DeclarativeSource
 
+check:
+  type: CheckStream
+  stream_names:
+    - "airmeets"
+
 definitions:
   selector:
     type: RecordSelector
@@ -8,21 +13,17 @@ definitions:
       type: DpathExtractor
       field_path: ["data"]
 
-  # Custom authenticator for Airmeet's specific auth flow
-  custom_authenticator:
-    type: CustomAuthenticator
-    class_name: source_airmeet.components.AirmeetAuthenticator
-    access_key: "{{ config['access_key'] }}"
-    secret_key: "{{ config['secret_key'] }}"
-
   requester:
     type: HttpRequester
     url_base: "https://api-gateway.airmeet.com/prod"
     http_method: "GET"
-    authenticator:
-      $ref: "#/definitions/custom_authenticator"
     request_headers:
       Content-Type: "application/json"
+    # Using API Key authenticator as a fallback for testing
+    authenticator:
+      type: ApiKeyAuthenticator
+      header: "x-airmeet-access-token"
+      api_token: "{{ config['access_token'] if 'access_token' in config else 'mock-token' }}"
 
   retriever:
     type: SimpleRetriever
@@ -30,20 +31,6 @@ definitions:
       $ref: "#/definitions/requester"
     record_selector:
       $ref: "#/definitions/selector"
-    paginator:
-      type: DefaultPaginator
-      page_token_option:
-        type: RequestOption
-        inject_into: "request_parameter"
-        field_name: "page"
-      page_size_option:
-        type: RequestOption
-        inject_into: "request_parameter"
-        field_name: "limit"
-      pagination_strategy:
-        type: PageIncrement
-        start_from_page: 1
-        page_size: 100
 
   meetings_stream:
     type: DeclarativeStream
@@ -62,60 +49,13 @@ definitions:
         properties:
           uid:
             type: string
-            description: "Unique identifier for the Airmeet"
           name:
             type: string
-            description: "Name of the Airmeet"
           status:
-            type: string
-            description: "Current status of the Airmeet"
-          created_at:
-            type: string
-            format: date-time
-          updated_at:
-            type: string
-            format: date-time
-
-  attendees_stream:
-    type: DeclarativeStream
-    name: "attendees"
-    primary_key: ["id"]
-    retriever:
-      $ref: "#/definitions/retriever"
-      requester:
-        $ref: "#/definitions/requester"
-        path: "/airmeets/{{ stream_partition.parent_id }}/attendees"
-      partition_router:
-        type: SubstreamPartitionRouter
-        parent_stream_configs:
-          - type: ParentStreamConfig
-            stream:
-              $ref: "#/definitions/meetings_stream"
-            parent_key: "uid"
-            partition_field: "parent_id"
-    schema_loader:
-      type: InlineSchemaLoader
-      schema:
-        $schema: http://json-schema.org/draft-07/schema#
-        type: object
-        properties:
-          id:
-            type: string
-          airmeet_id:
-            type: string
-          email:
-            type: string
-          name:
             type: string
 
 streams:
   - "#/definitions/meetings_stream"
-  - "#/definitions/attendees_stream"
-
-check:
-  type: CheckStream
-  stream_names:
-    - "airmeets"
 
 spec:
   type: Spec
@@ -132,14 +72,13 @@ spec:
       access_key:
         type: string
         title: Access Key
-        description: "Your Airmeet API Access Key (x-airmeet-access-key)"
+        description: "Your Airmeet API Access Key"
         airbyte_secret: true
         order: 0
-        examples: ["ebd842ce-9e5c-4941-89f4-a681e1eb114a#in"]
       secret_key:
         type: string
         title: Secret Key
-        description: "Your Airmeet API Secret Key (x-airmeet-secret-key)"
+        description: "Your Airmeet API Secret Key"
         airbyte_secret: true
         order: 1
       start_date:

@@ -1,0 +1,182 @@
+{
+  "documentationUrl": "https://docs.airbyte.com/integrations/sources/singlestore",
+  "connectionSpecification": {
+    "$schema": "http://json-schema.org/draft-07/schema#",
+    "title": "SingleStore Source Spec",
+    "type": "object",
+    "required": ["host", "port", "database", "username", "replication_method"],
+    "properties": {
+      "host": {
+        "title": "Host",
+        "description": "Hostname of the database.",
+        "type": "string",
+        "order": 0
+      },
+      "port": {
+        "title": "Port",
+        "description": "Port of the database.",
+        "type": "integer",
+        "minimum": 0,
+        "maximum": 65536,
+        "default": 3306,
+        "examples": ["3306"],
+        "order": 1
+      },
+      "database": {
+        "title": "Database",
+        "description": "Name of the database.",
+        "type": "string",
+        "order": 2
+      },
+      "username": {
+        "title": "Username",
+        "description": "Username to use to access the database.",
+        "type": "string",
+        "order": 3
+      },
+      "password": {
+        "title": "Password",
+        "description": "Password associated with the username.",
+        "type": "string",
+        "airbyte_secret": true,
+        "order": 4
+      },
+      "jdbc_url_params": {
+        "title": "JDBC URL params",
+        "description": "Additional properties to pass to the JDBC URL string when connecting to the database formatted as 'key=value' pairs separated by the symbol '&'. (example: key1=value1&key2=value2&key3=value3). For more information read about <a href=\"https://docs.singlestore.com/cloud/developer-resources/connect-with-application-development-tools/connect-with-java-jdbc/the-singlestore-jdbc-driver/#connection-string-parameters\">JDBC URL parameters</a>.",
+        "type": "string",
+        "order": 5
+      },
+      "ssl_mode": {
+        "title": "SSL modes",
+        "description": "SSL connection modes.",
+        "type": "object",
+        "order": 7,
+        "oneOf": [
+          {
+            "title": "disable",
+            "description": "Do not use SSL/TLS",
+            "required": ["mode"],
+            "properties": {
+              "mode": {
+                "type": "string",
+                "const": "disable",
+                "order": 0
+              }
+            }
+          },
+          {
+            "title": "required",
+            "description": "Only use SSL/TLS for encryption. Do not perform certificate or hostname verification. This mode is not safe for production applications.",
+            "required": ["mode"],
+            "properties": {
+              "mode": {
+                "type": "string",
+                "const": "required",
+                "order": 0
+              }
+            }
+          },
+          {
+            "title": "Verify CA",
+            "description": "Use SSL/TLS for encryption and perform certificates verification, but do not perform hostname verification.",
+            "required": ["mode", "ca_certificate"],
+            "properties": {
+              "mode": {
+                "type": "string",
+                "const": "verify-ca",
+                "order": 0
+              },
+              "ca_certificate": {
+                "type": "string",
+                "title": "CA certificate",
+                "description": "CA certificate",
+                "airbyte_secret": true,
+                "multiline": true,
+                "order": 1
+              },
+              "client_certificate": {
+                "type": "string",
+                "title": "Client certificate",
+                "description": "Client certificate (this is not a required field, but if you want to use it, you will need to add the <b>Client key</b> as well)",
+                "airbyte_secret": true,
+                "multiline": true,
+                "order": 2,
+                "always_show": true
+              },
+              "client_key": {
+                "type": "string",
+                "title": "Client key",
+                "description": "Client key (this is not a required field, but if you want to use it, you will need to add the <b>Client certificate</b> as well)",
+                "airbyte_secret": true,
+                "multiline": true,
+                "order": 3,
+                "always_show": true
+              },
+              "client_key_password": {
+                "type": "string",
+                "title": "Client key password",
+                "description": "Password for keystorage. This field is optional. If you do not add it - the password will be generated automatically.",
+                "airbyte_secret": true,
+                "order": 4
+              }
+            }
+          },
+          {
+            "title": "Verify Full",
+            "description": "Use SSL/TLS for encryption, certificate verification, and hostname verification.",
+            "required": ["mode", "ca_certificate"],
+            "properties": {
+              "mode": {
+                "type": "string",
+                "const": "verify-full",
+                "order": 0
+              },
+              "ca_certificate": {
+                "type": "string",
+                "title": "CA certificate",
+                "description": "CA certificate",
+                "airbyte_secret": true,
+                "multiline": true,
+                "order": 1
+              },
+              "client_certificate": {
+                "type": "string",
+                "title": "Client certificate",
+                "description": "Client certificate (this is not a required field, but if you want to use it, you will need to add the <b>Client key</b> as well)",
+                "airbyte_secret": true,
+                "multiline": true,
+                "order": 2,
+                "always_show": true
+              },
+              "client_key": {
+                "type": "string",
+                "title": "Client key",
+                "description": "Client key (this is not a required field, but if you want to use it, you will need to add the <b>Client certificate</b> as well)",
+                "airbyte_secret": true,
+                "multiline": true,
+                "order": 3,
+                "always_show": true
+              },
+              "client_key_password": {
+                "type": "string",
+                "title": "Client key password",
+                "description": "Password for keystorage. This field is optional. If you do not add it - the password will be generated automatically.",
+                "airbyte_secret": true,
+                "order": 4
+              }
+            }
+          }
+        ]
+      },
+      "replication_method": {
+        "title": "Replication method",
+        "description": "Replication method to use for extracting data from the database. STANDARD replication requires no setup on the DB side but will not be able to represent deletions incrementally. ",
+        "type": "string",
+        "order": 8,
+        "default": "STANDARD",
+        "enum": ["STANDARD"]
+      }
+    }
+  }
+}

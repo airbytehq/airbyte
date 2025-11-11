@@ -1,0 +1,5 @@
+// Write raw deletion record from the first batch, which resulted in an empty final table.
+// Note the non-null loaded_at - this is to simulate that we previously ran T+D on this record.
+{"_airbyte_raw_id": "7e7330a1-42fb-41ec-a955-52f18bd61964", "_airbyte_extracted_at": "2023-01-01T00:00:00", "_airbyte_loaded_at": "2023-01-01T00:00:01", "_airbyte_data": {"id1": 1, "id2": 100, "updated_at": "2023-01-01T01:00:00", "_ab_cdc_deleted_at": "2023-01-01T00:01:00"}}
+// insert raw record from the second record batch - this is an outdated record that should be ignored.
+{"_airbyte_raw_id": "87ff57d7-41a7-4962-a9dc-d684276283da", "_airbyte_extracted_at": "2023-01-01T00:00:00", "_airbyte_data": {"id1": 1, "id2": 100, "updated_at": "2023-01-01T00:00:00", "string": "alice"}}

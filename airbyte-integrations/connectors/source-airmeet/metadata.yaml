@@ -15,7 +15,7 @@ data:
     baseImage: docker.io/airbyte/source-declarative-manifest:4.5.4
   connectorSubtype: api
   connectorType: source
-  definitionId: 2d9c70db-e201-4e30-889d-24e3dd881405 
+  definitionId: 5a2569a7-2a4d-4267-b863-4c64b865723b 
   dockerImageTag: 0.1.0
   dockerRepository: airbyte/source-airmeet
   githubIssueLabel: source-airmeet
