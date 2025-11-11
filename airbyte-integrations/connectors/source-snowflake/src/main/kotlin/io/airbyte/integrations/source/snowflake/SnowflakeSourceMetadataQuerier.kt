@@ -290,7 +290,8 @@ class SnowflakeSourceMetadataQuerier(
                         }
                     }
 
-                    val filteredSchemaNames = base.tableFiltersBySchema.keys.map { it.uppercase() }.toSet()
+                    val filteredSchemaNames =
+                        base.tableFiltersBySchema.keys.map { it.uppercase() }.toSet()
                     dbmd.getTables(catalog, null, null, null).use { rs: ResultSet ->
                         while (rs.next()) {
                             val tableName =

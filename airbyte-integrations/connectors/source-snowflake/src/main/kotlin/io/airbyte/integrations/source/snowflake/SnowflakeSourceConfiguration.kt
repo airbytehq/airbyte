@@ -119,11 +119,12 @@ class SnowflakeSourceConfigurationFactory :
         val tableFilters = pojo.tableFilters ?: emptyList()
 
         // Handle both new 'schemas' field and legacy 'schema' field for backwards compatibility
-        val schemas: List<String> = when {
-            !pojo.schemas.isNullOrEmpty() -> pojo.schemas!!
-            pojo.schema != null -> listOf(pojo.schema!!)
-            else -> emptyList() // Empty = discover all schemas
-        }
+        val schemas: List<String> =
+            when {
+                !pojo.schemas.isNullOrEmpty() -> pojo.schemas!!
+                pojo.schema != null -> listOf(pojo.schema!!)
+                else -> emptyList() // Empty = discover all schemas
+            }
 
         // Validate table filters if schemas are specified
         if (schemas.isNotEmpty()) {
