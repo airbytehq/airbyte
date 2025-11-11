@@ -20,8 +20,6 @@ import kotlin.collections.forEach
 
 internal const val COUNT_TOTAL_ALIAS = "total"
 
-private val log = KotlinLogging.logger {}
-
 @Singleton
 class PostgresDirectLoadSqlGenerator(
     private val postgresColumnUtils: PostgresColumnUtils,
@@ -35,15 +33,6 @@ class PostgresDirectLoadSqlGenerator(
         private const val DEDUPED_TABLE_ALIAS = "deduped_source"
         private val EXTRACTED_AT_COLUMN_NAME = quoteIdentifier(COLUMN_NAME_AB_EXTRACTED_AT)
         private val DELETED_AT_COLUMN_NAME = quoteIdentifier(CDC_DELETED_AT_COLUMN)
-
-        /**
-         * This extension is here to avoid writing `.also { log.info { it }}` for every returned string
-         * we want to log
-         */
-        fun String.andLog(): String {
-            log.info { this.trim() }
-            return this
-        }
 
         private fun quoteIdentifier(identifier: String) =
             "\"${identifier}\""
@@ -67,8 +56,6 @@ class PostgresDirectLoadSqlGenerator(
             $createIndexesStatement
             COMMIT;
             """
-            .trimIndent()
-            .andLog()
     }
 
     /**
@@ -100,7 +87,7 @@ class PostgresDirectLoadSqlGenerator(
             $primaryKeyIndexStatement
             $cursorIndexStatement
             $extractedAtIndexStatement
-        """.trimIndent()
+        """
     }
 
     private fun getCursorColumnName(
@@ -135,8 +122,6 @@ class PostgresDirectLoadSqlGenerator(
             ALTER TABLE ${getFullyQualifiedName(sourceTableName)} RENAME TO ${getName(targetTableName)};
             COMMIT;
             """
-            .trimIndent()
-            .andLog()
     }
 
     fun copyTable(
@@ -150,8 +135,6 @@ class PostgresDirectLoadSqlGenerator(
             SELECT $columnNames
             FROM ${getFullyQualifiedName(sourceTableName)};
             """
-            .trimIndent()
-            .andLog()
     }
 
     private fun getTargetColumnNames(stream: DestinationStream, columnNameMapping: ColumnNameMapping): List<String> {
@@ -241,7 +224,7 @@ class PostgresDirectLoadSqlGenerator(
             )
 
             $insertNewRowsQuery
-            """.trimIndent().andLog()
+            """
     }
 
     /**
@@ -278,7 +261,7 @@ class PostgresDirectLoadSqlGenerator(
                 WHERE $primaryKeysConditions
               )
               $skipCdcDeletedClause
-        """.trimIndent()
+        """
     }
 
     /**
@@ -314,7 +297,7 @@ class PostgresDirectLoadSqlGenerator(
                 WHERE $primaryKeysMatches
                     $skipCdcDeletedClause
                     AND ($cursorComparison)
-        """.trimIndent()
+        """
     }
 
     /**
@@ -348,13 +331,13 @@ class PostgresDirectLoadSqlGenerator(
             WHERE $primaryKeysMatchingCondition
                 AND $dedupTableAlias.$DELETED_AT_COLUMN_NAME IS NOT NULL
                 AND ($cursorComparison)
-        """.trimIndent()
+        """
 
         return """
             deleted AS (
             $deleteStatement
             ),
-        """.trimIndent()
+        """
     }
 
     /**
@@ -375,7 +358,7 @@ class PostgresDirectLoadSqlGenerator(
                   OR (${getFullyQualifiedName(targetTableName)}.$cursorTargetColumn = $dedupTableAlias.$cursorTargetColumn AND ${getFullyQualifiedName(targetTableName)}.$extractedAtColumn < $dedupTableAlias.$extractedAtColumn)
                   OR (${getFullyQualifiedName(targetTableName)}.$cursorTargetColumn IS NULL AND $dedupTableAlias.$cursorTargetColumn IS NOT NULL)
                   OR (${getFullyQualifiedName(targetTableName)}.$cursorTargetColumn IS NULL AND $dedupTableAlias.$cursorTargetColumn IS NULL AND ${getFullyQualifiedName(targetTableName)}.$extractedAtColumn < $dedupTableAlias.$extractedAtColumn)
-                """.trimIndent()
+                """
         } else {
             // No cursor - use extraction timestamp only
             val extractedAtColumn = EXTRACTED_AT_COLUMN_NAME
@@ -410,22 +393,22 @@ class PostgresDirectLoadSqlGenerator(
               FROM ${getFullyQualifiedName(sourceTableName)}
             ) AS deduplicated
             WHERE row_number = 1
-        """.trimIndent()
+        """
     }
 
     fun dropTable(tableName: TableName): String =
-        "DROP TABLE IF EXISTS ${getFullyQualifiedName(tableName)} $dropTableSuffix;".andLog()
+        "DROP TABLE IF EXISTS ${getFullyQualifiedName(tableName)} $dropTableSuffix;"
 
     fun countTable(tableName: TableName): String {
-        return "SELECT COUNT(*) AS \"$COUNT_TOTAL_ALIAS\" FROM ${getFullyQualifiedName(tableName)};".andLog()
+        return "SELECT COUNT(*) AS \"$COUNT_TOTAL_ALIAS\" FROM ${getFullyQualifiedName(tableName)};"
     }
 
     fun createNamespace(namespace: String): String {
-        return "CREATE SCHEMA IF NOT EXISTS \"$namespace\";".andLog()
+        return "CREATE SCHEMA IF NOT EXISTS \"$namespace\";"
     }
 
     fun getGenerationId(tableName: TableName): String =
-        "SELECT \"${COLUMN_NAME_AB_GENERATION_ID}\" FROM ${getFullyQualifiedName(tableName)} LIMIT 1;".andLog()
+        "SELECT \"${COLUMN_NAME_AB_GENERATION_ID}\" FROM ${getFullyQualifiedName(tableName)} LIMIT 1;"
 
     fun getTableSchema(tableName: TableName): String =
         """
@@ -440,7 +423,7 @@ class PostgresDirectLoadSqlGenerator(
         COPY "${tableName.namespace}"."${tableName.name}"
         FROM STDIN
         WITH (FORMAT csv)
-        """.trimIndent()
+        """
 
     //should all alters happen in one same tx? probably
     fun matchSchemas(
@@ -454,11 +437,11 @@ class PostgresDirectLoadSqlGenerator(
         val fullyQualifiedTableName = getFullyQualifiedName(tableName)
         columnsToAdd.forEach {
             clauses.add(
-                "ALTER TABLE $fullyQualifiedTableName ADD COLUMN ${getName(it)} ${it.columnTypeName};".andLog()
+                "ALTER TABLE $fullyQualifiedTableName ADD COLUMN ${getName(it)} ${it.columnTypeName};"
             )
         }
         columnsToRemove.forEach {
-            clauses.add("ALTER TABLE $fullyQualifiedTableName DROP COLUMN ${getName(it)};".andLog())
+            clauses.add("ALTER TABLE $fullyQualifiedTableName DROP COLUMN ${getName(it)};")
         }
 
         columnsToModify.forEach { newColumn ->
@@ -475,7 +458,7 @@ class PostgresDirectLoadSqlGenerator(
                 // Standard cast for other conversions
                 else -> "USING ${getName(newColumn)}::$newType"
             }
-            clauses.add("ALTER TABLE $fullyQualifiedTableName ALTER COLUMN ${getName(newColumn)} TYPE $newType $usingClause;".andLog())
+            clauses.add("ALTER TABLE $fullyQualifiedTableName ALTER COLUMN ${getName(newColumn)} TYPE $newType $usingClause;")
         }
         return clauses
     }
