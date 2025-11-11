@@ -31,10 +31,7 @@ class PostgresAirbyteClient(
 
     override suspend fun countTable(tableName: TableName): Long? =
         try {
-            dataSource.connection.use { connection ->
-                val resultSet =
-                    connection.createStatement().executeQuery(sqlGenerator.countTable(tableName))
-
+            executeQuery(sqlGenerator.countTable(tableName)) { resultSet ->
                 if (resultSet.next()) {
                     resultSet.getLong(COUNT_TOTAL_ALIAS)
                 } else {
@@ -176,9 +173,7 @@ class PostgresAirbyteClient(
 
     override suspend fun getGenerationId(tableName: TableName): Long =
         try {
-            val sql = sqlGenerator.getGenerationId(tableName)
-            dataSource.connection.use { connection ->
-                val resultSet = connection.createStatement().executeQuery(sql)
+            executeQuery(sqlGenerator.getGenerationId(tableName)) { resultSet ->
                 if (resultSet.next()) {
                     resultSet.getLong(COLUMN_NAME_AB_GENERATION_ID)
                 } else {
@@ -192,15 +187,13 @@ class PostgresAirbyteClient(
         }
 
     fun describeTable(tableName: TableName): List<String> =
-        dataSource.connection.use { connection ->
-            val resultSet =
-                connection.createStatement().executeQuery(sqlGenerator.getTableSchema(tableName))
+        executeQuery(sqlGenerator.getTableSchema(tableName)) { resultSet ->
             val columns = mutableListOf<String>()
             while (resultSet.next()) {
                 //TODO: extract column_name as a constant
                 columns.add(resultSet.getString("column_name"))
             }
-            return columns
+            columns
         }
 
     fun copyFromCsv(tableName: TableName, filePath: String) {
@@ -223,4 +216,14 @@ class PostgresAirbyteClient(
         }
     }
 
+    private fun <T> executeQuery(query: String, resultProcessor: (ResultSet) -> T): T {
+        log.info { query.trimIndent() }
+        return dataSource.connection.use { connection ->
+            connection.createStatement().use {
+                it.executeQuery(query).use { resultSet ->
+                    resultProcessor(resultSet)
+                }
+            }
+        }
+    }
 }
