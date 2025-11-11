@@ -442,7 +442,10 @@ class PostgresDirectLoadSqlGenerator(
         FROM information_schema.columns
         WHERE table_schema = '${tableName.namespace}'
         AND table_name = '${tableName.name}';
-        """.trimIndent().andLog()
+        """
+
+    private fun dropIndex(indexName: String): String =
+        "DROP INDEX IF EXISTS ${quoteIdentifier(indexName)};"
 
     fun copyFromCsv(tableName: TableName): String =
         """
