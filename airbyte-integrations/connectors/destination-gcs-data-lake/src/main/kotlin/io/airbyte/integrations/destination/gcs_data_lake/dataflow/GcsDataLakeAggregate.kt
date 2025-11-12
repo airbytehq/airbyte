@@ -41,6 +41,7 @@ class GcsDataLakeAggregate(
 ) : Aggregate {
     companion object {
         val commitLock: Any = Any()
+        val converter = AirbyteValueToIcebergRecord()
     }
 
     private val operationType =
@@ -54,7 +55,6 @@ class GcsDataLakeAggregate(
         // Convert RecordDTO to Iceberg Record
         // Note: ValueCoercer has already nulled out-of-range integers in Parse stage
         // Here we handle Iceberg-schema-specific conversions that depend on field types
-        val converter = AirbyteValueToIcebergRecord()
         val icebergRecord = GenericRecord.create(schema)
 
         schema.asStruct().fields().forEach { field ->
