@@ -21,7 +21,7 @@ data:
             alias: airbyte-connector-testing-secret-store
   connectorType: destination
   definitionId: 8c8a2d3e-1b4f-4a9c-9e7d-6f5a4b3c2d1e
-  dockerImageTag: 0.0.1
+  dockerImageTag: 1.0.1
   dockerRepository: airbyte/destination-gcs-data-lake
   documentationUrl: https://docs.airbyte.com/integrations/destinations/gcs-data-lake
   githubIssueLabel: destination-gcs-data-lake
