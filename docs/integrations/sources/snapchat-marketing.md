@@ -143,35 +143,43 @@ Syncing data with an hourly granularity often generates large data volumes and c
 
 | Version    | Date       | Pull Request                                             | Subject                                                                        |
 |:-----------|:-----------|:---------------------------------------------------------|:-------------------------------------------------------------------------------|
-| 1.5.17     | 2025-08-14 | [64940](https://github.com/airbytehq/airbyte/pull/64940) | Re-release connector with fixed docker image entrypoint |
-| 1.5.16     | 2025-08-11 | [63276](https://github.com/airbytehq/airbyte/pull/63276) | Fix start time for stats streams |
-| 1.5.15     | 2025-08-09 | [64480](https://github.com/airbytehq/airbyte/pull/64480) | Update dependencies |
-| 1.5.14     | 2025-07-26 | [63088](https://github.com/airbytehq/airbyte/pull/63088) | Update dependencies |
-| 1.5.13     | 2025-07-02 | [62488](https://github.com/airbytehq/airbyte/pull/62488) | Fix end datetime to include today |
-| 1.5.12     | 2025-06-28 | [60513](https://github.com/airbytehq/airbyte/pull/60513) | Update dependencies |
-| 1.5.11     | 2025-05-10 | [60113](https://github.com/airbytehq/airbyte/pull/60113) | Update dependencies |
-| 1.5.10     | 2025-05-04 | [59625](https://github.com/airbytehq/airbyte/pull/59625) | Update dependencies |
-| 1.5.9      | 2025-04-27 | [58395](https://github.com/airbytehq/airbyte/pull/58395) | Update dependencies |
-| 1.5.8      | 2025-04-12 | [57957](https://github.com/airbytehq/airbyte/pull/57957) | Update dependencies |
-| 1.5.7      | 2025-04-05 | [57412](https://github.com/airbytehq/airbyte/pull/57412) | Update dependencies |
-| 1.5.6      | 2025-03-29 | [56907](https://github.com/airbytehq/airbyte/pull/56907) | Update dependencies |
-| 1.5.5      | 2025-03-22 | [56300](https://github.com/airbytehq/airbyte/pull/56300) | Update dependencies |
-| 1.5.4      | 2025-03-08 | [55595](https://github.com/airbytehq/airbyte/pull/55595) | Update dependencies |
-| 1.5.3      | 2025-03-01 | [54546](https://github.com/airbytehq/airbyte/pull/54546) | Update dependencies |
-| 1.5.2      | 2025-02-15 | [54091](https://github.com/airbytehq/airbyte/pull/54091) | Update dependencies |
-| 1.5.1      | 2025-02-08 | [53569](https://github.com/airbytehq/airbyte/pull/53569) | Update dependencies |
-| 1.5.0      | 2024-11-26 | [44170](https://github.com/airbytehq/airbyte/pull/44170) | Added Optional filters - Organization & Ad Account IDs |
-| 1.4.2      | 2025-02-01 | [53083](https://github.com/airbytehq/airbyte/pull/53083) | Update dependencies |
-| 1.4.1      | 2025-01-25 | [52403](https://github.com/airbytehq/airbyte/pull/52403) | Update dependencies |
-| 1.4.0      | 2025-01-23 | [52110](https://github.com/airbytehq/airbyte/pull/52110) | Make incremental per-partition streams concurrent |
-| 1.3.7      | 2025-01-18 | [51999](https://github.com/airbytehq/airbyte/pull/51999) | Update dependencies |
-| 1.3.6      | 2025-01-11 | [51431](https://github.com/airbytehq/airbyte/pull/51431) | Update dependencies |
-| 1.3.5      | 2024-12-28 | [50796](https://github.com/airbytehq/airbyte/pull/50796) | Update dependencies |
-| 1.3.4      | 2024-12-21 | [50308](https://github.com/airbytehq/airbyte/pull/50308) | Update dependencies |
-| 1.3.3      | 2024-12-14 | [49414](https://github.com/airbytehq/airbyte/pull/49414) | Update dependencies |
-| 1.3.2      | 2024-11-05 | [48375](https://github.com/airbytehq/airbyte/pull/48375) | Re-implement advanced_auth in connector spec |
-| 1.3.1      | 2024-10-29 | [47837](https://github.com/airbytehq/airbyte/pull/47837) | Update dependencies |
-| 1.3.0      | 2024-10-15 | [46927](https://github.com/airbytehq/airbyte/pull/46927) | Promoting release candidate 1.3.0-rc.1 to a main version. |
+| 1.5.25 | 2025-10-29 | [68815](https://github.com/airbytehq/airbyte/pull/68815) | Update dependencies |
+| 1.5.24 | 2025-10-22 | [68591](https://github.com/airbytehq/airbyte/pull/68591) | Add `suggestedStreams` |
+| 1.5.23 | 2025-10-21 | [68234](https://github.com/airbytehq/airbyte/pull/68234) | Update dependencies |
+| 1.5.22 | 2025-10-14 | [67746](https://github.com/airbytehq/airbyte/pull/67746) | Update dependencies |
+| 1.5.21 | 2025-10-07 | [67447](https://github.com/airbytehq/airbyte/pull/67447) | Update dependencies |
+| 1.5.20 | 2025-09-30 | [66898](https://github.com/airbytehq/airbyte/pull/66898) | Update dependencies |
+| 1.5.19 | 2025-09-24 | [66264](https://github.com/airbytehq/airbyte/pull/66264) | Update dependencies |
+| 1.5.18 | 2025-09-09 | [65393](https://github.com/airbytehq/airbyte/pull/65393) | Update dependencies |
+| 1.5.17 | 2025-08-14 | [64940](https://github.com/airbytehq/airbyte/pull/64940) | Re-release connector with fixed docker image entrypoint |
+| 1.5.16 | 2025-08-11 | [63276](https://github.com/airbytehq/airbyte/pull/63276) | Fix start time for stats streams |
+| 1.5.15 | 2025-08-09 | [64480](https://github.com/airbytehq/airbyte/pull/64480) | Update dependencies |
+| 1.5.14 | 2025-07-26 | [63088](https://github.com/airbytehq/airbyte/pull/63088) | Update dependencies |
+| 1.5.13 | 2025-07-02 | [62488](https://github.com/airbytehq/airbyte/pull/62488) | Fix end datetime to include today |
+| 1.5.12 | 2025-06-28 | [60513](https://github.com/airbytehq/airbyte/pull/60513) | Update dependencies |
+| 1.5.11 | 2025-05-10 | [60113](https://github.com/airbytehq/airbyte/pull/60113) | Update dependencies |
+| 1.5.10 | 2025-05-04 | [59625](https://github.com/airbytehq/airbyte/pull/59625) | Update dependencies |
+| 1.5.9 | 2025-04-27 | [58395](https://github.com/airbytehq/airbyte/pull/58395) | Update dependencies |
+| 1.5.8 | 2025-04-12 | [57957](https://github.com/airbytehq/airbyte/pull/57957) | Update dependencies |
+| 1.5.7 | 2025-04-05 | [57412](https://github.com/airbytehq/airbyte/pull/57412) | Update dependencies |
+| 1.5.6 | 2025-03-29 | [56907](https://github.com/airbytehq/airbyte/pull/56907) | Update dependencies |
+| 1.5.5 | 2025-03-22 | [56300](https://github.com/airbytehq/airbyte/pull/56300) | Update dependencies |
+| 1.5.4 | 2025-03-08 | [55595](https://github.com/airbytehq/airbyte/pull/55595) | Update dependencies |
+| 1.5.3 | 2025-03-01 | [54546](https://github.com/airbytehq/airbyte/pull/54546) | Update dependencies |
+| 1.5.2 | 2025-02-15 | [54091](https://github.com/airbytehq/airbyte/pull/54091) | Update dependencies |
+| 1.5.1 | 2025-02-08 | [53569](https://github.com/airbytehq/airbyte/pull/53569) | Update dependencies |
+| 1.5.0 | 2024-11-26 | [44170](https://github.com/airbytehq/airbyte/pull/44170) | Added Optional filters - Organization & Ad Account IDs |
+| 1.4.2 | 2025-02-01 | [53083](https://github.com/airbytehq/airbyte/pull/53083) | Update dependencies |
+| 1.4.1 | 2025-01-25 | [52403](https://github.com/airbytehq/airbyte/pull/52403) | Update dependencies |
+| 1.4.0 | 2025-01-23 | [52110](https://github.com/airbytehq/airbyte/pull/52110) | Make incremental per-partition streams concurrent |
+| 1.3.7 | 2025-01-18 | [51999](https://github.com/airbytehq/airbyte/pull/51999) | Update dependencies |
+| 1.3.6 | 2025-01-11 | [51431](https://github.com/airbytehq/airbyte/pull/51431) | Update dependencies |
+| 1.3.5 | 2024-12-28 | [50796](https://github.com/airbytehq/airbyte/pull/50796) | Update dependencies |
+| 1.3.4 | 2024-12-21 | [50308](https://github.com/airbytehq/airbyte/pull/50308) | Update dependencies |
+| 1.3.3 | 2024-12-14 | [49414](https://github.com/airbytehq/airbyte/pull/49414) | Update dependencies |
+| 1.3.2 | 2024-11-05 | [48375](https://github.com/airbytehq/airbyte/pull/48375) | Re-implement advanced_auth in connector spec |
+| 1.3.1 | 2024-10-29 | [47837](https://github.com/airbytehq/airbyte/pull/47837) | Update dependencies |
+| 1.3.0 | 2024-10-15 | [46927](https://github.com/airbytehq/airbyte/pull/46927) | Promoting release candidate 1.3.0-rc.1 to a main version. |
 | 1.3.0-rc.1 | 2024-10-08 | [46570](https://github.com/airbytehq/airbyte/pull/46570) | Migrate to Manifest-only |
 | 1.2.12     | 2024-10-12 | [46800](https://github.com/airbytehq/airbyte/pull/46800) | Update dependencies |
 | 1.2.11     | 2024-10-05 | [46419](https://github.com/airbytehq/airbyte/pull/46419) | Update dependencies |

@@ -327,6 +327,12 @@ definitions:
           filtering: '{{ {"secondary_status": "AD_STATUS_ALL"}|string if config.get("include_deleted", False) }}'
       record_selector:
         $ref: "#/definitions/record_selector"
+        # This filter is needed because the API will at times return Smart+ Ad Records without a modify_time value.
+        # These are not easily filtered at the API level which is why they are filtered here.
+        # See https://github.com/airbytehq/airbyte/pull/65602 for more context
+        record_filter:
+          type: RecordFilter
+          condition: "{{ record.get('modify_time') is not none }}"
       paginator:
         $ref: "#/definitions/semi_incremental_stream/retriever/paginator"
       partition_router:
@@ -364,10 +370,6 @@ definitions:
 
   record_selector_for_hourly_reports_streams:
     $ref: "#/definitions/record_selector"
-    record_filter:
-      type: RecordFilter
-      condition: "{{ record['dimensions']['stat_time_hour'] >= stream_interval['start_time'] }}"
-
   base_report_retriever:
     type: SimpleRetriever
     requester:
@@ -524,11 +526,15 @@ definitions:
           dimensions: '{{ parameters["dimensions"] | string }}'
           metrics: '{{ (parameters.get("report_metrics", []) + ["spend", "cpc", "cpm", "impressions", "clicks", "ctr", "reach", "cost_per_1000_reached", "frequency", "video_play_actions", "video_watched_2s", "video_watched_6s", "average_video_play", "average_video_play_per_user", "video_views_p25", "video_views_p50", "video_views_p75", "video_views_p100", "profile_visits", "likes", "comments", "shares", "follows", "clicks_on_music_disc", "real_time_app_install", "real_time_app_install_cost", "app_install"]) | string }}'
           query_lifetime: "true"
-          filters: '{{ [
-            {"filter_value": ["STATUS_ALL"], "field_name": "ad_status", "filter_type": "IN"},
-            {"filter_value": ["STATUS_ALL"], "field_name": "campaign_status", "filter_type": "IN"},
-            {"filter_value": ["STATUS_ALL"], "field_name": "adgroup_status", "filter_type": "IN"},
-            ] | string if config.get("include_deleted", False)}}'
+          filtering: '{{ [{
+              "filter_value": "[\\\"STATUS_ALL\\\"]",
+              "field_name": (
+                "ad_status" if parameters["data_level"] == "AUCTION_AD" else
+                "adgroup_status" if parameters["data_level"] == "AUCTION_ADGROUP" else
+                "campaign_status" if parameters["data_level"] == "AUCTION_CAMPAIGN"
+              ),
+              "filter_type": "IN"
+            }] | string if config.get("include_deleted", False) and parameters["data_level"] in ["AUCTION_AD", "AUCTION_ADGROUP", "AUCTION_CAMPAIGN"]}}'
       paginator:
         $ref: "#/definitions/paginator_page_increment"
         pagination_strategy:
@@ -608,6 +614,14 @@ definitions:
           "cost_per_total_sales_lead",
           "cost_per_total_app_event_add_to_cart",
           "total_app_event_add_to_cart",
+          "engaged_view",
+          "engagements",
+          "paid_engaged_view",
+          "engaged_view_through_conversions",
+          "paid_engagement_engaged_view",
+          "engaged_view_15s",
+          "paid_engaged_view_15s",
+          "paid_engagement_engaged_view_15s",
         ]
       dimensions: ["ad_id", "stat_time_day"]
     primary_key:
@@ -889,11 +903,15 @@ definitions:
         metrics: '{{ (parameters.get("report_metrics", []) + ["spend", "cpc", "cpm", "impressions", "clicks", "ctr"]) | string  }}'
         start_date: "{{ stream_interval['start_time'] }}"
         end_date: "{{ stream_interval['end_time'] }}"
-        filters: '{{ [
-          {"filter_value": ["STATUS_ALL"], "field_name": "ad_status", "filter_type": "IN"},
-          {"filter_value": ["STATUS_ALL"], "field_name": "campaign_status", "filter_type": "IN"},
-          {"filter_value": ["STATUS_ALL"], "field_name": "adgroup_status", "filter_type": "IN"},
-          ] | string if config.get("include_deleted", False)}}'
+        filtering: '{{ [{
+            "filter_value": "[\\\"STATUS_ALL\\\"]",
+            "field_name": (
+              "ad_status" if parameters["data_level"] == "AUCTION_AD" else
+              "adgroup_status" if parameters["data_level"] == "AUCTION_ADGROUP" else
+              "campaign_status" if parameters["data_level"] == "AUCTION_CAMPAIGN"
+            ),
+            "filter_type": "IN"
+          }] | string if config.get("include_deleted", False) and parameters["data_level"] in ["AUCTION_AD", "AUCTION_ADGROUP", "AUCTION_CAMPAIGN"]}}'
       authenticator:
         $ref: "#/definitions/authenticator"
       request_body_json: {}
@@ -1501,6 +1519,14 @@ definitions:
           "cost_per_total_sales_lead",
           "cost_per_total_app_event_add_to_cart",
           "total_app_event_add_to_cart",
+          "engaged_view",
+          "engagements",
+          "paid_engaged_view",
+          "engaged_view_through_conversions",
+          "paid_engagement_engaged_view",
+          "engaged_view_15s",
+          "paid_engaged_view_15s",
+          "paid_engagement_engaged_view_15s"
         ]
       dimensions: ["ad_id", "stat_time_hour"]
     primary_key:
@@ -1829,6 +1855,14 @@ definitions:
           "cost_per_total_sales_lead",
           "cost_per_total_app_event_add_to_cart",
           "total_app_event_add_to_cart",
+          "engaged_view",
+          "engagements",
+          "paid_engaged_view",
+          "engaged_view_through_conversions",
+          "paid_engagement_engaged_view",
+          "engaged_view_15s",
+          "paid_engaged_view_15s",
+          "paid_engagement_engaged_view_15s",
         ]
       dimensions: ["ad_id"]
     primary_key:
@@ -1942,11 +1976,15 @@ definitions:
           start_date: '{{ day_delta(-365, "%Y-%m-%d") if config.get("start_date", "2016-09-01") < day_delta(-365, "%Y-%m-%d") else config["start_date"] }}'
           end_date: "{{ today_utc() }}"
           lifetime: "true"
-          filters: '{{ [
-            {"filter_value": ["STATUS_ALL"], "field_name": "ad_status", "filter_type": "IN"},
-            {"filter_value": ["STATUS_ALL"], "field_name": "campaign_status", "filter_type": "IN"},
-            {"filter_value": ["STATUS_ALL"], "field_name": "adgroup_status", "filter_type": "IN"},
-            ] | string if config.get("include_deleted", False)}}'
+          filtering: '{{ [{
+              "filter_value": "[\\\"STATUS_ALL\\\"]",
+              "field_name": (
+                "ad_status" if parameters["data_level"] == "AUCTION_AD" else
+                "adgroup_status" if parameters["data_level"] == "AUCTION_ADGROUP" else
+                "campaign_status" if parameters["data_level"] == "AUCTION_CAMPAIGN"
+              ),
+              "filter_type": "IN"
+            }] | string if config.get("include_deleted", False) and parameters["data_level"] in ["AUCTION_AD", "AUCTION_ADGROUP", "AUCTION_CAMPAIGN"]}}'
       record_selector:
         $ref: "#/definitions/record_selector"
       paginator:
@@ -4329,6 +4367,46 @@ definitions:
               type:
                 - "null"
                 - number
+            engaged_view:
+              description: 6-second focused views Number of times your video was played for at least 6 seconds, played in full if it is less than 6 seconds, or received at least 1 engagement within the first 6 seconds
+              type:
+              - "null"
+              - number
+            engagements:
+              description: Clicks (all) Number of clicks from your ads This includes clicks that lead to destination as well as those for social and interaction purposes
+              type:
+              - "null"
+              - number
+            paid_engaged_view:
+              description: 6-second focused views (paid views) Number of times your video was played for at least 6 seconds, or played in full if it is less than 6 seconds For each video impression, plays are counted separately and replays are excluded
+              type:
+              - "null"
+              - number
+            engaged_view_through_conversions:
+              description: EVTA conversions Number of conversions attributed to engaged views
+              type:
+              - "null"
+              - number
+            paid_engagement_engaged_view:
+              description: 6-second focused views (paid interactions) The number of times your video received at least one positive interaction (likes, shares, follows, or clicks) without being viewed for 6 seconds
+              type:
+              - "null"
+              - number
+            engaged_view_15s:
+              description: 15-second focused views Number of times your video was played for at least 15 seconds, played in full if it is less than 15 seconds, or received at least 1 engagement within the first 15 seconds
+              type:
+              - "null"
+              - number
+            paid_engaged_view_15s:
+              description: 15-second focused views (paid views) The number of times your video was viewed for at least 15 seconds, or viewed in full if it is less than 15 seconds long
+              type:
+              - "null"
+              - number
+            paid_engagement_engaged_view_15s:
+              description: 15-second focused views (paid interactions) The number of times your video received at least one positive interaction (likes, shares, follows, or clicks) without being viewed for 15 seconds
+              type:
+              - "null"
+              - number
         dimensions:
           description:
             A list of dimensions for which data should be retrieved such as time,
@@ -5833,9 +5911,22 @@ spec:
 # If time allows it, we can definitely try to scope this number a bit better empirically.
 concurrency_level:
   type: ConcurrencyLevel
-  default_concurrency: "{{ config.get('concurrency_level', 3) }}"
+  default_concurrency: "{{ config.get('concurrency_level', 4) }}"
   max_concurrency: 20
 
 metadata:
   autoImportSchema:
     advertiser_ids: true
+
+api_budget:
+  type: HTTPAPIBudget
+  policies:
+    - type: MovingWindowCallRatePolicy
+      rates:
+        - limit: 100
+          interval: PT10S
+      matchers:
+        - method: GET
+          url_path_pattern: .*
+  status_codes_for_ratelimit_hit:
+    - 429

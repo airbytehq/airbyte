@@ -320,6 +320,17 @@ By default, this stream is enabled and retrieves information about **users and g
 
 | Version | Date       | Pull Request                                             | Subject                                                                                      |
 |---------|------------|----------------------------------------------------------|----------------------------------------------------------------------------------------------|
+| 0.5.3 | 2025-11-11 | [69272](https://github.com/airbytehq/airbyte/pull/69272) | Update dependencies |
+| 0.5.2 | 2025-11-04 | [69158](https://github.com/airbytehq/airbyte/pull/69158) | Update dependencies |
+| 0.5.1 | 2025-10-29 | [69053](https://github.com/airbytehq/airbyte/pull/69053) | Update dependencies |
+| 0.5.0 | 2025-10-23 | [68618](https://github.com/airbytehq/airbyte/pull/68618) | Update dependencies |
+| 0.4.10 | 2025-10-21 | [68321](https://github.com/airbytehq/airbyte/pull/68321) | Update dependencies |
+| 0.4.9 | 2025-10-14 | [68038](https://github.com/airbytehq/airbyte/pull/68038) | Update dependencies |
+| 0.4.8 | 2025-10-07 | [67259](https://github.com/airbytehq/airbyte/pull/67259) | Update dependencies |
+| 0.4.7 | 2025-09-30 | [66169](https://github.com/airbytehq/airbyte/pull/66169) | Update dependencies |
+| 0.4.6 | 2025-09-10 | [66009](https://github.com/airbytehq/airbyte/pull/66009) | Update to CDK v7 |
+| 0.4.5 | 2025-09-09 | [66108](https://github.com/airbytehq/airbyte/pull/66108) | Update dependencies |
+| 0.4.4 | 2025-08-23 | [61127](https://github.com/airbytehq/airbyte/pull/61127) | Update dependencies |
 | 0.4.3 | 2025-08-20 | [65081](https://github.com/airbytehq/airbyte/pull/65081) | Certify connector |
 | 0.4.2 | 2025-05-24 | [60621](https://github.com/airbytehq/airbyte/pull/60621) | Update dependencies |
 | 0.4.1 | 2025-05-10 | [58227](https://github.com/airbytehq/airbyte/pull/58227) | Update dependencies |

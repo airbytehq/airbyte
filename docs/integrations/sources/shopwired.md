@@ -35,6 +35,14 @@ API Reference: https://api.shopwired.co.uk/
 
 | Version          | Date              | Pull Request | Subject        |
 |------------------|-------------------|--------------|----------------|
+| 0.0.18 | 2025-10-29 | [68798](https://github.com/airbytehq/airbyte/pull/68798) | Update dependencies |
+| 0.0.17 | 2025-10-21 | [68239](https://github.com/airbytehq/airbyte/pull/68239) | Update dependencies |
+| 0.0.16 | 2025-10-14 | [67788](https://github.com/airbytehq/airbyte/pull/67788) | Update dependencies |
+| 0.0.15 | 2025-10-07 | [67445](https://github.com/airbytehq/airbyte/pull/67445) | Update dependencies |
+| 0.0.14 | 2025-09-30 | [66914](https://github.com/airbytehq/airbyte/pull/66914) | Update dependencies |
+| 0.0.13 | 2025-09-24 | [66255](https://github.com/airbytehq/airbyte/pull/66255) | Update dependencies |
+| 0.0.12 | 2025-09-09 | [65679](https://github.com/airbytehq/airbyte/pull/65679) | Update dependencies |
+| 0.0.11 | 2025-08-23 | [65435](https://github.com/airbytehq/airbyte/pull/65435) | Update dependencies |
 | 0.0.10 | 2025-08-09 | [64843](https://github.com/airbytehq/airbyte/pull/64843) | Update dependencies |
 | 0.0.9 | 2025-07-19 | [63639](https://github.com/airbytehq/airbyte/pull/63639) | Update dependencies |
 | 0.0.8 | 2025-07-12 | [63053](https://github.com/airbytehq/airbyte/pull/63053) | Update dependencies |

@@ -210,6 +210,15 @@ tutorials:
 
 | Version     | Date       | Pull Request                                               | Subject                                                                                                                                                                           |
 |:------------|:-----------|:-----------------------------------------------------------|:----------------------------------------------------------------------------------------------------------------------------------------------------------------------------------|
+| 3.0.14 | 2025-11-11 | [69231](https://github.com/airbytehq/airbyte/pull/69231) | Upgrade to Bulk CDK 0.1.74. |
+| 3.0.13 | 2025-11-01 | [69126](https://github.com/airbytehq/airbyte/pull/69126) | Upgrade to Bulk CDK 0.1.61. |
+| 3.0.12      | 2025-10-29 | [69083](https://github.com/airbytehq/airbyte/pull/69083) | Fail loudly if Bigquery detects bad records. |
+| 3.0.11      | 2025-10-27 | [68671](https://github.com/airbytehq/airbyte/pull/68671) | Log record count per load job. |
+| 3.0.10      | 2025-10-21 | [67153](https://github.com/airbytehq/airbyte/pull/67153) | Implement new proto schema implementation |
+| 3.0.9       | 2025-10-16 | [68152](https://github.com/airbytehq/airbyte/pull/68152) | Update to new TableOperationsClient interface.                                                                                                                                    |
+| 3.0.8       | 2025-10-05 | [67078](https://github.com/airbytehq/airbyte/pull/67078) | Remove memory limit for sync jobs to improve performance and resource utilization.                                                                                                |
+| 3.0.7       | 2025-09-02 | [65905](https://github.com/airbytehq/airbyte/pull/65905) | Promoting release candidate 3.0.7-rc.1 to a main version.                                                                                                                         |
+| 3.0.7-rc.1  | 2025-08-27 | [65114](https://github.com/airbytehq/airbyte/pull/65114)   | Implement SOCKET+PROTO mode support.                                                                                                                                              |
 | 3.0.6       | 2025-07-21 | [63700](https://github.com/airbytehq/airbyte/pull/63700)   | Improve error reporting for Billing errors.                                                                                                                                       |
 | 3.0.5       | 2025-07-15 | [63312](https://github.com/airbytehq/airbyte/pull/63312)   | Pull in upstream fix to support null chars in GCS staging mode.                                                                                                                   |
 | 3.0.4       | 2025-07-15 | [63327](https://github.com/airbytehq/airbyte/pull/63327)   | Improve error reporting for Billing errors.                                                                                                                                       |

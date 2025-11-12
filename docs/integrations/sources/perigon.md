@@ -25,8 +25,17 @@ API Reference: https://docs.perigon.io/reference/all-news
 <details>
   <summary>Expand to review</summary>
 
-| Version          | Date              | Pull Request | Subject        |
-|------------------|-------------------|--------------|----------------|
+| Version | Date              | Pull Request | Subject        |
+|---------|-------------------|--------------|----------------|
+| 0.0.22 | 2025-10-29 | [68935](https://github.com/airbytehq/airbyte/pull/68935) | Update dependencies |
+| 0.0.21 | 2025-10-21 | [68283](https://github.com/airbytehq/airbyte/pull/68283) | Update dependencies |
+| 0.0.20 | 2025-10-14 | [67859](https://github.com/airbytehq/airbyte/pull/67859) | Update dependencies |
+| 0.0.19 | 2025-10-07 | [67499](https://github.com/airbytehq/airbyte/pull/67499) | Update dependencies |
+| 0.0.18 | 2025-09-30 | [66958](https://github.com/airbytehq/airbyte/pull/66958) | Update dependencies |
+| 0.0.17 | 2025-09-23 | [66414](https://github.com/airbytehq/airbyte/pull/66414) | Update dependencies |
+| 0.0.16 | 2025-09-09 | [65881](https://github.com/airbytehq/airbyte/pull/65881) | Update dependencies |
+| 0.0.15 | 2025-09-05 | [65966](https://github.com/airbytehq/airbyte/pull/65966) | Update to CDK v7.0.0 |
+| 0.0.14 | 2025-08-23 | [65190](https://github.com/airbytehq/airbyte/pull/65190) | Update dependencies |
 | 0.0.13 | 2025-08-16 | [64984](https://github.com/airbytehq/airbyte/pull/64984) | Update dependencies |
 | 0.0.12 | 2025-08-02 | [64182](https://github.com/airbytehq/airbyte/pull/64182) | Update dependencies |
 | 0.0.11 | 2025-07-26 | [63839](https://github.com/airbytehq/airbyte/pull/63839) | Update dependencies |

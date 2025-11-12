@@ -64,6 +64,10 @@ Follow these steps to set up SSO in Airbyte Cloud.
 
 #### Configure SSO in Airbyte
 
+:::info
+Currently, this portion of the setup can only be done by an Airbyte employee. Contact Support to proceed.
+:::
+
 1. In Airbyte, click **Settings**.
 
 2. Under **Organization**, click **General**.
@@ -264,9 +268,10 @@ global:
   auth:
     identityProvider: 
       type: generic-oidc
-      generic-oidc: 
+      genericOidc: 
         clientId: YOUR_CLIENT_ID
         audience: YOUR_AUDIENCE
+        extraScopes: YOUR_EXTRA_SCOPES
         issuer: YOUR_ISSUER
         endpoints: 
           authorizationServerEndpoint: YOUR_AUTH_ENDPOINT
@@ -278,6 +283,8 @@ You collect these values from Okta in the locations shown below.
 - `clientId`: In Okta's administrator panel, **Applications** > **Applications** > **Airbyte** > **General** tab > **Client ID**.
 
 - `audience`: In Okta's administrator panel, **Security** > **API** > **Authorization Servers** tab > **Audience**. Choose the audience for the authorization server you're using with Airbyte.
+
+- `extraScopes`: If you've defined extra scopes in your authorization server, you can reference them here. Extra scopes are included in the authorization code flow and are sometimes required to provide web apps like Airbyte with valid JSON web tokens. In Okta's administrator panel, **Security** > **API** > **Authorization Servers** tab > your authorization server > **Scopes**.
 
 - `issuer`: In your well-known endpoint, use the `issuer`.
 

@@ -45,11 +45,14 @@ class AggregateStageTest {
         val input = DataFlowStageIO(raw = rawMock, munged = recordDto)
 
         val mockAggregate = mockk<Aggregate>()
-        val mockPartitionHistogram = mockk<PartitionHistogram>()
+        val mockCountsHistogram = mockk<PartitionHistogram>()
+        val mockBytesHistogram = mockk<PartitionHistogram>()
         val aggregateEntry =
             mockk<AggregateEntry> {
+                every { key } returns streamDescriptor
                 every { value } returns mockAggregate
-                every { partitionHistogram } returns mockPartitionHistogram
+                every { partitionCountsHistogram } returns mockCountsHistogram
+                every { partitionBytesHistogram } returns mockBytesHistogram
             }
         coEvery { store.acceptFor(streamDescriptor, recordDto) } returns Unit
         coEvery { store.removeNextComplete(emittedAtMs) } returns aggregateEntry andThen null
@@ -64,7 +67,9 @@ class AggregateStageTest {
             outputFlow.emit(
                 DataFlowStageIO(
                     aggregate = mockAggregate,
-                    partitionHistogram = mockPartitionHistogram
+                    partitionCountsHistogram = mockCountsHistogram,
+                    partitionBytesHistogram = mockBytesHistogram,
+                    mappedDesc = streamDescriptor,
                 )
             )
         }
@@ -119,19 +124,25 @@ class AggregateStageTest {
         val input = DataFlowStageIO(raw = rawMock, munged = recordDto)
 
         val mockAggregate1 = mockk<Aggregate>()
-        val mockPartitionHistogram1 = mockk<PartitionHistogram>()
+        val mockCounts1 = mockk<PartitionHistogram>()
+        val mockBytes1 = mockk<PartitionHistogram>()
         val aggregateEntry1 =
             mockk<AggregateEntry> {
+                every { key } returns streamDescriptor
                 every { value } returns mockAggregate1
-                every { partitionHistogram } returns mockPartitionHistogram1
+                every { partitionCountsHistogram } returns mockCounts1
+                every { partitionBytesHistogram } returns mockBytes1
             }
 
         val mockAggregate2 = mockk<Aggregate>()
-        val mockPartitionHistogram2 = mockk<PartitionHistogram>()
+        val mockCounts2 = mockk<PartitionHistogram>()
+        val mockBytes2 = mockk<PartitionHistogram>()
         val aggregateEntry2 =
             mockk<AggregateEntry> {
+                every { key } returns streamDescriptor
                 every { value } returns mockAggregate2
-                every { partitionHistogram } returns mockPartitionHistogram2
+                every { partitionCountsHistogram } returns mockCounts2
+                every { partitionBytesHistogram } returns mockBytes2
             }
 
         coEvery { store.acceptFor(streamDescriptor, recordDto) } returns Unit
@@ -150,7 +161,9 @@ class AggregateStageTest {
             outputFlow.emit(
                 DataFlowStageIO(
                     aggregate = mockAggregate1,
-                    partitionHistogram = mockPartitionHistogram1
+                    partitionCountsHistogram = mockCounts1,
+                    partitionBytesHistogram = mockBytes1,
+                    mappedDesc = streamDescriptor,
                 )
             )
         }
@@ -158,7 +171,9 @@ class AggregateStageTest {
             outputFlow.emit(
                 DataFlowStageIO(
                     aggregate = mockAggregate2,
-                    partitionHistogram = mockPartitionHistogram2
+                    partitionCountsHistogram = mockCounts2,
+                    partitionBytesHistogram = mockBytes2,
+                    mappedDesc = streamDescriptor,
                 )
             )
         }

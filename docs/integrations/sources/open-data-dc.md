@@ -43,6 +43,14 @@ MARID is the Master Address Repository ID associated with all addresses within t
 
 | Version          | Date              | Pull Request | Subject        |
 |------------------|-------------------|--------------|----------------|
+| 0.0.40 | 2025-10-29 | [68708](https://github.com/airbytehq/airbyte/pull/68708) | Update dependencies |
+| 0.0.39 | 2025-10-21 | [68400](https://github.com/airbytehq/airbyte/pull/68400) | Update dependencies |
+| 0.0.38 | 2025-10-14 | [67748](https://github.com/airbytehq/airbyte/pull/67748) | Update dependencies |
+| 0.0.37 | 2025-10-07 | [67424](https://github.com/airbytehq/airbyte/pull/67424) | Update dependencies |
+| 0.0.36 | 2025-09-30 | [66926](https://github.com/airbytehq/airbyte/pull/66926) | Update dependencies |
+| 0.0.35 | 2025-09-23 | [66621](https://github.com/airbytehq/airbyte/pull/66621) | Update dependencies |
+| 0.0.34 | 2025-09-09 | [65841](https://github.com/airbytehq/airbyte/pull/65841) | Update dependencies |
+| 0.0.33 | 2025-08-23 | [65197](https://github.com/airbytehq/airbyte/pull/65197) | Update dependencies |
 | 0.0.32 | 2025-08-09 | [64741](https://github.com/airbytehq/airbyte/pull/64741) | Update dependencies |
 | 0.0.31 | 2025-08-02 | [64251](https://github.com/airbytehq/airbyte/pull/64251) | Update dependencies |
 | 0.0.30 | 2025-07-26 | [63880](https://github.com/airbytehq/airbyte/pull/63880) | Update dependencies |

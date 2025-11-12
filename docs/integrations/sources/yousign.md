@@ -30,6 +30,14 @@ API Reference: https://developers.yousign.com/reference/oas-specification
 
 | Version          | Date              | Pull Request | Subject        |
 |------------------|-------------------|--------------|----------------|
+| 0.0.25 | 2025-10-29 | [68960](https://github.com/airbytehq/airbyte/pull/68960) | Update dependencies |
+| 0.0.24 | 2025-10-21 | [68435](https://github.com/airbytehq/airbyte/pull/68435) | Update dependencies |
+| 0.0.23 | 2025-10-14 | [68009](https://github.com/airbytehq/airbyte/pull/68009) | Update dependencies |
+| 0.0.22 | 2025-10-07 | [67249](https://github.com/airbytehq/airbyte/pull/67249) | Update dependencies |
+| 0.0.21 | 2025-09-30 | [66851](https://github.com/airbytehq/airbyte/pull/66851) | Update dependencies |
+| 0.0.20 | 2025-09-24 | [66465](https://github.com/airbytehq/airbyte/pull/66465) | Update dependencies |
+| 0.0.19 | 2025-09-09 | [65741](https://github.com/airbytehq/airbyte/pull/65741) | Update dependencies |
+| 0.0.18 | 2025-08-24 | [65444](https://github.com/airbytehq/airbyte/pull/65444) | Update dependencies |
 | 0.0.17 | 2025-08-09 | [64852](https://github.com/airbytehq/airbyte/pull/64852) | Update dependencies |
 | 0.0.16 | 2025-08-02 | [64402](https://github.com/airbytehq/airbyte/pull/64402) | Update dependencies |
 | 0.0.15 | 2025-07-26 | [64075](https://github.com/airbytehq/airbyte/pull/64075) | Update dependencies |

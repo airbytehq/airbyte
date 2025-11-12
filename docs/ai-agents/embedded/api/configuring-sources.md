@@ -1,76 +1,189 @@
 ---
+
 products: embedded
+
 ---
 
 # Authentication & Token Management
 
 ## Overview
+
 Airbyte Embedded uses a two-tier authentication system:
+
 1. **Organization-level tokens**: Your main API credentials for managing templates and connections
 2. **User-scoped tokens**: Temporary tokens that allow end-users to configure sources in their isolated workspaces
 
-## Generating User-Scoped Tokens
+For complete authentication documentation including widget tokens and region selection, see [Authentication](./authentication.md).
+
+## Generating user-scoped tokens
 
 When collecting credentials from your users, generate a scoped access token that only has permissions to read and modify integrations in their specific workspace. This follows the principle of least privilege and ensures user data isolation.
 
-This can be done by submitting a request to
+This can be done by submitting a request to:
 
-```
-curl --location 'https://api.airbyte.ai/api/v1/embedded/widget_token' \
---header 'Content-Type: application/json'\
--H 'Authorization: Bearer <token>' \
---header 'Accept: application/json' \
---data '{
-  "externalUserId": "<external_user_id>", 
-  "organizationId": "<organization_id>",
-  "allowedOrigin": "https://api.airbyte.ai"
-}'
+```bash
+curl --location 'https://api.airbyte.ai/api/v1/embedded/scoped-token' \
+
+  --header 'Content-Type: application/json' \
+  --header 'Authorization: Bearer <your_access_token>' \
+  --header 'X-Organization-Id: <your_organization_id>' \
+  --data '{
+
+    "workspace_name": "your_workspace_name",
+    "region_id": "optional_region_id"
+  }'
+
 ```
 
 Where:
-- externalUserId is a unique identifier within your organization
-- allowedOrigin is the origin where you're embedding the widget (used for CORS validation). It can be an arbitrary string if you're not using the Embedded Widget.
+
+- `workspace_name` is a unique identifier within your organization for each customer's tenant
+- `region_id` (optional) is the region where the workspace should be created:
+  - US region: `645a183f-b12b-4c6e-8ad3-99e165603450` (default)
+  - EU region: `b9e48d61-f082-4a14-a8d0-799a907938cb`
 
 The API will return a JSON object with a token string:
-```
-{"token":"eyJ0b2tlbiI6ImV5SmhiR2NpT2lKSVV6STFOaUo5LmV5SmhkV1FpT2lKaGFYSmllWFJsTFhObGNuWmxjaUlzSW5OMVlpSTZJbVUyTUdRNE1XRTFMVGt6WkdZdE5HWTVZUzA0TURFekxXSmlZbVkzT1ROalpqQmhNaUlzSW1sdkxtRnBjbUo1ZEdVdVlYVjBhQzUzYjNKcmMzQmhZMlZmYzJOdmNHVWlPbnNpZDI5eWEzTndZV05sU1dRaU9pSm1ZbUU0TVRJeE9DMHpORFkzTFRRMU9EZ3RZVGhrTlMxaE9ETTVObU5rWlRaak1ETWlmU3dpWVdOMElqcDdJbk4xWWlJNkltWmtOR1kzWVdNd0xURmhaREV0TkRJME9DMWlZekZqTFRZNU1HSXdPREk0T1RVNU9TSjlMQ0p5YjJ4bGN5STZXeUpGVFVKRlJFUkZSRjlGVGtSZlZWTkZVaUpkTENKcGMzTWlPaUpvZEhSd2N6b3ZMMk5zYjNWa0xtRnBjbUo1ZEdVdVkyOXRJaXdpZEhsd0lqb2lhVzh1WVdseVlubDBaUzVoZFhSb0xtVnRZbVZrWkdWa1gzWXhJaXdpWlhod0lqb3hOelV6TXpFNE1EVXdmUS4tZ0xJYkQ2OVZ4VUpyajE2QnluSTJhMTJjTDZwU19lVlNTZGxMVGdIbTdFIiwid2lkZ2V0VXJsIjoiaHR0cHM6Ly9jbG91ZC5haXJieXRlLmNvbS9lbWJlZGRlZC13aWRnZXQ/d29ya3NwYWNlSWQ9ZmJhODEyMTgtMzQ2Ny00NTg4LWE4ZDUtYTgzOTZjZGU2YzAzJmFsbG93ZWRPcmlnaW49aHR0cHMlM0ElMkYlMkZhcGkuYWlyYnl0ZS5haSJ9"}
-```
 
-## Understanding the Token Response
+```json
+{
+  "token": "eyJ0b2tlbiI6ImV5SmhiR2NpT2lKSVV6STFOaUo5..."
+}
 
-The response contains:
-- `token`: A JWT token scoped to the user's workspace 
-- `widgetUrl`: A pre-configured URL for the Airbyte Embedded Widget
-
-### Using with the Embedded Widget
-Pass the entire response directly to the Airbyte Embedded Widget - no additional processing needed.
-
-### Using with Custom Implementation  
-If building a custom integration, base64 decode the token field to extract the scoped access token:
-
-Here's an example decoded token:
-```
-{"token":"eyJhbGciOiJIUzI1NiJ9.eyJhdWQiOiJhaXJieXRlLXNlcnZlciIsInN1YiI6ImU2MGQ4MWE1LTkzZGYtNGY5YS04MDEzLWJiYmY3OTNjZjBhMiIsImlvLmFpcmJ5dGUuYXV0aC53b3Jrc3BhY2Vfc2NvcGUiOnsid29ya3NwYWNlSWQiOiJmYmE4MTIxOC0zNDY3LTQ1ODgtYThkNS1hODM5NmNkZTZjMDMifSwiYWN0Ijp7InN1YiI6ImZkNGY3YWMwLTFhZDEtNDI0OC1iYzFjLTY5MGIwODI4OTU5OSJ9LCJyb2xlcyI6WyJFTUJFRERFRF9FTkRfVVNFUiJdLCJpc3MiOiJodHRwczovL2Nsb3VkLmFpcmJ5dGUuY29tIiwidHlwIjoiaW8uYWlyYnl0ZS5hdXRoLmVtYmVkZGVkX3YxIiwiZXhwIjoxNzUzMzE4MDUwfQ.-gLIbD69VxUJrj16BynI2a12cL6pS_eVSSdlLTgHm7E","widgetUrl":"https://cloud.airbyte.com/embedded-widget?workspaceId=fba81218-3467-4588-a8d5-a8396cde6c03&allowedOrigin=https%3A%2F%2Fapi.airbyte.ai"}
 ```
 
-You can use the value of this token string as bearer token when creating a source.
+## Understanding the token response
 
-# Creating a Source
+The response contains a scoped JWT token that can be used to:
+
+- Create and manage sources in the workspace
+- List available source templates
+- Create connections from sources
+
+### Using the scoped token
+
+Use the token as a Bearer token in subsequent API calls:
+
+```bash
+curl https://api.airbyte.ai/api/v1/embedded/sources \
+
+  -H 'Authorization: Bearer <scoped_token>'
+
+```
+
+For widget integration, see [Authentication - Widget Token](./authentication.md#widget-token).
+
+## Creating a Source
 
 You'll need 3 pieces of information to create a source for your users:
+
 1. Their workspace ID
 2. The ID of the [Source Template](./source-templates.md) used
 3. The connection configuration
 
+## Basic source creation
+
 Here is an example request:
-```
-curl 'https://api.airbyte.ai/api/v1/integrations/sources/' \
-  -H 'authorization: Bearer <token>' \
-  -H 'content-type: application/json' \
-  --data-raw '{"workspace_id":"<workspace_id>","source_config_template_id":"<source_template_id>","connection_configuration":{}}'
+
+```bash
+curl --location 'https://api.airbyte.ai/api/v1/embedded/sources' \
+
+  --header 'Content-Type: application/json' \
+  --header 'Authorization: Bearer <scoped_token>' \
+  --header 'X-Organization-Id: <your_organization_id>' \
+  --data '{
+
+    "name": "your_source_name",
+    "workspace ID": "your_workspace ID",
+    "source_template_id": "your_source_template_id",
+    "source_config": {
+      // your source configuration fields here
+    }
+  }'
+
 ```
 
 The connection configuration should include all required fields from the connector specification, except for the ones included as default values in your source template.
+
 You can find the full connector specification in the [Connector Registry](https://connectors.airbyte.com/files/registries/v0/cloud_registry.json).
 
-You can find the [reference docs for creating a source here](https://api.airbyte.ai/api/v1/redoc#tag/Embedded/operation/create_embedded_sources)
+You can find [the reference docs for creating a source here](https://api.airbyte.ai/api/v1/docs#tag/Sources/operation/create_integrations_sources).
+
+## Filtering connection templates with tags
+
+When creating a source, you can control which connection templates are available by using tag filtering:
+
+```bash
+curl --location 'https://api.airbyte.ai/api/v1/embedded/sources' \
+
+  --header 'Content-Type: application/json' \
+  --header 'Authorization: Bearer <scoped_token>' \
+  --header 'X-Organization-Id: <your_organization_id>' \
+  --data '{
+
+    "name": "your_source_name",
+    "workspace ID": "your_workspace ID",
+    "source_template_id": "your_source_template_id",
+    "source_config": {},
+    "selected_connection_template_tags": ["analytics", "standard-sync"],
+    "selected_connection_template_tags_mode": "any"
+  }'
+
+```
+
+**Tag Selection Modes:**
+
+- `any` - Connection template must have at least one of the specified tags
+- `all` - Connection template must have all of the specified tags
+
+This allows you to customize which sync configurations are available based on customer tier, compliance requirements, or other criteria. See [Template Tags](./tags.md) for more information.
+
+## Controlling which streams are synced
+
+Stream selection is configured at the **source template level** using the `customization` field. This allows you to control which streams from a connector are included when connections are created from that template.
+
+### Stream selection modes
+
+There are three stream selection modes available:
+
+- `suggested` (default) - Only sync streams marked as "suggested" by the connector. If no streams are marked as suggested, all streams are synced.
+- `all` - Sync all available streams from the source
+- `whitelist` - Only sync specific streams that you explicitly list
+
+### Whitelisting specific streams
+
+To whitelist specific streams, configure your source template with the `whitelist` mode and provide a list of stream names:
+
+```bash
+curl --location 'https://api.airbyte.ai/api/v1/embedded/templates/sources' \
+  --header 'Content-Type: application/json' \
+  --header 'Authorization: Bearer <your_access_token>' \
+  --header 'X-Organization-Id: <your_organization_id>' \
+  --data '{
+    "name": "PostgreSQL Analytics Template",
+    "actor_definition_id": "decd338e-5647-4c0b-adf4-da0e75f5a750",
+    "partial_default_config": {
+      "ssl_mode": {"mode": "require"}
+    },
+    "customization": {
+      "stream_selection_mode": "whitelist",
+      "stream_whitelist": ["orders", "customers", "products"]
+    }
+  }'
+```
+
+**Important notes:**
+
+- Syncing all streams can cause perceived performance issues depending on the source
+- When using `whitelist` mode, you must provide a non-empty `stream_whitelist` array
+- Stream names must exactly match the stream names provided by the connector
+- When a source is created from this template, only the whitelisted streams will be available for syncing
+- To find available stream names for a connector, use the [discover endpoint](https://api.airbyte.ai/api/v1/docs#tag/Sources/operation/get_source_catalog)
+
+For more information about creating and configuring source templates, see [Source Templates](./source-templates.md).
+
+## Related documentation
+
+- [Source Templates](./source-templates.md) - Create and manage source templates
+- [Connection Templates](./connection-templates.md) - Configure sync behavior
+- [Template Tags](./tags.md) - Organize templates with tags
+- [Authentication](./authentication.md) - Token generation and management

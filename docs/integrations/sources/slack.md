@@ -24,7 +24,9 @@ If you are using a legacy Slack API Key, you can skip this section.
 :::
 
 :::warning
-Source Slack has a different API Budget Requests Policy for the Channel Messages and Threads streams (one request per minute). We suggest you create a separate connection for those streams so that you do not experience slower syncs across all Slack streams. Please visit [Rate limiting section](https://docs.airbyte.com/integrations/sources/slack#rate-limiting) for more info.
+**OAuth-only rate limit note:** When authenticating via **OAuth**, the Slack source applies a stricter API budget for the **Channel Messages** and **Threads** streams (effectively one request per minute). To avoid slowing down other Slack streams, we recommend creating a separate connection for these two streams. See the [Rate limiting](#rate-limiting) section for details.
+
+If you authenticate using a **legacy Slack API token**, this OAuth-specific limit does **not** apply.
 :::
 
 To create a Slack App, read this [tutorial](https://api.slack.com/tutorials/tracks/getting-a-token) on how to create an app, or follow these instructions. 
@@ -155,7 +157,14 @@ Expand to see details about Slack connector limitations and troubleshooting.
 Slack has [rate limit restrictions](https://api.slack.com/docs/rate-limits).
 
 ###### Rate Limits for Channel Messages and Threads streams: 
-Slack API [rate limits](https://api.slack.com/changelog/2025-05-terms-rate-limit-update-and-faq#what) for the [conversations.replies](https://api.slack.com/methods/conversations.replies) and [conversations.history](https://api.slack.com/methods/conversations.history) endpoints are now limited to one request per minute. Due to the new Source Slack policy, syncs of Channel Messages and Threads streams can be slow. If you want to sync data from Users, Channels and Channel Members streams in Source Slack more quickly, we recommended you create a separate connection for Channel Messages and Threads streams and other streams which observe a different rate limit policy. Please note that Users, Channels and Channel Members streams are not being read with the one request per minute policy, so their read time is only depends on how much data should be extracted.
+
+**OAuth authentication:** For apps authenticated via OAuth, the connector enforces a stricter budget on:
+- [`conversations.replies`](https://api.slack.com/methods/conversations.replies)
+- [`conversations.history`](https://api.slack.com/methods/conversations.history)
+
+These two streams are effectively limited to **one request per minute**. Consider creating a **separate connection** for them so other streams (Users, Channels, Channel Members, etc.) are not slowed down.
+
+**Legacy API token authentication:** When using a legacy Slack API token, this OAuth-specific one-per-minute policy does **not** apply; only Slack’s general rate limits apply.
 
 ### Troubleshooting
 
@@ -174,6 +183,18 @@ Slack API [rate limits](https://api.slack.com/changelog/2025-05-terms-rate-limit
 
 | Version    | Date       | Pull Request                                             | Subject                                                                                                                                                                |
 |:-----------|:-----------|:---------------------------------------------------------|:-----------------------------------------------------------------------------------------------------------------------------------------------------------------------|
+| 3.1.7 | 2025-10-29 | [68772](https://github.com/airbytehq/airbyte/pull/68772) | Update dependencies |
+| 3.1.6 | 2025-10-21 | [68282](https://github.com/airbytehq/airbyte/pull/68282) | Update dependencies |
+| 3.1.5 | 2025-10-14 | [67767](https://github.com/airbytehq/airbyte/pull/67767) | Update dependencies |
+| 3.1.4 | 2025-10-07 | [67449](https://github.com/airbytehq/airbyte/pull/67449) | Update dependencies |
+| 3.1.3 | 2025-10-06 | [67084](https://github.com/airbytehq/airbyte/pull/67084) | Update dependencies |
+| 3.1.2 | 2025-09-30 | [66566](https://github.com/airbytehq/airbyte/pull/66566) | Update to CDK v7 |
+| 3.1.1 | 2025-09-24 | [66640](https://github.com/airbytehq/airbyte/pull/66640) | Update dependencies |
+| 3.1.0 | 2025-09-18 | [66501](https://github.com/airbytehq/airbyte/pull/66501) | Promoting release candidate 3.1.0-rc.1 to a main version. |
+| 3.1.0-rc.1 | 2025-09-10 | [64160](https://github.com/airbytehq/airbyte/pull/64160) | Migrate to manifest-only.                                                                                                                                              |
+| 3.0.0      | 2025-09-10 | [65937](https://github.com/airbytehq/airbyte/pull/65937) | Add migration guide for missing state issue                                                                                                                            |
+| 2.2.0      | 2025-09-10 | [66155](https://github.com/airbytehq/airbyte/pull/66155) | Promoting release candidate 2.2.0-rc.7 to a main version.                                                                                                              |
+| 2.2.0-rc.7 | 2025-08-21 | [65132](https://github.com/airbytehq/airbyte/pull/65132) | Update API budget to depend on auth method (rate limits apply only with OAuth).                                                                                        |
 | 2.2.0-rc.6 | 2025-08-14 | [64553](https://github.com/airbytehq/airbyte/pull/64553) | Add API budget for Threads and Channel Messages streams.                                                                                                               |
 | 2.2.0-rc.5 | 2025-08-06 | [64530](https://github.com/airbytehq/airbyte/pull/64530) | Set use_cache = true for Channels and Channel Messages streams.                                                                                                        |
 | 2.2.0-rc.4 | 2025-08-04 | [64486](https://github.com/airbytehq/airbyte/pull/64486) | Add backoff strategy for Channels stream.                                                                                                                              |

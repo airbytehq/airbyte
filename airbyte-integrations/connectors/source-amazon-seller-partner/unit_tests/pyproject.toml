@@ -9,7 +9,7 @@ authors = ["Airbyte <contact@airbyte.io>"]
 package-mode = false
 [tool.poetry.dependencies]
 python = "^3.10,<3.13"
-airbyte-cdk = "^6"
+airbyte-cdk = "^7.1.0"
 pytest = "^8"
 pytest-lazy-fixtures = "^1.1.4"
 requests-mock = "^1.12.1"

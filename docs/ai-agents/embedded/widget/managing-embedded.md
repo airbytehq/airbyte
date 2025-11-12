@@ -10,25 +10,24 @@ Airbyte Embedded is built upon the Airbyte Platform. As the owner of your embedd
 
 ![Selected workspaces.](./assets/embedded-workspaces.png)
 
-
 ## Enabling Connectors within the Widget
 
-Source connectors can be configured to appear in the Embedded widget by creating a configuration template via the [`config_templates/sources` API endpoint.](https://reference.airbyte.com/reference/createconfigtemplate#/)
+Source connectors can be configured to appear in the Embedded widget by creating a configuration template [via the source_template endpoint](https://api.airbyte.ai/api/v1/docs#tag/Template-Sources/operation/create_integrations_templates_sources).
 
 The following example demonstrates how to use the API to create a new configuration template for the Faker connector, with a required “*count*” field.  To obtain the `source_connector_definition_id`, you can access this via the [Airbyte Connector Registry](https://connectors.airbyte.com/files/generated_reports/connector_registry_report.html).
 
 ```bash
 curl --request POST \
-  --url https://api.airbyte.ai/api/v1/embedded/config_templates/sources/ \
+  --url https://api.airbyte.ai/api/v1/integrations/templates/sources \
   --header 'Content-Type: application/json' \
   --header 'Authorization: Bearer <bearer id>' \
   --data '{
     "organization_id": "<organization id>",
-    "partial_default_config": {},
-    "actor_definition_id": "<actor id>"
+    "actor_definition_id": "<actor id>",
+    "partial_default_config": {}
   }'
 ```
 
 :::note
-This endpoint is only available to Embedded customers. You can only create new configuration templates, not update, modify, or delete existing ones.
+This endpoint is only available to Embedded customers.
 :::

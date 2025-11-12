@@ -38,6 +38,14 @@ The Zoho Books connector  enables seamless integration of financial data, automa
 
 | Version          | Date              | Pull Request | Subject        |
 |------------------|-------------------|--------------|----------------|
+| 0.0.40 | 2025-10-29 | [68980](https://github.com/airbytehq/airbyte/pull/68980) | Update dependencies |
+| 0.0.39 | 2025-10-21 | [68427](https://github.com/airbytehq/airbyte/pull/68427) | Update dependencies |
+| 0.0.38 | 2025-10-14 | [68012](https://github.com/airbytehq/airbyte/pull/68012) | Update dependencies |
+| 0.0.37 | 2025-10-07 | [67237](https://github.com/airbytehq/airbyte/pull/67237) | Update dependencies |
+| 0.0.36 | 2025-09-30 | [66856](https://github.com/airbytehq/airbyte/pull/66856) | Update dependencies |
+| 0.0.35 | 2025-09-24 | [66472](https://github.com/airbytehq/airbyte/pull/66472) | Update dependencies |
+| 0.0.34 | 2025-09-09 | [65720](https://github.com/airbytehq/airbyte/pull/65720) | Update dependencies |
+| 0.0.33 | 2025-08-23 | [65434](https://github.com/airbytehq/airbyte/pull/65434) | Update dependencies |
 | 0.0.32 | 2025-08-09 | [64870](https://github.com/airbytehq/airbyte/pull/64870) | Update dependencies |
 | 0.0.31 | 2025-08-02 | [64361](https://github.com/airbytehq/airbyte/pull/64361) | Update dependencies |
 | 0.0.30 | 2025-07-26 | [64069](https://github.com/airbytehq/airbyte/pull/64069) | Update dependencies |

@@ -1,5 +1,6 @@
 ---
 dockerRepository: airbyte/source-service-now
+enterprise-connector: true
 ---
 # Source ServiceNow
 

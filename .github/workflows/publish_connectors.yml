@@ -16,6 +16,11 @@ on:
         description: "Whether to publish as a pre-release (tagged for development) or as a main-release (production)"
         default: pre-release
         type: string
+      publish-java-tars:
+        description: "Whether to publish Java connector tar files."
+        required: false
+        default: false
+        type: boolean
   workflow_dispatch:
     inputs:
       connectors:
@@ -29,18 +34,25 @@ on:
         options:
           - pre-release
           - main-release
+      publish-java-tars:
+        description: "Whether to publish Java connector tar files."
+        required: false
+        default: false
+        type: boolean
 jobs:
   publish_options:
     name: Resolve options for connector publishing
     runs-on: ubuntu-24.04
     steps:
       - name: Checkout Airbyte
-        uses: actions/checkout@v4
+        # v4
+        uses: actions/checkout@08eba0b27e820071cde6df949e0beb9ba4906955
         with:
           fetch-depth: 2 # Required so we can conduct a diff from the previous commit to understand what connectors have changed.
+          submodules: true # Required for the enterprise repo since it uses a submodule that needs to exist for this workflow to run successfully.
       - name: List connectors to publish [manual]
         id: list-connectors-manual
-        if: github.event_name == 'workflow_dispatch' || github.event_name == 'workflow_call'
+        if: github.event_name == 'workflow_dispatch'
         shell: bash
         # When invoked manually, we run on the connectors specified in the input.
         run: echo connectors-to-publish=$(./poe-tasks/parse-connector-name-args.sh ${{ inputs.connectors }}) | tee -a $GITHUB_OUTPUT
@@ -61,10 +73,24 @@ jobs:
           else
             echo "release-type=${{ inputs.release-type }}" | tee -a $GITHUB_OUTPUT
           fi
+      - name: Resolve publish-java-tars
+        id: resolve-publish-java-tars
+        shell: bash
+        run: |
+          # If workflow is triggered on merge to master, we can assume
+          # the workflow is running in the open-source repo and we always want to publish.
+          if [[ "${{ inputs.publish-java-tars }}" == "" ]]; then
+            echo "publish-java-tars=true" | tee -a $GITHUB_OUTPUT
+          # if workflow is triggered manually, any other way, use the input publish-java-tars.
+          else
+            echo "publish-java-tars=${{ inputs.publish-java-tars }}" | tee -a $GITHUB_OUTPUT
+          fi
     outputs:
       # Exactly one of the manual/master steps will run, so just OR them together.
       connectors-to-publish: ${{ steps.list-connectors-manual.outputs.connectors-to-publish || steps.list-connectors-master.outputs.connectors-to-publish }}
       release-type: ${{ steps.resolve-release-type.outputs.release-type }}
+      # publishing java tars is not optional if triggered by push to master (in the non-enterprise repo).
+      publish-java-tars: ${{ steps.resolve-publish-java-tars.outputs.publish-java-tars }}
   publish_connectors:
     name: Publish connectors
     needs: [publish_options]
@@ -76,23 +102,25 @@ jobs:
       fail-fast: false
     steps:
       - name: Checkout Airbyte
-        uses: actions/checkout@v4
+        # v4
+        uses: actions/checkout@08eba0b27e820071cde6df949e0beb9ba4906955
         with:
           fetch-depth: 2 # Required so we can conduct a diff from the previous commit to understand what connectors have changed.
+          submodules: true # Required for the enterprise repo since it uses a submodule that needs to exist for this workflow to run successfully.
 
       - name: Create docker buildx builder
         id: create-buildx-builder
         shell: bash
         run: docker buildx create --use --driver=docker-container --name builder --platform linux/amd64,linux/arm64
 
-      - uses: actions/setup-java@v4
+      - uses: actions/setup-java@c5195efecf7bdfc987ee8bae7a71cb8b11521c00 # v4.7.1
         with:
           distribution: zulu
           java-version: 21
           cache: gradle
 
       - name: Log in to Docker Hub
-        uses: docker/login-action@v3
+        uses: docker/login-action@5e57cd118135c172c3672efd75eb46360885c0ef # v3.6.0
         with:
           username: ${{ secrets.DOCKER_HUB_USERNAME }}
           password: ${{ secrets.DOCKER_HUB_PASSWORD }}
@@ -109,10 +137,12 @@ jobs:
         # v1
         uses: snok/install-poetry@76e04a911780d5b312d89783f7b1cd627778900a
         with:
+          # There are a few uses of `poetry run --directory` in various scripts.
+          # If we upgrade to 2.x, those need to be switched to `--project`.
           version: 1.8.5
 
       - name: Install the latest version of uv
-        uses: astral-sh/setup-uv@v6
+        uses: astral-sh/setup-uv@d0cc045d04ccac9d8b7881df0226f9e82c39688e # v6.8.0
 
       - name: Install Poe
         run: |
@@ -174,7 +204,7 @@ jobs:
 
       - name: Publish JVM connectors tar file
         id: publish-JVM-connectors-tar-file
-        if: steps.connector-metadata.outputs.connector-language == 'java'
+        if: steps.connector-metadata.outputs.connector-language == 'java' && needs.publish_options.outputs.publish-java-tars == 'true'
         shell: bash
         run: ./poe-tasks/upload-java-connector-tar-file.sh --name ${{ matrix.connector }} --release-type ${{ needs.publish_options.outputs.release-type }}
         env:
@@ -202,15 +232,124 @@ jobs:
           SPEC_CACHE_GCS_CREDENTIALS: ${{ secrets.SPEC_CACHE_SERVICE_ACCOUNT_KEY_PUBLISH }}
           METADATA_SERVICE_GCS_CREDENTIALS: ${{ secrets.METADATA_SERVICE_PROD_GCS_CREDENTIALS }}
 
+  # The connector registries are generated from the spec cache,
+  # and in some cases, there are cross-connector dependencies.
+  # Specifically, connectors with a strict-encrypt variant need the strict-encrypt's spec cache
+  # to generate their registry entry.
+  # For example, generating destination-postgres's cloud.json will read from
+  # destination-postgres-strict-encrypt's spec cache.
+  # As a result, we need publish_connector_registry_entries to run after publish_connectors is fully completed.
+  # Once strict-encrypt connectors are all gone, we can merge these steps together
+  # (i.e. move the generate-XYZ-registry-entry steps to the bottom of publish_connectors).
+  publish_connector_registry_entries:
+    name: Publish connector registry entries
+    needs: [publish_options, publish_connectors]
+    runs-on: ubuntu-24.04
+    strategy:
+      matrix: ${{ fromJson(needs.publish_options.outputs.connectors-to-publish) }}
+      max-parallel: 5
+      # Allow all jobs to run, even if one fails
+      fail-fast: false
+    steps:
+      - name: Checkout Airbyte
+        # v4
+        uses: actions/checkout@08eba0b27e820071cde6df949e0beb9ba4906955
+        with:
+          fetch-depth: 2 # Required so we can conduct a diff from the previous commit to understand what connectors have changed.
+          submodules: true # Required for the enterprise repo since it uses a submodule that needs to exist for this workflow to run successfully.
+
+      - name: Set up Python
+        # v5
+        uses: actions/setup-python@a26af69be951a213d495a4c3e4e4022e16d87065
+        with:
+          python-version: "3.11"
+          check-latest: true
+          update-environment: true
+
+      - name: Install and configure Poetry
+        # v1
+        uses: snok/install-poetry@76e04a911780d5b312d89783f7b1cd627778900a
+        with:
+          version: 1.8.5
+
+      - name: Install metadata_service
+        run: poetry install --directory airbyte-ci/connectors/metadata_service/lib
+
+      - name: Install the latest version of uv
+        uses: astral-sh/setup-uv@d0cc045d04ccac9d8b7881df0226f9e82c39688e # v6.8.0
+
+      - name: Install Poe
+        run: |
+          # Install Poe so we can run the connector tasks:
+          uv tool install poethepoet
+
+      - name: Get connector metadata
+        id: connector-metadata
+        working-directory: airbyte-integrations/connectors/${{ matrix.connector }}
+        run: |
+          set -euo pipefail
+          echo "connector-language=$(poe -qq get-language)" | tee -a $GITHUB_OUTPUT
+          echo "connector-version=$(poe -qq get-version)" | tee -a $GITHUB_OUTPUT
+          CONNECTOR_VERSION=$(poe -qq get-version)
+          if [[ "${{ inputs.release-type }}" == "pre-release" ]]; then
+            hash=$(git rev-parse --short=10 HEAD)
+            echo "docker-image-tag=${CONNECTOR_VERSION}-dev.${hash}" | tee -a $GITHUB_OUTPUT
+            echo "release-type-flag=--pre-release" | tee -a $GITHUB_OUTPUT
+          else
+            echo "docker-image-tag=${CONNECTOR_VERSION}" | tee -a $GITHUB_OUTPUT
+            echo "release-type-flag=--main-release" | tee -a $GITHUB_OUTPUT
+          fi
+
+      - name: Generate OSS Registry Entry
+        id: generate-oss-registry-entry
+        shell: bash
+        run: |
+          echo "Generating OSS registry entry for ${{ matrix.connector }}"
+          poetry run --directory airbyte-ci/connectors/metadata_service/lib \
+            metadata_service generate-registry-entry \
+            --bucket-name prod-airbyte-cloud-connector-metadata-service \
+            --metadata-file-path "airbyte-integrations/connectors/${{ matrix.connector }}/metadata.yaml" \
+            --registry-type oss \
+            --docker-image-tag ${{ steps.connector-metadata.outputs.docker-image-tag }} \
+            ${{ steps.connector-metadata.outputs.release-type-flag }}
+        env:
+          GCS_CREDENTIALS: ${{ secrets.METADATA_SERVICE_PROD_GCS_CREDENTIALS }}
+          SLACK_TOKEN: ${{ secrets.SLACK_BOT_TOKEN_AIRBYTE_TEAM }}
+
+      - name: Generate Cloud Registry Entry
+        id: generate-cloud-registry-entry
+        shell: bash
+        run: |
+          echo "Generating Cloud registry entry for ${{ matrix.connector }}"
+          poetry run --directory airbyte-ci/connectors/metadata_service/lib \
+            metadata_service generate-registry-entry \
+            --bucket-name prod-airbyte-cloud-connector-metadata-service \
+            --metadata-file-path "airbyte-integrations/connectors/${{ matrix.connector }}/metadata.yaml" \
+            --registry-type cloud \
+            --docker-image-tag ${{ steps.connector-metadata.outputs.docker-image-tag }} \
+            ${{ steps.connector-metadata.outputs.release-type-flag }}
+        env:
+          GCS_CREDENTIALS: ${{ secrets.METADATA_SERVICE_PROD_GCS_CREDENTIALS }}
+          SLACK_TOKEN: ${{ secrets.SLACK_BOT_TOKEN_AIRBYTE_TEAM }}
+
+  generate_connector_registry:
+    name: Generate connector registry
+    needs: [publish_connector_registry_entries]
+    uses: ./.github/workflows/generate-connector-registries.yml
+    secrets: inherit
+
   notify-failure-slack-channel:
     name: "Notify Slack Channel on Publish Failures"
     runs-on: ubuntu-24.04
     needs:
-      - publish_connectors
+      - publish_connector_registry_entries
     if: ${{ always() && contains(needs.*.result, 'failure') && github.ref == 'refs/heads/master' }}
     steps:
       - name: Checkout Airbyte
-        uses: actions/checkout@v4
+        # v4
+        uses: actions/checkout@08eba0b27e820071cde6df949e0beb9ba4906955
+        with:
+          submodules: true # Required for the enterprise repo since it uses a submodule that needs to exist for this workflow to run successfully.
       - name: Match GitHub User to Slack User
         id: match-github-to-slack-user
         uses: ./.github/actions/match-github-to-slack-user
@@ -219,7 +358,7 @@ jobs:
           GITHUB_API_TOKEN: ${{ secrets.GITHUB_TOKEN }}
       - name: Send publish failures to connector-publish-failures channel
         id: slack
-        uses: slackapi/slack-github-action@v1.26.0
+        uses: slackapi/slack-github-action@70cd7be8e40a46e8b0eced40b0de447bdb42f68e # v1.26.0
         with:
           # This data can be any valid JSON from a previous step in the GitHub Action
           payload: |
@@ -235,11 +374,14 @@ jobs:
     name: "Notify PagerDuty on Publish Failures"
     runs-on: ubuntu-24.04
     needs:
-      - publish_connectors
+      - publish_connector_registry_entries
     if: ${{ always() && contains(needs.*.result, 'failure') && github.ref == 'refs/heads/master' }}
     steps:
       - name: Checkout Airbyte
-        uses: actions/checkout@v4
+        # v4
+        uses: actions/checkout@08eba0b27e820071cde6df949e0beb9ba4906955
+        with:
+          submodules: true # Required for the enterprise repo since it uses a submodule that needs to exist for this workflow to run successfully.
       - name: Notify PagerDuty
         id: pager-duty
         uses: ./.github/actions/send-pager-duty-event

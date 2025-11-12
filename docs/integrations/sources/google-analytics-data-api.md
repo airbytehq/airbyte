@@ -8,13 +8,11 @@ This page contains the setup guide and reference information for the [Google Ana
 
 Google Analytics 4 (GA4) is the latest version of Google Analytics, introduced in 2020. It offers a new data model that emphasizes events and user properties, rather than pageviews and sessions. This updated model allows for more flexibility and customization in reporting, and provides more accurate measurement of user behavior across various devices and platforms.
 
-:::note
-The [Google Analytics Universal Analytics (UA) connector](https://docs.airbyte.com/integrations/sources/google-analytics-v4) utilizes the older version of Google Analytics, which was the standard for tracking website and app user behavior before the introduction of GA4. Please note that the UA connector is being deprecated in favor of this one. As of July 1, 2023, standard Universal Analytics properties no longer process hits. For further reading on the transition from UA to GA4, refer to [Google's official support page](https://support.google.com/analytics/answer/11583528).
-:::
+This connector works with Google Analytics 4 (GA4) and [Google Analytics 360](https://support.google.com/analytics/answer/11202874?sjid=13261024199799321083-NC#limits) (GA360) properties.
 
 ## Prerequisites
 
-- A Google Analytics account with access to the GA4 Property(Property Ids) you want to sync
+- A Google Analytics account with access to the GA4 property and property ID you want to sync
 
 ## Setup guide
 
@@ -272,6 +270,15 @@ The Google Analytics connector is subject to Google Analytics Data API quotas. P
 
 | Version        | Date       | Pull Request                                             | Subject                                                                                                                                                                |
 |:---------------|:-----------|:---------------------------------------------------------|:-----------------------------------------------------------------------------------------------------------------------------------------------------------------------|
+| 2.9.15 | 2025-10-29 | [69011](https://github.com/airbytehq/airbyte/pull/69011) | Update dependencies |
+| 2.9.14 | 2025-10-21 | [68302](https://github.com/airbytehq/airbyte/pull/68302) | Update dependencies |
+| 2.9.13 | 2025-10-14 | [tbd](https://github.com/airbytehq/airbyte/pull/tbd)     | Promoting release candidate 2.9.13-rc.1 to a main version. |
+| 2.9.13-rc.1 | 2025-10-08 | [67148](https://github.com/airbytehq/airbyte/pull/67148) | Add dimensionFilter into the body of requests for custom reports and custom DimensionFilterConfigTransformation component                                              |
+| 2.9.12 | 2025-10-07 | [67262](https://github.com/airbytehq/airbyte/pull/67262) | Update dependencies |
+| 2.9.11 | 2025-09-30 | [66306](https://github.com/airbytehq/airbyte/pull/66306) | Update dependencies |
+| 2.9.10 | 2025-09-10 | [66008](https://github.com/airbytehq/airbyte/pull/66008) | Update to CDK v7 |
+| 2.9.9 | 2025-09-09 | [65895](https://github.com/airbytehq/airbyte/pull/65895) | Update dependencies |
+| 2.9.8 | 2025-08-23 | [65311](https://github.com/airbytehq/airbyte/pull/65311) | Update dependencies |
 | 2.9.7 | 2025-08-09 | [64631](https://github.com/airbytehq/airbyte/pull/64631) | Update dependencies |
 | 2.9.6 | 2025-08-02 | [64254](https://github.com/airbytehq/airbyte/pull/64254) | Update dependencies |
 | 2.9.5 | 2025-07-26 | [63820](https://github.com/airbytehq/airbyte/pull/63820) | Update dependencies |

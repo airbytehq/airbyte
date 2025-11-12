@@ -45,10 +45,14 @@ This mode throws an exception after receiving a configurable number of messages.
 <details>
   <summary>Expand to review</summary>
 
-The OSS and Cloud variants have the same version number starting from version `0.2.2`.
+The self-managed and Cloud variants have the same version number starting from version `0.2.2`.
 
 | Version     | Date       | Pull Request                                             | Subject                                                                                      |
 |:------------|:-----------|:---------------------------------------------------------|:---------------------------------------------------------------------------------------------|
+| 0.8.6 | 2025-11-01 | [69128](https://github.com/airbytehq/airbyte/pull/69128) | Upgrade to Bulk CDK 0.1.61. |
+| 0.8.5       | 2025-10-21 | [67153](https://github.com/airbytehq/airbyte/pull/67153) | Implement new proto schema implementation |
+| 0.8.4       | 2025-09-24 | [66684](https://github.com/airbytehq/airbyte/pull/66684) | Pin to CDK artifact.                                                                         |
+| 0.8.3       | 2025-08-12 | [65999](https://github.com/airbytehq/airbyte/pull/65999) | Testing publishing flow.                                                                     |
 | 0.8.2       | 2025-08-12 | [64897](https://github.com/airbytehq/airbyte/pull/64897) | Testing publishing flow.                                                                     |
 | 0.8.1       | 2025-07-30 | [64117](https://github.com/airbytehq/airbyte/pull/64117) | Re-release with latest CDK for socket related fixes.                                         |
 | 0.8.0       | 2025-06-17 | [61585](https://github.com/airbytehq/airbyte/pull/61585) | Upgrade dev null to the new data channel based architecture.                                 |

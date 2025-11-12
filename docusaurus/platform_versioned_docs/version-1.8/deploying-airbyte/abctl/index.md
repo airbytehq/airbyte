@@ -337,7 +337,7 @@ abctl has three commands: `local`, `images`, and `version`. Most commands have s
 
     | Name      | Default | Description                       | Example |
     | --------- | ------- | --------------------------------- | ------- |
-    | --restart | ""      | Restarts the provided deployment. | webapp  |
+    | --restart | ""      | Restarts the provided deployment. | server  |
 
     </details>
 

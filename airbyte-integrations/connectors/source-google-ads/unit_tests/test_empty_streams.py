@@ -1,14 +1,15 @@
 # Copyright (c) 2023 Airbyte, Inc., all rights reserved.
 
 import json
-from unittest.mock import patch
+from unittest.mock import MagicMock
 
+import pytest
+from source_google_ads.components import GAQL
 from source_google_ads.source import SourceGoogleAds
 
-from .conftest import find_stream, get_source, read_full_refresh
+from .conftest import Obj, find_stream, get_source, read_full_refresh
 
 
-@patch.object(SourceGoogleAds, "get_customers", return_value=[])
 def test_query_shopping_performance_view_stream(customers, config, requests_mock):
     config["end_date"] = "2021-01-10"
     config["conversion_window_days"] = 3
@@ -34,7 +35,7 @@ def test_query_shopping_performance_view_stream(customers, config, requests_mock
                             "clientCustomer": "customers/123",
                             "manager": False,
                             "status": "ENABLED",
-                            "id": "123",
+                            "id": "1234567890",  # WARNING: this value needs to match the value in the config
                         }
                     }
                 ]
@@ -71,7 +72,7 @@ def test_query_shopping_performance_view_stream(customers, config, requests_mock
 
     request_history = requests_mock.register_uri(
         "POST",
-        "https://googleads.googleapis.com/v20/customers/123/googleAds:search",
+        "https://googleads.googleapis.com/v20/customers/123/googleAds:searchStream",
         shopping_performance_view_response,
     )
 
@@ -106,8 +107,7 @@ def test_query_shopping_performance_view_stream(customers, config, requests_mock
     assert request_json["query"] == expected_query
 
 
-@patch.object(SourceGoogleAds, "get_customers", return_value=[])
-def test_custom_query_stream(customers, config_for_custom_query_tests, requests_mock):
+def test_custom_query_stream(customers, config_for_custom_query_tests, requests_mock, mocker):
     config_for_custom_query_tests["end_date"] = "2021-01-10"
     config_for_custom_query_tests["conversion_window_days"] = 1
     config_for_custom_query_tests["credentials"]["access_token"] = "access_token"
@@ -168,63 +168,38 @@ def test_custom_query_stream(customers, config_for_custom_query_tests, requests_
 
     # Register mocks
     requests_mock.register_uri("POST", "https://www.googleapis.com/oauth2/v3/token", access_token_response)
-    requests_mock.get(
-        "https://googleads.googleapis.com/v20/googleAdsFields/campaign_budget.name",
-        json={
-            "resourceName": "googleAdsFields/campaign_budget.name",
-            "category": "ATTRIBUTE",
-            "dataType": "STRING",
-            "name": "campaign_budget.name",
-            "selectable": True,
-            "filterable": True,
-            "sortable": True,
-            "typeUrl": "",
-            "isRepeated": False,
-        },
+
+    query_object = MagicMock(
+        return_value={
+            "campaign_budget.name": Obj(data_type=Obj(name="STRING"), is_repeated=False),
+            "campaign.name": Obj(data_type=Obj(name="STRING"), is_repeated=False),
+            "metrics.interaction_event_types": Obj(
+                data_type=Obj(name="ENUM"),
+                is_repeated=True,
+                enum_values=["UNSPECIFIED", "UNKNOWN", "CLICK", "ENGAGEMENT", "VIDEO_VIEW", "NONE"],
+            ),
+            "segments.date": Obj(data_type=Obj(name="DATE"), is_repeated=False),
+        }
     )
-    requests_mock.get(
-        "https://googleads.googleapis.com/v20/googleAdsFields/campaign.name",
-        json={
-            "resourceName": "googleAdsFields/campaign.name",
-            "category": "ATTRIBUTE",
-            "dataType": "STRING",
-            "name": "campaign.name",
-            "selectable": True,
-            "filterable": True,
-            "sortable": True,
-            "typeUrl": "",
-            "isRepeated": False,
-        },
+    mocker.patch(
+        "source_google_ads.components.CustomGAQuerySchemaLoader.google_ads_client", return_value=Obj(get_fields_metadata=query_object)
     )
-    requests_mock.get(
-        "https://googleads.googleapis.com/v20/googleAdsFields/metrics.interaction_event_types",
-        json={
-            "resourceName": "googleAdsFields/metrics.interaction_event_types",
-            "category": "METRIC",
-            "dataType": "ENUM",
-            "name": "metrics.interaction_event_types",
-            "selectable": True,
-            "filterable": True,
-            "sortable": False,
-            "enumValues": ["UNSPECIFIED", "UNKNOWN", "CLICK", "ENGAGEMENT", "VIDEO_VIEW", "NONE"],
-            "typeUrl": "google.ads.googleads.v20.enums.InteractionEventTypeEnum.InteractionEventType",
-            "isRepeated": True,
+
+    assert stream.get_json_schema() == {
+        "$schema": "http://json-schema.org/draft-07/schema#",
+        "type": "object",
+        "properties": {
+            "campaign_budget.name": {"type": ["string", "null"]},
+            "campaign.name": {"type": ["string", "null"]},
+            "metrics.interaction_event_types": {
+                "type": ["null", "array"],
+                "items": {"type": "string", "enum": ["UNSPECIFIED", "UNKNOWN", "CLICK", "ENGAGEMENT", "VIDEO_VIEW", "NONE"]},
+            },
+            "segments.date": {"type": ["string", "null"], "format": "date"},
         },
-    )
-    requests_mock.get(
-        "https://googleads.googleapis.com/v20/googleAdsFields/segments.date",
-        json={
-            "resourceName": "googleAdsFields/segments.date",
-            "category": "SEGMENT",
-            "dataType": "DATE",
-            "name": "segments.date",
-            "selectable": True,
-            "filterable": True,
-            "sortable": True,
-            "typeUrl": "",
-            "isRepeated": False,
-        },
-    )
+        "additionalProperties": True,
+    }
+
     requests_mock.register_uri(
         "GET", "https://googleads.googleapis.com/v20/customers:listAccessibleCustomers", accessible_customers_response
     )
@@ -234,7 +209,7 @@ def test_custom_query_stream(customers, config_for_custom_query_tests, requests_
 
     request_history = requests_mock.register_uri(
         "POST",
-        "https://googleads.googleapis.com/v20/customers/123/googleAds:search",
+        "https://googleads.googleapis.com/v20/customers/123/googleAds:searchStream",
         custom_query_response,
     )
 
@@ -258,3 +233,44 @@ def test_custom_query_stream(customers, config_for_custom_query_tests, requests_
     request_json = json.loads(request_history.last_request.text)
     expected_query = "SELECT campaign_budget.name, campaign.name, metrics.interaction_event_types, segments.date FROM campaign_budget WHERE segments.date BETWEEN '2021-01-01' AND '2021-01-10' ORDER BY segments.date ASC"
     assert request_json["query"] == expected_query
+
+
+@pytest.mark.parametrize(
+    "query, expected_incremental_sync",
+    [
+        ("SELECT campaign_budget.name, campaign.name, metrics.interaction_event_types FROM campaign_budget", False),
+        (
+            "SELECT campaign_budget.name, campaign.name, metrics.interaction_event_types FROM campaign_budget ORDER BY campaign_budget.name DESC",
+            False,
+        ),
+        ("SELECT ad_group_ad.ad.name, segments.date FROM ad_group_ad", True),
+        ("SELECT ad_group_ad.ad.name, segments.date FROM ad_group_ad ORDER BY segments.date DESC", True),
+        ("SELECT ad_group_ad.ad.name, segments.date FROM ad_group_ad ORDER BY segments.date DESC LIMIT 100", True),
+        (
+            "SELECT ad_group_ad.ad.name, segments.date FROM ad_group_ad ORDER BY ad_group_ad.ad.name DESC, segments.date DESC LIMIT 100",
+            True,
+        ),
+        (
+            "SELECT ad_group_ad.ad.name, segments.date FROM ad_group_ad ORDER BY segments.date DESC, ad_group_ad.ad.name DESC LIMIT 100",
+            True,
+        ),
+        # This query currently gets incremental sync due to manifest regex condition matching SELECT.*segments.date.*FROM pattern
+        ("SELECT ad_group_ad.ad.name, segments.date FROM ad_group_ad WHERE segments.date DURING LAST_30_DAYS", True),
+    ],
+)
+def test_custom_query_stream_with_different_queries(query, expected_incremental_sync, config_for_custom_query_tests, requests_mock):
+    config = config_for_custom_query_tests
+    config["custom_queries_array"][0]["query"] = query
+
+    streams = get_source(config=config).streams(config=config)
+    stream = next(filter(lambda s: s.name == "custom_ga_query", streams))
+
+    # Verify that the regex matching in the manifest correctly applies incremental sync
+    # by checking the stream_cursor_field which is set by the ComponentMappingDefinition
+    # The condition matches:
+    # - 1 segments.date with SELECT...FROM pattern, OR
+    # - 2 segments.date with SELECT...FROM AND ORDER BY...LIMIT patterns
+    if expected_incremental_sync:
+        assert stream.cursor_field == "segments.date", f"Stream cursor field should be 'segments.date' for query: {query}"
+    else:
+        assert stream.cursor_field != "segments.date", f"Stream should not have segments.date as cursor field for query: {query}"

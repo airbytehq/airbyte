@@ -77,11 +77,20 @@ The Monday connector should not run into Monday API limitations under normal usa
 
 | Version    | Date       | Pull Request                                              | Subject                                                                                                                                                                |
 |:-----------|:-----------|:----------------------------------------------------------|:-----------------------------------------------------------------------------------------------------------------------------------------------------------------------|
-| 2.4.4      | 2025-08-11 | [64878](https://github.com/airbytehq/airbyte/pull/64878)  | Pass query in json body of request instead of query params.                                                                                                            |
-| 2.4.3      | 2025-08-02 | [64220](https://github.com/airbytehq/airbyte/pull/64220)  | Update dependencies                                                                                                                                                    |
-| 2.4.2      | 2025-07-26 | [63835](https://github.com/airbytehq/airbyte/pull/63835)  | Update dependencies                                                                                                                                                    |
-| 2.4.1      | 2025-07-19 | [63206](https://github.com/airbytehq/airbyte/pull/63206)  | Update dependencies                                                                                                                                                    |
-| 2.4.0      | 2025-07-09 | [62886](https://github.com/airbytehq/airbyte/pull/62886)  | Promoting release candidate 2.4.0-rc.1 to a main version.                                                                                                              |
+| 2.4.13 | 2025-10-29 | [69048](https://github.com/airbytehq/airbyte/pull/69048) | Update dependencies |
+| 2.4.12 | 2025-10-22 | [68591](https://github.com/airbytehq/airbyte/pull/68591) | Add `suggestedStreams` |
+| 2.4.11 | 2025-10-21 | [68416](https://github.com/airbytehq/airbyte/pull/68416) | Update dependencies |
+| 2.4.10 | 2025-10-14 | [67840](https://github.com/airbytehq/airbyte/pull/67840) | Update dependencies |
+| 2.4.9 | 2025-10-07 | [67393](https://github.com/airbytehq/airbyte/pull/67393) | Update dependencies |
+| 2.4.8 | 2025-09-30 | [66938](https://github.com/airbytehq/airbyte/pull/66938) | Surface HTTP 200 Error Messages |
+| 2.4.7 | 2025-09-30 | [66336](https://github.com/airbytehq/airbyte/pull/66336) | Update dependencies |
+| 2.4.6 | 2025-09-09 | [65884](https://github.com/airbytehq/airbyte/pull/65884) | Update dependencies |
+| 2.4.5 | 2025-08-23 | [64705](https://github.com/airbytehq/airbyte/pull/64705) | Update dependencies |
+| 2.4.4 | 2025-08-11 | [64878](https://github.com/airbytehq/airbyte/pull/64878) | Pass query in json body of request instead of query params. |
+| 2.4.3 | 2025-08-02 | [64220](https://github.com/airbytehq/airbyte/pull/64220) | Update dependencies |
+| 2.4.2 | 2025-07-26 | [63835](https://github.com/airbytehq/airbyte/pull/63835) | Update dependencies |
+| 2.4.1 | 2025-07-19 | [63206](https://github.com/airbytehq/airbyte/pull/63206) | Update dependencies |
+| 2.4.0 | 2025-07-09 | [62886](https://github.com/airbytehq/airbyte/pull/62886) | Promoting release candidate 2.4.0-rc.1 to a main version. |
 | 2.4.0-rc.1 | 2025-07-02 | [62444](https://github.com/airbytehq/airbyte/pull/62444)  | Migrate connector to manifest-only                                                                                                                                     |
 | 2.3.1      | 2025-05-31 | [53828](https://github.com/airbytehq/airbyte/pull/53828)  | Update dependencies                                                                                                                                                    |
 | 2.3.0      | 2025-04-02 | [56967](https://github.com/airbytehq/airbyte/pull/56967)  | Promoting release candidate 2.3.0-rc.1 to a main version.                                                                                                              |
