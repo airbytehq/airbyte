@@ -22,7 +22,7 @@ Follow these steps to set up your GCS storage and Iceberg catalog permissions.
 #### Create a GCS bucket
 
 1. Open the [Google Cloud Console](https://console.cloud.google.com/)
-2. Navigate to **Cloud Storage** > **Buckets**
+2. Click **Cloud Storage** > **Buckets**
 3. Click **CREATE BUCKET**
 4. Choose a bucket name and location
 5. Select a storage class and access control settings
