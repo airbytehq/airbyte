@@ -79,7 +79,7 @@ internal class PostgresDirectLoadSqlGeneratorTest {
             );
             CREATE INDEX ON "namespace"."name" ("_airbyte_extracted_at");
             COMMIT;
-            """.trimIndent()
+            """
 
         assertEqualsIgnoreWhitespace(expected, sql)
     }
@@ -132,7 +132,7 @@ internal class PostgresDirectLoadSqlGeneratorTest {
             );
             CREATE INDEX ON "namespace"."name" ("_airbyte_extracted_at");
             COMMIT;
-            """.trimIndent()
+            """
 
         assertEqualsIgnoreWhitespace(expected, sql)
     }
@@ -178,7 +178,7 @@ internal class PostgresDirectLoadSqlGeneratorTest {
             CREATE INDEX "idx_cursor_test_table" ON "test_schema"."test_table" ("updatedAt");
             CREATE INDEX ON "test_schema"."test_table" ("_airbyte_extracted_at");
             COMMIT;
-            """.trimIndent()
+            """
 
         assertEqualsIgnoreWhitespace(expected, sql)
     }
@@ -380,7 +380,7 @@ internal class PostgresDirectLoadSqlGeneratorTest {
             WHERE "test_schema"."final_table"."id" = deduped_source."id"
             )
             AND deduped_source."_ab_cdc_deleted_at" IS NULL
-            """.trimIndent()
+            """
 
         assertEqualsIgnoreWhitespace(expected, sql)
     }
@@ -436,7 +436,7 @@ internal class PostgresDirectLoadSqlGeneratorTest {
             FROM "test_schema"."staging_table"
             ) AS deduplicated
             WHERE row_number = 1
-            """.trimIndent()
+            """
 
         assertEqualsIgnoreWhitespace(expected, sql)
     }
@@ -466,7 +466,7 @@ internal class PostgresDirectLoadSqlGeneratorTest {
             FROM "test_schema"."staging_table"
             ) AS deduplicated
             WHERE row_number = 1
-            """.trimIndent()
+            """
 
         assertEqualsIgnoreWhitespace(expected, sql)
     }
@@ -497,7 +497,7 @@ internal class PostgresDirectLoadSqlGeneratorTest {
             OR ("test_schema"."final_table".updatedAt IS NULL AND deduped_source.updatedAt IS NOT NULL)
             OR ("test_schema"."final_table".updatedAt IS NULL AND deduped_source.updatedAt IS NULL AND "test_schema"."final_table"."_airbyte_extracted_at" < deduped_source."_airbyte_extracted_at"))
             ),
-            """.trimIndent()
+            """
 
         assertEqualsIgnoreWhitespace(expected, sql)
     }
@@ -524,7 +524,7 @@ internal class PostgresDirectLoadSqlGeneratorTest {
             AND deduped_source."_ab_cdc_deleted_at" IS NOT NULL
             AND ("test_schema"."final_table"."_airbyte_extracted_at" < deduped_source."_airbyte_extracted_at")
             ),
-            """.trimIndent()
+            """
 
         assertEqualsIgnoreWhitespace(expected, sql)
     }
@@ -570,7 +570,7 @@ internal class PostgresDirectLoadSqlGeneratorTest {
             FROM deduped_source
             WHERE "test_schema"."final_table".id = deduped_source.id
             AND ("test_schema"."final_table"."_airbyte_extracted_at" < deduped_source."_airbyte_extracted_at")
-            """.trimIndent()
+            """
 
         assertEqualsIgnoreWhitespace(expected, sql)
     }
@@ -634,7 +634,7 @@ internal class PostgresDirectLoadSqlGeneratorTest {
             WHERE "test_schema"."final_table".id = deduped_source.id
             AND deduped_source."_ab_cdc_deleted_at" IS NULL
             AND ("test_schema"."final_table"."_airbyte_extracted_at" < deduped_source."_airbyte_extracted_at")
-            """.trimIndent()
+            """
 
         assertEqualsIgnoreWhitespace(expected, sql)
     }
@@ -669,7 +669,7 @@ internal class PostgresDirectLoadSqlGeneratorTest {
             FROM "test_schema"."final_table"
             WHERE "test_schema"."final_table".id = deduped_source.id
             )
-            """.trimIndent()
+            """
 
         assertEqualsIgnoreWhitespace(expected, sql)
     }
@@ -705,7 +705,7 @@ internal class PostgresDirectLoadSqlGeneratorTest {
             WHERE "test_schema"."final_table".id = deduped_source.id
             )
             AND deduped_source."_ab_cdc_deleted_at" IS NULL
-            """.trimIndent()
+            """
 
         assertEqualsIgnoreWhitespace(expected, sql)
     }
