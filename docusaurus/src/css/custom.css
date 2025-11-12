@@ -124,6 +124,15 @@ span.DocSearch-Button-Placeholder {
   gap: 4px;
 }
 
+nav div.dropdown--right {
+  border: 1px solid var(--docusaurus-tag-list-border);
+  border-radius: var(--docsearch-border-radius);
+}
+
+nav ul.dropdown__menu {
+  border: 1px solid var(--docusaurus-tag-list-border);
+}
+
 .header-github-link:hover {
   opacity: 0.6;
 }
@@ -411,6 +420,10 @@ nav a.navbar__link--active {
 /* Force no margin on the bottom when inside a flex container */
 header h1 {
   margin-bottom: 0;
+}
+
+article span.theme-doc-version-badge {
+  display: none;
 }
 
 article span.badge {

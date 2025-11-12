@@ -225,12 +225,9 @@ const config: Config = {
         sidebarPath: "./sidebar-developers.js",
         editUrl: "https://github.com/airbytehq/airbyte/blob/master/docs",
         remarkPlugins: [
-          plugins.docsHeaderDecoration,
-          plugins.enterpriseDocsHeaderInformation,
           plugins.productInformation,
           plugins.docMetaTags,
           plugins.addButtonToTitle,
-          [plugins.npm2yarn, { sync: true }],
         ],
       },
     ],
@@ -488,7 +485,7 @@ const config: Config = {
           position: "left",
           docsPluginId: "community",
           sidebarId: "community",
-          label: "Community & support",
+          label: "Community",
         },
         {
           href: "https://status.airbyte.com",
