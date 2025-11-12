@@ -2,6 +2,7 @@ data:
   ab_internal:
     ql: 200
     sl: 200
+    requireVersionIncrementsInPullRequests: false
   allowedHosts:
     hosts:
       - api.twilio.com
