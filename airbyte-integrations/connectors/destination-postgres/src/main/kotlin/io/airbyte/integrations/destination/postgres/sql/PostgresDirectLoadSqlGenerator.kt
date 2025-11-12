@@ -71,9 +71,9 @@ class PostgresDirectLoadSqlGenerator(
         tableName: TableName,
         columnNameMapping: ColumnNameMapping
     ): String {
-        val primaryKeyColumnNames = postgresColumnUtils.getPrimaryKeysColumnNames(stream, columnNameMapping)
+        val primaryKeyColumnNames = getPrimaryKeysColumnNames(stream, columnNameMapping)
         val primaryKeyIndexStatement = createPrimaryKeyIndexStatement(primaryKeyColumnNames, tableName)
-        val cursorColumnName = postgresColumnUtils.getCursorColumnName(stream, columnNameMapping)
+        val cursorColumnName = getCursorColumnName(stream, columnNameMapping)
         val cursorIndexStatement = createCursorIndexStatement(cursorColumnName, tableName)
         val extractedAtIndexStatement = "CREATE INDEX ON ${getFullyQualifiedName(tableName)} ($EXTRACTED_AT_COLUMN_NAME);"
 
@@ -83,6 +83,18 @@ class PostgresDirectLoadSqlGenerator(
             $extractedAtIndexStatement
         """
     }
+
+    private fun getPrimaryKeysColumnNames(stream: DestinationStream, columnNameMapping: ColumnNameMapping) =
+        postgresColumnUtils.getPrimaryKeysColumnNames(stream, columnNameMapping).map {quoteIdentifier(it)}
+
+    private fun getPrimaryKeysColumnNames(importType: Dedupe, columnNameMapping: ColumnNameMapping) =
+        postgresColumnUtils.getPrimaryKeysColumnNames(importType, columnNameMapping).map {quoteIdentifier(it)}
+
+    private fun getCursorColumnName(stream: DestinationStream, columnNameMapping: ColumnNameMapping) =
+        postgresColumnUtils.getCursorColumnName(stream, columnNameMapping)?.let { quoteIdentifier(it) }
+
+    private fun getCursorColumnName(cursor: List<String>, columnNameMapping: ColumnNameMapping) =
+        postgresColumnUtils.getCursorColumnName(cursor, columnNameMapping)?.let { quoteIdentifier(it) }
 
     internal fun recreatePrimaryKeyIndex(
         primaryKeyColumnNames: List<String>,
@@ -202,8 +214,8 @@ class PostgresDirectLoadSqlGenerator(
             throw IllegalArgumentException("Cannot perform upsert without primary key")
         }
 
-        val primaryKeyTargetColumns = postgresColumnUtils.getPrimaryKeysColumnNames(importType, columnNameMapping)
-        val cursorTargetColumn = postgresColumnUtils.getCursorColumnName(importType.cursor, columnNameMapping)
+        val primaryKeyTargetColumns = getPrimaryKeysColumnNames(importType, columnNameMapping)
+        val cursorTargetColumn = getCursorColumnName(importType.cursor, columnNameMapping)
         val allTargetColumns = getTargetColumnNames(stream, columnNameMapping)
 
         val selectDedupedQuery = selectDeduped(primaryKeyTargetColumns, cursorTargetColumn, allTargetColumns, sourceTableName)
@@ -531,11 +543,13 @@ class PostgresDirectLoadSqlGenerator(
         }
 
         if (recreatePrimaryKeyIndex) {
-            clauses.add(recreatePrimaryKeyIndex(primaryKeyColumnNames, tableName))
+            val quotedPrimaryKeyColumnNames = primaryKeyColumnNames.map { quoteIdentifier(it) }
+            clauses.add(recreatePrimaryKeyIndex(quotedPrimaryKeyColumnNames, tableName))
         }
 
         if(recreateCursorIndex) {
-            clauses.add(recreateCursorIndex(cursorColumnName, tableName))
+            val quotedCursorColumnName = cursorColumnName?.let { quoteIdentifier(it) }
+            clauses.add(recreateCursorIndex(quotedCursorColumnName, tableName))
         }
 
         return """
