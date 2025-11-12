@@ -52,6 +52,7 @@ The rest of the setup process differs depending on the catalog you're using.
 The BigLake catalog is Google Cloud's managed Iceberg catalog service. To use BigLake, you need to have created a BigLake catalog in your GCP project. The service account you created earlier should have the necessary permissions to access this catalog.
 
 In the Airbyte connector configuration, you'll need to provide:
+
 - **BigLake Catalog Name**: The name of your BigLake catalog (for example: `my-biglake-catalog`)
 - **BigLake Database**: The default database/namespace for tables
 
@@ -65,10 +66,10 @@ To authenticate with Apache Polaris, follow these steps:
 
 3. Grant the required privileges to your principal's catalog role. You can either:
 
-   **Option A: Grant the broad `CATALOG_MANAGE_CONTENT` privilege** (recommended for simplicity):
+   **Option A: grant the broad `CATALOG_MANAGE_CONTENT` privilege** (recommended for simplicity):
     - This single privilege allows the connector to manage tables and namespaces in the catalog
 
-   **Option B: Grant specific granular privileges**:
+   **Option B: grant specific granular privileges**:
     - `TABLE_LIST` - List tables in a namespace
     - `TABLE_CREATE` - Create new tables
     - `TABLE_DROP` - Delete tables
