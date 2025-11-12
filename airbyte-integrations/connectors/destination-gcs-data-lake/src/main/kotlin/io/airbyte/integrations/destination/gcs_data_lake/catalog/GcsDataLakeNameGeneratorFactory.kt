@@ -37,7 +37,6 @@ class GcsDataLakeColumnNameGenerator : ColumnNameGenerator {
     }
 }
 
-
 /**
  * Sanitizes a name to be BigLake/BigQuery compatible.
  * - Converts to alphanumeric + underscore only
