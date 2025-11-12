@@ -22,7 +22,11 @@ from airbyte_cdk.models import (
 
 from destination_snowflake_cortex import cortex_processor
 from destination_snowflake_cortex.common.catalog.catalog_providers import CatalogProvider
-from destination_snowflake_cortex.config import ConfigModel, PasswordBasedAuthorizationModel, KeyPairAuthorizationModel
+from destination_snowflake_cortex.config import (
+    ConfigModel,
+    KeyPairAuthorizationModel,
+    PasswordBasedAuthorizationModel,
+)
 
 BATCH_SIZE = 150
 
