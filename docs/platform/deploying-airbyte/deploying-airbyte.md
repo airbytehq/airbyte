@@ -9,7 +9,7 @@ import TabItem from '@theme/TabItem';
 
 The Airbyte platform is a sophisticated data integration platform that enables you to handle large amounts of data movement.
 To quickly deploy Airbyte on your local machine you can visit the [Quickstart](../using-airbyte/getting-started/oss-quickstart) guide.
-If setting up an Airbyte server does not fit your use case needs (for example, you're using Jupyter Notebooks or iterating on an early prototype for your project) you may find the [PyAirbyte](../using-airbyte/pyairbyte/getting-started) documentation useful.
+If setting up an Airbyte server does not fit your use case needs (for example, you're using Jupyter Notebooks or iterating on an early prototype for your project) you may find the [PyAirbyte](/developers/using-pyairbyte) documentation useful.
 
 :::info Self-Managed Enterprise customers
 If you're a Self-Managed Enterprise customer, skip this guide. Instead, follow the steps outlined in [Self-Managed Enterprise](../enterprise-setup/README.md) and the associated [implementation guide](../enterprise-setup/implementation-guide.md).
