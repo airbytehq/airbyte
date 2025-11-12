@@ -13,11 +13,11 @@ data:
   dockerRepository: airbyte/source-faker
   documentationUrl: https://docs.airbyte.com/integrations/sources/faker
   externalDocumentationUrls:
-    - title: Python Faker Library Documentation
-      url: https://faker.readthedocs.io/en/master/
+    - title: Mimesis Library Documentation
+      url: https://mimesis.name/en/latest/
       type: api_reference
-    - title: Faker Changelog
-      url: https://github.com/joke2k/faker/blob/master/CHANGELOG.md
+    - title: Mimesis GitHub Repository
+      url: https://github.com/lk-geimfari/mimesis
       type: api_release_history
   githubIssueLabel: source-faker
   icon: icon.svg
