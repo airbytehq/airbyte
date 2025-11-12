@@ -243,10 +243,14 @@ definitions:
         type: CustomRetriever
         class_name: "source_declarative_manifest.components.IntercomScrollRetriever"
         requester:
+          type: CustomRequester
+          class_name: source_declarative_manifest.components.NoCacheRequester
           $parameters:
             name: "companies"
-          $ref: "#/definitions/base_requester"
+          url_base: https://api.intercom.io/
           path: "companies/scroll"
+          authenticator:
+            $ref: "#/definitions/base_requester/authenticator"
           request_headers:
             Accept: "application/json"
             Intercom-Version: "2.11"
