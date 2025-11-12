@@ -51,11 +51,6 @@ The rest of the setup process differs depending on the catalog you're using.
 
 The BigLake catalog is Google Cloud's managed Iceberg catalog service. To use BigLake, you need to have created a BigLake catalog in your GCP project. The service account you created earlier should have the necessary permissions to access this catalog.
 
-In the Airbyte connector configuration, you'll need to provide:
-
-  - **BigLake Catalog Name**: The name of your BigLake catalog (for example: `my-biglake-catalog`)
-  - **BigLake Database**: The default database/namespace for tables
-
 #### Polaris
 
 To authenticate with Apache Polaris, follow these steps:
@@ -80,14 +75,7 @@ To authenticate with Apache Polaris, follow these steps:
     - `NAMESPACE_CREATE` - Create new namespaces
     - `NAMESPACE_READ_PROPERTIES` - Read namespace metadata
 
-4. In the Airbyte connector configuration, provide the following information:
-
-    - **Polaris Server URI**: The base URL of your Polaris server (for example: `http://localhost:8181/api/catalog`)
-    - **Catalog Name**: The name of the catalog you created in Polaris (for example: `quickstart_catalog`)
-    - **Client ID**: The OAuth Client ID provided when creating the principal
-    - **Client Secret**: The OAuth Client Secret provided when creating the principal
-
-5. Ensure that your Polaris catalog has been configured with the appropriate storage credentials to access your GCS bucket.
+4. Ensure that your Polaris catalog has been configured with the appropriate storage credentials to access your GCS bucket.
 
 ## Configuration
 
@@ -95,35 +83,35 @@ In Airbyte, configure the following fields:
 
 ### Common fields (all catalog types)
 
-| Field | Required | Description                                                          |
-|-------|----------|----------------------------------------------------------------------|
-| **GCS Bucket Name** | Yes | The name of your GCS bucket (for example: `my-data-lake`)            |
-| **Service Account JSON** | Yes | The complete JSON content from your service account key file         |
-| **GCP Project ID** | No | The GCP project ID. If not specified, extracted from service account |
-| **GCP Location** | Yes | The GCP location/region (for example: `us`, `us-central1`, `eu`)            |
-| **Warehouse Location** | Yes | Root path for Iceberg data in GCS (for example: `gs://my-bucket/warehouse`) |
-| **Catalog Type** | Yes | Select the type of Iceberg catalog to use: `BigLake` or `Polaris` |
-| **Main Branch Name** | No | Iceberg branch name (default: `main`)                                |
+| Field                    | Required   | Description                                                                  |
+|--------------------------|------------|------------------------------------------------------------------------------|
+| **GCS Bucket Name**      | Yes        | The name of your GCS bucket (for example: `my-data-lake`)                    |
+| **Service Account JSON** | Yes        | The complete JSON content from your service account key file                 |
+| **GCP Project ID**       | No         | The GCP project ID. If not specified, extracted from service account         |
+| **GCP Location**         | Yes        | The GCP location/region (for example: `us`, `us-central1`, `eu`)             |
+| **Warehouse Location**   | Yes        | Root path for Iceberg data in GCS (for example: `gs://my-bucket/warehouse`)  |
+| **Catalog Type**         | Yes        | Select the type of Iceberg catalog to use: `BigLake` or `Polaris`            |
+| **Main Branch Name**     | No         | Iceberg branch name (default: `main`)                                        |
 
 ### BigLake-specific fields
 
 When **Catalog Type** is set to `BigLake`, configure these additional fields:
 
-| Field | Required | Description                                                          |
-|-------|----------|----------------------------------------------------------------------|
-| **BigLake Catalog Name** | Yes | Name of your BigLake catalog (from the setup step)                   |
-| **BigLake Database** | Yes | Default database/namespace for tables                                |
+| Field                    | Required   | Description                                                          |
+|--------------------------|------------|----------------------------------------------------------------------|
+| **BigLake Catalog Name** | Yes        | Name of your BigLake catalog (from the setup step)                   |
+| **BigLake Database**     | Yes        | Default database/namespace for tables                                |
 
 ### Polaris-specific fields
 
 When **Catalog Type** is set to `Polaris`, configure these additional fields:
 
-| Field | Required | Description                                                          |
-|-------|----------|----------------------------------------------------------------------|
-| **Polaris Server URI** | Yes | The base URL of your Polaris server (for example: `http://localhost:8181/api/catalog`) |
-| **Catalog Name** | Yes | The name of the catalog in Polaris (for example: `quickstart_catalog`) |
-| **Client ID** | Yes | The OAuth Client ID for authenticating with the Polaris server |
-| **Client Secret** | Yes | The OAuth Client Secret for authenticating with the Polaris server |
+| Field                  | Required   | Description                                                                            |
+|------------------------|------------|----------------------------------------------------------------------------------------|
+| **Polaris Server URI** | Yes        | The base URL of your Polaris server (for example: `http://localhost:8181/api/catalog`) |
+| **Catalog Name**       | Yes        | The name of the catalog in Polaris (for example: `quickstart_catalog`)                 |
+| **Client ID**          | Yes        | The OAuth Client ID for authenticating with the Polaris server                         |
+| **Client Secret**      | Yes        | The OAuth Client Secret for authenticating with the Polaris server                     |
 
 ## Output schema
 
