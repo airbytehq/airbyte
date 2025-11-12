@@ -507,7 +507,6 @@ class PostgresDirectLoadSqlGenerator(
         WITH (FORMAT csv)
         """
 
-    //should all alters happen in one same tx? probably
     fun matchSchemas(
         tableName: TableName,
         columnsToAdd: Set<Column>,
