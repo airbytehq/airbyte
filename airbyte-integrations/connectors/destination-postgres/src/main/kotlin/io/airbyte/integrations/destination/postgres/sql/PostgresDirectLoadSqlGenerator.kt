@@ -100,7 +100,10 @@ class PostgresDirectLoadSqlGenerator(
         primaryKeyColumnNames: List<String>,
         tableName: TableName
     ): String {
-        val dropPrimaryKeyIndexStatement = dropIndex(getPrimaryKeyIndexName(tableName))
+        val dropPrimaryKeyIndexStatement = dropIndex(
+            indexName = getPrimaryKeyIndexName(tableName),
+            schema = getNamespace(tableName))
+
         val primaryKeyIndexStatement = createPrimaryKeyIndexStatement(primaryKeyColumnNames, tableName)
 
         return """
@@ -124,7 +127,9 @@ class PostgresDirectLoadSqlGenerator(
         cursorColumnName: String?,
         tableName: TableName
     ): String {
-        val dropCursorIndexStatement = dropIndex(getCursorIndexName(tableName))
+        val dropCursorIndexStatement = dropIndex(
+            indexName = getCursorIndexName(tableName),
+            schema = getNamespace(tableName))
         val cursorIndexStatement = createCursorIndexStatement(cursorColumnName, tableName)
 
         return """
@@ -492,8 +497,8 @@ class PostgresDirectLoadSqlGenerator(
         ORDER BY array_position(i.indkey, a.attnum);
         """
 
-    private fun dropIndex(indexName: String): String =
-        "DROP INDEX IF EXISTS ${quoteIdentifier(indexName)};"
+    private fun dropIndex(indexName: String, schema: String): String =
+        "DROP INDEX IF EXISTS $schema.$indexName;"
 
     fun copyFromCsv(tableName: TableName): String =
         """
