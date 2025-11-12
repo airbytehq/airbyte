@@ -21,11 +21,11 @@ data:
   githubIssueLabel: source-service-now
   icon: icon.svg
   license: MIT
-  name: service-now
+  name: ServiceNow
   releaseDate: 2021-01-01
   releaseStage: alpha
   supportLevel: certified
-  documentationUrl: https://docs.airbyte.com/integrations/sources/service-now
+  documentationUrl: https://docs.airbyte.com/integrations/enterprise-connectors/source-service-now
   tags:
     - cdk:low-code
     - language:manifest-only
