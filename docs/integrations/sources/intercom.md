@@ -96,7 +96,7 @@ The Intercom connector should not run into Intercom API limitations under normal
 
 | Version     | Date       | Pull Request                                             | Subject                                                                                                                              |
 |:------------|:-----------|:---------------------------------------------------------|:-------------------------------------------------------------------------------------------------------------------------------------|
-| 0.13.14     | 2025-11-13 | [tbd](https://github.com/airbytehq/airbyte/pull/tbd)     | Update custom IntercomScrollRetriever to not use deprecated stream_state parameter                                                   |
+| 0.13.14     | 2025-11-13 | [69306](https://github.com/airbytehq/airbyte/pull/69306)     | Update custom IntercomScrollRetriever to not use deprecated stream_state parameter                                                   |
 | 0.13.13     | 2025-10-29 | [68767](https://github.com/airbytehq/airbyte/pull/68767) | Update dependencies                                                                                                                  |
 | 0.13.12     | 2025-10-21 | [68477](https://github.com/airbytehq/airbyte/pull/68477) | Update dependencies                                                                                                                  |
 | 0.13.11     | 2025-10-14 | [67933](https://github.com/airbytehq/airbyte/pull/67933) | Update dependencies                                                                                                                  |
