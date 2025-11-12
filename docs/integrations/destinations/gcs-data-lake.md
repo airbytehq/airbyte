@@ -2,18 +2,20 @@
 
 This page guides you through setting up the GCS Data Lake destination connector.
 
-This connector is Airbyte's official support for the Iceberg protocol on Google Cloud Storage. It writes the Iceberg table format to GCS using the BigLake catalog.
+This connector is Airbyte's official support for the Iceberg protocol on Google Cloud Storage. It writes the Iceberg table format to GCS using a supported Iceberg catalog.
 
 ## Prerequisites
 
 The GCS Data Lake connector requires two things:
 
 1. A Google Cloud Storage bucket
-2. A BigLake Iceberg catalog
+2. A supported Iceberg catalog. Currently, the connector supports these catalogs:
+   - BigLake
+   - Polaris
 
 ## Setup guide
 
-Follow these steps to set up your GCS storage and BigLake catalog permissions.
+Follow these steps to set up your GCS storage and Iceberg catalog permissions.
 
 ### GCS setup and permissions
 
@@ -41,9 +43,56 @@ Follow these steps to set up your GCS storage and BigLake catalog permissions.
 6. Download the JSON key file
 7. In Airbyte, paste the entire contents of this JSON file into the **Service Account JSON** field
 
+### Iceberg catalog setup and permissions
+
+The rest of the setup process differs depending on the catalog you're using.
+
+#### BigLake
+
+The BigLake catalog is Google Cloud's managed Iceberg catalog service. To use BigLake, you need to have created a BigLake catalog in your GCP project. The service account you created earlier should have the necessary permissions to access this catalog.
+
+In the Airbyte connector configuration, you'll need to provide:
+- **BigLake Catalog Name**: The name of your BigLake catalog (for example: `my-biglake-catalog`)
+- **BigLake Database**: The default database/namespace for tables
+
+#### Polaris
+
+To authenticate with Apache Polaris, follow these steps:
+
+1. Set up your Polaris catalog and create a principal with the necessary permissions. Refer to the [Apache Polaris documentation](https://polaris.apache.org/) for detailed setup instructions.
+
+2. When creating a principal in Polaris, you'll receive OAuth credentials (Client ID and Client Secret). Keep these credentials secure.
+
+3. Grant the required privileges to your principal's catalog role. You can either:
+
+   **Option A: Grant the broad `CATALOG_MANAGE_CONTENT` privilege** (recommended for simplicity):
+    - This single privilege allows the connector to manage tables and namespaces in the catalog
+
+   **Option B: Grant specific granular privileges**:
+    - `TABLE_LIST` - List tables in a namespace
+    - `TABLE_CREATE` - Create new tables
+    - `TABLE_DROP` - Delete tables
+    - `TABLE_READ_PROPERTIES` - Read table metadata
+    - `TABLE_WRITE_PROPERTIES` - Update table metadata
+    - `TABLE_WRITE_DATA` - Write data to tables
+    - `NAMESPACE_LIST` - List namespaces
+    - `NAMESPACE_CREATE` - Create new namespaces
+    - `NAMESPACE_READ_PROPERTIES` - Read namespace metadata
+
+4. In the Airbyte connector configuration, provide the following information:
+
+    - **Polaris Server URI**: The base URL of your Polaris server (for example: `http://localhost:8181/api/catalog`)
+    - **Catalog Name**: The name of the catalog you created in Polaris (for example: `quickstart_catalog`)
+    - **Client ID**: The OAuth Client ID provided when creating the principal
+    - **Client Secret**: The OAuth Client Secret provided when creating the principal
+
+5. Ensure that your Polaris catalog has been configured with the appropriate storage credentials to access your GCS bucket.
+
 ## Configuration
 
 In Airbyte, configure the following fields:
+
+### Common fields (all catalog types)
 
 | Field | Required | Description                                                          |
 |-------|----------|----------------------------------------------------------------------|
@@ -52,9 +101,28 @@ In Airbyte, configure the following fields:
 | **GCP Project ID** | No | The GCP project ID. If not specified, extracted from service account |
 | **GCP Location** | Yes | The GCP location/region (for example: `us`, `us-central1`, `eu`)            |
 | **Warehouse Location** | Yes | Root path for Iceberg data in GCS (for example: `gs://my-bucket/warehouse`) |
+| **Catalog Type** | Yes | Select the type of Iceberg catalog to use: `BigLake` or `Polaris` |
+| **Main Branch Name** | No | Iceberg branch name (default: `main`)                                |
+
+### BigLake-specific fields
+
+When **Catalog Type** is set to `BigLake`, configure these additional fields:
+
+| Field | Required | Description                                                          |
+|-------|----------|----------------------------------------------------------------------|
 | **BigLake Catalog Name** | Yes | Name of your BigLake catalog (from the setup step)                   |
 | **BigLake Database** | Yes | Default database/namespace for tables                                |
-| **Main Branch Name** | No | Iceberg branch name (default: `main`)                                |
+
+### Polaris-specific fields
+
+When **Catalog Type** is set to `Polaris`, configure these additional fields:
+
+| Field | Required | Description                                                          |
+|-------|----------|----------------------------------------------------------------------|
+| **Polaris Server URI** | Yes | The base URL of your Polaris server (for example: `http://localhost:8181/api/catalog`) |
+| **Catalog Name** | Yes | The name of the catalog in Polaris (for example: `quickstart_catalog`) |
+| **Client ID** | Yes | The OAuth Client ID for authenticating with the Polaris server |
+| **Client Secret** | Yes | The OAuth Client Secret for authenticating with the Polaris server |
 
 ## Output schema
 
@@ -147,6 +215,6 @@ If compaction runs simultaneously with the sync, it would delete files from the 
 
 | Version | Date       | Pull Request                                               | Subject                                                                                                                         |
 |:--------|:-----------|:-----------------------------------------------------------|:--------------------------------------------------------------------------------------------------------------------------------|
-| 1.0.1   | 2025-11-07 | [69212](https://github.com/airbytehq/airbyte/pull/69212)  | Initial release of GCS Data Lake destination with BigLake catalog support                                                       |
+| 1.0.1   | 2025-11-07 | [69212](https://github.com/airbytehq/airbyte/pull/69212)  | Initial release of GCS Data Lake destination with BigLake and Polaris catalog support                                                       |
 
 </details>
