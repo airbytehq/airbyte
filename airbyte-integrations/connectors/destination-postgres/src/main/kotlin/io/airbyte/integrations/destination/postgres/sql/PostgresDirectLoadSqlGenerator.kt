@@ -492,8 +492,8 @@ class PostgresDirectLoadSqlGenerator(
         JOIN pg_attribute a ON a.attrelid = i.indrelid AND a.attnum = ANY(i.indkey)
         JOIN pg_class c ON c.oid = i.indexrelid
         JOIN pg_namespace n ON n.oid = c.relnamespace
-        WHERE c.relname = $indexName
-        AND n.nspname = $namespace
+        WHERE c.relname = '${indexName}'
+        AND n.nspname = '${namespace}'
         ORDER BY array_position(i.indkey, a.attnum);
         """
 
