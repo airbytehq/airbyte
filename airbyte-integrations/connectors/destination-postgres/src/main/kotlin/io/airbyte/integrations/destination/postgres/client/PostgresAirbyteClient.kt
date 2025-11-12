@@ -114,9 +114,6 @@ class PostgresAirbyteClient(
         val (addedColumns, deletedColumns, modifiedColumns) =
             generateSchemaChanges(columnsInDb, columnsInStream)
 
-        if (
-            addedColumns.isNotEmpty() || deletedColumns.isNotEmpty() || modifiedColumns.isNotEmpty()
-        ) {
             log.info { "Summary of the table alterations:" }
             log.info { "Added columns: $addedColumns" }
             log.info { "Deleted columns: $deletedColumns" }
@@ -133,7 +130,6 @@ class PostgresAirbyteClient(
                 recreateCursorIndex =  shouldRecreateCursorIndex(stream, tableName, columnNameMapping),
                 cursorColumnName = postgresColumnUtils.getCursorColumnName(stream, columnNameMapping),
             ))
-        }
     }
 
     /**
