@@ -334,10 +334,12 @@ internal class PostgresDirectLoadSqlGeneratorTest {
             USING deduped_source
             WHERE "test_schema"."final_table"."id" = deduped_source."id"
             AND deduped_source."_ab_cdc_deleted_at" IS NOT NULL
-            AND ("test_schema"."final_table"."updatedAt" < deduped_source."updatedAt"
+            AND (
+            "test_schema"."final_table"."updatedAt" < deduped_source."updatedAt"
             OR ("test_schema"."final_table"."updatedAt" = deduped_source."updatedAt" AND "test_schema"."final_table"."_airbyte_extracted_at" < deduped_source."_airbyte_extracted_at")
             OR ("test_schema"."final_table"."updatedAt" IS NULL AND deduped_source."updatedAt" IS NOT NULL)
-            OR ("test_schema"."final_table"."updatedAt" IS NULL AND deduped_source."updatedAt" IS NULL AND "test_schema"."final_table"."_airbyte_extracted_at" < deduped_source."_airbyte_extracted_at"))
+            OR ("test_schema"."final_table"."updatedAt" IS NULL AND deduped_source."updatedAt" IS NULL AND "test_schema"."final_table"."_airbyte_extracted_at" < deduped_source."_airbyte_extracted_at")
+            )
             ),
 
             updates AS (
@@ -354,10 +356,12 @@ internal class PostgresDirectLoadSqlGeneratorTest {
             FROM deduped_source
             WHERE "test_schema"."final_table"."id" = deduped_source."id"
             AND deduped_source."_ab_cdc_deleted_at" IS NULL
-            AND ("test_schema"."final_table"."updatedAt" < deduped_source."updatedAt"
+            AND (
+            "test_schema"."final_table"."updatedAt" < deduped_source."updatedAt"
             OR ("test_schema"."final_table"."updatedAt" = deduped_source."updatedAt" AND "test_schema"."final_table"."_airbyte_extracted_at" < deduped_source."_airbyte_extracted_at")
             OR ("test_schema"."final_table"."updatedAt" IS NULL AND deduped_source."updatedAt" IS NOT NULL)
-            OR ("test_schema"."final_table"."updatedAt" IS NULL AND deduped_source."updatedAt" IS NULL AND "test_schema"."final_table"."_airbyte_extracted_at" < deduped_source."_airbyte_extracted_at"))
+            OR ("test_schema"."final_table"."updatedAt" IS NULL AND deduped_source."updatedAt" IS NULL AND "test_schema"."final_table"."_airbyte_extracted_at" < deduped_source."_airbyte_extracted_at")
+            )
             )
 
             INSERT INTO "test_schema"."final_table" (
@@ -499,10 +503,12 @@ internal class PostgresDirectLoadSqlGeneratorTest {
             USING deduped_source
             WHERE "test_schema"."final_table".id = deduped_source.id
             AND deduped_source."_ab_cdc_deleted_at" IS NOT NULL
-            AND ("test_schema"."final_table".updatedAt < deduped_source.updatedAt
+            AND (
+            "test_schema"."final_table".updatedAt < deduped_source.updatedAt
             OR ("test_schema"."final_table".updatedAt = deduped_source.updatedAt AND "test_schema"."final_table"."_airbyte_extracted_at" < deduped_source."_airbyte_extracted_at")
             OR ("test_schema"."final_table".updatedAt IS NULL AND deduped_source.updatedAt IS NOT NULL)
-            OR ("test_schema"."final_table".updatedAt IS NULL AND deduped_source.updatedAt IS NULL AND "test_schema"."final_table"."_airbyte_extracted_at" < deduped_source."_airbyte_extracted_at"))
+            OR ("test_schema"."final_table".updatedAt IS NULL AND deduped_source.updatedAt IS NULL AND "test_schema"."final_table"."_airbyte_extracted_at" < deduped_source."_airbyte_extracted_at")
+            )
             ),
             """
 
@@ -607,11 +613,13 @@ internal class PostgresDirectLoadSqlGeneratorTest {
             updatedAt = deduped_source.updatedAt
             FROM deduped_source
             WHERE "test_schema"."final_table".id = deduped_source.id
-            AND ("test_schema"."final_table".updatedAt < deduped_source.updatedAt
+            AND (
+            "test_schema"."final_table".updatedAt < deduped_source.updatedAt
             OR ("test_schema"."final_table".updatedAt = deduped_source.updatedAt AND "test_schema"."final_table"."_airbyte_extracted_at" < deduped_source."_airbyte_extracted_at")
             OR ("test_schema"."final_table".updatedAt IS NULL AND deduped_source.updatedAt IS NOT NULL)
-            OR ("test_schema"."final_table".updatedAt IS NULL AND deduped_source.updatedAt IS NULL AND "test_schema"."final_table"."_airbyte_extracted_at" < deduped_source."_airbyte_extracted_at"))
-            """.trimIndent()
+            OR ("test_schema"."final_table".updatedAt IS NULL AND deduped_source.updatedAt IS NULL AND "test_schema"."final_table"."_airbyte_extracted_at" < deduped_source."_airbyte_extracted_at")
+            )
+            """
 
         assertEqualsIgnoreWhitespace(expected, sql)
     }
