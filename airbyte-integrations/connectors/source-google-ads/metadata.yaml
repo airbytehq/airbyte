@@ -14,6 +14,12 @@ data:
   dockerImageTag: "4.1.0-rc.7"
   dockerRepository: airbyte/source-google-ads
   documentationUrl: https://docs.airbyte.com/integrations/sources/google-ads
+  externalDocumentationUrls:
+    - title: Release notes
+      url: https://developers.google.com/google-ads/api/docs/release-notes
+      type: api_release_history
+    - title: Developer blog
+      url: https://ads-developers.googleblog.com/
   githubIssueLabel: source-google-ads
   icon: google-adwords.svg
   license: Elv2

@@ -13,6 +13,11 @@ data:
   dockerImageTag: 1.2.22
   dockerRepository: airbyte/source-harvest
   documentationUrl: https://docs.airbyte.com/integrations/sources/harvest
+  externalDocumentationUrls:
+    - title: Systems status
+      url: https://www.harveststatus.com/
+    - title: overview
+      url: https://help.getharvest.com/api-v2/
   githubIssueLabel: source-harvest
   icon: harvest.svg
   license: ELv2

@@ -14,6 +14,14 @@ data:
   dockerImageTag: 4.6.13
   dockerRepository: airbyte/source-airtable
   documentationUrl: https://docs.airbyte.com/integrations/sources/airtable
+  externalDocumentationUrls:
+    - title: Changelog
+      url: https://airtable.com/developers/web/api/changelog
+      type: api_release_history
+    - title: Community blog
+      url: https://community.airtable.com/development-apis-11
+    - title: OAuth refference
+      url: https://airtable.com/developers/web/api/oauth-reference#authorization-request
   resourceRequirements:
     jobSpecific:
       - jobType: discover_schema

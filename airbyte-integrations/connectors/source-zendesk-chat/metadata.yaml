@@ -13,6 +13,12 @@ data:
   dockerImageTag: 1.2.26
   dockerRepository: airbyte/source-zendesk-chat
   documentationUrl: https://docs.airbyte.com/integrations/sources/zendesk-chat
+  externalDocumentationUrls:
+    - title: Developer Updates
+      url: https://support.zendesk.com/hc/en-us/sections/4405298889242-Developer-updates
+    - title: Changelog
+      url: https://developer.zendesk.com/api-reference/changelog/changelog/
+      type: api_release_history
   githubIssueLabel: source-zendesk-chat
   icon: zendesk-chat.svg
   license: ELv2

@@ -14,6 +14,10 @@ data:
   dockerImageTag: 2.1.11
   dockerRepository: airbyte/source-mailchimp
   documentationUrl: https://docs.airbyte.com/integrations/sources/mailchimp
+  externalDocumentationUrls:
+    - title: Release Notes
+      url: https://mailchimp.com/developer/release-notes/?filter=marketing
+      type: api_release_history
   githubIssueLabel: source-mailchimp
   icon: mailchimp.svg
   license: ELv2

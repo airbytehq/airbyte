@@ -13,6 +13,13 @@ data:
   dockerImageTag: 0.10.22
   dockerRepository: airbyte/source-chargebee
   documentationUrl: https://docs.airbyte.com/integrations/sources/chargebee
+  externalDocumentationUrls:
+    - title: Versioning Docs
+      url: https://apidocs.chargebee.com/docs/api/versioning
+      type: api_reference
+    - title: Changelog
+      url: https://www.chargebee.com/help/api-updates/
+      type: api_release_history
   githubIssueLabel: source-chargebee
   icon: chargebee.svg
   license: ELv2
