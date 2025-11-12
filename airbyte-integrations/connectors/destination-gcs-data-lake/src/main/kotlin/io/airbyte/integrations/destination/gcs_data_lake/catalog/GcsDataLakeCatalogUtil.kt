@@ -40,13 +40,18 @@ class GcsDataLakeCatalogUtil(
      * @return The Iceberg [Catalog] configuration properties.
      */
     fun toCatalogProperties(config: GcsDataLakeConfiguration): Map<String, String> {
+        // Get OAuth2 access token from Google credentials
+        val credentials = config.googleCredentials
+        credentials.refreshIfExpired()
+        val accessToken = credentials.accessToken.tokenValue
+
         val catalogConfig = config.gcsCatalogConfiguration
 
-        val gcsProperties = buildGcsProperties(config, catalogConfig)
+        val gcsProperties = buildGcsProperties(config, catalogConfig, accessToken)
 
         return when (val catalogConfiguration = catalogConfig.catalogConfiguration) {
             is BigLakeCatalogConfiguration ->
-                buildBigLakeProperties(config, catalogConfiguration, gcsProperties)
+                buildBigLakeProperties(config, catalogConfiguration, gcsProperties, accessToken)
             is PolarisCatalogConfiguration ->
                 buildPolarisProperties(catalogConfiguration, gcsProperties)
         }
@@ -56,12 +61,8 @@ class GcsDataLakeCatalogUtil(
         config: GcsDataLakeConfiguration,
         catalogConfig:
             io.airbyte.integrations.destination.gcs_data_lake.spec.GcsCatalogConfiguration,
+        accessToken: String
     ): Map<String, String> {
-        // Get OAuth2 access token from Google credentials
-        val credentials = config.googleCredentials
-        credentials.refreshIfExpired()
-        val accessToken = credentials.accessToken.tokenValue
-
         return buildMap {
             put(CatalogProperties.FILE_IO_IMPL, "org.apache.iceberg.gcp.gcs.GCSFileIO")
             put(CatalogProperties.WAREHOUSE_LOCATION, catalogConfig.warehouseLocation)
@@ -81,13 +82,9 @@ class GcsDataLakeCatalogUtil(
     private fun buildBigLakeProperties(
         config: GcsDataLakeConfiguration,
         catalogConfig: BigLakeCatalogConfiguration,
-        gcsProperties: Map<String, String>
+        gcsProperties: Map<String, String>,
+        accessToken: String
     ): Map<String, String> {
-        // Get OAuth2 access token for REST catalog authentication
-        val credentials = config.googleCredentials
-        credentials.refreshIfExpired()
-        val accessToken = credentials.accessToken.tokenValue
-
         val bigLakeProperties =
             mapOfNotNull(
                 CatalogUtil.ICEBERG_CATALOG_TYPE to CatalogUtil.ICEBERG_CATALOG_TYPE_REST,
