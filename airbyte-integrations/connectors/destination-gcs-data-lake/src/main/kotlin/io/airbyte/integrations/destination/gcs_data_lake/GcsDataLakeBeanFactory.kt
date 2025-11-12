@@ -9,7 +9,7 @@ import io.micronaut.context.annotation.Factory
 import jakarta.inject.Singleton
 
 @Factory
-class SnowflakeBeanFactory {
+class GcsDataLakeBeanFactory {
     @Singleton
     fun aggregatePublishingConfig(): AggregatePublishingConfig {
         // NOT speed mode
