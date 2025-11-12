@@ -52,20 +52,11 @@ definitions:
           type: MinMaxDatetime
           datetime: "{{ format_datetime(config['start_date'], '%Y-%m-%dT%H:%M:%S') }}"
           datetime_format: "%Y-%m-%dT%H:%M:%S"
-        start_time_option:
-          type: RequestOption
-          field_name: modified_after
-          inject_into: request_parameter
-        end_time_option:
-          type: RequestOption
-          field_name: modified_before
-          inject_into: request_parameter
         end_datetime:
           type: MinMaxDatetime
           datetime: "{{ now_utc().strftime('%Y-%m-%dT%H:%M:%S') }}"
           datetime_format: "%Y-%m-%dT%H:%M:%S"
-        step: P30D
-        cursor_granularity: PT1S
+        is_client_side_incremental: true
       schema_loader:
         type: InlineSchemaLoader
         schema:
