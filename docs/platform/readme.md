@@ -47,16 +47,17 @@ Once your Airbyte instance is up and running, there's a way to use Airbyte that'
 
 Self-managed and cloud plans come with a carefully crafted user interface that walks you through setting up connections and automating syncs. This is a great choice if you're not a developer, aren't concerned about version control, or you're just seeing what Airbyte can do for you.
 
-### API and Python SDK {#api-sdk}
+### API and SDKs {#api-sdk}
 
 These are great choices for developers who want to automate the way you work with Airbyte and use version control to preserve a history of changes.
 
-- Airbyte's [API documentation](https://reference.airbyte.com) gives you programmatic access to Airbyte with code snippets in all common languages.
+- Airbyte's [API documentation](/developers/api-documentaton) gives you programmatic access to Airbyte with code snippets in all common languages.
 - Airbyte's [Python SDK](https://github.com/airbytehq/airbyte-api-python-sdk) lets you programmatically control your Airbyte instance with Python.
+- Airbyte's [Java SDK](https://github.com/airbytehq/airbyte-api-java-sdk) lets you programmatically control your Airbyte instance with Java.
 
 ### Terraform
 
-Many people think of Airbyte and its connectors as infrastructure. Our [Terraform provider](/developers/terraform-documentation) ensures you can deploy and manage sources and destinations with Terraform, the same way you manage your other infrastructure today.
+Many people think of Airbyte and its connectors as infrastructure. The [Terraform provider](/developers/terraform-documentation) ensures you can deploy and manage sources and destinations with Terraform, the same way you manage your other infrastructure today.
 
 ### PyAirbyte
 
