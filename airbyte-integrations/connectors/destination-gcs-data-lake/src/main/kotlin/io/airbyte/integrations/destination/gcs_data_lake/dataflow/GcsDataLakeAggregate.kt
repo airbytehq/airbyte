@@ -50,15 +50,27 @@ class GcsDataLakeAggregate(
             Operation.INSERT
         }
 
+    // Cache schema fields to avoid repeated calls to schema.asStruct().fields()
+    // which may create new collections on each invocation
+    private val schemaFields = schema.asStruct().fields()
+
+    // Pre-compute which fields need special transformations to avoid repeated type checks
+    private val longFields =
+        schemaFields.filter { it.type().typeId() == Type.TypeID.LONG }.map { it.name() }.toSet()
+    private val stringFields =
+        schemaFields.filter { it.type().typeId() == Type.TypeID.STRING }.map { it.name() }.toSet()
+
     override fun accept(record: RecordDTO) {
         // Convert RecordDTO to Iceberg Record
         // Note: ValueCoercer has already nulled out-of-range integers in Parse stage
         // Here we handle Iceberg-schema-specific conversions that depend on field types
         val icebergRecord = GenericRecord.create(schema)
+        val recordFields = record.fields
 
-        schema.asStruct().fields().forEach { field ->
+        // Use cached schemaFields instead of calling schema.asStruct().fields() repeatedly
+        schemaFields.forEach { field ->
             // Schema has mapped column names, record.fields also has mapped names
-            val airbyteValue = record.fields[field.name()]
+            val airbyteValue = recordFields[field.name()]
             if (airbyteValue != null) {
                 // Apply Iceberg-schema-dependent transformations
                 val transformedValue = transformForIcebergSchema(airbyteValue, field)
@@ -83,9 +95,12 @@ class GcsDataLakeAggregate(
         value: AirbyteValue,
         field: Types.NestedField
     ): AirbyteValue {
+        val fieldName = field.name()
+
         return when {
             // Timestamp → Integer for LONG fields (_airbyte_extracted_at)
-            field.type().typeId() == Type.TypeID.LONG &&
+            // Use cached set lookup instead of repeated typeId() calls
+            fieldName in longFields &&
                 (value is TimestampWithTimezoneValue || value is TimestampWithoutTimezoneValue) -> {
                 val millis =
                     when (value) {
@@ -98,9 +113,10 @@ class GcsDataLakeAggregate(
             }
             // Object/Array → String for STRING fields (for stringifySchemalessObjects behavior)
             // Note: Union values are already stringified by ValueCoercer
-            field.type().typeId() == Type.TypeID.STRING && value is ObjectValue ->
+            // Use cached set lookup instead of repeated typeId() calls
+            fieldName in stringFields && value is ObjectValue ->
                 StringValue(value.serializeToString())
-            field.type().typeId() == Type.TypeID.STRING && value is ArrayValue ->
+            fieldName in stringFields && value is ArrayValue ->
                 StringValue(value.serializeToString())
             else -> value
         }

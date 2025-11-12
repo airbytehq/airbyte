@@ -69,8 +69,7 @@ class GcsDataLakeValueCoercer : ValueCoercer {
         return ValidationResult.Valid
     }
 
-    private fun isInLongRange(value: BigInteger): Boolean =
-        value >= MIN_LONG && value <= MAX_LONG
+    private fun isInLongRange(value: BigInteger): Boolean = value >= MIN_LONG && value <= MAX_LONG
 
     private fun isInDoubleRange(value: BigDecimal): Boolean =
         value >= MIN_DOUBLE && value <= MAX_DOUBLE
