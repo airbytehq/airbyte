@@ -40,7 +40,6 @@ class GcsDataLakeAggregate(
     private val writer: BaseTaskWriter<Record>,
 ) : Aggregate {
     companion object {
-        val commitLock: Any = Any()
         val converter = AirbyteValueToIcebergRecord()
     }
 
@@ -119,12 +118,12 @@ class GcsDataLakeAggregate(
             val delta = table.newRowDelta().toBranch(stagingBranchName)
             writeResult.dataFiles().forEach { delta.addRows(it) }
             writeResult.deleteFiles().forEach { delta.addDeletes(it) }
-            synchronized(commitLock) { delta.commit() }
+            delta.commit()
         } else {
             // Use append for simple appends
             val append = table.newAppend().toBranch(stagingBranchName)
             writeResult.dataFiles().forEach { append.appendFile(it) }
-            synchronized(commitLock) { append.commit() }
+            append.commit()
         }
 
         logger.info { "Flushed records to staging branch $stagingBranchName" }
