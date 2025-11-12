@@ -53,8 +53,8 @@ The BigLake catalog is Google Cloud's managed Iceberg catalog service. To use Bi
 
 In the Airbyte connector configuration, you'll need to provide:
 
-    - **BigLake Catalog Name**: The name of your BigLake catalog (for example: `my-biglake-catalog`)
-    - **BigLake Database**: The default database/namespace for tables
+  - **BigLake Catalog Name**: The name of your BigLake catalog (for example: `my-biglake-catalog`)
+  - **BigLake Database**: The default database/namespace for tables
 
 #### Polaris
 
