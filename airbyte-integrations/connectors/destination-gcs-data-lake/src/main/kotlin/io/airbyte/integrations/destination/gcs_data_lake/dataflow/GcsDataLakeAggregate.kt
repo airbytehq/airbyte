@@ -6,12 +6,14 @@ package io.airbyte.integrations.destination.gcs_data_lake.dataflow
 
 import io.airbyte.cdk.load.command.Dedupe
 import io.airbyte.cdk.load.command.DestinationStream
+import io.airbyte.cdk.load.data.AirbyteValue
 import io.airbyte.cdk.load.data.ArrayValue
 import io.airbyte.cdk.load.data.IntegerValue
 import io.airbyte.cdk.load.data.ObjectValue
 import io.airbyte.cdk.load.data.StringValue
 import io.airbyte.cdk.load.data.TimestampWithTimezoneValue
 import io.airbyte.cdk.load.data.TimestampWithoutTimezoneValue
+import io.airbyte.cdk.load.data.iceberg.parquet.AirbyteValueToIcebergRecord
 import io.airbyte.cdk.load.dataflow.aggregate.Aggregate
 import io.airbyte.cdk.load.dataflow.transform.RecordDTO
 import io.airbyte.cdk.load.toolkits.iceberg.parquet.io.Operation
@@ -22,8 +24,11 @@ import java.math.BigInteger
 import java.time.ZoneOffset
 import org.apache.iceberg.Schema
 import org.apache.iceberg.Table
+import org.apache.iceberg.data.GenericRecord
 import org.apache.iceberg.data.Record
 import org.apache.iceberg.io.BaseTaskWriter
+import org.apache.iceberg.types.Type
+import org.apache.iceberg.types.Types
 
 private val logger = KotlinLogging.logger {}
 
@@ -49,8 +54,8 @@ class GcsDataLakeAggregate(
         // Convert RecordDTO to Iceberg Record
         // Note: ValueCoercer has already nulled out-of-range integers in Parse stage
         // Here we handle Iceberg-schema-specific conversions that depend on field types
-        val converter = io.airbyte.cdk.load.data.iceberg.parquet.AirbyteValueToIcebergRecord()
-        val icebergRecord = org.apache.iceberg.data.GenericRecord.create(schema)
+        val converter = AirbyteValueToIcebergRecord()
+        val icebergRecord = GenericRecord.create(schema)
 
         schema.asStruct().fields().forEach { field ->
             // Schema has mapped column names, record.fields also has mapped names
@@ -76,12 +81,12 @@ class GcsDataLakeAggregate(
      * handle Object/Array stringification for STRING fields.
      */
     private fun transformForIcebergSchema(
-        value: io.airbyte.cdk.load.data.AirbyteValue,
-        field: org.apache.iceberg.types.Types.NestedField
-    ): io.airbyte.cdk.load.data.AirbyteValue {
+        value: AirbyteValue,
+        field: Types.NestedField
+    ): AirbyteValue {
         return when {
             // Timestamp → Integer for LONG fields (_airbyte_extracted_at)
-            field.type().typeId() == org.apache.iceberg.types.Type.TypeID.LONG &&
+            field.type().typeId() == Type.TypeID.LONG &&
                 (value is TimestampWithTimezoneValue || value is TimestampWithoutTimezoneValue) -> {
                 val millis =
                     when (value) {
@@ -94,9 +99,9 @@ class GcsDataLakeAggregate(
             }
             // Object/Array → String for STRING fields (for stringifySchemalessObjects behavior)
             // Note: Union values are already stringified by ValueCoercer
-            field.type().typeId() == org.apache.iceberg.types.Type.TypeID.STRING &&
+            field.type().typeId() == Type.TypeID.STRING &&
                 value is ObjectValue -> StringValue(value.serializeToString())
-            field.type().typeId() == org.apache.iceberg.types.Type.TypeID.STRING &&
+            field.type().typeId() == Type.TypeID.STRING &&
                 value is ArrayValue -> StringValue(value.serializeToString())
             else -> value
         }
