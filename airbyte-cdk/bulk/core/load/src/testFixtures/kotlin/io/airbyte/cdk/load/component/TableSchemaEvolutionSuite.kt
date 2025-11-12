@@ -51,27 +51,32 @@ interface TableSchemaEvolutionSuite {
      * @param expectedDiscoveredSchema The schema to expect. This should be the same schema as
      * [computeSchema].
      */
-    fun discover(expectedDiscoveredSchema: TableSchema) = runTest {
-        val testNamespace = Fixtures.generateTestNamespace("namespace-test")
-        val testTable = Fixtures.generateTestTableName("table-test-table", testNamespace)
-        val stream =
-            Fixtures.createAppendStream(
-                namespace = testTable.namespace,
-                name = testTable.name,
-                schema = Fixtures.ALL_TYPES_SCHEMA,
+    fun discover(expectedDiscoveredSchema: TableSchema) {
+        discover(expectedDiscoveredSchema, Fixtures.ALL_TYPES_MAPPING)
+    }
+
+    fun discover(expectedDiscoveredSchema: TableSchema, columnNameMapping: ColumnNameMapping) =
+        runTest {
+            val testNamespace = Fixtures.generateTestNamespace("namespace-test")
+            val testTable = Fixtures.generateTestTableName("table-test-table", testNamespace)
+            val stream =
+                Fixtures.createAppendStream(
+                    namespace = testTable.namespace,
+                    name = testTable.name,
+                    schema = Fixtures.ALL_TYPES_SCHEMA,
+                )
+
+            opsClient.createNamespace(testNamespace)
+            opsClient.createTable(
+                tableName = testTable,
+                columnNameMapping = columnNameMapping,
+                stream = stream,
+                replace = false,
             )
 
-        opsClient.createNamespace(testNamespace)
-        opsClient.createTable(
-            tableName = testTable,
-            columnNameMapping = Fixtures.ALL_TYPES_MAPPING,
-            stream = stream,
-            replace = false,
-        )
-
-        val discoveredSchema = client.discoverSchema(testTable)
-        assertEquals(expectedDiscoveredSchema, discoveredSchema)
-    }
+            val discoveredSchema = client.discoverSchema(testTable)
+            assertEquals(expectedDiscoveredSchema, discoveredSchema)
+        }
 
     /**
      * Test that the connector can correctly compute a schema for a stream containing all data
@@ -80,9 +85,11 @@ interface TableSchemaEvolutionSuite {
      * @param expectedComputedSchema The schema to expect. This should be the same schema as
      * [discover].
      */
-    fun computeSchema(
-        expectedComputedSchema: TableSchema,
-    ) {
+    fun computeSchema(expectedComputedSchema: TableSchema) {
+        computeSchema(expectedComputedSchema, Fixtures.ALL_TYPES_MAPPING)
+    }
+
+    fun computeSchema(expectedComputedSchema: TableSchema, columnNameMapping: ColumnNameMapping) {
         val testNamespace = Fixtures.generateTestNamespace("namespace-test")
         val testTable = Fixtures.generateTestTableName("table-test-table", testNamespace)
         val stream =
@@ -91,7 +98,7 @@ interface TableSchemaEvolutionSuite {
                 name = testTable.name,
                 schema = Fixtures.ALL_TYPES_SCHEMA,
             )
-        val computedSchema = client.computeSchema(stream, Fixtures.ALL_TYPES_MAPPING)
+        val computedSchema = client.computeSchema(stream, columnNameMapping)
         assertEquals(expectedComputedSchema, computedSchema)
     }
 
@@ -99,32 +106,48 @@ interface TableSchemaEvolutionSuite {
      * Test that the connector correctly detects a no-change situation. This test just creates a
      * table, discovers its schema, and computes a changeset against that same schema.
      */
-    fun `noop diff`() = runTest {
+    fun `noop diff`() {
+        `noop diff`(Fixtures.TEST_MAPPING)
+    }
+
+    fun `noop diff`(
+        columnNameMapping: ColumnNameMapping,
+    ) = runTest {
         val testNamespace = Fixtures.generateTestNamespace("namespace-test")
         val testTable = Fixtures.generateTestTableName("table-test-table", testNamespace)
         val (_, _, columnChangeset) =
             computeSchemaEvolution(
                 testTable,
                 Fixtures.TEST_INTEGER_SCHEMA,
-                Fixtures.TEST_MAPPING,
+                columnNameMapping,
                 Fixtures.TEST_INTEGER_SCHEMA,
-                Fixtures.TEST_MAPPING,
+                columnNameMapping,
             )
 
         assertTrue(columnChangeset.isNoop(), "Expected changeset to be noop. Got $columnChangeset")
     }
 
     /** Test that the connector can correctly detect when a new column needs to be added */
-    fun `changeset is correct when adding a column`() = runTest {
+    fun `changeset is correct when adding a column`() {
+        `changeset is correct when adding a column`(
+            initialColumnNameMapping = Fixtures.TEST_MAPPING,
+            modifiedColumnNameMapping = Fixtures.ID_AND_TEST_MAPPING
+        )
+    }
+
+    fun `changeset is correct when adding a column`(
+        initialColumnNameMapping: ColumnNameMapping,
+        modifiedColumnNameMapping: ColumnNameMapping
+    ) = runTest {
         val testNamespace = Fixtures.generateTestNamespace("namespace-test")
         val testTable = Fixtures.generateTestTableName("table-test-table", testNamespace)
         val (_, _, columnChangeset) =
             computeSchemaEvolution(
                 testTable,
                 Fixtures.TEST_INTEGER_SCHEMA,
-                Fixtures.TEST_MAPPING,
+                initialColumnNameMapping,
                 Fixtures.ID_AND_TEST_SCHEMA,
-                Fixtures.ID_AND_TEST_MAPPING,
+                modifiedColumnNameMapping,
             )
 
         // The changeset should indicate that we're trying to add a column
@@ -132,7 +155,7 @@ interface TableSchemaEvolutionSuite {
             {
                 assertEquals(
                     columnChangeset.columnsToAdd.keys,
-                    setOf(Fixtures.ID_AND_TEST_MAPPING[ID_FIELD]),
+                    setOf(modifiedColumnNameMapping[ID_FIELD]),
                     "Expected to add exactly one column. Got ${columnChangeset.columnsToAdd}"
                 )
             },
@@ -152,7 +175,7 @@ interface TableSchemaEvolutionSuite {
             },
             {
                 assertEquals(
-                    setOf(Fixtures.ID_AND_TEST_MAPPING[TEST_FIELD]),
+                    setOf(modifiedColumnNameMapping[TEST_FIELD]),
                     columnChangeset.columnsToRetain.keys,
                     "Expected to retain the original column. Got ${columnChangeset.columnsToRetain}"
                 )
@@ -161,16 +184,26 @@ interface TableSchemaEvolutionSuite {
     }
 
     /** Test that the connector can correctly detect when a column needs to be dropped */
-    fun `changeset is correct when dropping a column`() = runTest {
+    fun `changeset is correct when dropping a column`() {
+        `changeset is correct when dropping a column`(
+            initialColumnNameMapping = Fixtures.ID_AND_TEST_MAPPING,
+            modifiedColumnNameMapping = Fixtures.TEST_MAPPING
+        )
+    }
+
+    fun `changeset is correct when dropping a column`(
+        initialColumnNameMapping: ColumnNameMapping,
+        modifiedColumnNameMapping: ColumnNameMapping
+    ) = runTest {
         val testNamespace = Fixtures.generateTestNamespace("namespace-test")
         val testTable = Fixtures.generateTestTableName("table-test-table", testNamespace)
         val (_, _, columnChangeset) =
             computeSchemaEvolution(
                 testTable,
                 Fixtures.ID_AND_TEST_SCHEMA,
-                Fixtures.ID_AND_TEST_MAPPING,
+                initialColumnNameMapping,
                 Fixtures.TEST_INTEGER_SCHEMA,
-                Fixtures.TEST_MAPPING,
+                modifiedColumnNameMapping,
             )
 
         // The changeset should indicate that we're trying to drop a column
@@ -184,7 +217,7 @@ interface TableSchemaEvolutionSuite {
             },
             {
                 assertEquals(
-                    setOf(Fixtures.ID_AND_TEST_MAPPING[ID_FIELD]),
+                    setOf(initialColumnNameMapping[ID_FIELD]),
                     columnChangeset.columnsToDrop.keys,
                     "Expected to drop exactly one column. Got ${columnChangeset.columnsToDrop}"
                 )
@@ -198,7 +231,7 @@ interface TableSchemaEvolutionSuite {
             },
             {
                 assertEquals(
-                    setOf(Fixtures.ID_AND_TEST_MAPPING[TEST_FIELD]),
+                    setOf(initialColumnNameMapping[TEST_FIELD]),
                     columnChangeset.columnsToRetain.keys,
                     "Expected to retain the original column. Got ${columnChangeset.columnsToRetain}"
                 )
@@ -210,20 +243,26 @@ interface TableSchemaEvolutionSuite {
      * Test that the connector can correctly detect when a column's type needs to be changed. Note
      * that this only tests changing the actual type, _not_ changing the column's nullability.
      */
-    fun `changeset is correct when changing a column's type`() = runTest {
+    fun `changeset is correct when changing a column's type`() {
+        `changeset is correct when changing a column's type`(Fixtures.TEST_MAPPING)
+    }
+
+    fun `changeset is correct when changing a column's type`(
+        columnNameMapping: ColumnNameMapping,
+    ) = runTest {
         val testNamespace = Fixtures.generateTestNamespace("namespace-test")
         val testTable = Fixtures.generateTestTableName("table-test-table", testNamespace)
         val (actualSchema, expectedSchema, columnChangeset) =
             computeSchemaEvolution(
                 testTable,
                 Fixtures.TEST_INTEGER_SCHEMA,
-                Fixtures.TEST_MAPPING,
+                columnNameMapping,
                 Fixtures.TEST_STRING_SCHEMA,
-                Fixtures.TEST_MAPPING,
+                columnNameMapping,
             )
 
-        val actualType = actualSchema.columns[Fixtures.TEST_MAPPING[TEST_FIELD]]!!
-        val expectedType = expectedSchema.columns[Fixtures.TEST_MAPPING[TEST_FIELD]]!!
+        val actualType = actualSchema.columns[columnNameMapping[TEST_FIELD]]!!
+        val expectedType = expectedSchema.columns[columnNameMapping[TEST_FIELD]]!!
 
         // The changeset should indicate that we're trying to drop a column
         assertAll(
@@ -251,7 +290,7 @@ interface TableSchemaEvolutionSuite {
             {
                 assertEquals(
                     ColumnTypeChange(actualType, expectedType),
-                    columnChangeset.columnsToChange[Fixtures.TEST_MAPPING[TEST_FIELD]],
+                    columnChangeset.columnsToChange[columnNameMapping[TEST_FIELD]],
                     "Expected column to change from $actualType to $expectedType. Got ${columnChangeset.columnsToChange}"
                 )
             },
