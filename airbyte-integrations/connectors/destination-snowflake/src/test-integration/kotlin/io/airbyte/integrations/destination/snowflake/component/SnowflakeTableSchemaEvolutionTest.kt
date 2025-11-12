@@ -25,13 +25,13 @@ class SnowflakeTableSchemaEvolutionTest(
     override val airbyteMetaColumnMapping = Meta.COLUMN_NAMES.associateWith { it.uppercase() }
 
     @Test
-    fun discover() {
-        super.discover(allTypesTableSchema, allTypesColumnNameMapping)
+    fun `discover recognizes all data types`() {
+        super.`discover recognizes all data types`(allTypesTableSchema, allTypesColumnNameMapping)
     }
 
     @Test
-    fun computeSchema() {
-        super.computeSchema(allTypesTableSchema, allTypesColumnNameMapping)
+    fun `computeSchema handles all data types`() {
+        super.`computeSchema handles all data types`(allTypesTableSchema, allTypesColumnNameMapping)
     }
 
     @Test

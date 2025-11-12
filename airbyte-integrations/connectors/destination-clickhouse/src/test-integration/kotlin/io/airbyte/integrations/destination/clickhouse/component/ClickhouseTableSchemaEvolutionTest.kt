@@ -37,13 +37,13 @@ class ClickhouseTableSchemaEvolutionTest(
         )
 
     @Test
-    fun discover() {
-        super.discover(allTypesTableSchema)
+    fun `discover recognizes all data types`() {
+        super.`discover recognizes all data types`(allTypesTableSchema)
     }
 
     @Test
-    fun computeSchema() {
-        super.computeSchema(allTypesTableSchema)
+    fun `computeSchema handles all data types`() {
+        super.`computeSchema handles all data types`(allTypesTableSchema)
     }
 
     @Test
