@@ -4,12 +4,14 @@
 
 package io.airbyte.integrations.destination.snowflake.component
 
-import io.airbyte.cdk.load.component.ColumnType
-import io.airbyte.cdk.load.component.TableSchema
 import io.airbyte.cdk.load.component.TableSchemaEvolutionSuite
 import io.airbyte.cdk.load.message.Meta
 import io.airbyte.cdk.load.table.ColumnNameMapping
 import io.airbyte.integrations.destination.snowflake.client.SnowflakeAirbyteClient
+import io.airbyte.integrations.destination.snowflake.component.SnowflakeComponentTestFixtures.allTypesColumnNameMapping
+import io.airbyte.integrations.destination.snowflake.component.SnowflakeComponentTestFixtures.allTypesTableSchema
+import io.airbyte.integrations.destination.snowflake.component.SnowflakeComponentTestFixtures.idAndTestMapping
+import io.airbyte.integrations.destination.snowflake.component.SnowflakeComponentTestFixtures.testMapping
 import org.junit.jupiter.api.Test
 import org.junit.jupiter.api.parallel.Execution
 import org.junit.jupiter.api.parallel.ExecutionMode
@@ -22,54 +24,34 @@ class SnowflakeTableSchemaEvolutionTest(
 ) : TableSchemaEvolutionSuite {
     override val airbyteMetaColumnMapping = Meta.COLUMN_NAMES.associateWith { it.uppercase() }
 
-    private val allTypesTableSchema =
-        TableSchema(
-            mapOf(
-                "string" to ColumnType("VARCHAR", true),
-                "boolean" to ColumnType("BOOLEAN", true),
-                // NUMBER == NUMBER(38, 0)
-                "integer" to ColumnType("NUMBER", true),
-                // we use FLOAT instead of NUMBER(38, 9) for historical reasons
-                "number" to ColumnType("FLOAT", true),
-                "date" to ColumnType("DATE", true),
-                "timestamp_tz" to ColumnType("TIMESTAMP_TZ", true),
-                "timestamp_ntz" to ColumnType("TIMESTAMP_NTZ", true),
-                "time_tz" to ColumnType("VARCHAR", true),
-                "time_ntz" to ColumnType("TIME", true),
-                "array" to ColumnType("ARRAY", true),
-                "object" to ColumnType("OBJECT", true),
-                "unknown" to ColumnType("VARIANT", true),
-            )
-        )
-
     @Test
     fun discover() {
-        super.discover(allTypesTableSchema)
+        super.discover(allTypesTableSchema, allTypesColumnNameMapping)
     }
 
     @Test
     fun computeSchema() {
-        super.computeSchema(allTypesTableSchema)
+        super.computeSchema(allTypesTableSchema, allTypesColumnNameMapping)
     }
 
     @Test
     override fun `noop diff`() {
-        super.`noop diff`()
+        super.`noop diff`(testMapping)
     }
 
     @Test
     override fun `changeset is correct when adding a column`() {
-        super.`changeset is correct when adding a column`()
+        super.`changeset is correct when adding a column`(testMapping, idAndTestMapping)
     }
 
     @Test
     override fun `changeset is correct when dropping a column`() {
-        super.`changeset is correct when dropping a column`()
+        super.`changeset is correct when dropping a column`(idAndTestMapping, testMapping)
     }
 
     @Test
     override fun `changeset is correct when changing a column's type`() {
-        super.`changeset is correct when changing a column's type`()
+        super.`changeset is correct when changing a column's type`(testMapping)
     }
 
     @Test
