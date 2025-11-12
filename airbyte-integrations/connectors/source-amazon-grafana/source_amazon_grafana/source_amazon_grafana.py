@@ -5,11 +5,11 @@ import hashlib
 import hmac
 import json
 import logging
-from typing import Iterable, List, Mapping, Any, Optional
+from typing import Any, Iterable, List, Mapping, Optional
 
 import boto3
-from botocore.exceptions import ClientError
 import requests
+from botocore.exceptions import ClientError
 
 from airbyte_cdk.logger import init_logger
 from airbyte_cdk.models import (
@@ -25,7 +25,9 @@ from airbyte_cdk.models import (
 )
 from airbyte_cdk.sources import Source
 
+
 logger = logging.getLogger("airbyte")
+
 
 class SigV4Authenticator:
     def __init__(self, access_key: str, secret_key: str, region: str, service: str = "grafana"):
@@ -50,21 +52,25 @@ class SigV4Authenticator:
         amz_date = t.strftime("%Y%m%dT%H%M%SZ")
         date_stamp = t.strftime("%Y%m%d")
         parsed_url = urlparse(url)
+
         
         canonical_uri = parsed_url.path or "/"
         canonical_querystring = parsed_url.query
+
         
         netloc = parsed_url.netloc
         if ":" in netloc:
-             netloc = netloc.split(":")[0]
+            netloc = netloc.split(":")[0]
 
         payload_hash = hashlib.sha256(body or b"").hexdigest()
+
         
         if body and "Content-Type" not in headers:
             headers["Content-Type"] = "application/json"
 
         canonical_headers = f"host:{netloc}\n" + f"x-amz-date:{amz_date}\n"
         signed_headers = "host;x-amz-date"
+
         
         if "Content-Type" in headers:
             canonical_headers += f"content-type:{headers['Content-Type'].strip().lower()}\n"
@@ -94,13 +100,13 @@ class SigV4Authenticator:
         signature = hmac.new(signing_key, string_to_sign.encode("utf-8"), hashlib.sha256).hexdigest()
 
         authorization_header = (
-            f"{algorithm} Credential={self.access_key}/{credential_scope}, " 
-            f"SignedHeaders={signed_headers}, Signature={signature}"
+            f"{algorithm} Credential={self.access_key}/{credential_scope}, " f"SignedHeaders={signed_headers}, Signature={signature}"
         )
 
         headers["x-amz-date"] = amz_date
         headers["Authorization"] = authorization_header
         headers["host"] = netloc
+
         
         logger.debug(f"SigV4 Auth generated for {method} {canonical_uri}")
 
@@ -141,24 +147,18 @@ class BaseGrafanaStream:
 
     def _create_token(self) -> (str, str):
         existing_tokens = self.grafana_client.list_workspace_service_account_tokens(
-            workspaceId=self.workspace_id,
-            serviceAccountId=self.service_account_id
+            workspaceId=self.workspace_id, serviceAccountId=self.service_account_id
         )
 
         for t in existing_tokens.get("serviceAccountTokens", []):
             if t.get("name") == "airbyte-temp-token":
                 logger.info(f"Deleting existing token {t.get('id')}")
                 self.grafana_client.delete_workspace_service_account_token(
-                    workspaceId=self.workspace_id,
-                    serviceAccountId=self.service_account_id,
-                    tokenId=t.get("id")
+                    workspaceId=self.workspace_id, serviceAccountId=self.service_account_id, tokenId=t.get("id")
                 )
 
         creates = self.grafana_client.create_workspace_service_account_token(
-            workspaceId=self.workspace_id,
-            serviceAccountId=self.service_account_id,
-            name="airbyte-temp-token",
-            secondsToLive=3600
+            workspaceId=self.workspace_id, serviceAccountId=self.service_account_id, name="airbyte-temp-token", secondsToLive=3600
         )
 
         token_key = creates["serviceAccountToken"]["key"]
@@ -168,9 +168,7 @@ class BaseGrafanaStream:
     def _delete_token(self, token_id: str):
         try:
             self.grafana_client.delete_workspace_service_account_token(
-                workspaceId=self.workspace_id,
-                serviceAccountId=self.service_account_id,
-                tokenId=token_id
+                workspaceId=self.workspace_id, serviceAccountId=self.service_account_id, tokenId=token_id
             )
             logger.info(f"Deleted service account token id {token_id}")
         except ClientError as e:
@@ -181,10 +179,7 @@ class BaseGrafanaStream:
 
         url = f"https://{self.workspace_id}.grafana-workspace.{self.region}.amazonaws.com{path}"
 
-        headers = {
-            "Authorization": f"Bearer {BaseGrafanaStream.token}",
-            "Accept": "application/json"
-        }
+        headers = {"Authorization": f"***", "Accept": "application/json"}
         if body is not None:
             headers["Content-Type"] = "application/json"
 
@@ -259,8 +254,9 @@ class SourceAmazonGrafana(Source):
                 },
                 "required": ["id", "name"],
                 "additionalProperties": True,
-            }
+            },
         }
+
     
         streams = [
             AirbyteStream(
@@ -274,8 +270,9 @@ class SourceAmazonGrafana(Source):
                 json_schema=schemas["teams"],
                 supported_sync_modes=[SyncMode.full_refresh],
                 source_defined_primary_key=[["id"]],
-            )
+            ),
         ]
+
     
         return AirbyteCatalog(streams=streams)
 
@@ -310,16 +307,48 @@ class SourceAmazonGrafana(Source):
                 "title": "Amazon Grafana Source Spec",
                 "required": ["workspace_id", "region", "service_account_id"],
                 "properties": {
-                    "workspace_id": {"type": "string", "description": "Grafana workspace ID", "title": "ID of Grafana workspace", "order": 0},
+                    "workspace_id": {
+                        "type": "string",
+                        "description": "Grafana workspace ID",
+                        "title": "ID of Grafana workspace",
+                        "order": 0,
+                    },
                     "region": {
                         "type": "string",
                         "enum": [
-                            "af-south-1", "ap-east-1", "ap-northeast-1", "ap-northeast-2", "ap-northeast-3",
-                            "ap-south-1", "ap-south-2", "ap-southeast-1", "ap-southeast-2", "ap-southeast-3",
-                            "ap-southeast-4", "ca-central-1", "ca-west-1", "cn-north-1", "cn-northwest-1",
-                            "eu-central-1", "eu-central-2", "eu-north-1", "eu-south-1", "eu-south-2",
-                            "eu-west-1", "eu-west-2", "eu-west-3", "il-central-1", "me-central-1", "me-south-1",
-                            "sa-east-1", "us-east-1", "us-east-2", "us-gov-east-1", "us-gov-west-1", "us-west-1", "us-west-2",
+                            "af-south-1",
+                            "ap-east-1",
+                            "ap-northeast-1",
+                            "ap-northeast-2",
+                            "ap-northeast-3",
+                            "ap-south-1",
+                            "ap-south-2",
+                            "ap-southeast-1",
+                            "ap-southeast-2",
+                            "ap-southeast-3",
+                            "ap-southeast-4",
+                            "ca-central-1",
+                            "ca-west-1",
+                            "cn-north-1",
+                            "cn-northwest-1",
+                            "eu-central-1",
+                            "eu-central-2",
+                            "eu-north-1",
+                            "eu-south-1",
+                            "eu-south-2",
+                            "eu-west-1",
+                            "eu-west-2",
+                            "eu-west-3",
+                            "il-central-1",
+                            "me-central-1",
+                            "me-south-1",
+                            "sa-east-1",
+                            "us-east-1",
+                            "us-east-2",
+                            "us-gov-east-1",
+                            "us-gov-west-1",
+                            "us-west-1",
+                            "us-west-2",
                         ],
                         "default": "eu-central-1",
                         "description": "AWS region of the workspace",
@@ -330,7 +359,7 @@ class SourceAmazonGrafana(Source):
                         "type": "string",
                         "description": "ID Service Account used for token generation",
                         "title": "AWS Grafana Service Account ID",
-                        "order": 2
+                        "order": 2,
                     },
                     "aws_access_key_id": {
                         "type": "string",
@@ -357,6 +386,7 @@ class SourceAmazonGrafana(Source):
             },
         )
 
+
 def get_aws_credentials(config: dict) -> dict:
     if config.get("aws_access_key_id") and config.get("aws_secret_access_key"):
         return {
@@ -368,9 +398,7 @@ def get_aws_credentials(config: dict) -> dict:
     session = boto3.Session()
     credentials = session.get_credentials()
     if not credentials:
-        raise ValueError(
-            "AWS credentials not found. Provide AWS keys in config or configure IRSA with metadata access."
-        )
+        raise ValueError("AWS credentials not found. Provide AWS keys in config or configure IRSA with metadata access.")
     cred = credentials.get_frozen_credentials()
     if not all([cred.access_key, cred.secret_key]):
         raise ValueError("Incomplete AWS credentials received from environment.")
