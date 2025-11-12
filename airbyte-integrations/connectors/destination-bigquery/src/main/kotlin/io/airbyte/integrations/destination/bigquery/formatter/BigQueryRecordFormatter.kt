@@ -93,23 +93,26 @@ class BigQueryRecordFormatter(
                         if (value.abValue != NullValue) {
                             // first, validate the value.
                             validateAirbyteValue(value)
-                            // then, populate the record.
-                            // Bigquery has some strict requirements for datetime / time formatting,
-                            // so handle that here.
-                            when (value.type) {
-                                TimestampTypeWithTimezone ->
-                                    outputRecord[columnNameMapping[key]!!] =
-                                        formatTimestampWithTimezone(value)
-                                TimestampTypeWithoutTimezone ->
-                                    outputRecord[columnNameMapping[key]!!] =
-                                        formatTimestampWithoutTimezone(value)
-                                TimeTypeWithoutTimezone ->
-                                    outputRecord[columnNameMapping[key]!!] =
-                                        formatTimeWithoutTimezone(value)
-                                TimeTypeWithTimezone ->
-                                    outputRecord[columnNameMapping[key]!!] =
-                                        formatTimeWithTimezone(value)
-                                else -> outputRecord[columnNameMapping[key]!!] = value.abValue
+                            // Recheck nullness, since validateAirbyteValue might have nulled it out
+                            if (value.abValue != NullValue) {
+                                // then, populate the record.
+                                // Bigquery has some strict requirements for datetime / time
+                                // formatting, so handle that here.
+                                when (value.type) {
+                                    TimestampTypeWithTimezone ->
+                                        outputRecord[columnNameMapping[key]!!] =
+                                            formatTimestampWithTimezone(value)
+                                    TimestampTypeWithoutTimezone ->
+                                        outputRecord[columnNameMapping[key]!!] =
+                                            formatTimestampWithoutTimezone(value)
+                                    TimeTypeWithoutTimezone ->
+                                        outputRecord[columnNameMapping[key]!!] =
+                                            formatTimeWithoutTimezone(value)
+                                    TimeTypeWithTimezone ->
+                                        outputRecord[columnNameMapping[key]!!] =
+                                            formatTimeWithTimezone(value)
+                                    else -> outputRecord[columnNameMapping[key]!!] = value.abValue
+                                }
                             }
                         }
                     }
