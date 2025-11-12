@@ -194,9 +194,16 @@ internal class PostgresDirectLoadSqlGeneratorTest {
             DROP TABLE IF EXISTS "namespace"."target";
             ALTER TABLE "namespace"."source" RENAME TO "target";
             COMMIT;
-        """.trimIndent()
+        """
 
-        assertEquals(expected, sql)
+        assertEqualsWithTrimIndent(expected, sql)
+    }
+
+    private fun assertEqualsWithTrimIndent(expected: String, actual: String) {
+        assertEquals(
+            expected.trimIndent(),
+            actual.trimIndent()
+        )
     }
 
     @Test
@@ -219,9 +226,9 @@ internal class PostgresDirectLoadSqlGeneratorTest {
             INSERT INTO "namespace"."target" ("_airbyte_raw_id","_airbyte_extracted_at","_airbyte_meta","_airbyte_generation_id","targetId")
             SELECT "_airbyte_raw_id","_airbyte_extracted_at","_airbyte_meta","_airbyte_generation_id","targetId"
             FROM "namespace"."source";
-        """.trimIndent()
+        """
 
-        assertEquals(expected, sql)
+        assertEqualsWithTrimIndent(expected, sql)
     }
 
     @Test
