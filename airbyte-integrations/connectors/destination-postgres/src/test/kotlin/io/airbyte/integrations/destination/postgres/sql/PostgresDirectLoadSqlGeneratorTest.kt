@@ -927,9 +927,97 @@ internal class PostgresDirectLoadSqlGeneratorTest {
             cursorColumnName = null
         )
 
-        assertEquals(3, sql.size)
-        assert(sql.any { it.contains("ADD COLUMN \"new_col\" bigint") })
-        assert(sql.any { it.contains("DROP COLUMN \"old_col\"") })
-        assert(sql.any { it.contains("ALTER COLUMN \"modified_col\" TYPE jsonb") })
+        assert(sql.contains("BEGIN TRANSACTION;"))
+        assert(sql.contains("COMMIT;"))
+        assert(sql.contains("ADD COLUMN \"new_col\" bigint"))
+        assert(sql.contains("DROP COLUMN \"old_col\""))
+        assert(sql.contains("ALTER COLUMN \"modified_col\" TYPE jsonb"))
+    }
+
+    @Test
+    fun testMatchSchemasWithPrimaryKeyIndexRecreation() {
+        val tableName = TableName(namespace = "test_schema", name = "test_table")
+        val columnsToAdd = setOf(Column("new_col", "bigint"))
+        val columnsToRemove = emptySet<Column>()
+        val columnsToModify = emptySet<Column>()
+        val columnsInDb = emptySet<Column>()
+        val primaryKeyColumnNames = listOf("id", "user_id")
+
+        val sql = postgresDirectLoadSqlGenerator.matchSchemas(
+            tableName,
+            columnsToAdd,
+            columnsToRemove,
+            columnsToModify,
+            columnsInDb,
+            recreatePrimaryKeyIndex = true,
+            primaryKeyColumnNames = primaryKeyColumnNames,
+            recreateCursorIndex = false,
+            cursorColumnName = null
+        )
+
+        assert(sql.contains("BEGIN TRANSACTION;"))
+        assert(sql.contains("COMMIT;"))
+        assert(sql.contains("ADD COLUMN \"new_col\" bigint"))
+        assert(sql.contains("DROP INDEX IF EXISTS \"test_schema\".\"idx_pk_test_table\""))
+        assert(sql.contains("CREATE INDEX \"idx_pk_test_table\" ON \"test_schema\".\"test_table\" (\"id\", \"user_id\")"))
+    }
+
+    @Test
+    fun testMatchSchemasWithCursorIndexRecreation() {
+        val tableName = TableName(namespace = "test_schema", name = "test_table")
+        val columnsToAdd = setOf(Column("new_col", "bigint"))
+        val columnsToRemove = emptySet<Column>()
+        val columnsToModify = emptySet<Column>()
+        val columnsInDb = emptySet<Column>()
+        val cursorColumnName = "updated_at"
+
+        val sql = postgresDirectLoadSqlGenerator.matchSchemas(
+            tableName,
+            columnsToAdd,
+            columnsToRemove,
+            columnsToModify,
+            columnsInDb,
+            recreatePrimaryKeyIndex = false,
+            primaryKeyColumnNames = emptyList(),
+            recreateCursorIndex = true,
+            cursorColumnName = cursorColumnName
+        )
+
+        assert(sql.contains("BEGIN TRANSACTION;"))
+        assert(sql.contains("COMMIT;"))
+        assert(sql.contains("ADD COLUMN \"new_col\" bigint"))
+        assert(sql.contains("DROP INDEX IF EXISTS \"test_schema\".\"idx_cursor_test_table\""))
+        assert(sql.contains("CREATE INDEX \"idx_cursor_test_table\" ON \"test_schema\".\"test_table\" (\"updated_at\")"))
+    }
+
+    @Test
+    fun testMatchSchemasWithBothIndexRecreations() {
+        val tableName = TableName(namespace = "test_schema", name = "test_table")
+        val columnsToAdd = emptySet<Column>()
+        val columnsToRemove = emptySet<Column>()
+        val columnsToModify = setOf(Column("modified_col", "jsonb"))
+        val columnsInDb = setOf(Column("modified_col", "varchar"))
+        val primaryKeyColumnNames = listOf("id")
+        val cursorColumnName = "updated_at"
+
+        val sql = postgresDirectLoadSqlGenerator.matchSchemas(
+            tableName,
+            columnsToAdd,
+            columnsToRemove,
+            columnsToModify,
+            columnsInDb,
+            recreatePrimaryKeyIndex = true,
+            primaryKeyColumnNames = primaryKeyColumnNames,
+            recreateCursorIndex = true,
+            cursorColumnName = cursorColumnName
+        )
+
+        assert(sql.contains("BEGIN TRANSACTION;"))
+        assert(sql.contains("COMMIT;"))
+        assert(sql.contains("ALTER COLUMN \"modified_col\" TYPE jsonb"))
+        assert(sql.contains("DROP INDEX IF EXISTS \"test_schema\".\"idx_pk_test_table\""))
+        assert(sql.contains("CREATE INDEX \"idx_pk_test_table\" ON \"test_schema\".\"test_table\" (\"id\")"))
+        assert(sql.contains("DROP INDEX IF EXISTS \"test_schema\".\"idx_cursor_test_table\""))
+        assert(sql.contains("CREATE INDEX \"idx_cursor_test_table\" ON \"test_schema\".\"test_table\" (\"updated_at\")"))
     }
 }
