@@ -57,6 +57,7 @@ internal class PostgresAirbyteClientTest {
             mockk<ResultSet> {
                 every { next() } returns true
                 every { getLong(COUNT_TOTAL_ALIAS) } returns 42L
+                every { close() } just Runs
             }
         val statement =
             mockk<Statement> {
@@ -82,7 +83,12 @@ internal class PostgresAirbyteClientTest {
     @Test
     fun testCountTableNoResults() {
         val tableName = TableName(namespace = "namespace", name = "name")
-        val resultSet = mockk<ResultSet> { every { next() } returns false }
+
+        val resultSet = mockk<ResultSet> {
+            every { next() } returns false
+            every { close()} just Runs
+        }
+
         val statement =
             mockk<Statement> {
                 every { executeQuery(any()) } returns resultSet
@@ -296,6 +302,7 @@ internal class PostgresAirbyteClientTest {
             mockk<ResultSet> {
                 every { next() } returns true
                 every { getLong(COLUMN_NAME_AB_GENERATION_ID) } returns generationId
+                every { close() } just Runs
             }
         val statement =
             mockk<Statement> {
@@ -376,6 +383,7 @@ internal class PostgresAirbyteClientTest {
             mockk<ResultSet> {
                 every { next() } returns true andThen true andThen false
                 every { getString("column_name") } returns column1 andThen column2
+                every { close() } just Runs
             }
         val statement =
             mockk<Statement> {
@@ -401,6 +409,7 @@ internal class PostgresAirbyteClientTest {
         val tableName = TableName(namespace = "test_namespace", name = "test_table")
         val resultSet = mockk<ResultSet>()
         every { resultSet.next() } returns true andThen true andThen true andThen false
+        every { resultSet.close() } just Runs
         val defaultColumnName = "default_column_name"
         every { resultSet.getString("column_name") } returns
             "col1" andThen
