@@ -14,7 +14,7 @@ class SnowflakeBeanFactory {
     fun aggregatePublishingConfig(): AggregatePublishingConfig {
         // NOT speed mode
         return AggregatePublishingConfig(
-            maxRecordsPerAgg = 100_000L,
+            maxRecordsPerAgg = 100_000_000L,
             maxEstBytesPerAgg = 50_000_000L,
             maxEstBytesAllAggregates = 250_000_000L,
             maxBufferedAggregates = 5,
