@@ -119,14 +119,7 @@ object AirbyteValueCoercer {
             is DateValue -> value
             else ->
                 requireType<StringValue, DateValue>(value) {
-                    // Fast path: Try ISO format first (yyyy-MM-dd)
-                    val date = try {
-                        LocalDate.parse(it.value, DateTimeFormatter.ISO_LOCAL_DATE)
-                    } catch (e: Exception) {
-                        // Fallback: Use complex pattern for non-standard formats
-                        LocalDate.parse(it.value, DATE_TIME_FORMATTER)
-                    }
-                    DateValue(date)
+                    DateValue(LocalDate.parse(it.value, DATE_TIME_FORMATTER))
                 }
         }
 
@@ -137,15 +130,9 @@ object AirbyteValueCoercer {
                 requireType<StringValue, TimeWithTimezoneValue>(value) {
                     val ot =
                         try {
-                            // Fast path: Try ISO format first
-                            OffsetTime.parse(it.value, DateTimeFormatter.ISO_OFFSET_TIME)
+                            OffsetTime.parse(it.value, TIME_FORMATTER)
                         } catch (e: Exception) {
-                            // Fallback: Try complex pattern, then default to UTC
-                            try {
-                                OffsetTime.parse(it.value, TIME_FORMATTER)
-                            } catch (e2: Exception) {
-                                LocalTime.parse(it.value, TIME_FORMATTER).atOffset(ZoneOffset.UTC)
-                            }
+                            LocalTime.parse(it.value, TIME_FORMATTER).atOffset(ZoneOffset.UTC)
                         }
                     TimeWithTimezoneValue(ot)
                 }
@@ -156,14 +143,7 @@ object AirbyteValueCoercer {
             is TimeWithoutTimezoneValue -> value
             else ->
                 requireType<StringValue, TimeWithoutTimezoneValue>(value) {
-                    // Fast path: Try ISO format first (HH:mm:ss)
-                    val time = try {
-                        LocalTime.parse(it.value, DateTimeFormatter.ISO_LOCAL_TIME)
-                    } catch (e: Exception) {
-                        // Fallback: Use complex pattern for non-standard formats
-                        LocalTime.parse(it.value, TIME_FORMATTER)
-                    }
-                    TimeWithoutTimezoneValue(time)
+                    TimeWithoutTimezoneValue(LocalTime.parse(it.value, TIME_FORMATTER))
                 }
         }
 
@@ -188,16 +168,9 @@ object AirbyteValueCoercer {
     private fun offsetDateTime(it: StringValue): OffsetDateTime {
         val odt =
             try {
-                // Fast path: Try ISO-8601 format first (most common case)
-                // This avoids the expensive pattern matching in DATE_TIME_FORMATTER
-                ZonedDateTime.parse(it.value, DateTimeFormatter.ISO_DATE_TIME).toOffsetDateTime()
+                ZonedDateTime.parse(it.value, DATE_TIME_FORMATTER).toOffsetDateTime()
             } catch (e: Exception) {
-                // Fallback: Try the complex pattern for non-standard formats
-                try {
-                    ZonedDateTime.parse(it.value, DATE_TIME_FORMATTER).toOffsetDateTime()
-                } catch (e2: Exception) {
-                    LocalDateTime.parse(it.value, DATE_TIME_FORMATTER).atOffset(ZoneOffset.UTC)
-                }
+                LocalDateTime.parse(it.value, DATE_TIME_FORMATTER).atOffset(ZoneOffset.UTC)
             }
         return odt
     }
