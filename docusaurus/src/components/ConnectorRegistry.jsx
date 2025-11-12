@@ -7,6 +7,14 @@ import styles from "./ConnectorRegistry.module.css";
 
 const iconStyle = { maxWidth: 25, maxHeight: 25 };
 
+const ENTERPRISE_DISPLAY_NAME_OVERRIDES = {
+  'service-now': 'ServiceNow'
+};
+
+function getDisplayName(connector) {
+  return ENTERPRISE_DISPLAY_NAME_OVERRIDES[connector.name_oss] || connector.name_oss;
+}
+
 async function fetchCatalog(url, setter) {
   const response = await fetch(url);
   const registry = await response.json();
@@ -31,6 +39,14 @@ function connectorSort(a, b) {
 }
 
 function ConnectorTable({ connectors, connectorSupportLevel, enterpriseConnectors = [] }) {
+  const sortedConnectors = connectorSupportLevel === "enterprise"
+    ? [...connectors].sort((a, b) => {
+        const nameA = getDisplayName(a);
+        const nameB = getDisplayName(b);
+        return nameA.localeCompare(nameB, undefined, { sensitivity: 'base' });
+      })
+    : [...connectors].sort(connectorSort);
+
   return (
     <table>
       <thead>
@@ -43,8 +59,7 @@ function ConnectorTable({ connectors, connectorSupportLevel, enterpriseConnector
         </tr>
       </thead>
       <tbody>
-        {connectors
-          .sort(connectorSort)
+        {sortedConnectors
           .filter((c) => {
             if (connectorSupportLevel === "enterprise") {
               return true;
@@ -61,6 +76,10 @@ function ConnectorTable({ connectors, connectorSupportLevel, enterpriseConnector
               "https://docs.airbyte.com",
               "",
             ); // not using documentationUrl so we can have relative links
+            
+            const displayName = connectorSupportLevel === "enterprise" 
+              ? getDisplayName(connector) 
+              : connector.name_oss;
 
             return (
               <tr key={`${connector.definitionId}`}>
@@ -72,7 +91,7 @@ function ConnectorTable({ connectors, connectorSupportLevel, enterpriseConnector
                       </div>
                     )}
 
-                    <a href={docsLink}>{connector.name_oss}</a>
+                    <a href={docsLink}>{displayName}</a>
                   </div>
                 </td>
                 {/* min width to prevent wrapping */}
