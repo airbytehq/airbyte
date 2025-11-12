@@ -51,7 +51,7 @@ Before you begin, make sure you've completed the following.
 
 - You need a Kubernetes cluster on which your data plane can run. For example, if your Airbyte control plane already runs on an EKS cluster on `us-west-2`, and you want your data plane to run on `eu-west-1`, create an EKS cluster on `eu-west-1`.
 
-- If you haven't already, get access to Airbyte's API by creating an application and generating an access token. For help, see [Configuring API access](../enterprise-setup/api-access-config).
+- If you haven't already, get access to Airbyte's API by creating an application and generating an access token. For help, see [Configuring API access](../using-airbyte/configuring-api-access).
 
 ## 1. Create a region {#step-1}
 
