@@ -122,6 +122,7 @@ internal class PostgresAirbyteClientTest {
             }
 
         every { dataSource.connection } returns mockConnection
+        every { sqlGenerator.countTable(tableName) } returns MOCK_SQL_QUERY
 
         runBlocking {
             val result = client.countTable(tableName)
