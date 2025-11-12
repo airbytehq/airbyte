@@ -28,8 +28,6 @@ class PostgresDirectLoadSqlGenerator(
     private val dropTableSuffix: String = if (postgresConfiguration.dropCascade == true) " CASCADE" else ""
 
     companion object {
-        private const val CURSOR_INDEX_PREFIX = "idx_cursor_"
-        private const val PRIMARY_KEY_INDEX_PREFIX = "idx_pk_"
         private const val DEDUPED_TABLE_ALIAS = "deduped_source"
         private val EXTRACTED_AT_COLUMN_NAME = quoteIdentifier(COLUMN_NAME_AB_EXTRACTED_AT)
         private val DELETED_AT_COLUMN_NAME = quoteIdentifier(CDC_DELETED_AT_COLUMN)
@@ -148,10 +146,10 @@ class PostgresDirectLoadSqlGenerator(
     }
 
     private fun getPrimaryKeyIndexName(tableName: TableName): String =
-        quoteIdentifier(PRIMARY_KEY_INDEX_PREFIX + tableName.name)
+        quoteIdentifier(postgresColumnUtils.getPrimaryKeyIndexName(tableName))
 
     private fun getCursorIndexName(tableName: TableName): String =
-        quoteIdentifier(CURSOR_INDEX_PREFIX + tableName.name)
+        quoteIdentifier(postgresColumnUtils.getCursorIndexName(tableName))
 
     fun overwriteTable(
         sourceTableName: TableName,
@@ -468,8 +466,8 @@ class PostgresDirectLoadSqlGenerator(
      */
     fun getPrimaryKeyIndexColumns(tableName: TableName): String =
         getIndexColumns(
-           indexName = getPrimaryKeyIndexName(tableName),
-            namespace = getNamespace(tableName)
+            indexName = postgresColumnUtils.getPrimaryKeyIndexName(tableName),
+            namespace = tableName.namespace
         )
 
     /**
@@ -480,8 +478,8 @@ class PostgresDirectLoadSqlGenerator(
      */
     fun getCursorColumn(tableName: TableName): String =
         getIndexColumns(
-            indexName = getCursorIndexName(tableName),
-            namespace = getNamespace(tableName)
+            indexName = postgresColumnUtils.getCursorIndexName(tableName),
+            namespace = tableName.namespace
         )
 
 

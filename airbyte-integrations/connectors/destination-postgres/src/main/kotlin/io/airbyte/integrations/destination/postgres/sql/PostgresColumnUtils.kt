@@ -32,6 +32,7 @@ import io.airbyte.cdk.load.message.Meta.Companion.COLUMN_NAME_AB_META
 import io.airbyte.cdk.load.message.Meta.Companion.COLUMN_NAME_AB_RAW_ID
 import io.airbyte.cdk.load.message.Meta.Companion.COLUMN_NAME_DATA
 import io.airbyte.cdk.load.table.ColumnNameMapping
+import io.airbyte.cdk.load.table.TableName
 import io.airbyte.integrations.destination.postgres.spec.PostgresConfiguration
 import jakarta.inject.Singleton
 import kotlin.collections.plus
@@ -41,6 +42,8 @@ class PostgresColumnUtils(
     private val postgresConfiguration: PostgresConfiguration
 ) {
     companion object {
+        private const val CURSOR_INDEX_PREFIX = "idx_cursor_"
+        private const val PRIMARY_KEY_INDEX_PREFIX = "idx_pk_"
         //Default columns that are always present in both raw and typed tables.
         private val DEFAULT_COLUMNS =
             listOf(
@@ -186,6 +189,12 @@ class PostgresColumnUtils(
             .firstOrNull()
             ?.let { columnName -> getTargetColumnName(columnName, columnNameMapping) }
     }
+
+    internal fun getCursorIndexName(tableName: TableName): String =
+        CURSOR_INDEX_PREFIX + tableName.name
+
+    internal fun getPrimaryKeyIndexName(tableName: TableName): String =
+        PRIMARY_KEY_INDEX_PREFIX + tableName.name
 }
 
 data class Column(val columnName: String, val columnTypeName: String, val nullable: Boolean = true)
