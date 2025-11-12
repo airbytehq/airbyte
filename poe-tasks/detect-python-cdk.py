@@ -97,30 +97,30 @@ def parse_cdk_dependency(pyproject_path) -> dict:
 
 def is_prerelease_version(version_str) -> bool:
     """Check if version string represents a standard published version.
-    
+
     Handles comma-separated version ranges like ">=6.61.6,<7.0" by validating
     each constraint separately. Returns True if any constraint is invalid or
     contains prerelease markers.
     """
     if not version_str:
         return True
-    
+
     parts = [p.strip() for p in version_str.split(",") if p.strip()]
-    
+
     constraint_pattern = re.compile(r"^(?:\^|~|~=|==|!=|<=|>=|<|>)?\s*\d+(?:\.\d+){0,2}\s*$")
-    
+
     prerelease_pattern = re.compile(r"(?:a|alpha|b|beta|c|rc|pre|preview|dev)\d*$", re.IGNORECASE)
-    
+
     for part in parts:
         if "*" in part or "x" in part.lower():
             return True
-        
+
         if prerelease_pattern.search(part):
             return True
-        
+
         if not constraint_pattern.match(part):
             return True
-    
+
     return False
 
 
