@@ -80,7 +80,7 @@
                 "type": "array",
                 "items": {
                   "$schema": "http://json-schema.org/draft-07/schema#",
-                  "$id": "https://github.com/airbytehq/airbyte/airbyte-ci/connectors/metadata_service/lib/metadata_service/models/src/TestSecret.yaml",
+                  "$id": "https://github.com/airbytehq/airbyte/airbyte-ci/connectors/metadata_service/lib/metadata_service/models/src/Secret.yaml",
                   "title": "Secret",
                   "description": "An object describing a secret's metadata",
                   "type": "object",
@@ -100,14 +100,10 @@
                     },
                     "secretStore": {
                       "$schema": "http://json-schema.org/draft-07/schema#",
-                      "$id": "https://github.com/airbytehq/airbyte/airbyte-ci/connectors/metadata_service/lib/metadata_service/models/src/TestSecret.yaml",
+                      "$id": "https://github.com/airbytehq/airbyte/airbyte-ci/connectors/metadata_service/lib/metadata_service/models/src/SecretStore.yaml",
                       "title": "SecretStore",
                       "description": "An object describing a secret store metadata",
                       "type": "object",
-                      "required": [
-                        "name",
-                        "secretStore"
-                      ],
                       "additionalProperties": false,
                       "properties": {
                         "alias": {
@@ -180,6 +176,44 @@
         "documentationUrl": {
           "type": "string",
           "format": "uri"
+        },
+        "externalDocumentationUrls": {
+          "type": "array",
+          "description": "An array of external vendor documentation URLs (changelogs, API references, deprecation notices, etc.)",
+          "items": {
+            "type": "object",
+            "required": [
+              "title",
+              "url"
+            ],
+            "additionalProperties": false,
+            "properties": {
+              "title": {
+                "type": "string",
+                "description": "Display title for the documentation link"
+              },
+              "url": {
+                "type": "string",
+                "format": "uri",
+                "description": "URL to the external documentation"
+              },
+              "type": {
+                "type": "string",
+                "description": "Category of documentation (api_release_history, api_reference, api_deprecations, or other)",
+                "enum": [
+                  "api_release_history",
+                  "api_reference",
+                  "api_deprecations",
+                  "other"
+                ]
+              },
+              "requiresLogin": {
+                "type": "boolean",
+                "description": "Whether the URL requires authentication to access",
+                "default": false
+              }
+            }
+          }
         },
         "githubIssueLabel": {
           "type": "string"
@@ -456,7 +490,7 @@
                   ],
                   "properties": {
                     "scopeType": {
-                      "type": "const",
+                      "type": "string",
                       "const": "stream"
                     },
                     "impactedScopes": {
