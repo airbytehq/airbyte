@@ -25,7 +25,7 @@ Follow these steps to set up your GCS storage and Iceberg catalog permissions.
 2. Navigate to **Cloud Storage** > **Buckets**
 3. Click **CREATE BUCKET**
 4. Choose a bucket name and location
-5. Select storage class and access control settings
+5. Select a storage class and access control settings
 6. Click **CREATE**
 
 #### Create a service account
