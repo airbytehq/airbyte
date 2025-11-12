@@ -98,10 +98,10 @@ class GcsDataLakeAggregate(
             }
             // Object/Array → String for STRING fields (for stringifySchemalessObjects behavior)
             // Note: Union values are already stringified by ValueCoercer
-            field.type().typeId() == Type.TypeID.STRING &&
-                value is ObjectValue -> StringValue(value.serializeToString())
-            field.type().typeId() == Type.TypeID.STRING &&
-                value is ArrayValue -> StringValue(value.serializeToString())
+            field.type().typeId() == Type.TypeID.STRING && value is ObjectValue ->
+                StringValue(value.serializeToString())
+            field.type().typeId() == Type.TypeID.STRING && value is ArrayValue ->
+                StringValue(value.serializeToString())
             else -> value
         }
     }
