@@ -31,6 +31,14 @@ import java.math.BigInteger
  */
 @Singleton
 class GcsDataLakeValueCoercer : ValueCoercer {
+    companion object {
+        // Cache these BigDecimal/BigInteger constants to avoid expensive allocations
+        // and BigInteger.pow() operations on every validation call
+        private val MIN_LONG = BigInteger.valueOf(Long.MIN_VALUE)
+        private val MAX_LONG = BigInteger.valueOf(Long.MAX_VALUE)
+        private val MIN_DOUBLE = BigDecimal(-Double.MAX_VALUE)
+        private val MAX_DOUBLE = BigDecimal(Double.MAX_VALUE)
+    }
     override fun map(value: EnrichedAirbyteValue): EnrichedAirbyteValue {
         // Stringify union values - this happens during Parse stage where we still
         // have type information to know which fields are unions
@@ -62,8 +70,8 @@ class GcsDataLakeValueCoercer : ValueCoercer {
     }
 
     private fun isInLongRange(value: BigInteger): Boolean =
-        value >= BigInteger.valueOf(Long.MIN_VALUE) && value <= BigInteger.valueOf(Long.MAX_VALUE)
+        value >= MIN_LONG && value <= MAX_LONG
 
     private fun isInDoubleRange(value: BigDecimal): Boolean =
-        value >= BigDecimal(-Double.MAX_VALUE) && value <= BigDecimal(Double.MAX_VALUE)
+        value >= MIN_DOUBLE && value <= MAX_DOUBLE
 }
