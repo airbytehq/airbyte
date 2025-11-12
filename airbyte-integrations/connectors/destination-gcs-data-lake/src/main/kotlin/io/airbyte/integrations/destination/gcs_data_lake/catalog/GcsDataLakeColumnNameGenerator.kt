@@ -13,7 +13,6 @@ import jakarta.inject.Singleton
  *
  * BigLake external tables have strict naming requirements:
  * - Only alphanumeric characters (a-z, A-Z, 0-9) and underscores (_)
- * - Must start with a letter or underscore
  *
  * This implementation uses [Transformations.toAlphanumericAndUnderscore] to ensure all column names
  * meet these requirements.
