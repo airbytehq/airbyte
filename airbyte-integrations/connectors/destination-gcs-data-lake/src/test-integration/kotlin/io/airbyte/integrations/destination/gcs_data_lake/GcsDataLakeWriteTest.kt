@@ -64,32 +64,6 @@ class BigLakeWriteTest :
     ) {
 
     @Test
-    override fun testDedupChangePk() {
-        super.testDedupChangePk()
-    }
-
-    @Test
-    override fun testUnions() {
-        super.testUnions()
-    }
-
-    @Test
-    override fun testBasicTypes() {
-        super.testBasicTypes()
-    }
-
-    @Test
-    override fun testFunkyCharacters() {
-        super.testFunkyCharacters()
-    }
-
-    //    @Disabled
-    @Test
-    override fun testDedup() {
-        super.testDedup()
-    }
-
-    @Test
     fun testNameConflicts() {
         assumeTrue(verifyDataWriting)
         fun makeStream(
@@ -118,21 +92,6 @@ class BigLakeWriteTest :
 
         val failure = expectFailure { runSync(updatedConfig, catalog, messages = emptyList()) }
         assertContains(failure.message, "Detected naming conflicts between streams")
-    }
-
-    @Test
-    override fun testBasicWrite() {
-        super.testBasicWrite()
-    }
-
-    @Test
-    override fun testOverwriteSchemaEvolution() {
-        super.testOverwriteSchemaEvolution()
-    }
-
-    @Test
-    override fun testTruncateRefreshChangeSyncMode() {
-        super.testTruncateRefreshChangeSyncMode()
     }
 
     /**
