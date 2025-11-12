@@ -51,7 +51,7 @@ Self-managed and cloud plans come with a carefully crafted user interface that w
 
 These are great choices for developers who want to automate the way you work with Airbyte and use version control to preserve a history of changes.
 
-- Airbyte's [API documentation](/developers/api-documentaton) gives you programmatic access to Airbyte with code snippets in all common languages.
+- Airbyte's [API documentation](/developers/api-documentation) gives you programmatic access to Airbyte with code snippets in all common languages.
 - Airbyte's [Python SDK](https://github.com/airbytehq/airbyte-api-python-sdk) lets you programmatically control your Airbyte instance with Python.
 - Airbyte's [Java SDK](https://github.com/airbytehq/airbyte-api-java-sdk) lets you programmatically control your Airbyte instance with Java.
 
