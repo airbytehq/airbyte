@@ -14,9 +14,9 @@ class GcsDataLakeBeanFactory {
     fun aggregatePublishingConfig(): AggregatePublishingConfig {
         // NOT speed mode
         return AggregatePublishingConfig(
-            maxRecordsPerAgg = 100_000_000L,
-            maxEstBytesPerAgg = 50_000_000L,
-            maxEstBytesAllAggregates = 50_000_000L * 5,
+            maxRecordsPerAgg = 10_000_000_000L,
+            maxEstBytesPerAgg = 150_000_000L,
+            maxEstBytesAllAggregates = 150_000_000L * 5,
             maxBufferedAggregates = 5,
         )
     }
