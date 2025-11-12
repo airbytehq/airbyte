@@ -20,7 +20,7 @@ import org.apache.iceberg.catalog.TableIdentifier
  * - Converts to alphanumeric + underscore only
  * - Prefixes with underscore if it starts with a number
  */
-private fun sanitizeBigLakeName(name: String): String {
+private fun sanitizeBigLakeTableName(name: String): String {
     var sanitized = Transformations.toAlphanumericAndUnderscore(name)
     // BigLake/BigQuery doesn't allow table names starting with numbers
     // Prefix with underscore if it starts with a digit
@@ -37,8 +37,8 @@ private fun sanitizeBigLakeName(name: String): String {
  */
 class BigLakeTableIdGenerator(private val databaseName: String) : TableIdGenerator {
     override fun toTableIdentifier(stream: DestinationStream.Descriptor): TableIdentifier {
-        val namespace = sanitizeBigLakeName(stream.namespace ?: databaseName)
-        val name = sanitizeBigLakeName(stream.name)
+        val namespace = sanitizeBigLakeTableName(stream.namespace ?: databaseName)
+        val name = sanitizeBigLakeTableName(stream.name)
         return tableIdOf(namespace, name)
     }
 }
@@ -59,8 +59,8 @@ class GcsDataLakeTableIdGeneratorFactory(
     fun createFinalTableNameGenerator(): FinalTableNameGenerator =
         FinalTableNameGenerator { stream ->
             val namespace =
-                sanitizeBigLakeName(stream.namespace ?: gcsDataLakeConfiguration.namespace)
-            val name = sanitizeBigLakeName(stream.name)
+                sanitizeBigLakeTableName(stream.namespace ?: gcsDataLakeConfiguration.namespace)
+            val name = sanitizeBigLakeTableName(stream.name)
             TableName(namespace = namespace, name = name)
         }
 }
