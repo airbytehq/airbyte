@@ -53,25 +53,21 @@ class SigV4Authenticator:
         date_stamp = t.strftime("%Y%m%d")
         parsed_url = urlparse(url)
 
-        
         canonical_uri = parsed_url.path or "/"
         canonical_querystring = parsed_url.query
 
-        
         netloc = parsed_url.netloc
         if ":" in netloc:
             netloc = netloc.split(":")[0]
 
         payload_hash = hashlib.sha256(body or b"").hexdigest()
 
-        
         if body and "Content-Type" not in headers:
             headers["Content-Type"] = "application/json"
 
         canonical_headers = f"host:{netloc}\n" + f"x-amz-date:{amz_date}\n"
         signed_headers = "host;x-amz-date"
 
-        
         if "Content-Type" in headers:
             canonical_headers += f"content-type:{headers['Content-Type'].strip().lower()}\n"
             signed_headers += ";content-type"
@@ -107,7 +103,6 @@ class SigV4Authenticator:
         headers["Authorization"] = authorization_header
         headers["host"] = netloc
 
-        
         logger.debug(f"SigV4 Auth generated for {method} {canonical_uri}")
 
 
@@ -257,7 +252,6 @@ class SourceAmazonGrafana(Source):
             },
         }
 
-    
         streams = [
             AirbyteStream(
                 name="users",
@@ -273,7 +267,6 @@ class SourceAmazonGrafana(Source):
             ),
         ]
 
-    
         return AirbyteCatalog(streams=streams)
 
     def streams(self, config: Mapping[str, Any]) -> List[BaseGrafanaStream]:
@@ -281,6 +274,7 @@ class SourceAmazonGrafana(Source):
 
     def read(self, logger, config, configured_catalog, state=None):
         from datetime import datetime
+
         streams_to_read = self.streams(config)
         token_manager = streams_to_read[0] if streams_to_read else None
         try:
