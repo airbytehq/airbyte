@@ -13,6 +13,10 @@ data:
   dockerImageTag: 3.1.7
   dockerRepository: airbyte/source-slack
   documentationUrl: https://docs.airbyte.com/integrations/sources/slack
+  externalDocumentationUrls:
+    - title: Changelog
+      url: https://api.slack.com/changelog
+      type: api_release_history
   githubIssueLabel: source-slack
   icon: slack.svg
   license: ELv2
