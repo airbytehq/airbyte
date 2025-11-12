@@ -741,12 +741,17 @@ internal class PostgresDirectLoadSqlGeneratorTest {
             columnsToAdd,
             columnsToRemove,
             columnsToModify,
-            columnsInDb
+            columnsInDb,
+            recreatePrimaryKeyIndex = false,
+            primaryKeyColumnNames = emptyList(),
+            recreateCursorIndex = false,
+            cursorColumnName = null
         )
 
-        assertEquals(2, sql.size)
-        assert(sql.any { it.contains("ADD COLUMN \"new_column1\" varchar") })
-        assert(sql.any { it.contains("ADD COLUMN \"new_column2\" bigint") })
+        assert(sql.contains("BEGIN TRANSACTION;"))
+        assert(sql.contains("COMMIT;"))
+        assert(sql.contains("ADD COLUMN \"new_column1\" varchar"))
+        assert(sql.contains("ADD COLUMN \"new_column2\" bigint"))
     }
 
     @Test
@@ -768,12 +773,17 @@ internal class PostgresDirectLoadSqlGeneratorTest {
             columnsToAdd,
             columnsToRemove,
             columnsToModify,
-            columnsInDb
+            columnsInDb,
+            recreatePrimaryKeyIndex = false,
+            primaryKeyColumnNames = emptyList(),
+            recreateCursorIndex = false,
+            cursorColumnName = null
         )
 
-        assertEquals(2, sql.size)
-        assert(sql.any { it.contains("DROP COLUMN \"old_column1\"") })
-        assert(sql.any { it.contains("DROP COLUMN \"old_column2\"") })
+        assert(sql.contains("BEGIN TRANSACTION;"))
+        assert(sql.contains("COMMIT;"))
+        assert(sql.contains("DROP COLUMN \"old_column1\""))
+        assert(sql.contains("DROP COLUMN \"old_column2\""))
     }
 
     @Test
@@ -793,13 +803,15 @@ internal class PostgresDirectLoadSqlGeneratorTest {
             columnsToAdd,
             columnsToRemove,
             columnsToModify,
-            columnsInDb
+            columnsInDb,
+            recreatePrimaryKeyIndex = false,
+            primaryKeyColumnNames = emptyList(),
+            recreateCursorIndex = false,
+            cursorColumnName = null
         )
 
-        assertEquals(1, sql.size)
-        val alterStatement = sql.first()
-        assert(alterStatement.contains("ALTER COLUMN \"column_a\" TYPE jsonb"))
-        assert(alterStatement.contains("USING to_jsonb(\"column_a\")"))
+        assert(sql.contains("ALTER COLUMN \"column_a\" TYPE jsonb"))
+        assert(sql.contains("USING to_jsonb(\"column_a\")"))
     }
 
     @Test
@@ -819,13 +831,15 @@ internal class PostgresDirectLoadSqlGeneratorTest {
             columnsToAdd,
             columnsToRemove,
             columnsToModify,
-            columnsInDb
+            columnsInDb,
+            recreatePrimaryKeyIndex = false,
+            primaryKeyColumnNames = emptyList(),
+            recreateCursorIndex = false,
+            cursorColumnName = null
         )
 
-        assertEquals(1, sql.size)
-        val alterStatement = sql.first()
-        assert(alterStatement.contains("ALTER COLUMN \"column_b\" TYPE varchar"))
-        assert(alterStatement.contains("USING \"column_b\" #>> '{}'"))
+        assert(sql.contains("ALTER COLUMN \"column_b\" TYPE varchar"))
+        assert(sql.contains("USING \"column_b\" #>> '{}'"))
     }
 
     @Test
@@ -845,13 +859,15 @@ internal class PostgresDirectLoadSqlGeneratorTest {
             columnsToAdd,
             columnsToRemove,
             columnsToModify,
-            columnsInDb
+            columnsInDb,
+            recreatePrimaryKeyIndex = false,
+            primaryKeyColumnNames = emptyList(),
+            recreateCursorIndex = false,
+            cursorColumnName = null
         )
 
-        assertEquals(1, sql.size)
-        val alterStatement = sql.first()
-        assert(alterStatement.contains("ALTER COLUMN \"column_c\" TYPE character varying"))
-        assert(alterStatement.contains("USING \"column_c\" #>> '{}'"))
+        assert(sql.contains("ALTER COLUMN \"column_c\" TYPE character varying"))
+        assert(sql.contains("USING \"column_c\" #>> '{}'"))
     }
 
     @Test
@@ -871,13 +887,15 @@ internal class PostgresDirectLoadSqlGeneratorTest {
             columnsToAdd,
             columnsToRemove,
             columnsToModify,
-            columnsInDb
+            columnsInDb,
+            recreatePrimaryKeyIndex = false,
+            primaryKeyColumnNames = emptyList(),
+            recreateCursorIndex = false,
+            cursorColumnName = null
         )
 
-        assertEquals(1, sql.size)
-        val alterStatement = sql.first()
-        assert(alterStatement.contains("ALTER COLUMN \"column_d\" TYPE varchar"))
-        assert(alterStatement.contains("USING \"column_d\"::varchar"))
+        assert(sql.contains("ALTER COLUMN \"column_d\" TYPE varchar"))
+        assert(sql.contains("USING \"column_d\"::varchar"))
     }
 
     @Test
@@ -902,7 +920,11 @@ internal class PostgresDirectLoadSqlGeneratorTest {
             columnsToAdd,
             columnsToRemove,
             columnsToModify,
-            columnsInDb
+            columnsInDb,
+            recreatePrimaryKeyIndex = false,
+            primaryKeyColumnNames = emptyList(),
+            recreateCursorIndex = false,
+            cursorColumnName = null
         )
 
         assertEquals(3, sql.size)
