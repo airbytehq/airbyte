@@ -10,10 +10,12 @@ import io.airbyte.cdk.load.message.Meta
 import io.airbyte.integrations.destination.snowflake.client.SnowflakeAirbyteClient
 import io.airbyte.integrations.destination.snowflake.component.SnowflakeComponentTestFixtures.idTestWithCdcMapping
 import io.airbyte.integrations.destination.snowflake.component.SnowflakeComponentTestFixtures.testMapping
+import io.micronaut.test.extensions.junit5.annotation.MicronautTest
 import org.junit.jupiter.api.Test
 import org.junit.jupiter.api.parallel.Execution
 import org.junit.jupiter.api.parallel.ExecutionMode
 
+@MicronautTest(environments = ["component"])
 @Execution(ExecutionMode.CONCURRENT)
 class SnowflakeTableOperationsTest(
     override val client: SnowflakeAirbyteClient,

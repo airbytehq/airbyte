@@ -10,8 +10,10 @@ import io.airbyte.cdk.load.component.TableSchema
 import io.airbyte.cdk.load.component.TableSchemaEvolutionClient
 import io.airbyte.cdk.load.component.TableSchemaEvolutionSuite
 import io.airbyte.cdk.load.component.TestTableOperationsClient
+import io.micronaut.test.extensions.junit5.annotation.MicronautTest
 import org.junit.jupiter.api.Test
 
+@MicronautTest(environments = ["component"])
 class ClickhouseTableSchemaEvolutionTest(
     override val client: TableSchemaEvolutionClient,
     override val opsClient: TableOperationsClient,
