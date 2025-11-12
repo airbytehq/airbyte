@@ -49,47 +49,52 @@ interface TableSchemaEvolutionSuite {
      * table with a column for each data type, then tries to discover its schema.
      *
      * @param expectedDiscoveredSchema The schema to expect. This should be the same schema as
-     * [computeSchema].
+     * [`computeSchema handles all data types`].
      */
-    fun discover(expectedDiscoveredSchema: TableSchema) {
-        discover(expectedDiscoveredSchema, Fixtures.ALL_TYPES_MAPPING)
+    fun `discover recognizes all data types`(expectedDiscoveredSchema: TableSchema) {
+        `discover recognizes all data types`(expectedDiscoveredSchema, Fixtures.ALL_TYPES_MAPPING)
     }
 
-    fun discover(expectedDiscoveredSchema: TableSchema, columnNameMapping: ColumnNameMapping) =
-        runTest {
-            val testNamespace = Fixtures.generateTestNamespace("namespace-test")
-            val testTable = Fixtures.generateTestTableName("table-test-table", testNamespace)
-            val stream =
-                Fixtures.createAppendStream(
-                    namespace = testTable.namespace,
-                    name = testTable.name,
-                    schema = Fixtures.ALL_TYPES_SCHEMA,
-                )
-
-            opsClient.createNamespace(testNamespace)
-            opsClient.createTable(
-                tableName = testTable,
-                columnNameMapping = columnNameMapping,
-                stream = stream,
-                replace = false,
+    fun `discover recognizes all data types`(
+        expectedDiscoveredSchema: TableSchema,
+        columnNameMapping: ColumnNameMapping
+    ) = runTest {
+        val testNamespace = Fixtures.generateTestNamespace("namespace-test")
+        val testTable = Fixtures.generateTestTableName("table-test-table", testNamespace)
+        val stream =
+            Fixtures.createAppendStream(
+                namespace = testTable.namespace,
+                name = testTable.name,
+                schema = Fixtures.ALL_TYPES_SCHEMA,
             )
 
-            val discoveredSchema = client.discoverSchema(testTable)
-            assertEquals(expectedDiscoveredSchema, discoveredSchema)
-        }
+        opsClient.createNamespace(testNamespace)
+        opsClient.createTable(
+            tableName = testTable,
+            columnNameMapping = columnNameMapping,
+            stream = stream,
+            replace = false,
+        )
+
+        val discoveredSchema = client.discoverSchema(testTable)
+        assertEquals(expectedDiscoveredSchema, discoveredSchema)
+    }
 
     /**
      * Test that the connector can correctly compute a schema for a stream containing all data
      * types.
      *
      * @param expectedComputedSchema The schema to expect. This should be the same schema as
-     * [discover].
+     * [`discover recognizes all data types`].
      */
-    fun computeSchema(expectedComputedSchema: TableSchema) {
-        computeSchema(expectedComputedSchema, Fixtures.ALL_TYPES_MAPPING)
+    fun `computeSchema handles all data types`(expectedComputedSchema: TableSchema) {
+        `computeSchema handles all data types`(expectedComputedSchema, Fixtures.ALL_TYPES_MAPPING)
     }
 
-    fun computeSchema(expectedComputedSchema: TableSchema, columnNameMapping: ColumnNameMapping) {
+    fun `computeSchema handles all data types`(
+        expectedComputedSchema: TableSchema,
+        columnNameMapping: ColumnNameMapping
+    ) {
         val testNamespace = Fixtures.generateTestNamespace("namespace-test")
         val testTable = Fixtures.generateTestTableName("table-test-table", testNamespace)
         val stream =
