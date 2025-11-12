@@ -28,14 +28,15 @@ internal class PostgresDirectLoadSqlGeneratorTest {
 
     private lateinit var postgresDirectLoadSqlGenerator: PostgresDirectLoadSqlGenerator
     private lateinit var columnUtils: PostgresColumnUtils
-    private val postgresConfiguration: PostgresConfiguration = mockk()
+    private lateinit var postgresConfiguration: PostgresConfiguration
 
     @BeforeEach
     fun setUp() {
-        val mockConfig = mockk<PostgresConfiguration> {
+        postgresConfiguration = mockk<PostgresConfiguration> {
             every { legacyRawTablesOnly } returns false
+            every { dropCascade } returns false
         }
-        columnUtils = PostgresColumnUtils(mockConfig)
+        columnUtils = PostgresColumnUtils(postgresConfiguration)
         postgresDirectLoadSqlGenerator = PostgresDirectLoadSqlGenerator(columnUtils, postgresConfiguration)
     }
 
