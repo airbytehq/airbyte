@@ -21,6 +21,8 @@ from airbyte_cdk.destinations.vector_db_based.document_processor import (
     ProcessingConfigModel as DocumentSplitterConfig,
 )
 from airbyte_protocol.models import AirbyteRecordMessage
+from cryptography.hazmat.backends import default_backend
+from cryptography.hazmat.primitives import serialization
 from overrides import overrides
 from pydantic import Field
 from snowflake import connector
@@ -47,11 +49,59 @@ class SnowflakeCortexConfig(SqlConfig):
 
     host: str
     username: str
-    password: SecretString
+    password: SecretString | None = None
+    private_key: SecretString | None = None
+    private_key_passphrase: SecretString | None = None
     warehouse: str
     database: str
     role: str
     schema_name: str = Field(default="PUBLIC")
+
+    def _validate_authentication_config(self) -> None:
+        """Validate that authentication configuration is correct."""
+        has_password = self.password is not None
+        has_private_key = self.private_key is not None
+        has_passphrase = self.private_key_passphrase is not None
+
+        if not has_password and not has_private_key:
+            raise ValueError(
+                "You must provide either 'password' or 'private_key' for authentication."
+            )
+
+        if has_password and has_private_key:
+            raise ValueError(
+                "Multiple authentication methods provided: 'password' and 'private_key'. "
+                "Please provide only one authentication method."
+            )
+
+        if has_passphrase and has_password:
+            raise ValueError(
+                "private_key_passphrase cannot be used with password authentication. "
+                "It can only be used with 'private_key'."
+            )
+
+    def _get_private_key_bytes(self) -> bytes:
+        """Get the private key bytes from the private_key string."""
+        if not self.private_key:
+            raise ValueError("No private key provided")
+
+        private_key_content = str(self.private_key).encode("utf-8")
+
+        passphrase = None
+        if self.private_key_passphrase:
+            passphrase = str(self.private_key_passphrase).encode("utf-8")
+
+        private_key = serialization.load_pem_private_key(
+            private_key_content,
+            password=passphrase,
+            backend=default_backend(),
+        )
+
+        return private_key.private_bytes(
+            encoding=serialization.Encoding.DER,
+            format=serialization.PrivateFormat.PKCS8,
+            encryption_algorithm=serialization.NoEncryption(),
+        )
 
     @property
     def cortex_embedding_model(self) -> str | None:
@@ -71,29 +121,47 @@ class SnowflakeCortexConfig(SqlConfig):
     @overrides
     def get_sql_alchemy_url(self) -> SecretString:
         """Return the SQLAlchemy URL to use."""
-        return SecretString(
-            URL(
-                account=self.host,
-                user=self.username,
-                password=self.password,
-                database=self.database,
-                warehouse=self.warehouse,
-                schema=self.schema_name,
-                role=self.role,
-            )
-        )
+        self._validate_authentication_config()
+
+        config = {
+            "account": self.host,
+            "user": self.username,
+            "database": self.database,
+            "warehouse": self.warehouse,
+            "schema": self.schema_name,
+            "role": self.role,
+        }
+        if self.password:
+            config["password"] = self.password
+        return SecretString(URL(**config))
+
+    @overrides
+    def get_sql_alchemy_connect_args(self) -> dict[str, Any]:
+        """Return the SQL Alchemy connect_args."""
+        if self.private_key is None:
+            return {}
+        return {"private_key": self._get_private_key_bytes()}
 
     def get_vendor_client(self) -> object:
         """Return the Snowflake connection object."""
-        return connector.connect(
-            user=self.username,
-            password=self.password,
-            account=self.host,
-            warehouse=self.warehouse,
-            database=self.database,
-            schema=self.schema_name,
-            role=self.role,
-        )
+        self._validate_authentication_config()
+
+        connection_config: dict[str, Any] = {
+            "user": self.username,
+            "account": self.host,
+            "warehouse": self.warehouse,
+            "database": self.database,
+            "schema": self.schema_name,
+            "role": self.role,
+        }
+
+        if self.password:
+            connection_config["password"] = self.password
+        else:
+            connection_config["private_key"] = self._get_private_key_bytes()
+            connection_config["authenticator"] = "SNOWFLAKE_JWT"
+
+        return connector.connect(**connection_config)
 
 
 class SnowflakeTypeConverter(SQLTypeConverter):

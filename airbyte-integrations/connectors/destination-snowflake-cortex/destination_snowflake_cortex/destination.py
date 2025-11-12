@@ -22,7 +22,7 @@ from airbyte_cdk.models import (
 
 from destination_snowflake_cortex import cortex_processor
 from destination_snowflake_cortex.common.catalog.catalog_providers import CatalogProvider
-from destination_snowflake_cortex.config import ConfigModel
+from destination_snowflake_cortex.config import ConfigModel, PasswordBasedAuthorizationModel, KeyPairAuthorizationModel
 
 BATCH_SIZE = 150
 
@@ -33,16 +33,26 @@ class DestinationSnowflakeCortex(Destination):
     def _init_sql_processor(
         self, config: ConfigModel, configured_catalog: Optional[ConfiguredAirbyteCatalog] = None
     ):
+        sql_config_params: dict[str, Any] = {
+            "host": config.indexing.host,
+            "role": config.indexing.role,
+            "warehouse": config.indexing.warehouse,
+            "database": config.indexing.database,
+            "schema_name": config.indexing.default_schema,
+            "username": config.indexing.username,
+        }
+
+        if isinstance(config.indexing.credentials, PasswordBasedAuthorizationModel):
+            sql_config_params["password"] = SecretString(config.indexing.credentials.password)
+        elif isinstance(config.indexing.credentials, KeyPairAuthorizationModel):
+            sql_config_params["private_key"] = SecretString(config.indexing.credentials.private_key)
+            if config.indexing.credentials.private_key_passphrase:
+                sql_config_params["private_key_passphrase"] = SecretString(
+                    config.indexing.credentials.private_key_passphrase
+                )
+
         self.sql_processor = cortex_processor.SnowflakeCortexSqlProcessor(
-            sql_config=cortex_processor.SnowflakeCortexConfig(
-                host=config.indexing.host,
-                role=config.indexing.role,
-                warehouse=config.indexing.warehouse,
-                database=config.indexing.database,
-                schema_name=config.indexing.default_schema,
-                username=config.indexing.username,
-                password=SecretString(config.indexing.credentials.password),
-            ),
+            sql_config=cortex_processor.SnowflakeCortexConfig(**sql_config_params),
             splitter_config=config.processing,
             embedder_config=config.embedding,  # type: ignore [arg-type]  # No common base class
             catalog_provider=CatalogProvider(configured_catalog),
