@@ -96,6 +96,25 @@ class DebeziumRecordIterator<T>(
                     next == null ||
                     isHeartbeatEvent(next)
             if (isEventLogged) {
+                val reason =
+                    when {
+                        next == null -> "timeout/no event"
+                        isHeartbeatEvent(next) -> "heartbeat event"
+                        numUnloggedPolls >= POLL_LOG_MAX_CALLS_INTERVAL - 1 ->
+                            "reached poll count threshold ($numUnloggedPolls)"
+                        Duration.between(lastLoggedPoll, instantAfterPoll) >
+                            pollLogMaxTimeInterval ->
+                            "time interval exceeded ${formatDuration(pollLogMaxTimeInterval)}"
+                        else -> "unknown"
+                    }
+                if (numUnloggedPolls > 0) {
+                    LOGGER.info {
+                        "CDC event logs: Finished processing batch - $numUnloggedPolls change events were processed. Logging resumed. Reason: $reason"
+                    }
+                } else {
+                    LOGGER.info { "CDC event logs: Event will be logged. Reason: $reason" }
+                }
+
                 val pollDuration: Duration = Duration.between(instantBeforePoll, Instant.now())
                 // format duration to human-readable
                 val formattedPollDuration = formatDuration(pollDuration)
@@ -118,6 +137,7 @@ class DebeziumRecordIterator<T>(
             // if within the timeout, the consumer could not get a record, it is time to tell the
             // producer to shutdown.
             if (next == null) {
+                LOGGER.info { " CDC heartbeat logs: The next event is null, event = $next " }
                 LOGGER.info { "CDC events queue poll(): returned nothing." }
                 if (
                     !receivedFirstRecord || hasSnapshotFinished || maxInstanceOfNoRecordsFound >= 10
@@ -153,12 +173,22 @@ class DebeziumRecordIterator<T>(
                         if (isProgressing) {
                             "progressing to $heartbeatPos."
                         } else {
-                            "no progress since last heartbeat."
+                            "no progress since last heartbeat. The heartbeat position is $heartbeatPos"
                         }
                 }
                 // wrap up sync if heartbeat position crossed the target OR heartbeat's position
                 // hasn't changed for too long
+                LOGGER.info { "CDC heartbeat logs: Checking heartbeat status..." }
+                LOGGER.info {
+                    "CDC heartbeat logs: logging the heartbeatPosNotChanging result: ${heartbeatPosNotChanging()}"
+                }
+                LOGGER.info {
+                    "CDC heartbeat logs: logging if heartbeatPos == this.lastHeartbeatPosition: ${heartbeatPos == this.lastHeartbeatPosition}"
+                }
                 if (targetPosition.reachedTargetPosition(heartbeatPos)) {
+                    LOGGER.info {
+                        "CDC heartbeat logs: Target position reached! heartbeatPos=$heartbeatPos, target=$targetPosition"
+                    }
                     requestClose(
                         "Closing: Heartbeat indicates sync is done by reaching the target position",
                         DebeziumCloseReason.HEARTBEAT_REACHED_TARGET_POSITION
@@ -175,6 +205,12 @@ class DebeziumRecordIterator<T>(
                 if (isProgressing) {
                     this.tsLastHeartbeat = LocalDateTime.now()
                     this.lastHeartbeatPosition = heartbeatPos
+                    LOGGER.info {
+                        "CDC heartbeat logs: heartbeat is progressing, updated heartbeat timestamp to: $tsLastHeartbeat "
+                    }
+                    LOGGER.info {
+                        "CDC heartbeat logs: heartbeat is progressing, updated heartbeat position to: $lastHeartbeatPosition "
+                    }
                 }
                 continue
             }
@@ -268,12 +304,18 @@ class DebeziumRecordIterator<T>(
     }
 
     private fun heartbeatPosNotChanging(): Boolean {
+        LOGGER.info {
+            "CDC heartbeat logs: heartbeatPosNotChanging() - the tsLastHeartbeat is $tsLastHeartbeat"
+        }
         if (this.tsLastHeartbeat == null) {
             return false
         }
 
         val timeElapsedSinceLastHeartbeatTs =
             Duration.between(this.tsLastHeartbeat, LocalDateTime.now())
+        LOGGER.info {
+            "CDC heartbeat logs: heartbeatPosNotChanging - time pass since last heartbeat ${formatDuration(timeElapsedSinceLastHeartbeatTs)}"
+        }
         return timeElapsedSinceLastHeartbeatTs.compareTo(firstRecordWaitTime) > 0
     }
 
