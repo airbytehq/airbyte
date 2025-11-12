@@ -32,10 +32,9 @@ For optimal deduplication in Incremental - Append + Deduped sync mode, use a cur
 - Date
 - Timestamp (`DateTime64`)
 
-If you use a different cursor column type, like `string`, the connector will fall back to using the `_airbyte_extracted_at` timestamp for deduplication ordering. This fallback may not accurately reflect the natural ordering of your source data, and you'll see a warning in the sync logs.
+If you use a different cursor column type, like `string`, the connector falls back to using the `_airbyte_extracted_at` timestamp for deduplication ordering. This fallback may not accurately reflect the natural ordering of your source data, and you'll see a warning in the sync logs.
 
 ## Requirements
-
 
 To use the ClickHouse destination connector, you need:
 
@@ -44,9 +43,9 @@ To use the ClickHouse destination connector, you need:
 - Network access from Airbyte to your ClickHouse instance
 - A ClickHouse user with appropriate permissions (see below)
 
-## Setup Guide
+## Setup guide
 
-### 1. Configure Network Access
+### 1. Configure network access
 
 Ensure your ClickHouse database is accessible from Airbyte.
 
@@ -59,10 +58,10 @@ Ensure your ClickHouse database is accessible from Airbyte.
 
 If you can't expose ClickHouse publicly, use SSH Tunneling via a bastion host that can reach ClickHouse.
 
-### 2. Create a Dedicated User with Permissions
+### 2. Create a dedicated user with permissions
 
 :::tip
-We strongly recommend creating a dedicated ClickHouse user for Airbyte rather than using an existing user. This improves security and makes it easier to audit Airbyte's database operations.
+It's best to create a dedicated ClickHouse user for Airbyte rather than using an existing user. This improves security and makes it easier to audit Airbyte's database operations.
 :::
 
 Create a ClickHouse user for Airbyte with the following permissions:
@@ -89,9 +88,9 @@ GRANT CREATE TABLE ON {database}.* TO airbyte_user;
 GRANT DROP TABLE ON {database}.* TO airbyte_user;
 ```
 
-Replace `{database}` with the database name you configure in the connector settings (typically `default`).
+Replace `{database}` with the database name you configure in the connector settings. It's typically `default`.
 
-**For connections using custom namespaces**: If you configure custom namespaces in your Airbyte connections, grant permissions for each namespace:
+If you configure custom namespaces in your Airbyte connections, grant permissions for each namespace:
 
 ```sql
 GRANT CREATE ON {namespace}.* TO airbyte_user;
@@ -106,35 +105,37 @@ GRANT DROP TABLE ON {namespace}.* TO airbyte_user;
 
 Replace `{namespace}` with each custom namespace you plan to use.
 
-### 3. Configure the Connector
+### 3. Configure the connector
 
-In Airbyte, configure the ClickHouse destination with the following information:
+1. In Airbyte, click **Destinations** > **ClickHouse**.
 
-- **Hostname**: Your ClickHouse server hostname (without protocol prefix like `http://` or `https://`)
-- **Port**: HTTP port for ClickHouse (default: 8443 for HTTPS, 8123 for HTTP)
-- **Protocol**: Connection protocol (HTTPS recommended for production)
-- **Database**: Target database name (default: `default`)
-- **Username**: The ClickHouse user you created (for example, `airbyte_user`)
-- **Password**: The password for the ClickHouse user
-- **Enable JSON**: Whether to use ClickHouse's JSON type for object fields (recommended if your ClickHouse version supports it)
+2. Configure the destination with the following information.
 
-### 4. SSH Tunnel (Optional)
+    - **Hostname**: Your ClickHouse server hostname (without protocol prefix like `http://` or `https://`)
+    - **Port**: HTTP port for ClickHouse (default: 8443 for HTTPS, 8123 for HTTP)
+    - **Protocol**: Connection protocol (HTTPS recommended for production)
+    - **Database**: Target database name (default: `default`)
+    - **Username**: The ClickHouse user you created (for example, `airbyte_user`)
+    - **Password**: The password for the ClickHouse user
+    - **Enable JSON**: Whether to use ClickHouse's JSON type for object fields (recommended if your ClickHouse version supports it)
+
+### 4. SSH tunnel (optional)
 
 :::warning
 SSH tunneling support is currently in **Beta**.
 :::
 
-If your ClickHouse instance is not directly accessible from Airbyte, you can use SSH tunneling to establish a secure connection. Configure the SSH tunnel settings in the connector configuration with your SSH host, port, username, and authentication method (password or private key).
+If your ClickHouse instance isn't directly accessible from Airbyte, you can use SSH tunneling to establish a secure connection. Configure the SSH tunnel settings in the connector configuration with your SSH host, port, username, and authentication method (password or private key).
 
-## Output Schema
+## Output schema
 
-Each stream is written to its own table in ClickHouse. Tables are created in either the configured default database (typically `default`) or in a database corresponding to the namespace specified for the stream.
+Airbyte writes each stream to its own table in ClickHouse. It creates tables in either the configured default database, typically `default`, or in a database corresponding to the namespace you specify for the stream when you set up your connection.
 
-Airbyte data types are converted to ClickHouse types as follows:
+The connector converts Airbyte data types to ClickHouse types as follows:
 
 - **Decimal** types → `Decimal(38, 9)` (38 digit precision with 9 decimal places)
 - **Timestamp** types → `DateTime64(3)` (millisecond precision)
-- **Object** types → `JSON` (if JSON is enabled in the connector configuration); otherwise → `String`
+- **Object** types → `JSON` if you enable JSON in the connector configuration, otherwise → `String`
 - **Integer** types → `Int64`
 - **Boolean** types → `Bool`
 - **String** types → `String`
@@ -142,7 +143,7 @@ Airbyte data types are converted to ClickHouse types as follows:
 - **Array** types → `String`
 
 :::note
-Arrays and Unions are converted to String for compatibility. If you need to query these as structured data, you can use ClickHouse's JSON functions to parse the string values.
+The connector converts arrays and unions to strings for compatibility. If you need to query these as structured data, use ClickHouse's JSON functions to parse the string values.
 :::
 
 ## Changelog
