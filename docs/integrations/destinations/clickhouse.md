@@ -36,7 +36,6 @@ If you use a different cursor column type, like `string`, the connector will fal
 
 ## Requirements
 
-
 To use the ClickHouse destination connector, you need:
 
 - A ClickHouse instance (ClickHouse Cloud or self-hosted)
@@ -111,8 +110,8 @@ Replace `{namespace}` with each custom namespace you plan to use.
 In Airbyte, configure the ClickHouse destination with the following information:
 
 - **Hostname**: Your ClickHouse server hostname (without protocol prefix like `http://` or `https://`)
-- **Port**: HTTP port for ClickHouse (default: 8443 for HTTPS, 8123 for HTTP)
-- **Protocol**: Connection protocol (HTTPS recommended for production)
+- **Port**: HTTP port for ClickHouse (defaults are 8123 for HTTP and 8443 for HTTPS)
+- **Protocol** (self-hosted only): Choose HTTP or HTTPS. In Airbyte Cloud, this option is hidden and managed by the platform.
 - **Database**: Target database name (default: `default`)
 - **Username**: The ClickHouse user you created (for example, `airbyte_user`)
 - **Password**: The password for the ClickHouse user
