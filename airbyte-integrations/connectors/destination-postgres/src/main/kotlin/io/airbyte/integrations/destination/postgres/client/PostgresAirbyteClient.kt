@@ -166,7 +166,7 @@ class PostgresAirbyteClient(
         getIndexColumns(sqlGenerator.getPrimaryKeyIndexColumns(tableName))
 
     private fun getCursorIndexColumn(tableName: TableName): String? =
-        getIndexColumns(sqlGenerator.getCursorColumn(tableName)).firstOrNull()
+        getIndexColumns(sqlGenerator.getCursorIndexColumn(tableName)).firstOrNull()
 
     private fun getIndexColumns(sql: String): List<String> =
         executeQuery(sql) { resultSet ->

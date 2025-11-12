@@ -14,7 +14,6 @@ import io.airbyte.cdk.load.table.ColumnNameMapping
 import io.airbyte.cdk.load.table.TableName
 import io.airbyte.integrations.destination.postgres.spec.CdcDeletionMode
 import io.airbyte.integrations.destination.postgres.spec.PostgresConfiguration
-import io.github.oshai.kotlinlogging.KotlinLogging
 import jakarta.inject.Singleton
 import kotlin.collections.forEach
 
@@ -476,7 +475,7 @@ class PostgresDirectLoadSqlGenerator(
      * @param tableName The table to query the index for
      * @return SQL query that returns column name in the cursor index
      */
-    fun getCursorColumn(tableName: TableName): String =
+    fun getCursorIndexColumn(tableName: TableName): String =
         getIndexColumns(
             indexName = postgresColumnUtils.getCursorIndexName(tableName),
             namespace = tableName.namespace
