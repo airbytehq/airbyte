@@ -576,7 +576,7 @@ class PostgresDirectLoadSqlGenerator(
     private fun getName(column: Column): String =
         "\"${column.columnName}\""
 
-    fun Column.toSQLString(): String {
+    internal fun Column.toSQLString(): String {
         val isNullableSuffix = if (nullable) "" else "NOT NULL"
         return "\"$columnName\" $columnTypeName $isNullableSuffix".trim()
     }
