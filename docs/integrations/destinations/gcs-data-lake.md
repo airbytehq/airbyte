@@ -39,7 +39,7 @@ Follow these steps to set up your GCS storage and Iceberg catalog permissions.
    - **BigQuery User** - For BigQuery operations
    - **Service Usage Consumer** - For using GCP services
 
-5. Click **CREATE KEY** > Choose **JSON** format
+5. Click **CREATE KEY** and choose the **JSON** format
 6. Download the JSON key file
 7. In Airbyte, paste the entire contents of this JSON file into the **Service Account JSON** field
 
