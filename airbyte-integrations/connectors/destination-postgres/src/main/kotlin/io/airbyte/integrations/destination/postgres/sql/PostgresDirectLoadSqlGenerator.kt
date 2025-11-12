@@ -25,7 +25,7 @@ class PostgresDirectLoadSqlGenerator(
     private val postgresColumnUtils: PostgresColumnUtils,
     private val postgresConfiguration: PostgresConfiguration) {
 
-    private val dropTableSuffix: String = if (postgresConfiguration.dropCascade == true) "CASCADE" else ""
+    private val dropTableSuffix: String = if (postgresConfiguration.dropCascade == true) " CASCADE" else ""
 
     companion object {
         private const val CURSOR_INDEX_PREFIX = "idx_cursor_"
@@ -45,7 +45,7 @@ class PostgresDirectLoadSqlGenerator(
         replace: Boolean
     ): String {
         val columnDeclarations = postgresColumnUtils.getTargetColumns(stream, columnNameMapping).joinToString(",\n") {it.toSQLString() }
-        val dropTableIfExistsStatement = if (replace) "DROP TABLE IF EXISTS ${getFullyQualifiedName(tableName)} $dropTableSuffix;" else ""
+        val dropTableIfExistsStatement = if (replace) "DROP TABLE IF EXISTS ${getFullyQualifiedName(tableName)}$dropTableSuffix;" else ""
         val createIndexesStatement = createIndexes(stream, tableName, columnNameMapping)
         return """
             BEGIN TRANSACTION;
@@ -142,7 +142,7 @@ class PostgresDirectLoadSqlGenerator(
     ): String {
         return """
             BEGIN TRANSACTION;
-            DROP TABLE IF EXISTS ${getFullyQualifiedName(targetTableName)} $dropTableSuffix;
+            DROP TABLE IF EXISTS ${getFullyQualifiedName(targetTableName)}$dropTableSuffix;
             ALTER TABLE ${getFullyQualifiedName(sourceTableName)} RENAME TO ${getName(targetTableName)};
             COMMIT;
             """
@@ -421,7 +421,7 @@ class PostgresDirectLoadSqlGenerator(
     }
 
     fun dropTable(tableName: TableName): String =
-        "DROP TABLE IF EXISTS ${getFullyQualifiedName(tableName)} $dropTableSuffix;"
+        "DROP TABLE IF EXISTS ${getFullyQualifiedName(tableName)}$dropTableSuffix;"
 
     fun countTable(tableName: TableName): String {
         return "SELECT COUNT(*) AS \"$COUNT_TOTAL_ALIAS\" FROM ${getFullyQualifiedName(tableName)};"
