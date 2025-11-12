@@ -9,13 +9,13 @@ This is a complete rewrite of the ClickHouse destination connector built on Airb
 Version 2.0.0 represents a complete architectural redesign of the ClickHouse destination connector with significant improvements:
 
 - **All sync modes supported**: Full Refresh (Overwrite and Append) and Incremental (Append and Append + Deduped) sync modes are now fully supported.
-- **[Direct Load](/platform/using-airbyte/core-concepts/direct-load-tables) with typed columns**: Data is written directly to typed columns matching your source schema, rather than storing everything as JSON in raw tables. This improves query performance and reduces storage requirements.
-- **Improved performance**: The new architecture uses ClickHouse's native binary protocol and batch inserts for significantly faster data loading.
+- **[Direct Load](/platform/using-airbyte/core-concepts/direct-load-tables) with typed columns**: Airbyte writes data directly to typed columns matching your source schema, rather than storing everything as JSON in raw tables. This improves query performance and reduces storage requirements.
+- **Improved performance**: The new architecture uses ClickHouse's native binary protocol and batch inserts for faster data loading.
 - **Active maintenance**: Built on Airbyte's modern CDK framework with ongoing development and support from the Airbyte team.
 
 ## Supported sync modes
 
-All sync modes are supported.
+The connectors supports all sync modes.
 
 | Feature                        | Supported?\(Yes/No\) | Notes                          |
 | :----------------------------- |:---------------------|:-------------------------------|
@@ -28,11 +28,11 @@ All sync modes are supported.
 
 For optimal deduplication in Incremental - Append + Deduped sync mode, use a cursor column with one of these types:
 
-- Integer types (Int64, etc.)
+- Integer types (`Int64`, etc.)
 - Date
-- Timestamp (DateTime64)
+- Timestamp (`DateTime64`)
 
-If you use a different cursor column type (such as String), the connector will fall back to using the `_airbyte_extracted_at` timestamp for deduplication ordering. This fallback may not accurately reflect the natural ordering of your source data, and you'll see a warning in the sync logs.
+If you use a different cursor column type, like `string`, the connector will fall back to using the `_airbyte_extracted_at` timestamp for deduplication ordering. This fallback may not accurately reflect the natural ordering of your source data, and you'll see a warning in the sync logs.
 
 ## Requirements
 
@@ -48,13 +48,16 @@ To use the ClickHouse destination connector, you need:
 
 ### 1. Configure Network Access
 
-Ensure your ClickHouse database is accessible from Airbyte:
+Ensure your ClickHouse database is accessible from Airbyte.
 
-- **Airbyte Cloud + ClickHouse Cloud**: Whitelist Airbyte Cloud's IP addresses in your ClickHouse Cloud settings
-- **Airbyte Cloud + Self-hosted ClickHouse**: Configure your firewall to allow inbound connections on port 8443 (HTTPS) or 8123 (HTTP) from Airbyte Cloud's IP addresses
-- **Self-hosted Airbyte + ClickHouse Cloud**: Whitelist your Airbyte server's public IP address in ClickHouse Cloud settings
-- **Self-hosted Airbyte + Self-hosted ClickHouse**: Ensure port 8443 (HTTPS) or 8123 (HTTP) is accessible from your Airbyte host. If both are in the same private network, configure security groups or firewall rules to allow traffic between them
-- **Private-only environments**: If you cannot expose ClickHouse publicly, use SSH Tunneling (Beta) via a bastion host that can reach ClickHouse
+| Airbyte deployment | Clickhouse deployment | Do this                                                                                                                                                                                           |
+| ------------------ | --------------------- | ------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------- |
+| Cloud              | Cloud                 | Whitelist Airbyte Cloud's [IP addresses](/platform/operating-airbyte/ip-allowlist) in your ClickHouse Cloud settings.                                                                             |
+| Cloud              | Self-managed          | Configure your firewall to allow inbound connections on port 8443 (HTTPS) or 8123 (HTTP) from Airbyte Cloud's [IP addresses](/platform/operating-airbyte/ip-allowlist).                                                                       |
+| Self-managed       | Cloud                 | Whitelist your Airbyte server's public IP address in ClickHouse Cloud settings.                                                                                                                   |
+| Self-managed       | Self-managed          | Ensure port 8443 (HTTPS) or 8123 (HTTP) is accessible from your Airbyte host. If both are in the same private network, configure security groups or firewall rules to allow traffic between them. |
+
+If you can't expose ClickHouse publicly, use SSH Tunneling via a bastion host that can reach ClickHouse.
 
 ### 2. Create a Dedicated User with Permissions
 
