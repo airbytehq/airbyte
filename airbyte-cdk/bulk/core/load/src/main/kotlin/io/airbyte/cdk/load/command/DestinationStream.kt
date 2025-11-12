@@ -64,7 +64,12 @@ data class DestinationStream(
     val includeFiles: Boolean = false,
     val destinationObjectName: String? = null,
     val matchingKey: List<String>? = null,
-    private val namespaceMapper: NamespaceMapper
+    private val namespaceMapper: NamespaceMapper,
+    // NEW: Pre-computed column name mappings for efficient lookup
+    val columnMappings: Map<String, String> = emptyMap(),
+    // NEW: Pre-computed table names (raw and final) with collision handling applied
+    val rawTableName: io.airbyte.cdk.load.table.TableName? = null,
+    val finalTableName: io.airbyte.cdk.load.table.TableName? = null
 ) {
     val unmappedDescriptor = Descriptor(namespace = unmappedNamespace, name = unmappedName)
     val mappedDescriptor = namespaceMapper.map(namespace = unmappedNamespace, name = unmappedName)
@@ -166,6 +171,14 @@ data class DestinationStream(
 
     fun isSingleGenerationTruncate() =
         shouldBeTruncatedAtEndOfSync() && minimumGenerationId == generationId
+
+    /**
+     * Get the mapped column name for a given original column name. Returns the mapped name if a
+     * mapping exists, otherwise returns the original name.
+     */
+    fun getMappedColumnName(originalName: String): String {
+        return columnMappings[originalName] ?: originalName
+    }
 }
 
 /**

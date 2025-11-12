@@ -77,11 +77,13 @@ data class DestinationRecordRaw(
             }
 
             val fieldValue = rawJson[fieldName]
+            // Apply column name mapping from the stream
+            val mappedFieldName = stream.getMappedColumnName(fieldName)
             val enrichedValue =
                 EnrichedAirbyteValue(
                     abValue = NullValue,
                     type = fieldType.type,
-                    name = fieldName,
+                    name = mappedFieldName, // Use mapped name here
                     airbyteMetaField = null,
                 )
             AirbyteValueCoercer.coerce(
@@ -94,7 +96,7 @@ data class DestinationRecordRaw(
                     AirbyteRecordMessageMetaChange.Reason.DESTINATION_SERIALIZATION_ERROR
                 )
 
-            declaredFields[fieldName] = enrichedValue
+            declaredFields[mappedFieldName] = enrichedValue // Store with mapped name as key
         }
         // Then, get the undeclared fields
         rawJson.fields().forEach { (fieldName, fieldValue) ->
