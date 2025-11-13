@@ -11,7 +11,7 @@ const parseCDKVersion = (
   switch (language) {
     case "python":
       const packageUrl = `https://pypi.org/project/airbyte-cdk/${version}/`;
-      return { version, isLatest: false, url: packageUrl };
+      return { version, url: packageUrl };
     case "java":
       return { version, isLatest: version === latestJavaCdkVersion, url: null };
     default:

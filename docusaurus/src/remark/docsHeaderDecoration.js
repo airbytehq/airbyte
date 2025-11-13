@@ -59,7 +59,7 @@ const plugin = () => {
           issue_url: registryEntry.issue_url,
           originalTitle,
           cdkVersion: version,
-          isLatestCDKString: boolToBoolString(isLatest),
+          ...(isLatest !== undefined && { isLatestCDKString: boolToBoolString(isLatest) }),
           cdkVersionUrl: url,
           syncSuccessRate,
           usageRate,
