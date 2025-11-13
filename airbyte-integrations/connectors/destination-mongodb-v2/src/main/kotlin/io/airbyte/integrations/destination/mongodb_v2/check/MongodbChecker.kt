@@ -42,19 +42,16 @@ class MongodbChecker(
 
                     // Test 4: Can we insert a document?
                     val testCollection = database.getCollection(testCollectionName)
-                    val testDoc = Document("test", "data")
-                        .append("timestamp", System.currentTimeMillis())
+                    val testDoc =
+                        Document("test", "data").append("timestamp", System.currentTimeMillis())
 
                     testCollection.insertOne(testDoc)
                     log.info { "Successfully inserted test document" }
 
                     // Test 5: Can we read the document back?
                     val count = testCollection.countDocuments()
-                    require(count == 1L) {
-                        "Expected 1 document in test collection, found $count"
-                    }
+                    require(count == 1L) { "Expected 1 document in test collection, found $count" }
                     log.info { "Successfully read test document" }
-
                 } finally {
                     // Clean up test collection
                     database.getCollection(testCollectionName).drop()
@@ -62,13 +59,12 @@ class MongodbChecker(
                 }
 
                 log.info { "Connection check passed successfully" }
-
             } catch (e: Exception) {
                 log.error(e) { "Connection check failed" }
                 throw ConfigErrorException(
                     "Failed to connect to MongoDB or perform operations. " +
-                    "Please verify your connection string, credentials, and permissions.\n\n" +
-                    "Error: ${e.message}",
+                        "Please verify your connection string, credentials, and permissions.\n\n" +
+                        "Error: ${e.message}",
                     e
                 )
             }

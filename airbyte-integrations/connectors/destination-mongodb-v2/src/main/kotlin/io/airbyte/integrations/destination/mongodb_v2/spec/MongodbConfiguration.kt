@@ -16,55 +16,37 @@ data class MongodbConfiguration(
     @JsonProperty("connection_string")
     @JsonPropertyDescription("MongoDB connection string (e.g., mongodb://localhost:27017)")
     val connectionString: String,
-
     @JsonProperty("database")
     @JsonPropertyDescription("Name of the database to write to")
     val database: String,
-
     @JsonProperty("auth_type")
     @JsonPropertyDescription("Authentication type")
     val authType: AuthType = AuthType.LOGIN_PASSWORD,
-
     @JsonProperty("username")
     @JsonPropertyDescription("Username for authentication")
     val username: String? = null,
-
     @JsonProperty("password")
     @JsonPropertyDescription("Password for authentication")
     val password: String? = null,
-
     @JsonProperty("batch_size")
     @JsonPropertyDescription("Number of documents to buffer before flushing (default: 1000)")
     val batchSize: Int = 1000,
-
     @JsonProperty("tunnel_method")
     @JsonPropertyDescription("SSH tunnel configuration")
     val tunnelMethod: TunnelMethod? = null,
 ) : DestinationConfiguration() {
 
     enum class AuthType(@get:JsonValue val value: String) {
-        @JsonProperty("login_password")
-        LOGIN_PASSWORD("login/password"),
-
-        @JsonProperty("none")
-        NONE("none")
+        @JsonProperty("login_password") LOGIN_PASSWORD("login/password"),
+        @JsonProperty("none") NONE("none")
     }
 
     data class TunnelMethod(
-        @JsonProperty("tunnel_method")
-        val tunnelMethod: String,
-
-        @JsonProperty("tunnel_host")
-        val tunnelHost: String? = null,
-
-        @JsonProperty("tunnel_port")
-        val tunnelPort: Int? = null,
-
-        @JsonProperty("tunnel_user")
-        val tunnelUser: String? = null,
-
-        @JsonProperty("ssh_key")
-        val sshKey: String? = null,
+        @JsonProperty("tunnel_method") val tunnelMethod: String,
+        @JsonProperty("tunnel_host") val tunnelHost: String? = null,
+        @JsonProperty("tunnel_port") val tunnelPort: Int? = null,
+        @JsonProperty("tunnel_user") val tunnelUser: String? = null,
+        @JsonProperty("ssh_key") val sshKey: String? = null,
     )
 }
 
@@ -98,9 +80,7 @@ class MongodbConfigurationFactory(
             }
         }
 
-        require(config.batchSize > 0) {
-            "Batch size must be greater than 0"
-        }
+        require(config.batchSize > 0) { "Batch size must be greater than 0" }
 
         return config
     }

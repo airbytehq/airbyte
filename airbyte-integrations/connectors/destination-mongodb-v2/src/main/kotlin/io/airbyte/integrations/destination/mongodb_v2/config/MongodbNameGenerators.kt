@@ -7,7 +7,6 @@ package io.airbyte.integrations.destination.mongodb_v2.config
 import io.airbyte.cdk.load.command.DestinationStream
 import io.airbyte.cdk.load.orchestration.db.ColumnNameGenerator
 import io.airbyte.cdk.load.orchestration.db.FinalTableNameGenerator
-import io.airbyte.cdk.load.orchestration.db.TempTableNameGenerator
 import io.airbyte.cdk.load.table.TableName
 import io.airbyte.integrations.destination.mongodb_v2.spec.MongodbConfiguration
 import jakarta.inject.Singleton
@@ -46,9 +45,10 @@ fun String.toMongodbCompatibleName(): String {
     val hasSystemPrefix = result.startsWith("system.")
 
     // Now do replacements
-    result = result
-        .replace("$", "_") // Replace $ with underscore (reserved for operators)
-        .replace(".", "_") // Replace dots with underscore (used for nested access)
+    result =
+        result
+            .replace("$", "_") // Replace $ with underscore (reserved for operators)
+            .replace(".", "_") // Replace dots with underscore (used for nested access)
 
     // Add prefix if it was a system collection
     if (hasSystemPrefix) {

@@ -36,17 +36,18 @@ class MongodbBeanFactory {
         // Build connection string with auth if provided
         val connectionString = buildConnectionString(config)
 
-        val settings = MongoClientSettings.builder()
-            .applyConnectionString(ConnectionString(connectionString))
-            .applyToConnectionPoolSettings { builder ->
-                builder.maxConnectionIdleTime(60, TimeUnit.SECONDS)
-                builder.maxSize(20) // Max connections in pool
-            }
-            .applyToSocketSettings { builder ->
-                builder.connectTimeout(30, TimeUnit.SECONDS)
-                builder.readTimeout(30, TimeUnit.SECONDS)
-            }
-            .build()
+        val settings =
+            MongoClientSettings.builder()
+                .applyConnectionString(ConnectionString(connectionString))
+                .applyToConnectionPoolSettings { builder ->
+                    builder.maxConnectionIdleTime(60, TimeUnit.SECONDS)
+                    builder.maxSize(20) // Max connections in pool
+                }
+                .applyToSocketSettings { builder ->
+                    builder.connectTimeout(30, TimeUnit.SECONDS)
+                    builder.readTimeout(30, TimeUnit.SECONDS)
+                }
+                .build()
 
         return MongoClients.create(settings)
     }
@@ -71,9 +72,10 @@ class MongodbBeanFactory {
         val baseConnectionString = config.connectionString
 
         // If auth is configured, inject credentials into connection string
-        if (config.authType == MongodbConfiguration.AuthType.LOGIN_PASSWORD &&
-            !config.username.isNullOrBlank() &&
-            !config.password.isNullOrBlank()
+        if (
+            config.authType == MongodbConfiguration.AuthType.LOGIN_PASSWORD &&
+                !config.username.isNullOrBlank() &&
+                !config.password.isNullOrBlank()
         ) {
             // Parse connection string and inject credentials
             // Format: mongodb://[username:password@]host:port/database

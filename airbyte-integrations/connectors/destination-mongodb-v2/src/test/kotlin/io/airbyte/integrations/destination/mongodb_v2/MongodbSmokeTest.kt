@@ -9,8 +9,8 @@ import org.junit.jupiter.api.Assertions.*
 import org.junit.jupiter.api.Test
 
 /**
- * Quick smoke tests that don't require MongoDB running.
- * These validate basic functionality and naming rules.
+ * Quick smoke tests that don't require MongoDB running. These validate basic functionality and
+ * naming rules.
  */
 class MongodbSmokeTest {
 
@@ -61,11 +61,22 @@ class MongodbSmokeTest {
 
     @Test
     fun `test configuration auth type values`() {
-        val authTypes = io.airbyte.integrations.destination.mongodb_v2.spec.MongodbConfiguration.AuthType.values()
+        val authTypes =
+            io.airbyte.integrations.destination.mongodb_v2.spec.MongodbConfiguration.AuthType
+                .values()
         assertEquals(2, authTypes.size)
 
-        assertEquals("login/password", io.airbyte.integrations.destination.mongodb_v2.spec.MongodbConfiguration.AuthType.LOGIN_PASSWORD.value)
-        assertEquals("none", io.airbyte.integrations.destination.mongodb_v2.spec.MongodbConfiguration.AuthType.NONE.value)
+        assertEquals(
+            "login/password",
+            io.airbyte.integrations.destination.mongodb_v2.spec.MongodbConfiguration.AuthType
+                .LOGIN_PASSWORD
+                .value
+        )
+        assertEquals(
+            "none",
+            io.airbyte.integrations.destination.mongodb_v2.spec.MongodbConfiguration.AuthType.NONE
+                .value
+        )
     }
 
     @Test

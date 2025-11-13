@@ -7,17 +7,12 @@ package io.airbyte.integrations.destination.mongodb_v2.write
 import com.mongodb.client.MongoClient
 import com.mongodb.client.model.InsertManyOptions
 import io.airbyte.cdk.load.data.*
-import io.airbyte.cdk.load.message.Meta.Companion.COLUMN_NAME_AB_EXTRACTED_AT
-import io.airbyte.cdk.load.message.Meta.Companion.COLUMN_NAME_AB_GENERATION_ID
-import io.airbyte.cdk.load.message.Meta.Companion.COLUMN_NAME_AB_META
-import io.airbyte.cdk.load.message.Meta.Companion.COLUMN_NAME_AB_RAW_ID
 import io.airbyte.cdk.load.table.TableName
 import io.airbyte.integrations.destination.mongodb_v2.spec.MongodbConfiguration
 import io.github.oshai.kotlinlogging.KotlinLogging
+import java.util.Date
 import kotlinx.coroutines.runBlocking
 import org.bson.Document
-import java.time.Instant
-import java.util.Date
 
 private val logger = KotlinLogging.logger {}
 
@@ -66,15 +61,13 @@ class MongodbInsertBuffer(
     }
 
     /**
-     * Converts Airbyte value types to MongoDB BSON document.
-     * MongoDB natively supports rich types like Date, embedded documents, arrays, etc.
+     * Converts Airbyte value types to MongoDB BSON document. MongoDB natively supports rich types
+     * like Date, embedded documents, arrays, etc.
      */
     private fun convertToDocument(fields: Map<String, AirbyteValue>): Document {
         val document = Document()
 
-        fields.forEach { (fieldName, value) ->
-            document[fieldName] = convertAirbyteValue(value)
-        }
+        fields.forEach { (fieldName, value) -> document[fieldName] = convertAirbyteValue(value) }
 
         return document
     }
@@ -104,9 +97,7 @@ class MongodbInsertBuffer(
             is ObjectValue -> {
                 // MongoDB supports nested documents
                 val doc = Document()
-                value.values.forEach { (k, v) ->
-                    doc[k] = convertAirbyteValue(v)
-                }
+                value.values.forEach { (k, v) -> doc[k] = convertAirbyteValue(v) }
                 doc
             }
         }

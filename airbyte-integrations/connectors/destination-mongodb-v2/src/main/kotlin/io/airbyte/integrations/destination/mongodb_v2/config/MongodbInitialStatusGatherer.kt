@@ -15,5 +15,6 @@ import jakarta.inject.Singleton
 class MongodbInitialStatusGatherer(
     mongodbClient: MongodbAirbyteClient,
     tempTableNameGenerator: TempTableNameGenerator,
-) : BaseDirectLoadInitialStatusGatherer(mongodbClient, tempTableNameGenerator),
+) :
+    BaseDirectLoadInitialStatusGatherer(mongodbClient, tempTableNameGenerator),
     DatabaseInitialStatusGatherer<DirectLoadInitialStatus>

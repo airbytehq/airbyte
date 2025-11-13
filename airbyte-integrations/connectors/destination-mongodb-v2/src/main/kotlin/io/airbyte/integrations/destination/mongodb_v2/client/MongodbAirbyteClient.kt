@@ -6,9 +6,7 @@ package io.airbyte.integrations.destination.mongodb_v2.client
 
 import com.mongodb.client.MongoClient
 import com.mongodb.client.MongoDatabase
-import com.mongodb.client.model.Filters
 import com.mongodb.client.model.ReplaceOptions
-import com.mongodb.client.model.Sorts
 import io.airbyte.cdk.ConfigErrorException
 import io.airbyte.cdk.SystemErrorException
 import io.airbyte.cdk.load.command.Dedupe
@@ -18,11 +16,9 @@ import io.airbyte.cdk.load.component.ColumnType
 import io.airbyte.cdk.load.component.TableOperationsClient
 import io.airbyte.cdk.load.component.TableSchema
 import io.airbyte.cdk.load.component.TableSchemaEvolutionClient
+import io.airbyte.cdk.load.message.Meta.Companion.COLUMN_NAMES
 import io.airbyte.cdk.load.message.Meta.Companion.COLUMN_NAME_AB_EXTRACTED_AT
 import io.airbyte.cdk.load.message.Meta.Companion.COLUMN_NAME_AB_GENERATION_ID
-import io.airbyte.cdk.load.message.Meta.Companion.COLUMN_NAME_AB_META
-import io.airbyte.cdk.load.message.Meta.Companion.COLUMN_NAME_AB_RAW_ID
-import io.airbyte.cdk.load.message.Meta.Companion.COLUMN_NAMES
 import io.airbyte.cdk.load.table.ColumnNameMapping
 import io.airbyte.cdk.load.table.TableName
 import io.airbyte.integrations.destination.mongodb_v2.spec.MongodbConfiguration
@@ -44,10 +40,10 @@ class MongodbAirbyteClient(
     override suspend fun createNamespace(namespace: String) {
         // In MongoDB, databases/namespaces are created implicitly when first collection is created
         // We just validate the namespace name
-        require(namespace.isNotBlank()) {
-            "Namespace (database) name cannot be blank"
+        require(namespace.isNotBlank()) { "Namespace (database) name cannot be blank" }
+        log.info {
+            "Namespace '$namespace' will be created implicitly on first collection creation"
         }
-        log.info { "Namespace '$namespace' will be created implicitly on first collection creation" }
     }
 
     override suspend fun namespaceExists(namespace: String): Boolean {
@@ -91,7 +87,9 @@ class MongodbAirbyteClient(
             indexDoc[COLUMN_NAME_AB_EXTRACTED_AT] = -1 // Descending for latest first
 
             collection.createIndex(indexDoc)
-            log.info { "Created dedupe index on ${pkFields.joinToString(", ")} + $COLUMN_NAME_AB_EXTRACTED_AT" }
+            log.info {
+                "Created dedupe index on ${pkFields.joinToString(", ")} + $COLUMN_NAME_AB_EXTRACTED_AT"
+            }
         }
     }
 
@@ -131,7 +129,9 @@ class MongodbAirbyteClient(
         }
 
         // Rename source to target (atomic operation)
-        sourceCollection.renameCollection(com.mongodb.MongoNamespace(config.database, targetTableName.name))
+        sourceCollection.renameCollection(
+            com.mongodb.MongoNamespace(config.database, targetTableName.name)
+        )
 
         log.info { "Renamed collection ${sourceTableName.name} to ${targetTableName.name}" }
     }
@@ -149,7 +149,9 @@ class MongodbAirbyteClient(
 
         if (documents.isNotEmpty()) {
             targetCollection.insertMany(documents)
-            log.info { "Copied ${documents.size} documents from ${sourceTableName.name} to ${targetTableName.name}" }
+            log.info {
+                "Copied ${documents.size} documents from ${sourceTableName.name} to ${targetTableName.name}"
+            }
         }
     }
 
@@ -159,25 +161,29 @@ class MongodbAirbyteClient(
         sourceTableName: TableName,
         targetTableName: TableName
     ) {
-        val dedupe = stream.importType as? Dedupe
-            ?: throw SystemErrorException("upsertTable called for non-dedupe stream")
+        val dedupe =
+            stream.importType as? Dedupe
+                ?: throw SystemErrorException("upsertTable called for non-dedupe stream")
 
         // primaryKey is List<List<String>>, flatten to get the field names
         val pkFields = dedupe.primaryKey.map { it.first() }.map { columnNameMapping[it]!! }
-        val cursorField = if (dedupe.cursor.isNotEmpty()) {
-            columnNameMapping[dedupe.cursor.first()]!!
-        } else {
-            COLUMN_NAME_AB_EXTRACTED_AT
-        }
+        val cursorField =
+            if (dedupe.cursor.isNotEmpty()) {
+                columnNameMapping[dedupe.cursor.first()]!!
+            } else {
+                COLUMN_NAME_AB_EXTRACTED_AT
+            }
 
-        log.info { "Upserting from ${sourceTableName.name} to ${targetTableName.name} with PK: $pkFields, cursor: $cursorField" }
+        log.info {
+            "Upserting from ${sourceTableName.name} to ${targetTableName.name} with PK: $pkFields, cursor: $cursorField"
+        }
 
         upsertWithAggregationPipeline(sourceTableName, targetTableName, pkFields, cursorField)
     }
 
     /**
-     * Implements deduplication using MongoDB aggregation pipeline.
-     * This is the NoSQL equivalent of SQL window functions.
+     * Implements deduplication using MongoDB aggregation pipeline. This is the NoSQL equivalent of
+     * SQL window functions.
      */
     private suspend fun upsertWithAggregationPipeline(
         sourceTableName: TableName,
@@ -192,44 +198,51 @@ class MongodbAirbyteClient(
         val groupId = Document()
         pkFields.forEach { groupId[it] = "\$$it" }
 
-        val pipeline = listOf(
-            // Sort by cursor descending to get latest first
-            Document("\$sort", Document(cursorField, -1)),
-            // Group by PK, taking first (latest) document
-            Document("\$group", Document("_id", groupId).append("doc", Document("\$first", "\$\$ROOT"))),
-            // Replace root with the document
-            Document("\$replaceRoot", Document("newRoot", "\$doc"))
-        )
+        val pipeline =
+            listOf(
+                // Sort by cursor descending to get latest first
+                Document("\$sort", Document(cursorField, -1)),
+                // Group by PK, taking first (latest) document
+                Document(
+                    "\$group",
+                    Document("_id", groupId).append("doc", Document("\$first", "\$\$ROOT"))
+                ),
+                // Replace root with the document
+                Document("\$replaceRoot", Document("newRoot", "\$doc"))
+            )
 
         val dedupedDocuments = sourceCollection.aggregate(pipeline).into(mutableListOf())
 
-        log.info { "Deduped ${dedupedDocuments.size} documents from ${sourceCollection.namespace.collectionName}" }
+        log.info {
+            "Deduped ${dedupedDocuments.size} documents from ${sourceCollection.namespace.collectionName}"
+        }
 
         // Step 2: Upsert each deduped document into target
         dedupedDocuments.forEach { doc ->
             val filter = Document()
-            pkFields.forEach { pkField ->
-                filter[pkField] = doc[pkField]
-            }
+            pkFields.forEach { pkField -> filter[pkField] = doc[pkField] }
 
             // Upsert: replace if exists and cursor is newer, insert if not exists
             val existingDoc = targetCollection.find(filter).first()
 
-            val shouldUpsert = if (existingDoc != null) {
-                // Compare cursors - only update if source is newer
-                val sourceCursor = doc.get(cursorField)
-                val targetCursor = existingDoc.get(cursorField)
-                compareCursors(sourceCursor, targetCursor) > 0
-            } else {
-                true // Document doesn't exist, insert it
-            }
+            val shouldUpsert =
+                if (existingDoc != null) {
+                    // Compare cursors - only update if source is newer
+                    val sourceCursor = doc.get(cursorField)
+                    val targetCursor = existingDoc.get(cursorField)
+                    compareCursors(sourceCursor, targetCursor) > 0
+                } else {
+                    true // Document doesn't exist, insert it
+                }
 
             if (shouldUpsert) {
                 targetCollection.replaceOne(filter, doc, ReplaceOptions().upsert(true))
             }
         }
 
-        log.info { "Upserted ${dedupedDocuments.size} documents into ${targetCollection.namespace.collectionName}" }
+        log.info {
+            "Upserted ${dedupedDocuments.size} documents into ${targetCollection.namespace.collectionName}"
+        }
     }
 
     private fun compareCursors(source: Any?, target: Any?): Int {
@@ -238,8 +251,7 @@ class MongodbAirbyteClient(
             source == null -> -1
             target == null -> 1
             source is Comparable<*> && target is Comparable<*> -> {
-                @Suppress("UNCHECKED_CAST")
-                (source as Comparable<Any>).compareTo(target)
+                @Suppress("UNCHECKED_CAST") (source as Comparable<Any>).compareTo(target)
             }
             else -> source.toString().compareTo(target.toString())
         }
@@ -250,15 +262,14 @@ class MongodbAirbyteClient(
         val collection = database.getCollection(tableName.name)
 
         // Verify collection has Airbyte columns
-        val sampleDoc = collection.find().limit(1).first()
-            ?: return TableSchema(emptyMap())
+        val sampleDoc = collection.find().limit(1).first() ?: return TableSchema(emptyMap())
 
         val hasAllAirbyteColumns = COLUMN_NAMES.all { sampleDoc.containsKey(it) }
 
         if (!hasAllAirbyteColumns) {
             throw ConfigErrorException(
                 "Collection '$tableName' exists but does not contain Airbyte's internal columns. " +
-                "Airbyte can only sync to Airbyte-controlled collections."
+                    "Airbyte can only sync to Airbyte-controlled collections."
             )
         }
 
@@ -299,6 +310,8 @@ class MongodbAirbyteClient(
     ) {
         // MongoDB is schemaless - no DDL changes needed
         // New columns are added implicitly when documents with those fields are inserted
-        log.info { "Schema changeset ignored for MongoDB (schemaless): ${changeset.columnsToAdd.keys}" }
+        log.info {
+            "Schema changeset ignored for MongoDB (schemaless): ${changeset.columnsToAdd.keys}"
+        }
     }
 }

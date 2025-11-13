@@ -17,14 +17,14 @@ import io.airbyte.cdk.load.table.TableName
 import io.airbyte.integrations.destination.mongodb_v2.client.MongodbAirbyteClient
 import io.airbyte.integrations.destination.mongodb_v2.spec.MongodbConfiguration
 import io.airbyte.integrations.destination.mongodb_v2.write.MongodbInsertBuffer
+import java.math.BigInteger
+import java.time.OffsetDateTime
 import kotlinx.coroutines.runBlocking
 import org.bson.Document
 import org.junit.jupiter.api.*
 import org.junit.jupiter.api.Assertions.*
 import org.testcontainers.containers.MongoDBContainer
 import org.testcontainers.utility.DockerImageName
-import java.math.BigInteger
-import java.time.OffsetDateTime
 
 @TestInstance(TestInstance.Lifecycle.PER_CLASS)
 class MongodbIntegrationTest {
@@ -40,11 +40,12 @@ class MongodbIntegrationTest {
         mongoContainer.start()
 
         val connectionString = mongoContainer.replicaSetUrl
-        config = MongodbConfiguration(
-            connectionString = connectionString,
-            database = "test_database",
-            batchSize = 100
-        )
+        config =
+            MongodbConfiguration(
+                connectionString = connectionString,
+                database = "test_database",
+                batchSize = 100
+            )
 
         mongoClient = MongoClients.create(connectionString)
         airbyteClient = MongodbAirbyteClient(mongoClient, config)
@@ -91,9 +92,7 @@ class MongodbIntegrationTest {
         // Insert documents using InsertBuffer
         val buffer = MongodbInsertBuffer(tableName, mongoClient, config)
 
-        repeat(10) { i ->
-            buffer.accumulate(createTestRecord(i))
-        }
+        repeat(10) { i -> buffer.accumulate(createTestRecord(i)) }
 
         buffer.flush()
 
@@ -112,17 +111,13 @@ class MongodbIntegrationTest {
         val buffer = MongodbInsertBuffer(tableName, mongoClient, config)
 
         // First batch
-        repeat(5) { i ->
-            buffer.accumulate(createTestRecord(i))
-        }
+        repeat(5) { i -> buffer.accumulate(createTestRecord(i)) }
         buffer.flush()
 
         assertEquals(5L, airbyteClient.countTable(tableName))
 
         // Second batch
-        repeat(5) { i ->
-            buffer.accumulate(createTestRecord(i + 5))
-        }
+        repeat(5) { i -> buffer.accumulate(createTestRecord(i + 5)) }
         buffer.flush()
 
         // Should have 10 total records
@@ -134,56 +129,61 @@ class MongodbIntegrationTest {
         val sourceTableName = TableName("test_namespace", "dedupe_source")
         val targetTableName = TableName("test_namespace", "dedupe_target")
 
-        val stream = createTestStream(
-            name = "dedupe_stream",
-            importType = Dedupe(
-                primaryKey = listOf(listOf("id")),
-                cursor = listOf("updated_at")
+        val stream =
+            createTestStream(
+                name = "dedupe_stream",
+                importType =
+                    Dedupe(primaryKey = listOf(listOf("id")), cursor = listOf("updated_at"))
             )
-        )
 
-        val columnMapping = ColumnNameMapping(mapOf(
-            "id" to "id",
-            "name" to "name",
-            "updated_at" to "updated_at"
-        ))
+        val columnMapping =
+            ColumnNameMapping(mapOf("id" to "id", "name" to "name", "updated_at" to "updated_at"))
 
         // Create both collections
         airbyteClient.createTable(stream, sourceTableName, columnMapping, replace = false)
         airbyteClient.createTable(stream, targetTableName, columnMapping, replace = false)
 
         // Insert duplicate records into source with different timestamps
-        val sourceCollection = mongoClient.getDatabase(config.database).getCollection(sourceTableName.name)
+        val sourceCollection =
+            mongoClient.getDatabase(config.database).getCollection(sourceTableName.name)
 
-        sourceCollection.insertMany(listOf(
-            Document(mapOf(
-                "id" to 1,
-                "name" to "First version",
-                "updated_at" to "2024-01-01T00:00:00Z",
-                Meta.COLUMN_NAME_AB_RAW_ID to "raw_1",
-                Meta.COLUMN_NAME_AB_EXTRACTED_AT to "2024-01-01T00:00:00Z",
-                Meta.COLUMN_NAME_AB_META to Document(),
-                Meta.COLUMN_NAME_AB_GENERATION_ID to 1
-            )),
-            Document(mapOf(
-                "id" to 1,
-                "name" to "Second version",
-                "updated_at" to "2024-01-02T00:00:00Z",
-                Meta.COLUMN_NAME_AB_RAW_ID to "raw_2",
-                Meta.COLUMN_NAME_AB_EXTRACTED_AT to "2024-01-02T00:00:00Z",
-                Meta.COLUMN_NAME_AB_META to Document(),
-                Meta.COLUMN_NAME_AB_GENERATION_ID to 1
-            )),
-            Document(mapOf(
-                "id" to 2,
-                "name" to "Different record",
-                "updated_at" to "2024-01-01T00:00:00Z",
-                Meta.COLUMN_NAME_AB_RAW_ID to "raw_3",
-                Meta.COLUMN_NAME_AB_EXTRACTED_AT to "2024-01-01T00:00:00Z",
-                Meta.COLUMN_NAME_AB_META to Document(),
-                Meta.COLUMN_NAME_AB_GENERATION_ID to 1
-            ))
-        ))
+        sourceCollection.insertMany(
+            listOf(
+                Document(
+                    mapOf(
+                        "id" to 1,
+                        "name" to "First version",
+                        "updated_at" to "2024-01-01T00:00:00Z",
+                        Meta.COLUMN_NAME_AB_RAW_ID to "raw_1",
+                        Meta.COLUMN_NAME_AB_EXTRACTED_AT to "2024-01-01T00:00:00Z",
+                        Meta.COLUMN_NAME_AB_META to Document(),
+                        Meta.COLUMN_NAME_AB_GENERATION_ID to 1
+                    )
+                ),
+                Document(
+                    mapOf(
+                        "id" to 1,
+                        "name" to "Second version",
+                        "updated_at" to "2024-01-02T00:00:00Z",
+                        Meta.COLUMN_NAME_AB_RAW_ID to "raw_2",
+                        Meta.COLUMN_NAME_AB_EXTRACTED_AT to "2024-01-02T00:00:00Z",
+                        Meta.COLUMN_NAME_AB_META to Document(),
+                        Meta.COLUMN_NAME_AB_GENERATION_ID to 1
+                    )
+                ),
+                Document(
+                    mapOf(
+                        "id" to 2,
+                        "name" to "Different record",
+                        "updated_at" to "2024-01-01T00:00:00Z",
+                        Meta.COLUMN_NAME_AB_RAW_ID to "raw_3",
+                        Meta.COLUMN_NAME_AB_EXTRACTED_AT to "2024-01-01T00:00:00Z",
+                        Meta.COLUMN_NAME_AB_META to Document(),
+                        Meta.COLUMN_NAME_AB_GENERATION_ID to 1
+                    )
+                )
+            )
+        )
 
         // Verify source has 3 documents
         assertEquals(3L, airbyteClient.countTable(sourceTableName))
@@ -192,7 +192,8 @@ class MongodbIntegrationTest {
         airbyteClient.upsertTable(stream, columnMapping, sourceTableName, targetTableName)
 
         // Verify target has only 2 unique records (deduplicated by PK)
-        val targetCollection = mongoClient.getDatabase(config.database).getCollection(targetTableName.name)
+        val targetCollection =
+            mongoClient.getDatabase(config.database).getCollection(targetTableName.name)
         val targetCount = targetCollection.countDocuments()
         assertEquals(2L, targetCount)
 
@@ -209,21 +210,27 @@ class MongodbIntegrationTest {
         val stream = createTestStream("overwrite_stream", Append)
 
         // Create target with some data
-        airbyteClient.createTable(stream, targetTableName, ColumnNameMapping(emptyMap()), replace = false)
+        airbyteClient.createTable(
+            stream,
+            targetTableName,
+            ColumnNameMapping(emptyMap()),
+            replace = false
+        )
         val targetBuffer = MongodbInsertBuffer(targetTableName, mongoClient, config)
-        repeat(5) { i ->
-            targetBuffer.accumulate(createTestRecord(i))
-        }
+        repeat(5) { i -> targetBuffer.accumulate(createTestRecord(i)) }
         targetBuffer.flush()
 
         assertEquals(5L, airbyteClient.countTable(targetTableName))
 
         // Create source with different data
-        airbyteClient.createTable(stream, sourceTableName, ColumnNameMapping(emptyMap()), replace = false)
+        airbyteClient.createTable(
+            stream,
+            sourceTableName,
+            ColumnNameMapping(emptyMap()),
+            replace = false
+        )
         val sourceBuffer = MongodbInsertBuffer(sourceTableName, mongoClient, config)
-        repeat(3) { i ->
-            sourceBuffer.accumulate(createTestRecord(i + 100))
-        }
+        repeat(3) { i -> sourceBuffer.accumulate(createTestRecord(i + 100)) }
         sourceBuffer.flush()
 
         assertEquals(3L, airbyteClient.countTable(sourceTableName))
@@ -241,19 +248,20 @@ class MongodbIntegrationTest {
     @Test
     fun `test indexes created for dedupe mode`() = runBlocking {
         val tableName = TableName("test_namespace", "index_test")
-        val stream = createTestStream(
-            name = "index_stream",
-            importType = Dedupe(
-                primaryKey = listOf(listOf("user_id"), listOf("event_id")),
-                cursor = listOf("timestamp")
+        val stream =
+            createTestStream(
+                name = "index_stream",
+                importType =
+                    Dedupe(
+                        primaryKey = listOf(listOf("user_id"), listOf("event_id")),
+                        cursor = listOf("timestamp")
+                    )
             )
-        )
 
-        val columnMapping = ColumnNameMapping(mapOf(
-            "user_id" to "user_id",
-            "event_id" to "event_id",
-            "timestamp" to "timestamp"
-        ))
+        val columnMapping =
+            ColumnNameMapping(
+                mapOf("user_id" to "user_id", "event_id" to "event_id", "timestamp" to "timestamp")
+            )
 
         airbyteClient.createTable(stream, tableName, columnMapping, replace = false)
 

@@ -52,55 +52,62 @@ class MongodbWriter(
         val tempTableName = tempTableNameGenerator.generate(realTableName)
 
         return when (stream.minimumGenerationId) {
-            0L -> when (stream.importType) {
-                is Dedupe -> DirectLoadTableDedupStreamLoader(
-                    stream,
-                    initialStatus,
-                    realTableName = realTableName,
-                    tempTableName = tempTableName,
-                    columnMapping,
-                    mongodbClient,
-                    mongodbClient,
-                    streamStateStore,
+            0L ->
+                when (stream.importType) {
+                    is Dedupe ->
+                        DirectLoadTableDedupStreamLoader(
+                            stream,
+                            initialStatus,
+                            realTableName = realTableName,
+                            tempTableName = tempTableName,
+                            columnMapping,
+                            mongodbClient,
+                            mongodbClient,
+                            streamStateStore,
+                        )
+                    else ->
+                        DirectLoadTableAppendStreamLoader(
+                            stream,
+                            initialStatus,
+                            realTableName = realTableName,
+                            tempTableName = tempTableName,
+                            columnMapping,
+                            mongodbClient,
+                            mongodbClient,
+                            streamStateStore,
+                        )
+                }
+            stream.generationId ->
+                when (stream.importType) {
+                    is Dedupe ->
+                        DirectLoadTableDedupTruncateStreamLoader(
+                            stream,
+                            initialStatus,
+                            realTableName = realTableName,
+                            tempTableName = tempTableName,
+                            columnMapping,
+                            mongodbClient,
+                            mongodbClient,
+                            streamStateStore,
+                            tempTableNameGenerator,
+                        )
+                    else ->
+                        DirectLoadTableAppendTruncateStreamLoader(
+                            stream,
+                            initialStatus,
+                            realTableName = realTableName,
+                            tempTableName = tempTableName,
+                            columnMapping,
+                            mongodbClient,
+                            mongodbClient,
+                            streamStateStore,
+                        )
+                }
+            else ->
+                throw SystemErrorException(
+                    "Cannot execute hybrid refresh - current generation ${stream.generationId}; " +
+                        "minimum generation ${stream.minimumGenerationId}"
                 )
-                else -> DirectLoadTableAppendStreamLoader(
-                    stream,
-                    initialStatus,
-                    realTableName = realTableName,
-                    tempTableName = tempTableName,
-                    columnMapping,
-                    mongodbClient,
-                    mongodbClient,
-                    streamStateStore,
-                )
-            }
-            stream.generationId -> when (stream.importType) {
-                is Dedupe -> DirectLoadTableDedupTruncateStreamLoader(
-                    stream,
-                    initialStatus,
-                    realTableName = realTableName,
-                    tempTableName = tempTableName,
-                    columnMapping,
-                    mongodbClient,
-                    mongodbClient,
-                    streamStateStore,
-                    tempTableNameGenerator,
-                )
-                else -> DirectLoadTableAppendTruncateStreamLoader(
-                    stream,
-                    initialStatus,
-                    realTableName = realTableName,
-                    tempTableName = tempTableName,
-                    columnMapping,
-                    mongodbClient,
-                    mongodbClient,
-                    streamStateStore,
-                )
-            }
-            else -> throw SystemErrorException(
-                "Cannot execute hybrid refresh - current generation ${stream.generationId}; " +
-                "minimum generation ${stream.minimumGenerationId}"
-            )
         }
     }
 }

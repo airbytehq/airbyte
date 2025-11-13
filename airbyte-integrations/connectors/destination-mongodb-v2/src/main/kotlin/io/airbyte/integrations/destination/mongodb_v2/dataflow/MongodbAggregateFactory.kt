@@ -23,11 +23,12 @@ class MongodbAggregateFactory(
 
     override fun create(key: StoreKey): Aggregate {
         val tableName = streamStateStore.get(key)!!.tableName
-        val buffer = MongodbInsertBuffer(
-            tableName = tableName,
-            mongoClient = mongoClient,
-            config = config,
-        )
+        val buffer =
+            MongodbInsertBuffer(
+                tableName = tableName,
+                mongoClient = mongoClient,
+                config = config,
+            )
         return MongodbAggregate(buffer = buffer)
     }
 }

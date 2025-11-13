@@ -12,23 +12,10 @@ data class MongodbSpecification(
     @JsonProperty("connection_string")
     @JsonPropertyDescription("MongoDB connection string")
     val connectionString: String,
-
-    @JsonProperty("database")
-    @JsonPropertyDescription("Database name")
-    val database: String,
-
-    @JsonProperty("auth_type")
-    val authType: MongodbConfiguration.AuthType? = null,
-
-    @JsonProperty("username")
-    val username: String? = null,
-
-    @JsonProperty("password")
-    val password: String? = null,
-
-    @JsonProperty("batch_size")
-    val batchSize: Int? = null,
-
-    @JsonProperty("tunnel_method")
-    val tunnelMethod: MongodbConfiguration.TunnelMethod? = null,
+    @JsonProperty("database") @JsonPropertyDescription("Database name") val database: String,
+    @JsonProperty("auth_type") val authType: MongodbConfiguration.AuthType? = null,
+    @JsonProperty("username") val username: String? = null,
+    @JsonProperty("password") val password: String? = null,
+    @JsonProperty("batch_size") val batchSize: Int? = null,
+    @JsonProperty("tunnel_method") val tunnelMethod: MongodbConfiguration.TunnelMethod? = null,
 ) : ConfigurationSpecification()
