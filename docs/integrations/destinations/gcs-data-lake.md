@@ -204,7 +204,7 @@ If compaction runs simultaneously with the sync, it would delete files from the 
 
 | Version | Date       | Pull Request                                                 | Subject                                                                               |
 |:--------|:-----------|:-------------------------------------------------------------|:--------------------------------------------------------------------------------------|
-| 1.0.2   | 2025-11-13 | [69212](https://github.com/airbytehq/airbyte/pull/69212)     | Connector generally available                                                         |
+| 1.0.2   | 2025-11-13 | [69317](https://github.com/airbytehq/airbyte/pull/69317)     | Connector generally available                                                         |
 | 1.0.1   | 2025-11-13 | [69212](https://github.com/airbytehq/airbyte/pull/69212)     | Initial release of GCS Data Lake destination with BigLake and Polaris catalog support |
 
 </details>
