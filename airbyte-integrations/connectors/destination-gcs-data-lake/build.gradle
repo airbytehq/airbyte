@@ -1,0 +1,77 @@
+plugins {
+    id 'application'
+    id 'airbyte-bulk-connector'
+    id "io.airbyte.gradle.docker"
+    id 'airbyte-connector-docker-convention'
+}
+
+airbyteBulkConnector {
+    core = 'load'
+    toolkits = ['load-iceberg-parquet', 'load-db']
+}
+
+application {
+    mainClass = 'io.airbyte.integrations.destination.gcs_data_lake.GcsDataLakeDestination'
+
+    applicationDefaultJvmArgs = ['-XX:+ExitOnOutOfMemoryError', '-XX:MaxRAMPercentage=75.0']
+
+    // Uncomment and replace to run locally
+    //applicationDefaultJvmArgs = ['-XX:+ExitOnOutOfMemoryError', '-XX:MaxRAMPercentage=75.0', '--add-opens', 'java.base/sun.nio.ch=ALL-UNNAMED', '--add-opens', 'java.base/sun.security.action=ALL-UNNAMED', '--add-opens', 'java.base/java.lang=ALL-UNNAMED']
+}
+
+ext {
+    apacheIcebergVersion = '1.7.0'
+    googleCloudStorageVersion = '2.59.0'
+    googleAuthVersion = '1.40.0'
+    junitVersion = '5.11.3'
+}
+
+configurations.configureEach {
+    // Exclude additional SLF4J providers from all classpaths
+    exclude group:"org.slf4j", module:"slf4j-reload4j"
+}
+
+// Uncomment to run locally
+//run {
+//    standardInput = System.in
+//}
+
+dependencies {
+    // Apache Iceberg
+    implementation("org.apache.iceberg:iceberg-api:${project.ext.apacheIcebergVersion}")
+    implementation("org.apache.iceberg:iceberg-core:${project.ext.apacheIcebergVersion}")
+    implementation("org.apache.iceberg:iceberg-data:${project.ext.apacheIcebergVersion}")
+    implementation("org.apache.iceberg:iceberg-gcp:${project.ext.apacheIcebergVersion}")
+    implementation("org.apache.iceberg:iceberg-nessie:${project.ext.apacheIcebergVersion}")
+
+    // Google Cloud Storage
+    implementation("com.google.cloud:google-cloud-storage:${project.ext.googleCloudStorageVersion}")
+    implementation("com.google.auth:google-auth-library-oauth2-http:${project.ext.googleAuthVersion}")
+
+    // Logging
+    implementation("io.github.oshai:kotlin-logging-jvm:7.0.0")
+
+    // Hadoop (required by Iceberg)
+    implementation("org.apache.hadoop:hadoop-common:3.4.1")
+    implementation("org.apache.hadoop:hadoop-client-api:3.4.1")
+
+    // Nessie client
+    implementation("org.projectnessie.nessie:nessie-client:0.99.0")
+
+    // Micronaut and DI
+    implementation("jakarta.inject:jakarta.inject-api:2.0.1")
+    implementation("com.github.spotbugs:spotbugs-annotations:4.8.6")
+    implementation("io.micronaut:micronaut-inject:4.6.1")
+    implementation("com.kjetland:mbknor-jackson-jsonschema_2.13:1.0.39")
+
+    // Testing
+    testImplementation("io.mockk:mockk:1.13.13")
+    testImplementation("org.junit.jupiter:junit-jupiter-api:${project.ext.junitVersion}")
+    testImplementation("org.junit.jupiter:junit-jupiter-params:${project.ext.junitVersion}")
+    testRuntimeOnly("org.junit.jupiter:junit-jupiter-engine:${project.ext.junitVersion}")
+
+    // Integration testing
+    integrationTestImplementation("org.apache.iceberg:iceberg-data:${project.ext.apacheIcebergVersion}")
+    integrationTestImplementation("com.squareup.okhttp3:okhttp:4.12.0")
+    integrationTestImplementation("org.projectnessie.nessie:nessie-minio-testcontainer:0.101.1")
+}
