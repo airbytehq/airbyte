@@ -6,7 +6,7 @@ This page contains the setup guide and reference information for the SFTP source
 
 - Access to a remote server that supports SFTP
 - Host address
-- Valid username and password associated with the host server
+- Valid username and authentication credentials (password or SSH private key)
 
 ## Setup guide
 
@@ -28,18 +28,19 @@ To set up key pair authentication, you may use the following steps as a guide:
 
 3. Use the `ssh-copy-id` command in your terminal to copy the public key to the server.
 
-```
-ssh-copy-id <username>@<server_ip_address>
-```
+   ```bash
+   ssh-copy-id <username>@<server_ip_address>
+   ```
 
-Be sure to replace your specific values for your username and the server's IP address.
-:::note
-Depending on factors such as your operating system and the specific SSH implementation your remote server uses, you may not be able to use the `ssh-copy-id` command. If so, please consult your server administrator for the appropriate steps to copy the public key to the server.
-:::
+   Be sure to replace your specific values for your username and the server's IP address.
+
+   :::note
+   Depending on factors such as your operating system and the specific SSH implementation your remote server uses, you may not be able to use the `ssh-copy-id` command. If so, please consult your server administrator for the appropriate steps to copy the public key to the server.
+   :::
 
 4. You should now be able to connect to the server via the private key. You can test this by using the `ssh` command:
 
-```
+```bash
 ssh <username>@<server_ip_address>
 ```
 
@@ -56,8 +57,37 @@ For more information on SSH key pair authentication, please refer to the
    <!-- /env:cloud -->
 4. Enter a **Source name** of your choosing.
 5. Enter your **Username**, as well as the **Host Address** and **Port**. The default port for SFTP is 22. If your remote server is using a different port, please enter it here.
-6. In the **Authentication** section, use the dropdown menu to select **Password Authentication** or **SSH Key Authentication**, then fill in the required credentials. If you are authenticating with a private key, you can upload the file containing the private key (usually named `rsa_id`) using the **Upload file** button.
+6. In the **Authentication** section, use the dropdown menu to select **Password Authentication** or **SSH Key Authentication**, then fill in the required credentials. If using SSH Key Authentication, see the section below for detailed setup instructions.
 7. If you wish to configure additional optional settings, please refer to the next section. Otherwise, click **Set up source** and wait for the tests to complete.
+
+#### SSH Key Authentication Setup
+
+If your SFTP server uses SSH key-based authentication, you'll need to provide your private key file (`.pem` or similar format) during setup. Follow these steps to create and upload it correctly:
+
+1. **Locate your private key text.** This is the block of text that begins with `-----BEGIN OPENSSH PRIVATE KEY-----` or `-----BEGIN RSA PRIVATE KEY-----` and ends with `-----END OPENSSH PRIVATE KEY-----` or `-----END RSA PRIVATE KEY-----`.
+
+2. **Create a PEM file:**
+   1. Open any text editor or IDE (for example, PyCharm, VS Code, or a terminal text editor).
+   2. Create a new file named `ssh.pem`.
+   3. Paste the entire private key text into the file, including the BEGIN and END lines.
+   4. Make sure there are no quotes or extra spaces before or after the key.
+   5. Save the file.
+
+3. **(Optional but recommended)** If you're on macOS or Linux, set restricted permissions so only you can read it:
+
+   ```bash
+   chmod 600 ssh.pem
+   ```
+
+4. **Upload the file in Airbyte:**
+   1. In the SFTP source setup form, find the **SSH Private Key** field under **SSH Key Authentication**.
+   2. Click **Upload file** and select your saved `ssh.pem` file.
+
+Once uploaded, Airbyte uses this file to authenticate securely with your SFTP server.
+
+:::note
+The file must be in PEM format, a plain text file containing your private key between the BEGIN and END lines. Do not paste the key directly into the field; Airbyte requires a file upload.
+:::
 
 ## Optional fields
 
@@ -66,26 +96,26 @@ The **Optional fields** can be used to further configure the SFTP source connect
 1. **File Types**: Enter the desired file types to replicate as comma-separated values. Currently, only CSV and JSON are supported. The default value is `csv,json`.
 2. **Folder Path**: Enter a folder path to specify the directory on the remote server to be synced. For example, given the file structure:
 
-```
-Root
-| - logs
-|   | - 2021
-|   | - 2022
-|
-| - files
-|   | - 2021
-|   | - 2022
-```
+   ```text
+   Root
+   | - logs
+   |   | - 2021
+   |   | - 2022
+   |
+   | - files
+   |   | - 2021
+   |   | - 2022
+   ```
 
-An input of `/logs/2022` will only replicate data contained within the specified folder, ignoring the `/files` and `/logs/2021` folders. Leaving this field blank will replicate all applicable files in the remote server's designated entry point.
+   An input of `/logs/2022` replicates only data contained within the specified folder, ignoring the `/files` and `/logs/2021` folders. Leaving this field blank replicates all applicable files in the remote server's designated entry point.
 
 3. **File Pattern**: Enter a [regular expression](https://docs.oracle.com/javase/8/docs/api/java/util/regex/Pattern.html) to specify a naming pattern for the files to be replicated. Consider the following example:
 
-```
-log-([0-9]{4})([0-9]{2})([0-9]{2})
-```
+   ```regex
+   log-([0-9]{4})([0-9]{2})([0-9]{2})
+   ```
 
-This pattern will filter for files that match the format `log-YYYYMMDD`, where `YYYY`, `MM`, and `DD` represented four-digit, two-digit, and two-digit numbers, respectively. For example, `log-20230713`. Leaving this field blank will replicate all files not filtered by the previous two fields.
+   This pattern filters for files that match the format `log-YYYYMMDD`, where `YYYY`, `MM`, and `DD` represent four-digit, two-digit, and two-digit numbers, respectively. For example, `log-20230713`. Leaving this field blank replicates all files not filtered by the previous two fields.
 
 ## Supported sync modes
 
@@ -105,6 +135,7 @@ This source provides a single stream per file with a dynamic schema. The current
 More formats \(e.g. Apache Avro\) will be supported in the future.
 
 ## Changelog
+
 <details>
   <summary>Expand to review</summary>
 
