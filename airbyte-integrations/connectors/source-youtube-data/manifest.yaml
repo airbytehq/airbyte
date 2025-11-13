@@ -238,16 +238,30 @@ definitions:
         type: InlineSchemaLoader
         schema:
           $ref: "#/schemas/channel_comments"
+  api_key_authenticator:
+    type: ApiKeyAuthenticator
+    api_token: "{{ config[\"api_key\"] }}"
+    inject_into:
+      type: RequestOption
+      field_name: key
+      inject_into: request_parameter
+  oauth2_authenticator:
+    type: OAuth2Authenticator
+    client_id: "{{ config[\"client_id\"] }}"
+    client_secret: "{{ config[\"client_secret\"] }}"
+    token_refresh_endpoint: https://oauth2.googleapis.com/token
+    scopes:
+      - https://www.googleapis.com/auth/youtube.readonly
+    refresh_token: "{{ config[\"refresh_token\"] }}"
   base_requester:
     type: HttpRequester
     url_base: https://www.googleapis.com/youtube/v3/
     authenticator:
-      type: ApiKeyAuthenticator
-      api_token: "{{ config[\"api_key\"] }}"
-      inject_into:
-        type: RequestOption
-        field_name: key
-        inject_into: request_parameter
+      type: SelectiveAuthenticator
+      authenticator_selection_path: ["credentials", "auth_method"]
+      authenticators:
+        api_key: "#/definitions/api_key_authenticator"
+        oauth2.0: "#/definitions/oauth2_authenticator"
 
 streams:
   - $ref: "#/definitions/streams/video"
@@ -261,20 +275,73 @@ spec:
   connection_specification:
     type: object
     $schema: http://json-schema.org/draft-07/schema#
-    required:
-      - api_key
-      - channel_ids
     properties:
-      api_key:
-        type: string
-        order: 0
-        title: API Key
-        airbyte_secret: true
-      channel_ids:
-        type: array
-        order: 1
-        title: Channel IDs
+      credentias:
+        type: object
+        title: Credentials
+        description: Choose your authentication method
+        oneOf:
+          - type: object
+            title: API Key
+            required:
+              - api_key
+              - channel_ids
+            properties:
+              auth_method:
+                type: string
+                const: api_key
+              api_key:
+                type: string
+                order: 0
+                title: API Key
+                airbyte_secret: true
+              channel_ids:
+                type: array
+                order: 1
+                title: Channel IDs
+          - type: object
+            title: OAuth 2.0
+            required:
+              - client_id
+              - client_secret
+              - refresh_token
+              - channel_ids
+            properties:
+              auth_method:
+                type: string
+                const: oauth2.0
+              client_id:
+                type: string
+                order: 0
+                title: Client ID
+                airbyte_secret: true
+              client_secret:
+                type: string
+                order: 1
+                title: Client Secret
+                airbyte_secret: true
+              refresh_token:
+                type: string
+                order: 2
+                title: Refresh Token
+                airbyte_secret: true
+              channel_ids:
+                type: array
+                order: 3
+                title: Channel IDs
     additionalProperties: true
+    advanced_auth:
+      auth_flow_type: oauth2.0
+      predicate_key:
+        - credentials
+        - auth_method
+      predicate_value: oauth2.0
+      oauth_config_specification:
+        oauth_input_specification:
+          consent_url: https://accounts.google.com/o/oauth2/v2/auth?{{client_id_param}}&{{redirect_uri_param}}&response_type=code&{{scope_param}}&access_type=offline&{{state_param}}&include_granted_scopes=true&prompt=consent
+          access_token_url: https://oauth2.googleapis.com/token
+          
+
 
 metadata:
   autoImportSchema:
