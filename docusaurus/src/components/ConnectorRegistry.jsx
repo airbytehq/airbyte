@@ -31,12 +31,6 @@ function connectorSort(a, b) {
 }
 
 function ConnectorTable({ connectors, connectorSupportLevel, enterpriseConnectors = [] }) {
-  const sortedConnectors = connectorSupportLevel === "enterprise"
-    ? [...connectors].sort((a, b) => {
-        return a.name_oss.localeCompare(b.name_oss, undefined, { sensitivity: 'base' });
-      })
-    : [...connectors].sort(connectorSort);
-
   return (
     <table>
       <thead>
@@ -49,7 +43,8 @@ function ConnectorTable({ connectors, connectorSupportLevel, enterpriseConnector
         </tr>
       </thead>
       <tbody>
-        {sortedConnectors
+        {connectors
+          .sort(connectorSort)
           .filter((c) => {
             if (connectorSupportLevel === "enterprise") {
               return true;
