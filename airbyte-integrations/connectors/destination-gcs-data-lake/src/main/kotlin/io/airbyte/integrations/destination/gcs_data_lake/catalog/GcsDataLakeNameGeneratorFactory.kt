@@ -21,7 +21,6 @@ import org.apache.iceberg.catalog.TableIdentifier
  *
  * BigLake external tables have strict naming requirements:
  * - Only alphanumeric characters (a-z, A-Z, 0-9) and underscores (_)
- * - Prefixes with underscore if it starts with a number
  *
  * This implementation uses [Transformations.toAlphanumericAndUnderscore] to ensure all column names
  * meet these requirements.
@@ -29,7 +28,7 @@ import org.apache.iceberg.catalog.TableIdentifier
 @Singleton
 class GcsDataLakeColumnNameGenerator : ColumnNameGenerator {
     override fun getColumnName(column: String): ColumnNameGenerator.ColumnName {
-        val sanitized = sanitizeBigLakeName(column)
+        val sanitized = Transformations.toAlphanumericAndUnderscore(column)
         return ColumnNameGenerator.ColumnName(
             displayName = sanitized,
             canonicalName = sanitized,
@@ -38,29 +37,12 @@ class GcsDataLakeColumnNameGenerator : ColumnNameGenerator {
 }
 
 /**
- * Sanitizes a name to be BigLake/BigQuery compatible.
- * - Converts to alphanumeric + underscore only
- * - Prefixes with underscore if it starts with a number
- */
-private fun sanitizeBigLakeName(name: String): String {
-    var sanitized = Transformations.toAlphanumericAndUnderscore(name)
-    // BigLake/BigQuery doesn't allow table names starting with numbers
-    // Prefix with underscore if it starts with a digit
-    if (sanitized.isNotEmpty() && sanitized[0].isDigit()) {
-        sanitized = "_$sanitized"
-    }
-    return sanitized
-}
-
-/**
- * BigLake table ID generator that sanitizes names. BigLake doesn't support:
- * - Special characters (converts to alphanumeric+underscore)
- * - Table names starting with numbers (prefixes with underscore)
+ * BigLake table ID generator that sanitizes names. BigLake doesn't support special characters (converts to alphanumeric+underscore)
  */
 class BigLakeTableIdGenerator(private val databaseName: String) : TableIdGenerator {
     override fun toTableIdentifier(stream: DestinationStream.Descriptor): TableIdentifier {
-        val namespace = sanitizeBigLakeName(stream.namespace ?: databaseName)
-        val name = sanitizeBigLakeName(stream.name)
+        val namespace = Transformations.toAlphanumericAndUnderscore(stream.namespace ?: databaseName)
+        val name = Transformations.toAlphanumericAndUnderscore(stream.name)
         return tableIdOf(namespace, name)
     }
 }
@@ -81,8 +63,8 @@ class GcsDataLakeNameGeneratorFactory(
     fun createFinalTableNameGenerator(): FinalTableNameGenerator =
         FinalTableNameGenerator { stream ->
             val namespace =
-                sanitizeBigLakeName(stream.namespace ?: gcsDataLakeConfiguration.namespace)
-            val name = sanitizeBigLakeName(stream.name)
+                Transformations.toAlphanumericAndUnderscore(stream.namespace ?: gcsDataLakeConfiguration.namespace)
+            val name = Transformations.toAlphanumericAndUnderscore(stream.name)
             TableName(namespace = namespace, name = name)
         }
 }
