@@ -432,13 +432,27 @@ Results:
 ✗ {count} tests failed (if any)
 
 [If all pass]
-🎉 Phase {N} complete!
+🎉 Phase {N} complete! All tests passing.
 
 Ready for Phase {N+1}? [Y/n]
 
-[If failures]
-⚠️ Found {count} failures. Let's debug...
+[If failures - MANDATORY]
+🚫 BLOCKER: {count} test(s) failing
+
+We CANNOT proceed to Phase {N+1} until ALL tests pass.
+
+Test failures are not optional - they indicate broken functionality.
+
+Let's debug and fix each failure now:
+
+1. {test_name}: {error summary}
+   [Detailed analysis and fix suggestion]
+
+[Iterate until 100% pass rate achieved]
 ```
+
+**Critical:** Agent must never proceed past a checkpoint with failing tests.
+Every failure must be resolved before continuing.
 
 ### Debug Template
 
@@ -548,7 +562,8 @@ Agent: "Phase 0 ✓. Next is Phase 1: Database Connectivity.
 
 ### Validation-Driven Progress
 
-**Don't move forward until checkpoint passes:**
+**CRITICAL: Don't move forward until checkpoint passes - ALL tests must pass**
+
 ```
 Agent: "Let's validate Phase 3 before moving on."
 
@@ -558,15 +573,27 @@ Agent: "❌ Test failed: create and drop tables
 
        Error: Table 'test_table' already exists
 
-       Looks like cleanup isn't working. In your SQL Generator,
-       change CREATE TABLE to CREATE TABLE IF NOT EXISTS...
+       This is a blocker. We cannot proceed to Phase 4 until this passes.
+
+       Root cause: Cleanup isn't working properly.
+
+       Fix: In your SQL Generator, change:
+         CREATE TABLE test_table
+       To:
+         CREATE TABLE IF NOT EXISTS test_table
 
        Should I make this change?"
 
-[Iterates until pass]
+[Iterates until pass - no exceptions]
 
 Agent: "✓ All Phase 3 tests pass! Ready for Phase 4?"
 ```
+
+**Non-negotiable rules:**
+1. **All tests must pass** - No "probably fine", no "minor issues"
+2. **No moving forward with failures** - Checkpoint = hard gate
+3. **Regressions are blockers** - Previously passing tests must still pass
+4. **Test failures are always investigated** - Never dismissed or deferred
 
 ### Example-Driven Learning
 
@@ -882,6 +909,76 @@ Agent: "✓ Phase 5 complete - your connector works in append mode!
 
 ---
 
+## Test Failure Response Examples
+
+### ❌ WRONG: Minimizing Failures
+
+```
+User: The integration test is failing
+
+Agent: "The integration test infrastructure is created but encountering
+       a dependency injection configuration issue during the full sync test.
+       This is likely a minor wiring issue with one of the new beans."
+```
+
+**Why this is wrong:**
+- Calls it "minor" (all failures are serious)
+- Says "likely" without investigation (must diagnose precisely)
+- Implies we can move forward (we cannot)
+
+### ✅ CORRECT: Treating Failures as Blockers
+
+```
+User: The integration test is failing
+
+Agent: "The integration test is failing. This is a blocker - we cannot
+       proceed until it passes.
+
+       Let me analyze the failure. Please paste the full test output.
+
+       [User pastes output]
+
+       I see a dependency injection error: 'No bean of type X found'
+
+       Root cause: Missing @Singleton on XFactory class.
+
+       Fix: Add @Singleton annotation to {DB}AggregateFactory
+
+       Let me make this change and re-run the test.
+
+       [Makes fix, re-runs]
+
+       ✓ Test now passes! All tests passing. Ready for next phase."
+```
+
+**Why this is correct:**
+- States it's a blocker upfront
+- Requests full diagnostic information
+- Identifies specific root cause
+- Provides specific fix
+- Validates fix works before proceeding
+
+### Examples of Unacceptable Phrases
+
+**Never say:**
+- ❌ "Minor issue"
+- ❌ "Probably fine"
+- ❌ "Should work"
+- ❌ "Likely just..."
+- ❌ "Not critical"
+- ❌ "Can fix later"
+- ❌ "Optional to fix"
+- ❌ "Let's continue anyway"
+
+**Always say:**
+- ✅ "This is a blocker"
+- ✅ "We must fix this before proceeding"
+- ✅ "All tests must pass"
+- ✅ "Let's debug this now"
+- ✅ "This indicates broken functionality"
+
+---
+
 ## Agent Limitations & Boundaries
 
 ### What Agent Should NOT Do
@@ -902,6 +999,15 @@ Agent: "✓ Phase 5 complete - your connector works in append mode!
 - Test validation at checkpoints
 - Regression checking
 - User approval for code generation
+
+**NEVER say or imply:**
+- "This is a minor issue" (test failures are blockers)
+- "Probably fine" (all tests must pass)
+- "Let's move on and fix later" (fix now before proceeding)
+- "This test isn't critical" (all tests are critical)
+- "We can skip this test" (never skip tests)
+- "Likely just a wiring issue" (investigate and fix completely)
+- "Should work even with this failure" (must work with all tests passing)
 
 ### What Agent Should Delegate to User
 
@@ -1078,10 +1184,12 @@ running tests, and debugging failures.
 Key principles:
 1. Follow step-by-step-guide.md phase-by-phase
 2. Validate progress via tests at each checkpoint
-3. Don't move forward until tests pass
-4. Generate code based on database characteristics
-5. Reference similar connectors for patterns
-6. Provide specific, actionable fixes for failures
+3. **ALL TESTS MUST PASS** - No exceptions, no "minor issues"
+4. Don't move forward until tests pass - checkpoints are hard gates
+5. Generate code based on database characteristics
+6. Reference similar connectors for patterns
+7. Provide specific, actionable fixes for failures
+8. Treat test failures as blockers, never as optional fixes
 
 Knowledge base:
 - connector-writer/destination/dataflow-cdk.md (architecture)
@@ -1199,3 +1307,10 @@ Generate: SqlGenerator.upsertTable() customized for DB capabilities
 - Realistic about complexity
 
 **Agent Mantra:** "Generate, Validate, Debug, Repeat - Don't move forward until tests pass"
+
+**Zero Tolerance for Test Failures:**
+- Never say "minor issue" or "probably fine"
+- Never suggest skipping a failing test
+- Never move to next phase with failures
+- Never dismiss regressions as unimportant
+- Test failures are ALWAYS blockers until resolved
