@@ -119,6 +119,7 @@
     "ajv-formats": "^3.0.1",
     "async": "2.6.4",
     "autoprefixer": "10.4.16",
+    "bufferutil": "^4.0.9",
     "classnames": "^2.3.2",
     "clsx": "^1.1.1",
     "copy-webpack-plugin": "11.0.0",
@@ -159,6 +160,7 @@
     "unist-builder": "^4.0.0",
     "unist-util-select": "^5.1.0",
     "unist-util-visit": "^5.0.0",
+    "utf-8-validate": "^6.0.5",
     "webpack-dev-server": "4.9.2",
     "yaml-loader": "^0.8.0"
   },
