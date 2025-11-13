@@ -327,21 +327,19 @@ class PostgresSqlGenerator(
             .and(jsonTypeof(extractColumnAsJson(cdcDeletedAtColumn)).ne("null"))
     }
 
-    override fun getRowNumber(primaryKeys: List<ColumnId>, cursor: Optional<ColumnId>): Field<Int> {
+    override fun getRowNumber(primaryKey: List<ColumnId>, cursorField: Optional<ColumnId>): Field<Int> {
         // literally identical to redshift's getRowNumber implementation, changes here probably
         // should
         // be reflected there
         val primaryKeyFields =
-            if (primaryKeys != null)
-                primaryKeys
-                    .stream()
-                    .map { columnId: ColumnId -> DSL.field(DSL.quotedName(columnId.name)) }
-                    .collect(Collectors.toList())
-            else ArrayList()
+            primaryKey
+                .stream()
+                .map { columnId: ColumnId -> DSL.field(DSL.quotedName(columnId.name)) }
+                .collect(Collectors.toList())
         val orderedFields: MutableList<Field<*>> = ArrayList()
         // We can still use Jooq's field to get the quoted name with raw sql templating.
         // jooq's .desc returns SortField<?> instead of Field<?> and NULLS LAST doesn't work with it
-        cursor.ifPresent { columnId: ColumnId ->
+        cursorField.ifPresent { columnId: ColumnId ->
             orderedFields.add(
                 DSL.field("{0} desc NULLS LAST", DSL.field(DSL.quotedName(columnId.name)))
             )

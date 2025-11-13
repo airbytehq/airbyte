@@ -23,8 +23,8 @@ import io.airbyte.cdk.load.data.TimestampTypeWithoutTimezone
 import io.airbyte.cdk.load.data.TimestampWithTimezoneValue
 import io.airbyte.cdk.load.data.TimestampWithoutTimezoneValue
 import io.airbyte.cdk.load.data.UnionType
+import io.airbyte.cdk.load.dataflow.transform.ValidationResult
 import io.airbyte.protocol.models.v0.AirbyteRecordMessageMetaChange
-import io.airbyte.protocol.models.v0.AirbyteRecordMessageMetaChange.Change
 import java.math.BigDecimal
 import java.math.BigInteger
 import java.time.OffsetDateTime
@@ -89,7 +89,7 @@ internal class PostgresValueCoercerTest {
                 airbyteMetaField = null,
             )
         val result = coercer.validate(airbyteValue)
-        assertEquals(airbyteValue, result)
+        assertEquals(ValidationResult.Valid, result)
     }
 
     @Test
@@ -120,7 +120,7 @@ internal class PostgresValueCoercerTest {
             )
 
         val result = coercer.validate(airbyteValue)
-        assertEquals(airbyteValue, result)
+        assertEquals(ValidationResult.Valid, result)
     }
 
     @Test
@@ -136,7 +136,7 @@ internal class PostgresValueCoercerTest {
             )
 
         val result = coercer.validate(airbyteValue)
-        assertEquals(airbyteValue, result)
+        assertEquals(ValidationResult.Valid, result)
     }
 
     @Test
@@ -152,12 +152,10 @@ internal class PostgresValueCoercerTest {
             )
 
         val result = coercer.validate(airbyteValue)
-        assertEquals(NullValue, result.abValue)
-        assertEquals(1, result.changes.size)
-        assertEquals(Change.NULLED, result.changes.first().change)
+        assertEquals(ValidationResult.ShouldNullify::class, result::class)
         assertEquals(
             AirbyteRecordMessageMetaChange.Reason.DESTINATION_FIELD_SIZE_LIMITATION,
-            result.changes.first().reason
+            (result as ValidationResult.ShouldNullify).reason
         )
     }
 
@@ -174,12 +172,10 @@ internal class PostgresValueCoercerTest {
             )
 
         val result = coercer.validate(airbyteValue)
-        assertEquals(NullValue, result.abValue)
-        assertEquals(1, result.changes.size)
-        assertEquals(Change.NULLED, result.changes.first().change)
+        assertEquals(ValidationResult.ShouldNullify::class, result::class)
         assertEquals(
             AirbyteRecordMessageMetaChange.Reason.DESTINATION_FIELD_SIZE_LIMITATION,
-            result.changes.first().reason
+            (result as ValidationResult.ShouldNullify).reason
         )
     }
 
@@ -196,7 +192,7 @@ internal class PostgresValueCoercerTest {
             )
 
         val result = coercer.validate(airbyteValue)
-        assertEquals(airbyteValue, result)
+        assertEquals(ValidationResult.Valid, result)
     }
 
     @Test
@@ -212,12 +208,10 @@ internal class PostgresValueCoercerTest {
             )
 
         val result = coercer.validate(airbyteValue)
-        assertEquals(NullValue, result.abValue)
-        assertEquals(1, result.changes.size)
-        assertEquals(Change.NULLED, result.changes.first().change)
+        assertEquals(ValidationResult.ShouldNullify::class, result::class)
         assertEquals(
             AirbyteRecordMessageMetaChange.Reason.DESTINATION_FIELD_SIZE_LIMITATION,
-            result.changes.first().reason
+            (result as ValidationResult.ShouldNullify).reason
         )
     }
 
@@ -234,12 +228,10 @@ internal class PostgresValueCoercerTest {
             )
 
         val result = coercer.validate(airbyteValue)
-        assertEquals(NullValue, result.abValue)
-        assertEquals(1, result.changes.size)
-        assertEquals(Change.NULLED, result.changes.first().change)
+        assertEquals(ValidationResult.ShouldNullify::class, result::class)
         assertEquals(
             AirbyteRecordMessageMetaChange.Reason.DESTINATION_FIELD_SIZE_LIMITATION,
-            result.changes.first().reason
+            (result as ValidationResult.ShouldNullify).reason
         )
     }
 
@@ -256,7 +248,7 @@ internal class PostgresValueCoercerTest {
             )
 
         val result = coercer.validate(airbyteValue)
-        assertEquals(airbyteValue, result)
+        assertEquals(ValidationResult.Valid, result)
     }
 
     @Test
@@ -275,12 +267,10 @@ internal class PostgresValueCoercerTest {
             )
 
         val result = coercer.validate(airbyteValue)
-        assertEquals(NullValue, result.abValue)
-        assertEquals(1, result.changes.size)
-        assertEquals(Change.NULLED, result.changes.first().change)
+        assertEquals(ValidationResult.ShouldNullify::class, result::class)
         assertEquals(
             AirbyteRecordMessageMetaChange.Reason.DESTINATION_FIELD_SIZE_LIMITATION,
-            result.changes.first().reason
+            (result as ValidationResult.ShouldNullify).reason
         )
     }
 
@@ -298,7 +288,7 @@ internal class PostgresValueCoercerTest {
             )
 
         val result = coercer.validate(airbyteValue)
-        assertEquals(airbyteValue, result)
+        assertEquals(ValidationResult.Valid, result)
     }
 
     @Test
@@ -315,7 +305,7 @@ internal class PostgresValueCoercerTest {
             )
 
         val result = coercer.validate(airbyteValue)
-        assertEquals(airbyteValue, result)
+        assertEquals(ValidationResult.Valid, result)
     }
 
     @Test
@@ -332,7 +322,7 @@ internal class PostgresValueCoercerTest {
             )
 
         val result = coercer.validate(airbyteValue)
-        assertEquals(airbyteValue, result)
+        assertEquals(ValidationResult.Valid, result)
     }
 
     @Test
@@ -359,8 +349,8 @@ internal class PostgresValueCoercerTest {
                 airbyteMetaField = null,
             )
 
-        assertEquals(intValue, coercer.validate(intValue))
-        assertEquals(floatValue, coercer.validate(floatValue))
+        assertEquals(ValidationResult.Valid, coercer.validate(intValue))
+        assertEquals(ValidationResult.Valid, coercer.validate(floatValue))
     }
 
     @Test
@@ -376,7 +366,7 @@ internal class PostgresValueCoercerTest {
             )
 
         val result = coercer.validate(airbyteValue)
-        assertEquals(airbyteValue, result)
+        assertEquals(ValidationResult.Valid, result)
     }
 
     @Test
@@ -393,7 +383,7 @@ internal class PostgresValueCoercerTest {
             )
 
         val result = coercer.validate(airbyteValue)
-        assertEquals(airbyteValue, result)
+        assertEquals(ValidationResult.Valid, result)
     }
 
     @Test
@@ -410,7 +400,7 @@ internal class PostgresValueCoercerTest {
             )
 
         val result = coercer.validate(airbyteValue)
-        assertEquals(airbyteValue, result)
+        assertEquals(ValidationResult.Valid, result)
     }
 
     @Test
@@ -427,7 +417,7 @@ internal class PostgresValueCoercerTest {
             )
 
         val result = coercer.validate(airbyteValue)
-        assertEquals(nullValue, result.abValue)
+        assertEquals(ValidationResult.Valid, result)
     }
 
     @Test
@@ -445,7 +435,7 @@ internal class PostgresValueCoercerTest {
             )
 
         val result = coercer.validate(airbyteValue)
-        assertEquals(airbyteValue, result)
+        assertEquals(ValidationResult.Valid, result)
     }
 
     @Test
@@ -467,12 +457,10 @@ internal class PostgresValueCoercerTest {
             )
 
         val result = coercer.validate(airbyteValue)
-        assertEquals(NullValue, result.abValue)
-        assertEquals(1, result.changes.size)
-        assertEquals(Change.NULLED, result.changes.first().change)
+        assertEquals(ValidationResult.ShouldNullify::class, result::class)
         assertEquals(
             AirbyteRecordMessageMetaChange.Reason.DESTINATION_FIELD_SIZE_LIMITATION,
-            result.changes.first().reason
+            (result as ValidationResult.ShouldNullify).reason
         )
     }
 
@@ -495,12 +483,10 @@ internal class PostgresValueCoercerTest {
             )
 
         val result = coercer.validate(airbyteValue)
-        assertEquals(NullValue, result.abValue)
-        assertEquals(1, result.changes.size)
-        assertEquals(Change.NULLED, result.changes.first().change)
+        assertEquals(ValidationResult.ShouldNullify::class, result::class)
         assertEquals(
             AirbyteRecordMessageMetaChange.Reason.DESTINATION_FIELD_SIZE_LIMITATION,
-            result.changes.first().reason
+            (result as ValidationResult.ShouldNullify).reason
         )
     }
 
@@ -519,7 +505,7 @@ internal class PostgresValueCoercerTest {
             )
 
         val result = coercer.validate(airbyteValue)
-        assertEquals(airbyteValue, result)
+        assertEquals(ValidationResult.Valid, result)
     }
 
     @Test
@@ -540,7 +526,7 @@ internal class PostgresValueCoercerTest {
             )
 
         val result = coercer.validate(airbyteValue)
-        assertEquals(airbyteValue, result)
+        assertEquals(ValidationResult.Valid, result)
     }
 
     @Test
@@ -561,7 +547,7 @@ internal class PostgresValueCoercerTest {
             )
 
         val result = coercer.validate(airbyteValue)
-        assertEquals(airbyteValue, result)
+        assertEquals(ValidationResult.Valid, result)
     }
 
     @Test
@@ -579,7 +565,7 @@ internal class PostgresValueCoercerTest {
             )
 
         val result = coercer.validate(airbyteValue)
-        assertEquals(airbyteValue, result)
+        assertEquals(ValidationResult.Valid, result)
     }
 
     @Test
@@ -628,7 +614,7 @@ internal class PostgresValueCoercerTest {
             )
 
         val result = coercer.validate(airbyteValue)
-        assertEquals(airbyteValue, result)
+        assertEquals(ValidationResult.Valid, result)
     }
 
     @Test
@@ -645,7 +631,7 @@ internal class PostgresValueCoercerTest {
             )
 
         val result = coercer.validate(airbyteValue)
-        assertEquals(airbyteValue, result)
+        assertEquals(ValidationResult.Valid, result)
     }
 
     @Test
@@ -662,6 +648,6 @@ internal class PostgresValueCoercerTest {
             )
 
         val result = coercer.validate(airbyteValue)
-        assertEquals(airbyteValue, result)
+        assertEquals(ValidationResult.Valid, result)
     }
 }
