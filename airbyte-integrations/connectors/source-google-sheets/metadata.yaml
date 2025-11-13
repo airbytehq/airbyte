@@ -13,6 +13,10 @@ data:
   dockerImageTag: 0.12.12
   dockerRepository: airbyte/source-google-sheets
   documentationUrl: https://docs.airbyte.com/integrations/sources/google-sheets
+  externalDocumentationUrls:
+    - title: Release notes
+      url: https://developers.google.com/sheets/docs/release-notes
+      type: api_release_history
   githubIssueLabel: source-google-sheets
   icon: google-sheets.svg
   license: Elv2
