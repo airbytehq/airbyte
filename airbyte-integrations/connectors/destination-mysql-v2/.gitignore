@@ -1,0 +1,18 @@
+# Secrets and credentials
+secrets/config.json
+secrets/*.json
+!secrets/config.json.example
+
+# Build outputs
+build/
+.gradle/
+out/
+
+# IDE
+.idea/
+*.iml
+.vscode/
+
+# Test outputs
+test-results/
+test-reports/
