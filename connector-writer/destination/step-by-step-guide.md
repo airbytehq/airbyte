@@ -510,9 +510,29 @@ class {DB}BeanFactory {
 }
 ```
 
-### Step 2.2: Create Test Configuration
+### Step 2.2: Add Testcontainers Dependency
+
+**File:** Update `build.gradle.kts`
+
+```kotlin
+dependencies {
+    // Existing dependencies...
+
+    // Testcontainers for automated testing (recommended)
+    testImplementation("org.testcontainers:testcontainers:1.19.0")
+    testImplementation("org.testcontainers:{db}:1.19.0")  // e.g., postgresql, mysql, etc.
+    // Or for databases without specific module:
+    // testImplementation("org.testcontainers:jdbc:1.19.0")
+}
+```
+
+**Check available modules:** https://www.testcontainers.org/modules/databases/
+
+### Step 2.3: Create Test Configuration with Testcontainers
 
 **File:** `src/test-integration/kotlin/.../component/{DB}TestConfigFactory.kt`
+
+**Primary approach (Testcontainers - recommended):**
 
 ```kotlin
 package io.airbyte.integrations.destination.{db}.component
@@ -523,6 +543,7 @@ import io.micronaut.context.annotation.Factory
 import io.micronaut.context.annotation.Primary
 import io.micronaut.context.annotation.Requires
 import io.micronaut.context.annotation.Singleton
+import org.testcontainers.containers.{DB}Container  // e.g., PostgreSQLContainer
 
 @Factory
 @Requires(env = ["component"])
@@ -530,20 +551,34 @@ class {DB}TestConfigFactory {
 
     @Singleton
     @Primary
-    fun testConfig(): {DB}Configuration {
-        // Option 1: From environment variables
-        return {DB}Configuration(
-            hostname = System.getenv("DB_HOSTNAME") ?: "localhost",
-            port = System.getenv("DB_PORT")?.toInt() ?: 5432,
-            database = System.getenv("DB_DATABASE") ?: "test",
-            username = System.getenv("DB_USERNAME") ?: "test",
-            password = System.getenv("DB_PASSWORD") ?: "test",
-        )
+    fun testContainer(): {DB}Container<*> {
+        // Example for PostgreSQL:
+        val container = PostgreSQLContainer("postgres:15-alpine")
+            .withDatabaseName("test")
+            .withUsername("test")
+            .withPassword("test")
 
-        // Option 2: Load from secrets file
-        // val secretsFile = Path.of("secrets/config.json")
-        // val json = objectMapper.readTree(secretsFile.toFile())
-        // return configFactory.makeWithoutExceptionHandling(json)
+        // Example for MySQL:
+        // val container = MySQLContainer("mysql:8.0")
+        //     .withDatabaseName("test")
+
+        // Example for generic JDBC:
+        // val container = JdbcDatabaseContainer("{db}:latest")
+
+        container.start()
+        return container
+    }
+
+    @Singleton
+    @Primary
+    fun testConfig(container: {DB}Container<*>): {DB}Configuration {
+        return {DB}Configuration(
+            hostname = container.host,
+            port = container.firstMappedPort,
+            database = container.databaseName,
+            username = container.username,
+            password = container.password,
+        )
     }
 
     @Singleton
@@ -552,40 +587,41 @@ class {DB}TestConfigFactory {
         config: {DB}Configuration
     ): MigratingConfigurationSpecificationSupplier<{DB}Specification> {
         return object : MigratingConfigurationSpecificationSupplier<{DB}Specification> {
-            override fun get() = {DB}Specification().apply {
-                // Populate from config if needed
-            }
+            override fun get() = {DB}Specification()
         }
     }
 }
 ```
 
-**Alternative:** Use Testcontainers (recommended for CI)
+**Alternative: Environment variables (for local development)**
 
 ```kotlin
 @Singleton
 @Primary
-@Requires(env = ["component"])
-fun testContainer(): {DB}Container {
-    val container = {DB}Container("{db}:latest")
-    container.start()
-    return container
-}
-
-@Singleton
-@Primary
-fun testConfig(container: {DB}Container): {DB}Configuration {
+fun testConfig(): {DB}Configuration {
     return {DB}Configuration(
-        hostname = container.host,
-        port = container.firstMappedPort,
-        database = container.databaseName,
-        username = container.username,
-        password = container.password,
+        hostname = System.getenv("DB_HOSTNAME") ?: "localhost",
+        port = System.getenv("DB_PORT")?.toInt() ?: 5432,
+        database = System.getenv("DB_DATABASE") ?: "test",
+        username = System.getenv("DB_USERNAME") ?: "test",
+        password = System.getenv("DB_PASSWORD") ?: "test",
     )
 }
 ```
 
-### Step 2.3: Create Minimal Test Client
+**Why Testcontainers (recommended)?**
+- ✅ Isolated test environment (no conflicts with other tests)
+- ✅ Works in CI without setup
+- ✅ Reproducible across machines
+- ✅ Automatic cleanup
+- ✅ No manual database installation needed
+
+**When to use environment variables?**
+- Local development with existing database
+- Database not supported by Testcontainers
+- Debugging against specific database version
+
+### Step 2.4: Create Minimal Test Client
 
 **File:** `src/test-integration/kotlin/.../component/{DB}TestTableOperationsClient.kt`
 
@@ -633,7 +669,7 @@ class {DB}TestTableOperationsClient(
 }
 ```
 
-### Step 2.4: Create TableOperationsTest (Minimal)
+### Step 2.5: Create TableOperationsTest (Minimal)
 
 **File:** `src/test-integration/kotlin/.../component/{DB}TableOperationsTest.kt`
 
@@ -663,7 +699,7 @@ class {DB}TableOperationsTest(
 }
 ```
 
-### Step 2.5: Validate Connection
+### Step 2.6: Validate Connection
 
 ```bash
 $ ./gradlew :destination-{db}:testComponentConnectToDatabase
