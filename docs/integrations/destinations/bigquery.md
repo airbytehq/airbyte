@@ -210,6 +210,8 @@ tutorials:
 
 | Version     | Date       | Pull Request                                               | Subject                                                                                                                                                                           |
 |:------------|:-----------|:-----------------------------------------------------------|:----------------------------------------------------------------------------------------------------------------------------------------------------------------------------------|
+| 3.0.14 | 2025-11-11 | [69231](https://github.com/airbytehq/airbyte/pull/69231) | Upgrade to Bulk CDK 0.1.74. |
+| 3.0.13 | 2025-11-01 | [69126](https://github.com/airbytehq/airbyte/pull/69126) | Upgrade to Bulk CDK 0.1.61. |
 | 3.0.12      | 2025-10-29 | [69083](https://github.com/airbytehq/airbyte/pull/69083) | Fail loudly if Bigquery detects bad records. |
 | 3.0.11      | 2025-10-27 | [68671](https://github.com/airbytehq/airbyte/pull/68671) | Log record count per load job. |
 | 3.0.10      | 2025-10-21 | [67153](https://github.com/airbytehq/airbyte/pull/67153) | Implement new proto schema implementation |
