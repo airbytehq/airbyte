@@ -241,7 +241,6 @@ For now the waiting logic only work for the following streams:
 
 Create a separate connection for streams which usually fail with error above "Failed to retrieve the report..." and disable sync of these streams in the first connection with streams which don't fail because of the error. Adjust the sync time of these two connection to do not overlap. It's recommended to have a time break between syncs in the connections.
 
-
 ### Rate Limit issue for Report Streams
 
 Syncing Report Streams sometimes may fail due to rate limits.
@@ -251,12 +250,12 @@ But actual Rate Limits could be differ from ones mentioned in the docs. See [Usa
 Depending on actual rate limits the Amazon Seller Partner source connector can receive "rate limited" responses, unfortunately there is no way to find actual rate limits values for account.
 
 We recomment next steps to overcome the rate limits issue:
+
 1. Depending on your amount of data per [Period In Days](https://docs.airbyte.com/integrations/sources/amazon-seller-partner#reference) adjust this value to reduce time of processing the report on API Side. If creation of the report takes more than 1h it's recommended to set lower value for `Period In Days` setting.
 2. Configure affected Report Stream to read data incrementally, use Incremental Sync mode (Append). This will prevent the source of rereading already fetched data and make the source to read new data starting from state custor value. See [Incremental Sync Mode - Append](https://docs.airbyte.com/platform/using-airbyte/core-concepts/sync-modes/incremental-append) for more information.
 3. Set syncs to run every 24h.
 
 This configuration will sync partial data every, until the source gets rate limited. Once state value reaches date that equal the date of sync, next sync will have only one partition(date period for report). So the source will make only one request for affected report which should be enough to avoid rate limits issue.
-
 
 ## Changelog
 
