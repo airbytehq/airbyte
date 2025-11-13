@@ -1,0 +1,31 @@
+data:
+  ab_internal:
+    ql: 400
+    sl: 300
+  connectorBuildOptions:
+    baseImage: airbyte/connectors-base-java:1.0.0
+  connectorSubtype: database
+  connectorType: destination
+  definitionId: 8b746512-8c2e-6bd6-4f3c-1af8f466b5e0
+  dockerImageTag: 0.1.0
+  dockerRepository: airbyte/destination-mongodb-v2
+  githubIssueLabel: destination-mongodb-v2
+  icon: mongodb.svg
+  license: MIT
+  name: MongoDB V2
+  registries:
+    oss:
+      enabled: true
+    cloud:
+      enabled: false
+  releaseStage: alpha
+  documentationUrl: https://docs.airbyte.com/integrations/destinations/mongodb-v2
+  tags:
+    - language:kotlin
+    - cdk:dataflow
+  releases:
+    breakingChanges:
+      0.1.0:
+        message: "Initial release of MongoDB V2 destination using modern Dataflow CDK"
+        upgradeDeadline: "2025-12-31"
+metadataSpecVersion: "1.0"
