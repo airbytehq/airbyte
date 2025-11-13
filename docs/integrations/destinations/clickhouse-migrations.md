@@ -1,6 +1,6 @@
 # ClickHouse Migration Guide
 
-## SSH Support
+## SSH support
 
 :::warning
 SSH tunneling support for the ClickHouse connector is currently in **Beta**.
