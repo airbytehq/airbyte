@@ -8,7 +8,7 @@ const memoize = require("lodash/memoize");
  */
 async function fetchWithRetry(url, options = {}) {
   const {
-    attempts = 3,
+    attempts = 4,
     delays = [1000, 5000, 15000],
     timeoutMs = 10000,
     connectorName = null,
