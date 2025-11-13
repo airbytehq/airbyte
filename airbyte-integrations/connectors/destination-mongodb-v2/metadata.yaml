@@ -21,8 +21,11 @@ data:
   releaseStage: alpha
   documentationUrl: https://docs.airbyte.com/integrations/destinations/mongodb-v2
   tags:
-    - language:kotlin
+    - language:java
     - cdk:dataflow
+  connectorTestSuitesOptions:
+    - suite: unitTests
+    - suite: integrationTests
   releases:
     breakingChanges:
       0.1.0:
