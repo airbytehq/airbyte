@@ -7,19 +7,42 @@ package io.airbyte.cdk.load.schema
 import io.airbyte.cdk.load.data.AirbyteType
 import io.airbyte.cdk.load.table.ColumnNameGenerator
 import io.github.oshai.kotlinlogging.KotlinLogging
+import io.micronaut.context.annotation.Requires
 import jakarta.inject.Singleton
 
 private val log = KotlinLogging.logger {}
 
+interface ColumnNameResolver {
+     fun createColumnNameMapping(
+        namespace: String?,
+        name: String,
+        schema: AirbyteType,
+    ): Map<String, String>
+}
+
+@Requires(missing = [ ColumnNameGenerator::class ])
 @Singleton
-class ColumnNameResolver(
+class NoopColumnNameResolverImpl(
+): ColumnNameResolver {
+    override fun createColumnNameMapping(
+        namespace: String?,
+        name: String,
+        schema: AirbyteType
+    ): Map<String, String> {
+        return schema.asColumns().mapValues { it.key }
+    }
+}
+
+@Requires(beans = [ ColumnNameGenerator::class ])
+@Singleton
+class ColumnNameResolverImpl(
     private val finalTableColumnNameGenerator: ColumnNameGenerator,
-) {
+): ColumnNameResolver {
     /**
      * Creates column name mapping with handling for potential collisions using incremental
      * numbering, with advanced resolution for truncation cases.
      */
-    fun createColumnNameMapping(
+    override fun createColumnNameMapping(
         namespace: String?,
         name: String,
         schema: AirbyteType,
@@ -148,8 +171,11 @@ class ColumnNameResolver(
     }
 
     /**
-     * Extension function to check for conflicts in column names. We only care about the canonical
-     * name, not the display name.
+     * can't just use `.contains()`, because we don't care whether the column names have the same
+     * display name. We only care about the canonical name.
+     *
+     * (arguably we could override equals/hashcode? But that would make writing tests more difficult,
+     * because it's not an intuitive behavior)
      */
     private fun Collection<ColumnNameGenerator.ColumnName>.hasConflict(
         candidate: ColumnNameGenerator.ColumnName
