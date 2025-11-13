@@ -103,14 +103,3 @@ class TableCatalogFactory {
         return TableCatalogByDescriptor(map.mapKeys { (k, _) -> k.mappedDescriptor })
     }
 }
-
-/**
- * can't just use `.contains()`, because we don't care whether the column names have the same
- * display name. We only care about the canonical name.
- *
- * (arguably we could override equals/hashcode? But that would make writing tests more difficult,
- * because it's not an intuitive behavior)
- */
-private fun Collection<ColumnNameGenerator.ColumnName>.hasConflict(
-    candidate: ColumnNameGenerator.ColumnName
-) = this.any { it.canonicalName == candidate.canonicalName }
