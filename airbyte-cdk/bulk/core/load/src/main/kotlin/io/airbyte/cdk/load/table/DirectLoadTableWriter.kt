@@ -2,19 +2,15 @@
  * Copyright (c) 2025 Airbyte, Inc., all rights reserved.
  */
 
-package io.airbyte.cdk.load.orchestration.db.direct_load_table
+package io.airbyte.cdk.load.table
 
 import io.airbyte.cdk.SystemErrorException
-import io.airbyte.cdk.load.command.Append
-import io.airbyte.cdk.load.command.Dedupe
-import io.airbyte.cdk.load.command.DestinationStream
-import io.airbyte.cdk.load.command.Overwrite
 import io.airbyte.cdk.load.component.TableOperationsClient
 import io.airbyte.cdk.load.component.TableSchemaEvolutionClient
-import io.airbyte.cdk.load.orchestration.db.DatabaseHandler
-import io.airbyte.cdk.load.orchestration.db.DatabaseInitialStatusGatherer
-import io.airbyte.cdk.load.orchestration.db.TempTableNameGenerator
-import io.airbyte.cdk.load.orchestration.db.legacy_typing_deduping.TableCatalog
+import io.airbyte.cdk.load.schema.Append
+import io.airbyte.cdk.load.schema.Dedupe
+import io.airbyte.cdk.load.schema.DestinationStream
+import io.airbyte.cdk.load.schema.Overwrite
 import io.airbyte.cdk.load.write.DestinationWriter
 import io.airbyte.cdk.load.write.StreamLoader
 import io.airbyte.cdk.load.write.StreamStateStore

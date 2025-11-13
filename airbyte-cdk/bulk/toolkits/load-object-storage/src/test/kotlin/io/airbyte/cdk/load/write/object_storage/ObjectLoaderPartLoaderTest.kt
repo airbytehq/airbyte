@@ -6,7 +6,6 @@ package io.airbyte.cdk.load.write.object_storage
 
 import io.airbyte.cdk.load.command.DestinationCatalog
 import io.airbyte.cdk.load.command.DestinationConfiguration
-import io.airbyte.cdk.load.command.DestinationStream
 import io.airbyte.cdk.load.file.object_storage.ObjectStorageClient
 import io.airbyte.cdk.load.file.object_storage.Part
 import io.airbyte.cdk.load.file.object_storage.RemoteObject
@@ -18,6 +17,7 @@ import io.airbyte.cdk.load.pipline.object_storage.ObjectKey
 import io.airbyte.cdk.load.pipline.object_storage.ObjectLoaderPartFormatter
 import io.airbyte.cdk.load.pipline.object_storage.ObjectLoaderPartLoader
 import io.airbyte.cdk.load.pipline.object_storage.UploadsInProgress
+import io.airbyte.cdk.load.schema.DestinationStream
 import io.mockk.coEvery
 import io.mockk.coVerify
 import io.mockk.mockk

@@ -4,7 +4,7 @@
 
 package io.airbyte.cdk.load.dataflow.transform
 
-import io.airbyte.cdk.load.command.DestinationStream
+import io.airbyte.cdk.load.schema.DestinationStream
 
 /** Used by the CDK to pass the final column name to the aggregate buffer. */
 interface ColumnNameMapper {

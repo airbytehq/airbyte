@@ -4,7 +4,7 @@
 
 package io.airbyte.cdk.load.toolkits.iceberg.parquet.io
 
-import io.airbyte.cdk.load.command.DestinationStream
+import io.airbyte.cdk.load.schema.DestinationStream
 import jakarta.inject.Singleton
 import org.apache.iceberg.Table
 import org.apache.iceberg.catalog.Catalog

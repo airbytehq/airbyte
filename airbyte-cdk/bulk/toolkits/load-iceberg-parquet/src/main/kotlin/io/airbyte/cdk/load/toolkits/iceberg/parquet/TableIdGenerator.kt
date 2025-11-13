@@ -4,7 +4,7 @@
 
 package io.airbyte.cdk.load.toolkits.iceberg.parquet
 
-import io.airbyte.cdk.load.command.DestinationStream
+import io.airbyte.cdk.load.schema.DestinationStream
 import org.apache.iceberg.catalog.Namespace
 import org.apache.iceberg.catalog.TableIdentifier
 

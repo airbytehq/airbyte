@@ -4,8 +4,8 @@
 
 package io.airbyte.cdk.load.write.db
 
-import io.airbyte.cdk.load.command.DestinationStream
 import io.airbyte.cdk.load.message.DestinationRecordRaw
+import io.airbyte.cdk.load.schema.DestinationStream
 import io.airbyte.cdk.load.write.LoadStrategy
 
 /**

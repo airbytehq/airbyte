@@ -4,7 +4,6 @@
 package io.airbyte.cdk.load.file.object_storage
 
 import com.fasterxml.jackson.databind.JsonNode
-import io.airbyte.cdk.load.command.DestinationStream
 import io.airbyte.cdk.load.command.object_storage.AvroFormatConfiguration
 import io.airbyte.cdk.load.data.AirbyteType
 import io.airbyte.cdk.load.data.AirbyteValueProxy
@@ -33,6 +32,7 @@ import io.airbyte.cdk.load.file.avro.toAvroWriter
 import io.airbyte.cdk.load.message.DestinationRecordProtobufSource
 import io.airbyte.cdk.load.message.DestinationRecordRaw
 import io.airbyte.cdk.load.message.Meta
+import io.airbyte.cdk.load.schema.DestinationStream
 import io.airbyte.protocol.models.v0.AirbyteRecordMessageMetaChange
 import java.io.OutputStream
 import java.time.LocalDate

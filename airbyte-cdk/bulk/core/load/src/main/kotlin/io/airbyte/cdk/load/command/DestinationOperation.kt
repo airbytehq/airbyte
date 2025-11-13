@@ -5,6 +5,7 @@
 package io.airbyte.cdk.load.command
 
 import io.airbyte.cdk.load.data.AirbyteType
+import io.airbyte.cdk.load.schema.ImportType
 
 /**
  * Internal Representation of the DestinationOperation from the protocol that is used in the context

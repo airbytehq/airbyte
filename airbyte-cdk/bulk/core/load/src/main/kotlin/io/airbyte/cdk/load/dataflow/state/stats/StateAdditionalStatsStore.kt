@@ -4,10 +4,10 @@
 
 package io.airbyte.cdk.load.dataflow.state.stats
 
-import io.airbyte.cdk.load.command.DestinationStream
 import io.airbyte.cdk.load.dataflow.state.AdditionalStatsHistogram
 import io.airbyte.cdk.load.dataflow.state.Histogram
 import io.airbyte.cdk.load.dataflow.state.PartitionKey
+import io.airbyte.cdk.load.schema.DestinationStream
 import jakarta.inject.Singleton
 import java.util.concurrent.ConcurrentHashMap
 

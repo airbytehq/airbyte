@@ -5,8 +5,8 @@
 package io.airbyte.cdk.load.discoverer.operation
 
 import io.airbyte.cdk.load.command.DestinationOperation
-import io.airbyte.cdk.load.command.ImportType
 import io.airbyte.cdk.load.data.AirbyteType
+import io.airbyte.cdk.load.schema.ImportType
 
 /** This class has not been used yet but shows why we structured OperationSupplier as we did */
 class StaticOperationProvider(

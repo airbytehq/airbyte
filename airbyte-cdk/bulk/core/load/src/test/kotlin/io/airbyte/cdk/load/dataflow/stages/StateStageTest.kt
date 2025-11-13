@@ -4,11 +4,11 @@
 
 package io.airbyte.cdk.load.dataflow.stages
 
-import io.airbyte.cdk.load.command.DestinationStream
 import io.airbyte.cdk.load.dataflow.pipeline.DataFlowStageIO
 import io.airbyte.cdk.load.dataflow.state.PartitionHistogram
 import io.airbyte.cdk.load.dataflow.state.StateHistogramStore
 import io.airbyte.cdk.load.dataflow.state.stats.CommittedStatsStore
+import io.airbyte.cdk.load.schema.DestinationStream
 import io.mockk.mockk
 import io.mockk.verify
 import kotlin.test.assertSame

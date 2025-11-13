@@ -4,8 +4,8 @@
 
 package io.airbyte.cdk.load.dataflow.state.stats.stdio
 
-import io.airbyte.cdk.load.command.DestinationStream
 import io.airbyte.cdk.load.dataflow.state.stats.EmittedStatsStore
+import io.airbyte.cdk.load.schema.DestinationStream
 import io.micronaut.context.annotation.Requires
 import jakarta.inject.Singleton
 

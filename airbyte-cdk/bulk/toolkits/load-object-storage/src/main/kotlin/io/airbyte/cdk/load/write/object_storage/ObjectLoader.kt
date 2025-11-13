@@ -5,8 +5,8 @@
 package io.airbyte.cdk.load.write.object_storage
 
 import io.airbyte.cdk.load.command.DestinationConfiguration
-import io.airbyte.cdk.load.command.DestinationStream
 import io.airbyte.cdk.load.message.BatchState
+import io.airbyte.cdk.load.schema.DestinationStream
 import io.airbyte.cdk.load.write.LoadStrategy
 import kotlin.math.min
 

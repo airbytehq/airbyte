@@ -4,7 +4,6 @@
 
 package io.airbyte.cdk.load.task.internal
 
-import io.airbyte.cdk.load.command.DestinationStream
 import io.airbyte.cdk.load.message.BatchState
 import io.airbyte.cdk.load.message.DestinationRecordRaw
 import io.airbyte.cdk.load.message.PartitionedQueue
@@ -24,6 +23,7 @@ import io.airbyte.cdk.load.pipeline.FinalOutput
 import io.airbyte.cdk.load.pipeline.NoOutput
 import io.airbyte.cdk.load.pipeline.OutputPartitioner
 import io.airbyte.cdk.load.pipeline.PipelineFlushStrategy
+import io.airbyte.cdk.load.schema.DestinationStream
 import io.airbyte.cdk.load.state.CheckpointId
 import io.airbyte.cdk.load.state.CheckpointValue
 import io.airbyte.cdk.load.test.util.CoroutineTestUtils.Companion.assertDoesNotThrow

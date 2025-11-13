@@ -5,9 +5,9 @@
 package io.airbyte.cdk.load.data.icerberg.parquet
 
 import io.airbyte.cdk.command.ConfigurationSpecification
-import io.airbyte.cdk.load.command.DestinationStream
 import io.airbyte.cdk.load.data.*
 import io.airbyte.cdk.load.message.Meta
+import io.airbyte.cdk.load.schema.DestinationStream
 import io.airbyte.cdk.load.test.util.DestinationDataDumper
 import io.airbyte.cdk.load.test.util.OutputRecord
 import io.airbyte.cdk.load.toolkits.iceberg.parquet.TableIdGenerator
