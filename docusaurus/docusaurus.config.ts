@@ -3,7 +3,6 @@ import type { Config } from "@docusaurus/types";
 import { themes as prismThemes } from "prism-react-renderer";
 import type { Options as ClassicPresetOptions } from "@docusaurus/preset-classic";
 import fs from "fs";
-import { PluginOptions as LLmPluginOptions } from "@signalwire/docusaurus-plugin-llms-txt";
 
 // Import remark plugins - lazy load to prevent webpack from bundling Node.js code
 const getRemarkPlugins = () => ({
@@ -13,7 +12,6 @@ const getRemarkPlugins = () => ({
   connectorList: require("./src/remark/connectorList"),
   specDecoration: require("./src/remark/specDecoration"),
   docMetaTags: require("./src/remark/docMetaTags"),
-  addButtonToTitle: require("./src/remark/addButtonToTitle"),
   npm2yarn: require("@docusaurus/remark-plugin-npm2yarn"),
 });
 
@@ -153,7 +151,6 @@ const config: Config = {
           plugins.enterpriseDocsHeaderInformation,
           plugins.productInformation,
           plugins.docMetaTags,
-          plugins.addButtonToTitle,
         ],
       },
     ],
@@ -171,7 +168,6 @@ const config: Config = {
           plugins.enterpriseDocsHeaderInformation,
           plugins.productInformation,
           plugins.docMetaTags,
-          plugins.addButtonToTitle,
           [plugins.npm2yarn, { sync: true }],
         ],
       },
@@ -190,7 +186,6 @@ const config: Config = {
           plugins.enterpriseDocsHeaderInformation,
           plugins.productInformation,
           plugins.docMetaTags,
-          plugins.addButtonToTitle,
         ],
       },
     ],
@@ -227,7 +222,6 @@ const config: Config = {
         remarkPlugins: [
           plugins.productInformation,
           plugins.docMetaTags,
-          plugins.addButtonToTitle,
         ],
       },
     ],
@@ -245,7 +239,6 @@ const config: Config = {
           plugins.enterpriseDocsHeaderInformation,
           plugins.productInformation,
           plugins.docMetaTags,
-          plugins.addButtonToTitle,
         ],
       },
     ],
@@ -344,19 +337,6 @@ const config: Config = {
       },
     ],
     require.resolve("./src/plugins/enterpriseConnectors"),
-    [
-      "@signalwire/docusaurus-plugin-llms-txt",
-      {
-        siteTitle: "docs.airbyte.com llms.txt",
-        siteDescription:
-          "Airbyte is an open source platform designed for building and managing data pipelines, offering extensive connector options to facilitate data movement from various sources to destinations efficiently and effectively.",
-        depth: 4,
-        content: {
-          includePages: true,
-          excludeRoutes: ["./api-docs/**"],
-        },
-      } satisfies LLmPluginOptions,
-    ],
     () => ({
       name: "Yaml loader",
       configureWebpack() {
