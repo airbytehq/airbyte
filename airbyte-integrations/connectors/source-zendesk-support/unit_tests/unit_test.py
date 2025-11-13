@@ -63,7 +63,7 @@ def test_check(response, status_code, check_passed):
 @pytest.mark.parametrize(
     "ticket_forms_response, status_code, expected_n_streams, expected_warnings, reason",
     [
-        pytest.param('{"ticket_forms": [{"id": 1, "updated_at": "2021-07-08T00:05:45Z"}]}', 200, 41, [], None, id="forms_accessible"),
+        pytest.param('{"ticket_forms": [{"id": 1, "updated_at": "2021-07-08T00:05:45Z"}]}', 200, 42, [], None, id="forms_accessible"),
         # todo: Filtering inaccessible streams based on an API request is not supported in the low-code CDK
         #  at this moment, once this is supported, these tests can be added back
         # pytest.param(
