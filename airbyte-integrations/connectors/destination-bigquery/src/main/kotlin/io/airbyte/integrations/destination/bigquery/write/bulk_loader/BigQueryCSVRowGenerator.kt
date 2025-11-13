@@ -33,13 +33,8 @@ class BigQueryCSVRowGenerator {
             )
 
         enrichedRecord.declaredFields.values.forEach { value ->
-            if (value.abValue is NullValue) {
-                return@forEach
-            }
             validateAirbyteValue(value)
-
             val actualValue = value.abValue
-            // validateAirbyteValue might have nulled us out, so recheck nullness
             if (actualValue is NullValue) {
                 return@forEach
             }
