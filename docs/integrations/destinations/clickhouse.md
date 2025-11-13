@@ -155,8 +155,9 @@ The connector converts arrays and unions to strings for compatibility. If you ne
 
 | Version    | Date       | Pull Request                                               | Subject                                                                        |
 |:-----------|:-----------|:-----------------------------------------------------------|:-------------------------------------------------------------------------------|
-| 2.1.13     | 2025-11-11 | [69116](https://github.com/airbytehq/airbyte/pull/69116)  | Upgrade to CDK 0.1.74 (internal refactor for schema evolution) |
-| 2.1.12     | 2025-11-06 | [69226](https://github.com/airbytehq/airbyte/pull/69226)  | Improved additional statistics handling                                        |
+| 2.1.14     | 2025-11-13 | [69245](https://github.com/airbytehq/airbyte/pull/69245)   | Upgrade to CDK 0.1.78 |
+| 2.1.13     | 2025-11-11 | [69116](https://github.com/airbytehq/airbyte/pull/69116)   | Upgrade to CDK 0.1.74 (internal refactor for schema evolution) |
+| 2.1.12     | 2025-11-06 | [69226](https://github.com/airbytehq/airbyte/pull/69226)   | Improved additional statistics handling                                        |
 | 2.1.11     | 2025-11-05 | [69200](https://github.com/airbytehq/airbyte/pull/69200/)  | Add support for observability metrics                                          |
 | 2.1.10     | 2025-11-03 | [69154](https://github.com/airbytehq/airbyte/pull/69154)   | Fix decimal validation                                                         |
 | 2.1.9      | 2025-10-30 | [69100](https://github.com/airbytehq/airbyte/pull/69100)   | Upgrade to CDK 0.1.61 to fix state index bug                                   |

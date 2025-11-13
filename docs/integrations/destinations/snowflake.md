@@ -251,6 +251,7 @@ desired namespace.
 
 | Version         | Date       | Pull Request                                                        | Subject                                                                                                                                                                                |
 |:----------------|:-----------|:--------------------------------------------------------------------|:---------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------|
+| 4.0.28          | 2025-11-13 | [69245](https://github.com/airbytehq/airbyte/pull/69245)            | Upgrade to CDK 0.1.78 |
 | 4.0.27          | 2025-11-11 | [69285](https://github.com/airbytehq/airbyte/pull/69285)  | Remove spurious log messages |
 | 4.0.26          | 2025-11-11 | [69117](https://github.com/airbytehq/airbyte/pull/69117)  | Upgrade to CDK 0.1.74 (internal code changes for schema evolution) |
 | 4.0.25          | 2025-11-06 | [69226](https://github.com/airbytehq/airbyte/pull/69226)  | Improved additional statistics handling                                        |
