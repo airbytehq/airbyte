@@ -67,7 +67,7 @@ streams:
           additional_jwt_payload:
             user_id: "{{ config[\"user_id"\] }}"
           base64_encode_secret_key: false
-          token_duration: null
+          token_duration: 3600
           header_prefix: ""
           passphrase: ""
         request_headers:
