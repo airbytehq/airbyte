@@ -86,7 +86,100 @@ dependencies {
 
 **No need to manually declare CDK dependencies** - the plugin handles it
 
-### Step 0.4: Create Main Entry Point
+### Step 0.4: Create metadata.yaml
+
+**File:** `destination-{db}/metadata.yaml`
+
+```yaml
+data:
+  connectorType: destination
+  connectorSubtype: database
+  dockerImageTag: 0.1.0
+  dockerRepository: airbyte/destination-{db}
+  documentationUrl: https://docs.airbyte.com/integrations/destinations/{db}
+  githubIssueLabel: destination-{db}
+  icon: {db}.svg  # Add icon file to src/main/resources
+  license: ELv2
+  name: {Database Name}
+
+  connectorBuildOptions:
+    # Use latest Java connector base image
+    # Find latest at: https://hub.docker.com/r/airbyte/java-connector-base/tags
+    baseImage: docker.io/airbyte/java-connector-base:2.0.3@sha256:119b8506bca069bbc8357a275936c7e2b0994e6947b81f1bf8d6ce9e16db7d47
+
+  connectorIPCOptions:
+    dataChannel:
+      version: "0.0.2"
+      supportedSerialization: ["JSONL", "PROTOBUF"]
+      supportedTransport: ["SOCKET", "STDIO"]
+
+  registryOverrides:
+    oss:
+      enabled: true
+    cloud:
+      enabled: false  # Set true when ready for Airbyte Cloud
+
+  releaseStage: alpha  # alpha → beta → generally_available
+  supportLevel: community
+  tags:
+    - language:java
+
+  connectorTestSuitesOptions:
+    - suite: unitTests
+    - suite: integrationTests
+
+metadataSpecVersion: "1.0"
+```
+
+**Key fields:**
+- `dockerRepository`: Full image name (e.g., `airbyte/destination-{db}`)
+- `dockerImageTag`: Version (start with `0.1.0`)
+- `baseImage`: Java connector base image (with digest for reproducibility)
+- `releaseStage`: Start with `alpha`, promote to `beta` → `generally_available`
+
+**To find latest base image:**
+```bash
+# Check what other connectors use
+grep "baseImage:" airbyte-integrations/connectors/destination-*/metadata.yaml | sort | uniq -c | sort -rn | head -3
+```
+
+### Step 0.5: Configure Docker Build in build.gradle.kts
+
+**File:** Update `destination-{db}/build.gradle.kts`
+
+```kotlin
+plugins {
+    id("application")
+    id("airbyte-bulk-connector")
+    id("io.airbyte.gradle.docker")              // Docker build support
+    id("airbyte-connector-docker-convention")   // Reads metadata.yaml
+}
+
+airbyteBulkConnector {
+    core = "load"
+    toolkits = listOf("load-db")
+}
+
+application {
+    mainClass = "io.airbyte.integrations.destination.{db}.{DB}DestinationKt"
+
+    applicationDefaultJvmArgs = listOf(
+        "-XX:+ExitOnOutOfMemoryError",
+        "-XX:MaxRAMPercentage=75.0"
+    )
+}
+
+dependencies {
+    // Database driver
+    implementation("your.database:driver:version")
+}
+```
+
+**What the plugins do:**
+- `io.airbyte.gradle.docker`: Provides Docker build tasks
+- `airbyte-connector-docker-convention`: Reads metadata.yaml, generates build args
+
+### Step 0.6: Create Main Entry Point
 
 **File:** `destination-{db}/src/main/kotlin/.../​{DB}Destination.kt`
 
@@ -102,7 +195,7 @@ fun main(args: Array<String>) {
 
 **That's it!** The framework handles everything else.
 
-### Step 0.5: Verify Build
+### Step 0.7: Verify Build
 
 ```bash
 $ ./gradlew :destination-{db}:build
@@ -114,10 +207,58 @@ $ ./gradlew :destination-{db}:build
 - Missing dependencies? Check `build.gradle.kts`
 - Package name mismatches? Verify all files use consistent package
 - Micronaut scanning issues? Ensure `@Singleton` annotations present
+- metadata.yaml syntax errors? Validate YAML format
 
-✅ **Checkpoint Complete:** Project compiles
+### Step 0.8: Build Docker Image
 
-**You're ready for Phase 1 when:** `./gradlew :destination-{db}:build` succeeds
+```bash
+$ ./gradlew :destination-{db}:assemble
+```
+
+**What this does:**
+1. Compiles code
+2. Runs unit tests
+3. Creates distribution TAR
+4. Builds Docker image
+
+**Expected output:**
+```
+BUILD SUCCESSFUL
+...
+> Task :airbyte-integrations:connectors:destination-{db}:dockerBuildx
+Building image: airbyte/destination-{db}:0.1.0
+```
+
+**Verify image was created:**
+```bash
+$ docker images | grep destination-{db}
+```
+
+**Expected:**
+```
+airbyte/destination-{db}    0.1.0    abc123def456    2 minutes ago    500MB
+```
+
+**Test the Docker image:**
+```bash
+$ docker run --rm airbyte/destination-{db}:0.1.0 --spec
+```
+
+**Expected:** Outputs SPEC message (JSON)
+
+**Troubleshooting:**
+- **metadata.yaml not found:** Check file exists at connector root
+- **Base image not found:** Check `baseImage` digest in metadata.yaml is valid
+- **TAR not created:** Run `./gradlew :destination-{db}:distTar` first
+- **Docker build fails:** Check Docker daemon is running: `docker ps`
+- **mainClass not found:** Verify `application.mainClass` points to correct package
+
+✅ **Checkpoint Complete:** Project compiles and Docker image builds
+
+**You're ready for Phase 1 when:**
+- `./gradlew :destination-{db}:build` succeeds
+- `./gradlew :destination-{db}:assemble` creates Docker image
+- `docker run airbyte/destination-{db}:0.1.0 --spec` outputs JSON
 
 ---
 
