@@ -1,3 +1,25 @@
+## Version 0.1.78
+
+load cdk: add basic schema evolution test cases
+
+## Version 0.1.77
+
+**Extract CDK**
+
+* Fix duplicate metadata key in JdbcMetadataQuerier.
+
+## Version 0.1.76
+
+**Load CDK**
+
+* Remove a println from our code generating bad logs
+
+## Version 0.1.75
+
+**Extract CDK**
+
+* Improve handling of debezium engine shutdown.
+
 ## Version 0.1.74
 
 load cdk: split up ensureSchemaMatches into smaller functions
