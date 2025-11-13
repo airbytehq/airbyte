@@ -5,9 +5,9 @@
 package io.airbyte.cdk.load.dataflow
 
 import io.airbyte.cdk.load.command.DestinationCatalog
-import io.airbyte.cdk.load.command.DestinationStream
 import io.airbyte.cdk.load.dataflow.finalization.StreamCompletionTracker
 import io.airbyte.cdk.load.dataflow.pipeline.PipelineRunner
+import io.airbyte.cdk.load.schema.DestinationStream
 import io.airbyte.cdk.load.write.DestinationWriter
 import io.airbyte.cdk.load.write.StreamLoader
 import io.mockk.coEvery

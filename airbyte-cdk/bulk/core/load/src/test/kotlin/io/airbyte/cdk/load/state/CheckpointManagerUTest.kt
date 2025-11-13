@@ -4,15 +4,15 @@
 
 package io.airbyte.cdk.load.state
 
-import io.airbyte.cdk.load.command.Append
 import io.airbyte.cdk.load.command.DestinationCatalog
-import io.airbyte.cdk.load.command.DestinationStream
 import io.airbyte.cdk.load.command.NamespaceMapper
 import io.airbyte.cdk.load.config.NamespaceDefinitionType
 import io.airbyte.cdk.load.data.ObjectTypeWithEmptySchema
 import io.airbyte.cdk.load.file.TimeProvider
 import io.airbyte.cdk.load.message.CheckpointMessage
 import io.airbyte.cdk.load.message.GlobalSnapshotCheckpoint
+import io.airbyte.cdk.load.schema.Append
+import io.airbyte.cdk.load.schema.DestinationStream
 import io.mockk.Ordering
 import io.mockk.Runs
 import io.mockk.coEvery

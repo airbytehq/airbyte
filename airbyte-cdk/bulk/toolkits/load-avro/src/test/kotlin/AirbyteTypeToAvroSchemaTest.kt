@@ -2,13 +2,13 @@
  * Copyright (c) 2024 Airbyte, Inc., all rights reserved.
  */
 
-import io.airbyte.cdk.load.command.DestinationStream
 import io.airbyte.cdk.load.data.FieldType
 import io.airbyte.cdk.load.data.ObjectType
 import io.airbyte.cdk.load.data.StringType
 import io.airbyte.cdk.load.data.avro.toAvroSchema
 import io.airbyte.cdk.load.data.withAirbyteMeta
 import io.airbyte.cdk.load.message.Meta
+import io.airbyte.cdk.load.schema.DestinationStream
 import org.apache.avro.LogicalTypes
 import org.apache.avro.Schema
 import org.junit.jupiter.api.Assertions.assertEquals

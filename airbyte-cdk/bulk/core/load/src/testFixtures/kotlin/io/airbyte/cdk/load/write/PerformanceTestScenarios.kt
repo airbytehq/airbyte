@@ -4,10 +4,7 @@
 
 package io.airbyte.cdk.load.write
 
-import io.airbyte.cdk.load.command.Append
-import io.airbyte.cdk.load.command.Dedupe
 import io.airbyte.cdk.load.command.DestinationCatalog
-import io.airbyte.cdk.load.command.DestinationStream
 import io.airbyte.cdk.load.command.NamespaceMapper
 import io.airbyte.cdk.load.data.FieldType
 import io.airbyte.cdk.load.data.ObjectType
@@ -16,6 +13,9 @@ import io.airbyte.cdk.load.data.json.toAirbyteValue
 import io.airbyte.cdk.load.message.DestinationFile
 import io.airbyte.cdk.load.message.InputFile
 import io.airbyte.cdk.load.message.InputRecord
+import io.airbyte.cdk.load.schema.Append
+import io.airbyte.cdk.load.schema.Dedupe
+import io.airbyte.cdk.load.schema.DestinationStream
 import io.airbyte.cdk.load.state.CheckpointId
 import io.airbyte.cdk.load.test.util.destination_process.DestinationProcess
 import io.airbyte.cdk.load.util.CloseableCoroutine

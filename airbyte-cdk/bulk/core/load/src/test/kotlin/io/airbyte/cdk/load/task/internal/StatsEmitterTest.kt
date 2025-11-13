@@ -5,7 +5,7 @@
 package io.airbyte.cdk.load.task.internal
 
 import io.airbyte.cdk.load.command.DestinationCatalog
-import io.airbyte.cdk.load.command.DestinationStream
+import io.airbyte.cdk.load.schema.DestinationStream
 import io.airbyte.cdk.load.state.SyncManager
 import io.airbyte.cdk.output.StandardOutputConsumer
 import io.airbyte.protocol.models.v0.AirbyteMessage

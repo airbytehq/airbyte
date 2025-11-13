@@ -4,8 +4,6 @@
 
 package io.airbyte.cdk.load.check.dlq
 
-import io.airbyte.cdk.load.command.Append
-import io.airbyte.cdk.load.command.DestinationStream
 import io.airbyte.cdk.load.command.NamespaceMapper
 import io.airbyte.cdk.load.command.dlq.DisabledObjectStorageConfig
 import io.airbyte.cdk.load.command.dlq.ObjectStorageConfig
@@ -18,6 +16,8 @@ import io.airbyte.cdk.load.file.StreamProcessor
 import io.airbyte.cdk.load.file.object_storage.ObjectStorageClient
 import io.airbyte.cdk.load.file.object_storage.ObjectStoragePathFactory
 import io.airbyte.cdk.load.file.object_storage.RemoteObject
+import io.airbyte.cdk.load.schema.Append
+import io.airbyte.cdk.load.schema.DestinationStream
 import io.airbyte.cdk.load.util.write
 import io.github.oshai.kotlinlogging.KotlinLogging
 import io.micronaut.context.BeanProvider

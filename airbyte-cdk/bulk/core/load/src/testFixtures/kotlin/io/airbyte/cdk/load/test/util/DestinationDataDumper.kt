@@ -5,7 +5,7 @@
 package io.airbyte.cdk.load.test.util
 
 import io.airbyte.cdk.command.ConfigurationSpecification
-import io.airbyte.cdk.load.command.DestinationStream
+import io.airbyte.cdk.load.schema.DestinationStream
 
 interface DestinationDataDumper {
     fun dumpRecords(spec: ConfigurationSpecification, stream: DestinationStream): List<OutputRecord>

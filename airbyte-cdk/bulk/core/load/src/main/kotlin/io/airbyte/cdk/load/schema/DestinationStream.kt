@@ -2,22 +2,25 @@
  * Copyright (c) 2024 Airbyte, Inc., all rights reserved.
  */
 
-package io.airbyte.cdk.load.command
+package io.airbyte.cdk.load.schema
 
+import io.airbyte.cdk.load.command.NamespaceMapper
 import io.airbyte.cdk.load.data.AirbyteType
 import io.airbyte.cdk.load.data.AirbyteValueProxy
 import io.airbyte.cdk.load.data.ObjectType
 import io.airbyte.cdk.load.data.collectUnknownPaths
 import io.airbyte.cdk.load.data.json.AirbyteTypeToJsonSchema
-import io.airbyte.cdk.load.data.json.JsonSchemaToAirbyteType
 import io.airbyte.cdk.load.message.DestinationRecord
 import io.airbyte.cdk.load.message.Meta
+import io.airbyte.cdk.load.table.TableName
 import io.airbyte.protocol.models.v0.AirbyteRecordMessageMetaChange
 import io.airbyte.protocol.models.v0.AirbyteStream
 import io.airbyte.protocol.models.v0.ConfiguredAirbyteStream
 import io.airbyte.protocol.models.v0.DestinationSyncMode
 import io.airbyte.protocol.models.v0.StreamDescriptor
-import jakarta.inject.Singleton
+import io.github.oshai.kotlinlogging.KotlinLogging
+
+private val log = KotlinLogging.logger {}
 
 /**
  * Internal representation of destination streams. This is intended to be a case class specialized
@@ -68,8 +71,8 @@ data class DestinationStream(
     // NEW: Pre-computed column name mappings for efficient lookup
     val columnMappings: Map<String, String> = emptyMap(),
     // NEW: Pre-computed table names (raw and final) with collision handling applied
-    val rawTableName: io.airbyte.cdk.load.table.TableName? = null,
-    val finalTableName: io.airbyte.cdk.load.table.TableName? = null
+    val rawTableName: TableName? = null,
+    val finalTableName: TableName? = null
 ) {
     val unmappedDescriptor = Descriptor(namespace = unmappedNamespace, name = unmappedName)
     val mappedDescriptor = namespaceMapper.map(namespace = unmappedNamespace, name = unmappedName)
@@ -193,58 +196,6 @@ fun AirbyteType.computeUnknownColumnChanges() =
             AirbyteRecordMessageMetaChange.Reason.DESTINATION_SERIALIZATION_ERROR,
         )
     }
-
-@Singleton
-class DestinationStreamFactory(
-    private val jsonSchemaToAirbyteType: JsonSchemaToAirbyteType,
-    private val namespaceMapper: NamespaceMapper
-) {
-    fun make(stream: ConfiguredAirbyteStream): DestinationStream {
-        return DestinationStream(
-            unmappedNamespace = stream.stream.namespace,
-            unmappedName = stream.stream.name,
-            namespaceMapper = namespaceMapper,
-            importType =
-                when (stream.destinationSyncMode) {
-                    null -> throw IllegalArgumentException("Destination sync mode was null")
-                    DestinationSyncMode.APPEND -> Append
-                    DestinationSyncMode.OVERWRITE -> Overwrite
-                    DestinationSyncMode.APPEND_DEDUP ->
-                        Dedupe(primaryKey = stream.primaryKey, cursor = stream.cursorField)
-                    DestinationSyncMode.UPDATE -> Update
-                    DestinationSyncMode.SOFT_DELETE -> SoftDelete
-                },
-            generationId = stream.generationId,
-            minimumGenerationId = stream.minimumGenerationId,
-            syncId = stream.syncId,
-            schema = jsonSchemaToAirbyteType.convert(stream.stream.jsonSchema),
-            isFileBased = stream.stream.isFileBased ?: false,
-            includeFiles = stream.includeFiles ?: false,
-            destinationObjectName = stream.destinationObjectName,
-            matchingKey =
-                stream.destinationObjectName?.let {
-                    fromCompositeNestedKeyToCompositeKey(stream.primaryKey)
-                }
-        )
-    }
-}
-
-private fun fromCompositeNestedKeyToCompositeKey(
-    compositeNestedKey: List<List<String>>
-): List<String> {
-    if (compositeNestedKey.any { it.size > 1 }) {
-        throw IllegalArgumentException(
-            "Nested keys are not supported for matching keys. Key was $compositeNestedKey"
-        )
-    }
-    if (compositeNestedKey.any { it.isEmpty() }) {
-        throw IllegalArgumentException(
-            "Parts of the composite key need to have at least one element. Key was $compositeNestedKey"
-        )
-    }
-
-    return compositeNestedKey.map { it[0] }.toList()
-}
 
 sealed interface ImportType
 
