@@ -5,6 +5,7 @@
 package io.airbyte.integrations.destination.postgres.sql
 
 import com.google.common.annotations.VisibleForTesting
+import io.airbyte.cdk.load.command.Dedupe
 import io.airbyte.cdk.load.command.DestinationStream
 import io.airbyte.cdk.load.data.AirbyteType
 import io.airbyte.cdk.load.data.ArrayType
@@ -31,6 +32,7 @@ import io.airbyte.cdk.load.message.Meta.Companion.COLUMN_NAME_AB_META
 import io.airbyte.cdk.load.message.Meta.Companion.COLUMN_NAME_AB_RAW_ID
 import io.airbyte.cdk.load.message.Meta.Companion.COLUMN_NAME_DATA
 import io.airbyte.cdk.load.table.ColumnNameMapping
+import io.airbyte.cdk.load.table.TableName
 import io.airbyte.integrations.destination.postgres.spec.PostgresConfiguration
 import jakarta.inject.Singleton
 import kotlin.collections.plus
@@ -40,6 +42,8 @@ class PostgresColumnUtils(
     private val postgresConfiguration: PostgresConfiguration
 ) {
     companion object {
+        private const val CURSOR_INDEX_PREFIX = "idx_cursor_"
+        private const val PRIMARY_KEY_INDEX_PREFIX = "idx_pk_"
         //Default columns that are always present in both raw and typed tables.
         private val DEFAULT_COLUMNS =
             listOf(
@@ -152,6 +156,45 @@ class PostgresColumnUtils(
             is UnknownType,
             is UnionType -> PostgresDataType.JSONB.typeName
         }
+
+    internal fun getPrimaryKeysColumnNames(stream: DestinationStream, columnNameMapping: ColumnNameMapping): List<String> {
+        return when (stream.importType) {
+            is Dedupe -> getPrimaryKeysColumnNames(stream.importType as Dedupe, columnNameMapping)
+            else -> listOf()
+        }
+    }
+
+    internal fun getPrimaryKeysColumnNames(
+        importType: Dedupe,
+        columnNameMapping: ColumnNameMapping
+    ): List<String> {
+        return importType.primaryKey.map { fieldPath ->
+            val primaryKeyColumnName = fieldPath.first() //only at the root level for Postgres
+            getTargetColumnName(primaryKeyColumnName, columnNameMapping )
+        }.toList()
+    }
+
+    internal fun getCursorColumnName(stream: DestinationStream, columnNameMapping: ColumnNameMapping): String? {
+        return when (stream.importType) {
+            is Dedupe -> getCursorColumnName((stream.importType as Dedupe).cursor, columnNameMapping)
+            else -> null
+        }
+    }
+
+    internal fun getCursorColumnName(
+        cursor: List<String>,
+        columnNameMapping: ColumnNameMapping
+    ): String? {
+        return cursor
+            .firstOrNull()
+            ?.let { columnName -> getTargetColumnName(columnName, columnNameMapping) }
+    }
+
+    internal fun getCursorIndexName(tableName: TableName): String =
+        CURSOR_INDEX_PREFIX + tableName.name
+
+    internal fun getPrimaryKeyIndexName(tableName: TableName): String =
+        PRIMARY_KEY_INDEX_PREFIX + tableName.name
 }
 
 data class Column(val columnName: String, val columnTypeName: String, val nullable: Boolean = true)

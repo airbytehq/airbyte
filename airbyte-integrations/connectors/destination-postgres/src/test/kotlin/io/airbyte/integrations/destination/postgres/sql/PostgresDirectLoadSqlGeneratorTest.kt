@@ -4,27 +4,14 @@
 
 package io.airbyte.integrations.destination.postgres.sql
 
-import com.fasterxml.jackson.databind.JsonNode
 import io.airbyte.cdk.load.command.Append
 import io.airbyte.cdk.load.command.Dedupe
 import io.airbyte.cdk.load.command.DestinationStream
-import io.airbyte.cdk.load.data.ArrayType
-import io.airbyte.cdk.load.data.ArrayTypeWithoutSchema
-import io.airbyte.cdk.load.data.BooleanType
-import io.airbyte.cdk.load.data.DateType
 import io.airbyte.cdk.load.data.FieldType
 import io.airbyte.cdk.load.data.IntegerType
-import io.airbyte.cdk.load.data.NumberType
 import io.airbyte.cdk.load.data.ObjectType
-import io.airbyte.cdk.load.data.ObjectTypeWithEmptySchema
-import io.airbyte.cdk.load.data.ObjectTypeWithoutSchema
 import io.airbyte.cdk.load.data.StringType
-import io.airbyte.cdk.load.data.TimeTypeWithTimezone
-import io.airbyte.cdk.load.data.TimeTypeWithoutTimezone
 import io.airbyte.cdk.load.data.TimestampTypeWithTimezone
-import io.airbyte.cdk.load.data.TimestampTypeWithoutTimezone
-import io.airbyte.cdk.load.data.UnionType
-import io.airbyte.cdk.load.data.UnknownType
 import io.airbyte.cdk.load.table.CDC_DELETED_AT_COLUMN
 import io.airbyte.cdk.load.table.ColumnNameMapping
 import io.airbyte.cdk.load.table.TableName
@@ -41,14 +28,15 @@ internal class PostgresDirectLoadSqlGeneratorTest {
 
     private lateinit var postgresDirectLoadSqlGenerator: PostgresDirectLoadSqlGenerator
     private lateinit var columnUtils: PostgresColumnUtils
-    private val postgresConfiguration: PostgresConfiguration = mockk()
+    private lateinit var postgresConfiguration: PostgresConfiguration
 
     @BeforeEach
     fun setUp() {
-        val mockConfig = mockk<PostgresConfiguration> {
+        postgresConfiguration = mockk<PostgresConfiguration> {
             every { legacyRawTablesOnly } returns false
+            every { dropCascade } returns false
         }
-        columnUtils = PostgresColumnUtils(mockConfig)
+        columnUtils = PostgresColumnUtils(postgresConfiguration)
         postgresDirectLoadSqlGenerator = PostgresDirectLoadSqlGenerator(columnUtils, postgresConfiguration)
     }
 
@@ -91,7 +79,7 @@ internal class PostgresDirectLoadSqlGeneratorTest {
             );
             CREATE INDEX ON "namespace"."name" ("_airbyte_extracted_at");
             COMMIT;
-            """.trimIndent()
+            """
 
         assertEqualsIgnoreWhitespace(expected, sql)
     }
@@ -144,7 +132,7 @@ internal class PostgresDirectLoadSqlGeneratorTest {
             );
             CREATE INDEX ON "namespace"."name" ("_airbyte_extracted_at");
             COMMIT;
-            """.trimIndent()
+            """
 
         assertEqualsIgnoreWhitespace(expected, sql)
     }
@@ -190,7 +178,7 @@ internal class PostgresDirectLoadSqlGeneratorTest {
             CREATE INDEX "idx_cursor_test_table" ON "test_schema"."test_table" ("updatedAt");
             CREATE INDEX ON "test_schema"."test_table" ("_airbyte_extracted_at");
             COMMIT;
-            """.trimIndent()
+            """
 
         assertEqualsIgnoreWhitespace(expected, sql)
     }
@@ -206,9 +194,16 @@ internal class PostgresDirectLoadSqlGeneratorTest {
             DROP TABLE IF EXISTS "namespace"."target";
             ALTER TABLE "namespace"."source" RENAME TO "target";
             COMMIT;
-        """.trimIndent()
+        """
 
-        assertEquals(expected, sql)
+        assertEqualsWithTrimIndent(expected, sql)
+    }
+
+    private fun assertEqualsWithTrimIndent(expected: String, actual: String) {
+        assertEquals(
+            expected.trimIndent(),
+            actual.trimIndent()
+        )
     }
 
     @Test
@@ -231,9 +226,9 @@ internal class PostgresDirectLoadSqlGeneratorTest {
             INSERT INTO "namespace"."target" ("_airbyte_raw_id","_airbyte_extracted_at","_airbyte_meta","_airbyte_generation_id","targetId")
             SELECT "_airbyte_raw_id","_airbyte_extracted_at","_airbyte_meta","_airbyte_generation_id","targetId"
             FROM "namespace"."source";
-        """.trimIndent()
+        """
 
-        assertEquals(expected, sql)
+        assertEqualsWithTrimIndent(expected, sql)
     }
 
     @Test
@@ -339,10 +334,12 @@ internal class PostgresDirectLoadSqlGeneratorTest {
             USING deduped_source
             WHERE "test_schema"."final_table"."id" = deduped_source."id"
             AND deduped_source."_ab_cdc_deleted_at" IS NOT NULL
-            AND ("test_schema"."final_table"."updatedAt" < deduped_source."updatedAt"
+            AND (
+            "test_schema"."final_table"."updatedAt" < deduped_source."updatedAt"
             OR ("test_schema"."final_table"."updatedAt" = deduped_source."updatedAt" AND "test_schema"."final_table"."_airbyte_extracted_at" < deduped_source."_airbyte_extracted_at")
             OR ("test_schema"."final_table"."updatedAt" IS NULL AND deduped_source."updatedAt" IS NOT NULL)
-            OR ("test_schema"."final_table"."updatedAt" IS NULL AND deduped_source."updatedAt" IS NULL AND "test_schema"."final_table"."_airbyte_extracted_at" < deduped_source."_airbyte_extracted_at"))
+            OR ("test_schema"."final_table"."updatedAt" IS NULL AND deduped_source."updatedAt" IS NULL AND "test_schema"."final_table"."_airbyte_extracted_at" < deduped_source."_airbyte_extracted_at")
+            )
             ),
 
             updates AS (
@@ -359,10 +356,12 @@ internal class PostgresDirectLoadSqlGeneratorTest {
             FROM deduped_source
             WHERE "test_schema"."final_table"."id" = deduped_source."id"
             AND deduped_source."_ab_cdc_deleted_at" IS NULL
-            AND ("test_schema"."final_table"."updatedAt" < deduped_source."updatedAt"
+            AND (
+            "test_schema"."final_table"."updatedAt" < deduped_source."updatedAt"
             OR ("test_schema"."final_table"."updatedAt" = deduped_source."updatedAt" AND "test_schema"."final_table"."_airbyte_extracted_at" < deduped_source."_airbyte_extracted_at")
             OR ("test_schema"."final_table"."updatedAt" IS NULL AND deduped_source."updatedAt" IS NOT NULL)
-            OR ("test_schema"."final_table"."updatedAt" IS NULL AND deduped_source."updatedAt" IS NULL AND "test_schema"."final_table"."_airbyte_extracted_at" < deduped_source."_airbyte_extracted_at"))
+            OR ("test_schema"."final_table"."updatedAt" IS NULL AND deduped_source."updatedAt" IS NULL AND "test_schema"."final_table"."_airbyte_extracted_at" < deduped_source."_airbyte_extracted_at")
+            )
             )
 
             INSERT INTO "test_schema"."final_table" (
@@ -392,7 +391,7 @@ internal class PostgresDirectLoadSqlGeneratorTest {
             WHERE "test_schema"."final_table"."id" = deduped_source."id"
             )
             AND deduped_source."_ab_cdc_deleted_at" IS NULL
-            """.trimIndent()
+            """
 
         assertEqualsIgnoreWhitespace(expected, sql)
     }
@@ -448,7 +447,7 @@ internal class PostgresDirectLoadSqlGeneratorTest {
             FROM "test_schema"."staging_table"
             ) AS deduplicated
             WHERE row_number = 1
-            """.trimIndent()
+            """
 
         assertEqualsIgnoreWhitespace(expected, sql)
     }
@@ -478,7 +477,7 @@ internal class PostgresDirectLoadSqlGeneratorTest {
             FROM "test_schema"."staging_table"
             ) AS deduplicated
             WHERE row_number = 1
-            """.trimIndent()
+            """
 
         assertEqualsIgnoreWhitespace(expected, sql)
     }
@@ -504,12 +503,14 @@ internal class PostgresDirectLoadSqlGeneratorTest {
             USING deduped_source
             WHERE "test_schema"."final_table".id = deduped_source.id
             AND deduped_source."_ab_cdc_deleted_at" IS NOT NULL
-            AND ("test_schema"."final_table".updatedAt < deduped_source.updatedAt
+            AND (
+            "test_schema"."final_table".updatedAt < deduped_source.updatedAt
             OR ("test_schema"."final_table".updatedAt = deduped_source.updatedAt AND "test_schema"."final_table"."_airbyte_extracted_at" < deduped_source."_airbyte_extracted_at")
             OR ("test_schema"."final_table".updatedAt IS NULL AND deduped_source.updatedAt IS NOT NULL)
-            OR ("test_schema"."final_table".updatedAt IS NULL AND deduped_source.updatedAt IS NULL AND "test_schema"."final_table"."_airbyte_extracted_at" < deduped_source."_airbyte_extracted_at"))
+            OR ("test_schema"."final_table".updatedAt IS NULL AND deduped_source.updatedAt IS NULL AND "test_schema"."final_table"."_airbyte_extracted_at" < deduped_source."_airbyte_extracted_at")
+            )
             ),
-            """.trimIndent()
+            """
 
         assertEqualsIgnoreWhitespace(expected, sql)
     }
@@ -536,7 +537,7 @@ internal class PostgresDirectLoadSqlGeneratorTest {
             AND deduped_source."_ab_cdc_deleted_at" IS NOT NULL
             AND ("test_schema"."final_table"."_airbyte_extracted_at" < deduped_source."_airbyte_extracted_at")
             ),
-            """.trimIndent()
+            """
 
         assertEqualsIgnoreWhitespace(expected, sql)
     }
@@ -582,7 +583,7 @@ internal class PostgresDirectLoadSqlGeneratorTest {
             FROM deduped_source
             WHERE "test_schema"."final_table".id = deduped_source.id
             AND ("test_schema"."final_table"."_airbyte_extracted_at" < deduped_source."_airbyte_extracted_at")
-            """.trimIndent()
+            """
 
         assertEqualsIgnoreWhitespace(expected, sql)
     }
@@ -612,11 +613,13 @@ internal class PostgresDirectLoadSqlGeneratorTest {
             updatedAt = deduped_source.updatedAt
             FROM deduped_source
             WHERE "test_schema"."final_table".id = deduped_source.id
-            AND ("test_schema"."final_table".updatedAt < deduped_source.updatedAt
+            AND (
+            "test_schema"."final_table".updatedAt < deduped_source.updatedAt
             OR ("test_schema"."final_table".updatedAt = deduped_source.updatedAt AND "test_schema"."final_table"."_airbyte_extracted_at" < deduped_source."_airbyte_extracted_at")
             OR ("test_schema"."final_table".updatedAt IS NULL AND deduped_source.updatedAt IS NOT NULL)
-            OR ("test_schema"."final_table".updatedAt IS NULL AND deduped_source.updatedAt IS NULL AND "test_schema"."final_table"."_airbyte_extracted_at" < deduped_source."_airbyte_extracted_at"))
-            """.trimIndent()
+            OR ("test_schema"."final_table".updatedAt IS NULL AND deduped_source.updatedAt IS NULL AND "test_schema"."final_table"."_airbyte_extracted_at" < deduped_source."_airbyte_extracted_at")
+            )
+            """
 
         assertEqualsIgnoreWhitespace(expected, sql)
     }
@@ -646,7 +649,7 @@ internal class PostgresDirectLoadSqlGeneratorTest {
             WHERE "test_schema"."final_table".id = deduped_source.id
             AND deduped_source."_ab_cdc_deleted_at" IS NULL
             AND ("test_schema"."final_table"."_airbyte_extracted_at" < deduped_source."_airbyte_extracted_at")
-            """.trimIndent()
+            """
 
         assertEqualsIgnoreWhitespace(expected, sql)
     }
@@ -681,7 +684,7 @@ internal class PostgresDirectLoadSqlGeneratorTest {
             FROM "test_schema"."final_table"
             WHERE "test_schema"."final_table".id = deduped_source.id
             )
-            """.trimIndent()
+            """
 
         assertEqualsIgnoreWhitespace(expected, sql)
     }
@@ -717,7 +720,7 @@ internal class PostgresDirectLoadSqlGeneratorTest {
             WHERE "test_schema"."final_table".id = deduped_source.id
             )
             AND deduped_source."_ab_cdc_deleted_at" IS NULL
-            """.trimIndent()
+            """
 
         assertEqualsIgnoreWhitespace(expected, sql)
     }
@@ -738,12 +741,17 @@ internal class PostgresDirectLoadSqlGeneratorTest {
             columnsToAdd,
             columnsToRemove,
             columnsToModify,
-            columnsInDb
+            columnsInDb,
+            recreatePrimaryKeyIndex = false,
+            primaryKeyColumnNames = emptyList(),
+            recreateCursorIndex = false,
+            cursorColumnName = null
         )
 
-        assertEquals(2, sql.size)
-        assert(sql.any { it.contains("ADD COLUMN \"new_column1\" varchar") })
-        assert(sql.any { it.contains("ADD COLUMN \"new_column2\" bigint") })
+        assert(sql.contains("BEGIN TRANSACTION;"))
+        assert(sql.contains("COMMIT;"))
+        assert(sql.contains("ADD COLUMN \"new_column1\" varchar"))
+        assert(sql.contains("ADD COLUMN \"new_column2\" bigint"))
     }
 
     @Test
@@ -765,12 +773,17 @@ internal class PostgresDirectLoadSqlGeneratorTest {
             columnsToAdd,
             columnsToRemove,
             columnsToModify,
-            columnsInDb
+            columnsInDb,
+            recreatePrimaryKeyIndex = false,
+            primaryKeyColumnNames = emptyList(),
+            recreateCursorIndex = false,
+            cursorColumnName = null
         )
 
-        assertEquals(2, sql.size)
-        assert(sql.any { it.contains("DROP COLUMN \"old_column1\"") })
-        assert(sql.any { it.contains("DROP COLUMN \"old_column2\"") })
+        assert(sql.contains("BEGIN TRANSACTION;"))
+        assert(sql.contains("COMMIT;"))
+        assert(sql.contains("DROP COLUMN \"old_column1\""))
+        assert(sql.contains("DROP COLUMN \"old_column2\""))
     }
 
     @Test
@@ -790,13 +803,15 @@ internal class PostgresDirectLoadSqlGeneratorTest {
             columnsToAdd,
             columnsToRemove,
             columnsToModify,
-            columnsInDb
+            columnsInDb,
+            recreatePrimaryKeyIndex = false,
+            primaryKeyColumnNames = emptyList(),
+            recreateCursorIndex = false,
+            cursorColumnName = null
         )
 
-        assertEquals(1, sql.size)
-        val alterStatement = sql.first()
-        assert(alterStatement.contains("ALTER COLUMN \"column_a\" TYPE jsonb"))
-        assert(alterStatement.contains("USING to_jsonb(\"column_a\")"))
+        assert(sql.contains("ALTER COLUMN \"column_a\" TYPE jsonb"))
+        assert(sql.contains("USING to_jsonb(\"column_a\")"))
     }
 
     @Test
@@ -816,13 +831,15 @@ internal class PostgresDirectLoadSqlGeneratorTest {
             columnsToAdd,
             columnsToRemove,
             columnsToModify,
-            columnsInDb
+            columnsInDb,
+            recreatePrimaryKeyIndex = false,
+            primaryKeyColumnNames = emptyList(),
+            recreateCursorIndex = false,
+            cursorColumnName = null
         )
 
-        assertEquals(1, sql.size)
-        val alterStatement = sql.first()
-        assert(alterStatement.contains("ALTER COLUMN \"column_b\" TYPE varchar"))
-        assert(alterStatement.contains("USING \"column_b\" #>> '{}'"))
+        assert(sql.contains("ALTER COLUMN \"column_b\" TYPE varchar"))
+        assert(sql.contains("USING \"column_b\" #>> '{}'"))
     }
 
     @Test
@@ -842,13 +859,15 @@ internal class PostgresDirectLoadSqlGeneratorTest {
             columnsToAdd,
             columnsToRemove,
             columnsToModify,
-            columnsInDb
+            columnsInDb,
+            recreatePrimaryKeyIndex = false,
+            primaryKeyColumnNames = emptyList(),
+            recreateCursorIndex = false,
+            cursorColumnName = null
         )
 
-        assertEquals(1, sql.size)
-        val alterStatement = sql.first()
-        assert(alterStatement.contains("ALTER COLUMN \"column_c\" TYPE character varying"))
-        assert(alterStatement.contains("USING \"column_c\" #>> '{}'"))
+        assert(sql.contains("ALTER COLUMN \"column_c\" TYPE character varying"))
+        assert(sql.contains("USING \"column_c\" #>> '{}'"))
     }
 
     @Test
@@ -868,13 +887,15 @@ internal class PostgresDirectLoadSqlGeneratorTest {
             columnsToAdd,
             columnsToRemove,
             columnsToModify,
-            columnsInDb
+            columnsInDb,
+            recreatePrimaryKeyIndex = false,
+            primaryKeyColumnNames = emptyList(),
+            recreateCursorIndex = false,
+            cursorColumnName = null
         )
 
-        assertEquals(1, sql.size)
-        val alterStatement = sql.first()
-        assert(alterStatement.contains("ALTER COLUMN \"column_d\" TYPE varchar"))
-        assert(alterStatement.contains("USING \"column_d\"::varchar"))
+        assert(sql.contains("ALTER COLUMN \"column_d\" TYPE varchar"))
+        assert(sql.contains("USING \"column_d\"::varchar"))
     }
 
     @Test
@@ -899,12 +920,104 @@ internal class PostgresDirectLoadSqlGeneratorTest {
             columnsToAdd,
             columnsToRemove,
             columnsToModify,
-            columnsInDb
+            columnsInDb,
+            recreatePrimaryKeyIndex = false,
+            primaryKeyColumnNames = emptyList(),
+            recreateCursorIndex = false,
+            cursorColumnName = null
         )
 
-        assertEquals(3, sql.size)
-        assert(sql.any { it.contains("ADD COLUMN \"new_col\" bigint") })
-        assert(sql.any { it.contains("DROP COLUMN \"old_col\"") })
-        assert(sql.any { it.contains("ALTER COLUMN \"modified_col\" TYPE jsonb") })
+        assert(sql.contains("BEGIN TRANSACTION;"))
+        assert(sql.contains("COMMIT;"))
+        assert(sql.contains("ADD COLUMN \"new_col\" bigint"))
+        assert(sql.contains("DROP COLUMN \"old_col\""))
+        assert(sql.contains("ALTER COLUMN \"modified_col\" TYPE jsonb"))
+    }
+
+    @Test
+    fun testMatchSchemasWithPrimaryKeyIndexRecreation() {
+        val tableName = TableName(namespace = "test_schema", name = "test_table")
+        val columnsToAdd = setOf(Column("new_col", "bigint"))
+        val columnsToRemove = emptySet<Column>()
+        val columnsToModify = emptySet<Column>()
+        val columnsInDb = emptySet<Column>()
+        val primaryKeyColumnNames = listOf("id", "user_id")
+
+        val sql = postgresDirectLoadSqlGenerator.matchSchemas(
+            tableName,
+            columnsToAdd,
+            columnsToRemove,
+            columnsToModify,
+            columnsInDb,
+            recreatePrimaryKeyIndex = true,
+            primaryKeyColumnNames = primaryKeyColumnNames,
+            recreateCursorIndex = false,
+            cursorColumnName = null
+        )
+
+        assert(sql.contains("BEGIN TRANSACTION;"))
+        assert(sql.contains("COMMIT;"))
+        assert(sql.contains("ADD COLUMN \"new_col\" bigint"))
+        assert(sql.contains("DROP INDEX IF EXISTS \"test_schema\".\"idx_pk_test_table\""))
+        assert(sql.contains("CREATE INDEX \"idx_pk_test_table\" ON \"test_schema\".\"test_table\" (\"id\", \"user_id\")"))
+    }
+
+    @Test
+    fun testMatchSchemasWithCursorIndexRecreation() {
+        val tableName = TableName(namespace = "test_schema", name = "test_table")
+        val columnsToAdd = setOf(Column("new_col", "bigint"))
+        val columnsToRemove = emptySet<Column>()
+        val columnsToModify = emptySet<Column>()
+        val columnsInDb = emptySet<Column>()
+        val cursorColumnName = "updated_at"
+
+        val sql = postgresDirectLoadSqlGenerator.matchSchemas(
+            tableName,
+            columnsToAdd,
+            columnsToRemove,
+            columnsToModify,
+            columnsInDb,
+            recreatePrimaryKeyIndex = false,
+            primaryKeyColumnNames = emptyList(),
+            recreateCursorIndex = true,
+            cursorColumnName = cursorColumnName
+        )
+
+        assert(sql.contains("BEGIN TRANSACTION;"))
+        assert(sql.contains("COMMIT;"))
+        assert(sql.contains("ADD COLUMN \"new_col\" bigint"))
+        assert(sql.contains("DROP INDEX IF EXISTS \"test_schema\".\"idx_cursor_test_table\""))
+        assert(sql.contains("CREATE INDEX \"idx_cursor_test_table\" ON \"test_schema\".\"test_table\" (\"updated_at\")"))
+    }
+
+    @Test
+    fun testMatchSchemasWithBothIndexRecreations() {
+        val tableName = TableName(namespace = "test_schema", name = "test_table")
+        val columnsToAdd = emptySet<Column>()
+        val columnsToRemove = emptySet<Column>()
+        val columnsToModify = setOf(Column("modified_col", "jsonb"))
+        val columnsInDb = setOf(Column("modified_col", "varchar"))
+        val primaryKeyColumnNames = listOf("id")
+        val cursorColumnName = "updated_at"
+
+        val sql = postgresDirectLoadSqlGenerator.matchSchemas(
+            tableName,
+            columnsToAdd,
+            columnsToRemove,
+            columnsToModify,
+            columnsInDb,
+            recreatePrimaryKeyIndex = true,
+            primaryKeyColumnNames = primaryKeyColumnNames,
+            recreateCursorIndex = true,
+            cursorColumnName = cursorColumnName
+        )
+
+        assert(sql.contains("BEGIN TRANSACTION;"))
+        assert(sql.contains("COMMIT;"))
+        assert(sql.contains("ALTER COLUMN \"modified_col\" TYPE jsonb"))
+        assert(sql.contains("DROP INDEX IF EXISTS \"test_schema\".\"idx_pk_test_table\""))
+        assert(sql.contains("CREATE INDEX \"idx_pk_test_table\" ON \"test_schema\".\"test_table\" (\"id\")"))
+        assert(sql.contains("DROP INDEX IF EXISTS \"test_schema\".\"idx_cursor_test_table\""))
+        assert(sql.contains("CREATE INDEX \"idx_cursor_test_table\" ON \"test_schema\".\"test_table\" (\"updated_at\")"))
     }
 }
