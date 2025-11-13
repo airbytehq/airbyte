@@ -20,7 +20,8 @@ class PostgresCheckTest :
         successConfigFilenames =
             listOf(
                 CheckTestConfig(
-                    configContents = """{
+                    configContents =
+                        """{
                         "host": "replace_me_host",
                         "port": replace_me_port,
                         "database": "replace_me_database",

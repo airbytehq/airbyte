@@ -37,7 +37,10 @@ class PostgresSpecification : ConfigurationSpecification() {
     @get:JsonSchemaTitle("Port")
     @get:JsonPropertyDescription("Port of the database.")
     @get:JsonProperty("port")
-    @get:JsonSchemaInject(json = """{"group": "connection", "order": 1, "minimum": 0, "maximum": 65536, "examples": ["5432"]}""")
+    @get:JsonSchemaInject(
+        json =
+            """{"group": "connection", "order": 1, "minimum": 0, "maximum": 65536, "examples": ["5432"]}"""
+    )
     val port: Int = 5432
 
     @get:JsonSchemaTitle("Database Name")
@@ -51,7 +54,10 @@ class PostgresSpecification : ConfigurationSpecification() {
         "The default schema tables are written. If not specified otherwise, the \"public\" schema will be used."
     )
     @get:JsonProperty("schema")
-    @get:JsonSchemaInject(json = """{"group": "connection", "order": 3, "examples": ["public"], "default": "public"}""")
+    @get:JsonSchemaInject(
+        json =
+            """{"group": "connection", "order": 3, "examples": ["public"], "default": "public"}"""
+    )
     val schema: String = "public"
 
     @get:JsonSchemaTitle("Username")
@@ -107,7 +113,9 @@ class PostgresSpecification : ConfigurationSpecification() {
     @get:JsonSchemaInject(json = """{"group": "connection", "order": 9}""")
     val internalTableSchema: String? = null
 
-    @get:JsonSchemaTitle("Disable Final Tables. (WARNING! Unstable option; Columns in raw table schema might change between versions)")
+    @get:JsonSchemaTitle(
+        "Disable Final Tables. (WARNING! Unstable option; Columns in raw table schema might change between versions)"
+    )
     @get:JsonPropertyDescription(
         """Disable Writing Final Tables. WARNING! The data format in _airbyte_data is likely stable but there are no guarantees that other metadata columns will remain the same in future versions""",
     )

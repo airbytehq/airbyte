@@ -20,8 +20,8 @@ import io.airbyte.integrations.destination.postgres.PostgresContainerHelper
 import io.airbyte.protocol.models.v0.AirbyteRecordMessageMetaChange
 
 /**
- * PostgreSQL normalizes timestamptz values to UTC and doesn't preserve the original timezone offset.
- * This mapper converts expected timestamp_with_timezone values to UTC for comparison.
+ * PostgreSQL normalizes timestamptz values to UTC and doesn't preserve the original timezone
+ * offset. This mapper converts expected timestamp_with_timezone values to UTC for comparison.
  */
 object PostgresTimestampNormalizationMapper : ExpectedRecordMapper {
     override fun mapRecord(expectedRecord: OutputRecord, schema: AirbyteType): OutputRecord {
@@ -32,7 +32,9 @@ object PostgresTimestampNormalizationMapper : ExpectedRecordMapper {
     private fun normalizeTimestampsToUtc(value: AirbyteValue): AirbyteValue =
         when (value) {
             is TimestampWithTimezoneValue ->
-                TimestampWithTimezoneValue(value.value.withOffsetSameInstant(java.time.ZoneOffset.UTC))
+                TimestampWithTimezoneValue(
+                    value.value.withOffsetSameInstant(java.time.ZoneOffset.UTC)
+                )
             is ArrayValue -> ArrayValue(value.values.map { normalizeTimestampsToUtc(it) })
             is ObjectValue ->
                 ObjectValue(
@@ -68,17 +70,21 @@ fun stringToMeta(metaAsString: String?): OutputRecord.Meta? {
     }
     val metaJson = Jsons.readTree(metaAsString)
 
-    val changes = (metaJson["changes"] as ArrayNode).map { change ->
-        val changeNode = change as JsonNode
-        Meta.Change(
-            field = changeNode["field"].textValue(),
-            change = AirbyteRecordMessageMetaChange.Change.fromValue(changeNode["change"].textValue()),
-            reason = AirbyteRecordMessageMetaChange.Reason.fromValue(changeNode["reason"].textValue())
-        )
-    }
+    val changes =
+        (metaJson["changes"] as ArrayNode).map { change ->
+            val changeNode = change as JsonNode
+            Meta.Change(
+                field = changeNode["field"].textValue(),
+                change =
+                    AirbyteRecordMessageMetaChange.Change.fromValue(
+                        changeNode["change"].textValue()
+                    ),
+                reason =
+                    AirbyteRecordMessageMetaChange.Reason.fromValue(
+                        changeNode["reason"].textValue()
+                    )
+            )
+        }
 
-    return OutputRecord.Meta(
-        changes = changes,
-        syncId = metaJson["sync_id"].longValue()
-    )
+    return OutputRecord.Meta(changes = changes, syncId = metaJson["sync_id"].longValue())
 }

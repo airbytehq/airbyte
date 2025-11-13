@@ -53,59 +53,63 @@ class PostgresRawDataDumper(
     companion object {
         // Lenient formatters that handle PostgreSQL's JSONB serialization quirks
         // (e.g., dropping :00 seconds)
-        private val TIMESTAMP_FORMATTER = DateTimeFormatterBuilder()
-            .appendPattern("yyyy-MM-dd'T'HH:mm")
-            .optionalStart()
-            .appendPattern(":ss")
-            .optionalEnd()
-            .optionalStart()
-            .appendPattern(".")
-            .appendFraction(ChronoField.NANO_OF_SECOND, 0, 9, false)
-            .optionalEnd()
-            .appendOffsetId()
-            .toFormatter()
+        private val TIMESTAMP_FORMATTER =
+            DateTimeFormatterBuilder()
+                .appendPattern("yyyy-MM-dd'T'HH:mm")
+                .optionalStart()
+                .appendPattern(":ss")
+                .optionalEnd()
+                .optionalStart()
+                .appendPattern(".")
+                .appendFraction(ChronoField.NANO_OF_SECOND, 0, 9, false)
+                .optionalEnd()
+                .appendOffsetId()
+                .toFormatter()
 
-        private val TIMESTAMP_NO_TZ_FORMATTER = DateTimeFormatterBuilder()
-            .appendPattern("yyyy-MM-dd'T'HH:mm")
-            .optionalStart()
-            .appendPattern(":ss")
-            .optionalEnd()
-            .optionalStart()
-            .appendPattern(".")
-            .appendFraction(ChronoField.NANO_OF_SECOND, 0, 9, false)
-            .optionalEnd()
-            .toFormatter()
+        private val TIMESTAMP_NO_TZ_FORMATTER =
+            DateTimeFormatterBuilder()
+                .appendPattern("yyyy-MM-dd'T'HH:mm")
+                .optionalStart()
+                .appendPattern(":ss")
+                .optionalEnd()
+                .optionalStart()
+                .appendPattern(".")
+                .appendFraction(ChronoField.NANO_OF_SECOND, 0, 9, false)
+                .optionalEnd()
+                .toFormatter()
 
-        private val TIME_FORMATTER = DateTimeFormatterBuilder()
-            .appendPattern("HH:mm")
-            .optionalStart()
-            .appendPattern(":ss")
-            .optionalEnd()
-            .optionalStart()
-            .appendPattern(".")
-            .appendFraction(ChronoField.NANO_OF_SECOND, 0, 9, false)
-            .optionalEnd()
-            .appendOffsetId()
-            .toFormatter()
+        private val TIME_FORMATTER =
+            DateTimeFormatterBuilder()
+                .appendPattern("HH:mm")
+                .optionalStart()
+                .appendPattern(":ss")
+                .optionalEnd()
+                .optionalStart()
+                .appendPattern(".")
+                .appendFraction(ChronoField.NANO_OF_SECOND, 0, 9, false)
+                .optionalEnd()
+                .appendOffsetId()
+                .toFormatter()
 
-        private val TIME_NO_TZ_FORMATTER = DateTimeFormatterBuilder()
-            .appendPattern("HH:mm")
-            .optionalStart()
-            .appendPattern(":ss")
-            .optionalEnd()
-            .optionalStart()
-            .appendPattern(".")
-            .appendFraction(ChronoField.NANO_OF_SECOND, 0, 9, false)
-            .optionalEnd()
-            .toFormatter()
+        private val TIME_NO_TZ_FORMATTER =
+            DateTimeFormatterBuilder()
+                .appendPattern("HH:mm")
+                .optionalStart()
+                .appendPattern(":ss")
+                .optionalEnd()
+                .optionalStart()
+                .appendPattern(".")
+                .appendFraction(ChronoField.NANO_OF_SECOND, 0, 9, false)
+                .optionalEnd()
+                .toFormatter()
 
         private val DATE_FORMATTER = DateTimeFormatter.ISO_LOCAL_DATE
     }
 
     /**
-     * Recursively coerce an AirbyteValue to match the expected schema types.
-     * This is necessary because JSONB storage serializes temporal types as strings,
-     * and we need to convert them back to their proper typed representations.
+     * Recursively coerce an AirbyteValue to match the expected schema types. This is necessary
+     * because JSONB storage serializes temporal types as strings, and we need to convert them back
+     * to their proper typed representations.
      */
     private fun coerceValue(value: AirbyteValue, type: AirbyteType): AirbyteValue {
         // Handle null values
@@ -119,14 +123,15 @@ class PostgresRawDataDumper(
                 if (value !is ObjectValue) {
                     return value
                 }
-                val coercedProperties = value.values.mapValuesTo(linkedMapOf()) { (key, propValue) ->
-                    val fieldType = type.properties[key]
-                    if (fieldType != null) {
-                        coerceValue(propValue, fieldType.type)
-                    } else {
-                        propValue
+                val coercedProperties =
+                    value.values.mapValuesTo(linkedMapOf()) { (key, propValue) ->
+                        val fieldType = type.properties[key]
+                        if (fieldType != null) {
+                            coerceValue(propValue, fieldType.type)
+                        } else {
+                            propValue
+                        }
                     }
-                }
                 ObjectValue(coercedProperties)
             }
             is ObjectTypeWithEmptySchema,
@@ -139,9 +144,8 @@ class PostgresRawDataDumper(
                 if (value !is ArrayValue) {
                     return value
                 }
-                val coercedElements = value.values.map { elem ->
-                    coerceValue(elem, type.items.type)
-                }
+                val coercedElements =
+                    value.values.map { elem -> coerceValue(elem, type.items.type) }
                 ArrayValue(coercedElements)
             }
             is ArrayTypeWithoutSchema -> {
@@ -152,7 +156,9 @@ class PostgresRawDataDumper(
             TimestampTypeWithTimezone -> {
                 if (value !is StringValue) return value
                 try {
-                    TimestampWithTimezoneValue(OffsetDateTime.parse(value.value, TIMESTAMP_FORMATTER))
+                    TimestampWithTimezoneValue(
+                        OffsetDateTime.parse(value.value, TIMESTAMP_FORMATTER)
+                    )
                 } catch (e: Exception) {
                     // Fall back to standard coercer
                     AirbyteValueCoercer.coerce(value, type) ?: value
@@ -161,7 +167,9 @@ class PostgresRawDataDumper(
             TimestampTypeWithoutTimezone -> {
                 if (value !is StringValue) return value
                 try {
-                    TimestampWithoutTimezoneValue(LocalDateTime.parse(value.value, TIMESTAMP_NO_TZ_FORMATTER))
+                    TimestampWithoutTimezoneValue(
+                        LocalDateTime.parse(value.value, TIMESTAMP_NO_TZ_FORMATTER)
+                    )
                 } catch (e: Exception) {
                     AirbyteValueCoercer.coerce(value, type) ?: value
                 }
@@ -193,12 +201,18 @@ class PostgresRawDataDumper(
             // For UnknownType with PASS_THROUGH behavior, unwrap double-serialized strings
             // that were serialized during write and need to be deserialized during read
             is UnknownType -> {
-                if (value is StringValue && value.value.startsWith("\"") && value.value.endsWith("\"")) {
+                if (
+                    value is StringValue &&
+                        value.value.startsWith("\"") &&
+                        value.value.endsWith("\"")
+                ) {
                     // The value is a JSON-serialized string, unwrap it
                     try {
-                        val unwrapped = value.value.substring(1, value.value.length - 1)
-                            .replace("\\\"", "\"")
-                            .replace("\\\\", "\\")
+                        val unwrapped =
+                            value.value
+                                .substring(1, value.value.length - 1)
+                                .replace("\\\"", "\"")
+                                .replace("\\\\", "\\")
                         StringValue(unwrapped)
                     } catch (e: Exception) {
                         value
@@ -210,7 +224,8 @@ class PostgresRawDataDumper(
             // For other primitive types, use the standard coercer
             else -> {
                 val coerced = AirbyteValueCoercer.coerce(value, type)
-                // If coercion returns null, it means the value couldn't be coerced to the expected type.
+                // If coercion returns null, it means the value couldn't be coerced to the expected
+                // type.
                 // In test scenarios, we want to preserve the original value to see what went wrong.
                 coerced ?: value
             }
@@ -224,11 +239,13 @@ class PostgresRawDataDumper(
         val output = mutableListOf<OutputRecord>()
 
         val config = configProvider(spec)
-        val dataSource = PostgresBeanFactory().postgresDataSource(
-            postgresConfiguration = config,
-            resolvedHost = config.host,
-            resolvedPort = config.port
-        )
+        val dataSource =
+            PostgresBeanFactory()
+                .postgresDataSource(
+                    postgresConfiguration = config,
+                    resolvedHost = config.host,
+                    resolvedPort = config.port
+                )
 
         dataSource.use { ds ->
             ds.connection.use { connection ->
@@ -241,8 +258,9 @@ class PostgresRawDataDumper(
 
                 // The internal schema (airbyte_internal) is used for raw tables
                 // Use "airbyte_internal" as the default if internalTableSchema is not set
-                val rawNamespace = config.internalTableSchema?.lowercase()?.toPostgresCompatibleName()
-                    ?: "airbyte_internal"
+                val rawNamespace =
+                    config.internalTableSchema?.lowercase()?.toPostgresCompatibleName()
+                        ?: "airbyte_internal"
 
                 val rawName =
                     TypingDedupingUtil.concatenateRawTableName(sourceNamespace, sourceName)
@@ -252,7 +270,8 @@ class PostgresRawDataDumper(
                 val fullyQualifiedTableName = "$rawNamespace.$rawName"
 
                 // Check if table exists first
-                val tableExistsQuery = """
+                val tableExistsQuery =
+                    """
                     SELECT COUNT(*) AS table_count
                     FROM information_schema.tables
                     WHERE table_schema = '$rawNamespace'
@@ -273,90 +292,113 @@ class PostgresRawDataDumper(
 
                 // Check if the table has the _airbyte_data column (legacy raw table mode)
                 // or individual typed columns (typed table mode)
-                val hasDataColumn = try {
-                    resultSet.metaData.getColumnCount() > 0 &&
-                        (1..resultSet.metaData.getColumnCount()).any {
-                            resultSet.metaData.getColumnName(it) == Meta.COLUMN_NAME_DATA
-                        }
-                } catch (e: Exception) {
-                    false
-                }
+                val hasDataColumn =
+                    try {
+                        resultSet.metaData.getColumnCount() > 0 &&
+                            (1..resultSet.metaData.getColumnCount()).any {
+                                resultSet.metaData.getColumnName(it) == Meta.COLUMN_NAME_DATA
+                            }
+                    } catch (e: Exception) {
+                        false
+                    }
 
                 while (resultSet.next()) {
-                    val rawData = if (hasDataColumn) {
-                        // Legacy raw table mode: read from _airbyte_data JSONB column
-                        val dataObject = resultSet.getObject(Meta.COLUMN_NAME_DATA)
-                        val dataJson = when (dataObject) {
-                            is org.postgresql.util.PGobject -> dataObject.value
-                            else -> dataObject?.toString() ?: "{}"
-                        }
+                    val rawData =
+                        if (hasDataColumn) {
+                            // Legacy raw table mode: read from _airbyte_data JSONB column
+                            val dataObject = resultSet.getObject(Meta.COLUMN_NAME_DATA)
+                            val dataJson =
+                                when (dataObject) {
+                                    is org.postgresql.util.PGobject -> dataObject.value
+                                    else -> dataObject?.toString() ?: "{}"
+                                }
 
-                        // Parse JSON to AirbyteValue, then coerce it to match the schema
-                        dataJson
-                            ?.deserializeToNode()
-                            ?.toAirbyteValue() ?: NullValue
-                    } else {
-                        // Typed table mode: read from individual columns and reconstruct the object
-                        val properties = linkedMapOf<String, AirbyteValue>()
+                            // Parse JSON to AirbyteValue, then coerce it to match the schema
+                            dataJson?.deserializeToNode()?.toAirbyteValue() ?: NullValue
+                        } else {
+                            // Typed table mode: read from individual columns and reconstruct the
+                            // object
+                            val properties = linkedMapOf<String, AirbyteValue>()
 
-                        if (stream.schema is ObjectType) {
-                            val objectSchema = stream.schema as ObjectType
+                            if (stream.schema is ObjectType) {
+                                val objectSchema = stream.schema as ObjectType
 
-                            // Build a map of lowercase column names to actual column names from the result set
-                            val columnMap = mutableMapOf<String, String>()
-                            for (i in 1..resultSet.metaData.getColumnCount()) {
-                                val actualColumnName = resultSet.metaData.getColumnName(i)
-                                columnMap[actualColumnName.lowercase()] = actualColumnName
-                            }
+                                // Build a map of lowercase column names to actual column names from
+                                // the result set
+                                val columnMap = mutableMapOf<String, String>()
+                                for (i in 1..resultSet.metaData.getColumnCount()) {
+                                    val actualColumnName = resultSet.metaData.getColumnName(i)
+                                    columnMap[actualColumnName.lowercase()] = actualColumnName
+                                }
 
-                            for ((fieldName, fieldType) in objectSchema.properties) {
-                                try {
-                                    // Try to find the actual column name (case-insensitive lookup)
-                                    val actualColumnName = columnMap[fieldName.lowercase()] ?: fieldName
-                                    val columnValue = resultSet.getObject(actualColumnName)
-                                    properties[fieldName] = when (columnValue) {
-                                        null -> NullValue
-                                        is org.postgresql.util.PGobject -> {
-                                            // JSONB columns (for arrays, objects, unknown types)
-                                            columnValue.value?.deserializeToNode()?.toAirbyteValue() ?: NullValue
-                                        }
-                                        else -> {
-                                            // Primitive types - convert directly
-                                            when (fieldType.type) {
-                                                is io.airbyte.cdk.load.data.IntegerType ->
-                                                    io.airbyte.cdk.load.data.IntegerValue((columnValue as Number).toLong())
-                                                is io.airbyte.cdk.load.data.NumberType ->
-                                                    io.airbyte.cdk.load.data.NumberValue(
-                                                        (columnValue as java.math.BigDecimal).toDouble().toBigDecimal()
-                                                    )
-                                                is io.airbyte.cdk.load.data.BooleanType ->
-                                                    io.airbyte.cdk.load.data.BooleanValue(columnValue as Boolean)
-                                                is io.airbyte.cdk.load.data.StringType ->
-                                                    StringValue(columnValue.toString())
-                                                else -> StringValue(columnValue.toString())
+                                for ((fieldName, fieldType) in objectSchema.properties) {
+                                    try {
+                                        // Try to find the actual column name (case-insensitive
+                                        // lookup)
+                                        val actualColumnName =
+                                            columnMap[fieldName.lowercase()] ?: fieldName
+                                        val columnValue = resultSet.getObject(actualColumnName)
+                                        properties[fieldName] =
+                                            when (columnValue) {
+                                                null -> NullValue
+                                                is org.postgresql.util.PGobject -> {
+                                                    // JSONB columns (for arrays, objects, unknown
+                                                    // types)
+                                                    columnValue.value
+                                                        ?.deserializeToNode()
+                                                        ?.toAirbyteValue()
+                                                        ?: NullValue
+                                                }
+                                                else -> {
+                                                    // Primitive types - convert directly
+                                                    when (fieldType.type) {
+                                                        is io.airbyte.cdk.load.data.IntegerType ->
+                                                            io.airbyte.cdk.load.data.IntegerValue(
+                                                                (columnValue as Number).toLong()
+                                                            )
+                                                        is io.airbyte.cdk.load.data.NumberType ->
+                                                            io.airbyte.cdk.load.data.NumberValue(
+                                                                (columnValue
+                                                                        as java.math.BigDecimal)
+                                                                    .toDouble()
+                                                                    .toBigDecimal()
+                                                            )
+                                                        is io.airbyte.cdk.load.data.BooleanType ->
+                                                            io.airbyte.cdk.load.data.BooleanValue(
+                                                                columnValue as Boolean
+                                                            )
+                                                        is io.airbyte.cdk.load.data.StringType ->
+                                                            StringValue(columnValue.toString())
+                                                        else -> StringValue(columnValue.toString())
+                                                    }
+                                                }
                                             }
-                                        }
+                                    } catch (e: Exception) {
+                                        // Column doesn't exist or error reading it, set to null
+                                        properties[fieldName] = NullValue
                                     }
-                                } catch (e: Exception) {
-                                    // Column doesn't exist or error reading it, set to null
-                                    properties[fieldName] = NullValue
                                 }
                             }
-                        }
 
-                        ObjectValue(properties)
-                    }
+                            ObjectValue(properties)
+                        }
 
                     val coercedData = coerceValue(rawData, stream.schema)
 
-                    val outputRecord = OutputRecord(
-                        rawId = resultSet.getString(Meta.COLUMN_NAME_AB_RAW_ID),
-                        extractedAt = resultSet.getTimestamp(Meta.COLUMN_NAME_AB_EXTRACTED_AT).toInstant().toEpochMilli(),
-                        loadedAt = null,
-                        generationId = resultSet.getLong(Meta.COLUMN_NAME_AB_GENERATION_ID),
-                        data = coercedData,
-                        airbyteMeta = stringToMeta(resultSet.getString(Meta.COLUMN_NAME_AB_META))
-                    )
+                    val outputRecord =
+                        OutputRecord(
+                            rawId = resultSet.getString(Meta.COLUMN_NAME_AB_RAW_ID),
+                            extractedAt =
+                                resultSet
+                                    .getTimestamp(Meta.COLUMN_NAME_AB_EXTRACTED_AT)
+                                    .toInstant()
+                                    .toEpochMilli(),
+                            loadedAt = null,
+                            generationId = resultSet.getLong(Meta.COLUMN_NAME_AB_GENERATION_ID),
+                            data = coercedData,
+                            airbyteMeta =
+                                stringToMeta(resultSet.getString(Meta.COLUMN_NAME_AB_META))
+                        )
                     output.add(outputRecord)
                 }
                 resultSet.close()

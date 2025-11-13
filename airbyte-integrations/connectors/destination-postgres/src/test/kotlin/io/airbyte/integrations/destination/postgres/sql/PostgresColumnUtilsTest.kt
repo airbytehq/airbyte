@@ -33,7 +33,6 @@ import io.airbyte.cdk.load.table.ColumnNameMapping
 import io.airbyte.integrations.destination.postgres.spec.PostgresConfiguration
 import io.mockk.every
 import io.mockk.mockk
-import org.junit.Before
 import org.junit.jupiter.api.Assertions.assertEquals
 import org.junit.jupiter.api.Assertions.assertFalse
 import org.junit.jupiter.api.Assertions.assertTrue
@@ -44,7 +43,6 @@ internal class PostgresColumnUtilsTest {
 
     private lateinit var config: PostgresConfiguration
     private lateinit var columnUtils: PostgresColumnUtils
-
 
     @BeforeEach
     fun setUp() {
@@ -84,19 +82,18 @@ internal class PostgresColumnUtilsTest {
     fun testGetTargetColumns() {
         every { config.legacyRawTablesOnly } returns false
 
-        val stream = mockk<DestinationStream> {
-            every { schema } returns ObjectType(
-                properties = linkedMapOf(
-                    "id" to FieldType(IntegerType, nullable = false),
-                    "name" to FieldType(StringType, nullable = true)
-                )
-            )
-        }
-        val columnNameMapping = ColumnNameMapping(
-            mapOf(
-                "id" to "targetId"
-            )
-        )
+        val stream =
+            mockk<DestinationStream> {
+                every { schema } returns
+                    ObjectType(
+                        properties =
+                            linkedMapOf(
+                                "id" to FieldType(IntegerType, nullable = false),
+                                "name" to FieldType(StringType, nullable = true)
+                            )
+                    )
+            }
+        val columnNameMapping = ColumnNameMapping(mapOf("id" to "targetId"))
 
         val columns = columnUtils.getTargetColumns(stream, columnNameMapping)
 
@@ -120,15 +117,18 @@ internal class PostgresColumnUtilsTest {
     fun testGetTargetColumnsInRawMode() {
         every { config.legacyRawTablesOnly } returns true
 
-        val stream = mockk<DestinationStream> {
-            every { schema } returns ObjectType(
-                properties = linkedMapOf(
-                    "id" to FieldType(IntegerType, nullable = false),
-                    "name" to FieldType(StringType, nullable = true),
-                    "email" to FieldType(StringType, nullable = false)
-                )
-            )
-        }
+        val stream =
+            mockk<DestinationStream> {
+                every { schema } returns
+                    ObjectType(
+                        properties =
+                            linkedMapOf(
+                                "id" to FieldType(IntegerType, nullable = false),
+                                "name" to FieldType(StringType, nullable = true),
+                                "email" to FieldType(StringType, nullable = false)
+                            )
+                    )
+            }
         val columnNameMapping = ColumnNameMapping(emptyMap())
 
         val columns = columnUtils.getTargetColumns(stream, columnNameMapping)
@@ -147,9 +147,7 @@ internal class PostgresColumnUtilsTest {
     fun testGetTargetColumnsWithEmptySchema() {
         every { config.legacyRawTablesOnly } returns false
 
-        val stream = mockk<DestinationStream> {
-            every { schema } returns ObjectTypeWithEmptySchema
-        }
+        val stream = mockk<DestinationStream> { every { schema } returns ObjectTypeWithEmptySchema }
         val columnNameMapping = ColumnNameMapping(emptyMap())
 
         val columns = columnUtils.getTargetColumns(stream, columnNameMapping)
@@ -164,11 +162,7 @@ internal class PostgresColumnUtilsTest {
 
     @Test
     fun testGetTargetColumnName() {
-        val columnNameMapping = ColumnNameMapping(
-            mapOf(
-                "sourceId" to "targetId"
-            )
-        )
+        val columnNameMapping = ColumnNameMapping(mapOf("sourceId" to "targetId"))
 
         assertEquals("targetId", columnUtils.getTargetColumnName("sourceId", columnNameMapping))
         assertEquals("sourceName", columnUtils.getTargetColumnName("sourceName", columnNameMapping))
@@ -183,10 +177,16 @@ internal class PostgresColumnUtilsTest {
         assertEquals("varchar", columnUtils.toDialectType(StringType))
         assertEquals("time with time zone", columnUtils.toDialectType(TimeTypeWithTimezone))
         assertEquals("time", columnUtils.toDialectType(TimeTypeWithoutTimezone))
-        assertEquals("timestamp with time zone", columnUtils.toDialectType(TimestampTypeWithTimezone))
+        assertEquals(
+            "timestamp with time zone",
+            columnUtils.toDialectType(TimestampTypeWithTimezone)
+        )
         assertEquals("timestamp", columnUtils.toDialectType(TimestampTypeWithoutTimezone))
 
-        assertEquals("jsonb", columnUtils.toDialectType(ArrayType(items = FieldType(StringType, false))))
+        assertEquals(
+            "jsonb",
+            columnUtils.toDialectType(ArrayType(items = FieldType(StringType, false)))
+        )
         assertEquals("jsonb", columnUtils.toDialectType(ArrayTypeWithoutSchema))
         assertEquals("jsonb", columnUtils.toDialectType(ObjectType(linkedMapOf())))
         assertEquals("jsonb", columnUtils.toDialectType(ObjectTypeWithEmptySchema))
@@ -196,19 +196,19 @@ internal class PostgresColumnUtilsTest {
 
     @Test
     fun testToDialectTypeMappingUnions() {
-        val unionWithStruct = UnionType(
-            options = setOf(
-                StringType,
-                ObjectType(linkedMapOf("field" to FieldType(StringType, nullable = false)))
-            ),
-            isLegacyUnion = true
-        )
+        val unionWithStruct =
+            UnionType(
+                options =
+                    setOf(
+                        StringType,
+                        ObjectType(linkedMapOf("field" to FieldType(StringType, nullable = false)))
+                    ),
+                isLegacyUnion = true
+            )
         assertEquals("jsonb", columnUtils.toDialectType(unionWithStruct))
 
-        val unionWithBasicTypes = UnionType(
-            options = setOf(StringType, IntegerType),
-            isLegacyUnion = true
-        )
+        val unionWithBasicTypes =
+            UnionType(options = setOf(StringType, IntegerType), isLegacyUnion = true)
         assertEquals("jsonb", columnUtils.toDialectType(unionWithBasicTypes))
     }
 }

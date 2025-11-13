@@ -254,7 +254,8 @@ internal class PostgresValueCoercerTest {
     @Test
     fun testInvalidStringTooLarge() {
         // Create a string that would exceed TEXT_LIMIT_BYTES when considering UTF-8 encoding
-        // We multiply by 4 (max bytes per UTF-8 char), so any string longer than TEXT_LIMIT_BYTES / 4
+        // We multiply by 4 (max bytes per UTF-8 char), so any string longer than TEXT_LIMIT_BYTES /
+        // 4
         // will be rejected
         val largeString = StringValue("a".repeat(TEXT_LIMIT_BYTES / 4 + 1))
         val airbyteValue =
@@ -442,10 +443,11 @@ internal class PostgresValueCoercerTest {
     fun testInvalidTimestampWithTimezoneExceedsMaximum() {
         // Test timestamp beyond PostgreSQL's maximum (294276 AD)
         // Using epoch second beyond TIMESTAMP_MAX_EPOCH_SECONDS
-        val invalidTimestamp = OffsetDateTime.ofInstant(
-            java.time.Instant.ofEpochSecond(TIMESTAMP_MAX_EPOCH_SECONDS + 1),
-            ZoneOffset.UTC
-        )
+        val invalidTimestamp =
+            OffsetDateTime.ofInstant(
+                java.time.Instant.ofEpochSecond(TIMESTAMP_MAX_EPOCH_SECONDS + 1),
+                ZoneOffset.UTC
+            )
         val timestampValue = TimestampWithTimezoneValue(invalidTimestamp)
         val airbyteValue =
             EnrichedAirbyteValue(
@@ -468,10 +470,11 @@ internal class PostgresValueCoercerTest {
     fun testInvalidTimestampWithTimezoneBelowMinimum() {
         // Test timestamp before PostgreSQL's minimum (4713 BC)
         // Using epoch second below TIMESTAMP_MIN_EPOCH_SECONDS
-        val invalidTimestamp = OffsetDateTime.ofInstant(
-            java.time.Instant.ofEpochSecond(TIMESTAMP_MIN_EPOCH_SECONDS - 1),
-            ZoneOffset.UTC
-        )
+        val invalidTimestamp =
+            OffsetDateTime.ofInstant(
+                java.time.Instant.ofEpochSecond(TIMESTAMP_MIN_EPOCH_SECONDS - 1),
+                ZoneOffset.UTC
+            )
         val timestampValue = TimestampWithTimezoneValue(invalidTimestamp)
         val airbyteValue =
             EnrichedAirbyteValue(
@@ -511,10 +514,11 @@ internal class PostgresValueCoercerTest {
     @Test
     fun testTimestampAtMaximumBoundary() {
         // Test timestamp at exactly the maximum boundary
-        val maxTimestamp = OffsetDateTime.ofInstant(
-            java.time.Instant.ofEpochSecond(TIMESTAMP_MAX_EPOCH_SECONDS),
-            ZoneOffset.UTC
-        )
+        val maxTimestamp =
+            OffsetDateTime.ofInstant(
+                java.time.Instant.ofEpochSecond(TIMESTAMP_MAX_EPOCH_SECONDS),
+                ZoneOffset.UTC
+            )
         val timestampValue = TimestampWithTimezoneValue(maxTimestamp)
         val airbyteValue =
             EnrichedAirbyteValue(
@@ -532,10 +536,11 @@ internal class PostgresValueCoercerTest {
     @Test
     fun testTimestampAtMinimumBoundary() {
         // Test timestamp at exactly the minimum boundary
-        val minTimestamp = OffsetDateTime.ofInstant(
-            java.time.Instant.ofEpochSecond(TIMESTAMP_MIN_EPOCH_SECONDS),
-            ZoneOffset.UTC
-        )
+        val minTimestamp =
+            OffsetDateTime.ofInstant(
+                java.time.Instant.ofEpochSecond(TIMESTAMP_MIN_EPOCH_SECONDS),
+                ZoneOffset.UTC
+            )
         val timestampValue = TimestampWithTimezoneValue(minTimestamp)
         val airbyteValue =
             EnrichedAirbyteValue(

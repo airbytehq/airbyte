@@ -32,41 +32,44 @@ internal class PostgresDirectLoadSqlGeneratorTest {
 
     @BeforeEach
     fun setUp() {
-        postgresConfiguration = mockk<PostgresConfiguration> {
-            every { legacyRawTablesOnly } returns false
-            every { dropCascade } returns false
-        }
+        postgresConfiguration =
+            mockk<PostgresConfiguration> {
+                every { legacyRawTablesOnly } returns false
+                every { dropCascade } returns false
+            }
         columnUtils = PostgresColumnUtils(postgresConfiguration)
-        postgresDirectLoadSqlGenerator = PostgresDirectLoadSqlGenerator(columnUtils, postgresConfiguration)
+        postgresDirectLoadSqlGenerator =
+            PostgresDirectLoadSqlGenerator(columnUtils, postgresConfiguration)
     }
 
     @Test
     fun testCreateTable() {
-        val stream = mockk<DestinationStream> {
-            every { schema } returns ObjectType(
-                properties = linkedMapOf(
-                    "sourceId" to FieldType(StringType, nullable = true),
-                    "sourceName" to FieldType(StringType, nullable = false)
-                )
-            )
+        val stream =
+            mockk<DestinationStream> {
+                every { schema } returns
+                    ObjectType(
+                        properties =
+                            linkedMapOf(
+                                "sourceId" to FieldType(StringType, nullable = true),
+                                "sourceName" to FieldType(StringType, nullable = false)
+                            )
+                    )
 
-            every { importType } returns Append
-        }
-        val columnNameMapping = ColumnNameMapping(
-            mapOf(
-                "sourceId" to "targetId"
-            )
-        )
+                every { importType } returns Append
+            }
+        val columnNameMapping = ColumnNameMapping(mapOf("sourceId" to "targetId"))
         val tableName = TableName(namespace = "namespace", name = "name")
 
-        val sql = postgresDirectLoadSqlGenerator.createTable(
-            stream = stream,
-            tableName = tableName,
-            columnNameMapping = columnNameMapping,
-            replace = true
-        )
+        val sql =
+            postgresDirectLoadSqlGenerator.createTable(
+                stream = stream,
+                tableName = tableName,
+                columnNameMapping = columnNameMapping,
+                replace = true
+            )
 
-        val expected = """
+        val expected =
+            """
             BEGIN TRANSACTION;
             DROP TABLE IF EXISTS "namespace"."name";
             CREATE TABLE "namespace"."name" (
@@ -85,43 +88,44 @@ internal class PostgresDirectLoadSqlGeneratorTest {
     }
 
     private fun assertEqualsIgnoreWhitespace(expected: String, actual: String) {
-        assertEquals(
-            dropWhitespace(expected),
-            dropWhitespace(actual))
+        assertEquals(dropWhitespace(expected), dropWhitespace(actual))
     }
 
-    private fun dropWhitespace(text: String) = text
-        .lines()
-        .map { it.trim()}
-        .filter { it.isNotEmpty() }
-        .joinToString("\n") { it.trim() }
+    private fun dropWhitespace(text: String) =
+        text.lines().map { it.trim() }.filter { it.isNotEmpty() }.joinToString("\n") { it.trim() }
 
     @Test
     fun testCreateTableNoReplace() {
-        val stream = mockk<DestinationStream> {
-            every { schema } returns ObjectType(
-                properties = linkedMapOf(
-                    "sourceId" to FieldType(StringType, nullable = true),
+        val stream =
+            mockk<DestinationStream> {
+                every { schema } returns
+                    ObjectType(
+                        properties =
+                            linkedMapOf(
+                                "sourceId" to FieldType(StringType, nullable = true),
+                            )
+                    )
+
+                every { importType } returns Append
+            }
+        val columnNameMapping =
+            ColumnNameMapping(
+                mapOf(
+                    "sourceId" to "targetId",
                 )
             )
-
-            every { importType } returns Append
-        }
-        val columnNameMapping = ColumnNameMapping(
-            mapOf(
-                "sourceId" to "targetId",
-            )
-        )
         val tableName = TableName(namespace = "namespace", name = "name")
 
-        val sql = postgresDirectLoadSqlGenerator.createTable(
-            stream = stream,
-            tableName = tableName,
-            columnNameMapping = columnNameMapping,
-            replace = false
-        )
+        val sql =
+            postgresDirectLoadSqlGenerator.createTable(
+                stream = stream,
+                tableName = tableName,
+                columnNameMapping = columnNameMapping,
+                replace = false
+            )
 
-        val expected = """
+        val expected =
+            """
             BEGIN TRANSACTION;
             CREATE TABLE "namespace"."name" (
             "_airbyte_raw_id" varchar NOT NULL,
@@ -139,30 +143,33 @@ internal class PostgresDirectLoadSqlGeneratorTest {
 
     @Test
     fun testCreateTableWithPrimaryKeysAndCursor() {
-        val stream = mockk<DestinationStream> {
-            every { schema } returns ObjectType(
-                properties = linkedMapOf(
-                    "id" to FieldType(IntegerType, nullable = true),
-                    "name" to FieldType(StringType, nullable = true),
-                    "updatedAt" to FieldType(TimestampTypeWithTimezone, nullable = true)
-                )
-            )
-            every { importType } returns Dedupe(
-                primaryKey = listOf(listOf("id")),
-                cursor = listOf("updatedAt")
-            )
-        }
+        val stream =
+            mockk<DestinationStream> {
+                every { schema } returns
+                    ObjectType(
+                        properties =
+                            linkedMapOf(
+                                "id" to FieldType(IntegerType, nullable = true),
+                                "name" to FieldType(StringType, nullable = true),
+                                "updatedAt" to FieldType(TimestampTypeWithTimezone, nullable = true)
+                            )
+                    )
+                every { importType } returns
+                    Dedupe(primaryKey = listOf(listOf("id")), cursor = listOf("updatedAt"))
+            }
         val columnNameMapping = ColumnNameMapping(emptyMap())
         val tableName = TableName(namespace = "test_schema", name = "test_table")
 
-        val sql = postgresDirectLoadSqlGenerator.createTable(
-            stream = stream,
-            tableName = tableName,
-            columnNameMapping = columnNameMapping,
-            replace = true
-        )
+        val sql =
+            postgresDirectLoadSqlGenerator.createTable(
+                stream = stream,
+                tableName = tableName,
+                columnNameMapping = columnNameMapping,
+                replace = true
+            )
 
-        val expected = """
+        val expected =
+            """
             BEGIN TRANSACTION;
             DROP TABLE IF EXISTS "test_schema"."test_table";
             CREATE TABLE "test_schema"."test_table" (
@@ -189,7 +196,8 @@ internal class PostgresDirectLoadSqlGeneratorTest {
         val targetTableName = TableName(namespace = "namespace", name = "target")
         val sql = postgresDirectLoadSqlGenerator.overwriteTable(sourceTableName, targetTableName)
 
-        val expected = """
+        val expected =
+            """
             BEGIN TRANSACTION;
             DROP TABLE IF EXISTS "namespace"."target";
             ALTER TABLE "namespace"."source" RENAME TO "target";
@@ -200,29 +208,24 @@ internal class PostgresDirectLoadSqlGeneratorTest {
     }
 
     private fun assertEqualsWithTrimIndent(expected: String, actual: String) {
-        assertEquals(
-            expected.trimIndent(),
-            actual.trimIndent()
-        )
+        assertEquals(expected.trimIndent(), actual.trimIndent())
     }
 
     @Test
     fun testGenerateCopyTable() {
-        val columnNameMapping = ColumnNameMapping(
-            mapOf(
-                "sourceId" to "targetId"
-            )
-        )
+        val columnNameMapping = ColumnNameMapping(mapOf("sourceId" to "targetId"))
         val sourceTableName = TableName(namespace = "namespace", name = "source")
         val destinationTableName = TableName(namespace = "namespace", name = "target")
 
-        val sql = postgresDirectLoadSqlGenerator.copyTable(
-            columnNameMapping = columnNameMapping,
-            sourceTableName = sourceTableName,
-            targetTableName = destinationTableName
-        )
+        val sql =
+            postgresDirectLoadSqlGenerator.copyTable(
+                columnNameMapping = columnNameMapping,
+                sourceTableName = sourceTableName,
+                targetTableName = destinationTableName
+            )
 
-        val expected = """
+        val expected =
+            """
             INSERT INTO "namespace"."target" ("_airbyte_raw_id","_airbyte_extracted_at","_airbyte_meta","_airbyte_generation_id","targetId")
             SELECT "_airbyte_raw_id","_airbyte_extracted_at","_airbyte_meta","_airbyte_generation_id","targetId"
             FROM "namespace"."source";
@@ -242,30 +245,21 @@ internal class PostgresDirectLoadSqlGeneratorTest {
     fun testCountTable() {
         val tableName = TableName(namespace = "namespace", name = "name")
         val sql = postgresDirectLoadSqlGenerator.countTable(tableName)
-        assertEquals(
-            "SELECT COUNT(*) AS \"total\" FROM \"namespace\".\"name\";",
-            sql
-        )
+        assertEquals("SELECT COUNT(*) AS \"total\" FROM \"namespace\".\"name\";", sql)
     }
 
     @Test
     fun testCreateNamespace() {
         val namespace = "namespace"
         val sql = postgresDirectLoadSqlGenerator.createNamespace(namespace)
-        assertEquals(
-            "CREATE SCHEMA IF NOT EXISTS \"namespace\";",
-            sql
-        )
+        assertEquals("CREATE SCHEMA IF NOT EXISTS \"namespace\";", sql)
     }
 
     @Test
     fun testGetGenerationId() {
         val tableName = TableName(namespace = "namespace", name = "name")
         val sql = postgresDirectLoadSqlGenerator.getGenerationId(tableName = tableName)
-        assertEquals(
-            "SELECT \"_airbyte_generation_id\" FROM \"namespace\".\"name\" LIMIT 1;",
-            sql
-        )
+        assertEquals("SELECT \"_airbyte_generation_id\" FROM \"namespace\".\"name\" LIMIT 1;", sql)
     }
 
     @Test
@@ -288,33 +282,38 @@ internal class PostgresDirectLoadSqlGeneratorTest {
     fun testUpsertTable() {
         every { postgresConfiguration.cdcDeletionMode } returns CdcDeletionMode.HARD_DELETE
 
-        val stream = mockk<DestinationStream> {
-            every { schema } returns ObjectType(
-                properties = linkedMapOf(
-                    "id" to FieldType(IntegerType, nullable = false),
-                    "name" to FieldType(StringType, nullable = true),
-                    "updatedAt" to FieldType(TimestampTypeWithTimezone, nullable = true),
-                    CDC_DELETED_AT_COLUMN to FieldType(TimestampTypeWithTimezone, nullable = true)
-                )
-            )
-            every { importType } returns Dedupe(
-                primaryKey = listOf(listOf("id")),
-                cursor = listOf("updatedAt")
-            )
-        }
+        val stream =
+            mockk<DestinationStream> {
+                every { schema } returns
+                    ObjectType(
+                        properties =
+                            linkedMapOf(
+                                "id" to FieldType(IntegerType, nullable = false),
+                                "name" to FieldType(StringType, nullable = true),
+                                "updatedAt" to
+                                    FieldType(TimestampTypeWithTimezone, nullable = true),
+                                CDC_DELETED_AT_COLUMN to
+                                    FieldType(TimestampTypeWithTimezone, nullable = true)
+                            )
+                    )
+                every { importType } returns
+                    Dedupe(primaryKey = listOf(listOf("id")), cursor = listOf("updatedAt"))
+            }
 
         val columnNameMapping = ColumnNameMapping(emptyMap())
         val sourceTableName = TableName(namespace = "test_schema", name = "staging_table")
         val targetTableName = TableName(namespace = "test_schema", name = "final_table")
 
-        val sql = postgresDirectLoadSqlGenerator.upsertTable(
-            stream = stream,
-            columnNameMapping = columnNameMapping,
-            sourceTableName = sourceTableName,
-            targetTableName = targetTableName
-        )
+        val sql =
+            postgresDirectLoadSqlGenerator.upsertTable(
+                stream = stream,
+                columnNameMapping = columnNameMapping,
+                sourceTableName = sourceTableName,
+                targetTableName = targetTableName
+            )
 
-        val expected = """
+        val expected =
+            """
             WITH deduped_source AS (
             SELECT "_airbyte_raw_id", "_airbyte_extracted_at", "_airbyte_meta", "_airbyte_generation_id", "id", "name", "updatedAt", "_ab_cdc_deleted_at"
             FROM (
@@ -398,25 +397,24 @@ internal class PostgresDirectLoadSqlGeneratorTest {
 
     @Test
     fun testUpsertTableWithoutPrimaryKeyThrowsException() {
-        val stream = mockk<DestinationStream> {
-            every { importType } returns Dedupe(
-                primaryKey = emptyList(),
-                cursor = emptyList()
-            )
-        }
+        val stream =
+            mockk<DestinationStream> {
+                every { importType } returns Dedupe(primaryKey = emptyList(), cursor = emptyList())
+            }
 
         val columnNameMapping = ColumnNameMapping(emptyMap())
         val sourceTableName = TableName(namespace = "test_schema", name = "source_table")
         val targetTableName = TableName(namespace = "test_schema", name = "target_table")
 
-        val exception = assertThrows<IllegalArgumentException> {
-            postgresDirectLoadSqlGenerator.upsertTable(
-                stream = stream,
-                columnNameMapping = columnNameMapping,
-                sourceTableName = sourceTableName,
-                targetTableName = targetTableName
-            )
-        }
+        val exception =
+            assertThrows<IllegalArgumentException> {
+                postgresDirectLoadSqlGenerator.upsertTable(
+                    stream = stream,
+                    columnNameMapping = columnNameMapping,
+                    sourceTableName = sourceTableName,
+                    targetTableName = targetTableName
+                )
+            }
 
         assertEquals("Cannot perform upsert without primary key", exception.message)
     }
@@ -428,14 +426,16 @@ internal class PostgresDirectLoadSqlGeneratorTest {
         val allColumns = listOf("id", "name", "updatedAt", "_airbyte_extracted_at")
         val sourceTable = TableName(namespace = "test_schema", name = "staging_table")
 
-        val sql = postgresDirectLoadSqlGenerator.selectDeduped(
-            primaryKeyColumns,
-            cursorColumn,
-            allColumns,
-            sourceTable
-        )
+        val sql =
+            postgresDirectLoadSqlGenerator.selectDeduped(
+                primaryKeyColumns,
+                cursorColumn,
+                allColumns,
+                sourceTable
+            )
 
-        val expected = """
+        val expected =
+            """
             SELECT id, name, updatedAt, _airbyte_extracted_at
             FROM (
             SELECT *,
@@ -458,14 +458,16 @@ internal class PostgresDirectLoadSqlGeneratorTest {
         val allColumns = listOf("id", "name", "updatedAt", "_airbyte_extracted_at")
         val sourceTable = TableName(namespace = "test_schema", name = "staging_table")
 
-        val sql = postgresDirectLoadSqlGenerator.selectDeduped(
-            primaryKeyColumns,
-            null,
-            allColumns,
-            sourceTable
-        )
+        val sql =
+            postgresDirectLoadSqlGenerator.selectDeduped(
+                primaryKeyColumns,
+                null,
+                allColumns,
+                sourceTable
+            )
 
-        val expected = """
+        val expected =
+            """
             SELECT id, name, updatedAt, _airbyte_extracted_at
             FROM (
             SELECT *,
@@ -489,15 +491,17 @@ internal class PostgresDirectLoadSqlGeneratorTest {
         val targetTable = TableName(namespace = "test_schema", name = "final_table")
         val primaryKeyColumns = listOf("id")
 
-        val sql = postgresDirectLoadSqlGenerator.cdcDelete(
-            dedupTableAlias,
-            cursorColumn,
-            targetTable,
-            primaryKeyColumns,
-            true
-        )
+        val sql =
+            postgresDirectLoadSqlGenerator.cdcDelete(
+                dedupTableAlias,
+                cursorColumn,
+                targetTable,
+                primaryKeyColumns,
+                true
+            )
 
-        val expected = """
+        val expected =
+            """
             deleted AS (
             DELETE FROM "test_schema"."final_table"
             USING deduped_source
@@ -521,15 +525,17 @@ internal class PostgresDirectLoadSqlGeneratorTest {
         val targetTable = TableName(namespace = "test_schema", name = "final_table")
         val primaryKeyColumns = listOf("id")
 
-        val sql = postgresDirectLoadSqlGenerator.cdcDelete(
-            dedupTableAlias,
-            null,
-            targetTable,
-            primaryKeyColumns,
-            true
-        )
+        val sql =
+            postgresDirectLoadSqlGenerator.cdcDelete(
+                dedupTableAlias,
+                null,
+                targetTable,
+                primaryKeyColumns,
+                true
+            )
 
-        val expected = """
+        val expected =
+            """
             deleted AS (
             DELETE FROM "test_schema"."final_table"
             USING deduped_source
@@ -548,13 +554,14 @@ internal class PostgresDirectLoadSqlGeneratorTest {
         val targetTable = TableName(namespace = "test_schema", name = "final_table")
         val primaryKeyColumns = listOf("id")
 
-        val sql = postgresDirectLoadSqlGenerator.cdcDelete(
-            dedupTableAlias,
-            "updatedAt",
-            targetTable,
-            primaryKeyColumns,
-            false
-        )
+        val sql =
+            postgresDirectLoadSqlGenerator.cdcDelete(
+                dedupTableAlias,
+                "updatedAt",
+                targetTable,
+                primaryKeyColumns,
+                false
+            )
 
         assertEquals("", sql)
     }
@@ -566,16 +573,18 @@ internal class PostgresDirectLoadSqlGeneratorTest {
         val allColumns = listOf("id", "name")
         val primaryKeyColumns = listOf("id")
 
-        val sql = postgresDirectLoadSqlGenerator.updateExistingRows(
-            dedupTableAlias,
-            targetTable,
-            allColumns,
-            primaryKeyColumns,
-            null,
-            false
-        )
+        val sql =
+            postgresDirectLoadSqlGenerator.updateExistingRows(
+                dedupTableAlias,
+                targetTable,
+                allColumns,
+                primaryKeyColumns,
+                null,
+                false
+            )
 
-        val expected = """
+        val expected =
+            """
             UPDATE "test_schema"."final_table"
             SET
             id = deduped_source.id,
@@ -596,16 +605,18 @@ internal class PostgresDirectLoadSqlGeneratorTest {
         val primaryKeyColumns = listOf("id")
         val cursorColumn = "updatedAt"
 
-        val sql = postgresDirectLoadSqlGenerator.updateExistingRows(
-            dedupTableAlias,
-            targetTable,
-            allColumns,
-            primaryKeyColumns,
-            cursorColumn,
-            false
-        )
+        val sql =
+            postgresDirectLoadSqlGenerator.updateExistingRows(
+                dedupTableAlias,
+                targetTable,
+                allColumns,
+                primaryKeyColumns,
+                cursorColumn,
+                false
+            )
 
-        val expected = """
+        val expected =
+            """
             UPDATE "test_schema"."final_table"
             SET
             id = deduped_source.id,
@@ -631,16 +642,18 @@ internal class PostgresDirectLoadSqlGeneratorTest {
         val allColumns = listOf("id", "name")
         val primaryKeyColumns = listOf("id")
 
-        val sql = postgresDirectLoadSqlGenerator.updateExistingRows(
-            dedupTableAlias,
-            targetTable,
-            allColumns,
-            primaryKeyColumns,
-            null,
-            true
-        )
+        val sql =
+            postgresDirectLoadSqlGenerator.updateExistingRows(
+                dedupTableAlias,
+                targetTable,
+                allColumns,
+                primaryKeyColumns,
+                null,
+                true
+            )
 
-        val expected = """
+        val expected =
+            """
             UPDATE "test_schema"."final_table"
             SET
             id = deduped_source.id,
@@ -661,15 +674,17 @@ internal class PostgresDirectLoadSqlGeneratorTest {
         val allColumns = listOf("id", "name")
         val primaryKeyColumns = listOf("id")
 
-        val sql = postgresDirectLoadSqlGenerator.insertNewRows(
-            dedupTableAlias,
-            targetTable,
-            allColumns,
-            primaryKeyColumns,
-            false
-        )
+        val sql =
+            postgresDirectLoadSqlGenerator.insertNewRows(
+                dedupTableAlias,
+                targetTable,
+                allColumns,
+                primaryKeyColumns,
+                false
+            )
 
-        val expected = """
+        val expected =
+            """
             INSERT INTO "test_schema"."final_table" (
             id,
             name
@@ -696,15 +711,17 @@ internal class PostgresDirectLoadSqlGeneratorTest {
         val allColumns = listOf("id", "name")
         val primaryKeyColumns = listOf("id")
 
-        val sql = postgresDirectLoadSqlGenerator.insertNewRows(
-            dedupTableAlias,
-            targetTable,
-            allColumns,
-            primaryKeyColumns,
-            true
-        )
+        val sql =
+            postgresDirectLoadSqlGenerator.insertNewRows(
+                dedupTableAlias,
+                targetTable,
+                allColumns,
+                primaryKeyColumns,
+                true
+            )
 
-        val expected = """
+        val expected =
+            """
             INSERT INTO "test_schema"."final_table" (
             id,
             name
@@ -728,25 +745,23 @@ internal class PostgresDirectLoadSqlGeneratorTest {
     @Test
     fun testMatchSchemasAddColumns() {
         val tableName = TableName(namespace = "test_schema", name = "test_table")
-        val columnsToAdd = setOf(
-            Column("new_column1", "varchar"),
-            Column("new_column2", "bigint")
-        )
+        val columnsToAdd = setOf(Column("new_column1", "varchar"), Column("new_column2", "bigint"))
         val columnsToRemove = emptySet<Column>()
         val columnsToModify = emptySet<Column>()
         val columnsInDb = emptySet<Column>()
 
-        val sql = postgresDirectLoadSqlGenerator.matchSchemas(
-            tableName,
-            columnsToAdd,
-            columnsToRemove,
-            columnsToModify,
-            columnsInDb,
-            recreatePrimaryKeyIndex = false,
-            primaryKeyColumnNames = emptyList(),
-            recreateCursorIndex = false,
-            cursorColumnName = null
-        )
+        val sql =
+            postgresDirectLoadSqlGenerator.matchSchemas(
+                tableName,
+                columnsToAdd,
+                columnsToRemove,
+                columnsToModify,
+                columnsInDb,
+                recreatePrimaryKeyIndex = false,
+                primaryKeyColumnNames = emptyList(),
+                recreateCursorIndex = false,
+                cursorColumnName = null
+            )
 
         assert(sql.contains("BEGIN TRANSACTION;"))
         assert(sql.contains("COMMIT;"))
@@ -758,27 +773,23 @@ internal class PostgresDirectLoadSqlGeneratorTest {
     fun testMatchSchemasRemoveColumns() {
         val tableName = TableName(namespace = "test_schema", name = "test_table")
         val columnsToAdd = emptySet<Column>()
-        val columnsToRemove = setOf(
-            Column("old_column1", "varchar"),
-            Column("old_column2", "bigint")
-        )
+        val columnsToRemove =
+            setOf(Column("old_column1", "varchar"), Column("old_column2", "bigint"))
         val columnsToModify = emptySet<Column>()
-        val columnsInDb = setOf(
-            Column("old_column1", "varchar"),
-            Column("old_column2", "bigint")
-        )
+        val columnsInDb = setOf(Column("old_column1", "varchar"), Column("old_column2", "bigint"))
 
-        val sql = postgresDirectLoadSqlGenerator.matchSchemas(
-            tableName,
-            columnsToAdd,
-            columnsToRemove,
-            columnsToModify,
-            columnsInDb,
-            recreatePrimaryKeyIndex = false,
-            primaryKeyColumnNames = emptyList(),
-            recreateCursorIndex = false,
-            cursorColumnName = null
-        )
+        val sql =
+            postgresDirectLoadSqlGenerator.matchSchemas(
+                tableName,
+                columnsToAdd,
+                columnsToRemove,
+                columnsToModify,
+                columnsInDb,
+                recreatePrimaryKeyIndex = false,
+                primaryKeyColumnNames = emptyList(),
+                recreateCursorIndex = false,
+                cursorColumnName = null
+            )
 
         assert(sql.contains("BEGIN TRANSACTION;"))
         assert(sql.contains("COMMIT;"))
@@ -791,24 +802,21 @@ internal class PostgresDirectLoadSqlGeneratorTest {
         val tableName = TableName(namespace = "test_schema", name = "test_table")
         val columnsToAdd = emptySet<Column>()
         val columnsToRemove = emptySet<Column>()
-        val columnsToModify = setOf(
-            Column("column_a", "jsonb")
-        )
-        val columnsInDb = setOf(
-            Column("column_a", "varchar")
-        )
+        val columnsToModify = setOf(Column("column_a", "jsonb"))
+        val columnsInDb = setOf(Column("column_a", "varchar"))
 
-        val sql = postgresDirectLoadSqlGenerator.matchSchemas(
-            tableName,
-            columnsToAdd,
-            columnsToRemove,
-            columnsToModify,
-            columnsInDb,
-            recreatePrimaryKeyIndex = false,
-            primaryKeyColumnNames = emptyList(),
-            recreateCursorIndex = false,
-            cursorColumnName = null
-        )
+        val sql =
+            postgresDirectLoadSqlGenerator.matchSchemas(
+                tableName,
+                columnsToAdd,
+                columnsToRemove,
+                columnsToModify,
+                columnsInDb,
+                recreatePrimaryKeyIndex = false,
+                primaryKeyColumnNames = emptyList(),
+                recreateCursorIndex = false,
+                cursorColumnName = null
+            )
 
         assert(sql.contains("ALTER COLUMN \"column_a\" TYPE jsonb"))
         assert(sql.contains("USING to_jsonb(\"column_a\")"))
@@ -819,24 +827,21 @@ internal class PostgresDirectLoadSqlGeneratorTest {
         val tableName = TableName(namespace = "test_schema", name = "test_table")
         val columnsToAdd = emptySet<Column>()
         val columnsToRemove = emptySet<Column>()
-        val columnsToModify = setOf(
-            Column("column_b", "varchar")
-        )
-        val columnsInDb = setOf(
-            Column("column_b", "jsonb")
-        )
+        val columnsToModify = setOf(Column("column_b", "varchar"))
+        val columnsInDb = setOf(Column("column_b", "jsonb"))
 
-        val sql = postgresDirectLoadSqlGenerator.matchSchemas(
-            tableName,
-            columnsToAdd,
-            columnsToRemove,
-            columnsToModify,
-            columnsInDb,
-            recreatePrimaryKeyIndex = false,
-            primaryKeyColumnNames = emptyList(),
-            recreateCursorIndex = false,
-            cursorColumnName = null
-        )
+        val sql =
+            postgresDirectLoadSqlGenerator.matchSchemas(
+                tableName,
+                columnsToAdd,
+                columnsToRemove,
+                columnsToModify,
+                columnsInDb,
+                recreatePrimaryKeyIndex = false,
+                primaryKeyColumnNames = emptyList(),
+                recreateCursorIndex = false,
+                cursorColumnName = null
+            )
 
         assert(sql.contains("ALTER COLUMN \"column_b\" TYPE varchar"))
         assert(sql.contains("USING \"column_b\" #>> '{}'"))
@@ -847,24 +852,21 @@ internal class PostgresDirectLoadSqlGeneratorTest {
         val tableName = TableName(namespace = "test_schema", name = "test_table")
         val columnsToAdd = emptySet<Column>()
         val columnsToRemove = emptySet<Column>()
-        val columnsToModify = setOf(
-            Column("column_c", "character varying")
-        )
-        val columnsInDb = setOf(
-            Column("column_c", "jsonb")
-        )
+        val columnsToModify = setOf(Column("column_c", "character varying"))
+        val columnsInDb = setOf(Column("column_c", "jsonb"))
 
-        val sql = postgresDirectLoadSqlGenerator.matchSchemas(
-            tableName,
-            columnsToAdd,
-            columnsToRemove,
-            columnsToModify,
-            columnsInDb,
-            recreatePrimaryKeyIndex = false,
-            primaryKeyColumnNames = emptyList(),
-            recreateCursorIndex = false,
-            cursorColumnName = null
-        )
+        val sql =
+            postgresDirectLoadSqlGenerator.matchSchemas(
+                tableName,
+                columnsToAdd,
+                columnsToRemove,
+                columnsToModify,
+                columnsInDb,
+                recreatePrimaryKeyIndex = false,
+                primaryKeyColumnNames = emptyList(),
+                recreateCursorIndex = false,
+                cursorColumnName = null
+            )
 
         assert(sql.contains("ALTER COLUMN \"column_c\" TYPE character varying"))
         assert(sql.contains("USING \"column_c\" #>> '{}'"))
@@ -875,24 +877,21 @@ internal class PostgresDirectLoadSqlGeneratorTest {
         val tableName = TableName(namespace = "test_schema", name = "test_table")
         val columnsToAdd = emptySet<Column>()
         val columnsToRemove = emptySet<Column>()
-        val columnsToModify = setOf(
-            Column("column_d", "varchar")
-        )
-        val columnsInDb = setOf(
-            Column("column_d", "bigint")
-        )
+        val columnsToModify = setOf(Column("column_d", "varchar"))
+        val columnsInDb = setOf(Column("column_d", "bigint"))
 
-        val sql = postgresDirectLoadSqlGenerator.matchSchemas(
-            tableName,
-            columnsToAdd,
-            columnsToRemove,
-            columnsToModify,
-            columnsInDb,
-            recreatePrimaryKeyIndex = false,
-            primaryKeyColumnNames = emptyList(),
-            recreateCursorIndex = false,
-            cursorColumnName = null
-        )
+        val sql =
+            postgresDirectLoadSqlGenerator.matchSchemas(
+                tableName,
+                columnsToAdd,
+                columnsToRemove,
+                columnsToModify,
+                columnsInDb,
+                recreatePrimaryKeyIndex = false,
+                primaryKeyColumnNames = emptyList(),
+                recreateCursorIndex = false,
+                cursorColumnName = null
+            )
 
         assert(sql.contains("ALTER COLUMN \"column_d\" TYPE varchar"))
         assert(sql.contains("USING \"column_d\"::varchar"))
@@ -901,31 +900,23 @@ internal class PostgresDirectLoadSqlGeneratorTest {
     @Test
     fun testMatchSchemasCombinedOperations() {
         val tableName = TableName(namespace = "test_schema", name = "test_table")
-        val columnsToAdd = setOf(
-            Column("new_col", "bigint")
-        )
-        val columnsToRemove = setOf(
-            Column("old_col", "varchar")
-        )
-        val columnsToModify = setOf(
-            Column("modified_col", "jsonb")
-        )
-        val columnsInDb = setOf(
-            Column("old_col", "varchar"),
-            Column("modified_col", "varchar")
-        )
+        val columnsToAdd = setOf(Column("new_col", "bigint"))
+        val columnsToRemove = setOf(Column("old_col", "varchar"))
+        val columnsToModify = setOf(Column("modified_col", "jsonb"))
+        val columnsInDb = setOf(Column("old_col", "varchar"), Column("modified_col", "varchar"))
 
-        val sql = postgresDirectLoadSqlGenerator.matchSchemas(
-            tableName,
-            columnsToAdd,
-            columnsToRemove,
-            columnsToModify,
-            columnsInDb,
-            recreatePrimaryKeyIndex = false,
-            primaryKeyColumnNames = emptyList(),
-            recreateCursorIndex = false,
-            cursorColumnName = null
-        )
+        val sql =
+            postgresDirectLoadSqlGenerator.matchSchemas(
+                tableName,
+                columnsToAdd,
+                columnsToRemove,
+                columnsToModify,
+                columnsInDb,
+                recreatePrimaryKeyIndex = false,
+                primaryKeyColumnNames = emptyList(),
+                recreateCursorIndex = false,
+                cursorColumnName = null
+            )
 
         assert(sql.contains("BEGIN TRANSACTION;"))
         assert(sql.contains("COMMIT;"))
@@ -943,23 +934,28 @@ internal class PostgresDirectLoadSqlGeneratorTest {
         val columnsInDb = emptySet<Column>()
         val primaryKeyColumnNames = listOf("id", "user_id")
 
-        val sql = postgresDirectLoadSqlGenerator.matchSchemas(
-            tableName,
-            columnsToAdd,
-            columnsToRemove,
-            columnsToModify,
-            columnsInDb,
-            recreatePrimaryKeyIndex = true,
-            primaryKeyColumnNames = primaryKeyColumnNames,
-            recreateCursorIndex = false,
-            cursorColumnName = null
-        )
+        val sql =
+            postgresDirectLoadSqlGenerator.matchSchemas(
+                tableName,
+                columnsToAdd,
+                columnsToRemove,
+                columnsToModify,
+                columnsInDb,
+                recreatePrimaryKeyIndex = true,
+                primaryKeyColumnNames = primaryKeyColumnNames,
+                recreateCursorIndex = false,
+                cursorColumnName = null
+            )
 
         assert(sql.contains("BEGIN TRANSACTION;"))
         assert(sql.contains("COMMIT;"))
         assert(sql.contains("ADD COLUMN \"new_col\" bigint"))
         assert(sql.contains("DROP INDEX IF EXISTS \"test_schema\".\"idx_pk_test_table\""))
-        assert(sql.contains("CREATE INDEX \"idx_pk_test_table\" ON \"test_schema\".\"test_table\" (\"id\", \"user_id\")"))
+        assert(
+            sql.contains(
+                "CREATE INDEX \"idx_pk_test_table\" ON \"test_schema\".\"test_table\" (\"id\", \"user_id\")"
+            )
+        )
     }
 
     @Test
@@ -971,23 +967,28 @@ internal class PostgresDirectLoadSqlGeneratorTest {
         val columnsInDb = emptySet<Column>()
         val cursorColumnName = "updated_at"
 
-        val sql = postgresDirectLoadSqlGenerator.matchSchemas(
-            tableName,
-            columnsToAdd,
-            columnsToRemove,
-            columnsToModify,
-            columnsInDb,
-            recreatePrimaryKeyIndex = false,
-            primaryKeyColumnNames = emptyList(),
-            recreateCursorIndex = true,
-            cursorColumnName = cursorColumnName
-        )
+        val sql =
+            postgresDirectLoadSqlGenerator.matchSchemas(
+                tableName,
+                columnsToAdd,
+                columnsToRemove,
+                columnsToModify,
+                columnsInDb,
+                recreatePrimaryKeyIndex = false,
+                primaryKeyColumnNames = emptyList(),
+                recreateCursorIndex = true,
+                cursorColumnName = cursorColumnName
+            )
 
         assert(sql.contains("BEGIN TRANSACTION;"))
         assert(sql.contains("COMMIT;"))
         assert(sql.contains("ADD COLUMN \"new_col\" bigint"))
         assert(sql.contains("DROP INDEX IF EXISTS \"test_schema\".\"idx_cursor_test_table\""))
-        assert(sql.contains("CREATE INDEX \"idx_cursor_test_table\" ON \"test_schema\".\"test_table\" (\"updated_at\")"))
+        assert(
+            sql.contains(
+                "CREATE INDEX \"idx_cursor_test_table\" ON \"test_schema\".\"test_table\" (\"updated_at\")"
+            )
+        )
     }
 
     @Test
@@ -1000,24 +1001,33 @@ internal class PostgresDirectLoadSqlGeneratorTest {
         val primaryKeyColumnNames = listOf("id")
         val cursorColumnName = "updated_at"
 
-        val sql = postgresDirectLoadSqlGenerator.matchSchemas(
-            tableName,
-            columnsToAdd,
-            columnsToRemove,
-            columnsToModify,
-            columnsInDb,
-            recreatePrimaryKeyIndex = true,
-            primaryKeyColumnNames = primaryKeyColumnNames,
-            recreateCursorIndex = true,
-            cursorColumnName = cursorColumnName
-        )
+        val sql =
+            postgresDirectLoadSqlGenerator.matchSchemas(
+                tableName,
+                columnsToAdd,
+                columnsToRemove,
+                columnsToModify,
+                columnsInDb,
+                recreatePrimaryKeyIndex = true,
+                primaryKeyColumnNames = primaryKeyColumnNames,
+                recreateCursorIndex = true,
+                cursorColumnName = cursorColumnName
+            )
 
         assert(sql.contains("BEGIN TRANSACTION;"))
         assert(sql.contains("COMMIT;"))
         assert(sql.contains("ALTER COLUMN \"modified_col\" TYPE jsonb"))
         assert(sql.contains("DROP INDEX IF EXISTS \"test_schema\".\"idx_pk_test_table\""))
-        assert(sql.contains("CREATE INDEX \"idx_pk_test_table\" ON \"test_schema\".\"test_table\" (\"id\")"))
+        assert(
+            sql.contains(
+                "CREATE INDEX \"idx_pk_test_table\" ON \"test_schema\".\"test_table\" (\"id\")"
+            )
+        )
         assert(sql.contains("DROP INDEX IF EXISTS \"test_schema\".\"idx_cursor_test_table\""))
-        assert(sql.contains("CREATE INDEX \"idx_cursor_test_table\" ON \"test_schema\".\"test_table\" (\"updated_at\")"))
+        assert(
+            sql.contains(
+                "CREATE INDEX \"idx_cursor_test_table\" ON \"test_schema\".\"test_table\" (\"updated_at\")"
+            )
+        )
     }
 }

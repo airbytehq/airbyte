@@ -30,9 +30,7 @@ data class PostgresConfiguration(
 @Singleton
 class PostgresConfigurationFactory :
     DestinationConfigurationFactory<PostgresSpecification, PostgresConfiguration> {
-    override fun makeWithoutExceptionHandling(
-        pojo: PostgresSpecification
-    ): PostgresConfiguration {
+    override fun makeWithoutExceptionHandling(pojo: PostgresSpecification): PostgresConfiguration {
         return makeWithOverrides(spec = pojo)
     }
 

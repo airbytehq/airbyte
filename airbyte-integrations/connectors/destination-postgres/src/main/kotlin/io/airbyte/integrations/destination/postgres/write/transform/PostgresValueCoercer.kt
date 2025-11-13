@@ -92,7 +92,8 @@ class PostgresValueCoercer : ValueCoercer {
                     value.abValue = StringValue(sanitizedValue)
                 }
 
-                // Validate string length (conservative check - actual byte size may vary with encoding)
+                // Validate string length (conservative check - actual byte size may vary with
+                // encoding)
                 // PostgreSQL uses UTF-8, so we check character count * 4 (max bytes per UTF-8 char)
                 val currentValue = (value.abValue as StringValue).value
                 if (currentValue.length * 4 > TEXT_LIMIT_BYTES) {
@@ -103,7 +104,9 @@ class PostgresValueCoercer : ValueCoercer {
             }
             is TimestampWithTimezoneValue -> {
                 val seconds = abValue.value.toEpochSecond()
-                if (seconds < TIMESTAMP_MIN_EPOCH_SECONDS || seconds > TIMESTAMP_MAX_EPOCH_SECONDS) {
+                if (
+                    seconds < TIMESTAMP_MIN_EPOCH_SECONDS || seconds > TIMESTAMP_MAX_EPOCH_SECONDS
+                ) {
                     ValidationResult.ShouldNullify(
                         AirbyteRecordMessageMetaChange.Reason.DESTINATION_FIELD_SIZE_LIMITATION
                     )
@@ -111,7 +114,9 @@ class PostgresValueCoercer : ValueCoercer {
             }
             is TimestampWithoutTimezoneValue -> {
                 val seconds = abValue.value.toEpochSecond(java.time.ZoneOffset.UTC)
-                if (seconds < TIMESTAMP_MIN_EPOCH_SECONDS || seconds > TIMESTAMP_MAX_EPOCH_SECONDS) {
+                if (
+                    seconds < TIMESTAMP_MIN_EPOCH_SECONDS || seconds > TIMESTAMP_MAX_EPOCH_SECONDS
+                ) {
                     ValidationResult.ShouldNullify(
                         AirbyteRecordMessageMetaChange.Reason.DESTINATION_FIELD_SIZE_LIMITATION
                     )
@@ -121,5 +126,4 @@ class PostgresValueCoercer : ValueCoercer {
                 ValidationResult.Valid
             }
         }
-
 }

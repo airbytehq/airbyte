@@ -55,9 +55,7 @@ class PostgresBeanFactory {
         return configFactory.makeWithoutExceptionHandling(spec)
     }
 
-    /**
-     * Helper to resolve the endpoint (either direct or through SSH tunnel)
-     */
+    /** Helper to resolve the endpoint (either direct or through SSH tunnel) */
     @Singleton
     @Named("resolvedHost")
     fun resolvedHost(config: PostgresConfiguration): String {

@@ -34,12 +34,30 @@ class PostgresRawOverrideDisableTypingDedupingTest : PostgresTypingDedupingTest(
 
     // this test assumes that fields that are not in the schema will show up
     // on the raw table. This is only true for older versions of the connector.
-    @Disabled @ParameterizedTest @ValueSource(longs = []) override fun testIncrementalSyncDropOneColumn(inputGenerationId: Long) {}
+    @Disabled
+    @ParameterizedTest
+    @ValueSource(longs = [])
+    override fun testIncrementalSyncDropOneColumn(inputGenerationId: Long) {}
 
     // disabling dedup tests since dedup not supported when setting `disable_type_dedupe` to true.
-    @Disabled @ParameterizedTest @ValueSource(longs = []) override fun incrementalDedup(inputGenerationId: Long) {}
-    @Disabled @ParameterizedTest @ValueSource(longs = []) override fun largeDedupSync(inputGenerationId: Long) {}
-    @Disabled @ParameterizedTest @ValueSource(longs = []) override fun incrementalDedupDefaultNamespace(inputGenerationId: Long) {}
-    @Disabled @ParameterizedTest @ValueSource(longs = []) override fun incrementalDedupChangeCursor(inputGenerationId: Long) {}
-    @Disabled @ParameterizedTest @ValueSource(longs = []) override fun incrementalDedupIdenticalName() {}
+    @Disabled
+    @ParameterizedTest
+    @ValueSource(longs = [])
+    override fun incrementalDedup(inputGenerationId: Long) {}
+    @Disabled
+    @ParameterizedTest
+    @ValueSource(longs = [])
+    override fun largeDedupSync(inputGenerationId: Long) {}
+    @Disabled
+    @ParameterizedTest
+    @ValueSource(longs = [])
+    override fun incrementalDedupDefaultNamespace(inputGenerationId: Long) {}
+    @Disabled
+    @ParameterizedTest
+    @ValueSource(longs = [])
+    override fun incrementalDedupChangeCursor(inputGenerationId: Long) {}
+    @Disabled
+    @ParameterizedTest
+    @ValueSource(longs = [])
+    override fun incrementalDedupIdenticalName() {}
 }

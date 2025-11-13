@@ -15,8 +15,10 @@ import io.airbyte.integrations.destination.postgres.spec.PostgresConfigurationFa
 import io.airbyte.integrations.destination.postgres.spec.PostgresSpecification
 import org.junit.jupiter.api.BeforeAll
 
-class PostgresRawAcceptanceTest : BasicFunctionalityIntegrationTest(
-    configContents = """{
+class PostgresRawAcceptanceTest :
+    BasicFunctionalityIntegrationTest(
+        configContents =
+            """{
                         "host": "replace_me_host",
                         "port": replace_me_port,
                         "database": "replace_me_database",
@@ -25,35 +27,38 @@ class PostgresRawAcceptanceTest : BasicFunctionalityIntegrationTest(
                         "password": "replace_me_password",
                         "disable_type_dedupe": true
                     }""",
-    configSpecClass = PostgresSpecification::class.java,
-    dataDumper = PostgresRawDataDumper { spec ->
-        val configOverrides = buildConfigOverridesForTestContainer()
-        PostgresConfigurationFactory().makeWithOverrides(spec as PostgresSpecification, configOverrides)
-    },
-    destinationCleaner = PostgresDataCleaner,
-    isStreamSchemaRetroactive = false,
-    dedupBehavior = null,
-    stringifySchemalessObjects = false,
-    schematizedObjectBehavior = SchematizedNestedValueBehavior.PASS_THROUGH,
-    schematizedArrayBehavior = SchematizedNestedValueBehavior.PASS_THROUGH,
-    unionBehavior = UnionBehavior.STRINGIFY,
-    stringifyUnionObjects = true,
-    supportFileTransfer = false,
-    commitDataIncrementally = false,
-    commitDataIncrementallyOnAppend = false,
-    commitDataIncrementallyToEmptyDestinationOnAppend = true,
-    commitDataIncrementallyToEmptyDestinationOnDedupe = false,
-    allTypesBehavior = StronglyTyped(
-        integerCanBeLarge = false,
-        numberCanBeLarge = true,
-        nestedFloatLosesPrecision = false,
-        stripsNullBytes = true,
-    ),
-    unknownTypesBehavior = UnknownTypesBehavior.PASS_THROUGH,
-    nullEqualsUnset = false,
-    configUpdater = PostgresConfigUpdater(),
-    recordMangler = PostgresExpectedRawRecordMapper,
-) {
+        configSpecClass = PostgresSpecification::class.java,
+        dataDumper =
+            PostgresRawDataDumper { spec ->
+                val configOverrides = buildConfigOverridesForTestContainer()
+                PostgresConfigurationFactory()
+                    .makeWithOverrides(spec as PostgresSpecification, configOverrides)
+            },
+        destinationCleaner = PostgresDataCleaner,
+        isStreamSchemaRetroactive = false,
+        dedupBehavior = null,
+        stringifySchemalessObjects = false,
+        schematizedObjectBehavior = SchematizedNestedValueBehavior.PASS_THROUGH,
+        schematizedArrayBehavior = SchematizedNestedValueBehavior.PASS_THROUGH,
+        unionBehavior = UnionBehavior.STRINGIFY,
+        stringifyUnionObjects = true,
+        supportFileTransfer = false,
+        commitDataIncrementally = false,
+        commitDataIncrementallyOnAppend = false,
+        commitDataIncrementallyToEmptyDestinationOnAppend = true,
+        commitDataIncrementallyToEmptyDestinationOnDedupe = false,
+        allTypesBehavior =
+            StronglyTyped(
+                integerCanBeLarge = false,
+                numberCanBeLarge = true,
+                nestedFloatLosesPrecision = false,
+                stripsNullBytes = true,
+            ),
+        unknownTypesBehavior = UnknownTypesBehavior.PASS_THROUGH,
+        nullEqualsUnset = false,
+        configUpdater = PostgresConfigUpdater(),
+        recordMangler = PostgresExpectedRawRecordMapper,
+    ) {
     companion object {
         @JvmStatic
         @BeforeAll

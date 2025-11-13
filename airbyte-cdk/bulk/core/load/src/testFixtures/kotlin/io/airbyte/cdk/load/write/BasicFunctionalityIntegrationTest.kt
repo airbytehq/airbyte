@@ -139,15 +139,15 @@ data class StronglyTyped(
      */
     val timeWithTimezoneBehavior: SimpleValueBehavior = SimpleValueBehavior.STRONGLY_TYPE,
     /**
-     * Whether the destination strips null bytes (\u0000) from strings.
-     * Some databases like PostgreSQL don't support null bytes in text fields and will strip them.
-     * When true, test expectations will use sanitized strings without null bytes.
+     * Whether the destination strips null bytes (\u0000) from strings. Some databases like
+     * PostgreSQL don't support null bytes in text fields and will strip them. When true, test
+     * expectations will use sanitized strings without null bytes.
      */
     val stripsNullBytes: Boolean = false,
     /**
-     * Whether the destination normalizes timestamp with timezone values to UTC.
-     * Some databases like PostgreSQL store timestamptz in UTC and don't preserve the original timezone offset.
-     * When true, test expectations will compare timestamps normalized to UTC.
+     * Whether the destination normalizes timestamp with timezone values to UTC. Some databases like
+     * PostgreSQL store timestamptz in UTC and don't preserve the original timezone offset. When
+     * true, test expectations will compare timestamps normalized to UTC.
      */
     val normalizesTimestampWithTimezoneToUtc: Boolean = false,
 ) : AllTypesBehavior
@@ -4031,7 +4031,10 @@ abstract class BasicFunctionalityIntegrationTest(
                     data =
                         mapOf(
                             "id" to 1,
-                            "string" to if ((allTypesBehavior as? StronglyTyped)?.stripsNullBytes == true) "foo" else "fo\u0000o",
+                            "string" to
+                                if ((allTypesBehavior as? StronglyTyped)?.stripsNullBytes == true)
+                                    "foo"
+                                else "fo\u0000o",
                             "number" to 42.1,
                             "integer" to 42,
                             "boolean" to true,
