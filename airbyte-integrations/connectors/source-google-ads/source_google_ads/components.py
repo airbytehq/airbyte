@@ -416,54 +416,6 @@ class KeysToSnakeCaseGoogleAdsTransformation(RecordTransformation):
 
 
 @dataclass
-class ChangeStatusRetriever(SimpleRetriever):
-    """
-    Retrieves change status records from the Google Ads API.
-    ChangeStatus stream requires custom retriever because Google Ads API requires limit for this stream to be set to 10,000.
-    When the number of records exceeds this limit, we need to adjust the start date to the last record's cursor.
-    """
-
-    QUERY_LIMIT = 10000
-    cursor_field: str = "change_status.last_change_date_time"
-
-    def _read_pages(
-        self,
-        records_generator_fn: Callable[[Optional[Mapping]], Iterable[Record]],
-        stream_state: StreamState,
-        stream_slice: StreamSlice,
-    ) -> Iterable[Record]:
-        """
-        Since this stream doesn’t support “real” pagination, we treat each HTTP
-        call as a slice defined by a start_date / end_date. If we hit the
-        QUERY_LIMIT exactly, we assume there may be more data at the end of that
-        slice, so we bump start_date forward to the last-record cursor and retry.
-        """
-        while True:
-            record_count = 0
-            last_record = None
-            response = self._fetch_next_page(stream_state, stream_slice)
-
-            # Yield everything we got
-            for rec in records_generator_fn(response):
-                record_count += 1
-                last_record = rec
-                yield rec
-
-            if record_count < self.QUERY_LIMIT:
-                break
-
-            # Update the stream slice start time to the last record's cursor
-            last_cursor = last_record[self.cursor_field]
-            cursor_slice = stream_slice.cursor_slice
-            cursor_slice["start_time"] = last_cursor
-            stream_slice = StreamSlice(
-                partition=stream_slice.partition,
-                cursor_slice=cursor_slice,
-                extra_fields=stream_slice.extra_fields,
-            )
-
-
-@dataclass
 class ChangeStatusRequester(GoogleAdsHttpRequester):
     CURSOR_FIELD: str = "change_status.last_change_date_time"
     LIMIT: int = 10000
@@ -508,7 +460,6 @@ class CriterionRetriever(SimpleRetriever):
     def _read_pages(
         self,
         records_generator_fn: Callable[[Optional[Mapping]], Iterable[Record]],
-        stream_state: StreamState,
         stream_slice: StreamSlice,
     ) -> Iterable[Record]:
         """
@@ -558,7 +509,7 @@ class CriterionRetriever(SimpleRetriever):
                 cursor_slice=stream_slice.cursor_slice,
                 extra_fields={"change_status.last_change_date_time": updated_times},
             )
-            response = self._fetch_next_page(stream_state, new_slice)
+            response = self._fetch_next_page(new_slice)
             for rec in records_generator_fn(response):
                 # attach timestamp from ChangeStatus
                 rec.data[self.cursor_field] = time_map.get(rec.data.get(self.primary_key[0]))
