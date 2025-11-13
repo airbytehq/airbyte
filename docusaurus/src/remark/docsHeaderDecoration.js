@@ -19,10 +19,34 @@ const plugin = () => {
     if (!docsPageInfo.isDocsPage) return;
 
     const registryEntry = await getRegistryEntry(vfile);
-
-    const latestPythonCdkVersion = await getLatestPythonCDKVersion();
-
     if (!registryEntry) return;
+
+    const rawCDKVersion = getFromPaths(
+      registryEntry,
+      "packageInfo_[oss|cloud].cdk_version",
+    );
+
+    const isPythonConnector =
+      typeof rawCDKVersion === "string" &&
+      rawCDKVersion.trim().toLowerCase().startsWith("python:");
+
+    let latestPythonCdkVersion = null;
+    if (isPythonConnector) {
+      console.log(
+        `[CDK Version] Fetching latest Python CDK version for connector: ${registryEntry.definitionId}`,
+      );
+      latestPythonCdkVersion = await getLatestPythonCDKVersion();
+
+      if (!latestPythonCdkVersion) {
+        console.warn(
+          `[CDK Version] WARNING: Unable to fetch latest Python CDK version for connector: ${registryEntry.definitionId}. CDK version comparison will not be available.`,
+        );
+      }
+    } else {
+      console.log(
+        `[CDK Version] Skipping PyPI fetch for non-Python connector: ${registryEntry.definitionId} (CDK: ${rawCDKVersion || "none"})`,
+      );
+    }
 
     let firstHeading = true;
 
@@ -30,10 +54,6 @@ const plugin = () => {
       if (firstHeading && node.depth === 1 && node.children.length === 1) {
         const originalTitle = node.children[0].value;
 
-        const rawCDKVersion = getFromPaths(
-          registryEntry,
-          "packageInfo_[oss|cloud].cdk_version",
-        );
         const syncSuccessRate = getFromPaths(
           registryEntry,
           "generated_[oss|cloud].metrics.[all|cloud|oss].sync_success_rate",
