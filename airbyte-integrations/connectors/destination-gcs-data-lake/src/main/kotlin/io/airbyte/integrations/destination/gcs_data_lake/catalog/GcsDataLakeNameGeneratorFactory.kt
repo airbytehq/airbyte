@@ -37,11 +37,13 @@ class GcsDataLakeColumnNameGenerator : ColumnNameGenerator {
 }
 
 /**
- * BigLake table ID generator that sanitizes names. BigLake doesn't support special characters (converts to alphanumeric+underscore)
+ * BigLake table ID generator that sanitizes names. BigLake doesn't support special characters
+ * (converts to alphanumeric+underscore)
  */
 class BigLakeTableIdGenerator(private val databaseName: String) : TableIdGenerator {
     override fun toTableIdentifier(stream: DestinationStream.Descriptor): TableIdentifier {
-        val namespace = Transformations.toAlphanumericAndUnderscore(stream.namespace ?: databaseName)
+        val namespace =
+            Transformations.toAlphanumericAndUnderscore(stream.namespace ?: databaseName)
         val name = Transformations.toAlphanumericAndUnderscore(stream.name)
         return tableIdOf(namespace, name)
     }
@@ -63,7 +65,9 @@ class GcsDataLakeNameGeneratorFactory(
     fun createFinalTableNameGenerator(): FinalTableNameGenerator =
         FinalTableNameGenerator { stream ->
             val namespace =
-                Transformations.toAlphanumericAndUnderscore(stream.namespace ?: gcsDataLakeConfiguration.namespace)
+                Transformations.toAlphanumericAndUnderscore(
+                    stream.namespace ?: gcsDataLakeConfiguration.namespace
+                )
             val name = Transformations.toAlphanumericAndUnderscore(stream.name)
             TableName(namespace = namespace, name = name)
         }
