@@ -14,6 +14,8 @@ import io.airbyte.integrations.destination.postgres.PostgresConfigUpdater
 import io.airbyte.integrations.destination.postgres.PostgresContainerHelper
 import io.airbyte.integrations.destination.postgres.spec.PostgresConfigurationFactory
 import io.airbyte.integrations.destination.postgres.spec.PostgresSpecification
+import io.airbyte.integrations.destination.postgres.spec.PostgresSpecificationCloud
+import io.airbyte.integrations.destination.postgres.spec.PostgresSpecificationOss
 import org.junit.jupiter.api.BeforeAll
 
 class PostgresAcceptanceTest : BasicFunctionalityIntegrationTest(
@@ -25,7 +27,7 @@ class PostgresAcceptanceTest : BasicFunctionalityIntegrationTest(
                         "username": "replace_me_username",
                         "password": "replace_me_password"
                     }""",
-    configSpecClass = PostgresSpecification::class.java,
+    configSpecClass = PostgresSpecificationCloud::class.java,
     dataDumper = PostgresDataDumper { spec ->
         val configOverrides = buildConfigOverridesForTestContainer()
         PostgresConfigurationFactory().makeWithOverrides(spec as PostgresSpecification, configOverrides)
