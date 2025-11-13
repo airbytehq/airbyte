@@ -4,19 +4,19 @@
 
 package io.airbyte.cdk.load.toolkits.load.db.orchestration
 
-import io.airbyte.cdk.load.command.Append
 import io.airbyte.cdk.load.command.DestinationCatalog
-import io.airbyte.cdk.load.command.DestinationStream
 import io.airbyte.cdk.load.command.NamespaceMapper
 import io.airbyte.cdk.load.data.AirbyteType
 import io.airbyte.cdk.load.data.FieldType
 import io.airbyte.cdk.load.data.ObjectType
 import io.airbyte.cdk.load.data.StringType
-import io.airbyte.cdk.load.orchestration.db.ColumnNameGenerator
-import io.airbyte.cdk.load.orchestration.db.FinalTableNameGenerator
-import io.airbyte.cdk.load.orchestration.db.RawTableNameGenerator
 import io.airbyte.cdk.load.orchestration.db.legacy_typing_deduping.DEFAULT_AIRBYTE_INTERNAL_NAMESPACE
 import io.airbyte.cdk.load.orchestration.db.legacy_typing_deduping.TableCatalogFactory
+import io.airbyte.cdk.load.schema.Append
+import io.airbyte.cdk.load.schema.DestinationStream
+import io.airbyte.cdk.load.table.ColumnNameGenerator
+import io.airbyte.cdk.load.table.FinalTableNameGenerator
+import io.airbyte.cdk.load.table.RawTableNameGenerator
 import io.airbyte.cdk.load.table.TableName
 import org.junit.jupiter.api.Assertions.assertAll
 import org.junit.jupiter.api.Assertions.assertEquals

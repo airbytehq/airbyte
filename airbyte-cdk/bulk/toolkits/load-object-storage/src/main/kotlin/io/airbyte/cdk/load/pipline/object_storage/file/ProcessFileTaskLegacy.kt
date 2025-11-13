@@ -4,7 +4,6 @@
 
 package io.airbyte.cdk.load.pipline.object_storage.file
 
-import io.airbyte.cdk.load.command.DestinationStream
 import io.airbyte.cdk.load.message.FileTransferQueueEndOfStream
 import io.airbyte.cdk.load.message.FileTransferQueueMessage
 import io.airbyte.cdk.load.message.FileTransferQueueRecord
@@ -14,6 +13,7 @@ import io.airbyte.cdk.load.message.PipelineEndOfStream
 import io.airbyte.cdk.load.message.PipelineEvent
 import io.airbyte.cdk.load.pipline.object_storage.ObjectKey
 import io.airbyte.cdk.load.pipline.object_storage.ObjectLoaderPartFormatter
+import io.airbyte.cdk.load.schema.DestinationStream
 import io.airbyte.cdk.load.task.SelfTerminating
 import io.airbyte.cdk.load.task.Task
 import io.airbyte.cdk.load.task.TerminalCondition

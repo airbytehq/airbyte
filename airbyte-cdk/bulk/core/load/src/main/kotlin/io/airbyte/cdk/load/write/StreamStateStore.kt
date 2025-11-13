@@ -4,7 +4,7 @@
 
 package io.airbyte.cdk.load.write
 
-import io.airbyte.cdk.load.command.DestinationStream
+import io.airbyte.cdk.load.schema.DestinationStream
 import jakarta.inject.Singleton
 import java.util.concurrent.ConcurrentHashMap
 

@@ -2,9 +2,7 @@
  * Copyright (c) 2025 Airbyte, Inc., all rights reserved.
  */
 
-package io.airbyte.cdk.load.orchestration.db.direct_load_table
-
-import io.airbyte.cdk.load.table.TableName
+package io.airbyte.cdk.load.table
 
 data class DirectLoadTableExecutionConfig(
     val tableName: TableName,

@@ -4,7 +4,6 @@
 
 package io.airbyte.cdk.load.data.parquet
 
-import io.airbyte.cdk.load.command.DestinationStream
 import io.airbyte.cdk.load.data.AirbyteSchemaNoopMapper
 import io.airbyte.cdk.load.data.AirbyteValueDeepCoercingMapper
 import io.airbyte.cdk.load.data.AirbyteValueNoopMapper
@@ -15,6 +14,7 @@ import io.airbyte.cdk.load.data.SchemalessValuesToJsonString
 import io.airbyte.cdk.load.data.TimeStringToInteger
 import io.airbyte.cdk.load.data.UnionTypeToDisjointRecord
 import io.airbyte.cdk.load.data.UnionValueToDisjointRecord
+import io.airbyte.cdk.load.schema.DestinationStream
 
 /**
  * @deprecated This class is deprecated and will be removed in a future release. We are

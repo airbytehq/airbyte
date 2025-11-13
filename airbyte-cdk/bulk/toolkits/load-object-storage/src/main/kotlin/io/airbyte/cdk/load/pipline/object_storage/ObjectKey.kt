@@ -4,8 +4,8 @@
 
 package io.airbyte.cdk.load.pipline.object_storage
 
-import io.airbyte.cdk.load.command.DestinationStream
 import io.airbyte.cdk.load.message.WithStream
+import io.airbyte.cdk.load.schema.DestinationStream
 
 data class ObjectKey(
     override val stream: DestinationStream.Descriptor,

@@ -4,8 +4,8 @@
 
 package io.airbyte.cdk.load.data
 
-import io.airbyte.cdk.load.command.DestinationStream
 import io.airbyte.cdk.load.message.Meta.Change
+import io.airbyte.cdk.load.schema.DestinationStream
 
 /**
  * @deprecated This class is deprecated and will be removed in a future release. We are

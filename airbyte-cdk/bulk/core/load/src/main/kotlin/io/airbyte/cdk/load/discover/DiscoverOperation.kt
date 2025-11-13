@@ -5,14 +5,14 @@
 package io.airbyte.cdk.load.discover
 
 import io.airbyte.cdk.Operation
-import io.airbyte.cdk.load.command.Append
-import io.airbyte.cdk.load.command.Dedupe
 import io.airbyte.cdk.load.command.DestinationDiscoverCatalog
 import io.airbyte.cdk.load.command.DestinationOperation
-import io.airbyte.cdk.load.command.ImportType
-import io.airbyte.cdk.load.command.SoftDelete
-import io.airbyte.cdk.load.command.Update
 import io.airbyte.cdk.load.data.json.AirbyteTypeToJsonSchema
+import io.airbyte.cdk.load.schema.Append
+import io.airbyte.cdk.load.schema.Dedupe
+import io.airbyte.cdk.load.schema.ImportType
+import io.airbyte.cdk.load.schema.SoftDelete
+import io.airbyte.cdk.load.schema.Update
 import io.airbyte.cdk.output.OutputConsumer
 import io.airbyte.protocol.models.v0.DestinationCatalog as ProtocolDestinationCatalog
 import io.airbyte.protocol.models.v0.DestinationOperation as ProtocolDestinationOperation

@@ -5,13 +5,13 @@
 package io.airbyte.cdk.load.message
 
 import com.fasterxml.jackson.databind.JsonNode
-import io.airbyte.cdk.load.command.DestinationStream
 import io.airbyte.cdk.load.data.AirbyteValueCoercer
 import io.airbyte.cdk.load.data.EnrichedAirbyteValue
 import io.airbyte.cdk.load.data.FieldType
 import io.airbyte.cdk.load.data.NullValue
 import io.airbyte.cdk.load.data.ObjectType
 import io.airbyte.cdk.load.data.json.toAirbyteValue
+import io.airbyte.cdk.load.schema.DestinationStream
 import io.airbyte.cdk.load.state.CheckpointId
 import io.airbyte.protocol.models.v0.AirbyteRecordMessageMetaChange
 import java.util.*

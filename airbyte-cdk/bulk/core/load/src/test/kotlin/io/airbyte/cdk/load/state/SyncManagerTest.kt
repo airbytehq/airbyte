@@ -5,9 +5,9 @@
 package io.airbyte.cdk.load.state
 
 import io.airbyte.cdk.TransientErrorException
-import io.airbyte.cdk.load.command.DestinationStream
 import io.airbyte.cdk.load.command.MockDestinationCatalogFactory.Companion.stream1
 import io.airbyte.cdk.load.command.MockDestinationCatalogFactory.Companion.stream2
+import io.airbyte.cdk.load.schema.DestinationStream
 import io.airbyte.cdk.load.test.util.CoroutineTestUtils
 import io.micronaut.test.extensions.junit5.annotation.MicronautTest
 import jakarta.inject.Inject

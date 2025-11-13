@@ -2,14 +2,10 @@
  * Copyright (c) 2025 Airbyte, Inc., all rights reserved.
  */
 
-package io.airbyte.cdk.load.orchestration.db
+package io.airbyte.cdk.load.table
 
-import io.airbyte.cdk.load.command.DestinationStream
 import io.airbyte.cdk.load.component.TableOperationsClient
-import io.airbyte.cdk.load.orchestration.db.direct_load_table.DirectLoadInitialStatus
-import io.airbyte.cdk.load.orchestration.db.direct_load_table.DirectLoadTableStatus
-import io.airbyte.cdk.load.orchestration.db.legacy_typing_deduping.TableCatalog
-import io.airbyte.cdk.load.table.TableName
+import io.airbyte.cdk.load.schema.DestinationStream
 import java.util.concurrent.ConcurrentHashMap
 import kotlinx.coroutines.coroutineScope
 import kotlinx.coroutines.launch

@@ -12,6 +12,10 @@ import io.airbyte.cdk.load.data.IntegerType
 import io.airbyte.cdk.load.data.ObjectType
 import io.airbyte.cdk.load.data.StringType
 import io.airbyte.cdk.load.data.json.JsonSchemaToAirbyteType
+import io.airbyte.cdk.load.schema.Append
+import io.airbyte.cdk.load.schema.Dedupe
+import io.airbyte.cdk.load.schema.DestinationStream
+import io.airbyte.cdk.load.schema.DestinationStreamFactory
 import io.airbyte.cdk.load.util.deserializeToNode
 import io.airbyte.protocol.models.v0.AirbyteStream
 import io.airbyte.protocol.models.v0.ConfiguredAirbyteCatalog

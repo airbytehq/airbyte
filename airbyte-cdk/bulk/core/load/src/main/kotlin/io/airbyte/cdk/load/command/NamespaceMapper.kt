@@ -5,6 +5,7 @@
 package io.airbyte.cdk.load.command
 
 import io.airbyte.cdk.load.config.NamespaceDefinitionType
+import io.airbyte.cdk.load.schema.DestinationStream
 import java.util.concurrent.ConcurrentHashMap
 
 class NamespaceMapper(

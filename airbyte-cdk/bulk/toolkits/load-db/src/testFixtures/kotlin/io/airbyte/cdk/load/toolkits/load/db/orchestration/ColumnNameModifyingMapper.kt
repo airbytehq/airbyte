@@ -6,7 +6,7 @@ package io.airbyte.cdk.load.toolkits.load.db.orchestration
 
 import io.airbyte.cdk.load.data.AirbyteType
 import io.airbyte.cdk.load.data.ObjectValue
-import io.airbyte.cdk.load.orchestration.db.ColumnNameGenerator
+import io.airbyte.cdk.load.table.ColumnNameGenerator
 import io.airbyte.cdk.load.test.util.ExpectedRecordMapper
 import io.airbyte.cdk.load.test.util.OutputRecord
 

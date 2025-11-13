@@ -5,9 +5,9 @@
 package io.airbyte.cdk.load.check
 
 import io.airbyte.cdk.load.command.DestinationCatalog
-import io.airbyte.cdk.load.command.DestinationStream
 import io.airbyte.cdk.load.message.DestinationRecordStreamComplete
 import io.airbyte.cdk.load.message.InputRecord
+import io.airbyte.cdk.load.schema.DestinationStream
 import io.airbyte.cdk.load.util.serializeToString
 import io.airbyte.cdk.load.write.WriteOperation
 import java.io.InputStream

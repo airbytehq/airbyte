@@ -10,6 +10,10 @@ import io.airbyte.cdk.load.config.CHECK_STREAM_NAMESPACE
 import io.airbyte.cdk.load.data.FieldType
 import io.airbyte.cdk.load.data.IntegerType
 import io.airbyte.cdk.load.data.ObjectType
+import io.airbyte.cdk.load.schema.Append
+import io.airbyte.cdk.load.schema.Dedupe
+import io.airbyte.cdk.load.schema.DestinationStream
+import io.airbyte.cdk.load.schema.DestinationStreamFactory
 import io.airbyte.protocol.models.v0.ConfiguredAirbyteCatalog
 import io.github.oshai.kotlinlogging.KotlinLogging
 import io.micronaut.context.annotation.Factory

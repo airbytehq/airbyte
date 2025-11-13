@@ -4,13 +4,13 @@
 package io.airbyte.cdk.load.file.object_storage
 
 import com.google.protobuf.kotlin.toByteString
-import io.airbyte.cdk.load.command.DestinationStream
-import io.airbyte.cdk.load.command.computeUnknownColumnChanges
 import io.airbyte.cdk.load.command.object_storage.ParquetFormatConfiguration
 import io.airbyte.cdk.load.data.*
 import io.airbyte.cdk.load.message.DestinationRecordProtobufSource
 import io.airbyte.cdk.load.message.DestinationRecordRaw
 import io.airbyte.cdk.load.message.DestinationRecordSource
+import io.airbyte.cdk.load.schema.DestinationStream
+import io.airbyte.cdk.load.schema.computeUnknownColumnChanges
 import io.airbyte.protocol.protobuf.AirbyteMessage
 import io.airbyte.protocol.protobuf.AirbyteRecordMessage
 import io.mockk.every

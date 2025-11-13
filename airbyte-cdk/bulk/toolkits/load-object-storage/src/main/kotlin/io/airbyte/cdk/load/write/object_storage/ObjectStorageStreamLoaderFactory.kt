@@ -5,9 +5,9 @@
 package io.airbyte.cdk.load.write.object_storage
 
 import edu.umd.cs.findbugs.annotations.SuppressFBWarnings
-import io.airbyte.cdk.load.command.DestinationStream
 import io.airbyte.cdk.load.file.object_storage.ObjectStorageClient
 import io.airbyte.cdk.load.file.object_storage.RemoteObject
+import io.airbyte.cdk.load.schema.DestinationStream
 import io.airbyte.cdk.load.state.DestinationStateManager
 import io.airbyte.cdk.load.state.StreamProcessingFailed
 import io.airbyte.cdk.load.state.object_storage.ObjectStorageDestinationState

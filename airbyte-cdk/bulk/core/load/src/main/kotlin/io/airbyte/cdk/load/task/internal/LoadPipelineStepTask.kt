@@ -5,7 +5,6 @@
 package io.airbyte.cdk.load.task.internal
 
 import com.google.common.annotations.VisibleForTesting
-import io.airbyte.cdk.load.command.DestinationStream
 import io.airbyte.cdk.load.config.PipelineInputEvent
 import io.airbyte.cdk.load.message.DestinationRecordRaw
 import io.airbyte.cdk.load.message.PartitionedQueue
@@ -24,6 +23,7 @@ import io.airbyte.cdk.load.pipeline.BatchStateUpdate
 import io.airbyte.cdk.load.pipeline.BatchUpdate
 import io.airbyte.cdk.load.pipeline.OutputPartitioner
 import io.airbyte.cdk.load.pipeline.PipelineFlushStrategy
+import io.airbyte.cdk.load.schema.DestinationStream
 import io.airbyte.cdk.load.state.CheckpointId
 import io.airbyte.cdk.load.state.CheckpointValue
 import io.airbyte.cdk.load.task.OnEndOfSync

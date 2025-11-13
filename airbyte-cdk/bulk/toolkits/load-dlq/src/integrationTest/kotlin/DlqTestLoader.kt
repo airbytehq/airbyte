@@ -12,7 +12,6 @@ import io.airbyte.cdk.load.check.dlq.DlqChecker
 import io.airbyte.cdk.load.command.DestinationCatalog
 import io.airbyte.cdk.load.command.DestinationConfiguration
 import io.airbyte.cdk.load.command.DestinationConfigurationFactory
-import io.airbyte.cdk.load.command.DestinationStream
 import io.airbyte.cdk.load.command.dlq.ConfigurationSpecificationWithDlq
 import io.airbyte.cdk.load.command.dlq.ObjectStorageConfig
 import io.airbyte.cdk.load.command.dlq.ObjectStorageConfigProvider
@@ -21,6 +20,7 @@ import io.airbyte.cdk.load.file.object_storage.ObjectStorageClient
 import io.airbyte.cdk.load.message.DestinationRecordRaw
 import io.airbyte.cdk.load.message.StreamKey
 import io.airbyte.cdk.load.pipeline.LoadPipeline
+import io.airbyte.cdk.load.schema.DestinationStream
 import io.airbyte.cdk.load.spec.DestinationSpecificationExtension
 import io.airbyte.cdk.load.write.DestinationWriter
 import io.airbyte.cdk.load.write.StreamLoader

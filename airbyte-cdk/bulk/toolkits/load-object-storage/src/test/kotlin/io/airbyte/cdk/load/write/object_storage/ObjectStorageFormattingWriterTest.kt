@@ -4,8 +4,6 @@
 
 package io.airbyte.cdk.load.write.object_storage
 
-import io.airbyte.cdk.load.command.Append
-import io.airbyte.cdk.load.command.DestinationStream
 import io.airbyte.cdk.load.command.NamespaceMapper
 import io.airbyte.cdk.load.config.NamespaceDefinitionType
 import io.airbyte.cdk.load.data.FieldType
@@ -18,6 +16,8 @@ import io.airbyte.cdk.load.file.object_storage.ObjectStorageFormattingWriter
 import io.airbyte.cdk.load.file.object_storage.StandardByteArrayOutputStream
 import io.airbyte.cdk.load.message.DestinationRecordJsonSource
 import io.airbyte.cdk.load.message.DestinationRecordRaw
+import io.airbyte.cdk.load.schema.Append
+import io.airbyte.cdk.load.schema.DestinationStream
 import io.airbyte.protocol.models.Jsons
 import io.airbyte.protocol.models.v0.AirbyteMessage
 import io.airbyte.protocol.models.v0.AirbyteRecordMessage

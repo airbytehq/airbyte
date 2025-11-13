@@ -4,7 +4,7 @@
 
 package io.airbyte.cdk.load.message
 
-import io.airbyte.cdk.load.command.DestinationStream
+import io.airbyte.cdk.load.schema.DestinationStream
 
 /**
  * Used internally by the CDK to keep track of streams while still allowing for partitioning on key.
