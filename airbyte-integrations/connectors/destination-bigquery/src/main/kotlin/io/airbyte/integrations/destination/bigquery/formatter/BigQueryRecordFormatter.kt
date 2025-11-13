@@ -86,16 +86,11 @@ class BigQueryRecordFormatter(
                     outputRecord[key] = (value.abValue as IntegerValue).value
                 else -> {
                     if (!legacyRawTablesOnly) {
-                        // if we're null, then just don't write a value into the output JSON,
-                        // so that bigquery will load a NULL value.
-                        // Otherwise, do all the type validation stuff, then write a value into
-                        // the output JSON.
+                        validateAirbyteValue(value)
                         if (value.abValue != NullValue) {
-                            // first, validate the value.
-                            validateAirbyteValue(value)
                             // then, populate the record.
-                            // Bigquery has some strict requirements for datetime / time formatting,
-                            // so handle that here.
+                            // Bigquery has some strict requirements for datetime / time
+                            // formatting, so handle that here.
                             when (value.type) {
                                 TimestampTypeWithTimezone ->
                                     outputRecord[columnNameMapping[key]!!] =
@@ -247,6 +242,10 @@ class BigQueryRecordFormatter(
         }
 
         fun validateAirbyteValue(value: EnrichedAirbyteValue) {
+            if (value.abValue == NullValue) {
+                // Null is always valid, so just return immediately
+                return
+            }
             when (value.type) {
                 is IntegerType -> {
                     (value.abValue as IntegerValue).value.let {
