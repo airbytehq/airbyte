@@ -1,3 +1,37 @@
+## Version 0.1.77
+
+**Extract CDK**
+
+* Fix duplicate metadata key in JdbcMetadataQuerier.
+
+## Version 0.1.76
+
+**Load CDK**
+
+* Remove a println from our code generating bad logs
+
+## Version 0.1.75
+
+**Extract CDK**
+
+* Improve handling of debezium engine shutdown.
+
+## Version 0.1.74
+
+load cdk: split up ensureSchemaMatches into smaller functions
+
+## Version 0.1.73
+
+**Load CDK**
+
+* More changes to `IcebergTableSynchronizer` to get BigLake working
+
+## Version 0.1.72
+
+**Extract CDK**
+
+* Fix case sensitivity for table filtering.
+
 ## Version 0.1.71
 
 **Load CDK**

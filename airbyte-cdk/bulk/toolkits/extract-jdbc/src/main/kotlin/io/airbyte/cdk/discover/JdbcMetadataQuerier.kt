@@ -97,7 +97,10 @@ class JdbcMetadataQuerier(
                         NamespaceKind.CATALOG_AND_SCHEMA -> namespace to namespace
                     }
 
-                val patterns = tableFiltersBySchema[namespace]
+                val patterns =
+                    tableFiltersBySchema.entries
+                        .firstOrNull { it.key.equals(namespace, ignoreCase = true) }
+                        ?.value
                 if (patterns != null && patterns.isNotEmpty()) {
                     for (pattern in patterns) {
                         addTablesFromQuery(catalog, schema, pattern)
@@ -151,7 +154,10 @@ class JdbcMetadataQuerier(
                         NamespaceKind.CATALOG_AND_SCHEMA -> namespace to namespace
                     }
 
-                val patterns = tableFiltersBySchema[namespace]
+                val patterns =
+                    tableFiltersBySchema.entries
+                        .firstOrNull { it.key.equals(namespace, ignoreCase = true) }
+                        ?.value
                 if (patterns != null && patterns.isNotEmpty()) {
                     for (pattern in patterns) {
                         addColumnsFromQuery(catalog, schema, pattern, isPseudoColumn = true)
@@ -168,8 +174,11 @@ class JdbcMetadataQuerier(
         }
         return@lazy results.groupBy({ it.first }, { it.second }).mapValues {
             (_, columnMetadataByTable: List<ColumnMetadata>) ->
-            columnMetadataByTable.filter { it.ordinal == null } +
-                columnMetadataByTable.filter { it.ordinal != null }.sortedBy { it.ordinal }
+            // Deduplicate columns by name to handle case-insensitive databases
+            // where uppercase/lowercase namespace queries return duplicate columns
+            val deduplicatedColumns = columnMetadataByTable.distinctBy { it.name }
+            deduplicatedColumns.filter { it.ordinal == null } +
+                deduplicatedColumns.filter { it.ordinal != null }.sortedBy { it.ordinal }
         }
     }
 

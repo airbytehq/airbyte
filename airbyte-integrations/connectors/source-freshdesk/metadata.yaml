@@ -13,6 +13,10 @@ data:
   dockerImageTag: 3.2.3
   dockerRepository: airbyte/source-freshdesk
   documentationUrl: https://docs.airbyte.com/integrations/sources/freshdesk
+  externalDocumentationUrls:
+    - title: Changelog
+      url: https://developers.freshdesk.com/api/#change_log
+      type: api_release_history
   githubIssueLabel: source-freshdesk
   icon: freshdesk.svg
   license: ELv2
