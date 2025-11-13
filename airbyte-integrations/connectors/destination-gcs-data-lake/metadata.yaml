@@ -6,9 +6,9 @@ data:
     baseImage: docker.io/airbyte/java-connector-base:2.0.3@sha256:119b8506bca069bbc8357a275936c7e2b0994e6947b81f1bf8d6ce9e16db7d47
   registryOverrides:
     cloud:
-      enabled: false
+      enabled: true
     oss:
-      enabled: false
+      enabled: true
   connectorSubtype: file
   connectorTestSuitesOptions:
     - suite: unitTests
@@ -21,7 +21,7 @@ data:
             alias: airbyte-connector-testing-secret-store
   connectorType: destination
   definitionId: 8c8a2d3e-1b4f-4a9c-9e7d-6f5a4b3c2d1e
-  dockerImageTag: 1.0.1
+  dockerImageTag: 1.0.2
   dockerRepository: airbyte/destination-gcs-data-lake
   documentationUrl: https://docs.airbyte.com/integrations/destinations/gcs-data-lake
   githubIssueLabel: destination-gcs-data-lake
