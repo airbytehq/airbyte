@@ -1,6 +1,6 @@
 # Step-by-Step Guide: Building a Dataflow CDK Destination Connector
 
-**Summary:** Paint-by-numbers guide to implementing a destination connector. Each phase has clear tasks, code patterns, and test validation. Build incrementally with quick feedback loops. After Phase 5, you'll have a working append-only connector. Full feature set complete by Phase 9.
+**Summary:** Paint-by-numbers guide to implementing a destination connector. Each phase has clear tasks, code patterns, and test validation. Build incrementally with quick feedback loops. After Phase 1, you have --spec working. After Phase 6, you'll have a working append-only connector. Full feature set complete by Phase 10.
 
 **Prerequisites:**
 - Familiarity with Kotlin and your target database
@@ -11,9 +11,9 @@
 
 ## Phase 0: Scaffolding
 
-**Goal:** Empty project that builds and runs sanity test
+**Goal:** Empty project structure that builds
 
-**Checkpoint:** `./gradlew :destination-{db}:build` succeeds
+**Checkpoint:** Project compiles
 
 ### Step 0.1: Create Directory Structure
 
@@ -102,77 +102,54 @@ fun main(args: Array<String>) {
 
 **That's it!** The framework handles everything else.
 
-### Step 0.5: Verify CDK Version Pin
-
-**Find the latest Bulk CDK version:**
+### Step 0.5: Verify Build
 
 ```bash
-# Method 1: Check the source version file
-cat airbyte-cdk/bulk/version.properties
-
-# Method 2: Check what other connectors are using
-grep -r "cdkVersion=" airbyte-integrations/connectors/destination-*/gradle.properties | sort -t= -k2 -V | tail -5
-
-# Method 3: Check published versions (if you have network access)
-# The latest published version is usually in the CDK repo
+$ ./gradlew :destination-{db}:build
 ```
 
-**Expected output from Method 1:**
-```
-version=0.1.76
-```
+**Expected:** Build succeeds
 
-**Expected output from Method 2:**
+**Troubleshooting:**
+- Missing dependencies? Check `build.gradle.kts`
+- Package name mismatches? Verify all files use consistent package
+- Micronaut scanning issues? Ensure `@Singleton` annotations present
+
+✅ **Checkpoint Complete:** Project compiles
+
+**You're ready for Phase 1 when:** `./gradlew :destination-{db}:build` succeeds
+
+---
+
+## Phase 1: Spec Operation
+
+**Goal:** Implement --spec operation (returns connector configuration schema)
+
+**Checkpoint:** Spec test passes
+
+### Step 1.1: Understand Configuration Classes
+
+**Two classes work together for configuration:**
+
+| Class | Purpose | Used By |
+|-------|---------|---------|
+| `{DB}Specification` | Defines UI form schema (what users see) | Spec operation (generates JSON schema) |
+| `{DB}Configuration` | Runtime config object (what your code uses) | Check and Write operations |
+
+**Flow:**
 ```
-destination-clickhouse/gradle.properties:cdkVersion=0.1.74
-destination-snowflake/gradle.properties:cdkVersion=0.1.74
-destination-bigquery/gradle.properties:cdkVersion=0.1.74
-destination-s3/gradle.properties:cdkVersion=0.1.74
-...
-```
-
-**Use the highest version you see**, typically from `version.properties` (this is the latest available)
-
-**Update your `gradle.properties`:**
-
-```properties
-cdkVersion=0.1.76  # Use the version from version.properties
-```
-
-**Verify your connector is using the pinned version:**
-
-```bash
-./gradlew :destination-{db}:dependencies --configuration runtimeClasspath | grep bulk-cdk
-```
-
-**Expected output (correct - using Maven artifacts):**
-```
-io.airbyte.bulk-cdk:bulk-cdk-core-load:0.1.76
-io.airbyte.bulk-cdk:bulk-cdk-toolkits-load-db:0.1.76
-```
-
-**Wrong output (using local instead of pinned):**
-```
-project :airbyte-cdk:bulk:core:load
-project :airbyte-cdk:bulk:toolkits:load-db
-```
-
-**If you see project references:**
-- You have `cdkVersion=local` in your `gradle.properties`
-- Change it to the pinned version: `cdkVersion=0.1.76`
-- Re-run the verification command
-
-**Quick check script:**
-```bash
-# One-liner to get latest version and verify your pin
-LATEST=$(cat airbyte-cdk/bulk/version.properties | grep version= | cut -d= -f2)
-YOUR_VERSION=$(cat destination-{db}/gradle.properties | grep cdkVersion= | cut -d= -f2)
-echo "Latest CDK: $LATEST"
-echo "Your pin: $YOUR_VERSION"
-[ "$YOUR_VERSION" = "$LATEST" ] && echo "✓ Using latest" || echo "⚠ Consider upgrading to $LATEST"
+User fills UI form
+  ↓
+Platform sends JSON matching Specification schema
+  ↓
+ConfigurationFactory parses JSON → Configuration object
+  ↓
+Your code uses Configuration object
 ```
 
-### Step 0.6: Create Minimal Specification
+### Step 1.2: Create Specification Class
+
+**Purpose:** Defines the configuration form users fill in Airbyte UI
 
 **File:** `spec/{DB}Specification.kt`
 
@@ -208,7 +185,15 @@ open class {DB}Specification : ConfigurationSpecification() {
 }
 ```
 
-### Step 0.5: Create Configuration Classes
+**Key annotations:**
+- `@JsonProperty("field_name")` - Field name in JSON
+- `@JsonPropertyDescription("...")` - Help text in UI
+- `@JsonSchemaTitle("Title")` - Label in UI (optional, defaults to property name)
+- `@JsonSchemaInject(json = """{"airbyte_secret": true}""")` - Mark as secret (passwords, API keys)
+
+### Step 1.3: Create Configuration and Factory
+
+**Purpose:** Runtime configuration object your code actually uses
 
 **File:** `spec/{DB}Configuration.kt`
 
@@ -219,6 +204,7 @@ import io.airbyte.cdk.load.command.DestinationConfiguration
 import io.airbyte.cdk.load.command.DestinationConfigurationFactory
 import io.micronaut.context.annotation.Singleton
 
+// Runtime configuration (used by your code)
 data class {DB}Configuration(
     val hostname: String,
     val port: Int,
@@ -227,6 +213,7 @@ data class {DB}Configuration(
     val password: String,
 ) : DestinationConfiguration()
 
+// Factory: Converts Specification → Configuration
 @Singleton
 class {DB}ConfigurationFactory :
     DestinationConfigurationFactory<{DB}Specification, {DB}Configuration> {
@@ -245,7 +232,18 @@ class {DB}ConfigurationFactory :
 }
 ```
 
-### Step 0.7: Create Specification Extension
+**Why two classes?**
+- **Specification:** JSON schema annotations, defaults, UI metadata
+- **Configuration:** Clean runtime object, validated values, no Jackson overhead
+- **Factory:** Validation and transformation layer between them
+
+**Simple rule:**
+- Specification = What users configure
+- Configuration = What your code uses
+
+### Step 1.4: Create Specification Extension
+
+**Purpose:** Declares what sync modes your connector supports
 
 **File:** `spec/{DB}SpecificationExtension.kt`
 
@@ -265,35 +263,195 @@ class {DB}SpecificationExtension : DestinationSpecificationExtension {
             DestinationSyncMode.APPEND_DEDUP,
         )
     override val supportsIncremental = true
+
+    // Optional: Group configuration fields in UI
+    override val groups =
+        listOf(
+            DestinationSpecificationExtension.Group("connection", "Connection"),
+            DestinationSpecificationExtension.Group("advanced", "Advanced"),
+        )
 }
 ```
 
-### Step 0.8: Verify Build
+### Step 1.5: Configure Documentation URL
 
-```bash
-$ ./gradlew :destination-{db}:build
+**File:** `src/main/resources/application.yml`
+
+```yaml
+airbyte:
+  connector:
+    metadata:
+      documentation-url: 'https://docs.airbyte.com/integrations/destinations/{db}'
 ```
 
-**Expected:** Build succeeds (compilation only, no tests yet)
+**Or in build.gradle.kts (alternative):**
+
+```kotlin
+airbyteBulkConnector {
+    core = "load"
+    toolkits = listOf("load-db")
+
+    // Optional: override documentation URL
+    // documentationUrl = "https://docs.airbyte.com/integrations/destinations/{db}"
+}
+```
+
+**Default:** If not specified, uses placeholder URL
+
+### Step 1.6: Create Expected Spec Test File
+
+**File:** `src/test-integration/resources/expected-spec-oss.json`
+
+```json
+{
+  "documentationUrl": "https://docs.airbyte.com/integrations/destinations/{db}",
+  "connectionSpecification": {
+    "$schema": "http://json-schema.org/draft-07/schema#",
+    "title": "{DB} Destination Spec",
+    "type": "object",
+    "required": [
+      "hostname",
+      "port",
+      "database",
+      "username",
+      "password"
+    ],
+    "properties": {
+      "hostname": {
+        "type": "string",
+        "title": "Hostname",
+        "description": "Hostname of the database server"
+      },
+      "port": {
+        "type": "integer",
+        "title": "Port",
+        "description": "Port of the database server"
+      },
+      "database": {
+        "type": "string",
+        "title": "Database",
+        "description": "Name of the database"
+      },
+      "username": {
+        "type": "string",
+        "title": "Username",
+        "description": "Username for authentication"
+      },
+      "password": {
+        "type": "string",
+        "title": "Password",
+        "description": "Password for authentication",
+        "airbyte_secret": true
+      }
+    },
+    "groups": [
+      {"id": "connection", "title": "Connection"},
+      {"id": "advanced", "title": "Advanced"}
+    ]
+  },
+  "supportsIncremental": true,
+  "supportsNormalization": false,
+  "supportsDBT": false,
+  "supported_destination_sync_modes": [
+    "overwrite",
+    "append",
+    "append_dedup"
+  ]
+}
+```
+
+**Note:** This file is a snapshot of expected output. Generate it by:
+1. Running spec operation manually
+2. Copying output to this file
+3. Using it for regression testing
+
+### Step 1.7: Create Spec Test
+
+**File:** `src/test-integration/kotlin/.../spec/{DB}SpecTest.kt`
+
+```kotlin
+package io.airbyte.integrations.destination.{db}.spec
+
+import io.airbyte.cdk.load.spec.SpecTest
+
+class {DB}SpecTest : SpecTest()
+```
+
+**What this tests:**
+- Spec operation executes without errors
+- Returns valid JSON schema
+- Matches expected-spec-oss.json (snapshot test)
+- If Cloud-specific: Matches expected-spec-cloud.json
+
+### Step 1.8: Generate and Validate Spec
+
+**Run spec operation to generate the JSON schema:**
+
+```bash
+$ ./gradlew :destination-{db}:run --args='--spec'
+```
+
+**Expected output (stdout):**
+```json
+{
+  "type": "SPEC",
+  "spec": {
+    "documentationUrl": "https://docs.airbyte.com/integrations/destinations/{db}",
+    "connectionSpecification": { ... },
+    "supportsIncremental": true,
+    "supported_destination_sync_modes": ["overwrite", "append", "append_dedup"]
+  }
+}
+```
+
+**Copy the `spec` object** (not the outer wrapper) to:
+
+```bash
+# Create resources directory
+mkdir -p src/test-integration/resources
+
+# Manually copy the "spec" portion to this file:
+# src/test-integration/resources/expected-spec-oss.json
+```
+
+**Tip:** Use `jq` to format: `./gradlew :destination-{db}:run --args='--spec' | jq .spec > expected-spec-oss.json`
+
+### Step 1.9: Run Spec Test
+
+```bash
+$ ./gradlew :destination-{db}:integrationTestSpecOss
+```
+
+**Expected:**
+```
+✓ testSpecOss
+```
 
 **Troubleshooting:**
-- Missing dependencies? Check `build.gradle.kts`
-- Package name mismatches? Verify all files use consistent package
-- Micronaut scanning issues? Ensure `@Singleton` annotations present
+- **Spec operation fails:**
+  - Check `application.yml` has documentation-url
+  - Verify Specification class has proper Jackson annotations
+  - Check SpecificationExtension is a `@Singleton`
 
-✅ **Checkpoint Complete:** Project compiles
+- **Spec test fails:**
+  - Actual spec doesn't match expected-spec-oss.json
+  - Run `--spec` manually to see what's generated
+  - Update expected-spec-oss.json with correct output
+  - Ensure JSON formatting matches (no trailing commas, consistent order)
 
-**You're ready for Phase 1 when:** `./gradlew :destination-{db}:build` succeeds
+✅ **Checkpoint Complete:** Spec operation works
+
+**You're ready for Phase 2 when:** `./gradlew :destination-{db}:integrationTestSpecOss` passes
 
 ---
 
-## Phase 1: Database Connectivity
+## Phase 2: Database Connectivity
 
 **Goal:** Establish database connection
 
 **Checkpoint:** Can connect to database and execute simple query
 
-### Step 1.1: Create BeanFactory with DataSource
+### Step 2.1: Create BeanFactory with DataSource
 
 **File:** `{DB}BeanFactory.kt`
 
@@ -352,7 +510,7 @@ class {DB}BeanFactory {
 }
 ```
 
-### Step 1.2: Create Test Configuration
+### Step 2.2: Create Test Configuration
 
 **File:** `src/test-integration/kotlin/.../component/{DB}TestConfigFactory.kt`
 
@@ -427,7 +585,7 @@ fun testConfig(container: {DB}Container): {DB}Configuration {
 }
 ```
 
-### Step 1.3: Create Minimal Test Client
+### Step 2.3: Create Minimal Test Client
 
 **File:** `src/test-integration/kotlin/.../component/{DB}TestTableOperationsClient.kt`
 
@@ -475,7 +633,7 @@ class {DB}TestTableOperationsClient(
 }
 ```
 
-### Step 1.4: Create TableOperationsTest (Minimal)
+### Step 2.4: Create TableOperationsTest (Minimal)
 
 **File:** `src/test-integration/kotlin/.../component/{DB}TableOperationsTest.kt`
 
@@ -505,7 +663,7 @@ class {DB}TableOperationsTest(
 }
 ```
 
-### Step 1.5: Validate Connection
+### Step 2.5: Validate Connection
 
 ```bash
 $ ./gradlew :destination-{db}:testComponentConnectToDatabase
@@ -534,17 +692,17 @@ $ ./gradlew :destination-{db}:componentTest
 
 ✅ **Checkpoint Complete:** Can connect to database
 
-**You're ready for Phase 2 when:** `connect to database` test passes
+**You're ready for Phase 3 when:** `connect to database` test passes
 
 ---
 
-## Phase 2: Namespace Operations
+## Phase 3: Namespace Operations
 
 **Goal:** Create and drop schemas/databases
 
 **Checkpoint:** Can manage namespaces
 
-### Step 2.1: Create SQL Generator (Namespace Methods)
+### Step 3.1: Create SQL Generator (Namespace Methods)
 
 **File:** `client/{DB}SqlGenerator.kt`
 
@@ -720,13 +878,13 @@ $ ./gradlew :destination-{db}:componentTest
 
 ---
 
-## Phase 3: Basic Table Operations
+## Phase 4: Basic Table Operations
 
 **Goal:** Create tables, insert data, count rows
 
 **Checkpoint:** Can perform basic table CRUD
 
-### Step 3.1: Create Column Utilities
+### Step 4.1: Create Column Utilities
 
 **File:** `client/{DB}ColumnUtils.kt`
 
@@ -1012,7 +1170,7 @@ $ ./gradlew :destination-{db}:componentTest
 
 ---
 
-## Phase 4: Generation ID Support
+## Phase 5: Generation ID Support
 
 **Goal:** Track sync generations for refresh handling
 
@@ -1061,7 +1219,7 @@ $ ./gradlew :destination-{db}:componentTest
 
 ---
 
-## Phase 5: Append Mode - First Working Sync
+## Phase 6: Append Mode - First Working Sync
 
 **Goal:** Run a complete sync in append mode
 
@@ -1520,7 +1678,7 @@ $ ./gradlew :destination-{db}:componentTest
 
 ---
 
-## Phase 6: Overwrite Mode
+## Phase 7: Overwrite Mode
 
 **Goal:** Support full refresh (replace all data)
 
@@ -1651,7 +1809,7 @@ Integration: testAppend, testTruncate pass
 
 ---
 
-## Phase 7: Copy Operation
+## Phase 8: Copy Operation
 
 **Goal:** Support table copying (used internally by some modes)
 
@@ -1731,7 +1889,7 @@ Integration: testAppend, testTruncate pass
 
 ---
 
-## Phase 8: Schema Evolution
+## Phase 9: Schema Evolution
 
 **Goal:** Automatically adapt to schema changes
 
@@ -1998,7 +2156,7 @@ Integration: testAppend, testTruncate, testAppendSchemaEvolution pass
 
 ---
 
-## Phase 9: Dedupe Mode
+## Phase 10: Dedupe Mode
 
 **Goal:** Support primary key deduplication
 
@@ -2271,7 +2429,7 @@ Integration: testAppend, testTruncate, testAppendSchemaEvolution, testDedupe pas
 
 ---
 
-## Phase 10: CDC Support (Optional)
+## Phase 11: CDC Support (Optional)
 
 **Goal:** Handle source deletions
 
@@ -2396,7 +2554,7 @@ $ ./gradlew :destination-{db}:integrationTest
 
 ---
 
-## Phase 11: Optimization & Polish
+## Phase 12: Optimization & Polish
 
 **Goal:** Production-ready performance
 

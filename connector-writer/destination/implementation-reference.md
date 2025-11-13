@@ -825,6 +825,121 @@ ALTER TABLE t MODIFY COLUMN col Nullable(String);
 
 ---
 
+## The Three Operations
+
+**Every connector must support three operations:**
+
+| Operation | Trigger | Purpose | Output | Implementation |
+|-----------|---------|---------|--------|----------------|
+| `--spec` | CLI flag | Return connector capabilities | SPEC message with JSON schema | Automatic (via Specification class) |
+| `--check` | CLI flag | Validate connection | CONNECTION_STATUS message | Implement Checker |
+| `--write` | CLI flag | Execute sync | STATE messages | Implement Writer, Client, Buffer |
+
+### Spec Operation
+
+**Command:**
+```bash
+destination-{db} --spec
+```
+
+**What it does:**
+- Reads your `{DB}Specification` class
+- Generates JSON schema from Jackson annotations
+- Adds supported sync modes from `{DB}SpecificationExtension`
+- Returns SPEC message to stdout
+
+**What you implement:**
+- `{DB}Specification` class with `@JsonProperty`, `@JsonSchemaTitle`, etc.
+- `{DB}SpecificationExtension` declaring supported sync modes
+- `application.yml` with documentation URL (optional)
+
+**Output example:**
+```json
+{
+  "type": "SPEC",
+  "spec": {
+    "documentationUrl": "https://docs.airbyte.com/integrations/destinations/{db}",
+    "connectionSpecification": {
+      "$schema": "http://json-schema.org/draft-07/schema#",
+      "type": "object",
+      "required": ["hostname", "database", "username", "password"],
+      "properties": { ... }
+    },
+    "supportsIncremental": true,
+    "supported_destination_sync_modes": ["overwrite", "append", "append_dedup"]
+  }
+}
+```
+
+**Testing:**
+```kotlin
+// src/test-integration/kotlin/.../spec/{DB}SpecTest.kt
+class {DB}SpecTest : SpecTest()
+
+// Validates against: src/test-integration/resources/expected-spec-oss.json
+```
+
+**Covered in:** Phase 0, Steps 0.6-0.12 of step-by-step-guide.md
+
+### Check Operation
+
+**Command:**
+```bash
+destination-{db} --check --config config.json
+```
+
+**What it does:**
+- Validates configuration
+- Tests database connection
+- Creates test table, inserts record, verifies, cleans up
+- Returns CONNECTION_STATUS (SUCCEEDED or FAILED)
+
+**What you implement:**
+- `{DB}Checker` class implementing `DestinationCheckerV2`
+- `check()` method that validates connection
+
+**Output example:**
+```json
+{
+  "type": "CONNECTION_STATUS",
+  "connectionStatus": {
+    "status": "SUCCEEDED"
+  }
+}
+```
+
+**Covered in:** Phase 5, Step 5.9 of step-by-step-guide.md
+
+### Write Operation
+
+**Command:**
+```bash
+destination-{db} --write --config config.json --catalog catalog.json < messages.jsonl
+```
+
+**What it does:**
+- Reads RECORD and STATE messages from stdin
+- Processes records through data pipeline
+- Writes to database via your InsertBuffer
+- Emits STATE messages to stdout
+- Handles all sync modes (append, dedupe, overwrite)
+
+**What you implement:**
+- All 4 core components (Client, SqlGenerator, InsertBuffer, ColumnUtils)
+- Writer, Aggregate, AggregateFactory
+- Name generators
+
+**Output example:**
+```json
+{"type":"LOG","log":{"level":"INFO","message":"Beginning sync..."}}
+{"type":"LOG","log":{"level":"INFO","message":"Finished insert of 1000 rows"}}
+{"type":"STATE","state":{"type":"STREAM","stream":{...},"sourceStats":{"recordCount":1000.0}}}
+```
+
+**Covered in:** Phases 1-11 of step-by-step-guide.md
+
+---
+
 ## CDK Version Pinning
 
 ### Required Setup
