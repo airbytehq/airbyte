@@ -201,7 +201,7 @@ class MySqlSourceConfigurationSpecification : ConfigurationSpecification() {
 }
 
 @JsonSchemaTitle("Table Filter")
-@JsonSchemaDescription("Inclusion filter configuration for table selection per schema.")
+@JsonSchemaDescription("Inclusion filter configuration for table selection.")
 @JsonPropertyOrder("schema_name", "table_name_patterns")
 @SuppressFBWarnings(value = ["NP_NONNULL_RETURN_VIOLATION"], justification = "Micronaut DI")
 class TableFilter {
