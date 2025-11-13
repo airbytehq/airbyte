@@ -1,8 +1,8 @@
-version: 6.33.2
+version: 6.41.5
 
 type: DeclarativeSource
 
-description: Add support for custom domain
+description: Connector for Vitally.io
 
 check:
   type: CheckStream
@@ -44,6 +44,8 @@ definitions:
             type: CursorPagination
             page_size: 100
             cursor_value: "{{ response.next }}"
+        decoder:
+          type: JsonDecoder
       schema_loader:
         type: InlineSchemaLoader
         schema:
@@ -79,6 +81,8 @@ definitions:
             type: CursorPagination
             page_size: 100
             cursor_value: "{{ response.next }}"
+        decoder:
+          type: JsonDecoder
       schema_loader:
         type: InlineSchemaLoader
         schema:
@@ -114,6 +118,8 @@ definitions:
             type: CursorPagination
             page_size: 100
             cursor_value: "{{ response.next }}"
+        decoder:
+          type: JsonDecoder
       schema_loader:
         type: InlineSchemaLoader
         schema:
@@ -149,6 +155,8 @@ definitions:
             type: CursorPagination
             page_size: 100
             cursor_value: "{{ response.next }}"
+        decoder:
+          type: JsonDecoder
       schema_loader:
         type: InlineSchemaLoader
         schema:
@@ -184,6 +192,8 @@ definitions:
             type: CursorPagination
             page_size: 100
             cursor_value: "{{ response.next }}"
+        decoder:
+          type: JsonDecoder
       schema_loader:
         type: InlineSchemaLoader
         schema:
@@ -219,13 +229,17 @@ definitions:
             type: CursorPagination
             page_size: 100
             cursor_value: "{{ response.next }}"
+        decoder:
+          type: JsonDecoder
       schema_loader:
         type: InlineSchemaLoader
         schema:
           $ref: "#/schemas/users"
   base_requester:
     type: HttpRequester
-    url_base: "{{ 'https://' + config['domain'] + '.' if config.domain else ''  + 'rest.vitally.io/resources' }}"
+    url_base: >-
+      {{ ('https://' + config['domain'] + '.' if config.domain else '') +
+      'rest.vitally.io/resources' }}
     authenticator:
       type: BasicHttpAuthenticator
       password: "{{ config[\"basic_auth_header\"] }}"
@@ -251,11 +265,12 @@ spec:
     properties:
       domain:
         type: string
-        order: 0
-        title: Custom Domain
         description: >-
-          Provide only the domain part, like https://{your-domain}.rest.vitally.io/. 
-          Keep empty if you don't have a subdomain.
+          Provide only the subdomain part, like
+          https://{your-custom-subdomain}.rest.vitally.io/.  Keep empty if you
+          don't have a subdomain.
+        order: 0
+        title: Custom Subdomain
       status:
         type: string
         description: >-
@@ -291,43 +306,43 @@ metadata:
     users: false
   testedStreams:
     accounts:
-      hasRecords: true
-      streamHash: ca1b94c2b9bdc691bcd85285d72f00f6597918e0
+      streamHash: 30ddca51972202cbbad3ed172261a548849a62e4
       hasResponse: true
-      primaryKeysAreUnique: true
-      primaryKeysArePresent: true
       responsesAreSuccessful: true
+      hasRecords: true
+      primaryKeysArePresent: true
+      primaryKeysAreUnique: true
     admins:
-      hasRecords: true
-      streamHash: 5346644c54cc0595f3109dcb9a630024542e9245
+      streamHash: d9efad91bc144a5f484691c9ce4b539e878be340
       hasResponse: true
-      primaryKeysAreUnique: true
-      primaryKeysArePresent: true
       responsesAreSuccessful: true
+      hasRecords: true
+      primaryKeysArePresent: true
+      primaryKeysAreUnique: true
     conversations:
       hasRecords: true
-      streamHash: f9f408ccf0d825833fa5d2841f7735aa5499a1fe
+      streamHash: ea4c7e3fe9b501cd8ae0b63eefcf6cff9421015a
       hasResponse: true
       primaryKeysAreUnique: true
       primaryKeysArePresent: true
       responsesAreSuccessful: true
     notes:
       hasRecords: true
-      streamHash: cde6b8c66ff0e648b01c91c4ec51949a53953910
+      streamHash: a0dcaf271fca368ff8abc675084b1bda11cbf300
       hasResponse: true
       primaryKeysAreUnique: true
       primaryKeysArePresent: true
       responsesAreSuccessful: true
     tasks:
       hasRecords: true
-      streamHash: ac9aec74e2812d51bb69abf28087adfadf2f99de
+      streamHash: 34636bcd9f67a9b607a859afbf56ee4178d78eec
       hasResponse: true
       primaryKeysAreUnique: true
       primaryKeysArePresent: true
       responsesAreSuccessful: true
     users:
       hasRecords: true
-      streamHash: dd05be79d845c8fb8b97b16cbbe3b191559e032d
+      streamHash: 2d5e3875fcfc1dbb5af6c6319bcdd700d5a35fbe
       hasResponse: true
       primaryKeysAreUnique: true
       primaryKeysArePresent: true

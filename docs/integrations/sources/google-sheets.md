@@ -129,6 +129,128 @@ If your spreadsheet is viewable by anyone with its link, no further action is ne
 </FieldAnchor>
 <HideInUI>
 
+## Configuration Options
+
+### Stream Name Overrides (Rename Sheet/Stream Names)
+
+The Google Sheets connector allows you to optionally rename streams (sheet/tab names) as they appear in Airbyte and your destination. This is useful if your sheet names are not descriptive, contain special characters, or you want to standardize naming across sources.
+
+#### How it works
+
+- You can provide a list of overrides, each specifying a `source_stream_name` (the exact name of the sheet/tab in your spreadsheet) and a `custom_stream_name` (the name you want it to appear as in Airbyte and your destination).
+- If a `source_stream_name` is not found in your spreadsheet, it will be ignored and the default name will be used.
+- This feature only affects stream (sheet/tab) names, not field/column names.
+- If you want to rename fields or column names, you can do so using the Airbyte Mappings feature after your connection is created. See the Airbyte [documentation](https://docs.airbyte.com/platform/using-airbyte/mappings) for more details on how to use Mappings.
+- Renaming occurs before any other name conversion or sanitization options.
+
+#### Example
+
+Suppose your spreadsheet has sheets named `Sheet1`, `2024 Q1`, and `Summary`. You want to rename them to `sales_data`, `q1_2024`, and leave `Summary` unchanged. You would configure:
+
+```json
+[
+  { "source_stream_name": "Sheet1", "custom_stream_name": "sales_data" },
+  { "source_stream_name": "2024 Q1", "custom_stream_name": "q1_2024" }
+]
+```
+
+After discovery, your streams in Airbyte will be named `sales_data`, `q1_2024`, and `Summary`.
+
+#### How to configure
+
+- In the Airbyte UI, add your overrides in the **Stream Name Overrides** field as an array of objects.
+- If you do not wish to rename any streams, leave this field blank.
+- **After adding or changing a stream name override, refresh your schema in Airbyte to see the new stream names take effect.**
+- **Overridden streams will default to Sync Mode: Full Refresh (Append), which does not support primary keys. If you want to use primary keys and deduplication, update the sync mode to "Full Refresh | Overwrite + Deduped" in your connection settings.**
+
+---
+
+### Google Sheets Connector Column Name Conversion
+
+The Google Sheets connector offers options to customize how column names from your spreadsheet are converted to be SQL-compliant. These settings can be configured in the Airbyte UI when setting up the connector.
+
+---
+
+#### 1. Convert Column Names to SQL-Compliant Format
+- **Description**: When enabled, this converts column names to a format compatible with SQL databases (e.g., lowercasing, replacing spaces with underscores). This is the primary toggle required to enable any column name conversion.
+- **Default**: Off
+
+---
+
+#### 2. Additional Conversion Options
+The following options allow you to fine-tune the column name conversion process. They only take effect if "Convert Column Names to SQL-Compliant Format" is enabled.
+
+- **Remove Leading and Trailing Underscores**
+  - **Description**: Removes leading and trailing underscores from column names. Note that leading underscores are preserved for column names starting with a number if "Allow Leading Numbers" is disabled.
+  - **Example**:  
+    - Input: `"  EXAMPLE Domain  "`  
+    - Output: `"example_domain"`
+  - **Default**: Off
+
+- **Combine Number-Word Pairs**
+  - **Description**: Combines adjacent numbers and words into a single token without separators.
+  - **Example**:  
+    - Input: `"50th Percentile"`  
+    - Output: `"50th_percentile"` (if "Allow Leading Numbers" is enabled)  
+    - Output: `"_50th_percentile"` (if "Allow Leading Numbers" is disabled)
+  - **Default**: Off
+
+- **Remove All Special Characters**
+  - **Description**: Removes all special characters (e.g., `*`, `?`, `!`, `$`, `%`, `(`, `)`) from column names.
+  - **Example**:  
+    - Input: `"Example ID*"`  
+    - Output: `"example_id"`
+  - **Default**: Off
+
+- **Combine Letter-Number Pairs**
+  - **Description**: Combines adjacent letters and numbers into a single token without separators.
+  - **Example**:  
+    - Input: `"Q3 2023"`  
+    - Output: `"q3_2023"`
+  - **Default**: Off
+
+- **Allow Leading Numbers**
+  - **Description**: Allows column names to start with numbers. If disabled, a leading underscore is added to column names that begin with a number.
+  - **Example**:  
+    - Input: `"50th Percentile"`  
+    - Output: `"50_th_percentile"` (if enabled)  
+    - Output: `"_50_th_percentile"` (if disabled)
+  - **Default**: Off
+
+---
+
+#### Additional Details
+- All converted column names are lowercased.
+- Multiple spaces or special characters are collapsed or removed, not replaced with multiple underscores.
+- Only single underscores are used to separate tokens.
+- The result is always SQL-friendly and readable.
+
+---
+
+These options provide flexibility to tailor column name conversions to your specific database requirements. Adjust them as needed in the Airbyte UI when configuring the Google Sheets connector.
+
+---
+
+### Header Deduplication
+
+The Google Sheets connector automatically handles duplicate column headers by appending the cell position to create unique field names. This ensures that all columns are properly synced even when your spreadsheet contains duplicate header names.
+
+#### How it works
+
+- When duplicate headers are detected, the connector appends `_<cell_position>` to each duplicated header name
+- The cell position follows the standard Google Sheet naming convention (e.g., A1, B1, C1, etc.)
+- This creates unique field names while preserving the original header text
+
+#### Example
+
+If your spreadsheet has a header named `stats` in both columns C and Q (positions C1 and Q1), the connector will create two distinct fields:
+- `stats_C1` (for the column at position C1)
+- `stats_Q1` (for the column at position Q1)
+
+This ensures that data from both columns is properly captured and synced to your destination, with clear identification of which column each field represents.
+
+---
+
 ## Supported sync modes
 
 The Google Sheets source connector supports the following [sync modes](https://docs.airbyte.com/cloud/core-concepts/#connection-sync-modes):
@@ -187,11 +309,30 @@ Airbyte batches requests to the API in order to efficiently pull data and respec
 
 | Version    | Date       | Pull Request                                             | Subject                                                                                                                                                                |
 |------------|------------|----------------------------------------------------------|------------------------------------------------------------------------------------------------------------------------------------------------------------------------|
-| 0.9.4 | 2025-03-01 | [54989](https://github.com/airbytehq/airbyte/pull/54989) | Update dependencies |
-| 0.9.3 | 2025-02-22 | [54434](https://github.com/airbytehq/airbyte/pull/54434) | Update dependencies |
-| 0.9.2 | 2025-02-15 | [53720](https://github.com/airbytehq/airbyte/pull/53720) | Update dependencies |
-| 0.9.1 | 2025-02-08 | [51696](https://github.com/airbytehq/airbyte/pull/51696) | Update dependencies |
-| 0.9.0 | 2025-02-04 | [53154](https://github.com/airbytehq/airbyte/pull/53154) | Promoting release candidate 0.9.0-rc.3 to a main version. |
+| 0.12.12 | 2025-10-29 | [68759](https://github.com/airbytehq/airbyte/pull/68759) | Update dependencies |
+| 0.12.11 | 2025-10-21 | [68254](https://github.com/airbytehq/airbyte/pull/68254) | Update dependencies |
+| 0.12.10 | 2025-10-16 | [67531](https://github.com/airbytehq/airbyte/pull/67531) | Add error handling for unexpected data in sheets causing 500 responses. |
+| 0.12.9 | 2025-10-14 | [67876](https://github.com/airbytehq/airbyte/pull/67876) | Update dependencies |
+| 0.12.8 | 2025-10-07 | [67395](https://github.com/airbytehq/airbyte/pull/67395) | Update dependencies |
+| 0.12.7 | 2025-09-30 | [65383](https://github.com/airbytehq/airbyte/pull/65383) | Update dependencies |
+| 0.12.6 | 2025-09-10 | [66012](https://github.com/airbytehq/airbyte/pull/66012) | Update to CDK v7 |
+| 0.12.5 | 2025-08-09 | [64633](https://github.com/airbytehq/airbyte/pull/64633) | Update dependencies |
+| 0.12.4 | 2025-08-02 | [64179](https://github.com/airbytehq/airbyte/pull/64179) | Update dependencies |
+| 0.12.3 | 2025-07-26 | [63822](https://github.com/airbytehq/airbyte/pull/63822) | Update dependencies |
+| 0.12.2 | 2025-07-22 | [63334](https://github.com/airbytehq/airbyte/pull/63334) | Feature: Deduplicate Headers |
+| 0.12.1 | 2025-07-19 | [55490](https://github.com/airbytehq/airbyte/pull/55490) | Update dependencies |
+| 0.12.0 | 2025-07-15 | [63305](https://github.com/airbytehq/airbyte/pull/63305) | Promoting release candidate 0.12.0-rc.2 to a main version. |
+| 0.12.0-rc.2| 2025-07-11 | [62931](https://github.com/airbytehq/airbyte/pull/62931) | Fix: handle empty `propeties_to_match` in SchmemaMatchingExtractor |
+| 0.12.0-rc.1| 2025-07-02 | [62456](https://github.com/airbytehq/airbyte/pull/62456) | Feature: migrate connector to manifest-only format                                                                                                                     |
+| 0.11.0     | 2025-06-11 | [61489](https://github.com/airbytehq/airbyte/pull/61489) | Feature: Added Streeam Name Override Options                                                                                                                           |
+| 0.10.0     | 2025-06-09 | [60836](https://github.com/airbytehq/airbyte/pull/60836) | Feature: Added additional sanitization flags when using Convert Column Names to SQL-Compliant Format (names_conversion)                                                |
+| 0.9.6      | 2025-05-22 | [60874](https://github.com/airbytehq/airbyte/pull/60874) | Use custom backoff policy on 429 errors for single sheets                                                                                                              |
+| 0.9.5      | 2025-05-13 | [60259](https://github.com/airbytehq/airbyte/pull/60259) | Fix whitespaces used for column names when enabling `names_conversion`                                                                                                 |
+| 0.9.4      | 2025-03-01 | [54989](https://github.com/airbytehq/airbyte/pull/54989) | Update dependencies                                                                                                                                                    |
+| 0.9.3      | 2025-02-22 | [54434](https://github.com/airbytehq/airbyte/pull/54434) | Update dependencies                                                                                                                                                    |
+| 0.9.2      | 2025-02-15 | [53720](https://github.com/airbytehq/airbyte/pull/53720) | Update dependencies                                                                                                                                                    |
+| 0.9.1      | 2025-02-08 | [51696](https://github.com/airbytehq/airbyte/pull/51696) | Update dependencies                                                                                                                                                    |
+| 0.9.0      | 2025-02-04 | [53154](https://github.com/airbytehq/airbyte/pull/53154) | Promoting release candidate 0.9.0-rc.3 to a main version.                                                                                                              |
 | 0.9.0-rc.3 | 2025-01-31 | [52682](https://github.com/airbytehq/airbyte/pull/52682) | Fix stream name typing                                                                                                                                                 |
 | 0.9.0-rc.2 | 2025-01-31 | [52671](https://github.com/airbytehq/airbyte/pull/52671) | Fix sheet id encoding                                                                                                                                                  |
 | 0.9.0-rc.1 | 2025-01-30 | [50843](https://github.com/airbytehq/airbyte/pull/50843) | Migrate to low-code                                                                                                                                                    |

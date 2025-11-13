@@ -1,0 +1,20 @@
+name: Gradle Dependency Analysis
+on:
+  pull_request:
+
+jobs:
+  dependencies-diff:
+    name: Gradle Dependency Diff
+    runs-on: ubuntu-latest
+    # As of now, the diff analysis does not work for forks.
+    if: github.event.pull_request.head.repo.fork == false
+    steps:
+      - name: Checkout Code
+        uses: actions/checkout@08eba0b27e820071cde6df949e0beb9ba4906955 # v4.3.0
+      - name: Set up Java
+        uses: actions/setup-java@c5195efecf7bdfc987ee8bae7a71cb8b11521c00 # v4.7.1
+        with:
+          distribution: temurin
+          java-version: 21
+      - name: Run Gradle Dependency Diff
+        uses: be-hase/gradle-dependency-diff-action@c6832aa3ca2594b7f25136bad88155f483d1fa04 # v2.0.0

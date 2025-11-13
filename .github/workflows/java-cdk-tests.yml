@@ -1,0 +1,116 @@
+name: Java CDK Tests
+
+concurrency:
+  group: ${{ github.workflow }}-${{ github.ref }}
+  cancel-in-progress: true
+
+env:
+  S3_BUILD_CACHE_ACCESS_KEY_ID: ${{ secrets.SELF_RUNNER_AWS_ACCESS_KEY_ID }}
+  S3_BUILD_CACHE_SECRET_KEY: ${{ secrets.SELF_RUNNER_AWS_SECRET_ACCESS_KEY }}
+
+on:
+  workflow_dispatch:
+  push:
+    branches:
+      - master
+  pull_request:
+    types:
+      - opened
+      - reopened
+      - synchronize
+
+jobs:
+  changes:
+    name: Detect Changes
+    runs-on: ubuntu-24.04
+    outputs:
+      java: ${{ steps.changes.outputs.java }}
+
+    steps:
+      - name: Checkout Airbyte
+        if: github.event_name != 'pull_request'
+        uses: actions/checkout@08eba0b27e820071cde6df949e0beb9ba4906955 # v4.3.0
+      - id: changes
+        uses: dorny/paths-filter@4512585405083f25c027a35db413c2b3b9006d50 # v2.11.1
+        with:
+          filters: |
+            java:
+              - 'airbyte-cdk/java/**/*'
+              - 'airbyte-cdk/bulk/**/*'
+
+  # Check for changes in the actual artifact that we'll publish.
+  # Notably, this does _not_ include test/integrationTest.
+  changes-in-bulk-artifact:
+    name: Detect Changes in Bulk CDK artifact
+    runs-on: ubuntu-24.04
+    outputs:
+      java: ${{ steps.changes-in-bulk-artifact.outputs.java }}
+
+    steps:
+      - name: Checkout Airbyte
+        if: github.event_name != 'pull_request'
+        uses: actions/checkout@08eba0b27e820071cde6df949e0beb9ba4906955 # v4.3.0
+      - id: changes-in-bulk-artifact
+        uses: dorny/paths-filter@4512585405083f25c027a35db413c2b3b9006d50 # v2.11.1
+        with:
+          filters: |
+            java:
+              - 'airbyte-cdk/bulk/**/**/src/main/**/*'
+              - 'airbyte-cdk/bulk/**/**/src/testFixtures/**/*'
+
+  run-check-bulk-cdk-version:
+    needs:
+      - changes-in-bulk-artifact
+    if: needs.changes-in-bulk-artifact.outputs.java == 'true'
+    runs-on: linux-24.04-large # Custom runner, defined in GitHub org settings
+    name: Bulk CDK version check
+    timeout-minutes: 60
+    steps:
+      - name: Checkout Airbyte
+        uses: actions/checkout@08eba0b27e820071cde6df949e0beb9ba4906955 # v4.3.0
+      - name: Java Setup
+        uses: actions/setup-java@17f84c3641ba7b8f6deff6309fc4c864478f5d62 # v3.14.1
+        with:
+          distribution: "zulu"
+          java-version: "21"
+      # Help CDK Devs understand CDK version should be incremented on changes.
+      - name: Check that bulk CDK version is incremented
+        uses: burrunan/gradle-cache-action@3bf23b8dd95e7d2bacf2470132454fe893a178a1 # v1
+        env:
+          CI: true
+        with:
+          job-id: bulk-cdk-version-check
+          concurrent: true
+          gradle-distribution-sha-256-sum-warning: false
+          arguments: --scan :airbyte-cdk:bulk:checkBuildNumber
+
+  run-check:
+    needs:
+      - changes
+    if: needs.changes.outputs.java == 'true'
+    # As of now, 16 cores seems to be enough.
+    # Any revision upwards should be based on a performance analysis of gradle scans.
+    # See https://github.com/airbytehq/airbyte/pull/36055 for an example of this,
+    # which explains why which we went down from 64 cores to 16.
+    runs-on: linux-24.04-large # Custom runner, defined in GitHub org settings
+    name: CDK Check
+    timeout-minutes: 60
+    steps:
+      - name: Checkout Airbyte
+        uses: actions/checkout@08eba0b27e820071cde6df949e0beb9ba4906955 # v4.3.0
+      - name: Java Setup
+        uses: actions/setup-java@17f84c3641ba7b8f6deff6309fc4c864478f5d62 # v3.14.1
+        with:
+          distribution: "zulu"
+          java-version: "21"
+      - name: Run Java CDK Tests
+        uses: burrunan/gradle-cache-action@663fbad34e03c8f12b27f4999ac46e3d90f87eca # v3.0.1
+        env:
+          CI: true
+        with:
+          job-id: gradle-check
+          read-only: ${{ github.ref != 'refs/heads/master' }}
+          gradle-distribution-sha-256-sum-warning: false
+          concurrent: true
+          # TODO: be able to remove the skipSlowTests property
+          arguments: --scan :airbyte-cdk:check -DskipSlowTests=true

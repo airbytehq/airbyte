@@ -4,7 +4,7 @@
 package io.airbyte.cdk.test.fixtures.legacy
 
 import com.fasterxml.jackson.annotation.JsonValue
-import io.airbyte.protocol.models.AirbyteTraceMessage
+import io.airbyte.protocol.models.v0.AirbyteTraceMessage
 import org.apache.commons.lang3.exception.ExceptionUtils
 
 object FailureHelper {

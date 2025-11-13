@@ -17,6 +17,11 @@
         "type": "string",
         "description": "The full url of the Elasticsearch server"
       },
+      "pathPrefix": {
+        "title": "Server path prefix",
+        "type": "string",
+        "description": "The Path Prefix of the Elasticsearch server"
+      },
       "upsert": {
         "type": "boolean",
         "title": "Upsert Records",

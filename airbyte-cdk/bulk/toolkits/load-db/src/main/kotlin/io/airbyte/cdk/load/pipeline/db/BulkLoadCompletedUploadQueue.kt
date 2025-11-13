@@ -4,7 +4,7 @@
 
 package io.airbyte.cdk.load.pipeline.db
 
-import io.airbyte.cdk.load.factory.object_storage.ObjectLoaderPartQueueFactory
+import io.airbyte.cdk.load.factory.object_storage.ObjectLoaderQueueBeanFactory
 import io.airbyte.cdk.load.file.object_storage.RemoteObject
 import io.airbyte.cdk.load.message.ChannelMessageQueue
 import io.airbyte.cdk.load.message.PartitionedQueue
@@ -34,7 +34,7 @@ class BulkLoadCompletedUploadQueue<K : WithStream, T : RemoteObject<*>> {
                 .map {
                     ChannelMessageQueue<
                         PipelineEvent<K, ObjectLoaderUploadCompleter.UploadResult<T>>>(
-                        Channel(ObjectLoaderPartQueueFactory.OBJECT_LOADER_MAX_ENQUEUED_COMPLETIONS)
+                        Channel(ObjectLoaderQueueBeanFactory.OBJECT_LOADER_MAX_ENQUEUED_COMPLETIONS)
                     )
                 }
                 .toTypedArray()

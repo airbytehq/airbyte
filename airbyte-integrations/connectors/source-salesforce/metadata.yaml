@@ -6,16 +6,20 @@ data:
     hosts:
       - "*.salesforce.com"
   connectorBuildOptions:
-    baseImage: docker.io/airbyte/python-connector-base:4.0.0@sha256:d9894b6895923b379f3006fa251147806919c62b7d9021b5cd125bb67d7bbe22
+    baseImage: docker.io/airbyte/python-connector-base:4.0.2@sha256:9fdb1888c4264cf6fee473649ecb593f56f58e5d0096a87ee0b231777e2e3e73
   connectorSubtype: api
   connectorType: source
   definitionId: b117307c-14b6-41aa-9422-947e34922962
-  dockerImageTag: 2.7.8
+  dockerImageTag: 2.7.16
   releases:
     rolloutConfiguration:
       enableProgressiveRollout: false
   dockerRepository: airbyte/source-salesforce
   documentationUrl: https://docs.airbyte.com/integrations/sources/salesforce
+  externalDocumentationUrls:
+    - title: Winter 2026 release notes - API
+      url: https://help.salesforce.com/s/articleView?id=release-notes.salesforce_release_notes.htm&release=258&type=5
+      type: api_release_history
   githubIssueLabel: source-salesforce
   icon: salesforce.svg
   license: ELv2
@@ -31,6 +35,16 @@ data:
     oss:
       enabled: true
   releaseStage: generally_available
+  suggestedStreams:
+    streams:
+      - Account
+      - Contact
+      - Lead
+      - Opportunity
+      - OpportunityStage
+      - Stage
+      - Task
+      - User
   supportLevel: certified
   tags:
     - language:python

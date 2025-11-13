@@ -6,7 +6,7 @@ data:
   dockerRepository: airbyte/destination-amazon-sqs
   githubIssueLabel: destination-amazon-sqs
   icon: awssqs.svg
-  license: MIT
+  license: ELv2
   name: Amazon SQS
   registryOverrides:
     cloud:

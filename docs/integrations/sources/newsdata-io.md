@@ -31,6 +31,25 @@ Historical News is only available for premium users of NewsData service.
 
 | Version          | Date              | Pull Request | Subject        |
 |------------------|-------------------|--------------|----------------|
+| 0.0.40 | 2025-10-29 | [68730](https://github.com/airbytehq/airbyte/pull/68730) | Update dependencies |
+| 0.0.39 | 2025-10-21 | [68352](https://github.com/airbytehq/airbyte/pull/68352) | Update dependencies |
+| 0.0.38 | 2025-10-14 | [67761](https://github.com/airbytehq/airbyte/pull/67761) | Update dependencies |
+| 0.0.37 | 2025-10-07 | [67419](https://github.com/airbytehq/airbyte/pull/67419) | Update dependencies |
+| 0.0.36 | 2025-09-30 | [66924](https://github.com/airbytehq/airbyte/pull/66924) | Update dependencies |
+| 0.0.35 | 2025-09-23 | [66620](https://github.com/airbytehq/airbyte/pull/66620) | Update dependencies |
+| 0.0.34 | 2025-09-09 | [65869](https://github.com/airbytehq/airbyte/pull/65869) | Update dependencies |
+| 0.0.33 | 2025-08-23 | [65200](https://github.com/airbytehq/airbyte/pull/65200) | Update dependencies |
+| 0.0.32 | 2025-08-09 | [64680](https://github.com/airbytehq/airbyte/pull/64680) | Update dependencies |
+| 0.0.31 | 2025-08-02 | [64276](https://github.com/airbytehq/airbyte/pull/64276) | Update dependencies |
+| 0.0.30 | 2025-07-26 | [63855](https://github.com/airbytehq/airbyte/pull/63855) | Update dependencies |
+| 0.0.29 | 2025-07-19 | [63446](https://github.com/airbytehq/airbyte/pull/63446) | Update dependencies |
+| 0.0.28 | 2025-07-12 | [63239](https://github.com/airbytehq/airbyte/pull/63239) | Update dependencies |
+| 0.0.27 | 2025-07-05 | [62569](https://github.com/airbytehq/airbyte/pull/62569) | Update dependencies |
+| 0.0.26 | 2025-06-28 | [62325](https://github.com/airbytehq/airbyte/pull/62325) | Update dependencies |
+| 0.0.25 | 2025-06-21 | [61915](https://github.com/airbytehq/airbyte/pull/61915) | Update dependencies |
+| 0.0.24 | 2025-06-14 | [60542](https://github.com/airbytehq/airbyte/pull/60542) | Update dependencies |
+| 0.0.23 | 2025-05-10 | [60065](https://github.com/airbytehq/airbyte/pull/60065) | Update dependencies |
+| 0.0.22 | 2025-05-03 | [59466](https://github.com/airbytehq/airbyte/pull/59466) | Update dependencies |
 | 0.0.21 | 2025-04-27 | [59099](https://github.com/airbytehq/airbyte/pull/59099) | Update dependencies |
 | 0.0.20 | 2025-04-19 | [58465](https://github.com/airbytehq/airbyte/pull/58465) | Update dependencies |
 | 0.0.19 | 2025-04-12 | [57844](https://github.com/airbytehq/airbyte/pull/57844) | Update dependencies |

@@ -16,26 +16,59 @@
 
 [tool.poe.tasks]
 
-# Installation and package updates
+get-connector-name = 'basename "$PWD"' # Use with -qq to get just the connector name
+fetch-secrets = "airbyte-cdk secrets fetch"
+
+install = ["install-project", "install-cdk-cli"]
+install-project = "poetry install --all-extras"
+install-cdk-cli = "uv tool install --upgrade 'airbyte-cdk[dev]'"
+test-all = ["test-unit-tests", "test-integration-tests"]
+test-integration-tests = ["pytest-integration-tests"]
+test-unit-tests = ["pytest-unit-tests"]
+test-fast = ["pytest-fast"]
+format-check = ["check-ruff-format"]
+lint-check = [
+    "check-ruff-lint",
+    "check-mypy",
+]
+
+# Poetry Lock
 lock = "poetry lock"
-install = "poetry install --all-extras"
 
 # Pytest
-pytest = "poetry run pytest"
-pytest-fast = "pytest --ff -m 'not slow and not requires_creds'"
+pytest-fast = "poetry run pytest --ff -m 'not slow and not requires_creds' --junitxml=build/test-results/pytest-fast-junit.xml unit_tests"
+pytest-unit-tests.shell = '''
+set -eu # Ensure we return non-zero exit code upon failure
+
+if [ -d unit_tests ]; then
+  poetry run pytest --junitxml=build/test-results/pytest-unit-tests-junit.xml unit_tests
+else
+  echo "No 'unit_tests' directory found; skipping unit tests."
+fi
+'''
+
+pytest-integration-tests.shell = '''
+set -eu # Ensure we return non-zero exit code upon failure
+
+if ls integration_tests/test_*.py >/dev/null 2>&1; then
+  poetry run pytest --junitxml=build/test-results/pytest-integration-tests-junit.xml integration_tests
+else
+  echo "No 'integration_tests' directory found; skipping integration tests."
+fi
+'''
 
 # Coverage checks
-coverage = "pytest --cov=. --cov-report=term-missing"
-coverage-html = "pytest --cov=. --cov-report=html"
+coverage = "poetry run pytest --cov=. --cov-report=term-missing"
+coverage-html = "poetry run pytest --cov=. --cov-report=html"
 
 # Check commands
-check-ruff-lint = "ruff check ."
-check-ruff-format = "ruff format ."
+check-ruff-lint = "poetry run ruff check ."
+check-ruff-format = "poetry run ruff format ."
 check-ruff = [
     "check-ruff-lint",
     "check-ruff-format",
 ]
-check-mypy = "mypy ."
+check-mypy = "poetry run mypy ."
 
 check-all = [
     "check-ruff",
@@ -43,8 +76,8 @@ check-all = [
 ]
 
 # Fix commands
-fix-ruff-format = "ruff format --fix ."
-fix-ruff-lint = "ruff check --fix ."
+fix-ruff-format = "poetry run ruff format --fix ."
+fix-ruff-lint = "poetry run ruff check --fix ."
 fix-ruff = [
     "fix-ruff-format",
     "fix-ruff-lint",
@@ -65,12 +98,36 @@ fix-and-check = [ # Fix everything fixable, then see if checks pass
 #  poe use-cdk-branch 'aj/my-branch-name'   # Pin to a specific branch
 #  poe use-cdk-branch-active                # Pin to the branch of the local CDK repo
 
+[tool.poe.tasks.detect-cdk-extras]
+cmd = "${POE_GIT_DIR}/poe-tasks/detect-python-cdk.py --extras-only"
+help = "Detect currently installed CDK extras from pyproject.toml file. Use with -qq to quiet unrelated outputs."
+
+[tool.poe.tasks.detect-cdk-prerelease]
+cmd = "${POE_GIT_DIR}/poe-tasks/detect-python-cdk.py --detect-prerelease"
+help = "Check if connector is using non-production CDK references (git/local refs). Returns 0 for production-ready, 1 for prerelease or non-production versions."
+
+[tool.poe.tasks.detect-cdk-info]
+cmd = "${POE_GIT_DIR}/poe-tasks/detect-python-cdk.py"
+help = "Get complete CDK dependency information as JSON from pyproject.toml file."
+
 [tool.poe.tasks.use-cdk-latest]
-cmd = 'poetry add airbyte-cdk@latest'
+shell = '''
+set -eu
+EXTRAS=$(poe -qq detect-cdk-extras)
+DEP_STR="airbyte-cdk${EXTRAS}@latest"
+echo Running: poetry add \"${DEP_STR}\"
+poetry add "${DEP_STR}"
+'''
 help = "Pin to the latest version of the CDK."
 
 [tool.poe.tasks.use-cdk-version]
-cmd = 'poetry add "airbyte-cdk@${VERSION}"'
+shell = '''
+set -eu
+EXTRAS=$(poe -qq detect-cdk-extras)
+DEP_STR="airbyte-cdk${EXTRAS}@${VERSION}"
+echo Running: poetry add \"${DEP_STR}\"
+poetry add "${DEP_STR}"
+'''
 args = [
   { name = "VERSION", positional = true, default = "latest" },
 ]
@@ -78,16 +135,56 @@ help = "Pin to a specific version of the CDK."
 
 [tool.poe.tasks.use-cdk-branch-active]
 shell = '''
-    REPO_ROOT=$(git rev-parse --show-toplevel)
-    ACTIVE_CDK_BRANCH=$(git -C "$REPO_ROOT/../airbyte-python-cdk" rev-parse --abbrev-ref HEAD)
-    echo "Attempting to pin CDK to branch '$ACTIVE_CDK_BRANCH' from the local repo."
-    poetry add "git+https://github.com/airbytehq/airbyte-python-cdk.git#${ACTIVE_CDK_BRANCH}"
+set -eu
+echo "Detecting active CDK branch..."
+REPO_ROOT=$(git rev-parse --show-toplevel)
+ACTIVE_CDK_BRANCH=$(git -C "$REPO_ROOT/../airbyte-python-cdk" rev-parse --abbrev-ref HEAD)
+EXTRAS=$(poe -qq detect-cdk-extras)
+DEP_STR="git+https://github.com/airbytehq/airbyte-python-cdk.git@${ACTIVE_CDK_BRANCH}${EXTRAS}"
+echo Running: poetry add \"${DEP_STR}\"
+poetry add "${DEP_STR}"
 '''
 help = "Pin to the branch of the CDK that is currently checked out locally."
 
 [tool.poe.tasks.use-cdk-branch]
-cmd = 'poetry add "git+https://github.com/airbytehq/airbyte-python-cdk.git#${BRANCH}"'
+shell = '''
+set -eu
+EXTRAS=$(poe -qq detect-cdk-extras)
+DEP_STR="git+https://github.com/airbytehq/airbyte-python-cdk.git@${BRANCH}${EXTRAS}"
+echo Running: poetry add \"${DEP_STR}\"
+poetry add "${DEP_STR}"
+'''
 args = [
   { name = "BRANCH", positional = true, default = "main" },
 ]
 help = "Pin to a specific branch of the CDK."
+
+[tool.poe.tasks.use-cdk-local]
+shell = '''
+set -eu
+REPO_ROOT=$(git rev-parse --show-toplevel)
+CDK_ROOT=${REPO_ROOT}/../airbyte-python-cdk
+EXTRAS=$(poe -qq detect-cdk-extras)
+DEP_STR="${CDK_ROOT}${EXTRAS}"
+echo Running: poetry add \"${DEP_STR}\"
+poetry add "${DEP_STR}"
+'''
+help = "Pin to your local working copy of the CDK, in editable mode. (Expects that the CDK and airbyte repo are sibling directories.)"
+
+# Generic tasks (same across all connector types)
+
+[tool.poe.tasks.get-language]
+cmd = """yq eval '.data.tags[] | select(test("^language:")) | sub("language:","")' ${POE_PWD}/metadata.yaml"""
+help = "Get the language of the connector from its metadata.yaml file. Use with -qq to get just the language name."
+
+[tool.poe.tasks.get-base-image]
+cmd = """yq eval '.data.connectorBuildOptions.baseImage' ${POE_PWD}/metadata.yaml"""
+help = "Get the base image of the connector from its metadata.yaml file."
+
+[tool.poe.tasks.get-version]
+cmd = """yq eval '.data.dockerImageTag' ${POE_PWD}/metadata.yaml"""
+help = "Get the version of the connector from its metadata.yaml file."
+
+[tool.poe.tasks.run-cat-tests]
+shell = "airbyte-ci connectors --name=`poe -qq get-connector-name` test --only-step=acceptance"
+help = "Run the legacy Airbyte-CI acceptance tests (CAT tests)."

@@ -319,39 +319,37 @@
           "host": {
             "title": "Host",
             "description": "Enter the account name you want to use to access the database.",
-            "order": 0,
+            "order": 1,
             "examples": ["AIRBYTE_ACCOUNT"],
             "type": "string"
           },
           "port": {
             "title": "Port",
-            "description": "Port of the database.",
-            "type": "integer",
-            "minimum": 0,
-            "maximum": 65536,
+            "description": "Enter the port you want to use to access the database",
             "default": 5432,
+            "order": 2,
             "examples": ["5432"],
-            "order": 1
+            "type": "integer"
           },
           "database": {
             "title": "Database",
             "description": "Enter the name of the database that you want to sync data into",
-            "order": 2,
+            "order": 4,
             "examples": ["AIRBYTE_DATABASE"],
             "type": "string"
           },
           "default_schema": {
             "title": "Default Schema",
             "description": "Enter the name of the default schema",
-            "order": 3,
+            "default": "public",
+            "order": 5,
             "examples": ["AIRBYTE_SCHEMA"],
-            "type": "string",
-            "default": "public"
+            "type": "string"
           },
           "username": {
             "title": "Username",
             "description": "Enter the name of the user you want to use to access the database",
-            "order": 4,
+            "order": 6,
             "examples": ["AIRBYTE_USER"],
             "type": "string"
           },
@@ -364,20 +362,14 @@
                 "description": "Enter the password you want to use to access the database",
                 "airbyte_secret": true,
                 "examples": ["AIRBYTE_PASSWORD"],
-                "order": 0,
+                "order": 7,
                 "type": "string"
               }
             },
             "required": ["password"]
           }
         },
-        "required": [
-          "host",
-          "database",
-          "default_schema",
-          "username",
-          "credentials"
-        ],
+        "required": ["host", "database", "username", "credentials"],
         "description": "Postgres can be used to store vector data and retrieve embeddings.",
         "group": "indexing"
       }

@@ -6,7 +6,7 @@ data:
   dockerRepository: airbyte/source-dv-360
   githubIssueLabel: source-dv-360
   icon: dv360.svg
-  license: MIT
+  license: ELv2
   name: DV 360
   remoteRegistries:
     pypi:

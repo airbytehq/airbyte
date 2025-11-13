@@ -3,7 +3,7 @@
 import calendar
 from typing import Optional
 
-import pendulum
+from airbyte_cdk.utils.datetime_helpers import AirbyteDateTime
 
 from .base_request_builder import ZendeskSupportBaseRequestBuilder
 from .request_authenticators.authenticator import Authenticator
@@ -31,7 +31,7 @@ class UsersRequestBuilder(ZendeskSupportBaseRequestBuilder):
             params["include"] = self._include
         return params
 
-    def with_start_time(self, start_time: pendulum.DateTime) -> "UsersRequestBuilder":
+    def with_start_time(self, start_time: AirbyteDateTime) -> "UsersRequestBuilder":
         self._start_time = str(calendar.timegm(start_time.timetuple()))
         return self
 

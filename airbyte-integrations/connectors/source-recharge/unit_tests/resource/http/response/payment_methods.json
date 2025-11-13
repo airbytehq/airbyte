@@ -1,0 +1,36 @@
+{
+  "next_cursor": null,
+  "previous_cursor": null,
+  "payment_methods": [
+    {
+      "id": 1234567,
+      "billing_address": {
+        "address1": "123 Washington Street",
+        "address2": "Suite 101",
+        "city": "Los Angeles",
+        "company_name": "Acme Corp",
+        "country_code": "US",
+        "name": "Jane Doe",
+        "phone": "1234567890",
+        "province": "California",
+        "zip": "90210"
+      },
+      "created_at": "2025-05-20T00:00:00+00:00",
+      "customer_id": 100001,
+      "default": true,
+      "payment_details": [
+        {
+          "brand": "visa",
+          "exp_month": 12,
+          "exp_year": 2021,
+          "last4": 1234
+        }
+      ],
+      "payment_type": "CREDIT_CARD",
+      "processor_customer_token": "cus_AB3ebcBaL6pCx9",
+      "processor_name": "stripe",
+      "processor_payment_method_token": "pm_123123",
+      "updated_at": "2025-05-20T00:00:00+00:00"
+    }
+  ]
+}

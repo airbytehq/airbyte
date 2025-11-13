@@ -25,6 +25,18 @@ Google Blogger is a free blogging platform by Google that allows users to create
 
 | Version          | Date              | Pull Request | Subject        |
 |------------------|-------------------|--------------|----------------|
+| 0.0.32 | 2025-10-29 | [68738](https://github.com/airbytehq/airbyte/pull/68738) | Update dependencies |
+| 0.0.31 | 2025-10-21 | [68271](https://github.com/airbytehq/airbyte/pull/68271) | Update dependencies |
+| 0.0.30 | 2025-10-14 | [67844](https://github.com/airbytehq/airbyte/pull/67844) | Update dependencies |
+| 0.0.29 | 2025-10-07 | [67200](https://github.com/airbytehq/airbyte/pull/67200) | Update dependencies |
+| 0.0.28 | 2025-09-30 | [66321](https://github.com/airbytehq/airbyte/pull/66321) | Update dependencies |
+| 0.0.27 | 2025-08-16 | [65048](https://github.com/airbytehq/airbyte/pull/65048) | Update dependencies |
+| 0.0.26 | 2025-07-26 | [63795](https://github.com/airbytehq/airbyte/pull/63795) | Update dependencies |
+| 0.0.25 | 2025-07-05 | [62530](https://github.com/airbytehq/airbyte/pull/62530) | Update dependencies |
+| 0.0.24 | 2025-06-21 | [61887](https://github.com/airbytehq/airbyte/pull/61887) | Update dependencies |
+| 0.0.23 | 2025-06-15 | [60602](https://github.com/airbytehq/airbyte/pull/60602) | Update dependencies |
+| 0.0.22 | 2025-05-10 | [59841](https://github.com/airbytehq/airbyte/pull/59841) | Update dependencies |
+| 0.0.21 | 2025-05-03 | [59355](https://github.com/airbytehq/airbyte/pull/59355) | Update dependencies |
 | 0.0.20 | 2025-04-26 | [58736](https://github.com/airbytehq/airbyte/pull/58736) | Update dependencies |
 | 0.0.19 | 2025-04-19 | [58258](https://github.com/airbytehq/airbyte/pull/58258) | Update dependencies |
 | 0.0.18 | 2025-04-12 | [57632](https://github.com/airbytehq/airbyte/pull/57632) | Update dependencies |

@@ -1,0 +1,27 @@
+name: PR cannot modify both bulk CDK and connectors
+
+on:
+  pull_request:
+
+jobs:
+  enforce-pr-structure:
+    name: Enforce PR structure
+    runs-on: ubuntu-24.04
+    if: github.base_ref == 'master' && github.repository == 'airbytehq/airbyte'
+    steps:
+      - name: Check for changes in bulk CDK
+        uses: tj-actions/changed-files@24d32ffd492484c1d75e0c0b894501ddb9d30d62 # v47.0.0
+        id: cdk-changes
+        with:
+          files: "airbyte-cdk/bulk/**/*"
+      - name: Check for changes in connectors
+        uses: tj-actions/changed-files@24d32ffd492484c1d75e0c0b894501ddb9d30d62 # v47.0.0
+        id: connector-changes
+        with:
+          files: "airbyte-integrations/connectors/**/*"
+      - name: Fail if PR does not follow required structure
+        if: steps.cdk-changes.outputs.any_changed == 'true' && steps.connector-changes.outputs.any_changed == 'true'
+        run: |
+          echo "A single PR cannot modify both the bulk CDK and a connector, because this creates unclear git history, and makes rollbacks more difficult." >&2
+          echo "You should split this PR into two branches, with one branch containing the CDK changes, and one branch containing the connector changes." >&2
+          exit 1

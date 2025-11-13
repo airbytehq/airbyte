@@ -5,53 +5,63 @@ products: all
 import Tabs from "@theme/Tabs";
 import TabItem from "@theme/TabItem";
 
-# Add a Destination
+# Add and manage destinations
 
-Destinations are the data warehouses, data lakes, databases and analytics tools where you will load the data from your chosen source(s). The steps to setting up your first destination are very similar to those for [setting up a source](./add-a-source).
+A destination is the data warehouse, data lake, database, or other system to which you sync data. Adding a destination is the next step after you create [a source](add-a-source).
 
-Once you've signed up for Airbyte Cloud or logged in to your Airbyte Open Source deployment, click on the **Destinations** tab in the navigation bar found on the left side of the dashboard. This will take you to the list of available destinations.
+## Add a destination connector
 
-![Destination List](./assets/getting-started-destination-catalog.png)
+Add a new destination connector to Airbyte.
 
-You can use the provided search bar at the top of the page, or scroll down the list to find the destination you want to replicate data from.
+1. In the left navigation, click **Destinations**.
 
-:::tip
-You can filter the list of destinations by support level. Airbyte connectors are categorized in two support levels, Airbyte Connectors and Marketplace Connectors. See our [Connector Support Levels](/integrations/connector-support-levels) page for more information on this topic.
+2. Click **New Destination**.
+
+3. Find the destination you want to add. If you're not sure yet, click the **Marketplace** tab, then click **End-to-End Testing (/dev/null)**. This is a test destination to simulate syncs, but it doesn't move your data anywhere. If you're using Airbyte Cloud, **Google Sheets** is easy to authenticate with, making it a great destination to test your first sync.
+
+4. Configure your connector using the form on the left side of your screen. Every connector has different options and settings, but you normally enter things like authentication information and the location where you store your data. Use the documentation panel on the right side of your screen for help populating the form.
+
+5. Click **Set up destination**. Airbyte tests the destination to ensure it can make a connection. Once the test completes, Airbyte takes you to that connector's Connections page, which is empty at this point.
+
+<Navattic id="cmhfhih81000204la4795erqd" />
+
+## Modify a destination connector
+
+After you set up a destination connector, you can modify it.
+
+1. In the left navigation, click **Destinations**.
+
+2. Find and click the destination connector you want to modify.
+
+3. Configure your connector using the form on the left side of your screen. Every connector has different options and settings, but you normally enter things like authentication information and the location where you store your data. Use the documentation panel on the right side of your screen for help populating the form.
+
+4. Click **Test and save**. Airbyte tests the destination to ensure it can make a connection.
+
+## Delete a destination connector
+
+You can delete a destination you no longer need.
+
+:::danger
+Deleting a destination connector also deletes any connections that rely on it. Data that's already in your destination isn't affected. However, reestablishing this connection later requires a full re-sync.
 :::
 
-<Tabs groupId="cloud-hosted">
-  <TabItem value="cloud" label="Cloud">
-    As an example, we'll be setting up a simple Google Sheets spreadsheet that will move data to a Google Sheet. Select **Google Sheets** from the list of destinations. This will take you to the destination setup page.
+1. In the left navigation, click **Destinations**.
 
-    ![Destination Page](./assets/getting-started-google-sheets-destination.png)
+2. Find and click the destination connector you want to modify.
 
-:::info  
-Google Sheets imposes rate limits and hard limits on the amount of data it can receive. Only use Google Sheets as a destination for small, non-production use cases, as it is not designed for handling large-scale data operations.
+3. Click **Delete this destination**.
 
-Read more about the [specific limitations](/integrations/destinations/google-sheets/#limitations) in our Google Sheets documentation.
-:::
+4. In the dialog, type the name of the connector, then click **Delete**.
 
-    The left half of the page contains a set of fields that you will have to fill out. In the **Destination name** field, you can enter a name of your choosing to help you identify this instance of the connector. By default, this will be set to the name of the destination (i.e., `Google Sheets`).
+## Reusing destination connectors
 
-    Authenticate into your Google account by clicking "Sign in with Google" and granting permissions to Airbyte. Because this is a simple Google Sheets destination, there is only one more required field, **Spreadsheet Link**. This is the path to your spreadsheet that can be copied directly from your browser.
+Connectors are reusable. In most cases, you only need to set up the connector once, and you can use it in as many connections as you need to.
 
-  </TabItem>
-  <TabItem value="self-managed" label="Self-Managed">
-    As an example, we'll be setting up a simple JSON file that will be saved on our local system as the destination. Select **Local JSON** from the list of destinations. This will take you to the destination setup page.
+## Other ways to manage destinations
 
-    The left half of the page contains a set of fields that you will have to fill out. In the **Destination name** field, you can enter a name of your choosing to help you identify this instance of the connector. By default, this will be set to the name of the destination (i.e., `Local JSON`).
+Airbyte has other options to manage connectors, too.
 
-    Because this is a simple JSON file, there is only one more required field, **Destination Path**. This is the path in your local filesystem where the JSON file containing your data will be saved. In our example, if we set the path to `/my_first_destination`, the file will be saved in `/tmp/airbyte_local/my_first_destination`.
+- [Airbyte API](https://reference.airbyte.com/reference/createdestination#/)
+- [Terraform](/developers/terraform-documentation)
 
-  </TabItem>
-</Tabs>
-
-Each destination will have its own set of required fields to configure during setup. You can refer to your destination's provided setup guide on the right side of the page for specific details on the nature of each field.
-
-:::tip
-Some destinations will also have an **Optional Fields** tab located beneath the required fields. You can open this tab to view and configure any additional optional parameters that exist for the source. These fields generally grant you more fine-grained control over your data replication, but you can safely ignore them.
-:::
-
-Once you've filled out the required fields, select **Set up destination**. A connection check will run to verify that a successful connection can be established. If you're using the [API](https://reference.airbyte.com/reference/createdestination#/) or [Terraform](../../terraform-documentation) to manage your infrastructure, use the **Copy JSON** button to copy your configuration as a JSON string that you can paste into your code.
-
-Now you're ready to [set up your first connection](./set-up-a-connection)!
+In these cases, you can speed up the process by entering your values into the UI, then clicking the **Copy JSON** button. This copies your configuration as a JSON string that you can paste into your code.

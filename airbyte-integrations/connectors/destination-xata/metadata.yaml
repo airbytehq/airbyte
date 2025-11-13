@@ -7,11 +7,11 @@ data:
   connectorSubtype: database
   connectorType: destination
   definitionId: 2a51c92d-0fb4-4e54-94d2-cce631f24d1f
-  dockerImageTag: 0.1.45
+  dockerImageTag: 0.1.46
   dockerRepository: airbyte/destination-xata
   githubIssueLabel: destination-xata
   icon: xata.svg
-  license: MIT
+  license: ELv2
   name: Xata
   releaseStage: alpha
   documentationUrl: https://docs.airbyte.com/integrations/destinations/xata

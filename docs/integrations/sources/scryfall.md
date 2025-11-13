@@ -20,6 +20,24 @@ For Magic The Gathering fans. Here is a simple data source for all the cards and
 
 | Version | Date | Pull Request | Subject |
 |---------|------|--------------|---------|
+| 0.0.39 | 2025-10-29 | [68892](https://github.com/airbytehq/airbyte/pull/68892) | Update dependencies |
+| 0.0.38 | 2025-10-21 | [68443](https://github.com/airbytehq/airbyte/pull/68443) | Update dependencies |
+| 0.0.37 | 2025-10-14 | [67908](https://github.com/airbytehq/airbyte/pull/67908) | Update dependencies |
+| 0.0.36 | 2025-10-07 | [67224](https://github.com/airbytehq/airbyte/pull/67224) | Update dependencies |
+| 0.0.35 | 2025-09-30 | [66858](https://github.com/airbytehq/airbyte/pull/66858) | Update dependencies |
+| 0.0.34 | 2025-09-23 | [66636](https://github.com/airbytehq/airbyte/pull/66636) | Update dependencies |
+| 0.0.33 | 2025-09-09 | [65655](https://github.com/airbytehq/airbyte/pull/65655) | Update dependencies |
+| 0.0.32 | 2025-08-24 | [65431](https://github.com/airbytehq/airbyte/pull/65431) | Update dependencies |
+| 0.0.31 | 2025-08-16 | [64990](https://github.com/airbytehq/airbyte/pull/64990) | Update dependencies |
+| 0.0.30 | 2025-08-02 | [64448](https://github.com/airbytehq/airbyte/pull/64448) | Update dependencies |
+| 0.0.29 | 2025-07-26 | [63939](https://github.com/airbytehq/airbyte/pull/63939) | Update dependencies |
+| 0.0.28 | 2025-07-19 | [63623](https://github.com/airbytehq/airbyte/pull/63623) | Update dependencies |
+| 0.0.27 | 2025-07-12 | [63052](https://github.com/airbytehq/airbyte/pull/63052) | Update dependencies |
+| 0.0.26 | 2025-06-28 | [62275](https://github.com/airbytehq/airbyte/pull/62275) | Update dependencies |
+| 0.0.25 | 2025-06-14 | [61294](https://github.com/airbytehq/airbyte/pull/61294) | Update dependencies |
+| 0.0.24 | 2025-05-25 | [60519](https://github.com/airbytehq/airbyte/pull/60519) | Update dependencies |
+| 0.0.23 | 2025-05-10 | [60186](https://github.com/airbytehq/airbyte/pull/60186) | Update dependencies |
+| 0.0.22 | 2025-05-04 | [59033](https://github.com/airbytehq/airbyte/pull/59033) | Update dependencies |
 | 0.0.21 | 2025-04-19 | [58414](https://github.com/airbytehq/airbyte/pull/58414) | Update dependencies |
 | 0.0.20 | 2025-04-12 | [57965](https://github.com/airbytehq/airbyte/pull/57965) | Update dependencies |
 | 0.0.19 | 2025-04-05 | [57487](https://github.com/airbytehq/airbyte/pull/57487) | Update dependencies |

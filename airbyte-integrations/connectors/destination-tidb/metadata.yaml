@@ -6,7 +6,7 @@ data:
   dockerRepository: airbyte/destination-tidb
   githubIssueLabel: destination-tidb
   icon: tidb.svg
-  license: MIT
+  license: ELv2
   name: TiDB
   normalizationConfig:
     normalizationIntegrationType: tidb

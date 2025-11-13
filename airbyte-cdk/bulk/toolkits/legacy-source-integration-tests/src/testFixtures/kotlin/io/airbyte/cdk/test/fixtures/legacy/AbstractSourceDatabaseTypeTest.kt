@@ -5,7 +5,6 @@ package io.airbyte.cdk.test.fixtures.legacy
 
 import com.fasterxml.jackson.databind.JsonNode
 import com.google.common.collect.Lists
-import io.airbyte.protocol.models.Field
 import io.airbyte.protocol.models.JsonSchemaType
 import io.airbyte.protocol.models.v0.*
 import io.github.oshai.kotlinlogging.KotlinLogging

@@ -2,7 +2,7 @@
 
 from typing import Optional
 
-import pendulum
+from airbyte_cdk.utils.datetime_helpers import ab_datetime_parse
 
 from .base_request_builder import ZendeskSupportBaseRequestBuilder
 from .request_authenticators.authenticator import Authenticator
@@ -36,5 +36,5 @@ class TicketMetricsRequestBuilder(ZendeskSupportBaseRequestBuilder):
         return self
 
     def with_start_date(self, start_date: str) -> "TicketMetricsRequestBuilder":
-        self._start_date: int = pendulum.parse(start_date).int_timestamp
+        self._start_date: int = int(ab_datetime_parse(start_date).timestamp())
         return self

@@ -6,7 +6,7 @@ data:
   dockerRepository: airbyte/source-search-metrics
   githubIssueLabel: source-search-metrics
   icon: searchmetrics.svg
-  license: MIT
+  license: ELv2
   name: SearchMetrics
   remoteRegistries:
     pypi:

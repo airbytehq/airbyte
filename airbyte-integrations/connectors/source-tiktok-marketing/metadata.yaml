@@ -7,16 +7,23 @@ data:
       - sandbox-ads.tiktok.com
       - business-api.tiktok.com
   connectorBuildOptions:
-    baseImage: docker.io/airbyte/python-connector-base:4.0.0@sha256:d9894b6895923b379f3006fa251147806919c62b7d9021b5cd125bb67d7bbe22
+    baseImage: docker.io/airbyte/source-declarative-manifest:7.4.1@sha256:71df19e2ee555ca5b14abbec01d50104c79c9b84cb9cc323284d24333361900a
   connectorSubtype: api
   connectorType: source
   definitionId: 4bfac00d-ce15-44ff-95b9-9e3c3e8fbd35
-  dockerImageTag: 4.6.2
+  dockerImageTag: 4.8.11-rc.1
   dockerRepository: airbyte/source-tiktok-marketing
   documentationUrl: https://docs.airbyte.com/integrations/sources/tiktok-marketing
+  externalDocumentationUrls:
+    - title: Versioning docs
+      url: https://business-api.tiktok.com/portal/docs?id=1740029169927169
+      type: api_reference
+    - title: Changelog
+      url: https://business-api.tiktok.com/portal/docs?id=1740029165513730
+      type: api_release_history
   githubIssueLabel: source-tiktok-marketing
   icon: tiktok.svg
-  license: MIT
+  license: ELv2
   maxSecondsBetweenMessages: 86400
   name: TikTok Marketing
   registryOverrides:
@@ -26,7 +33,7 @@ data:
       enabled: true
   releases:
     rolloutConfiguration:
-      enableProgressiveRollout: false
+      enableProgressiveRollout: true
     breakingChanges:
       4.0.0:
         message:
@@ -57,6 +64,8 @@ data:
               - "ads_audience_reports_daily"
               - "ads_reports_daily"
               - "ads_reports_hourly"
+              - "ads_reports_by_country_daily"
+              - "ads_reports_by_country_hourly"
               - "advertisers_audience_reports_by_country_daily"
               - "advertisers_audience_reports_by_platform_daily"
               - "advertisers_audience_reports_daily"
@@ -73,7 +82,7 @@ data:
   releaseStage: generally_available
   remoteRegistries:
     pypi:
-      enabled: true
+      enabled: false
       packageName: airbyte-source-tiktok-marketing
   suggestedStreams:
     streams:
@@ -86,8 +95,8 @@ data:
       - advertisers_reports_daily
   supportLevel: certified
   tags:
-    - language:python
     - cdk:low-code
+    - language:manifest-only
   connectorTestSuitesOptions:
     - suite: liveTests
       testConnections:

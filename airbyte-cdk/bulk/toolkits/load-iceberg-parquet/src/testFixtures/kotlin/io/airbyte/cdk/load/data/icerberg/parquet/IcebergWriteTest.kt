@@ -8,6 +8,7 @@ import io.airbyte.cdk.command.ConfigurationSpecification
 import io.airbyte.cdk.load.command.Append
 import io.airbyte.cdk.load.command.Dedupe
 import io.airbyte.cdk.load.command.DestinationStream
+import io.airbyte.cdk.load.command.NamespaceMapper
 import io.airbyte.cdk.load.command.Property
 import io.airbyte.cdk.load.data.FieldType
 import io.airbyte.cdk.load.data.IntegerType
@@ -18,6 +19,7 @@ import io.airbyte.cdk.load.test.util.OutputRecord
 import io.airbyte.cdk.load.toolkits.iceberg.parquet.TableIdGenerator
 import io.airbyte.cdk.load.toolkits.iceberg.parquet.io.BaseDeltaTaskWriter
 import io.airbyte.cdk.load.write.BasicFunctionalityIntegrationTest
+import io.airbyte.cdk.load.write.DedupBehavior
 import io.airbyte.cdk.load.write.SchematizedNestedValueBehavior
 import io.airbyte.cdk.load.write.StronglyTyped
 import io.airbyte.cdk.load.write.UnionBehavior
@@ -45,12 +47,12 @@ abstract class IcebergWriteTest(
         additionalMicronautEnvs = additionalMicronautEnvs,
         micronautProperties = micronautProperties,
         isStreamSchemaRetroactive = true,
-        supportsDedup = true,
+        isStreamSchemaRetroactiveForUnknownTypeToString = false,
+        dedupBehavior = DedupBehavior(),
         stringifySchemalessObjects = true,
         schematizedObjectBehavior = SchematizedNestedValueBehavior.STRINGIFY,
         schematizedArrayBehavior = SchematizedNestedValueBehavior.PASS_THROUGH,
         unionBehavior = UnionBehavior.STRINGIFY,
-        preserveUndeclaredFields = false,
         supportFileTransfer = false,
         commitDataIncrementally = false,
         allTypesBehavior =
@@ -83,23 +85,26 @@ abstract class IcebergWriteTest(
         Assumptions.assumeTrue(verifyDataWriting)
         fun makeStream(syncId: Long, schema: LinkedHashMap<String, FieldType>) =
             DestinationStream(
-                DestinationStream.Descriptor(randomizedNamespace, "test_stream"),
+                unmappedNamespace = randomizedNamespace,
+                unmappedName = "test_stream",
                 Append,
                 ObjectType(schema),
                 generationId = 0,
                 minimumGenerationId = 0,
                 syncId,
+                namespaceMapper = NamespaceMapper()
             )
-        runSync(
-            updatedConfig,
+        val firstStream =
             makeStream(
                 syncId = 42,
                 linkedMapOf("id" to intType, "to_drop" to stringType, "same" to intType)
-            ),
+            )
+        runSync(
+            updatedConfig,
+            firstStream,
             listOf(
                 InputRecord(
-                    randomizedNamespace,
-                    "test_stream",
+                    firstStream,
                     """{"id": 42, "to_drop": "val1", "same": 42}""",
                     emittedAtMs = 1234L,
                 )
@@ -115,8 +120,7 @@ abstract class IcebergWriteTest(
             finalStream,
             listOf(
                 InputRecord(
-                    randomizedNamespace,
-                    "test_stream",
+                    finalStream,
                     """{"id": 42, "same": "43", "to_add": "val3"}""",
                     emittedAtMs = 1234,
                 )
@@ -151,21 +155,24 @@ abstract class IcebergWriteTest(
      */
     @Test
     open fun testDedupNullPk() {
+        val stream =
+            DestinationStream(
+                unmappedNamespace = randomizedNamespace,
+                unmappedName = "test_stream",
+                Dedupe(primaryKey = listOf(listOf("id")), cursor = emptyList()),
+                ObjectType(linkedMapOf("id" to FieldType(IntegerType, nullable = true))),
+                generationId = 42,
+                minimumGenerationId = 0,
+                syncId = 12,
+                namespaceMapper = NamespaceMapper()
+            )
         val failure = expectFailure {
             runSync(
                 updatedConfig,
-                DestinationStream(
-                    DestinationStream.Descriptor(randomizedNamespace, "test_stream"),
-                    Dedupe(primaryKey = listOf(listOf("id")), cursor = emptyList()),
-                    ObjectType(linkedMapOf("id" to FieldType(IntegerType, nullable = true))),
-                    generationId = 42,
-                    minimumGenerationId = 0,
-                    syncId = 12,
-                ),
+                stream,
                 listOf(
                     InputRecord(
-                        randomizedNamespace,
-                        "test_stream",
+                        stream,
                         """{"id": null}""",
                         emittedAtMs = 1234L,
                     )

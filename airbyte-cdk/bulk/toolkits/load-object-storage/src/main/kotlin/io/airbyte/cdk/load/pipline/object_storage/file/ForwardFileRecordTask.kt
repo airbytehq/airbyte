@@ -53,6 +53,6 @@ class ForwardFileRecordTask<T>(
                 is PipelineHeartbeat<*, *> -> null
             }
 
-        toPublish?.let { outputQueue.publish(it, 1) }
+        toPublish?.let { outputQueue.publish(it, 0) }
     }
 }

@@ -1,6 +1,6 @@
 # Troubleshooting abctl
 
-This guide will help you navigate any issues with deploying Airbyte. This guide is intended for users of `abctl`.
+This guide helps you navigate any issues when you deploy Airbyte with `abctl`.
 
 ## Common Errors
 
@@ -164,7 +164,12 @@ Upgrade to version `>0.15.1`
 
 Version `0.15.0` had a bug when users have `secrets.yaml` file. You must upgrade your `abctl` to fix this issue.
 
----
+### Make sure you have disabled secure cookies
+
+- Error: `Your credentials were correct, but the server failed to set a cookie. You appear to have deployed over HTTP. Make sure you have disabled secure cookies.`
+- Cause: You have deployed Airbyte to an insecure (non-HTTPS) host, but you haven't turned off secure cookies.
+- Fix 1: Upgrade abctl to version 0.29 or higher. A bug in previous versions caused this message to appear even when it should not have.
+- Fix 2: Deploy Airbyte again and set the `--insecure-cookies` flag. For example, `abctl local install --host example.com --insecure-cookies`.
 
 ## FAQ
 
@@ -176,7 +181,7 @@ If you want to interact with the pods or resources inside the cluster you can us
 
 [kind](https://kind.sigs.k8s.io/) is a tool for creating a K8s cluster using docker instead of having to install a local K8s cluster. You only need to think about kind if you want to make an adjustment to the cluster itself.
 
-For more advanced interactions (e.g. loading custom docker containers), read more in [developing locally](/platform/contributing-to-airbyte/developing-locally#using-abctl-for-airbyte-development).
+For more advanced interactions (e.g. loading custom docker containers), read more in [developing locally](/community/contributing-to-airbyte/developing-locally#using-abctl-for-airbyte-development).
 
 ### Unable To Locate User Email
 

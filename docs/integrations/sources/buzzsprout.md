@@ -30,6 +30,19 @@ Visit `https://github.com/buzzsprout/buzzsprout-api/tree/master?tab=readme-ov-fi
 
 | Version | Date | Pull Request | Subject |
 | ------------------ | ------------ | --- | ---------------- |
+| 0.0.36 | 2025-10-29 | [68706](https://github.com/airbytehq/airbyte/pull/68706) | Update dependencies |
+| 0.0.35 | 2025-10-21 | [68242](https://github.com/airbytehq/airbyte/pull/68242) | Update dependencies |
+| 0.0.34 | 2025-10-14 | [67817](https://github.com/airbytehq/airbyte/pull/67817) | Update dependencies |
+| 0.0.33 | 2025-10-07 | [67203](https://github.com/airbytehq/airbyte/pull/67203) | Update dependencies |
+| 0.0.32 | 2025-09-30 | [66318](https://github.com/airbytehq/airbyte/pull/66318) | Update dependencies |
+| 0.0.31 | 2025-09-09 | [65642](https://github.com/airbytehq/airbyte/pull/65642) | Update dependencies |
+| 0.0.30 | 2025-07-26 | [63789](https://github.com/airbytehq/airbyte/pull/63789) | Update dependencies |
+| 0.0.29 | 2025-07-12 | [63082](https://github.com/airbytehq/airbyte/pull/63082) | Update dependencies |
+| 0.0.28 | 2025-07-05 | [62541](https://github.com/airbytehq/airbyte/pull/62541) | Update dependencies |
+| 0.0.27 | 2025-06-15 | [61451](https://github.com/airbytehq/airbyte/pull/61451) | Update dependencies |
+| 0.0.26 | 2025-05-24 | [60628](https://github.com/airbytehq/airbyte/pull/60628) | Update dependencies |
+| 0.0.25 | 2025-05-10 | [59900](https://github.com/airbytehq/airbyte/pull/59900) | Update dependencies |
+| 0.0.24 | 2025-05-03 | [58689](https://github.com/airbytehq/airbyte/pull/58689) | Update dependencies |
 | 0.0.23 | 2025-04-19 | [58270](https://github.com/airbytehq/airbyte/pull/58270) | Update dependencies |
 | 0.0.22 | 2025-04-12 | [57647](https://github.com/airbytehq/airbyte/pull/57647) | Update dependencies |
 | 0.0.21 | 2025-04-05 | [57189](https://github.com/airbytehq/airbyte/pull/57189) | Update dependencies |

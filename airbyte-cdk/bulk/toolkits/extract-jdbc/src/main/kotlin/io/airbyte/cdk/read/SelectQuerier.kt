@@ -1,12 +1,14 @@
 /* Copyright (c) 2024 Airbyte, Inc., all rights reserved. */
 package io.airbyte.cdk.read
 
-import com.fasterxml.jackson.databind.JsonNode
 import com.fasterxml.jackson.databind.node.ObjectNode
+import io.airbyte.cdk.data.JsonEncoder
+import io.airbyte.cdk.data.NullCodec
 import io.airbyte.cdk.discover.Field
 import io.airbyte.cdk.jdbc.JdbcConnectionFactory
 import io.airbyte.cdk.jdbc.JdbcFieldType
-import io.airbyte.cdk.util.Jsons
+import io.airbyte.cdk.output.sockets.FieldValueEncoder
+import io.airbyte.cdk.output.sockets.NativeRecordPayload
 import io.github.oshai.kotlinlogging.KotlinLogging
 import io.micronaut.context.annotation.DefaultImplementation
 import jakarta.inject.Singleton
@@ -38,7 +40,7 @@ interface SelectQuerier {
     interface Result : Iterator<ResultRow>, AutoCloseable
 
     interface ResultRow {
-        val data: ObjectNode
+        val data: NativeRecordPayload
         val changes: Map<Field, FieldValueChange>
     }
 }
@@ -54,7 +56,7 @@ class JdbcSelectQuerier(
     ): SelectQuerier.Result = Result(jdbcConnectionFactory, q, parameters)
 
     data class ResultRow(
-        override var data: ObjectNode = Jsons.objectNode(),
+        override val data: NativeRecordPayload = mutableMapOf(),
         override var changes: MutableMap<Field, FieldValueChange> = mutableMapOf(),
     ) : SelectQuerier.ResultRow
 
@@ -130,13 +132,23 @@ class JdbcSelectQuerier(
             val resultRow: ResultRow = reusable ?: ResultRow()
             resultRow.changes.clear()
             var colIdx = 1
+
             for (column in q.columns) {
                 log.debug { "Getting value #$colIdx for $column." }
                 val jdbcFieldType: JdbcFieldType<*> = column.type as JdbcFieldType<*>
                 try {
-                    resultRow.data.set<JsonNode>(column.id, jdbcFieldType.get(rs!!, colIdx))
+                    @Suppress("UNCHECKED_CAST")
+                    resultRow.data[column.id] =
+                        FieldValueEncoder(
+                            jdbcFieldType.jdbcGetter.get(rs!!, colIdx),
+                            jdbcFieldType.jsonEncoder as JsonEncoder<in Any?>,
+                        )
                 } catch (e: Exception) {
-                    resultRow.data.set<JsonNode>(column.id, Jsons.nullNode())
+                    resultRow.data[column.id] =
+                        FieldValueEncoder(
+                            null,
+                            NullCodec // Use NullCodec for null values
+                        ) // Use NullCodec for null values
                     if (!hasLoggedException) {
                         log.warn(e) { "Error deserializing value in column $column." }
                         hasLoggedException = true

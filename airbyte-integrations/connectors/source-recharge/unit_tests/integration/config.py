@@ -32,5 +32,9 @@ class ConfigBuilder:
         self._config["access_token"] = access_token
         return self
 
+    def with_lookback_window_days(self, lookback_window_days: int) -> ConfigBuilder:
+        self._config["lookback_window_days"] = lookback_window_days
+        return self
+
     def build(self) -> MutableMapping[str, Any]:
         return self._config

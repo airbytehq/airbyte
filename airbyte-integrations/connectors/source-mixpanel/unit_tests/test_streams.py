@@ -7,6 +7,7 @@ import logging
 import urllib.parse
 from datetime import timedelta
 from unittest import mock
+from unittest.mock import MagicMock
 
 import pendulum
 import pytest
@@ -14,6 +15,7 @@ import responses
 import source_mixpanel
 from source_mixpanel import SourceMixpanel
 from source_mixpanel.components import iter_dicts
+from source_mixpanel.streams import Export
 from source_mixpanel.utils import read_full_refresh
 
 from airbyte_cdk.models import (
@@ -641,12 +643,11 @@ def export_response():
     )
 
 
-def test_export_stream(requests_mock, export_response, config_raw):
-    stream = init_stream("export", config_raw)
+def test_export_stream(requests_mock, export_response, config):
+    stream = Export(authenticator=MagicMock(), **config)
 
     requests_mock.register_uri("GET", get_url_to_mock(stream), export_response)
-    requests_mock.register_uri("GET", "https://mixpanel.com/api/query/events/properties/top", json={})
-    stream_slice = StreamSlice(partition={}, cursor_slice={"start_time": "2017-01-25T00:00:00Z", "end_time": "2017-02-25T00:00:00Z"})
+    stream_slice = {"start_date": "2017-01-25T00:00:00Z", "end_date": "2017-02-25T00:00:00Z"}
     # read records for single slice
     records = stream.read_records(sync_mode=SyncMode.incremental, stream_slice=stream_slice)
 
@@ -654,18 +655,17 @@ def test_export_stream(requests_mock, export_response, config_raw):
     assert records_length == 1
 
 
-def test_export_stream_fail(requests_mock, export_response, config_raw):
-    stream = init_stream("export", config_raw)
+def test_export_stream_fail(requests_mock, export_response, config):
+    stream = Export(authenticator=MagicMock(), **config)
     error_message = ""
     requests_mock.register_uri("GET", get_url_to_mock(stream), status_code=400, text="Unable to authenticate request")
-    requests_mock.register_uri("GET", "https://mixpanel.com/api/query/events/properties/top", json={})
-    stream_slice = StreamSlice(partition={}, cursor_slice={"start_time": "2017-01-25T00:00:00Z", "end_time": "2017-01-25T00:00:00Z"})
+    stream_slice = {"start_date": "2017-01-25T00:00:00Z", "end_date": "2017-02-25T00:00:00Z"}
     try:
         records = stream.read_records(sync_mode=SyncMode.incremental, stream_slice=stream_slice)
         records = list(records)
     except Exception as e:
         error_message = str(e)
-    assert "Authentication has failed. Please update your config with valid credentials." in error_message
+    assert "Your credentials might have expired" in error_message
 
 
 def test_handle_time_zone_mismatch(requests_mock, export_config, caplog):
@@ -735,8 +735,8 @@ def test_export_full_refresh_read(export_config, engage_response):
     responses.add(responses.GET, url="https://mixpanel.com/api/query/events/properties/top", json={}, status=200)
 
     request_params = [
-        ({"from_date": "2022-01-01T00:00:00Z", "to_date": "2022-03-31T00:00:00Z"}, {"properties": {"time": "2022-03-18T21:59:59Z"}}),
-        ({"from_date": "2022-04-01T00:00:00Z", "to_date": "2022-06-01T00:00:00Z"}, {"properties": {"time": "2022-05-18T21:59:59Z"}}),
+        ({"from_date": "2021-12-27", "to_date": "2022-03-26"}, {"properties": {"time": 1647599523}, "event": "2022-03-18T21:59:59Z"}),
+        ({"from_date": "2022-03-27", "to_date": "2022-06-01"}, {"properties": {"time": 1652911199}, "event": "2022-06-01T21:59:59Z"}),
     ]
 
     for params, json_data in request_params:
@@ -794,7 +794,8 @@ def test_export_incremental_read(export_config, engage_response):
 
     start_from_date = (pendulum.parse(state_value) - timedelta(days=config["attribution_window"])).format("YYYY-MM-DD")
     request_params = [
-        ({"from_date": start_from_date, "to_date": "2022-06-01"}, {"properties": {"time": "2022-04-18T21:59:59Z"}}),
+        ({"from_date": start_from_date, "to_date": "2022-04-11"}, {"properties": {"time": 1649714399}, "event": "2022-03-18T21:59:59Z"}),
+        ({"from_date": start_from_date, "to_date": "2022-04-18"}, {"properties": {"time": 1650319199}, "event": "2022-03-18T21:59:59Z"}),
     ]
 
     time_ts = (pendulum.parse(state_value) - timedelta(seconds=config["export_lookback_window"])).timestamp()
@@ -810,57 +811,28 @@ def test_export_incremental_read(export_config, engage_response):
     assert output.state_messages[-1].state.stream.stream_state.time == "2022-04-18T21:59:59Z"
 
 
-@responses.activate
-def test_export_lookback_window(export_config):
+def test_export_stream_lookback_window(requests_mock, export_response, config_raw, mocker):
     """Test that export_lookback_window correctly adjusts the start date during incremental sync and verifies slice parameters"""
-    config = export_config.copy()
-    config["export_lookback_window"] = 7200  # 1 hour lookback
-    config["start_date"] = "2021-06-01T00:00:00Z"
-    config["end_date"] = "2021-07-10T00:00:00Z"
+    config_raw["export_lookback_window"] = 7200  # 1 hour lookback
+    config_raw["start_date"] = "2021-06-01T00:00:00Z"
+    config_raw["end_date"] = "2021-07-10T00:00:00Z"
 
-    responses.add(
-        responses.GET,
-        url="https://mixpanel.com/api/query/engage/properties",
-        json={
-            "computed_at": "time",
-            "results": {
-                "$email": {"count": 2, "type": "string"},
-                "$last_seen": {"count": 3, "type": "datetime"},
-                "$name": {"count": 3, "type": "string"},
+    stream = init_stream("export", config=config_raw)
+
+    # Mock get_json_schema to avoid actual schema fetching
+    mocker.patch.object(
+        Export,
+        "get_json_schema",
+        return_value={
+            "type": "object",
+            "properties": {
+                "event": {"type": "string"},
+                "time": {"type": "string"},
+                "distinct_id": {"type": "string"},
+                "insert_id": {"type": "string"},
             },
-            "session_id": "session",
-            "status": "ok",
         },
-        status=200,
     )
-    responses.add(responses.GET, url="https://mixpanel.com/api/query/events/properties/top", json={}, status=200)
-
-    state_value = "2021-06-16T16:28:00Z"
-
-    catalog = ConfiguredAirbyteCatalog(
-        streams=[
-            ConfiguredAirbyteStream(
-                sync_mode=SyncMode.incremental,
-                destination_sync_mode=DestinationSyncMode.append_dedup,
-                stream=AirbyteStream(name="export", json_schema={}, supported_sync_modes=[SyncMode.incremental, SyncMode.full_refresh]),
-            )
-        ]
-    )
-
-    state = [
-        AirbyteStateMessage(
-            type=AirbyteStateType.STREAM,
-            stream=AirbyteStreamState(
-                stream_descriptor=StreamDescriptor(name="export"), stream_state=AirbyteStateBlob(**{"time": state_value})
-            ),
-        )
-    ]
-
-    # Verify slice parameters
-    expected_end = pendulum.parse("2021-07-10T00:00:00Z").format("YYYY-MM-DD")  # From config end_date
-    expected_start = (pendulum.parse(state_value) - timedelta(days=config["attribution_window"])).format(
-        "YYYY-MM-DD"
-    )  # 16:28:00 - 2 hours due to lookback
 
     # Mock response with two records at different times in JSONL format
     export_response_multiple = (
@@ -868,18 +840,32 @@ def test_export_lookback_window(export_config):
         b'{"event": "Clicked Button", "properties": {"time": 1623864480, "distinct_id": "user2", "$insert_id": "insert2"}}'
     )
 
-    request_params = [
-        ({"from_date": expected_start, "to_date": expected_end}, export_response_multiple),
-    ]
+    requests_mock.register_uri(
+        "GET",
+        get_url_to_mock(stream),
+        content=export_response_multiple,  # Use content directly for bytes
+        status_code=200,
+    )
 
-    time_ts = (pendulum.parse(state_value) - timedelta(seconds=config["export_lookback_window"])).timestamp()
+    # State with a timestamp 1 hour ago from the latest record
+    stream_state = {"time": "2021-06-16T16:28:00Z"}
+    stream_slices = list(stream.stream_slices(sync_mode=SyncMode.incremental, stream_state=stream_state))
+    assert len(stream_slices) > 0  # Ensure we have at least one slice
+    stream_slice = stream_slices[0]
 
-    for params, body_data in request_params:
-        params.update({"where": f'properties["$time"]>=datetime({int(time_ts)})'})
-        responses.add(
-            responses.GET, url="https://data.mixpanel.com/api/2.0/export?" + urllib.parse.urlencode(params), body=body_data, status=200
-        )
+    # Verify slice parameters
+    expected_start = pendulum.parse("2021-06-16T14:28:00Z")  # 16:28:00 - 2 hours due to lookback
+    expected_end = pendulum.parse("2021-07-10T00:00:00Z")  # From config end_date
 
-    output = read(SourceMixpanel(config=config, catalog=catalog, state=state), config, catalog, state)
+    # Note: start_date might differ due to date_window_size slicing, adjust if needed
+    assert pendulum.parse(stream_slice["start_date"]) == pendulum.parse("2021-06-11T00:00:00Z")  # Adjusted by attribution_window
+    assert pendulum.parse(stream_slice["end_date"]) == expected_end
+    assert pendulum.parse(stream_slice["time"]) == expected_start
+
+    # Read records and verify both are included due to lookback
+    records = list(stream.read_records(sync_mode=SyncMode.incremental, stream_slice=stream_slice))
+    assert len(records) == 2
+
     # Verify updated state is set to the latest record time
-    assert output.state_messages[-1].state.stream.stream_state.time == "2021-06-16T17:28:00Z"
+    new_state = stream.get_updated_state(stream_state, records[-1])
+    assert new_state["time"] == "2021-06-16T17:28:00Z"

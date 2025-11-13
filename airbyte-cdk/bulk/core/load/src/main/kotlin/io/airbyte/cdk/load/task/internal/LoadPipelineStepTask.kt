@@ -6,6 +6,7 @@ package io.airbyte.cdk.load.task.internal
 
 import com.google.common.annotations.VisibleForTesting
 import io.airbyte.cdk.load.command.DestinationStream
+import io.airbyte.cdk.load.config.PipelineInputEvent
 import io.airbyte.cdk.load.message.DestinationRecordRaw
 import io.airbyte.cdk.load.message.PartitionedQueue
 import io.airbyte.cdk.load.message.PipelineContext
@@ -24,6 +25,7 @@ import io.airbyte.cdk.load.pipeline.BatchUpdate
 import io.airbyte.cdk.load.pipeline.OutputPartitioner
 import io.airbyte.cdk.load.pipeline.PipelineFlushStrategy
 import io.airbyte.cdk.load.state.CheckpointId
+import io.airbyte.cdk.load.state.CheckpointValue
 import io.airbyte.cdk.load.task.OnEndOfSync
 import io.airbyte.cdk.load.task.Task
 import io.airbyte.cdk.load.task.TerminalCondition
@@ -45,7 +47,7 @@ import kotlinx.coroutines.flow.fold
  */
 data class StateWithCounts<S : AutoCloseable>(
     val accumulatorState: S,
-    val checkpointCounts: MutableMap<CheckpointId, Long> = mutableMapOf(),
+    val checkpointCounts: MutableMap<CheckpointId, CheckpointValue> = mutableMapOf(),
     val inputCount: Long = 0,
     val createdAtMs: Long = System.currentTimeMillis()
 ) : AutoCloseable {
@@ -66,7 +68,8 @@ class LoadPipelineStepTask<S : AutoCloseable, K1 : WithStream, T, K2 : WithStrea
     private val numWorkers: Int,
     private val stepId: String,
     private val streamCompletions:
-        ConcurrentHashMap<Pair<String, DestinationStream.Descriptor>, AtomicInteger>
+        ConcurrentHashMap<Pair<String, DestinationStream.Descriptor>, AtomicInteger>,
+    private val maxNumConcurrentKeys: Int? = null,
 ) : Task {
     private val log = KotlinLogging.logger {}
 
@@ -94,6 +97,37 @@ class LoadPipelineStepTask<S : AutoCloseable, K1 : WithStream, T, K2 : WithStrea
                                 "$stepId[$part] received input for complete stream ${input.key.stream}. This indicates data was processed out of order and future bookkeeping might be corrupt. Failing hard."
                             )
                         }
+
+                        /**
+                         * Enforce the specified maximum number of concurrent keys. If this is a new
+                         * key, AND we are already at the max, force a call to finish on the key
+                         * whose state contains the most data, then evict it.
+                         */
+                        maxNumConcurrentKeys?.let { maxKeys ->
+                            if (
+                                !stateStore.stateWithCounts.contains(input.key) &&
+                                    stateStore.stateWithCounts.size >= maxKeys
+                            ) {
+                                // Pick the key with the highest input count
+                                val (key, state) =
+                                    stateStore.stateWithCounts.maxByOrNull { it.value.inputCount }!!
+                                stateStore.stateWithCounts.remove(key)
+                                log.info {
+                                    "Saw greater than $maxNumConcurrentKeys keys, evicting highest accumulating $key (inputs=${state.inputCount})"
+                                }
+
+                                val output = batchAccumulator.finish(state.accumulatorState)
+                                handleOutput(
+                                    key,
+                                    state.checkpointCounts,
+                                    output.output,
+                                    state.inputCount
+                                )
+
+                                state.close()
+                            }
+                        }
+
                         // Get or create the accumulator state associated w/ the input key.
                         val stateWithCounts =
                             stateStore.stateWithCounts
@@ -117,7 +151,7 @@ class LoadPipelineStepTask<S : AutoCloseable, K1 : WithStream, T, K2 : WithStrea
                         } // TODO: Accumulate and release when persisted
                         input.checkpointCounts.forEach {
                             stateWithCounts.checkpointCounts.merge(it.key, it.value) { old, new ->
-                                old + new
+                                old.plus(new)
                             }
                         }
 
@@ -196,7 +230,7 @@ class LoadPipelineStepTask<S : AutoCloseable, K1 : WithStream, T, K2 : WithStrea
                             }
                             outputQueue?.broadcast(PipelineEndOfStream(input.stream))
                         } else {
-                            log.info {
+                            log.debug {
                                 "$this saw end-of-stream for ${input.stream} after $inputCountEos inputs, ${numWorkers - numWorkersSeenEos} workers remaining"
                             }
                         }
@@ -240,7 +274,7 @@ class LoadPipelineStepTask<S : AutoCloseable, K1 : WithStream, T, K2 : WithStrea
         reason: String
     ) {
         keys.forEach { key ->
-            log.info { "Finishing state for $key due to $reason" }
+            log.debug { "Finishing state for $key due to $reason" }
             stateStore.stateWithCounts.remove(key)?.let { stateWithCounts ->
                 val output = batchAccumulator.finish(stateWithCounts.accumulatorState).output
                 handleOutput(
@@ -257,7 +291,7 @@ class LoadPipelineStepTask<S : AutoCloseable, K1 : WithStream, T, K2 : WithStrea
     @VisibleForTesting
     suspend fun handleOutput(
         inputKey: K1,
-        checkpointCounts: Map<CheckpointId, Long>,
+        checkpointCounts: Map<CheckpointId, CheckpointValue>,
         output: U,
         inputCount: Long,
         context: PipelineContext? = null,
@@ -296,8 +330,7 @@ class LoadPipelineStepTask<S : AutoCloseable, K1 : WithStream, T, K2 : WithStrea
 @Requires(bean = LoadStrategy::class)
 class LoadPipelineStepTaskFactory(
     @Named("batchStateUpdateQueue") val batchUpdateQueue: QueueWriter<BatchUpdate>,
-    @Named("pipelineInputQueue")
-    val recordQueue: PartitionedQueue<PipelineEvent<StreamKey, DestinationRecordRaw>>,
+    @Named("dataChannelInputFlows") val inputFlows: Array<Flow<PipelineInputEvent>>,
     private val flushStrategy: PipelineFlushStrategy,
 ) {
     // A map of (TaskId, Stream) ->  streams to ensure eos is not forwarded from
@@ -313,7 +346,8 @@ class LoadPipelineStepTaskFactory(
         flushStrategy: PipelineFlushStrategy?,
         part: Int,
         numWorkers: Int,
-        taskId: String,
+        stepId: String,
+        maxNumConcurrentKeys: Int? = null,
     ): LoadPipelineStepTask<S, K1, T, K2, U> {
         return LoadPipelineStepTask(
             batchAccumulator,
@@ -324,8 +358,9 @@ class LoadPipelineStepTaskFactory(
             flushStrategy,
             part,
             numWorkers,
-            taskId,
+            stepId,
             streamCompletions,
+            maxNumConcurrentKeys
         )
     }
 
@@ -335,16 +370,18 @@ class LoadPipelineStepTaskFactory(
         outputQueue: PartitionedQueue<PipelineEvent<K2, U>>?,
         part: Int,
         numWorkers: Int,
+        maxNumConcurrentKeys: Int? = null,
     ): LoadPipelineStepTask<S, StreamKey, DestinationRecordRaw, K2, U> {
         return create(
             batchAccumulator,
-            recordQueue.consume(part),
+            inputFlows[part],
             outputPartitioner,
             outputQueue,
             flushStrategy,
             part,
             numWorkers,
-            taskId = "first-step"
+            stepId = "first-step",
+            maxNumConcurrentKeys = maxNumConcurrentKeys
         )
     }
 
@@ -362,7 +399,7 @@ class LoadPipelineStepTaskFactory(
             null,
             part,
             numWorkers,
-            taskId = "final-step"
+            stepId = "final-step"
         )
     }
 
@@ -370,28 +407,29 @@ class LoadPipelineStepTaskFactory(
         batchAccumulator: BatchAccumulator<S, StreamKey, DestinationRecordRaw, U>,
         part: Int,
         numWorkers: Int,
+        maxNumConcurrentKeys: Int? = null,
     ): LoadPipelineStepTask<S, StreamKey, DestinationRecordRaw, K2, U> {
-        return createFirstStep(batchAccumulator, null, null, part, numWorkers)
+        return createFirstStep(batchAccumulator, null, null, part, numWorkers, maxNumConcurrentKeys)
     }
 
     fun <S : AutoCloseable, K1 : WithStream, T, K2 : WithStream, U : Any> createIntermediateStep(
         batchAccumulator: BatchAccumulator<S, K1, T, U>,
-        inputQueue: PartitionedQueue<PipelineEvent<K1, T>>,
+        inputFlow: Flow<PipelineEvent<K1, T>>,
         outputPartitioner: OutputPartitioner<K1, T, K2, U>?,
         outputQueue: PartitionedQueue<PipelineEvent<K2, U>>?,
         part: Int,
         numWorkers: Int,
-        taskId: String,
+        stepId: String,
     ): LoadPipelineStepTask<S, K1, T, K2, U> {
         return create(
             batchAccumulator,
-            inputQueue.consume(part),
+            inputFlow,
             outputPartitioner,
             outputQueue,
             null,
             part,
             numWorkers,
-            taskId,
+            stepId,
         )
     }
 }

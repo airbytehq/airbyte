@@ -3,11 +3,11 @@ requires = ["poetry-core>=1.0.0"]
 build-backend = "poetry.core.masonry.api"
 
 [tool.poetry]
-version = "0.1.12"
+version = "0.1.13"
 name = "source-box-data-extract"
 description = "Source implementation for Box File Text Extraction."
 authors = ["Airbyte <contact@airbyte.io>"]
-license = "MIT"
+license = "ELv2"
 readme = "README.md"
 documentation = "https://docs.airbyte.com/integrations/sources/box-files-text"
 homepage = "https://airbyte.com"

@@ -64,7 +64,7 @@ definitions:
         cursor_field: updated_at
         end_datetime:
           type: MinMaxDatetime
-          datetime: "{{ config.get('end_date', now_utc().strftime('%Y-%m-%d')) }}"
+          datetime: "{{ config.get('end_date', day_delta(1, format='%Y-%m-%d')) }}"
           datetime_format: "%Y-%m-%d"
         start_datetime:
           type: MinMaxDatetime
@@ -142,7 +142,7 @@ definitions:
         cursor_field: updated_at
         end_datetime:
           type: MinMaxDatetime
-          datetime: "{{ config.get('end_date', now_utc().strftime('%Y-%m-%d')) }}"
+          datetime: "{{ config.get('end_date', day_delta(1, format='%Y-%m-%d')) }}"
           datetime_format: "%Y-%m-%d"
         start_datetime:
           type: MinMaxDatetime
@@ -211,7 +211,7 @@ definitions:
         cursor_field: updated_at
         end_datetime:
           type: MinMaxDatetime
-          datetime: "{{ config.get('end_date', now_utc().strftime('%Y-%m-%d')) }}"
+          datetime: "{{ config.get('end_date', day_delta(1, format='%Y-%m-%d')) }}"
           datetime_format: "%Y-%m-%d"
         start_datetime:
           type: MinMaxDatetime
@@ -280,7 +280,7 @@ definitions:
         cursor_field: updated_at
         end_datetime:
           type: MinMaxDatetime
-          datetime: "{{ config.get('end_date', now_utc().strftime('%Y-%m-%d')) }}"
+          datetime: "{{ config.get('end_date', day_delta(1, format='%Y-%m-%d')) }}"
           datetime_format: "%Y-%m-%d"
         start_datetime:
           type: MinMaxDatetime
@@ -349,7 +349,7 @@ definitions:
         cursor_field: updated_at
         end_datetime:
           type: MinMaxDatetime
-          datetime: "{{ config.get('end_date', now_utc().strftime('%Y-%m-%d')) }}"
+          datetime: "{{ config.get('end_date', day_delta(1, format='%Y-%m-%d')) }}"
           datetime_format: "%Y-%m-%d"
         start_datetime:
           type: MinMaxDatetime
@@ -418,7 +418,7 @@ definitions:
         cursor_field: updated_at
         end_datetime:
           type: MinMaxDatetime
-          datetime: "{{ config.get('end_date', now_utc().strftime('%Y-%m-%d')) }}"
+          datetime: "{{ config.get('end_date', day_delta(1, format='%Y-%m-%d')) }}"
           datetime_format: "%Y-%m-%d"
         start_datetime:
           type: MinMaxDatetime
@@ -487,7 +487,7 @@ definitions:
         cursor_field: updated_at
         end_datetime:
           type: MinMaxDatetime
-          datetime: "{{ config.get('end_date', now_utc().strftime('%Y-%m-%d')) }}"
+          datetime: "{{ config.get('end_date', day_delta(1, format='%Y-%m-%d')) }}"
           datetime_format: "%Y-%m-%d"
         start_datetime:
           type: MinMaxDatetime
@@ -556,7 +556,7 @@ definitions:
         cursor_field: updated_at
         end_datetime:
           type: MinMaxDatetime
-          datetime: "{{ config.get('end_date', now_utc().strftime('%Y-%m-%d')) }}"
+          datetime: "{{ config.get('end_date', day_delta(1, format='%Y-%m-%d')) }}"
           datetime_format: "%Y-%m-%d"
         start_datetime:
           type: MinMaxDatetime
@@ -636,13 +636,13 @@ definitions:
         cursor_field: start_time
         end_datetime:
           type: MinMaxDatetime
-          datetime: "{{ config.get('end_date', now_utc().strftime('%Y-%m-%d')) }}"
+          datetime: "{{ config.get('end_date', day_delta(1, format='%Y-%m-%d')) }}"
           datetime_format: "%Y-%m-%d"
         start_datetime:
           type: MinMaxDatetime
           datetime: "{{ config.get(\"start_date\", \"2011-09-01\") }}"
           datetime_format: "%Y-%m-%d"
-        datetime_format: "%Y-%m-%dT%H:%M:%S.%f%z"
+        datetime_format: "%Y-%m-%dT%H:00:00.0000000%z"
         end_time_option:
           type: RequestOption
           field_name: end_time
@@ -749,13 +749,13 @@ definitions:
         cursor_field: start_time
         end_datetime:
           type: MinMaxDatetime
-          datetime: "{{ config.get('end_date', now_utc().strftime('%Y-%m-%d')) }}"
+          datetime: "{{ config.get('end_date', day_delta(1, format='%Y-%m-%d')) }}"
           datetime_format: "%Y-%m-%d"
         start_datetime:
           type: MinMaxDatetime
           datetime: "{{ config.get(\"start_date\", \"2011-09-01\") }}"
           datetime_format: "%Y-%m-%d"
-        datetime_format: "%Y-%m-%dT%H:%M:%S"
+        datetime_format: "%Y-%m-%dT00:00:00"
         end_time_option:
           type: RequestOption
           field_name: end_time
@@ -933,13 +933,13 @@ definitions:
         cursor_field: start_time
         end_datetime:
           type: MinMaxDatetime
-          datetime: "{{ config.get('end_date', now_utc().strftime('%Y-%m-%d')) }}"
+          datetime: "{{ config.get('end_date', day_delta(1, format='%Y-%m-%d')) }}"
           datetime_format: "%Y-%m-%d"
         start_datetime:
           type: MinMaxDatetime
           datetime: "{{ config.get(\"start_date\", \"2011-09-01\") }}"
           datetime_format: "%Y-%m-%d"
-        datetime_format: "%Y-%m-%dT%H:%M:%S.%f%z"
+        datetime_format: "%Y-%m-%dT%H:00:00.0000000%z"
         end_time_option:
           type: RequestOption
           field_name: end_time
@@ -1370,13 +1370,13 @@ definitions:
         cursor_field: start_time
         end_datetime:
           type: MinMaxDatetime
-          datetime: "{{ config.get('end_date', now_utc().strftime('%Y-%m-%d')) }}"
+          datetime: "{{ config.get('end_date', day_delta(1, format='%Y-%m-%d')) }}"
           datetime_format: "%Y-%m-%d"
         start_datetime:
           type: MinMaxDatetime
           datetime: "{{ config.get(\"start_date\", \"2011-09-01\") }}"
           datetime_format: "%Y-%m-%d"
-        datetime_format: "%Y-%m-%dT%H:%M:%S"
+        datetime_format: "%Y-%m-%dT00:00:00"
         end_time_option:
           type: RequestOption
           field_name: end_time
@@ -2261,13 +2261,13 @@ definitions:
         cursor_field: start_time
         end_datetime:
           type: MinMaxDatetime
-          datetime: "{{ config.get('end_date', now_utc().strftime('%Y-%m-%d')) }}"
+          datetime: "{{ config.get('end_date', day_delta(1, format='%Y-%m-%d')) }}"
           datetime_format: "%Y-%m-%d"
         start_datetime:
           type: MinMaxDatetime
           datetime: "{{ config.get(\"start_date\", \"2011-09-01\") }}"
           datetime_format: "%Y-%m-%d"
-        datetime_format: "%Y-%m-%dT%H:%M:%S.%f%z"
+        datetime_format: "%Y-%m-%dT%H:00:00"
         end_time_option:
           type: RequestOption
           field_name: end_time
@@ -2698,13 +2698,13 @@ definitions:
         cursor_field: start_time
         end_datetime:
           type: MinMaxDatetime
-          datetime: "{{ config.get('end_date', now_utc().strftime('%Y-%m-%d')) }}"
+          datetime: "{{ config.get('end_date', day_delta(1, format='%Y-%m-%d')) }}"
           datetime_format: "%Y-%m-%d"
         start_datetime:
           type: MinMaxDatetime
           datetime: "{{ config.get(\"start_date\", \"2011-09-01\") }}"
           datetime_format: "%Y-%m-%d"
-        datetime_format: "%Y-%m-%dT%H:%M:%S"
+        datetime_format: "%Y-%m-%dT00:00:00"
         end_time_option:
           type: RequestOption
           field_name: end_time
@@ -3589,13 +3589,13 @@ definitions:
         cursor_field: start_time
         end_datetime:
           type: MinMaxDatetime
-          datetime: "{{ config.get('end_date', now_utc().strftime('%Y-%m-%d')) }}"
+          datetime: "{{ config.get('end_date', day_delta(1, format='%Y-%m-%d')) }}"
           datetime_format: "%Y-%m-%d"
         start_datetime:
           type: MinMaxDatetime
           datetime: "{{ config.get(\"start_date\", \"2011-09-01\") }}"
           datetime_format: "%Y-%m-%d"
-        datetime_format: "%Y-%m-%dT%H:%M:%S.%f%z"
+        datetime_format: "%Y-%m-%dT%H:00:00.0000000%z"
         end_time_option:
           type: RequestOption
           field_name: end_time
@@ -4026,13 +4026,13 @@ definitions:
         cursor_field: start_time
         end_datetime:
           type: MinMaxDatetime
-          datetime: "{{ config.get('end_date', now_utc().strftime('%Y-%m-%d')) }}"
+          datetime: "{{ config.get('end_date', day_delta(1, format='%Y-%m-%d')) }}"
           datetime_format: "%Y-%m-%d"
         start_datetime:
           type: MinMaxDatetime
           datetime: "{{ config.get(\"start_date\", \"2011-09-01\") }}"
           datetime_format: "%Y-%m-%d"
-        datetime_format: "%Y-%m-%dT%H:%M:%S"
+        datetime_format: "%Y-%m-%dT00:00:00"
         end_time_option:
           type: RequestOption
           field_name: end_time

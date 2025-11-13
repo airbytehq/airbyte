@@ -5,11 +5,13 @@
 package io.airbyte.integrations.destination.mssql.v2
 
 import com.microsoft.sqlserver.jdbc.SQLServerException
+import io.airbyte.cdk.ConfigErrorException
 import io.airbyte.cdk.load.command.Append
 import io.airbyte.cdk.load.command.Dedupe
 import io.airbyte.cdk.load.command.DestinationStream
 import io.airbyte.cdk.load.command.Overwrite
-import io.airbyte.cdk.load.data.AirbyteType
+import io.airbyte.cdk.load.command.SoftDelete
+import io.airbyte.cdk.load.command.Update
 import io.airbyte.cdk.load.data.AirbyteValue
 import io.airbyte.cdk.load.data.ArrayType
 import io.airbyte.cdk.load.data.ArrayTypeWithoutSchema
@@ -221,8 +223,8 @@ class MSSQLQueryBuilder(
     data class NamedValue(val name: String, val value: AirbyteValue)
     data class NamedSqlField(val name: String, val type: MssqlType)
 
-    val outputSchema: String = stream.descriptor.namespace ?: defaultSchema
-    val tableName: String = stream.descriptor.name
+    val outputSchema: String = stream.mappedDescriptor.namespace ?: defaultSchema
+    val tableName: String = stream.mappedDescriptor.name
     val uniquenessKey: List<String> =
         when (stream.importType) {
             is Dedupe ->
@@ -233,13 +235,14 @@ class MSSQLQueryBuilder(
                 }
             Append -> emptyList()
             Overwrite -> emptyList()
+            SoftDelete,
+            Update -> throw ConfigErrorException("Unsupported sync mode: ${stream.importType}")
         }
     private val indexedColumns: Set<String> = uniquenessKey.toSet()
 
     private val toMssqlType = AirbyteTypeToMssqlType()
 
-    val finalTableSchema: List<NamedField> =
-        airbyteFinalTableFields + extractFinalTableSchema(stream.schema)
+    val finalTableSchema: List<NamedField> = airbyteFinalTableFields + extractFinalTableSchema()
     val hasCdc: Boolean = finalTableSchema.any { it.name == AIRBYTE_CDC_DELETED_AT }
 
     private fun getExistingSchema(connection: Connection): List<NamedSqlField> {
@@ -498,16 +501,8 @@ class MSSQLQueryBuilder(
         }
     }
 
-    private fun extractFinalTableSchema(schema: AirbyteType): List<NamedField> =
-        when (schema) {
-            is ObjectType -> {
-                (stream.schema as ObjectType)
-                    .properties
-                    .map { NamedField(name = it.key, type = it.value) }
-                    .toList()
-            }
-            else -> TODO("most likely fail hard")
-        }
+    private fun extractFinalTableSchema(): List<NamedField> =
+        stream.schema.asColumns().map { NamedField(name = it.key, type = it.value) }.toList()
 
     private fun airbyteTypeToSqlSchema(
         schema: List<NamedField>,

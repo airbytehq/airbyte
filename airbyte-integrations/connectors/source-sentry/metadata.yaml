@@ -6,16 +6,23 @@ data:
     hosts:
       - "*"
   connectorBuildOptions:
-    baseImage: docker.io/airbyte/source-declarative-manifest:6.47.0@sha256:b78e7be5d27d96b4eebc99fb76ccd3bad6408b0cd3a2a4d668852a4b6b9209dc
+    baseImage: docker.io/airbyte/source-declarative-manifest:7.4.1@sha256:71df19e2ee555ca5b14abbec01d50104c79c9b84cb9cc323284d24333361900a
   connectorSubtype: api
   connectorType: source
   definitionId: cdaf146a-9b75-49fd-9dd2-9d64a0bb4781
-  dockerImageTag: 0.8.7
+  dockerImageTag: 0.9.9
   dockerRepository: airbyte/source-sentry
   documentationUrl: https://docs.airbyte.com/integrations/sources/sentry
+  externalDocumentationUrls:
+    - title: API Reference
+      url: https://docs.sentry.io/api/
+      type: api_reference
+    - title: Changelog
+      url: https://sentry.io/changelog/
+      type: api_release_history
   githubIssueLabel: source-sentry
   icon: sentry.svg
-  license: MIT
+  license: ELv2
   # Rate limit windows are returned in the response headers of the API requests.
   # Senty docs (https://docs.sentry.io/api/ratelimits/) state a per-second rate limit,
   # but the `x-rate-limit-reset` header has been observed to return a value of up to the next full minute from a request
@@ -32,6 +39,12 @@ data:
     oss:
       enabled: true
   releaseStage: generally_available
+  suggestedStreams:
+    streams:
+      - issues
+      - events
+      - projects
+      - releases
   supportLevel: certified
   tags:
     - cdk:low-code

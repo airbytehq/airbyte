@@ -6,16 +6,14 @@ test_strictness_level: "high"
 acceptance_tests:
   spec:
     tests:
-      - spec_path: "source_tiktok_marketing/spec.json"
+      - spec_path: "manifest.yaml"
         # the spec was changed with the `format: date` for start/end dates input,
         # to satisfy the DatePicker requirements
         backward_compatibility_tests_config:
           disable_for_version: "3.1.0" # attribution windows: add min/max values; change default 0 -> 3
   connection:
     tests:
-      - config_path: "secrets/prod_config.json"
-        status: "succeed"
-      - config_path: "secrets/config_oauth.json"
+      - config_path: "secrets/config.json"
         status: "succeed"
       - config_path: "integration_tests/invalid_config.json"
         status: "failed"
@@ -59,6 +57,14 @@ acceptance_tests:
           - name: pixel_instant_page_events
             bypass_reason: "No data in the integration test account. We should seed the sandbox later on."
           - name: pixel_events_statistics
+            bypass_reason: "No data in the integration test account. We should seed the sandbox later on."
+          - name: ads_reports_by_country_daily
+            bypass_reason: "No data in the integration test account. We should seed the sandbox later on."
+          - name: ad_groups_reports_by_country_daily
+            bypass_reason: "No data in the integration test account. We should seed the sandbox later on."
+          - name: ads_reports_by_country_hourly
+            bypass_reason: "No data in the integration test account. We should seed the sandbox later on."
+          - name: ad_groups_reports_by_country_hourly
             bypass_reason: "No data in the integration test account. We should seed the sandbox later on."
   full_refresh:
     tests:

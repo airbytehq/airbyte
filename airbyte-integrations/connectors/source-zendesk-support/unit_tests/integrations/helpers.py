@@ -1,11 +1,10 @@
 # Copyright (c) 2023 Airbyte, Inc., all rights reserved.
+from datetime import timedelta
 from typing import Optional
-
-import pendulum
-from pendulum.datetime import DateTime
 
 from airbyte_cdk.test.mock_http import HttpMocker
 from airbyte_cdk.test.mock_http.response_builder import FieldPath
+from airbyte_cdk.utils.datetime_helpers import AirbyteDateTime
 
 from .utils import datetime_to_string
 from .zs_requests import (
@@ -33,13 +32,13 @@ from .zs_responses.records import (
 
 
 def given_ticket_forms(
-    http_mocker: HttpMocker, start_date: DateTime, api_token_authenticator: ApiTokenAuthenticator
+    http_mocker: HttpMocker, start_date: AirbyteDateTime, api_token_authenticator: ApiTokenAuthenticator
 ) -> TicketFormsRecordBuilder:
     """
     Ticket Forms reqests
     """
     ticket_forms_record_builder = TicketFormsRecordBuilder.ticket_forms_record().with_field(
-        FieldPath("updated_at"), datetime_to_string(start_date.add(seconds=1))
+        FieldPath("updated_at"), datetime_to_string(start_date.add(timedelta(seconds=1)))
     )
     http_mocker.get(
         TicketFormsRequestBuilder.ticket_forms_endpoint(api_token_authenticator).build(),
@@ -49,13 +48,16 @@ def given_ticket_forms(
 
 
 def given_posts(
-    http_mocker: HttpMocker, start_date: DateTime, api_token_authenticator: ApiTokenAuthenticator, updated_at: Optional[DateTime] = None
+    http_mocker: HttpMocker,
+    start_date: AirbyteDateTime,
+    api_token_authenticator: ApiTokenAuthenticator,
+    updated_at: Optional[AirbyteDateTime] = None,
 ) -> PostsRecordBuilder:
     """
     Posts requests setup
     """
     posts_record_builder = PostsRecordBuilder.posts_record().with_field(
-        FieldPath("updated_at"), datetime_to_string(updated_at if updated_at else start_date.add(seconds=1))
+        FieldPath("updated_at"), datetime_to_string(updated_at if updated_at else start_date.add(timedelta(seconds=1)))
     )
     http_mocker.get(
         PostsRequestBuilder.posts_endpoint(api_token_authenticator)
@@ -69,16 +71,16 @@ def given_posts(
 
 def given_post_comments(
     http_mocker: HttpMocker,
-    start_date: DateTime,
+    start_date: AirbyteDateTime,
     post_id: int,
     api_token_authenticator: ApiTokenAuthenticator,
-    updated_at: Optional[DateTime] = None,
+    updated_at: Optional[AirbyteDateTime] = None,
 ) -> PostsCommentsRecordBuilder:
     """
     Post Comments requests setup
     """
     post_comments_record_builder = PostsCommentsRecordBuilder.posts_comments_record().with_field(
-        FieldPath("updated_at"), datetime_to_string(updated_at if updated_at else start_date.add(seconds=1))
+        FieldPath("updated_at"), datetime_to_string(updated_at if updated_at else start_date.add(timedelta(seconds=1)))
     )
     http_mocker.get(
         PostsCommentsRequestBuilder.posts_comments_endpoint(api_token_authenticator, post_id)
@@ -90,7 +92,9 @@ def given_post_comments(
     return post_comments_record_builder
 
 
-def given_tickets(http_mocker: HttpMocker, start_date: DateTime, api_token_authenticator: ApiTokenAuthenticator) -> TicketsRecordBuilder:
+def given_tickets(
+    http_mocker: HttpMocker, start_date: AirbyteDateTime, api_token_authenticator: ApiTokenAuthenticator
+) -> TicketsRecordBuilder:
     """
     Tickets requests setup
     """
@@ -103,14 +107,14 @@ def given_tickets(http_mocker: HttpMocker, start_date: DateTime, api_token_authe
 
 
 def given_tickets_with_state(
-    http_mocker: HttpMocker, start_date: DateTime, cursor_value: DateTime, api_token_authenticator: ApiTokenAuthenticator
+    http_mocker: HttpMocker, start_date: AirbyteDateTime, cursor_value: AirbyteDateTime, api_token_authenticator: ApiTokenAuthenticator
 ) -> TicketsRecordBuilder:
     """
     Tickets requests setup
     """
-    tickets_record_builder = TicketsRecordBuilder.tickets_record().with_cursor(cursor_value.int_timestamp)
+    tickets_record_builder = TicketsRecordBuilder.tickets_record().with_cursor(int(cursor_value.timestamp()))
     http_mocker.get(
-        TicketsRequestBuilder.tickets_endpoint(api_token_authenticator).with_start_time(start_date.int_timestamp).build(),
+        TicketsRequestBuilder.tickets_endpoint(api_token_authenticator).with_start_time(int(start_date.timestamp())).build(),
         TicketsResponseBuilder.tickets_response().with_record(tickets_record_builder).build(),
     )
     return tickets_record_builder
@@ -118,8 +122,8 @@ def given_tickets_with_state(
 
 def given_groups_with_later_records(
     http_mocker: HttpMocker,
-    updated_at_value: DateTime,
-    later_record_time_delta: pendulum.duration,
+    updated_at_value: AirbyteDateTime,
+    later_record_time_delta: timedelta,
     api_token_authenticator: ApiTokenAuthenticator,
 ) -> GroupsRecordBuilder:
     """

@@ -242,12 +242,7 @@ abstract class AbstractSourceConnectorTest {
             WorkerSourceConfig()
                 .withSourceConnectionConfiguration(config)
                 .withState(if (state == null) null else State().withState(state))
-                .withCatalog(
-                    convertProtocolObject(
-                        catalog,
-                        io.airbyte.protocol.models.ConfiguredAirbyteCatalog::class.java
-                    )
-                )
+                .withCatalog(convertProtocolObject(catalog, ConfiguredAirbyteCatalog::class.java))
 
         val source: AirbyteSource =
             DefaultAirbyteSource(
@@ -266,7 +261,7 @@ abstract class AbstractSourceConnectorTest {
         val messages: MutableList<AirbyteMessage> = ArrayList()
         source.start(sourceConfig, jobRoot)
         while (!source.isFinished) {
-            source.attemptRead().ifPresent { m: io.airbyte.protocol.models.AirbyteMessage ->
+            source.attemptRead().ifPresent { m: AirbyteMessage ->
                 messages.add(convertProtocolObject(m, AirbyteMessage::class.java))
             }
         }
@@ -285,19 +280,14 @@ abstract class AbstractSourceConnectorTest {
             WorkerSourceConfig()
                 .withSourceConnectionConfiguration(config)
                 .withState(if (state == null) null else State().withState(state))
-                .withCatalog(
-                    convertProtocolObject(
-                        catalog,
-                        io.airbyte.protocol.models.ConfiguredAirbyteCatalog::class.java
-                    )
-                )
+                .withCatalog(convertProtocolObject(catalog, ConfiguredAirbyteCatalog::class.java))
 
         val source = prepareAirbyteSource()
         source.start(sourceConfig, jobRoot)
 
         while (!source.isFinished) {
             val airbyteMessageOptional =
-                source.attemptRead().map { m: io.airbyte.protocol.models.AirbyteMessage ->
+                source.attemptRead().map { m: AirbyteMessage ->
                     convertProtocolObject(m, AirbyteMessage::class.java)
                 }
             if (

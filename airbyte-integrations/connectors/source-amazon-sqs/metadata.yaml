@@ -13,12 +13,12 @@ data:
   connectorSubtype: api
   connectorType: source
   definitionId: 983fd355-6bf3-4709-91b5-37afa391eeb6
-  dockerImageTag: 1.0.13
+  dockerImageTag: 1.0.15
   dockerRepository: airbyte/source-amazon-sqs
   documentationUrl: https://docs.airbyte.com/integrations/sources/amazon-sqs
   githubIssueLabel: source-amazon-sqs
   icon: amazon-sqs.svg
-  license: MIT
+  license: ELv2
   name: Amazon SQS
   releaseDate: 2021-10-27
   releases:

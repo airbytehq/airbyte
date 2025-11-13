@@ -14,11 +14,11 @@ data:
   connectorSubtype: api
   connectorType: source
   definitionId: 492b56d1-937c-462e-8076-21ad2031e784
-  dockerImageTag: 0.3.24
+  dockerImageTag: 0.3.26
   dockerRepository: airbyte/source-hellobaton
   githubIssueLabel: source-hellobaton
   icon: hellobaton.svg
-  license: MIT
+  license: ELv2
   name: Hellobaton
   releaseDate: 2022-01-14
   releaseStage: alpha
@@ -43,5 +43,5 @@ data:
   #           type: GSM
   #           alias: airbyte-connector-testing-secret-store
   connectorBuildOptions:
-    baseImage: docker.io/airbyte/source-declarative-manifest:6.46.1@sha256:5e56569cab810e31e367b0667d846b324988fabd3d3bdc0bfa4c4afa3276d059
+    baseImage: docker.io/airbyte/source-declarative-manifest:6.48.10@sha256:09947fb38d07e515f9901a12f22cc44f1512f6148703341de80403c0e0c1b8c3
 metadataSpecVersion: "1.0"

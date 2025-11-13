@@ -63,6 +63,21 @@ The Confluence connector should not run into Confluence API limitations under no
 
 | Version | Date       | Pull Request                                             | Subject                                                                         |
 | :------ | :--------- | :------------------------------------------------------- | :------------------------------------------------------------------------------ |
+| 1.0.19 | 2025-10-29 | [66333](https://github.com/airbytehq/airbyte/pull/66333) | Update dependencies |
+| 1.0.18 | 2025-09-09 | [65889](https://github.com/airbytehq/airbyte/pull/65889) | Update dependencies |
+| 1.0.17 | 2025-08-23 | [65281](https://github.com/airbytehq/airbyte/pull/65281) | Update dependencies |
+| 1.0.16 | 2025-08-09 | [64777](https://github.com/airbytehq/airbyte/pull/64777) | Update dependencies |
+| 1.0.15 | 2025-08-02 | [64318](https://github.com/airbytehq/airbyte/pull/64318) | Update dependencies |
+| 1.0.14 | 2025-07-26 | [63958](https://github.com/airbytehq/airbyte/pull/63958) | Update dependencies |
+| 1.0.13 | 2025-07-19 | [63597](https://github.com/airbytehq/airbyte/pull/63597) | Update dependencies |
+| 1.0.12 | 2025-07-12 | [63027](https://github.com/airbytehq/airbyte/pull/63027) | Update dependencies |
+| 1.0.11 | 2025-07-05 | [62797](https://github.com/airbytehq/airbyte/pull/62797) | Update dependencies |
+| 1.0.10 | 2025-06-28 | [62380](https://github.com/airbytehq/airbyte/pull/62380) | Update dependencies |
+| 1.0.9 | 2025-06-22 | [61996](https://github.com/airbytehq/airbyte/pull/61996) | Update dependencies |
+| 1.0.8 | 2025-06-14 | [61176](https://github.com/airbytehq/airbyte/pull/61176) | Update dependencies |
+| 1.0.7 | 2025-05-24 | [60406](https://github.com/airbytehq/airbyte/pull/60406) | Update dependencies |
+| 1.0.6 | 2025-05-10 | [59921](https://github.com/airbytehq/airbyte/pull/59921) | Update dependencies |
+| 1.0.5 | 2025-05-03 | [59442](https://github.com/airbytehq/airbyte/pull/59442) | Update dependencies |
 | 1.0.4 | 2025-04-26 | [58851](https://github.com/airbytehq/airbyte/pull/58851) | Update dependencies |
 | 1.0.3 | 2025-04-19 | [58320](https://github.com/airbytehq/airbyte/pull/58320) | Update dependencies |
 | 1.0.2 | 2025-04-12 | [57774](https://github.com/airbytehq/airbyte/pull/57774) | Update dependencies |

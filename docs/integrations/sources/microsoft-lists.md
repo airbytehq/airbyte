@@ -61,6 +61,25 @@ Microsoft Lists connector enables seamless data integration and synchronization 
 
 | Version          | Date              | Pull Request | Subject        |
 |------------------|-------------------|--------------|----------------|
+| 0.0.44 | 2025-10-29 | [69045](https://github.com/airbytehq/airbyte/pull/69045) | Update dependencies |
+| 0.0.43 | 2025-10-21 | [68470](https://github.com/airbytehq/airbyte/pull/68470) | Update dependencies |
+| 0.0.42 | 2025-10-14 | [67851](https://github.com/airbytehq/airbyte/pull/67851) | Update dependencies |
+| 0.0.41 | 2025-10-07 | [67391](https://github.com/airbytehq/airbyte/pull/67391) | Update dependencies |
+| 0.0.40 | 2025-09-30 | [66347](https://github.com/airbytehq/airbyte/pull/66347) | Update dependencies |
+| 0.0.39 | 2025-09-09 | [65757](https://github.com/airbytehq/airbyte/pull/65757) | Update dependencies |
+| 0.0.38 | 2025-08-23 | [65208](https://github.com/airbytehq/airbyte/pull/65208) | Update dependencies |
+| 0.0.37 | 2025-08-09 | [64789](https://github.com/airbytehq/airbyte/pull/64789) | Update dependencies |
+| 0.0.36 | 2025-08-02 | [64240](https://github.com/airbytehq/airbyte/pull/64240) | Update dependencies |
+| 0.0.35 | 2025-07-26 | [63896](https://github.com/airbytehq/airbyte/pull/63896) | Update dependencies |
+| 0.0.34 | 2025-07-19 | [63444](https://github.com/airbytehq/airbyte/pull/63444) | Update dependencies |
+| 0.0.33 | 2025-07-12 | [63217](https://github.com/airbytehq/airbyte/pull/63217) | Update dependencies |
+| 0.0.32 | 2025-07-05 | [62657](https://github.com/airbytehq/airbyte/pull/62657) | Update dependencies |
+| 0.0.31 | 2025-06-28 | [62382](https://github.com/airbytehq/airbyte/pull/62382) | Update dependencies |
+| 0.0.30 | 2025-06-21 | [61930](https://github.com/airbytehq/airbyte/pull/61930) | Update dependencies |
+| 0.0.29 | 2025-06-14 | [61065](https://github.com/airbytehq/airbyte/pull/61065) | Update dependencies |
+| 0.0.28 | 2025-05-24 | [60444](https://github.com/airbytehq/airbyte/pull/60444) | Update dependencies |
+| 0.0.27 | 2025-05-10 | [60125](https://github.com/airbytehq/airbyte/pull/60125) | Update dependencies |
+| 0.0.26 | 2025-05-04 | [59520](https://github.com/airbytehq/airbyte/pull/59520) | Update dependencies |
 | 0.0.25 | 2025-04-26 | [58756](https://github.com/airbytehq/airbyte/pull/58756) | Update dependencies |
 | 0.0.24 | 2025-04-30 | [58575](https://github.com/airbytehq/airbyte/pull/58575) | Fix ListItems and ColumnValues streams |
 | 0.0.23 | 2025-04-19 | [58521](https://github.com/airbytehq/airbyte/pull/58521) | Update dependencies |

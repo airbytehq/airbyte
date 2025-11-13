@@ -5,7 +5,7 @@ package io.airbyte.cdk.test.fixtures.legacy
 
 import com.fasterxml.jackson.databind.node.ObjectNode
 import io.airbyte.api.client.model.generated.*
-import io.airbyte.protocol.models.SyncMode
+import io.airbyte.protocol.models.v0.SyncMode
 import java.util.*
 
 /**
@@ -20,8 +20,8 @@ object CatalogClientConverters {
      * @param catalog
      * @return
      */
-    fun toAirbyteProtocol(catalog: AirbyteCatalog): io.airbyte.protocol.models.AirbyteCatalog {
-        val protoCatalog = io.airbyte.protocol.models.AirbyteCatalog()
+    fun toAirbyteProtocol(catalog: AirbyteCatalog): io.airbyte.protocol.models.v0.AirbyteCatalog {
+        val protoCatalog = io.airbyte.protocol.models.v0.AirbyteCatalog()
         val airbyteStream =
             catalog.streams.map { stream: AirbyteStreamAndConfiguration ->
                 try {
@@ -38,7 +38,7 @@ object CatalogClientConverters {
     private fun toConfiguredProtocol(
         stream: AirbyteStream?,
         config: AirbyteStreamConfiguration?
-    ): io.airbyte.protocol.models.AirbyteStream {
+    ): io.airbyte.protocol.models.v0.AirbyteStream {
         if (config!!.fieldSelectionEnabled != null && config.fieldSelectionEnabled!!) {
             // Validate the selected field paths.
             if (config.selectedFields == null) {
@@ -104,7 +104,7 @@ object CatalogClientConverters {
             }
             (properties as ObjectNode).retain(selectedFieldNames)
         }
-        return io.airbyte.protocol.models
+        return io.airbyte.protocol.models.v0
             .AirbyteStream()
             .withName(stream!!.name)
             .withJsonSchema(stream.jsonSchema)
@@ -121,12 +121,12 @@ object CatalogClientConverters {
 
     /** Converts a protocol AirbyteCatalog to an OpenAPI client versioned AirbyteCatalog. */
     fun toAirbyteCatalogClientApi(
-        catalog: io.airbyte.protocol.models.AirbyteCatalog
+        catalog: io.airbyte.protocol.models.v0.AirbyteCatalog
     ): AirbyteCatalog {
         return AirbyteCatalog()
             .streams(
                 catalog.streams
-                    .map { stream: io.airbyte.protocol.models.AirbyteStream ->
+                    .map { stream: io.airbyte.protocol.models.v0.AirbyteStream ->
                         toAirbyteStreamClientApi(stream)
                     }
                     .map { s: AirbyteStream ->
@@ -159,7 +159,7 @@ object CatalogClientConverters {
     }
 
     private fun toAirbyteStreamClientApi(
-        stream: io.airbyte.protocol.models.AirbyteStream
+        stream: io.airbyte.protocol.models.v0.AirbyteStream
     ): AirbyteStream {
         return AirbyteStream()
             .name(stream.name)

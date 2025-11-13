@@ -6,7 +6,7 @@ data:
   dockerRepository: airbyte/source-talkdesk-explore
   githubIssueLabel: source-talkdesk-explore
   icon: talkdesk-explore.svg
-  license: MIT
+  license: ELv2
   name: TalkDesk Explore
   remoteRegistries:
     pypi:

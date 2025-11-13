@@ -20,6 +20,19 @@ Connector for customerly.io
 
 | Version          | Date              | Pull Request | Subject        |
 |------------------|-------------------|--------------|----------------|
+| 0.0.20 | 2025-08-23 | [65282](https://github.com/airbytehq/airbyte/pull/65282) | Update dependencies |
+| 0.0.19 | 2025-08-09 | [64730](https://github.com/airbytehq/airbyte/pull/64730) | Update dependencies |
+| 0.0.18 | 2025-08-02 | [64330](https://github.com/airbytehq/airbyte/pull/64330) | Update dependencies |
+| 0.0.17 | 2025-07-26 | [64031](https://github.com/airbytehq/airbyte/pull/64031) | Update dependencies |
+| 0.0.16 | 2025-07-19 | [63588](https://github.com/airbytehq/airbyte/pull/63588) | Update dependencies |
+| 0.0.15 | 2025-07-12 | [63007](https://github.com/airbytehq/airbyte/pull/63007) | Update dependencies |
+| 0.0.14 | 2025-07-05 | [62786](https://github.com/airbytehq/airbyte/pull/62786) | Update dependencies |
+| 0.0.13 | 2025-06-28 | [62313](https://github.com/airbytehq/airbyte/pull/62313) | Update dependencies |
+| 0.0.12 | 2025-06-22 | [61986](https://github.com/airbytehq/airbyte/pull/61986) | Update dependencies |
+| 0.0.11 | 2025-06-14 | [61282](https://github.com/airbytehq/airbyte/pull/61282) | Update dependencies |
+| 0.0.10 | 2025-05-24 | [60372](https://github.com/airbytehq/airbyte/pull/60372) | Update dependencies |
+| 0.0.9 | 2025-05-10 | [59995](https://github.com/airbytehq/airbyte/pull/59995) | Update dependencies |
+| 0.0.8 | 2025-05-03 | [59409](https://github.com/airbytehq/airbyte/pull/59409) | Update dependencies |
 | 0.0.7 | 2025-04-26 | [58839](https://github.com/airbytehq/airbyte/pull/58839) | Update dependencies |
 | 0.0.6 | 2025-04-19 | [58358](https://github.com/airbytehq/airbyte/pull/58358) | Update dependencies |
 | 0.0.5 | 2025-04-12 | [57803](https://github.com/airbytehq/airbyte/pull/57803) | Update dependencies |

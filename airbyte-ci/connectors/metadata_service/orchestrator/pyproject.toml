@@ -1,23 +1,22 @@
 [tool.poetry]
 name = "orchestrator"
-version = "0.7.1"
+version = "0.8.0"
 description = ""
-authors = ["Ben Church <ben@airbyte.io>"]
+authors = ["Airbyte <contact@airbyte.io>"]
 readme = "README.md"
 packages = [{include = "orchestrator"}]
 
 [tool.poetry.dependencies]
 python = "^3.11, <3.12"
-dagit = "^1.5.14"
 dagster = "^1.5.14"
-pandas = "^1.5.3"
+pandas = "^2.3.1"
 # Pinning numpy to fix https://github.com/airbytehq/oncall/issues/5818
 # ValueError: numpy.dtype size changed, may indicate binary incompatibility. Expected 96 from C header, got 88 from PyObject
 numpy = "==1.26.4"
 dagster-gcp = "^0.21.14"
 google = "^3.0.0"
 jinja2 = "^3.1.2"
-pygithub = "^1.58.0"
+pygithub = "^2.7.0"
 metadata-service = {path = "../lib", develop = true}
 deepdiff = "^6.3.0"
 mergedeep = "^1.3.4"

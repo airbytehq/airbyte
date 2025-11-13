@@ -15,6 +15,8 @@ out
 **/gmon.out
 static_checker_reports/
 .tool-versions
+test-results
+
 # Logs
 acceptance_tests_logs/
 airbyte_ci_logs/
@@ -56,6 +58,9 @@ coverage.xml
 .hypothesis/
 .pytest_cache/
 cover/
+
+# Node.js
+node_modules/
 
 # dbt
 profiles.yml
@@ -113,3 +118,7 @@ target/
 # CDK load artifacts
 airbyte-cdk/bulk/core/load/airbyte-cdk-load/
 airbyte-integrations/connectors/**/airbyte-cdk-load/
+
+# AI
+AGENT.md
+.claude/settings.local.json

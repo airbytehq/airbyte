@@ -131,15 +131,13 @@ class IcebergUtil(private val tableIdGenerator: TableIdGenerator) {
     fun createTable(
         streamDescriptor: DestinationStream.Descriptor,
         catalog: Catalog,
-        schema: Schema,
-        properties: Map<String, String>
+        schema: Schema
     ): Table {
         val tableIdentifier = tableIdGenerator.toTableIdentifier(streamDescriptor)
         return if (!catalog.tableExists(tableIdentifier)) {
             logger.info { "Creating Iceberg table '$tableIdentifier'...." }
             catalog
                 .buildTable(tableIdentifier, schema)
-                .withProperties(properties)
                 .withProperty(DEFAULT_FILE_FORMAT, FileFormat.PARQUET.name.lowercase())
                 .withSortOrder(getSortOrder(schema = schema))
                 .create()
@@ -245,7 +243,7 @@ class IcebergUtil(private val tableIdGenerator: TableIdGenerator) {
         return builder.build()
     }
 
-    private fun getOperation(
+    fun getOperation(
         record: EnrichedDestinationRecordAirbyteValue,
         importType: ImportType,
     ): Operation =

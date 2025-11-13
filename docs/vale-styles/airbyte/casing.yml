@@ -1,0 +1,7 @@
+extends: existence
+message: "Don't start sentences with a lowercase letter."
+level: error
+scope: sentence
+ignorecase: false
+tokens:
+  - '^[a-z]'

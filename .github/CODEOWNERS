@@ -1,10 +1,10 @@
 # Vector db connectors
-/airbyte-integrations/connectors/destination-pinecone @airbytehq/ai-language-models
-/airbyte-integrations/connectors/destination-weaviate @airbytehq/ai-language-models
-/airbyte-integrations/connectors/destination-milvus @airbytehq/ai-language-models
-/airbyte-integrations/connectors/destination-qdrant @airbytehq/ai-language-models
-/airbyte-integrations/connectors/destination-chroma @airbytehq/ai-language-models
-/airbyte-integrations/connectors/destination-snowflake-cortex @airbytehq/ai-language-models
+/airbyte-integrations/connectors/destination-pinecone @airbytehq/dev-extensibility
+/airbyte-integrations/connectors/destination-weaviate @airbytehq/dev-extensibility
+/airbyte-integrations/connectors/destination-milvus @airbytehq/dev-extensibility
+/airbyte-integrations/connectors/destination-qdrant @airbytehq/dev-extensibility
+/airbyte-integrations/connectors/destination-chroma @airbytehq/dev-extensibility
+/airbyte-integrations/connectors/destination-snowflake-cortex @airbytehq/dev-extensibility
 
 # CI/CD
 /.github/ @airbytehq/dev-extensibility
@@ -38,10 +38,14 @@
 /airbyte-integrations/connectors/source-*/**/*.java @airbytehq/dbsources
 /airbyte-integrations/connectors/source-*/**/*.kt @airbytehq/dbsources
 /airbyte-integrations/connectors/source-*/**/*.gradle @airbytehq/dbsources
+/airbyte-integrations/connectors/source-*/**/*.gradle.kts @airbytehq/dbsources
+/airbyte-integrations/connectors/source-*/**/gradle.properties @airbytehq/dbsources
 /airbyte-integrations/connectors-performance/source-harness/ @airbytehq/dbsources
 /airbyte-integrations/connectors/destination-*/**/*.java @airbytehq/move-destinations
 /airbyte-integrations/connectors/destination-*/**/*.kt @airbytehq/move-destinations
 /airbyte-integrations/connectors/destination-*/**/*.gradle @airbytehq/move-destinations
+/airbyte-integrations/connectors/destination-*/**/*.gradle.kts @airbytehq/move-destinations
+/airbyte-integrations/connectors/destination-*/**/gradle.properties @airbytehq/move-destinations
 /airbyte-integrations/connectors-performance/destination-harness/ @airbytehq/dbsources
 
 # Java-based certified or incubating source connectors
@@ -67,6 +71,6 @@
 
 # Breaking changes detection
 # This rule ensures that breaking changes to connectors (identified by a required
-# update in the connnector's migration file) are reviewed by the 
+# update in the connnector's migration file) are reviewed by the
 # `breaking-changes-reviewers` team to manage and help message breaking changes.
 docs/integrations/**/*-migrations.md @airbytehq/breaking-change-reviewers

@@ -29,8 +29,6 @@ acceptance_tests:
       # You can comment the lines if you are sure you have data for the below streams.
       - config_path: secrets/config.json
         empty_streams:
-          - name: show_product_details
-            bypass_reason: "Products may not exist"
           - name: search_invoices
             bypass_reason:
               "Order makes the diff fail."
@@ -39,10 +37,12 @@ acceptance_tests:
             bypass_reason: "Disputes may not exist."
           - name: transactions
             bypass_reason: "Empty Stream."
+          - name: balances
+            bypass_reason: "as_of_time value will keep changing"
         timeout_seconds: 3200
         expect_records:
-          path: "integration_tests/sample_files/expected_records_sandbox.jsonl"
-          exact_order: yes
+          path: "integration_tests/sample_files/expected_records.jsonl"
+          exact_order: false
         fail_on_extra_columns: false
   incremental:
     tests:

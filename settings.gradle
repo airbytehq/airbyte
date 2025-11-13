@@ -5,7 +5,9 @@ pluginManagement {
         // # Gradle looks for dependency artifacts in repositories listed in 'repositories' blocks in descending order.
 
         // ## Prefer repos controlled by Airbyte.
-        // TODO: add airbyte-controlled proxy repos here
+        maven {
+            url = 'https://airbyte.mycloudrepo.io/public/repositories/airbyte-public-jars/'
+        }
 
         // ## Look into other, public repos.
         // Gradle plugin portal.
@@ -18,7 +20,7 @@ pluginManagement {
 // Configure the gradle enterprise plugin to enable build scans. Enabling the plugin at the top of the settings file allows the build scan to record
 // as much information as possible.
 plugins {
-    id "com.gradle.enterprise" version "3.15.1"
+    id "com.gradle.develocity" version "3.19.2"
     id 'com.github.burrunan.s3-build-cache' version "1.8.1"
 }
 
@@ -112,10 +114,10 @@ dependencyResolutionManagement {
     }
 }
 
-gradleEnterprise {
+develocity {
     buildScan {
-        termsOfServiceUrl = "https://gradle.com/terms-of-service"
-        termsOfServiceAgree = "yes"
+        termsOfUseUrl = "https://gradle.com/terms-of-service"
+        termsOfUseAgree = "yes"
         uploadInBackground = !isCI // Disable in CI or scan URLs may not work.
         buildScanPublished { PublishedBuildScan scan ->
             file("scan-journal.log") << "${new Date()} - ${scan.buildScanId} - ${scan.buildScanUri}\n"
@@ -169,6 +171,8 @@ void includeCdkProjects(String dir, String gradlePathPrefix, String projectNameP
     }
 }
 
+// Include convenience aggregator.
+include ":airbyte-cdk"
 // Include all java CDK modules.
 includeCdkProjects("airbyte-cdk/java/airbyte-cdk", ":airbyte-cdk:java:airbyte-cdk:", "airbyte-cdk-")
 includeCdkProjects("airbyte-cdk/bulk/core", ":airbyte-cdk:bulk:core:", "bulk-cdk-core-")
@@ -195,6 +199,5 @@ integrationsPath.eachDir { dir ->
 }
 
 // Include miscellaneous modules.
-include ':airbyte-integrations:connector-templates:generator'
 include ':airbyte-integrations:connectors-performance:source-harness'
 include ':airbyte-integrations:connectors-performance:destination-harness'

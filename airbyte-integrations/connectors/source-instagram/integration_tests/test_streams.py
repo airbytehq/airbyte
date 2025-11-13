@@ -2,12 +2,10 @@
 # Copyright (c) 2023 Airbyte, Inc., all rights reserved.
 #
 
-import logging
-from typing import Any, Callable, List, MutableMapping, Tuple
+from datetime import timedelta
+from typing import Any, List, MutableMapping, Tuple
 
-import pendulum
 import pytest
-from source_instagram.source import SourceInstagram
 
 from airbyte_cdk.models import (
     AirbyteMessage,
@@ -15,20 +13,21 @@ from airbyte_cdk.models import (
     AirbyteStateMessage,
     AirbyteStateType,
     AirbyteStreamState,
-    ConfiguredAirbyteCatalog,
     StreamDescriptor,
     Type,
 )
 from airbyte_cdk.test.catalog_builder import CatalogBuilder, ConfiguredAirbyteStreamBuilder
-from airbyte_cdk.test.entrypoint_wrapper import EntrypointOutput, read
+from airbyte_cdk.test.entrypoint_wrapper import read
+from airbyte_cdk.utils.datetime_helpers import ab_datetime_now
+
+from .conftest import get_source
 
 
 @pytest.fixture(name="state")
 def state_fixture() -> MutableMapping[str, Any]:
-    today = pendulum.today()
     initial_state = {
-        "17841408147298757": {"date": (today - pendulum.duration(days=10)).to_datetime_string()},
-        "17841403112736866": {"date": (today - pendulum.duration(days=5)).to_datetime_string()},
+        "17841408147298757": {"date": (ab_datetime_now() - timedelta(days=10)).strftime("%Y-%m-%dT%H:%M:%S+00:00")},
+        "17841403112736866": {"date": (ab_datetime_now() - timedelta(days=5)).strftime("%Y-%m-%dT%H:%M:%S+00:00")},
     }
     return [
         AirbyteStateMessage(
@@ -56,7 +55,7 @@ class TestInstagramSource:
             stream_name, stream_state, state_keys_count = (
                 state_msg.state.stream.stream_descriptor.name,
                 state_msg.state.stream.stream_state,
-                len(state_msg.state.stream.stream_state.__dict__),
+                len(state_msg.state.stream.stream_state.__dict__.get("states", {})),
             )
 
             assert stream_name == "user_insights", f"each state message should reference 'user_insights' stream, got {stream_name} instead"
@@ -70,7 +69,7 @@ class TestInstagramSource:
         records = []
         states = []
         output = read(
-            SourceInstagram(config=conf, catalog=None, state=state),
+            get_source(config=conf, state=state),
             conf,
             CatalogBuilder().with_stream(ConfiguredAirbyteStreamBuilder().with_name(stream_name)).build(),
             state=state,

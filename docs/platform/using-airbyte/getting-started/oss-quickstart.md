@@ -9,7 +9,7 @@ import { faWindows } from "@fortawesome/free-brands-svg-icons";
 
 # Quickstart
 
-This quickstart guides you through deploying a local instance of Airbyte Self-Managed Community, Airbyte's open source product. Setup only takes a few minutes, and you can start moving data immediately.
+This quickstart guides you through deploying a local instance of Airbyte Core, Airbyte's open source product. Setup only takes a few minutes, and you can start moving data immediately.
 
 ## Overview
 
@@ -25,7 +25,7 @@ This quickstart shows you how to:
 
 If you don't want to self-manage Airbyte, skip this guide. Sign up for an [Airbyte Cloud](https://cloud.airbyte.com/signup) trial and [start syncing data](add-a-source.md) now.
 
-If you want to use Python to move data, Airbyte's Python library, [PyAirbyte](../pyairbyte/getting-started.mdx), might be the best fit for you. It's a good choice if you're using Jupyter Notebook or iterating on an early prototype for a large data project and don't need to run your own server.
+If you want to use Python to move data, Airbyte's Python library, [PyAirbyte](/developers/using-pyairbyte), might be the best fit for you. It's a good choice if you're using Jupyter Notebook or iterating on an early prototype for a large data project and don't need to run your own server.
 
 ## Suggested resources {#suggested-resources}
 
@@ -37,13 +37,17 @@ Install Docker Desktop on your machine, if you haven't already. Follow the steps
 
     - [Mac](https://docs.docker.com/desktop/install/mac-install/)
     - [Windows](https://docs.docker.com/desktop/install/windows-install/)
-    - [Linux](https://docs.docker.com/desktop/install/linux-install/)
+    - [Linux](https://docs.docker.com/desktop/install/linux-install/) (see [installations on headless virtual machines](#for-linux) for more options)
 
 You don't need to do anything with Docker, but you do need to run it in the background. Once it's open, minimize it and proceed to Part 2.
 
 :::info Why do you need Docker?
 Airbyte runs on Kubernetes. When you deploy Airbyte locally, it uses Docker to create a Kubernetes cluster on your computer.
 :::
+
+### Linux installations on headless virtual machines {#for-linux}
+
+If you're installing on a Linux headless virtual machine, it's easier to use [Docker Engine](https://docs.docker.com/engine/install/) instead of Docker Desktop. See the [EC2 guide for an example](../../deploying-airbyte/abctl-ec2.md).
 
 ## Part 2: Install abctl
 
@@ -170,6 +174,9 @@ Use [Homebrew](https://brew.sh/) to install abctl.
 
 ## Part 3: Run Airbyte
 
+<Tabs>
+<TabItem value='local' label='Run locally' default>
+
 1. Open Docker Desktop, [which you installed previously](#part-1-install-docker-desktop).
 
 2. Install Airbyte. To do this, open a terminal and run the following command.
@@ -178,27 +185,48 @@ Use [Homebrew](https://brew.sh/) to install abctl.
     abctl local install
     ```
 
-    <!-- [[[This is good to know but I don't think it's within the scope of this guide.]]]
-    To make Airbyte accessible outside `localhost`, specify the `--host` flag to the local install command, and provide a fully qualified domain name for Airbyte's host.
+    :::note
+    If you see the warning `Encountered an issue deploying Airbyte` with the message `Readiness probe failed: HTTP probe failed with statuscode: 503`, allow installation to continue. You may need to allocate more resources for Airbyte, but installation can complete anyway. See [Suggested resources](#suggested-resources).
+    :::
+
+3. Enter your **Email** and **Organization name**, then click **Get Started**.
+
+</TabItem>
+<TabItem value='http' label='Run over HTTP' default>
+
+1. Open Docker Desktop, [which you installed previously](#part-1-install-docker-desktop).
+
+2. Install Airbyte. To make Airbyte accessible outside `localhost`, specify the `--host` flag and provide a fully qualified domain name for Airbyte's host.
 
     ```bash
-    abctl local install --host airbyte.example.com
-    ``` 
-    -->
+    abctl local install --host example.com
+    ```
 
-    To run Airbyte in a low-resource environment (fewer than 4 CPUs), specify the `--low-resource-mode` flag to the local install command.
+    If you're running on an insecure/non-HTTPS connection, turn off the secure cookies requirement. If you don't do this, abctl gives you the error: `Your credentials were correct, but the server failed to set a cookie. You appear to have deployed over HTTP. Make sure you have disabled secure cookies.` [Learn more about this error](/platform/deploying-airbyte/troubleshoot-deploy#make-sure-you-have-disabled-secure-cookies).
+
+    ```bash
+    abctl local install --host example.com --insecure-cookies
+    ```
+
+3. Enter your **Email** and **Organization name**, then click **Get Started**.
+
+</TabItem>
+<TabItem value='low-resource' label='Run in low-resource mode' default>
+
+1. Open Docker Desktop, [which you installed previously](#part-1-install-docker-desktop).
+
+2. Install Airbyte. To run Airbyte in a low-resource environment (fewer than 4 CPUs), specify the `--low-resource-mode` flag to the local install command. In low-resource mode, you are unable to access the Connector Builder.
 
     ```bash
     abctl local install --low-resource-mode
     ```
 
-    :::note
-    If you see the warning `Encountered an issue deploying Airbyte` with the message `Readiness probe failed: HTTP probe failed with statuscode: 503`, allow installation to continue. You may need to allocate more resources for Airbyte, but installation can complete anyway. See [Suggested resources](#suggested-resources).
-    :::
-
-    Installation may take up to 30 minutes depending on your internet connection. When it completes, your Airbyte instance opens in your web browser at [http://localhost:8000](http://localhost:8000). As long as Docker Desktop is running in the background, use Airbyte by returning to [http://localhost:8000](http://localhost:8000). If you quit Docker Desktop and want to return to Airbyte, start Docker Desktop again. Once your containers are running, you can access Airbyte normally.
-
 3. Enter your **Email** and **Organization name**, then click **Get Started**.
+
+</TabItem>
+</Tabs>
+
+Installation may take up to 30 minutes depending on your internet connection. When it completes, your Airbyte instance opens in your web browser at [http://localhost:8000](http://localhost:8000), or the host you specified. As long as Docker Desktop is running in the background, use Airbyte by returning to that page. If you quit Docker Desktop and want to return to Airbyte, start Docker Desktop again. Once your containers are running, you can access Airbyte normally.
 
 Airbyte asks you to log in with a password, but you don't have one yet. Proceed to Part 4 to get one.
 

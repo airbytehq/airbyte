@@ -7,6 +7,8 @@ package io.airbyte.cdk.discover
 import com.fasterxml.jackson.databind.JsonNode
 import com.fasterxml.jackson.databind.node.ObjectNode
 import io.airbyte.cdk.command.OpaqueStateValue
+import io.airbyte.cdk.data.JsonEncoder
+import io.airbyte.cdk.output.sockets.NativeRecordPayload
 import io.airbyte.cdk.read.Stream
 import io.micronaut.context.annotation.Requires
 import io.micronaut.context.env.Environment
@@ -35,9 +37,10 @@ class TestMetaFieldDecorator : MetaFieldDecorator {
         recordData: ObjectNode
     ) {
         recordData.putNull(CommonMetaField.CDC_DELETED_AT.id)
+        @Suppress("UNCHECKED_CAST")
         recordData.set<JsonNode>(
             CommonMetaField.CDC_UPDATED_AT.id,
-            CdcOffsetDateTimeMetaFieldType.jsonEncoder.encode(timestamp)
+            (CommonMetaField.CDC_UPDATED_AT.type.jsonEncoder as JsonEncoder<Any>).encode(timestamp)
         )
         recordData.set<JsonNode>(
             GlobalCursor.id,
@@ -47,5 +50,14 @@ class TestMetaFieldDecorator : MetaFieldDecorator {
                 CdcStringMetaFieldType.jsonEncoder.encode(globalStateValue.toString())
             }
         )
+    }
+
+    override fun decorateRecordData(
+        timestamp: OffsetDateTime,
+        globalStateValue: OpaqueStateValue?,
+        stream: Stream,
+        recordData: NativeRecordPayload
+    ) {
+        // no-op
     }
 }

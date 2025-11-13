@@ -66,10 +66,10 @@ To fill out the required information:
 
 <!-- env:cloud -->
 
-### Step 3: (Airbyte Cloud Only) Allow inbound traffic from Airbyte IPs.
+### Step 3: (Airbyte Cloud Only) Allow inbound traffic from Airbyte IPs
 
 If you are on Airbyte Cloud, you will always need to modify your database configuration to allow inbound traffic from Airbyte IPs. You can find a list of all IPs that need to be allowlisted in
-our [Airbyte Security docs](../../platform/operating-airbyte/security#network-security-1).
+our [Airbyte Security docs](../../platform/operating-airbyte/ip-allowlist).
 
 Now, click `Set up source` in the Airbyte UI. Airbyte will now test connecting to your database. Once this succeeds, you've configured an Airbyte Postgres source!
 
@@ -100,7 +100,7 @@ These are the additional steps required (after following the [quick start](#quic
 
 We recommend following the steps in the [quick start](#quick-start) section to confirm that Airbyte can connect to your Postgres database prior to configuring CDC settings.
 
-For CDC, you must connect to primary/master databases. Pointing the connector configuration to replica database hosts for CDC will lead to failures.
+For CDC, you may connect to primary/master databases or replicas. To use a replica as a source, Postgres must be at version 16.1 or later and this connector must be at version 3.6.21 or later. You must also enable additional configurations on the database instance (for help, see the [Postgres official documentation](https://www.postgresql.org/docs/current/warm-standby.html#CASCADING-REPLICATION)).
 
 ### Step 2: Provide additional permissions to read-only user
 
@@ -276,6 +276,17 @@ The command produces the private key in PEM format and the public key remains in
 
 <HideInUI>
 
+## Configuring Entra authentication
+
+The Airbyte source can be configured to authenticate as a Microsoft Entra service principal. 
+This allows Airbyte to use short-lived identity tokens to authenticate to an Azure Postgres server. 
+Consult the Microsoft [documentation on this topic](https://learn.microsoft.com/en-us/azure/postgresql/flexible-server/concepts-azure-ad-authentication) for more detail on configuring the server and other Entra resources.
+
+To configure the Airbyte Postgres source with Entra authentication, set the `Username` to the Entra ID, as discussed 
+in [Microsoft's documentation](https://learn.microsoft.com/en-us/azure/postgresql/flexible-server/how-to-configure-sign-in-azure-ad-authentication).
+Set the password to a client secret for your Entra service principal.
+Expand the Optional Fields and provide the Entra tenant ID and Entra client (or app) ID of the service principal.
+
 ## Limitations & Troubleshooting
 
 To see connector limitations, or troubleshoot your Postgres connector, see more [in our Postgres troubleshooting guide](/integrations/sources/postgres/postgres-troubleshooting).
@@ -343,15 +354,20 @@ According to Postgres [documentation](https://www.postgresql.org/docs/14/datatyp
   <summary>Expand to review</summary>
 
 | Version | Date       | Pull Request                                               | Subject                                                                                                                                                                    |
-|---------| ---------- | ---------------------------------------------------------- | -------------------------------------------------------------------------------------------------------------------------------------------------------------------------- |
-| 3.6.31 | 2025-04-18 | [58132](https://github.com/airbytehq/airbyte/pull/58132) | Fix vulnerabilities in dependencies. |
-| 3.6.30 | 2025-03-06 | [55234](https://github.com/airbytehq/airbyte/pull/55234) | Update base image version for certified DB source connectors |
-| 3.6.29 | 2025-02-13 | [53649](https://github.com/airbytehq/airbyte/pull/53649) | Fix issue that column default value did not get converted |
-| 3.6.28 | 2024-12-23 | [50870](https://github.com/airbytehq/airbyte/pull/50870) | Use airbyte/java-connector-base:2.0.0 |
-| 3.6.27 | 2024-12-23 | [50410](https://github.com/airbytehq/airbyte/pull/50410) | Use a non root base image. |
-| 3.6.26 | 2024-12-20 | [48495](https://github.com/airbytehq/airbyte/pull/48495) | Increase MAX_FIRST_RECORD_WAIT_TIME and use Debezium 3.0.1 |
-| 3.6.25 | 2024-12-17 | [49838](https://github.com/airbytehq/airbyte/pull/49838) | Use a base image: airbyte/java-connector-base:1.0.0 |
-| 3.6.24 | 2024-12-16 | [49469](https://github.com/airbytehq/airbyte/pull/49469) | Simplify CTID_TABLE_BLOCK_SIZE query for Postgres integration |
+|---------|------------|------------------------------------------------------------|----------------------------------------------------------------------------------------------------------------------------------------------------------------------------|
+| 3.7.0   | 2025-07-21 | [57511](https://github.com/airbytehq/airbyte/pull/57511)   | Add configurations for Azure authentication to Azure Postgres servers.                                                                                                     |
+| 3.6.35  | 2025-06-12 | [61527](https://github.com/airbytehq/airbyte/pull/61527)   | Add error handling for connection issues and adopt the latest CDK version.
+| 3.6.34  | 2025-05-11 | [60876](https://github.com/airbytehq/airbyte/pull/60876)   | Cache CDC initial state once constructed.
+| 3.6.33  | 2025-05-11 | [60214](https://github.com/airbytehq/airbyte/pull/60214)   | Migrate to new Gradle flow.
+| 3.6.32  | 2025-05-8  | [59722](https://github.com/airbytehq/airbyte/pull/59722)   | Consolidate gradle set up.                                                                                                                                                 |
+| 3.6.31  | 2025-04-18 | [58132](https://github.com/airbytehq/airbyte/pull/58132)   | Fix vulnerabilities in dependencies.                                                                                                                                       |
+| 3.6.30  | 2025-03-06 | [55234](https://github.com/airbytehq/airbyte/pull/55234)   | Update base image version for certified DB source connectors                                                                                                               |
+| 3.6.29  | 2025-02-13 | [53649](https://github.com/airbytehq/airbyte/pull/53649)   | Fix issue that column default value did not get converted                                                                                                                  |
+| 3.6.28  | 2024-12-23 | [50870](https://github.com/airbytehq/airbyte/pull/50870)   | Use airbyte/java-connector-base:2.0.0                                                                                                                                      |
+| 3.6.27  | 2024-12-23 | [50410](https://github.com/airbytehq/airbyte/pull/50410)   | Use a non root base image.                                                                                                                                                 |
+| 3.6.26  | 2024-12-20 | [48495](https://github.com/airbytehq/airbyte/pull/48495)   | Increase MAX_FIRST_RECORD_WAIT_TIME and use Debezium 3.0.1                                                                                                                 |
+| 3.6.25  | 2024-12-17 | [49838](https://github.com/airbytehq/airbyte/pull/49838)   | Use a base image: airbyte/java-connector-base:1.0.0                                                                                                                        |
+| 3.6.24  | 2024-12-16 | [49469](https://github.com/airbytehq/airbyte/pull/49469)   | Simplify CTID_TABLE_BLOCK_SIZE query for Postgres integration                                                                                                              |
 | 3.6.23  | 2024-11-13 | [\#48482](https://github.com/airbytehq/airbyte/pull/48482) | Convert large integer typed using NUMERIC(X, 0) into a BigInteger.  l                                                                                                      |
 | 3.6.22  | 2024-10-02 | [46900](https://github.com/airbytehq/airbyte/pull/46900)   | Fixed a bug where source docs won't render on Airbyte 1.1                                                                                                                  |
 | 3.6.21  | 2024-10-02 | [46322](https://github.com/airbytehq/airbyte/pull/46322)   | Support CDC against a read-replica (continuation)                                                                                                                          |
@@ -567,13 +583,13 @@ According to Postgres [documentation](https://www.postgresql.org/docs/14/datatyp
 | 0.4.43  | 2022-08-03 | [15226](https://github.com/airbytehq/airbyte/pull/15226)   | Make connectionTimeoutMs configurable through JDBC url parameters                                                                                                          |
 | 0.4.42  | 2022-08-03 | [15273](https://github.com/airbytehq/airbyte/pull/15273)   | Fix a bug in `0.4.36` and correctly parse the CDC initial record waiting time                                                                                              |
 | 0.4.41  | 2022-08-03 | [15077](https://github.com/airbytehq/airbyte/pull/15077)   | Sync data from beginning if the LSN is no longer valid in CDC                                                                                                              |
-|         | 2022-08-03 | [14903](https://github.com/airbytehq/airbyte/pull/14903)   | Emit state messages more frequently (⛔ this version has a bug; use `1.0.1` instead                                                                                        |
+|         | 2022-08-03 | [14903](https://github.com/airbytehq/airbyte/pull/14903)   | Emit state messages more frequently (⛔ this version has a bug; use `1.0.1` instead                                                                                         |
 | 0.4.40  | 2022-08-03 | [15187](https://github.com/airbytehq/airbyte/pull/15187)   | Add support for BCE dates/timestamps                                                                                                                                       |
 |         | 2022-08-03 | [14534](https://github.com/airbytehq/airbyte/pull/14534)   | Align regular and CDC integration tests and data mappers                                                                                                                   |
 | 0.4.39  | 2022-08-02 | [14801](https://github.com/airbytehq/airbyte/pull/14801)   | Fix multiple log bindings                                                                                                                                                  |
 | 0.4.38  | 2022-07-26 | [14362](https://github.com/airbytehq/airbyte/pull/14362)   | Integral columns are now discovered as int64 fields.                                                                                                                       |
 | 0.4.37  | 2022-07-22 | [14714](https://github.com/airbytehq/airbyte/pull/14714)   | Clarified error message when invalid cursor column selected                                                                                                                |
-| 0.4.36  | 2022-07-21 | [14451](https://github.com/airbytehq/airbyte/pull/14451)   | Make initial CDC waiting time configurable (⛔ this version has a bug and will not work; use `0.4.42` instead)                                                             |
+| 0.4.36  | 2022-07-21 | [14451](https://github.com/airbytehq/airbyte/pull/14451)   | Make initial CDC waiting time configurable (⛔ this version has a bug and will not work; use `0.4.42` instead)                                                              |
 | 0.4.35  | 2022-07-14 | [14574](https://github.com/airbytehq/airbyte/pull/14574)   | Removed additionalProperties:false from JDBC source connectors                                                                                                             |
 | 0.4.34  | 2022-07-17 | [13840](https://github.com/airbytehq/airbyte/pull/13840)   | Added the ability to connect using different SSL modes and SSL certificates.                                                                                               |
 | 0.4.33  | 2022-07-14 | [14586](https://github.com/airbytehq/airbyte/pull/14586)   | Validate source JDBC url parameters                                                                                                                                        |

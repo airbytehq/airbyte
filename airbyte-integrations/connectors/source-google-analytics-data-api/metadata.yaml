@@ -8,13 +8,23 @@ data:
       - www.googleapis.com
       - analyticsdata.googleapis.com
   connectorBuildOptions:
-    baseImage: docker.io/airbyte/python-connector-base:4.0.0@sha256:d9894b6895923b379f3006fa251147806919c62b7d9021b5cd125bb67d7bbe22
+    baseImage: docker.io/airbyte/source-declarative-manifest:7.4.2@sha256:f5e8abfcdbef9f5050213962e75dd417b5551b22b6143b42fa3ea85f9bcb00d0
   connectorSubtype: api
   connectorType: source
   definitionId: 3cc2eafd-84aa-4dca-93af-322d9dfeec1a
-  dockerImageTag: 2.7.4
+  dockerImageTag: 2.9.16
   dockerRepository: airbyte/source-google-analytics-data-api
   documentationUrl: https://docs.airbyte.com/integrations/sources/google-analytics-data-api
+  externalDocumentationUrls:
+    - title: Data API changelog
+      url: https://developers.google.com/analytics/devguides/reporting/data/v1/changelog
+      type: api_release_history
+  resourceRequirements:
+    jobSpecific:
+      - jobType: check_connection
+        resourceRequirements:
+          memory_limit: 1600Mi
+          memory_request: 1600Mi
   githubIssueLabel: source-google-analytics-data-api
   icon: google-analytics.svg
   license: Elv2
@@ -22,7 +32,7 @@ data:
   name: Google Analytics 4 (GA4)
   remoteRegistries:
     pypi:
-      enabled: true
+      enabled: false
       packageName: airbyte-source-google-analytics-data-api
   registryOverrides:
     cloud:
@@ -31,6 +41,8 @@ data:
       enabled: true
   releaseStage: generally_available
   releases:
+    rolloutConfiguration:
+      enableProgressiveRollout: false
     breakingChanges:
       2.0.0:
         message: Version 2.0.0 introduces changes to stream names for those syncing more than one Google Analytics 4 property. It allows streams from all properties to sync successfully. Please upgrade the connector to enable this additional functionality.
@@ -48,8 +60,8 @@ data:
       - sessions
   supportLevel: certified
   tags:
-    - language:python
-    - cdk:python
+    - language:manifest-only
+    - cdk:low-code
   connectorTestSuitesOptions:
     #    Running regression and acceptance at the same time can cause quota consumption problems
     #    - suite: liveTests

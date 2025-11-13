@@ -13,15 +13,15 @@ data:
       enabled: false
       packageName: airbyte-source-formbricks
   connectorBuildOptions:
-    baseImage: docker.io/airbyte/source-declarative-manifest:6.46.1@sha256:5e56569cab810e31e367b0667d846b324988fabd3d3bdc0bfa4c4afa3276d059
+    baseImage: docker.io/airbyte/source-declarative-manifest:7.4.1@sha256:71df19e2ee555ca5b14abbec01d50104c79c9b84cb9cc323284d24333361900a
   connectorSubtype: api
   connectorType: source
   definitionId: 6ee4ad96-368f-4c5a-85cf-d92d4b27a4dd
-  dockerImageTag: 0.0.19
+  dockerImageTag: 0.0.37
   dockerRepository: airbyte/source-formbricks
   githubIssueLabel: source-formbricks
   icon: icon.svg
-  license: MIT
+  license: ELv2
   name: Formbricks
   releaseDate: 2024-11-08
   releaseStage: alpha

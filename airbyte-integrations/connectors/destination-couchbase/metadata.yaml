@@ -10,11 +10,11 @@ data:
   connectorSubtype: database
   connectorType: destination
   definitionId: 7312e2d5-3067-455c-ab45-c7f3a5c78003
-  dockerImageTag: 0.1.6
+  dockerImageTag: 0.1.9
   dockerRepository: airbyte/destination-couchbase
   githubIssueLabel: destination-couchbase
   icon: couchbase.svg
-  license: MIT
+  license: ELv2
   name: Couchbase
   releaseDate: "2024-10-30"
   releaseStage: alpha

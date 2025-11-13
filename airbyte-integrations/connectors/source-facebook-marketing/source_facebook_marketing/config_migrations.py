@@ -4,7 +4,9 @@
 
 
 import logging
-from typing import Any, List, Mapping
+from typing import Any, Dict, List, Mapping
+
+from facebook_business.adobjects.adsinsights import AdsInsights
 
 from airbyte_cdk import emit_configuration_as_airbyte_control_message
 from airbyte_cdk.entrypoint import AirbyteEntrypoint
@@ -175,3 +177,96 @@ class MigrateSecretsPathInConnector:
         source.write_config(migrated_config, config_path)
         # return modified config
         return migrated_config
+
+
+class RemoveActionReportTimeMigration:
+    """
+    Runtime config migrator that **removes** the deprecated
+    ``action_report_time`` property.
+
+    The field was deprecated starting in version 3.5.0.
+    """
+
+    migrate_key: str = "action_report_time"
+
+    @classmethod
+    def should_migrate(cls, config: Mapping[str, Any]) -> bool:
+        """Return ``True`` when the deprecated key is present."""
+        return any(cls.migrate_key in report for report in config.get("custom_insights", []))
+
+    @classmethod
+    def transform(cls, config: Mapping[str, Any]) -> Mapping[str, Any]:
+        """
+        Return a copy of *config* without the deprecated key.
+        The original mapping is left untouched.
+        """
+        config_copy: Dict[str, Any] = dict(config)
+        for report in config_copy["custom_insights"]:
+            report.pop(cls.migrate_key, None)
+        return config_copy
+
+    @classmethod
+    def modify_and_save(cls, config_path: str, source: Source, config: Mapping[str, Any]) -> Mapping[str, Any]:
+        # modify the config
+        migrated_config = cls.transform(config)
+        # save the config
+        source.write_config(migrated_config, config_path)
+        # return modified config
+        return migrated_config
+
+    @classmethod
+    def migrate(cls, args: List[str], source: Source) -> None:
+        # get config path
+        config_path = AirbyteEntrypoint(source).extract_config(args)
+        # proceed only if `--config` arg is provided
+        if config_path:
+            # read the existing config
+            config = source.read_config(config_path)
+            # migration check
+            if cls.should_migrate(config):
+                emit_configuration_as_airbyte_control_message(cls.modify_and_save(config_path, source, config))
+
+
+class MigrateDefaultActionBreakdowns:
+    """
+    This is temporary migration that will be removed in one week.
+    This migration adds current default action breakdowns to existing configs
+    to avoid breaking changes for existing users.
+    """
+
+    migrate_key: str = "default_ads_insights_action_breakdowns"
+
+    @classmethod
+    def should_migrate(cls, config: Mapping[str, Any]) -> bool:
+        """Return ``True`` when the deprecated key is not present in config."""
+        return cls.migrate_key not in config
+
+    @classmethod
+    def transform(cls, config: Mapping[str, Any]) -> Mapping[str, Any]:
+        config[cls.migrate_key] = [
+            AdsInsights.ActionBreakdowns.action_type,
+            AdsInsights.ActionBreakdowns.action_target_id,
+            AdsInsights.ActionBreakdowns.action_destination,
+        ]
+        return config
+
+    @classmethod
+    def modify_and_save(cls, config_path: str, source: Source, config: Mapping[str, Any]) -> Mapping[str, Any]:
+        # modify the config
+        migrated_config = cls.transform(config)
+        # save the config
+        source.write_config(migrated_config, config_path)
+        # return modified config
+        return migrated_config
+
+    @classmethod
+    def migrate(cls, args: List[str], source: Source) -> None:
+        # get config path
+        config_path = AirbyteEntrypoint(source).extract_config(args)
+        # proceed only if `--config` arg is provided
+        if config_path:
+            # read the existing config
+            config = source.read_config(config_path)
+            # migration check
+            if cls.should_migrate(config):
+                emit_configuration_as_airbyte_control_message(cls.modify_and_save(config_path, source, config))

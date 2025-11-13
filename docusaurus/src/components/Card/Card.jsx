@@ -3,8 +3,10 @@ import {
   faCloud,
   faDownload,
   faLock,
+  faPlug,
   faRobot,
 } from "@fortawesome/free-solid-svg-icons";
+import { faPython } from "@fortawesome/free-brands-svg-icons";
 import { FontAwesomeIcon } from "@fortawesome/react-fontawesome";
 import styles from "./Card.module.css";
 import { CloudIcon, EnterpriseIcon, OssIcon } from "./CustomIcons";
@@ -13,6 +15,8 @@ const FA_ICONS = {
   "fa-cloud": faCloud,
   "fa-download": faDownload,
   "fa-lock": faLock,
+  "fa-plug": faPlug,
+  "fa-python": faPython,
   "fa-robot": faRobot,
 };
 
@@ -26,11 +30,15 @@ const Link = ({ children, href, variant = "primary" }) => {
   const linkClass =
     variant === "secondary" ? styles.cardCtaSecondary : styles.cardCtaPrimary;
 
+  const handleClick = () => {
+    window.location.href = href;
+  };
+
   return (
-    <div className={`${styles.cardCta} ${linkClass}`}>
-      <a href={href}>{children}</a>
+    <button className={`${styles.cardCta} ${linkClass}`} onClick={handleClick} role="link">
+      {children}
       <FontAwesomeIcon icon={faArrowRight} />
-    </div>
+    </button>
   );
 };
 

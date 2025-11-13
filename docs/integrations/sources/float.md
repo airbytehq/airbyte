@@ -35,6 +35,25 @@ Float.com enables teams to plan and allocate resources effectively, manage team 
 
 | Version          | Date              | Pull Request | Subject        |
 |------------------|-------------------|--------------|----------------|
+| 0.0.37 | 2025-10-29 | [68837](https://github.com/airbytehq/airbyte/pull/68837) | Update dependencies |
+| 0.0.36 | 2025-10-21 | [68453](https://github.com/airbytehq/airbyte/pull/68453) | Update dependencies |
+| 0.0.35 | 2025-10-14 | [68042](https://github.com/airbytehq/airbyte/pull/68042) | Update dependencies |
+| 0.0.34 | 2025-10-07 | [67294](https://github.com/airbytehq/airbyte/pull/67294) | Update dependencies |
+| 0.0.33 | 2025-09-30 | [66770](https://github.com/airbytehq/airbyte/pull/66770) | Update dependencies |
+| 0.0.32 | 2025-09-24 | [65798](https://github.com/airbytehq/airbyte/pull/65798) | Update dependencies |
+| 0.0.31 | 2025-08-23 | [65301](https://github.com/airbytehq/airbyte/pull/65301) | Update dependencies |
+| 0.0.30 | 2025-08-09 | [64776](https://github.com/airbytehq/airbyte/pull/64776) | Update dependencies |
+| 0.0.29 | 2025-08-02 | [64370](https://github.com/airbytehq/airbyte/pull/64370) | Update dependencies |
+| 0.0.28 | 2025-07-26 | [63937](https://github.com/airbytehq/airbyte/pull/63937) | Update dependencies |
+| 0.0.27 | 2025-07-19 | [63595](https://github.com/airbytehq/airbyte/pull/63595) | Update dependencies |
+| 0.0.26 | 2025-07-17 | [63315](https://github.com/airbytehq/airbyte/pull/63315) | source-float contribution from cvd |
+| 0.0.25 | 2025-07-12 | [63025](https://github.com/airbytehq/airbyte/pull/63025) | Update dependencies |
+| 0.0.24 | 2025-07-05 | [62759](https://github.com/airbytehq/airbyte/pull/62759) | Update dependencies |
+| 0.0.23 | 2025-06-28 | [62314](https://github.com/airbytehq/airbyte/pull/62314) | Update dependencies |
+| 0.0.22 | 2025-06-21 | [61955](https://github.com/airbytehq/airbyte/pull/61955) | Update dependencies |
+| 0.0.21 | 2025-06-14 | [60401](https://github.com/airbytehq/airbyte/pull/60401) | Update dependencies |
+| 0.0.20 | 2025-05-10 | [59937](https://github.com/airbytehq/airbyte/pull/59937) | Update dependencies |
+| 0.0.19 | 2025-05-03 | [58908](https://github.com/airbytehq/airbyte/pull/58908) | Update dependencies |
 | 0.0.18 | 2025-04-19 | [57837](https://github.com/airbytehq/airbyte/pull/57837) | Update dependencies |
 | 0.0.17 | 2025-04-05 | [57258](https://github.com/airbytehq/airbyte/pull/57258) | Update dependencies |
 | 0.0.16 | 2025-03-29 | [56533](https://github.com/airbytehq/airbyte/pull/56533) | Update dependencies |

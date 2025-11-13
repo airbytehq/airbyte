@@ -6,13 +6,23 @@ data:
     hosts:
       - api.hubapi.com
   connectorBuildOptions:
-    baseImage: docker.io/airbyte/python-connector-base:4.0.0@sha256:d9894b6895923b379f3006fa251147806919c62b7d9021b5cd125bb67d7bbe22
+    baseImage: docker.io/airbyte/source-declarative-manifest:7.4.1@sha256:71df19e2ee555ca5b14abbec01d50104c79c9b84cb9cc323284d24333361900a
   connectorSubtype: api
   connectorType: source
   definitionId: 36c891d9-4bd9-43ac-bad2-10e12756272c
-  dockerImageTag: 4.8.0-rc.1
+  dockerImageTag: 6.0.10
   dockerRepository: airbyte/source-hubspot
   documentationUrl: https://docs.airbyte.com/integrations/sources/hubspot
+  resourceRequirements:
+    jobSpecific:
+      - jobType: check_connection
+        resourceRequirements:
+          memory_limit: 1600Mi
+          memory_request: 1600Mi
+      - jobType: discover_schema
+        resourceRequirements:
+          memory_limit: 1024Mi
+          memory_request: 1024Mi
   erdUrl: https://dbdocs.io/airbyteio/source-hubspot?view=relationships
   githubIssueLabel: source-hubspot
   icon: hubspot.svg
@@ -21,7 +31,7 @@ data:
   name: HubSpot
   remoteRegistries:
     pypi:
-      enabled: true
+      enabled: false
       packageName: airbyte-source-hubspot
   registryOverrides:
     cloud:
@@ -31,14 +41,45 @@ data:
   releaseStage: generally_available
   releases:
     rolloutConfiguration:
-      enableProgressiveRollout: true
+      enableProgressiveRollout: false
     breakingChanges:
+      6.0.0:
+        message: >-
+          This update migrates the `marketing_emails` stream from HubSpot's deprecated v1 API to
+          the new v3 API. While this migration significantly changes the schema of the stream,
+          removing many fields that were previously present, it also enables incremental sync
+          support for the stream. Users will need to refresh the source schema and reset the
+          `marketing_emails` stream after upgrading. Please refer to the [migration guide](https://docs.airbyte.com/integrations/sources/hubspot-migrations)
+          for more information.
+        upgradeDeadline: "2025-09-30"
+        deadlineAction: "auto_upgrade"
+        scopedImpact:
+          - scopeType: stream
+            impactedScopes: ["marketing_emails"]
+      5.0.0:
+        message: >-
+          This update deprecates the `contacts_form_submissions`, `contacts_list_memberships`, and
+          `contacts_merged_audit` streams from the source because they are no longer supported in
+          Hubspot's V3 API and the V1 API is being deprecated on 2025-09-30. Updates the `contact_lists`
+          stream to use V3 API, which contains changes to the schema due to old fields no longer exposed by
+          the V3 API. Users will need to refresh the source schema and clear the stream.
+        upgradeDeadline: "2025-06-15"
+        deadlineAction: "auto_upgrade"
+        scopedImpact:
+          - scopeType: stream
+            impactedScopes:
+              [
+                "contact_lists",
+                "contacts_form_submissions",
+                "contacts_list_memberships",
+                "contacts_merged_audit",
+              ]
       4.0.0:
         message: >-
           This update brings extended schema with data type changes for the streams
           `Deals Property History` and `Companies Property History`. Users will need
           to refresh their schema and reset their streams after upgrading.
-        upgradeDeadline: 2024-03-10
+        upgradeDeadline: "2024-03-10"
         scopedImpact:
           - scopeType: stream
             impactedScopes:
@@ -48,7 +89,7 @@ data:
           This update brings extended schema with data type changes for the Marketing
           Emails stream.
           Users will need to refresh it and reset this stream after upgrading.
-        upgradeDeadline: 2024-02-12
+        upgradeDeadline: "2024-02-12"
         scopedImpact:
           - scopeType: stream
             impactedScopes: ["marketing_emails"]
@@ -60,7 +101,7 @@ data:
           It will affect only users who use `Property History` stream, who will need
           to fix schema conflicts and sync `Contacts Property History` stream instead
           of `Property History`.
-        upgradeDeadline: 2024-01-15
+        upgradeDeadline: "2024-01-15"
   suggestedStreams:
     streams:
       - contacts
@@ -68,7 +109,7 @@ data:
       - deals
   supportLevel: certified
   tags:
-    - language:python
+    - language:manifest-only
     - cdk:low-code
   connectorTestSuitesOptions:
     - suite: liveTests

@@ -20,19 +20,19 @@ class ObjectLoaderPartLoaderStep<T : RemoteObject<*>>(
     private val outputQueue:
         PartitionedQueue<PipelineEvent<ObjectKey, ObjectLoaderPartLoader.PartResult<T>>>,
     private val taskFactory: LoadPipelineStepTaskFactory,
-    private val taskId: String,
+    private val stepId: String,
 ) : LoadPipelineStep {
     override val numWorkers: Int = loader.numUploadWorkers
 
     override fun taskForPartition(partition: Int): LoadPipelineStepTask<*, *, *, *, *> {
         return taskFactory.createIntermediateStep(
             partLoader,
-            inputQueue,
+            inputQueue.consume(partition),
             outputPartitioner = ObjectLoaderLoadedPartPartitioner(),
             outputQueue,
             partition,
             numWorkers,
-            taskId = taskId,
+            stepId = stepId,
         )
     }
 }

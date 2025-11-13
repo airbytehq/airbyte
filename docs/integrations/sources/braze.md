@@ -54,6 +54,14 @@ Rate limits table: https://www.braze.com/docs/api/api_limits/#rate-limits-by-req
 
 | Version | Date       | Pull Request                                             | Subject                                                            |
 | :------ | :--------- | :------------------------------------------------------- | :----------------------------------------------------------------- |
+| 0.4.20 | 2025-08-16 | [65057](https://github.com/airbytehq/airbyte/pull/65057) | Update dependencies |
+| 0.4.19 | 2025-08-02 | [64411](https://github.com/airbytehq/airbyte/pull/64411) | Update dependencies |
+| 0.4.18 | 2025-07-26 | [63796](https://github.com/airbytehq/airbyte/pull/63796) | Update dependencies |
+| 0.4.17 | 2025-07-08 | [62858](https://github.com/airbytehq/airbyte/pull/62858) | Updated Schema for `campaigns_details`, `campaigns_analytics`, and `campaigns` |
+| 0.4.16 | 2025-07-05 | [62528](https://github.com/airbytehq/airbyte/pull/62528) | Update dependencies |
+| 0.4.15 | 2025-06-28 | [60648](https://github.com/airbytehq/airbyte/pull/60648) | Update dependencies |
+| 0.4.14 | 2025-05-10 | [59854](https://github.com/airbytehq/airbyte/pull/59854) | Update dependencies |
+| 0.4.13 | 2025-05-03 | [59309](https://github.com/airbytehq/airbyte/pull/59309) | Update dependencies |
 | 0.4.12 | 2025-04-26 | [58732](https://github.com/airbytehq/airbyte/pull/58732) | Update dependencies |
 | 0.4.11 | 2025-04-19 | [58230](https://github.com/airbytehq/airbyte/pull/58230) | Update dependencies |
 | 0.4.10 | 2025-04-12 | [57643](https://github.com/airbytehq/airbyte/pull/57643) | Update dependencies |

@@ -18,15 +18,15 @@ data:
     # Please update to the latest version of the connector base image.
     # https://hub.docker.com/r/airbyte/python-connector-base
     # Please use the full address with sha256 hash to guarantee build reproducibility.
-    baseImage: docker.io/airbyte/source-declarative-manifest:5.16.0@sha256:6800f806944ee4fccf24ae01f6b8fbefb12d952c3b3da338f51f732b55de51f2
+    baseImage: docker.io/airbyte/source-declarative-manifest:7.4.1@sha256:71df19e2ee555ca5b14abbec01d50104c79c9b84cb9cc323284d24333361900a
   connectorSubtype: api
   connectorType: source
   definitionId: 3981c999-bd7d-4afc-849b-e53dea90c948
-  dockerImageTag: 0.4.2
+  dockerImageTag: 0.4.19
   dockerRepository: airbyte/source-lever-hiring
   githubIssueLabel: source-lever-hiring
   icon: icon.svg
-  license: MIT
+  license: ELv2
   name: Lever Hiring
   releaseDate: 2021-09-22
   releaseStage: alpha

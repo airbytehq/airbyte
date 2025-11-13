@@ -8,16 +8,16 @@ data:
       - api.cohere.ai
       - ${embedding.api_base}
   connectorBuildOptions:
-    baseImage: docker.io/airbyte/python-connector-base:3.0.0@sha256:1a0845ff2b30eafa793c6eee4e8f4283c2e52e1bbd44eed6cb9e9abd5d34d844
+    baseImage: docker.io/airbyte/python-connector-base:4.0.2@sha256:9fdb1888c4264cf6fee473649ecb593f56f58e5d0096a87ee0b231777e2e3e73
   connectorSubtype: vectorstore
   connectorType: destination
   definitionId: e0e06cd9-57a9-4d39-b032-bedd874ae875
-  dockerImageTag: 0.1.2
+  dockerImageTag: 0.1.8
   dockerRepository: airbyte/destination-pgvector
   documentationUrl: https://docs.airbyte.com/integrations/destinations/pgvector
   githubIssueLabel: destination-pgvector
   icon: pgvector.svg
-  license: MIT
+  license: ELv2
   name: PGVector
   remoteRegistries:
     pypi:

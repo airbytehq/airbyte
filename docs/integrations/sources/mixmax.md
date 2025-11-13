@@ -44,6 +44,26 @@ Visit `https://developer.mixmax.com/reference/getting-started-with-the-api` for 
 
 | Version | Date | Pull Request | Subject |
 | ------------------ | ------------ | --- | ---------------- |
+| 0.1.18 | 2025-10-29 | [69041](https://github.com/airbytehq/airbyte/pull/69041) | Update dependencies |
+| 0.1.17 | 2025-10-21 | [68419](https://github.com/airbytehq/airbyte/pull/68419) | Update dependencies |
+| 0.1.16 | 2025-10-14 | [67821](https://github.com/airbytehq/airbyte/pull/67821) | Update dependencies |
+| 0.1.15 | 2025-10-07 | [67386](https://github.com/airbytehq/airbyte/pull/67386) | Update dependencies |
+| 0.1.14 | 2025-09-30 | [66334](https://github.com/airbytehq/airbyte/pull/66334) | Update dependencies |
+| 0.1.13 | 2025-09-09 | [65803](https://github.com/airbytehq/airbyte/pull/65803) | Update dependencies |
+| 0.1.12 | 2025-08-23 | [65227](https://github.com/airbytehq/airbyte/pull/65227) | Update dependencies |
+| 0.1.11 | 2025-08-09 | [64717](https://github.com/airbytehq/airbyte/pull/64717) | Update dependencies |
+| 0.1.10 | 2025-08-02 | [64259](https://github.com/airbytehq/airbyte/pull/64259) | Update dependencies |
+| 0.1.9 | 2025-07-26 | [63910](https://github.com/airbytehq/airbyte/pull/63910) | Update dependencies |
+| 0.1.8 | 2025-07-19 | [63416](https://github.com/airbytehq/airbyte/pull/63416) | Update dependencies |
+| 0.1.7 | 2025-07-12 | [63191](https://github.com/airbytehq/airbyte/pull/63191) | Update dependencies |
+| 0.1.6 | 2025-07-05 | [62549](https://github.com/airbytehq/airbyte/pull/62549) | Update dependencies |
+| 0.1.5 | 2025-06-28 | [62362](https://github.com/airbytehq/airbyte/pull/62362) | Update dependencies |
+| 0.1.4 | 2025-06-21 | [61922](https://github.com/airbytehq/airbyte/pull/61922) | Update dependencies |
+| 0.1.3 | 2025-06-14 | [61068](https://github.com/airbytehq/airbyte/pull/61068) | Update dependencies |
+| 0.1.2 | 2025-05-24 | [60435](https://github.com/airbytehq/airbyte/pull/60435) | Update dependencies |
+| 0.1.1 | 2025-05-10 | [60095](https://github.com/airbytehq/airbyte/pull/60095) | Update dependencies |
+| 0.1.0 | 2025-05-05 | [59160](https://github.com/airbytehq/airbyte/pull/59160) | Changes to livefeed and unsubscribes stream |
+| 0.0.25 | 2025-05-03 | [59476](https://github.com/airbytehq/airbyte/pull/59476) | Update dependencies |
 | 0.0.24 | 2025-04-27 | [59045](https://github.com/airbytehq/airbyte/pull/59045) | Update dependencies |
 | 0.0.23 | 2025-04-19 | [58474](https://github.com/airbytehq/airbyte/pull/58474) | Update dependencies |
 | 0.0.22 | 2025-04-12 | [57864](https://github.com/airbytehq/airbyte/pull/57864) | Update dependencies |

@@ -75,10 +75,10 @@ Please keep in mind that if you start syncing a table via Airbyte, then rename i
 
 ## Supported sync modes
 
-The Airtable source connector supports the following [sync modes](https://docs.airbyte.com/cloud/core-concepts/#connection-sync-modes):
+The Airtable source connector supports the following [sync modes](https://docs.airbyte.com/platform/using-airbyte/core-concepts/sync-modes/):
 
-- [Full Refresh - Overwrite](https://docs.airbyte.com/understanding-airbyte/glossary#full-refresh-sync)
-- [Full Refresh - Append](https://docs.airbyte.com/understanding-airbyte/connections/full-refresh-append)
+- [Full Refresh - Overwrite](https://docs.airbyte.com/platform/using-airbyte/core-concepts/sync-modes/full-refresh-overwrite)
+- [Full Refresh - Append](https://docs.airbyte.com/platform/using-airbyte/core-concepts/sync-modes/full-refresh-append)
 
 ## Supported Streams
 
@@ -137,8 +137,22 @@ See information about rate limits [here](https://airtable.com/developers/web/api
 
 | Version    | Date       | Pull Request                                             | Subject                                                                                 |
 |:-----------|:-----------|:---------------------------------------------------------|:----------------------------------------------------------------------------------------|
-| 4.5.1      | 2025-02-13 | [53672](https://github.com/airbytehq/airbyte/pull/53672) | Add type for aiText and lastModifiedTime, when result type is null                      |
-| 4.5.0      | 2025-02-12 | [53657](https://github.com/airbytehq/airbyte/pull/53657) | Promoting release candidate 4.5.0-rc.4 to a main version.                               |
+| 4.6.13 | 2025-10-29 | [69029](https://github.com/airbytehq/airbyte/pull/69029) | Update dependencies |
+| 4.6.12 | 2025-10-14 | [65633](https://github.com/airbytehq/airbyte/pull/65633) | Update dependencies |
+| 4.6.11 | 2025-09-08 | [65991](https://github.com/airbytehq/airbyte/pull/65991) | Update to CDK v7.0.0 |
+| 4.6.10 | 2025-08-23 | [65352](https://github.com/airbytehq/airbyte/pull/65352) | Update dependencies |
+| 4.6.9 | 2025-08-09 | [64651](https://github.com/airbytehq/airbyte/pull/64651) | Update dependencies |
+| 4.6.8 | 2025-08-02 | [64436](https://github.com/airbytehq/airbyte/pull/64436) | Update dependencies |
+| 4.6.7 | 2025-07-21 | [63281](https://github.com/airbytehq/airbyte/pull/63281) | Bump default Memory on DISCOVER to 2.5GB |
+| 4.6.6 | 2025-07-15 | [63309](https://github.com/airbytehq/airbyte/pull/63309) | Adds `type` property to `config_normalization_rules` in manifest |
+| 4.6.5 | 2025-07-12 | [43886](https://github.com/airbytehq/airbyte/pull/43886) | Update dependencies |
+| 4.6.4 | 2025-07-10 | [62894](https://github.com/airbytehq/airbyte/pull/62894) | Bump default Memory on DISCOVER to 2GB |
+| 4.6.3 | 2025-07-03 | [62118](https://github.com/airbytehq/airbyte/pull/62118) | Bump default Memory on DISCOVER to 1.5 GB |
+| 4.6.2 | 2025-06-17 | [61643](https://github.com/airbytehq/airbyte/pull/61643) | Bump default Memory on DISCOVER to 1GB |
+| 4.6.1 | 2025-06-05 | [61394](https://github.com/airbytehq/airbyte/pull/61394) | Fix schema issue related to migration |
+| 4.6.0 | 2025-06-04 | [60875](https://github.com/airbytehq/airbyte/pull/60875) | Migrate to manifest-only |
+| 4.5.1 | 2025-02-13 | [53672](https://github.com/airbytehq/airbyte/pull/53672) | Add type for aiText and lastModifiedTime, when result type is null |
+| 4.5.0 | 2025-02-12 | [53657](https://github.com/airbytehq/airbyte/pull/53657) | Promoting release candidate 4.5.0-rc.4 to a main version. |
 | 4.5.0-rc.4 | 2025-02-04 | [53156](https://github.com/airbytehq/airbyte/pull/53156) | Add default type for `rollup`, `lookuo` and `multiplelookup`, add new type `manualSort` |
 | 4.5.0-rc.3 | 2025-01-29 | [52624](https://github.com/airbytehq/airbyte/pull/52624) | Fix type for multipleLookupValues fields                                                |
 | 4.5.0-rc.2 | 2025-01-28 | [52595](https://github.com/airbytehq/airbyte/pull/52595) | Fix type for datetime fields                                                            |

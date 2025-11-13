@@ -47,9 +47,18 @@ object AvroExpectedRecordMapper : ExpectedRecordMapper {
                     LinkedHashMap(
                         value.values
                             .map { (k, v) ->
-                                k.replace("é", "e").replace("+", "_").replace(Regex("(^\\d+)")) {
-                                    "_${it.groupValues[0]}"
-                                } to fieldNameMangler(v)
+                                // hardcoded handling for various special characters in the tests.
+                                // we expect the connector to do the same transformations, but
+                                // in a more generic way.
+                                k.replace("é", "e")
+                                    .replace("+", "_")
+                                    .replace(".", "_")
+                                    // avro+parquet require field names to start with a letter or
+                                    // an underscore.
+                                    // we have tests with field names starting with a number,
+                                    // so do that translation hewe.
+                                    .replace(Regex("(^\\d+)")) { "_${it.groupValues[0]}" } to
+                                    fieldNameMangler(v)
                             }
                             .toMap()
                     )

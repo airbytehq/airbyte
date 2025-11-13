@@ -3,7 +3,7 @@ requires = [ "poetry-core>=1.0.0",]
 build-backend = "poetry.core.masonry.api"
 
 [tool.poetry]
-version = "3.7.10"
+version = "4.1.0-rc.7"
 name = "source-google-ads"
 description = "Source implementation for Google Ads."
 authors = [ "Airbyte <contact@airbyte.io>",]
@@ -17,9 +17,10 @@ include = "source_google_ads"
 
 [tool.poetry.dependencies]
 python = "^3.10,<3.12"
-google-ads = "==25.0.0"
+google-ads = "==27.0.0"
 protobuf = "==4.25.2"
-airbyte-cdk = "^5"
+pendulum = "<3.0.0"
+airbyte-cdk = "^7.0.5"
 
 [tool.poetry.scripts]
 source-google-ads = "source_google_ads.run:run"

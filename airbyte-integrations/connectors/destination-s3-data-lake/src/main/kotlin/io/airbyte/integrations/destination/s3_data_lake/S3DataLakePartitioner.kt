@@ -24,7 +24,7 @@ class S3DataLakePartitioner : InputPartitioner {
         }
 
         val primaryKey = (record.stream.importType as Dedupe).primaryKey
-        val jsonData = record.asRawJson()
+        val jsonData = record.asJsonRecord()
 
         val primaryKeyValues =
             primaryKey.map { keys ->

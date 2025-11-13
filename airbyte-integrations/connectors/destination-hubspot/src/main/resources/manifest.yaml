@@ -1,0 +1,14 @@
+checker:
+  type: HttpRequestChecker
+  requester:
+    type: HttpRequester
+    url: https://api.hubapi.com/crm/v3/schemas/contact
+    method: GET
+    authenticator:
+      type: OAuthAuthenticator
+      url: https://api.hubapi.com/oauth/v1/token
+      client_id: '{{ config["credentials"]["client_id"] }}'
+      client_secret: '{{ config["credentials"]["client_secret"] }}'
+      refresh_token: '{{ config["credentials"]["refresh_token"] }}'
+spec:
+  connection_specification: {}

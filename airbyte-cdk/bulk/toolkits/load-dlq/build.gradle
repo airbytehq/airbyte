@@ -1,0 +1,43 @@
+sourceSets {
+    integrationTest {
+        kotlin {
+        }
+    }
+}
+
+dependencies {
+    implementation project(':airbyte-cdk:bulk:core:bulk-cdk-core-base')
+    implementation project(':airbyte-cdk:bulk:core:bulk-cdk-core-load')
+    api project(':airbyte-cdk:bulk:toolkits:bulk-cdk-toolkit-load-object-storage')
+    api project(':airbyte-cdk:bulk:toolkits:bulk-cdk-toolkit-load-s3')
+
+    testFixturesApi("io.micronaut.test:micronaut-test-core:4.5.0")
+    testFixturesApi("io.micronaut.test:micronaut-test-junit5:4.5.0")
+    testFixturesApi(testFixtures(project(":airbyte-cdk:bulk:core:bulk-cdk-core-load")))
+    testFixturesApi(testFixtures(project(":airbyte-cdk:bulk:toolkits:bulk-cdk-toolkit-load-object-storage")))
+
+    integrationTestImplementation testFixtures(project)
+}
+
+def integrationTestTask = tasks.register('integrationTest', Test) {
+    description = 'Runs the integration tests.'
+    group = 'verification'
+    testClassesDirs = sourceSets.integrationTest.output.classesDirs
+    classpath = sourceSets.integrationTest.runtimeClasspath
+    useJUnitPlatform()
+
+    jvmArgs = project.test.jvmArgs
+    systemProperties = project.test.systemProperties
+    maxParallelForks = project.test.maxParallelForks
+    maxHeapSize = project.test.maxHeapSize
+
+    testLogging() {
+        events 'skipped', 'started', 'passed', 'failed'
+        exceptionFormat 'full'
+    }
+}
+
+// These tests are lightweight enough to run on every PR.
+tasks.named('check').configure {
+    dependsOn integrationTest
+}

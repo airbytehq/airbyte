@@ -1,5 +1,18 @@
 # Jira Migration Guide
 
+## Upgrading to 4.0.0
+
+This is a breaking change for users syncing the **Pull Requests** stream, which will no longer be supported moving forward. This version removes all code pertaining to this stream, as well as the `enable_experimental_streams` config option.
+
+Users who do not have this stream enabled will not be affected and can safely upgrade to version `4.0.0`. If you are syncing data from this stream, please:
+
+1. Select **Connections** in the main navbar, then select the connection(s) affected by the update.
+2. Select the **Schema** tab.
+3. Disable the `pull_requests` stream
+4. In the main navbar, navigate to the **Sources** tab and select the affected Jira source. Set the `enable_experimental_streams` field to false and save your changes.
+
+If you're a self-managed user and can't upgrade to the new version yet, you can pin the connector to a specific version. [Help managing upgrades](/platform/next/managing-airbyte/connector-updates).
+
 ## Upgrading to 3.0.0
 
 This is a breaking change for **Workflows** stream, which used `Id` field as pk.

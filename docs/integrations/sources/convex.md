@@ -75,6 +75,19 @@ In the Data tab, you should see the tables and a sample of the data that will be
 
 | Version | Date       | Pull Request                                             | Subject                                                          |
 | :------ | :--------- | :------------------------------------------------------- | :--------------------------------------------------------------- |
+| 0.4.51 | 2025-10-07 | [65777](https://github.com/airbytehq/airbyte/pull/65777) | Update dependencies |
+| 0.4.50 | 2025-08-23 | [65287](https://github.com/airbytehq/airbyte/pull/65287) | Update dependencies |
+| 0.4.49 | 2025-08-16 | [65003](https://github.com/airbytehq/airbyte/pull/65003) | Update dependencies |
+| 0.4.48 | 2025-08-09 | [64798](https://github.com/airbytehq/airbyte/pull/64798) | Update dependencies |
+| 0.4.47 | 2025-07-19 | [63533](https://github.com/airbytehq/airbyte/pull/63533) | Update dependencies |
+| 0.4.46 | 2025-07-12 | [62996](https://github.com/airbytehq/airbyte/pull/62996) | Update dependencies |
+| 0.4.45 | 2025-07-05 | [62823](https://github.com/airbytehq/airbyte/pull/62823) | Update dependencies |
+| 0.4.44 | 2025-06-28 | [62389](https://github.com/airbytehq/airbyte/pull/62389) | Update dependencies |
+| 0.4.43 | 2025-06-21 | [61936](https://github.com/airbytehq/airbyte/pull/61936) | Update dependencies |
+| 0.4.42 | 2025-06-14 | [61160](https://github.com/airbytehq/airbyte/pull/61160) | Update dependencies |
+| 0.4.41 | 2025-05-24 | [60344](https://github.com/airbytehq/airbyte/pull/60344) | Update dependencies |
+| 0.4.40 | 2025-05-10 | [59947](https://github.com/airbytehq/airbyte/pull/59947) | Update dependencies |
+| 0.4.39 | 2025-05-03 | [59423](https://github.com/airbytehq/airbyte/pull/59423) | Update dependencies |
 | 0.4.38 | 2025-04-26 | [58847](https://github.com/airbytehq/airbyte/pull/58847) | Update dependencies |
 | 0.4.37 | 2025-04-19 | [58361](https://github.com/airbytehq/airbyte/pull/58361) | Update dependencies |
 | 0.4.36 | 2025-04-12 | [57800](https://github.com/airbytehq/airbyte/pull/57800) | Update dependencies |

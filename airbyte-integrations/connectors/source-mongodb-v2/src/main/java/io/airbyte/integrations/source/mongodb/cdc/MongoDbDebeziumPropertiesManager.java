@@ -15,11 +15,14 @@ import static io.airbyte.integrations.source.mongodb.cdc.MongoDbDebeziumConstant
 
 import com.fasterxml.jackson.databind.JsonNode;
 import io.airbyte.cdk.integrations.debezium.internals.DebeziumPropertiesManager;
+import io.airbyte.integrations.source.mongodb.MongoConstants;
 import io.airbyte.protocol.models.v0.ConfiguredAirbyteCatalog;
 import io.airbyte.protocol.models.v0.ConfiguredAirbyteStream;
 import java.util.List;
 import java.util.Properties;
 import java.util.stream.Collectors;
+import java.util.stream.StreamSupport;
+import org.jetbrains.annotations.NotNull;
 
 /**
  * Custom {@link DebeziumPropertiesManager} specific for the configuration of the Debezium MongoDB
@@ -33,10 +36,11 @@ public class MongoDbDebeziumPropertiesManager extends DebeziumPropertiesManager 
 
   static final String COLLECTION_INCLUDE_LIST_KEY = "collection.include.list";
   static final String DATABASE_INCLUDE_LIST_KEY = "database.include.list";
-
+  // For single db
+  static final String CAPTURE_SCOPE_KEY = "capture.scope";
+  static final String CAPTURE_TARGET_KEY = "capture.target";
   static final String MONGODB_POST_IMAGE_KEY = "capture.mode.full.update.type";
   static final String MONGODB_POST_IMAGE_VALUE = "post_image";
-  static final String CAPTURE_TARGET_KEY = "capture.target";
   static final String DOUBLE_QUOTES_PATTERN = "\"";
   static final String MONGODB_AUTHSOURCE_KEY = "mongodb.authsource";
   static final String MONGODB_CONNECTION_MODE_KEY = "mongodb.connection.mode";
@@ -78,37 +82,59 @@ public class MongoDbDebeziumPropertiesManager extends DebeziumPropertiesManager 
   }
 
   @Override
-  protected String getName(final JsonNode config) {
-    return normalizeName(config.get(DATABASE_CONFIGURATION_KEY).asText());
+  protected @NotNull String getName(final JsonNode config) {
+    return normalizeToDebeziumFormat(config.get(CONNECTION_STRING_CONFIGURATION_KEY).asText());
+  }
+
+  /**
+   * Ensure that the name property is formatted correctly for use by Debezium.
+   *
+   * @param connectionString: The name/server_id to be associated with the Debezium connector.
+   * @return The normalized name.
+   *
+   *         Ref
+   *         https://docs.redhat.com/en/documentation/red_hat_integration/2021.q3/html-single/debezium_user_guide/index#:~:text=topic%20names.-,Warning,-The%20MongoDB%20connector
+   */
+  public static String normalizeToDebeziumFormat(final String connectionString) {
+    if (connectionString == null)
+      return null;
+
+    // Step 1: Convert underscores to dashes (matches Debezium's normalizeName behavior)
+    String partialNormalizedStr = connectionString.replaceAll("_", "-");
+
+    // Step 2: Replace special characters with underscores
+    return partialNormalizedStr.replaceAll("[^a-zA-Z0-9.-]", "_");
   }
 
   @Override
-  protected Properties getIncludeConfiguration(final ConfiguredAirbyteCatalog catalog, final JsonNode config, final List<String> cdcStreamNames) {
+  protected @NotNull Properties getIncludeConfiguration(final ConfiguredAirbyteCatalog catalog,
+                                                        final JsonNode config,
+                                                        final @NotNull List<String> cdcStreamNames) {
     final Properties properties = new Properties();
-
     // Database/collection selection
-    properties.setProperty(COLLECTION_INCLUDE_LIST_KEY, createCollectionIncludeString(catalog.getStreams(), cdcStreamNames));
-    properties.setProperty(DATABASE_INCLUDE_LIST_KEY, config.get(DATABASE_CONFIGURATION_KEY).asText());
-    properties.setProperty(CAPTURE_TARGET_KEY, config.get(DATABASE_CONFIGURATION_KEY).asText());
 
+    properties.setProperty(COLLECTION_INCLUDE_LIST_KEY, createCollectionIncludeString(catalog.getStreams(), cdcStreamNames));
+    properties.setProperty(DATABASE_INCLUDE_LIST_KEY, StreamSupport.stream(config.get(DATABASE_CONFIGURATION_KEY).spliterator(), false)
+        .map(JsonNode::asText)
+        .collect(Collectors.joining(",")));
+
+    List<String> databasesNames = new java.util.ArrayList<>();
+    config.get(MongoConstants.DATABASE_CONFIGURATION_KEY).forEach(db -> databasesNames.add(db.asText()));
+
+    if (databasesNames.size() == 1) {
+      properties.setProperty(CAPTURE_SCOPE_KEY, "database");
+      properties.setProperty(CAPTURE_TARGET_KEY, databasesNames.getFirst());
+    } else {
+      properties.setProperty(CAPTURE_SCOPE_KEY, "deployment");
+    }
     return properties;
   }
 
   protected String createCollectionIncludeString(final List<ConfiguredAirbyteStream> streams, final List<String> cdcStreamNames) {
     return streams.stream()
         .map(s -> s.getStream().getNamespace() + "\\." + s.getStream().getName())
-        .filter(s -> cdcStreamNames.contains(s))
+        .filter(cdcStreamNames::contains)
         .collect(Collectors.joining(","));
-  }
-
-  /**
-   * Ensure that the name property is formatted correctly for use by Debezium.
-   *
-   * @param name The name to be associated with the Debezium connector.
-   * @return The normalized name.
-   */
-  public static String normalizeName(final String name) {
-    return name != null ? name.replaceAll("_", "-") : null;
   }
 
   /**

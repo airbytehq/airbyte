@@ -3,7 +3,7 @@ test_strictness_level: high
 acceptance_tests:
   spec:
     tests:
-      - spec_path: integration_tests/spec.json
+      - spec_path: manifest.yaml
         backward_compatibility_tests_config:
           disable_for_version: 5.0.0
   connection:
@@ -11,7 +11,7 @@ acceptance_tests:
       - config_path: secrets/config.json
         status: succeed
       - config_path: integration_tests/invalid_config.json
-        status: exception
+        status: failed
   discovery:
     tests:
       - config_path: secrets/config.json
@@ -91,6 +91,14 @@ acceptance_tests:
             bypass_reason: "can't populate stream because it requires real ad campaign"
           - name: sponsored_products_targets_report_stream_daily
             bypass_reason: "can't populate stream because it requires real ad campaign"
+          - name: attribution_report_products
+            bypass_reason: "Our test account profile is not authorized to use Amazon Attribution"
+          - name: attribution_report_performance_adgroup
+            bypass_reason: "Our test account profile is not authorized to use Amazon Attribution"
+          - name: attribution_report_performance_campaign
+            bypass_reason: "Our test account profile is not authorized to use Amazon Attribution"
+          - name: attribution_report_performance_creative
+            bypass_reason: "Our test account profile is not authorized to use Amazon Attribution"
         timeout_seconds: 2400
         expect_records:
           path: integration_tests/expected_records.jsonl

@@ -354,3 +354,57 @@ def test_set_state(config):
     expected_state = {"id": 1}
     stream.state = expected_state
     assert stream._state == expected_state
+
+
+def test_leads_stream_fields_warns_on_no_valid_fields(config, requests_mock, caplog):
+    # Example response with two valid rest fields and one soap-only field
+    describe_json = {
+        "requestId": "def456",
+        "success": True,
+        "result": [
+            {
+                "id": 1,
+                "displayName": "Email",
+                "dataType": "string",
+                "rest": {"name": "email", "readOnly": False},
+                "soap": {"name": "Email", "readOnly": False},
+            },
+            {"id": 2, "displayName": "Phone", "dataType": "string", "rest": {"name": "phone", "readOnly": False}},
+            {"id": 3, "displayName": "Legacy Field", "dataType": "string", "soap": {"name": "LegacyField", "readOnly": False}},
+        ],
+    }
+
+    # Patch the schema to include all possible fields
+    class DummyLeads(Leads):
+        def get_json_schema(self):
+            return {"properties": {"email": {}, "phone": {}, "LegacyField": {}}}
+
+    requests_mock.get(
+        f"{config['domain_url'].rstrip('/')}/rest/v1/leads/describe.json",
+        json=describe_json,
+    )
+
+    caplog.set_level("WARNING")
+    leads_stream = DummyLeads(config)
+    fields = leads_stream.stream_fields
+
+    # Only fields with a 'rest' key should be included
+    assert set(fields) == {"email", "phone"}
+    # No warning should be logged since valid fields exist
+    assert "No valid fields found in leads/describe response" not in caplog.text
+
+    # Now test with no valid rest fields
+    describe_json_no_rest = {
+        "requestId": "def456",
+        "success": True,
+        "result": [{"id": 3, "displayName": "Legacy Field", "dataType": "string", "soap": {"name": "LegacyField", "readOnly": False}}],
+    }
+    requests_mock.get(
+        f"{config['domain_url'].rstrip('/')}/rest/v1/leads/describe.json",
+        json=describe_json_no_rest,
+    )
+    leads_stream = DummyLeads(config)
+    fields = leads_stream.stream_fields
+
+    assert fields == []
+    assert "No valid fields found in leads/describe response" in caplog.text

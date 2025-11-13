@@ -21,6 +21,21 @@ Countercyclical is the fully end-to-end financial intelligence platform designed
 
 | Version          | Date              | Pull Request | Subject        |
 |------------------|-------------------|--------------|----------------|
+| 0.0.37 | 2025-10-07 | [67156](https://github.com/airbytehq/airbyte/pull/67156) | Update dependencies |
+| 0.0.36 | 2025-09-30 | [66332](https://github.com/airbytehq/airbyte/pull/66332) | Update dependencies |
+| 0.0.35 | 2025-09-09 | [65748](https://github.com/airbytehq/airbyte/pull/65748) | Update dependencies |
+| 0.0.34 | 2025-08-23 | [65285](https://github.com/airbytehq/airbyte/pull/65285) | Update dependencies |
+| 0.0.33 | 2025-08-09 | [64379](https://github.com/airbytehq/airbyte/pull/64379) | Update dependencies |
+| 0.0.32 | 2025-07-26 | [64047](https://github.com/airbytehq/airbyte/pull/64047) | Update dependencies |
+| 0.0.31 | 2025-07-19 | [63555](https://github.com/airbytehq/airbyte/pull/63555) | Update dependencies |
+| 0.0.30 | 2025-07-12 | [63012](https://github.com/airbytehq/airbyte/pull/63012) | Update dependencies |
+| 0.0.29 | 2025-07-05 | [62790](https://github.com/airbytehq/airbyte/pull/62790) | Update dependencies |
+| 0.0.28 | 2025-06-28 | [62337](https://github.com/airbytehq/airbyte/pull/62337) | Update dependencies |
+| 0.0.27 | 2025-06-21 | [61960](https://github.com/airbytehq/airbyte/pull/61960) | Update dependencies |
+| 0.0.26 | 2025-06-14 | [61187](https://github.com/airbytehq/airbyte/pull/61187) | Update dependencies |
+| 0.0.25 | 2025-05-24 | [60394](https://github.com/airbytehq/airbyte/pull/60394) | Update dependencies |
+| 0.0.24 | 2025-05-10 | [60047](https://github.com/airbytehq/airbyte/pull/60047) | Update dependencies |
+| 0.0.23 | 2025-05-03 | [59404](https://github.com/airbytehq/airbyte/pull/59404) | Update dependencies |
 | 0.0.22 | 2025-04-26 | [58856](https://github.com/airbytehq/airbyte/pull/58856) | Update dependencies |
 | 0.0.21 | 2025-04-19 | [58329](https://github.com/airbytehq/airbyte/pull/58329) | Update dependencies |
 | 0.0.20 | 2025-04-12 | [57770](https://github.com/airbytehq/airbyte/pull/57770) | Update dependencies |

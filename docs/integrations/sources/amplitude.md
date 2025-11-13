@@ -58,6 +58,18 @@ The Amplitude connector ideally should gracefully handle Amplitude API limitatio
 
 | Version    | Date       | Pull Request                                             | Subject                                                                                                                                                                |
 |:-----------|:-----------| :------------------------------------------------------- |:-----------------------------------------------------------------------------------------------------------------------------------------------------------------------|
+| 0.7.24 | 2025-10-29 | [68881](https://github.com/airbytehq/airbyte/pull/68881) | Update dependencies |
+| 0.7.23 | 2025-10-21 | [68361](https://github.com/airbytehq/airbyte/pull/68361) | Update dependencies |
+| 0.7.22 | 2025-10-14 | [67986](https://github.com/airbytehq/airbyte/pull/67986) | Update dependencies |
+| 0.7.21 | 2025-10-07 | [67159](https://github.com/airbytehq/airbyte/pull/67159) | Update dependencies |
+| 0.7.20 | 2025-09-30 | [62537](https://github.com/airbytehq/airbyte/pull/62537) | Update dependencies |
+| 0.7.19 | 2025-09-08 | [65994](https://github.com/airbytehq/airbyte/pull/65994) | Update to CDK v7 |
+| 0.7.18 | 2025-06-28 | [62135](https://github.com/airbytehq/airbyte/pull/62135) | Update dependencies |
+| 0.7.17 | 2025-06-21 | [61897](https://github.com/airbytehq/airbyte/pull/61897) | Update dependencies |
+| 0.7.16 | 2025-06-15 | [60600](https://github.com/airbytehq/airbyte/pull/60600) | Update dependencies |
+| 0.7.15 | 2025-05-23 | [60887](https://github.com/airbytehq/airbyte/pull/60887) | Fix cohorts extractor field_path |
+| 0.7.14 | 2025-05-10 | [59808](https://github.com/airbytehq/airbyte/pull/59808) | Update dependencies |
+| 0.7.13 | 2025-05-03 | [59369](https://github.com/airbytehq/airbyte/pull/59369) | Update dependencies |
 | 0.7.12 | 2025-04-26 | [58709](https://github.com/airbytehq/airbyte/pull/58709) | Update dependencies |
 | 0.7.11 | 2025-04-19 | [58264](https://github.com/airbytehq/airbyte/pull/58264) | Update dependencies |
 | 0.7.10 | 2025-04-12 | [57605](https://github.com/airbytehq/airbyte/pull/57605) | Update dependencies |

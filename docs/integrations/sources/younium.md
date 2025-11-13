@@ -46,6 +46,26 @@ The Younium source connector supports the following [sync modes](https://docs.ai
 
 | Version | Date       | Pull Request                                             | Subject                                                    |
 | :------ | :--------- | :------------------------------------------------------- | :--------------------------------------------------------- |
+| 0.4.35 | 2025-10-29 | [68962](https://github.com/airbytehq/airbyte/pull/68962) | Update dependencies |
+| 0.4.34 | 2025-10-21 | [68462](https://github.com/airbytehq/airbyte/pull/68462) | Update dependencies |
+| 0.4.33 | 2025-10-14 | [67989](https://github.com/airbytehq/airbyte/pull/67989) | Update dependencies |
+| 0.4.32 | 2025-10-07 | [67236](https://github.com/airbytehq/airbyte/pull/67236) | Update dependencies |
+| 0.4.31 | 2025-09-30 | [66849](https://github.com/airbytehq/airbyte/pull/66849) | Update dependencies |
+| 0.4.30 | 2025-09-24 | [66468](https://github.com/airbytehq/airbyte/pull/66468) | Update dependencies |
+| 0.4.29 | 2025-09-09 | [65738](https://github.com/airbytehq/airbyte/pull/65738) | Update dependencies |
+| 0.4.28 | 2025-08-23 | [65420](https://github.com/airbytehq/airbyte/pull/65420) | Update dependencies |
+| 0.4.27 | 2025-08-09 | [64829](https://github.com/airbytehq/airbyte/pull/64829) | Update dependencies |
+| 0.4.26 | 2025-08-02 | [64348](https://github.com/airbytehq/airbyte/pull/64348) | Update dependencies |
+| 0.4.25 | 2025-07-26 | [64070](https://github.com/airbytehq/airbyte/pull/64070) | Update dependencies |
+| 0.4.24 | 2025-07-20 | [63668](https://github.com/airbytehq/airbyte/pull/63668) | Update dependencies |
+| 0.4.23 | 2025-07-12 | [63212](https://github.com/airbytehq/airbyte/pull/63212) | Update dependencies |
+| 0.4.22 | 2025-07-05 | [62723](https://github.com/airbytehq/airbyte/pull/62723) | Update dependencies |
+| 0.4.21 | 2025-06-28 | [62230](https://github.com/airbytehq/airbyte/pull/62230) | Update dependencies |
+| 0.4.20 | 2025-06-21 | [61746](https://github.com/airbytehq/airbyte/pull/61746) | Update dependencies |
+| 0.4.19 | 2025-06-15 | [61166](https://github.com/airbytehq/airbyte/pull/61166) | Update dependencies |
+| 0.4.18 | 2025-05-24 | [60773](https://github.com/airbytehq/airbyte/pull/60773) | Update dependencies |
+| 0.4.17 | 2025-05-10 | [59938](https://github.com/airbytehq/airbyte/pull/59938) | Update dependencies |
+| 0.4.16 | 2025-05-04 | [59527](https://github.com/airbytehq/airbyte/pull/59527) | Update dependencies |
 | 0.4.15 | 2025-04-26 | [58023](https://github.com/airbytehq/airbyte/pull/58023) | Update dependencies |
 | 0.4.14 | 2025-04-05 | [56833](https://github.com/airbytehq/airbyte/pull/56833) | Update dependencies |
 | 0.4.13 | 2025-03-22 | [56327](https://github.com/airbytehq/airbyte/pull/56327) | Update dependencies |

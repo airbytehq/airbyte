@@ -137,6 +137,7 @@ def create_or_update_github_pull_request(
     skip_ci: bool = False,
     labels: Optional[Iterable[str]] = None,
     force_push: bool = True,
+    github_auto_merge: bool = False,
 ) -> github_sdk.PullRequest.PullRequest:
     logger = logger or main_logger
     g = github_sdk.Github(auth=github_sdk.Auth.Token(github_token))
@@ -221,6 +222,10 @@ def create_or_update_github_pull_request(
     for label in labels:
         pull_request.add_to_labels(label)
         logger.info(f"Added label {label} to pull request")
+
+    if github_auto_merge:
+        logger.info("Enabling (native) GitHub auto-merge for the pull request")
+        pull_request.enable_automerge("SQUASH")
 
     return pull_request
 

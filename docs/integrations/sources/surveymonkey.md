@@ -87,6 +87,17 @@ SurveyMonkey's API has [default rate limits](https://developer.surveymonkey.com/
 
 | Version | Date       | Pull Request                                             | Subject                                                                          |
 | :------ | :--------- | :------------------------------------------------------- | :------------------------------------------------------------------------------- |
+| 0.3.47 | 2025-10-21 | [68542](https://github.com/airbytehq/airbyte/pull/68542) | Update dependencies |
+| 0.3.46 | 2025-10-14 | [67916](https://github.com/airbytehq/airbyte/pull/67916) | Update dependencies |
+| 0.3.45 | 2025-10-07 | [67476](https://github.com/airbytehq/airbyte/pull/67476) | Update dependencies |
+| 0.3.44 | 2025-09-30 | [66894](https://github.com/airbytehq/airbyte/pull/66894) | Update dependencies |
+| 0.3.43 | 2025-09-23 | [66372](https://github.com/airbytehq/airbyte/pull/66372) | Update dependencies |
+| 0.3.42 | 2025-09-09 | [65682](https://github.com/airbytehq/airbyte/pull/65682) | Update dependencies |
+| 0.3.41 | 2025-08-24 | [65476](https://github.com/airbytehq/airbyte/pull/65476) | Update dependencies |
+| 0.3.40 | 2025-08-16 | [65023](https://github.com/airbytehq/airbyte/pull/65023) | Update dependencies |
+| 0.3.39 | 2025-08-09 | [64849](https://github.com/airbytehq/airbyte/pull/64849) | Update dependencies |
+| 0.3.38 | 2025-08-02 | [54085](https://github.com/airbytehq/airbyte/pull/54085) | Update dependencies |
+| 0.3.37 | 2025-07-16 | [63345](https://github.com/airbytehq/airbyte/pull/63345) | Update CDK version to fix tests and allow for bumping version for metadata updates. |
 | 0.3.36 | 2025-02-01 | [53050](https://github.com/airbytehq/airbyte/pull/53050) | Update dependencies |
 | 0.3.35 | 2025-01-25 | [51993](https://github.com/airbytehq/airbyte/pull/51993) | Update dependencies |
 | 0.3.34 | 2025-01-11 | [51412](https://github.com/airbytehq/airbyte/pull/51412) | Update dependencies |

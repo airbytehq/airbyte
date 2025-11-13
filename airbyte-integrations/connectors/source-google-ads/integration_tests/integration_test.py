@@ -57,23 +57,6 @@ def create_google_ads_row_from_dict(data: dict) -> GoogleAdsRow:
     "stream_fixture_name, expected_records",
     [
         (
-            "customer_label",
-            [
-                {
-                    "customer_label.resource_name": "123",
-                    "customer_label.customer": "customer",
-                    "customer.id": 123,
-                    "customer_label.label": "customer_label",
-                },
-                {
-                    "customer_label.resource_name": "1234",
-                    "customer_label.customer": "customer",
-                    "customer.id": 123,
-                    "customer_label.label": "customer_label1",
-                },
-            ],
-        ),
-        (
             "topic_view",
             [
                 {

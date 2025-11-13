@@ -72,6 +72,11 @@ The connector is restricted by Insightly [requests limitation](https://api.na1.i
 
 | Version | Date       | Pull Request                                             | Subject                                                                         |
 | :------ | :--------- | :------------------------------------------------------- | :------------------------------------------------------------------------------ |
+| 0.3.26 | 2025-10-14 | [67374](https://github.com/airbytehq/airbyte/pull/67374) | Update dependencies |
+| 0.3.25 | 2025-09-30 | [61132](https://github.com/airbytehq/airbyte/pull/61132) | Update dependencies |
+| 0.3.24 | 2025-09-12 | [TBD](https://github.com/airbytehq/airbyte/pull/TBD) | Update to CDK v7 |
+| 0.3.23 | 2025-05-24 | [60654](https://github.com/airbytehq/airbyte/pull/60654) | Update dependencies |
+| 0.3.22 | 2025-05-10 | [58762](https://github.com/airbytehq/airbyte/pull/58762) | Update dependencies |
 | 0.3.21 | 2025-04-19 | [58172](https://github.com/airbytehq/airbyte/pull/58172) | Update dependencies |
 | 0.3.20 | 2025-04-12 | [57725](https://github.com/airbytehq/airbyte/pull/57725) | Update dependencies |
 | 0.3.19 | 2025-04-05 | [57110](https://github.com/airbytehq/airbyte/pull/57110) | Update dependencies |

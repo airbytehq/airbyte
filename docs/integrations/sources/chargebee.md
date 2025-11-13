@@ -104,6 +104,22 @@ The Chargebee connector should not run into [Chargebee API](https://apidocs.char
 
 | Version     | Date       | Pull Request                                             | Subject                                                                                                                                                                |
 |:------------|:-----------|:---------------------------------------------------------|:-----------------------------------------------------------------------------------------------------------------------------------------------------------------------|
+| 0.10.22 | 2025-10-29 | [68902](https://github.com/airbytehq/airbyte/pull/68902) | Update dependencies |
+| 0.10.21 | 2025-10-21 | [68546](https://github.com/airbytehq/airbyte/pull/68546) | Update dependencies |
+| 0.10.20 | 2025-10-14 | [68083](https://github.com/airbytehq/airbyte/pull/68083) | Update dependencies |
+| 0.10.19 | 2025-10-07 | [67181](https://github.com/airbytehq/airbyte/pull/67181) | Update dependencies |
+| 0.10.18 | 2025-09-30 | [65793](https://github.com/airbytehq/airbyte/pull/65793) | Update dependencies |
+| 0.10.17 | 2025-09-08 | [65996](https://github.com/airbytehq/airbyte/pull/65996) | Update to CDK v7 |
+| 0.10.16 | 2025-08-23 | [65294](https://github.com/airbytehq/airbyte/pull/65294) | Update dependencies |
+| 0.10.15 | 2025-08-09 | [64707](https://github.com/airbytehq/airbyte/pull/64707) | Update dependencies |
+| 0.10.14 | 2025-07-04 | [63936](https://github.com/airbytehq/airbyte/pull/63936) | Fix missing data in subscriptions with scheduled changes stream |
+| 0.10.13 | 2025-08-02 | [64333](https://github.com/airbytehq/airbyte/pull/64333) | Update dependencies |
+| 0.10.12 | 2025-07-26 | [64039](https://github.com/airbytehq/airbyte/pull/64039) | Update dependencies |
+| 0.10.11 | 2025-07-19 | [63538](https://github.com/airbytehq/airbyte/pull/63538) | Update dependencies |
+| 0.10.10 | 2025-07-12 | [63022](https://github.com/airbytehq/airbyte/pull/63022) | Update dependencies |
+| 0.10.9 | 2025-06-28 | [62369](https://github.com/airbytehq/airbyte/pull/62369) | Update dependencies |
+| 0.10.8 | 2025-06-21 | [61985](https://github.com/airbytehq/airbyte/pull/61985) | Update dependencies |
+| 0.10.7 | 2025-06-14 | [59347](https://github.com/airbytehq/airbyte/pull/59347) | Update dependencies |
 | 0.10.6 | 2025-04-26 | [58729](https://github.com/airbytehq/airbyte/pull/58729) | Update dependencies |
 | 0.10.5 | 2025-04-19 | [57648](https://github.com/airbytehq/airbyte/pull/57648) | Update dependencies |
 | 0.10.4 | 2025-04-05 | [57130](https://github.com/airbytehq/airbyte/pull/57130) | Update dependencies |

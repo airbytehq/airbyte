@@ -1,0 +1,38 @@
+[build-system]
+requires = [ "poetry-core>=1.0.0",]
+build-backend = "poetry.core.masonry.api"
+
+[tool.poetry]
+version = "0.1.0"
+name = "destination-surrealdb"
+description = "Destination implementation for SurrealDB."
+authors = [ "Airbyte <contact@airbyte.io>",]
+license = "ELv2"
+readme = "README.md"
+documentation = "https://docs.airbyte.com/integrations/destinations/surrealdb"
+homepage = "https://airbyte.com"
+repository = "https://github.com/airbytehq/airbyte"
+
+[[tool.poetry.packages]]
+include = "destination_surrealdb"
+
+[tool.poetry.dependencies]
+python = "^3.10,<3.12"
+airbyte-cdk = {version = "^6.45.10", extras = []}
+# surrealdb.py 1.0.3 depends on packaging 24.2, where airbite-cdk depends on langchain which depends on packaging 23.x,
+# which results in poetry dependency resolution failure.
+# This is a temporary fix so that surrealdb.py depends on packaging >= 23.0.
+surrealdb = {git = "https://github.com/mumoshu/surrealdb.py.git", rev = "849bd5d4cba514269d455b0f5a957ab0359783eb"}
+
+[tool.poetry.scripts]
+destination-surrealdb = "destination_surrealdb.run:run"
+
+[tool.poetry.group.dev.dependencies]
+pytest = "^8.3.2"
+
+[tool.poe]
+include = [
+    # Shared tasks definition file(s) can be imported here.
+    # Run `poe` or `poe --help` to see the list of available tasks.
+    "${POE_GIT_DIR}/poe-tasks/poetry-connector-tasks.toml",
+]

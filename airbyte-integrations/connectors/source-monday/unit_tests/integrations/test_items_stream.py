@@ -24,7 +24,7 @@ class TestItemsStreamFullRefresh(TestCase):
         config = ConfigBuilder().with_api_token_credentials("api-token").build()
         api_token_authenticator = self.get_authenticator(config)
 
-        http_mocker.get(
+        http_mocker.post(
             ItemsRequestBuilder.items_endpoint(api_token_authenticator).build(),
             ItemsResponseBuilder.items_response()
             .with_record(ItemsRecordBuilder.items_record())
@@ -44,7 +44,7 @@ class TestItemsStreamFullRefresh(TestCase):
         config = ConfigBuilder().with_api_token_credentials("api-token").with_board_ids(board_ids).build()
         api_token_authenticator = self.get_authenticator(config)
 
-        http_mocker.get(
+        http_mocker.post(
             ItemsRequestBuilder.items_endpoint(api_token_authenticator, board_ids).build(),
             ItemsResponseBuilder.items_response().with_record(ItemsRecordBuilder.items_record()).build(),
         )

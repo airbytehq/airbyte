@@ -1,6 +1,8 @@
 # Copyright (c) 2024 Airbyte, Inc., all rights reserved.
 
 import json
+import logging
+from http import HTTPStatus
 from unittest import TestCase
 
 from airbyte_cdk.models import SyncMode
@@ -15,12 +17,15 @@ from airbyte_cdk.test.mock_http.response_builder import (
     find_template,
 )
 
-from .config import BUSINESS_ACCOUNT_ID, ConfigBuilder
+from ..conftest import get_source
+from .config import ConfigBuilder
 from .pagination import NEXT_PAGE_TOKEN, InstagramPaginationStrategy
-from .request_builder import RequestBuilder, get_account_request
-from .response_builder import get_account_response
+from .request_builder import get_account_request
+from .response_builder import build_response, get_account_response
 from .utils import config, read_output
 
+
+logger = logging.getLogger("airbyte")
 
 _FIELDS = ["id", "instagram_business_account"]
 
@@ -94,3 +99,12 @@ class TestFullRefresh(TestCase):
 
         output = self._read(config_=config())
         assert len(output.records) == 3
+
+    @HttpMocker()
+    def test_exception_on_accounts_request(self, http_mocker: HttpMocker) -> None:
+        get_account_request().build()
+        http_mocker.get(get_account_request().build(), build_response(status_code=HTTPStatus.FORBIDDEN, body={}))
+
+        is_successful, error = get_source(config={}).check_connection(logger=logger, config={})
+        assert not is_successful
+        assert "Forbidden" in error

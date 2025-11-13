@@ -3,16 +3,17 @@
 import json
 from unittest import TestCase
 
-from advetiser_slices import mock_advertisers_slices
-from config_builder import ConfigBuilder
 from freezegun import freeze_time
-from source_tiktok_marketing import SourceTiktokMarketing
 
 from airbyte_cdk.models import SyncMode
 from airbyte_cdk.test.catalog_builder import CatalogBuilder
 from airbyte_cdk.test.entrypoint_wrapper import read
 from airbyte_cdk.test.mock_http import HttpMocker, HttpRequest, HttpResponse
 from airbyte_cdk.test.mock_http.response_builder import find_template
+
+from ..conftest import get_source
+from .advetiser_slices import mock_advertisers_slices
+from .config_builder import ConfigBuilder
 
 
 class TestAdvertiserAudienceReportsLifetime(TestCase):
@@ -29,7 +30,7 @@ class TestAdvertiserAudienceReportsLifetime(TestCase):
             config.with_include_deleted()
         return config.build()
 
-    def _mock_response(self, http_mocker: HttpMocker, include_deleted: bool = False):
+    def _mock_response(self, http_mocker: HttpMocker):
         mock_advertisers_slices(http_mocker, self.config())
         query_params = {
             "service_type": "AUCTION",
@@ -43,10 +44,6 @@ class TestAdvertiserAudienceReportsLifetime(TestCase):
             "page_size": 1000,
             "advertiser_id": self.advertiser_id,
         }
-        if include_deleted:
-            query_params["filters"] = (
-                '[{"filter_value": ["STATUS_ALL"], "field_name": "ad_status", "filter_type": "IN"}, {"filter_value": ["STATUS_ALL"], "field_name": "campaign_status", "filter_type": "IN"}, {"filter_value": ["STATUS_ALL"], "field_name": "adgroup_status", "filter_type": "IN"}]'
-            )
         http_mocker.get(
             HttpRequest(
                 url=f"https://business-api.tiktok.com/open_api/v1.3/report/integrated/get/",
@@ -59,18 +56,22 @@ class TestAdvertiserAudienceReportsLifetime(TestCase):
     @freeze_time("2024-12-12")
     def test_basic_read(self, http_mocker: HttpMocker):
         self._mock_response(http_mocker)
+        config = self.config()
 
-        output = read(SourceTiktokMarketing(config=self.config(), catalog=None, state=None), self.config(), self.catalog())
+        output = read(get_source(config=config, state=None), config, self.catalog())
+
         assert len(output.records) == 2
 
     @HttpMocker()
     @freeze_time("2024-12-12")
     def test_basic_read_include_deleted(self, http_mocker: HttpMocker):
-        self._mock_response(http_mocker, True)
+        """
+        Note that the previous behavior was to add a `filtering` parameter but this got removed as it was resulting in data being missed
+        from the reports (see https://github.com/airbytehq/airbyte/pull/65623).
+        """
+        self._mock_response(http_mocker)
+        config = self.config(include_deleted=True)
 
-        output = read(
-            SourceTiktokMarketing(config=self.config(include_deleted=True), catalog=None, state=None),
-            self.config(include_deleted=True),
-            self.catalog(),
-        )
+        output = read(get_source(config=config, state=None), config, self.catalog())
+
         assert len(output.records) == 2

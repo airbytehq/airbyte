@@ -1,5 +1,9 @@
 # Changelog
 
+## 3.9.9
+
+Allow for additionalProperties in the stream schema to be any value except False in the case of connectors whose schemas that have an actual data field called additionalProperties (not the JSON schema additionalProperties).
+
 ## 3.9.8
 
 Give ownership of copied connection object files to the image user to make sure it has permission to write them (config migration).

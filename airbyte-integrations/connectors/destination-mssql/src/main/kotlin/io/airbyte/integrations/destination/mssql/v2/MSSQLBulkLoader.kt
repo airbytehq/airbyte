@@ -54,7 +54,7 @@ class MSSQLBulkLoader(
      * into the destination table using the PK columns.
      */
     private fun handleDedup(dataFilePath: String) {
-        log.info { "Deduplicating $dataFilePath into table for ${stream.descriptor}" }
+        log.info { "Deduplicating $dataFilePath into table for ${stream.mappedDescriptor}" }
         val importType = stream.importType as Dedupe
         val primaryKey =
             if (importType.primaryKey.isNotEmpty()) {
@@ -80,7 +80,7 @@ class MSSQLBulkLoader(
 
     /** Performs a simple bulk insert (append-overwrite behavior). */
     private fun handleAppendOverwrite(dataFilePath: String) {
-        log.info { "Loading $dataFilePath into table for ${stream.descriptor}" }
+        log.info { "Loading $dataFilePath into table for ${stream.mappedDescriptor}" }
         mssqlBulkLoadHandler.bulkLoadForAppendOverwrite(
             dataFilePath = dataFilePath,
             formatFilePath = formatFilePath
@@ -130,16 +130,15 @@ class MSSQLBulkLoaderFactory(
         val mssqlBulkLoadHandler =
             MSSQLBulkLoadHandler(
                 streamStateStore.get(key.stream)!!.dataSource,
-                stream.descriptor.namespace ?: defaultSchema,
-                stream.descriptor.name,
+                stream.mappedDescriptor.namespace ?: defaultSchema,
+                stream.mappedDescriptor.name,
                 bulkLoadConfig.dataSource,
                 MSSQLQueryBuilder(config.schema, stream)
             )
-        return MSSQLBulkLoader(
-            azureBlobClient,
-            stream,
-            mssqlBulkLoadHandler,
-            streamStateStore.get(key.stream)!!.formatFilePath
-        )
+        val state = streamStateStore.get(key.stream)
+        check(state != null && state is MSSQLBulkLoaderStreamState) {
+            "Stream state not properly initialized for stream ${key.stream}"
+        }
+        return MSSQLBulkLoader(azureBlobClient, stream, mssqlBulkLoadHandler, state.formatFilePath)
     }
 }

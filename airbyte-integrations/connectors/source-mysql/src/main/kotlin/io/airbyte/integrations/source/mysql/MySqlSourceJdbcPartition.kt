@@ -8,6 +8,7 @@ import com.fasterxml.jackson.databind.JsonNode
 import com.fasterxml.jackson.databind.node.ObjectNode
 import io.airbyte.cdk.command.OpaqueStateValue
 import io.airbyte.cdk.discover.Field
+import io.airbyte.cdk.jdbc.JdbcConnectionFactory
 import io.airbyte.cdk.read.And
 import io.airbyte.cdk.read.DefaultJdbcStreamState
 import io.airbyte.cdk.read.Equal
@@ -16,14 +17,23 @@ import io.airbyte.cdk.read.FromSample
 import io.airbyte.cdk.read.Greater
 import io.airbyte.cdk.read.GreaterOrEqual
 import io.airbyte.cdk.read.JdbcCursorPartition
+import io.airbyte.cdk.read.JdbcNonResumablePartitionReader
 import io.airbyte.cdk.read.JdbcPartition
+import io.airbyte.cdk.read.JdbcPartitionFactory
+import io.airbyte.cdk.read.JdbcPartitionsCreator
+import io.airbyte.cdk.read.JdbcPartitionsCreatorFactory
+import io.airbyte.cdk.read.JdbcSharedState
 import io.airbyte.cdk.read.JdbcSplittablePartition
+import io.airbyte.cdk.read.JdbcStreamState
 import io.airbyte.cdk.read.Lesser
 import io.airbyte.cdk.read.LesserOrEqual
 import io.airbyte.cdk.read.Limit
+import io.airbyte.cdk.read.MODE_PROPERTY
 import io.airbyte.cdk.read.NoWhere
 import io.airbyte.cdk.read.Or
 import io.airbyte.cdk.read.OrderBy
+import io.airbyte.cdk.read.PartitionReader
+import io.airbyte.cdk.read.Sample
 import io.airbyte.cdk.read.SelectColumnMaxValue
 import io.airbyte.cdk.read.SelectColumns
 import io.airbyte.cdk.read.SelectQuery
@@ -35,6 +45,11 @@ import io.airbyte.cdk.read.WhereClauseLeafNode
 import io.airbyte.cdk.read.WhereClauseNode
 import io.airbyte.cdk.read.optimize
 import io.airbyte.cdk.util.Jsons
+import io.github.oshai.kotlinlogging.KotlinLogging
+import io.micronaut.context.annotation.Primary
+import io.micronaut.context.annotation.Requires
+import jakarta.inject.Singleton
+import kotlin.random.Random
 
 /** Base class for default implementations of [JdbcPartition] for non resumable partitions. */
 sealed class MySqlSourceJdbcPartition(
@@ -186,16 +201,20 @@ class MySqlSourceJdbcRfrSnapshotPartition(
     override val lowerBound: List<JsonNode>?,
     override val upperBound: List<JsonNode>?,
 ) : MySqlSourceJdbcResumablePartition(selectQueryGenerator, streamState, primaryKey) {
+    override val isLowerBoundIncluded: Boolean = lowerBound != null
 
     // TODO: this needs to reflect lastRecord. Complete state needs to have last primary key value
     // in RFR case.
     override val completeState: OpaqueStateValue
         get() =
-            MySqlSourceJdbcStreamStateValue.snapshotCheckpoint(
-                primaryKey = checkpointColumns,
-                primaryKeyCheckpoint =
-                    checkpointColumns.map { upperBound?.get(0) ?: Jsons.nullNode() },
-            )
+            when (upperBound) {
+                null -> MySqlSourceJdbcStreamStateValue.snapshotCompleted
+                else ->
+                    MySqlSourceJdbcStreamStateValue.snapshotCheckpoint(
+                        primaryKey = checkpointColumns,
+                        primaryKeyCheckpoint = checkpointColumns.map { upperBound.get(0) },
+                    )
+            }
 
     override fun incompleteState(lastRecord: ObjectNode): OpaqueStateValue =
         MySqlSourceJdbcStreamStateValue.snapshotCheckpoint(
@@ -203,6 +222,8 @@ class MySqlSourceJdbcRfrSnapshotPartition(
             primaryKeyCheckpoint = checkpointColumns.map { lastRecord[it.id] ?: Jsons.nullNode() },
         )
 }
+
+typealias MySqlSourceJdbcSplittableRfrSnapshotPartition = MySqlSourceJdbcRfrSnapshotPartition
 
 /** RFR for CDC. */
 class MySqlSourceJdbcCdcRfrSnapshotPartition(
@@ -219,6 +240,33 @@ class MySqlSourceJdbcCdcRfrSnapshotPartition(
                 primaryKeyCheckpoint =
                     checkpointColumns.map { upperBound?.get(0) ?: Jsons.nullNode() },
             )
+
+    override fun incompleteState(lastRecord: ObjectNode): OpaqueStateValue =
+        MySqlSourceCdcInitialSnapshotStateValue.snapshotCheckpoint(
+            primaryKey = checkpointColumns,
+            primaryKeyCheckpoint = checkpointColumns.map { lastRecord[it.id] ?: Jsons.nullNode() },
+        )
+}
+
+// typealias MySqlSourceJdbcSplittableCdcRfrSnapshotPartition = MySqlSourceJdbcCdcSnapshotPartition
+class MySqlSourceJdbcSplittableCdcRfrSnapshotPartition(
+    selectQueryGenerator: SelectQueryGenerator,
+    override val streamState: DefaultJdbcStreamState,
+    primaryKey: List<Field>,
+    override val lowerBound: List<JsonNode>?,
+    override val upperBound: List<JsonNode>?,
+    override val isLowerBoundIncluded: Boolean,
+) : MySqlSourceJdbcResumablePartition(selectQueryGenerator, streamState, primaryKey) {
+    override val completeState: OpaqueStateValue
+        get() =
+            when (upperBound) {
+                null -> MySqlSourceCdcInitialSnapshotStateValue.getSnapshotCompletedState(stream)
+                else ->
+                    MySqlSourceCdcInitialSnapshotStateValue.snapshotCheckpoint(
+                        primaryKey = checkpointColumns,
+                        primaryKeyCheckpoint = checkpointColumns.map { upperBound.get(0) },
+                    )
+            }
 
     override fun incompleteState(lastRecord: ObjectNode): OpaqueStateValue =
         MySqlSourceCdcInitialSnapshotStateValue.snapshotCheckpoint(
@@ -309,6 +357,50 @@ class MySqlSourceJdbcSnapshotWithCursorPartition(
         )
 }
 
+class MySqlSourceJdbcSplittableSnapshotWithCursorPartition(
+    selectQueryGenerator: SelectQueryGenerator,
+    override val streamState: DefaultJdbcStreamState,
+    primaryKey: List<Field>,
+    override val lowerBound: List<JsonNode>?,
+    override val upperBound: List<JsonNode>?,
+    cursor: Field,
+    cursorUpperBound: JsonNode?,
+    override val isLowerBoundIncluded: Boolean
+) :
+    MySqlSourceJdbcCursorPartition(
+        selectQueryGenerator,
+        streamState,
+        primaryKey,
+        cursor,
+        cursorUpperBound
+    ) {
+    override fun incompleteState(lastRecord: ObjectNode): OpaqueStateValue =
+        MySqlSourceJdbcStreamStateValue.snapshotWithCursorCheckpoint(
+            checkpointColumns,
+            checkpointColumns.map { lastRecord[it.id] ?: Jsons.nullNode() },
+            cursor,
+            stream,
+        )
+
+    override val completeState: OpaqueStateValue
+        get() =
+            when (upperBound) {
+                null ->
+                    MySqlSourceJdbcStreamStateValue.cursorIncrementalCheckpoint(
+                        cursor,
+                        cursorUpperBound,
+                        stream,
+                    )
+                else ->
+                    MySqlSourceJdbcStreamStateValue.snapshotWithCursorCheckpoint(
+                        checkpointColumns,
+                        primaryKeyCheckpoint = upperBound,
+                        cursor,
+                        stream
+                    )
+            }
+}
+
 /**
  * Default implementation of a [JdbcPartition] for a cursor incremental partition. These are always
  * splittable.
@@ -347,4 +439,124 @@ class MySqlSourceJdbcCursorIncrementalPartition(
             cursorCheckpoint = lastRecord[cursor.id] ?: Jsons.nullNode(),
             stream,
         )
+}
+
+@Singleton
+@Primary
+@Requires(property = MODE_PROPERTY, value = "concurrent")
+class MySqlJdbcConcurrentPartitionsCreatorFactory<
+    A : JdbcSharedState,
+    S : JdbcStreamState<A>,
+    P : JdbcPartition<S>,
+>(
+    partitionFactory: JdbcPartitionFactory<A, S, P>,
+) : JdbcPartitionsCreatorFactory<A, S, P>(partitionFactory) {
+    override fun partitionsCreator(partition: P): JdbcPartitionsCreator<A, S, P> =
+        MySqlJdbcConcurrentPartitionsCreator(partition, partitionFactory)
+}
+
+class MySqlJdbcConcurrentPartitionsCreator<
+    A : JdbcSharedState, S : JdbcStreamState<A>, P : JdbcPartition<S>>(
+    partition: P,
+    partitionFactory: JdbcPartitionFactory<A, S, P>,
+) : JdbcPartitionsCreator<A, S, P>(partition, partitionFactory) {
+    private val log = KotlinLogging.logger {}
+    val tableEstimateQuery =
+        "SELECT DATA_LENGTH FROM information_schema.TABLES t WHERE TABLE_SCHEMA = '%s' AND TABLE_NAME = '%s'"
+
+    override suspend fun run(): List<PartitionReader> {
+        // Ensure that the cursor upper bound is known, if required.
+        if (partition is JdbcCursorPartition<*>) {
+            ensureCursorUpperBound()
+            if (
+                streamState.cursorUpperBound == null || streamState.cursorUpperBound?.isNull == true
+            ) {
+                log.info { "Maximum cursor column value query found that the table was empty." }
+                return listOf(CheckpointOnlyPartitionReader())
+            }
+        }
+        // Handle edge case where the table can't be sampled.
+        if (!sharedState.withSampling) {
+            log.warn {
+                "Table cannot be read by concurrent partition readers because it cannot be sampled."
+            }
+            // TODO: adaptive fetchSize computation?
+            return listOf(JdbcNonResumablePartitionReader(partition))
+        }
+        // Sample the table for partition split boundaries and for record byte sizes.
+        val sample: Sample<Pair<OpaqueStateValue?, Long>> = collectSample { record: ObjectNode ->
+            val boundary: OpaqueStateValue? =
+                (partition as? JdbcSplittablePartition<*>)?.incompleteState(record)
+            val rowByteSize: Long = sharedState.rowByteSizeEstimator().apply(record)
+            boundary to rowByteSize
+        }
+        if (sample.kind == Sample.Kind.EMPTY) {
+            log.info { "Sampling query found that the table was empty." }
+            return listOf(CheckpointOnlyPartitionReader())
+        }
+        val rowByteSizeSample: Sample<Long> = sample.map { (_, rowByteSize: Long) -> rowByteSize }
+        streamState.fetchSize = sharedState.jdbcFetchSizeEstimator().apply(rowByteSizeSample)
+        if (partition !is JdbcSplittablePartition<*>) {
+            log.warn {
+                "Table cannot be read by concurrent partition readers because it cannot be split."
+            }
+            return listOf(JdbcNonResumablePartitionReader(partition))
+        }
+        val tableByteSizeEstimate: Long =
+            findTableSizeEstimate(stream, partitionFactory.sharedState)
+
+        if (tableByteSizeEstimate == 0L) {
+            log.info { "Unable to get table estimate size" }
+            return listOf(JdbcNonResumablePartitionReader(partition))
+        }
+
+        log.info { "Table memory size estimated at ${tableByteSizeEstimate shr 20} MiB." }
+        log.info { "Target partition size is ${sharedState.targetPartitionByteSize shr 20} MiB." }
+        val secondarySamplingRate: Double =
+            if (tableByteSizeEstimate <= sharedState.targetPartitionByteSize) {
+                return listOf(JdbcNonResumablePartitionReader(partition))
+            } else {
+                val expectedPartitionByteSize: Long =
+                    tableByteSizeEstimate / sharedState.maxSampleSize
+                if (expectedPartitionByteSize < sharedState.targetPartitionByteSize) {
+                    expectedPartitionByteSize.toDouble() / sharedState.targetPartitionByteSize
+                } else {
+                    1.0
+                }
+            }
+        val random = Random(tableByteSizeEstimate) // RNG output is repeatable.
+        val splitBoundaries: List<OpaqueStateValue> =
+            sample.sampledValues
+                .filter { random.nextDouble() < secondarySamplingRate }
+                .mapNotNull { (splitBoundary: OpaqueStateValue?, _) -> splitBoundary }
+                .distinct()
+
+        // Handle edge case with empty split boundaries when sampling rate is too low,
+        // causing random filtering to discard all sampled boundaries, which would
+        // lead to division by zero the in the split() function. Fall back to single partition.
+        if (splitBoundaries.isEmpty()) {
+            log.warn { "No split boundaries found, using single partition" }
+            return listOf(JdbcNonResumablePartitionReader(partition))
+        }
+
+        val partitions: List<JdbcPartition<*>> = partitionFactory.split(partition, splitBoundaries)
+        log.info { "Table will be read by ${partitions.size} concurrent partition reader(s)." }
+        return partitions.map { JdbcNonResumablePartitionReader(it) }
+    }
+
+    private fun findTableSizeEstimate(stream: Stream, sharedState: JdbcSharedState): Long {
+        val jdbcConnectionFactory = JdbcConnectionFactory(sharedState.configuration)
+        jdbcConnectionFactory.get().use { connection ->
+            val stmt =
+                connection.prepareStatement(
+                    tableEstimateQuery.format(stream.namespace, stream.name)
+                )
+            val rs = stmt.executeQuery()
+            if (rs.next()) {
+                val tableSize: Long = rs.getLong(1)
+                return tableSize
+            }
+        }
+        return 0
+    }
 }

@@ -32,6 +32,19 @@ The API is accessible from two environments, sandbox and production. You can lea
 
 | Version          | Date              | Pull Request | Subject        |
 |------------------|-------------------|--------------|----------------|
+| 0.0.34 | 2025-09-30 | [65756](https://github.com/airbytehq/airbyte/pull/65756) | Update dependencies |
+| 0.0.33 | 2025-08-23 | [65291](https://github.com/airbytehq/airbyte/pull/65291) | Update dependencies |
+| 0.0.32 | 2025-08-09 | [64792](https://github.com/airbytehq/airbyte/pull/64792) | Update dependencies |
+| 0.0.31 | 2025-07-26 | [64038](https://github.com/airbytehq/airbyte/pull/64038) | Update dependencies |
+| 0.0.30 | 2025-07-19 | [63586](https://github.com/airbytehq/airbyte/pull/63586) | Update dependencies |
+| 0.0.29 | 2025-07-12 | [62975](https://github.com/airbytehq/airbyte/pull/62975) | Update dependencies |
+| 0.0.28 | 2025-07-05 | [62771](https://github.com/airbytehq/airbyte/pull/62771) | Update dependencies |
+| 0.0.27 | 2025-06-28 | [62301](https://github.com/airbytehq/airbyte/pull/62301) | Update dependencies |
+| 0.0.26 | 2025-06-21 | [61978](https://github.com/airbytehq/airbyte/pull/61978) | Update dependencies |
+| 0.0.25 | 2025-06-14 | [61287](https://github.com/airbytehq/airbyte/pull/61287) | Update dependencies |
+| 0.0.24 | 2025-05-24 | [60373](https://github.com/airbytehq/airbyte/pull/60373) | Update dependencies |
+| 0.0.23 | 2025-05-10 | [60030](https://github.com/airbytehq/airbyte/pull/60030) | Update dependencies |
+| 0.0.22 | 2025-05-03 | [59386](https://github.com/airbytehq/airbyte/pull/59386) | Update dependencies |
 | 0.0.21 | 2025-04-26 | [58305](https://github.com/airbytehq/airbyte/pull/58305) | Update dependencies |
 | 0.0.20 | 2025-04-12 | [57823](https://github.com/airbytehq/airbyte/pull/57823) | Update dependencies |
 | 0.0.19 | 2025-04-05 | [57196](https://github.com/airbytehq/airbyte/pull/57196) | Update dependencies |

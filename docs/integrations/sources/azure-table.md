@@ -70,6 +70,19 @@ We recommend creating a restricted key specifically for Airbyte access. This wil
 
 | Version | Date       | Pull Request                                             | Subject                                           |
 | :------ | :--------- | :------------------------------------------------------- | :------------------------------------------------ |
+| 0.1.57 | 2025-10-21 | [68397](https://github.com/airbytehq/airbyte/pull/68397) | Update dependencies |
+| 0.1.56 | 2025-10-14 | [67976](https://github.com/airbytehq/airbyte/pull/67976) | Update dependencies |
+| 0.1.55 | 2025-10-07 | [67169](https://github.com/airbytehq/airbyte/pull/67169) | Update dependencies |
+| 0.1.54 | 2025-09-30 | [65653](https://github.com/airbytehq/airbyte/pull/65653) | Update dependencies |
+| 0.1.53 | 2025-08-23 | [65333](https://github.com/airbytehq/airbyte/pull/65333) | Update dependencies |
+| 0.1.52 | 2025-08-16 | [65046](https://github.com/airbytehq/airbyte/pull/65046) | Update dependencies |
+| 0.1.51 | 2025-08-09 | [64646](https://github.com/airbytehq/airbyte/pull/64646) | Update dependencies |
+| 0.1.50 | 2025-07-26 | [63805](https://github.com/airbytehq/airbyte/pull/63805) | Update dependencies |
+| 0.1.49 | 2025-06-21 | [61900](https://github.com/airbytehq/airbyte/pull/61900) | Update dependencies |
+| 0.1.48 | 2025-06-15 | [61628](https://github.com/airbytehq/airbyte/pull/61628) | Update dependencies |
+| 0.1.47 | 2025-05-24 | [60695](https://github.com/airbytehq/airbyte/pull/60695) | Update dependencies |
+| 0.1.46 | 2025-05-10 | [59873](https://github.com/airbytehq/airbyte/pull/59873) | Update dependencies |
+| 0.1.45 | 2025-05-03 | [59324](https://github.com/airbytehq/airbyte/pull/59324) | Update dependencies |
 | 0.1.44 | 2025-04-26 | [58715](https://github.com/airbytehq/airbyte/pull/58715) | Update dependencies |
 | 0.1.43 | 2025-04-19 | [58249](https://github.com/airbytehq/airbyte/pull/58249) | Update dependencies |
 | 0.1.42 | 2025-04-12 | [57650](https://github.com/airbytehq/airbyte/pull/57650) | Update dependencies |

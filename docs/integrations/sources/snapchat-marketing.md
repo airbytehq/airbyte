@@ -141,8 +141,24 @@ Syncing data with an hourly granularity often generates large data volumes and c
 <details>
   <summary>Expand to review</summary>
 
-| Version | Date       | Pull Request                                             | Subject                                                                        |
-|:--------|:-----------|:---------------------------------------------------------|:-------------------------------------------------------------------------------|
+| Version    | Date       | Pull Request                                             | Subject                                                                        |
+|:-----------|:-----------|:---------------------------------------------------------|:-------------------------------------------------------------------------------|
+| 1.5.25 | 2025-10-29 | [68815](https://github.com/airbytehq/airbyte/pull/68815) | Update dependencies |
+| 1.5.24 | 2025-10-22 | [68591](https://github.com/airbytehq/airbyte/pull/68591) | Add `suggestedStreams` |
+| 1.5.23 | 2025-10-21 | [68234](https://github.com/airbytehq/airbyte/pull/68234) | Update dependencies |
+| 1.5.22 | 2025-10-14 | [67746](https://github.com/airbytehq/airbyte/pull/67746) | Update dependencies |
+| 1.5.21 | 2025-10-07 | [67447](https://github.com/airbytehq/airbyte/pull/67447) | Update dependencies |
+| 1.5.20 | 2025-09-30 | [66898](https://github.com/airbytehq/airbyte/pull/66898) | Update dependencies |
+| 1.5.19 | 2025-09-24 | [66264](https://github.com/airbytehq/airbyte/pull/66264) | Update dependencies |
+| 1.5.18 | 2025-09-09 | [65393](https://github.com/airbytehq/airbyte/pull/65393) | Update dependencies |
+| 1.5.17 | 2025-08-14 | [64940](https://github.com/airbytehq/airbyte/pull/64940) | Re-release connector with fixed docker image entrypoint |
+| 1.5.16 | 2025-08-11 | [63276](https://github.com/airbytehq/airbyte/pull/63276) | Fix start time for stats streams |
+| 1.5.15 | 2025-08-09 | [64480](https://github.com/airbytehq/airbyte/pull/64480) | Update dependencies |
+| 1.5.14 | 2025-07-26 | [63088](https://github.com/airbytehq/airbyte/pull/63088) | Update dependencies |
+| 1.5.13 | 2025-07-02 | [62488](https://github.com/airbytehq/airbyte/pull/62488) | Fix end datetime to include today |
+| 1.5.12 | 2025-06-28 | [60513](https://github.com/airbytehq/airbyte/pull/60513) | Update dependencies |
+| 1.5.11 | 2025-05-10 | [60113](https://github.com/airbytehq/airbyte/pull/60113) | Update dependencies |
+| 1.5.10 | 2025-05-04 | [59625](https://github.com/airbytehq/airbyte/pull/59625) | Update dependencies |
 | 1.5.9 | 2025-04-27 | [58395](https://github.com/airbytehq/airbyte/pull/58395) | Update dependencies |
 | 1.5.8 | 2025-04-12 | [57957](https://github.com/airbytehq/airbyte/pull/57957) | Update dependencies |
 | 1.5.7 | 2025-04-05 | [57412](https://github.com/airbytehq/airbyte/pull/57412) | Update dependencies |
@@ -164,50 +180,50 @@ Syncing data with an hourly granularity often generates large data volumes and c
 | 1.3.2 | 2024-11-05 | [48375](https://github.com/airbytehq/airbyte/pull/48375) | Re-implement advanced_auth in connector spec |
 | 1.3.1 | 2024-10-29 | [47837](https://github.com/airbytehq/airbyte/pull/47837) | Update dependencies |
 | 1.3.0 | 2024-10-15 | [46927](https://github.com/airbytehq/airbyte/pull/46927) | Promoting release candidate 1.3.0-rc.1 to a main version. |
-| 1.3.0-rc.1  | 2024-10-08 | [46570](https://github.com/airbytehq/airbyte/pull/46570) | Migrate to Manifest-only |
-| 1.2.12 | 2024-10-12 | [46800](https://github.com/airbytehq/airbyte/pull/46800) | Update dependencies |
-| 1.2.11 | 2024-10-05 | [46419](https://github.com/airbytehq/airbyte/pull/46419) | Update dependencies |
-| 1.2.10 | 2024-09-28 | [46106](https://github.com/airbytehq/airbyte/pull/46106) | Update dependencies |
-| 1.2.9 | 2024-09-21 | [45780](https://github.com/airbytehq/airbyte/pull/45780) | Update dependencies |
-| 1.2.8 | 2024-09-14 | [45477](https://github.com/airbytehq/airbyte/pull/45477) | Update dependencies |
-| 1.2.7 | 2024-09-07 | [45278](https://github.com/airbytehq/airbyte/pull/45278) | Update dependencies |
-| 1.2.6 | 2024-08-31 | [44998](https://github.com/airbytehq/airbyte/pull/44998) | Update dependencies |
-| 1.2.5 | 2024-08-24 | [44735](https://github.com/airbytehq/airbyte/pull/44735) | Update dependencies |
-| 1.2.4 | 2024-08-17 | [43859](https://github.com/airbytehq/airbyte/pull/43859) | Update dependencies |
-| 1.2.3 | 2024-08-12 | [43826](https://github.com/airbytehq/airbyte/pull/43826) | Fixed the bug with the missing `spend` field to supported `*_stats_*` streams |
-| 1.2.2 | 2024-08-10 | [43539](https://github.com/airbytehq/airbyte/pull/43539) | Update dependencies |
-| 1.2.1 | 2024-08-03 | [43174](https://github.com/airbytehq/airbyte/pull/43174) | Update dependencies |
-| 1.2.0 | 2024-07-31 | [42010](https://github.com/airbytehq/airbyte/pull/42010) | Migrate to CDK v4.1.0 |
-| 1.1.2 | 2024-07-27 | [42680](https://github.com/airbytehq/airbyte/pull/42680) | Update dependencies |
-| 1.1.1 | 2024-07-20 | [42366](https://github.com/airbytehq/airbyte/pull/42366) | Update dependencies |
-| 1.1.0 | 2024-07-16 | [42009](https://github.com/airbytehq/airbyte/pull/42009) | Migrate to CDK v2.4.0 |
-| 1.0.3 | 2024-07-13 | [41855](https://github.com/airbytehq/airbyte/pull/41855) | Update dependencies |
-| 1.0.2 | 2024-07-10 | [41547](https://github.com/airbytehq/airbyte/pull/41547) | Update dependencies |
-| 1.0.1 | 2024-07-09 | [40132](https://github.com/airbytehq/airbyte/pull/40132) | Update dependencies |
-| 1.0.0 | 2024-06-20 | [39507](https://github.com/airbytehq/airbyte/pull/39507) | Migrate to low-code CDK and add incremental functionality to `organizations` |
-| 0.6.2 | 2024-05-22 | [38574](https://github.com/airbytehq/airbyte/pull/38574) | Update authenticator package |
-| 0.6.1 | 2024-04-24 | [36662](https://github.com/airbytehq/airbyte/pull/36662) | Schema descriptions |
-| 0.6.0 | 2024-04-10 | [30586](https://github.com/airbytehq/airbyte/pull/30586) | Add `attribution_windows`,`action_report_time` as optional configurable params |
-| 0.5.0 | 2024-03-19 | [36267](https://github.com/airbytehq/airbyte/pull/36267) | Pin airbyte-cdk version to `^0` |
-| 0.4.0 | 2024-02-27 | [35660](https://github.com/airbytehq/airbyte/pull/35660) | Add new fields to streams `ads`, `adsquads`, `creatives`, and `media` |
-| 0.3.2 | 2024-02-12 | [35171](https://github.com/airbytehq/airbyte/pull/35171) | Manage dependencies with Poetry. |
-| 0.3.0 | 2023-05-22 | [26358](https://github.com/airbytehq/airbyte/pull/26358) | Remove deprecated authSpecification in favour of advancedAuth |
-| 0.2.0 | 2023-05-10 | [25948](https://github.com/airbytehq/airbyte/pull/25948) | Introduce new field in the `Campaigns` stream schema |
-| 0.1.16 | 2023-04-20 | [20897](https://github.com/airbytehq/airbyte/pull/20897) | Add missing fields to Basic Stats schema |
-| 0.1.15 | 2023-03-02 | [22869](https://github.com/airbytehq/airbyte/pull/22869) | Specified date formatting in specification |
-| 0.1.14 | 2023-02-10 | [22808](https://github.com/airbytehq/airbyte/pull/22808) | Enable default `AvailabilityStrategy` |
-| 0.1.13 | 2023-01-27 | [22023](https://github.com/airbytehq/airbyte/pull/22023) | Set `AvailabilityStrategy` for streams explicitly to `None` |
-| 0.1.12 | 2023-01-11 | [21267](https://github.com/airbytehq/airbyte/pull/21267) | Fix parse empty error response |
-| 0.1.11 | 2022-12-23 | [20865](https://github.com/airbytehq/airbyte/pull/20865) | Handle 403 permission error |
-| 0.1.10 | 2022-12-15 | [20537](https://github.com/airbytehq/airbyte/pull/20537) | Run on CDK 0.15.0 |
-| 0.1.9 | 2022-12-14 | [20498](https://github.com/airbytehq/airbyte/pull/20498) | Fix output state when no records are read |
-| 0.1.8 | 2022-10-05 | [17596](https://github.com/airbytehq/airbyte/pull/17596) | Retry 429 and 5xx errors when refreshing access token |
-| 0.1.6 | 2022-07-21 | [14924](https://github.com/airbytehq/airbyte/pull/14924) | Remove `additionalProperties` field from specs |
-| 0.1.5 | 2022-07-13 | [14577](https://github.com/airbytehq/airbyte/pull/14577) | Added stats streams hourly, daily, lifetime |
-| 0.1.4 | 2021-12-07 | [8429](https://github.com/airbytehq/airbyte/pull/8429) | Update titles and descriptions |
-| 0.1.3 | 2021-11-10 | [7811](https://github.com/airbytehq/airbyte/pull/7811) | Add oauth2.0, fix stream_state |
-| 0.1.2 | 2021-11-08 | [7499](https://github.com/airbytehq/airbyte/pull/7499) | Remove base-python dependencies |
-| 0.1.1 | 2021-07-29 | [5072](https://github.com/airbytehq/airbyte/pull/5072) | Fix bug with incorrect stream_state value |
-| 0.1.0 | 2021-07-26 | [4843](https://github.com/airbytehq/airbyte/pull/4843) | Initial release supporting the Snapchat Marketing API |
+| 1.3.0-rc.1 | 2024-10-08 | [46570](https://github.com/airbytehq/airbyte/pull/46570) | Migrate to Manifest-only |
+| 1.2.12     | 2024-10-12 | [46800](https://github.com/airbytehq/airbyte/pull/46800) | Update dependencies |
+| 1.2.11     | 2024-10-05 | [46419](https://github.com/airbytehq/airbyte/pull/46419) | Update dependencies |
+| 1.2.10     | 2024-09-28 | [46106](https://github.com/airbytehq/airbyte/pull/46106) | Update dependencies |
+| 1.2.9      | 2024-09-21 | [45780](https://github.com/airbytehq/airbyte/pull/45780) | Update dependencies |
+| 1.2.8      | 2024-09-14 | [45477](https://github.com/airbytehq/airbyte/pull/45477) | Update dependencies |
+| 1.2.7      | 2024-09-07 | [45278](https://github.com/airbytehq/airbyte/pull/45278) | Update dependencies |
+| 1.2.6      | 2024-08-31 | [44998](https://github.com/airbytehq/airbyte/pull/44998) | Update dependencies |
+| 1.2.5      | 2024-08-24 | [44735](https://github.com/airbytehq/airbyte/pull/44735) | Update dependencies |
+| 1.2.4      | 2024-08-17 | [43859](https://github.com/airbytehq/airbyte/pull/43859) | Update dependencies |
+| 1.2.3      | 2024-08-12 | [43826](https://github.com/airbytehq/airbyte/pull/43826) | Fixed the bug with the missing `spend` field to supported `*_stats_*` streams |
+| 1.2.2      | 2024-08-10 | [43539](https://github.com/airbytehq/airbyte/pull/43539) | Update dependencies |
+| 1.2.1      | 2024-08-03 | [43174](https://github.com/airbytehq/airbyte/pull/43174) | Update dependencies |
+| 1.2.0      | 2024-07-31 | [42010](https://github.com/airbytehq/airbyte/pull/42010) | Migrate to CDK v4.1.0 |
+| 1.1.2      | 2024-07-27 | [42680](https://github.com/airbytehq/airbyte/pull/42680) | Update dependencies |
+| 1.1.1      | 2024-07-20 | [42366](https://github.com/airbytehq/airbyte/pull/42366) | Update dependencies |
+| 1.1.0      | 2024-07-16 | [42009](https://github.com/airbytehq/airbyte/pull/42009) | Migrate to CDK v2.4.0 |
+| 1.0.3      | 2024-07-13 | [41855](https://github.com/airbytehq/airbyte/pull/41855) | Update dependencies |
+| 1.0.2      | 2024-07-10 | [41547](https://github.com/airbytehq/airbyte/pull/41547) | Update dependencies |
+| 1.0.1      | 2024-07-09 | [40132](https://github.com/airbytehq/airbyte/pull/40132) | Update dependencies |
+| 1.0.0      | 2024-06-20 | [39507](https://github.com/airbytehq/airbyte/pull/39507) | Migrate to low-code CDK and add incremental functionality to `organizations` |
+| 0.6.2      | 2024-05-22 | [38574](https://github.com/airbytehq/airbyte/pull/38574) | Update authenticator package |
+| 0.6.1      | 2024-04-24 | [36662](https://github.com/airbytehq/airbyte/pull/36662) | Schema descriptions |
+| 0.6.0      | 2024-04-10 | [30586](https://github.com/airbytehq/airbyte/pull/30586) | Add `attribution_windows`,`action_report_time` as optional configurable params |
+| 0.5.0      | 2024-03-19 | [36267](https://github.com/airbytehq/airbyte/pull/36267) | Pin airbyte-cdk version to `^0` |
+| 0.4.0      | 2024-02-27 | [35660](https://github.com/airbytehq/airbyte/pull/35660) | Add new fields to streams `ads`, `adsquads`, `creatives`, and `media` |
+| 0.3.2      | 2024-02-12 | [35171](https://github.com/airbytehq/airbyte/pull/35171) | Manage dependencies with Poetry. |
+| 0.3.0      | 2023-05-22 | [26358](https://github.com/airbytehq/airbyte/pull/26358) | Remove deprecated authSpecification in favour of advancedAuth |
+| 0.2.0      | 2023-05-10 | [25948](https://github.com/airbytehq/airbyte/pull/25948) | Introduce new field in the `Campaigns` stream schema |
+| 0.1.16     | 2023-04-20 | [20897](https://github.com/airbytehq/airbyte/pull/20897) | Add missing fields to Basic Stats schema |
+| 0.1.15     | 2023-03-02 | [22869](https://github.com/airbytehq/airbyte/pull/22869) | Specified date formatting in specification |
+| 0.1.14     | 2023-02-10 | [22808](https://github.com/airbytehq/airbyte/pull/22808) | Enable default `AvailabilityStrategy` |
+| 0.1.13     | 2023-01-27 | [22023](https://github.com/airbytehq/airbyte/pull/22023) | Set `AvailabilityStrategy` for streams explicitly to `None` |
+| 0.1.12     | 2023-01-11 | [21267](https://github.com/airbytehq/airbyte/pull/21267) | Fix parse empty error response |
+| 0.1.11     | 2022-12-23 | [20865](https://github.com/airbytehq/airbyte/pull/20865) | Handle 403 permission error |
+| 0.1.10     | 2022-12-15 | [20537](https://github.com/airbytehq/airbyte/pull/20537) | Run on CDK 0.15.0 |
+| 0.1.9      | 2022-12-14 | [20498](https://github.com/airbytehq/airbyte/pull/20498) | Fix output state when no records are read |
+| 0.1.8      | 2022-10-05 | [17596](https://github.com/airbytehq/airbyte/pull/17596) | Retry 429 and 5xx errors when refreshing access token |
+| 0.1.6      | 2022-07-21 | [14924](https://github.com/airbytehq/airbyte/pull/14924) | Remove `additionalProperties` field from specs |
+| 0.1.5      | 2022-07-13 | [14577](https://github.com/airbytehq/airbyte/pull/14577) | Added stats streams hourly, daily, lifetime |
+| 0.1.4      | 2021-12-07 | [8429](https://github.com/airbytehq/airbyte/pull/8429) | Update titles and descriptions |
+| 0.1.3      | 2021-11-10 | [7811](https://github.com/airbytehq/airbyte/pull/7811) | Add oauth2.0, fix stream_state |
+| 0.1.2      | 2021-11-08 | [7499](https://github.com/airbytehq/airbyte/pull/7499) | Remove base-python dependencies |
+| 0.1.1      | 2021-07-29 | [5072](https://github.com/airbytehq/airbyte/pull/5072) | Fix bug with incorrect stream_state value |
+| 0.1.0      | 2021-07-26 | [4843](https://github.com/airbytehq/airbyte/pull/4843) | Initial release supporting the Snapchat Marketing API |
 
 </details>

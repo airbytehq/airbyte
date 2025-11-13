@@ -13,15 +13,15 @@ data:
       enabled: false
       packageName: airbyte-source-justcall
   connectorBuildOptions:
-    baseImage: docker.io/airbyte/source-declarative-manifest:6.46.1@sha256:5e56569cab810e31e367b0667d846b324988fabd3d3bdc0bfa4c4afa3276d059
+    baseImage: docker.io/airbyte/source-declarative-manifest:7.4.1@sha256:71df19e2ee555ca5b14abbec01d50104c79c9b84cb9cc323284d24333361900a
   connectorSubtype: api
   connectorType: source
   definitionId: 488cdc64-36cd-451d-bcfa-c6478b461e94
-  dockerImageTag: 0.0.21
+  dockerImageTag: 0.0.37
   dockerRepository: airbyte/source-justcall
   githubIssueLabel: source-justcall
   icon: icon.svg
-  license: MIT
+  license: ELv2
   name: JustCall
   releaseDate: 2024-10-21
   releaseStage: alpha

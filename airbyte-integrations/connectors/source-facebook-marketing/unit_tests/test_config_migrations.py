@@ -10,8 +10,10 @@ from typing import Any, Mapping
 import pytest
 from source_facebook_marketing.config_migrations import (
     MigrateAccountIdToArray,
+    MigrateDefaultActionBreakdowns,
     MigrateIncludeDeletedToStatusFilters,
     MigrateSecretsPathInConnector,
+    RemoveActionReportTimeMigration,
 )
 from source_facebook_marketing.source import SourceFacebookMarketing
 
@@ -26,6 +28,8 @@ _EXCLUDE_DELETE_CONFIGS_PATH = "test_migrations/include_deleted_to_status_filter
 _INCLUDE_DELETE_CONFIGS_PATH = "test_migrations/include_deleted_to_status_filters/include_deleted_true"
 _ACCOUNT_ID_TO_ARRAY_CONFIGS_PATH = "test_migrations/account_id_to_array"
 _SECRETS_TO_CREDENTIALS_CONFIGS_PATH = "test_migrations/secrets_to_credentials"
+_REMOVE_ACTION_REPORT_TIME_CONFIGS_PATH = "test_migrations/remove_action_report_time"
+_MIGRATE_DEFAULT_ACTION_BREAKDOWNS_CONFIGS_PATH = "test_migrations/add_default_action_breakdowns"
 
 
 def load_config(config_path: str) -> Mapping[str, Any]:
@@ -236,3 +240,66 @@ class TestMigrateSecretsPathInConnector:
         new_config = load_config(self.NEW_TEST_CONFIG_PATH_ACCESS_TOKEN)
         migration_instance = MigrateSecretsPathInConnector()
         assert not migration_instance._should_migrate(new_config)
+
+
+class TestRemoveActionReportTimeMigration:
+    OLD_TEST_CONFIG = _config_path(f"{_REMOVE_ACTION_REPORT_TIME_CONFIGS_PATH}/test_old_config.json")
+    NEW_TEST_CONFIG = _config_path(f"{_REMOVE_ACTION_REPORT_TIME_CONFIGS_PATH}/test_new_config.json")
+
+    @staticmethod
+    def revert_migration(config_path: str) -> None:
+        with open(config_path, "r") as test_config:
+            config = json.load(test_config)
+            config["custom_insights"][0]["action_report_time"] = "mixed"
+            with open(config_path, "w") as updated_config:
+                config = json.dumps(config)
+                updated_config.write(config)
+
+    def test_migrate_client_config(self):
+        migration_instance = RemoveActionReportTimeMigration()
+        original_config = load_config(self.OLD_TEST_CONFIG)
+        # migrate the test_config
+        migration_instance.migrate([CMD, "--config", self.OLD_TEST_CONFIG], SOURCE)
+        # load the updated config
+        test_migrated_config = load_config(self.OLD_TEST_CONFIG)
+        # check migrated property
+        assert "action_report_time" not in test_migrated_config["custom_insights"][0]
+        # revert the test_config to the starting point
+        self.revert_migration(self.OLD_TEST_CONFIG)
+
+    def test_should_not_migrate_new_client_config(self):
+        new_config = load_config(self.NEW_TEST_CONFIG)
+        migration_instance = RemoveActionReportTimeMigration()
+        assert not migration_instance.should_migrate(new_config)
+
+
+class TestMigrateDefaultActionBreakdowns:
+    OLD_TEST_CONFIG = _config_path(f"{_MIGRATE_DEFAULT_ACTION_BREAKDOWNS_CONFIGS_PATH}/test_old_config.json")
+    NEW_TEST_CONFIG = _config_path(f"{_MIGRATE_DEFAULT_ACTION_BREAKDOWNS_CONFIGS_PATH}/test_new_config.json")
+
+    @staticmethod
+    def revert_migration(config_path: str) -> None:
+        with open(config_path, "r") as test_config:
+            config = json.load(test_config)
+            config.pop("default_action_breakdowns", None)
+            with open(config_path, "w") as updated_config:
+                config = json.dumps(config)
+                updated_config.write(config)
+
+    def test_migrate_client_config(self):
+        migration_instance = MigrateDefaultActionBreakdowns()
+        original_config = load_config(self.OLD_TEST_CONFIG)
+        # migrate the test_config
+        migration_instance.migrate([CMD, "--config", self.OLD_TEST_CONFIG], SOURCE)
+        # load the updated config
+        test_migrated_config = load_config(self.OLD_TEST_CONFIG)
+        # check migrated property
+        assert "default_ads_insights_action_breakdowns" in test_migrated_config
+        assert test_migrated_config["default_ads_insights_action_breakdowns"] == ["action_type", "action_target_id", "action_destination"]
+        # revert the test_config to the starting point
+        self.revert_migration(self.OLD_TEST_CONFIG)
+
+    def test_should_not_migrate_new_client_config(self):
+        new_config = load_config(self.NEW_TEST_CONFIG)
+        migration_instance = MigrateDefaultActionBreakdowns()
+        assert not migration_instance.should_migrate(new_config)

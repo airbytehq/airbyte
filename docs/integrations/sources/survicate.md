@@ -33,6 +33,23 @@ Refer `https://developers.survicate.com/data-export/setup/#authentication` for m
 
 | Version | Date | Pull Request | Subject |
 | ------------------ | ------------ | -- | ---------------- |
+| 0.0.40 | 2025-10-29 | [68987](https://github.com/airbytehq/airbyte/pull/68987) | Update dependencies |
+| 0.0.39 | 2025-10-21 | [68496](https://github.com/airbytehq/airbyte/pull/68496) | Update dependencies |
+| 0.0.38 | 2025-10-14 | [67873](https://github.com/airbytehq/airbyte/pull/67873) | Update dependencies |
+| 0.0.37 | 2025-10-07 | [67464](https://github.com/airbytehq/airbyte/pull/67464) | Update dependencies |
+| 0.0.36 | 2025-09-30 | [66882](https://github.com/airbytehq/airbyte/pull/66882) | Update dependencies |
+| 0.0.35 | 2025-09-23 | [66368](https://github.com/airbytehq/airbyte/pull/66368) | Update dependencies |
+| 0.0.34 | 2025-09-09 | [65693](https://github.com/airbytehq/airbyte/pull/65693) | Update dependencies |
+| 0.0.33 | 2025-08-24 | [65453](https://github.com/airbytehq/airbyte/pull/65453) | Update dependencies |
+| 0.0.32 | 2025-08-16 | [65015](https://github.com/airbytehq/airbyte/pull/65015) | Update dependencies |
+| 0.0.31 | 2025-08-02 | [64459](https://github.com/airbytehq/airbyte/pull/64459) | Update dependencies |
+| 0.0.30 | 2025-07-19 | [63621](https://github.com/airbytehq/airbyte/pull/63621) | Update dependencies |
+| 0.0.29 | 2025-07-12 | [63090](https://github.com/airbytehq/airbyte/pull/63090) | Update dependencies |
+| 0.0.28 | 2025-07-05 | [62681](https://github.com/airbytehq/airbyte/pull/62681) | Update dependencies |
+| 0.0.27 | 2025-06-28 | [61459](https://github.com/airbytehq/airbyte/pull/61459) | Update dependencies |
+| 0.0.26 | 2025-05-24 | [60508](https://github.com/airbytehq/airbyte/pull/60508) | Update dependencies |
+| 0.0.25 | 2025-05-10 | [60178](https://github.com/airbytehq/airbyte/pull/60178) | Update dependencies |
+| 0.0.24 | 2025-05-04 | [59577](https://github.com/airbytehq/airbyte/pull/59577) | Update dependencies |
 | 0.0.23 | 2025-04-24 | [58084](https://github.com/airbytehq/airbyte/pull/58084) | Fix `respondents_attributes` stream |
 | 0.0.22 | 2025-04-27 | [58981](https://github.com/airbytehq/airbyte/pull/58981) | Update dependencies |
 | 0.0.21 | 2025-04-19 | [58424](https://github.com/airbytehq/airbyte/pull/58424) | Update dependencies |

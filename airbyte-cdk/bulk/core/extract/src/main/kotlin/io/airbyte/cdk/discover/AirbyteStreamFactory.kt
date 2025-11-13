@@ -2,9 +2,9 @@
 package io.airbyte.cdk.discover
 
 import io.airbyte.cdk.command.SourceConfiguration
-import io.airbyte.protocol.models.Field as AirbyteField
 import io.airbyte.protocol.models.v0.AirbyteStream
 import io.airbyte.protocol.models.v0.CatalogHelpers
+import io.airbyte.protocol.models.v0.Field as AirbyteField
 
 /** Stateless object for building an [AirbyteStream] during DISCOVER. */
 interface AirbyteStreamFactory {

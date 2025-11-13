@@ -1,5 +1,7 @@
 plugins {
     id 'airbyte-bulk-connector'
+    id "io.airbyte.gradle.docker"
+    id 'airbyte-connector-docker-convention'
 }
 
 application {
@@ -9,7 +11,6 @@ application {
 airbyteBulkConnector {
     core = 'extract'
     toolkits = ['extract-jdbc', 'extract-cdc']
-    cdk = '0.381'
 }
 
 dependencies {

@@ -3,11 +3,11 @@ requires = [ "poetry-core>=1.0.0",]
 build-backend = "poetry.core.masonry.api"
 
 [tool.poetry]
-version = "0.1.7"
+version = "0.1.9"
 name = "source-fauna"
 description = "Source implementation for fauna."
 authors = [ "Airbyte <contact@airbyte.io>",]
-license = "MIT"
+license = "ELv2"
 readme = "README.md"
 documentation = "https://docs.airbyte.com/integrations/sources/fauna"
 homepage = "https://airbyte.com"

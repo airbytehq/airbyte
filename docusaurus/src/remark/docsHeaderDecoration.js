@@ -3,7 +3,7 @@ const { isDocsPage, getRegistryEntry } = require("./utils");
 const {
   getLatestPythonCDKVersion,
   parseCDKVersion,
-} = require("../connector_registry");
+} = require("../scripts/connector_registry");
 const visit = require("unist-util-visit").visit;
 
 /**
@@ -19,6 +19,7 @@ const plugin = () => {
     if (!docsPageInfo.isDocsPage) return;
 
     const registryEntry = await getRegistryEntry(vfile);
+
     const latestPythonCdkVersion = await getLatestPythonCDKVersion();
 
     if (!registryEntry) return;
@@ -28,7 +29,6 @@ const plugin = () => {
     visit(ast, "heading", (node) => {
       if (firstHeading && node.depth === 1 && node.children.length === 1) {
         const originalTitle = node.children[0].value;
-        const originalId = node.data.hProperties.id;
 
         const rawCDKVersion = getFromPaths(
           registryEntry,
@@ -61,13 +61,13 @@ const plugin = () => {
           github_url: registryEntry.github_url,
           issue_url: registryEntry.issue_url,
           originalTitle,
-          originalId,
           cdkVersion: version,
           isLatestCDKString: boolToBoolString(isLatest),
           cdkVersionUrl: url,
           syncSuccessRate,
           usageRate,
           lastUpdated,
+          definitionId: registryEntry.definitionId,
         };
 
         firstHeading = false;

@@ -43,6 +43,7 @@ import io.airbyte.commons.util.AutoCloseableIterators;
 import io.airbyte.integrations.source.postgres.PostgresTestDatabase.BaseImage;
 import io.airbyte.integrations.source.postgres.PostgresTestDatabase.ContainerModifier;
 import io.airbyte.integrations.source.postgres.cdc.PostgresCdcTargetPosition;
+import io.airbyte.integrations.source.postgres.cdc.PostgresDebeziumStateUtil;
 import io.airbyte.integrations.source.postgres.cdc.PostgresReplicationConnection;
 import io.airbyte.protocol.models.Field;
 import io.airbyte.protocol.models.JsonSchemaType;
@@ -701,6 +702,7 @@ public class CdcPostgresSourceTest extends CdcSourceTest<PostgresSource, Postgre
     // second batch of records again 20 being created
     bulkInsertRecords(recordsToCreate);
 
+    PostgresDebeziumStateUtil.disposeInitialState();
     // Extract the last state message
     final JsonNode state = Jsons.jsonNode(Collections.singletonList(stateAfterFirstBatch.get(stateAfterFirstBatch.size() - 1)));
     final AutoCloseableIterator<AirbyteMessage> secondBatchIterator = source()
@@ -718,6 +720,7 @@ public class CdcPostgresSourceTest extends CdcSourceTest<PostgresSource, Postgre
       writeModelRecord(record);
     }
 
+    PostgresDebeziumStateUtil.disposeInitialState();
     // Triggering sync with the first sync's state only which would mimic a scenario that the second
     // sync failed on destination end, and we didn't save state
     final AutoCloseableIterator<AirbyteMessage> thirdBatchIterator = source()

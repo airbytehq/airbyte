@@ -36,7 +36,3 @@ open class ChannelMessageQueue<T>(val channel: Channel<T>) : MessageQueue<T> {
     }
     override fun isClosedForPublish(): Boolean = isClosed.get()
 }
-
-interface MessageQueueSupplier<K, T> {
-    fun get(key: K): MessageQueue<T>
-}

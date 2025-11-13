@@ -1,0 +1,156 @@
+name: Generate Connector Registries
+
+on:
+  workflow_dispatch:
+    inputs:
+      gitref:
+        description: "The git ref to check out from the repository"
+        required: false
+        type: string
+  workflow_call:
+
+permissions:
+  contents: read
+
+concurrency:
+  # Only allow one active run, and one pending run.
+  # This prevents race conditions between multiple runs of this workflow.
+  group: generate-connector-registry
+  # If a new run is triggered while there's already one in-progress,
+  # allow the in-progress run to finish.
+  cancel-in-progress: false
+
+jobs:
+  generate-cloud-registry:
+    name: Generate Cloud Registry
+    runs-on: ubuntu-24.04
+
+    steps:
+      - name: Checkout Airbyte
+        uses: actions/checkout@8edcb1bdb4e267140fa742c62e395cd74f332709 # v4.2.2
+        with:
+          ref: ${{ github.event.inputs.gitref || github.ref }}
+          submodules: true # Required for the enterprise repo since it uses a submodule that needs to exist for this workflow to run successfully.
+
+      - name: Set up Python
+        uses: actions/setup-python@9322b3ca74000aeb2c01eb777b646334015ddd72 # v5.6.0
+        with:
+          python-version: "3.11"
+          check-latest: true
+          update-environment: true
+
+      - name: Install Poetry
+        uses: snok/install-poetry@d526ede1e27960b7b181a5ac53044f552afdaa38 # v1.4.1
+        with:
+          version: 2.1.4
+          virtualenvs-create: true
+          virtualenvs-in-project: true
+
+      - name: Install metadata_service
+        working-directory: airbyte-ci/connectors/metadata_service/lib
+        run: poetry install
+
+      - name: Generate Cloud Registry
+        env:
+          GCS_CREDENTIALS: ${{ secrets.METADATA_SERVICE_PROD_GCS_CREDENTIALS }}
+          SLACK_TOKEN: ${{ secrets.SLACK_BOT_TOKEN_AIRBYTE_TEAM }}
+          GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+          SENTRY_DSN: ${{ secrets.SENTRY_DSN_METADATA_SERVICE }}
+          SENTRY_TRACES_SAMPLE_RATE: 1.0
+          SENTRY_ENVIRONMENT: production
+        working-directory: airbyte-ci/connectors/metadata_service/lib
+        shell: bash
+        run: |
+          poetry run metadata_service generate-connector-registry prod-airbyte-cloud-connector-metadata-service cloud
+
+  generate-oss-registry:
+    name: Generate OSS Registry
+    runs-on: ubuntu-24.04
+
+    steps:
+      - name: Checkout Airbyte
+        uses: actions/checkout@8edcb1bdb4e267140fa742c62e395cd74f332709 # v4.2.2
+        with:
+          ref: ${{ github.event.inputs.gitref || github.ref }}
+          submodules: true # Required for the enterprise repo since it uses a submodule that needs to exist for this workflow to run successfully.
+
+      - name: Set up Python
+        uses: actions/setup-python@9322b3ca74000aeb2c01eb777b646334015ddd72 # v5.6.0
+        with:
+          python-version: "3.11"
+          check-latest: true
+          update-environment: true
+
+      - name: Install Poetry
+        uses: snok/install-poetry@d526ede1e27960b7b181a5ac53044f552afdaa38 # v1.4.1
+        with:
+          version: latest
+          virtualenvs-create: true
+          virtualenvs-in-project: true
+
+      - name: Install metadata_service
+        working-directory: airbyte-ci/connectors/metadata_service/lib
+        run: poetry install
+
+      - name: Generate OSS Registry
+        env:
+          GCS_CREDENTIALS: ${{ secrets.METADATA_SERVICE_PROD_GCS_CREDENTIALS }}
+          SLACK_TOKEN: ${{ secrets.SLACK_BOT_TOKEN_AIRBYTE_TEAM }}
+          GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+          SENTRY_DSN: ${{ secrets.SENTRY_DSN_METADATA_SERVICE }}
+          SENTRY_TRACES_SAMPLE_RATE: 1.0
+          SENTRY_ENVIRONMENT: production
+        working-directory: airbyte-ci/connectors/metadata_service/lib
+        shell: bash
+        run: |
+          poetry run metadata_service generate-connector-registry prod-airbyte-cloud-connector-metadata-service oss
+
+  post-registry-generation:
+    name: Post registry generation steps
+    runs-on: ubuntu-24.04
+    needs: [generate-cloud-registry, generate-oss-registry]
+
+    steps:
+      - name: Checkout Airbyte
+        uses: actions/checkout@8edcb1bdb4e267140fa742c62e395cd74f332709 # v4.2.2
+        with:
+          ref: ${{ github.event.inputs.gitref || github.ref }}
+          submodules: true # Required for the enterprise repo since it uses a submodule that needs to exist for this workflow to run successfully.
+
+      - name: Set up Python
+        uses: actions/setup-python@9322b3ca74000aeb2c01eb777b646334015ddd72 # v5.6.0
+        with:
+          python-version: "3.11"
+          check-latest: true
+          update-environment: true
+
+      - name: Install Poetry
+        uses: snok/install-poetry@d526ede1e27960b7b181a5ac53044f552afdaa38 # v1.4.1
+        with:
+          version: latest
+          virtualenvs-create: true
+          virtualenvs-in-project: true
+
+      - name: Install metadata_service
+        working-directory: airbyte-ci/connectors/metadata_service/lib
+        run: poetry install
+
+      - name: Generate Specs Secrets Mask
+        env:
+          GCS_CREDENTIALS: ${{ secrets.METADATA_SERVICE_PROD_GCS_CREDENTIALS }}
+          SLACK_TOKEN: ${{ secrets.SLACK_BOT_TOKEN_AIRBYTE_TEAM }}
+          GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+          SENTRY_DSN: ${{ secrets.SENTRY_DSN_METADATA_SERVICE }}
+          SENTRY_TRACES_SAMPLE_RATE: 1.0
+          SENTRY_ENVIRONMENT: production
+        working-directory: airbyte-ci/connectors/metadata_service/lib
+        shell: bash
+        run: |
+          poetry run metadata_service generate-specs-secrets-mask prod-airbyte-cloud-connector-metadata-service
+
+      - name: Generate connector registry report
+        shell: bash
+        env:
+          GCS_CREDENTIALS: ${{ secrets.METADATA_SERVICE_PROD_GCS_CREDENTIALS }}
+        # Note: --project because we're on poetry 2.x
+        run: poetry run --project airbyte-ci/connectors/metadata_service/lib metadata_service generate-registry-report prod-airbyte-cloud-connector-metadata-service

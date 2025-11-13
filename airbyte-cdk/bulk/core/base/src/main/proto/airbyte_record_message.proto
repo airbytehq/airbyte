@@ -1,0 +1,53 @@
+/*
+ * Copyright (c) 2020-2025 Airbyte, Inc., all rights reserved.
+ */
+syntax = "proto3";
+
+import "airbyte_record_message_meta.proto";
+import "google/protobuf/struct.proto";
+
+package io.airbyte.protocol.protobuf;
+
+message AirbyteRecordMessageProtobuf {
+  optional string stream_namespace = 1;
+  string stream_name = 2;
+  uint64 emitted_at_ms = 3;
+  string partition_id = 4; // Unique id associating this record to a state message
+  repeated AirbyteValueProtobuf data = 5;
+  AirbyteRecordMessageMeta meta = 6;
+};
+
+message AirbyteValueProtobuf {
+  oneof value {
+    bool boolean = 1;
+    string string = 2;
+    sint64 integer = 3;
+    string big_integer = 4; // Prefer over integer iff it exists
+    double number = 5;
+    string big_decimal = 6; // Prefer over number iff it exists
+
+    sint64 date = 7;
+    OffsetTime time_with_timezone = 8;
+    uint64 time_without_timezone = 9;
+    OffsetDateTime timestamp_with_timezone = 10;
+    LocalDateTime timestamp_without_timezone = 11;
+    bytes json = 12; // JSON-encoded arrays, objects, unions, or otherwise unknown.
+    google.protobuf.NullValue null = 13;
+  }
+}
+
+message LocalDateTime {
+  sint64 date_days_since_epoch = 1;
+  uint64 nanos_of_day = 2;
+}
+
+message OffsetTime {
+  uint64 nanos_of_day = 1;
+  sint32 offset_seconds = 2;
+}
+
+message OffsetDateTime {
+  sint64 epoch_second = 1;
+  uint32 nano = 2;
+  sint32 offset_seconds = 3;
+}

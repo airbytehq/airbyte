@@ -17,7 +17,7 @@ data:
   dockerRepository: airbyte/destination-vectara
   githubIssueLabel: destination-vectara
   icon: vectara.svg
-  license: MIT
+  license: ELv2
   name: Vectara
   remoteRegistries:
     pypi:

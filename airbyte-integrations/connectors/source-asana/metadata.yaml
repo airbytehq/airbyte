@@ -28,11 +28,11 @@ data:
   connectorSubtype: api
   connectorType: source
   definitionId: d0243522-dccf-4978-8ba0-37ed47a0bdbf
-  dockerImageTag: 1.4.0
+  dockerImageTag: 1.5.0
   dockerRepository: airbyte/source-asana
   githubIssueLabel: source-asana
   icon: asana.svg
-  license: MIT
+  license: ELv2
   name: Asana
   releaseDate: 2021-05-25
   releaseStage: beta

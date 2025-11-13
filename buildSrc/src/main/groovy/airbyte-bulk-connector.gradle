@@ -1,39 +1,42 @@
+import org.gradle.api.DefaultTask
 import org.gradle.api.Plugin
 import org.gradle.api.Project
+import org.gradle.api.tasks.TaskAction
+import org.gradle.api.tasks.options.Option
 
+// This extension does a lot of heavy lifting, because the property values (core/toolkits)
+// aren't yet set when the plugin's `apply` method is called.
+// In particular: setCore() also adds the base+core CDK dependencies (and computes the correct micronaut ksp dependency)
+// setToolkits() also adds the toolkit dependencies.
 class AirbyteBulkConnectorExtension {
 
     String core // 'extract' or 'load'
     List<String> toolkits = []  // 'extract-jdbc', etc...
-    String cdk // 'local' or a specific version
+    private boolean isDestination
+    private String cdk
+    private Project project
 
     AirbyteBulkConnectorExtension(Project project) {
         this.project = project
+        isDestination = project.name.startsWith('destination-')
+
+        this.cdk = project.findProperty("cdkVersion")
+        if (cdk == null) {
+            throw new IllegalArgumentException("Project should set the cdkVersion property in gradle.properties")
+        }
+        if (cdk != "local" && !(cdk.matches("^[0-9]+\\.[0-9]+") || cdk.matches("^[0-9]+\\.[0-9]+\\.[0-9]+"))) {
+            throw new IllegalArgumentException("'cdk' should be either a well-formed version number or 'local'")
+        }
     }
 
-    private Project project
+    String getCdk() {
+        return cdk
+    }
 
     void setCore(String core) {
         this.core = core
         if (core != "extract" && core != "load") {
             throw new IllegalArgumentException("'core' should be either 'extract' or 'load'")
-        }
-        if (cdk != null) {
-            throw new IllegalArgumentException("'core' should be defined before 'cdk'")
-        }
-    }
-
-    void setToolkits(List<String> toolkits) {
-        this.toolkits = toolkits
-        if (cdk != null) {
-            throw new IllegalArgumentException("'toolkits' should be defined before 'cdk'")
-        }
-    }
-
-    void setCdk(String cdk) {
-        this.cdk = cdk
-        if (cdk != "local" && !cdk.matches("^[0-9]+\\.[0-9]+")) {
-            throw new IllegalArgumentException("'cdk' should be either a well-formed version number or 'local'")
         }
 
         project.processResources {
@@ -51,17 +54,11 @@ class AirbyteBulkConnectorExtension {
                     project.project(":airbyte-cdk:bulk:core:bulk-cdk-core-base"),
                     project.project(":airbyte-cdk:bulk:core:bulk-cdk-core-$core"),
             ]
-            for (toolkit in toolkits) {
-                fromSource << project.project(":airbyte-cdk:bulk:toolkits:bulk-cdk-toolkit-$toolkit")
-            }
         } else {
             fromJar = [
                     "io.airbyte.bulk-cdk:bulk-cdk-core-base:$cdk",
                     "io.airbyte.bulk-cdk:bulk-cdk-core-$core:$cdk",
             ]
-            for (toolkit in toolkits) {
-                fromJar << "io.airbyte.bulk-cdk:bulk-cdk-toolkit-$toolkit:$cdk"
-            }
         }
 
         String micronautVersion = null
@@ -88,37 +85,50 @@ class AirbyteBulkConnectorExtension {
         }
         final String kspDependency = "io.micronaut:micronaut-inject-kotlin:$micronautVersion"
 
-        final boolean isDestination = project.name.startsWith('destination-')
         project.dependencies {
             ksp kspDependency
             kspTestFixtures kspDependency
             kspTest kspDependency
+        }
+        for (dep in fromSource + fromJar) {
+            addDependency(dep)
+        }
+    }
 
-            for (dep in fromSource) {
-                implementation dep
-                testFixturesImplementation dep
-                testFixturesImplementation testFixtures(dep)
-                testImplementation dep
-                testImplementation testFixtures(dep)
-                if (isDestination) {
-                    integrationTestImplementation dep
-                    integrationTestImplementation testFixtures(dep)
-                    integrationTestLegacyImplementation dep
-                    integrationTestLegacyImplementation testFixtures(dep)
+    void setToolkits(List<String> toolkits) {
+        this.toolkits = toolkits
+        for (toolkit in toolkits) {
+            if (cdk == "local") {
+                if (toolkit.contains(':')) {
+                    addDependency("io.airbyte.bulk-cdk:bulk-cdk-toolkit-$toolkit")
+                } else {
+                    addDependency(project.project(":airbyte-cdk:bulk:toolkits:bulk-cdk-toolkit-$toolkit"))
+                }
+            } else {
+                if (toolkit.contains(':')) {
+                    addDependency("io.airbyte.bulk-cdk:bulk-cdk-toolkit-$toolkit")
+                } else {
+                    addDependency("io.airbyte.bulk-cdk:bulk-cdk-toolkit-$toolkit:$cdk")
                 }
             }
-            for (dep in fromJar) {
-                implementation dep
-                testFixturesImplementation dep
-                testFixturesImplementation testFixtures(dep)
-                testImplementation dep
-                testImplementation testFixtures(dep)
-                if (isDestination) {
-                    integrationTestImplementation dep
-                    integrationTestImplementation testFixtures(dep)
-                    integrationTestLegacyImplementation dep
-                    integrationTestLegacyImplementation testFixtures(dep)
-                }
+        }
+    }
+
+    void addDependency(dep) {
+        // Copy the field, so that we can access it from within the closure
+        // (because the closure runs within a DefaultDependencyHandler scope)
+        final boolean isDestination = this.isDestination
+        project.dependencies {
+            implementation dep
+            testFixturesImplementation dep
+            testFixturesImplementation testFixtures(dep)
+            testImplementation dep
+            testImplementation testFixtures(dep)
+            if (isDestination) {
+                integrationTestImplementation dep
+                integrationTestImplementation testFixtures(dep)
+                integrationTestLegacyImplementation dep
+                integrationTestLegacyImplementation testFixtures(dep)
             }
         }
     }
@@ -183,6 +193,7 @@ class AirbyteBulkConnectorPlugin implements Plugin<Project> {
                 testLogging() {
                     events 'skipped', 'started', 'passed', 'failed'
                     exceptionFormat 'full'
+                    showStandardStreams = true
                 }
 
                 // Always re-run integration tests no matter what.
@@ -205,11 +216,7 @@ class AirbyteBulkConnectorPlugin implements Plugin<Project> {
                 environment "AIRBYTE_CONNECTOR_INTEGRATION_TEST_RUNNER", "docker"
 
                 jvmArgs = project.test.jvmArgs
-                systemProperties = project.test.systemProperties + [
-                        'junit.jupiter.execution.parallel.enabled': 'true',
-                        'junit.jupiter.execution.parallel.config.strategy': 'fixed',
-                        'junit.jupiter.execution.parallel.config.fixed.parallelism': Math.max((Runtime.runtime.availableProcessors() / 2).toInteger(), 1).toString()
-                ]
+                systemProperties = project.test.systemProperties
                 maxParallelForks = project.test.maxParallelForks
                 maxHeapSize = project.test.maxHeapSize
 
@@ -217,6 +224,35 @@ class AirbyteBulkConnectorPlugin implements Plugin<Project> {
                     events 'skipped', 'started', 'passed', 'failed'
                     exceptionFormat 'full'
                     showStandardStreams = true
+                }
+
+                develocity {
+                    testRetry {
+                        // If running in CI, enable retries to mitigate flakiness
+                        if (System.getenv().containsKey("CI")) {
+                            // Run each test method up to three times
+                            maxRetries = 3
+                            // If any test method fails, disable retries for the other tests
+                            // (unintuitive: if you set this to 1, then as soon as a test case fails, it will disable retries, including for itself.
+                            // So we set to 2, which means: a test case failing will retry itself. If, after three retries, it still fails, then we disable retries globally.)
+                            maxFailures = 2
+                        }
+                        // If a test fails, but succeeds on retry - don't fail the task
+                        failOnPassedAfterRetry = false
+                        // If a test fails, but is skipped on retry (e.g., due to failed assumptions) - don't fail the task.
+                        // This handles cases where tests use Assumptions.assumeTrue() to conditionally skip themselves.
+                        failOnSkippedAfterRetry = false
+                    }
+                }
+                reports {
+                    junitXml {
+                        // Without this flag, the generated test report will list each test attempt.
+                        // This would cause Github to see the report as containing "failed tests,"
+                        // even though the test eventually succeeded.
+                        // So we tell gradle to merge those attempts together, which should tell Github
+                        // to view the overall run as successful.
+                        mergeReruns = true
+                    }
                 }
 
                 // Always re-run integration tests no matter what.
@@ -227,10 +263,18 @@ class AirbyteBulkConnectorPlugin implements Plugin<Project> {
                 // integration tests depend on the runtime code
                 integrationTestImplementation project
                 integrationTestLegacyImplementation project
+                integrationTestLegacyImplementation project.sourceSets.integrationTest.output
             }
 
             project.tasks.named('build').configure {
                 dependsOn project.tasks.integrationTestJava
+            }
+
+            project.configurations {
+                integrationTestImplementation.extendsFrom implementation
+                integrationTestImplementation.extendsFrom testImplementation
+                integrationTestRuntimeOnly.extendsFrom runtimeOnly
+                integrationTestRuntimeOnly.extendsFrom testRuntimeOnly
             }
         }
 
@@ -260,6 +304,88 @@ class AirbyteBulkConnectorPlugin implements Plugin<Project> {
             testFixturesRuntimeOnly.extendsFrom runtimeOnly
         }
 
-        project.extensions.create('airbyteBulkConnector', AirbyteBulkConnectorExtension, project)
+        project.tasks.named('test').configure {
+            // enable the "don't be evil" option, which for some reason is disabled by default
+            systemProperties(["mockk.junit.extension.requireParallelTesting": "true"])
+        }
+
+        def extension = project.extensions.create('airbyteBulkConnector', AirbyteBulkConnectorExtension, project)
+
+        project.tasks.register('getCdkVersion') {
+            description = 'Gets the CDK version used by the connector'
+            group = 'airbyte-bulk-connector'
+
+            doLast {
+                println extension.cdk
+            }
+        }
+
+        project.tasks.register('upgradeCdk', BumpConnectorCdkVersion)
+    }
+}
+
+class BumpConnectorCdkVersion extends DefaultTask {
+    private String targetVersion = null
+
+    BumpConnectorCdkVersion() {
+        description = 'Bump the bulk CDK version number'
+        group = 'airbyte-bulk-connector'
+    }
+
+    @Option(option = "cdkVersion", description = "The bulk CDK version to use. If not provided, defaults to the latest CDK version.")
+    void setTargetVersion(String targetVersion) {
+        this.targetVersion = targetVersion
+    }
+
+    @TaskAction
+    void bumpVersion() {
+        if (targetVersion == null) {
+            targetVersion = getLocalCdkVersion(project)
+            println "No version specified, upgrading to local CDK version: $targetVersion"
+        } else {
+            println "Version specified, using the provided CDK versionn: $targetVersion"
+        }
+
+        updateCdkVersion(project, targetVersion)
+    }
+
+    private static String getLocalCdkVersion(Project project) throws IOException {
+        File versionPropsFile = new File(project.rootDir, 'airbyte-cdk/bulk/version.properties')
+        if (!versionPropsFile.exists()) {
+            throw new FileNotFoundException("CDK version file not found: ${versionPropsFile.absolutePath}")
+        }
+
+        Properties props = new Properties()
+        versionPropsFile.withInputStream { stream -> props.load(stream) }
+        if (!props.containsKey('version')) {
+            throw new NoSuchElementException("Missing 'version' property in ${versionPropsFile.absolutePath}")
+        }
+
+        String localVersion = props.getProperty('version')?.trim()
+        if (!localVersion) {
+            throw new IllegalStateException("'version' property is empty in ${versionPropsFile.absolutePath}")
+        }
+
+        project.logger.info("Found local CDK version from version.properties: ${localVersion}")
+        return localVersion
+    }
+
+    private static void updateCdkVersion(Project project, String version) {
+        File propertiesFile = project.file('gradle.properties')
+
+        // Unfortunately, we can't just use a Properties() object and load+store it,
+        // because that would lose any comments in the file.
+        // So we'll edit the file line-by-line.
+        def lines = propertiesFile.readLines()
+        def updatedLines = lines.collect { line ->
+            if (line.startsWith('cdkVersion')) {
+                return "cdkVersion=$version"
+            } else {
+                return line
+            }
+        }
+        propertiesFile.text = updatedLines.join('\n') + '\n'
+
+        project.logger.info("Updated CDK version to '${version}' in ${propertiesFile.absolutePath}")
     }
 }

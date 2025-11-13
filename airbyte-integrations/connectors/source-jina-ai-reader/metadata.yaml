@@ -17,11 +17,11 @@ data:
   connectorSubtype: api
   connectorType: source
   definitionId: 47077a7f-7ab0-47ee-b428-650396a708c7
-  dockerImageTag: 0.1.38
+  dockerImageTag: 0.1.40
   dockerRepository: airbyte/source-jina-ai-reader
   githubIssueLabel: source-jina-ai-reader
   icon: jina-ai-reader.svg
-  license: MIT
+  license: ELv2
   name: Jina AI Reader
   releaseDate: 2024-06-17
   releaseStage: alpha

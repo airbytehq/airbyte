@@ -3,7 +3,7 @@ requires = [ "poetry-core>=1.0.0",]
 build-backend = "poetry.core.masonry.api"
 
 [tool.poetry]
-version = "3.4.7"
+version = "4.1.2"
 name = "source-facebook-marketing"
 description = "Source implementation for Facebook Marketing."
 authors = [ "Airbyte <contact@airbyte.io>",]
@@ -17,9 +17,9 @@ include = "source_facebook_marketing"
 
 [tool.poetry.dependencies]
 python = "^3.10,<3.12"
-airbyte-cdk = "^5"
-facebook-business = "21.0.5"
-cached-property = "==1.5.2"
+airbyte-cdk = "^7.4.1"
+facebook-business = "^23.0.0"
+cached-property = "^2"
 
 [tool.poetry.scripts]
 source-facebook-marketing = "source_facebook_marketing.run:run"

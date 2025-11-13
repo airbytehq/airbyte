@@ -62,6 +62,24 @@ Visit `https://dev.frontapp.com/docs/create-and-revoke-api-tokens` for getting y
 
 | Version | Date | Pull Request | Subject |
 | ------------------ | ------------ | --- | ---------------- |
+| 0.0.32 | 2025-10-29 | [68808](https://github.com/airbytehq/airbyte/pull/68808) | Update dependencies |
+| 0.0.31 | 2025-10-21 | [68426](https://github.com/airbytehq/airbyte/pull/68426) | Update dependencies |
+| 0.0.30 | 2025-10-14 | [68073](https://github.com/airbytehq/airbyte/pull/68073) | Update dependencies |
+| 0.0.29 | 2025-10-07 | [67298](https://github.com/airbytehq/airbyte/pull/67298) | Update dependencies |
+| 0.0.28 | 2025-09-30 | [66776](https://github.com/airbytehq/airbyte/pull/66776) | Update dependencies |
+| 0.0.27 | 2025-09-24 | [65759](https://github.com/airbytehq/airbyte/pull/65759) | Update dependencies |
+| 0.0.26 | 2025-08-23 | [65245](https://github.com/airbytehq/airbyte/pull/65245) | Update dependencies |
+| 0.0.25 | 2025-08-09 | [64779](https://github.com/airbytehq/airbyte/pull/64779) | Update dependencies |
+| 0.0.24 | 2025-07-26 | [64049](https://github.com/airbytehq/airbyte/pull/64049) | Update dependencies |
+| 0.0.23 | 2025-07-19 | [63572](https://github.com/airbytehq/airbyte/pull/63572) | Update dependencies |
+| 0.0.22 | 2025-07-12 | [62961](https://github.com/airbytehq/airbyte/pull/62961) | Update dependencies |
+| 0.0.21 | 2025-07-05 | [62780](https://github.com/airbytehq/airbyte/pull/62780) | Update dependencies |
+| 0.0.20 | 2025-06-28 | [62366](https://github.com/airbytehq/airbyte/pull/62366) | Update dependencies |
+| 0.0.19 | 2025-06-21 | [61963](https://github.com/airbytehq/airbyte/pull/61963) | Update dependencies |
+| 0.0.18 | 2025-06-14 | [61281](https://github.com/airbytehq/airbyte/pull/61281) | Update dependencies |
+| 0.0.17 | 2025-05-24 | [60416](https://github.com/airbytehq/airbyte/pull/60416) | Update dependencies |
+| 0.0.16 | 2025-05-10 | [59920](https://github.com/airbytehq/airbyte/pull/59920) | Update dependencies |
+| 0.0.15 | 2025-05-03 | [59422](https://github.com/airbytehq/airbyte/pull/59422) | Update dependencies |
 | 0.0.14 | 2025-04-26 | [58309](https://github.com/airbytehq/airbyte/pull/58309) | Update dependencies |
 | 0.0.13 | 2025-04-12 | [57819](https://github.com/airbytehq/airbyte/pull/57819) | Update dependencies |
 | 0.0.12 | 2025-04-05 | [57276](https://github.com/airbytehq/airbyte/pull/57276) | Update dependencies |

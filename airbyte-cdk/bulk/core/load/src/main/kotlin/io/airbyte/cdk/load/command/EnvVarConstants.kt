@@ -21,6 +21,7 @@ package io.airbyte.cdk.load.command
 data class Property(val micronautProperty: String, val environmentVariable: String)
 
 object EnvVarConstants {
+    val AIRBYTE_EDITION = Property("airbyte.edition", "AIRBYTE_EDITION")
     val FILE_TRANSFER_ENABLED =
         Property(
             "airbyte.destination.core.file-transfer.enabled",
@@ -30,5 +31,25 @@ object EnvVarConstants {
         Property(
             "airbyte.destination.core.record-batch-size-override",
             "AIRBYTE_DESTINATION_RECORD_BATCH_SIZE_OVERRIDE",
+        )
+    val DATA_CHANNEL_FORMAT =
+        Property(
+            "airbyte.destination.core.data-channel.format",
+            "DATA_CHANNEL_FORMAT",
+        )
+    val DATA_CHANNEL_MEDIUM =
+        Property(
+            "airbyte.destination.core.data-channel.medium",
+            "DATA_CHANNEL_MEDIUM",
+        )
+    val DATA_CHANNEL_SOCKET_PATHS =
+        Property(
+            "airbyte.destination.core.data-channel.socket-paths",
+            "DATA_CHANNEL_SOCKET_PATHS",
+        )
+    val NAMESPACE_MAPPER_CONFIG_PATH =
+        Property(
+            "airbyte.destination.core.mappers.namespace-mapping-config-path",
+            "NAMESPACE_MAPPING_CONFIG_PATH",
         )
 }

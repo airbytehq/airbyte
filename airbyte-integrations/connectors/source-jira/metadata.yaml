@@ -6,22 +6,26 @@ data:
     hosts:
       - ${domain}
   connectorBuildOptions:
-    baseImage: docker.io/airbyte/python-connector-base:3.0.0@sha256:1a0845ff2b30eafa793c6eee4e8f4283c2e52e1bbd44eed6cb9e9abd5d34d844
+    baseImage: docker.io/airbyte/source-declarative-manifest:7.4.1@sha256:71df19e2ee555ca5b14abbec01d50104c79c9b84cb9cc323284d24333361900a
   connectorSubtype: api
   connectorType: source
   definitionId: 68e63de2-bb83-4c7e-93fa-a8a9051e3993
-  dockerImageTag: 3.5.4
+  dockerImageTag: 4.3.6
   dockerRepository: airbyte/source-jira
   documentationUrl: https://docs.airbyte.com/integrations/sources/jira
+  externalDocumentationUrls:
+    - title: Changelog
+      url: https://developer.atlassian.com/changelog/#
+      type: api_release_history
   erdUrl: https://dbdocs.io/airbyteio/source-jira?view=relationships
   githubIssueLabel: source-jira
   icon: jira.svg
-  license: MIT
-  maxSecondsBetweenMessages: 10800
+  license: ELv2
+  maxSecondsBetweenMessages: 86400
   name: Jira
   remoteRegistries:
     pypi:
-      enabled: true
+      enabled: false
       packageName: airbyte-source-jira
   registryOverrides:
     cloud:
@@ -31,6 +35,13 @@ data:
   releaseStage: generally_available
   releases:
     breakingChanges:
+      4.0.0:
+        deadlineAction: "auto_upgrade"
+        message: "The `pull_requests` stream has been fully deprecated. This change constitutes a breaking change. For more information, see our migration documentation for source Jira."
+        upgradeDeadline: "2025-05-04"
+        scopedImpact:
+          - scopeType: stream
+            impactedScopes: ["pull_requests"]
       3.0.0:
         message: "Primary key for Workflows stream has been changed from `Id` to [`entityId`, `name`]. This change of pk makes the stream compatible with more types of destinations."
         upgradeDeadline: "2024-07-02"
@@ -49,6 +60,8 @@ data:
         scopedImpact:
           - scopeType: stream
             impactedScopes: ["board_issues"]
+    rolloutConfiguration:
+      enableProgressiveRollout: false
   suggestedStreams:
     streams:
       - issues
@@ -57,7 +70,7 @@ data:
       - issue_fields
   supportLevel: certified
   tags:
-    - language:python
+    - language:manifest-only
     - cdk:low-code
   connectorTestSuitesOptions:
     - suite: liveTests

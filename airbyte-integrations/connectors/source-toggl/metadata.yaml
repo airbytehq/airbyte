@@ -11,11 +11,11 @@ data:
   connectorSubtype: api
   connectorType: source
   definitionId: 7e7c844f-2300-4342-b7d3-6dd7992593cd
-  dockerImageTag: 0.2.21
+  dockerImageTag: 0.2.23
   dockerRepository: airbyte/source-toggl
   githubIssueLabel: source-toggl
   icon: toggl.svg
-  license: MIT
+  license: ELv2
   name: Toggl
   releaseDate: 2022-10-28
   releaseStage: alpha
@@ -40,5 +40,5 @@ data:
   #           type: GSM
   #           alias: airbyte-connector-testing-secret-store
   connectorBuildOptions:
-    baseImage: docker.io/airbyte/source-declarative-manifest:6.47.0@sha256:b78e7be5d27d96b4eebc99fb76ccd3bad6408b0cd3a2a4d668852a4b6b9209dc
+    baseImage: docker.io/airbyte/source-declarative-manifest:6.48.10@sha256:09947fb38d07e515f9901a12f22cc44f1512f6148703341de80403c0e0c1b8c3
 metadataSpecVersion: "1.0"

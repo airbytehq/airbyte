@@ -37,6 +37,9 @@ Mailjet APIs are under rate limits for the number of API calls allowed per API k
 
 | Version | Date       | Pull Request                                              | Subject                                        |
 | :------ | :--------- | :-------------------------------------------------------- | :--------------------------------------------- |
+| 0.2.13 | 2025-05-24 | [60716](https://github.com/airbytehq/airbyte/pull/60716) | Update dependencies |
+| 0.2.12 | 2025-05-10 | [59781](https://github.com/airbytehq/airbyte/pull/59781) | Update dependencies |
+| 0.2.11 | 2025-05-03 | [58794](https://github.com/airbytehq/airbyte/pull/58794) | Update dependencies |
 | 0.2.10 | 2025-04-19 | [58200](https://github.com/airbytehq/airbyte/pull/58200) | Update dependencies |
 | 0.2.9 | 2025-04-12 | [57720](https://github.com/airbytehq/airbyte/pull/57720) | Update dependencies |
 | 0.2.8 | 2025-04-05 | [57083](https://github.com/airbytehq/airbyte/pull/57083) | Update dependencies |
