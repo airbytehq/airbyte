@@ -21,6 +21,7 @@ data:
   githubIssueLabel: source-service-now
   icon: icon.svg
   license: MIT
+  maxSecondsBetweenMessages: 7200
   name: ServiceNow
   releaseDate: 2021-01-01
   releaseStage: alpha
