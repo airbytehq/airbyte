@@ -32,31 +32,61 @@ mkdir check client config dataflow spec write
 mkdir write/load write/transform
 ```
 
-### Step 0.2: Create build.gradle.kts
+### Step 0.2: Create gradle.properties with CDK Version Pin
+
+**File:** `destination-{db}/gradle.properties`
+
+```properties
+# Pin to latest stable Bulk CDK version
+# Check airbyte-cdk/bulk/version.properties for latest
+cdkVersion=0.1.76
+```
+
+**IMPORTANT:** Always use a pinned version for production connectors.
+
+**When to use `cdkVersion=local`:**
+- Only when actively developing CDK features
+- For faster iteration when modifying CDK code
+- Switch back to pinned version before merging
+
+**To upgrade CDK version later:**
+```bash
+./gradlew destination-{db}:upgradeCdk --cdkVersion=0.1.76
+```
+
+### Step 0.3: Create build.gradle.kts
+
+**File:** `destination-{db}/build.gradle.kts`
 
 **Reference:** `destination-snowflake/build.gradle.kts` or `destination-clickhouse/build.gradle.kts`
 
-**Key dependencies:**
 ```kotlin
-dependencies {
-    // CDK core
-    implementation(project(":airbyte-cdk:bulk:core:load"))
-    implementation(project(":airbyte-cdk:bulk:toolkits:load-db"))
+plugins {
+    id("airbyte-bulk-connector")
+}
 
+airbyteBulkConnector {
+    core = "load"              // For destinations
+    toolkits = listOf("load-db")  // Database toolkit
+}
+
+dependencies {
     // Database driver
     implementation("your.database:driver:version")
 
-    // Micronaut
-    ksp(libs.bundles.micronaut.annotation.processor)
-    ksp(libs.micronaut.openapi)
-
-    // Testing
-    testImplementation(project(":airbyte-cdk:bulk:core:load", "testFixtures"))
-    testImplementation(libs.bundles.micronaut.test)
+    // Add other specific dependencies as needed
 }
 ```
 
-### Step 0.3: Create Main Entry Point
+**How it works:**
+- The `airbyte-bulk-connector` plugin reads `cdkVersion` from `gradle.properties`
+- If `cdkVersion=0.1.76`: Resolves Maven artifacts `io.airbyte.bulk-cdk:bulk-cdk-core-load:0.1.76`
+- If `cdkVersion=local`: Uses project references `:airbyte-cdk:bulk:core:load`
+- Automatically adds CDK dependencies, Micronaut, test fixtures
+
+**No need to manually declare CDK dependencies** - the plugin handles it
+
+### Step 0.4: Create Main Entry Point
 
 **File:** `destination-{db}/src/main/kotlin/.../​{DB}Destination.kt`
 
@@ -72,7 +102,77 @@ fun main(args: Array<String>) {
 
 **That's it!** The framework handles everything else.
 
-### Step 0.4: Create Minimal Specification
+### Step 0.5: Verify CDK Version Pin
+
+**Find the latest Bulk CDK version:**
+
+```bash
+# Method 1: Check the source version file
+cat airbyte-cdk/bulk/version.properties
+
+# Method 2: Check what other connectors are using
+grep -r "cdkVersion=" airbyte-integrations/connectors/destination-*/gradle.properties | sort -t= -k2 -V | tail -5
+
+# Method 3: Check published versions (if you have network access)
+# The latest published version is usually in the CDK repo
+```
+
+**Expected output from Method 1:**
+```
+version=0.1.76
+```
+
+**Expected output from Method 2:**
+```
+destination-clickhouse/gradle.properties:cdkVersion=0.1.74
+destination-snowflake/gradle.properties:cdkVersion=0.1.74
+destination-bigquery/gradle.properties:cdkVersion=0.1.74
+destination-s3/gradle.properties:cdkVersion=0.1.74
+...
+```
+
+**Use the highest version you see**, typically from `version.properties` (this is the latest available)
+
+**Update your `gradle.properties`:**
+
+```properties
+cdkVersion=0.1.76  # Use the version from version.properties
+```
+
+**Verify your connector is using the pinned version:**
+
+```bash
+./gradlew :destination-{db}:dependencies --configuration runtimeClasspath | grep bulk-cdk
+```
+
+**Expected output (correct - using Maven artifacts):**
+```
+io.airbyte.bulk-cdk:bulk-cdk-core-load:0.1.76
+io.airbyte.bulk-cdk:bulk-cdk-toolkits-load-db:0.1.76
+```
+
+**Wrong output (using local instead of pinned):**
+```
+project :airbyte-cdk:bulk:core:load
+project :airbyte-cdk:bulk:toolkits:load-db
+```
+
+**If you see project references:**
+- You have `cdkVersion=local` in your `gradle.properties`
+- Change it to the pinned version: `cdkVersion=0.1.76`
+- Re-run the verification command
+
+**Quick check script:**
+```bash
+# One-liner to get latest version and verify your pin
+LATEST=$(cat airbyte-cdk/bulk/version.properties | grep version= | cut -d= -f2)
+YOUR_VERSION=$(cat destination-{db}/gradle.properties | grep cdkVersion= | cut -d= -f2)
+echo "Latest CDK: $LATEST"
+echo "Your pin: $YOUR_VERSION"
+[ "$YOUR_VERSION" = "$LATEST" ] && echo "✓ Using latest" || echo "⚠ Consider upgrading to $LATEST"
+```
+
+### Step 0.6: Create Minimal Specification
 
 **File:** `spec/{DB}Specification.kt`
 
@@ -145,7 +245,7 @@ class {DB}ConfigurationFactory :
 }
 ```
 
-### Step 0.6: Create Specification Extension
+### Step 0.7: Create Specification Extension
 
 **File:** `spec/{DB}SpecificationExtension.kt`
 
@@ -168,7 +268,7 @@ class {DB}SpecificationExtension : DestinationSpecificationExtension {
 }
 ```
 
-### Step 0.7: Verify Build
+### Step 0.8: Verify Build
 
 ```bash
 $ ./gradlew :destination-{db}:build

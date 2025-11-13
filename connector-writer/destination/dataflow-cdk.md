@@ -700,9 +700,43 @@ ON DUPLICATE KEY UPDATE col1 = VALUES(col1), ...;
 
 ---
 
+## CDK Version Pinning
+
+**All production connectors must pin to a specific CDK version:**
+
+**File:** `destination-{db}/gradle.properties`
+```properties
+cdkVersion=0.1.76  # Pin to specific version
+```
+
+**Never use in production:**
+```properties
+cdkVersion=local  # Only for CDK development
+```
+
+**The `airbyte-bulk-connector` plugin:**
+- Reads `cdkVersion` from `gradle.properties`
+- Resolves Maven artifacts: `io.airbyte.bulk-cdk:bulk-cdk-core-load:0.1.76`
+- Or uses local project references if `cdkVersion=local`
+
+**Verify pinning:**
+```bash
+./gradlew :destination-{db}:dependencies --configuration runtimeClasspath | grep bulk-cdk
+```
+
+**Expected:** `io.airbyte.bulk-cdk:bulk-cdk-core-load:0.1.76` (not `project :airbyte-cdk:bulk:...`)
+
+**Upgrade CDK:**
+```bash
+./gradlew destination-{db}:upgradeCdk --cdkVersion=0.1.76
+```
+
+---
+
 ## Summary Checklist
 
 **What you must provide:**
+- [ ] CDK version pinned in `gradle.properties`
 - [ ] SQL Generator with all operations
 - [ ] Database Client implementing TableOperationsClient + TableSchemaEvolutionClient
 - [ ] InsertBuffer with efficient batch writes

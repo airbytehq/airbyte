@@ -825,6 +825,75 @@ ALTER TABLE t MODIFY COLUMN col Nullable(String);
 
 ---
 
+## CDK Version Pinning
+
+### Required Setup
+
+**File:** `destination-{db}/gradle.properties`
+
+```properties
+# Always pin to a specific version for production
+cdkVersion=0.1.76
+```
+
+### Pinning Strategy
+
+**Production connectors (merged to main):**
+- ✅ Must use pinned version: `cdkVersion=0.1.76`
+- ❌ Never use: `cdkVersion=local`
+
+**During CDK development:**
+- Use `cdkVersion=local` for faster iteration
+- Switch back to pinned version before merging
+
+### How It Works
+
+**The `airbyte-bulk-connector` plugin:**
+1. Reads `cdkVersion` from `gradle.properties`
+2. If pinned (e.g., `0.1.76`): Resolves Maven artifacts
+   - `io.airbyte.bulk-cdk:bulk-cdk-core-load:0.1.76`
+   - `io.airbyte.bulk-cdk:bulk-cdk-toolkits-load-db:0.1.76`
+3. If `local`: Uses project references
+   - `:airbyte-cdk:bulk:core:load`
+   - `:airbyte-cdk:bulk:toolkits:load-db`
+
+### Verify Pinning
+
+```bash
+./gradlew :destination-{db}:dependencies --configuration runtimeClasspath | grep bulk-cdk
+```
+
+**Expected (pinned):**
+```
+io.airbyte.bulk-cdk:bulk-cdk-core-load:0.1.76
+```
+
+**Wrong (local):**
+```
+project :airbyte-cdk:bulk:core:load
+```
+
+### Upgrade CDK Version
+
+**Manual:**
+```bash
+# Edit gradle.properties
+cdkVersion=0.1.76  # Update to new version
+```
+
+**Automated:**
+```bash
+./gradlew destination-{db}:upgradeCdk --cdkVersion=0.1.76
+```
+
+### Check Latest CDK Version
+
+```bash
+cat airbyte-cdk/bulk/version.properties
+```
+
+---
+
 ## Time Estimates
 
 | Component | Effort | Lines | Time |
