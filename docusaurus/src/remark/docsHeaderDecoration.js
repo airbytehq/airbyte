@@ -1,7 +1,6 @@
 const { getFromPaths, toAttributes } = require("../helpers/objects");
 const { isDocsPage, getRegistryEntry } = require("./utils");
 const {
-  getLatestPythonCDKVersion,
   parseCDKVersion,
 } = require("../scripts/connector_registry");
 const visit = require("unist-util-visit").visit;
@@ -26,26 +25,6 @@ const plugin = () => {
       "packageInfo_[oss|cloud].cdk_version",
     );
 
-    const isPythonConnector =
-      typeof rawCDKVersion === "string" &&
-      rawCDKVersion.trim().toLowerCase().startsWith("python:");
-
-    const connectorName = registryEntry.connectorName || registryEntry.name_oss || registryEntry.definitionId;
-
-    let latestPythonCdkVersion = null;
-    if (isPythonConnector) {
-      console.log(
-        `[CDK Version] Fetching latest Python CDK version for connector: ${connectorName}`,
-      );
-      latestPythonCdkVersion = await getLatestPythonCDKVersion(connectorName);
-
-      if (!latestPythonCdkVersion) {
-        console.warn(
-          `[CDK Version] WARNING: Unable to fetch latest Python CDK version for connector: ${connectorName}. CDK version comparison will not be available.`,
-        );
-      }
-    }
-
     let firstHeading = true;
 
     visit(ast, "heading", (node) => {
@@ -67,7 +46,7 @@ const plugin = () => {
 
         const { version, isLatest, url } = parseCDKVersion(
           rawCDKVersion,
-          latestPythonCdkVersion,
+          null,
         );
 
         const attrDict = {
