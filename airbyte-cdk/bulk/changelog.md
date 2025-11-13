@@ -1,3 +1,9 @@
+## Version 0.1.77
+
+**Extract CDK**
+
+* Fix duplicate metadata key in JdbcMetadataQuerier.
+
 ## Version 0.1.76
 
 **Load CDK**
