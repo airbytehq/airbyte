@@ -68,11 +68,7 @@ data class DestinationStream(
     val destinationObjectName: String? = null,
     val matchingKey: List<String>? = null,
     private val namespaceMapper: NamespaceMapper,
-    // NEW: Pre-computed column name mappings for efficient lookup
     val columnMappings: Map<String, String> = emptyMap(),
-    // NEW: Pre-computed table names (raw and final) with collision handling applied
-    val rawTableName: TableName? = null,
-    val finalTableName: TableName? = null
 ) {
     val unmappedDescriptor = Descriptor(namespace = unmappedNamespace, name = unmappedName)
     val mappedDescriptor = namespaceMapper.map(namespace = unmappedNamespace, name = unmappedName)
