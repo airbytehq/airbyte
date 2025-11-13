@@ -1250,7 +1250,7 @@ The [following policies](https://docs.aws.amazon.com/AmazonS3/latest/userguide/e
 
 ### Azure Key Vault Policy
 
-Airbyte requires the ability to write and read secrets in an Azure Key Vault. The built-in role that supports this is the Key Vault Secrets Officer role, whose JSON configuration can be viewed below to understand the specific permissions needed. 
+Airbyte requires the ability to write and read secrets in an Azure Key Vault. The built-in role that supports this is the Key Vault Secrets Officer role, whose JSON configuration can be viewed below to understand the specific permissions needed.
 
 ```yaml
 {
