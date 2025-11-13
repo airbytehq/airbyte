@@ -30,22 +30,20 @@ const plugin = () => {
       typeof rawCDKVersion === "string" &&
       rawCDKVersion.trim().toLowerCase().startsWith("python:");
 
+    const connectorName = registryEntry.connectorName || registryEntry.name_oss || registryEntry.definitionId;
+
     let latestPythonCdkVersion = null;
     if (isPythonConnector) {
       console.log(
-        `[CDK Version] Fetching latest Python CDK version for connector: ${registryEntry.definitionId}`,
+        `[CDK Version] Fetching latest Python CDK version for connector: ${connectorName}`,
       );
-      latestPythonCdkVersion = await getLatestPythonCDKVersion();
+      latestPythonCdkVersion = await getLatestPythonCDKVersion(connectorName);
 
       if (!latestPythonCdkVersion) {
         console.warn(
-          `[CDK Version] WARNING: Unable to fetch latest Python CDK version for connector: ${registryEntry.definitionId}. CDK version comparison will not be available.`,
+          `[CDK Version] WARNING: Unable to fetch latest Python CDK version for connector: ${connectorName}. CDK version comparison will not be available.`,
         );
       }
-    } else {
-      console.log(
-        `[CDK Version] Skipping PyPI fetch for non-Python connector: ${registryEntry.definitionId} (CDK: ${rawCDKVersion || "none"})`,
-      );
     }
 
     let firstHeading = true;
