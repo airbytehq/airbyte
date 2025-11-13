@@ -65,7 +65,7 @@ streams:
             sub: ""
             aud: ""
           additional_jwt_payload:
-            user_id: "{{ config['user_id'] }}"
+            user_id: "{{ config[\"user_id"\] }}"
           base64_encode_secret_key: false
           token_duration: null
           header_prefix: ""
@@ -74,7 +74,7 @@ streams:
           Content-Type: application/json
           Stream-Auth-Type: jwt
         request_parameters:
-          api_key: "{{ config['api_key'] }}"
+          api_key: "{{ config[\"api_key"\] }}"
       record_selector:
         type: RecordSelector
         extractor:
@@ -1215,12 +1215,12 @@ spec:
         type: string
         order: 0
         title: API Key
-        default: qbpgvdqmr8je
+        airbyte_secret: true
       user_id:
         type: string
         order: 2
         title: User ID
-        default: 01680cea-ba49-4246-a9b3-98fa3f7b0685
+        airbyte_secret: true
       secret_key:
         type: string
         order: 1
