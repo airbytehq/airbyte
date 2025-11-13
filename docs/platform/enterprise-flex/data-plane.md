@@ -292,6 +292,7 @@ secretsManager:
       clientSecret: ""
       clientSecretSecretKey: ""
 ```
+
 </TabItem>
 
 </Tabs>
