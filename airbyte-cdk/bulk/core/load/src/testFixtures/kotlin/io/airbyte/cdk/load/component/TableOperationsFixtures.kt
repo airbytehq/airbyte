@@ -9,14 +9,23 @@ import io.airbyte.cdk.load.command.Dedupe
 import io.airbyte.cdk.load.command.DestinationStream
 import io.airbyte.cdk.load.command.NamespaceMapper
 import io.airbyte.cdk.load.data.AirbyteValue
+import io.airbyte.cdk.load.data.ArrayType
+import io.airbyte.cdk.load.data.BooleanType
+import io.airbyte.cdk.load.data.DateType
 import io.airbyte.cdk.load.data.FieldType
 import io.airbyte.cdk.load.data.IntegerType
 import io.airbyte.cdk.load.data.IntegerValue
+import io.airbyte.cdk.load.data.NumberType
 import io.airbyte.cdk.load.data.ObjectType
 import io.airbyte.cdk.load.data.ObjectValue
 import io.airbyte.cdk.load.data.StringType
 import io.airbyte.cdk.load.data.StringValue
+import io.airbyte.cdk.load.data.TimeTypeWithTimezone
+import io.airbyte.cdk.load.data.TimeTypeWithoutTimezone
+import io.airbyte.cdk.load.data.TimestampTypeWithTimezone
+import io.airbyte.cdk.load.data.TimestampTypeWithoutTimezone
 import io.airbyte.cdk.load.data.TimestampWithTimezoneValue
+import io.airbyte.cdk.load.data.UnknownType
 import io.airbyte.cdk.load.message.Meta.Companion.COLUMN_NAME_AB_EXTRACTED_AT
 import io.airbyte.cdk.load.message.Meta.Companion.COLUMN_NAME_AB_GENERATION_ID
 import io.airbyte.cdk.load.message.Meta.Companion.COLUMN_NAME_AB_META
@@ -24,6 +33,7 @@ import io.airbyte.cdk.load.message.Meta.Companion.COLUMN_NAME_AB_RAW_ID
 import io.airbyte.cdk.load.table.CDC_DELETED_AT_COLUMN
 import io.airbyte.cdk.load.table.ColumnNameMapping
 import io.airbyte.cdk.load.table.TableName
+import io.airbyte.cdk.load.util.Jsons
 import java.util.UUID
 
 /**
@@ -37,6 +47,7 @@ object TableOperationsFixtures {
 
     // Common schemas
     val TEST_INTEGER_SCHEMA = ObjectType(linkedMapOf(TEST_FIELD to FieldType(IntegerType, true)))
+    val TEST_STRING_SCHEMA = ObjectType(linkedMapOf(TEST_FIELD to FieldType(StringType, true)))
 
     val ID_AND_TEST_SCHEMA =
         ObjectType(
@@ -55,8 +66,46 @@ object TableOperationsFixtures {
             ),
         )
 
+    val ALL_TYPES_SCHEMA =
+        ObjectType(
+            linkedMapOf(
+                "string" to FieldType(StringType, true),
+                "boolean" to FieldType(BooleanType, true),
+                "integer" to FieldType(IntegerType, true),
+                "number" to FieldType(NumberType, true),
+                "date" to FieldType(DateType, true),
+                "timestamp_tz" to FieldType(TimestampTypeWithTimezone, true),
+                "timestamp_ntz" to FieldType(TimestampTypeWithoutTimezone, true),
+                "time_tz" to FieldType(TimeTypeWithTimezone, true),
+                "time_ntz" to FieldType(TimeTypeWithoutTimezone, true),
+                "array" to FieldType(ArrayType(FieldType(StringType, true)), true),
+                "object" to
+                    FieldType(ObjectType(linkedMapOf("key" to FieldType(StringType, true))), true),
+                "unknown" to FieldType(UnknownType(Jsons.readTree("""{"type": "potato"}""")), true),
+            ),
+        )
+    val ALL_TYPES_MAPPING =
+        ColumnNameMapping(
+            mapOf(
+                "string" to "string",
+                "boolean" to "boolean",
+                "integer" to "integer",
+                "number" to "number",
+                "date" to "date",
+                "timestamp_tz" to "timestamp_tz",
+                "timestamp_ntz" to "timestamp_ntz",
+                "time_tz" to "time_tz",
+                "time_ntz" to "time_ntz",
+                "array" to "array",
+                "object" to "object",
+                "unknown" to "unknown",
+            )
+        )
+
     // Common column mappings
     val TEST_MAPPING = ColumnNameMapping(mapOf(TEST_FIELD to TEST_FIELD))
+    val ID_AND_TEST_MAPPING =
+        ColumnNameMapping(mapOf(TEST_FIELD to TEST_FIELD, ID_FIELD to ID_FIELD))
 
     val ID_TEST_WITH_CDC_MAPPING =
         ColumnNameMapping(
@@ -276,11 +325,21 @@ object TableOperationsFixtures {
         prefix: String,
         namespace: String,
     ): TableName {
-        return TableName(namespace, "$prefix-${UUID.randomUUID()}")
+        return TableName(
+            namespace,
+            "$prefix-${UUID.randomUUID()}"
+            // this is a hack for now - eventually we probably want to plumb in a
+            // TableNameGenerator,
+            // but until then - underscores are generally nicer than hyphens.
+            .replace('-', '_'),
+        )
     }
 
     fun generateTestNamespace(prefix: String): String {
         return "$prefix-${UUID.randomUUID()}"
+        // this is a hack for now - eventually we probably want to plumb in a TableNameGenerator,
+        // but until then - underscores are generally nicer than hyphens.
+        .replace('-', '_')
     }
 
     // Create common destination stream configurations
@@ -342,11 +401,20 @@ object TableOperationsFixtures {
         return map { record -> record.mapKeys { (k, _) -> totalMapping.originalName(k) ?: k } }
     }
 
+    fun <V> List<Map<String, V>>.removeNulls() =
+        this.map { record -> record.filterValues { it != null } }
+
     suspend fun TestTableOperationsClient.insertRecords(
         table: TableName,
         records: List<Map<String, AirbyteValue>>,
         columnNameMapping: ColumnNameMapping,
     ) = insertRecords(table, records.applyColumnNameMapping(columnNameMapping))
+
+    suspend fun TestTableOperationsClient.insertRecords(
+        table: TableName,
+        columnNameMapping: ColumnNameMapping,
+        vararg records: Map<String, AirbyteValue>,
+    ) = insertRecords(table, records.toList(), columnNameMapping)
 
     fun inputRecord(
         rawId: String,
