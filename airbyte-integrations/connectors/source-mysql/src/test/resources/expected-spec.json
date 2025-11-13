@@ -257,7 +257,7 @@
           "type": "object",
           "additionalProperties": true,
           "title": "Table Filter",
-          "description": "Inclusion filter configuration for table selection per schema.",
+          "description": "Inclusion filter configuration for table selection.",
           "properties": {
             "schema_name": {
               "type": "string",
