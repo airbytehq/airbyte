@@ -3,7 +3,6 @@ package io.airbyte.integrations.source.mysql
 
 import io.airbyte.cdk.ConfigErrorException
 import io.airbyte.cdk.check.JdbcCheckQueries
-import io.airbyte.cdk.command.TableFilter
 import io.airbyte.cdk.discover.MetadataQuerier
 import io.airbyte.cdk.jdbc.DefaultJdbcConstants
 import io.airbyte.cdk.jdbc.JdbcConnectionFactory

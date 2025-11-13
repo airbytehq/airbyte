@@ -20,7 +20,6 @@ import edu.umd.cs.findbugs.annotations.SuppressFBWarnings
 import io.airbyte.cdk.ConfigErrorException
 import io.airbyte.cdk.command.CONNECTOR_CONFIG_PREFIX
 import io.airbyte.cdk.command.ConfigurationSpecification
-import io.airbyte.cdk.command.TableFilter
 import io.airbyte.cdk.ssh.MicronautPropertiesFriendlySshTunnelMethodConfigurationSpecification
 import io.airbyte.cdk.ssh.SshTunnelMethodConfiguration
 import io.micronaut.context.annotation.ConfigurationBuilder
@@ -79,8 +78,7 @@ class MySqlSourceConfigurationSpecification : ConfigurationSpecification() {
     @JsonProperty("table_filters")
     @JsonSchemaTitle("Table Filters")
     @JsonPropertyDescription(
-        "Optional filters to include only specific tables from the specified database. " +
-            "'Schema Name' should be equivalent to the 'Database' specified above."
+        "Optional filters to include only specific tables from the specified database."
     )
     @JsonSchemaInject(json = """{"order":7}""")
     var tableFilters: List<TableFilter>? = null
@@ -200,6 +198,29 @@ class MySqlSourceConfigurationSpecification : ConfigurationSpecification() {
     ) {
         additionalPropertiesMap[name] = value
     }
+}
+
+@JsonSchemaTitle("Table Filter")
+@JsonSchemaDescription("Inclusion filter configuration for table selection per schema.")
+@JsonPropertyOrder("schema_name", "table_name_patterns")
+@SuppressFBWarnings(value = ["NP_NONNULL_RETURN_VIOLATION"], justification = "Micronaut DI")
+class TableFilter {
+    @JsonProperty("schema_name", required = true)
+    @JsonSchemaTitle("Database Name")
+    @JsonPropertyDescription(
+        "The name of the database to apply this filter to. " +
+            "Should match the database defined in the \"Database\" field above."
+    )
+    @JsonSchemaInject(json = """{"order":1,"always_show":true}""")
+    lateinit var schemaName: String
+
+    @JsonProperty("table_name_patterns", required = true)
+    @JsonSchemaTitle("Table Filter Patterns")
+    @JsonPropertyDescription(
+        "List of table name patterns to include. Should be a SQL LIKE pattern."
+    )
+    @JsonSchemaInject(json = """{"order":2,"always_show":true,"minItems":1}""")
+    lateinit var patterns: List<String>
 }
 
 @JsonTypeInfo(use = JsonTypeInfo.Id.NAME, property = "mode")

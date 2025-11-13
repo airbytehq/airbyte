@@ -151,8 +151,16 @@ constructor(
         // Only validate table filters if schemas are explicitly configured
         val tableFilters = pojo.tableFilters ?: emptyList()
 
+        // Convert MySQL TableFilter to JDBC TableFilter for validation
+        val jdbcTableFilters: List<TableFilter> = tableFilters.map {
+            TableFilter().apply {
+                schemaName = it.schemaName
+                patterns = it.patterns
+            }
+        }
+
         pojo.database.let { schema ->
-            JdbcSourceConfiguration.validateTableFilters(setOf(schema), tableFilters)
+            JdbcSourceConfiguration.validateTableFilters(setOf(schema), jdbcTableFilters)
         }
 
         // Internal configuration settings.
@@ -197,7 +205,7 @@ constructor(
             jdbcUrlFmt = jdbcUrlFmt,
             jdbcProperties = jdbcProperties,
             namespaces = setOf(pojo.database),
-            tableFilters = tableFilters,
+            tableFilters = jdbcTableFilters,
             incrementalConfiguration = incremental,
             checkpointTargetInterval = checkpointTargetInterval,
             maxConcurrency = maxConcurrency,
