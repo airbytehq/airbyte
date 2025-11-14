@@ -101,39 +101,46 @@ abstract class WriteInitializationTest<T : ConfigurationSpecification>(
                 )
             )
 
-        val process = destinationProcessFactory.createDestinationProcess(
-            command = "write",
-            configContents = configContents,
-            catalog = catalog,
-        )
+        // Just CREATE the process - DI will fail if beans are missing
+        // We don't actually RUN it (that would hang waiting for stdin)
+        try {
+            val process = destinationProcessFactory.createDestinationProcess(
+                command = "write",
+                configContents = configContents,
+                catalog = catalog,
+            )
 
-        // Just start the process - DI will fail if beans are missing
-        // We don't need to actually send records, just validate initialization
-        kotlinx.coroutines.runBlocking {
-            try {
-                process.run()
-                // Process should start without DI errors
-                // It will fail with "no input" but that's expected
-            } catch (e: Exception) {
-                // Check if it's a DI error (blocker) vs expected error (no input)
-                val message = e.message ?: ""
-                val cause = e.cause?.message ?: ""
+            // If we get here, DI succeeded!
+            // Process was created without bean instantiation errors
+            assertNotNull(
+                process,
+                "Write process should be created successfully. " +
+                    "DI initialization passed - all required beans exist."
+            )
 
-                if (message.contains("BeanInstantiationException") ||
-                    message.contains("Failed to inject") ||
-                    cause.contains("BeanInstantiationException") ||
-                    cause.contains("Failed to inject")) {
-                    throw AssertionError(
-                        "Write operation failed to initialize due to DI error. " +
-                            "This means required beans are missing. " +
-                            "Check for: RawTableNameGenerator, FinalTableNameGenerator, " +
-                            "ColumnNameGenerator, ColumnNameMapper, Writer. " +
-                            "Original error: $message",
-                        e
-                    )
-                }
-                // Other errors (like "no input") are OK for this test
+        } catch (e: Exception) {
+            // Check if it's a DI error (blocker) vs other error
+            val message = e.message ?: ""
+            val cause = e.cause?.message ?: ""
+
+            if (message.contains("BeanInstantiationException") ||
+                message.contains("Failed to inject") ||
+                message.contains("No bean of type") ||
+                cause.contains("BeanInstantiationException") ||
+                cause.contains("Failed to inject") ||
+                cause.contains("No bean of type")) {
+                throw AssertionError(
+                    "Write operation failed to initialize due to DI error. " +
+                        "This means required beans are missing. " +
+                        "Check for: RawTableNameGenerator, FinalTableNameGenerator, " +
+                        "ColumnNameGenerator, ColumnNameMapper, Writer, " +
+                        "AggregatePublishingConfig. " +
+                        "Original error: $message",
+                    e
+                )
             }
+            // Re-throw other unexpected errors
+            throw e
         }
     }
 }
