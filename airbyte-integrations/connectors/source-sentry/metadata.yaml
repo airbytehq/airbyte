@@ -13,6 +13,13 @@ data:
   dockerImageTag: 0.9.9
   dockerRepository: airbyte/source-sentry
   documentationUrl: https://docs.airbyte.com/integrations/sources/sentry
+  externalDocumentationUrls:
+    - title: API Reference
+      url: https://docs.sentry.io/api/
+      type: api_reference
+    - title: Changelog
+      url: https://sentry.io/changelog/
+      type: api_release_history
   githubIssueLabel: source-sentry
   icon: sentry.svg
   license: ELv2

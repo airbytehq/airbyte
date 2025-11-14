@@ -202,4 +202,32 @@ class MsSqlServerStateMigrationTest {
         assertEquals(0, parsed.cursorRecordCount)
         assertEquals(MsSqlServerJdbcStreamStateValue.CURRENT_VERSION, parsed.version)
     }
+
+    @Test
+    fun `should handle ordered column state with explicit null incremental_state`() {
+        // This test case simulates the exact scenario from the bug report where
+        // incremental_state is explicitly set to null (JSON null, not missing field)
+        val legacyOrderedColumnStateWithNullIncremental =
+            """
+        {
+            "version": 2,
+            "state_type": "ordered_column",
+            "ordered_col": "id",
+            "ordered_col_val": "23",
+            "incremental_state": null
+        }
+        """.trimIndent()
+
+        val parsed =
+            MsSqlServerStateMigration.parseStateValue(
+                Jsons.readTree(legacyOrderedColumnStateWithNullIncremental)
+            )
+
+        // Should successfully migrate without NPE
+        assertEquals("primary_key", parsed.stateType)
+        assertEquals("id", parsed.pkName)
+        assertEquals("23", parsed.pkValue?.asText())
+        assertNull(parsed.incrementalState)
+        assertEquals(MsSqlServerJdbcStreamStateValue.CURRENT_VERSION, parsed.version)
+    }
 }

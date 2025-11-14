@@ -241,7 +241,15 @@ class JsonCodecTest {
         LocalTimeCodec.run {
             testValueRoundTrip(LocalTime.now().truncatedTo(ChronoUnit.MICROS))
             testJsonRoundTrip(Jsons.textNode("01:02:03.456789"))
-            testBadEncoding(Jsons.textNode("01:02:03.4"))
+            // Test variable precision support (1-9 decimal places)
+            Assertions.assertEquals(
+                LocalTime.of(1, 2, 3, 400000000),
+                decode(Jsons.textNode("01:02:03.4"))
+            )
+            Assertions.assertEquals(
+                LocalTime.of(1, 2, 3, 123456789),
+                decode(Jsons.textNode("01:02:03.123456789"))
+            )
             testBadEncoding(Jsons.textNode("foo"))
             testBadEncoding(Jsons.nullNode())
         }
@@ -252,6 +260,15 @@ class JsonCodecTest {
         LocalDateTimeCodec.run {
             testValueRoundTrip(LocalDateTime.now().truncatedTo(ChronoUnit.MICROS))
             testJsonRoundTrip(Jsons.textNode("2024-03-01T01:02:03.456789"))
+            // Test variable precision support (1-9 decimal places) - for MSSQL datetime2
+            Assertions.assertEquals(
+                LocalDateTime.of(2024, 2, 20, 1, 52, 4, 353333300),
+                decode(Jsons.textNode("2024-02-20T01:52:04.353333300"))
+            )
+            Assertions.assertEquals(
+                LocalDateTime.of(2024, 3, 1, 1, 2, 3, 400000000),
+                decode(Jsons.textNode("2024-03-01T01:02:03.4"))
+            )
             testBadEncoding(Jsons.textNode("2024-03-01 01:02:03.4"))
             testBadEncoding(Jsons.numberNode(LocalDateTime.now().toEpochSecond(ZoneOffset.UTC)))
             testBadEncoding(Jsons.textNode("foo"))

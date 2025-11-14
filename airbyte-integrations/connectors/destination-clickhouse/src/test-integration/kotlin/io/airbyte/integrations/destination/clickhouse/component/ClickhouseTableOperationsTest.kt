@@ -7,9 +7,11 @@ package io.airbyte.integrations.destination.clickhouse.component
 import io.airbyte.cdk.load.component.TableOperationsSuite
 import io.airbyte.cdk.load.component.TestTableOperationsClient
 import io.airbyte.integrations.destination.clickhouse.client.ClickhouseAirbyteClient
+import io.micronaut.test.extensions.junit5.annotation.MicronautTest
 import jakarta.inject.Inject
 import org.junit.jupiter.api.Test
 
+@MicronautTest(environments = ["component"])
 class ClickhouseTableOperationsTest : TableOperationsSuite {
     @Inject override lateinit var client: ClickhouseAirbyteClient
     @Inject override lateinit var testClient: TestTableOperationsClient

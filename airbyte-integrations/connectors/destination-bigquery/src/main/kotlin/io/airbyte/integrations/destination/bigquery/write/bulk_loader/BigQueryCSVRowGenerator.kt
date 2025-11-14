@@ -33,12 +33,11 @@ class BigQueryCSVRowGenerator {
             )
 
         enrichedRecord.declaredFields.values.forEach { value ->
-            if (value.abValue is NullValue) {
+            validateAirbyteValue(value)
+            val actualValue = value.abValue
+            if (actualValue is NullValue) {
                 return@forEach
             }
-            validateAirbyteValue(value)
-
-            val actualValue = value.abValue
             when (value.type) {
                 is TimestampTypeWithTimezone ->
                     value.abValue = StringValue(formatTimestampWithTimezone(value))

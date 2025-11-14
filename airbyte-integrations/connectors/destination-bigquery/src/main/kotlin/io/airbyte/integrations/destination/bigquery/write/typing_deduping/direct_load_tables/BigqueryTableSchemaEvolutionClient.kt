@@ -13,7 +13,10 @@ import com.google.common.annotations.VisibleForTesting
 import edu.umd.cs.findbugs.annotations.SuppressFBWarnings
 import io.airbyte.cdk.ConfigErrorException
 import io.airbyte.cdk.load.command.DestinationStream
+import io.airbyte.cdk.load.component.ColumnChangeset
+import io.airbyte.cdk.load.component.TableColumns
 import io.airbyte.cdk.load.component.TableOperationsClient
+import io.airbyte.cdk.load.component.TableSchema
 import io.airbyte.cdk.load.component.TableSchemaEvolutionClient
 import io.airbyte.cdk.load.message.Meta
 import io.airbyte.cdk.load.orchestration.db.Sql
@@ -89,6 +92,29 @@ class BigqueryTableSchemaEvolutionClient(
             }
             throw e
         }
+    }
+
+    // Leave these unimplemented for now, since we're just overriding ensureSchemaMatches.
+    // https://github.com/airbytehq/airbyte-internal-issues/issues/15163
+    override suspend fun discoverSchema(tableName: TableName): TableSchema {
+        TODO("Not yet implemented")
+    }
+
+    override fun computeSchema(
+        stream: DestinationStream,
+        columnNameMapping: ColumnNameMapping
+    ): TableSchema {
+        TODO("Not yet implemented")
+    }
+
+    override suspend fun applyChangeset(
+        stream: DestinationStream,
+        columnNameMapping: ColumnNameMapping,
+        tableName: TableName,
+        expectedColumns: TableColumns,
+        columnChangeset: ColumnChangeset
+    ) {
+        TODO("Not yet implemented")
     }
 
     /**

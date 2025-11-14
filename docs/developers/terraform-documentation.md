@@ -29,7 +29,7 @@ Before starting this tutorial, make sure you have the following:
 
 - Obtain your Airbyte credentials:
 
-    - [An API application](using-airbyte/configuring-api-access.md) in Airbyte, your client ID, and your client secret.
+    - [An API application](/platform/using-airbyte/configuring-api-access) in Airbyte, your client ID, and your client secret.
 
     - The URL of your Airbyte server (e.g. `http://localhost:8000/api/public/v1/`).
 

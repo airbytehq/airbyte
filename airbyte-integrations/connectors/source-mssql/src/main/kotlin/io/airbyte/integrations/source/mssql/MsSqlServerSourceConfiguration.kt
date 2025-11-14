@@ -265,7 +265,6 @@ constructor(
                 Duration.ofMillis(
                     MsSqlServerSourceConfigurationSpecification.DEFAULT_HEARTBEAT_INTERVAL_MS
                 ),
-            resourceAcquisitionHeartbeat = Duration.ofSeconds(15),
             incrementalReplicationConfiguration = incrementalReplicationConfiguration,
             databaseName = pojo.database
         )

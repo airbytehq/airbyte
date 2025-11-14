@@ -13,6 +13,13 @@ data:
   dockerImageTag: 0.13.13
   dockerRepository: airbyte/source-intercom
   documentationUrl: https://docs.airbyte.com/integrations/sources/intercom
+  externalDocumentationUrls:
+    - title: Changelog
+      url: https://developers.intercom.com/docs/build-an-integration/learn-more/rest-apis/api-changelog
+      type: api_release_history
+    - title: Unversioned Changes
+      url: https://developers.intercom.com/docs/build-an-integration/learn-more/rest-apis/unversioned-changes#unversioned-changes
+      type: api_reference
   githubIssueLabel: source-intercom
   icon: intercom.svg
   license: ELv2

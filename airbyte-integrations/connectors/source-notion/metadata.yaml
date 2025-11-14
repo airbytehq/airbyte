@@ -13,6 +13,13 @@ data:
   dockerImageTag: 3.3.5
   dockerRepository: airbyte/source-notion
   documentationUrl: https://docs.airbyte.com/integrations/sources/notion
+  externalDocumentationUrls:
+    - title: Changes by version
+      url: https://developers.notion.com/reference/changes-by-version
+      type: api_reference
+    - title: Changelog
+      url: https://developers.notion.com/page/changelog
+      type: api_release_history
   githubIssueLabel: source-notion
   icon: notion.svg
   license: ELv2
