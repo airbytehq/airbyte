@@ -122,7 +122,7 @@ class DebeziumRecordIterator<T>(
                     "CDC events queue poll(): " +
                         when (numUnloggedPolls) {
                             -1 -> "first call - waited $formattedPollDuration for events"
-                            0 -> "waited for $formattedPollDuration since last logged call."
+                            0 -> "no unlogged events since last call, waited for $formattedPollDuration since last logged call"
                             else ->
                                 "waited for $formattedPollDuration after " +
                                     "$numUnloggedPolls previous call(s) which were not logged."
@@ -240,7 +240,13 @@ class DebeziumRecordIterator<T>(
                     DebeziumCloseReason.CHANGE_EVENT_REACHED_TARGET_POSITION
                 )
             }
+
+            // Reset heartbeat state during event processing:
+            // - tsLastHeartbeat = null: Don't trigger timeout while actively consuming events
+            // - lastHeartbeatPosition = null: Allow first post-processing heartbeat to restart the timer,
+            //   even when processing a large single transaction where LSN doesn't advance between batches
             this.tsLastHeartbeat = null
+            this.lastHeartbeatPosition = null
             if (!receivedFirstRecord) {
                 LOGGER.info { "Received first record from debezium." }
             }
