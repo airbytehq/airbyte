@@ -9,16 +9,24 @@ import io.airbyte.integrations.destination.postgres.spec.SslModeRequire
 import io.airbyte.integrations.destination.postgres.spec.SslModeVerifyCa
 import io.airbyte.integrations.destination.postgres.spec.SslModeVerifyFull
 import io.micronaut.context.annotation.Requires
+import jakarta.inject.Inject
 import jakarta.inject.Singleton
 
 @Singleton
 @Requires(env = [AIRBYTE_CLOUD_ENV])
 class PostgresCloudChecker(
     private val postgresConfiguration: PostgresConfiguration,
-    postgresAirbyteClient: PostgresAirbyteClient,
+    private val postgresOssChecker: PostgresOssChecker,
 ) : DestinationCheckerV2 {
 
-    private val postgresOssChecker = PostgresOssChecker(postgresAirbyteClient, postgresConfiguration)
+    @Inject
+    constructor(
+        postgresConfiguration: PostgresConfiguration,
+        postgresAirbyteClient: PostgresAirbyteClient,
+    ) : this(
+        postgresConfiguration,
+        PostgresOssChecker(postgresAirbyteClient, postgresConfiguration)
+    )
 
     override fun check() {
         if (postgresConfiguration.tunnelMethod is SshNoTunnelMethod) {
