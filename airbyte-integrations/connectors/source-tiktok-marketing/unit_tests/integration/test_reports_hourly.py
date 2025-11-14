@@ -85,6 +85,23 @@ class TestAdsReportHourly(TestCase):
         "engaged_view_15s",
         "paid_engaged_view_15s",
         "paid_engagement_engaged_view_15s",
+        "skan_result",
+        "skan_cost_per_result",
+        "skan_conversion",
+        "skan_cost_per_conversion",
+        "skan_click_time_conversion",
+        "skan_click_time_cost_per_conversion",
+        "skan_click_time_conversion_rate",
+        "skan_app_install",
+        "skan_registration",
+        "skan_complete_tutorial",
+        "skan_purchase",
+        "skan_cost_per_purchase",
+        "skan_purchase_rate",
+        "skan_total_purchase",
+        "skan_cost_per_total_purchase",
+        "skan_total_purchase_value",
+        "skan_total_repetitive_active_pay_roas",
         "spend",
         "cpc",
         "cpm",
@@ -142,19 +159,19 @@ class TestAdsReportHourly(TestCase):
             "service_type": "AUCTION",
             "report_type": "BASIC",
             "data_level": "AUCTION_AD",
-            "dimensions": '["ad_id", "stat_time_hour"]',
-            "metrics": str(self.metrics).replace("'", '"'),
+            "dimensions": json.dumps(["ad_id", "stat_time_hour"]),
+            "metrics": json.dumps(self.metrics),
             "start_date": self.config()["start_date"],
             "end_date": self.config()["start_date"],
             "page_size": 1000,
             "advertiser_id": self.advertiser_id,
         }
         if include_deleted:
-            query_params["filtering"] = '[{"field_name": "ad_status", "filter_type": "IN", "filter_value": "[\\"STATUS_ALL\\"]"}]'
+            query_params["filtering"] = json.dumps([{"field_name": "ad_status", "filter_type": "IN", "filter_value": '["STATUS_ALL"]'}])
         http_mocker.get(
             HttpRequest(
                 url=f"https://business-api.tiktok.com/open_api/v1.3/report/integrated/get/",
-                query_params=query_params,
+                query_params=query_params.copy(),
             ),
             HttpResponse(body=json.dumps(find_template(self.stream_name, __file__)), status_code=200),
         )
@@ -163,7 +180,7 @@ class TestAdsReportHourly(TestCase):
         http_mocker.get(
             HttpRequest(
                 url=f"https://business-api.tiktok.com/open_api/v1.3/report/integrated/get/",
-                query_params=query_params,
+                query_params=query_params.copy(),
             ),
             HttpResponse(body=json.dumps(EMPTY_LIST_RESPONSE), status_code=200),
         )
