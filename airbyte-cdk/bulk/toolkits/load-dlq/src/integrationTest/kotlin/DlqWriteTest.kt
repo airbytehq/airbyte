@@ -2,6 +2,8 @@
  * Copyright (c) 2025 Airbyte, Inc., all rights reserved.
  */
 
+import io.airbyte.cdk.load.command.Append
+import io.airbyte.cdk.load.command.DestinationStream
 import io.airbyte.cdk.load.command.NamespaceMapper
 import io.airbyte.cdk.load.config.DataChannelFormat
 import io.airbyte.cdk.load.config.DataChannelMedium
@@ -13,8 +15,6 @@ import io.airbyte.cdk.load.message.CheckpointMessage
 import io.airbyte.cdk.load.message.InputRecord
 import io.airbyte.cdk.load.message.InputStreamCheckpoint
 import io.airbyte.cdk.load.message.StreamCheckpoint
-import io.airbyte.cdk.load.command.Append
-import io.airbyte.cdk.load.command.DestinationStream
 import io.airbyte.cdk.load.test.mock.MockDestinationDataDumper
 import io.airbyte.cdk.load.test.util.IntegrationTest
 import io.airbyte.cdk.load.test.util.NoopDestinationCleaner

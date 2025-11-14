@@ -5,11 +5,11 @@
 package io.airbyte.cdk.load.state.object_storage
 
 import io.airbyte.cdk.load.command.DestinationConfiguration
+import io.airbyte.cdk.load.command.DestinationStream
 import io.airbyte.cdk.load.file.object_storage.ObjectStorageClient
 import io.airbyte.cdk.load.file.object_storage.ObjectStoragePathFactory
 import io.airbyte.cdk.load.file.object_storage.PathMatcher
 import io.airbyte.cdk.load.file.object_storage.RemoteObject
-import io.airbyte.cdk.load.command.DestinationStream
 import io.mockk.coEvery
 import io.mockk.every
 import io.mockk.impl.annotations.MockK

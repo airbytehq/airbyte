@@ -5,9 +5,9 @@ package io.airbyte.cdk.load.file.object_storage
 
 import com.fasterxml.jackson.core.JsonEncoding
 import com.fasterxml.jackson.core.JsonGenerator
+import io.airbyte.cdk.load.command.DestinationStream
 import io.airbyte.cdk.load.message.DestinationRecordProtobufSource
 import io.airbyte.cdk.load.message.DestinationRecordRaw
-import io.airbyte.cdk.load.command.DestinationStream
 import io.airbyte.cdk.util.Jsons
 import java.io.OutputStream
 

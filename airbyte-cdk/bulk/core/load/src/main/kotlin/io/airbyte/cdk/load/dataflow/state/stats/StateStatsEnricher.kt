@@ -5,6 +5,7 @@
 package io.airbyte.cdk.load.dataflow.state.stats
 
 import com.google.common.annotations.VisibleForTesting
+import io.airbyte.cdk.load.command.DestinationStream
 import io.airbyte.cdk.load.command.NamespaceMapper
 import io.airbyte.cdk.load.dataflow.state.PartitionKey
 import io.airbyte.cdk.load.dataflow.state.StateKey
@@ -12,7 +13,6 @@ import io.airbyte.cdk.load.message.CheckpointMessage
 import io.airbyte.cdk.load.message.GlobalCheckpoint
 import io.airbyte.cdk.load.message.GlobalSnapshotCheckpoint
 import io.airbyte.cdk.load.message.StreamCheckpoint
-import io.airbyte.cdk.load.command.DestinationStream
 import jakarta.inject.Singleton
 
 /** Decorates states with destination stats — both top level and per stream. */

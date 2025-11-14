@@ -4,8 +4,8 @@
 
 package io.airbyte.cdk.load.dataflow.state.stats
 
-import io.airbyte.cdk.load.dataflow.state.PartitionKey
 import io.airbyte.cdk.load.command.DestinationStream
+import io.airbyte.cdk.load.dataflow.state.PartitionKey
 import org.junit.jupiter.api.Assertions.assertEquals
 import org.junit.jupiter.api.Test
 

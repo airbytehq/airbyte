@@ -4,8 +4,8 @@
 
 package io.airbyte.cdk.load.orchestration.db.legacy_typing_deduping
 
-import io.airbyte.cdk.load.orchestration.db.DatabaseHandler
 import io.airbyte.cdk.load.command.DestinationStream
+import io.airbyte.cdk.load.orchestration.db.DatabaseHandler
 import io.airbyte.cdk.load.table.DatabaseInitialStatusGatherer
 import io.airbyte.cdk.load.table.TableCatalog
 import io.airbyte.cdk.load.write.DestinationWriter

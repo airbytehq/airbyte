@@ -4,6 +4,7 @@
 
 package io.airbyte.cdk.load.data.avro
 
+import io.airbyte.cdk.load.command.DestinationStream
 import io.airbyte.cdk.load.data.AirbyteSchemaNoopMapper
 import io.airbyte.cdk.load.data.AirbyteValueDeepCoercingMapper
 import io.airbyte.cdk.load.data.AirbyteValueNoopMapper
@@ -12,7 +13,6 @@ import io.airbyte.cdk.load.data.MergeUnions
 import io.airbyte.cdk.load.data.NullOutOfRangeIntegers
 import io.airbyte.cdk.load.data.SchemalessValuesToJsonString
 import io.airbyte.cdk.load.data.TimeStringToInteger
-import io.airbyte.cdk.load.command.DestinationStream
 
 /**
  * @deprecated This class is deprecated and will be removed in a future release. We are

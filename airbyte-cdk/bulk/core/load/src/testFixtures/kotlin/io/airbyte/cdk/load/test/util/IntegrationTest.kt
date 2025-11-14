@@ -7,6 +7,7 @@ package io.airbyte.cdk.load.test.util
 import edu.umd.cs.findbugs.annotations.SuppressFBWarnings
 import io.airbyte.cdk.command.ConfigurationSpecification
 import io.airbyte.cdk.load.command.DestinationCatalog
+import io.airbyte.cdk.load.command.DestinationStream
 import io.airbyte.cdk.load.command.EnvVarConstants
 import io.airbyte.cdk.load.command.Property
 import io.airbyte.cdk.load.config.DataChannelFormat
@@ -20,7 +21,6 @@ import io.airbyte.cdk.load.message.InputRecord
 import io.airbyte.cdk.load.message.InputStreamCheckpoint
 import io.airbyte.cdk.load.message.InputStreamComplete
 import io.airbyte.cdk.load.message.StreamCheckpoint
-import io.airbyte.cdk.load.command.DestinationStream
 import io.airbyte.cdk.load.test.util.destination_process.DestinationProcessFactory
 import io.airbyte.cdk.load.test.util.destination_process.DestinationUncleanExitException
 import io.airbyte.cdk.load.test.util.destination_process.DockerizedDestination

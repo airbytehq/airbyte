@@ -4,13 +4,13 @@
 
 package io.airbyte.cdk.load.component
 
+import io.airbyte.cdk.load.command.DestinationStream
 import io.airbyte.cdk.load.component.TableOperationsFixtures.createAppendStream
 import io.airbyte.cdk.load.component.TableOperationsFixtures.insertRecords
 import io.airbyte.cdk.load.data.AirbyteValue
 import io.airbyte.cdk.load.data.ObjectType
-import io.airbyte.cdk.load.command.DestinationStream
-import io.airbyte.cdk.load.table.ColumnNameMapping
 import io.airbyte.cdk.load.schema.TableName
+import io.airbyte.cdk.load.table.ColumnNameMapping
 import io.github.oshai.kotlinlogging.KotlinLogging
 import org.junit.jupiter.api.Assertions.assertEquals
 

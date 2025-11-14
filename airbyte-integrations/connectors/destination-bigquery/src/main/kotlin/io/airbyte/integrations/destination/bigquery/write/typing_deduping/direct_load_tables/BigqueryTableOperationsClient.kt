@@ -14,8 +14,8 @@ import io.airbyte.cdk.load.component.TableOperationsClient
 import io.airbyte.cdk.load.message.Meta
 import io.airbyte.cdk.load.orchestration.db.DatabaseHandler
 import io.airbyte.cdk.load.orchestration.db.direct_load_table.DirectLoadSqlGenerator
-import io.airbyte.cdk.load.table.ColumnNameMapping
 import io.airbyte.cdk.load.schema.TableName
+import io.airbyte.cdk.load.table.ColumnNameMapping
 import io.airbyte.integrations.destination.bigquery.BigQueryUtils
 import io.airbyte.integrations.destination.bigquery.write.typing_deduping.toTableId
 import jakarta.inject.Singleton

@@ -5,6 +5,7 @@
 package io.airbyte.cdk.load.file
 
 import io.airbyte.cdk.load.command.DestinationCatalog
+import io.airbyte.cdk.load.command.DestinationStream
 import io.airbyte.cdk.load.config.PipelineInputEvent
 import io.airbyte.cdk.load.message.CheckpointMessage
 import io.airbyte.cdk.load.message.DestinationStreamAffinedMessage
@@ -13,7 +14,6 @@ import io.airbyte.cdk.load.message.PipelineEndOfStream
 import io.airbyte.cdk.load.message.PipelineHeartbeat
 import io.airbyte.cdk.load.message.ProbeMessage
 import io.airbyte.cdk.load.message.Undefined
-import io.airbyte.cdk.load.command.DestinationStream
 import io.airbyte.cdk.load.state.PipelineEventBookkeepingRouter
 import io.airbyte.cdk.load.state.ReservationManager
 import io.airbyte.cdk.load.util.use

@@ -2,8 +2,8 @@
  * Copyright (c) 2024 Airbyte, Inc., all rights reserved.
  */
 
-import io.airbyte.cdk.load.data.*
 import io.airbyte.cdk.load.command.DestinationStream
+import io.airbyte.cdk.load.data.*
 import io.mockk.every
 import io.mockk.mockk
 import org.junit.jupiter.api.Test

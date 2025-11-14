@@ -4,6 +4,8 @@
 
 package io.airbyte.cdk.load.dataflow.stages
 
+import io.airbyte.cdk.load.command.Append
+import io.airbyte.cdk.load.command.DestinationStream
 import io.airbyte.cdk.load.command.NamespaceMapper
 import io.airbyte.cdk.load.data.ObjectType
 import io.airbyte.cdk.load.data.StringValue
@@ -14,8 +16,6 @@ import io.airbyte.cdk.load.dataflow.transform.medium.JsonConverter
 import io.airbyte.cdk.load.dataflow.transform.medium.ProtobufConverter
 import io.airbyte.cdk.load.message.DestinationRecordJsonSource
 import io.airbyte.cdk.load.message.DestinationRecordRaw
-import io.airbyte.cdk.load.command.Append
-import io.airbyte.cdk.load.command.DestinationStream
 import io.airbyte.protocol.models.v0.AirbyteMessage
 import io.airbyte.protocol.models.v0.AirbyteRecordMessage
 import io.mockk.every

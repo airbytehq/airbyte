@@ -11,8 +11,8 @@ import io.airbyte.cdk.load.schema.TableNames
 import io.github.oshai.kotlinlogging.KotlinLogging
 import io.micronaut.context.annotation.Factory
 import javax.inject.Singleton
-import org.apache.commons.codec.digest.DigestUtils
 import kotlin.collections.contains
+import org.apache.commons.codec.digest.DigestUtils
 
 private val LOGGER = KotlinLogging.logger {}
 const val DEFAULT_AIRBYTE_INTERNAL_NAMESPACE = "airbyte_internal"

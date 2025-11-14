@@ -13,17 +13,16 @@ import jakarta.inject.Singleton
 private val log = KotlinLogging.logger {}
 
 interface ColumnNameResolver {
-     fun createColumnNameMapping(
+    fun createColumnNameMapping(
         namespace: String?,
         name: String,
         schema: AirbyteType,
     ): Map<String, String>
 }
 
-@Requires(missing = [ ColumnNameGenerator::class ])
+@Requires(missing = [ColumnNameGenerator::class])
 @Singleton
-class NoopColumnNameResolverImpl(
-): ColumnNameResolver {
+class NoopColumnNameResolverImpl() : ColumnNameResolver {
     override fun createColumnNameMapping(
         namespace: String?,
         name: String,
@@ -33,11 +32,11 @@ class NoopColumnNameResolverImpl(
     }
 }
 
-@Requires(beans = [ ColumnNameGenerator::class ])
+@Requires(beans = [ColumnNameGenerator::class])
 @Singleton
 class ColumnNameResolverImpl(
     private val finalTableColumnNameGenerator: ColumnNameGenerator,
-): ColumnNameResolver {
+) : ColumnNameResolver {
     /**
      * Creates column name mapping with handling for potential collisions using incremental
      * numbering, with advanced resolution for truncation cases.
@@ -174,8 +173,8 @@ class ColumnNameResolverImpl(
      * can't just use `.contains()`, because we don't care whether the column names have the same
      * display name. We only care about the canonical name.
      *
-     * (arguably we could override equals/hashcode? But that would make writing tests more difficult,
-     * because it's not an intuitive behavior)
+     * (arguably we could override equals/hashcode? But that would make writing tests more
+     * difficult, because it's not an intuitive behavior)
      */
     private fun Collection<ColumnNameGenerator.ColumnName>.hasConflict(
         candidate: ColumnNameGenerator.ColumnName

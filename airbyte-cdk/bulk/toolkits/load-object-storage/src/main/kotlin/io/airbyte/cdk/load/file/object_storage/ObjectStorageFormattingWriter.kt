@@ -4,6 +4,7 @@
 
 package io.airbyte.cdk.load.file.object_storage
 
+import io.airbyte.cdk.load.command.DestinationStream
 import io.airbyte.cdk.load.command.object_storage.AvroFormatConfiguration
 import io.airbyte.cdk.load.command.object_storage.CSVFormatConfiguration
 import io.airbyte.cdk.load.command.object_storage.JsonFormatConfiguration
@@ -24,7 +25,6 @@ import io.airbyte.cdk.load.file.csv.toCsvPrinterWithHeader
 import io.airbyte.cdk.load.file.parquet.ParquetWriter
 import io.airbyte.cdk.load.file.parquet.toParquetWriter
 import io.airbyte.cdk.load.message.DestinationRecordRaw
-import io.airbyte.cdk.load.command.DestinationStream
 import io.airbyte.cdk.load.util.serializeToString
 import io.airbyte.cdk.load.util.write
 import io.github.oshai.kotlinlogging.KotlinLogging

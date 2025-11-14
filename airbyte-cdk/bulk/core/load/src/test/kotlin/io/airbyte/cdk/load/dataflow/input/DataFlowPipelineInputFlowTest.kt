@@ -4,6 +4,7 @@
 
 package io.airbyte.cdk.load.dataflow.input
 
+import io.airbyte.cdk.load.command.DestinationStream
 import io.airbyte.cdk.load.dataflow.finalization.StreamCompletionTracker
 import io.airbyte.cdk.load.dataflow.pipeline.DataFlowStageIO
 import io.airbyte.cdk.load.dataflow.state.PartitionKey
@@ -16,7 +17,6 @@ import io.airbyte.cdk.load.message.DestinationRecord
 import io.airbyte.cdk.load.message.DestinationRecordSource
 import io.airbyte.cdk.load.message.DestinationRecordStreamComplete
 import io.airbyte.cdk.load.message.Undefined
-import io.airbyte.cdk.load.command.DestinationStream
 import io.mockk.coVerify
 import io.mockk.every
 import io.mockk.mockk

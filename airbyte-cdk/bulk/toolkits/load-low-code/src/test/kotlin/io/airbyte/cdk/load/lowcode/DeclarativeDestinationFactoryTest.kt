@@ -7,7 +7,11 @@ package io.airbyte.cdk.load.lowcode
 import com.fasterxml.jackson.databind.JsonNode
 import com.fasterxml.jackson.databind.ObjectMapper
 import io.airbyte.cdk.load.check.dlq.DlqChecker
+import io.airbyte.cdk.load.command.Append
+import io.airbyte.cdk.load.command.Dedupe
 import io.airbyte.cdk.load.command.DestinationOperation
+import io.airbyte.cdk.load.command.SoftDelete
+import io.airbyte.cdk.load.command.Update
 import io.airbyte.cdk.load.data.BooleanType
 import io.airbyte.cdk.load.data.FieldType
 import io.airbyte.cdk.load.data.NumberType
@@ -40,10 +44,6 @@ import io.airbyte.cdk.load.model.http.HttpRequester as HttpRequesterModel
 import io.airbyte.cdk.load.model.http.authenticator.BasicAccessAuthenticator as BasicAccessAuthenticatorModel
 import io.airbyte.cdk.load.model.retriever.Retriever
 import io.airbyte.cdk.load.model.spec.Spec
-import io.airbyte.cdk.load.command.Append
-import io.airbyte.cdk.load.command.Dedupe
-import io.airbyte.cdk.load.command.SoftDelete
-import io.airbyte.cdk.load.command.Update
 import io.airbyte.cdk.util.Jsons
 import io.airbyte.cdk.util.ResourceUtils
 import io.airbyte.protocol.models.v0.AdvancedAuth

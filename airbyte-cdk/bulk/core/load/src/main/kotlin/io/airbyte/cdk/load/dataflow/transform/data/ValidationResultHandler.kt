@@ -4,6 +4,7 @@
 
 package io.airbyte.cdk.load.dataflow.transform.data
 
+import io.airbyte.cdk.load.command.DestinationStream
 import io.airbyte.cdk.load.data.AirbyteValue
 import io.airbyte.cdk.load.data.EnrichedAirbyteValue
 import io.airbyte.cdk.load.data.NullValue
@@ -11,7 +12,6 @@ import io.airbyte.cdk.load.dataflow.state.PartitionKey
 import io.airbyte.cdk.load.dataflow.state.stats.StateAdditionalStatsStore
 import io.airbyte.cdk.load.dataflow.transform.ValidationResult
 import io.airbyte.cdk.load.message.Meta
-import io.airbyte.cdk.load.command.DestinationStream
 import io.airbyte.protocol.models.v0.AirbyteRecordMessageMetaChange.Change
 import io.airbyte.protocol.models.v0.AirbyteRecordMessageMetaChange.Reason
 import jakarta.inject.Singleton
