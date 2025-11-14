@@ -6,7 +6,7 @@ package io.airbyte.cdk.load
 
 import io.airbyte.cdk.load.file.object_storage.PathFactory
 import io.airbyte.cdk.load.file.object_storage.PathMatcher
-import io.airbyte.cdk.load.schema.DestinationStream
+import io.airbyte.cdk.load.command.DestinationStream
 import io.micronaut.context.annotation.Requires
 import jakarta.inject.Singleton
 

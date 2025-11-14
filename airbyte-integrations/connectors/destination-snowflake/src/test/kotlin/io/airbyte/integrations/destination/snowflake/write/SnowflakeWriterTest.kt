@@ -17,7 +17,7 @@ import io.airbyte.cdk.load.orchestration.db.direct_load_table.DirectLoadTableSta
 import io.airbyte.cdk.load.orchestration.db.legacy_typing_deduping.TableCatalog
 import io.airbyte.cdk.load.orchestration.db.legacy_typing_deduping.TableNameInfo
 import io.airbyte.cdk.load.table.ColumnNameMapping
-import io.airbyte.cdk.load.table.TableName
+import io.airbyte.cdk.load.schema.TableName
 import io.airbyte.integrations.destination.snowflake.client.SnowflakeAirbyteClient
 import io.airbyte.integrations.destination.snowflake.db.toSnowflakeCompatibleName
 import io.mockk.coEvery

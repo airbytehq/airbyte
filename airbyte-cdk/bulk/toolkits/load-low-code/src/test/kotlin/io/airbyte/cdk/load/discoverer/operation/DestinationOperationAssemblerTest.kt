@@ -9,7 +9,7 @@ import io.airbyte.cdk.load.discoverer.destinationobject.DestinationObject
 import io.airbyte.cdk.load.http.HttpRequester
 import io.airbyte.cdk.load.http.Response
 import io.airbyte.cdk.load.http.getBodyOrEmpty
-import io.airbyte.cdk.load.schema.SoftDelete
+import io.airbyte.cdk.load.command.SoftDelete
 import io.airbyte.cdk.util.Jsons
 import io.mockk.every
 import io.mockk.mockk

@@ -16,7 +16,7 @@ import io.airbyte.cdk.load.message.PipelineMessage
 import io.airbyte.cdk.load.pipline.object_storage.ObjectKey
 import io.airbyte.cdk.load.pipline.object_storage.ObjectLoaderFormattedPartPartitioner
 import io.airbyte.cdk.load.pipline.object_storage.ObjectLoaderPartFormatter
-import io.airbyte.cdk.load.schema.DestinationStream
+import io.airbyte.cdk.load.command.DestinationStream
 import io.airbyte.cdk.load.state.CheckpointId
 import io.airbyte.cdk.load.state.CheckpointValue
 import io.github.oshai.kotlinlogging.KotlinLogging

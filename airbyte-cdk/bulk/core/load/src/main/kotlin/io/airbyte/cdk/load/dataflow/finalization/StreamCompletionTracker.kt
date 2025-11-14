@@ -6,7 +6,7 @@ package io.airbyte.cdk.load.dataflow.finalization
 
 import io.airbyte.cdk.load.command.DestinationCatalog
 import io.airbyte.cdk.load.message.DestinationRecordStreamComplete
-import io.airbyte.cdk.load.schema.DestinationStream
+import io.airbyte.cdk.load.command.DestinationStream
 import jakarta.inject.Singleton
 import java.util.concurrent.ConcurrentHashMap
 

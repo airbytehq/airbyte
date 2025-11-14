@@ -10,7 +10,7 @@ import io.airbyte.cdk.load.command.DestinationCatalog
 import io.airbyte.cdk.load.command.DestinationConfiguration
 import io.airbyte.cdk.load.message.MessageQueue
 import io.airbyte.cdk.load.pipeline.LoadPipeline
-import io.airbyte.cdk.load.schema.DestinationStream
+import io.airbyte.cdk.load.command.DestinationStream
 import io.airbyte.cdk.load.state.SyncManager
 import io.airbyte.cdk.load.task.implementor.CloseStreamTaskFactory
 import io.airbyte.cdk.load.task.implementor.FailStreamTaskFactory

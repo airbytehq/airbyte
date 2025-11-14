@@ -2,10 +2,10 @@
  * Copyright (c) 2024 Airbyte, Inc., all rights reserved.
  */
 
-package io.airbyte.cdk.load.schema
+package io.airbyte.cdk.load.command
 
-import io.airbyte.cdk.load.command.NamespaceMapper
 import io.airbyte.cdk.load.data.json.JsonSchemaToAirbyteType
+import io.airbyte.cdk.load.schema.ColumnNameResolver
 import io.airbyte.protocol.models.v0.ConfiguredAirbyteStream
 import io.airbyte.protocol.models.v0.DestinationSyncMode
 import io.github.oshai.kotlinlogging.KotlinLogging
@@ -41,7 +41,11 @@ class DestinationStreamFactory(
                     DestinationSyncMode.APPEND -> Append
                     DestinationSyncMode.OVERWRITE -> Overwrite
                     DestinationSyncMode.APPEND_DEDUP ->
-                        Dedupe(primaryKey = stream.primaryKey, cursor = stream.cursorField)
+                        Dedupe(
+                            primaryKey = stream.primaryKey,
+                            cursor = stream.cursorField
+                        )
+
                     DestinationSyncMode.UPDATE -> Update
                     DestinationSyncMode.SOFT_DELETE -> SoftDelete
                 },

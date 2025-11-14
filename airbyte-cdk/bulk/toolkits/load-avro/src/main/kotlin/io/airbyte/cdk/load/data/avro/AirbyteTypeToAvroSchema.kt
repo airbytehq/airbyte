@@ -24,7 +24,7 @@ import io.airbyte.cdk.load.data.Transformations
 import io.airbyte.cdk.load.data.UnionType
 import io.airbyte.cdk.load.data.UnknownType
 import io.airbyte.cdk.load.message.Meta
-import io.airbyte.cdk.load.schema.DestinationStream
+import io.airbyte.cdk.load.command.DestinationStream
 import org.apache.avro.LogicalTypes
 import org.apache.avro.Schema
 import org.apache.avro.SchemaBuilder

@@ -17,7 +17,7 @@ import io.airbyte.cdk.load.message.PartitionedQueue
 import io.airbyte.cdk.load.message.PipelineEvent
 import io.airbyte.cdk.load.message.StreamCheckpointWrapped
 import io.airbyte.cdk.load.message.StreamKey
-import io.airbyte.cdk.load.schema.DestinationStream
+import io.airbyte.cdk.load.command.DestinationStream
 import io.airbyte.cdk.load.state.CheckpointId
 import io.airbyte.cdk.load.state.CheckpointIndex
 import io.airbyte.cdk.load.state.CheckpointKey

@@ -5,7 +5,7 @@
 package io.airbyte.cdk.load.pipeline
 
 import io.airbyte.cdk.load.message.DestinationRecordRaw
-import io.airbyte.cdk.load.schema.Dedupe
+import io.airbyte.cdk.load.command.Dedupe
 import kotlin.random.Random
 
 class ByPrimaryKeyInputPartitioner : InputPartitioner {

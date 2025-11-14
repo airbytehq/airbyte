@@ -12,7 +12,7 @@ import io.airbyte.cdk.load.data.MergeUnions
 import io.airbyte.cdk.load.data.NullOutOfRangeIntegers
 import io.airbyte.cdk.load.data.SchemalessValuesToJsonString
 import io.airbyte.cdk.load.data.TimeStringToInteger
-import io.airbyte.cdk.load.schema.DestinationStream
+import io.airbyte.cdk.load.command.DestinationStream
 
 /**
  * @deprecated This class is deprecated and will be removed in a future release. We are

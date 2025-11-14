@@ -8,7 +8,7 @@ import io.airbyte.cdk.load.dataflow.config.AggregatePublishingConfig
 import io.airbyte.cdk.load.dataflow.state.PartitionHistogram
 import io.airbyte.cdk.load.dataflow.state.PartitionKey
 import io.airbyte.cdk.load.dataflow.transform.RecordDTO
-import io.airbyte.cdk.load.schema.DestinationStream
+import io.airbyte.cdk.load.command.DestinationStream
 import io.mockk.Runs
 import io.mockk.every
 import io.mockk.impl.annotations.MockK
