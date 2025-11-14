@@ -139,7 +139,11 @@ The SFTP Bulk source connector supports the following [sync modes](https://docs.
 
 ## Supported Streams
 
-This source provides a single stream per file with a dynamic schema. The current supported type files are Avro, CSV, JSONL, Parquet, and Document File Type Format. 
+This source provides a single stream per file with a dynamic schema. The current supported type files are Avro, CSV, JSONL, Parquet, and Document File Type Format.
+
+## Limitations
+
+Individual files must not exceed 1.5 GB in size. If a file exceeds this limit, the sync will fail with an error message indicating which file caused the issue.
 
 ## Changelog
 <details>
