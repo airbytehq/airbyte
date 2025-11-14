@@ -4,6 +4,7 @@
 
 package io.airbyte.integrations.destination.postgres.check
 
+import io.airbyte.cdk.command.AIRBYTE_CLOUD_ENV
 import io.airbyte.cdk.load.check.DestinationCheckerV2
 import io.airbyte.cdk.load.command.Append
 import io.airbyte.cdk.load.command.DestinationStream
@@ -18,6 +19,7 @@ import io.airbyte.cdk.load.table.TableName
 import io.airbyte.integrations.destination.postgres.client.PostgresAirbyteClient
 import io.airbyte.integrations.destination.postgres.spec.PostgresConfiguration
 import io.airbyte.integrations.destination.postgres.write.load.PostgresInsertBuffer
+import io.micronaut.context.annotation.Requires
 import jakarta.inject.Singleton
 import java.time.OffsetDateTime
 import java.util.UUID
@@ -26,7 +28,8 @@ import kotlinx.coroutines.runBlocking
 internal const val CHECK_COLUMN_NAME = "test_key"
 
 @Singleton
-class PostgresChecker(
+@Requires(notEnv = [AIRBYTE_CLOUD_ENV])
+class PostgresOssChecker(
     private val postgresAirbyteClient: PostgresAirbyteClient,
     private val postgresConfiguration: PostgresConfiguration,
 ) : DestinationCheckerV2 {

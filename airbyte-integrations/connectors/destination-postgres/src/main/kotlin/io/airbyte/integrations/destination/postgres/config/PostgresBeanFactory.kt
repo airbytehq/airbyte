@@ -154,8 +154,12 @@ class PostgresBeanFactory {
 
                 // Apply SSL connection parameters as data source properties
                 // These are applied AFTER custom params to ensure SSL config takes precedence
-                val sslConnectionParams = buildSslConnectionParams(postgresConfiguration.sslMode)
-                sslConnectionParams.forEach { (key, value) -> addDataSourceProperty(key, value) }
+                if(postgresConfiguration.ssl) {
+                    val sslConnectionParams = buildSslConnectionParams(postgresConfiguration.sslMode)
+                    sslConnectionParams.forEach { (key, value) ->
+                        addDataSourceProperty(key, value)
+                    }
+                }
             }
 
         return HikariDataSource(datasourceConfig)

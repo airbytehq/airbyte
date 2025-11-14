@@ -13,6 +13,7 @@ import io.airbyte.integrations.destination.postgres.PostgresConfigUpdater
 import io.airbyte.integrations.destination.postgres.PostgresContainerHelper
 import io.airbyte.integrations.destination.postgres.spec.PostgresConfigurationFactory
 import io.airbyte.integrations.destination.postgres.spec.PostgresSpecification
+import io.airbyte.integrations.destination.postgres.spec.PostgresSpecificationCloud
 import org.junit.jupiter.api.BeforeAll
 
 class PostgresRawAcceptanceTest :
@@ -27,7 +28,7 @@ class PostgresRawAcceptanceTest :
                         "password": "replace_me_password",
                         "disable_type_dedupe": true
                     }""",
-        configSpecClass = PostgresSpecification::class.java,
+        configSpecClass = PostgresSpecificationCloud::class.java,
         dataDumper =
             PostgresRawDataDumper { spec ->
                 val configOverrides = buildConfigOverridesForTestContainer()
