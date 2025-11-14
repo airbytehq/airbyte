@@ -45,6 +45,7 @@ object TableOperationsFixtures {
     // Common field names
     const val TEST_FIELD = "test"
     const val ID_FIELD = "id"
+    const val DESCRIPTION_FIELD = "description"
 
     // Common schemas
     val TEST_INTEGER_SCHEMA = ObjectType(linkedMapOf(TEST_FIELD to FieldType(IntegerType, true)))
@@ -64,6 +65,7 @@ object TableOperationsFixtures {
                 ID_FIELD to FieldType(StringType, true),
                 TEST_FIELD to FieldType(IntegerType, true),
                 CDC_DELETED_AT_COLUMN to FieldType(IntegerType, true),
+                DESCRIPTION_FIELD to FieldType(StringType, true),
             ),
         )
 
@@ -114,6 +116,7 @@ object TableOperationsFixtures {
                 ID_FIELD to ID_FIELD,
                 TEST_FIELD to TEST_FIELD,
                 CDC_DELETED_AT_COLUMN to CDC_DELETED_AT_COLUMN,
+                DESCRIPTION_FIELD to DESCRIPTION_FIELD,
             ),
         )
 
@@ -205,14 +208,10 @@ object TableOperationsFixtures {
                 generationId = 1,
                 ID_FIELD to StringValue("0"),
                 TEST_FIELD to IntegerValue(1000),
-            ),
-            inputRecord(
-                "5499cdef-1411-4c7e-987c-b22fe1284a49",
-                "2025-01-23T00:00:00Z",
-                linkedMapOf(),
-                generationId = 1,
-                ID_FIELD to StringValue("2"),
-                TEST_FIELD to IntegerValue(1001),
+                DESCRIPTION_FIELD to
+                    StringValue(
+                        "New record, no existing record. Upsert should insert this record."
+                    ),
             ),
             inputRecord(
                 "295eb05d-da91-4cf5-8d26-a2bf8b6e8ef7",
@@ -222,24 +221,22 @@ object TableOperationsFixtures {
                 ID_FIELD to StringValue("3"),
                 TEST_FIELD to IntegerValue(1002),
                 CDC_DELETED_AT_COLUMN to IntegerValue(1234),
+                DESCRIPTION_FIELD to
+                    StringValue(
+                        "New deletion record with later cursor and extracted_at than existing record. Upsert should delete the existing record."
+                    ),
             ),
-            inputRecord(
-                "9110dcf0-2171-4daa-a934-695163950d98",
-                "2025-01-23T00:00:00Z",
-                linkedMapOf(),
-                generationId = 1,
-                ID_FIELD to StringValue("4"),
-                TEST_FIELD to IntegerValue(4),
-            ),
-            // There are two records with id=5, which differ only in extracted_at.
-            // The second record has non-null deleted_at, so we expect the record to be deleted.
             inputRecord(
                 "35295b83-302f-49c3-af0f-cf093bc46def",
                 "2025-01-23T00:00:00Z",
                 linkedMapOf(),
                 generationId = 1,
                 ID_FIELD to StringValue("5"),
-                TEST_FIELD to IntegerValue(1004),
+                TEST_FIELD to IntegerValue(5),
+                DESCRIPTION_FIELD to
+                    StringValue(
+                        "Incoming record with no existing record, but there's a second incoming deletion record with later extracted_at. Upsert should discard this record."
+                    ),
             ),
             inputRecord(
                 "5773cf6f-f8b7-48f2-8f23-728a4a4eb56d",
@@ -247,17 +244,22 @@ object TableOperationsFixtures {
                 linkedMapOf(),
                 generationId = 1,
                 ID_FIELD to StringValue("5"),
-                TEST_FIELD to IntegerValue(1005),
+                TEST_FIELD to IntegerValue(5),
                 CDC_DELETED_AT_COLUMN to IntegerValue(1234),
+                DESCRIPTION_FIELD to
+                    StringValue("Incoming deletion record. This record should be discarded."),
             ),
-            // id=6: two records, no deletion. We should take the later record.
             inputRecord(
                 "1c4d0fc5-1e1e-4f7e-87c8-a46a722ee984",
                 "2025-01-23T00:00:00Z",
                 linkedMapOf(),
                 generationId = 1,
                 ID_FIELD to StringValue("6"),
-                TEST_FIELD to IntegerValue(42),
+                TEST_FIELD to IntegerValue(6),
+                DESCRIPTION_FIELD to
+                    StringValue(
+                        "Incoming record with no existing record, but there's a second incoming record with later extracted_at. Upsert should discard this record."
+                    ),
             ),
             inputRecord(
                 "2ddf5ee9-08a1-4319-824d-187d878edac5",
@@ -265,18 +267,24 @@ object TableOperationsFixtures {
                 linkedMapOf(),
                 generationId = 1,
                 ID_FIELD to StringValue("6"),
-                TEST_FIELD to IntegerValue(1006),
+                TEST_FIELD to IntegerValue(6),
+                DESCRIPTION_FIELD to
+                    StringValue(
+                        "Incoming record with no existing record. Upsert should insert this record."
+                    ),
             ),
-            // id=7: two new records; the earlier record is a delete.
-            // We should keep the second record.
             inputRecord(
                 "e8379b8f-e437-4d55-9d16-76f5e6e942d6",
                 "2025-01-23T00:00:00Z",
                 linkedMapOf(),
                 generationId = 1,
                 ID_FIELD to StringValue("7"),
-                TEST_FIELD to IntegerValue(42),
+                TEST_FIELD to IntegerValue(7),
                 CDC_DELETED_AT_COLUMN to IntegerValue(1234),
+                DESCRIPTION_FIELD to
+                    StringValue(
+                        "Incoming deletion record, but there's a second incoming record with later extracted_at. Upsert should discard this record."
+                    ),
             ),
             inputRecord(
                 "e56fc753-b55a-439b-9b16-528596e2ca3a",
@@ -284,10 +292,12 @@ object TableOperationsFixtures {
                 linkedMapOf(),
                 generationId = 1,
                 ID_FIELD to StringValue("7"),
-                TEST_FIELD to IntegerValue(1007),
+                TEST_FIELD to IntegerValue(7),
+                DESCRIPTION_FIELD to
+                    StringValue(
+                        "Incoming record with no existing record. Upsert should insert this record."
+                    ),
             ),
-            // id=8: earlier cursor than the existing record but later extracted_at.
-            // we should discard this record (i.e. prefer cursor over extracted_at)
             inputRecord(
                 "645efad2-f1e6-438a-b29f-15ae5d096015",
                 "2025-01-23T00:00:00Z",
@@ -295,9 +305,11 @@ object TableOperationsFixtures {
                 generationId = 1,
                 ID_FIELD to StringValue("8"),
                 TEST_FIELD to IntegerValue(8),
+                DESCRIPTION_FIELD to
+                    StringValue(
+                        "Incoming record with earlier cursor and later extracted_at than existing record. Upsert should discard this record (prefer cursor over extracted_at)."
+                    ),
             ),
-            // id=9: equal cursor to existing record but later extracted_at.
-            // We should take this record (i.e. use extracted_at as tiebreaker)
             inputRecord(
                 "f74b8ddb-45d0-4e30-af25-66885e57a0e6",
                 "2025-01-23T00:00:00Z",
@@ -305,8 +317,11 @@ object TableOperationsFixtures {
                 generationId = 1,
                 ID_FIELD to StringValue("9"),
                 TEST_FIELD to IntegerValue(9),
+                DESCRIPTION_FIELD to
+                    StringValue(
+                        "Incoming record with equal cursor and later extracted_at than existing record. Upsert should update with this record (break ties with extracted_at)."
+                    ),
             ),
-            // id=10: later cursor _and_ later extracted_at. Take this record.
             inputRecord(
                 "877cceb6-23a6-4e7b-92e3-59ca46f8fd6c",
                 "2025-01-23T00:00:00Z",
@@ -314,8 +329,11 @@ object TableOperationsFixtures {
                 generationId = 1,
                 ID_FIELD to StringValue("10"),
                 TEST_FIELD to IntegerValue(1010),
+                DESCRIPTION_FIELD to
+                    StringValue(
+                        "Incoming record with later cursor and later extracted_at than existing record. Upsert should update with this record."
+                    ),
             ),
-            // id=11: earlier cursor and equal extracted_at. Discard this record.
             inputRecord(
                 "20410b34-7bb0-4ba5-9c61-0dd23bfeee6d",
                 "2025-01-22T00:00:00Z",
@@ -323,8 +341,11 @@ object TableOperationsFixtures {
                 generationId = 1,
                 ID_FIELD to StringValue("11"),
                 TEST_FIELD to IntegerValue(11),
+                DESCRIPTION_FIELD to
+                    StringValue(
+                        "Incoming record with earlier cursor and equal extracted_at than existing record. Upsert should discard this record."
+                    ),
             ),
-            // id=12: later cursor and equal extracted_at. Take this record.
             inputRecord(
                 "70fdf9b0-ade0-4d30-9131-ba217ef506da",
                 "2025-01-22T00:00:00Z",
@@ -332,8 +353,11 @@ object TableOperationsFixtures {
                 generationId = 1,
                 ID_FIELD to StringValue("12"),
                 TEST_FIELD to IntegerValue(1012),
+                DESCRIPTION_FIELD to
+                    StringValue(
+                        "Incoming record with later cursor and equal extracted_at than existing record. Upsert should update with this record."
+                    ),
             ),
-            // id=13: earlier cursor and earlier extracted_at. Discard.
             inputRecord(
                 "20949d9b-8ffc-4497-85e4-cda14abc4049",
                 "2025-01-21T00:00:00Z",
@@ -341,8 +365,11 @@ object TableOperationsFixtures {
                 generationId = 1,
                 ID_FIELD to StringValue("13"),
                 TEST_FIELD to IntegerValue(13),
+                DESCRIPTION_FIELD to
+                    StringValue(
+                        "Incoming record with earlier cursor and earlier extracted_at than existing record. Upsert should discard this record."
+                    ),
             ),
-            // id=14: equal cursor and earlier extracted_at. Discard.
             inputRecord(
                 "5808a0ef-3c6d-4d9a-851c-edbbc4852e18",
                 "2025-01-21T00:00:00Z",
@@ -350,8 +377,11 @@ object TableOperationsFixtures {
                 generationId = 1,
                 ID_FIELD to StringValue("14"),
                 TEST_FIELD to IntegerValue(14),
+                DESCRIPTION_FIELD to
+                    StringValue(
+                        "Incoming record with equal cursor and earlier extracted_at than existing record. Upsert should discard this record."
+                    ),
             ),
-            // id=15: later cursor and earlier extracted_at. Take this record.
             inputRecord(
                 "373127a7-a40e-4e23-890b-1a52114686ee",
                 "2025-01-21T00:00:00Z",
@@ -359,6 +389,10 @@ object TableOperationsFixtures {
                 generationId = 1,
                 ID_FIELD to StringValue("15"),
                 TEST_FIELD to IntegerValue(1015),
+                DESCRIPTION_FIELD to
+                    StringValue(
+                        "Incoming record with later cursor and earlier extracted_at than existing record. Upsert should update with this record."
+                    ),
             ),
         )
 
@@ -368,7 +402,6 @@ object TableOperationsFixtures {
      */
     val UPSERT_TARGET_RECORDS: List<Map<String, AirbyteValue>> =
         listOf(
-            // id=1 has no incoming record, so it should remain untouched.
             inputRecord(
                 "6317026e-12f9-4713-976e-ce43901bd7ce",
                 "2025-01-22T00:00:00Z",
@@ -376,18 +409,11 @@ object TableOperationsFixtures {
                 1,
                 ID_FIELD to StringValue("1"),
                 TEST_FIELD to IntegerValue(1),
+                DESCRIPTION_FIELD to
+                    StringValue(
+                        "Existing record, no incoming record. Upsert should preserve this record."
+                    ),
             ),
-            // id=2 has a normal incoming record, which will overwrite this one.
-            inputRecord(
-                "46159e3a-9bf9-42d9-8bb7-9f47d37bd663",
-                "2025-01-22T00:00:00Z",
-                linkedMapOf(),
-                generationId = 1,
-                ID_FIELD to StringValue("2"),
-                TEST_FIELD to IntegerValue(2),
-            ),
-            // id=3 has an incoming record with nonnull deleted_at, so this record should be
-            // deleted.
             // TODO what about destinations with CDC soft deletes?
             // https://github.com/airbytehq/airbyte-internal-issues/issues/14911
             inputRecord(
@@ -397,17 +423,10 @@ object TableOperationsFixtures {
                 generationId = 1,
                 ID_FIELD to StringValue("3"),
                 TEST_FIELD to IntegerValue(3),
-            ),
-            // id=4 has an incoming record with the same cursor value (test=4) but later
-            // extracted_at.
-            // That record should replace this one.
-            inputRecord(
-                "02e22e03-587f-4d30-9718-994357407b65",
-                "2025-01-22T00:00:00Z",
-                linkedMapOf(),
-                generationId = 1,
-                ID_FIELD to StringValue("4"),
-                TEST_FIELD to IntegerValue(4),
+                DESCRIPTION_FIELD to
+                    StringValue(
+                        "Existing record with incoming deletion record with later cursor and extracted_at. Upsert should delete this record."
+                    ),
             ),
             inputRecord(
                 "8086bdd6-6cf5-479e-a819-e5f347373804",
@@ -416,6 +435,10 @@ object TableOperationsFixtures {
                 generationId = 1,
                 ID_FIELD to StringValue("8"),
                 TEST_FIELD to IntegerValue(1008),
+                DESCRIPTION_FIELD to
+                    StringValue(
+                        "Existing record with later cursor and earlier extracted_at than incoming record. Upsert should preserve this record (prefer cursor over extracted_at)."
+                    ),
             ),
             inputRecord(
                 "b60e8b33-32f4-4da0-934b-87d14d9ed354",
@@ -424,6 +447,10 @@ object TableOperationsFixtures {
                 generationId = 1,
                 ID_FIELD to StringValue("9"),
                 TEST_FIELD to IntegerValue(9),
+                DESCRIPTION_FIELD to
+                    StringValue(
+                        "Existing record with equal cursor and earlier extracted_at than incoming record. Upsert should discard this record (break ties with extracted_at)."
+                    ),
             ),
             inputRecord(
                 "e79d163e-b594-4016-89b9-a85e385778bd",
@@ -432,6 +459,10 @@ object TableOperationsFixtures {
                 generationId = 1,
                 ID_FIELD to StringValue("10"),
                 TEST_FIELD to IntegerValue(10),
+                DESCRIPTION_FIELD to
+                    StringValue(
+                        "Existing record with earlier cursor and earlier extracted_at than incoming record. Upsert should discard this record."
+                    ),
             ),
             inputRecord(
                 "3d345fb2-254e-4968-89a6-f896a05fb831",
@@ -440,6 +471,10 @@ object TableOperationsFixtures {
                 generationId = 1,
                 ID_FIELD to StringValue("11"),
                 TEST_FIELD to IntegerValue(1011),
+                DESCRIPTION_FIELD to
+                    StringValue(
+                        "Existing record with later cursor and equal extracted_at than incoming record. Upsert should preserve this record."
+                    ),
             ),
             inputRecord(
                 "9c5262e6-44e3-41de-9a5a-c31bc0efdb68",
@@ -448,6 +483,10 @@ object TableOperationsFixtures {
                 generationId = 1,
                 ID_FIELD to StringValue("12"),
                 TEST_FIELD to IntegerValue(12),
+                DESCRIPTION_FIELD to
+                    StringValue(
+                        "Existing record with earlier cursor and equal extracted_at than incoming record. Upsert should discard this record."
+                    ),
             ),
             inputRecord(
                 "739a9347-267b-48af-a172-2030320e2193",
@@ -456,6 +495,10 @@ object TableOperationsFixtures {
                 generationId = 1,
                 ID_FIELD to StringValue("13"),
                 TEST_FIELD to IntegerValue(1013),
+                DESCRIPTION_FIELD to
+                    StringValue(
+                        "Existing record with later cursor and later extracted_at than incoming record. Upsert should preserve this record."
+                    ),
             ),
             inputRecord(
                 "70243c59-eadb-4840-90fa-be4ed57609fc",
@@ -464,6 +507,10 @@ object TableOperationsFixtures {
                 generationId = 1,
                 ID_FIELD to StringValue("14"),
                 TEST_FIELD to IntegerValue(14),
+                DESCRIPTION_FIELD to
+                    StringValue(
+                        "Existing record with equal cursor and later extracted_at than incoming record. Upsert should preserve this record."
+                    ),
             ),
             inputRecord(
                 "966e89ec-c0d2-4358-b8e5-bf9c713f5396",
@@ -472,6 +519,10 @@ object TableOperationsFixtures {
                 generationId = 1,
                 ID_FIELD to StringValue("15"),
                 TEST_FIELD to IntegerValue(15),
+                DESCRIPTION_FIELD to
+                    StringValue(
+                        "Existing record with earlier cursor and later extracted_at than existing record. Upsert should discard this record."
+                    ),
             ),
         )
 
@@ -484,6 +535,8 @@ object TableOperationsFixtures {
                 generationId = 1L,
                 ID_FIELD to "0",
                 TEST_FIELD to 1000L,
+                DESCRIPTION_FIELD to
+                    "New record, no existing record. Upsert should insert this record.",
             ),
             outputRecord(
                 "6317026e-12f9-4713-976e-ce43901bd7ce",
@@ -492,22 +545,8 @@ object TableOperationsFixtures {
                 generationId = 1L,
                 ID_FIELD to "1",
                 TEST_FIELD to 1L,
-            ),
-            outputRecord(
-                "5499cdef-1411-4c7e-987c-b22fe1284a49",
-                "2025-01-23T00:00:00Z",
-                linkedMapOf(),
-                1L,
-                ID_FIELD to "2",
-                TEST_FIELD to 1001L,
-            ),
-            outputRecord(
-                "9110dcf0-2171-4daa-a934-695163950d98",
-                "2025-01-23T00:00:00Z",
-                linkedMapOf(),
-                1L,
-                ID_FIELD to "4",
-                TEST_FIELD to 4L,
+                DESCRIPTION_FIELD to
+                    "Existing record, no incoming record. Upsert should preserve this record.",
             ),
             outputRecord(
                 "2ddf5ee9-08a1-4319-824d-187d878edac5",
@@ -515,7 +554,9 @@ object TableOperationsFixtures {
                 linkedMapOf(),
                 1L,
                 ID_FIELD to "6",
-                TEST_FIELD to 1006L,
+                TEST_FIELD to 6L,
+                DESCRIPTION_FIELD to
+                    "Incoming record with no existing record. Upsert should insert this record.",
             ),
             outputRecord(
                 "e56fc753-b55a-439b-9b16-528596e2ca3a",
@@ -523,7 +564,9 @@ object TableOperationsFixtures {
                 linkedMapOf(),
                 1L,
                 ID_FIELD to "7",
-                TEST_FIELD to 1007L,
+                TEST_FIELD to 7L,
+                DESCRIPTION_FIELD to
+                    "Incoming record with no existing record. Upsert should insert this record.",
             ),
             outputRecord(
                 "8086bdd6-6cf5-479e-a819-e5f347373804",
@@ -532,6 +575,8 @@ object TableOperationsFixtures {
                 1L,
                 ID_FIELD to "8",
                 TEST_FIELD to 1008L,
+                DESCRIPTION_FIELD to
+                    "Existing record with later cursor and earlier extracted_at than incoming record. Upsert should preserve this record (prefer cursor over extracted_at).",
             ),
             outputRecord(
                 "f74b8ddb-45d0-4e30-af25-66885e57a0e6",
@@ -540,6 +585,8 @@ object TableOperationsFixtures {
                 1L,
                 ID_FIELD to "9",
                 TEST_FIELD to 9L,
+                DESCRIPTION_FIELD to
+                    "Incoming record with equal cursor and later extracted_at than existing record. Upsert should update with this record (break ties with extracted_at).",
             ),
             outputRecord(
                 "877cceb6-23a6-4e7b-92e3-59ca46f8fd6c",
@@ -548,6 +595,8 @@ object TableOperationsFixtures {
                 1L,
                 ID_FIELD to "10",
                 TEST_FIELD to 1010L,
+                DESCRIPTION_FIELD to
+                    "Incoming record with later cursor and later extracted_at than existing record. Upsert should update with this record.",
             ),
             outputRecord(
                 "3d345fb2-254e-4968-89a6-f896a05fb831",
@@ -556,6 +605,8 @@ object TableOperationsFixtures {
                 1L,
                 ID_FIELD to "11",
                 TEST_FIELD to 1011L,
+                DESCRIPTION_FIELD to
+                    "Existing record with later cursor and equal extracted_at than incoming record. Upsert should preserve this record.",
             ),
             outputRecord(
                 "70fdf9b0-ade0-4d30-9131-ba217ef506da",
@@ -564,6 +615,8 @@ object TableOperationsFixtures {
                 1L,
                 ID_FIELD to "12",
                 TEST_FIELD to 1012L,
+                DESCRIPTION_FIELD to
+                    "Incoming record with later cursor and equal extracted_at than existing record. Upsert should update with this record.",
             ),
             outputRecord(
                 "739a9347-267b-48af-a172-2030320e2193",
@@ -572,6 +625,8 @@ object TableOperationsFixtures {
                 1L,
                 ID_FIELD to "13",
                 TEST_FIELD to 1013L,
+                DESCRIPTION_FIELD to
+                    "Existing record with later cursor and later extracted_at than incoming record. Upsert should preserve this record.",
             ),
             outputRecord(
                 "70243c59-eadb-4840-90fa-be4ed57609fc",
@@ -580,6 +635,8 @@ object TableOperationsFixtures {
                 1L,
                 ID_FIELD to "14",
                 TEST_FIELD to 14L,
+                DESCRIPTION_FIELD to
+                    "Existing record with equal cursor and later extracted_at than incoming record. Upsert should preserve this record.",
             ),
             outputRecord(
                 "373127a7-a40e-4e23-890b-1a52114686ee",
@@ -588,6 +645,8 @@ object TableOperationsFixtures {
                 1L,
                 ID_FIELD to "15",
                 TEST_FIELD to 1015L,
+                DESCRIPTION_FIELD to
+                    "Incoming record with later cursor and earlier extracted_at than existing record. Upsert should update with this record.",
             ),
         )
 
