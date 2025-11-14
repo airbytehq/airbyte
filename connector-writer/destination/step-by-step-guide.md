@@ -1,6 +1,6 @@
 # Step-by-Step Guide: Building a Dataflow CDK Destination Connector
 
-**Summary:** Paint-by-numbers guide to implementing a destination connector. Each phase has clear tasks, code patterns, and test validation. Build incrementally with quick feedback loops. After Phase 1, you have --spec working. After Phase 6, you'll have a working append-only connector. Full feature set complete by Phase 10.
+**Summary:** Paint-by-numbers guide to implementing a destination connector. 14 phases (0-13) with clear tasks, code patterns, and test validation. Build incrementally with quick feedback loops. After Phase 1, --spec works. After Phase 5, --check works. After Phase 7, you have a working append-only connector. Full feature set by Phase 11.
 
 **Prerequisites:**
 - Familiarity with Kotlin and your target database
@@ -1347,13 +1347,154 @@ $ ./gradlew :destination-{db}:componentTest
 
 ---
 
-## Phase 5: Generation ID Support
+## Phase 5: Check Operation
+
+**Goal:** Implement --check operation (validates database connection)
+
+**Checkpoint:** Check operation works
+
+### Step 5.1: Create Checker
+
+**File:** `check/{DB}Checker.kt`
+
+```kotlin
+package io.airbyte.integrations.destination.{db}.check
+
+import io.airbyte.cdk.load.check.DestinationCheckerV2
+import io.airbyte.cdk.load.command.DestinationStream
+import io.airbyte.cdk.load.data.*
+import io.airbyte.cdk.load.table.ColumnNameMapping
+import io.airbyte.cdk.load.table.TableName
+import io.airbyte.integrations.destination.{db}.client.{DB}AirbyteClient
+import io.airbyte.integrations.destination.{db}.spec.{DB}Configuration
+import io.micronaut.context.annotation.Singleton
+import kotlinx.coroutines.runBlocking
+import java.util.UUID
+
+@Singleton
+class {DB}Checker(
+    private val client: {DB}AirbyteClient,
+    private val config: {DB}Configuration,
+) : DestinationCheckerV2 {
+
+    override fun check() {
+        val testNamespace = config.database
+        val testTableName = "_airbyte_connection_test_${UUID.randomUUID()}"
+        val tableName = TableName(testNamespace, testTableName)
+
+        runBlocking {
+            try {
+                client.createNamespace(testNamespace)
+
+                val testStream = createTestStream()
+                val columnMapping = ColumnNameMapping(mapOf("test_col" to "test_col"))
+
+                client.createTable(testStream, tableName, columnMapping, replace = false)
+
+                val count = client.countTable(tableName)
+                require(count == 0L) { "Expected empty table, got $count rows" }
+
+            } finally {
+                client.dropTable(tableName)
+            }
+        }
+    }
+
+    private fun createTestStream(): DestinationStream {
+        return DestinationStream(
+            descriptor = DestinationStream.Descriptor(namespace = config.database, name = "test"),
+            importType = DestinationStream.ImportType.APPEND,
+            schema = ObjectType(linkedMapOf("test_col" to FieldType(StringType, true))),
+            generationId = 0,
+            minimumGenerationId = 0,
+            syncId = 0,
+        )
+    }
+}
+```
+
+### Step 5.2: Create Check Integration Test
+
+**File:** `src/test-integration/kotlin/.../check/{DB}CheckTest.kt`
+
+```kotlin
+package io.airbyte.integrations.destination.{db}.check
+
+import io.airbyte.cdk.load.check.CheckIntegrationTest
+import io.airbyte.cdk.load.check.CheckTestConfig
+import io.airbyte.integrations.destination.{db}.spec.{DB}Specification
+import java.nio.file.Path
+
+class {DB}CheckTest :
+    CheckIntegrationTest<{DB}Specification>(
+        successConfigFilenames = listOf(
+            CheckTestConfig(configPath = Path.of("secrets/config.json")),
+        ),
+        failConfigFilenamesAndFailureReasons = emptyMap(),
+    )
+```
+
+### Step 5.3: Validate Check Operation
+
+**Via Docker:**
+```bash
+# Create test config
+cat > /tmp/test-config.json << EOF
+{
+  "hostname": "localhost",
+  "port": 5432,
+  "database": "test",
+  "username": "test",
+  "password": "test"
+}
+EOF
+
+# Run check operation
+docker run --rm --network host \
+  -v /tmp/test-config.json:/config.json \
+  airbyte/destination-{db}:0.1.0 --check --config /config.json
+```
+
+**Expected:**
+```json
+{"type":"CONNECTION_STATUS","connectionStatus":{"status":"SUCCEEDED"}}
+```
+
+**Via integration test:**
+```bash
+$ ./gradlew :destination-{db}:integrationTestCheckSuccessConfigs
+```
+
+**Expected:**
+```
+✓ testSuccessConfigs
+```
+
+**Regression check:**
+```bash
+$ ./gradlew :destination-{db}:componentTest
+$ ./gradlew :destination-{db}:integrationTest
+```
+
+**Expected:**
+```
+Component: 8 tests pass
+Integration: testSpecOss, testSuccessConfigs pass
+```
+
+✅ **Checkpoint Complete:** --check operation works
+
+**You're ready for Phase 6 when:** Check test passes
+
+---
+
+## Phase 6: Generation ID Support
 
 **Goal:** Track sync generations for refresh handling
 
 **Checkpoint:** Can retrieve generation IDs
 
-### Step 4.1: Enable Test
+### Step 6.1: Enable Test
 
 **File:** Update `{DB}TableOperationsTest.kt`
 
@@ -1364,7 +1505,7 @@ override fun `get generation id`() {
 }
 ```
 
-### Step 4.2: Validate
+### Step 6.2: Validate
 
 ```bash
 $ ./gradlew :destination-{db}:testComponentGetGenerationId
@@ -1392,11 +1533,11 @@ $ ./gradlew :destination-{db}:componentTest
 
 ✅ **Checkpoint Complete:** Generation ID tracking works
 
-**You're ready for Phase 5 when:** `get generation id` test passes
+**You're ready for Phase 7 when:** `get generation id` test passes
 
 ---
 
-## Phase 6: Append Mode - First Working Sync
+## Phase 7: Append Mode - First Working Sync
 
 **Goal:** Run a complete sync in append mode
 
@@ -1851,11 +1992,11 @@ $ ./gradlew :destination-{db}:componentTest
 
 ✅ **Checkpoint Complete:** First working sync! 🎉
 
-**You're ready for Phase 6 when:** `testAppend()` integration test passes
+**You're ready for Phase 8 when:** `testAppend()` integration test passes
 
 ---
 
-## Phase 7: Overwrite Mode
+## Phase 8: Overwrite Mode
 
 **Goal:** Support full refresh (replace all data)
 
@@ -1986,7 +2127,7 @@ Integration: testAppend, testTruncate pass
 
 ---
 
-## Phase 8: Copy Operation
+## Phase 9: Copy Operation
 
 **Goal:** Support table copying (used internally by some modes)
 
@@ -2066,7 +2207,7 @@ Integration: testAppend, testTruncate pass
 
 ---
 
-## Phase 9: Schema Evolution
+## Phase 10: Schema Evolution
 
 **Goal:** Automatically adapt to schema changes
 
@@ -2333,7 +2474,7 @@ Integration: testAppend, testTruncate, testAppendSchemaEvolution pass
 
 ---
 
-## Phase 10: Dedupe Mode
+## Phase 11: Dedupe Mode
 
 **Goal:** Support primary key deduplication
 
@@ -2606,7 +2747,7 @@ Integration: testAppend, testTruncate, testAppendSchemaEvolution, testDedupe pas
 
 ---
 
-## Phase 11: CDC Support (Optional)
+## Phase 12: CDC Support (Optional)
 
 **Goal:** Handle source deletions
 
@@ -2731,7 +2872,7 @@ $ ./gradlew :destination-{db}:integrationTest
 
 ---
 
-## Phase 12: Optimization & Polish
+## Phase 13: Optimization & Polish
 
 **Goal:** Production-ready performance
 
