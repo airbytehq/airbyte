@@ -7,6 +7,7 @@ import logging
 from datetime import timedelta
 from urllib.parse import urlencode
 
+import freezegun
 import mock
 import pytest
 
@@ -291,12 +292,13 @@ class TestSplittingPropertiesFunctionality:
             assert len(properties) == NUMBER_OF_PROPERTIES
 
 
+@freezegun.freeze_time("2022-03-10T14:42:00Z")  # less than one month after state date in test
 def test_search_based_stream_should_not_attempt_to_get_more_than_10k_records(
     requests_mock, config, fake_properties_list, mock_dynamic_schema_requests
 ):
     """
     If there are more than 10,000 records that would be returned by the Hubspot search endpoint,
-    the CRMSearchStream instance should stop at the 10Kth record. 10k changed to 1k for testing purposes.
+    the CRMSearchStream instance should stop at the 10Kth record. 10k changed to 600 for testing purposes.
     """
     requests_mock.get("https://api.hubapi.com/crm/v3/schemas", json={}, status_code=200)
 
@@ -312,7 +314,7 @@ def test_search_based_stream_should_not_attempt_to_get_more_than_10k_records(
             },
             "status_code": 200,
         }
-        for x in range(1, 5)
+        for x in range(1, 3)
     ]
     # Last page... it does not have paging->next->after
     responses.append(
@@ -322,21 +324,18 @@ def test_search_based_stream_should_not_attempt_to_get_more_than_10k_records(
         }
     )
     # After reaching 1000 records, it performs a new search query.
-    responses.extend(
-        [
-            {
-                "json": {
-                    "results": [{"id": f"{y}", "updatedAt": "2022-03-01T00:00:00Z"} for y in range(200)],
-                    "paging": {
-                        "next": {
-                            "after": f"{x * 200}",
-                        }
-                    },
+    responses.append(
+        {
+            "json": {
+                "results": [{"id": f"{y}", "updatedAt": "2022-03-01T00:00:00Z"} for y in range(200)],
+                "paging": {
+                    "next": {
+                        "after": "200",
+                    }
                 },
-                "status_code": 200,
-            }
-            for x in range(1, 3)
-        ]
+            },
+            "status_code": 200,
+        }
     )
     # Last page... it does not have paging->next->after
     responses.append(
@@ -380,11 +379,11 @@ def test_search_based_stream_should_not_attempt_to_get_more_than_10k_records(
         [{"status_code": 200, "json": {"results": [{"from": {"id": "1"}, "to": [{"toObjectId": "2"}]}]}}],
     )
 
-    with mock.patch("components.HubspotCRMSearchPaginationStrategy.RECORDS_LIMIT", 1000):
+    with mock.patch("components.HubspotCRMSearchPaginationStrategy.RECORDS_LIMIT", 600):
         output = read_from_stream(config, "companies", SyncMode.incremental, state)
-    # The stream should not attempt to get more than 1000 records.
+    # The stream should not attempt to get more than 600 records.
     # Instead, it should use the new state to start a new search query.
-    assert len(output.records) == 1600
+    assert len(output.records) == 1000
     assert output.state_messages[1].state.stream.stream_state.updatedAt == "2022-03-01T00:00:00.000000Z"
 
 
