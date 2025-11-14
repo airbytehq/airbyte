@@ -182,7 +182,7 @@ class JdbcMetadataQuerier(
         }
     }
 
-    private fun columnMetadataFromResultSet(
+    fun columnMetadataFromResultSet(
         rs: ResultSet,
         isPseudoColumn: Boolean,
     ): Pair<TableName, ColumnMetadata> {
