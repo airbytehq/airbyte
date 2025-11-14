@@ -24,7 +24,7 @@ Airbyte Core users don't have access to paid support, but you still have communi
 
 ### GitHub discussions
 
-[GitHub siscussions](https://github.com/airbytehq/airbyte/discussions) are a great way to propose, vote on, and discuss Airbyte improvements.
+[GitHub discussions](https://github.com/airbytehq/airbyte/discussions) are a great way to propose, vote on, and discuss Airbyte improvements.
 
 ### Report an issue
 

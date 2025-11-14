@@ -96,8 +96,11 @@ object MsSqlServerStateMigration {
             "Migrating OrderedColumnLoadStatus state: ordered_col=${legacy.orderedCol}, ordered_col_val=${legacy.orderedColVal}"
         }
 
-        // Extract incremental state if present
-        val incrementalState = legacy.incrementalState?.let { migrateCursorBasedStatusFromJson(it) }
+        // Extract incremental state if present and not null
+        val incrementalState =
+            legacy.incrementalState
+                ?.takeIf { !it.isNull }
+                ?.let { migrateCursorBasedStatusFromJson(it) }
 
         // Convert String to JsonNode, handling null and "null" string
         val pkValueNode: JsonNode? =

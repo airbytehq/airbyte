@@ -55,6 +55,10 @@ data:
       - users
       - user_lifetime_insights
   documentationUrl: https://docs.airbyte.com/integrations/sources/instagram
+  externalDocumentationUrls:
+    - title: Release notes
+      url: https://developers.facebook.com/docs/instagram-api/changelog
+      type: api_release_history
   erdUrl: https://dbdocs.io/airbyteio/source-instagram?view=relationships
   tags:
     - language:manifest-only

@@ -32,8 +32,8 @@ class EmittedStatsStoreImpl(
         count: Long,
         bytes: Long,
     ) {
-        readCounts.increment(s, count)
-        readBytes.increment(s, bytes)
+        readCounts.increment(s, count.toDouble())
+        readBytes.increment(s, bytes.toDouble())
     }
 
     override fun getStats(): List<AirbyteMessage> =
@@ -45,8 +45,8 @@ class EmittedStatsStoreImpl(
     @VisibleForTesting
     internal fun get(s: DestinationStream.Descriptor) =
         EmissionStats(
-            count = readCounts.get(s) ?: 0,
-            bytes = readBytes.get(s) ?: 0,
+            count = readCounts.get(s)?.toLong() ?: 0,
+            bytes = readBytes.get(s)?.toLong() ?: 0,
         )
 
     @VisibleForTesting
