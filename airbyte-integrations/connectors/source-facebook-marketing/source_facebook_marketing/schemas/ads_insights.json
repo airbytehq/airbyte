@@ -267,6 +267,10 @@
       "description": "Marketing objective",
       "type": ["null", "string"]
     },
+    "objective_results": {
+      "description": "Results for the objective",
+      "$ref": "ads_action_stats.json"
+    },
     "optimization_goal": {
       "description": "Goal for optimization",
       "type": ["null", "string"]
