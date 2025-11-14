@@ -199,6 +199,14 @@ object TableOperationsFixtures {
     val UPSERT_SOURCE_RECORDS: List<Map<String, AirbyteValue>> =
         listOf(
             inputRecord(
+                "109d38b9-e001-4f62-86ce-4a457ab013a1",
+                "2025-01-23T00:00:00Z",
+                linkedMapOf(),
+                generationId = 1,
+                ID_FIELD to StringValue("0"),
+                TEST_FIELD to IntegerValue(1000),
+            ),
+            inputRecord(
                 "5499cdef-1411-4c7e-987c-b22fe1284a49",
                 "2025-01-23T00:00:00Z",
                 linkedMapOf(),
@@ -295,6 +303,14 @@ object TableOperationsFixtures {
 
     val UPSERT_EXPECTED_RECORDS: List<Map<String, Any>> =
         listOf(
+            outputRecord(
+                "109d38b9-e001-4f62-86ce-4a457ab013a1",
+                "2025-01-23T00:00:00Z",
+                linkedMapOf(),
+                generationId = 1L,
+                ID_FIELD to "0",
+                TEST_FIELD to 1000L,
+            ),
             outputRecord(
                 "6317026e-12f9-4713-976e-ce43901bd7ce",
                 "2025-01-22T00:00:00Z",
