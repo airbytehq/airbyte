@@ -267,6 +267,25 @@ object TableOperationsFixtures {
                 ID_FIELD to StringValue("6"),
                 TEST_FIELD to IntegerValue(1006),
             ),
+            // id=7: two new records; the earlier record is a delete.
+            // We should keep the second record.
+            inputRecord(
+                "e8379b8f-e437-4d55-9d16-76f5e6e942d6",
+                "2025-01-23T00:00:00Z",
+                linkedMapOf(),
+                generationId = 1,
+                ID_FIELD to StringValue("7"),
+                TEST_FIELD to IntegerValue(42),
+                CDC_DELETED_AT_COLUMN to IntegerValue(1234),
+            ),
+            inputRecord(
+                "e56fc753-b55a-439b-9b16-528596e2ca3a",
+                "2025-01-23T01:00:00Z",
+                linkedMapOf(),
+                generationId = 1,
+                ID_FIELD to StringValue("7"),
+                TEST_FIELD to IntegerValue(1007),
+            ),
         )
 
     /**
@@ -359,6 +378,14 @@ object TableOperationsFixtures {
                 1L,
                 ID_FIELD to "6",
                 TEST_FIELD to 1006L,
+            ),
+            outputRecord(
+                "e56fc753-b55a-439b-9b16-528596e2ca3a",
+                "2025-01-23T01:00:00Z",
+                linkedMapOf(),
+                1L,
+                ID_FIELD to "7",
+                TEST_FIELD to 1007L,
             ),
         )
 
