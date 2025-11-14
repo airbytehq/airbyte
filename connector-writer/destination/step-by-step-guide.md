@@ -209,7 +209,42 @@ $ ./gradlew :destination-{db}:build
 - Micronaut scanning issues? Ensure `@Singleton` annotations present
 - metadata.yaml syntax errors? Validate YAML format
 
-### Step 0.8: Build Docker Image
+### Step 0.8: Create application-connector.yml
+
+**File:** `src/main/resources/application-connector.yml`
+
+```yaml
+# This file is loaded by the connector at runtime (in Docker)
+# The platform may override these via environment variables
+
+airbyte:
+  destination:
+    core:
+      # Default type handling
+      types:
+        unions: DEFAULT
+      # Data channel configuration (required)
+      data-channel:
+        medium: STDIO  # STDIO or SOCKET (platform sets this)
+        format: JSONL  # JSONL or PROTOBUF
+      # Namespace mapping (required)
+      mappers:
+        namespace-mapping-config-path: ""  # Empty = no custom mapping (identity)
+
+# Reduce noise in logs
+logger:
+  levels:
+    com.zaxxer.hikari: ERROR
+    com.zaxxer.hikari.pool: ERROR
+```
+
+**Critical:** Without this file, the connector will crash with DI errors:
+```
+Failed to inject value for parameter [dataChannelMedium]
+Failed to inject value for parameter [namespaceMappingConfigPath]
+```
+
+### Step 0.9: Build Docker Image
 
 ```bash
 $ ./gradlew :destination-{db}:assemble
@@ -219,7 +254,7 @@ $ ./gradlew :destination-{db}:assemble
 1. Compiles code
 2. Runs unit tests
 3. Creates distribution TAR
-4. Builds Docker image
+4. Builds Docker image (includes application-connector.yml)
 
 **Expected output:**
 ```
@@ -239,26 +274,14 @@ $ docker images | grep destination-{db}
 airbyte/destination-{db}    0.1.0    abc123def456    2 minutes ago    500MB
 ```
 
-**Test the Docker image:**
-```bash
-$ docker run --rm airbyte/destination-{db}:0.1.0 --spec
-```
-
-**Expected:** Outputs SPEC message (JSON)
-
-**Troubleshooting:**
-- **metadata.yaml not found:** Check file exists at connector root
-- **Base image not found:** Check `baseImage` digest in metadata.yaml is valid
-- **TAR not created:** Run `./gradlew :destination-{db}:distTar` first
-- **Docker build fails:** Check Docker daemon is running: `docker ps`
-- **mainClass not found:** Verify `application.mainClass` points to correct package
-
-✅ **Checkpoint Complete:** Project compiles and Docker image builds
+✅ **Checkpoint Complete:** Docker container builds
 
 **You're ready for Phase 1 when:**
 - `./gradlew :destination-{db}:build` succeeds
 - `./gradlew :destination-{db}:assemble` creates Docker image
-- `docker run airbyte/destination-{db}:0.1.0 --spec` outputs JSON
+
+**Note:** Full Docker validation (--spec, --check, --write) will be tested in later phases
+with proper integration tests, not manual commands.
 
 ---
 
@@ -423,6 +446,10 @@ airbyte:
   connector:
     metadata:
       documentation-url: 'https://docs.airbyte.com/integrations/destinations/{db}'
+  destination:
+    core:
+      data-channel:
+        medium: STDIO  # Default for local testing (platform sets this at runtime)
 ```
 
 **Or in build.gradle.kts (alternative):**
@@ -1555,6 +1582,18 @@ import io.airbyte.integrations.destination.{db}.spec.{DB}Configuration
 import io.micronaut.context.annotation.Singleton
 
 @Singleton
+class {DB}RawTableNameGenerator(
+    private val config: {DB}Configuration,
+) : RawTableNameGenerator {
+    override fun getTableName(descriptor: DestinationStream.Descriptor): TableName {
+        // Raw tables go to internal schema (usually not used in modern CDK)
+        val namespace = config.database  // Or config.internalSchema
+        val name = "_airbyte_raw_${descriptor.namespace}_${descriptor.name}".toDbCompatible()
+        return TableName(namespace, name)
+    }
+}
+
+@Singleton
 class {DB}FinalTableNameGenerator(
     private val config: {DB}Configuration,
 ) : FinalTableNameGenerator {
@@ -1860,62 +1899,7 @@ class {DB}Writer(
 }
 ```
 
-### Step 5.9: Create Checker
-
-**File:** `check/{DB}Checker.kt`
-
-```kotlin
-package io.airbyte.integrations.destination.{db}.check
-
-import io.airbyte.cdk.load.check.DestinationCheckerV2
-import io.airbyte.integrations.destination.{db}.client.{DB}AirbyteClient
-import io.airbyte.integrations.destination.{db}.spec.{DB}Configuration
-import io.micronaut.context.annotation.Singleton
-import kotlinx.coroutines.runBlocking
-import java.util.UUID
-
-@Singleton
-class {DB}Checker(
-    private val client: {DB}AirbyteClient,
-    private val config: {DB}Configuration,
-) : DestinationCheckerV2 {
-
-    override fun check() {
-        val testNamespace = config.database  // Or config.schema
-        val testTable = "_airbyte_connection_test_${UUID.randomUUID()}"
-
-        runBlocking {
-            try {
-                client.createNamespace(testNamespace)
-
-                // Create simple test stream
-                val testStream = createTestStream()
-                val tableName = TableName(testNamespace, testTable)
-                val columnMapping = createTestColumnMapping()
-
-                client.createTable(testStream, tableName, columnMapping, replace = false)
-
-                val count = client.countTable(tableName)
-                require(count == 0L) { "Expected empty table, got $count rows" }
-
-            } finally {
-                client.dropTable(TableName(testNamespace, testTable))
-            }
-        }
-    }
-
-    private fun createTestStream(): DestinationStream {
-        // Minimal stream for testing
-        // See SnowflakeChecker or ClickhouseChecker for example
-    }
-
-    private fun createTestColumnMapping(): ColumnNameMapping {
-        // Minimal mapping for test
-    }
-}
-```
-
-### Step 5.10: Create WriteOperationV2
+### Step 7.9: Create WriteOperationV2
 
 **File:** `cdk/WriteOperationV2.kt`
 
@@ -1940,59 +1924,246 @@ class WriteOperationV2(
 }
 ```
 
-### Step 5.11: Create Integration Test
+### Step 7.10: Create ConnectorWiringSuite Test
 
-**File:** `src/test-integration/kotlin/.../{DB}AppendTest.kt`
+**File:** `src/test-integration/kotlin/.../component/{DB}WiringTest.kt`
 
 ```kotlin
-package io.airbyte.integrations.destination.{db}
+package io.airbyte.integrations.destination.{db}.component
 
-import io.airbyte.cdk.load.write.BasicFunctionalityIntegrationTest
+import io.airbyte.cdk.load.component.ConnectorWiringSuite
+import io.airbyte.cdk.load.component.TableOperationsClient
+import io.airbyte.cdk.load.dataflow.aggregate.AggregateFactory
+import io.airbyte.cdk.load.table.TableName
+import io.airbyte.cdk.load.write.DestinationWriter
+import io.micronaut.test.extensions.junit5.annotation.MicronautTest
 import org.junit.jupiter.api.Test
-import java.nio.file.Path
 
-class {DB}AppendTest : BasicFunctionalityIntegrationTest() {
-    override val configPath: Path = Path.of("secrets/config.json")
-    // Or use Testcontainers config
+@MicronautTest(environments = ["component"])
+class {DB}WiringTest(
+    override val writer: DestinationWriter,
+    override val client: TableOperationsClient,
+    override val aggregateFactory: AggregateFactory,
+) : ConnectorWiringSuite {
+
+    // Optional: Override test namespace if different from "test"
+    // override val testNamespace = "my_database"
 
     @Test
-    override fun testAppend() {
-        super.testAppend()
+    override fun `all beans are injectable`() {
+        super.`all beans are injectable`()
+    }
+
+    @Test
+    override fun `writer setup completes`() {
+        super.`writer setup completes`()
+    }
+
+    @Test
+    override fun `can create append stream loader`() {
+        super.`can create append stream loader`()
+    }
+
+    @Test
+    override fun `can write one record`() {
+        super.`can write one record`()
     }
 }
 ```
 
-### Step 5.12: Validate
+**What ConnectorWiringSuite does:**
+- **Test 1: `all beans are injectable`** - Catches missing @Singleton, circular dependencies, missing beans
+- **Test 2: `writer setup completes`** - Validates namespace creation works
+- **Test 3: `can create append stream loader`** - Validates StreamLoader instantiation
+- **Test 4: `can write one record`** - **Full write path validation (most important!)**
 
+**IMPORTANT:** If these tests fail with DI errors, that's the test WORKING CORRECTLY.
+The purpose is to catch missing bean definitions before runtime. DI errors mean your
+BeanFactory is incomplete - fix by adding missing beans, NOT by blaming the test.
+
+**Note:** ConnectorWiringSuite is provided by the CDK in testFixtures (automatically available).
+
+### Step 7.11: Validate Wiring and First Sync
+
+**Run new wiring tests:**
 ```bash
-$ ./gradlew :destination-{db}:testComponentGetGenerationId
+$ ./gradlew :destination-{db}:testComponentAllBeansAreInjectable
+$ ./gradlew :destination-{db}:testComponentWriterSetupCompletes
+$ ./gradlew :destination-{db}:testComponentCanCreateAppendStreamLoader
+$ ./gradlew :destination-{db}:testComponentCanWriteOneRecord
 ```
 
 **Expected new passes:**
 ```
-✓ get generation id
+✓ all beans are injectable
+✓ writer setup completes
+✓ can create append stream loader
+✓ can write one record
 ```
 
-**Full sync test:**
-```bash
-$ ./gradlew :destination-{db}:integrationTestAppend
-```
-
-**Expected:**
-```
-✓ testAppend
-```
+**The last test (`can write one record`) validates:**
+- ✅ Full DI wiring works
+- ✅ Writer.setup() creates namespaces
+- ✅ StreamLoader.start() creates tables
+- ✅ Aggregate.accept() buffers records
+- ✅ InsertBuffer.flush() writes to database
+- ✅ **Data actually appears in your database!**
 
 **Regression check:**
 ```bash
 $ ./gradlew :destination-{db}:componentTest
 ```
 
-**Expected:** All 6 component tests pass
+**Expected:**
+```
+TableOperationsSuite: 9 tests pass (Phases 2-6)
+ConnectorWiringSuite: 4 tests pass (new)
+Total: 13 component tests passing
+```
+
+### Step 7.12: Validate Docker Write Operation
+
+**CRITICAL: Component tests pass in test environment, but Docker runs in production environment!**
+
+**Why this test matters:**
+- ConnectorWiringSuite runs with Micronaut test defaults
+- Docker runs with `application-connector.yml` configuration
+- Missing beans/config only show up in Docker, not tests
+- **This catches the gap between test and runtime**
+
+**Rebuild Docker image:**
+```bash
+$ ./gradlew :destination-{db}:assemble
+```
+
+**Test Docker write operation initializes:**
+```bash
+# Create test config
+cat > /tmp/config.json << EOF
+{
+  "hostname": "localhost",
+  "port": 3306,
+  "database": "test",
+  "username": "test",
+  "password": "test"
+}
+EOF
+
+# Create minimal catalog
+cat > /tmp/catalog.json << EOF
+{
+  "streams": [{
+    "stream": {
+      "name": "test_table",
+      "namespace": "test",
+      "json_schema": {
+        "type": "object",
+        "properties": {
+          "id": {"type": "integer"},
+          "name": {"type": "string"}
+        }
+      }
+    },
+    "sync_mode": "full_refresh",
+    "destination_sync_mode": "append"
+  }]
+}
+EOF
+
+# Test initialization (empty input, but valid catalog provided)
+# This validates DI can instantiate all beans for write operation
+echo "" | docker run --rm -i --network host \
+  -v /tmp/config.json:/data/config.json \
+  -v /tmp/catalog.json:/data/catalog.json \
+  airbyte/destination-{db}:0.1.0 \
+  write --config /data/config.json --catalog /data/catalog.json
+```
+
+**Expected:**
+- No "BeanInstantiationException" errors
+- No "Failed to inject" errors
+- May show "End of input" or finish quickly (no data to write)
+
+**Common DI errors at this point:**
+- **"Error instantiating TableCatalog"** → Missing RawTableNameGenerator
+- **"Failed to inject ColumnNameMapper"** → Missing ColumnNameMapper @Singleton
+- **"Failed to inject Writer"** → Missing Writer @Singleton
+- **"Failed to inject AggregateFactory"** → Missing AggregateFactory @Singleton
+
+**If you see DI errors:**
+1. Check which bean is missing from error message
+2. Verify that bean has @Singleton annotation
+3. Verify bean is in correct package for Micronaut scanning
+4. Check bean's dependencies are also @Singleton
+
+**File:** `src/test-integration/kotlin/.../write/{DB}WriteInitTest.kt`
+
+```kotlin
+package io.airbyte.integrations.destination.{db}.write
+
+import io.airbyte.cdk.load.write.WriteInitializationTest
+import io.airbyte.integrations.destination.{db}.spec.{DB}Specification
+import java.nio.file.Path
+
+/**
+ * Validates write operation can initialize with real catalog.
+ * Catches missing beans that ConnectorWiringSuite (with mock catalog) doesn't test.
+ */
+class {DB}WriteInitTest : WriteInitializationTest<{DB}Specification>(
+    configContents = Path.of("secrets/config.json").toFile().readText(),
+    configSpecClass = {DB}Specification::class.java,
+)
+```
+
+**That's it!** Just 10 lines - extend `WriteInitializationTest` and provide your config.
+
+**What WriteInitializationTest provides (from CDK):**
+- Minimal catalog (one stream) - hardcoded in base class
+- Test method: `writer can be instantiated with real catalog`
+- Spawns real write process (same as Docker)
+- Catches TableCatalog DI errors
+- Clear error messages pointing to missing beans (RawTableNameGenerator, etc.)
+
+**No DataDumper/Cleaner needed** - base class uses Fake/Noop implementations since
+we're just testing DI initialization, not actually writing data.
+
+### Step 7.13: Run Write Initialization Test
+
+```bash
+$ ./gradlew :destination-{db}:integrationTestWriterCanBeInstantiatedWithRealCatalog
+```
+
+**Expected:**
+```
+✓ writer can be instantiated with real catalog
+```
+
+**If this FAILS with DI errors:**
+- **"Error instantiating TableCatalog"** → Missing RawTableNameGenerator (add to Step 7.1)
+- **"Failed to inject ColumnNameMapper"** → Missing @Singleton annotation
+- **"Failed to inject Writer"** → Missing @Singleton annotation
+
+**This test uses REAL catalog loading (not mock), so it catches the same errors
+you'd see in Docker runtime!**
+
+**Regression check:**
+```bash
+$ ./gradlew :destination-{db}:componentTest
+$ ./gradlew :destination-{db}:integrationTest
+```
+
+**Expected:**
+```
+Component: 13 tests pass (TableOperationsSuite + ConnectorWiringSuite)
+Integration: testSpecOss, testSuccessConfigs, writer can be instantiated pass
+```
 
 ✅ **Checkpoint Complete:** First working sync! 🎉
 
-**You're ready for Phase 8 when:** `testAppend()` integration test passes
+**You're ready for Phase 8 when:**
+- All ConnectorWiringSuite tests pass (component tests with mock catalog)
+- WriteInitTest passes (integration test with real catalog)
+- No DI errors in either test environment
 
 ---
 

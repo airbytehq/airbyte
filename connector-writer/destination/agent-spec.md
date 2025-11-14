@@ -674,6 +674,163 @@ Agent: "MongoDB doesn't have MERGE or INSERT ON CONFLICT, but has
 
 ---
 
+## Systematic DI Debugging Protocol
+
+### When ConnectorWiringSuite Fails with DI Error
+
+**NEVER:** Give up, suggest skipping, or blame the test
+
+**ALWAYS:** Follow this systematic debugging protocol:
+
+#### Step 1: Get Full Error Information
+```
+Agent: "The test is catching a DI configuration error. Let me diagnose.
+
+       Please paste the FULL test output including:
+       - Complete error message
+       - Which bean failed to inject
+       - Which parameter is missing
+       - Stack trace"
+```
+
+#### Step 2: Identify Missing Bean
+```
+Agent: "Error shows: 'Failed to inject value for parameter [unionBehavior]'
+
+       This means Micronaut cannot find a bean of type UnionBehavior.
+
+       Common causes:
+       1. Bean not created (missing @Singleton method in BeanFactory)
+       2. Bean created but wrong type
+       3. Bean created but with @Requires that doesn't match
+       4. Missing dependency (bean's dependencies not satisfied)"
+```
+
+#### Step 3: Check Reference Implementation
+```
+Agent: "Let me check how Snowflake/ClickHouse provides this bean..."
+
+       [Searches reference BeanFactory files]
+
+       "I don't see unionBehavior in reference implementations.
+        This might be a parameter for BasicFunctionalityIntegrationTest,
+        not for ConnectorWiringSuite.
+
+        Wait - are you using ConnectorWiringSuite or BasicFunctionalityIntegrationTest?
+
+        [If using BasicFunctionalityIntegrationTest]
+        BasicFunctionalityIntegrationTest requires 13+ constructor parameters.
+        You need to provide unionBehavior as a parameter when extending it.
+
+        [If using ConnectorWiringSuite]
+        ConnectorWiringSuite should NOT need unionBehavior.
+        Let me check if there's a version mismatch..."
+```
+
+#### Step 4: Provide Specific Fix
+```
+Agent: "The fix is to add this bean to your BeanFactory:
+
+       @Singleton
+       fun tempTableNameGenerator(): TempTableNameGenerator {
+           return DefaultTempTableNameGenerator()
+       }
+
+       This is REQUIRED for write operations - without it, your connector
+       will fail at runtime too.
+
+       Should I add this to {DB}BeanFactory.kt?"
+```
+
+#### Step 5: Verify Fix
+```
+Agent: "Fix applied. Re-running test...
+
+       [Runs test]
+
+       ✓ Test passes!
+
+       This was a real missing configuration, not a test problem.
+       Your connector would have crashed at runtime without this bean.
+
+       Ready to continue?"
+```
+
+### DI Debugging Checklist
+
+When DI test fails, check in order:
+
+1. **Is the required bean in BeanFactory?**
+   - Search for `@Singleton fun beanName()` or `@Singleton class BeanName`
+
+2. **Does the bean have @Singleton annotation?**
+   - Missing annotation = Micronaut won't manage it
+
+3. **Does the bean's @Requires match?**
+   - `@Requires(property = Operation.PROPERTY, value = "write")` only for write
+   - Check if bean is conditional when it shouldn't be
+
+4. **Are the bean's dependencies satisfied?**
+   - Check constructor parameters
+   - Recursively verify each dependency has a bean
+
+5. **Is there a circular dependency?**
+   - Bean A needs Bean B, Bean B needs Bean A
+
+**NEVER skip this checklist to "move on" - fix the root cause!**
+
+### When Tests Fail Due to "Catalog/Stream Matching Issues"
+
+**NEVER say:** "The remaining tests are failing because of catalog/stream matching issues between test framework and configuration"
+
+**This is NOT a framework problem!** This means:
+
+1. **Your test doesn't set up TableCatalog properly**, OR
+2. **Your Writer.setup() assumes TableCatalog is pre-populated**, OR
+3. **ConnectorWiringSuite creates streams that aren't registered**
+
+**Root cause:** ConnectorWiringSuite creates dynamic test streams. Your `Writer.setup()` likely iterates over `names.values` (TableCatalog) which is empty in this test context.
+
+**Fix options:**
+
+**Option A: Make Writer.setup() defensive**
+```kotlin
+override suspend fun setup() {
+    // Only create namespaces that exist in catalog
+    if (names.values.isNotEmpty()) {
+        names.values
+            .map { it.tableNames.finalTableName!!.namespace }
+            .toSet()
+            .forEach { client.createNamespace(it) }
+    }
+
+    // Gather initial status only if catalog exists
+    if (names.values.isNotEmpty()) {
+        initialStatuses = stateGatherer.gatherInitialStatus(names)
+    } else {
+        initialStatuses = emptyMap()
+    }
+}
+```
+
+**Option B: Override Writer.setup() in test**
+```kotlin
+// In ConnectorWiringSuite implementation
+override fun `can write one record`() {
+    // Skip writer.setup() since we're testing with dynamic streams
+    // Call loader.start() directly instead
+}
+```
+
+**Option C: Provide test catalog**
+```kotlin
+// Create proper catalog setup for ConnectorWiringSuite
+```
+
+**The point:** This is a real design issue in how your Writer handles empty catalogs. Fix it, don't skip the test!
+
+---
+
 ## Error Handling & Recovery
 
 ### Common Failure Scenarios
@@ -926,6 +1083,22 @@ Agent: "The integration test infrastructure is created but encountering
 - Says "likely" without investigation (must diagnose precisely)
 - Implies we can move forward (we cannot)
 
+### ❌ WRONG: Blaming the Test
+
+```
+User: The wiring test is failing with DI error
+
+Agent: "Wiring Tests (0/4): ❌
+       - Failing due to Micronaut DI configuration issue with type behavior injection
+       - This is a test framework configuration problem, NOT a connector functionality problem"
+```
+
+**Why this is wrong:**
+- Blames "test framework" instead of connector code
+- Says "NOT a connector functionality problem" (it IS!)
+- Implies test is wrong, not the implementation
+- Misunderstands purpose of the test (catching DI errors is THE GOAL)
+
 ### ✅ CORRECT: Treating Failures as Blockers
 
 ```
@@ -958,6 +1131,49 @@ Agent: "The integration test is failing. This is a blocker - we cannot
 - Provides specific fix
 - Validates fix works before proceeding
 
+### ✅ CORRECT: DI Test Failure Response
+
+```
+User: ConnectorWiringSuite test failing with DI error
+
+Agent: "ConnectorWiringSuite test is failing with DI error. This is a blocker.
+
+       The test is working correctly - it's catching a real problem in your
+       connector's DI configuration.
+
+       Purpose of ConnectorWiringSuite:
+       - Test 1 (all beans injectable) CATCHES missing bean definitions
+       - Test 4 (can write one record) VALIDATES the write path works
+
+       A DI error in this test means your connector is missing required beans.
+
+       Please paste the full error. I need to see:
+       - Which bean failed to inject
+       - What parameter is missing
+       - Full stack trace
+
+       [User pastes: 'Failed to inject value for parameter [unionBehavior]']
+
+       The error shows 'unionBehavior' parameter cannot be injected.
+
+       Root cause: Your BeanFactory is missing required beans for write operation.
+
+       Fix: Add to your BeanFactory:
+       [Shows specific bean to add]
+
+       This is NOT a test problem - this is a real missing configuration
+       that would cause your connector to fail at runtime.
+
+       Let me help you fix this now."
+```
+
+**Why this is correct:**
+- Explains the test is working as designed
+- Clarifies the test's purpose (catch DI errors)
+- States DI error = real connector problem
+- Provides specific fix
+- Emphasizes this would break connector at runtime
+
 ### Examples of Unacceptable Phrases
 
 **Never say:**
@@ -969,6 +1185,15 @@ Agent: "The integration test is failing. This is a blocker - we cannot
 - ❌ "Can fix later"
 - ❌ "Optional to fix"
 - ❌ "Let's continue anyway"
+- ❌ "This is a test framework configuration problem, NOT a connector functionality problem"
+- ❌ "This is just a test infrastructure issue"
+- ❌ "The test is misconfigured, but the connector is fine"
+- ❌ "The test is too complex"
+- ❌ "We're fighting the test framework"
+- ❌ "Let me provide an honest assessment: we should skip this"
+- ❌ "The connector IS working even though tests fail"
+- ❌ "Move forward, the test is just validation"
+- ❌ "This is taking too long, let's move on"
 
 **Always say:**
 - ✅ "This is a blocker"
@@ -976,6 +1201,10 @@ Agent: "The integration test is failing. This is a blocker - we cannot
 - ✅ "All tests must pass"
 - ✅ "Let's debug this now"
 - ✅ "This indicates broken functionality"
+- ✅ "The test is catching a real problem in your implementation"
+- ✅ "This DI error means required beans are missing in your BeanFactory"
+- ✅ "Test failures = implementation problems that must be fixed"
+- ✅ "The test is working correctly by catching this error"
 
 ---
 
