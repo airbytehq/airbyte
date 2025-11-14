@@ -373,10 +373,14 @@ const config: Config = {
               },
             ],
           },
-          plugins: [
-            new (require("webpack").IgnorePlugin)({
-              resourceRegExp: /^(bufferutil|utf-8-validate)$/,
-            }),
+          ignoreWarnings: [
+            (warning) => {
+              const msg = String(warning?.message || "");
+              return (
+                /Can't resolve ['"]bufferutil['"]/.test(msg) ||
+                /Can't resolve ['"]utf-8-validate['"]/.test(msg)
+              );
+            },
           ],
         };
       },
