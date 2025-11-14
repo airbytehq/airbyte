@@ -5,8 +5,8 @@
 package io.airbyte.cdk.load.discoverer.operation
 
 import com.fasterxml.jackson.databind.JsonNode
-import io.airbyte.cdk.load.data.AirbyteType
 import io.airbyte.cdk.load.command.ImportType
+import io.airbyte.cdk.load.data.AirbyteType
 import java.util.function.Predicate
 
 /**

@@ -4,10 +4,10 @@
 
 package io.airbyte.cdk.load.message
 
-import io.airbyte.cdk.load.command.NamespaceMapper
-import io.airbyte.cdk.load.data.*
 import io.airbyte.cdk.load.command.Append
 import io.airbyte.cdk.load.command.DestinationStream
+import io.airbyte.cdk.load.command.NamespaceMapper
+import io.airbyte.cdk.load.data.*
 import io.airbyte.cdk.load.util.deserializeToNode
 import io.airbyte.cdk.load.util.serializeToString
 import io.airbyte.protocol.models.v0.AirbyteMessage
