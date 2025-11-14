@@ -35,6 +35,7 @@ import io.airbyte.cdk.load.table.ColumnNameMapping
 import io.airbyte.cdk.load.table.TableName
 import io.airbyte.cdk.load.util.Jsons
 import java.util.UUID
+import org.junit.jupiter.api.Assertions
 
 /**
  * Common test fixtures and constants used across table operations test suites. Provides reusable
@@ -387,7 +388,11 @@ object TableOperationsFixtures {
             namespaceMapper = NamespaceMapper(),
         )
 
-    fun <V> List<Map<String, V>>.sortByTestField() = this.sortedBy { it["test"] as Long }
+    fun <V> List<Map<String, V>>.sortBy(key: String) =
+        // sketchy unchecked cast is intentional, we're assuming that the tests are written such
+        // that the sort key is always comparable.
+        // In practice, it's generally some sort of ID column (int/string/etc.).
+        this.sortedBy { it[key] as Comparable<Any> }
 
     fun <V> List<Map<String, V>>.applyColumnNameMapping(mapping: ColumnNameMapping) =
         map { record ->
@@ -444,5 +449,17 @@ object TableOperationsFixtures {
             COLUMN_NAME_AB_META to meta,
             COLUMN_NAME_AB_GENERATION_ID to generationId,
             *pairs,
+        )
+
+    fun assertEquals(
+        expectedRecords: List<Map<String, Any>>,
+        actualRecords: List<Map<String, Any>>,
+        sortKey: String,
+        message: String,
+    ) =
+        Assertions.assertEquals(
+            expectedRecords.sortBy(sortKey).joinToString("\n"),
+            actualRecords.sortBy(sortKey).joinToString("\n"),
+            message,
         )
 }
