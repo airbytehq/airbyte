@@ -8,6 +8,8 @@ import com.zaxxer.hikari.HikariConfig
 import com.zaxxer.hikari.HikariDataSource
 import io.airbyte.cdk.Operation
 import io.airbyte.cdk.command.ConfigurationSpecificationSupplier
+import io.airbyte.cdk.db.jdbc.JdbcUtils
+import io.airbyte.cdk.integrations.util.PostgresSslConnectionUtils
 import io.airbyte.cdk.load.check.CheckOperationV2
 import io.airbyte.cdk.load.check.DestinationCheckerV2
 import io.airbyte.cdk.load.dataflow.config.AggregatePublishingConfig
@@ -19,9 +21,12 @@ import io.airbyte.cdk.ssh.SshKeyAuthTunnelMethod
 import io.airbyte.cdk.ssh.SshNoTunnelMethod
 import io.airbyte.cdk.ssh.SshPasswordAuthTunnelMethod
 import io.airbyte.cdk.ssh.createTunnelSession
+import io.airbyte.commons.json.Jsons
 import io.airbyte.integrations.destination.postgres.spec.PostgresConfiguration
 import io.airbyte.integrations.destination.postgres.spec.PostgresConfigurationFactory
 import io.airbyte.integrations.destination.postgres.spec.PostgresSpecification
+import io.airbyte.integrations.destination.postgres.spec.SslModeVerifyCa
+import io.airbyte.integrations.destination.postgres.spec.SslModeVerifyFull
 import io.micronaut.context.annotation.Factory
 import io.micronaut.context.annotation.Primary
 import io.micronaut.context.annotation.Requires
@@ -122,10 +127,8 @@ class PostgresBeanFactory {
         @Named("resolvedHost") resolvedHost: String,
         @Named("resolvedPort") resolvedPort: Int,
     ): HikariDataSource {
-        val sslModeParam = postgresConfiguration.sslMode?.mode?.let { "?sslmode=$it" } ?: ""
-        val jdbcUrlParams = postgresConfiguration.jdbcUrlParams?.let { "&$it" } ?: ""
         val postgresJdbcUrl =
-            "jdbc:postgresql://$resolvedHost:$resolvedPort/${postgresConfiguration.database}$sslModeParam$jdbcUrlParams"
+            "jdbc:postgresql://$resolvedHost:$resolvedPort/${postgresConfiguration.database}"
 
         val datasourceConfig =
             HikariConfig().apply {
@@ -141,9 +144,68 @@ class PostgresBeanFactory {
                 username = postgresConfiguration.username
                 password = postgresConfiguration.password ?: ""
                 schema = postgresConfiguration.schema
+
+                // Apply custom JDBC URL parameters first (if provided)
+                postgresConfiguration.jdbcUrlParams?.let { params ->
+                    JdbcUtils.parseJdbcParameters(params).forEach { (key, value) ->
+                        addDataSourceProperty(key, value)
+                    }
+                }
+
+                // Apply SSL connection parameters as data source properties
+                // These are applied AFTER custom params to ensure SSL config takes precedence
+                val sslConnectionParams = buildSslConnectionParams(postgresConfiguration.sslMode)
+                sslConnectionParams.forEach { (key, value) -> addDataSourceProperty(key, value) }
             }
 
         return HikariDataSource(datasourceConfig)
+    }
+
+    private fun buildSslConnectionParams(
+        sslMode: io.airbyte.integrations.destination.postgres.spec.SslMode?
+    ): Map<String, String> {
+        return when (sslMode) {
+            is SslModeVerifyCa -> {
+                val sslModeJson =
+                    Jsons.jsonNode(
+                        mapOf(
+                            PostgresSslConnectionUtils.PARAM_MODE to
+                                PostgresSslConnectionUtils.VERIFY_CA,
+                            PostgresSslConnectionUtils.PARAM_CA_CERTIFICATE to
+                                sslMode.caCertificate,
+                            PostgresSslConnectionUtils.PARAM_CLIENT_KEY_PASSWORD to
+                                (sslMode.clientKeyPassword ?: "")
+                        )
+                    )
+                PostgresSslConnectionUtils.obtainConnectionOptions(sslModeJson)
+            }
+            is SslModeVerifyFull -> {
+                val sslModeJson =
+                    Jsons.jsonNode(
+                        mapOf(
+                            PostgresSslConnectionUtils.PARAM_MODE to
+                                PostgresSslConnectionUtils.VERIFY_FULL,
+                            PostgresSslConnectionUtils.PARAM_CA_CERTIFICATE to
+                                sslMode.caCertificate,
+                            PostgresSslConnectionUtils.PARAM_CLIENT_CERTIFICATE to
+                                sslMode.clientCertificate,
+                            PostgresSslConnectionUtils.PARAM_CLIENT_KEY to sslMode.clientKey,
+                            PostgresSslConnectionUtils.PARAM_CLIENT_KEY_PASSWORD to
+                                (sslMode.clientKeyPassword ?: "")
+                        )
+                    )
+                PostgresSslConnectionUtils.obtainConnectionOptions(sslModeJson)
+            }
+            null -> emptyMap()
+            else -> {
+                // For other SSL modes (disable, allow, prefer, require), return the mode parameter
+                mapOf(
+                    PostgresSslConnectionUtils.PARAM_SSL to
+                        PostgresSslConnectionUtils.TRUE_STRING_VALUE,
+                    PostgresSslConnectionUtils.PARAM_SSLMODE to sslMode.mode
+                )
+            }
+        }
     }
 
     @Primary

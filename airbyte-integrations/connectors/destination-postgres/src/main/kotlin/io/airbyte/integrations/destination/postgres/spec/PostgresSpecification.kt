@@ -214,7 +214,20 @@ class SslModeRequire : SslMode {
 
 @JsonSchemaTitle("verify-ca")
 @JsonSchemaDescription("Verify-ca SSL mode.")
-class SslModeVerifyCa : SslMode {
+data class SslModeVerifyCa(
+    @get:JsonSchemaTitle("CA Certificate")
+    @get:JsonPropertyDescription("CA certificate")
+    @get:JsonProperty("ca_certificate")
+    @get:JsonSchemaInject(json = """{"airbyte_secret": true, "multiline": true, "order": 1}""")
+    val caCertificate: String = "",
+    @get:JsonSchemaTitle("Client Key Password")
+    @get:JsonPropertyDescription(
+        "Password for keystorage. This field is optional. If you do not add it - the password will be generated automatically."
+    )
+    @get:JsonProperty("client_key_password")
+    @get:JsonSchemaInject(json = """{"airbyte_secret": true, "order": 2}""")
+    val clientKeyPassword: String? = null
+) : SslMode {
     companion object {
         const val MODE = "verify-ca"
     }
@@ -223,7 +236,30 @@ class SslModeVerifyCa : SslMode {
 
 @JsonSchemaTitle("verify-full")
 @JsonSchemaDescription("Verify-full SSL mode.")
-class SslModeVerifyFull : SslMode {
+data class SslModeVerifyFull(
+    @get:JsonSchemaTitle("CA Certificate")
+    @get:JsonPropertyDescription("CA certificate")
+    @get:JsonProperty("ca_certificate")
+    @get:JsonSchemaInject(json = """{"airbyte_secret": true, "multiline": true, "order": 1}""")
+    val caCertificate: String = "",
+    @get:JsonSchemaTitle("Client Certificate")
+    @get:JsonPropertyDescription("Client certificate")
+    @get:JsonProperty("client_certificate")
+    @get:JsonSchemaInject(json = """{"airbyte_secret": true, "multiline": true, "order": 2}""")
+    val clientCertificate: String = "",
+    @get:JsonSchemaTitle("Client Key")
+    @get:JsonPropertyDescription("Client key")
+    @get:JsonProperty("client_key")
+    @get:JsonSchemaInject(json = """{"airbyte_secret": true, "multiline": true, "order": 3}""")
+    val clientKey: String = "",
+    @get:JsonSchemaTitle("Client Key Password")
+    @get:JsonPropertyDescription(
+        "Password for keystorage. This field is optional. If you do not add it - the password will be generated automatically."
+    )
+    @get:JsonProperty("client_key_password")
+    @get:JsonSchemaInject(json = """{"airbyte_secret": true, "order": 4}""")
+    val clientKeyPassword: String? = null
+) : SslMode {
     companion object {
         const val MODE = "verify-full"
     }
