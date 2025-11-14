@@ -91,13 +91,19 @@ class MsSqlSourceMetadataQuerier(
 
     override fun fields(streamID: StreamIdentifier): List<Field> {
         val table: TableName = findTableName(streamID) ?: return listOf()
-        if (table !in base.memoizedColumnMetadata) return listOf()
-        return base.memoizedColumnMetadata[table]!!.map {
+        if (table !in memoizedColumnMetadata) return listOf()
+        return memoizedColumnMetadata[table]!!.map {
             Field(it.label, base.fieldTypeMapper.toFieldType(it))
         }
     }
 
-    override fun streamNamespaces(): List<String> = base.config.namespaces.toList()
+    override fun streamNamespaces(): List<String> {
+        // If no namespaces are configured, return all discovered schemas
+        if (base.config.namespaces.isEmpty()) {
+            return memoizedTableNames.mapNotNull { it.schema }.distinct()
+        }
+        return base.config.namespaces.toList()
+    }
 
     val memoizedTableNames: List<TableName> by lazy {
         log.info { "Querying SQL Server table names for catalog discovery." }
@@ -106,19 +112,42 @@ class MsSqlSourceMetadataQuerier(
             val dbmd = base.conn.metaData
             val currentDatabase = base.conn.catalog
 
-            for (namespace in
-                base.config.namespaces + base.config.namespaces.map { it.uppercase() }) {
-                // For SQL Server with SCHEMA namespace kind, use current database as catalog
-                dbmd.getTables(currentDatabase, namespace, null, null).use { rs ->
+            // If no namespaces are configured, discover all schemas
+            if (base.config.namespaces.isEmpty()) {
+                log.info {
+                    "No schemas explicitly configured, discovering all non-system schemas in the database."
+                }
+                dbmd.getTables(currentDatabase, null, null, null).use { rs ->
                     while (rs.next()) {
-                        allTables.add(
-                            TableName(
-                                catalog = rs.getString("TABLE_CAT"),
-                                schema = rs.getString("TABLE_SCHEM"),
-                                name = rs.getString("TABLE_NAME"),
-                                type = rs.getString("TABLE_TYPE") ?: "",
-                            ),
-                        )
+                        val schema = rs.getString("TABLE_SCHEM")
+                        // Filter out SQL Server system schemas unless explicitly configured
+                        if (schema != null && !isSystemSchema(schema)) {
+                            allTables.add(
+                                TableName(
+                                    catalog = rs.getString("TABLE_CAT"),
+                                    schema = schema,
+                                    name = rs.getString("TABLE_NAME"),
+                                    type = rs.getString("TABLE_TYPE") ?: "",
+                                ),
+                            )
+                        }
+                    }
+                }
+            } else {
+                for (namespace in
+                    base.config.namespaces + base.config.namespaces.map { it.uppercase() }) {
+                    // For SQL Server with SCHEMA namespace kind, use current database as catalog
+                    dbmd.getTables(currentDatabase, namespace, null, null).use { rs ->
+                        while (rs.next()) {
+                            allTables.add(
+                                TableName(
+                                    catalog = rs.getString("TABLE_CAT"),
+                                    schema = rs.getString("TABLE_SCHEM"),
+                                    name = rs.getString("TABLE_NAME"),
+                                    type = rs.getString("TABLE_TYPE") ?: "",
+                                ),
+                            )
+                        }
                     }
                 }
             }
@@ -128,6 +157,57 @@ class MsSqlSourceMetadataQuerier(
             return@lazy allTables.toList()
         } catch (e: Exception) {
             throw RuntimeException("SQL Server table discovery query failed: ${e.message}", e)
+        }
+    }
+
+    val memoizedColumnMetadata: Map<TableName, List<JdbcMetadataQuerier.ColumnMetadata>> by lazy {
+        val joinMap: Map<TableName, TableName> =
+            memoizedTableNames.associateBy { it.copy(type = "") }
+        val results = mutableListOf<Pair<TableName, JdbcMetadataQuerier.ColumnMetadata>>()
+        log.info { "Querying SQL Server column names for catalog discovery." }
+        try {
+            val dbmd = base.conn.metaData
+            val currentDatabase = base.conn.catalog
+
+            fun addColumnsFromQuery(
+                catalog: String?,
+                schema: String?,
+                tablePattern: String?,
+                isPseudoColumn: Boolean
+            ) {
+                val rsMethod = if (isPseudoColumn) dbmd::getPseudoColumns else dbmd::getColumns
+                rsMethod(catalog, schema, tablePattern, null).use { rs ->
+                    while (rs.next()) {
+                        val (tableName: TableName, metadata: JdbcMetadataQuerier.ColumnMetadata) =
+                            base.columnMetadataFromResultSet(rs, isPseudoColumn)
+                        val joinedTableName: TableName = joinMap[tableName] ?: continue
+                        results.add(joinedTableName to metadata)
+                    }
+                }
+            }
+
+            // If no namespaces are configured, discover all schemas
+            if (base.config.namespaces.isEmpty()) {
+                log.info { "Querying columns for all schemas." }
+                addColumnsFromQuery(currentDatabase, null, null, isPseudoColumn = true)
+                addColumnsFromQuery(currentDatabase, null, null, isPseudoColumn = false)
+            } else {
+                for (namespace in
+                    base.config.namespaces + base.config.namespaces.map { it.uppercase() }) {
+                    addColumnsFromQuery(currentDatabase, namespace, null, isPseudoColumn = true)
+                    addColumnsFromQuery(currentDatabase, namespace, null, isPseudoColumn = false)
+                }
+            }
+            log.info { "Discovered ${results.size} column(s) and pseudo-column(s)." }
+        } catch (e: Exception) {
+            throw RuntimeException("SQL Server column discovery query failed: ${e.message}", e)
+        }
+        return@lazy results.groupBy({ it.first }, { it.second }).mapValues {
+            (_, columnMetadataByTable) ->
+            // Deduplicate columns by name to handle case-insensitive databases
+            val deduplicatedColumns = columnMetadataByTable.distinctBy { it.name }
+            deduplicatedColumns.filter { it.ordinal == null } +
+                deduplicatedColumns.filter { it.ordinal != null }.sortedBy { it.ordinal }
         }
     }
 
@@ -391,6 +471,52 @@ class MsSqlSourceMetadataQuerier(
     )
 
     companion object {
+
+        /**
+         * SQL Server system schemas that should be excluded from auto-discovery. These schemas
+         * contain system objects and should not be synced unless explicitly configured.
+         */
+        private val SYSTEM_SCHEMAS =
+            setOf(
+                // Core system schemas (cannot be dropped)
+                "sys",
+                "INFORMATION_SCHEMA",
+
+                // CDC schema (change data capture)
+                "cdc",
+
+                // Guest user schema
+                "guest",
+
+                // Fixed database role schemas (backward compatibility)
+                "db_accessadmin",
+                "db_backupoperator",
+                "db_datareader",
+                "db_datawriter",
+                "db_ddladmin",
+                "db_denydatareader",
+                "db_denydatawriter",
+                "db_owner",
+                "db_securityadmin",
+
+                // Legacy system support tables/schemas
+                "spt_fallback_db",
+                "spt_fallback_dev",
+                "spt_fallback_usg",
+                "spt_monitor",
+                "spt_values",
+
+                // Replication system schema
+                "MSreplication_options"
+            )
+
+        /**
+         * Checks if a schema is a SQL Server system schema. System schemas are excluded from
+         * auto-discovery unless explicitly configured by the user.
+         */
+        private fun isSystemSchema(schema: String): Boolean {
+            return SYSTEM_SCHEMAS.contains(schema)
+        }
 
         const val CLUSTERED_INDEX_QUERY_FMTSTR =
             """
