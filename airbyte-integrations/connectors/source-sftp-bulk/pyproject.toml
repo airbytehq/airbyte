@@ -19,6 +19,7 @@ include = "source_sftp_bulk"
 python = "^3.10,<3.12"
 airbyte-cdk = {extras = ["file-based"], version = "^7.0.4"}
 paramiko = "3.4.0"
+psutil = "6.1.0"
 
 [tool.poetry.scripts]
 source-sftp-bulk = "source_sftp_bulk.run:run"
