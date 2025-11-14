@@ -721,7 +721,7 @@ object TableOperationsFixtures {
         // sketchy unchecked cast is intentional, we're assuming that the tests are written such
         // that the sort key is always comparable.
         // In practice, it's generally some sort of ID column (int/string/etc.).
-        this.sortedBy { it[key] as Comparable<Any> }
+        @Suppress("UNCHECKED_CAST") this.sortedBy { it[key] as Comparable<Any> }
 
     fun <V> List<Map<String, V>>.applyColumnNameMapping(mapping: ColumnNameMapping) =
         map { record ->
