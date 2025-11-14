@@ -79,7 +79,7 @@ If you have existing connections that use custom namespaces, review your configu
 
 The hostname field in version 2.0.0 must **not** include the protocol prefix (`http://` or `https://`).
 
-**Incorrect:** `https://my-clickhouse-server.com`  
+**Incorrect:** `https://my-clickhouse-server.com`
 **Correct:** `my-clickhouse-server.com`
 
 Version 1.0.0 incidentally tolerated protocols in the hostname field, but version 2.0.0 requires clean hostnames. If your configuration includes a protocol in the hostname, remove it before upgrading or the connection check will fail.
