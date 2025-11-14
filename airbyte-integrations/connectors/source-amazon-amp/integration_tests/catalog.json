@@ -1,0 +1,55 @@
+{
+  "streams": [
+    {
+      "stream": {
+        "name": "MetricNames",
+        "json_schema": {
+          "type": "object",
+          "properties": {
+            "metric_name": { "type": ["string", "null"] }
+          },
+          "additionalProperties": true
+        },
+        "supported_sync_modes": ["full_refresh"]
+      },
+      "sync_mode": "full_refresh",
+      "destination_sync_mode": "append"
+    },
+    {
+      "stream": {
+        "name": "Rules",
+        "json_schema": {
+          "type": "object",
+          "properties": {
+            "alert": { "type": ["string", "null"] },
+            "expr": { "type": ["string", "null"] },
+            "for": { "type": ["string", "null"] },
+            "keep_firing_for": { "type": ["string", "null"] },
+            "labels": {
+              "type": ["object", "null"],
+              "properties": {
+                "severity": { "type": ["string", "null"] },
+                "system": { "type": ["string", "null"] }
+              },
+              "additionalProperties": true
+            },
+            "annotations": {
+              "type": ["object", "null"],
+              "properties": {
+                "summary": { "type": ["string", "null"] },
+                "description": { "type": ["string", "null"] },
+                "runbook": { "type": ["string", "null"] }
+              },
+              "additionalProperties": true
+            },
+            "group_name": { "type": ["string", "null"] }
+          },
+          "additionalProperties": true
+        },
+        "supported_sync_modes": ["full_refresh"]
+      },
+      "sync_mode": "full_refresh",
+      "destination_sync_mode": "append"
+    }
+  ]
+}
