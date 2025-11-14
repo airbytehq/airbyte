@@ -41,11 +41,7 @@ class DestinationStreamFactory(
                     DestinationSyncMode.APPEND -> Append
                     DestinationSyncMode.OVERWRITE -> Overwrite
                     DestinationSyncMode.APPEND_DEDUP ->
-                        Dedupe(
-                            primaryKey = stream.primaryKey,
-                            cursor = stream.cursorField
-                        )
-
+                        Dedupe(primaryKey = stream.primaryKey, cursor = stream.cursorField)
                     DestinationSyncMode.UPDATE -> Update
                     DestinationSyncMode.SOFT_DELETE -> SoftDelete
                 },

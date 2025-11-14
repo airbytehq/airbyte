@@ -4,11 +4,11 @@
 
 package io.airbyte.cdk.load.orchestration.db.legacy_typing_deduping
 
-import io.airbyte.cdk.load.orchestration.db.Sql
 import io.airbyte.cdk.load.command.DestinationStream
-import io.airbyte.cdk.load.table.ColumnNameMapping
+import io.airbyte.cdk.load.orchestration.db.Sql
 import io.airbyte.cdk.load.schema.TableName
 import io.airbyte.cdk.load.schema.TableNames
+import io.airbyte.cdk.load.table.ColumnNameMapping
 import io.airbyte.cdk.load.table.TableSuffixes.SOFT_RESET_SUFFIX
 import java.time.Instant
 

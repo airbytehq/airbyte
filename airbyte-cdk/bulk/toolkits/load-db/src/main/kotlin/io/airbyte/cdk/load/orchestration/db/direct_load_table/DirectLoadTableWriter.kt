@@ -1,22 +1,26 @@
+/*
+ * Copyright (c) 2025 Airbyte, Inc., all rights reserved.
+ */
+
 package io.airbyte.cdk.load.orchestration.db.direct_load_table
 
 import io.airbyte.cdk.SystemErrorException
-import io.airbyte.cdk.load.component.TableOperationsClient
-import io.airbyte.cdk.load.component.TableSchemaEvolutionClient
-import io.airbyte.cdk.load.orchestration.db.DatabaseHandler
 import io.airbyte.cdk.load.command.Append
 import io.airbyte.cdk.load.command.Dedupe
 import io.airbyte.cdk.load.command.DestinationStream
 import io.airbyte.cdk.load.command.Overwrite
+import io.airbyte.cdk.load.component.TableOperationsClient
+import io.airbyte.cdk.load.component.TableSchemaEvolutionClient
+import io.airbyte.cdk.load.orchestration.db.DatabaseHandler
 import io.airbyte.cdk.load.table.DatabaseInitialStatusGatherer
+import io.airbyte.cdk.load.table.TableCatalog
+import io.airbyte.cdk.load.table.TempTableNameGenerator
 import io.airbyte.cdk.load.table.directload.DirectLoadInitialStatus
 import io.airbyte.cdk.load.table.directload.DirectLoadTableAppendStreamLoader
 import io.airbyte.cdk.load.table.directload.DirectLoadTableAppendTruncateStreamLoader
 import io.airbyte.cdk.load.table.directload.DirectLoadTableDedupStreamLoader
 import io.airbyte.cdk.load.table.directload.DirectLoadTableDedupTruncateStreamLoader
 import io.airbyte.cdk.load.table.directload.DirectLoadTableExecutionConfig
-import io.airbyte.cdk.load.table.TableCatalog
-import io.airbyte.cdk.load.table.TempTableNameGenerator
 import io.airbyte.cdk.load.write.DestinationWriter
 import io.airbyte.cdk.load.write.StreamLoader
 import io.airbyte.cdk.load.write.StreamStateStore

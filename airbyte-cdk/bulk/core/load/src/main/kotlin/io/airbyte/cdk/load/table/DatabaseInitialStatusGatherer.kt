@@ -4,11 +4,11 @@
 
 package io.airbyte.cdk.load.table
 
-import io.airbyte.cdk.load.component.TableOperationsClient
 import io.airbyte.cdk.load.command.DestinationStream
+import io.airbyte.cdk.load.component.TableOperationsClient
+import io.airbyte.cdk.load.schema.TableName
 import io.airbyte.cdk.load.table.directload.DirectLoadInitialStatus
 import io.airbyte.cdk.load.table.directload.DirectLoadTableStatus
-import io.airbyte.cdk.load.schema.TableName
 import java.util.concurrent.ConcurrentHashMap
 import kotlinx.coroutines.coroutineScope
 import kotlinx.coroutines.launch

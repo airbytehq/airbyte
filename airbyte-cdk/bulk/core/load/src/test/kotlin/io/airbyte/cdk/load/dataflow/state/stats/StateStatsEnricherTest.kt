@@ -4,6 +4,7 @@
 
 package io.airbyte.cdk.load.dataflow.state.stats
 
+import io.airbyte.cdk.load.command.DestinationStream
 import io.airbyte.cdk.load.command.NamespaceMapper
 import io.airbyte.cdk.load.dataflow.state.AdditionalStatsHistogram
 import io.airbyte.cdk.load.dataflow.state.PartitionKey
@@ -12,7 +13,6 @@ import io.airbyte.cdk.load.message.CheckpointMessage
 import io.airbyte.cdk.load.message.GlobalCheckpoint
 import io.airbyte.cdk.load.message.GlobalSnapshotCheckpoint
 import io.airbyte.cdk.load.message.StreamCheckpoint
-import io.airbyte.cdk.load.command.DestinationStream
 import io.mockk.every
 import io.mockk.impl.annotations.MockK
 import io.mockk.junit5.MockKExtension
