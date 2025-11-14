@@ -8,10 +8,11 @@ The Amazon AMP source syncs the AMP API. It supports full refresh sync.
 
 ### Requirements
 
-- AWS IAM Access Key
-- AWS IAM Secret Key
 - AWS AMP Workspace ID
 - AWS Region
+- AWS IAM Access Key and AWS IAM Secret Key<br>
+or
+- Proper permissions for service account if Airbyte is running on Kubernetes
 
 ### Setup guide
 
@@ -62,17 +63,19 @@ This source will output two streams for the configured AMP Workspace:
 
 ### Properties
 
-Required properties are 'AMP Workspace ID', 'AWS Region', 'AWS IAM Access Key ID' and 'AWS IAM Secret Key' as noted in
-**bold** below.
+Required properties, as noted in **bold** below, are:
 
 - **AMP Workspace ID** (STRING)
   - ID of the AMP workspace
 - **AWS Region** (STRING)
   - AWS region where AMP is deployed
-- **AWS IAM Access Key ID** (STRING)
+- (optional) **AWS IAM Access Key ID** (STRING)
   - The Access Key ID of the AWS IAM Role with AMP access
-- **AWS IAM Secret Key** (STRING)
+- (optional) **AWS IAM Secret Key** (STRING)
   - The Secret Key of the AWS IAM Role with AMP access
+
+Access Key and Secret Key are not required. When they are not provided and Airbyte is running on Kubernetes,
+connector will use service account for accessing Prometheus workspace. Make sure it has proper permissions.
 
 ## Changelog
 
