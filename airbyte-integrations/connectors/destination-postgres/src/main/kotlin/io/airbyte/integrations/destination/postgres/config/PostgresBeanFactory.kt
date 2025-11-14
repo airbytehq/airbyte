@@ -124,7 +124,8 @@ class PostgresBeanFactory {
         @Named("resolvedHost") resolvedHost: String,
         @Named("resolvedPort") resolvedPort: Int,
     ): HikariDataSource {
-        val sslModeParam = postgresConfiguration.sslMode?.mode?.let { "?sslmode=$it" } ?: ""
+        val sslModeParam =
+            postgresConfiguration.takeIf { it.ssl }?.sslMode?.mode?.let { "?sslmode=$it" } ?: ""
         val jdbcUrlParams = postgresConfiguration.jdbcUrlParams?.let { "&$it" } ?: ""
         val postgresJdbcUrl =
             "jdbc:postgresql://$resolvedHost:$resolvedPort/${postgresConfiguration.database}$sslModeParam$jdbcUrlParams"
