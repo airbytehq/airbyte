@@ -97,6 +97,14 @@ def retry_pattern(backoff_type, exception, **wait_gen_kwargs):
         pattern = r"Cannot include .* in summary param because they weren't there while creating the report run."
         return bool(exc.http_status() == http.client.BAD_REQUEST and re.search(pattern, exc.api_error_message()))
 
+    def is_graph_batch_exception(exc: FacebookRequestError) -> bool:
+        """Check if the error is a GraphBatchException from Facebook's batch API.
+        This error occurs when the batch request is too large or contains failed calls."""
+        if exc.http_status() == http.client.BAD_REQUEST:
+            error_data = getattr(exc, '_error', {})
+            return error_data.get('type') == 'GraphBatchException' or 'GraphBatchException' in exc.api_error_message()
+        return False
+
     def should_retry_api_error(exc):
         if isinstance(exc, FacebookRequestError):
             call_rate_limit_error = exc.api_error_code() in FACEBOOK_RATE_LIMIT_ERROR_CODES
@@ -106,6 +114,7 @@ def retry_pattern(backoff_type, exception, **wait_gen_kwargs):
             connection_reset_error = exc.api_error_code() == FACEBOOK_CONNECTION_RESET_ERROR_CODE
             server_error = exc.http_status() == http.client.INTERNAL_SERVER_ERROR
             service_unavailable_error = exc.http_status() == http.client.SERVICE_UNAVAILABLE
+            graph_batch_exception = is_graph_batch_exception(exc)
             return any(
                 (
                     exc.api_transient_error(),
@@ -117,6 +126,7 @@ def retry_pattern(backoff_type, exception, **wait_gen_kwargs):
                     temporary_oauth_error,
                     server_error,
                     service_unavailable_error,
+                    graph_batch_exception,
                 )
             )
         return True
@@ -211,6 +221,16 @@ def traced_exception(fb_exception: FacebookRequestError):
     elif fb_exception.http_status() == 503:
         return AirbyteTracedException(
             message="The Facebook API service is temporarily unavailable. This issue should resolve itself, and does not require further action.",
+            internal_message=str(fb_exception),
+            failure_type=FailureType.transient_error,
+            exception=fb_exception,
+        )
+
+    elif fb_exception.http_status() == 400 and (
+        getattr(fb_exception, '_error', {}).get('type') == 'GraphBatchException' or 'GraphBatchException' in msg
+    ):
+        return AirbyteTracedException(
+            message="Facebook's batch API encountered an error while processing multiple requests. This is typically a transient issue. The sync will retry automatically.",
             internal_message=str(fb_exception),
             failure_type=FailureType.transient_error,
             exception=fb_exception,
