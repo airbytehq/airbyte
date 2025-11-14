@@ -16,7 +16,7 @@ import io.airbyte.cdk.load.pipeline.FinalOutput
 import io.airbyte.cdk.load.pipeline.IntermediateOutput
 import io.airbyte.cdk.load.pipeline.NoOutput
 import io.airbyte.cdk.load.pipline.object_storage.ObjectLoaderPartFormatter
-import io.airbyte.cdk.load.schema.DestinationStream
+import io.airbyte.cdk.load.command.DestinationStream
 import io.airbyte.cdk.load.state.DestinationStateManager
 import io.airbyte.cdk.load.state.object_storage.ObjectStorageDestinationState
 import io.airbyte.cdk.load.util.Jsons

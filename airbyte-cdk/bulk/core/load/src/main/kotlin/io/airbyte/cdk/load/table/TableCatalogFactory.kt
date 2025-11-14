@@ -5,11 +5,14 @@
 package io.airbyte.cdk.load.table
 
 import io.airbyte.cdk.load.command.DestinationCatalog
-import io.airbyte.cdk.load.schema.DestinationStream
+import io.airbyte.cdk.load.command.DestinationStream
+import io.airbyte.cdk.load.schema.TableName
+import io.airbyte.cdk.load.schema.TableNames
 import io.github.oshai.kotlinlogging.KotlinLogging
 import io.micronaut.context.annotation.Factory
 import javax.inject.Singleton
 import org.apache.commons.codec.digest.DigestUtils
+import kotlin.collections.contains
 
 private val LOGGER = KotlinLogging.logger {}
 const val DEFAULT_AIRBYTE_INTERNAL_NAMESPACE = "airbyte_internal"
@@ -55,7 +58,7 @@ class TableCatalogFactory {
             val currentFinalProcessedName: TableName
 
             val rawTableNameColliding =
-                processedRawTableNames?.let { originalRawTableName in it } ?: false
+                processedRawTableNames?.let { originalRawTableName contains it } ?: false
             val finalTableNameColliding = originalFinalTableName in processedFinalTableNames
             if (rawTableNameColliding || finalTableNameColliding) {
                 LOGGER.info {

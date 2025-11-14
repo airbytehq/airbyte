@@ -11,9 +11,9 @@ import io.airbyte.cdk.load.data.FieldType
 import io.airbyte.cdk.load.data.IntegerType
 import io.airbyte.cdk.load.data.ObjectType
 import io.airbyte.cdk.load.message.InputRecord
-import io.airbyte.cdk.load.schema.Append
-import io.airbyte.cdk.load.schema.Dedupe
-import io.airbyte.cdk.load.schema.DestinationStream
+import io.airbyte.cdk.load.command.Append
+import io.airbyte.cdk.load.command.Dedupe
+import io.airbyte.cdk.load.command.DestinationStream
 import io.airbyte.cdk.load.test.util.DestinationCleaner
 import io.airbyte.cdk.load.test.util.OutputRecord
 import io.airbyte.cdk.load.toolkits.iceberg.parquet.TableIdGenerator

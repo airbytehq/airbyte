@@ -9,7 +9,7 @@ import io.airbyte.cdk.load.command.DestinationConfiguration
 import io.airbyte.cdk.load.file.object_storage.ObjectStorageClient
 import io.airbyte.cdk.load.file.object_storage.PathFactory
 import io.airbyte.cdk.load.file.object_storage.RemoteObject
-import io.airbyte.cdk.load.schema.DestinationStream
+import io.airbyte.cdk.load.command.DestinationStream
 import io.airbyte.cdk.load.state.DestinationState
 import io.airbyte.cdk.load.state.DestinationStatePersister
 import io.github.oshai.kotlinlogging.KotlinLogging

@@ -16,7 +16,7 @@ import io.airbyte.cdk.load.message.DestinationRecord
 import io.airbyte.cdk.load.message.DestinationRecordSource
 import io.airbyte.cdk.load.message.DestinationRecordStreamComplete
 import io.airbyte.cdk.load.message.Undefined
-import io.airbyte.cdk.load.schema.DestinationStream
+import io.airbyte.cdk.load.command.DestinationStream
 import io.mockk.coVerify
 import io.mockk.every
 import io.mockk.mockk

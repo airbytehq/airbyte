@@ -10,8 +10,8 @@ import io.airbyte.cdk.load.command.NamespaceMapper
 import io.airbyte.cdk.load.data.ObjectTypeWithoutSchema
 import io.airbyte.cdk.load.message.DestinationRecordStreamComplete
 import io.airbyte.cdk.load.message.InputRecord
-import io.airbyte.cdk.load.schema.Append
-import io.airbyte.cdk.load.schema.DestinationStream
+import io.airbyte.cdk.load.command.Append
+import io.airbyte.cdk.load.command.DestinationStream
 import io.airbyte.cdk.load.util.serializeToString
 import io.airbyte.cdk.load.write.WriteOperation
 import io.github.oshai.kotlinlogging.KotlinLogging

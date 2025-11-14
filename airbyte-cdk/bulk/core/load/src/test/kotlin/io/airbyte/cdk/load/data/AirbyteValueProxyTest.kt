@@ -8,8 +8,8 @@ import com.fasterxml.jackson.databind.JsonNode
 import com.fasterxml.jackson.databind.node.ObjectNode
 import io.airbyte.cdk.load.command.NamespaceMapper
 import io.airbyte.cdk.load.data.json.toAirbyteValue
-import io.airbyte.cdk.load.schema.Append
-import io.airbyte.cdk.load.schema.DestinationStream
+import io.airbyte.cdk.load.command.Append
+import io.airbyte.cdk.load.command.DestinationStream
 import io.airbyte.cdk.load.util.deserializeToNode
 import io.airbyte.cdk.load.util.serializeToString
 import io.airbyte.protocol.protobuf.AirbyteRecordMessage.AirbyteValueProtobuf

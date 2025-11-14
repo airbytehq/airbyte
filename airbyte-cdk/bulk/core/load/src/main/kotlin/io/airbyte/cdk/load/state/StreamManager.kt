@@ -5,7 +5,7 @@
 package io.airbyte.cdk.load.state
 
 import io.airbyte.cdk.load.message.BatchState
-import io.airbyte.cdk.load.schema.DestinationStream
+import io.airbyte.cdk.load.command.DestinationStream
 import io.airbyte.cdk.load.task.implementor.CloseStreamTask
 import io.airbyte.cdk.load.task.implementor.FailStreamTask
 import io.airbyte.cdk.load.util.setOnce

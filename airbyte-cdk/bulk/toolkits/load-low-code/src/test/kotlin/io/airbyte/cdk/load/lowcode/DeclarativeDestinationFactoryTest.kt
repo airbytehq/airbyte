@@ -40,10 +40,10 @@ import io.airbyte.cdk.load.model.http.HttpRequester as HttpRequesterModel
 import io.airbyte.cdk.load.model.http.authenticator.BasicAccessAuthenticator as BasicAccessAuthenticatorModel
 import io.airbyte.cdk.load.model.retriever.Retriever
 import io.airbyte.cdk.load.model.spec.Spec
-import io.airbyte.cdk.load.schema.Append
-import io.airbyte.cdk.load.schema.Dedupe
-import io.airbyte.cdk.load.schema.SoftDelete
-import io.airbyte.cdk.load.schema.Update
+import io.airbyte.cdk.load.command.Append
+import io.airbyte.cdk.load.command.Dedupe
+import io.airbyte.cdk.load.command.SoftDelete
+import io.airbyte.cdk.load.command.Update
 import io.airbyte.cdk.util.Jsons
 import io.airbyte.cdk.util.ResourceUtils
 import io.airbyte.protocol.models.v0.AdvancedAuth

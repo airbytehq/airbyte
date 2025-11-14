@@ -5,7 +5,7 @@
 package io.airbyte.cdk.load.file.parquet
 
 import io.airbyte.cdk.load.data.Transformations
-import io.airbyte.cdk.load.schema.DestinationStream
+import io.airbyte.cdk.load.command.DestinationStream
 import java.io.Closeable
 import java.io.File
 import java.io.InputStream

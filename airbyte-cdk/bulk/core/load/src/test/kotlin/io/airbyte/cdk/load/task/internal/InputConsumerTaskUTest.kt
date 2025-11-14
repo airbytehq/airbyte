@@ -15,7 +15,7 @@ import io.airbyte.cdk.load.message.PipelineEvent
 import io.airbyte.cdk.load.message.QueueWriter
 import io.airbyte.cdk.load.message.StreamKey
 import io.airbyte.cdk.load.pipeline.InputPartitioner
-import io.airbyte.cdk.load.schema.DestinationStream
+import io.airbyte.cdk.load.command.DestinationStream
 import io.airbyte.cdk.load.state.PipelineEventBookkeepingRouter
 import io.airbyte.cdk.load.state.Reserved
 import io.mockk.coEvery

@@ -8,7 +8,7 @@ import io.airbyte.cdk.load.data.StringType
 import io.airbyte.cdk.load.data.avro.toAvroSchema
 import io.airbyte.cdk.load.data.withAirbyteMeta
 import io.airbyte.cdk.load.message.Meta
-import io.airbyte.cdk.load.schema.DestinationStream
+import io.airbyte.cdk.load.command.DestinationStream
 import org.apache.avro.LogicalTypes
 import org.apache.avro.Schema
 import org.junit.jupiter.api.Assertions.assertEquals

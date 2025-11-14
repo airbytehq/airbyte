@@ -5,7 +5,7 @@
 package io.airbyte.cdk.load.state
 
 import edu.umd.cs.findbugs.annotations.SuppressFBWarnings
-import io.airbyte.cdk.load.schema.DestinationStream
+import io.airbyte.cdk.load.command.DestinationStream
 import io.micronaut.context.annotation.Secondary
 import jakarta.inject.Singleton
 import java.util.concurrent.ConcurrentHashMap

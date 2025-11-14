@@ -4,7 +4,7 @@
 
 package io.airbyte.cdk.load.task.implementor
 
-import io.airbyte.cdk.load.schema.DestinationStream
+import io.airbyte.cdk.load.command.DestinationStream
 import io.airbyte.cdk.load.state.StreamProcessingFailed
 import io.airbyte.cdk.load.state.StreamProcessingSucceeded
 import io.airbyte.cdk.load.state.SyncManager

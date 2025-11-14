@@ -5,10 +5,6 @@
 package io.airbyte.cdk.load.command
 
 import io.airbyte.cdk.load.data.json.JsonSchemaToAirbyteType
-import io.airbyte.cdk.load.schema.Append
-import io.airbyte.cdk.load.schema.DestinationStream
-import io.airbyte.cdk.load.schema.DestinationStreamFactory
-import io.airbyte.cdk.load.schema.Overwrite
 import io.airbyte.protocol.models.JsonSchemaType
 import io.airbyte.protocol.models.v0.CatalogHelpers
 import io.airbyte.protocol.models.v0.ConfiguredAirbyteStream

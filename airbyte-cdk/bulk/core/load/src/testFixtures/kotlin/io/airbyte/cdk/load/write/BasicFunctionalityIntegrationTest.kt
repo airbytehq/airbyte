@@ -47,10 +47,10 @@ import io.airbyte.cdk.load.message.Meta.Change
 import io.airbyte.cdk.load.message.Meta.Companion.CHECKPOINT_ID_NAME
 import io.airbyte.cdk.load.message.Meta.Companion.CHECKPOINT_INDEX_NAME
 import io.airbyte.cdk.load.message.StreamCheckpoint
-import io.airbyte.cdk.load.schema.Append
-import io.airbyte.cdk.load.schema.Dedupe
-import io.airbyte.cdk.load.schema.DestinationStream
-import io.airbyte.cdk.load.schema.ImportType
+import io.airbyte.cdk.load.command.Append
+import io.airbyte.cdk.load.command.Dedupe
+import io.airbyte.cdk.load.command.DestinationStream
+import io.airbyte.cdk.load.command.ImportType
 import io.airbyte.cdk.load.state.CheckpointId
 import io.airbyte.cdk.load.state.CheckpointIndex
 import io.airbyte.cdk.load.state.CheckpointKey

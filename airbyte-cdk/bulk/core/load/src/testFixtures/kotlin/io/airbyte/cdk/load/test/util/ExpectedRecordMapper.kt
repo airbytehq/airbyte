@@ -14,7 +14,7 @@ import io.airbyte.cdk.load.data.TimeWithTimezoneValue
 import io.airbyte.cdk.load.data.TimeWithoutTimezoneValue
 import io.airbyte.cdk.load.data.TimestampWithTimezoneValue
 import io.airbyte.cdk.load.data.TimestampWithoutTimezoneValue
-import io.airbyte.cdk.load.schema.DestinationStream
+import io.airbyte.cdk.load.command.DestinationStream
 import java.time.format.DateTimeFormatter
 
 fun interface ExpectedRecordMapper {

@@ -9,7 +9,7 @@ import io.airbyte.cdk.load.dataflow.state.PartitionHistogram
 import io.airbyte.cdk.load.dataflow.state.PartitionKey
 import io.airbyte.cdk.load.dataflow.transform.RecordDTO
 import io.airbyte.cdk.load.message.DestinationRecordRaw
-import io.airbyte.cdk.load.schema.DestinationStream
+import io.airbyte.cdk.load.command.DestinationStream
 
 data class DataFlowStageIO(
     var raw: DestinationRecordRaw? = null,

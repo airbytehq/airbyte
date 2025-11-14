@@ -4,7 +4,7 @@
 
 package io.airbyte.cdk.load.write
 
-import io.airbyte.cdk.load.schema.DestinationStream
+import io.airbyte.cdk.load.command.DestinationStream
 import io.airbyte.cdk.load.state.DestinationFailure
 import io.micronaut.context.annotation.Secondary
 import jakarta.inject.Singleton

@@ -10,7 +10,7 @@ import io.airbyte.cdk.load.command.object_storage.ObjectStoragePathConfiguration
 import io.airbyte.cdk.load.command.object_storage.ObjectStoragePathConfigurationProvider
 import io.airbyte.cdk.load.file.DefaultTimeProvider
 import io.airbyte.cdk.load.file.TimeProvider
-import io.airbyte.cdk.load.schema.DestinationStream
+import io.airbyte.cdk.load.command.DestinationStream
 import io.micronaut.context.annotation.Secondary
 import jakarta.inject.Singleton
 import java.nio.file.Paths

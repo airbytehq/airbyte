@@ -4,7 +4,7 @@
 
 package io.airbyte.cdk.load.message
 
-import io.airbyte.cdk.load.schema.DestinationStream
+import io.airbyte.cdk.load.command.DestinationStream
 import io.airbyte.cdk.load.state.CheckpointId
 import io.airbyte.cdk.load.state.CheckpointValue
 

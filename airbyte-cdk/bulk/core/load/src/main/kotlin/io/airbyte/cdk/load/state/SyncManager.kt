@@ -7,7 +7,7 @@ package io.airbyte.cdk.load.state
 import edu.umd.cs.findbugs.annotations.SuppressFBWarnings
 import io.airbyte.cdk.TransientErrorException
 import io.airbyte.cdk.load.command.DestinationCatalog
-import io.airbyte.cdk.load.schema.DestinationStream
+import io.airbyte.cdk.load.command.DestinationStream
 import io.airbyte.cdk.load.write.StreamLoader
 import jakarta.inject.Singleton
 import java.util.concurrent.ConcurrentHashMap

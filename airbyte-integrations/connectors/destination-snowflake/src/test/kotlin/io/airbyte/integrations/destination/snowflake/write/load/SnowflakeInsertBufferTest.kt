@@ -9,7 +9,7 @@ import io.airbyte.cdk.load.data.IntegerValue
 import io.airbyte.cdk.load.data.NullValue
 import io.airbyte.cdk.load.data.StringValue
 import io.airbyte.cdk.load.message.Meta
-import io.airbyte.cdk.load.table.TableName
+import io.airbyte.cdk.load.schema.TableName
 import io.airbyte.integrations.destination.snowflake.client.SnowflakeAirbyteClient
 import io.airbyte.integrations.destination.snowflake.spec.SnowflakeConfiguration
 import io.airbyte.integrations.destination.snowflake.sql.SnowflakeColumnUtils

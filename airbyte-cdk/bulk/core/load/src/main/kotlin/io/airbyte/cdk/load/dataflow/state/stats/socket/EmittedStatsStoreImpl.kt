@@ -9,7 +9,7 @@ import io.airbyte.cdk.load.command.DestinationCatalog
 import io.airbyte.cdk.load.dataflow.state.Histogram
 import io.airbyte.cdk.load.dataflow.state.stats.EmissionStats
 import io.airbyte.cdk.load.dataflow.state.stats.EmittedStatsStore
-import io.airbyte.cdk.load.schema.DestinationStream
+import io.airbyte.cdk.load.command.DestinationStream
 import io.airbyte.cdk.output.OutputConsumer
 import io.airbyte.protocol.models.Jsons
 import io.airbyte.protocol.models.v0.AirbyteMessage

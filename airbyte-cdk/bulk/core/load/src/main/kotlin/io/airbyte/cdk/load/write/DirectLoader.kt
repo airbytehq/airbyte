@@ -5,7 +5,7 @@
 package io.airbyte.cdk.load.write
 
 import io.airbyte.cdk.load.message.DestinationRecordRaw
-import io.airbyte.cdk.load.schema.DestinationStream
+import io.airbyte.cdk.load.command.DestinationStream
 
 /**
  * [DirectLoader] is for the use case where records are loaded directly into the destination or

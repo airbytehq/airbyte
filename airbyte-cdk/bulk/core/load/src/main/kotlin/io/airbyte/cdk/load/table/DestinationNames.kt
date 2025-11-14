@@ -4,27 +4,10 @@
 
 package io.airbyte.cdk.load.table
 
-import io.airbyte.cdk.load.schema.DestinationStream
+import io.airbyte.cdk.load.command.DestinationStream
+import io.airbyte.cdk.load.schema.TableName
 import io.airbyte.cdk.load.table.TableSuffixes.TMP_TABLE_SUFFIX
 import org.apache.commons.codec.digest.DigestUtils
-
-data class TableNames(
-    // this is pretty dumb, but in theory we could have:
-    // * old-style implementation: raw+final tables both exist
-    // * only the raw table exists (i.e. T+D disabled)
-    // * only the final table exists (i.e. new-style direct-load tables)
-    val rawTableName: TableName?,
-    val finalTableName: TableName?,
-) {
-    init {
-        check(rawTableName != null || finalTableName != null) {
-            "At least one table name should be nonnull"
-        }
-    }
-
-    fun toPrettyString() =
-        "Raw table: ${rawTableName?.toPrettyString()}; Final table: ${finalTableName?.toPrettyString()}"
-}
 
 fun interface TempTableNameGenerator {
     fun generate(originalName: TableName): TableName

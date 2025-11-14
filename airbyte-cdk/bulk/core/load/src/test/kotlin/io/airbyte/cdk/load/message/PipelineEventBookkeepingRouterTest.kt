@@ -9,7 +9,7 @@ import io.airbyte.cdk.load.command.NamespaceMapper
 import io.airbyte.cdk.load.config.NamespaceDefinitionType
 import io.airbyte.cdk.load.pipeline.BatchEndOfStream
 import io.airbyte.cdk.load.pipeline.BatchUpdate
-import io.airbyte.cdk.load.schema.DestinationStream
+import io.airbyte.cdk.load.command.DestinationStream
 import io.airbyte.cdk.load.state.CheckpointId
 import io.airbyte.cdk.load.state.CheckpointIndex
 import io.airbyte.cdk.load.state.CheckpointKey

@@ -8,8 +8,6 @@ import io.airbyte.cdk.load.data.FieldType
 import io.airbyte.cdk.load.data.IntegerType
 import io.airbyte.cdk.load.data.ObjectType
 import io.airbyte.cdk.load.data.StringType
-import io.airbyte.cdk.load.schema.Append
-import io.airbyte.cdk.load.schema.DestinationStream
 import io.micronaut.context.annotation.Factory
 import io.micronaut.context.annotation.Primary
 import io.micronaut.context.annotation.Requires

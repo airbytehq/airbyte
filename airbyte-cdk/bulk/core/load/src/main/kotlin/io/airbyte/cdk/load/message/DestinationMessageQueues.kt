@@ -4,7 +4,7 @@
 
 package io.airbyte.cdk.load.message
 
-import io.airbyte.cdk.load.schema.DestinationStream
+import io.airbyte.cdk.load.command.DestinationStream
 import io.airbyte.cdk.load.state.CheckpointKey
 import io.airbyte.cdk.load.state.Reserved
 import io.micronaut.context.annotation.Secondary

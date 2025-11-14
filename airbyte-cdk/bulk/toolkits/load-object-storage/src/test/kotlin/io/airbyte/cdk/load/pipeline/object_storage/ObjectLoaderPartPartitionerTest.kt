@@ -10,7 +10,7 @@ import io.airbyte.cdk.load.message.WithStream
 import io.airbyte.cdk.load.pipline.object_storage.ObjectKey
 import io.airbyte.cdk.load.pipline.object_storage.ObjectLoaderFormattedPartPartitioner
 import io.airbyte.cdk.load.pipline.object_storage.ObjectLoaderPartFormatter
-import io.airbyte.cdk.load.schema.DestinationStream
+import io.airbyte.cdk.load.command.DestinationStream
 import kotlin.test.assertEquals
 import org.junit.jupiter.api.Test
 

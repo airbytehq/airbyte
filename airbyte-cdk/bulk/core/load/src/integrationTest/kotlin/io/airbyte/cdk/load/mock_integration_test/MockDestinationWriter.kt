@@ -5,9 +5,9 @@
 package io.airbyte.cdk.load.mock_integration_test
 
 import edu.umd.cs.findbugs.annotations.SuppressFBWarnings
-import io.airbyte.cdk.load.schema.Append
-import io.airbyte.cdk.load.schema.Dedupe
-import io.airbyte.cdk.load.schema.DestinationStream
+import io.airbyte.cdk.load.command.Append
+import io.airbyte.cdk.load.command.Dedupe
+import io.airbyte.cdk.load.command.DestinationStream
 import io.airbyte.cdk.load.state.StreamProcessingFailed
 import io.airbyte.cdk.load.test.mock.MockDestinationBackend
 import io.airbyte.cdk.load.test.mock.MockDestinationBackend.MOCK_TEST_MICRONAUT_ENVIRONMENT

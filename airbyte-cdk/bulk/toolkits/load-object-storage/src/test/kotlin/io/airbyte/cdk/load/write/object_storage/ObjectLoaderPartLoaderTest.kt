@@ -17,7 +17,7 @@ import io.airbyte.cdk.load.pipline.object_storage.ObjectKey
 import io.airbyte.cdk.load.pipline.object_storage.ObjectLoaderPartFormatter
 import io.airbyte.cdk.load.pipline.object_storage.ObjectLoaderPartLoader
 import io.airbyte.cdk.load.pipline.object_storage.UploadsInProgress
-import io.airbyte.cdk.load.schema.DestinationStream
+import io.airbyte.cdk.load.command.DestinationStream
 import io.mockk.coEvery
 import io.mockk.coVerify
 import io.mockk.mockk

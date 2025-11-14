@@ -32,7 +32,7 @@ import io.airbyte.cdk.load.message.StreamCheckpointWrapped
 import io.airbyte.cdk.load.message.StreamKey
 import io.airbyte.cdk.load.pipeline.BatchEndOfStream
 import io.airbyte.cdk.load.pipeline.BatchUpdate
-import io.airbyte.cdk.load.schema.DestinationStream
+import io.airbyte.cdk.load.command.DestinationStream
 import io.airbyte.cdk.load.util.CloseableCoroutine
 import io.github.oshai.kotlinlogging.KotlinLogging
 import jakarta.inject.Named

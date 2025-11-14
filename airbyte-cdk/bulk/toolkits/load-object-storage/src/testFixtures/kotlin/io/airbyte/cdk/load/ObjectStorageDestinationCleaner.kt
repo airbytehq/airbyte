@@ -7,7 +7,7 @@ package io.airbyte.cdk.load
 import io.airbyte.cdk.load.file.object_storage.ObjectStorageClient
 import io.airbyte.cdk.load.file.object_storage.ObjectStoragePathFactory
 import io.airbyte.cdk.load.file.object_storage.RemoteObject
-import io.airbyte.cdk.load.schema.DestinationStream
+import io.airbyte.cdk.load.command.DestinationStream
 import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.runBlocking
 import kotlinx.coroutines.withContext

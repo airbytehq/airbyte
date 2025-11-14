@@ -27,9 +27,9 @@ import io.airbyte.cdk.load.data.iceberg.parquet.toIcebergSchema
 import io.airbyte.cdk.load.data.withAirbyteMeta
 import io.airbyte.cdk.load.message.EnrichedDestinationRecordAirbyteValue
 import io.airbyte.cdk.load.message.Meta
-import io.airbyte.cdk.load.schema.Dedupe
-import io.airbyte.cdk.load.schema.DestinationStream
-import io.airbyte.cdk.load.schema.ImportType
+import io.airbyte.cdk.load.command.Dedupe
+import io.airbyte.cdk.load.command.DestinationStream
+import io.airbyte.cdk.load.command.ImportType
 import io.airbyte.cdk.load.toolkits.iceberg.parquet.TableIdGenerator
 import io.airbyte.cdk.load.util.serializeToString
 import io.airbyte.protocol.models.v0.AirbyteRecordMessageMetaChange.Change

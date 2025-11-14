@@ -23,7 +23,7 @@ import io.airbyte.cdk.load.component.TableSchemaEvolutionClient
 import io.airbyte.cdk.load.message.Meta.Companion.COLUMN_NAMES
 import io.airbyte.cdk.load.orchestration.db.TempTableNameGenerator
 import io.airbyte.cdk.load.table.ColumnNameMapping
-import io.airbyte.cdk.load.table.TableName
+import io.airbyte.cdk.load.schema.TableName
 import io.airbyte.integrations.destination.clickhouse.client.ClickhouseSqlGenerator.Companion.DATETIME_WITH_PRECISION
 import io.airbyte.integrations.destination.clickhouse.client.ClickhouseSqlGenerator.Companion.DECIMAL_WITH_PRECISION_AND_SCALE
 import io.airbyte.integrations.destination.clickhouse.spec.ClickhouseConfiguration

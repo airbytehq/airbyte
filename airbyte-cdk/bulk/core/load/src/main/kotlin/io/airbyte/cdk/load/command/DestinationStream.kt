@@ -2,9 +2,8 @@
  * Copyright (c) 2024 Airbyte, Inc., all rights reserved.
  */
 
-package io.airbyte.cdk.load.schema
+package io.airbyte.cdk.load.command
 
-import io.airbyte.cdk.load.command.NamespaceMapper
 import io.airbyte.cdk.load.data.AirbyteType
 import io.airbyte.cdk.load.data.AirbyteValueProxy
 import io.airbyte.cdk.load.data.ObjectType
@@ -12,7 +11,6 @@ import io.airbyte.cdk.load.data.collectUnknownPaths
 import io.airbyte.cdk.load.data.json.AirbyteTypeToJsonSchema
 import io.airbyte.cdk.load.message.DestinationRecord
 import io.airbyte.cdk.load.message.Meta
-import io.airbyte.cdk.load.table.TableName
 import io.airbyte.protocol.models.v0.AirbyteRecordMessageMetaChange
 import io.airbyte.protocol.models.v0.AirbyteStream
 import io.airbyte.protocol.models.v0.ConfiguredAirbyteStream

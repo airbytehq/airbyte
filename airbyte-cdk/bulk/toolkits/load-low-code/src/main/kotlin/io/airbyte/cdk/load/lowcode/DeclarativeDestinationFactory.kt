@@ -92,11 +92,11 @@ import io.airbyte.cdk.load.model.http.authenticator.Authenticator as Authenticat
 import io.airbyte.cdk.load.model.http.authenticator.BasicAccessAuthenticator as BasicAccessAuthenticatorModel
 import io.airbyte.cdk.load.model.http.authenticator.OAuthAuthenticator as OAuthAuthenticatorModel
 import io.airbyte.cdk.load.model.retriever.Retriever as RetrieverModel
-import io.airbyte.cdk.load.schema.Append
-import io.airbyte.cdk.load.schema.Dedupe
-import io.airbyte.cdk.load.schema.ImportType
-import io.airbyte.cdk.load.schema.SoftDelete
-import io.airbyte.cdk.load.schema.Update
+import io.airbyte.cdk.load.command.Append
+import io.airbyte.cdk.load.command.Dedupe
+import io.airbyte.cdk.load.command.ImportType
+import io.airbyte.cdk.load.command.SoftDelete
+import io.airbyte.cdk.load.command.Update
 import io.airbyte.cdk.load.spec.DeclarativeCdkConfiguration
 import io.airbyte.cdk.load.spec.DeclarativeSpecificationFactory
 import io.airbyte.cdk.util.Jsons

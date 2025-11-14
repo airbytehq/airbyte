@@ -7,7 +7,7 @@ package io.airbyte.cdk.load.command.s3
 import io.airbyte.cdk.load.command.object_storage.ObjectStoragePathConfigurationProvider
 import io.airbyte.cdk.load.file.TimeProvider
 import io.airbyte.cdk.load.file.object_storage.ObjectStoragePathFactory
-import io.airbyte.cdk.load.schema.DestinationStream
+import io.airbyte.cdk.load.command.DestinationStream
 import io.mockk.every
 import io.mockk.mockk
 import java.time.LocalDateTime
