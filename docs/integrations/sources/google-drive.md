@@ -6,6 +6,10 @@ This page contains the setup guide and reference information for the Google Driv
 The Google Drive source connector pulls data from a single folder in Google Drive. Subfolders are recursively included in the sync. All files in the specified folder and all sub folders will be considered.
 :::
 
+:::warning
+Files that live in the Google Drive trash are still returned by the Drive API when the folder is scanned. The connector will therefore sync trashed files—including Excel workbooks and other file types—whenever they match your path patterns. Permanently delete or restore unwanted files before running a sync if you do not want them replicated.
+:::
+
 ## Prerequisites
 
 - Drive folder link - The link to the Google Drive folder you want to sync files from (includes files located in subfolders)
@@ -320,6 +324,7 @@ By default, this stream is enabled and retrieves information about **users and g
 
 | Version | Date       | Pull Request                                             | Subject                                                                                      |
 |---------|------------|----------------------------------------------------------|----------------------------------------------------------------------------------------------|
+| 0.5.6 | 2025-11-17 | [XXXXX](https://github.com/airbytehq/airbyte/pull/XXXXX) | Update CDK to Fix Excel Out of Range Date Parsing Errors |
 | 0.5.3 | 2025-11-11 | [69272](https://github.com/airbytehq/airbyte/pull/69272) | Update dependencies |
 | 0.5.2 | 2025-11-04 | [69158](https://github.com/airbytehq/airbyte/pull/69158) | Update dependencies |
 | 0.5.1 | 2025-10-29 | [69053](https://github.com/airbytehq/airbyte/pull/69053) | Update dependencies |
