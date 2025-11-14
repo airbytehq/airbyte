@@ -219,38 +219,38 @@ class TestUpdateInBatch:
 
     def test_less_jobs(self, api, started_job, batch):
         """Should update all jobs when number of jobs less than max size of batch"""
-        jobs = [started_job for _ in range(49)]
+        jobs = [started_job for _ in range(29)]
 
         update_in_batch(api=api, jobs=jobs)
 
-        assert started_job.update_job.call_count == 49
-        assert len(api.new_batch.return_value) == 49
+        assert started_job.update_job.call_count == 29
+        assert len(api.new_batch.return_value) == 29
         batch.execute.assert_called_once()
 
     def test_more_jobs(self, api, started_job, batch):
         """Should update all jobs when number of jobs greater than max size of batch"""
         second_batch = copy.deepcopy(batch)
-        jobs = [started_job for _ in range(55)]
+        jobs = [started_job for _ in range(35)]
         api.new_batch.return_value = None
         api.new_batch.side_effect = [batch, second_batch]
 
         update_in_batch(api=api, jobs=jobs)
 
-        assert started_job.update_job.call_count == 55
-        assert len(batch) == 50
+        assert started_job.update_job.call_count == 35
+        assert len(batch) == 30
         batch.execute.assert_called_once()
         assert len(second_batch) == 5
         second_batch.execute.assert_called_once()
 
     def test_failed_execution(self, api, started_job, batch):
         """Should execute batch until there are no failed tasks"""
-        jobs = [started_job for _ in range(49)]
+        jobs = [started_job for _ in range(29)]
         batch.execute.side_effect = [batch, batch, None]
 
         update_in_batch(api=api, jobs=jobs)
 
-        assert started_job.update_job.call_count == 49
-        assert len(api.new_batch.return_value) == 49
+        assert started_job.update_job.call_count == 29
+        assert len(api.new_batch.return_value) == 29
         assert batch.execute.call_count == 3
 
 
