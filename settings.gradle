@@ -1,5 +1,3 @@
-import com.gradle.scan.plugin.PublishedBuildScan
-
 pluginManagement {
     repositories {
         // # Gradle looks for dependency artifacts in repositories listed in 'repositories' blocks in descending order.
@@ -119,7 +117,7 @@ develocity {
         termsOfUseUrl = "https://gradle.com/terms-of-service"
         termsOfUseAgree = "yes"
         uploadInBackground = !isCI // Disable in CI or scan URLs may not work.
-        buildScanPublished { PublishedBuildScan scan ->
+        buildScanPublished { scan ->
             file("scan-journal.log") << "${new Date()} - ${scan.buildScanId} - ${scan.buildScanUri}\n"
         }
     }

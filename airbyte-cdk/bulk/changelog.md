@@ -1,3 +1,13 @@
+## Version 0.1.79
+
+**Extract CDK**
+
+* Support multiple ts precision patterns for ts decoding. Expose `columnMetadataFromResultSet` function in `JdbcMetadataQuerier`.
+
+## Version 0.1.78
+
+load cdk: add basic schema evolution test cases
+
 ## Version 0.1.77
 
 **Extract CDK**
