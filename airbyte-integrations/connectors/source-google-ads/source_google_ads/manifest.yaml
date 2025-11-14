@@ -285,6 +285,8 @@ definitions:
       state_migrations:
         - type: CustomStateMigration
           class_name: source_google_ads.components.GoogleAdsCriterionParentStateMigration
+        - type: CustomStateMigration
+          class_name: source_google_ads.components.GoogleAdsGlobalStateMigration
 
   accessible_accounts:
     $ref: "#/definitions/stream_base"
@@ -843,8 +845,7 @@ definitions:
     $parameters:
       url_base: "https://googleads.googleapis.com/v20/{{ stream_partition['customer_id'] }}/googleAds:search"
     retriever:
-      type: CustomRetriever
-      class_name: "source_google_ads.components.ChangeStatusRetriever"
+      type: SimpleRetriever
       requester:
         type: CustomRequester
         class_name: "source_google_ads.components.ChangeStatusRequester"
@@ -860,6 +861,12 @@ definitions:
         name: change_status
       paginator:
         $ref: "#/definitions/cursor_paginator"
+      pagination_reset:
+        type: PaginationReset
+        action: SPLIT_USING_CURSOR
+        limits:
+          type: PaginationResetLimits
+          number_of_records: 10000
       record_selector:
         type: RecordSelector
         $parameters:
