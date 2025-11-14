@@ -23,8 +23,9 @@ class PostgresDataDumper(
     private fun sanitizeColumnName(name: String): String {
         // Replicate the sanitization logic used by TableCatalog
         // First normalize Unicode characters (e.g., é -> e)
-        var sanitized = java.text.Normalizer.normalize(name, java.text.Normalizer.Form.NFD)
-            .replace(Regex("\\p{M}"), "") // Remove diacritical marks
+        var sanitized =
+            java.text.Normalizer.normalize(name, java.text.Normalizer.Form.NFD)
+                .replace(Regex("\\p{M}"), "") // Remove diacritical marks
 
         // Replace all non-alphanumeric characters (except underscore) with underscore
         sanitized = sanitized.replace(Regex("[^a-zA-Z0-9_]"), "_")
@@ -43,15 +44,18 @@ class PostgresDataDumper(
     ): List<OutputRecord> {
         val config = configProvider(spec)
         val tableNameGenerator = PostgresFinalTableNameGenerator(config)
-        val dataSource = PostgresBeanFactory().postgresDataSource(
-            postgresConfiguration = config,
-            resolvedHost = config.host,
-            resolvedPort = config.port
-        )
+        val dataSource =
+            PostgresBeanFactory()
+                .postgresDataSource(
+                    postgresConfiguration = config,
+                    resolvedHost = config.host,
+                    resolvedPort = config.port
+                )
 
         // Build reverse mapping from sanitized column names back to original names
         val reverseMapping = mutableMapOf<String, String>()
-        (stream.schema as? io.airbyte.cdk.load.data.ObjectType)?.properties?.keys?.forEach { originalName ->
+        (stream.schema as? io.airbyte.cdk.load.data.ObjectType)?.properties?.keys?.forEach {
+            originalName ->
             val sanitizedName = sanitizeColumnName(originalName)
             reverseMapping[sanitizedName] = originalName
         }
@@ -67,7 +71,8 @@ class PostgresDataDumper(
                 val quotedTableName = "\"${tableName.namespace}\".\"${tableName.name}\""
 
                 // First check if the table exists
-                val tableExistsQuery = """
+                val tableExistsQuery =
+                    """
                     SELECT COUNT(*) AS table_count
                     FROM information_schema.tables
                     WHERE table_schema = '${tableName.namespace}'
@@ -92,30 +97,41 @@ class PostgresDataDumper(
                         val sanitizedColumnName = resultSet.metaData.getColumnName(i)
                         if (!Meta.COLUMN_NAMES.contains(sanitizedColumnName)) {
                             // Reverse-map to get the original column name
-                            val originalColumnName = reverseMapping[sanitizedColumnName] ?: sanitizedColumnName
+                            val originalColumnName =
+                                reverseMapping[sanitizedColumnName] ?: sanitizedColumnName
 
                             val columnType = resultSet.metaData.getColumnTypeName(i)
-                            val value = when (columnType) {
-                                "timestamptz" -> resultSet.getObject(i, java.time.OffsetDateTime::class.java)
-                                "timestamp" -> resultSet.getObject(i, java.time.LocalDateTime::class.java)
-                                "timetz" -> resultSet.getObject(i, java.time.OffsetTime::class.java)
-                                "time" -> resultSet.getObject(i, java.time.LocalTime::class.java)
-                                else -> resultSet.getObject(i)
-                            }
-                            dataMap[originalColumnName] = value?.let {
-                                AirbyteValue.from(convertValue(it))
-                            } ?: NullValue
+                            val value =
+                                when (columnType) {
+                                    "timestamptz" ->
+                                        resultSet.getObject(i, java.time.OffsetDateTime::class.java)
+                                    "timestamp" ->
+                                        resultSet.getObject(i, java.time.LocalDateTime::class.java)
+                                    "timetz" ->
+                                        resultSet.getObject(i, java.time.OffsetTime::class.java)
+                                    "time" ->
+                                        resultSet.getObject(i, java.time.LocalTime::class.java)
+                                    else -> resultSet.getObject(i)
+                                }
+                            dataMap[originalColumnName] =
+                                value?.let { AirbyteValue.from(convertValue(it)) } ?: NullValue
                         }
                     }
 
-                    val outputRecord = OutputRecord(
-                        rawId = resultSet.getString(Meta.COLUMN_NAME_AB_RAW_ID),
-                        extractedAt = resultSet.getTimestamp(Meta.COLUMN_NAME_AB_EXTRACTED_AT).toInstant().toEpochMilli(),
-                        loadedAt = null,
-                        generationId = resultSet.getLong(Meta.COLUMN_NAME_AB_GENERATION_ID),
-                        data = ObjectValue(dataMap),
-                        airbyteMeta = stringToMeta(resultSet.getString(Meta.COLUMN_NAME_AB_META))
-                    )
+                    val outputRecord =
+                        OutputRecord(
+                            rawId = resultSet.getString(Meta.COLUMN_NAME_AB_RAW_ID),
+                            extractedAt =
+                                resultSet
+                                    .getTimestamp(Meta.COLUMN_NAME_AB_EXTRACTED_AT)
+                                    .toInstant()
+                                    .toEpochMilli(),
+                            loadedAt = null,
+                            generationId = resultSet.getLong(Meta.COLUMN_NAME_AB_GENERATION_ID),
+                            data = ObjectValue(dataMap),
+                            airbyteMeta =
+                                stringToMeta(resultSet.getString(Meta.COLUMN_NAME_AB_META))
+                        )
                     output.add(outputRecord)
                 }
                 resultSet.close()
@@ -140,23 +156,29 @@ class PostgresDataDumper(
             is java.time.OffsetTime -> value
             is java.time.LocalTime -> value
             is java.time.LocalDate -> value
-            // Legacy SQL types (shouldn't occur with our specific getters above, but keep as fallback)
+            // Legacy SQL types (shouldn't occur with our specific getters above, but keep as
+            // fallback)
             is java.sql.Date -> value.toLocalDate()
             is java.sql.Time -> value.toLocalTime()
             is java.sql.Timestamp -> value.toLocalDateTime()
             // JSONB and JSON types
             is PGobject -> {
                 val jsonNode = io.airbyte.commons.json.Jsons.deserialize(value.value!!)
-                // JSONB can contain objects, arrays, or primitives (strings, numbers, booleans, null)
+                // JSONB can contain objects, arrays, or primitives (strings, numbers, booleans,
+                // null)
                 // Try to convert to Map if it's an object, otherwise return the primitive value
                 when {
-                    jsonNode.isObject -> io.airbyte.commons.json.Jsons.convertValue(jsonNode, Map::class.java) as Any
-                    jsonNode.isArray -> io.airbyte.commons.json.Jsons.convertValue(jsonNode, List::class.java) as Any
+                    jsonNode.isObject ->
+                        io.airbyte.commons.json.Jsons.convertValue(jsonNode, Map::class.java) as Any
+                    jsonNode.isArray ->
+                        io.airbyte.commons.json.Jsons.convertValue(jsonNode, List::class.java)
+                            as Any
                     jsonNode.isTextual -> jsonNode.asText() ?: ""
-                    jsonNode.isNumber -> when {
-                        jsonNode.isIntegralNumber -> jsonNode.asLong() as Any
-                        else -> jsonNode.asDouble() as Any
-                    }
+                    jsonNode.isNumber ->
+                        when {
+                            jsonNode.isIntegralNumber -> jsonNode.asLong() as Any
+                            else -> jsonNode.asDouble() as Any
+                        }
                     jsonNode.isBoolean -> jsonNode.asBoolean() as Any
                     else -> jsonNode.toString()
                 }

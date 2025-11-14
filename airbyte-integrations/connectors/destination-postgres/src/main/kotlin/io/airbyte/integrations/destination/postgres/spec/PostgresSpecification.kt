@@ -59,7 +59,10 @@ class PostgresSpecificationOss : PostgresSpecification() {
     @get:JsonSchemaTitle("Port")
     @get:JsonPropertyDescription("Port of the database.")
     @get:JsonProperty("port")
-    @get:JsonSchemaInject(json = """{"group": "connection", "order": 1, "minimum": 0, "maximum": 65536, "examples": ["5432"]}""")
+    @get:JsonSchemaInject(
+        json =
+            """{"group": "connection", "order": 1, "minimum": 0, "maximum": 65536, "examples": ["5432"]}"""
+    )
     override val port: Int = 5432
 
     @get:JsonSchemaTitle("Database Name")
@@ -73,7 +76,10 @@ class PostgresSpecificationOss : PostgresSpecification() {
         "The default schema tables are written. If not specified otherwise, the \"public\" schema will be used."
     )
     @get:JsonProperty("schema")
-    @get:JsonSchemaInject(json = """{"group": "connection", "order": 3, "examples": ["public"], "default": "public"}""")
+    @get:JsonSchemaInject(
+        json =
+            """{"group": "connection", "order": 3, "examples": ["public"], "default": "public"}"""
+    )
     override val schema: String = "public"
 
     @get:JsonSchemaTitle("Username")
@@ -136,7 +142,9 @@ class PostgresSpecificationOss : PostgresSpecification() {
     @get:JsonSchemaInject(json = """{"group": "connection", "order": 10}""")
     override val internalTableSchema: String? = null
 
-    @get:JsonSchemaTitle("Disable Final Tables. (WARNING! Unstable option; Columns in raw table schema might change between versions)")
+    @get:JsonSchemaTitle(
+        "Disable Final Tables. (WARNING! Unstable option; Columns in raw table schema might change between versions)"
+    )
     @get:JsonPropertyDescription(
         """Disable Writing Final Tables. WARNING! The data format in _airbyte_data is likely stable but there are no guarantees that other metadata columns will remain the same in future versions""",
     )
@@ -376,7 +384,20 @@ class SslModeRequire : SslMode {
 
 @JsonSchemaTitle("verify-ca")
 @JsonSchemaDescription("Verify-ca SSL mode.")
-class SslModeVerifyCa : SslMode {
+data class SslModeVerifyCa(
+    @get:JsonSchemaTitle("CA Certificate")
+    @get:JsonPropertyDescription("CA certificate")
+    @get:JsonProperty("ca_certificate")
+    @get:JsonSchemaInject(json = """{"airbyte_secret": true, "multiline": true, "order": 1}""")
+    val caCertificate: String = "",
+    @get:JsonSchemaTitle("Client Key Password")
+    @get:JsonPropertyDescription(
+        "Password for keystorage. This field is optional. If you do not add it - the password will be generated automatically."
+    )
+    @get:JsonProperty("client_key_password")
+    @get:JsonSchemaInject(json = """{"airbyte_secret": true, "order": 2}""")
+    val clientKeyPassword: String? = null
+) : SslMode {
     companion object {
         const val MODE = "verify-ca"
     }
@@ -385,7 +406,30 @@ class SslModeVerifyCa : SslMode {
 
 @JsonSchemaTitle("verify-full")
 @JsonSchemaDescription("Verify-full SSL mode.")
-class SslModeVerifyFull : SslMode {
+data class SslModeVerifyFull(
+    @get:JsonSchemaTitle("CA Certificate")
+    @get:JsonPropertyDescription("CA certificate")
+    @get:JsonProperty("ca_certificate")
+    @get:JsonSchemaInject(json = """{"airbyte_secret": true, "multiline": true, "order": 1}""")
+    val caCertificate: String = "",
+    @get:JsonSchemaTitle("Client Certificate")
+    @get:JsonPropertyDescription("Client certificate")
+    @get:JsonProperty("client_certificate")
+    @get:JsonSchemaInject(json = """{"airbyte_secret": true, "multiline": true, "order": 2}""")
+    val clientCertificate: String = "",
+    @get:JsonSchemaTitle("Client Key")
+    @get:JsonPropertyDescription("Client key")
+    @get:JsonProperty("client_key")
+    @get:JsonSchemaInject(json = """{"airbyte_secret": true, "multiline": true, "order": 3}""")
+    val clientKey: String = "",
+    @get:JsonSchemaTitle("Client Key Password")
+    @get:JsonPropertyDescription(
+        "Password for keystorage. This field is optional. If you do not add it - the password will be generated automatically."
+    )
+    @get:JsonProperty("client_key_password")
+    @get:JsonSchemaInject(json = """{"airbyte_secret": true, "order": 4}""")
+    val clientKeyPassword: String? = null
+) : SslMode {
     companion object {
         const val MODE = "verify-full"
     }

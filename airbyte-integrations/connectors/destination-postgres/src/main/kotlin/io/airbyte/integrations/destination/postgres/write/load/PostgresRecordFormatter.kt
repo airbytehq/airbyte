@@ -4,17 +4,13 @@
 
 package io.airbyte.integrations.destination.postgres.write.load
 
-import com.fasterxml.jackson.databind.node.JsonNodeFactory
 import io.airbyte.cdk.load.data.AirbyteValue
 import io.airbyte.cdk.load.data.NullValue
-import io.airbyte.cdk.load.data.StringValue
 import io.airbyte.cdk.load.data.csv.toCsvValue
-import io.airbyte.cdk.load.data.json.toJson
 import io.airbyte.cdk.load.message.Meta
 import io.airbyte.cdk.load.message.Meta.Companion.COLUMN_NAME_AB_LOADED_AT
 import io.airbyte.cdk.load.message.Meta.Companion.COLUMN_NAME_DATA
 import io.airbyte.cdk.load.util.Jsons
-import io.airbyte.cdk.load.util.serializeToString
 
 internal val RAW_META_COLUMNS =
     listOf(
@@ -48,8 +44,9 @@ class PostgresRawRecordFormatter(
         val outputRecord = mutableListOf<Any>()
 
         // Do not output null values in the JSON raw output
-        val filteredRecord = record.filter { (k, v) -> v !is NullValue && !RAW_META_COLUMNS.contains(k) }
-        val jsonData =  Jsons.writeValueAsString(filteredRecord)
+        val filteredRecord =
+            record.filter { (k, v) -> v !is NullValue && !RAW_META_COLUMNS.contains(k) }
+        val jsonData = Jsons.writeValueAsString(filteredRecord)
 
         // Iterate through columns in the exact order they appear in the table
         columns.forEach { column ->

@@ -1,6 +1,6 @@
 /*
-* Copyright (c) 2025 Airbyte, Inc., all rights reserved.
-*/
+ * Copyright (c) 2025 Airbyte, Inc., all rights reserved.
+ */
 
 package io.airbyte.integrations.destination.postgres.client
 
@@ -53,10 +53,13 @@ class PostgresAirbyteClient(
             execute(sqlGenerator.createNamespace(namespace))
         } catch (e: org.postgresql.util.PSQLException) {
             // Handle race condition when multiple connections try to create the same schema
-            // PostgreSQL's CREATE SCHEMA IF NOT EXISTS can still fail with unique constraint violation
+            // PostgreSQL's CREATE SCHEMA IF NOT EXISTS can still fail with unique constraint
+            // violation
             // if two sessions try to create it simultaneously
-            if (e.message?.contains("pg_namespace_nspname_index") == true ||
-                e.message?.contains("already exists") == true) {
+            if (
+                e.message?.contains("pg_namespace_nspname_index") == true ||
+                    e.message?.contains("already exists") == true
+            ) {
                 log.debug(e) { "Schema $namespace already exists (race condition), ignoring error" }
             } else {
                 throw e
@@ -73,10 +76,7 @@ class PostgresAirbyteClient(
         execute(sqlGenerator.createTable(stream, tableName, columnNameMapping, replace))
     }
 
-    override suspend fun overwriteTable(
-        sourceTableName: TableName,
-        targetTableName: TableName
-    ) {
+    override suspend fun overwriteTable(sourceTableName: TableName, targetTableName: TableName) {
         execute(sqlGenerator.overwriteTable(sourceTableName, targetTableName))
     }
 
@@ -94,7 +94,9 @@ class PostgresAirbyteClient(
         sourceTableName: TableName,
         targetTableName: TableName
     ) {
-        execute(sqlGenerator.upsertTable(stream, columnNameMapping, sourceTableName, targetTableName))
+        execute(
+            sqlGenerator.upsertTable(stream, columnNameMapping, sourceTableName, targetTableName)
+        )
     }
 
     override suspend fun dropTable(tableName: TableName) {
@@ -108,34 +110,42 @@ class PostgresAirbyteClient(
     ) {
         val columnsInDb = getColumnsFromDb(tableName)
         val defaultColumnNames = postgresColumnUtils.defaultColumns().map { it.columnName }.toSet()
-        val columnsInStream = postgresColumnUtils.getTargetColumns(stream, columnNameMapping)
-            .filter { it.columnName !in defaultColumnNames }
-            .toSet()
+        val columnsInStream =
+            postgresColumnUtils
+                .getTargetColumns(stream, columnNameMapping)
+                .filter { it.columnName !in defaultColumnNames }
+                .toSet()
         val (addedColumns, deletedColumns, modifiedColumns) =
             generateSchemaChanges(columnsInDb, columnsInStream)
 
-            log.info { "Summary of the table alterations:" }
-            log.info { "Added columns: $addedColumns" }
-            log.info { "Deleted columns: $deletedColumns" }
-            log.info { "Modified columns: $modifiedColumns" }
+        log.info { "Summary of the table alterations:" }
+        log.info { "Added columns: $addedColumns" }
+        log.info { "Deleted columns: $deletedColumns" }
+        log.info { "Modified columns: $modifiedColumns" }
 
-            execute(sqlGenerator.matchSchemas(
+        execute(
+            sqlGenerator.matchSchemas(
                 tableName = tableName,
                 columnsToAdd = addedColumns,
                 columnsToRemove = deletedColumns,
                 columnsToModify = modifiedColumns,
                 columnsInDb = columnsInDb,
-                recreatePrimaryKeyIndex = shouldRecreatePrimaryKeyIndex(stream, tableName, columnNameMapping),
-                primaryKeyColumnNames =  postgresColumnUtils.getPrimaryKeysColumnNames(stream, columnNameMapping),
-                recreateCursorIndex =  shouldRecreateCursorIndex(stream, tableName, columnNameMapping),
-                cursorColumnName = postgresColumnUtils.getCursorColumnName(stream, columnNameMapping),
-            ))
+                recreatePrimaryKeyIndex =
+                    shouldRecreatePrimaryKeyIndex(stream, tableName, columnNameMapping),
+                primaryKeyColumnNames =
+                    postgresColumnUtils.getPrimaryKeysColumnNames(stream, columnNameMapping),
+                recreateCursorIndex =
+                    shouldRecreateCursorIndex(stream, tableName, columnNameMapping),
+                cursorColumnName =
+                    postgresColumnUtils.getCursorColumnName(stream, columnNameMapping),
+            )
+        )
     }
 
     /**
-     * Checks if the primary key index matches the current stream configuration.
-     * If the primary keys have changed (detected by comparing columns in the index),
-     * then this will return true, otherwise returns false.
+     * Checks if the primary key index matches the current stream configuration. If the primary keys
+     * have changed (detected by comparing columns in the index), then this will return true,
+     * otherwise returns false.
      *
      * This function will also return false if the stream doesn't have any primary keys
      */
@@ -144,14 +154,17 @@ class PostgresAirbyteClient(
         tableName: TableName,
         columnNameMapping: ColumnNameMapping
     ): Boolean {
-        val streamPrimaryKeys = postgresColumnUtils.getPrimaryKeysColumnNames(stream, columnNameMapping)
+        val streamPrimaryKeys =
+            postgresColumnUtils.getPrimaryKeysColumnNames(stream, columnNameMapping)
         if (streamPrimaryKeys.isEmpty()) return false
 
         val existingPrimaryKeyIndexColumns = getPrimaryKeyIndexColumns(tableName)
 
         return (existingPrimaryKeyIndexColumns != streamPrimaryKeys).also { shouldRecreate ->
             if (shouldRecreate) {
-                log.info { "Primary key columns changed from $existingPrimaryKeyIndexColumns to $streamPrimaryKeys" }
+                log.info {
+                    "Primary key columns changed from $existingPrimaryKeyIndexColumns to $streamPrimaryKeys"
+                }
             } else {
                 log.info { "Primary keys unchanged, no need to (re)create index" }
             }
@@ -174,9 +187,9 @@ class PostgresAirbyteClient(
         }
 
     /**
-     * Checks if the cursor index matches the current stream configuration.
-     * If the cursor has changed (detected by comparing columns in the index),
-     * then this will return true, otherwise returns false.
+     * Checks if the cursor index matches the current stream configuration. If the cursor has
+     * changed (detected by comparing columns in the index), then this will return true, otherwise
+     * returns false.
      *
      * This function will also return false if the stream doesn't have a cursor
      */
@@ -185,14 +198,16 @@ class PostgresAirbyteClient(
         tableName: TableName,
         columnNameMapping: ColumnNameMapping
     ): Boolean {
-        val streamCursor = postgresColumnUtils.getCursorColumnName(stream, columnNameMapping)
-            ?: return false
+        val streamCursor =
+            postgresColumnUtils.getCursorColumnName(stream, columnNameMapping) ?: return false
 
         val existingCursorIndexColumn = getCursorIndexColumn(tableName)
 
         return (existingCursorIndexColumn != streamCursor).also { shouldRecreate ->
             if (shouldRecreate) {
-                log.info { "Cursor column changed from $existingCursorIndexColumn to $streamCursor" }
+                log.info {
+                    "Cursor column changed from $existingCursorIndexColumn to $streamCursor"
+                }
             } else {
                 log.info { "Cursor unchanged, no need to (re)create index" }
             }
@@ -202,7 +217,8 @@ class PostgresAirbyteClient(
     internal fun getColumnsFromDb(tableName: TableName): Set<Column> =
         executeQuery(sqlGenerator.getTableSchema(tableName)) { rs ->
             val columnsInDb: MutableSet<Column> = mutableSetOf()
-            val defaultColumnNames = postgresColumnUtils.defaultColumns().map { it.columnName }.toSet()
+            val defaultColumnNames =
+                postgresColumnUtils.defaultColumns().map { it.columnName }.toSet()
             while (rs.next()) {
                 val columnName = rs.getString(COLUMN_NAME_COLUMN)
 
@@ -223,15 +239,24 @@ class PostgresAirbyteClient(
         columnsInStream: Set<Column>
     ): Triple<Set<Column>, Set<Column>, Set<Column>> {
         val addedColumns =
-            columnsInStream.filter { it.columnName !in columnsInDb.map { col -> col.columnName } }.toSet()
+            columnsInStream
+                .filter { it.columnName !in columnsInDb.map { col -> col.columnName } }
+                .toSet()
         val deletedColumns =
-            columnsInDb.filter { it.columnName !in columnsInStream.map { col -> col.columnName } }.toSet()
+            columnsInDb
+                .filter { it.columnName !in columnsInStream.map { col -> col.columnName } }
+                .toSet()
         val commonColumns =
-            columnsInStream.filter { it.columnName in columnsInDb.map { col -> col.columnName } }.toSet()
+            columnsInStream
+                .filter { it.columnName in columnsInDb.map { col -> col.columnName } }
+                .toSet()
         val modifiedColumns =
             commonColumns
                 .filter {
-                    val dbType = columnsInDb.find { column -> it.columnName == column.columnName }?.columnTypeName
+                    val dbType =
+                        columnsInDb
+                            .find { column -> it.columnName == column.columnName }
+                            ?.columnTypeName
                     it.columnTypeName != dbType
                 }
                 .toSet()
@@ -257,7 +282,7 @@ class PostgresAirbyteClient(
         executeQuery(sqlGenerator.getTableSchema(tableName)) { resultSet ->
             val columns = mutableListOf<String>()
             while (resultSet.next()) {
-                //TODO: extract column_name as a constant
+                // TODO: extract column_name as a constant
                 columns.add(resultSet.getString(COLUMN_NAME_COLUMN))
             }
             columns
@@ -265,8 +290,8 @@ class PostgresAirbyteClient(
 
     fun copyFromCsv(tableName: TableName, filePath: String) {
         dataSource.connection.use { connection ->
-            val copyManager = connection.unwrap(org.postgresql.core.BaseConnection::class.java)
-                .getCopyAPI()
+            val copyManager =
+                connection.unwrap(org.postgresql.core.BaseConnection::class.java).getCopyAPI()
             val sql = sqlGenerator.copyFromCsv(tableName)
             java.io.FileInputStream(filePath).use { fileInputStream ->
                 copyManager.copyIn(sql, fileInputStream)
@@ -277,9 +302,7 @@ class PostgresAirbyteClient(
     private fun execute(query: String) {
         log.info { query.trimIndent() }
         dataSource.connection.use { connection ->
-            connection.createStatement().use {
-                it.execute(query)
-            }
+            connection.createStatement().use { it.execute(query) }
         }
     }
 
@@ -287,9 +310,7 @@ class PostgresAirbyteClient(
         log.info { query.trimIndent() }
         return dataSource.connection.use { connection ->
             connection.createStatement().use {
-                it.executeQuery(query).use { resultSet ->
-                    resultProcessor(resultSet)
-                }
+                it.executeQuery(query).use { resultSet -> resultProcessor(resultSet) }
             }
         }
     }

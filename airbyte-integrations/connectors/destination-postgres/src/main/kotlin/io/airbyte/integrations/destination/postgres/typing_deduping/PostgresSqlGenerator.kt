@@ -327,7 +327,10 @@ class PostgresSqlGenerator(
             .and(jsonTypeof(extractColumnAsJson(cdcDeletedAtColumn)).ne("null"))
     }
 
-    override fun getRowNumber(primaryKey: List<ColumnId>, cursorField: Optional<ColumnId>): Field<Int> {
+    override fun getRowNumber(
+        primaryKey: List<ColumnId>,
+        cursorField: Optional<ColumnId>
+    ): Field<Int> {
         // literally identical to redshift's getRowNumber implementation, changes here probably
         // should
         // be reflected there

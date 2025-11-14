@@ -8,8 +8,8 @@ import io.airbyte.cdk.load.command.DestinationStream
 import io.airbyte.cdk.load.data.Transformations.Companion.toAlphanumericAndUnderscore
 import io.airbyte.cdk.load.orchestration.db.ColumnNameGenerator
 import io.airbyte.cdk.load.orchestration.db.FinalTableNameGenerator
-import io.airbyte.cdk.load.table.TableName
 import io.airbyte.cdk.load.orchestration.db.legacy_typing_deduping.TypingDedupingUtil
+import io.airbyte.cdk.load.table.TableName
 import io.airbyte.integrations.destination.postgres.spec.PostgresConfiguration
 import jakarta.inject.Singleton
 import java.util.Locale
@@ -20,21 +20,19 @@ class PostgresFinalTableNameGenerator(private val config: PostgresConfiguration)
     FinalTableNameGenerator {
     override fun getTableName(streamDescriptor: DestinationStream.Descriptor): TableName {
         val namespace = streamDescriptor.namespace ?: config.schema
-        return if(!config.legacyRawTablesOnly) {
+        return if (!config.legacyRawTablesOnly) {
             TableName(
                 namespace = namespace.toPostgresCompatibleName(),
                 name = streamDescriptor.name.toPostgresCompatibleName(),
             )
         } else {
             TableName(
-                namespace = config.internalTableSchema!!
-                    .lowercase()
-                    .toPostgresCompatibleName(),
+                namespace = config.internalTableSchema!!.lowercase().toPostgresCompatibleName(),
                 name =
                     TypingDedupingUtil.concatenateRawTableName(
-                        namespace = namespace,
-                        name = streamDescriptor.name,
-                    )
+                            namespace = namespace,
+                            name = streamDescriptor.name,
+                        )
                         .lowercase()
                         .toPostgresCompatibleName(),
             )

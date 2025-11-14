@@ -2,9 +2,7 @@
  * Copyright (c) 2025 Airbyte, Inc., all rights reserved.
  */
 
-
 package io.airbyte.integrations.destination.postgres.write
-
 
 import io.airbyte.cdk.SystemErrorException
 import io.airbyte.cdk.load.command.Dedupe
@@ -24,7 +22,6 @@ import io.airbyte.cdk.load.write.StreamStateStore
 import io.airbyte.integrations.destination.postgres.client.PostgresAirbyteClient
 import jakarta.inject.Singleton
 
-
 @Singleton
 class PostgresWriter(
     private val names: TableCatalog,
@@ -35,16 +32,13 @@ class PostgresWriter(
 ) : DestinationWriter {
     private lateinit var initialStatuses: Map<DestinationStream, DirectLoadInitialStatus>
 
-
     override suspend fun setup() {
         names.values
             .map { (tableNames, _) -> tableNames.finalTableName!!.namespace }
             .forEach { postgresClient.createNamespace(it) }
 
-
         initialStatuses = stateGatherer.gatherInitialStatus(names)
     }
-
 
     override fun createStreamLoader(stream: DestinationStream): StreamLoader {
         val initialStatus = initialStatuses[stream]!!
@@ -110,5 +104,4 @@ class PostgresWriter(
                 )
         }
     }
-
 }

@@ -54,7 +54,10 @@ object PostgresContainerHelper {
     fun getIpAddress(): String {
         // Ensure that the container is started first
         start()
-        return testContainer.containerInfo.networkSettings.networks.entries.first().value.ipAddress!!
+        return testContainer.containerInfo.networkSettings.networks.entries
+            .first()
+            .value
+            .ipAddress!!
     }
 }
 
@@ -96,8 +99,5 @@ class PostgresConfigUpdater : ConfigurationUpdater {
         config: String,
         defaultNamespace: String
     ): DefaultNamespaceResult =
-        DefaultNamespaceResult(
-            config.replace("public", defaultNamespace),
-            defaultNamespace
-        )
+        DefaultNamespaceResult(config.replace("public", defaultNamespace), defaultNamespace)
 }

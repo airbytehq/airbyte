@@ -125,9 +125,24 @@
               "type" : "string",
               "enum" : [ "verify-ca" ],
               "default" : "verify-ca"
+            },
+            "ca_certificate" : {
+              "type" : "string",
+              "description" : "CA certificate",
+              "title" : "CA Certificate",
+              "airbyte_secret" : true,
+              "multiline" : true,
+              "order" : 1
+            },
+            "client_key_password" : {
+              "type" : "string",
+              "description" : "Password for keystorage. This field is optional. If you do not add it - the password will be generated automatically.",
+              "title" : "Client Key Password",
+              "airbyte_secret" : true,
+              "order" : 2
             }
           },
-          "required" : [ "mode" ]
+          "required" : [ "mode", "ca_certificate" ]
         }, {
           "title" : "verify-full",
           "type" : "object",
@@ -138,9 +153,40 @@
               "type" : "string",
               "enum" : [ "verify-full" ],
               "default" : "verify-full"
+            },
+            "ca_certificate" : {
+              "type" : "string",
+              "description" : "CA certificate",
+              "title" : "CA Certificate",
+              "airbyte_secret" : true,
+              "multiline" : true,
+              "order" : 1
+            },
+            "client_certificate" : {
+              "type" : "string",
+              "description" : "Client certificate",
+              "title" : "Client Certificate",
+              "airbyte_secret" : true,
+              "multiline" : true,
+              "order" : 2
+            },
+            "client_key" : {
+              "type" : "string",
+              "description" : "Client key",
+              "title" : "Client Key",
+              "airbyte_secret" : true,
+              "multiline" : true,
+              "order" : 3
+            },
+            "client_key_password" : {
+              "type" : "string",
+              "description" : "Password for keystorage. This field is optional. If you do not add it - the password will be generated automatically.",
+              "title" : "Client Key Password",
+              "airbyte_secret" : true,
+              "order" : 4
             }
           },
-          "required" : [ "mode" ]
+          "required" : [ "mode", "ca_certificate", "client_certificate", "client_key" ]
         } ],
         "description" : "SSL connection modes.\n  <b>disable</b> - Disables encryption of communication between Airbyte and destination database.\n  <b>allow</b> - Enables encryption only when required by the destination database.\n  <b>prefer</b> - Allows unencrypted connections only if the destination database does not support encryption.\n  <b>require</b> - Always require encryption. If the destination database server does not support encryption, connection will fail.\n  <b>verify-ca</b> - Always require encryption and verifies that the destination database server has a valid SSL certificate.\n  <b>verify-full</b> - This is the most secure mode. Always require encryption and verifies the identity of the destination database server.\n See more information - <a href=\"https://jdbc.postgresql.org/documentation/head/ssl-client.html\"> in the docs</a>.",
         "title" : "SSL Modes",

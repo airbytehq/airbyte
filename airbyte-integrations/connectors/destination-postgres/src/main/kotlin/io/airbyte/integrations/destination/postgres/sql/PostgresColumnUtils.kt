@@ -38,13 +38,11 @@ import jakarta.inject.Singleton
 import kotlin.collections.plus
 
 @Singleton
-class PostgresColumnUtils(
-    private val postgresConfiguration: PostgresConfiguration
-) {
+class PostgresColumnUtils(private val postgresConfiguration: PostgresConfiguration) {
     companion object {
         private const val CURSOR_INDEX_PREFIX = "idx_cursor_"
         private const val PRIMARY_KEY_INDEX_PREFIX = "idx_pk_"
-        //Default columns that are always present in both raw and typed tables.
+        // Default columns that are always present in both raw and typed tables.
         private val DEFAULT_COLUMNS =
             listOf(
                 Column(
@@ -99,7 +97,8 @@ class PostgresColumnUtils(
 
     /**
      * Returns the list of columns and their types
-     * - Raw table mode: Only returns system columns (including _airbyte_data), user columns are ignored
+     * - Raw table mode: Only returns system columns (including _airbyte_data), user columns are
+     * ignored
      * - Typed table mode: Returns system columns + mapped user columns
      */
     internal fun getTargetColumns(
@@ -132,8 +131,10 @@ class PostgresColumnUtils(
         }
     }
 
-    internal fun getTargetColumnName(streamColumnName : String, columnNameMapping: ColumnNameMapping): String =
-        columnNameMapping[streamColumnName] ?: streamColumnName
+    internal fun getTargetColumnName(
+        streamColumnName: String,
+        columnNameMapping: ColumnNameMapping
+    ): String = columnNameMapping[streamColumnName] ?: streamColumnName
 
     // Converts Airbyte types to PostgreSQL column types.
     @VisibleForTesting
@@ -157,7 +158,10 @@ class PostgresColumnUtils(
             is UnionType -> PostgresDataType.JSONB.typeName
         }
 
-    internal fun getPrimaryKeysColumnNames(stream: DestinationStream, columnNameMapping: ColumnNameMapping): List<String> {
+    internal fun getPrimaryKeysColumnNames(
+        stream: DestinationStream,
+        columnNameMapping: ColumnNameMapping
+    ): List<String> {
         return when (stream.importType) {
             is Dedupe -> getPrimaryKeysColumnNames(stream.importType as Dedupe, columnNameMapping)
             else -> listOf()
@@ -168,15 +172,21 @@ class PostgresColumnUtils(
         importType: Dedupe,
         columnNameMapping: ColumnNameMapping
     ): List<String> {
-        return importType.primaryKey.map { fieldPath ->
-            val primaryKeyColumnName = fieldPath.first() //only at the root level for Postgres
-            getTargetColumnName(primaryKeyColumnName, columnNameMapping )
-        }.toList()
+        return importType.primaryKey
+            .map { fieldPath ->
+                val primaryKeyColumnName = fieldPath.first() // only at the root level for Postgres
+                getTargetColumnName(primaryKeyColumnName, columnNameMapping)
+            }
+            .toList()
     }
 
-    internal fun getCursorColumnName(stream: DestinationStream, columnNameMapping: ColumnNameMapping): String? {
+    internal fun getCursorColumnName(
+        stream: DestinationStream,
+        columnNameMapping: ColumnNameMapping
+    ): String? {
         return when (stream.importType) {
-            is Dedupe -> getCursorColumnName((stream.importType as Dedupe).cursor, columnNameMapping)
+            is Dedupe ->
+                getCursorColumnName((stream.importType as Dedupe).cursor, columnNameMapping)
             else -> null
         }
     }
@@ -185,9 +195,9 @@ class PostgresColumnUtils(
         cursor: List<String>,
         columnNameMapping: ColumnNameMapping
     ): String? {
-        return cursor
-            .firstOrNull()
-            ?.let { columnName -> getTargetColumnName(columnName, columnNameMapping) }
+        return cursor.firstOrNull()?.let { columnName ->
+            getTargetColumnName(columnName, columnNameMapping)
+        }
     }
 
     internal fun getCursorIndexName(tableName: TableName): String =
