@@ -5,7 +5,6 @@
 package io.airbyte.integrations.destination.snowflake.write.transform
 
 import com.google.common.base.Utf8
-import io.airbyte.cdk.load.data.AirbyteValue
 import io.airbyte.cdk.load.data.ArrayValue
 import io.airbyte.cdk.load.data.EnrichedAirbyteValue
 import io.airbyte.cdk.load.data.IntegerValue
@@ -67,32 +66,40 @@ fun isVarcharValid(s: String): Boolean {
 }
 
 /**
- * Truncates a BigDecimal to fit within a specified range and maximum precision.
- * Returns null if the value cannot be made to fit within the range.
+ * Truncates a BigDecimal to fit within a specified range and maximum precision. Returns null if the
+ * value cannot be made to fit within the range.
  *
- * We can't just truncate to the max precision because that doesn't guarantee the value will be in range.
- * For example: 99999999999999999 (17 digits) truncated to 15 digits = 999999999999999,
- * which is still > FLOAT_MAX (9007199254740991). So we keep reducing precision until it fits.
+ * We can't just truncate to the max precision because that doesn't guarantee the value will be in
+ * range. For example: 99999999999999999 (17 digits) truncated to 15 digits = 999999999999999, which
+ * is still > FLOAT_MAX (9007199254740991). So we keep reducing precision until it fits.
  *
  * Example: truncateToRange(99999999999999999, -9007199254740991, 9007199254740991, 15)
+ * ```
  *          -> 9999999999999 (13 digits), which is now within range
+ * ```
  */
-fun truncateToRange(value: BigDecimal, min: BigDecimal, max: BigDecimal, maxPrecision: Int): BigDecimal? {
+fun truncateToRange(
+    value: BigDecimal,
+    min: BigDecimal,
+    max: BigDecimal,
+    maxPrecision: Int
+): BigDecimal? {
     // Caller should have already checked if value is in range
     // Start with maxPrecision and reduce until it fits
     var precision = maxPrecision
 
     while (precision > 0) {
-        val truncated = if (value.precision() > precision) {
-            // To keep only the first N digits, we divide by 10^(precision - N),
-            // truncate, then that's our result (without multiplying back)
-            val digitsToRemove = value.precision() - precision
-            val divisor = BigDecimal.TEN.pow(digitsToRemove)
-            value.divide(divisor, 0, java.math.RoundingMode.DOWN)
-        } else {
-            // Value's precision is already <= target, it won't fit by truncating digits
-            return null
-        }
+        val truncated =
+            if (value.precision() > precision) {
+                // To keep only the first N digits, we divide by 10^(precision - N),
+                // truncate, then that's our result (without multiplying back)
+                val digitsToRemove = value.precision() - precision
+                val divisor = BigDecimal.TEN.pow(digitsToRemove)
+                value.divide(divisor, 0, java.math.RoundingMode.DOWN)
+            } else {
+                // Value's precision is already <= target, it won't fit by truncating digits
+                return null
+            }
 
         if (truncated in min..max) return truncated
         precision--
@@ -122,7 +129,8 @@ class SnowflakeValueCoercer : ValueCoercer {
                 }
 
                 // Out of range, try to truncate
-                val truncated = truncateToRange(abValue.value, FLOAT_MIN, FLOAT_MAX, FLOAT_PRECISION)
+                val truncated =
+                    truncateToRange(abValue.value, FLOAT_MIN, FLOAT_MAX, FLOAT_PRECISION)
                 when {
                     truncated == null -> {
                         // Cannot fit in range even with truncation -> nullify
@@ -146,12 +154,13 @@ class SnowflakeValueCoercer : ValueCoercer {
                 }
 
                 // Out of range, try to truncate
-                val truncated = truncateToRange(
-                    BigDecimal(abValue.value),
-                    BigDecimal(INT_MIN),
-                    BigDecimal(INT_MAX),
-                    INTEGER_PRECISION
-                )
+                val truncated =
+                    truncateToRange(
+                        BigDecimal(abValue.value),
+                        BigDecimal(INT_MIN),
+                        BigDecimal(INT_MAX),
+                        INTEGER_PRECISION
+                    )
                 when {
                     truncated == null -> {
                         // Cannot fit in range even with truncation -> nullify

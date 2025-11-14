@@ -736,7 +736,8 @@ internal class SnowflakeValueCoercerTest {
 
     @Test
     fun testIntegerJustOutsideBoundary() {
-        // Test integers just outside the boundary - these should now be truncated instead of nullified
+        // Test integers just outside the boundary - these should now be truncated instead of
+        // nullified
         val justOverMax = IntegerValue(INT_MAX.add(BigInteger.ONE))
         val justUnderMin = IntegerValue(INT_MIN.subtract(BigInteger.ONE))
 
@@ -860,7 +861,8 @@ internal class SnowflakeValueCoercerTest {
         assertEquals(ValidationResult.ShouldTruncate::class, result::class)
 
         // The truncated value should be within range and have fewer digits than original
-        val truncatedValue = (result as ValidationResult.ShouldTruncate).truncatedValue as NumberValue
+        val truncatedValue =
+            (result as ValidationResult.ShouldTruncate).truncatedValue as NumberValue
         assert(truncatedValue.value in FLOAT_MIN..FLOAT_MAX)
         assert(truncatedValue.value.precision() < highValue.value.precision())
     }
