@@ -155,7 +155,7 @@ constructor(
         val jdbcTableFilters: List<TableFilter> =
             tableFilters.map {
                 TableFilter().apply {
-                    schemaName = it.schemaName
+                    schemaName = it.databaseName
                     patterns = it.patterns
                 }
             }

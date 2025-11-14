@@ -81,7 +81,7 @@ class MySqlSourceMetadataQuerierTableFilterTest {
     fun testTableFilters() {
         val tableFilter =
             TableFilter().apply {
-                schemaName = databaseName
+                databaseName = "test"
                 patterns = listOf("customers", "orders")
             }
 
@@ -112,7 +112,7 @@ class MySqlSourceMetadataQuerierTableFilterTest {
         // Test pattern that doesn't match any tables
         val tableFilter =
             TableFilter().apply {
-                schemaName = databaseName
+                databaseName = "test"
                 patterns = listOf("nonexistent%")
             }
 
@@ -141,7 +141,7 @@ class MySqlSourceMetadataQuerierTableFilterTest {
         // Filter references a schema that is not in the configured schemas list
         val tableFilter =
             TableFilter().apply {
-                schemaName = "nonexistent_schema"
+                databaseName = "nonexistent_schema"
                 patterns = listOf("orders", "customers")
             }
 
@@ -161,7 +161,7 @@ class MySqlSourceMetadataQuerierTableFilterTest {
         // Test SQL LIKE wildcards with MySQL
         val tableFilter =
             TableFilter().apply {
-                schemaName = databaseName
+                databaseName = "test"
                 patterns = listOf("c%") // Should match 'customers'
             }
 
@@ -190,7 +190,7 @@ class MySqlSourceMetadataQuerierTableFilterTest {
         // Test multiple patterns for the same schema
         val tableFilter =
             TableFilter().apply {
-                schemaName = databaseName
+                databaseName = "test"
                 patterns = listOf("orders", "products", "invoices")
             }
 

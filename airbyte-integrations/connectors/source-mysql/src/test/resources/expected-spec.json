@@ -257,9 +257,9 @@
           "type": "object",
           "additionalProperties": true,
           "title": "Table Filter",
-          "description": "Inclusion filter configuration for table selection.",
+          "description": "Inclusion filter configuration for table selection per database.",
           "properties": {
-            "schema_name": {
+            "database_name": {
               "type": "string",
               "title": "Database Name",
               "description": "The name of the database to apply this filter to. Should match the database defined in the \"Database\" field above.",
@@ -278,7 +278,7 @@
               "minItems": 1
             }
           },
-          "required": ["schema_name", "table_name_patterns"]
+          "required": ["database_name", "table_name_patterns"]
         },
         "description": "Optional filters to include only specific tables from the specified database.",
         "title": "Table Filters",

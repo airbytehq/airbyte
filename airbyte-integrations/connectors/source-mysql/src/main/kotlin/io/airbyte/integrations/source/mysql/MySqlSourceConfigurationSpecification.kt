@@ -201,18 +201,18 @@ class MySqlSourceConfigurationSpecification : ConfigurationSpecification() {
 }
 
 @JsonSchemaTitle("Table Filter")
-@JsonSchemaDescription("Inclusion filter configuration for table selection.")
-@JsonPropertyOrder("schema_name", "table_name_patterns")
+@JsonSchemaDescription("Inclusion filter configuration for table selection per database.")
+@JsonPropertyOrder("database_name", "table_name_patterns")
 @SuppressFBWarnings(value = ["NP_NONNULL_RETURN_VIOLATION"], justification = "Micronaut DI")
 class TableFilter {
-    @JsonProperty("schema_name", required = true)
+    @JsonProperty("database_name", required = true)
     @JsonSchemaTitle("Database Name")
     @JsonPropertyDescription(
         "The name of the database to apply this filter to. " +
             "Should match the database defined in the \"Database\" field above."
     )
     @JsonSchemaInject(json = """{"order":1,"always_show":true}""")
-    lateinit var schemaName: String
+    lateinit var databaseName: String
 
     @JsonProperty("table_name_patterns", required = true)
     @JsonSchemaTitle("Table Filter Patterns")
