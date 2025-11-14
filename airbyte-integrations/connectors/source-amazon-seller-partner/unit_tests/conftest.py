@@ -66,3 +66,11 @@ def http_mocker() -> None:
 @pytest.fixture(autouse=True)
 def time_mocker(mocker) -> None:
     mocker.patch("time.sleep", lambda x: None)
+
+
+@pytest.fixture(autouse=True)
+def api_budget_policy_mocker(mocker) -> None:
+    """
+    Mocks API Budget Policy to do not apply limiting requests because it may lead to tests failures if time_mocker is used.
+    """
+    mocker.patch("airbyte_cdk.sources.streams.call_rate.MovingWindowCallRatePolicy.matches", lambda x, y: False)

@@ -23,7 +23,6 @@ import io.airbyte.cdk.load.util.deserializeToNode
 import io.mockk.*
 import java.util.UUID
 import kotlin.test.assertEquals
-import kotlin.test.assertTrue
 import kotlinx.coroutines.test.runTest
 import org.junit.jupiter.api.BeforeEach
 import org.junit.jupiter.api.Test
@@ -113,8 +112,7 @@ class PipelineEventBookkeepingRouterTest {
                 airbyteRawId = UUID.randomUUID()
             )
 
-        val event =
-            r.handleStreamMessage(msg, unopenedStreams = mutableSetOf()) as PipelineMessage<*, *>
+        val event = r.handleStreamMessage(msg) as PipelineMessage<*, *>
 
         assertEquals(mapOf(CheckpointId("1") to CheckpointValue(1, 10L)), event.checkpointCounts)
         verify { streamManager1.incrementReadCount(CheckpointId("1")) }
@@ -132,8 +130,7 @@ class PipelineEventBookkeepingRouterTest {
                 airbyteRawId = UUID.randomUUID()
             )
 
-        val event =
-            r.handleStreamMessage(msg, unopenedStreams = mutableSetOf()) as PipelineMessage<*, *>
+        val event = r.handleStreamMessage(msg) as PipelineMessage<*, *>
 
         assertEquals(mapOf(CheckpointId("abc") to CheckpointValue(1, 5L)), event.checkpointCounts)
         verify { streamManager2.incrementReadCount(CheckpointId("abc")) }
@@ -145,7 +142,6 @@ class PipelineEventBookkeepingRouterTest {
         coEvery { syncManager.awaitSetupComplete() } just Runs
         coEvery { syncManager.getOrAwaitStreamLoader(stream1.mappedDescriptor) } returns mockk()
 
-        val unopened = mutableSetOf(stream1.mappedDescriptor)
         r.handleStreamMessage(
             DestinationRecord(
                 stream = stream1,
@@ -154,10 +150,8 @@ class PipelineEventBookkeepingRouterTest {
                 checkpointId = null,
                 airbyteRawId = UUID.randomUUID()
             ),
-            unopenedStreams = unopened
         )
 
-        assertTrue(unopened.isEmpty())
         coVerify { syncManager.awaitSetupComplete() }
         coVerify { openStreamQueue.publish(stream1) }
         coVerify { syncManager.getOrAwaitStreamLoader(stream1.mappedDescriptor) }
@@ -168,7 +162,6 @@ class PipelineEventBookkeepingRouterTest {
         val r = router(1, markEndOfStreamAtEnd = false)
         r.handleStreamMessage(
             DestinationRecordStreamComplete(stream1, 0L),
-            unopenedStreams = mutableSetOf()
         )
         coVerify { streamManager1.markEndOfStream(true) }
     }
@@ -182,7 +175,6 @@ class PipelineEventBookkeepingRouterTest {
                 emittedAtMs = 0L,
                 fileMessage = DestinationFile.AirbyteRecordMessageFile(fileUrl = "s3://x")
             ),
-            unopenedStreams = mutableSetOf()
         )
 
         coVerify {
@@ -199,7 +191,6 @@ class PipelineEventBookkeepingRouterTest {
         val r = router(1)
         r.handleStreamMessage(
             DestinationFileStreamComplete(stream1, 0L),
-            unopenedStreams = mutableSetOf()
         )
         coVerify { streamManager1.markEndOfStream(true) }
         coVerify { fileTransferQueue.publish(match { it is FileTransferQueueEndOfStream }) }
@@ -440,7 +431,6 @@ class PipelineEventBookkeepingRouterTest {
 
         r.handleStreamMessage(
             DestinationRecordStreamComplete(stream1, 0L),
-            unopenedStreams = mutableSetOf()
         )
 
         r.close()
@@ -468,7 +458,6 @@ class PipelineEventBookkeepingRouterTest {
         val r = router(numDataChannels = 1, markEndOfStreamAtEnd = false)
         r.handleStreamMessage(
             DestinationRecordStreamComplete(stream2, 0L),
-            unopenedStreams = mutableSetOf()
         )
         coVerify { streamManager2.markEndOfStream(true) }
 

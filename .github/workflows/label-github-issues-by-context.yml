@@ -8,11 +8,15 @@ jobs:
     name: "Add Labels to Issues.  Safe to Merge on fail"
     runs-on: ubuntu-24.04
     steps:
+      # TODO: Replace PAT with a GitHub App token.
+      # The "private-action-loader" action does not seem to be compatible with it,
+      # so we should consider moving off of this specialized action and onto a normal
+      # action step.
       - name: Run Issue Command from workflow-actions
-        uses: nick-fields/private-action-loader@v3
+        uses: nick-fields/private-action-loader@6fa713597d3de3707f8b7a3029a5c262f32c5bca # v3.0.12
         with:
           pal-repo-token: "${{ secrets.GH_PAT_MAINTENANCE_OCTAVIA }}"
-          pal-repo-name: airbytehq/workflow-actions@production
+          pal-repo-name: airbytehq/workflow-actions@2a848ffce5eaf8da66d4176b66f55dd2e1007016
           # the following input gets passed to the private
           token: "${{ secrets.GH_PAT_MAINTENANCE_OCTAVIA }}"
           # ref: https://github.com/airbytehq/workflow-actions/blob/main/src/bin_issue.ts

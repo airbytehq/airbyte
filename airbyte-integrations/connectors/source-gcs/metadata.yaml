@@ -7,11 +7,11 @@ data:
       - storage.googleapis.com
       - accounts.google.com
   connectorBuildOptions:
-    baseImage: docker.io/airbyte/python-connector-base:4.0.2@sha256:9fdb1888c4264cf6fee473649ecb593f56f58e5d0096a87ee0b231777e2e3e73
+    baseImage: docker.io/airbyte/python-connector-base:4.1.0@sha256:1d1aa21d34e851df4e8a87b391c27724c06e2597608e7161f4d167be853bd7b6
   connectorSubtype: file
   connectorType: source
   definitionId: 2a8c41ae-8c23-4be0-a73f-2ab10ca1a820
-  dockerImageTag: 0.8.26
+  dockerImageTag: 0.10.3
   dockerRepository: airbyte/source-gcs
   documentationUrl: https://docs.airbyte.com/integrations/sources/gcs
   githubIssueLabel: source-gcs
@@ -19,6 +19,9 @@ data:
   license: ELv2
   maxSecondsBetweenMessages: 5400
   name: Google Cloud Storage (GCS)
+  releases:
+    rolloutConfiguration:
+      enableProgressiveRollout: false
   remoteRegistries:
     pypi:
       enabled: true

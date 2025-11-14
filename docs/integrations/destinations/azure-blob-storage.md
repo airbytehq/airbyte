@@ -19,12 +19,15 @@ as `<stream_namespace>/<stream_name>/yyyy_mm_dd_<unix_epoch>_<part_number>.<file
 
 | Parameter                                    |  Type   | Notes                                                                                                                                                                     |
 | :------------------------------------------- | :-----: | :------------------------------------------------------------------------------------------------------------------------------------------------------------------------ |
-| Endpoint Domain Name                         | string  | This is Azure Blob Storage endpoint domain name. Leave default value \(or leave it empty if run container from command line\) to use Microsoft native one.                |
-| Azure blob storage container \(Bucket\) Name | string  | A name of the Azure blob storage container. If not exists - will be created automatically. If leave empty, then will be created automatically airbytecontainer+timestamp. |
-| Azure Blob Storage account name              | string  | The account's name of the Azure Blob Storage.                                                                                                                             |
-| The Azure blob storage account key           | string  | Azure blob storage account key. If this is set, the `shared access signature` option must not be set. Example: `abcdefghijklmnopqrstuvwxyz/0123456789+ABCDEFGHIJKLMNOPQRSTUVWXYZ/0123456789%++sampleKey==`.                                     |
-| The Azure blob shared access signature       | string  | Azure blob storage shared account signature (SAS). If this is set, the `storage account key` option must not be set. Example: `sv=2025-01-01&ss=b&srt=co&sp=abcdefghijk&se=2026-01-31T07:00:00Z&st=2025-01-31T20:30:29Z&spr=https&sig=YWJjZGVmZ2hpamthYmNkZWZnaGlqa2FiY2RlZmdoaWp%3D`.                  |
-| Azure Blob Storage target blob size          | integer | How large each blob should be, in megabytes. Example: 500. After a blob exceeds this size, the connector will start writing to a new blob, and increment the part number. |
+| Azure Blob Storage Endpoint Domain Name     | string  | This is Azure Blob Storage endpoint domain name. Leave default value \(or leave it empty if run container from command line\) to use Microsoft native one.                |
+| Azure Blob Storage Container Name           | string  | A name of the Azure Blob Storage container. If not exists - will be created automatically. If leave empty, then will be created automatically airbytecontainer+timestamp. |
+| Azure Blob Storage Account Name             | string  | The account's name of the Azure Blob Storage.                                                                                                                             |
+| Azure Blob Storage Account Key               | string  | Azure Blob Storage account key. If this is set, the `Shared Access Signature`, `Azure Tenant ID`, `Azure Client ID`, and `Azure Client Secret` fields must not be set. Example: `abcdefghijklmnopqrstuvwxyz/0123456789+ABCDEFGHIJKLMNOPQRSTUVWXYZ/0123456789%++sampleKey==`.                                     |
+| Shared Access Signature                     | string  | Azure Blob Storage shared access signature (SAS). If this is set, the `Azure Blob Storage Account Key`, `Azure Tenant ID`, `Azure Client ID`, and `Azure Client Secret` fields must not be set. Example: `sv=2025-01-01&ss=b&srt=co&sp=abcdefghijk&se=2026-01-31T07:00:00Z&st=2025-01-31T20:30:29Z&spr=https&sig=YWJjZGVmZ2hpamthYmNkZWZnaGlqa2FiY2RlZmdoaWp%3D`.                  |
+| Azure Tenant ID                             | string  | Azure Active Directory (Entra ID) tenant ID. Required for Entra ID authentication. If this is set, `Azure Client ID` and `Azure Client Secret` must also be set. Example: `12345678-1234-1234-1234-123456789012`.                                                      |
+| Azure Client ID                             | string  | Azure Active Directory (Entra ID) client ID. Required for Entra ID authentication. If this is set, `Azure Tenant ID` and `Azure Client Secret` must also be set. Example: `87654321-4321-4321-4321-210987654321`.                                                       |
+| Azure Client Secret                         | string  | Azure Active Directory (Entra ID) client secret. Required for Entra ID authentication. If this is set, `Azure Tenant ID` and `Azure Client ID` must also be set.                                                                                                        |
+| Azure Blob Storage Target Blob Size (MB)    | integer | How large each blob should be, in megabytes. Example: 500. After a blob exceeds this size, the connector will start writing to a new blob, and increment the part number. |
 | Format                                       | object  | Format specific configuration. See below for details.                                                                                                                     |
 
 ## Output Schema
@@ -108,16 +111,19 @@ With root level flattening, the output JSONL is:
 ### Setup guide
 
 * Fill up AzureBlobStorage info
-  * **Endpoint Domain Name**
+  * **Azure Blob Storage Endpoint Domain Name**
     * Leave default value \(or leave it empty if run container from command line\) to use Microsoft native one or use your own.
-  * **Azure blob storage container**
+  * **Azure Blob Storage Container Name**
     * If not exists - will be created automatically. If leave empty, then will be created automatically airbytecontainer+timestamp..
-  * **Azure Blob Storage account name**
+  * **Azure Blob Storage Account Name**
     * See [this](https://docs.microsoft.com/en-us/azure/storage/common/storage-account-create?tabs=azure-portal) on how to create an account.
   * **Authentication** - you must use exactly one of these:
-    * **The Azure blob storage shared acces signature** (recommended)
+    * **Shared Access Signature** (recommended)
       * See [this](https://learn.microsoft.com/en-us/azure/ai-services/translator/document-translation/how-to-guides/create-sas-tokens?tabs=Containers#create-sas-tokens-in-the-azure-portal) for how to create an SAS.
-    * **The Azure blob storage account key**
+    * **Azure Entra ID (Service Principal)**
+      * Azure Tenant ID, Azure Client ID, and Azure Client Secret from an Azure service principal with appropriate permissions.
+      * See [this](https://learn.microsoft.com/en-us/azure/active-directory/develop/howto-create-service-principal-portal) for how to create a service principal.
+    * **Azure Blob Storage Account Key**
       * Corresponding key to the above user.
   * **Format**
     * Data format that will be use for a migrated data representation in blob.
@@ -131,24 +137,31 @@ With root level flattening, the output JSONL is:
 <details>
   <summary>Expand to review</summary>
 
-| Version | Date       | Pull Request                                               | Subject                                                                                                                                                         |
-|:--------|:-----------|:-----------------------------------------------------------|:----------------------------------------------------------------------------------------------------------------------------------------------------------------|
-| 1.0.3   | 2025-05-07 | [59710](https://github.com/airbytehq/airbyte/pull/59710)   | CDK backpressure bugfix                                                                                                                                         |
-| 1.0.2   | 2025-04-14 | [57563](https://github.com/airbytehq/airbyte/pull/57563)   | Fix signature spec example                                                                                                                                      |
-| 1.0.1   | 2025-04-09 | [57541](https://github.com/airbytehq/airbyte/pull/57541)   | Fix metadata to actually certify.                                                                                                                               |
-| 1.0.0   | 2025-04-03 | [56391](https://github.com/airbytehq/airbyte/pull/56391)   | Bring into compliance with modern connector standards; certify connector.                                                                                       |
-| 0.2.5   | 2025-03-21 | [55906](https://github.com/airbytehq/airbyte/pull/55906)   | Upgrade to airbyte/java-connector-base:2.0.1 to be M4 compatible.                                                                                               |
-| 0.2.4   | 2025-01-10 | [51507](https://github.com/airbytehq/airbyte/pull/51507)   | Use a non root base image                                                                                                                                       |
-| 0.2.3   | 2024-12-18 | [49910](https://github.com/airbytehq/airbyte/pull/49910)   | Use a base image: airbyte/java-connector-base:1.0.0                                                                                                             |
-| 0.2.2   | 2024-06-12 | [\#38061](https://github.com/airbytehq/airbyte/pull/38061) | File Extensions added for the output files                                                                                                                      |
-| 0.2.1   | 2023-09-13 | [\#30412](https://github.com/airbytehq/airbyte/pull/30412) | Switch noisy logging to debug                                                                                                                                   |
-| 0.2.0   | 2023-01-18 | [\#21467](https://github.com/airbytehq/airbyte/pull/21467) | Support spilling of objects exceeding configured size threshold                                                                                                 |
-| 0.1.6   | 2022-08-08 | [\#15318](https://github.com/airbytehq/airbyte/pull/15318) | Support per-stream state                                                                                                                                        |
-| 0.1.5   | 2022-06-16 | [\#13852](https://github.com/airbytehq/airbyte/pull/13852) | Updated stacktrace format for any trace message errors                                                                                                          |
-| 0.1.4   | 2022-05-17 | [12820](https://github.com/airbytehq/airbyte/pull/12820)   | Improved 'check' operation performance                                                                                                                          |
-| 0.1.3   | 2022-02-14 | [10256](https://github.com/airbytehq/airbyte/pull/10256)   | Add `-XX:+ExitOnOutOfMemoryError` JVM option                                                                                                                    |
-| 0.1.2   | 2022-01-20 | [\#9682](https://github.com/airbytehq/airbyte/pull/9682)   | Each data synchronization for each stream is written to a new blob to the folder with stream name.                                                              |
-| 0.1.1   | 2021-12-29 | [\#9190](https://github.com/airbytehq/airbyte/pull/9190)   | Added BufferedOutputStream wrapper to blob output stream to improve performance and fix issues with 50,000 block limit. Also disabled autoflush on PrintWriter. |
-| 0.1.0   | 2021-08-30 | [\#5332](https://github.com/airbytehq/airbyte/pull/5332)   | Initial release with JSONL and CSV output.                                                                                                                      |
+| Version  | Date       | Pull Request                                               | Subject                                                                                                                                                         |
+|:---------|:-----------|:-----------------------------------------------------------|:----------------------------------------------------------------------------------------------------------------------------------------------------------------|
+| 1.1.4 | 2025-11-01 | [69127](https://github.com/airbytehq/airbyte/pull/69127) | Upgrade to Bulk CDK 0.1.61. |
+| 1.1.3 | 2025-10-21 | [67153](https://github.com/airbytehq/airbyte/pull/67153) | Implement new proto schema implementation |
+| 1.1.2 | 2025-10-05 | [67078](https://github.com/airbytehq/airbyte/pull/67078) | Remove memory limit for sync jobs to improve performance and resource utilization. |
+| 1.1.1 | 2025-09-10 | [66139](https://github.com/airbytehq/airbyte/pull/66139)   | Fix inconsistent field name casing and improve tooltip clarity. Field names now use consistent title casing and tooltips reference exact field names. |
+| 1.1.0 | 2025-09-03 | [65933](https://github.com/airbytehq/airbyte/pull/65933)   | Add support for Azure Entra ID (Service Principal) authentication. You can now authenticate using Azure AD tenant ID, client ID, and client secret. |
+| 1.0.4 | 2025-08-07 | [64556](https://github.com/airbytehq/airbyte/pull/64556)   | Promoting release candidate 1.0.4-rc.1 to a main version. |
+| 1.0.4-rc.1 | 2025-08-05 | [59710](https://github.com/airbytehq/airbyte/pull/59710)   | Release Azure blob destination on latest CDK                                                                                                                    |
+| 1.0.3    | 2025-05-07 | [59710](https://github.com/airbytehq/airbyte/pull/59710)   | CDK backpressure bugfix                                                                                                                                         |
+| 1.0.2    | 2025-04-14 | [57563](https://github.com/airbytehq/airbyte/pull/57563)   | Fix signature spec example                                                                                                                                      |
+| 1.0.1    | 2025-04-09 | [57541](https://github.com/airbytehq/airbyte/pull/57541)   | Fix metadata to actually certify.                                                                                                                               |
+| 1.0.0    | 2025-04-03 | [56391](https://github.com/airbytehq/airbyte/pull/56391)   | Bring into compliance with modern connector standards; certify connector.                                                                                       |
+| 0.2.5    | 2025-03-21 | [55906](https://github.com/airbytehq/airbyte/pull/55906)   | Upgrade to airbyte/java-connector-base:2.0.1 to be M4 compatible.                                                                                               |
+| 0.2.4    | 2025-01-10 | [51507](https://github.com/airbytehq/airbyte/pull/51507)   | Use a non root base image                                                                                                                                       |
+| 0.2.3    | 2024-12-18 | [49910](https://github.com/airbytehq/airbyte/pull/49910)   | Use a base image: airbyte/java-connector-base:1.0.0                                                                                                             |
+| 0.2.2    | 2024-06-12 | [\#38061](https://github.com/airbytehq/airbyte/pull/38061) | File Extensions added for the output files                                                                                                                      |
+| 0.2.1    | 2023-09-13 | [\#30412](https://github.com/airbytehq/airbyte/pull/30412) | Switch noisy logging to debug                                                                                                                                   |
+| 0.2.0    | 2023-01-18 | [\#21467](https://github.com/airbytehq/airbyte/pull/21467) | Support spilling of objects exceeding configured size threshold                                                                                                 |
+| 0.1.6    | 2022-08-08 | [\#15318](https://github.com/airbytehq/airbyte/pull/15318) | Support per-stream state                                                                                                                                        |
+| 0.1.5    | 2022-06-16 | [\#13852](https://github.com/airbytehq/airbyte/pull/13852) | Updated stacktrace format for any trace message errors                                                                                                          |
+| 0.1.4    | 2022-05-17 | [12820](https://github.com/airbytehq/airbyte/pull/12820)   | Improved 'check' operation performance                                                                                                                          |
+| 0.1.3    | 2022-02-14 | [10256](https://github.com/airbytehq/airbyte/pull/10256)   | Add `-XX:+ExitOnOutOfMemoryError` JVM option                                                                                                                    |
+| 0.1.2    | 2022-01-20 | [\#9682](https://github.com/airbytehq/airbyte/pull/9682)   | Each data synchronization for each stream is written to a new blob to the folder with stream name.                                                              |
+| 0.1.1    | 2021-12-29 | [\#9190](https://github.com/airbytehq/airbyte/pull/9190)   | Added BufferedOutputStream wrapper to blob output stream to improve performance and fix issues with 50,000 block limit. Also disabled autoflush on PrintWriter. |
+| 0.1.0    | 2021-08-30 | [\#5332](https://github.com/airbytehq/airbyte/pull/5332)   | Initial release with JSONL and CSV output.                                                                                                                      |
 
 </details>

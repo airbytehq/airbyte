@@ -9,6 +9,8 @@ import com.google.cloud.bigquery.BigQuery
 import com.google.cloud.bigquery.JobInfo
 import com.google.cloud.bigquery.LoadJobConfiguration
 import io.airbyte.cdk.load.command.DestinationCatalog
+import io.airbyte.cdk.load.command.DestinationStream
+import io.airbyte.cdk.load.config.DataChannelMedium
 import io.airbyte.cdk.load.file.gcs.GcsBlob
 import io.airbyte.cdk.load.file.gcs.GcsClient
 import io.airbyte.cdk.load.message.StreamKey
@@ -24,11 +26,16 @@ import io.airbyte.integrations.destination.bigquery.formatter.BigQueryRecordForm
 import io.airbyte.integrations.destination.bigquery.spec.BigqueryConfiguration
 import io.airbyte.integrations.destination.bigquery.spec.GcsFilePostProcessing
 import io.airbyte.integrations.destination.bigquery.spec.GcsStagingConfiguration
+import io.airbyte.integrations.destination.bigquery.toPrettyString
 import io.airbyte.integrations.destination.bigquery.write.typing_deduping.toTableId
+import io.github.oshai.kotlinlogging.KotlinLogging
 import io.micronaut.context.annotation.Requires
 import io.micronaut.context.condition.Condition
 import io.micronaut.context.condition.ConditionContext
+import jakarta.inject.Named
 import jakarta.inject.Singleton
+
+private val logger = KotlinLogging.logger {}
 
 class BigQueryBulkLoader(
     private val storageClient: GcsClient,
@@ -65,8 +72,20 @@ class BigQueryBulkLoader(
             BigQueryUtils.waitForJobFinish(loadJob)
         } catch (e: Exception) {
             throw RuntimeException(
-                "Failed to load CSV data from $gcsUri to table ${tableId.dataset}.${tableId.table}",
+                "Failed to load CSV data from $gcsUri to table ${tableId.toPrettyString()}",
                 e
+            )
+        }
+
+        val stats = loadJob.reload().getStatistics<JobStatistics.LoadStatistics>()
+        logger.info {
+            "Finished loading data into table ${tableId.toPrettyString()}. ${stats.outputRows} rows loaded; ${stats.badRecords} bad records."
+        }
+        if (stats.badRecords > 0) {
+            // This should be impossible: the load job uses the default setting of maxBadRecords=0,
+            // so the job is supposed to fail if there were any bad records.
+            throw RuntimeException(
+                "${tableId.toPrettyString()}: Nonzero bad records detected: ${stats.badRecords}"
             )
         }
 
@@ -99,13 +118,20 @@ class BigQueryBulkLoaderFactory(
     private val bigQueryConfiguration: BigqueryConfiguration,
     private val typingDedupingStreamStateStore: StreamStateStore<TypingDedupingExecutionConfig>?,
     private val directLoadStreamStateStore: StreamStateStore<DirectLoadTableExecutionConfig>?,
+    @Named("dataChannelMedium") private val dataChannelMedium: DataChannelMedium,
 ) : BulkLoaderFactory<StreamKey, GcsBlob> {
     override val numPartWorkers: Int = 2
     override val numUploadWorkers: Int = 10
     override val maxNumConcurrentLoads: Int = 1
 
     override val objectSizeBytes: Long = 200 * 1024 * 1024 // 200 MB
-    override val partSizeBytes: Long = 10 * 1024 * 1024 // 10 MB
+
+    override val partSizeBytes: Long =
+        when (dataChannelMedium) {
+            DataChannelMedium.SOCKET -> 20 * 1024 * 1024
+            DataChannelMedium.STDIO -> 10 * 1024 * 1024
+        }
+
     override val maxMemoryRatioReservedForParts: Double = 0.6
 
     override fun create(key: StreamKey, partition: Int): BulkLoader<GcsBlob> {
@@ -114,11 +140,13 @@ class BigQueryBulkLoaderFactory(
         val tableNameInfo = names[key.stream]!!
         if (bigQueryConfiguration.legacyRawTablesOnly) {
             val rawTableName = tableNameInfo.tableNames.rawTableName!!
-            val rawTableSuffix = typingDedupingStreamStateStore!!.get(key.stream)!!.rawTableSuffix
+            val executionConfig = waitForStateStore(typingDedupingStreamStateStore!!, key.stream)
+            val rawTableSuffix = executionConfig.rawTableSuffix
             tableId = TableId.of(rawTableName.namespace, rawTableName.name + rawTableSuffix)
             schema = BigQueryRecordFormatter.CSV_SCHEMA
         } else {
-            tableId = directLoadStreamStateStore!!.get(key.stream)!!.tableName.toTableId()
+            val executionConfig = waitForStateStore(directLoadStreamStateStore!!, key.stream)
+            tableId = executionConfig.tableName.toTableId()
             schema =
                 BigQueryRecordFormatter.getDirectLoadSchema(
                     catalog.getStream(key.stream),
@@ -131,6 +159,29 @@ class BigQueryBulkLoaderFactory(
             bigQueryConfiguration,
             tableId,
             schema,
+        )
+    }
+
+    private fun <S> waitForStateStore(
+        stateStore: StreamStateStore<S>,
+        streamDescriptor: DestinationStream.Descriptor
+    ): S {
+        // Poll the state store until it's populated by the coordinating StreamLoader thread
+        var attempts = 0
+        val maxAttempts = 60 * 60 // 1 hour
+
+        while (attempts < maxAttempts) {
+            val state = stateStore.get(streamDescriptor)
+            if (state != null) {
+                return state
+            }
+
+            Thread.sleep(1000)
+            attempts++
+        }
+
+        throw RuntimeException(
+            "Timeout waiting for StreamStateStore to be populated for stream $streamDescriptor. This indicates a coordination issue between workers.",
         )
     }
 }

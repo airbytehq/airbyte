@@ -6,11 +6,11 @@ data:
     hosts:
       - api.stripe.com
   connectorBuildOptions:
-    baseImage: docker.io/airbyte/source-declarative-manifest:6.60.5@sha256:79a69ff4f759e8b404c687eff62c72f53b05d567fa830b71d17b01b8deaf2189
+    baseImage: docker.io/airbyte/source-declarative-manifest:7.4.1@sha256:71df19e2ee555ca5b14abbec01d50104c79c9b84cb9cc323284d24333361900a
   connectorSubtype: api
   connectorType: source
   definitionId: e094cb9a-26de-4645-8761-65c0c425d1de
-  dockerImageTag: 5.15.3
+  dockerImageTag: 5.15.11
   dockerRepository: airbyte/source-stripe
   documentationUrl: https://docs.airbyte.com/integrations/sources/stripe
   erdUrl: https://dbdocs.io/airbyteio/source-stripe?view=relationships
@@ -26,7 +26,6 @@ data:
   registryOverrides:
     cloud:
       enabled: true
-      dockerImageTag: 5.14.1
     oss:
       enabled: true
   releaseStage: generally_available

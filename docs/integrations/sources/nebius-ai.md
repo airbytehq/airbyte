@@ -26,6 +26,14 @@ API Reference: https://studio.nebius.com/docs/api-reference
 
 | Version          | Date              | Pull Request | Subject        |
 |------------------|-------------------|--------------|----------------|
+| 0.0.23 | 2025-10-29 | [68727](https://github.com/airbytehq/airbyte/pull/68727) | Update dependencies |
+| 0.0.22 | 2025-10-21 | [68385](https://github.com/airbytehq/airbyte/pull/68385) | Update dependencies |
+| 0.0.21 | 2025-10-14 | [67729](https://github.com/airbytehq/airbyte/pull/67729) | Update dependencies |
+| 0.0.20 | 2025-10-07 | [66928](https://github.com/airbytehq/airbyte/pull/66928) | Update dependencies |
+| 0.0.19 | 2025-09-23 | [66608](https://github.com/airbytehq/airbyte/pull/66608) | Update dependencies |
+| 0.0.18 | 2025-09-09 | [65816](https://github.com/airbytehq/airbyte/pull/65816) | Update dependencies |
+| 0.0.17 | 2025-08-23 | [65202](https://github.com/airbytehq/airbyte/pull/65202) | Update dependencies |
+| 0.0.16 | 2025-08-09 | [64695](https://github.com/airbytehq/airbyte/pull/64695) | Update dependencies |
 | 0.0.15 | 2025-08-02 | [64248](https://github.com/airbytehq/airbyte/pull/64248) | Update dependencies |
 | 0.0.14 | 2025-07-26 | [63850](https://github.com/airbytehq/airbyte/pull/63850) | Update dependencies |
 | 0.0.13 | 2025-07-19 | [63397](https://github.com/airbytehq/airbyte/pull/63397) | Update dependencies |

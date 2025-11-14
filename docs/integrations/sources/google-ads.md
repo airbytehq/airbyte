@@ -77,7 +77,7 @@ If you are accessing your account through a Google Ads Manager account, you must
 </FieldAnchor>
 
 <FieldAnchor field="customer_status_filter">
-7. (Optional) Enter customer statuses to filter customers. Leaving this field blank will replicate data from all accounts. Check [Google Ads documentation](https://developers.google.com/google-ads/api/reference/rpc/v18/CustomerStatusEnum.CustomerStatus) for more info.
+7. (Optional) Enter customer statuses to filter customers. Leaving this field blank will replicate data from all accounts. Check [Google Ads documentation](https://developers.google.com/google-ads/api/reference/rpc/v20/CustomerStatusEnum.CustomerStatus) for more info.
 </FieldAnchor>
 
 <FieldAnchor field="start_date">
@@ -108,7 +108,7 @@ If you are accessing your account through a Google Ads Manager account, you must
 5. Enter the **Developer Token** you obtained from Google.
 6. To authenticate your Google account, enter your Google application's **Client ID**, **Client Secret**, **Refresh Token**, and optionally, the **Access Token**.
 7. (Optional) Enter a comma-separated list of the **Customer ID(s)** for your account. These IDs are 10-digit numbers that uniquely identify your account. To find your Customer ID, please follow [Google's instructions](https://support.google.com/google-ads/answer/1704344). Leaving this field blank will replicate data from all connected accounts.
-8. (Optional) Enter customer statuses to filter customers. Leaving this field blank will replicate data from all accounts. Check [Google Ads documentation](https://developers.google.com/google-ads/api/reference/rpc/v18/CustomerStatusEnum.CustomerStatus) for more info.
+8. (Optional) Enter customer statuses to filter customers. Leaving this field blank will replicate data from all accounts. Check [Google Ads documentation](https://developers.google.com/google-ads/api/reference/rpc/v20/CustomerStatusEnum.CustomerStatus) for more info.
 9. (Optional) Enter a **Start Date** using the provided datepicker, or by programmatically entering the date in YYYY-MM-DD format. The data added on and after this date will be replicated. (Default start date is 2 years ago)
 10. (Optional) You can use the **Custom GAQL Queries** field to enter a custom query using Google Ads Query Language. Click **Add** and enter your query, as well as the desired name of the table for this data in the destination. Multiple queries can be provided. For more information on formulating these queries, refer to our [guide below](#custom-query-understanding-google-ads-query-language).
 11. (Required for Manager accounts) If accessing your account through a Google Ads Manager account, you must enter the [**Customer ID**](https://developers.google.com/google-ads/api/docs/concepts/call-structure#cid) of the Manager account.
@@ -132,9 +132,9 @@ The Google Ads source connector supports the following [sync modes](https://docs
 
 List of streams:
 
-- [ad_group_criterions](https://developers.google.com/google-ads/api/fields/v18/ad_group_criterion)
-- [ad_listing_group_criterions](https://developers.google.com/google-ads/api/fields/v18/ad_group_criterion)
-- [campaign_criterion](https://developers.google.com/google-ads/api/fields/v18/campaign_criterion)
+- [ad_group_criterions](https://developers.google.com/google-ads/api/fields/v20/ad_group_criterion)
+- [ad_listing_group_criterions](https://developers.google.com/google-ads/api/fields/v20/ad_group_criterion)
+- [campaign_criterion](https://developers.google.com/google-ads/api/fields/v20/campaign_criterion)
 
 These streams support incremental updates, including deletions, leveraging the Change Status stream. However, they only capture updates from the most recent three months.
 
@@ -150,56 +150,56 @@ The Google Ads source connector can sync the following tables. It can also sync 
 
 ### Main Tables
 
-- [customer](https://developers.google.com/google-ads/api/fields/v18/customer)
+- [customer](https://developers.google.com/google-ads/api/fields/v20/customer)
 
 Highlights the setup and configurations of a Google Ads account. It encompasses features like call reporting and conversion tracking, giving a clear picture of the account's operational settings and features.
 
-- [customer_label](https://developers.google.com/google-ads/api/fields/v18/customer_label)
-- [campaign_criterion](https://developers.google.com/google-ads/api/fields/v18/campaign_criterion)
+- [customer_label](https://developers.google.com/google-ads/api/fields/v20/customer_label)
+- [campaign_criterion](https://developers.google.com/google-ads/api/fields/v20/campaign_criterion)
 
 Targeting option for a campaign, such as a keyword, placement, or audience.
 
-- [campaign_bidding_strategy](https://developers.google.com/google-ads/api/fields/v18/campaign)
+- [campaign_bidding_strategy](https://developers.google.com/google-ads/api/fields/v20/campaign)
 
 Represents the bidding strategy at the campaign level.
 
-- [campaign_label](https://developers.google.com/google-ads/api/fields/v18/campaign_label)
-- [label](https://developers.google.com/google-ads/api/fields/v18/label)
+- [campaign_label](https://developers.google.com/google-ads/api/fields/v20/campaign_label)
+- [label](https://developers.google.com/google-ads/api/fields/v20/label)
 
 Represents labels that can be attached to different entities such as campaigns or ads.
 
-- [ad_group_ad](https://developers.google.com/google-ads/api/fields/v18/ad_group_ad)
+- [ad_group_ad](https://developers.google.com/google-ads/api/fields/v20/ad_group_ad)
 
 Different attributes of ads from ad groups segmented by date.
 
-- [ad_group_ad_label](https://developers.google.com/google-ads/api/fields/v18/ad_group_ad_label)
-- [ad_group](https://developers.google.com/google-ads/api/fields/v18/ad_group)
+- [ad_group_ad_label](https://developers.google.com/google-ads/api/fields/v20/ad_group_ad_label)
+- [ad_group](https://developers.google.com/google-ads/api/fields/v20/ad_group)
 
 Represents an ad group within a campaign. Ad groups contain one or more ads which target a shared set of keywords.
 
-- [ad_group_label](https://developers.google.com/google-ads/api/fields/v18/ad_group_label)
-- [ad_group_bidding_strategy](https://developers.google.com/google-ads/api/fields/v18/ad_group)
+- [ad_group_label](https://developers.google.com/google-ads/api/fields/v20/ad_group_label)
+- [ad_group_bidding_strategy](https://developers.google.com/google-ads/api/fields/v20/ad_group)
 
 Represents the bidding strategy at the ad group level.
 
-- [ad_group_criterion](https://developers.google.com/google-ads/api/fields/v18/ad_group_criterion)
+- [ad_group_criterion](https://developers.google.com/google-ads/api/fields/v20/ad_group_criterion)
 
 Represents criteria in an ad group, such as keywords or placements.
 
-- [ad_listing_group_criterion](https://developers.google.com/google-ads/api/fields/v18/ad_group_criterion)
+- [ad_listing_group_criterion](https://developers.google.com/google-ads/api/fields/v20/ad_group_criterion)
 
 Represents criteria for listing group ads.
 
-- [ad_group_criterion_label](https://developers.google.com/google-ads/api/fields/v18/ad_group_criterion_label)
-- [audience](https://developers.google.com/google-ads/api/fields/v18/audience)
+- [ad_group_criterion_label](https://developers.google.com/google-ads/api/fields/v20/ad_group_criterion_label)
+- [audience](https://developers.google.com/google-ads/api/fields/v20/audience)
 
 Represents user lists that are defined by the advertiser to target specific users.
 
-- [user_interest](https://developers.google.com/google-ads/api/fields/v18/user_interest)
+- [user_interest](https://developers.google.com/google-ads/api/fields/v20/user_interest)
 
 A particular interest-based vertical to be targeted.
 
-- [click_view](https://developers.google.com/google-ads/api/reference/rpc/v18/ClickView)
+- [click_view](https://developers.google.com/google-ads/api/reference/rpc/v20/ClickView)
 
 A click view with metrics aggregated at each click level, including both valid and invalid clicks.
 
@@ -207,48 +207,48 @@ Note that `ad_group`, `ad_group_ad`, and `campaign` contain a `labels` field, wh
 
 ### Report Tables
 
-- [account_performance_report](https://developers.google.com/google-ads/api/fields/v18/overview)
+- [account_performance_report](https://developers.google.com/google-ads/api/fields/v20/overview)
 
 Provides in-depth metrics related to ads interactions, including viewability, click-through rates, and conversions. Segments data by various factors, offering a granular look into how ads perform across different contexts.
 
-- [campaign](https://developers.google.com/google-ads/api/fields/v18/campaign)
+- [campaign](https://developers.google.com/google-ads/api/fields/v20/campaign)
 
 Represents a campaign in Google Ads.
 
-- [campaign_budget](https://developers.google.com/google-ads/api/fields/v18/campaign_budget)
+- [campaign_budget](https://developers.google.com/google-ads/api/fields/v20/campaign_budget)
 
 Represents the budget settings of a campaign.
 
-- [geographic_view](https://developers.google.com/google-ads/api/fields/v18/geographic_view)
+- [geographic_view](https://developers.google.com/google-ads/api/fields/v20/geographic_view)
 
 Geographic View includes all metrics aggregated at the country level. It reports metrics at either actual physical location of the user or an area of interest.
 
-- [user_location_view](https://developers.google.com/google-ads/api/fields/v18/user_location_view)
+- [user_location_view](https://developers.google.com/google-ads/api/fields/v20/user_location_view)
 
 User Location View includes all metrics aggregated at the country level. It reports metrics at the actual physical location of the user by targeted or not targeted location.
 
-- [display_keyword_view](https://developers.google.com/google-ads/api/fields/v18/display_keyword_view)
+- [display_keyword_view](https://developers.google.com/google-ads/api/fields/v20/display_keyword_view)
 
 Metrics for display keywords, which are keywords that are targeted in display campaigns.
 
-- [topic_view](https://developers.google.com/google-ads/api/fields/v18/topic_view)
+- [topic_view](https://developers.google.com/google-ads/api/fields/v20/topic_view)
 
 Reporting view that shows metrics aggregated by topic, which are broad categories of interests that users have.
 
-- [shopping_performance_view](https://developers.google.com/google-ads/api/fields/v18/shopping_performance_view)
+- [shopping_performance_view](https://developers.google.com/google-ads/api/fields/v20/shopping_performance_view)
 
 Provides Shopping campaign statistics aggregated at several product dimension levels. Product dimension values from Merchant Center such as brand, category, custom attributes, product condition and product type will reflect the state of each dimension as of the date and time when the corresponding event was recorded.
 
-- [keyword_view](https://developers.google.com/google-ads/api/fields/v18/keyword_view)
+- [keyword_view](https://developers.google.com/google-ads/api/fields/v20/keyword_view)
 
 Provides metrics related to the performance of keywords in the campaign.
 
-- [ad_group_ad_legacy](https://developers.google.com/google-ads/api/fields/v18/ad_group_ad)
+- [ad_group_ad_legacy](https://developers.google.com/google-ads/api/fields/v20/ad_group_ad)
 
 Metrics and attributes of legacy ads from ad groups.
 
 :::note
-Due to Google Ads API constraints, the `click_view` stream retrieves data one day at a time and can only retrieve data newer than 90 days ago. Also, [metrics](https://developers.google.com/google-ads/api/fields/v18/metrics) cannot be requested for a Google Ads Manager account. Report streams are only available when pulling data from a non-manager account.
+Due to Google Ads API constraints, the `click_view` stream retrieves data one day at a time and can only retrieve data newer than 90 days ago. Also, [metrics](https://developers.google.com/google-ads/api/fields/v20/metrics) cannot be requested for a Google Ads Manager account. Report streams are only available when pulling data from a non-manager account.
 :::
 
 :::warning
@@ -257,7 +257,7 @@ If you have this type of campaign Google will remove them from the results for t
 More [info](https://github.com/airbytehq/airbyte/issues/11062) and [Google Discussions](https://groups.google.com/g/adwords-api/c/_mxbgNckaLQ).
 :::
 
-For incremental streams, data is synced up to the previous day using your Google Ads account time zone since Google Ads can filter data only by [date](https://developers.google.com/google-ads/api/fields/v18/ad_group_ad#segments.date) without time. Also, some reports cannot load data real-time due to Google Ads [limitations](https://support.google.com/google-ads/answer/2544985?hl=en).
+For incremental streams, data is synced up to the previous day using your Google Ads account time zone since Google Ads can filter data only by [date](https://developers.google.com/google-ads/api/fields/v20/ad_group_ad#segments.date) without time. Also, some reports cannot load data real-time due to Google Ads [limitations](https://support.google.com/google-ads/answer/2544985?hl=en).
 
 ### Primary Key Selection Method
 
@@ -270,7 +270,7 @@ Primary keys are chosen to uniquely identify records within streams. In this sel
 
 Additional streams for Google Ads can be dynamically created using custom queries.
 
-The Google Ads Query Language queries the Google Ads API. Review the [Google Ads Query Language](https://developers.google.com/google-ads/api/docs/query/overview) and the [query builder](https://developers.google.com/google-ads/api/fields/v18/query_validator) to validate your query. You can then add these as custom queries when configuring the Google Ads source.
+The Google Ads Query Language queries the Google Ads API. Review the [Google Ads Query Language](https://developers.google.com/google-ads/api/docs/query/overview) and the [query builder](https://developers.google.com/google-ads/api/fields/v20/query_validator) to validate your query. You can then add these as custom queries when configuring the Google Ads source.
 
 Example GAQL Custom Query:
 
@@ -308,7 +308,7 @@ You can then monitor ad performance, update campaigns, and manage other account 
 
 While both types of accounts can access a wide range of resources in the API, the difference lies in their scope and purpose. Manager accounts have a broader oversight, while client accounts delve into the specifics of advertising operations.
 
-For detailed information, refer to the [official documentation.](https://developers.google.com/google-ads/api/fields/v18/overview)
+For detailed information, refer to the [official documentation.](https://developers.google.com/google-ads/api/fields/v20/overview)
 
 ## Note on Conversion Windows
 
@@ -335,7 +335,17 @@ Due to a limitation in the Google Ads API which does not allow getting performan
 
 | Version     | Date       | Pull Request                                             | Subject                                                                                                                                                                |
 |:------------|:-----------|:---------------------------------------------------------|:-----------------------------------------------------------------------------------------------------------------------------------------------------------------------|
-| 3.15.0 | 2025-08-04 | [64495](https://github.com/airbytehq/airbyte/pull/64495) | Promoting release candidate 3.15.0-rc.1 to a main version. |
+| 4.1.0-rc.7  | 2025-10-16 | [68030](https://github.com/airbytehq/airbyte/pull/68030) | Fix schema loader for `custom_queries` streams                                                                                                                         |
+| 4.1.0-rc.6  | 2025-09-25 | [66701](https://github.com/airbytehq/airbyte/pull/66701) | Enables progressive rollouts                                                                                                                                           |
+| 4.1.0-rc.5  | 2025-09-25 | [66569](https://github.com/airbytehq/airbyte/pull/66569) | Bumps to CDK v7, adds retry/backoff logic to custom schema loader                                                                                                      |
+| 4.1.0-rc.4  | 2025-09-18 | [66522](https://github.com/airbytehq/airbyte/pull/66522) | Revert to CDK v6.60.12                                                                                                                                                 |
+| 4.1.0-rc.3  | 2025-09-17 | [65535](https://github.com/airbytehq/airbyte/pull/65535) | Update custom query dynamic streams to use regex for conditional incremental sync component mapping                                                                    |
+| 4.1.0-rc.2  | 2025-08-22 | [65149](https://github.com/airbytehq/airbyte/pull/65149) | Update custom query URL to use Google Ads API v20                                                                                                                      |
+| 4.1.0-rc.1  | 2025-08-19 | [63344](https://github.com/airbytehq/airbyte/pull/63344) | Migrate `custom_queries` streams to low-code                                                                                                                           |
+| 4.0.2       | 2025-08-16 | [64987](https://github.com/airbytehq/airbyte/pull/64987) | Update dependencies                                                                                                                                                    |
+| 4.0.1       | 2025-08-09 | [64612](https://github.com/airbytehq/airbyte/pull/64612) | Update dependencies                                                                                                                                                    |
+| 4.0.0       | 2025-08-06 | [64512](https://github.com/airbytehq/airbyte/pull/64512) | Update API version to v20                                                                                                                                              |
+| 3.15.0      | 2025-08-04 | [64495](https://github.com/airbytehq/airbyte/pull/64495) | Promoting release candidate 3.15.0-rc.1 to a main version.                                                                                                             |
 | 3.15.0-rc.1 | 2025-07-20 | [64124](https://github.com/airbytehq/airbyte/pull/64124) | Switch all streams to paginated endpoints for improved reliability                                                                                                     |
 | 3.14.2      | 2025-07-28 | [63753](https://github.com/airbytehq/airbyte/pull/63753) | Switching `click_view` to paginated endpoint for improved reliability                                                                                                  |
 | 3.14.1      | 2025-07-26 | [61472](https://github.com/airbytehq/airbyte/pull/61472) | Update dependencies                                                                                                                                                    |

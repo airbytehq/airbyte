@@ -6,9 +6,11 @@ package io.airbyte.integrations.destination.clickhouse.client
 
 import com.github.vertical_blank.sqlformatter.SqlFormatter
 import com.github.vertical_blank.sqlformatter.languages.Dialect
-import io.airbyte.cdk.load.orchestration.db.ColumnNameMapping
-import io.airbyte.cdk.load.orchestration.db.TableName
-import io.airbyte.integrations.destination.clickhouse.model.AlterationSummary
+import io.airbyte.cdk.load.component.ColumnChangeset
+import io.airbyte.cdk.load.component.ColumnType
+import io.airbyte.cdk.load.component.ColumnTypeChange
+import io.airbyte.cdk.load.table.ColumnNameMapping
+import io.airbyte.cdk.load.table.TableName
 import io.airbyte.integrations.destination.clickhouse.spec.ClickhouseConfiguration
 import io.mockk.mockk
 import kotlin.test.assertTrue
@@ -36,11 +38,11 @@ class ClickhouseSqlGeneratorTest {
     @ParameterizedTest
     @MethodSource("alterTableTestCases")
     fun testAlterTableContainsClauses(
-        alterationSummary: AlterationSummary,
+        columnChangeset: ColumnChangeset,
         expectedClauses: List<String>
     ) {
         val tableName = TableName("my_namespace", "my_table")
-        val actualSql = clickhouseSqlGenerator.alterTable(alterationSummary, tableName)
+        val actualSql = clickhouseSqlGenerator.alterTable(columnChangeset, tableName)
         expectedClauses.forEach { clause ->
             assertTrue(
                 actualSql.contains(clause),
@@ -51,15 +53,35 @@ class ClickhouseSqlGeneratorTest {
 
     @Test
     fun testAlterTableValidSql() {
-        val alterationSummary =
-            AlterationSummary(
-                added = mapOf("col1" to "Int32", "col2" to "String"),
-                modified = mapOf("col3" to "String", "col4" to "Int64"),
-                deleted = setOf("col5", "col6"),
-                hasDedupChange = false
+        val columnChangeset =
+            ColumnChangeset(
+                columnsToAdd =
+                    mapOf(
+                        "col1" to ColumnType("Int32", true),
+                        "col2" to ColumnType("String", true)
+                    ),
+                columnsToChange =
+                    mapOf(
+                        "col3" to
+                            ColumnTypeChange(
+                                ColumnType("IrrelevantValue", true),
+                                ColumnType("String", true),
+                            ),
+                        "col4" to
+                            ColumnTypeChange(
+                                ColumnType("IrrelevantValue", true),
+                                ColumnType("Int64", true),
+                            ),
+                    ),
+                columnsToDrop =
+                    mapOf(
+                        "col5" to ColumnType("IrrelevantValue", true),
+                        "col6" to ColumnType("IrrelevantValue", true)
+                    ),
+                columnsToRetain = emptyMap(),
             )
         val tableName = TableName("my_namespace", "my_table")
-        val sql = clickhouseSqlGenerator.alterTable(alterationSummary, tableName)
+        val sql = clickhouseSqlGenerator.alterTable(columnChangeset, tableName)
 
         assertDoesNotThrow {
             // Using the StandardSql dialect as a substitute for clickhouse SQL syntax validation.
@@ -167,56 +189,90 @@ class ClickhouseSqlGeneratorTest {
         fun alterTableTestCases(): List<Arguments> =
             listOf(
                 Arguments.of(
-                    AlterationSummary(
-                        added = mapOf("new_column" to "Int32"),
-                        modified = mapOf("existing_column" to "String"),
-                        deleted = setOf("old_column"),
-                        hasDedupChange = false,
+                    ColumnChangeset(
+                        columnsToAdd = mapOf("new_column" to ColumnType("Int32", false)),
+                        columnsToChange =
+                            mapOf(
+                                "existing_column" to
+                                    ColumnTypeChange(
+                                        ColumnType("IrrelevantValue", false),
+                                        ColumnType("String", false)
+                                    )
+                            ),
+                        columnsToDrop = mapOf("old_column" to ColumnType("IrrelevantValue", false)),
+                        columnsToRetain = emptyMap(),
                     ),
                     listOf(
-                        " ADD COLUMN `new_column` Nullable(Int32)",
-                        " MODIFY COLUMN `existing_column` Nullable(String)",
+                        " ADD COLUMN `new_column` Int32",
+                        " MODIFY COLUMN `existing_column` String",
                         " DROP COLUMN `old_column`"
                     )
                 ),
                 Arguments.of(
-                    AlterationSummary(
-                        added = mapOf("new_column" to "Int32"),
-                        modified = emptyMap(),
-                        deleted = setOf(),
-                        hasDedupChange = false,
+                    ColumnChangeset(
+                        columnsToAdd = mapOf("new_column" to ColumnType("Int32", false)),
+                        columnsToChange = emptyMap(),
+                        columnsToDrop = mapOf(),
+                        columnsToRetain = emptyMap(),
                     ),
-                    listOf(" ADD COLUMN `new_column` Nullable(Int32)")
+                    listOf(" ADD COLUMN `new_column` Int32")
                 ),
                 Arguments.of(
-                    AlterationSummary(
-                        added = emptyMap(),
-                        modified = mapOf("existing_column" to "String"),
-                        deleted = setOf(),
-                        hasDedupChange = false,
+                    ColumnChangeset(
+                        columnsToAdd = emptyMap(),
+                        columnsToChange =
+                            mapOf(
+                                "existing_column" to
+                                    ColumnTypeChange(
+                                        ColumnType("IrrelevantValue", false),
+                                        ColumnType("String", false)
+                                    )
+                            ),
+                        columnsToDrop = mapOf(),
+                        columnsToRetain = emptyMap(),
                     ),
-                    listOf(" MODIFY COLUMN `existing_column` Nullable(String)")
+                    listOf(" MODIFY COLUMN `existing_column` String")
                 ),
                 Arguments.of(
-                    AlterationSummary(
-                        added = emptyMap(),
-                        modified = emptyMap(),
-                        deleted = setOf("old_column"),
-                        hasDedupChange = false,
+                    ColumnChangeset(
+                        columnsToAdd = emptyMap(),
+                        columnsToChange = emptyMap(),
+                        columnsToDrop = mapOf("old_column" to ColumnType("IrrelevantValue", false)),
+                        columnsToRetain = emptyMap(),
                     ),
                     listOf(" DROP COLUMN `old_column`")
                 ),
                 Arguments.of(
-                    AlterationSummary(
-                        added = mapOf("col1" to "Int32", "col2" to "String"),
-                        modified = mapOf("col3" to "String", "col4" to "Int64"),
-                        deleted = setOf("col5", "col6"),
-                        hasDedupChange = false,
+                    ColumnChangeset(
+                        columnsToAdd =
+                            mapOf(
+                                "col1" to ColumnType("Int32", false),
+                                "col2" to ColumnType("String", true),
+                            ),
+                        columnsToChange =
+                            mapOf(
+                                "col3" to
+                                    ColumnTypeChange(
+                                        ColumnType("IrrelevantValue", false),
+                                        ColumnType("String", false)
+                                    ),
+                                "col4" to
+                                    ColumnTypeChange(
+                                        ColumnType("IrrelevantValue", false),
+                                        ColumnType("Int64", true)
+                                    ),
+                            ),
+                        columnsToDrop =
+                            mapOf(
+                                "col5" to ColumnType("String", false),
+                                "col6" to ColumnType("String", false),
+                            ),
+                        columnsToRetain = emptyMap(),
                     ),
                     listOf(
-                        " ADD COLUMN `col1` Nullable(Int32)",
+                        " ADD COLUMN `col1` Int32",
                         " ADD COLUMN `col2` Nullable(String)",
-                        " MODIFY COLUMN `col3` Nullable(String)",
+                        " MODIFY COLUMN `col3` String",
                         " MODIFY COLUMN `col4` Nullable(Int64)",
                         " DROP COLUMN `col5`",
                         " DROP COLUMN `col6`"

@@ -104,6 +104,15 @@ None!
 
 | Version     | Date       | Pull Request                                                                                                          | Subject                                                                                                         |
 |:------------|:-----------| :-------------------------------------------------------------------------------------------------------------------- |:----------------------------------------------------------------------------------------------------------------|
+| 6.2.38 | 2025-11-12 | [69289](https://github.com/airbytehq/airbyte/pull/69289) | Add externalDocumentationUrls field to metadata |
+| 6.2.37 | 2025-10-21 | [68572](https://github.com/airbytehq/airbyte/pull/68572) | Update dependencies |
+| 6.2.36 | 2025-10-14 | [67806](https://github.com/airbytehq/airbyte/pull/67806) | Update dependencies |
+| 6.2.35 | 2025-10-07 | [67290](https://github.com/airbytehq/airbyte/pull/67290) | Update dependencies |
+| 6.2.34 | 2025-09-30 | [65779](https://github.com/airbytehq/airbyte/pull/65779) | Update dependencies |
+| 6.2.33 | 2025-09-02 | [65914](https://github.com/airbytehq/airbyte/pull/65914) | Upgrade CDK to 6.28.0 and remove pendulum dependency |
+| 6.2.32 | 2025-08-23 | [65273](https://github.com/airbytehq/airbyte/pull/65273) | Update dependencies |
+| 6.2.31 | 2025-08-16 | [65006](https://github.com/airbytehq/airbyte/pull/65006) | Update dependencies |
+| 6.2.30 | 2025-08-09 | [64799](https://github.com/airbytehq/airbyte/pull/64799) | Update dependencies |
 | 6.2.29 | 2025-07-26 | [63953](https://github.com/airbytehq/airbyte/pull/63953) | Update dependencies |
 | 6.2.28 | 2025-07-19 | [63534](https://github.com/airbytehq/airbyte/pull/63534) | Update dependencies |
 | 6.2.27 | 2025-07-17 | [63354](https://github.com/airbytehq/airbyte/pull/63354) | Updated icon |

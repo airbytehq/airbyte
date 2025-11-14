@@ -776,6 +776,80 @@ definitions:
         schema:
           $ref: "#/schemas/vendor_orders"
 
+    vendor_orders_status:
+      type: DeclarativeStream
+      name: VendorOrdersStatus
+      primary_key:
+        - purchaseOrderNumber
+      incremental_sync:
+        type: DatetimeBasedCursor
+        cursor_field: createdBefore
+        cursor_datetime_formats:
+          - "%Y-%m-%dT%H:%M:%SZ"
+        datetime_format: "%Y-%m-%dT%H:%M:%SZ"
+        step: "P7D"
+        cursor_granularity: "PT0S"
+        start_datetime:
+          type: MinMaxDatetime
+          datetime: "{{ format_datetime( max(config.get('replication_start_date', (now_utc() - duration('P730D')).strftime('%Y-%m-%dT%H:%M:%SZ') ), (now_utc() - duration('P730D')).strftime('%Y-%m-%dT%H:%M:%SZ')), '%Y-%m-%dT%H:%M:%SZ') }}"
+          datetime_format: "%Y-%m-%dT%H:%M:%SZ"
+        end_datetime:
+          type: MinMaxDatetime
+          datetime: "{{ format_datetime(config['replication_end_date'] if config.get('replication_end_date') else now_utc(), '%Y-%m-%dT%H:%M:%SZ') }}"
+          datetime_format: "%Y-%m-%dT%H:%M:%SZ"
+        start_time_option:
+          field_name: createdAfter
+          inject_into: request_parameter
+        end_time_option:
+          field_name: createdBefore
+          inject_into: request_parameter
+      transformations:
+        - type: AddFields
+          fields:
+            - path: ["createdBefore"]
+              value: "{{ stream_slice['end_time'] }}"
+      retriever:
+        type: SimpleRetriever
+        requester:
+          $ref: "#/definitions/base_requester"
+          path: "vendor/orders/v1/purchaseOrdersStatus"
+          http_method: GET
+          request_headers:
+            content-type: "application/json"
+          error_handler:
+            type: CompositeErrorHandler
+            error_handlers:
+              - type: DefaultErrorHandler
+                response_filters:
+                  - type: HttpResponseFilter
+                    action: RETRY
+                    http_codes:
+                      - 403
+                backoff_strategies:
+                  - class_name: "source_declarative_manifest.components.AmazonSellerPartnerWaitTimeFromHeaderBackoffStrategy"
+                    type: CustomBackoffStrategy
+                    header: x-amzn-RateLimit-Limit
+                    default_backoff_time: 60
+        record_selector:
+          type: RecordSelector
+          extractor:
+            type: DpathExtractor
+            field_path: ["payload", "ordersStatus"]
+        paginator:
+          type: DefaultPaginator
+          page_token_option:
+            type: RequestOption
+            inject_into: request_parameter
+            field_name: nextToken
+          pagination_strategy:
+            type: CursorPagination
+            stop_condition: '{{ not response.get("payload", {}).get("pagination", {}).get("nextToken") }}'
+            cursor_value: "{{ response.payload.pagination.nextToken }}"
+      schema_loader:
+        type: InlineSchemaLoader
+        schema:
+          $ref: "#/schemas/vendor_orders_status"
+
     # FinanceStream
     list_financial_event_groups:
       type: DeclarativeStream
@@ -2721,6 +2795,39 @@ api_budget:
       matchers:
         - method: GET
           url_path_pattern: "orders/v0/orders/[^/]+/orderItems(\\?.*)?$" # matches /orderItems
+
+    # SP-API Reports v2021-06-30
+
+    # 1) Create report  (POST /reports/2021-06-30/reports)
+    #   Default: ~0.0167 rps (≈1/min), burst 15
+    - type: MovingWindowCallRatePolicy
+      rates:
+        - limit: 1
+          interval: PT1M
+      matchers:
+        - method: POST
+          url_path_pattern: "reports/2021-06-30/reports$"
+
+    # 2) Poll report status  (GET /reports/2021-06-30/reports/{reportId})
+    #   Default: 2 rps, burst 15
+    - type: MovingWindowCallRatePolicy
+      rates:
+        - limit: 2
+          interval: PT1S
+      matchers:
+        - method: GET
+          url_path_pattern: "reports/2021-06-30/reports/[^/]+$"
+
+    # 3) Get report document metadata  (GET /reports/2021-06-30/documents/{documentId})
+    #   Default: ~0.0167 rps (≈1/min), burst 15
+    - type: MovingWindowCallRatePolicy
+      rates:
+        - limit: 1
+          interval: PT1M
+      matchers:
+        - method: GET
+          url_path_pattern: "reports/2021-06-30/documents/[^/]+$"
+
   # Other API budget settings:
   status_codes_for_ratelimit_hit: [429]
 
@@ -2732,6 +2839,7 @@ streams:
   - $ref: "#/definitions/streams/list_financial_events"
   - $ref: "#/definitions/streams/vendor_direct_fulfillment_shipping"
   - $ref: "#/definitions/streams/vendor_orders"
+  - $ref: "#/definitions/streams/vendor_orders_status"
 
     # Reports Streams
   - $ref: "#/definitions/streams/get_flat_file_all_orders_data_by_order_date_general"
@@ -9712,6 +9820,369 @@ schemas:
         - 'null'
         - string
         format: date-time
+  vendor_orders_status:
+    title: Vendor Orders Status
+    description: Status of vendor purchase orders
+    type: object
+    $schema: http://json-schema.org/draft-07/schema#
+    properties:
+      purchaseOrderNumber:
+        description: Purchase order number
+        type:
+          - 'null'
+          - string
+      status:
+        description: Status of the purchase order
+        type:
+          - 'null'
+          - string
+      changedBefore:
+        description: The timestamp indicating the maximum creation date of the status data to be fetched.
+        type:
+          - 'null'
+          - string
+        format: date-time
+      orderDetails:
+        description: Details of the vendor order.
+        type:
+          - 'null'
+          - object
+        properties:
+          purchaseOrderDate:
+            description: Purchase order creation date and time
+            type:
+              - 'null'
+              - string
+            format: date-time
+          purchaseOrderChangedDate:
+            description: Date and time when the purchase order was last changed
+            type:
+              - 'null'
+              - string
+            format: date-time
+          purchaseOrderStateChangedDate:
+            description: Date and time when the purchase order state changed
+            type:
+              - 'null'
+              - string
+            format: date-time
+          purchaseOrderType:
+            description: Type of purchase order
+            type:
+              - 'null'
+              - string
+          importDetails:
+            description: Details related to import of the order
+            type:
+              - 'null'
+              - object
+            properties:
+              methodOfPayment:
+                description: Method of payment for import
+                type:
+                  - 'null'
+                  - string
+              internationalCommercialTerms:
+                description: International commercial terms
+                type:
+                  - 'null'
+                  - string
+              portOfDelivery:
+                description: Port of delivery
+                type:
+                  - 'null'
+                  - string
+              importContainers:
+                description: Information about import containers
+                type:
+                  - 'null'
+                  - string
+              shippingInstructions:
+                description: Instructions for shipping
+                type:
+                  - 'null'
+                  - string
+          dealCode:
+            description: Deal code associated with the order
+            type:
+              - 'null'
+              - string
+          paymentMethod:
+            description: Payment method for the order
+            type:
+              - 'null'
+              - string
+          buyingParty:
+            description: Information about the party making the purchase
+            type:
+              - 'null'
+              - object
+            properties:
+              partyId:
+                description: ID of the buying party
+                type:
+                  - 'null'
+                  - string
+              address:
+                description: Address of the buying party
+                type:
+                  - 'null'
+                  - object
+                properties:
+                  name:
+                    description: Name of the buying party
+                    type:
+                      - 'null'
+                      - string
+                  addressLine1:
+                    description: First line of the address
+                    type:
+                      - 'null'
+                      - string
+                  city:
+                    description: City of the address
+                    type:
+                      - 'null'
+                      - string
+                  stateOrRegion:
+                    description: State or region of the address
+                    type:
+                      - 'null'
+                      - string
+                  postalCode:
+                    description: Postal code of the address
+                    type:
+                      - 'null'
+                      - string
+                  countryCode:
+                    description: Country code of the address
+                    type:
+                      - 'null'
+                      - string
+                  phone:
+                    description: Phone number of the buying party
+                    type:
+                      - 'null'
+                      - string
+          sellingParty:
+            description: Information about the party selling the product
+            type:
+              - 'null'
+              - object
+            properties:
+              partyId:
+                description: ID of the selling party
+                type:
+                  - 'null'
+                  - string
+          shipToParty:
+            description: Information about the party to ship to
+            type:
+              - 'null'
+              - object
+            properties:
+              partyId:
+                description: ID of the ship to party
+                type:
+                  - 'null'
+                  - string
+              address:
+                description: Address of the ship to party
+                type:
+                  - 'null'
+                  - object
+                properties:
+                  name:
+                    description: Name of the ship to party
+                    type:
+                      - 'null'
+                      - string
+                  addressLine1:
+                    description: First line of the address
+                    type:
+                      - 'null'
+                      - string
+                  city:
+                    description: City of the address
+                    type:
+                      - 'null'
+                      - string
+                  stateOrRegion:
+                    description: State or region of the address
+                    type:
+                      - 'null'
+                      - string
+                  postalCode:
+                    description: Postal code of the address
+                    type:
+                      - 'null'
+                      - string
+                  countryCode:
+                    description: Country code of the address
+                    type:
+                      - 'null'
+                      - string
+                  phone:
+                    description: Phone number of the ship to party
+                    type:
+                      - 'null'
+                      - string
+          billToParty:
+            description: Information about the party to bill
+            type:
+              - 'null'
+              - object
+            properties:
+              partyId:
+                description: ID of the bill to party
+                type:
+                  - 'null'
+                  - string
+              address:
+                description: Address of the bill to party
+                type:
+                  - 'null'
+                  - object
+                properties:
+                  name:
+                    description: Name of the bill to party
+                    type:
+                      - 'null'
+                      - string
+                  addressLine1:
+                    description: First line of the address
+                    type:
+                      - 'null'
+                      - string
+                  city:
+                    description: City of the address
+                    type:
+                      - 'null'
+                      - string
+                  stateOrRegion:
+                    description: State or region of the address
+                    type:
+                      - 'null'
+                      - string
+                  postalCode:
+                    description: Postal code of the address
+                    type:
+                      - 'null'
+                      - string
+                  countryCode:
+                    description: Country code of the address
+                    type:
+                      - 'null'
+                      - string
+                  phone:
+                    description: Phone number of the bill to party
+                    type:
+                      - 'null'
+                      - string
+          taxInfo:
+            description: Tax information for the order
+            type:
+              - 'null'
+              - object
+            properties:
+              taxType:
+                description: Type of tax
+                type:
+                  - 'null'
+                  - string
+              taxRegistrationNumber:
+                description: Tax registration number
+                type:
+                  - 'null'
+                  - string
+      deliveryWindow:
+        description: Delivery window for the order
+        type:
+          - 'null'
+          - string
+      items:
+        description: List of items in the order
+        type:
+          - 'null'
+          - array
+        items:
+          type:
+            - 'null'
+            - object
+          properties:
+            itemSequenceNumber:
+              description: Sequence number of the item
+              type:
+                - 'null'
+                - string
+            amazonProductIdentifier:
+              description: Amazon product identifier
+              type:
+                - 'null'
+                - string
+            vendorProductIdentifier:
+              description: Vendor product identifier
+              type:
+                - 'null'
+                - string
+            orderedQuantity:
+              description: Quantity ordered
+              type:
+                - 'null'
+                - object
+              properties:
+                amount:
+                  description: Amount of the quantity
+                  type:
+                    - 'null'
+                    - integer
+                unitOfMeasure:
+                  description: Unit of measure for the quantity
+                  type:
+                    - 'null'
+                    - string
+                unitSize:
+                  description: Unit size for the quantity
+                  type:
+                    - 'null'
+                    - integer
+            isBackOrderAllowed:
+              description: Whether back order is allowed
+              type:
+                - 'null'
+                - boolean
+            netCost:
+              description: Net cost of the item
+              type:
+                - 'null'
+                - object
+              properties:
+                amount:
+                  description: Amount of the net cost
+                  type:
+                    - 'null'
+                    - string
+                currencyCode:
+                  description: Currency code for the net cost
+                  type:
+                    - 'null'
+                    - string
+            listPrice:
+              description: List price of the item
+              type:
+                - 'null'
+                - object
+              properties:
+                amount:
+                  description: Amount of the list price
+                  type:
+                    - 'null'
+                    - string
+                currencyCode:
+                  description: Currency code for the list price
+                  type:
+                    - 'null'
+                    - string
   list_financial_event_groups:
     title: ListFinancialEventGroups
     description: List Financial Event Groups

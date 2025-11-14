@@ -68,6 +68,14 @@ The Freshsales connector should not run into Freshsales API limitations under no
 
 | Version | Date       | Pull Request                                             | Subject                                                      |
 | :------ | :--------- | :------------------------------------------------------- | :----------------------------------------------------------- |
+| 1.1.38 | 2025-10-29 | [68776](https://github.com/airbytehq/airbyte/pull/68776) | Update dependencies |
+| 1.1.37 | 2025-10-21 | [68423](https://github.com/airbytehq/airbyte/pull/68423) | Update dependencies |
+| 1.1.36 | 2025-10-14 | [68041](https://github.com/airbytehq/airbyte/pull/68041) | Update dependencies |
+| 1.1.35 | 2025-10-07 | [67311](https://github.com/airbytehq/airbyte/pull/67311) | Update dependencies |
+| 1.1.34 | 2025-09-30 | [66775](https://github.com/airbytehq/airbyte/pull/66775) | Update dependencies |
+| 1.1.33 | 2025-09-24 | [65792](https://github.com/airbytehq/airbyte/pull/65792) | Update dependencies |
+| 1.1.32 | 2025-08-23 | [65299](https://github.com/airbytehq/airbyte/pull/65299) | Update dependencies |
+| 1.1.31 | 2025-08-09 | [64790](https://github.com/airbytehq/airbyte/pull/64790) | Update dependencies |
 | 1.1.30 | 2025-08-02 | [64337](https://github.com/airbytehq/airbyte/pull/64337) | Update dependencies |
 | 1.1.29 | 2025-07-26 | [63971](https://github.com/airbytehq/airbyte/pull/63971) | Update dependencies |
 | 1.1.28 | 2025-07-19 | [63543](https://github.com/airbytehq/airbyte/pull/63543) | Update dependencies |

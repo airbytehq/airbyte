@@ -4,11 +4,11 @@ data:
       - accounts.snapchat.com
       - adsapi.snapchat.com
   connectorBuildOptions:
-    baseImage: docker.io/airbyte/source-declarative-manifest:6.60.0@sha256:8a01d4fabdc7cbee92a583cc30fe08bb8ebba0e8d54569920d29378772b31699
+    baseImage: docker.io/airbyte/source-declarative-manifest:7.4.1@sha256:71df19e2ee555ca5b14abbec01d50104c79c9b84cb9cc323284d24333361900a
   connectorSubtype: api
   connectorType: source
   definitionId: 200330b2-ea62-4d11-ac6d-cfe3e3f8ab2b
-  dockerImageTag: 1.5.14
+  dockerImageTag: 1.5.25
   dockerRepository: airbyte/source-snapchat-marketing
   githubIssueLabel: source-snapchat-marketing
   icon: snapchat.svg
@@ -58,6 +58,15 @@ data:
               - "campaigns_stats_daily"
               - "campaigns_stats_lifetime"
   documentationUrl: https://docs.airbyte.com/integrations/sources/snapchat-marketing
+  externalDocumentationUrls:
+    - title: Ads API announcements
+      url: https://developers.snap.com/api/marketing-api/Ads-API/announcements
+      type: api_reference
+  suggestedStreams:
+    streams:
+      - campaigns
+      - adsquads
+      - ads
   tags:
     - language:manifest-only
     - cdk:low-code

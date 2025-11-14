@@ -31,7 +31,7 @@ Please be sure to authenticate with the email (personal or work) that you used t
 
 ### Step 1: Set up Bing Ads
 
-1. Get your [Microsoft developer token](https://docs.microsoft.com/en-us/advertising/guides/get-started?view=bingads-13#get-developer-token). To use Bing Ads APIs, you must have a developer token and valid user credentials. See [Microsoft Advertising docs](https://docs.microsoft.com/en-us/advertising/guides/get-started?view=bingads-13#get-developer-token) for more info.
+1. Get your [Microsoft developer token](https://ads.microsoft.com/cc/Settings/DevSettings). To use Bing Ads APIs, you must have a developer token and valid user credentials. See [Microsoft Advertising docs](https://docs.microsoft.com/en-us/advertising/guides/get-started?view=bingads-13#get-developer-token) for more info.
 
    1. Sign in with [Super Admin](https://learn.microsoft.com/en-us/advertising/guides/account-hierarchy-permissions?view=bingads-13#user-roles-permissions) credentials at the [Microsoft Advertising Developer Portal](https://developers.ads.microsoft.com/Account) account tab.
    2. Choose the user that you want associated with the developer token. Typically an application only needs one universal token regardless how many users will be supported.
@@ -65,9 +65,10 @@ The tenant is used in the authentication URL, for example: `https://login.micros
 12. For _Reporting Data Object_ add the Bing Ads Reporting Object that you want to sync in the custom report.
 13. For _Columns_ add list columns of Reporting Data Object that you want to see in the custom report.
 14. For _Aggregation_ add time aggregation. See [report aggregation](#report-aggregation) section.
-15. Click **Authenticate your Bing Ads account**.
-16. Log in and authorize the Bing Ads account.
-17. Click **Set up source**.
+15. (Optional) For _Disable Custom Report Names Camel to Snake Case Conversion_, enable this option if you want to use the exact report name without automatic conversion from camelCase to snake_case. See [custom report name conversion](#custom-report-name-conversion) for details.
+16. Click **Authenticate your Bing Ads account**.
+17. Log in and authorize the Bing Ads account.
+18. Click **Set up source**.
 <!-- /env:cloud -->
 
 <!-- env:oss -->
@@ -88,8 +89,9 @@ The tenant is used in the authentication URL, for example: `https://login.micros
 12. For _Reporting Data Object_ add the Bing Ads Reporting Object that you want to sync in the custom report.
 13. For _Columns_ add columns of Reporting Data Object that you want to see in the custom report.
 14. For _Aggregation_ select time aggregation. See [report aggregation](#report-aggregation) section.
+15. (Optional) For _Disable Custom Report Names Camel to Snake Case Conversion_, enable this option if you want to use the exact report name without automatic conversion from camelCase to snake_case. See [custom report name conversion](#custom-report-name-conversion) for details.
 
-15. Click **Set up source**.
+16. Click **Set up source**.
 <!-- /env:oss -->
 
 <HideInUI>
@@ -227,6 +229,61 @@ You can build your own report by providing:
   The report must include the Required Columns (you can find it under list of all columns of reporting object) at a minimum. As a general rule, each report must include at least one attribute column and at least one non-impression share performance statistics column. Be careful you can't add extra columns that not specified in Bing Ads docs and not all fields can be skipped.
 - _Aggregation_ - Hourly, Daily, Weekly, Monthly, DayOfWeek, HourOfDay, WeeklyStartingMonday, Summary. See [report aggregation](#report-aggregation).
 
+#### Custom Report Name Conversion
+
+**By default, custom report names are automatically converted from camelCase to snake_case.** For example:
+- `MyCustomReport` becomes `my_custom_report`
+- `CampaignPerformanceDaily` becomes `campaign_performance_daily`
+- `keywordAnalysisReport` becomes `keyword_analysis_report`
+
+This conversion ensures consistency with Airbyte's naming conventions and compatibility with most data destinations.
+
+#### Disabling Name Conversion
+
+If you prefer to use your exact custom report names without automatic conversion, you can disable this feature on a **per-report basis** by setting the **Disable Custom Report Names Camel to Snake Case Conversion** option to `true` for each individual custom report.
+
+When disabled for a specific report:
+- That report's name will be used exactly as specified
+- No camelCase to snake_case conversion will be applied to that report
+- You have full control over the resulting stream name for that specific report
+- Other custom reports without this setting will still use the default conversion
+
+:::warning Breaking Change Warning
+
+**Changing this setting for an existing custom report will create a new stream and remove the old one.** This is a breaking change that may affect your data pipelines and downstream processes.
+
+For example, if you have an existing custom report named `MyCustomReport` (which creates a stream called `my_custom_report`) and you later enable the disable conversion setting, it will create a new stream called `MyCustomReport` and the old `my_custom_report` stream will no longer be available.
+
+**Be careful when modifying this setting for existing custom reports in production environments.**
+
+:::
+
+**Example configuration:**
+```json
+{
+  "custom_reports": [
+    {
+      "name": "MyExactReportName",
+      "reporting_object": "CampaignPerformanceReportRequest",
+      "report_columns": ["CampaignName", "Impressions", "Clicks"],
+      "report_aggregation": "Daily",
+      "disable_custom_report_names_camel_to_snake_conversion": true
+    },
+    {
+      "name": "AnotherReport",
+      "reporting_object": "AccountPerformanceReportRequest", 
+      "report_columns": ["AccountName", "Impressions", "Clicks"],
+      "report_aggregation": "Daily"
+      // This report will use default conversion: another_report
+    }
+  ]
+}
+```
+
+In this example:
+- The first report will be named exactly `MyExactReportName` (conversion disabled)
+- The second report will be named `another_report` (default conversion applied)
+
 ### Report aggregation
 
 All reports synced by this connector can be [aggregated](https://docs.microsoft.com/en-us/advertising/reporting-service/reportaggregation?view=bingads-13) using hourly, daily, weekly, or monthly time windows.
@@ -262,6 +319,15 @@ The Bing Ads API limits the number of requests for all Microsoft Advertising cli
 
 | Version     | Date       | Pull Request                                                                                                                     | Subject                                                                                                                                                                |
 |:------------|:-----------|:---------------------------------------------------------------------------------------------------------------------------------|:-----------------------------------------------------------------------------------------------------------------------------------------------------------------------|
+| 2.23.9 | 2025-10-29 | [68883](https://github.com/airbytehq/airbyte/pull/68883) | Update dependencies |
+| 2.23.8 | 2025-10-21 | [68406](https://github.com/airbytehq/airbyte/pull/68406) | Update dependencies |
+| 2.23.7 | 2025-10-14 | [68008](https://github.com/airbytehq/airbyte/pull/68008) | Update dependencies |
+| 2.23.6 | 2025-10-07 | [67170](https://github.com/airbytehq/airbyte/pull/67170) | Update dependencies |
+| 2.23.5 | 2025-09-30 | [66038](https://github.com/airbytehq/airbyte/pull/66038) | Update dependencies |
+| 2.23.4 | 2025-09-15 | [66234](https://github.com/airbytehq/airbyte/pull/66234) | Promoting release candidate 2.23.4-rc.1 to a main version. |
+| 2.23.4-rc.1 | 2025-09-10 | [65894](https://github.com/airbytehq/airbyte/pull/65894) | Fix Custom Report Names - Add Option to Disable camel_case_to_snake_case |
+| 2.23.3 | 2025-09-08 | [65995](https://github.com/airbytehq/airbyte/pull/65995) | Update to CDK v7 |
+| 2.23.2 | 2025-08-15 | [64952](https://github.com/airbytehq/airbyte/pull/64952) | Always decompress bulk download response |
 | 2.23.1 | 2025-07-26 | [60669](https://github.com/airbytehq/airbyte/pull/60669) | Update dependencies |
 | 2.23.0 | 2025-07-09 | [62872](https://github.com/airbytehq/airbyte/pull/62872) | Promoting release candidate 2.23.0-rc.1 to a main version. |
 | 2.23.0-rc.1 | 2025-07-07 | [62520](https://github.com/airbytehq/airbyte/pull/62520)                                                                         | Migrate Source Bing Ads to manifest-only                                                                                                                               |

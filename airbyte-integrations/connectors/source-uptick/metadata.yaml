@@ -13,17 +13,33 @@ data:
       enabled: false
       packageName: airbyte-source-uptick
   connectorBuildOptions:
-    baseImage: docker.io/airbyte/source-declarative-manifest:6.60.5@sha256:79a69ff4f759e8b404c687eff62c72f53b05d567fa830b71d17b01b8deaf2189
+    baseImage: docker.io/airbyte/source-declarative-manifest:7.4.1@sha256:71df19e2ee555ca5b14abbec01d50104c79c9b84cb9cc323284d24333361900a
+  connectorTestSuitesOptions:
+    - suite: unitTests
+    - suite: integrationTests
+      testSecrets:
+        - name: SECRET_SOURCE-UPTICK__CREDS
+          fileName: config.json
+          secretStore:
+            type: GSM
+            alias: airbyte-connector-testing-secret-store
+    - suite: acceptanceTests
+      testSecrets:
+        - name: SECRET_SOURCE-UPTICK__CREDS
+          fileName: config.json
+          secretStore:
+            type: GSM
+            alias: airbyte-connector-testing-secret-store
   connectorSubtype: api
   connectorType: source
   definitionId: 54c75c42-df4a-4f3e-a5f3-d50cf80f1649
-  dockerImageTag: 0.0.7
+  dockerImageTag: 0.3.7
   dockerRepository: airbyte/source-uptick
   githubIssueLabel: source-uptick
   icon: icon.svg
   license: ELv2
   name: Uptick
-  releaseDate: 2025-06-10
+  releaseDate: 2025-10-17
   releaseStage: alpha
   supportLevel: community
   documentationUrl: https://docs.airbyte.com/integrations/sources/uptick

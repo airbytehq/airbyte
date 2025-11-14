@@ -6,7 +6,7 @@ data:
     hosts:
       - api.trello.com
   connectorBuildOptions:
-    baseImage: docker.io/airbyte/source-declarative-manifest:6.60.5@sha256:79a69ff4f759e8b404c687eff62c72f53b05d567fa830b71d17b01b8deaf2189
+    baseImage: docker.io/airbyte/source-declarative-manifest:6.60.16@sha256:b8126848437ec5a6cff05fb4796fd775450b83e57925674d856a1838a390a28c
   remoteRegistries:
     pypi:
       enabled: false
@@ -19,7 +19,7 @@ data:
   connectorSubtype: api
   connectorType: source
   definitionId: 8da67652-004c-11ec-9a03-0242ac130003
-  dockerImageTag: 1.3.8
+  dockerImageTag: 1.3.10
   dockerRepository: airbyte/source-trello
   documentationUrl: https://docs.airbyte.com/integrations/sources/trello
   githubIssueLabel: source-trello

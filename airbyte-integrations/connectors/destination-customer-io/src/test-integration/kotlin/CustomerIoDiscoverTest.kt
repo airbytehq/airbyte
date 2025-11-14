@@ -4,12 +4,12 @@
 
 import io.airbyte.cdk.load.discover.DiscoverIntegrationTest
 import io.airbyte.cdk.load.discover.DiscoverTestConfig
-import io.airbyte.integrations.destination.customerio.CustomerIoSpecification
+import io.airbyte.cdk.load.spec.NoopSpec
 import java.nio.file.Files
 import java.nio.file.Path
 
 class CustomerIoDiscoverTest :
-    DiscoverIntegrationTest<CustomerIoSpecification>(
+    DiscoverIntegrationTest<NoopSpec>(
         successConfigFilenames =
             listOf(
                 DiscoverTestConfig(

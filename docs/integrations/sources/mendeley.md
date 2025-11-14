@@ -35,6 +35,14 @@ API Reference: https://dev.mendeley.com/methods/#introduction
 
 | Version          | Date              | Pull Request | Subject        |
 |------------------|-------------------|--------------|----------------|
+| 0.0.22 | 2025-10-29 | [69050](https://github.com/airbytehq/airbyte/pull/69050) | Update dependencies |
+| 0.0.21 | 2025-10-21 | [68448](https://github.com/airbytehq/airbyte/pull/68448) | Update dependencies |
+| 0.0.20 | 2025-10-14 | [67848](https://github.com/airbytehq/airbyte/pull/67848) | Update dependencies |
+| 0.0.19 | 2025-10-07 | [67392](https://github.com/airbytehq/airbyte/pull/67392) | Update dependencies |
+| 0.0.18 | 2025-09-30 | [66348](https://github.com/airbytehq/airbyte/pull/66348) | Update dependencies |
+| 0.0.17 | 2025-09-09 | [65818](https://github.com/airbytehq/airbyte/pull/65818) | Update dependencies |
+| 0.0.16 | 2025-08-23 | [65207](https://github.com/airbytehq/airbyte/pull/65207) | Update dependencies |
+| 0.0.15 | 2025-08-09 | [64782](https://github.com/airbytehq/airbyte/pull/64782) | Update dependencies |
 | 0.0.14 | 2025-08-02 | [64273](https://github.com/airbytehq/airbyte/pull/64273) | Update dependencies |
 | 0.0.13 | 2025-07-26 | [63851](https://github.com/airbytehq/airbyte/pull/63851) | Update dependencies |
 | 0.0.12 | 2025-07-19 | [63433](https://github.com/airbytehq/airbyte/pull/63433) | Update dependencies |

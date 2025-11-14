@@ -1,6 +1,6 @@
 [tool.poetry]
 name = "connectors-qa"
-version = "1.10.2"
+version = "1.10.3"
 description = "A package to run QA checks on Airbyte connectors, generate reports and documentation."
 authors = ["Airbyte <contact@airbyte.io>"]
 readme = "README.md"
@@ -17,7 +17,7 @@ metadata-service = { path = "../metadata_service/lib", develop = false }
 pydash = "^6.0.2"
 jinja2 = "^3.1.3"
 toml = "^0.10.2"
-asyncclick = "^8.1.7.1"
+asyncclick = "8.1.7.1"
 asyncer = "^0.0.4"
 
 [tool.poetry.scripts]

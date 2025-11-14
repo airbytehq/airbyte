@@ -17,6 +17,9 @@ import io.airbyte.cdk.load.data.TimeWithTimezoneValue
 import io.airbyte.cdk.load.data.TimeWithoutTimezoneValue
 import io.airbyte.cdk.load.data.TimestampWithTimezoneValue
 import io.airbyte.cdk.load.data.TimestampWithoutTimezoneValue
+import io.airbyte.cdk.load.data.UnionType
+import io.airbyte.cdk.load.dataflow.transform.ValidationResult
+import io.airbyte.cdk.load.dataflow.transform.ValueCoercer
 import io.airbyte.cdk.load.util.serializeToString
 import io.airbyte.integrations.destination.clickhouse.write.transform.ClickhouseCoercer.Constants.DATE32_MAX
 import io.airbyte.integrations.destination.clickhouse.write.transform.ClickhouseCoercer.Constants.DATE32_MIN
@@ -35,12 +38,17 @@ import java.time.LocalDateTime
 import java.time.LocalTime
 import java.time.ZoneOffset
 
-/*
- * Mutative for performance reasons.
- */
 @Singleton
-class ClickhouseCoercer {
-    fun toJsonStringValue(value: EnrichedAirbyteValue): EnrichedAirbyteValue {
+class ClickhouseCoercer : ValueCoercer {
+
+    override fun map(value: EnrichedAirbyteValue): EnrichedAirbyteValue {
+        return when (value.type) {
+            is UnionType -> toJsonStringValue(value)
+            else -> value
+        }
+    }
+
+    private fun toJsonStringValue(value: EnrichedAirbyteValue): EnrichedAirbyteValue {
         value.abValue =
             when (val abValue = value.abValue) {
                 is ObjectValue -> StringValue(abValue.values.serializeToString())
@@ -60,49 +68,48 @@ class ClickhouseCoercer {
         return value
     }
 
-    fun validate(value: EnrichedAirbyteValue): EnrichedAirbyteValue {
+    override fun validate(value: EnrichedAirbyteValue): ValidationResult =
         when (val abValue = value.abValue) {
             is NumberValue ->
                 if (abValue.value <= DECIMAL128_MIN || abValue.value >= DECIMAL128_MAX) {
-                    value.nullify(
+                    ValidationResult.ShouldNullify(
                         AirbyteRecordMessageMetaChange.Reason.DESTINATION_FIELD_SIZE_LIMITATION
                     )
-                }
+                } else ValidationResult.Valid
             is IntegerValue ->
                 if (abValue.value < INT64_MIN || abValue.value > INT64_MAX) {
-                    value.nullify(
+                    ValidationResult.ShouldNullify(
                         AirbyteRecordMessageMetaChange.Reason.DESTINATION_FIELD_SIZE_LIMITATION
                     )
-                }
+                } else ValidationResult.Valid
             is DateValue -> {
                 val days = abValue.value.toEpochDay()
                 if (days < DATE32_MIN || days > DATE32_MAX) {
-                    value.nullify(
+                    ValidationResult.ShouldNullify(
                         AirbyteRecordMessageMetaChange.Reason.DESTINATION_FIELD_SIZE_LIMITATION
                     )
-                }
+                } else ValidationResult.Valid
             }
             is TimestampWithTimezoneValue -> {
                 val seconds = abValue.value.toEpochSecond()
                 if (seconds < DATETIME64_MIN || seconds > DATETIME64_MAX) {
-                    value.nullify(
+                    ValidationResult.ShouldNullify(
                         AirbyteRecordMessageMetaChange.Reason.DESTINATION_FIELD_SIZE_LIMITATION
                     )
-                }
+                } else ValidationResult.Valid
             }
             is TimestampWithoutTimezoneValue -> {
                 val seconds = abValue.value.toEpochSecond(ZoneOffset.UTC)
                 if (seconds < DATETIME64_MIN || seconds > DATETIME64_MAX) {
-                    value.nullify(
+                    ValidationResult.ShouldNullify(
                         AirbyteRecordMessageMetaChange.Reason.DESTINATION_FIELD_SIZE_LIMITATION
                     )
-                }
+                } else ValidationResult.Valid
             }
-            else -> {}
+            else -> {
+                ValidationResult.Valid
+            }
         }
-
-        return value
-    }
 
     object Constants {
         // CH will overflow ints without erroring
@@ -110,11 +117,14 @@ class ClickhouseCoercer {
         val INT64_MIN = BigInteger(Long.MIN_VALUE.toString())
 
         // below are copied from "deprecated" but still actively used
-        // com.clickhouse.data.format.BinaryStreamUtils.DECIMAL64_MAX
+        // com.clickhouse.data.format.BinaryStreamUtils
         // we can't directly use them because the deprecated status causes a
         // compiler warning which we don't tolerate in CI :smithers:
-        val DECIMAL128_MAX = BigDecimal("100000000000000000000000000000000000000")
-        val DECIMAL128_MIN = BigDecimal("-100000000000000000000000000000000000000")
+        //
+        // Further scale the CH defined limits by -9 (our defined scale for decimals) to mimic their
+        // scaling without the overhead (they multiply every value by the scale before comparison).
+        val DECIMAL128_MAX = BigDecimal("100000000000000000000000000000")
+        val DECIMAL128_MIN = BigDecimal("-100000000000000000000000000000")
 
         // used by both date 32 and date time 64
         val DATE32_MAX_RAW = LocalDate.of(2299, 12, 31)

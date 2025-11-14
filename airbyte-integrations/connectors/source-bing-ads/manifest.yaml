@@ -2602,12 +2602,8 @@ definitions:
       url_base: "{{download_target}}"
       http_method: GET
     download_decoder:
-      type: GzipDecoder
-      decoder:
-        type: CsvDecoder
-        encoding: "utf-8-sig"
-        set_values_to_none:
-          - ""
+      type: CustomDecoder
+      class_name: source_declarative_manifest.components.BingAdsGzipCsvDecoder
     creation_requester:
       # https://learn.microsoft.com/en-ie/advertising/bulk-service/downloadcampaignsbyaccountids?view=bingads-13&tabs=prod&pivots=rest
       type: HttpRequester
@@ -5246,7 +5242,7 @@ dynamic_streams:
         - type: ComponentMappingDefinition
           create_or_update: true
           field_path: ["name"]
-          value: "{{ camel_case_to_snake_case(components_values['name']) }}"
+          value: "{{ camel_case_to_snake_case(components_values['name']) if not components_values.get('disable_custom_report_names_camel_to_snake_conversion', false) else components_values['name'] }}"
         - type: ComponentMappingDefinition
           create_or_update: true
           field_path: ["$parameters", "report_aggregation"]
@@ -11053,7 +11049,7 @@ schemas:
         description: The client identifier linked to the keyword.
         type:
           - "null"
-          - integer
+          - string
       Custom Parameter:
         description: A custom parameter associated with the keyword.
         type:
@@ -17664,6 +17660,11 @@ spec:
                   - Summary
               default:
                 - Hourly
+            disable_custom_report_names_camel_to_snake_conversion:
+              title: Disable Custom Report Names Camel to Snake Case Conversion
+              description: When enabled, disables the automatic conversion of custom report names from camelCase to snake_case. By default, custom report names are automatically converted (e.g., 'MyCustomReport' becomes 'my_custom_report'). Enable this option if you want to use the exact report names you specify.
+              type: boolean
+              default: false
           required:
             - name
             - reporting_object

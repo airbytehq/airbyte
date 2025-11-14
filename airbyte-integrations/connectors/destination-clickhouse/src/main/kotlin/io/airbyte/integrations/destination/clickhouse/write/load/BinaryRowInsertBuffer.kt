@@ -22,7 +22,7 @@ import io.airbyte.cdk.load.data.TimeWithTimezoneValue
 import io.airbyte.cdk.load.data.TimeWithoutTimezoneValue
 import io.airbyte.cdk.load.data.TimestampWithTimezoneValue
 import io.airbyte.cdk.load.data.TimestampWithoutTimezoneValue
-import io.airbyte.cdk.load.orchestration.db.TableName
+import io.airbyte.cdk.load.table.TableName
 import io.airbyte.cdk.load.util.serializeToString
 import io.github.oshai.kotlinlogging.KotlinLogging
 import java.io.ByteArrayInputStream
@@ -71,20 +71,25 @@ class BinaryRowInsertBuffer(
     }
 
     private fun writeAirbyteValue(columnName: String, abValue: AirbyteValue) {
-        when (abValue) {
-            // TODO: let's consider refactoring AirbyteValue so we don't have to do this
-            is NullValue -> writer.setValue(columnName, null)
-            is ObjectValue -> writer.setValue(columnName, abValue.values.serializeToString())
-            is ArrayValue -> writer.setValue(columnName, abValue.values.serializeToString())
-            is BooleanValue -> writer.setValue(columnName, abValue.value)
-            is IntegerValue -> writer.setValue(columnName, abValue.value)
-            is NumberValue -> writer.setValue(columnName, abValue.value)
-            is StringValue -> writer.setValue(columnName, abValue.value)
-            is DateValue -> writer.setValue(columnName, abValue.value)
-            is TimeWithTimezoneValue -> writer.setValue(columnName, abValue.value)
-            is TimeWithoutTimezoneValue -> writer.setValue(columnName, abValue.value)
-            is TimestampWithTimezoneValue -> writer.setValue(columnName, abValue.value)
-            is TimestampWithoutTimezoneValue -> writer.setValue(columnName, abValue.value)
+        try {
+            when (abValue) {
+                // TODO: let's consider refactoring AirbyteValue so we don't have to do this
+                is NullValue -> writer.setValue(columnName, null)
+                is ObjectValue -> writer.setValue(columnName, abValue.values.serializeToString())
+                is ArrayValue -> writer.setValue(columnName, abValue.values.serializeToString())
+                is BooleanValue -> writer.setValue(columnName, abValue.value)
+                is IntegerValue -> writer.setValue(columnName, abValue.value)
+                is NumberValue -> writer.setValue(columnName, abValue.value)
+                is StringValue -> writer.setValue(columnName, abValue.value)
+                is DateValue -> writer.setValue(columnName, abValue.value)
+                is TimeWithTimezoneValue -> writer.setValue(columnName, abValue.value)
+                is TimeWithoutTimezoneValue -> writer.setValue(columnName, abValue.value)
+                is TimestampWithTimezoneValue -> writer.setValue(columnName, abValue.value)
+                is TimestampWithoutTimezoneValue -> writer.setValue(columnName, abValue.value)
+            }
+        } catch (e: Exception) {
+            log.error(e) { "Error writing $columnName into $tableName." }
+            throw e
         }
     }
 

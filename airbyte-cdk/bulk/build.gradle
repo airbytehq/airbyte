@@ -1,5 +1,25 @@
+import javax.xml.parsers.DocumentBuilder
+import javax.xml.parsers.DocumentBuilderFactory
+import javax.xml.xpath.XPath
+import javax.xml.xpath.XPathConstants
+import javax.xml.xpath.XPathFactory
+import org.gradle.api.DefaultTask
+import org.gradle.api.GradleException
+import org.gradle.api.tasks.TaskAction
+import org.gradle.api.tasks.options.Option
+import org.w3c.dom.Document
+
+final var versionFile = file("version.properties")
+
+final var cdkVersion = {
+    var props = new Properties()
+    versionFile.withInputStream(props::load)
+    return props.getProperty('version', 'undefined')
+}()
+
+
 allprojects {
-    version = "0.1.4"
+    version = cdkVersion
     apply plugin: 'java-library'
     apply plugin: 'maven-publish'
 
@@ -76,9 +96,18 @@ tasks.register('checkBuildNumber') {
             if (responseCode != 200) {
                 throw new GradleException("Unexpected HTTP response code ${responseCode} from ${metadataXmlUrl} : expected 200.")
             }
-            String responseContent = connection.inputStream.text
-            def xml = new XmlParser().parseText(responseContent)
-            String latestVersion = xml."versioning"."latest".text()
+            InputStream responseContent = connection.inputStream
+            DocumentBuilderFactory factory = DocumentBuilderFactory.newInstance()
+            DocumentBuilder builder = factory.newDocumentBuilder()
+            Document doc = builder.parse(responseContent); // Replace with your XML file path
+
+            doc.getDocumentElement().normalize()
+
+            XPath xpath = XPathFactory.newInstance().newXPath()
+
+            String expression = "/metadata/versioning/latest"
+
+            String latestVersion = (String) xpath.compile(expression).evaluate(doc, XPathConstants.STRING)
             if (version.toString() == latestVersion) {
                 throw new GradleException("Version already exist")
             }
@@ -93,4 +122,113 @@ tasks.register('bulkCdkBuild').configure {
 }
 tasks.register('bulkCdkPublish').configure {
     dependsOn allprojects.collect {it.tasks.named('publish')}
+}
+
+class BumpBulkCdkVersionTask extends DefaultTask {
+    private boolean patch = false
+    private boolean minor = false
+    private boolean major = false
+    private String changelogEntry = null
+    private File versionFile
+    private String currentVersion
+
+    BumpBulkCdkVersionTask() {
+        description = 'Bump the bulk CDK version number'
+    }
+
+    void setVersionFile(File versionFile) {
+        this.versionFile = versionFile
+
+        var props = new Properties()
+        versionFile.withInputStream(props::load)
+        currentVersion = props.getProperty('version', 'undefined')
+    }
+
+    @Option(option = "patch", description = "Bump patch version (x.y.Z)")
+    void setPatch(boolean patch) {
+        this.patch = patch
+    }
+
+    @Option(option = "minor", description = "Bump minor version (x.Y.z)")
+    void setMinor(boolean minor) {
+        this.minor = minor
+    }
+
+    @Option(option = "major", description = "Bump major version (X.y.z)")
+    void setMajor(boolean major) {
+        this.major = major
+    }
+
+    @Option(option = "changelog", description = "The changelog entry to populate")
+    void setChangelogEntry(String changelogEntry) {
+        this.changelogEntry = changelogEntry
+    }
+
+    @TaskAction
+    void bumpVersion() {
+        // Parse flags
+        def bumpType = null
+        def flagCount = [patch, minor, major].count { it }
+        if (flagCount == 0) {
+            throw new GradleException("Please specify version bump type: --patch, --minor, or --major")
+        }
+        if (flagCount > 1) {
+            throw new GradleException("Please specify only one version bump type")
+        }
+
+        if (changelogEntry == null) {
+            // Read changelog entry from stdin
+            println "Enter changelog entry (press Ctrl+D when done):"
+            def changelogEntryBuilder = new StringBuilder()
+            System.in.withReader { reader ->
+                def line
+                while ((line = reader.readLine()) != null) {
+                    changelogEntryBuilder.append(line).append('\n')
+                }
+            }
+            if (changelogEntryBuilder.length() == 0) {
+                throw new GradleException("Changelog entry cannot be empty")
+            }
+            changelogEntry = changelogEntryBuilder.toString()
+        }
+
+        // Compute new version number
+        def versionParts = currentVersion.split('\\.')
+        def majorNum = Integer.parseInt(versionParts[0])
+        def minorNum = Integer.parseInt(versionParts[1])
+        // TODO This will break on any `-whatever` suffix, but we're not currently doing that.
+        //   If we ever want to get fancier with how we release the CDK, we should probably handle this better.
+        def patchNum = Integer.parseInt(versionParts[2])
+        def newVersion
+        if (patch) {
+            newVersion = "${majorNum}.${minorNum}.${patchNum + 1}"
+        } else if (minor) {
+            newVersion = "${majorNum}.${minorNum + 1}.0"
+        } else if (major) {
+            newVersion = "${majorNum + 1}.0.0"
+        }
+
+        println "Bumping version from ${currentVersion} to ${newVersion}"
+
+        // Write out the new version number
+        versionFile.text = "version=${newVersion}\n"
+
+        // Update changelog file
+        def changelogFile = project.file("changelog.md")
+        def currentChangelog = changelogFile.text
+        def newChangelog = new StringBuilder()
+        // Add new version entry
+        newChangelog.append("## Version ${newVersion}\n\n")
+        newChangelog.append("${changelogEntry.toString().trim()}\n\n")
+        // Add the rest of the existing changelog
+        newChangelog.append(currentChangelog)
+        // Write back to file
+        changelogFile.text = newChangelog.toString()
+
+        println "Version bumped to ${newVersion} and changelog updated"
+    }
+}
+
+tasks.register('bumpVersion', BumpBulkCdkVersionTask) {
+    it.versionFile = versionFile
 }

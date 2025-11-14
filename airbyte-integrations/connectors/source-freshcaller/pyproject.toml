@@ -3,11 +3,11 @@ requires = ["poetry-core>=1.0.0"]
 build-backend = "poetry.core.masonry.api"
 
 [tool.poetry]
-version = "0.4.25"
+version = "0.5.4"
 name = "source-freshcaller"
 description = "Source implementation for Freshcaller"
 authors = ["Airbyte <contact@airbyte.io>"]
-license = "MIT"
+license = "ELv2"
 readme = "README.md"
 documentation = "https://docs.airbyte.com/integrations/sources/freshcaller"
 homepage = "https://airbyte.com"
@@ -16,8 +16,8 @@ repository = "https://github.com/airbytehq/airbyte"
 include = "source_freshcaller"
 
 [tool.poetry.dependencies]
-python = "^3.9,<3.12"
-airbyte-cdk = "0.55.2"
+python = "<3.13,>=3.10"
+airbyte-cdk = "^7.0.4"
 
 [tool.poetry.scripts]
 source-freshcaller = "source_freshcaller.run:run"

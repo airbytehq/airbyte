@@ -13,11 +13,11 @@ data:
       enabled: false
       packageName: airbyte-source-dbt
   connectorBuildOptions:
-    baseImage: docker.io/airbyte/source-declarative-manifest:6.60.5@sha256:79a69ff4f759e8b404c687eff62c72f53b05d567fa830b71d17b01b8deaf2189
+    baseImage: docker.io/airbyte/source-declarative-manifest:7.4.1@sha256:71df19e2ee555ca5b14abbec01d50104c79c9b84cb9cc323284d24333361900a
   connectorSubtype: api
   connectorType: source
   definitionId: 6eaa4fc5-cf11-413d-a0d6-0023402f71f6
-  dockerImageTag: 0.0.28
+  dockerImageTag: 0.0.32
   dockerRepository: airbyte/source-dbt
   githubIssueLabel: source-dbt
   icon: icon.svg

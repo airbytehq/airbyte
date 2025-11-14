@@ -26,8 +26,6 @@ class ClickhouseChecker(
     @VisibleForTesting val tableName = "_airbyte_check_table_${clock.millis()}"
 
     override fun check(config: ClickhouseConfiguration) {
-        assert(!config.hostname.startsWith(PROTOCOL)) { PROTOCOL_ERR_MESSAGE }
-
         val client = clientFactory.make(config)
         val resolvedTableName = "${config.database}.$tableName"
 
@@ -47,7 +45,7 @@ class ClickhouseChecker(
                 )
                 .get(10, TimeUnit.SECONDS)
 
-        assert(insert.writtenRows == 1L) {
+        require(insert.writtenRows == 1L) {
             "Failed to insert expected rows into check table. Actual written: ${insert.writtenRows}"
         }
     }
@@ -75,6 +73,8 @@ class ClickhouseChecker(
 @Singleton
 class RawClickHouseClientFactory {
     fun make(config: ClickhouseConfiguration): Client {
+        require(!config.hostname.startsWith(PROTOCOL)) { PROTOCOL_ERR_MESSAGE }
+
         val factory = ClickhouseBeanFactory()
         val endpoint = factory.resolvedEndpoint(config)
         return ClickhouseBeanFactory().clickhouseClient(config, endpoint)
