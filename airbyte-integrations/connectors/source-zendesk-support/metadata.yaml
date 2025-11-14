@@ -14,6 +14,12 @@ data:
   dockerImageTag: 4.10.15
   dockerRepository: airbyte/source-zendesk-support
   documentationUrl: https://docs.airbyte.com/integrations/sources/zendesk-support
+  externalDocumentationUrls:
+    - title: Developer Updates
+      url: https://support.zendesk.com/hc/en-us/sections/4405298889242-Developer-updates
+    - title: Changelog
+      url: https://developer.zendesk.com/api-reference/changelog/changelog/
+      type: api_release_history
   githubIssueLabel: source-zendesk-support
   icon: zendesk-support.svg
   license: ELv2

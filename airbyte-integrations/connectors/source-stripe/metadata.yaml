@@ -13,6 +13,13 @@ data:
   dockerImageTag: 5.15.11
   dockerRepository: airbyte/source-stripe
   documentationUrl: https://docs.airbyte.com/integrations/sources/stripe
+  externalDocumentationUrls:
+    - title: Versioning docs
+      url: https://stripe.com/docs/api/versioning
+      type: api_reference
+    - title: Changelog
+      url: https://stripe.com/docs/changelog
+      type: api_release_history
   erdUrl: https://dbdocs.io/airbyteio/source-stripe?view=relationships
   githubIssueLabel: source-stripe
   icon: stripe.svg
