@@ -246,7 +246,7 @@ definitions:
       field_name: key
       inject_into: request_parameter
   oauth2_authenticator:
-    type: OAuth2Authenticator
+    type: OAuthAuthenticator
     client_id: "{{ config[\"client_id\"] }}"
     client_secret: "{{ config[\"client_secret\"] }}"
     token_refresh_endpoint: https://oauth2.googleapis.com/token
@@ -340,8 +340,27 @@ spec:
         oauth_input_specification:
           consent_url: https://accounts.google.com/o/oauth2/v2/auth?{{client_id_param}}&{{redirect_uri_param}}&response_type=code&{{scope_param}}&access_type=offline&{{state_param}}&include_granted_scopes=true&prompt=consent
           access_token_url: https://oauth2.googleapis.com/token
-          
-
+    config_normalization_rules:
+      type: ConfigNormalizationRules
+      config_migrations:
+        - type: ConfigMigration
+          description: |
+            Remaps the existing config authentication format to a new format
+            OLD: {"api_key": ...}
+            NEW: {"credentials": {"api_key": ..., "auth_method": "api_key"}}
+          transformations:
+            - type: ConfigAddFields
+              fields:
+                - type: AddedFieldDefinition
+                  path: ["credentials", "api_key"]
+                  value: "{{ config['api_key'] }}"
+              condition: "{{ config.get('api_key', False) }}"
+            - type: ConfigAddFields
+              fields:
+                - type: AddedFieldDefinition
+                  path: ["credentials", "auth_method"]
+                  value: "api_key"
+              condition: "{{ config.get('api_key', False) }}"
 
 metadata:
   autoImportSchema:
