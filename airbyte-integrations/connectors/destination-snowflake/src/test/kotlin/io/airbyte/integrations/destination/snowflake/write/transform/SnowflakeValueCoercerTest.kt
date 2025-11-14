@@ -137,6 +137,7 @@ internal class SnowflakeValueCoercerTest {
 
     @Test
     fun testInvalidInteger() {
+        // INT_MAX + 1 exceeds the range, should be truncated
         val integerValue = IntegerValue(INT_MAX.plus(BigInteger.ONE))
         val airbyteValue =
             EnrichedAirbyteValue(
@@ -148,11 +149,14 @@ internal class SnowflakeValueCoercerTest {
             )
 
         val result = coercer.validate(airbyteValue)
-        assertEquals(ValidationResult.ShouldNullify::class, result::class)
+        assertEquals(ValidationResult.ShouldTruncate::class, result::class)
         assertEquals(
             AirbyteRecordMessageMetaChange.Reason.DESTINATION_FIELD_SIZE_LIMITATION,
-            (result as ValidationResult.ShouldNullify).reason
+            (result as ValidationResult.ShouldTruncate).reason
         )
+        // The truncated value should be within range
+        val truncatedValue = result.truncatedValue as IntegerValue
+        assert(truncatedValue.value in INT_MIN..INT_MAX)
     }
 
     @Test
@@ -227,7 +231,7 @@ internal class SnowflakeValueCoercerTest {
 
     @Test
     fun testIntegerExceedsPrecisionLimit() {
-        // Test integer with 39 digits (exceeds 38 digit limit)
+        // Test integer with 39 digits (exceeds 38 digit limit) - should be truncated
         val oversizedInteger = IntegerValue("1${"0".repeat(38)}".toBigInteger())
         val airbyteValue =
             EnrichedAirbyteValue(
@@ -239,11 +243,14 @@ internal class SnowflakeValueCoercerTest {
             )
 
         val result = coercer.validate(airbyteValue)
-        assertEquals(ValidationResult.ShouldNullify::class, result::class)
+        assertEquals(ValidationResult.ShouldTruncate::class, result::class)
         assertEquals(
             AirbyteRecordMessageMetaChange.Reason.DESTINATION_FIELD_SIZE_LIMITATION,
-            (result as ValidationResult.ShouldNullify).reason
+            (result as ValidationResult.ShouldTruncate).reason
         )
+        // The truncated value should be within range
+        val truncatedValue = result.truncatedValue as IntegerValue
+        assert(truncatedValue.value in INT_MIN..INT_MAX)
     }
 
     @Test
@@ -661,7 +668,7 @@ internal class SnowflakeValueCoercerTest {
 
     @Test
     fun testFloatJustOutsideBoundary() {
-        // Test float just outside the boundary
+        // Test float just outside the boundary - these should now be truncated instead of nullified
         val justOverMax = NumberValue(FLOAT_MAX.add(BigDecimal.ONE))
         val justUnderMin = NumberValue(FLOAT_MIN.subtract(BigDecimal.ONE))
 
@@ -686,15 +693,16 @@ internal class SnowflakeValueCoercerTest {
         val overResult = coercer.validate(overMaxValue)
         val underResult = coercer.validate(underMinValue)
 
-        assertEquals(ValidationResult.ShouldNullify::class, overResult::class)
+        // Values just outside boundary should be truncated to fit
+        assertEquals(ValidationResult.ShouldTruncate::class, overResult::class)
         assertEquals(
             AirbyteRecordMessageMetaChange.Reason.DESTINATION_FIELD_SIZE_LIMITATION,
-            (overResult as ValidationResult.ShouldNullify).reason
+            (overResult as ValidationResult.ShouldTruncate).reason
         )
-        assertEquals(ValidationResult.ShouldNullify::class, underResult::class)
+        assertEquals(ValidationResult.ShouldTruncate::class, underResult::class)
         assertEquals(
             AirbyteRecordMessageMetaChange.Reason.DESTINATION_FIELD_SIZE_LIMITATION,
-            (underResult as ValidationResult.ShouldNullify).reason
+            (underResult as ValidationResult.ShouldTruncate).reason
         )
     }
 
@@ -728,7 +736,7 @@ internal class SnowflakeValueCoercerTest {
 
     @Test
     fun testIntegerJustOutsideBoundary() {
-        // Test integers just outside the boundary
+        // Test integers just outside the boundary - these should now be truncated instead of nullified
         val justOverMax = IntegerValue(INT_MAX.add(BigInteger.ONE))
         val justUnderMin = IntegerValue(INT_MIN.subtract(BigInteger.ONE))
 
@@ -753,15 +761,16 @@ internal class SnowflakeValueCoercerTest {
         val overResult = coercer.validate(overMaxValue)
         val underResult = coercer.validate(underMinValue)
 
-        assertEquals(ValidationResult.ShouldNullify::class, overResult::class)
+        // Values just outside boundary should be truncated to fit
+        assertEquals(ValidationResult.ShouldTruncate::class, overResult::class)
         assertEquals(
             AirbyteRecordMessageMetaChange.Reason.DESTINATION_FIELD_SIZE_LIMITATION,
-            (overResult as ValidationResult.ShouldNullify).reason
+            (overResult as ValidationResult.ShouldTruncate).reason
         )
-        assertEquals(ValidationResult.ShouldNullify::class, underResult::class)
+        assertEquals(ValidationResult.ShouldTruncate::class, underResult::class)
         assertEquals(
             AirbyteRecordMessageMetaChange.Reason.DESTINATION_FIELD_SIZE_LIMITATION,
-            (underResult as ValidationResult.ShouldNullify).reason
+            (underResult as ValidationResult.ShouldTruncate).reason
         )
     }
 
@@ -800,6 +809,60 @@ internal class SnowflakeValueCoercerTest {
 
         val result = coercer.validate(airbyteValue)
         assertEquals(ValidationResult.Valid, result)
+    }
+
+    @Test
+    fun testFloatWithExcessivePrecisionTruncated() {
+        // Test that a large value with many digits gets truncated to fit within range
+        // Example: 1740710103515266826 (19 digits) should be truncated to fit
+        val highPrecisionValue = NumberValue(BigDecimal("1740710103515266826"))
+        val airbyteValue =
+            EnrichedAirbyteValue(
+                abValue = highPrecisionValue,
+                type = NumberType,
+                name = "high_precision_float",
+                changes = mutableListOf(),
+                airbyteMetaField = null,
+            )
+
+        val result = coercer.validate(airbyteValue)
+
+        // Should be truncated, not nullified
+        assertEquals(ValidationResult.ShouldTruncate::class, result::class)
+        assertEquals(
+            AirbyteRecordMessageMetaChange.Reason.DESTINATION_FIELD_SIZE_LIMITATION,
+            (result as ValidationResult.ShouldTruncate).reason
+        )
+
+        // The truncated value should be within range
+        val truncatedValue = result.truncatedValue as NumberValue
+        assert(truncatedValue.value in FLOAT_MIN..FLOAT_MAX)
+    }
+
+    @Test
+    fun testFloatWithHighPrecisionJustAboveMaxTruncated() {
+        // Test the scenario: 99999999999999999 (17 digits)
+        // Truncating to 15 digits gives 999999999999999, which is still > FLOAT_MAX
+        // So we need to keep reducing precision until it fits
+        val highValue = NumberValue(BigDecimal("99999999999999999"))
+        val airbyteValue =
+            EnrichedAirbyteValue(
+                abValue = highValue,
+                type = NumberType,
+                name = "high_value_float",
+                changes = mutableListOf(),
+                airbyteMetaField = null,
+            )
+
+        val result = coercer.validate(airbyteValue)
+
+        // Should be truncated to fit
+        assertEquals(ValidationResult.ShouldTruncate::class, result::class)
+
+        // The truncated value should be within range and have fewer digits than original
+        val truncatedValue = (result as ValidationResult.ShouldTruncate).truncatedValue as NumberValue
+        assert(truncatedValue.value in FLOAT_MIN..FLOAT_MAX)
+        assert(truncatedValue.value.precision() < highValue.value.precision())
     }
 
     @Test

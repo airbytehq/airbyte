@@ -31,11 +31,15 @@ import java.math.BigInteger
 internal val INT_MAX = BigInteger("99999999999999999999999999999999999999") // 38 9s
 internal val INT_MIN = BigInteger("-99999999999999999999999999999999999999") // 38 9s
 internal val INT_RANGE = INT_MIN..INT_MAX
+// Snowflake NUMBER (integer) has 38 digits of precision
+internal const val INTEGER_PRECISION = 38
 
 // https://docs.snowflake.com/en/sql-reference/data-types-numeric#label-data-type-float
 internal val FLOAT_MAX = BigDecimal("9007199254740991")
 internal val FLOAT_MIN = BigDecimal("-9007199254740991")
 internal val FLOAT_RANGE = FLOAT_MIN..FLOAT_MAX
+// Snowflake FLOAT has 15 significant digits of precision
+internal const val FLOAT_PRECISION = 15
 
 // https://docs.snowflake.com/en/sql-reference/data-types-semistructured#characteristics-of-a-variant-value
 internal const val VARIANT_LIMIT_BYTES = 128 * 1024 * 1024
@@ -45,17 +49,6 @@ internal const val VARCHAR_LIMIT_BYTES = 16 * 1024 * 1024
 // UTF-8 has max 4 bytes per char, so anything under this length is safe
 internal const val MAX_UTF_8_VARIANT_LENGTH_UNDER_LIMIT = VARIANT_LIMIT_BYTES / 4 // (134217728 / 4)
 internal const val MAX_UTF_8_VARCHAR_LENGTH_UNDER_LIMIT = VARCHAR_LIMIT_BYTES / 4 // (16777216 / 4)
-
-fun isValid(value: AirbyteValue): Boolean {
-    return when (value) {
-        is ArrayValue,
-        is ObjectValue -> isVariantValid(value.toCsvValue().toString())
-        is IntegerValue -> value.value in INT_RANGE
-        is NumberValue -> value.value in FLOAT_RANGE
-        is StringValue -> isVarcharValid(value.value)
-        else -> true
-    }
-}
 
 fun isVariantValid(s: String): Boolean {
     // avoid expensive size calculation if we're safely under the limit
@@ -73,6 +66,41 @@ fun isVarcharValid(s: String): Boolean {
     return Utf8.encodedLength(s) <= VARCHAR_LIMIT_BYTES
 }
 
+/**
+ * Truncates a BigDecimal to fit within a specified range and maximum precision.
+ * Returns null if the value cannot be made to fit within the range.
+ *
+ * We can't just truncate to the max precision because that doesn't guarantee the value will be in range.
+ * For example: 99999999999999999 (17 digits) truncated to 15 digits = 999999999999999,
+ * which is still > FLOAT_MAX (9007199254740991). So we keep reducing precision until it fits.
+ *
+ * Example: truncateToRange(99999999999999999, -9007199254740991, 9007199254740991, 15)
+ *          -> 9999999999999 (13 digits), which is now within range
+ */
+fun truncateToRange(value: BigDecimal, min: BigDecimal, max: BigDecimal, maxPrecision: Int): BigDecimal? {
+    // Caller should have already checked if value is in range
+    // Start with maxPrecision and reduce until it fits
+    var precision = maxPrecision
+
+    while (precision > 0) {
+        val truncated = if (value.precision() > precision) {
+            // To keep only the first N digits, we divide by 10^(precision - N),
+            // truncate, then that's our result (without multiplying back)
+            val digitsToRemove = value.precision() - precision
+            val divisor = BigDecimal.TEN.pow(digitsToRemove)
+            value.divide(divisor, 0, java.math.RoundingMode.DOWN)
+        } else {
+            // Value's precision is already <= target, it won't fit by truncating digits
+            return null
+        }
+
+        if (truncated in min..max) return truncated
+        precision--
+    }
+
+    return null // Cannot fit in range even with truncation
+}
+
 @Singleton
 class SnowflakeValueCoercer : ValueCoercer {
     override fun map(value: EnrichedAirbyteValue): EnrichedAirbyteValue {
@@ -85,10 +113,81 @@ class SnowflakeValueCoercer : ValueCoercer {
         return value
     }
 
-    override fun validate(value: EnrichedAirbyteValue): ValidationResult =
-        if (!isValid(value.abValue)) {
-            ValidationResult.ShouldNullify(
-                AirbyteRecordMessageMetaChange.Reason.DESTINATION_FIELD_SIZE_LIMITATION
-            )
-        } else ValidationResult.Valid
+    override fun validate(value: EnrichedAirbyteValue): ValidationResult {
+        return when (val abValue = value.abValue) {
+            is NumberValue -> {
+                // Check if already in range
+                if (abValue.value in FLOAT_RANGE) {
+                    return ValidationResult.Valid
+                }
+
+                // Out of range, try to truncate
+                val truncated = truncateToRange(abValue.value, FLOAT_MIN, FLOAT_MAX, FLOAT_PRECISION)
+                when {
+                    truncated == null -> {
+                        // Cannot fit in range even with truncation -> nullify
+                        ValidationResult.ShouldNullify(
+                            AirbyteRecordMessageMetaChange.Reason.DESTINATION_FIELD_SIZE_LIMITATION
+                        )
+                    }
+                    else -> {
+                        // Value was truncated to fit
+                        ValidationResult.ShouldTruncate(
+                            NumberValue(truncated),
+                            AirbyteRecordMessageMetaChange.Reason.DESTINATION_FIELD_SIZE_LIMITATION
+                        )
+                    }
+                }
+            }
+            is IntegerValue -> {
+                // Check if already in range
+                if (abValue.value in INT_RANGE) {
+                    return ValidationResult.Valid
+                }
+
+                // Out of range, try to truncate
+                val truncated = truncateToRange(
+                    BigDecimal(abValue.value),
+                    BigDecimal(INT_MIN),
+                    BigDecimal(INT_MAX),
+                    INTEGER_PRECISION
+                )
+                when {
+                    truncated == null -> {
+                        // Cannot fit in range even with truncation -> nullify
+                        ValidationResult.ShouldNullify(
+                            AirbyteRecordMessageMetaChange.Reason.DESTINATION_FIELD_SIZE_LIMITATION
+                        )
+                    }
+                    else -> {
+                        // Value was truncated to fit
+                        ValidationResult.ShouldTruncate(
+                            IntegerValue(truncated.toBigInteger()),
+                            AirbyteRecordMessageMetaChange.Reason.DESTINATION_FIELD_SIZE_LIMITATION
+                        )
+                    }
+                }
+            }
+            is StringValue -> {
+                if (!isVarcharValid(abValue.value)) {
+                    ValidationResult.ShouldNullify(
+                        AirbyteRecordMessageMetaChange.Reason.DESTINATION_FIELD_SIZE_LIMITATION
+                    )
+                } else {
+                    ValidationResult.Valid
+                }
+            }
+            is ArrayValue,
+            is ObjectValue -> {
+                if (!isVariantValid(abValue.toCsvValue().toString())) {
+                    ValidationResult.ShouldNullify(
+                        AirbyteRecordMessageMetaChange.Reason.DESTINATION_FIELD_SIZE_LIMITATION
+                    )
+                } else {
+                    ValidationResult.Valid
+                }
+            }
+            else -> ValidationResult.Valid
+        }
+    }
 }
