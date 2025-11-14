@@ -101,8 +101,8 @@ def retry_pattern(backoff_type, exception, **wait_gen_kwargs):
         """Check if the error is a GraphBatchException from Facebook's batch API.
         This error occurs when the batch request is too large or contains failed calls."""
         if exc.http_status() == http.client.BAD_REQUEST:
-            error_data = getattr(exc, '_error', {})
-            return error_data.get('type') == 'GraphBatchException' or 'GraphBatchException' in exc.api_error_message()
+            error_data = getattr(exc, "_error", {})
+            return error_data.get("type") == "GraphBatchException" or "GraphBatchException" in exc.api_error_message()
         return False
 
     def should_retry_api_error(exc):
@@ -227,7 +227,7 @@ def traced_exception(fb_exception: FacebookRequestError):
         )
 
     elif fb_exception.http_status() == 400 and (
-        getattr(fb_exception, '_error', {}).get('type') == 'GraphBatchException' or 'GraphBatchException' in msg
+        getattr(fb_exception, "_error", {}).get("type") == "GraphBatchException" or "GraphBatchException" in msg
     ):
         return AirbyteTracedException(
             message="Facebook's batch API encountered an error while processing multiple requests. This is typically a transient issue. The sync will retry automatically.",
