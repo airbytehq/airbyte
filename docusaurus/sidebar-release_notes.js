@@ -20,6 +20,7 @@ export default {
         "v-1.1",
         "v-1.0",
         "breaking-changes",
+        "helm-charts/readme",
         {
           type: "category",
           label: "Historical release notes",
