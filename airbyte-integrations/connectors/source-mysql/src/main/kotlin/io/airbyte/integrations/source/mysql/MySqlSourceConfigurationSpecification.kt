@@ -41,10 +41,11 @@ import jakarta.inject.Singleton
 @ConfigurationProperties(CONNECTOR_CONFIG_PREFIX)
 @SuppressFBWarnings(value = ["NP_NONNULL_RETURN_VIOLATION"], justification = "Micronaut DI")
 class MySqlSourceConfigurationSpecification : ConfigurationSpecification() {
+
     @JsonProperty("host")
     @JsonSchemaTitle("Host")
-    @JsonSchemaInject(json = """{"order":1}""")
     @JsonPropertyDescription("Hostname of the database.")
+    @JsonSchemaInject(json = """{"order":1}""")
     lateinit var host: String
 
     @JsonProperty("port")
@@ -74,6 +75,14 @@ class MySqlSourceConfigurationSpecification : ConfigurationSpecification() {
     @JsonSchemaInject(json = """{"order":6,"always_show":true}""")
     lateinit var database: String
 
+    @JsonProperty("table_filters")
+    @JsonSchemaTitle("Table Filters")
+    @JsonPropertyDescription(
+        "Optional filters to include only specific tables from the specified database."
+    )
+    @JsonSchemaInject(json = """{"order":7}""")
+    var tableFilters: List<TableFilter>? = null
+
     @JsonProperty("jdbc_url_params")
     @JsonSchemaTitle("JDBC URL Params")
     @JsonPropertyDescription(
@@ -81,7 +90,7 @@ class MySqlSourceConfigurationSpecification : ConfigurationSpecification() {
             "formatted as 'key=value' pairs separated by the symbol '&'. " +
             "(example: key1=value1&key2=value2&key3=value3).",
     )
-    @JsonSchemaInject(json = """{"order":7}""")
+    @JsonSchemaInject(json = """{"order":8}""")
     var jdbcUrlParams: String? = null
 
     @JsonIgnore
@@ -100,7 +109,7 @@ class MySqlSourceConfigurationSpecification : ConfigurationSpecification() {
     @JsonPropertyDescription(
         "The encryption method which is used when communicating with the database.",
     )
-    @JsonSchemaInject(json = """{"order":8,"default":"required"}""")
+    @JsonSchemaInject(json = """{"order":9,"default":"required"}""")
     fun getEncryptionValue(): EncryptionSpecification? = encryptionJson ?: encryption.asEncryption()
 
     @JsonIgnore
@@ -120,7 +129,7 @@ class MySqlSourceConfigurationSpecification : ConfigurationSpecification() {
         "Whether to initiate an SSH tunnel before connecting to the database, " +
             "and if so, which kind of authentication to use.",
     )
-    @JsonSchemaInject(json = """{"order":9}""")
+    @JsonSchemaInject(json = """{"order":10}""")
     fun getTunnelMethodValue(): SshTunnelMethodConfiguration? =
         tunnelMethodJson ?: tunnelMethod.asSshTunnelMethod()
 
@@ -138,28 +147,28 @@ class MySqlSourceConfigurationSpecification : ConfigurationSpecification() {
     @JsonGetter("replication_method")
     @JsonSchemaTitle("Update Method")
     @JsonPropertyDescription("Configures how data is extracted from the database.")
-    @JsonSchemaInject(json = """{"order":10,"display_type":"radio"}""")
+    @JsonSchemaInject(json = """{"order":11,"display_type":"radio"}""")
     fun getIncrementalValue(): IncrementalConfigurationSpecification =
         replicationMethodJson ?: replicationMethod.asCursorMethodConfiguration()
 
     @JsonProperty("checkpoint_target_interval_seconds")
     @JsonSchemaTitle("Checkpoint Target Time Interval")
-    @JsonSchemaInject(json = """{"order":11}""")
+    @JsonSchemaInject(json = """{"order":12}""")
     @JsonSchemaDefault("300")
     @JsonPropertyDescription("How often (in seconds) a stream should checkpoint, when possible.")
     var checkpointTargetIntervalSeconds: Int? = 300
 
     @JsonProperty("concurrency")
     @JsonSchemaTitle("Concurrency")
-    // Hidden and maintened for backwards compatibility.
-    @JsonSchemaInject(json = """{"order":12,"airbyte_hidden":true}""")
+    // Hidden and maintained for backwards compatibility.
+    @JsonSchemaInject(json = """{"order":13,"airbyte_hidden":true}""")
     @JsonSchemaDefault("1")
     @JsonPropertyDescription("Maximum number of concurrent queries to the database.")
     var concurrency: Int? = 1
 
     @JsonProperty("max_db_connections")
     @JsonSchemaTitle("Max Concurrent Queries to Database")
-    @JsonSchemaInject(json = """{"order":12}""")
+    @JsonSchemaInject(json = """{"order":13}""")
     @JsonPropertyDescription(
         "Maximum number of concurrent queries to the database. Leave empty to let Airbyte optimize performance."
     )
@@ -189,6 +198,29 @@ class MySqlSourceConfigurationSpecification : ConfigurationSpecification() {
     ) {
         additionalPropertiesMap[name] = value
     }
+}
+
+@JsonSchemaTitle("Table Filter")
+@JsonSchemaDescription("Inclusion filter configuration for table selection per database.")
+@JsonPropertyOrder("database_name", "table_name_patterns")
+@SuppressFBWarnings(value = ["NP_NONNULL_RETURN_VIOLATION"], justification = "Micronaut DI")
+class TableFilter {
+    @JsonProperty("database_name", required = true)
+    @JsonSchemaTitle("Database Name")
+    @JsonPropertyDescription(
+        "The name of the database to apply this filter to. " +
+            "Should match the database defined in the \"Database\" field above."
+    )
+    @JsonSchemaInject(json = """{"order":1,"always_show":true}""")
+    lateinit var databaseName: String
+
+    @JsonProperty("table_name_patterns", required = true)
+    @JsonSchemaTitle("Table Filter Patterns")
+    @JsonPropertyDescription(
+        "List of table name patterns to include. Should be a SQL LIKE pattern."
+    )
+    @JsonSchemaInject(json = """{"order":2,"always_show":true,"minItems":1}""")
+    lateinit var patterns: List<String>
 }
 
 @JsonTypeInfo(use = JsonTypeInfo.Id.NAME, property = "mode")
