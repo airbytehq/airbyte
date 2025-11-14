@@ -5,8 +5,6 @@
 package io.airbyte.cdk.load.command
 
 import io.airbyte.cdk.load.config.NamespaceDefinitionType
-import io.airbyte.cdk.load.schema.Append
-import io.airbyte.cdk.load.schema.DestinationStream
 import io.mockk.mockk
 import org.junit.jupiter.api.Assertions
 import org.junit.jupiter.api.Test

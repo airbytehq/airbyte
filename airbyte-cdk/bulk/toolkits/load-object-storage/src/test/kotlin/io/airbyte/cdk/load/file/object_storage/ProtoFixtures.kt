@@ -23,8 +23,8 @@ import io.airbyte.cdk.load.data.UnionType
 import io.airbyte.cdk.load.data.UnknownType
 import io.airbyte.cdk.load.message.DestinationRecordProtobufSource
 import io.airbyte.cdk.load.message.DestinationRecordRaw
-import io.airbyte.cdk.load.schema.DestinationStream
-import io.airbyte.cdk.load.schema.computeUnknownColumnChanges
+import io.airbyte.cdk.load.command.DestinationStream
+import io.airbyte.cdk.load.command.computeUnknownColumnChanges
 import io.airbyte.cdk.protocol.AirbyteValueProtobufEncoder
 import io.airbyte.protocol.models.Jsons
 import io.airbyte.protocol.protobuf.AirbyteMessage

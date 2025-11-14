@@ -4,9 +4,9 @@
 
 package io.airbyte.cdk.load.component
 
-import io.airbyte.cdk.load.schema.DestinationStream
+import io.airbyte.cdk.load.command.DestinationStream
 import io.airbyte.cdk.load.table.ColumnNameMapping
-import io.airbyte.cdk.load.table.TableName
+import io.airbyte.cdk.load.schema.TableName
 import org.junit.jupiter.api.Assertions.*
 import org.junit.jupiter.api.Test
 

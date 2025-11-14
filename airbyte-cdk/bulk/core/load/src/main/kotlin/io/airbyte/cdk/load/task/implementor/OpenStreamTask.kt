@@ -5,7 +5,7 @@
 package io.airbyte.cdk.load.task.implementor
 
 import io.airbyte.cdk.load.message.MessageQueue
-import io.airbyte.cdk.load.schema.DestinationStream
+import io.airbyte.cdk.load.command.DestinationStream
 import io.airbyte.cdk.load.state.SyncManager
 import io.airbyte.cdk.load.task.SelfTerminating
 import io.airbyte.cdk.load.task.Task

@@ -4,10 +4,10 @@
 
 package io.airbyte.cdk.load.toolkits.iceberg.parquet.io
 
-import io.airbyte.cdk.load.schema.Append
-import io.airbyte.cdk.load.schema.Dedupe
-import io.airbyte.cdk.load.schema.ImportType
-import io.airbyte.cdk.load.schema.Overwrite
+import io.airbyte.cdk.load.command.Append
+import io.airbyte.cdk.load.command.Dedupe
+import io.airbyte.cdk.load.command.ImportType
+import io.airbyte.cdk.load.command.Overwrite
 import jakarta.inject.Singleton
 import java.util.UUID
 import org.apache.iceberg.FileFormat

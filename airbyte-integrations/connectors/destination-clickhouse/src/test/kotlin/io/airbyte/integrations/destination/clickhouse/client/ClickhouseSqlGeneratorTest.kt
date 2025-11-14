@@ -10,7 +10,7 @@ import io.airbyte.cdk.load.component.ColumnChangeset
 import io.airbyte.cdk.load.component.ColumnType
 import io.airbyte.cdk.load.component.ColumnTypeChange
 import io.airbyte.cdk.load.table.ColumnNameMapping
-import io.airbyte.cdk.load.table.TableName
+import io.airbyte.cdk.load.schema.TableName
 import io.airbyte.integrations.destination.clickhouse.spec.ClickhouseConfiguration
 import io.mockk.mockk
 import kotlin.test.assertTrue

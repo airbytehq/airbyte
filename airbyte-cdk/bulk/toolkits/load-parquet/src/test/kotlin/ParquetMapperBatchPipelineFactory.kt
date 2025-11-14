@@ -3,7 +3,7 @@
  */
 
 import io.airbyte.cdk.load.data.*
-import io.airbyte.cdk.load.schema.DestinationStream
+import io.airbyte.cdk.load.command.DestinationStream
 import io.mockk.every
 import io.mockk.mockk
 import org.junit.jupiter.api.Test
