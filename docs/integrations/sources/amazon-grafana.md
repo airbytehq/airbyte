@@ -6,14 +6,17 @@ API reference: https://docs.alpaca.markets/reference/getallaccounts
 
 | Input | Type | Description | Default Value |
 |-------|------|-------------|---------------|
-| `api_key` | `string` | Grafana API key |  |
 | `workspace_id` | `string` | ID of Grafana workspace |  |
 | `region` | `string` | AWS region | eu-central-1 |
+| `service_account_id` | `string` | AWS Grafana Service Account ID |  |
+| `aws_access_key_id` | `string` | AWS IAM Access Key ID |  |
+| `aws_secret_access_key` | `string` | AWS IAM Secret Key |  |
 
 ## Streams
 | Stream Name | Primary Key | Pagination | Supports Full Sync | Supports Incremental |
 |-------------|-------------|------------|---------------------|----------------------|
 | users | id | No pagination | ✅ |  ❌  |
+| teams | id | No pagination | ✅ |  ❌  |
 
 ## Changelog
 
