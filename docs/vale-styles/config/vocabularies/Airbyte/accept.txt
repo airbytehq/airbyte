@@ -39,6 +39,7 @@ Vale
 OpenTelemetry
 Datadog
 [Dd]eduplication
+[Dd]eduped
 Python
 MarkDownLint
 markdownlint-cli2
@@ -76,6 +77,7 @@ S3 Data Lake
 PostgreSQL
 Postgres
 NetSuite
+ClickHouse
 
 # Companies, products, and jargon
 
@@ -97,7 +99,7 @@ MinIO
 [Nn]amespaces
 [Ii]nitialisms
 \bCPU(?:s)?\b
-hostname
+\bhostname(?:s)?\b
 
 # API and technical terms
 

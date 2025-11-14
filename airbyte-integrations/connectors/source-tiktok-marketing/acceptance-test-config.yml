@@ -13,9 +13,7 @@ acceptance_tests:
           disable_for_version: "3.1.0" # attribution windows: add min/max values; change default 0 -> 3
   connection:
     tests:
-      - config_path: "secrets/prod_config.json"
-        status: "succeed"
-      - config_path: "secrets/config_oauth.json"
+      - config_path: "secrets/config.json"
         status: "succeed"
       - config_path: "integration_tests/invalid_config.json"
         status: "failed"

@@ -58,6 +58,10 @@ data:
               - "campaigns_stats_daily"
               - "campaigns_stats_lifetime"
   documentationUrl: https://docs.airbyte.com/integrations/sources/snapchat-marketing
+  externalDocumentationUrls:
+    - title: Ads API announcements
+      url: https://developers.snap.com/api/marketing-api/Ads-API/announcements
+      type: api_reference
   suggestedStreams:
     streams:
       - campaigns

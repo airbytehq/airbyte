@@ -718,6 +718,64 @@ class ProtoToBigQueryCSVRowGeneratorTest {
         assertNotNull(csvRow[metaIndex])
     }
 
+    @Test
+    fun `handles out-of-range timestamps`() {
+        val encoder = AirbyteValueProtobufEncoder()
+        val protoData =
+            listOf(
+                    encoder.encode(null, LeafAirbyteSchemaType.STRING),
+                    encoder.encode(null, LeafAirbyteSchemaType.STRING),
+                    encoder.encode(null, LeafAirbyteSchemaType.STRING),
+                    encoder.encode(null, LeafAirbyteSchemaType.STRING),
+                    encoder.encode(null, LeafAirbyteSchemaType.STRING),
+                    encoder.encode(null, LeafAirbyteSchemaType.STRING),
+                    encoder.encode(null, LeafAirbyteSchemaType.STRING),
+                    encoder.encode(
+                        OffsetDateTime.parse("9999-12-31T23:00:00-08"),
+                        LeafAirbyteSchemaType.TIMESTAMP_WITH_TIMEZONE,
+                    ),
+                    encoder.encode(null, LeafAirbyteSchemaType.STRING),
+                    encoder.encode(null, LeafAirbyteSchemaType.STRING),
+                    encoder.encode(null, LeafAirbyteSchemaType.STRING),
+                    encoder.encode(null, LeafAirbyteSchemaType.STRING),
+                    encoder.encode(null, LeafAirbyteSchemaType.STRING),
+                )
+                .map { it.build() }
+        val csvRow =
+            generator.generate(
+                mockk(relaxed = true) {
+                    every { this@mockk.airbyteRawId } returns uuid
+                    every { this@mockk.rawData } returns
+                        DestinationRecordProtobufSource(
+                            AirbyteMessage.AirbyteMessageProtobuf.newBuilder()
+                                .setRecord(
+                                    AirbyteRecordMessage.AirbyteRecordMessageProtobuf.newBuilder()
+                                        .setStreamName("dummy")
+                                        .setEmittedAtMs(emittedAtMs)
+                                        .addAllData(protoData)
+                                        .setMeta(
+                                            AirbyteRecordMessageMetaOuterClass
+                                                .AirbyteRecordMessageMeta
+                                                .newBuilder()
+                                                .build()
+                                        )
+                                        .build()
+                                )
+                                .build()
+                        )
+                    every { this@mockk.stream } returns
+                        this@ProtoToBigQueryCSVRowGeneratorTest.stream
+                }
+            )
+        assertEquals("\\N", csvRow[7])
+        assertEquals(
+            // unknown column is always nulled, b/c proto mode doesn't support unknown types.
+            // more importantly, we null out the ts_tz field with DESTINATION_FIELD_SIZE_LIMITATION.
+            """{"sync_id":42,"changes":[{"field":"unknown_col","change":"NULLED","reason":"DESTINATION_SERIALIZATION_ERROR"},{"field":"ts_tz_col","change":"NULLED","reason":"DESTINATION_FIELD_SIZE_LIMITATION"}]}""",
+            csvRow[16],
+        )
+    }
+
     private fun buildModifiedRecord(
         protoValues: List<AirbyteRecordMessage.AirbyteValueProtobuf>
     ): DestinationRecordProtobufSource {

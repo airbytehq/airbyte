@@ -99,7 +99,6 @@ class StateAdditionalStatsStore {
     private fun populateWithDefaultValues(
         histogram: AdditionalStatsHistogram
     ): AdditionalStatsHistogram {
-        println("Populating...")
         ObservabilityMetrics.entries.forEach {
             if (histogram.get(it.metricName) == null) {
                 histogram.increment(it.metricName, 0.0)

@@ -13,6 +13,12 @@ data:
   dockerImageTag: 1.10.15
   dockerRepository: airbyte/source-google-search-console
   documentationUrl: https://docs.airbyte.com/integrations/sources/google-search-console
+  externalDocumentationUrls:
+    - title: Google Search Central Blog
+      url: https://developers.google.com/search/news
+    - title: Reference
+      url: https://developers.google.com/webmaster-tools/v1/api_reference_index
+      type: api_reference
   erdUrl: https://dbdocs.io/airbyteio/source-google-search-console?view=relationships
   githubIssueLabel: source-google-search-console
   icon: googlesearchconsole.svg
