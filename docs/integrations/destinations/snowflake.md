@@ -214,18 +214,21 @@ Again, see [here](/platform/understanding-airbyte/airbyte-metadata-fields) for m
 ### Precision handling for numeric types
 
 Snowflake has precision limits for numeric types:
+
 - **FLOAT**: Maximum 15 significant digits with a range of ±9,007,199,254,740,991
 - **NUMBER (INTEGER)**: Maximum 38 digits
 
 When numeric values exceed these limits, the connector automatically truncates them to fit:
 
 **How truncation works:**
+
 - Values within range are preserved unchanged
 - Values with excessive precision are truncated by removing trailing digits
 - For example: `1740710103515266826` (19 digits) → `174071010351526` (15 digits)
 - If a value exceeds both precision and range (e.g., `99999999999999999`), precision is reduced until it fits within range
 
 **Why truncation instead of nullification:**
+
 - Preserves partial data rather than losing it entirely
 - Maintains numeric relationships and ordering in datasets
 - Provides more useful data for analysis and reporting
