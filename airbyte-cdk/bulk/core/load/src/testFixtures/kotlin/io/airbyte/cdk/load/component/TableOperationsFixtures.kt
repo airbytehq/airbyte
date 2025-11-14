@@ -286,6 +286,80 @@ object TableOperationsFixtures {
                 ID_FIELD to StringValue("7"),
                 TEST_FIELD to IntegerValue(1007),
             ),
+            // id=8: earlier cursor than the existing record but later extracted_at.
+            // we should discard this record (i.e. prefer cursor over extracted_at)
+            inputRecord(
+                "645efad2-f1e6-438a-b29f-15ae5d096015",
+                "2025-01-23T00:00:00Z",
+                linkedMapOf(),
+                generationId = 1,
+                ID_FIELD to StringValue("8"),
+                TEST_FIELD to IntegerValue(8),
+            ),
+            // id=9: equal cursor to existing record but later extracted_at.
+            // We should take this record (i.e. use extracted_at as tiebreaker)
+            inputRecord(
+                "f74b8ddb-45d0-4e30-af25-66885e57a0e6",
+                "2025-01-23T00:00:00Z",
+                linkedMapOf(),
+                generationId = 1,
+                ID_FIELD to StringValue("9"),
+                TEST_FIELD to IntegerValue(9),
+            ),
+            // id=10: later cursor _and_ later extracted_at. Take this record.
+            inputRecord(
+                "877cceb6-23a6-4e7b-92e3-59ca46f8fd6c",
+                "2025-01-23T00:00:00Z",
+                linkedMapOf(),
+                generationId = 1,
+                ID_FIELD to StringValue("10"),
+                TEST_FIELD to IntegerValue(1010),
+            ),
+            // id=11: earlier cursor and equal extracted_at. Discard this record.
+            inputRecord(
+                "20410b34-7bb0-4ba5-9c61-0dd23bfeee6d",
+                "2025-01-22T00:00:00Z",
+                linkedMapOf(),
+                generationId = 1,
+                ID_FIELD to StringValue("11"),
+                TEST_FIELD to IntegerValue(11),
+            ),
+            // id=12: later cursor and equal extracted_at. Take this record.
+            inputRecord(
+                "70fdf9b0-ade0-4d30-9131-ba217ef506da",
+                "2025-01-22T00:00:00Z",
+                linkedMapOf(),
+                generationId = 1,
+                ID_FIELD to StringValue("12"),
+                TEST_FIELD to IntegerValue(1012),
+            ),
+            // id=13: earlier cursor and earlier extracted_at. Discard.
+            inputRecord(
+                "20949d9b-8ffc-4497-85e4-cda14abc4049",
+                "2025-01-21T00:00:00Z",
+                linkedMapOf(),
+                generationId = 1,
+                ID_FIELD to StringValue("13"),
+                TEST_FIELD to IntegerValue(13),
+            ),
+            // id=14: equal cursor and earlier extracted_at. Discard.
+            inputRecord(
+                "5808a0ef-3c6d-4d9a-851c-edbbc4852e18",
+                "2025-01-21T00:00:00Z",
+                linkedMapOf(),
+                generationId = 1,
+                ID_FIELD to StringValue("14"),
+                TEST_FIELD to IntegerValue(14),
+            ),
+            // id=15: later cursor and earlier extracted_at. Take this record.
+            inputRecord(
+                "373127a7-a40e-4e23-890b-1a52114686ee",
+                "2025-01-21T00:00:00Z",
+                linkedMapOf(),
+                generationId = 1,
+                ID_FIELD to StringValue("15"),
+                TEST_FIELD to IntegerValue(1015),
+            ),
         )
 
     /**
@@ -334,6 +408,70 @@ object TableOperationsFixtures {
                 generationId = 1,
                 ID_FIELD to StringValue("4"),
                 TEST_FIELD to IntegerValue(4),
+            ),
+            inputRecord(
+                "8086bdd6-6cf5-479e-a819-e5f347373804",
+                "2025-01-22T00:00:00Z",
+                linkedMapOf(),
+                generationId = 1,
+                ID_FIELD to StringValue("8"),
+                TEST_FIELD to IntegerValue(1008),
+            ),
+            inputRecord(
+                "b60e8b33-32f4-4da0-934b-87d14d9ed354",
+                "2025-01-22T00:00:00Z",
+                linkedMapOf(),
+                generationId = 1,
+                ID_FIELD to StringValue("9"),
+                TEST_FIELD to IntegerValue(9),
+            ),
+            inputRecord(
+                "e79d163e-b594-4016-89b9-a85e385778bd",
+                "2025-01-22T00:00:00Z",
+                linkedMapOf(),
+                generationId = 1,
+                ID_FIELD to StringValue("10"),
+                TEST_FIELD to IntegerValue(10),
+            ),
+            inputRecord(
+                "3d345fb2-254e-4968-89a6-f896a05fb831",
+                "2025-01-22T00:00:00Z",
+                linkedMapOf(),
+                generationId = 1,
+                ID_FIELD to StringValue("11"),
+                TEST_FIELD to IntegerValue(1011),
+            ),
+            inputRecord(
+                "9c5262e6-44e3-41de-9a5a-c31bc0efdb68",
+                "2025-01-22T00:00:00Z",
+                linkedMapOf(),
+                generationId = 1,
+                ID_FIELD to StringValue("12"),
+                TEST_FIELD to IntegerValue(12),
+            ),
+            inputRecord(
+                "739a9347-267b-48af-a172-2030320e2193",
+                "2025-01-22T00:00:00Z",
+                linkedMapOf(),
+                generationId = 1,
+                ID_FIELD to StringValue("13"),
+                TEST_FIELD to IntegerValue(1013),
+            ),
+            inputRecord(
+                "70243c59-eadb-4840-90fa-be4ed57609fc",
+                "2025-01-22T00:00:00Z",
+                linkedMapOf(),
+                generationId = 1,
+                ID_FIELD to StringValue("14"),
+                TEST_FIELD to IntegerValue(14),
+            ),
+            inputRecord(
+                "966e89ec-c0d2-4358-b8e5-bf9c713f5396",
+                "2025-01-22T00:00:00Z",
+                linkedMapOf(),
+                generationId = 1,
+                ID_FIELD to StringValue("15"),
+                TEST_FIELD to IntegerValue(15),
             ),
         )
 
@@ -386,6 +524,70 @@ object TableOperationsFixtures {
                 1L,
                 ID_FIELD to "7",
                 TEST_FIELD to 1007L,
+            ),
+            outputRecord(
+                "8086bdd6-6cf5-479e-a819-e5f347373804",
+                "2025-01-22T00:00:00Z",
+                linkedMapOf(),
+                1L,
+                ID_FIELD to "8",
+                TEST_FIELD to 1008L,
+            ),
+            outputRecord(
+                "f74b8ddb-45d0-4e30-af25-66885e57a0e6",
+                "2025-01-23T00:00:00Z",
+                linkedMapOf(),
+                1L,
+                ID_FIELD to "9",
+                TEST_FIELD to 9L,
+            ),
+            outputRecord(
+                "877cceb6-23a6-4e7b-92e3-59ca46f8fd6c",
+                "2025-01-23T00:00:00Z",
+                linkedMapOf(),
+                1L,
+                ID_FIELD to "10",
+                TEST_FIELD to 1010L,
+            ),
+            outputRecord(
+                "3d345fb2-254e-4968-89a6-f896a05fb831",
+                "2025-01-22T00:00:00Z",
+                linkedMapOf(),
+                1L,
+                ID_FIELD to "11",
+                TEST_FIELD to 1011L,
+            ),
+            outputRecord(
+                "70fdf9b0-ade0-4d30-9131-ba217ef506da",
+                "2025-01-22T00:00:00Z",
+                linkedMapOf(),
+                1L,
+                ID_FIELD to "12",
+                TEST_FIELD to 1012L,
+            ),
+            outputRecord(
+                "739a9347-267b-48af-a172-2030320e2193",
+                "2025-01-22T00:00:00Z",
+                linkedMapOf(),
+                1L,
+                ID_FIELD to "13",
+                TEST_FIELD to 1013L,
+            ),
+            outputRecord(
+                "70243c59-eadb-4840-90fa-be4ed57609fc",
+                "2025-01-22T00:00:00Z",
+                linkedMapOf(),
+                1L,
+                ID_FIELD to "14",
+                TEST_FIELD to 14L,
+            ),
+            outputRecord(
+                "373127a7-a40e-4e23-890b-1a52114686ee",
+                "2025-01-21T00:00:00Z",
+                linkedMapOf(),
+                1L,
+                ID_FIELD to "15",
+                TEST_FIELD to 1015L,
             ),
         )
 
