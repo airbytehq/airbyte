@@ -10,7 +10,7 @@ The Amazon AMP source syncs the AMP API. It supports full refresh sync.
 
 - AWS AMP Workspace ID
 - AWS Region
-- AWS IAM Access Key and AWS IAM Secret Key<br>
+- AWS IAM Access Key and AWS IAM Secret Key  
 or
 - Proper permissions for service account if Airbyte is running on Kubernetes
 
