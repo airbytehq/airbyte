@@ -230,6 +230,9 @@ airbyte:
       # Namespace mapping (required)
       mappers:
         namespace-mapping-config-path: ""  # Empty = no custom mapping (identity)
+      # File transfer (required)
+      file-transfer:
+        enabled: false  # true for cloud storage destinations, false for databases
 
 # Reduce noise in logs
 logger:
@@ -242,7 +245,15 @@ logger:
 ```
 Failed to inject value for parameter [dataChannelMedium]
 Failed to inject value for parameter [namespaceMappingConfigPath]
+Failed to inject value for parameter [fileTransferEnabled]
 ```
+
+**All required properties:**
+- ✅ `types.unions`: How to handle union types
+- ✅ `data-channel.medium`: STDIO or SOCKET
+- ✅ `data-channel.format`: JSONL or PROTOBUF
+- ✅ `mappers.namespace-mapping-config-path`: Namespace mapping file path (empty for identity)
+- ✅ `file-transfer.enabled`: Whether connector transfers files (false for databases)
 
 ### Step 0.9: Build Docker Image
 
@@ -1940,7 +1951,49 @@ class {DB}ColumnNameMapper(
 - ColumnNameMapper: Uses mappings during transform (Phase 7)
 - Separation of concerns: generation vs. application
 
-### Step 7.5: Create WriteInitializationTest
+### Step 7.5: Register AggregatePublishingConfig in BeanFactory
+
+**File:** Update `{DB}BeanFactory.kt`
+
+```kotlin
+@Singleton
+fun aggregatePublishingConfig(dataChannelMedium: DataChannelMedium): AggregatePublishingConfig {
+    // Different settings for STDIO vs SOCKET mode
+    return if (dataChannelMedium == DataChannelMedium.STDIO) {
+        AggregatePublishingConfig(
+            maxRecordsPerAgg = 10_000_000_000_000L,
+            maxEstBytesPerAgg = 350_000_000L,
+            maxEstBytesAllAggregates = 350_000_000L * 5,
+        )
+    } else {
+        // SOCKET mode (faster IPC)
+        AggregatePublishingConfig(
+            maxRecordsPerAgg = 10_000_000_000_000L,
+            maxEstBytesPerAgg = 350_000_000L,
+            maxEstBytesAllAggregates = 350_000_000L * 5,
+            maxBufferedAggregates = 6,
+        )
+    }
+}
+```
+
+**What this configures:**
+- `maxRecordsPerAgg`: Flush aggregate after this many records
+- `maxEstBytesPerAgg`: Flush aggregate after this many bytes
+- `maxEstBytesAllAggregates`: Total memory limit across all streams
+- `maxBufferedAggregates`: Backpressure threshold (SOCKET mode only)
+
+**Why this is required:**
+- Controls memory usage and batching behavior
+- CDK's data pipeline needs this configuration
+- Without it: `No bean of type [AggregatePublishingConfig] exists`
+
+**Default values:**
+- Use Snowflake/ClickHouse values as template (shown above)
+- Tune later based on performance requirements
+- Start with defaults - they work for most databases
+
+### Step 7.6: Create WriteInitializationTest
 
 **File:** `src/test-integration/kotlin/.../write/{DB}WriteInitTest.kt`
 
