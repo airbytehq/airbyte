@@ -4,7 +4,6 @@
 
 package io.airbyte.cdk.load.dataflow.transform.medium
 
-import io.airbyte.cdk.load.command.DestinationStream
 import io.airbyte.cdk.load.data.AirbyteValue
 import io.airbyte.cdk.load.data.AirbyteValueProxy.FieldAccessor
 import io.airbyte.cdk.load.data.ArrayType
@@ -38,10 +37,8 @@ import io.airbyte.cdk.load.data.TimestampWithoutTimezoneValue
 import io.airbyte.cdk.load.data.UnionType
 import io.airbyte.cdk.load.data.UnknownType
 import io.airbyte.cdk.load.data.json.toAirbyteValue
-import io.airbyte.cdk.load.dataflow.transform.ColumnNameMapper
 import io.airbyte.cdk.load.dataflow.transform.ValueCoercer
 import io.airbyte.cdk.load.dataflow.transform.data.ValidationResultHandler
-import io.airbyte.cdk.load.dataflow.transform.defaults.NoOpColumnNameMapper
 import io.airbyte.cdk.load.message.DestinationRecordProtobufSource
 import io.airbyte.cdk.load.message.DestinationRecordRaw
 import io.airbyte.cdk.load.message.Meta
@@ -57,7 +54,6 @@ import java.time.LocalTime
 import java.time.OffsetDateTime
 import java.time.OffsetTime
 import java.time.ZoneOffset
-import java.util.concurrent.ConcurrentHashMap
 import javax.inject.Singleton
 
 /**
@@ -66,32 +62,11 @@ import javax.inject.Singleton
  */
 @Singleton
 class ProtobufConverter(
-    private val columnNameMapper: ColumnNameMapper,
     private val coercer: ValueCoercer,
     private val validationResultHandler: ValidationResultHandler,
 ) : MediumConverter {
 
-    private val isNoOpMapper = columnNameMapper is NoOpColumnNameMapper
     private val decoder = AirbyteValueProtobufDecoder()
-
-    private val perStreamMappedNames =
-        ConcurrentHashMap<DestinationStream.Descriptor, Array<String>>()
-
-    private fun mappedNamesFor(
-        stream: DestinationStream,
-        fieldAccessors: Array<FieldAccessor>
-    ): Array<String> {
-        val key = stream.mappedDescriptor
-        return perStreamMappedNames.computeIfAbsent(key) {
-            val maxIndex = fieldAccessors.maxOfOrNull { it.index } ?: -1
-            val arr = Array(maxIndex + 1) { "" }
-            fieldAccessors.forEach { fa ->
-                val mapped = columnNameMapper.getMappedColumnName(stream, fa.name) ?: fa.name
-                arr[fa.index] = mapped
-            }
-            arr
-        }
-    }
 
     override fun convert(input: ConversionInput): Map<String, AirbyteValue> {
         check(input.msg.rawData is DestinationRecordProtobufSource) {
@@ -140,12 +115,8 @@ class ProtobufConverter(
             allParsingFailures.addAll(validatedValue.changes)
 
             if (validatedValue.abValue !is NullValue || validatedValue.type !is UnknownType) {
-                val columnName =
-                    if (isNoOpMapper) accessor.name
-                    else
-                        mappedNamesFor(stream, fieldAccessors).getOrElse(accessor.index) {
-                            accessor.name
-                        }
+                // Use column mapping from stream
+                val columnName = stream.tableSchema.getFinalColumnName(accessor.name)
                 result[columnName] = validatedValue.abValue
             }
         }

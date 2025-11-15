@@ -5,14 +5,12 @@
 package io.airbyte.cdk.load.dataflow.transform.medium
 
 import io.airbyte.cdk.load.data.AirbyteValue
-import io.airbyte.cdk.load.dataflow.transform.ColumnNameMapper
 import io.airbyte.cdk.load.dataflow.transform.ValueCoercer
 import io.airbyte.cdk.load.dataflow.transform.data.ValidationResultHandler
 import jakarta.inject.Singleton
 
 @Singleton
 class JsonConverter(
-    private val columnNameMapper: ColumnNameMapper,
     private val coercer: ValueCoercer,
     private val validationResultHandler: ValidationResultHandler,
 ) : MediumConverter {
@@ -22,12 +20,10 @@ class JsonConverter(
                 extractedAtAsTimestampWithTimezone = true
             )
 
-        val munged = HashMap<String, AirbyteValue>()
-        enriched.declaredFields.forEach { field ->
-            val mappedKey =
-                columnNameMapper.getMappedColumnName(input.msg.stream, field.key)
-                    ?: field.key // fallback to the original key
+        val result = HashMap<String, AirbyteValue>()
 
+        // Column names are already mapped in the enriched value
+        enriched.declaredFields.forEach { field ->
             val mappedValue =
                 field.value
                     .let { coercer.map(it) }
@@ -40,11 +36,11 @@ class JsonConverter(
                         )
                     }
 
-            munged[mappedKey] = mappedValue.abValue
+            result[field.key] = mappedValue.abValue
         }
 
-        enriched.airbyteMetaFields.forEach { munged[it.key] = it.value.abValue }
+        enriched.airbyteMetaFields.forEach { result[it.key] = it.value.abValue }
 
-        return munged
+        return result
     }
 }

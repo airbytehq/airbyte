@@ -30,10 +30,11 @@ import io.airbyte.cdk.load.message.Meta.Companion.COLUMN_NAME_AB_EXTRACTED_AT
 import io.airbyte.cdk.load.message.Meta.Companion.COLUMN_NAME_AB_GENERATION_ID
 import io.airbyte.cdk.load.message.Meta.Companion.COLUMN_NAME_AB_META
 import io.airbyte.cdk.load.message.Meta.Companion.COLUMN_NAME_AB_RAW_ID
+import io.airbyte.cdk.load.schema.model.TableName
 import io.airbyte.cdk.load.table.CDC_DELETED_AT_COLUMN
 import io.airbyte.cdk.load.table.ColumnNameMapping
-import io.airbyte.cdk.load.table.TableName
 import io.airbyte.cdk.load.util.Jsons
+import io.airbyte.cdk.util.invert
 import java.util.UUID
 
 /**
@@ -398,7 +399,7 @@ object TableOperationsFixtures {
         airbyteMetaColumnMapping: Map<String, String>
     ): List<Map<String, V>> {
         val totalMapping = ColumnNameMapping(columnNameMapping + airbyteMetaColumnMapping)
-        return map { record -> record.mapKeys { (k, _) -> totalMapping.originalName(k) ?: k } }
+        return map { record -> record.mapKeys { (k, _) -> totalMapping.invert()[k] ?: k } }
     }
 
     fun <V> List<Map<String, V>>.removeNulls() =

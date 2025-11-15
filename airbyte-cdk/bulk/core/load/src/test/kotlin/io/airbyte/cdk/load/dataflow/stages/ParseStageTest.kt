@@ -7,6 +7,7 @@ package io.airbyte.cdk.load.dataflow.stages
 import io.airbyte.cdk.load.command.Append
 import io.airbyte.cdk.load.command.DestinationStream
 import io.airbyte.cdk.load.command.NamespaceMapper
+import io.airbyte.cdk.load.data.ObjectType
 import io.airbyte.cdk.load.data.StringValue
 import io.airbyte.cdk.load.dataflow.pipeline.DataFlowStageIO
 import io.airbyte.cdk.load.dataflow.state.PartitionKey
@@ -50,7 +51,7 @@ class ParseStageTest {
                 unmappedNamespace = "test-namespace",
                 unmappedName = "test-stream",
                 importType = Append,
-                schema = io.airbyte.cdk.load.data.ObjectType(linkedMapOf()),
+                schema = ObjectType(linkedMapOf()),
                 generationId = 1L,
                 minimumGenerationId = 1L,
                 syncId = 1L,
