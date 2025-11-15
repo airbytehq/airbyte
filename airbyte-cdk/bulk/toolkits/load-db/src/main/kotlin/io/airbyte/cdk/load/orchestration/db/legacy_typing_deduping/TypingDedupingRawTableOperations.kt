@@ -4,7 +4,7 @@
 
 package io.airbyte.cdk.load.orchestration.db.legacy_typing_deduping
 
-import io.airbyte.cdk.load.schema.TableName
+import io.airbyte.cdk.load.schema.model.TableName
 
 interface TypingDedupingRawTableOperations {
     /**
