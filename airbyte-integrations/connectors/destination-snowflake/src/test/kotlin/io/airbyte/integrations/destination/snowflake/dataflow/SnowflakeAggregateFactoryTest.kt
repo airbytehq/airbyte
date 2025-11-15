@@ -7,7 +7,7 @@ package io.airbyte.integrations.destination.snowflake.dataflow
 import io.airbyte.cdk.load.command.DestinationStream.Descriptor
 import io.airbyte.cdk.load.dataflow.aggregate.StoreKey
 import io.airbyte.cdk.load.orchestration.db.direct_load_table.DirectLoadTableExecutionConfig
-import io.airbyte.cdk.load.schema.TableName
+import io.airbyte.cdk.load.table.TableName
 import io.airbyte.cdk.load.write.StreamStateStore
 import io.airbyte.integrations.destination.snowflake.client.SnowflakeAirbyteClient
 import io.airbyte.integrations.destination.snowflake.spec.SnowflakeConfiguration
