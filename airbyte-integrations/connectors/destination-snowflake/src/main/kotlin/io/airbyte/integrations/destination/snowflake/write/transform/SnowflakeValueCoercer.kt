@@ -32,10 +32,17 @@ internal val INT_MAX = BigInteger("99999999999999999999999999999999999999") // 3
 internal val INT_MIN = BigInteger("-99999999999999999999999999999999999999") // 38 9s
 internal val INT_RANGE = INT_MIN..INT_MAX
 
-// https://docs.snowflake.com/en/sql-reference/data-types-numeric#label-data-type-float
-internal val FLOAT_MAX = BigDecimal("9007199254740991")
-internal val FLOAT_MIN = BigDecimal("-9007199254740991")
-internal val FLOAT_RANGE = FLOAT_MIN..FLOAT_MAX
+// https://docs.snowflake.com/en/sql-reference/data-types-numeric#number
+// NUMBER(38,9) can store up to 29 integer digits and 9 decimal digits
+// Max value: 99999999999999999999999999999.999999999 (29 integer digits + 9 decimal digits)
+internal val DECIMAL_MAX = BigDecimal("99999999999999999999999999999.999999999")
+internal val DECIMAL_MIN = BigDecimal("-99999999999999999999999999999.999999999")
+internal val DECIMAL_RANGE = DECIMAL_MIN..DECIMAL_MAX
+
+// NUMBER(38,9) constraints
+internal const val MAX_PRECISION = 38
+internal const val MAX_SCALE = 9
+internal const val MAX_INTEGER_DIGITS = 29 // MAX_PRECISION - MAX_SCALE
 
 // https://docs.snowflake.com/en/sql-reference/data-types-semistructured#characteristics-of-a-variant-value
 internal const val VARIANT_LIMIT_BYTES = 128 * 1024 * 1024
@@ -46,12 +53,36 @@ internal const val VARCHAR_LIMIT_BYTES = 16 * 1024 * 1024
 internal const val MAX_UTF_8_VARIANT_LENGTH_UNDER_LIMIT = VARIANT_LIMIT_BYTES / 4 // (134217728 / 4)
 internal const val MAX_UTF_8_VARCHAR_LENGTH_UNDER_LIMIT = VARCHAR_LIMIT_BYTES / 4 // (16777216 / 4)
 
+fun isNumber38_9Valid(value: BigDecimal): Boolean {
+    // Normalize the BigDecimal to remove trailing zeros for accurate scale/precision checks
+    val normalized = value.stripTrailingZeros()
+    
+    // Get scale (number of decimal places), treating negative scale as 0
+    val scale = maxOf(0, normalized.scale())
+    
+    // Get precision (total number of significant digits)
+    val precision = normalized.precision()
+    
+    // Calculate integer digits (digits before decimal point)
+    val integerDigits = precision - scale
+    
+    // Validate NUMBER(38,9) constraints:
+    // 1. Total precision must be <= 38
+    // 2. Scale (decimal places) must be <= 9
+    // 3. Integer digits must be <= 29 (38 - 9)
+    // 4. Value must be within the numeric range
+    return precision <= MAX_PRECISION &&
+           scale <= MAX_SCALE &&
+           integerDigits <= MAX_INTEGER_DIGITS &&
+           value in DECIMAL_RANGE
+}
+
 fun isValid(value: AirbyteValue): Boolean {
     return when (value) {
         is ArrayValue,
         is ObjectValue -> isVariantValid(value.toCsvValue().toString())
         is IntegerValue -> value.value in INT_RANGE
-        is NumberValue -> value.value in FLOAT_RANGE
+        is NumberValue -> isNumber38_9Valid(value.value)
         is StringValue -> isVarcharValid(value.value)
         else -> true
     }

@@ -167,7 +167,7 @@ class SnowflakeColumnUtils(
             // Simple types
             BooleanType -> SnowflakeDataType.BOOLEAN.typeName
             IntegerType -> SnowflakeDataType.NUMBER.typeName
-            NumberType -> SnowflakeDataType.FLOAT.typeName
+            NumberType -> SnowflakeDataType.DECIMAL.typeName
             StringType -> SnowflakeDataType.VARCHAR.typeName
 
             // Temporal types
