@@ -1,0 +1,24 @@
+{
+  "streams": [
+    {
+      "stream": {
+        "name": "test_stream",
+        "namespace": "test",
+        "json_schema": {
+          "type": "object",
+          "properties": {
+            "id": {"type": "integer"},
+            "name": {"type": "string"},
+            "value": {"type": "number"}
+          }
+        },
+        "supported_sync_modes": ["full_refresh", "incremental"]
+      },
+      "sync_mode": "full_refresh",
+      "destination_sync_mode": "append",
+      "generation_id": 0,
+      "minimum_generation_id": 0,
+      "sync_id": 1
+    }
+  ]
+}

@@ -1,0 +1,16 @@
+airbyte:
+  connector:
+    operation: "write"
+    catalog-path: "src/test-integration/resources/configured_catalog.json"
+  destination:
+    core:
+      types:
+        unions: DEFAULT
+      data-channel:
+        medium: STDIO
+        format: JSONL
+      mappers:
+        namespace-mapping-config-path: ""
+      check-namespace: "airbyte_test"
+      file-transfer:
+        enabled: false

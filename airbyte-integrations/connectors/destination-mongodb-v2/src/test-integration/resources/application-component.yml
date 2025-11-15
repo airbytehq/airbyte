@@ -1,0 +1,28 @@
+# Test configuration for component tests (ConnectorWiringSuite)
+# Uses Testcontainers to spin up MongoDB
+
+micronaut:
+  application:
+    name: destination-mongodb-v2-component-test
+  environments:
+    component
+
+airbyte:
+  connector:
+    operation: write  # Required for test DI
+    config:
+      connection_string: "mongodb://test:test@localhost:27017"
+      database: "test"
+      auth_source: "admin"
+      batch_size: 1000
+  destination:
+    core:
+      types:
+        unions: DEFAULT
+      data-channel:
+        medium: STDIO
+        format: JSONL
+      mappers:
+        namespace-mapping-config-path: ""
+      file-transfer:
+        enabled: false

@@ -1,0 +1,46 @@
+{
+  "documentationUrl" : "https://docs.airbyte.com/integrations/destinations/mongodb-v2",
+  "connectionSpecification" : {
+    "$schema" : "http://json-schema.org/draft-07/schema#",
+    "title" : "Mongodb Specification",
+    "type" : "object",
+    "additionalProperties" : true,
+    "properties" : {
+      "connection_string" : {
+        "type" : "string",
+        "description" : "MongoDB connection string in the format: mongodb://[username:password@]host[:port]/[database][?options]. Example: mongodb://user:pass@localhost:27017/mydb or mongodb+srv://cluster.mongodb.net",
+        "title" : "Connection String",
+        "order" : 0,
+        "airbyte_secret" : true
+      },
+      "database" : {
+        "type" : "string",
+        "description" : "Name of the database to write to.",
+        "title" : "Database",
+        "order" : 1,
+        "default" : "airbyte"
+      },
+      "auth_source" : {
+        "type" : "string",
+        "description" : "Database where user credentials are stored. Defaults to 'admin'.",
+        "title" : "Authentication Source",
+        "order" : 2,
+        "default" : "admin"
+      },
+      "batch_size" : {
+        "type" : "integer",
+        "description" : "Number of documents to insert in a single batch. Higher values improve performance but use more memory. Default: 10,000",
+        "title" : "Batch Size",
+        "order" : 3,
+        "default" : 10000,
+        "minimum" : 1,
+        "maximum" : 100000
+      }
+    },
+    "required" : [ "connection_string", "database" ]
+  },
+  "supportsIncremental" : true,
+  "supportsNormalization" : false,
+  "supportsDBT" : false,
+  "supported_destination_sync_modes" : [ "overwrite", "append", "append_dedup" ]
+}

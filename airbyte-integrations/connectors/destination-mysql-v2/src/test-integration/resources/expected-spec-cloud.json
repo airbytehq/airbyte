@@ -1,0 +1,37 @@
+{
+  "documentationUrl" : "https://docs.airbyte.com/integrations/destinations/mysql",
+  "connectionSpecification" : {
+    "$schema" : "http://json-schema.org/draft-07/schema#",
+    "title" : "My SQL Specification",
+    "type" : "object",
+    "additionalProperties" : true,
+    "properties" : {
+      "hostname" : {
+        "type" : "string",
+        "description" : "Hostname of the MySQL server"
+      },
+      "port" : {
+        "type" : "integer",
+        "description" : "Port of the MySQL server"
+      },
+      "database" : {
+        "type" : "string",
+        "description" : "Name of the database"
+      },
+      "username" : {
+        "type" : "string",
+        "description" : "Username for authentication"
+      },
+      "password" : {
+        "type" : "string",
+        "description" : "Password for authentication",
+        "airbyte_secret" : true
+      }
+    },
+    "required" : [ "hostname", "port", "database", "username", "password" ]
+  },
+  "supportsIncremental" : true,
+  "supportsNormalization" : false,
+  "supportsDBT" : false,
+  "supported_destination_sync_modes" : [ "overwrite", "append", "append_dedup" ]
+}

@@ -1,0 +1,6 @@
+{
+  "connection_string": "mongodb://test:test@localhost:27017",
+  "database": "test",
+  "auth_source": "admin",
+  "batch_size": 1000
+}
