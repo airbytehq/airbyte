@@ -1,0 +1,35 @@
+plugins {
+    id 'application'
+    id 'airbyte-bulk-connector'
+    id 'io.airbyte.gradle.docker'
+    id 'airbyte-connector-docker-convention'
+}
+
+airbyteBulkConnector {
+    core = 'load'
+    toolkits = ['load-db']
+}
+
+application {
+    mainClass = 'io.airbyte.integrations.destination.mongodb_v2.MongodbDestinationKt'
+    applicationDefaultJvmArgs = ['-XX:+ExitOnOutOfMemoryError', '-XX:MaxRAMPercentage=75.0']
+}
+
+dependencies {
+    // MongoDB driver
+    implementation 'org.mongodb:mongodb-driver-sync:5.1.0'
+
+    // Test dependencies
+    testImplementation 'io.mockk:mockk:1.14.5'
+    testImplementation 'org.junit.jupiter:junit-jupiter-api:5.13.4'
+    testImplementation 'org.junit.jupiter:junit-jupiter:5.13.4'
+    testRuntimeOnly 'org.junit.platform:junit-platform-engine:1.13.4'
+    testRuntimeOnly 'org.junit.platform:junit-platform-launcher:1.13.4'
+    testRuntimeOnly 'org.junit.jupiter:junit-jupiter-engine:5.13.4'
+    testImplementation 'org.testcontainers:mongodb:1.21.1'
+    testImplementation 'org.mongodb:mongodb-driver-sync:5.1.0'
+
+    // Integration test dependencies
+    integrationTestImplementation 'org.testcontainers:mongodb:1.21.1'
+    integrationTestImplementation 'org.mongodb:mongodb-driver-sync:5.1.0'
+}
