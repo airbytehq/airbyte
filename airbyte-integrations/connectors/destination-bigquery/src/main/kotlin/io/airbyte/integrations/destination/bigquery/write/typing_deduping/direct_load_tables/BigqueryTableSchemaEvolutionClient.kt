@@ -24,8 +24,8 @@ import io.airbyte.cdk.load.orchestration.db.TempTableNameGenerator
 import io.airbyte.cdk.load.orchestration.db.direct_load_table.AlterTableReport
 import io.airbyte.cdk.load.orchestration.db.direct_load_table.ColumnAdd
 import io.airbyte.cdk.load.orchestration.db.direct_load_table.ColumnChange
-import io.airbyte.cdk.load.schema.TableName
 import io.airbyte.cdk.load.table.ColumnNameMapping
+import io.airbyte.cdk.load.table.TableName
 import io.airbyte.cdk.util.CollectionUtils.containsAllIgnoreCase
 import io.airbyte.cdk.util.containsIgnoreCase
 import io.airbyte.cdk.util.findIgnoreCase

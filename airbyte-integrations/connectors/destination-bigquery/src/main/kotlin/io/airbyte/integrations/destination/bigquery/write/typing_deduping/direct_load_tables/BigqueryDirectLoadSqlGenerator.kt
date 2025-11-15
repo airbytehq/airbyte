@@ -27,9 +27,9 @@ import io.airbyte.cdk.load.data.UnionType
 import io.airbyte.cdk.load.data.UnknownType
 import io.airbyte.cdk.load.orchestration.db.Sql
 import io.airbyte.cdk.load.orchestration.db.direct_load_table.DirectLoadSqlGenerator
-import io.airbyte.cdk.load.schema.TableName
 import io.airbyte.cdk.load.table.CDC_DELETED_AT_COLUMN
 import io.airbyte.cdk.load.table.ColumnNameMapping
+import io.airbyte.cdk.load.table.TableName
 import io.airbyte.integrations.destination.bigquery.spec.CdcDeletionMode
 import java.util.ArrayList
 import java.util.stream.Collectors

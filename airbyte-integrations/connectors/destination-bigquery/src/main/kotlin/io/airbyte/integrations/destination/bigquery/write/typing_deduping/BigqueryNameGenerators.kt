@@ -10,7 +10,7 @@ import io.airbyte.cdk.load.orchestration.db.ColumnNameGenerator
 import io.airbyte.cdk.load.orchestration.db.FinalTableNameGenerator
 import io.airbyte.cdk.load.orchestration.db.RawTableNameGenerator
 import io.airbyte.cdk.load.orchestration.db.legacy_typing_deduping.TypingDedupingUtil
-import io.airbyte.cdk.load.schema.TableName
+import io.airbyte.cdk.load.table.TableName
 import io.airbyte.integrations.destination.bigquery.BigQuerySQLNameTransformer
 import io.airbyte.integrations.destination.bigquery.spec.BigqueryConfiguration
 import java.util.Locale
