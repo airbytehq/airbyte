@@ -13,7 +13,7 @@ import io.airbyte.cdk.load.orchestration.db.legacy_typing_deduping.FinalTableIni
 import io.airbyte.cdk.load.orchestration.db.legacy_typing_deduping.RawTableInitialStatus
 import io.airbyte.cdk.load.orchestration.db.legacy_typing_deduping.TableCatalog
 import io.airbyte.cdk.load.orchestration.db.legacy_typing_deduping.TypingDedupingDatabaseInitialStatus
-import io.airbyte.cdk.load.schema.TableName
+import io.airbyte.cdk.load.table.TableName
 import io.airbyte.cdk.load.table.TableSuffixes.TMP_TABLE_SUFFIX
 
 class BigqueryTypingDedupingDatabaseInitialStatusGatherer(private val bq: BigQuery) :

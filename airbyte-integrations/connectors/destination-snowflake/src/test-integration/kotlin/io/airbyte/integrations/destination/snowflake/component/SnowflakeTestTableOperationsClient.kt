@@ -8,7 +8,7 @@ import io.airbyte.cdk.load.component.TestTableOperationsClient
 import io.airbyte.cdk.load.data.AirbyteValue
 import io.airbyte.cdk.load.dataflow.state.PartitionKey
 import io.airbyte.cdk.load.dataflow.transform.RecordDTO
-import io.airbyte.cdk.load.schema.TableName
+import io.airbyte.cdk.load.table.TableName
 import io.airbyte.cdk.load.util.Jsons
 import io.airbyte.integrations.destination.snowflake.client.SnowflakeAirbyteClient
 import io.airbyte.integrations.destination.snowflake.client.execute

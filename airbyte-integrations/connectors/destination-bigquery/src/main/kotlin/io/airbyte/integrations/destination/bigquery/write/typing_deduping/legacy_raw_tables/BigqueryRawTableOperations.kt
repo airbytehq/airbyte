@@ -10,7 +10,7 @@ import com.google.cloud.bigquery.TableId
 import com.google.cloud.bigquery.TableResult
 import io.airbyte.cdk.load.message.Meta
 import io.airbyte.cdk.load.orchestration.db.legacy_typing_deduping.TypingDedupingRawTableOperations
-import io.airbyte.cdk.load.schema.TableName
+import io.airbyte.cdk.load.table.TableName
 import io.airbyte.integrations.destination.bigquery.BigQueryUtils
 import io.airbyte.integrations.destination.bigquery.formatter.BigQueryRecordFormatter
 import io.github.oshai.kotlinlogging.KotlinLogging
