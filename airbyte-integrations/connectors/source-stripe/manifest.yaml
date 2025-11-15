@@ -15,10 +15,14 @@ definitions:
       $ref: "#/definitions/base_retriever"
 
   base_retriever:
-    type: SimpleRetriever
-    requester:
+    type: SimpleBidirectionalRetriever
+
+    base_requester:
       $ref: "#/definitions/base_requester"
-    record_selector:
+
+    ## The 'record_selector' field is renamed to `multi_record_selector` for clarity.
+    ## Used for 'read_many' operations:
+    multi_record_selector:
       type: RecordSelector
       extractor:
         type: DpathExtractor
@@ -26,8 +30,85 @@ definitions:
           - data
       transform_before_filtering: true
       schema_normalization: Default
+
+    ## Paginator used for 'read_many' operations. (No change.)
     paginator:
       $ref: "#/definitions/base_paginator"
+
+    ## ------------------------------------------------
+    ## -- NEW: `single_record_selector` Configuration --
+    ## ------------------------------------------------
+    ## This is the default for individual record operations that return a
+    ## single object, including `read_one`, `create_one`, `update_one`,
+    ## and `replace_one`.
+    ## Below is the default behavior and therefore optional to specify:
+    # single_record_selector:
+    #   type: RecordSelector
+    #   extractor:
+    #     type: DpathExtractor
+    #     field_path: []  ## Single object response
+    #   schema_normalization: Default
+
+    ## ----------------------------------
+    ## -- NEW: Operation Configurations --
+    ## ----------------------------------
+
+    ## Opt into standard REST API conventions by setting this profile:
+    standard_operations_profile: REST_CRUDL_POST_1999
+    ## Profile options:
+    ## - REST_CRUDL_POST_1999: Uses POST for updates (RFC 2616, 1999)
+    ## - REST_CRUDL_PATCH_2010: Uses PATCH for updates (RFC 5789, 2010)
+    ## When not set, users define interactions directly. Users can always override defaults even when set. (important-comment)
+    
+    ## Filter which operation types to enable (applies on top of profile defaults):
+    standard_operations_subset: [read, create, update, delete]
+    ## Subset options: read, create, update, replace, delete
+    ## - read: Enables read_many and read_one
+    ## - create: Enables create_one (create_many falls back to create_one loop) (important-comment)
+    ## - update: Enables update_one (update_many falls back to update_one loop) (important-comment)
+    ## - replace: Enables replace_one (replace_many falls back to replace_one loop) (important-comment)
+    ## - delete: Enables delete_one (delete_many falls back to delete_one loop) (important-comment)
+    ## Note: 'replace' is omitted for Stripe since it doesn't support PUT full replacement. (important-comment)
+
+
+    ## Standard REST CRUDL profile defaults:
+    ##
+    ## REST_CRUDL_POST_1999 (RFC 2616 HTTP/1.1 circa 1999):
+    ## - read_many: GET /collection
+    ## - read_one: GET /collection/{id}
+    ## - create_one: POST /collection
+    ## - update_one: POST /collection/{id}
+    ## - replace_one: PUT /collection/{id}
+    ## - delete_one: DELETE /collection/{id}
+    ##
+    ## REST_CRUDL_PATCH_2010 (RFC 5789 circa 2010) Adds PATCH support:
+    ## - update_one: PATCH /collection/{id}
+
+    # operation_overrides:
+    #   ## Below are inherited from `REST_CRUDL_POST_1999`, shown for clarity:
+    #   read_many: {}  ## Use default `base_requestor`, `multi_record_selector`, and `paginator`
+    #   read_one: {}   ## Use default `base_requestor`, `single_record_selector`
+    #   create_one:
+    #     requester:
+    #       $ref: "#/definitions/base_requester"
+    #       http_method: POST
+    #       ## No need to override `path`, POST to the 'read_many' endpoint.
+    #       request_body:
+    #         type: RequestBodyJsonObject
+    #         value: "{{ record }}"
+    #   update_one:
+    #     requester:
+    #       $ref: "#/definitions/base_requester"
+    #       ## Override `path_suffix` (new) instead of `path` to keep things DRY:
+    #       path_suffix: "/{{ record.id }}"
+    #       request_body:
+    #         type: RequestBodyJsonObject
+    #         value: "{{ record }}"
+    #   delete_one:
+    #     requester:
+    #       $ref: "#/definitions/base_requester"
+    #       http_method: DELETE
+    #       path_suffix: "/{{ record.id }}"
 
   base_requester:
     type: HttpRequester
@@ -64,8 +145,8 @@ definitions:
               http_codes:
                 - 404
               error_message: >-
-                Data was not found. Error message: {{ response['error']['message'] }} If this is a path for getting 
-                child attributes like /v1/checkout/sessions/<session_id>/line_items when running the incremental sync, 
+                Data was not found. Error message: {{ response['error']['message'] }} If this is a path for getting
+                child attributes like /v1/checkout/sessions/<session_id>/line_items when running the incremental sync,
                 you may safely ignore this warning.
   bearer_authenticator:
     type: BearerAuthenticator
@@ -277,6 +358,12 @@ definitions:
         type: InlineSchemaLoader
         schema:
           $ref: "#/schemas/events"
+      retriever:
+        $ref: "#/definitions/base_retriever"
+        $parameters:
+          path: events
+        standard_operations_subset: [read]
+        http_deep_link_pattern: "https://dashboard.stripe.com/events/{id}"
       $parameters:
         path: events
         name: events
@@ -295,6 +382,12 @@ definitions:
         type: InlineSchemaLoader
         schema:
           $ref: "#/schemas/balance_transactions"
+      retriever:
+        $ref: "#/definitions/base_retriever"
+        $parameters:
+          path: balance_transactions
+        standard_operations_subset: [read]
+        http_deep_link_pattern: "https://dashboard.stripe.com/balance/transactions/{id}"
       $parameters:
         path: balance_transactions
         name: balance_transactions
@@ -304,6 +397,12 @@ definitions:
         type: InlineSchemaLoader
         schema:
           $ref: "#/schemas/files"
+      retriever:
+        $ref: "#/definitions/base_retriever"
+        $parameters:
+          path: files
+        standard_operations_subset: [read]
+        http_deep_link_pattern: "https://dashboard.stripe.com/files/{id}"
       $parameters:
         path: files
         name: files
@@ -327,6 +426,8 @@ definitions:
           $ref: "#/definitions/base_retriever"
           $parameters:
             path: customers
+          standard_operations_subset: [read, create, update, delete]
+          http_deep_link_pattern: "https://dashboard.stripe.com/customers/{id}"
         schema_loader:
           type: InlineSchemaLoader
           schema:
@@ -353,6 +454,8 @@ definitions:
           $ref: "#/definitions/base_retriever"
           $parameters:
             path: subscriptions
+          standard_operations_subset: [read, create, update, delete]
+          http_deep_link_pattern: "https://dashboard.stripe.com/subscriptions/{id}"
           requester:
             $ref: "#/definitions/base_requester"
             request_parameters:
@@ -383,6 +486,8 @@ definitions:
           $ref: "#/definitions/base_retriever"
           $parameters:
             path: invoices
+          standard_operations_subset: [read, create, update]
+          http_deep_link_pattern: "https://dashboard.stripe.com/invoices/{id}"
           requester:
             $ref: "#/definitions/base_requester"
             request_parameters:
@@ -413,6 +518,8 @@ definitions:
           $ref: "#/definitions/base_retriever"
           $parameters:
             path: transfers
+          standard_operations_subset: [read, create, update]
+          http_deep_link_pattern: "https://dashboard.stripe.com/transfers/{id}"
         schema_loader:
           type: InlineSchemaLoader
           schema:
@@ -439,6 +546,8 @@ definitions:
           $ref: "#/definitions/base_retriever"
           $parameters:
             path: refunds
+          standard_operations_subset: [read, create, update]
+          http_deep_link_pattern: "https://dashboard.stripe.com/payments/{charge}"
         schema_loader:
           type: InlineSchemaLoader
           schema:
@@ -517,6 +626,8 @@ definitions:
           $ref: "#/definitions/base_retriever"
           $parameters:
             path: charges
+          standard_operations_subset: [read, create, update]
+          http_deep_link_pattern: "https://dashboard.stripe.com/payments/{id}"
           requester:
             $ref: "#/definitions/base_requester"
             request_parameters:
@@ -547,6 +658,8 @@ definitions:
           $ref: "#/definitions/base_retriever"
           $parameters:
             path: coupons
+          standard_operations_subset: [read, create, update, delete]
+          http_deep_link_pattern: "https://dashboard.stripe.com/coupons/{id}"
         schema_loader:
           type: InlineSchemaLoader
           schema:
@@ -573,6 +686,8 @@ definitions:
           $ref: "#/definitions/base_retriever"
           $parameters:
             path: disputes
+          standard_operations_subset: [read, update]
+          http_deep_link_pattern: "https://dashboard.stripe.com/disputes/{id}"
         schema_loader:
           type: InlineSchemaLoader
           schema:
@@ -651,6 +766,8 @@ definitions:
           $ref: "#/definitions/base_retriever"
           $parameters:
             path: payouts
+          standard_operations_subset: [read, create, update]
+          http_deep_link_pattern: "https://dashboard.stripe.com/payouts/{id}"
         schema_loader:
           type: InlineSchemaLoader
           schema:
@@ -733,6 +850,8 @@ definitions:
           $ref: "#/definitions/base_retriever"
           $parameters:
             path: products
+          standard_operations_subset: [read, create, update, delete]
+          http_deep_link_pattern: "https://dashboard.stripe.com/products/{id}"
         schema_loader:
           type: InlineSchemaLoader
           schema:
@@ -759,6 +878,8 @@ definitions:
           $ref: "#/definitions/base_retriever"
           $parameters:
             path: reviews
+          standard_operations_subset: [read, update]
+          http_deep_link_pattern: "https://dashboard.stripe.com/reviews/{id}"
         schema_loader:
           type: InlineSchemaLoader
           schema:
@@ -811,6 +932,8 @@ definitions:
           $ref: "#/definitions/base_retriever"
           $parameters:
             path: payment_intents
+          standard_operations_subset: [read, create, update]
+          http_deep_link_pattern: "https://dashboard.stripe.com/payments/{id}"
         schema_loader:
           type: InlineSchemaLoader
           schema:
@@ -837,6 +960,8 @@ definitions:
           $ref: "#/definitions/base_retriever"
           $parameters:
             path: promotion_codes
+          standard_operations_subset: [read, create, update]
+          http_deep_link_pattern: "https://dashboard.stripe.com/promotion_codes/{id}"
         schema_loader:
           type: InlineSchemaLoader
           schema:
@@ -858,7 +983,7 @@ definitions:
       $parameters:
         name: setup_intents
       full_refresh_stream:
-        $ref: "#/definitions/entity_stream"   
+        $ref: "#/definitions/entity_stream"
         retriever:
           $ref: "#/definitions/base_retriever"
           $parameters:
@@ -941,6 +1066,8 @@ definitions:
           $ref: "#/definitions/base_retriever"
           $parameters:
             path: topups
+          standard_operations_subset: [read, create]
+          http_deep_link_pattern: "https://dashboard.stripe.com/topups/{id}"
         schema_loader:
           type: InlineSchemaLoader
           schema:
@@ -993,6 +1120,8 @@ definitions:
           $ref: "#/definitions/base_retriever"
           $parameters:
             path: checkout/sessions
+          standard_operations_subset: [read, create]
+          http_deep_link_pattern: "https://dashboard.stripe.com/checkout/sessions/{id}"
         schema_loader:
           type: InlineSchemaLoader
           schema:
