@@ -292,7 +292,6 @@ class IntercomScrollRetriever(SimpleRetriever):
     def _read_pages(
         self,
         records_generator_fn: Callable[[Optional[requests.Response]], Iterable[Record]],
-        stream_state: Mapping[str, Any],
         stream_slice: StreamSlice,
     ) -> Iterable[Record]:
         """
@@ -306,7 +305,7 @@ class IntercomScrollRetriever(SimpleRetriever):
             # Needed for _next_page_token
             response = self.requester.send_request(
                 path=self._paginator_path(next_page_token=next_page_token),
-                stream_state=stream_state,
+                stream_state=None,  # stream_state as an interpolation context is deprecated
                 stream_slice=stream_slice,
                 next_page_token=next_page_token,
                 request_headers=self._request_headers(next_page_token=next_page_token),
