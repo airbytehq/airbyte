@@ -4,9 +4,11 @@
 
 package io.airbyte.cdk.load.component
 
+import io.airbyte.cdk.load.command.DestinationStream
 import io.airbyte.cdk.load.component.TableOperationsFixtures as Fixtures
 import io.airbyte.cdk.load.component.TableOperationsFixtures.ID_FIELD
 import io.airbyte.cdk.load.component.TableOperationsFixtures.TEST_FIELD
+import io.airbyte.cdk.load.component.TableOperationsFixtures.inputRecord
 import io.airbyte.cdk.load.component.TableOperationsFixtures.insertRecords
 import io.airbyte.cdk.load.component.TableOperationsFixtures.removeNulls
 import io.airbyte.cdk.load.component.TableOperationsFixtures.reverseColumnNameMapping
@@ -14,15 +16,9 @@ import io.airbyte.cdk.load.data.FieldType
 import io.airbyte.cdk.load.data.IntegerType
 import io.airbyte.cdk.load.data.IntegerValue
 import io.airbyte.cdk.load.data.ObjectType
-import io.airbyte.cdk.load.data.ObjectValue
 import io.airbyte.cdk.load.data.StringType
 import io.airbyte.cdk.load.data.StringValue
-import io.airbyte.cdk.load.data.TimestampWithTimezoneValue
 import io.airbyte.cdk.load.message.Meta
-import io.airbyte.cdk.load.message.Meta.Companion.COLUMN_NAME_AB_EXTRACTED_AT
-import io.airbyte.cdk.load.message.Meta.Companion.COLUMN_NAME_AB_GENERATION_ID
-import io.airbyte.cdk.load.message.Meta.Companion.COLUMN_NAME_AB_META
-import io.airbyte.cdk.load.message.Meta.Companion.COLUMN_NAME_AB_RAW_ID
 import io.airbyte.cdk.load.table.ColumnNameMapping
 import io.airbyte.cdk.load.table.TableName
 import io.micronaut.test.extensions.junit5.annotation.MicronautTest
@@ -31,6 +27,7 @@ import kotlinx.coroutines.test.runTest
 import org.junit.jupiter.api.Assertions
 import org.junit.jupiter.api.Assertions.assertTrue
 import org.junit.jupiter.api.assertAll
+import org.junit.jupiter.params.provider.Arguments.argumentSet
 
 @MicronautTest(environments = ["component"])
 interface TableSchemaEvolutionSuite {
@@ -309,11 +306,26 @@ interface TableSchemaEvolutionSuite {
         )
     }
 
-    fun `basic apply changeset`() {
-        `basic apply changeset`(
+    /**
+     * Execute a basic set of schema changes, across a variety of sync modes. The types are just
+     * string/int (i.e. no JSON), and there's no funky characters anywhere.
+     *
+     * You likely will annotate your test method as:
+     * ```kotlin
+     * @ParameterizedTest
+     * @MethodSource("io.airbyte.cdk.load.component.TableSchemaEvolutionSuite#applyChangesetArguments")
+     * ```
+     */
+    fun `apply changeset`(
+        initialStreamIsDedup: Boolean,
+        modifiedStreamIsDedup: Boolean,
+    ) {
+        `apply changeset`(
             initialColumnNameMapping =
                 ColumnNameMapping(
                     mapOf(
+                        "id" to "id",
+                        "updated_at" to "updated_at",
                         "to_retain" to "to_retain",
                         "to_change" to "to_change",
                         "to_drop" to "to_drop",
@@ -322,45 +334,59 @@ interface TableSchemaEvolutionSuite {
             modifiedColumnNameMapping =
                 ColumnNameMapping(
                     mapOf(
+                        "id" to "id",
+                        "updated_at" to "updated_at",
                         "to_retain" to "to_retain",
                         "to_change" to "to_change",
                         "to_add" to "to_add",
                     )
                 ),
+            initialStreamIsDedup,
+            modifiedStreamIsDedup,
         )
     }
 
-    /**
-     * Execute a basic set of schema changes. We're not changing the sync mode, the types are just
-     * string/int (i.e. no JSON), and there's no funky characters anywhere.
-     */
-    fun `basic apply changeset`(
+    fun `apply changeset`(
         initialColumnNameMapping: ColumnNameMapping,
-        modifiedColumnNameMapping: ColumnNameMapping
+        modifiedColumnNameMapping: ColumnNameMapping,
+        initialStreamIsDedup: Boolean,
+        modifiedStreamIsDedup: Boolean,
     ) = runTest {
         val testNamespace = Fixtures.generateTestNamespace("namespace-test")
         val testTable = Fixtures.generateTestTableName("table-test-table", testNamespace)
         val initialSchema =
             ObjectType(
                 linkedMapOf(
+                    "id" to FieldType(IntegerType, true),
+                    "updated_at" to FieldType(IntegerType, true),
                     "to_retain" to FieldType(StringType, true),
                     "to_change" to FieldType(IntegerType, true),
                     "to_drop" to FieldType(StringType, true),
                 ),
             )
+        val initialStream =
+            Fixtures.createSimpleStream(
+                testTable.namespace,
+                testTable.name,
+                initialSchema,
+                initialStreamIsDedup,
+            )
         val modifiedSchema =
             ObjectType(
                 linkedMapOf(
+                    "id" to FieldType(IntegerType, true),
+                    "updated_at" to FieldType(IntegerType, true),
                     "to_retain" to FieldType(StringType, true),
                     "to_change" to FieldType(StringType, true),
                     "to_add" to FieldType(StringType, true),
                 ),
             )
         val modifiedStream =
-            Fixtures.createAppendStream(
-                namespace = testTable.namespace,
-                name = testTable.name,
-                schema = modifiedSchema,
+            Fixtures.createSimpleStream(
+                testTable.namespace,
+                testTable.name,
+                modifiedSchema,
+                modifiedStreamIsDedup,
             )
 
         // Create the table and compute the schema changeset
@@ -371,16 +397,20 @@ interface TableSchemaEvolutionSuite {
                 initialColumnNameMapping,
                 modifiedSchema,
                 modifiedColumnNameMapping,
+                initialStream,
+                modifiedStream,
             )
         // Insert a record before applying the changeset
         testClient.insertRecords(
             testTable,
             initialColumnNameMapping,
-            mapOf(
-                COLUMN_NAME_AB_RAW_ID to StringValue("fcc784dd-bf06-468e-ad59-666d5aaceae8"),
-                COLUMN_NAME_AB_EXTRACTED_AT to TimestampWithTimezoneValue("2025-01-22T00:00:00Z"),
-                COLUMN_NAME_AB_META to ObjectValue(linkedMapOf()),
-                COLUMN_NAME_AB_GENERATION_ID to IntegerValue(1),
+            inputRecord(
+                "fcc784dd-bf06-468e-ad59-666d5aaceae8",
+                "2025-01-22T00:00:00Z",
+                linkedMapOf(),
+                1,
+                "id" to IntegerValue(1234),
+                "updated_at" to IntegerValue(5678),
                 "to_retain" to StringValue("to_retain original value"),
                 "to_change" to IntegerValue(42),
                 "to_drop" to StringValue("to_drop original value"),
@@ -399,6 +429,8 @@ interface TableSchemaEvolutionSuite {
         Assertions.assertEquals(
             listOf(
                 mapOf(
+                    "id" to 1234L,
+                    "updated_at" to 5678L,
                     "to_retain" to "to_retain original value",
                     // changed from int to string
                     "to_change" to "42",
@@ -434,20 +466,19 @@ interface TableSchemaEvolutionSuite {
         initialColumnNameMapping: ColumnNameMapping,
         modifiedSchema: ObjectType,
         modifiedColumnNameMapping: ColumnNameMapping,
-    ): SchemaEvolutionComputation {
-        val initialStream =
+        initialStream: DestinationStream =
             Fixtures.createAppendStream(
                 namespace = testTable.namespace,
                 name = testTable.name,
                 schema = initialSchema,
-            )
-        val modifiedStream =
+            ),
+        modifiedStream: DestinationStream =
             Fixtures.createAppendStream(
                 namespace = testTable.namespace,
                 name = testTable.name,
                 schema = modifiedSchema,
-            )
-
+            ),
+    ): SchemaEvolutionComputation {
         opsClient.createNamespace(testTable.namespace)
         opsClient.createTable(
             tableName = testTable,
@@ -471,4 +502,17 @@ interface TableSchemaEvolutionSuite {
         val computedSchema: TableSchema,
         val columnChangeset: ColumnChangeset,
     )
+
+    companion object {
+        // junit needs everything annotated with JvmStatic, and doesn't support backtick-quoted
+        // names
+        @JvmStatic
+        fun applyChangesetArguments() =
+            listOf(
+                argumentSet("append -> append", false, false),
+                argumentSet("append -> dedup", false, true),
+                argumentSet("dedup -> append", true, false),
+                argumentSet("dedup -> dedup", true, true),
+            )
+    }
 }

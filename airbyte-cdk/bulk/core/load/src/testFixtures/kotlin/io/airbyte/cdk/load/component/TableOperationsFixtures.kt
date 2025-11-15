@@ -717,6 +717,26 @@ object TableOperationsFixtures {
             namespaceMapper = NamespaceMapper(),
         )
 
+    fun createSimpleStream(
+        namespace: String,
+        name: String,
+        schema: ObjectType,
+        isDedup: Boolean,
+        primaryKey: String = "id",
+        cursor: String? = "updated_at",
+    ) =
+        if (isDedup) {
+            createDedupeStream(
+                namespace,
+                name,
+                schema,
+                primaryKey = listOf(listOf(primaryKey)),
+                cursor = cursor?.let { listOf(it) } ?: emptyList(),
+            )
+        } else {
+            createAppendStream(namespace, name, schema)
+        }
+
     fun <V> List<Map<String, V>>.sortBy(key: String) =
         // sketchy unchecked cast is intentional, we're assuming that the tests are written such
         // that the sort key is always comparable.
