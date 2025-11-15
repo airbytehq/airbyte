@@ -16,8 +16,10 @@ import io.micronaut.test.extensions.junit5.annotation.MicronautTest
 import org.junit.jupiter.api.Test
 import org.junit.jupiter.api.parallel.Execution
 import org.junit.jupiter.api.parallel.ExecutionMode
+import org.junit.jupiter.params.ParameterizedTest
+import org.junit.jupiter.params.provider.MethodSource
 
-@MicronautTest(environments = ["component"])
+@MicronautTest(environments = ["component"], resolveParameters = false)
 @Execution(ExecutionMode.CONCURRENT)
 class SnowflakeTableSchemaEvolutionTest(
     override val client: SnowflakeAirbyteClient,
@@ -56,12 +58,18 @@ class SnowflakeTableSchemaEvolutionTest(
         super.`changeset is correct when changing a column's type`(testMapping)
     }
 
-    @Test
-    override fun `basic apply changeset`() {
-        super.`basic apply changeset`(
+    @ParameterizedTest
+    @MethodSource("io.airbyte.cdk.load.component.TableSchemaEvolutionSuite#applyChangesetArguments")
+    override fun `apply changeset`(
+        initialStreamIsDedup: Boolean,
+        modifiedStreamIsDedup: Boolean,
+    ) {
+        super.`apply changeset`(
             initialColumnNameMapping =
                 ColumnNameMapping(
                     mapOf(
+                        "id" to "ID",
+                        "updated_at" to "UPDATED_AT",
                         "to_retain" to "TO_RETAIN",
                         "to_change" to "TO_CHANGE",
                         "to_drop" to "TO_DROP",
@@ -70,11 +78,15 @@ class SnowflakeTableSchemaEvolutionTest(
             modifiedColumnNameMapping =
                 ColumnNameMapping(
                     mapOf(
+                        "id" to "ID",
+                        "updated_at" to "UPDATED_AT",
                         "to_retain" to "TO_RETAIN",
                         "to_change" to "TO_CHANGE",
                         "to_add" to "TO_ADD",
                     )
                 ),
+            initialStreamIsDedup,
+            modifiedStreamIsDedup,
         )
     }
 }

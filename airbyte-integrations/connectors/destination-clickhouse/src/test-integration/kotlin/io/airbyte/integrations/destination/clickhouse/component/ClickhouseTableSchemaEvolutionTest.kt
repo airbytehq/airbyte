@@ -12,8 +12,10 @@ import io.airbyte.cdk.load.component.TableSchemaEvolutionSuite
 import io.airbyte.cdk.load.component.TestTableOperationsClient
 import io.micronaut.test.extensions.junit5.annotation.MicronautTest
 import org.junit.jupiter.api.Test
+import org.junit.jupiter.params.ParameterizedTest
+import org.junit.jupiter.params.provider.MethodSource
 
-@MicronautTest(environments = ["component"])
+@MicronautTest(environments = ["component"], resolveParameters = false)
 class ClickhouseTableSchemaEvolutionTest(
     override val client: TableSchemaEvolutionClient,
     override val opsClient: TableOperationsClient,
@@ -68,8 +70,15 @@ class ClickhouseTableSchemaEvolutionTest(
         super.`changeset is correct when changing a column's type`()
     }
 
-    @Test
-    override fun `basic apply changeset`() {
-        super.`basic apply changeset`()
+    @ParameterizedTest
+    @MethodSource("io.airbyte.cdk.load.component.TableSchemaEvolutionSuite#applyChangesetArguments")
+    override fun `apply changeset`(
+        initialStreamIsDedup: Boolean,
+        modifiedStreamIsDedup: Boolean,
+    ) {
+        super.`apply changeset`(
+            initialStreamIsDedup,
+            modifiedStreamIsDedup,
+        )
     }
 }
