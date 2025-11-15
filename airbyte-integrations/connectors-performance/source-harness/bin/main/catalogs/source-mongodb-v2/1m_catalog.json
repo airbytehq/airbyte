@@ -1,0 +1,63 @@
+{
+  "streams": [
+    {
+      "stream": {
+        "name": "Cluster0",
+        "namespace": "perf_test_1m",
+        "json_schema": {
+          "type": "object",
+          "properties": {
+            "_id": {
+              "type": "string"
+            },
+            "data": {
+              "type": "string"
+            },
+            "name": {
+              "type": "string"
+            },
+            "title": {
+              "type": "string"
+            },
+            "intField": {
+              "type": "number"
+            },
+            "paragraph": {
+              "type": "string"
+            },
+            "timestamp": {
+              "type": "string"
+            },
+            "description": {
+              "type": "string"
+            },
+            "doubleField": {
+              "type": "number"
+            },
+            "objectField": {
+              "type": "object"
+            },
+            "_ab_cdc_cursor": {
+              "type": "number",
+              "airbyte_type": "integer"
+            },
+            "_ab_cdc_deleted_at": {
+              "type": "string"
+            },
+            "_ab_cdc_updated_at": {
+              "type": "string"
+            }
+          }
+        },
+        "default_cursor_field": ["_ab_cdc_cursor"],
+        "supported_sync_modes": ["incremental"],
+        "source_defined_cursor": true,
+        "source_defined_primary_key": [["_id"]]
+      },
+      "sync_mode": "incremental",
+      "primary_key": [["_id"]],
+      "cursor_field": ["_ab_cdc_cursor"],
+      "destination_sync_mode": "append"
+    }
+  ]
+}

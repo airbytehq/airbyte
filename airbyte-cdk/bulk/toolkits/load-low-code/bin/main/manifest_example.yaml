@@ -1,0 +1,10 @@
+checker:
+  type: HttpRequestChecker
+  requester:
+    type: HttpRequester
+    url: https://api.aircall.io/v1/users
+    method: GET
+    authenticator:
+      type: BasicAccessAuthenticator
+      username: "{{ config.apiId }}"
+      password: "{{ config.apiToken }}"

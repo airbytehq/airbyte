@@ -1,0 +1,29 @@
+{
+  "streams": [
+    {
+      "name": "exchange_rate",
+      "json_schema": {
+        "properties": {
+          "id": {
+            "$ref": "WellKnownTypes.json#/definitions/Integer"
+          },
+          "currency": {
+            "$ref": "WellKnownTypes.json#/definitions/String"
+          },
+          "date": {
+            "$ref": "WellKnownTypes.json#/definitions/String"
+          },
+          "HKD": {
+            "$ref": "WellKnownTypes.json#/definitions/Number"
+          },
+          "NZD": {
+            "$ref": "WellKnownTypes.json#/definitions/Number"
+          },
+          "USD": {
+            "$ref": "WellKnownTypes.json#/definitions/Number"
+          }
+        }
+      }
+    }
+  ]
+}

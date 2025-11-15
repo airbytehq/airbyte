@@ -1,0 +1,24 @@
+[
+  {
+    "type": "LOG",
+    "log": {
+      "level": "WARN",
+      "message": "StreamNotFound(streamID=PUBLIC.FOO)"
+    }
+  },
+  {
+    "type": "TRACE",
+    "trace": {
+      "type": "ERROR",
+      "emitted_at": 3.1336416e12,
+      "error": {
+        "stream_descriptor": {
+          "name": "FOO",
+          "namespace": "PUBLIC"
+        },
+        "message": "Stream 'PUBLIC.FOO' not found or not accessible in source.",
+        "failure_type": "config_error"
+      }
+    }
+  }
+]

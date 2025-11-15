@@ -1,0 +1,12 @@
+// This is a sample file present to ensure that the build works.  The FlatBuffers Gradle plugin
+// will fail if the src/main/fbs directory is not present.  Git will not commit empy directories,
+// so this file has been added to ensure that we can merge this now without impacting builds.
+//
+// THIS FILE SHOULD BE REMOVED WHEN THE REAL FLATBUFFERS IDL IS IMPLEMENTED!
+
+namespace io.airbyte.protocol;
+
+enum AirbyteRecordChangeType:int {
+  NULLED = 0,
+  TRUNCATED = 1
+}

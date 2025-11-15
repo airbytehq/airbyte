@@ -1,0 +1,216 @@
+{
+  "streams": [
+    {
+      "stream": {
+        "name": "problematic_types",
+        "json_schema": {
+          "type": "object",
+          "properties": {
+            "schemaless_object": {
+              "type": "object"
+            },
+            "schematized_object": {
+              "type": "object",
+              "properties": {
+                "id": {
+                  "type": "integer"
+                },
+                "name": {
+                  "type": "string"
+                }
+              }
+            },
+            "combined_type": {
+              "type": ["string", "integer"]
+            },
+            "union_type": {
+              "oneOf": [
+                {
+                  "type": "string"
+                },
+                {
+                  "type": "integer"
+                }
+              ]
+            },
+            "schemaless_array": {
+              "type": "array"
+            },
+            "mixed_array_integer_and_schemaless_object": {
+              "type": "array",
+              "items": [
+                {
+                  "type": "integer"
+                },
+                {
+                  "type": "object"
+                }
+              ]
+            },
+            "array_of_union_integer_and_schemaless_array": {
+              "type": "array",
+              "items": [
+                {
+                  "oneOf": [
+                    {
+                      "type": "integer"
+                    },
+                    {
+                      "type": "array"
+                    }
+                  ]
+                }
+              ]
+            },
+            "union_of_objects_with_properties_identical": {
+              "oneOf": [
+                {
+                  "type": "object",
+                  "properties": {
+                    "id": {
+                      "type": "integer"
+                    },
+                    "name": {
+                      "type": "string"
+                    }
+                  }
+                },
+                {
+                  "type": "object",
+                  "properties": {
+                    "id": {
+                      "type": "integer"
+                    },
+                    "name": {
+                      "type": "string"
+                    }
+                  }
+                }
+              ]
+            },
+            "union_of_objects_with_properties_overlapping": {
+              "allOf": [
+                {
+                  "type": "object",
+                  "properties": {
+                    "id": {
+                      "type": "integer"
+                    },
+                    "name": {
+                      "type": "string"
+                    }
+                  }
+                },
+                {
+                  "type": "object",
+                  "properties": {
+                    "name": {
+                      "type": "string"
+                    },
+                    "flagged": {
+                      "type": "boolean"
+                    }
+                  }
+                }
+              ]
+            },
+            "union_of_objects_with_properties_nonoverlapping": {
+              "anyOf": [
+                {
+                  "type": "object",
+                  "properties": {
+                    "id": {
+                      "type": "integer"
+                    },
+                    "name": {
+                      "type": "string"
+                    }
+                  }
+                },
+                {
+                  "type": "object",
+                  "properties": {
+                    "flagged": {
+                      "type": "boolean"
+                    },
+                    "description": {
+                      "type": "string"
+                    }
+                  }
+                }
+              ]
+            },
+            "union_of_objects_with_properties_contradicting": {
+              "oneOf": [
+                {
+                  "type": "object",
+                  "properties": {
+                    "id": {
+                      "type": "integer"
+                    },
+                    "name": {
+                      "type": "string"
+                    }
+                  }
+                },
+                {
+                  "type": "object",
+                  "properties": {
+                    "id": {
+                      "type": "string"
+                    },
+                    "name": {
+                      "type": "string"
+                    }
+                  }
+                }
+              ]
+            },
+            "empty_object": {
+              "type": "object",
+              "properties": {}
+            },
+            "object_with_null_properties": {
+              "type": "object",
+              "properties": null
+            },
+            "combined_with_null": {
+              "type": ["string", "null"]
+            },
+            "union_with_null": {
+              "oneOf": [
+                {
+                  "type": "string"
+                },
+                {
+                  "type": "null"
+                }
+              ]
+            },
+            "combined_nulls": {
+              "type": ["null", "null"]
+            },
+            "compact_union": {
+              "type": ["object", "integer"],
+              "properties": {
+                "id": {
+                  "type": "integer"
+                },
+                "name": {
+                  "type": "string"
+                }
+              }
+            }
+          }
+        }
+      },
+      "sync_mode": "full_refresh",
+      "cursor_field": [],
+      "destination_sync_mode": "overwrite",
+      "primary_key": [],
+      "generation_id": 10,
+      "minimum_generation_id": 10,
+      "sync_id": 999
+    }
+  ]
+}

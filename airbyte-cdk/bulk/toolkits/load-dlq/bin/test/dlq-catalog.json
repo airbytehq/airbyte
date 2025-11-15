@@ -1,0 +1,38 @@
+{
+  "streams": [
+    {
+      "stream": {
+        "name": "EVENTS",
+        "json_schema": {
+          "type": "object",
+          "properties": {
+            "MSG": {
+              "type": "string"
+            },
+            "ID": {
+              "type": "string"
+            },
+            "TS": {
+              "type": "string",
+              "format": "date-time",
+              "airbyte_type": "timestamp_with_timezone"
+            }
+          }
+        },
+        "supported_sync_modes": ["full_refresh", "incremental"],
+        "source_defined_cursor": false,
+        "default_cursor_field": [],
+        "source_defined_primary_key": [["ID"]],
+        "is_resumable": true,
+        "namespace": "PUBLIC"
+      },
+      "sync_mode": "full_refresh",
+      "cursor_field": [],
+      "destination_sync_mode": "overwrite",
+      "primary_key": [["ID"]],
+      "generation_id": 0,
+      "minimum_generation_id": 0,
+      "sync_id": 42
+    }
+  ]
+}

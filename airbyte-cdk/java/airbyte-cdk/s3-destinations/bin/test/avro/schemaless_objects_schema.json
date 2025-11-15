@@ -1,0 +1,67 @@
+{
+  "type": "object",
+  "properties": {
+    "object_without_schema": {
+      "type": "object"
+    },
+    "object_with_schema": {
+      "type": "object",
+      "properties": {
+        "integer_type_field": {
+          "type": "integer"
+        },
+        "string_type_field": {
+          "type": "string"
+        },
+        "nested_schemaless_object": {
+          "type": "object"
+        },
+        "nested_array_of_schemaless_objects": {
+          "type": "array",
+          "items": {
+            "type": "object"
+          }
+        },
+        "union_of_schemaless_object_and_number": {
+          "oneOf": [
+            {
+              "type": "object"
+            },
+            {
+              "type": "number"
+            }
+          ]
+        },
+        "union_of_schema_object_and_number": {
+          "oneOf": [
+            {
+              "type": "object",
+              "properties": {
+                "integer_type_field": {
+                  "type": "integer"
+                },
+                "string_type_field": {
+                  "type": "string"
+                }
+              }
+            },
+            {
+              "type": "number"
+            }
+          ]
+        },
+        "array_of_union_of_schema_object_and_integer": {
+          "type": "array",
+          "items": [
+            {
+              "type": "integer"
+            },
+            {
+              "type": "object"
+            }
+          ]
+        }
+      }
+    }
+  }
+}

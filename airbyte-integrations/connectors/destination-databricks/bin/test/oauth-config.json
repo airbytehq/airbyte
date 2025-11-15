@@ -1,0 +1,11 @@
+{
+  "accept_terms": true,
+  "hostname": "test_hostname",
+  "http_path": "test_http_path",
+  "database": "test",
+  "authentication": {
+    "auth_type": "OAUTH",
+    "client_id": "dummy-client",
+    "secret": "Hunter2"
+  }
+}
