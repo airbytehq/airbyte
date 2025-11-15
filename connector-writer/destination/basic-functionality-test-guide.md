@@ -214,7 +214,7 @@ class {DB}Cleaner(
 
 ### Step 2.1: Understand Required Parameters
 
-BasicFunctionalityIntegrationTest has **13 required constructor parameters**:
+BasicFunctionalityIntegrationTest has **14 required constructor parameters** (15 for dataflow CDK):
 
 | Parameter | Type | Purpose | Common Value |
 |-----------|------|---------|--------------|
@@ -233,6 +233,7 @@ BasicFunctionalityIntegrationTest has **13 required constructor parameters**:
 | `allTypesBehavior` | AllTypesBehavior | Type handling configuration | `StronglyTyped(...)` |
 | `unknownTypesBehavior` | UnknownTypesBehavior | Unknown type handling | `PASS_THROUGH` |
 | `nullEqualsUnset` | Boolean | Null same as missing field | `true` |
+| **`useDataFlowPipeline`** | **Boolean** | **Use dataflow CDK architecture** | **`true`** ⭐ **REQUIRED for dataflow CDK** |
 
 ### Step 2.2: Create Test Class
 
@@ -284,6 +285,9 @@ class {DB}BasicFunctionalityTest : BasicFunctionalityIntegrationTest(
     ),
     unknownTypesBehavior = UnknownTypesBehavior.PASS_THROUGH,
     nullEqualsUnset = true,
+
+    // Dataflow CDK architecture (REQUIRED for new CDK)
+    useDataFlowPipeline = true,  // ⚠️ Must be true for dataflow CDK connectors
 ) {
     companion object {
         private lateinit var testDataSource: DataSource
@@ -520,6 +524,137 @@ AllTypesBehavior.StronglyTyped(
 - `false`: Distinguish between null and absent
 
 **Recommended:** `true` (simpler semantics)
+
+### useDataFlowPipeline
+
+**What:** Use dataflow CDK architecture (new bulk CDK)
+
+**Value:** `true` ⚠️ **REQUIRED for dataflow CDK connectors**
+
+**Why critical:**
+- Dataflow CDK (what this guide is for) uses new architecture with:
+  - Aggregate-based buffering
+  - StreamLoader pattern
+  - Dataflow pipeline
+- Old CDK used different architecture (direct table writing)
+- **Setting to `false` will use wrong code path and fail!**
+
+**Always set:**
+```kotlin
+useDataFlowPipeline = true  // For all dataflow CDK connectors
+```
+
+**What happens if you set false:**
+- Test will try to use old CDK code paths
+- Will fail with "method not implemented" errors
+- InsertBuffer/Aggregate pattern won't be used
+
+---
+
+## ⚠️ CRITICAL: All Tests Must Pass - No Exceptions
+
+**NEVER rationalize test failures as:**
+- ❌ "Cosmetic, not functional"
+- ❌ "The connector IS working, tests just need adjustment"
+- ❌ "Just test framework expectations vs database behavior"
+- ❌ "State message comparison issues, not real problems"
+- ❌ "Need database-specific adaptations (but haven't made them)"
+
+**Test failures mean ONE of two things:**
+
+### 1. Your Implementation is Wrong (90% of cases)
+- State message format doesn't match expected
+- Schema evolution doesn't work correctly
+- Deduplication logic has bugs
+- Type handling is incorrect
+
+**Fix:** Debug and fix your implementation
+
+### 2. Test Expectations Need Tuning (10% of cases)
+- Database truly handles something differently (e.g., ClickHouse soft delete only)
+- Type precision genuinely differs
+- **BUT:** You must document WHY and get agreement this is acceptable
+
+**Fix:** Update test parameters with clear rationale
+
+**Key principle:** If tests fail, the connector is NOT working correctly for production use.
+
+**Example rationalizations to REJECT:**
+
+❌ "Many tests failing due to state message comparison - cosmetic"
+→ State messages are HOW Airbyte tracks progress. Wrong state = broken checkpointing!
+
+❌ "Schema evolution needs MongoDB-specific expectations"
+→ Implement schema evolution correctly for MongoDB, then tests pass!
+
+❌ "Dedupe tests need configuration"
+→ Add the configuration! Don't skip tests!
+
+❌ "Some tests need adaptations"
+→ Make the adaptations! Document what's different and why!
+
+**ALL tests must pass or be explicitly skipped with documented rationale approved by maintainers.**
+
+### Common Rationalizations That Are WRONG
+
+**Agent says:** "The 7 failures are specific edge cases - advanced scenarios, not core functionality"
+
+**Reality:**
+- Truncate/overwrite mode = **CORE SYNC MODE** used by thousands of syncs
+- Generation ID tracking = **REQUIRED for refresh** to work correctly
+- "Edge cases" = real user scenarios that WILL happen in production
+- "Advanced scenarios" = standard Airbyte features your connector claims to support
+
+**If you don't support a mode:**
+- Don't claim to support it (remove from SpecificationExtension)
+- Explicitly skip those tests with @Disabled annotation
+- Document the limitation clearly
+
+**If you claim to support it (in SpecificationExtension):**
+- Tests MUST pass
+- No "works for normal cases" excuses
+- Users will try to use it and it will break
+
+**Agent says:** "The connector works for normal use cases"
+
+**Reality:**
+- Tests define "working"
+- "Normal use cases" is undefined - what's normal?
+- Users will hit "edge cases" in production
+- Failed tests = broken functionality that will cause support tickets
+
+**The rule:** If supportedSyncModes includes OVERWRITE, then testTruncate() must pass.
+
+---
+
+### Specific Scenarios That Are NOT Optional
+
+**Truncate/Overwrite Mode:**
+- Used by: Full refresh syncs (very common!)
+- Tests: testTruncate()
+- **NOT optional** if you declared `DestinationSyncMode.OVERWRITE` in SpecificationExtension
+
+**Generation ID Tracking:**
+- Used by: All refresh operations
+- Tests: Generation ID assertions in all tests
+- **NOT optional** - required for sync modes to work correctly
+
+**State Messages:**
+- Used by: Checkpointing and resume
+- Tests: State message format validation
+- **NOT optional** - wrong state = broken incremental syncs
+
+**Schema Evolution:**
+- Used by: When source schema changes
+- Tests: testAppendSchemaEvolution()
+- **NOT optional** - users will add/remove columns
+
+**Deduplication:**
+- Used by: APPEND_DEDUP mode
+- Tests: testDedupe()
+- **NOT optional** if you declared `DestinationSyncMode.APPEND_DEDUP`
+
+**None of these are "edge cases" - they're core Airbyte features!**
 
 ---
 
