@@ -3776,7 +3776,33 @@ Integration: 3 tests pass (CDC tested automatically if applicable)
 
 **Not strictly required for functionality, but recommended for production use**
 
-### Step 15.1: Optimize Insert Buffer
+### Step 15.1: Add BasicFunctionalityIntegrationTest (Recommended)
+
+**For production certification, implement comprehensive integration tests.**
+
+📖 **See:** `connector-writer/destination/basic-functionality-test-guide.md`
+
+**What it validates:**
+- All Airbyte data types (50+ scenarios)
+- Schema evolution (add/drop/modify columns)
+- CDC deletions (hard delete, soft delete)
+- Type edge cases (large integers, precision, nulls)
+- All sync modes comprehensively
+
+**Implementation guide covers:**
+- ✅ DataDumper/Cleaner helpers (~200 lines)
+- ✅ Test class with all 13 parameters (~100 lines)
+- ✅ Parameter explanations for your database
+- ✅ Debugging common failures
+- ✅ Reference implementations
+
+**Time:** 5-9 hours
+
+**Checkpoint:** `./gradlew :destination-{db}:integrationTest` passes
+
+**Note:** This is complex but provides gold-standard validation. The separate guide keeps this main guide scannable.
+
+### Step 15.2: Optimize Insert Buffer
 
 **Current:** Simple single-row inserts (slow for large datasets)
 
