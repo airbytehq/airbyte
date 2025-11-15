@@ -5,9 +5,9 @@
 package io.airbyte.cdk.load.schema
 
 data class TableNames(
-    val rawTableName: TableName?,
-    val tempTableName: TableName?,
-    val finalTableName: TableName?,
+    val rawTableName: TableName? = null,
+    val tempTableName: TableName? = null,
+    val finalTableName: TableName? = null,
 ) {
     init {
         check(rawTableName != null || finalTableName != null) {
