@@ -4,9 +4,11 @@
 
 package io.airbyte.cdk.load.table
 
+import io.airbyte.cdk.load.command.DestinationCatalog
 import io.airbyte.cdk.load.command.DestinationStream
 import io.airbyte.cdk.load.component.TableOperationsClient
-import io.airbyte.cdk.load.schema.TableName
+import io.airbyte.cdk.load.schema.model.TableName
+import io.airbyte.cdk.load.schema.model.TableNames
 import io.airbyte.cdk.load.table.directload.DirectLoadInitialStatus
 import io.airbyte.cdk.load.table.directload.DirectLoadTableStatus
 import java.util.concurrent.ConcurrentHashMap
@@ -30,22 +32,20 @@ interface DatabaseInitialStatus
  * ```
  */
 fun interface DatabaseInitialStatusGatherer<InitialStatus : DatabaseInitialStatus> {
-    suspend fun gatherInitialStatus(streams: TableCatalog): Map<DestinationStream, InitialStatus>
+    suspend fun gatherInitialStatus(): Map<DestinationStream, InitialStatus>
 }
 
 abstract class BaseDirectLoadInitialStatusGatherer(
     private val tableOperationsClient: TableOperationsClient,
-    private val tempTableNameGenerator: TempTableNameGenerator,
+    private val catalog: DestinationCatalog,
 ) : DatabaseInitialStatusGatherer<DirectLoadInitialStatus> {
-    override suspend fun gatherInitialStatus(
-        streams: TableCatalog
-    ): Map<DestinationStream, DirectLoadInitialStatus> {
-        val map = ConcurrentHashMap<DestinationStream, DirectLoadInitialStatus>(streams.size)
+    override suspend fun gatherInitialStatus(): Map<DestinationStream, DirectLoadInitialStatus> {
+        val map = ConcurrentHashMap<DestinationStream, DirectLoadInitialStatus>(catalog.streams.size)
         coroutineScope {
-            streams.forEach { (stream, tableNameInfo) ->
+            catalog.streams.forEach { s ->
                 launch {
-                    val tableName = tableNameInfo.tableNames.finalTableName!!
-                    map[stream] = getInitialStatus(tableName)
+                    val tableNames = s.tableSchema.tableNames
+                    map[s] = getInitialStatus(tableNames)
                 }
             }
         }
@@ -64,10 +64,10 @@ abstract class BaseDirectLoadInitialStatusGatherer(
         }
     }
 
-    private suspend fun getInitialStatus(tableName: TableName): DirectLoadInitialStatus {
+    private suspend fun getInitialStatus(names: TableNames): DirectLoadInitialStatus {
         return DirectLoadInitialStatus(
-            realTable = getTableStatus(tableName),
-            tempTable = getTableStatus(tempTableNameGenerator.generate(tableName)),
+            realTable = getTableStatus(names.finalTableName!!),
+            tempTable = getTableStatus(names.tempTableName!!),
         )
     }
 }

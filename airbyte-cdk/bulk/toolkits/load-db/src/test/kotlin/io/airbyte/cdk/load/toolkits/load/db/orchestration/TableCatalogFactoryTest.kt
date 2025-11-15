@@ -14,7 +14,7 @@ import io.airbyte.cdk.load.data.ObjectType
 import io.airbyte.cdk.load.data.StringType
 import io.airbyte.cdk.load.orchestration.db.legacy_typing_deduping.DEFAULT_AIRBYTE_INTERNAL_NAMESPACE
 import io.airbyte.cdk.load.orchestration.db.legacy_typing_deduping.TableCatalogFactory
-import io.airbyte.cdk.load.schema.TableName
+import io.airbyte.cdk.load.schema.model.TableName
 import io.airbyte.cdk.load.table.ColumnNameGenerator
 import io.airbyte.cdk.load.table.FinalTableNameGenerator
 import io.airbyte.cdk.load.table.RawTableNameGenerator

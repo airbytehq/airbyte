@@ -11,6 +11,7 @@ import io.airbyte.cdk.load.data.collectUnknownPaths
 import io.airbyte.cdk.load.data.json.AirbyteTypeToJsonSchema
 import io.airbyte.cdk.load.message.DestinationRecord
 import io.airbyte.cdk.load.message.Meta
+import io.airbyte.cdk.load.schema.model.StreamTableSchema
 import io.airbyte.protocol.models.v0.AirbyteRecordMessageMetaChange
 import io.airbyte.protocol.models.v0.AirbyteStream
 import io.airbyte.protocol.models.v0.ConfiguredAirbyteStream
@@ -66,7 +67,8 @@ data class DestinationStream(
     val destinationObjectName: String? = null,
     val matchingKey: List<String>? = null,
     private val namespaceMapper: NamespaceMapper,
-    val columnMappings: Map<String, String> = emptyMap(),
+    // fully munged table and column names with mappings
+    val tableSchema: StreamTableSchema,
 ) {
     val unmappedDescriptor = Descriptor(namespace = unmappedNamespace, name = unmappedName)
     val mappedDescriptor = namespaceMapper.map(namespace = unmappedNamespace, name = unmappedName)
@@ -168,14 +170,6 @@ data class DestinationStream(
 
     fun isSingleGenerationTruncate() =
         shouldBeTruncatedAtEndOfSync() && minimumGenerationId == generationId
-
-    /**
-     * Get the mapped column name for a given original column name. Returns the mapped name if a
-     * mapping exists, otherwise returns the original name.
-     */
-    fun getMappedColumnName(originalName: String): String {
-        return columnMappings[originalName] ?: originalName
-    }
 }
 
 /**

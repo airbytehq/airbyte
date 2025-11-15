@@ -1,4 +1,4 @@
-package io.airbyte.cdk.load.schema
+package io.airbyte.cdk.load.schema.model
 
 import io.airbyte.cdk.load.table.TableSuffixes
 

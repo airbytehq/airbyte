@@ -1,54 +1,18 @@
-/*
- * Copyright (c) 2025 Airbyte, Inc., all rights reserved.
- */
+package io.airbyte.cdk.load.schema
 
-package io.airbyte.cdk.load.table
-
-import io.airbyte.cdk.load.command.DestinationCatalog
 import io.airbyte.cdk.load.command.DestinationStream
 import io.airbyte.cdk.load.schema.model.TableName
-import io.airbyte.cdk.load.schema.model.TableNames
-import io.github.oshai.kotlinlogging.KotlinLogging
-import io.micronaut.context.annotation.Factory
-import javax.inject.Singleton
-import kotlin.collections.contains
-import org.apache.commons.codec.digest.DigestUtils
+import jakarta.inject.Singleton
 
-private val LOGGER = KotlinLogging.logger {}
-const val DEFAULT_AIRBYTE_INTERNAL_NAMESPACE = "airbyte_internal"
+@Singleton
+class TableNameResolver(
+    private val mapper: TableSchemaMapper,
+    private val ignoreCaseColNames: Boolean,
+) {
+    fun cat() {
+     val processedFinalTableNames = mutableSetOf<TableName>()
 
-data class TableNameInfo(val tableNames: TableNames)
-
-data class TableCatalog(private val catalog: Map<DestinationStream, TableNameInfo>) :
-    Map<DestinationStream, TableNameInfo> by catalog
-
-data class TableCatalogByDescriptor(
-    private val catalog: Map<DestinationStream.Descriptor, TableNameInfo>
-) : Map<DestinationStream.Descriptor, TableNameInfo> by catalog {
-    fun getFinalTableName(desc: DestinationStream.Descriptor): TableName? =
-        this[desc]?.tableNames?.finalTableName
-}
-
-@Factory
-class TableCatalogFactory {
-    @Singleton
-    fun getTableCatalog(
-        catalog: DestinationCatalog,
-        // Raw table generator is optional. Direct-load destinations don't need it
-        // (unless they were previously T+D destinations, in which case it's still required
-        // so that we maintain stable names with the T+D version)
-        rawTableNameGenerator: RawTableNameGenerator?,
-        finalTableNameGenerator: FinalTableNameGenerator,
-    ): TableCatalog {
-        val processedRawTableNames =
-            if (rawTableNameGenerator != null) {
-                mutableSetOf<TableName>()
-            } else {
-                null
-            }
-        val processedFinalTableNames = mutableSetOf<TableName>()
-
-        val result = mutableMapOf<DestinationStream, TableNameInfo>()
+        val result = mutableMapOf<DestinationStream, TableName>()
 
         catalog.streams.forEach { stream ->
             val originalRawTableName = rawTableNameGenerator?.getTableName(stream.mappedDescriptor)
@@ -97,12 +61,4 @@ class TableCatalogFactory {
                     )
                 )
         }
-
-        return TableCatalog(result)
-    }
-
-    @Singleton
-    fun getTableCatalogByDescriptor(map: TableCatalog): TableCatalogByDescriptor {
-        return TableCatalogByDescriptor(map.mapKeys { (k, _) -> k.mappedDescriptor })
-    }
 }
