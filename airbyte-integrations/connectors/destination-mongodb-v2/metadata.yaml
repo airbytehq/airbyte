@@ -1,0 +1,37 @@
+data:
+  connectorType: destination
+  connectorSubtype: database
+  dockerImageTag: 0.1.0
+  dockerRepository: airbyte/destination-mongodb-v2
+  documentationUrl: https://docs.airbyte.com/integrations/destinations/mongodb-v2
+  githubIssueLabel: destination-mongodb-v2
+  icon: mongodb.svg
+  license: ELv2
+  name: MongoDB V2
+
+  connectorBuildOptions:
+    baseImage: docker.io/airbyte/java-connector-base:2.0.3@sha256:119b8506bca069bbc8357a275936c7e2b0994e6947b81f1bf8d6ce9e16db7d47
+
+  connectorIPCOptions:
+    dataChannel:
+      version: "0.0.2"
+      supportedSerialization: ["JSONL", "PROTOBUF"]
+      supportedTransport: ["SOCKET", "STDIO"]
+
+  registryOverrides:
+    oss:
+      enabled: true
+    cloud:
+      enabled: false
+
+  releaseStage: alpha
+  supportLevel: community
+  tags:
+    - language:kotlin
+    - cdk:bulk-cdk
+
+  connectorTestSuitesOptions:
+    - suite: unitTests
+    - suite: integrationTests
+
+metadataSpecVersion: "1.0"

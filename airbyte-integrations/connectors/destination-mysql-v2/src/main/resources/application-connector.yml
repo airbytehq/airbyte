@@ -1,0 +1,25 @@
+# This file is loaded by the connector at runtime (in Docker)
+# The platform may override these via environment variables
+
+airbyte:
+  destination:
+    core:
+      # Default type handling
+      types:
+        unions: DEFAULT
+      # Data channel configuration (required)
+      data-channel:
+        medium: STDIO  # STDIO or SOCKET (platform sets this)
+        format: JSONL  # JSONL or PROTOBUF
+      # Namespace mapping (required)
+      mappers:
+        namespace-mapping-config-path: ""  # Empty = no custom mapping (identity)
+      # File transfer support (required)
+      file-transfer:
+        enabled: false  # Set true if connector supports file transfer
+
+# Reduce noise in logs
+logger:
+  levels:
+    com.zaxxer.hikari: ERROR
+    com.zaxxer.hikari.pool: ERROR

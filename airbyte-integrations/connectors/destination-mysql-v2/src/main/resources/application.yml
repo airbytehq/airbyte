@@ -1,0 +1,4 @@
+airbyte:
+  connector:
+    metadata:
+      documentation-url: 'https://docs.airbyte.com/integrations/destinations/mysql'
