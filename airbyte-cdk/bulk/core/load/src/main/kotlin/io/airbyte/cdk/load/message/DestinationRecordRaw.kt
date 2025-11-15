@@ -79,7 +79,7 @@ data class DestinationRecordRaw(
 
             val fieldValue = rawJson[fieldName]
             // Apply column name mapping from the stream
-            val mappedFieldName = stream.getMappedColumnName(fieldName)
+            val mappedFieldName = stream.tableSchema.getFinalColumnName(fieldName)
             val enrichedValue =
                 EnrichedAirbyteValue(
                     abValue = NullValue,

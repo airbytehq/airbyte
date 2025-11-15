@@ -5,7 +5,7 @@
 package io.airbyte.cdk.load.component
 
 import io.airbyte.cdk.load.command.DestinationStream
-import io.airbyte.cdk.load.schema.TableName
+import io.airbyte.cdk.load.schema.model.TableName
 import io.airbyte.cdk.load.table.ColumnNameMapping
 import kotlin.collections.component1
 import kotlin.collections.component2

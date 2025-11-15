@@ -2,7 +2,7 @@
  * Copyright (c) 2025 Airbyte, Inc., all rights reserved.
  */
 
-package io.airbyte.cdk.load.schema
+package io.airbyte.cdk.load.schema.model
 
 data class TableNames(
     val rawTableName: TableName? = null,

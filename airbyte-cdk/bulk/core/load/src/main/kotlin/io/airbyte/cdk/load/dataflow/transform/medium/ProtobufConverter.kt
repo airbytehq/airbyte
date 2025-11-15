@@ -116,7 +116,7 @@ class ProtobufConverter(
 
             if (validatedValue.abValue !is NullValue || validatedValue.type !is UnknownType) {
                 // Use column mapping from stream
-                val columnName = stream.getMappedColumnName(accessor.name)
+                val columnName = stream.tableSchema.getFinalColumnName(accessor.name)
                 result[columnName] = validatedValue.abValue
             }
         }

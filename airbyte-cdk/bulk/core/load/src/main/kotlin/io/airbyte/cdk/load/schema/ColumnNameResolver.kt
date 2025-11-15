@@ -4,67 +4,40 @@
 
 package io.airbyte.cdk.load.schema
 
-import io.airbyte.cdk.load.data.AirbyteType
-import io.airbyte.cdk.load.table.ColumnNameGenerator
 import io.github.oshai.kotlinlogging.KotlinLogging
-import io.micronaut.context.annotation.Requires
 import jakarta.inject.Singleton
 
 private val log = KotlinLogging.logger {}
 
-interface ColumnNameResolver {
-    fun createColumnNameMapping(
-        namespace: String?,
-        name: String,
-        schema: AirbyteType,
-    ): Map<String, String>
-}
 
-@Requires(missing = [ColumnNameGenerator::class])
 @Singleton
-class NoopColumnNameResolverImpl() : ColumnNameResolver {
-    override fun createColumnNameMapping(
-        namespace: String?,
-        name: String,
-        schema: AirbyteType
-    ): Map<String, String> {
-        return schema.asColumns().mapValues { it.key }
-    }
-}
-
-@Requires(beans = [ColumnNameGenerator::class])
-@Singleton
-class ColumnNameResolverImpl(
-    private val finalTableColumnNameGenerator: ColumnNameGenerator,
-) : ColumnNameResolver {
+class ColumnNameResolver(
+    private val mapper: TableSchemaMapper,
+    private val ignoreCaseColNames: Boolean,
+) {
     /**
      * Creates column name mapping with handling for potential collisions using incremental
      * numbering, with advanced resolution for truncation cases.
      */
-    override fun createColumnNameMapping(
-        namespace: String?,
-        name: String,
-        schema: AirbyteType,
+    fun createColumnNameMapping(
+        rawColumNames: Set<String>
     ): Map<String, String> {
-        val processedColumnNames = mutableSetOf<ColumnNameGenerator.ColumnName>()
+        val processedColumnNames = mutableSetOf<String>()
         val columnMappings = mutableMapOf<String, String>()
 
-        schema.asColumns().forEach { (columnName, _) ->
-            val processedColumnName = finalTableColumnNameGenerator.getColumnName(columnName)
+        rawColumNames.forEach { columnName ->
+            val processedColumnName = mapper.toColumnName(columnName)
 
             // Get a unique column name by adding incremental numbers if necessary
             val finalColumnName =
                 resolveColumnNameCollision(
-                    namespace,
-                    name,
                     processedColumnName,
                     existingNames = processedColumnNames,
                     originalColumnName = columnName,
-                    finalTableColumnNameGenerator,
                 )
 
             processedColumnNames.add(finalColumnName)
-            columnMappings[columnName] = finalColumnName.displayName
+            columnMappings[columnName] = finalColumnName
         }
 
         return columnMappings
@@ -79,47 +52,43 @@ class ColumnNameResolverImpl(
      * @param originalColumnName The original column name before processing
      */
     private fun resolveColumnNameCollision(
-        namespace: String?,
-        streamName: String,
-        processedName: ColumnNameGenerator.ColumnName,
-        existingNames: Set<ColumnNameGenerator.ColumnName>,
+        processedName: String,
+        existingNames: Set<String>,
         originalColumnName: String,
-        finalTableColumnNameGenerator: ColumnNameGenerator,
-    ): ColumnNameGenerator.ColumnName {
+    ): String {
         // If processed name is unique, use it
-        if (!existingNames.hasConflict(processedName)) {
+        if (!hasConflict(existingNames, processedName)) {
             return processedName
         }
 
         log.info {
-            "Detected column name collision for ${namespace ?: ""}.${streamName}.$originalColumnName"
+            "Detected column name collision for $originalColumnName"
         }
 
         // Try adding incremental suffixes until we find a non-colliding name
         var counter = 1
-        var candidateName: ColumnNameGenerator.ColumnName
+        var candidateName: String
         var previousCandidate = processedName
 
         do {
             // Generate candidate name by adding numeric suffix
             candidateName =
-                finalTableColumnNameGenerator.getColumnName("${originalColumnName}_$counter")
+                mapper.toColumnName("${originalColumnName}_$counter")
 
             // Check if we're making progress (detecting potential truncation)
-            if (candidateName.canonicalName == previousCandidate.canonicalName) {
+            if (colsConflicts(candidateName, previousCandidate)) {
                 // We're not making progress, likely due to name truncation
                 // Use the more powerful resolution method with the ORIGINAL column name
                 return superResolveColumnCollisions(
                     originalColumnName,
                     existingNames,
-                    processedName.canonicalName.length,
-                    finalTableColumnNameGenerator,
+                    processedName.length,
                 )
             }
 
             previousCandidate = candidateName
             counter++
-        } while (existingNames.hasConflict(candidateName))
+        } while (existingNames.any { colsConflicts(it, candidateName) })
 
         return candidateName
     }
@@ -134,10 +103,9 @@ class ColumnNameResolverImpl(
      */
     private fun superResolveColumnCollisions(
         originalName: String,
-        existingNames: Set<ColumnNameGenerator.ColumnName>,
+        existingNames: Set<String>,
         maximumColumnNameLength: Int,
-        finalTableColumnNameGenerator: ColumnNameGenerator,
-    ): ColumnNameGenerator.ColumnName {
+    ): String {
         // Assume that the <length> portion can be expressed in at most 5 characters.
         // If someone is giving us a column name that's longer than 99999 characters,
         // that's just being silly.
@@ -152,15 +120,15 @@ class ColumnNameResolverImpl(
             )
         }
 
-        val prefix = originalName.substring(0, affixLength)
+        val prefix = originalName.take(affixLength)
         val suffix = originalName.substring(originalName.length - affixLength, originalName.length)
 
         val length = originalName.length - 2 * affixLength
-        val newColumnName = finalTableColumnNameGenerator.getColumnName("$prefix$length$suffix")
+        val newColumnName = mapper.toColumnName("$prefix$length$suffix")
 
         // If there's still a collision after this, just give up.
         // We could try to be more clever, but this is already a pretty rare case.
-        if (existingNames.hasConflict(newColumnName)) {
+        if (hasConflict(existingNames, newColumnName)) {
             throw IllegalArgumentException(
                 "Cannot solve column name collision: $originalName. We recommend removing this column to continue syncing.",
             )
@@ -169,14 +137,7 @@ class ColumnNameResolverImpl(
         return newColumnName
     }
 
-    /**
-     * can't just use `.contains()`, because we don't care whether the column names have the same
-     * display name. We only care about the canonical name.
-     *
-     * (arguably we could override equals/hashcode? But that would make writing tests more
-     * difficult, because it's not an intuitive behavior)
-     */
-    private fun Collection<ColumnNameGenerator.ColumnName>.hasConflict(
-        candidate: ColumnNameGenerator.ColumnName
-    ) = this.any { it.canonicalName == candidate.canonicalName }
+    fun colsConflicts(a: String, b: String): Boolean = a.equals(b, ignoreCase = ignoreCaseColNames)
+
+    fun hasConflict(existingNames: Set<String>, candidate: String) = existingNames.any { colsConflicts(it, candidate) }
 }
