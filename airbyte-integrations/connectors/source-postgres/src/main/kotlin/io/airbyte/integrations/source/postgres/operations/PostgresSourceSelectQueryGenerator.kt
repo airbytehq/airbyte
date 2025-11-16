@@ -49,7 +49,7 @@ class PostgresSourceSelectQueryGenerator : SelectQueryGenerator {
 
     fun SelectQuerySpec.sql(): String {
         val components: List<String> =
-            listOf(select.sql(), from.sql(select.columns), where.sql(), orderBy.sql())
+            listOf(select.sql(), from.sql(/*select.columns*/), where.sql(), orderBy.sql())
         val sqlWithoutLimit: String = components.filter { it.isNotBlank() }.joinToString(" ")
         val limitClause: String =
             when (limit) {
@@ -79,13 +79,13 @@ class PostgresSourceSelectQueryGenerator : SelectQueryGenerator {
     fun DataField.sql(): String = "\"$id\""
 
     fun FromNode.sql(
-        columns: List<DataField>,
+        /*columns: List<DataField>,*/
     ): String =
         when (this) {
             NoFrom -> "FROM DUAL"
             is From ->
                 if (this.namespace == null) "FROM \"$name\"" else "FROM \"$namespace\".\"$name\""
-            is FromSample -> {
+            /*is FromSample -> {
                 val sample: String =
                     if (sampleRateInv == 1L) {
                         ""
@@ -98,7 +98,8 @@ class PostgresSourceSelectQueryGenerator : SelectQueryGenerator {
                 val inner =
                     "SELECT ${columns.joinToString(", ") { it.sql() }} $innerFrom ORDER BY RANDOM()"
                 "FROM (SELECT ${columns.joinToString(", ") { it.sql() }} FROM ($inner) AS ts LIMIT $sampleSize) AS l"
-            }
+            }*/
+            is FromSample -> From(name, namespace).sql()
         }
 
     fun WhereNode.sql(): String =

@@ -46,7 +46,7 @@ class PostgresSourceJdbcStreamState(val base: DefaultJdbcStreamState) :
             }
 
     val maybeFilenode: Filenode?
-        get() = stateValue?.let { sv -> sv.filenode }
+        get() = stateValue?.filenode
     val maybeCtid: Ctid?
         get() = stateValue?.let { sv -> sv.ctid?.let { Ctid.of(it) } }
 
