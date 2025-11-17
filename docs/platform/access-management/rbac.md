@@ -7,7 +7,7 @@ products: oss-enterprise, cloud-teams
 Role Based Access Control allows a user with Administrative access to apply roles to users, granting different levels of permission within an organization or workspace.
 
 :::info
-**Self-Managed Enterprise** instances have an `Instance Admin` role in addition to the other roles outlined in this document. Airbyte assigns this role to the first user who logs on to Airbyte in a Self-Managed Enterprise instance. This user has all permissions listed below for all workspaces and all organizations associated with their Enterprise account. To update this assignment, enterprise customers should contact [Airbyte support](https://support.airbyte.com/hc/en-us).
+**Self-Managed Enterprise** instances have an `Instance Admin` role in addition to the other roles outlined in this document. Airbyte assigns this role to the first user who logs on to Airbyte in a Self-Managed Enterprise instance. This user has all permissions listed below for all workspaces and all organizations associated with their Enterprise account. To update this assignment, contact [Airbyte support](https://support.airbyte.com/hc/en-us).
 :::
 
 ## Organization roles

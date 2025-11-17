@@ -24,7 +24,7 @@ Airbyte's [Workday](https://workday.com) enterprise source connector currently o
 
 - Workday tenant - The Organization ID for your Workday environment. This can be found by logging into your Workday account and going to My Account > Organization ID
 - Workday hostname - The endpoint for connecting into your Workday environment. This can be found by logging into your Workday instance and searching “Public Web Service” in the search bar and selecting the appropriate report. Use the ellipse (...) button to select **Web Service > View WSDL**
-- Access token - An OAuth 2.0 access token for API client integrations. More information and instructions can be found in the Workday community documentation for your environment about creating and registering a Workday API Client. If you are using Airbyte Teams, when registering the API Client for Airbyte, you can use https://cloud.airbyte.com/auth_flow for the Redirection URI field . If you are using Self-Managed Enterprise, you can use the URL of your Airbyte deployment instead.
+- Access token - An OAuth 2.0 access token for API client integrations. More information and instructions can be found in the Workday community documentation for your environment about creating and registering a Workday API Client. If you are using Airbyte Pro, when registering the API Client for Airbyte, you can use https://cloud.airbyte.com/auth_flow for the Redirection URI field. If you are using Self-Managed Enterprise, you can use the URL of your Airbyte deployment instead.
 
 ## Setup Guide
 
