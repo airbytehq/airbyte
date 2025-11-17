@@ -4,6 +4,30 @@ updates:
     directory: "/"
     commit-message:
       prefix: "chore(deps): "
+      prefix-development: "chore(deps-dev): "
+    schedule:
+      interval: weekly
+    cooldown:
+      default-days: 9
+    labels:
+      - chore
+      - dependencies
+      - dependabot/connector-updates
+      - dependabot/cdk-updates
+    open-pull-requests-limit: 5
+    allow:
+      - dependency-name: "airbyte-cdk"
+    groups:
+      minor-and-patch:
+        applies-to: version-updates
+        update-types:
+          - patch
+          - minor
+  - package-ecosystem: pip
+    directory: "/"
+    commit-message:
+      prefix: "chore(deps): "
+      prefix-development: "chore(deps-dev): "
     schedule:
       interval: weekly
     cooldown:
@@ -15,6 +39,8 @@ updates:
     open-pull-requests-limit: 5
     allow:
       - dependency-type: all
+    ignore:
+      - dependency-name: "airbyte-cdk"
     groups:
       minor-and-patch:
         applies-to: version-updates
