@@ -6,6 +6,8 @@ updates:
       prefix: "chore(deps): "
     schedule:
       interval: weekly
+    cooldown:
+      default-days: 9
     labels:
       - chore
       - dependencies
@@ -24,6 +26,8 @@ updates:
       prefix: "chore(deps): "
     schedule:
       interval: weekly
+    cooldown:
+      default-days: 9
     labels:
       - chore
       - dependencies
