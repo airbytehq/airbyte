@@ -199,11 +199,19 @@
               },
               "type": {
                 "type": "string",
-                "description": "Category of documentation (api_release_history, api_reference, api_deprecations, or other)",
+                "description": "Category of documentation",
                 "enum": [
                   "api_release_history",
                   "api_reference",
                   "api_deprecations",
+                  "authentication_guide",
+                  "permissions_scopes",
+                  "rate_limits",
+                  "status_page",
+                  "data_model_reference",
+                  "sql_reference",
+                  "migration_guide",
+                  "developer_community",
                   "other"
                 ]
               },
