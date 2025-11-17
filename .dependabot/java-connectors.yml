@@ -11,6 +11,7 @@ updates:
     labels:
       - chore
       - dependencies
+      - dependabot/connector-updates
     open-pull-requests-limit: 5
     allow:
       - dependency-type: all
@@ -31,6 +32,7 @@ updates:
     labels:
       - chore
       - dependencies
+      - dependabot/connector-updates
     open-pull-requests-limit: 5
     allow:
       - dependency-type: all
