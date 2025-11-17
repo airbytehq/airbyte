@@ -136,6 +136,8 @@ const buildAConnector = {
       ],
     },
     "connector-development/local-connector-development",
+    "connector-development/submit-new-connector",
+    "connector-development/connector-breaking-changes",
     "connector-development/connector-specification-reference",
     "connector-development/partner-certified-destinations",
     "operator-guides/using-custom-connectors",
@@ -145,30 +147,6 @@ const buildAConnector = {
     "connector-development/connector-metadata-file",
     "connector-development/best-practices",
     "connector-development/ux-handbook",
-  ],
-};
-
-const contributeToAirbyte = {
-  type: "category",
-  label: "Contribute to Airbyte",
-  link: {
-    type: "doc",
-    id: "contributing-to-airbyte/README",
-  },
-  items: [
-    "contributing-to-airbyte/issues-and-requests",
-    "contributing-to-airbyte/change-cdk-connector",
-    "contributing-to-airbyte/submit-new-connector",
-    "contributing-to-airbyte/developing-locally",
-    "contributing-to-airbyte/writing-docs",
-    {
-      type: "category",
-      label: "Resources",
-      items: [
-        "contributing-to-airbyte/resources/pull-requests-handbook",
-        "contributing-to-airbyte/resources/qa-checks",
-      ],
-    },
   ],
 };
 
@@ -250,7 +228,6 @@ const understandingAirbyte = {
     "understanding-airbyte/beginners-guide-to-catalog",
     "understanding-airbyte/supported-data-types",
     "understanding-airbyte/secrets",
-    "understanding-airbyte/cdc",
     "understanding-airbyte/resumability",
     "understanding-airbyte/json-avro-conversion",
     "understanding-airbyte/schemaless-sources-and-destinations",
@@ -356,6 +333,19 @@ module.exports = {
                     "using-airbyte/core-concepts/sync-modes/full-refresh-append",
                     "using-airbyte/core-concepts/sync-modes/full-refresh-overwrite",
                     "using-airbyte/core-concepts/sync-modes/full-refresh-overwrite-deduped",
+                    {
+                      type: "category",
+                      label: "Change Data Capture (CDC)",
+                      link: {
+                        type: "generated-index",
+                        title: "Change Data Capture (CDC)",
+                        description: "Learn about CDC in Airbyte and best practices for configuration.",
+                      },
+                      items: [
+                        "understanding-airbyte/cdc",
+                        "understanding-airbyte/cdc-best-practices",
+                      ],
+                    },
                   ],
                 },
               ],
@@ -455,7 +445,6 @@ module.exports = {
           },
           items: [
             "enterprise-setup/implementation-guide",
-            "enterprise-setup/api-access-config",
             "enterprise-setup/multi-region",
             "enterprise-setup/audit-logging",
             "enterprise-setup/scaling-airbyte",
@@ -538,7 +527,6 @@ module.exports = {
           type: "category",
           label: "Integrating with Airbyte",
           items: [
-            "using-airbyte/configuring-api-access",
             "operator-guides/using-the-airflow-airbyte-operator",
             "operator-guides/using-prefect-task",
             "operator-guides/using-dagster-integration",
@@ -546,45 +534,9 @@ module.exports = {
             "operator-guides/using-orchestra-task",
           ],
         },
-        sectionHeader("Developer guides"),
-        {
-          type: "doc",
-          id: "api-documentation",
-        },
-        {
-          type: "doc",
-          id: "terraform-documentation",
-        },
-        {
-          type: "doc",
-          label: "Using PyAirbyte",
-          id: "using-airbyte/pyairbyte/getting-started",
-        },
+        sectionHeader("Advanced"),
+        "using-airbyte/configuring-api-access",
         understandingAirbyte,
-        {
-          type: "category",
-          label: "Licenses",
-          link: {
-            type: "doc",
-            id: "developer-guides/licenses/README",
-          },
-          items: [
-            "developer-guides/licenses/license-faq",
-            "developer-guides/licenses/elv2-license",
-            "developer-guides/licenses/mit-license",
-            "developer-guides/licenses/examples",
-          ],
-        },
-        sectionHeader("Community"),
-        contributeToAirbyte,
-        "community/getting-support",
-        "community/code-of-conduct",
-        sectionHeader("Product updates"),
-        {
-          type: "link",
-          label: "Roadmap",
-          href: "https://go.airbyte.com/roadmap",
-        },
       ],
     },
   ],

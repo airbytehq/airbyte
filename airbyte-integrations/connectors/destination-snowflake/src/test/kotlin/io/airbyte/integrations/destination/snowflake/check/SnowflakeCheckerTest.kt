@@ -23,16 +23,25 @@ internal class SnowflakeCheckerTest {
     @ParameterizedTest
     @ValueSource(booleans = [true, false])
     fun testSuccessfulCheck(isLegacyRawTablesOnly: Boolean) {
-        val defaultColumns =
+        val defaultColumnsMap =
             if (isLegacyRawTablesOnly) {
-                (DEFAULT_COLUMNS + RAW_DATA_COLUMN).map { it.columnName }
+                linkedMapOf<String, String>().also { map ->
+                    (DEFAULT_COLUMNS + RAW_DATA_COLUMN).forEach {
+                        map[it.columnName] = it.columnType
+                    }
+                }
             } else {
-                DEFAULT_COLUMNS.map { it.columnName.toSnowflakeCompatibleName() }
+                linkedMapOf<String, String>().also { map ->
+                    (DEFAULT_COLUMNS + RAW_DATA_COLUMN).forEach {
+                        map[it.columnName.toSnowflakeCompatibleName()] = it.columnType
+                    }
+                }
             }
+        val defaultColumns = defaultColumnsMap.keys.toMutableList()
         val snowflakeAirbyteClient: SnowflakeAirbyteClient =
             mockk(relaxed = true) {
                 coEvery { countTable(any()) } returns 1L
-                coEvery { describeTable(any()) } returns defaultColumns
+                coEvery { describeTable(any()) } returns defaultColumnsMap
             }
 
         val testSchema = "test-schema"
@@ -63,16 +72,25 @@ internal class SnowflakeCheckerTest {
     @ParameterizedTest
     @ValueSource(booleans = [true, false])
     fun testUnsuccessfulCheck(isLegacyRawTablesOnly: Boolean) {
-        val defaultColumns =
+        val defaultColumnsMap =
             if (isLegacyRawTablesOnly) {
-                (DEFAULT_COLUMNS + RAW_DATA_COLUMN).map { it.columnName }
+                linkedMapOf<String, String>().also { map ->
+                    (DEFAULT_COLUMNS + RAW_DATA_COLUMN).forEach {
+                        map[it.columnName] = it.columnType
+                    }
+                }
             } else {
-                DEFAULT_COLUMNS.map { it.columnName.toSnowflakeCompatibleName() }
+                linkedMapOf<String, String>().also { map ->
+                    (DEFAULT_COLUMNS + RAW_DATA_COLUMN).forEach {
+                        map[it.columnName.toSnowflakeCompatibleName()] = it.columnType
+                    }
+                }
             }
+        val defaultColumns = defaultColumnsMap.keys.toMutableList()
         val snowflakeAirbyteClient: SnowflakeAirbyteClient =
             mockk(relaxed = true) {
                 coEvery { countTable(any()) } returns 0L
-                coEvery { describeTable(any()) } returns defaultColumns
+                coEvery { describeTable(any()) } returns defaultColumnsMap
             }
 
         val testSchema = "test-schema"

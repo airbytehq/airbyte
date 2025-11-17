@@ -49,6 +49,9 @@ Visit `https://app.brevo.com/settings/keys/api` for getting your api key.
 
 | Version | Date | Pull Request | Subject |
 | ------------------ | ------------ | --- | ---------------- |
+| 0.2.20 | 2025-10-29 | [68749](https://github.com/airbytehq/airbyte/pull/68749) | Update dependencies |
+| 0.2.19 | 2025-10-21 | [68272](https://github.com/airbytehq/airbyte/pull/68272) | Update dependencies |
+| 0.2.18 | 2025-10-14 | [67845](https://github.com/airbytehq/airbyte/pull/67845) | Update dependencies |
 | 0.2.17 | 2025-10-07 | [67207](https://github.com/airbytehq/airbyte/pull/67207) | Update dependencies |
 | 0.2.16 | 2025-09-30 | [65648](https://github.com/airbytehq/airbyte/pull/65648) | Update dependencies |
 | 0.2.15 | 2025-08-09 | [64647](https://github.com/airbytehq/airbyte/pull/64647) | Update dependencies |

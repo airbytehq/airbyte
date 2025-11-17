@@ -7,11 +7,11 @@ package io.airbyte.cdk.load.orchestration.db.legacy_typing_deduping
 import io.airbyte.cdk.load.command.DestinationCatalog
 import io.airbyte.cdk.load.command.DestinationStream
 import io.airbyte.cdk.load.orchestration.db.ColumnNameGenerator
-import io.airbyte.cdk.load.orchestration.db.ColumnNameMapping
 import io.airbyte.cdk.load.orchestration.db.FinalTableNameGenerator
 import io.airbyte.cdk.load.orchestration.db.RawTableNameGenerator
-import io.airbyte.cdk.load.orchestration.db.TableName
 import io.airbyte.cdk.load.orchestration.db.TableNames
+import io.airbyte.cdk.load.table.ColumnNameMapping
+import io.airbyte.cdk.load.table.TableName
 import io.github.oshai.kotlinlogging.KotlinLogging
 import io.micronaut.context.annotation.Factory
 import javax.inject.Singleton

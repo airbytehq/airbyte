@@ -23,6 +23,7 @@ import io.airbyte.cdk.load.write.UnionBehavior
 import io.airbyte.cdk.load.write.UnknownTypesBehavior
 import io.airbyte.integrations.destination.snowflake.SnowflakeTestUtils.CONFIG_WITH_AUTH_STAGING
 import io.airbyte.integrations.destination.snowflake.SnowflakeTestUtils.CONFIG_WITH_AUTH_STAGING_AND_RAW_OVERRIDE
+import io.airbyte.integrations.destination.snowflake.SnowflakeTestUtils.CONFIG_WITH_AUTH_STAGING_IGNORE_CASING
 import io.airbyte.integrations.destination.snowflake.SnowflakeTestUtils.getConfigPath
 import io.airbyte.integrations.destination.snowflake.spec.SnowflakeConfigurationFactory
 import io.airbyte.integrations.destination.snowflake.spec.SnowflakeSpecification
@@ -33,6 +34,7 @@ import org.junit.jupiter.api.Disabled
 import org.junit.jupiter.api.Test
 
 internal val CONFIG_PATH = getConfigPath(CONFIG_WITH_AUTH_STAGING)
+internal val CONFIG_IGNORE_CASING_PATH = getConfigPath(CONFIG_WITH_AUTH_STAGING_IGNORE_CASING)
 internal val RAW_CONFIG_PATH = getConfigPath(CONFIG_WITH_AUTH_STAGING_AND_RAW_OVERRIDE)
 
 class SnowflakeInsertAcceptanceTest :
@@ -44,10 +46,28 @@ class SnowflakeInsertAcceptanceTest :
             },
         recordMapper = SnowflakeExpectedRecordMapper,
         nameMapper = SnowflakeNameMapper(),
+        unknownTypesBehavior = UnknownTypesBehavior.SERIALIZE,
     ) {
     @Test
-    override fun testFunkyCharactersDedup() {
-        super.testFunkyCharactersDedup()
+    override fun testAppendSchemaEvolution() {
+        super.testAppendSchemaEvolution()
+    }
+}
+
+class SnowflakeInsertIgnoreCasingAcceptanceTest :
+    SnowflakeAcceptanceTest(
+        configPath = CONFIG_IGNORE_CASING_PATH,
+        dataDumper =
+            SnowflakeDataDumper { spec ->
+                SnowflakeConfigurationFactory().make(spec as SnowflakeSpecification)
+            },
+        recordMapper = SnowflakeExpectedRecordMapper,
+        nameMapper = SnowflakeNameMapper(),
+        unknownTypesBehavior = UnknownTypesBehavior.SERIALIZE,
+    ) {
+    @Test
+    override fun testBasicWrite() {
+        super.testBasicWrite()
     }
 }
 
@@ -84,6 +104,7 @@ class SnowflakeRawInsertAcceptanceTest :
         dedupBehavior = null,
         nullEqualsUnset = false,
         coercesLegacyUnions = false,
+        unknownTypesBehavior = UnknownTypesBehavior.PASS_THROUGH,
     ) {
     @Test
     override fun testFunkyCharacters() {
@@ -127,7 +148,7 @@ abstract class SnowflakeAcceptanceTest(
     dedupBehavior: DedupBehavior? = DedupBehavior(DedupBehavior.CdcDeletionMode.HARD_DELETE),
     nullEqualsUnset: Boolean = true,
     coercesLegacyUnions: Boolean = false,
-    unknownTypesBehavior: UnknownTypesBehavior = UnknownTypesBehavior.PASS_THROUGH,
+    unknownTypesBehavior: UnknownTypesBehavior,
 ) :
     BasicFunctionalityIntegrationTest(
         configContents = Files.readString(configPath),
@@ -165,6 +186,7 @@ abstract class SnowflakeAcceptanceTest(
         recordMangler = recordMapper,
         nameMapper = nameMapper,
         coercesLegacyUnions = coercesLegacyUnions,
+        useDataFlowPipeline = true,
     ) {
 
     @Disabled override fun testUnions() {}

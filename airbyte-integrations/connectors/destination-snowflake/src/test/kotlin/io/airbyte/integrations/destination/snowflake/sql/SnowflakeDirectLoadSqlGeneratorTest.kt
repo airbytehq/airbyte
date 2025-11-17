@@ -6,6 +6,8 @@ package io.airbyte.integrations.destination.snowflake.sql
 
 import io.airbyte.cdk.load.command.Dedupe
 import io.airbyte.cdk.load.command.DestinationStream
+import io.airbyte.cdk.load.component.ColumnType
+import io.airbyte.cdk.load.component.ColumnTypeChange
 import io.airbyte.cdk.load.data.FieldType
 import io.airbyte.cdk.load.data.ObjectType
 import io.airbyte.cdk.load.data.StringType
@@ -13,11 +15,10 @@ import io.airbyte.cdk.load.data.TimestampTypeWithTimezone
 import io.airbyte.cdk.load.message.Meta.Companion.COLUMN_NAME_AB_EXTRACTED_AT
 import io.airbyte.cdk.load.message.Meta.Companion.COLUMN_NAME_AB_GENERATION_ID
 import io.airbyte.cdk.load.message.Meta.Companion.COLUMN_NAME_DATA
-import io.airbyte.cdk.load.orchestration.db.CDC_DELETED_AT_COLUMN
-import io.airbyte.cdk.load.orchestration.db.ColumnNameMapping
-import io.airbyte.cdk.load.orchestration.db.TableName
+import io.airbyte.cdk.load.table.CDC_DELETED_AT_COLUMN
+import io.airbyte.cdk.load.table.ColumnNameMapping
+import io.airbyte.cdk.load.table.TableName
 import io.airbyte.cdk.load.util.UUIDGenerator
-import io.airbyte.integrations.destination.snowflake.db.ColumnDefinition
 import io.airbyte.integrations.destination.snowflake.db.toSnowflakeCompatibleName
 import io.airbyte.integrations.destination.snowflake.spec.CdcDeletionMode
 import io.airbyte.integrations.destination.snowflake.spec.SnowflakeConfiguration
@@ -71,7 +72,7 @@ internal class SnowflakeDirectLoadSqlGeneratorTest {
         val tableName = TableName(namespace = "namespace", name = "name")
         val sql = snowflakeDirectLoadSqlGenerator.countTable(tableName)
         assertEquals(
-            "SELECT COUNT(*) AS ${QUOTE}total${QUOTE} FROM ${snowflakeSqlNameUtils.fullyQualifiedName(tableName)}",
+            "SELECT COUNT(*) AS TOTAL FROM ${snowflakeSqlNameUtils.fullyQualifiedName(tableName)}",
             sql
         )
     }
@@ -278,37 +279,11 @@ new_record."_AIRBYTE_GENERATION_ID"
     }
 
     @Test
-    fun testGenerateCreateFileFormat() {
-        val namespace = "test-namespace"
-        val fileFormatName = snowflakeSqlNameUtils.fullyQualifiedFormatName(namespace)
-        val expected =
-            """
-            CREATE OR REPLACE FILE FORMAT $fileFormatName
-            TYPE = 'CSV'
-            COMPRESSION = GZIP
-            FIELD_DELIMITER = '$CSV_FIELD_SEPARATOR'
-            RECORD_DELIMITER = '$CSV_LINE_DELIMITER'
-            FIELD_OPTIONALLY_ENCLOSED_BY = '"'
-            TRIM_SPACE = TRUE
-            ERROR_ON_COLUMN_COUNT_MISMATCH = FALSE
-            REPLACE_INVALID_CHARACTERS = TRUE
-            ESCAPE = NONE
-            ESCAPE_UNENCLOSED_FIELD = NONE
-        """.trimIndent()
-        val sql = snowflakeDirectLoadSqlGenerator.createFileFormat(namespace)
-        assertEquals(expected, sql)
-    }
-
-    @Test
     fun testGenerateCreateStage() {
         val tableName = TableName(namespace = "namespace", name = "name")
         val stagingTableName = snowflakeSqlNameUtils.fullyQualifiedStageName(tableName)
-        val fileFormat = snowflakeSqlNameUtils.fullyQualifiedFormatName(tableName.namespace)
         val sql = snowflakeDirectLoadSqlGenerator.createSnowflakeStage(tableName)
-        assertEquals(
-            "CREATE STAGE IF NOT EXISTS $stagingTableName\n    FILE_FORMAT = $fileFormat;",
-            sql
-        )
+        assertEquals("CREATE STAGE IF NOT EXISTS $stagingTableName", sql)
     }
 
     @Test
@@ -332,13 +307,23 @@ new_record."_AIRBYTE_GENERATION_ID"
         val tableName = TableName(namespace = "namespace", name = "name")
         val targetTableName = snowflakeSqlNameUtils.fullyQualifiedName(tableName)
         val stagingTableName = snowflakeSqlNameUtils.fullyQualifiedStageName(tableName)
-        val fileFormat = snowflakeSqlNameUtils.fullyQualifiedFormatName(tableName.namespace)
         val sql = snowflakeDirectLoadSqlGenerator.copyFromStage(tableName, "test.csv.gz")
         val expectedSql =
             """
             COPY INTO $targetTableName
             FROM '@$stagingTableName'
-            FILE_FORMAT = $fileFormat
+            FILE_FORMAT = (
+                TYPE = 'CSV'
+                COMPRESSION = GZIP
+                FIELD_DELIMITER = '$CSV_FIELD_SEPARATOR'
+                RECORD_DELIMITER = '$CSV_LINE_DELIMITER'
+                FIELD_OPTIONALLY_ENCLOSED_BY = '"'
+                TRIM_SPACE = TRUE
+                ERROR_ON_COLUMN_COUNT_MISMATCH = FALSE
+                REPLACE_INVALID_CHARACTERS = TRUE
+                ESCAPE = NONE
+                ESCAPE_UNENCLOSED_FIELD = NONE
+            )
             ON_ERROR = 'ABORT_STATEMENT'
             PURGE = TRUE
             files = ('test.csv.gz')
@@ -648,9 +633,10 @@ new_record."_AIRBYTE_GENERATION_ID"
         val uuid = UUID.randomUUID()
         every { uuidGenerator.v4() } returns uuid
         val tableName = TableName(namespace = "namespace", name = "name")
-        val addedColumns = setOf(ColumnDefinition("COL1", "TEXT", false))
-        val deletedColumns = setOf(ColumnDefinition("COL2", "TEXT", false))
-        val modifiedColumns = setOf(ColumnDefinition("COL3", "TEXT", false))
+        val addedColumns = mapOf("COL1" to ColumnType("TEXT", true))
+        val deletedColumns = mapOf("COL2" to ColumnType("TEXT", true))
+        val modifiedColumns =
+            mapOf("COL3" to ColumnTypeChange(ColumnType("NUMBER", true), ColumnType("TEXT", true)))
         val sql =
             snowflakeDirectLoadSqlGenerator.alterTable(
                 tableName,
@@ -667,9 +653,11 @@ new_record."_AIRBYTE_GENERATION_ID"
                 """ALTER TABLE $expectedTableName DROP COLUMN "COL2";""",
                 """ALTER TABLE $expectedTableName ADD COLUMN "COL3_${uuid}" TEXT;""",
                 """UPDATE $expectedTableName SET "COL3_${uuid}" = CAST("COL3" AS TEXT);""",
-                """ALTER TABLE $expectedTableName
+                """
+                ALTER TABLE $expectedTableName
                 RENAME COLUMN "COL3" TO "COL3_${uuid}_backup";""".trimIndent(),
-                """ALTER TABLE $expectedTableName
+                """
+                ALTER TABLE $expectedTableName
                 RENAME COLUMN "COL3_${uuid}" TO "COL3";""".trimIndent(),
                 """ALTER TABLE $expectedTableName DROP COLUMN "COL3_${uuid}_backup";"""
             ),

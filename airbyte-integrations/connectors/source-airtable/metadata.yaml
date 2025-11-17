@@ -7,13 +7,21 @@ data:
       - api.airtable.com
       - airtable.com
   connectorBuildOptions:
-    baseImage: docker.io/airbyte/source-declarative-manifest:7.0.1@sha256:ff1e701c8f913cf24a0220f62c8e64cc1c3011ba0a636985f4db47fdab1391b6
+    baseImage: docker.io/airbyte/source-declarative-manifest:7.4.1@sha256:71df19e2ee555ca5b14abbec01d50104c79c9b84cb9cc323284d24333361900a
   connectorSubtype: api
   connectorType: source
   definitionId: 14c6e7ea-97ed-4f5e-a7b5-25e9a80b8212
-  dockerImageTag: 4.6.11
+  dockerImageTag: 4.6.13
   dockerRepository: airbyte/source-airtable
   documentationUrl: https://docs.airbyte.com/integrations/sources/airtable
+  externalDocumentationUrls:
+    - title: Changelog
+      url: https://airtable.com/developers/web/api/changelog
+      type: api_release_history
+    - title: Community blog
+      url: https://community.airtable.com/development-apis-11
+    - title: OAuth refference
+      url: https://airtable.com/developers/web/api/oauth-reference#authorization-request
   resourceRequirements:
     jobSpecific:
       - jobType: discover_schema

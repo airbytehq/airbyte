@@ -6,12 +6,13 @@ package io.airbyte.integrations.destination.snowflake.sql
 
 import io.airbyte.cdk.load.command.Dedupe
 import io.airbyte.cdk.load.command.DestinationStream
+import io.airbyte.cdk.load.component.ColumnType
+import io.airbyte.cdk.load.component.ColumnTypeChange
 import io.airbyte.cdk.load.message.Meta.Companion.COLUMN_NAME_AB_EXTRACTED_AT
-import io.airbyte.cdk.load.orchestration.db.CDC_DELETED_AT_COLUMN
-import io.airbyte.cdk.load.orchestration.db.ColumnNameMapping
-import io.airbyte.cdk.load.orchestration.db.TableName
+import io.airbyte.cdk.load.table.CDC_DELETED_AT_COLUMN
+import io.airbyte.cdk.load.table.ColumnNameMapping
+import io.airbyte.cdk.load.table.TableName
 import io.airbyte.cdk.load.util.UUIDGenerator
-import io.airbyte.integrations.destination.snowflake.db.ColumnDefinition
 import io.airbyte.integrations.destination.snowflake.db.toSnowflakeCompatibleName
 import io.airbyte.integrations.destination.snowflake.spec.CdcDeletionMode
 import io.airbyte.integrations.destination.snowflake.spec.SnowflakeConfiguration
@@ -20,7 +21,7 @@ import io.airbyte.integrations.destination.snowflake.write.load.CSV_LINE_DELIMIT
 import io.github.oshai.kotlinlogging.KotlinLogging
 import jakarta.inject.Singleton
 
-internal const val COUNT_TOTAL_ALIAS = "total"
+internal const val COUNT_TOTAL_ALIAS = "TOTAL"
 
 private val log = KotlinLogging.logger {}
 
@@ -41,7 +42,7 @@ class SnowflakeDirectLoadSqlGenerator(
     private val snowflakeSqlNameUtils: SnowflakeSqlNameUtils,
 ) {
     fun countTable(tableName: TableName): String {
-        return "SELECT COUNT(*) AS ${COUNT_TOTAL_ALIAS.quote()} FROM ${snowflakeSqlNameUtils.fullyQualifiedName(tableName)}".andLog()
+        return "SELECT COUNT(*) AS $COUNT_TOTAL_ALIAS FROM ${snowflakeSqlNameUtils.fullyQualifiedName(tableName)}".andLog()
     }
 
     fun createNamespace(namespace: String): String {
@@ -316,37 +317,9 @@ class SnowflakeDirectLoadSqlGenerator(
             .andLog()
     }
 
-    fun createFileFormat(namespace: String): String {
-        val formatName = snowflakeSqlNameUtils.fullyQualifiedFormatName(namespace)
-        // We need the ESCAPE and ESCAPE_UNENCLOSED_FIELD options set,
-        // otherwise snowflake defaults to `\`.
-        //  Which causes weird behavior on string fields with a trailing `\` in the value.
-        return """
-            CREATE OR REPLACE FILE FORMAT $formatName
-            TYPE = 'CSV'
-            COMPRESSION = GZIP
-            FIELD_DELIMITER = '$CSV_FIELD_SEPARATOR'
-            RECORD_DELIMITER = '$CSV_LINE_DELIMITER'
-            FIELD_OPTIONALLY_ENCLOSED_BY = '"'
-            TRIM_SPACE = TRUE
-            ERROR_ON_COLUMN_COUNT_MISMATCH = FALSE
-            REPLACE_INVALID_CHARACTERS = TRUE
-            ESCAPE = NONE
-            ESCAPE_UNENCLOSED_FIELD = NONE
-        """
-            .trimIndent()
-            .andLog()
-    }
-
     fun createSnowflakeStage(tableName: TableName): String {
         val stageName = snowflakeSqlNameUtils.fullyQualifiedStageName(tableName)
-        val formatName = snowflakeSqlNameUtils.fullyQualifiedFormatName(tableName.namespace)
-        return """
-            CREATE STAGE IF NOT EXISTS $stageName
-                FILE_FORMAT = $formatName;
-        """
-            .trimIndent()
-            .andLog()
+        return "CREATE STAGE IF NOT EXISTS $stageName".andLog()
     }
 
     fun putInStage(tableName: TableName, tempFilePath: String): String {
@@ -363,12 +336,22 @@ class SnowflakeDirectLoadSqlGenerator(
 
     fun copyFromStage(tableName: TableName, filename: String): String {
         val stageName = snowflakeSqlNameUtils.fullyQualifiedStageName(tableName, true)
-        val formatName = snowflakeSqlNameUtils.fullyQualifiedFormatName(tableName.namespace)
 
         return """
             COPY INTO ${snowflakeSqlNameUtils.fullyQualifiedName(tableName)}
             FROM '@$stageName'
-            FILE_FORMAT = $formatName
+            FILE_FORMAT = (
+                TYPE = 'CSV'
+                COMPRESSION = GZIP
+                FIELD_DELIMITER = '$CSV_FIELD_SEPARATOR'
+                RECORD_DELIMITER = '$CSV_LINE_DELIMITER'
+                FIELD_OPTIONALLY_ENCLOSED_BY = '"'
+                TRIM_SPACE = TRUE
+                ERROR_ON_COLUMN_COUNT_MISMATCH = FALSE
+                REPLACE_INVALID_CHARACTERS = TRUE
+                ESCAPE = NONE
+                ESCAPE_UNENCLOSED_FIELD = NONE
+            )
             ON_ERROR = 'ABORT_STATEMENT'
             PURGE = TRUE
             files = ('$filename')
@@ -403,42 +386,67 @@ class SnowflakeDirectLoadSqlGenerator(
 
     fun alterTable(
         tableName: TableName,
-        addedColumns: Set<ColumnDefinition>,
-        deletedColumns: Set<ColumnDefinition>,
-        modifiedColumns: Set<ColumnDefinition>,
+        addedColumns: Map<String, ColumnType>,
+        deletedColumns: Map<String, ColumnType>,
+        modifiedColumns: Map<String, ColumnTypeChange>,
     ): Set<String> {
         val clauses = mutableSetOf<String>()
         val prettyTableName = snowflakeSqlNameUtils.fullyQualifiedName(tableName)
-        addedColumns.forEach {
+        addedColumns.forEach { (name, columnType) ->
             clauses.add(
-                "ALTER TABLE $prettyTableName ADD COLUMN ${it.name.quote()} ${it.type};".andLog()
+                // Note that we intentionally don't set NOT NULL.
+                // We're adding a new column, and we don't know what constitutes a reasonable
+                // default value for preexisting records.
+                // So we add the column as nullable.
+                "ALTER TABLE $prettyTableName ADD COLUMN ${name.quote()} ${columnType.type};".andLog()
             )
         }
         deletedColumns.forEach {
-            clauses.add("ALTER TABLE $prettyTableName DROP COLUMN ${it.name.quote()};".andLog())
+            clauses.add("ALTER TABLE $prettyTableName DROP COLUMN ${it.key.quote()};".andLog())
         }
-        modifiedColumns.forEach {
-            val tempColumn = "${it.name}_${uuidGenerator.v4()}"
-            clauses.add(
-                "ALTER TABLE $prettyTableName ADD COLUMN ${tempColumn.quote()} ${it.type};".andLog()
-            )
-            clauses.add(
-                "UPDATE $prettyTableName SET ${tempColumn.quote()} = CAST(${it.name.quote()} AS ${it.type});".andLog()
-            )
-            val backupColumn = "${tempColumn}_backup"
-            clauses.add(
-                """ALTER TABLE $prettyTableName
-                RENAME COLUMN "${it.name}" TO "$backupColumn";
-            """.trimIndent()
-            )
-            clauses.add(
-                """ALTER TABLE $prettyTableName
-                RENAME COLUMN "$tempColumn" TO "${it.name}";
-            """.trimIndent()
-            )
-            clauses.add(
-                "ALTER TABLE $prettyTableName DROP COLUMN ${backupColumn.quote()};".andLog()
-            )
+        modifiedColumns.forEach { (name, typeChange) ->
+            if (typeChange.originalType.type != typeChange.newType.type) {
+                // If we're changing the actual column type, then we need to add a temp column,
+                // cast the original column to that column, drop the original column,
+                // and rename the temp column.
+                val tempColumn = "${name}_${uuidGenerator.v4()}"
+                clauses.add(
+                    // As above: we add the column as nullable.
+                    "ALTER TABLE $prettyTableName ADD COLUMN ${tempColumn.quote()} ${typeChange.newType.type};".andLog()
+                )
+                clauses.add(
+                    "UPDATE $prettyTableName SET ${tempColumn.quote()} = CAST(${name.quote()} AS ${typeChange.newType.type});".andLog()
+                )
+                val backupColumn = "${tempColumn}_backup"
+                clauses.add(
+                    """
+                    ALTER TABLE $prettyTableName
+                    RENAME COLUMN "$name" TO "$backupColumn";
+                    """.trimIndent()
+                )
+                clauses.add(
+                    """
+                    ALTER TABLE $prettyTableName
+                    RENAME COLUMN "$tempColumn" TO "$name";
+                    """.trimIndent()
+                )
+                clauses.add(
+                    "ALTER TABLE $prettyTableName DROP COLUMN ${backupColumn.quote()};".andLog()
+                )
+            } else if (!typeChange.originalType.nullable && typeChange.newType.nullable) {
+                // If the type is unchanged, we can change a column from NOT NULL to nullable.
+                // But we'll never do the reverse, because there's a decent chance that historical
+                // records
+                // had null values.
+                // Users can always manually ALTER COLUMN ... SET NOT NULL if they want.
+                clauses.add(
+                    """ALTER TABLE $prettyTableName ALTER COLUMN "$name" DROP NOT NULL;""".andLog()
+                )
+            } else {
+                log.info {
+                    "Table ${tableName.toPrettyString()} column $name wants to change from nullable to non-nullable; ignoring this change."
+                }
+            }
         }
         return clauses
     }
