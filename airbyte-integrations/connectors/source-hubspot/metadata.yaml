@@ -2,7 +2,6 @@ data:
   ab_internal:
     ql: 400
     sl: 300
-    requireVersionIncrementsInPullRequests: false
   allowedHosts:
     hosts:
       - api.hubapi.com
