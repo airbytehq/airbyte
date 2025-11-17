@@ -15,9 +15,19 @@ data:
   releaseStage: alpha
   documentationUrl: https://docs.airbyte.com/integrations/destinations/rockset
   tags:
-    - language:java
+  - language:java
   ab_internal:
     sl: 100
     ql: 100
   supportLevel: archived
-metadataSpecVersion: "1.0"
+  externalDocumentationUrls:
+  - title: Rockset documentation
+    url: https://rockset.com/docs/
+    type: api_reference
+  - title: API reference
+    url: https://rockset.com/docs/rest-api/
+    type: api_reference
+  - title: Authentication
+    url: https://rockset.com/docs/rest-api/#authentication
+    type: authentication_guide
+metadataSpecVersion: '1.0'

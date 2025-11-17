@@ -5,9 +5,9 @@ data:
     baseImage: docker.io/airbyte/java-connector-base:2.0.2@sha256:f8e47304842a2c4d75ac223cf4b3c4117aa1c5c9207149369d296616815fe5b0
   registryOverrides:
     cloud:
-      enabled: false # strict encrypt connectors are deployed to Cloud by their non strict encrypt sibling.
+      enabled: false
     oss:
-      enabled: false # strict encrypt connectors are not used on OSS.
+      enabled: false
   connectorSubtype: database
   connectorType: destination
   definitionId: 8b746512-8c2e-6ac1-4adc-b59faafd473c
@@ -20,14 +20,27 @@ data:
   releaseStage: alpha
   documentationUrl: https://docs.airbyte.com/integrations/destinations/mongodb
   tags:
-    - language:java
+  - language:java
   connectorTestSuitesOptions:
-    - suite: unitTests
-    - suite: integrationTests
-      testSecrets:
-        - name: SECRET_DESTINATION-MONGODB-STRICT-ENCRYPT_CREDENTIALS__CREDS
-          fileName: credentials.json
-          secretStore:
-            type: GSM
-            alias: airbyte-connector-testing-secret-store
-metadataSpecVersion: "1.0"
+  - suite: unitTests
+  - suite: integrationTests
+    testSecrets:
+    - name: SECRET_DESTINATION-MONGODB-STRICT-ENCRYPT_CREDENTIALS__CREDS
+      fileName: credentials.json
+      secretStore:
+        type: GSM
+        alias: airbyte-connector-testing-secret-store
+  externalDocumentationUrls:
+  - title: MongoDB documentation
+    url: https://www.mongodb.com/docs/
+    type: api_reference
+  - title: Authentication
+    url: https://www.mongodb.com/docs/manual/core/authentication/
+    type: authentication_guide
+  - title: Role-based access control
+    url: https://www.mongodb.com/docs/manual/core/authorization/
+    type: permissions_scopes
+  - title: MongoDB Status
+    url: https://status.mongodb.com/
+    type: status_page
+metadataSpecVersion: '1.0'

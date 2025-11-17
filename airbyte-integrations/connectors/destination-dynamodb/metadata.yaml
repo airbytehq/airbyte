@@ -18,19 +18,35 @@ data:
   releaseStage: alpha
   documentationUrl: https://docs.airbyte.com/integrations/destinations/dynamodb
   tags:
-    - language:java
+  - language:java
   ab_internal:
     sl: 100
     ql: 200
     requireVersionIncrementsInPullRequests: false
   supportLevel: community
   connectorTestSuitesOptions:
-    - suite: unitTests
-    - suite: integrationTests
-      testSecrets:
-        - name: SECRET_DESTINATION-DYNAMODB__CREDS
-          fileName: config.json
-          secretStore:
-            type: GSM
-            alias: airbyte-connector-testing-secret-store
-metadataSpecVersion: "1.0"
+  - suite: unitTests
+  - suite: integrationTests
+    testSecrets:
+    - name: SECRET_DESTINATION-DYNAMODB__CREDS
+      fileName: config.json
+      secretStore:
+        type: GSM
+        alias: airbyte-connector-testing-secret-store
+  externalDocumentationUrls:
+  - title: DynamoDB documentation
+    url: https://docs.aws.amazon.com/dynamodb/
+    type: api_reference
+  - title: IAM authentication
+    url: https://docs.aws.amazon.com/IAM/latest/UserGuide/id_credentials_access-keys.html
+    type: authentication_guide
+  - title: IAM policies
+    url: https://docs.aws.amazon.com/amazondynamodb/latest/developerguide/iam-policy-structure.html
+    type: permissions_scopes
+  - title: Service quotas
+    url: https://docs.aws.amazon.com/amazondynamodb/latest/developerguide/ServiceQuotas.html
+    type: rate_limits
+  - title: AWS Service Health Dashboard
+    url: https://health.aws.amazon.com/health/status
+    type: status_page
+metadataSpecVersion: '1.0'

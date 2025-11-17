@@ -16,9 +16,19 @@ data:
   releaseStage: alpha
   documentationUrl: https://docs.airbyte.com/integrations/destinations/yugabytedb
   tags:
-    - language:java
+  - language:java
   ab_internal:
     sl: 100
     ql: 100
   supportLevel: archived
-metadataSpecVersion: "1.0"
+  externalDocumentationUrls:
+  - title: YugabyteDB documentation
+    url: https://docs.yugabyte.com/
+    type: api_reference
+  - title: YSQL reference
+    url: https://docs.yugabyte.com/preview/api/ysql/
+    type: sql_reference
+  - title: Authentication
+    url: https://docs.yugabyte.com/preview/secure/authentication/
+    type: authentication_guide
+metadataSpecVersion: '1.0'

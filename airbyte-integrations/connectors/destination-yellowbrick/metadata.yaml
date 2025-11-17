@@ -25,13 +25,20 @@ data:
   supportLevel: community
   supportsDbt: false
   tags:
-    - language:java
+  - language:java
   connectorTestSuitesOptions:
-    - suite: integrationTests
-      testSecrets:
-        - name: SECRET_DESTINATION-YELLOWBRICK_CREDENTIALS__CREDS
-          fileName: config.json
-          secretStore:
-            type: GSM
-            alias: airbyte-connector-testing-secret-store
-metadataSpecVersion: "1.0"
+  - suite: integrationTests
+    testSecrets:
+    - name: SECRET_DESTINATION-YELLOWBRICK_CREDENTIALS__CREDS
+      fileName: config.json
+      secretStore:
+        type: GSM
+        alias: airbyte-connector-testing-secret-store
+  externalDocumentationUrls:
+  - title: Yellowbrick documentation
+    url: https://docs.yellowbrick.com/
+    type: api_reference
+  - title: SQL reference
+    url: https://docs.yellowbrick.com/6.7.1/sql_reference/sql_reference.html
+    type: sql_reference
+metadataSpecVersion: '1.0'

@@ -22,27 +22,42 @@ data:
   releases:
     breakingChanges:
       1.0.0:
-        upgradeDeadline: "2024-05-01"
-        message: >
-          This version removes the option to use "normalization" with Oracle. It also changes
-          the schema and database of Airbyte's "raw" tables to be compatible with the new
-          [Destinations V2](https://docs.airbyte.com/release_notes/upgrading_to_destinations_v2/#what-is-destinations-v2)
-          format. These changes will likely require updates to downstream dbt / SQL models.
-          Selecting `Upgrade` will upgrade **all** connections using this destination at their next sync.
+        upgradeDeadline: '2024-05-01'
+        message: 'This version removes the option to use "normalization" with Oracle.
+          It also changes the schema and database of Airbyte''s "raw" tables to be
+          compatible with the new [Destinations V2](https://docs.airbyte.com/release_notes/upgrading_to_destinations_v2/#what-is-destinations-v2)
+          format. These changes will likely require updates to downstream dbt / SQL
+          models. Selecting `Upgrade` will upgrade **all** connections using this
+          destination at their next sync.
+
+          '
   tags:
-    - language:java
+  - language:java
   ab_internal:
     sl: 100
     ql: 200
     requireVersionIncrementsInPullRequests: false
   supportLevel: community
   connectorTestSuitesOptions:
-    - suite: unitTests
-    - suite: integrationTests
-      testSecrets:
-        - name: SECRET_DESTINATION-ORACLE__CREDS
-          fileName: config.json
-          secretStore:
-            type: GSM
-            alias: airbyte-connector-testing-secret-store
-metadataSpecVersion: "1.0"
+  - suite: unitTests
+  - suite: integrationTests
+    testSecrets:
+    - name: SECRET_DESTINATION-ORACLE__CREDS
+      fileName: config.json
+      secretStore:
+        type: GSM
+        alias: airbyte-connector-testing-secret-store
+  externalDocumentationUrls:
+  - title: Oracle Database documentation
+    url: https://docs.oracle.com/en/database/
+    type: api_reference
+  - title: SQL language reference
+    url: https://docs.oracle.com/en/database/oracle/oracle-database/19/sqlrf/
+    type: sql_reference
+  - title: Database authentication
+    url: https://docs.oracle.com/en/database/oracle/oracle-database/19/dbseg/configuring-authentication.html
+    type: authentication_guide
+  - title: Managing security
+    url: https://docs.oracle.com/en/database/oracle/oracle-database/19/dbseg/
+    type: permissions_scopes
+metadataSpecVersion: '1.0'

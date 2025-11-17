@@ -19,13 +19,26 @@ data:
   releaseStage: alpha
   documentationUrl: https://docs.airbyte.com/integrations/destinations/mongodb
   tags:
-    - language:java
+  - language:java
   ab_internal:
     sl: 100
     ql: 100
     requireVersionIncrementsInPullRequests: false
   supportLevel: community
   connectorTestSuitesOptions:
-    - suite: unitTests
-    - suite: integrationTests
-metadataSpecVersion: "1.0"
+  - suite: unitTests
+  - suite: integrationTests
+  externalDocumentationUrls:
+  - title: MongoDB documentation
+    url: https://www.mongodb.com/docs/
+    type: api_reference
+  - title: Authentication
+    url: https://www.mongodb.com/docs/manual/core/authentication/
+    type: authentication_guide
+  - title: Role-based access control
+    url: https://www.mongodb.com/docs/manual/core/authorization/
+    type: permissions_scopes
+  - title: MongoDB Status
+    url: https://status.mongodb.com/
+    type: status_page
+metadataSpecVersion: '1.0'

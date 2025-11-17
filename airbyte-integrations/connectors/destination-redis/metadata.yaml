@@ -18,13 +18,23 @@ data:
   releaseStage: alpha
   documentationUrl: https://docs.airbyte.com/integrations/destinations/redis
   tags:
-    - language:java
+  - language:java
   ab_internal:
     sl: 100
     ql: 100
     requireVersionIncrementsInPullRequests: false
   supportLevel: community
   connectorTestSuitesOptions:
-    - suite: unitTests
-    - suite: integrationTests
-metadataSpecVersion: "1.0"
+  - suite: unitTests
+  - suite: integrationTests
+  externalDocumentationUrls:
+  - title: Redis documentation
+    url: https://redis.io/docs/
+    type: api_reference
+  - title: Redis ACL
+    url: https://redis.io/docs/management/security/acl/
+    type: permissions_scopes
+  - title: Release notes
+    url: https://redis.io/docs/about/releases/
+    type: api_release_history
+metadataSpecVersion: '1.0'

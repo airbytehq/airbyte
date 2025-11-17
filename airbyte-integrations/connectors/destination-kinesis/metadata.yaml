@@ -16,9 +16,25 @@ data:
   releaseStage: alpha
   documentationUrl: https://docs.airbyte.com/integrations/destinations/kinesis
   tags:
-    - language:java
+  - language:java
   ab_internal:
     sl: 100
     ql: 100
   supportLevel: archived
-metadataSpecVersion: "1.0"
+  externalDocumentationUrls:
+  - title: Kinesis documentation
+    url: https://docs.aws.amazon.com/kinesis/
+    type: api_reference
+  - title: IAM authentication
+    url: https://docs.aws.amazon.com/IAM/latest/UserGuide/id_credentials_access-keys.html
+    type: authentication_guide
+  - title: IAM policies
+    url: https://docs.aws.amazon.com/streams/latest/dev/controlling-access.html
+    type: permissions_scopes
+  - title: Quotas and limits
+    url: https://docs.aws.amazon.com/streams/latest/dev/service-sizes-and-limits.html
+    type: rate_limits
+  - title: AWS Service Health Dashboard
+    url: https://health.aws.amazon.com/health/status
+    type: status_page
+metadataSpecVersion: '1.0'

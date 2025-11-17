@@ -16,7 +16,7 @@ data:
   releaseStage: alpha
   documentationUrl: https://docs.airbyte.com/integrations/destinations/iceberg
   tags:
-    - language:java
+  - language:java
   ab_internal:
     sl: 100
     ql: 100
@@ -24,12 +24,19 @@ data:
   connectorBuildOptions:
     baseImage: docker.io/airbyte/java-connector-base:2.0.0@sha256:5a1a21c75c5e1282606de9fa539ba136520abe2fbd013058e988bb0297a9f454
   connectorTestSuitesOptions:
-    - suite: unitTests
-    - suite: integrationTests
-      testSecrets:
-        - name: SECRET_DESTINATION-ICEBERG_S3_GLUE_CONFIG
-          fileName: s3_glue_config.json
-          secretStore:
-            type: GSM
-            alias: airbyte-connector-testing-secret-store
-metadataSpecVersion: "1.0"
+  - suite: unitTests
+  - suite: integrationTests
+    testSecrets:
+    - name: SECRET_DESTINATION-ICEBERG_S3_GLUE_CONFIG
+      fileName: s3_glue_config.json
+      secretStore:
+        type: GSM
+        alias: airbyte-connector-testing-secret-store
+  externalDocumentationUrls:
+  - title: Apache Iceberg documentation
+    url: https://iceberg.apache.org/docs/latest/
+    type: api_reference
+  - title: Iceberg specification
+    url: https://iceberg.apache.org/spec/
+    type: api_reference
+metadataSpecVersion: '1.0'

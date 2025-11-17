@@ -4,10 +4,10 @@ data:
     sl: 300
   allowedHosts:
     hosts:
-      - "*.${indexing.pinecone_environment}.pinecone.io"
-      - api.openai.com
-      - api.cohere.ai
-      - ${embedding.api_base}
+    - '*.${indexing.pinecone_environment}.pinecone.io'
+    - api.openai.com
+    - api.cohere.ai
+    - ${embedding.api_base}
   connectorBuildOptions:
     baseImage: docker.io/airbyte/python-connector-base:4.0.2@sha256:9fdb1888c4264cf6fee473649ecb593f56f58e5d0096a87ee0b231777e2e3e73
   connectorSubtype: vectorstore
@@ -22,7 +22,7 @@ data:
   name: Pinecone
   remoteRegistries:
     pypi:
-      enabled: false # TODO: enable once the CLI is working
+      enabled: false
       packageName: airbyte-destination-pinecone
   registryOverrides:
     cloud:
@@ -33,28 +33,44 @@ data:
   releaseStage: beta
   resourceRequirements:
     jobSpecific:
-      - jobType: sync
-        resourceRequirements:
-          memory_limit: 2Gi
-          memory_request: 2Gi
+    - jobType: sync
+      resourceRequirements:
+        memory_limit: 2Gi
+        memory_request: 2Gi
   supportLevel: certified
   tags:
-    - language:python
-    - cdk:python
+  - language:python
+  - cdk:python
   connectorTestSuitesOptions:
-    - suite: unitTests
-    - suite: integrationTests
-      testSecrets:
-        - name: SECRET_DESTINATION-PINECONE__CREDS
-          fileName: config.json
-          secretStore:
-            type: GSM
-            alias: airbyte-connector-testing-secret-store
-    - suite: acceptanceTests
-      testSecrets:
-        - name: SECRET_DESTINATION-PINECONE__CREDS
-          fileName: config.json
-          secretStore:
-            type: GSM
-            alias: airbyte-connector-testing-secret-store
-metadataSpecVersion: "1.0"
+  - suite: unitTests
+  - suite: integrationTests
+    testSecrets:
+    - name: SECRET_DESTINATION-PINECONE__CREDS
+      fileName: config.json
+      secretStore:
+        type: GSM
+        alias: airbyte-connector-testing-secret-store
+  - suite: acceptanceTests
+    testSecrets:
+    - name: SECRET_DESTINATION-PINECONE__CREDS
+      fileName: config.json
+      secretStore:
+        type: GSM
+        alias: airbyte-connector-testing-secret-store
+  externalDocumentationUrls:
+  - title: Pinecone documentation
+    url: https://docs.pinecone.io/
+    type: api_reference
+  - title: Authentication
+    url: https://docs.pinecone.io/guides/get-started/authentication
+    type: authentication_guide
+  - title: Rate limits
+    url: https://docs.pinecone.io/troubleshooting/rate-limits
+    type: rate_limits
+  - title: Release notes
+    url: https://docs.pinecone.io/release-notes
+    type: api_release_history
+  - title: Pinecone Status
+    url: https://status.pinecone.io/
+    type: status_page
+metadataSpecVersion: '1.0'

@@ -12,24 +12,24 @@ data:
       enabled: true
   connectorSubtype: file
   connectorTestSuitesOptions:
-    - suite: unitTests
-    - suite: integrationTests
-      testSecrets:
-        - name: SECRET_DESTINATION-ICEBERG_V2_S3_GLUE_CONFIG
-          fileName: glue.json
-          secretStore:
-            type: GSM
-            alias: airbyte-connector-testing-secret-store
-        - name: SECRET_DESTINATION-ICEBERG_V2_S3_GLUE_ASSUME_ROLE_CONFIG
-          fileName: glue_assume_role.json
-          secretStore:
-            type: GSM
-            alias: airbyte-connector-testing-secret-store
-        - name: SECRET_DESTINATION-ICEBERG_V2_S3_GLUE_ASSUME_ROLE_SYSTEM_AWS_CONFIG
-          fileName: glue_aws_assume_role.json
-          secretStore:
-            type: GSM
-            alias: airbyte-connector-testing-secret-store
+  - suite: unitTests
+  - suite: integrationTests
+    testSecrets:
+    - name: SECRET_DESTINATION-ICEBERG_V2_S3_GLUE_CONFIG
+      fileName: glue.json
+      secretStore:
+        type: GSM
+        alias: airbyte-connector-testing-secret-store
+    - name: SECRET_DESTINATION-ICEBERG_V2_S3_GLUE_ASSUME_ROLE_CONFIG
+      fileName: glue_assume_role.json
+      secretStore:
+        type: GSM
+        alias: airbyte-connector-testing-secret-store
+    - name: SECRET_DESTINATION-ICEBERG_V2_S3_GLUE_ASSUME_ROLE_SYSTEM_AWS_CONFIG
+      fileName: glue_aws_assume_role.json
+      secretStore:
+        type: GSM
+        alias: airbyte-connector-testing-secret-store
   connectorType: destination
   definitionId: 716ca874-520b-4902-9f80-9fad66754b89
   dockerImageTag: 0.3.41
@@ -43,5 +43,15 @@ data:
   supportLevel: certified
   supportsRefreshes: true
   tags:
-    - language:java
-metadataSpecVersion: "1.0"
+  - language:java
+  externalDocumentationUrls:
+  - title: AWS S3 documentation
+    url: https://docs.aws.amazon.com/s3/
+    type: api_reference
+  - title: IAM authentication
+    url: https://docs.aws.amazon.com/IAM/latest/UserGuide/id_credentials_access-keys.html
+    type: authentication_guide
+  - title: Bucket policies and permissions
+    url: https://docs.aws.amazon.com/AmazonS3/latest/userguide/access-policy-language-overview.html
+    type: permissions_scopes
+metadataSpecVersion: '1.0'

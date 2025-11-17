@@ -1,8 +1,8 @@
 data:
   allowedHosts:
     hosts:
-      - api.vectara.io
-      - "vectara-prod-${self.customer_id}.auth.us-west-2.amazoncognito.com"
+    - api.vectara.io
+    - vectara-prod-${self.customer_id}.auth.us-west-2.amazoncognito.com
   registryOverrides:
     oss:
       enabled: true
@@ -21,21 +21,28 @@ data:
   name: Vectara
   remoteRegistries:
     pypi:
-      enabled: false # TODO: enable once the CLI is working
+      enabled: false
       packageName: airbyte-destination-vectara
   releaseDate: 2023-12-16
   releaseStage: alpha
   supportLevel: community
   documentationUrl: https://docs.airbyte.com/integrations/destinations/vectara
   tags:
-    - language:python
-    - cdk:python
+  - language:python
+  - cdk:python
   connectorTestSuitesOptions:
-    - suite: integrationTests
-      testSecrets:
-        - name: SECRET_DESTINATION_VECTARA_CREDS
-          fileName: config.json
-          secretStore:
-            type: GSM
-            alias: airbyte-connector-testing-secret-store
-metadataSpecVersion: "1.0"
+  - suite: integrationTests
+    testSecrets:
+    - name: SECRET_DESTINATION_VECTARA_CREDS
+      fileName: config.json
+      secretStore:
+        type: GSM
+        alias: airbyte-connector-testing-secret-store
+  externalDocumentationUrls:
+  - title: Vectara documentation
+    url: https://docs.vectara.com/
+    type: api_reference
+  - title: Authentication
+    url: https://docs.vectara.com/docs/learn/authentication/auth-overview
+    type: authentication_guide
+metadataSpecVersion: '1.0'

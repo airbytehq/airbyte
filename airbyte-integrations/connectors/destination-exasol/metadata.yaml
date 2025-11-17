@@ -15,9 +15,16 @@ data:
   releaseStage: alpha
   documentationUrl: https://docs.airbyte.com/integrations/destinations/exasol
   tags:
-    - language:java
+  - language:java
   ab_internal:
     sl: 100
     ql: 100
   supportLevel: archived
-metadataSpecVersion: "1.0"
+  externalDocumentationUrls:
+  - title: Exasol documentation
+    url: https://docs.exasol.com/
+    type: api_reference
+  - title: SQL reference
+    url: https://docs.exasol.com/db/latest/sql_references/sqlreferencesoverview.htm
+    type: sql_reference
+metadataSpecVersion: '1.0'

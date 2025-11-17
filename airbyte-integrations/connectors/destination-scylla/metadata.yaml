@@ -16,9 +16,19 @@ data:
   releaseStage: alpha
   documentationUrl: https://docs.airbyte.com/integrations/destinations/scylla
   tags:
-    - language:java
+  - language:java
   ab_internal:
     sl: 100
     ql: 100
   supportLevel: archived
-metadataSpecVersion: "1.0"
+  externalDocumentationUrls:
+  - title: ScyllaDB documentation
+    url: https://docs.scylladb.com/
+    type: api_reference
+  - title: CQL reference
+    url: https://docs.scylladb.com/stable/cql/
+    type: sql_reference
+  - title: Authentication
+    url: https://docs.scylladb.com/stable/operating-scylla/security/authentication.html
+    type: authentication_guide
+metadataSpecVersion: '1.0'

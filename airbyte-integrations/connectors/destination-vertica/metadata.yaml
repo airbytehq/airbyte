@@ -16,9 +16,16 @@ data:
   releaseStage: alpha
   documentationUrl: https://docs.airbyte.com/integrations/destinations/vertica
   tags:
-    - language:java
+  - language:java
   ab_internal:
     sl: 100
     ql: 100
   supportLevel: archived
-metadataSpecVersion: "1.0"
+  externalDocumentationUrls:
+  - title: Vertica documentation
+    url: https://www.vertica.com/docs/latest/HTML/Content/Home.htm
+    type: api_reference
+  - title: SQL reference
+    url: https://www.vertica.com/docs/latest/HTML/Content/Authoring/SQLReferenceManual/SQLReferenceManual.htm
+    type: sql_reference
+metadataSpecVersion: '1.0'

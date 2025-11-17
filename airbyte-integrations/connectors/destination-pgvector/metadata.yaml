@@ -4,9 +4,9 @@ data:
     sl: 200
   allowedHosts:
     hosts:
-      - api.openai.com
-      - api.cohere.ai
-      - ${embedding.api_base}
+    - api.openai.com
+    - api.cohere.ai
+    - ${embedding.api_base}
   connectorBuildOptions:
     baseImage: docker.io/airbyte/python-connector-base:4.0.2@sha256:9fdb1888c4264cf6fee473649ecb593f56f58e5d0096a87ee0b231777e2e3e73
   connectorSubtype: vectorstore
@@ -32,22 +32,27 @@ data:
   releaseStage: beta
   resourceRequirements:
     jobSpecific:
-      - jobType: sync
-        resourceRequirements:
-          memory_limit: 2Gi
-          memory_request: 2Gi
+    - jobType: sync
+      resourceRequirements:
+        memory_limit: 2Gi
+        memory_request: 2Gi
   supportLevel: certified
   tags:
-    - language:python
-    - cdk:python
+  - language:python
+  - cdk:python
   connectorTestSuitesOptions:
-    # Temporarily disabled due to test coverage not passing
-    # - suite: unitTests
-    - suite: integrationTests
-      testSecrets:
-        - name: SECRET_DESTINATION-PGVECTOR__CREDS
-          fileName: config.json
-          secretStore:
-            type: GSM
-            alias: airbyte-connector-testing-secret-store
-metadataSpecVersion: "1.0"
+  - suite: integrationTests
+    testSecrets:
+    - name: SECRET_DESTINATION-PGVECTOR__CREDS
+      fileName: config.json
+      secretStore:
+        type: GSM
+        alias: airbyte-connector-testing-secret-store
+  externalDocumentationUrls:
+  - title: pgvector documentation
+    url: https://github.com/pgvector/pgvector
+    type: api_reference
+  - title: PostgreSQL documentation
+    url: https://www.postgresql.org/docs/current/
+    type: api_reference
+metadataSpecVersion: '1.0'

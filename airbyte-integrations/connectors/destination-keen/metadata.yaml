@@ -16,9 +16,16 @@ data:
   releaseStage: alpha
   documentationUrl: https://docs.airbyte.com/integrations/destinations/keen
   tags:
-    - language:java
+  - language:java
   ab_internal:
     sl: 100
     ql: 100
   supportLevel: archived
-metadataSpecVersion: "1.0"
+  externalDocumentationUrls:
+  - title: Keen documentation
+    url: https://keen.io/docs/
+    type: api_reference
+  - title: Authentication
+    url: https://keen.io/docs/api/#authentication
+    type: authentication_guide
+metadataSpecVersion: '1.0'

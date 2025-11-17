@@ -12,19 +12,29 @@ data:
   name: Kafka
   registryOverrides:
     cloud:
-      enabled: false # hide Kafka Destination https://github.com/airbytehq/airbyte-cloud/issues/2610
+      enabled: false
     oss:
       enabled: true
   releaseStage: alpha
   documentationUrl: https://docs.airbyte.com/integrations/destinations/kafka
   tags:
-    - language:java
+  - language:java
   ab_internal:
     sl: 100
     ql: 100
     requireVersionIncrementsInPullRequests: false
   supportLevel: community
   connectorTestSuitesOptions:
-    - suite: unitTests
-    - suite: integrationTests
-metadataSpecVersion: "1.0"
+  - suite: unitTests
+  - suite: integrationTests
+  externalDocumentationUrls:
+  - title: Apache Kafka documentation
+    url: https://kafka.apache.org/documentation/
+    type: api_reference
+  - title: Security
+    url: https://kafka.apache.org/documentation/#security
+    type: authentication_guide
+  - title: Quotas
+    url: https://kafka.apache.org/documentation/#design_quotas
+    type: rate_limits
+metadataSpecVersion: '1.0'

@@ -16,9 +16,16 @@ data:
   releaseStage: alpha
   documentationUrl: https://docs.airbyte.com/integrations/destinations/pulsar
   tags:
-    - language:java
+  - language:java
   ab_internal:
     sl: 100
     ql: 100
   supportLevel: archived
-metadataSpecVersion: "1.0"
+  externalDocumentationUrls:
+  - title: Apache Pulsar documentation
+    url: https://pulsar.apache.org/docs/en/standalone/
+    type: api_reference
+  - title: Security
+    url: https://pulsar.apache.org/docs/en/security-overview/
+    type: authentication_guide
+metadataSpecVersion: '1.0'

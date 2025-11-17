@@ -1,10 +1,10 @@
 data:
   allowedHosts:
     hosts:
-      - "${indexing.host}"
-      - api.openai.com
-      - api.cohere.ai
-      - "${embedding.api_base}"
+    - ${indexing.host}
+    - api.openai.com
+    - api.cohere.ai
+    - ${embedding.api_base}
   registryOverrides:
     cloud:
       enabled: true
@@ -12,11 +12,10 @@ data:
       enabled: true
   resourceRequirements:
     jobSpecific:
-      - jobType: sync
-        # TODO: Remove once https://github.com/airbytehq/airbyte/issues/30611 is resolved
-        resourceRequirements:
-          memory_limit: 2Gi
-          memory_request: 2Gi
+    - jobType: sync
+      resourceRequirements:
+        memory_limit: 2Gi
+        memory_request: 2Gi
   connectorBuildOptions:
     baseImage: docker.io/airbyte/python-connector-base:4.0.2@sha256:9fdb1888c4264cf6fee473649ecb593f56f58e5d0096a87ee0b231777e2e3e73
   connectorSubtype: vectorstore
@@ -32,26 +31,36 @@ data:
   releaseStage: alpha
   documentationUrl: https://docs.airbyte.com/integrations/destinations/milvus
   tags:
-    - language:python
-    - cdk:python
+  - language:python
+  - cdk:python
   ab_internal:
     sl: 300
     ql: 300
   supportLevel: certified
   connectorTestSuitesOptions:
-    - suite: unitTests
-    - suite: integrationTests
-      testSecrets:
-        - name: SECRET_DESTINATION-MILVUS_CREDS
-          fileName: config.json
-          secretStore:
-            type: GSM
-            alias: airbyte-connector-testing-secret-store
-    - suite: acceptanceTests
-      testSecrets:
-        - name: SECRET_DESTINATION-MILVUS_CREDS
-          fileName: config.json
-          secretStore:
-            type: GSM
-            alias: airbyte-connector-testing-secret-store
-metadataSpecVersion: "1.0"
+  - suite: unitTests
+  - suite: integrationTests
+    testSecrets:
+    - name: SECRET_DESTINATION-MILVUS_CREDS
+      fileName: config.json
+      secretStore:
+        type: GSM
+        alias: airbyte-connector-testing-secret-store
+  - suite: acceptanceTests
+    testSecrets:
+    - name: SECRET_DESTINATION-MILVUS_CREDS
+      fileName: config.json
+      secretStore:
+        type: GSM
+        alias: airbyte-connector-testing-secret-store
+  externalDocumentationUrls:
+  - title: Milvus documentation
+    url: https://milvus.io/docs
+    type: api_reference
+  - title: Authentication
+    url: https://milvus.io/docs/authenticate.md
+    type: authentication_guide
+  - title: Release notes
+    url: https://milvus.io/docs/release_notes.md
+    type: api_release_history
+metadataSpecVersion: '1.0'

@@ -16,9 +16,22 @@ data:
   releaseStage: alpha
   documentationUrl: https://docs.airbyte.com/integrations/destinations/r2
   tags:
-    - language:java
+  - language:java
   ab_internal:
     sl: 100
     ql: 100
   supportLevel: archived
-metadataSpecVersion: "1.0"
+  externalDocumentationUrls:
+  - title: Cloudflare R2 documentation
+    url: https://developers.cloudflare.com/r2/
+    type: api_reference
+  - title: Authentication
+    url: https://developers.cloudflare.com/r2/api/s3/tokens/
+    type: authentication_guide
+  - title: Limits
+    url: https://developers.cloudflare.com/r2/platform/limits/
+    type: rate_limits
+  - title: Cloudflare Status
+    url: https://www.cloudflarestatus.com/
+    type: status_page
+metadataSpecVersion: '1.0'
