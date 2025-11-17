@@ -384,9 +384,10 @@ class PostgresSourceJdbcCursorIncrementalPartition(
         val querySpec =
             SelectQuerySpec(
                 SelectColumns((stream.fields).distinct()),
-                FromSample(stream.name, stream.namespace, sampleRateInvPow2, sampleSize, where),
+                From(stream.name, stream.namespace),
                 //                where,
-                orderBy = OrderBy(cursor),
+                //orderBy = OrderBy(cursor),
+                limit = Limit(sampleSize.toLong())
             )
         return selectQueryGenerator.generate(querySpec.optimize())
     }
