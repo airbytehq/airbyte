@@ -1,7 +1,7 @@
 data:
   allowedHosts:
     hosts:
-    - '*.apps.astra.datastax.com'
+      - "*.apps.astra.datastax.com"
   registryOverrides:
     oss:
       enabled: true
@@ -23,32 +23,32 @@ data:
   supportLevel: community
   documentationUrl: https://docs.airbyte.com/integrations/destinations/astra
   tags:
-  - language:python
-  - cdk:python
+    - language:python
+    - cdk:python
   connectorTestSuitesOptions:
-  - suite: unitTests
-  - suite: integrationTests
-    testSecrets:
-    - name: SECRET_DESTINATION-ASTRA__CREDS
-      fileName: config.json
-      secretStore:
-        type: GSM
-        alias: airbyte-connector-testing-secret-store
-  - suite: acceptanceTests
-    testSecrets:
-    - name: SECRET_DESTINATION-ASTRA__CREDS
-      fileName: config.json
-      secretStore:
-        type: GSM
-        alias: airbyte-connector-testing-secret-store
+    - suite: unitTests
+    - suite: integrationTests
+      testSecrets:
+        - name: SECRET_DESTINATION-ASTRA__CREDS
+          fileName: config.json
+          secretStore:
+            type: GSM
+            alias: airbyte-connector-testing-secret-store
+    - suite: acceptanceTests
+      testSecrets:
+        - name: SECRET_DESTINATION-ASTRA__CREDS
+          fileName: config.json
+          secretStore:
+            type: GSM
+            alias: airbyte-connector-testing-secret-store
   externalDocumentationUrls:
-  - title: DataStax Astra documentation
-    url: https://docs.datastax.com/en/astra-serverless/docs/
-    type: api_reference
-  - title: CQL reference
-    url: https://docs.datastax.com/en/cql-oss/3.x/cql/cql_reference/cqlReferenceTOC.html
-    type: sql_reference
-  - title: Authentication
-    url: https://docs.datastax.com/en/astra-serverless/docs/manage/org/manage-tokens.html
-    type: authentication_guide
-metadataSpecVersion: '1.0'
+    - title: DataStax Astra documentation
+      url: https://docs.datastax.com/en/astra-serverless/docs/
+      type: api_reference
+    - title: CQL reference
+      url: https://docs.datastax.com/en/cql-oss/3.x/cql/cql_reference/cqlReferenceTOC.html
+      type: sql_reference
+    - title: Authentication
+      url: https://docs.datastax.com/en/astra-serverless/docs/manage/org/manage-tokens.html
+      type: authentication_guide
+metadataSpecVersion: "1.0"

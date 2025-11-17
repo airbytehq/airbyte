@@ -14,11 +14,11 @@ data:
     dataChannel:
       version: 0.0.2
       supportedSerialization:
-      - JSONL
-      - PROTOBUF
+        - JSONL
+        - PROTOBUF
       supportedTransport:
-      - SOCKET
-      - STDIO
+        - SOCKET
+        - STDIO
   registryOverrides:
     cloud:
       enabled: true
@@ -30,37 +30,38 @@ data:
       enableProgressiveRollout: false
     breakingChanges:
       2.0.0:
-        message: 'This connector has been re-written from scratch. Data will now be
+        message:
+          "This connector has been re-written from scratch. Data will now be
           typed and stored in final (non-raw) tables. The connector may require changes
           to its configuration to function properly and downstream pipelines may be
-          affected. Warning: SSH tunneling is in Beta.'
-        upgradeDeadline: '2025-08-19'
+          affected. Warning: SSH tunneling is in Beta."
+        upgradeDeadline: "2025-08-19"
   documentationUrl: https://docs.airbyte.com/integrations/destinations/clickhouse
   tags:
-  - language:java
+    - language:java
   ab_internal:
     sl: 300
     ql: 300
     requireVersionIncrementsInPullRequests: false
   supportLevel: certified
   connectorTestSuitesOptions:
-  - suite: unitTests
-  - suite: integrationTests
-    testSecrets:
-    - name: destination_clickhouse_component_test_instance
-      fileName: test-instance.json
-      secretStore:
-        type: GSM
-        alias: airbyte-connector-testing-secret-store
+    - suite: unitTests
+    - suite: integrationTests
+      testSecrets:
+        - name: destination_clickhouse_component_test_instance
+          fileName: test-instance.json
+          secretStore:
+            type: GSM
+            alias: airbyte-connector-testing-secret-store
   supportsRefreshes: true
   externalDocumentationUrls:
-  - title: ClickHouse documentation
-    url: https://clickhouse.com/docs
-    type: api_reference
-  - title: SQL reference
-    url: https://clickhouse.com/docs/en/sql-reference
-    type: sql_reference
-  - title: User authentication
-    url: https://clickhouse.com/docs/en/operations/access-rights
-    type: authentication_guide
-metadataSpecVersion: '1.0'
+    - title: ClickHouse documentation
+      url: https://clickhouse.com/docs
+      type: api_reference
+    - title: SQL reference
+      url: https://clickhouse.com/docs/en/sql-reference
+      type: sql_reference
+    - title: User authentication
+      url: https://clickhouse.com/docs/en/operations/access-rights
+      type: authentication_guide
+metadataSpecVersion: "1.0"

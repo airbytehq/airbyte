@@ -11,14 +11,14 @@ data:
       enabled: true
   connectorSubtype: file
   connectorTestSuitesOptions:
-  - suite: unitTests
-  - suite: integrationTests
-    testSecrets:
-    - name: SECRET_DESTINATION_GCS_DATA_LAKE_BIGLAKE
-      fileName: biglake.json
-      secretStore:
-        type: GSM
-        alias: airbyte-connector-testing-secret-store
+    - suite: unitTests
+    - suite: integrationTests
+      testSecrets:
+        - name: SECRET_DESTINATION_GCS_DATA_LAKE_BIGLAKE
+          fileName: biglake.json
+          secretStore:
+            type: GSM
+            alias: airbyte-connector-testing-secret-store
   connectorType: destination
   definitionId: 8c8a2d3e-1b4f-4a9c-9e7d-6f5a4b3c2d1e
   dockerImageTag: 1.0.2
@@ -32,15 +32,15 @@ data:
   supportLevel: certified
   supportsRefreshes: true
   tags:
-  - language:java
+    - language:java
   externalDocumentationUrls:
-  - title: Cloud Storage documentation
-    url: https://cloud.google.com/storage/docs
-    type: api_reference
-  - title: Service account authentication
-    url: https://cloud.google.com/iam/docs/service-accounts
-    type: authentication_guide
-  - title: Access control
-    url: https://cloud.google.com/storage/docs/access-control
-    type: permissions_scopes
-metadataSpecVersion: '1.0'
+    - title: Cloud Storage documentation
+      url: https://cloud.google.com/storage/docs
+      type: api_reference
+    - title: Service account authentication
+      url: https://cloud.google.com/iam/docs/service-accounts
+      type: authentication_guide
+    - title: Access control
+      url: https://cloud.google.com/storage/docs/access-control
+      type: permissions_scopes
+metadataSpecVersion: "1.0"

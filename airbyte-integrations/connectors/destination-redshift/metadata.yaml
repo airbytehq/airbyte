@@ -6,39 +6,39 @@ data:
     baseImage: docker.io/airbyte/java-connector-base:2.0.1@sha256:ec89bd1a89e825514dd2fc8730ba299a3ae1544580a078df0e35c5202c2085b3
   connectorSubtype: database
   connectorTestSuitesOptions:
-  - suite: unitTests
-  - suite: integrationTests
-    testSecrets:
-    - fileName: 1s1t_config.json
-      name: SECRET_DESTINATION-REDSHIFT_1S1T_CONFIG
-      secretStore:
-        alias: airbyte-connector-testing-secret-store
-        type: GSM
-    - fileName: 1s1t_config_raw_schema_override.json
-      name: SECRET_DESTINATION-REDSHIFT_1S1T_CONFIG_RAW_SCHEMA_OVERRIDE_DISABLE_TYPING_DEDUPING
-      secretStore:
-        alias: airbyte-connector-testing-secret-store
-        type: GSM
-    - fileName: 1s1t_config_staging.json
-      name: SECRET_DESTINATION-REDSHIFT_1S1T_CONFIG_STAGING
-      secretStore:
-        alias: airbyte-connector-testing-secret-store
-        type: GSM
-    - fileName: 1s1t_config_staging_raw_schema_override.json
-      name: SECRET_DESTINATION-REDSHIFT_1S1T_CONFIG_STAGING_RAW_SCHEMA_OVERRIDE_DISABLE_TYPING_DEDUPING
-      secretStore:
-        alias: airbyte-connector-testing-secret-store
-        type: GSM
-    - fileName: config_staging.json
-      name: SECRET_DESTINATION-REDSHIFT_STAGING__CREDS
-      secretStore:
-        alias: airbyte-connector-testing-secret-store
-        type: GSM
-    - fileName: config.json
-      name: SECRET_DESTINATION-REDSHIFT__CREDS
-      secretStore:
-        alias: airbyte-connector-testing-secret-store
-        type: GSM
+    - suite: unitTests
+    - suite: integrationTests
+      testSecrets:
+        - fileName: 1s1t_config.json
+          name: SECRET_DESTINATION-REDSHIFT_1S1T_CONFIG
+          secretStore:
+            alias: airbyte-connector-testing-secret-store
+            type: GSM
+        - fileName: 1s1t_config_raw_schema_override.json
+          name: SECRET_DESTINATION-REDSHIFT_1S1T_CONFIG_RAW_SCHEMA_OVERRIDE_DISABLE_TYPING_DEDUPING
+          secretStore:
+            alias: airbyte-connector-testing-secret-store
+            type: GSM
+        - fileName: 1s1t_config_staging.json
+          name: SECRET_DESTINATION-REDSHIFT_1S1T_CONFIG_STAGING
+          secretStore:
+            alias: airbyte-connector-testing-secret-store
+            type: GSM
+        - fileName: 1s1t_config_staging_raw_schema_override.json
+          name: SECRET_DESTINATION-REDSHIFT_1S1T_CONFIG_STAGING_RAW_SCHEMA_OVERRIDE_DISABLE_TYPING_DEDUPING
+          secretStore:
+            alias: airbyte-connector-testing-secret-store
+            type: GSM
+        - fileName: config_staging.json
+          name: SECRET_DESTINATION-REDSHIFT_STAGING__CREDS
+          secretStore:
+            alias: airbyte-connector-testing-secret-store
+            type: GSM
+        - fileName: config.json
+          name: SECRET_DESTINATION-REDSHIFT__CREDS
+          secretStore:
+            alias: airbyte-connector-testing-secret-store
+            type: GSM
   connectorType: destination
   definitionId: f7a7d195-377f-cf5b-70a5-be6b819019dc
   dockerImageTag: 3.5.3
@@ -57,7 +57,8 @@ data:
   releases:
     breakingChanges:
       2.0.0:
-        message: 'This version introduces [Destinations V2](https://docs.airbyte.com/release_notes/upgrading_to_destinations_v2/#what-is-destinations-v2),
+        message:
+          "This version introduces [Destinations V2](https://docs.airbyte.com/release_notes/upgrading_to_destinations_v2/#what-is-destinations-v2),
           which provides better error handling, incremental delivery of data for large
           syncs, and improved final table structures. To review the breaking changes,
           and how to upgrade, see [here](https://docs.airbyte.com/release_notes/upgrading_to_destinations_v2/#quick-start-to-upgrading).
@@ -67,45 +68,46 @@ data:
           at their next sync. You can manually sync existing connections prior to
           the next scheduled sync to start the upgrade early.
 
-          '
-        upgradeDeadline: '2024-03-15'
+          "
+        upgradeDeadline: "2024-03-15"
       3.0.0:
-        message: 'Version 3.0.0 of destination-redshift removes support for the "standard
+        message:
+          'Version 3.0.0 of destination-redshift removes support for the "standard
           inserts" mode. S3 staging was always preferred for being faster and less
           expensive, and as part of Airbyte 1.0, we are officially removing the inferior
           "standard inserts" mode. Upgrading to this version of the destination will
           require a configuration with an S3 staging area.
 
           '
-        upgradeDeadline: '2024-07-31'
+        upgradeDeadline: "2024-07-31"
   resourceRequirements:
     jobSpecific:
-    - jobType: sync
-      resourceRequirements:
-        memory_limit: 1Gi
-        memory_request: 1Gi
+      - jobType: sync
+        resourceRequirements:
+          memory_limit: 1Gi
+          memory_request: 1Gi
   supportLevel: certified
   supportsDbt: true
   supportsRefreshes: true
   tags:
-  - language:java
+    - language:java
   externalDocumentationUrls:
-  - title: Release notes
-    url: https://docs.aws.amazon.com/redshift/latest/mgmt/release-notes.html
-    type: api_release_history
-  - title: SQL reference
-    url: https://docs.aws.amazon.com/redshift/latest/dg/c_SQL_reference.html
-    type: sql_reference
-  - title: Database authentication
-    url: https://docs.aws.amazon.com/redshift/latest/mgmt/generating-user-credentials.html
-    type: authentication_guide
-  - title: Access control
-    url: https://docs.aws.amazon.com/redshift/latest/dg/r_GRANT.html
-    type: permissions_scopes
-  - title: Quotas and limits
-    url: https://docs.aws.amazon.com/redshift/latest/mgmt/amazon-redshift-limits.html
-    type: rate_limits
-  - title: AWS Service Health Dashboard
-    url: https://health.aws.amazon.com/health/status
-    type: status_page
-metadataSpecVersion: '1.0'
+    - title: Release notes
+      url: https://docs.aws.amazon.com/redshift/latest/mgmt/release-notes.html
+      type: api_release_history
+    - title: SQL reference
+      url: https://docs.aws.amazon.com/redshift/latest/dg/c_SQL_reference.html
+      type: sql_reference
+    - title: Database authentication
+      url: https://docs.aws.amazon.com/redshift/latest/mgmt/generating-user-credentials.html
+      type: authentication_guide
+    - title: Access control
+      url: https://docs.aws.amazon.com/redshift/latest/dg/r_GRANT.html
+      type: permissions_scopes
+    - title: Quotas and limits
+      url: https://docs.aws.amazon.com/redshift/latest/mgmt/amazon-redshift-limits.html
+      type: rate_limits
+    - title: AWS Service Health Dashboard
+      url: https://health.aws.amazon.com/health/status
+      type: status_page
+metadataSpecVersion: "1.0"

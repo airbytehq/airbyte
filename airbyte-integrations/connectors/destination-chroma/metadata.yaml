@@ -15,21 +15,21 @@ data:
   icon: chroma.svg
   license: ELv2
   name: Chroma
-  releaseDate: '2023-09-13'
+  releaseDate: "2023-09-13"
   releaseStage: alpha
   supportLevel: community
   documentationUrl: https://docs.airbyte.com/integrations/destinations/chroma
   tags:
-  - language:python
-  - cdk:python
+    - language:python
+    - cdk:python
   connectorTestSuitesOptions:
-  - suite: unitTests
-  - suite: integrationTests
+    - suite: unitTests
+    - suite: integrationTests
   externalDocumentationUrls:
-  - title: Chroma documentation
-    url: https://docs.trychroma.com/
-    type: api_reference
-  - title: Authentication
-    url: https://docs.trychroma.com/deployment/auth
-    type: authentication_guide
-metadataSpecVersion: '1.0'
+    - title: Chroma documentation
+      url: https://docs.trychroma.com/
+      type: api_reference
+    - title: Authentication
+      url: https://docs.trychroma.com/deployment/auth
+      type: authentication_guide
+metadataSpecVersion: "1.0"

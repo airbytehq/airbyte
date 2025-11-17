@@ -19,29 +19,29 @@ data:
   documentationUrl: https://docs.airbyte.com/integrations/destinations/firebolt
   supportsDbt: true
   tags:
-  - language:python
-  - cdk:python
+    - language:python
+    - cdk:python
   ab_internal:
     sl: 100
     ql: 100
   supportLevel: community
   connectorTestSuitesOptions:
-  - suite: unitTests
-  - suite: integrationTests
-    testSecrets:
-    - name: SECRET_DESTINATION-FIREBOLT_CREDS
-      fileName: config.json
-      secretStore:
-        type: GSM
-        alias: airbyte-connector-testing-secret-store
+    - suite: unitTests
+    - suite: integrationTests
+      testSecrets:
+        - name: SECRET_DESTINATION-FIREBOLT_CREDS
+          fileName: config.json
+          secretStore:
+            type: GSM
+            alias: airbyte-connector-testing-secret-store
   externalDocumentationUrls:
-  - title: Firebolt documentation
-    url: https://docs.firebolt.io/
-    type: api_reference
-  - title: SQL reference
-    url: https://docs.firebolt.io/sql_reference/
-    type: sql_reference
-  - title: Authentication
-    url: https://docs.firebolt.io/godocs/Overview/managing-your-organization/service-accounts.html
-    type: authentication_guide
-metadataSpecVersion: '1.0'
+    - title: Firebolt documentation
+      url: https://docs.firebolt.io/
+      type: api_reference
+    - title: SQL reference
+      url: https://docs.firebolt.io/sql_reference/
+      type: sql_reference
+    - title: Authentication
+      url: https://docs.firebolt.io/godocs/Overview/managing-your-organization/service-accounts.html
+      type: authentication_guide
+metadataSpecVersion: "1.0"

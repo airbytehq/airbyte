@@ -23,7 +23,8 @@ data:
       enableProgressiveRollout: false
     breakingChanges:
       2.0.0:
-        message: 'This version introduces [Destinations V2](https://docs.airbyte.com/release_notes/upgrading_to_destinations_v2/#what-is-destinations-v2),
+        message:
+          "This version introduces [Destinations V2](https://docs.airbyte.com/release_notes/upgrading_to_destinations_v2/#what-is-destinations-v2),
           which provides better error handling, incremental delivery of data for large
           syncs, and improved final table structures. To review the breaking changes,
           and how to upgrade, see [here](https://docs.airbyte.com/release_notes/upgrading_to_destinations_v2/#quick-start-to-upgrading).
@@ -32,28 +33,28 @@ data:
           Selecting `Upgrade` will upgrade **all** connections using this destination
           at their next sync. For more controlled upgrade [see instructions](https://docs.airbyte.com/release_notes/upgrading_to_destinations_v2/#upgrading-connections-one-by-one-with-dual-writing).
 
-          '
-        upgradeDeadline: '2024-05-31'
+          "
+        upgradeDeadline: "2024-05-31"
   releaseStage: generally_available
   supportLevel: certified
   supportsRefreshes: true
   supportsDbt: true
   tags:
-  - language:java
+    - language:java
   connectorTestSuitesOptions:
-  - suite: unitTests
-  - suite: integrationTests
+    - suite: unitTests
+    - suite: integrationTests
   externalDocumentationUrls:
-  - title: PostgreSQL documentation
-    url: https://www.postgresql.org/docs/current/
-    type: api_reference
-  - title: SQL commands
-    url: https://www.postgresql.org/docs/current/sql-commands.html
-    type: sql_reference
-  - title: Client authentication
-    url: https://www.postgresql.org/docs/current/client-authentication.html
-    type: authentication_guide
-  - title: Database roles and privileges
-    url: https://www.postgresql.org/docs/current/user-manag.html
-    type: permissions_scopes
-metadataSpecVersion: '1.0'
+    - title: PostgreSQL documentation
+      url: https://www.postgresql.org/docs/current/
+      type: api_reference
+    - title: SQL commands
+      url: https://www.postgresql.org/docs/current/sql-commands.html
+      type: sql_reference
+    - title: Client authentication
+      url: https://www.postgresql.org/docs/current/client-authentication.html
+      type: authentication_guide
+    - title: Database roles and privileges
+      url: https://www.postgresql.org/docs/current/user-manag.html
+      type: permissions_scopes
+metadataSpecVersion: "1.0"

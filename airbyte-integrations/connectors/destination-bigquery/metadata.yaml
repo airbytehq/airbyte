@@ -19,11 +19,11 @@ data:
     dataChannel:
       version: 0.0.2
       supportedSerialization:
-      - JSONL
-      - PROTOBUF
+        - JSONL
+        - PROTOBUF
       supportedTransport:
-      - SOCKET
-      - STDIO
+        - SOCKET
+        - STDIO
   registryOverrides:
     cloud:
       enabled: true
@@ -33,7 +33,8 @@ data:
   releases:
     breakingChanges:
       2.0.0:
-        message: '**Do not upgrade until you have run a test upgrade as outlined [here](https://docs.airbyte.com/release_notes/upgrading_to_destinations_v2/#testing-destinations-v2-for-a-single-connection)**.
+        message:
+          "**Do not upgrade until you have run a test upgrade as outlined [here](https://docs.airbyte.com/release_notes/upgrading_to_destinations_v2/#testing-destinations-v2-for-a-single-connection)**.
 
           This version introduces [Destinations V2](https://docs.airbyte.com/release_notes/upgrading_to_destinations_v2/#what-is-destinations-v2),
           which provides better error handling, incremental delivery of data for large
@@ -46,76 +47,77 @@ data:
           at their next sync. You can manually sync existing connections prior to
           the next scheduled sync to start the upgrade early.
 
-          '
-        upgradeDeadline: '2023-11-07'
+          "
+        upgradeDeadline: "2023-11-07"
       3.0.0:
-        message: If you never interact with the raw tables, you can upgrade without
+        message:
+          If you never interact with the raw tables, you can upgrade without
           taking any action. Otherwise, make sure to read the migration guide for
           more details.
-        upgradeDeadline: '2026-07-31'
+        upgradeDeadline: "2026-07-31"
     rolloutConfiguration:
       enableProgressiveRollout: false
   resourceRequirements:
     jobSpecific:
-    - jobType: sync
-      resourceRequirements:
-        memory_request: 1Gi
+      - jobType: sync
+        resourceRequirements:
+          memory_request: 1Gi
   supportLevel: certified
   supportsDbt: true
   supportsRefreshes: true
   tags:
-  - language:java
+    - language:java
   connectorTestSuitesOptions:
-  - suite: unitTests
-  - suite: integrationTests
-    testSecrets:
-    - name: SECRET_DESTINATION-BIGQUERY_CREDENTIALS_1S1T_GCS
-      fileName: credentials-1s1t-gcs.json
-      secretStore:
-        type: GSM
-        alias: airbyte-connector-testing-secret-store
-    - name: SECRET_DESTINATION-BIGQUERY_CREDENTIALS_1S1T_STANDARD
-      fileName: credentials-1s1t-standard.json
-      secretStore:
-        type: GSM
-        alias: airbyte-connector-testing-secret-store
-    - name: SECRET_DESTINATION-BIGQUERY_CREDENTIALS_BAD_PROJECT_CREDS
-      fileName: credentials-badproject.json
-      secretStore:
-        type: GSM
-        alias: airbyte-connector-testing-secret-store
-    - name: SECRET_DESTINATION-BIGQUERY_CREDENTIALS_NO_PUBLIC_SCHEMA_EDIT_ROLE
-      fileName: credentials-no-edit-public-schema-role.json
-      secretStore:
-        type: GSM
-        alias: airbyte-connector-testing-secret-store
-    - name: SECRET_DESTINATION-BIGQUERY_STANDARD-NO-DATASET-CREATION__CREDS
-      fileName: credentials-standard-no-dataset-creation.json
-      secretStore:
-        type: GSM
-        alias: airbyte-connector-testing-secret-store
-    - name: SECRET_DESTINATION-BIGQUERY_CREDENTIALS_1S1T_GCS_BAD_COPY
-      fileName: credentials-1s1t-gcs-bad-copy-permission.json
-      secretStore:
-        type: GSM
-        alias: airbyte-connector-testing-secret-store
+    - suite: unitTests
+    - suite: integrationTests
+      testSecrets:
+        - name: SECRET_DESTINATION-BIGQUERY_CREDENTIALS_1S1T_GCS
+          fileName: credentials-1s1t-gcs.json
+          secretStore:
+            type: GSM
+            alias: airbyte-connector-testing-secret-store
+        - name: SECRET_DESTINATION-BIGQUERY_CREDENTIALS_1S1T_STANDARD
+          fileName: credentials-1s1t-standard.json
+          secretStore:
+            type: GSM
+            alias: airbyte-connector-testing-secret-store
+        - name: SECRET_DESTINATION-BIGQUERY_CREDENTIALS_BAD_PROJECT_CREDS
+          fileName: credentials-badproject.json
+          secretStore:
+            type: GSM
+            alias: airbyte-connector-testing-secret-store
+        - name: SECRET_DESTINATION-BIGQUERY_CREDENTIALS_NO_PUBLIC_SCHEMA_EDIT_ROLE
+          fileName: credentials-no-edit-public-schema-role.json
+          secretStore:
+            type: GSM
+            alias: airbyte-connector-testing-secret-store
+        - name: SECRET_DESTINATION-BIGQUERY_STANDARD-NO-DATASET-CREATION__CREDS
+          fileName: credentials-standard-no-dataset-creation.json
+          secretStore:
+            type: GSM
+            alias: airbyte-connector-testing-secret-store
+        - name: SECRET_DESTINATION-BIGQUERY_CREDENTIALS_1S1T_GCS_BAD_COPY
+          fileName: credentials-1s1t-gcs-bad-copy-permission.json
+          secretStore:
+            type: GSM
+            alias: airbyte-connector-testing-secret-store
   externalDocumentationUrls:
-  - title: Release notes
-    url: https://cloud.google.com/bigquery/docs/release-notes
-    type: api_release_history
-  - title: Standard SQL reference
-    url: https://cloud.google.com/bigquery/docs/reference/standard-sql
-    type: sql_reference
-  - title: Service account authentication
-    url: https://cloud.google.com/iam/docs/service-accounts
-    type: authentication_guide
-  - title: Access control and permissions
-    url: https://cloud.google.com/bigquery/docs/access-control
-    type: permissions_scopes
-  - title: Quotas and limits
-    url: https://cloud.google.com/bigquery/quotas
-    type: rate_limits
-  - title: Google Cloud Status
-    url: https://status.cloud.google.com/
-    type: status_page
-metadataSpecVersion: '1.0'
+    - title: Release notes
+      url: https://cloud.google.com/bigquery/docs/release-notes
+      type: api_release_history
+    - title: Standard SQL reference
+      url: https://cloud.google.com/bigquery/docs/reference/standard-sql
+      type: sql_reference
+    - title: Service account authentication
+      url: https://cloud.google.com/iam/docs/service-accounts
+      type: authentication_guide
+    - title: Access control and permissions
+      url: https://cloud.google.com/bigquery/docs/access-control
+      type: permissions_scopes
+    - title: Quotas and limits
+      url: https://cloud.google.com/bigquery/quotas
+      type: rate_limits
+    - title: Google Cloud Status
+      url: https://status.cloud.google.com/
+      type: status_page
+metadataSpecVersion: "1.0"

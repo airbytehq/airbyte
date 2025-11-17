@@ -19,24 +19,27 @@ data:
   releases:
     breakingChanges:
       0.3.0:
-        message: 'This version uses the DuckDB 0.9.1 database driver, which is not
+        message:
+          "This version uses the DuckDB 0.9.1 database driver, which is not
           backwards compatible with prior versions. MotherDuck users can upgrade their
           database by visiting https://app.motherduck.com/ and accepting the upgrade.
           For more information, see the connector migration guide.
 
-          '
-        upgradeDeadline: '2023-10-31'
+          "
+        upgradeDeadline: "2023-10-31"
       0.4.0:
-        message: 'This version uses the DuckDB 0.10.3 database driver, which in not
+        message:
+          "This version uses the DuckDB 0.10.3 database driver, which in not
           backwards compatible with databases created using the 0.9.x versions of
           DuckDB. MotherDuck users can upgrade their database by visiting https://app.motherduck.com/
           and accepting the upgrade. For more information, see the connector migration
           guide.
 
-          '
-        upgradeDeadline: '2024-06-30'
+          "
+        upgradeDeadline: "2024-06-30"
       0.5.0:
-        message: 'This version uses the DuckDB 1.2.1 database driver, which is backwards
+        message:
+          "This version uses the DuckDB 1.2.1 database driver, which is backwards
           compatible with databases created using versions 0.10.x or higher of DuckDB.
           If your databases were created using an older version, you may need to manually
           upgrade your database file. Note that forward compatibility is provided
@@ -44,47 +47,47 @@ data:
           be readable in prior versions of DuckDB. You can read more about the DuckDB
           storage format here: https://duckdb.org/docs/stable/internals/storage.html.
 
-          '
-        upgradeDeadline: '2025-05-07'
+          "
+        upgradeDeadline: "2025-05-07"
   resourceRequirements:
     jobSpecific:
-    - jobType: check_connection
-      resourceRequirements:
-        memory_limit: 800Mi
-        memory_request: 800Mi
-    - jobType: sync
-      resourceRequirements:
-        memory_limit: 2Gi
-        memory_request: 2Gi
+      - jobType: check_connection
+        resourceRequirements:
+          memory_limit: 800Mi
+          memory_request: 800Mi
+      - jobType: sync
+        resourceRequirements:
+          memory_limit: 2Gi
+          memory_request: 2Gi
   documentationUrl: https://docs.airbyte.com/integrations/destinations/duckdb
   tags:
-  - language:python
-  - cdk:python
+    - language:python
+    - cdk:python
   ab_internal:
     sl: 100
     ql: 100
   supportLevel: community
   connectorTestSuitesOptions:
-  - suite: unitTests
-  - suite: integrationTests
-    testSecrets:
-    - name: SECRET_DESTINATION_DUCKDB__MOTHERDUCK__CREDS
-      fileName: config.json
-      secretStore:
-        type: GSM
-        alias: airbyte-connector-testing-secret-store
-  - suite: acceptanceTests
-    testSecrets:
-    - name: SECRET_DESTINATION_DUCKDB__MOTHERDUCK__CREDS
-      fileName: config.json
-      secretStore:
-        type: GSM
-        alias: airbyte-connector-testing-secret-store
+    - suite: unitTests
+    - suite: integrationTests
+      testSecrets:
+        - name: SECRET_DESTINATION_DUCKDB__MOTHERDUCK__CREDS
+          fileName: config.json
+          secretStore:
+            type: GSM
+            alias: airbyte-connector-testing-secret-store
+    - suite: acceptanceTests
+      testSecrets:
+        - name: SECRET_DESTINATION_DUCKDB__MOTHERDUCK__CREDS
+          fileName: config.json
+          secretStore:
+            type: GSM
+            alias: airbyte-connector-testing-secret-store
   externalDocumentationUrls:
-  - title: DuckDB documentation
-    url: https://duckdb.org/docs/
-    type: api_reference
-  - title: SQL reference
-    url: https://duckdb.org/docs/sql/introduction
-    type: sql_reference
-metadataSpecVersion: '1.0'
+    - title: DuckDB documentation
+      url: https://duckdb.org/docs/
+      type: api_reference
+    - title: SQL reference
+      url: https://duckdb.org/docs/sql/introduction
+      type: sql_reference
+metadataSpecVersion: "1.0"

@@ -1,7 +1,7 @@
 data:
   allowedHosts:
     hosts:
-    - api.hubapi.com
+      - api.hubapi.com
   registryOverrides:
     cloud:
       enabled: true
@@ -21,7 +21,7 @@ data:
   releaseStage: alpha
   documentationUrl: https://docs.airbyte.com/integrations/destinations/hubspot
   tags:
-  - language:java
+    - language:java
   ab_internal:
     sl: 100
     ql: 100
@@ -30,16 +30,16 @@ data:
   supportsDataActivation: true
   supportsRefreshes: true
   externalDocumentationUrls:
-  - title: HubSpot API documentation
-    url: https://developers.hubspot.com/docs/api/overview
-    type: api_reference
-  - title: OAuth
-    url: https://developers.hubspot.com/docs/api/oauth-quickstart-guide
-    type: authentication_guide
-  - title: Rate limits
-    url: https://developers.hubspot.com/docs/api/usage-details
-    type: rate_limits
-  - title: HubSpot Status
-    url: https://status.hubspot.com/
-    type: status_page
-metadataSpecVersion: '1.0'
+    - title: HubSpot API documentation
+      url: https://developers.hubspot.com/docs/api/overview
+      type: api_reference
+    - title: OAuth
+      url: https://developers.hubspot.com/docs/api/oauth-quickstart-guide
+      type: authentication_guide
+    - title: Rate limits
+      url: https://developers.hubspot.com/docs/api/usage-details
+      type: rate_limits
+    - title: HubSpot Status
+      url: https://status.hubspot.com/
+      type: status_page
+metadataSpecVersion: "1.0"

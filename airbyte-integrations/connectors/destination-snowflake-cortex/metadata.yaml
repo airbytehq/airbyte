@@ -4,10 +4,10 @@ data:
     sl: 300
   allowedHosts:
     hosts:
-    - '*.snowflakecomputing.com'
-    - api.openai.com
-    - api.cohere.ai
-    - ${embedding.api_base}
+      - "*.snowflakecomputing.com"
+      - api.openai.com
+      - api.cohere.ai
+      - ${embedding.api_base}
   connectorBuildOptions:
     baseImage: docker.io/airbyte/python-connector-base:4.0.2@sha256:9fdb1888c4264cf6fee473649ecb593f56f58e5d0096a87ee0b231777e2e3e73
   connectorSubtype: vectorstore
@@ -33,30 +33,30 @@ data:
   releaseStage: beta
   resourceRequirements:
     jobSpecific:
-    - jobType: sync
-      resourceRequirements:
-        memory_limit: 2Gi
-        memory_request: 2Gi
+      - jobType: sync
+        resourceRequirements:
+          memory_limit: 2Gi
+          memory_request: 2Gi
   supportLevel: certified
   tags:
-  - language:python
-  - cdk:python
+    - language:python
+    - cdk:python
   connectorTestSuitesOptions:
-  - suite: integrationTests
-    testSecrets:
-    - name: SECRET_DESTINATION-SNOWFLAKE-CORTEX__CREDS
-      fileName: config.json
-      secretStore:
-        type: GSM
-        alias: airbyte-connector-testing-secret-store
+    - suite: integrationTests
+      testSecrets:
+        - name: SECRET_DESTINATION-SNOWFLAKE-CORTEX__CREDS
+          fileName: config.json
+          secretStore:
+            type: GSM
+            alias: airbyte-connector-testing-secret-store
   externalDocumentationUrls:
-  - title: Snowflake Cortex documentation
-    url: https://docs.snowflake.com/en/user-guide/snowflake-cortex
-    type: api_reference
-  - title: Snowflake SQL reference
-    url: https://docs.snowflake.com/en/sql-reference
-    type: sql_reference
-  - title: Key pair authentication
-    url: https://docs.snowflake.com/en/user-guide/key-pair-auth
-    type: authentication_guide
-metadataSpecVersion: '1.0'
+    - title: Snowflake Cortex documentation
+      url: https://docs.snowflake.com/en/user-guide/snowflake-cortex
+      type: api_reference
+    - title: Snowflake SQL reference
+      url: https://docs.snowflake.com/en/sql-reference
+      type: sql_reference
+    - title: Key pair authentication
+      url: https://docs.snowflake.com/en/user-guide/key-pair-auth
+      type: authentication_guide
+metadataSpecVersion: "1.0"

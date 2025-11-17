@@ -24,46 +24,46 @@ data:
       packageName: airbyte-destination-motherduck
   resourceRequirements:
     jobSpecific:
-    - jobType: check_connection
-      resourceRequirements:
-        memory_limit: 800Mi
-        memory_request: 800Mi
-    - jobType: sync
-      resourceRequirements:
-        memory_limit: 2Gi
-        memory_request: 2Gi
+      - jobType: check_connection
+        resourceRequirements:
+          memory_limit: 800Mi
+          memory_request: 800Mi
+      - jobType: sync
+        resourceRequirements:
+          memory_limit: 2Gi
+          memory_request: 2Gi
   documentationUrl: https://docs.airbyte.com/integrations/destinations/motherduck
   tags:
-  - language:python
-  - cdk:python
+    - language:python
+    - cdk:python
   ab_internal:
     sl: 100
     ql: 100
   supportLevel: community
   connectorTestSuitesOptions:
-  - suite: unitTests
-  - suite: integrationTests
-    testSecrets:
-    - name: SECRET_DESTINATION_DUCKDB__MOTHERDUCK__CREDS
-      fileName: config.json
-      secretStore:
-        type: GSM
-        alias: airbyte-connector-testing-secret-store
-  - suite: acceptanceTests
-    testSecrets:
-    - name: SECRET_DESTINATION_DUCKDB__MOTHERDUCK__CREDS
-      fileName: config.json
-      secretStore:
-        type: GSM
-        alias: airbyte-connector-testing-secret-store
+    - suite: unitTests
+    - suite: integrationTests
+      testSecrets:
+        - name: SECRET_DESTINATION_DUCKDB__MOTHERDUCK__CREDS
+          fileName: config.json
+          secretStore:
+            type: GSM
+            alias: airbyte-connector-testing-secret-store
+    - suite: acceptanceTests
+      testSecrets:
+        - name: SECRET_DESTINATION_DUCKDB__MOTHERDUCK__CREDS
+          fileName: config.json
+          secretStore:
+            type: GSM
+            alias: airbyte-connector-testing-secret-store
   externalDocumentationUrls:
-  - title: MotherDuck documentation
-    url: https://motherduck.com/docs
-    type: api_reference
-  - title: Authentication
-    url: https://motherduck.com/docs/key-tasks/authenticating-and-connecting-to-motherduck/
-    type: authentication_guide
-  - title: MotherDuck Status
-    url: https://status.motherduck.com/
-    type: status_page
-metadataSpecVersion: '1.0'
+    - title: MotherDuck documentation
+      url: https://motherduck.com/docs
+      type: api_reference
+    - title: Authentication
+      url: https://motherduck.com/docs/key-tasks/authenticating-and-connecting-to-motherduck/
+      type: authentication_guide
+    - title: MotherDuck Status
+      url: https://status.motherduck.com/
+      type: status_page
+metadataSpecVersion: "1.0"
