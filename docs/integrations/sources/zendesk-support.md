@@ -189,6 +189,7 @@ The Zendesk connector ideally should not run into Zendesk API limitations under 
 
 | Version     | Date       | Pull Request                                             | Subject                                                                                                                                                                                                                            |
 |:------------|:-----------|:---------------------------------------------------------|:-----------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------|
+| 4.10.16 | 2025-11-07 | [45667](https://github.com/airbytehq/airbyte/issues/45667) | Add missing SLA fields (`sla`, `group_sla`, `status`, `deleted`) to `ticket_metric_events` schema |
 | 4.10.15 | 2025-10-29 | [68945](https://github.com/airbytehq/airbyte/pull/68945) | Update dependencies |
 | 4.10.14 | 2025-10-21 | [68408](https://github.com/airbytehq/airbyte/pull/68408) | Update dependencies |
 | 4.10.13 | 2025-10-14 | [68019](https://github.com/airbytehq/airbyte/pull/68019) | Update dependencies |
