@@ -2,7 +2,8 @@
 # Copyright (c) 2023 Airbyte, Inc., all rights reserved.
 #
 
-import pendulum
+from datetime import timedelta
+
 from facebook_business import FacebookAdsApi, FacebookSession
 from pytest import fixture
 from source_facebook_marketing.api import API
@@ -35,7 +36,7 @@ def some_config_fixture(account_id):
 def mock_default_sleep_interval(mocker):
     mocker.patch(
         "source_facebook_marketing.streams.common.DEFAULT_SLEEP_INTERVAL",
-        return_value=pendulum.duration(seconds=5),
+        return_value=timedelta(seconds=5),
     )
 
 

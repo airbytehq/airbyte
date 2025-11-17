@@ -23,8 +23,15 @@ Using this connector we can extract Historical Data , Splits and Dividends data 
 <details>
   <summary>Expand to review</summary>
 
-| Version          | Date              | Pull Request | Subject        |
-|------------------|-------------------|--------------|----------------|
+| Version | Date              | Pull Request | Subject        |
+|---------|-------------------|--------------|----------------|
+| 0.0.40 | 2025-10-29 | [69062](https://github.com/airbytehq/airbyte/pull/69062) | Update dependencies |
+| 0.0.39 | 2025-10-21 | [68415](https://github.com/airbytehq/airbyte/pull/68415) | Update dependencies |
+| 0.0.38 | 2025-10-14 | [67850](https://github.com/airbytehq/airbyte/pull/67850) | Update dependencies |
+| 0.0.37 | 2025-10-07 | [67384](https://github.com/airbytehq/airbyte/pull/67384) | Update dependencies |
+| 0.0.36 | 2025-09-30 | [66349](https://github.com/airbytehq/airbyte/pull/66349) | Update dependencies |
+| 0.0.35 | 2025-09-09 | [65771](https://github.com/airbytehq/airbyte/pull/65771) | Update dependencies |
+| 0.0.34 | 2025-09-05 | [65966](https://github.com/airbytehq/airbyte/pull/65966) | Update to CDK v7.0.0 |
 | 0.0.33 | 2025-08-23 | [65185](https://github.com/airbytehq/airbyte/pull/65185) | Update dependencies |
 | 0.0.32 | 2025-08-09 | [64745](https://github.com/airbytehq/airbyte/pull/64745) | Update dependencies |
 | 0.0.31 | 2025-08-02 | [64178](https://github.com/airbytehq/airbyte/pull/64178) | Update dependencies |
@@ -57,6 +64,6 @@ Using this connector we can extract Historical Data , Splits and Dividends data 
 | 0.0.4 | 2024-12-21 | [50084](https://github.com/airbytehq/airbyte/pull/50084) | Update dependencies |
 | 0.0.3 | 2024-12-14 | [49626](https://github.com/airbytehq/airbyte/pull/49626) | Update dependencies |
 | 0.0.2 | 2024-12-12 | [48963](https://github.com/airbytehq/airbyte/pull/48963) | Update dependencies |
-| 0.0.1 | 2024-11-07 | | Initial release by [@ombhardwajj](https://github.com/ombhardwajj) via Connector Builder |
+| 0.0.1   | 2024-11-07 | | Initial release by [@ombhardwajj](https://github.com/ombhardwajj) via Connector Builder |
 
 </details>

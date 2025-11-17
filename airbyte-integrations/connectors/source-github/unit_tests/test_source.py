@@ -44,8 +44,8 @@ def test_source_will_continue_sync_on_stream_failure():
         ({"access_token": "test_token", "repository": "airbyte/test"}, True),
     ),
 )
-def test_check_start_date(config, expected, rate_limit_mock_response):
-    responses.add(responses.GET, "https://api.github.com/repos/airbyte/test?per_page=100", json={"full_name": "test_full_name"})
+def test_check_start_date(config, expected, rate_limit_mock_response, requests_mock):
+    requests_mock.get("https://api.github.com/repos/airbyte/test?per_page=100", json={"full_name": "test_full_name"})
     source = SourceGithub()
     status, _ = source.check_connection(logger=logging.getLogger("airbyte"), config=config)
     assert status == expected
@@ -74,58 +74,51 @@ def test_connection_fail_due_to_config_error(api_url, deployment_env, expected_m
     assert e.value.message == expected_message
 
 
-@responses.activate
-def test_check_connection_repos_only(rate_limit_mock_response):
-    responses.add("GET", "https://api.github.com/repos/airbytehq/airbyte", json={"full_name": "airbytehq/airbyte"})
+def test_check_connection_repos_only(rate_limit_mock_response, requests_mock):
+    mocked_request = requests_mock.get("https://api.github.com/repos/airbytehq/airbyte", json={"full_name": "airbytehq/airbyte"})
 
     status = check_source("airbytehq/airbyte airbytehq/airbyte airbytehq/airbyte")
     assert not status.message
     assert status.status == Status.SUCCEEDED
     # Only one request since 3 repos have same name
-    assert len(responses.calls) == 2
+    assert mocked_request.call_count == 1
 
 
-@responses.activate
-def test_check_connection_repos_and_org_repos(rate_limit_mock_response):
+def test_check_connection_repos_and_org_repos(rate_limit_mock_response, requests_mock):
     repos = [{"name": f"name {i}", "full_name": f"full name {i}", "updated_at": "2020-01-01T00:00:00Z"} for i in range(1000)]
-    responses.add(
-        "GET", "https://api.github.com/repos/airbyte/test", json={"full_name": "airbyte/test", "organization": {"login": "airbyte"}}
+    requests_mock.get("https://api.github.com/repos/airbyte/test", json={"full_name": "airbyte/test", "organization": {"login": "airbyte"}})
+    requests_mock.get(
+        "https://api.github.com/repos/airbyte/test2", json={"full_name": "airbyte/test2", "organization": {"login": "airbyte"}}
     )
-    responses.add(
-        "GET", "https://api.github.com/repos/airbyte/test2", json={"full_name": "airbyte/test2", "organization": {"login": "airbyte"}}
-    )
-    responses.add("GET", "https://api.github.com/orgs/airbytehq/repos", json=repos)
-    responses.add("GET", "https://api.github.com/orgs/org/repos", json=repos)
+    requests_mock.get("https://api.github.com/orgs/airbytehq/repos", json=repos)
+    requests_mock.get("https://api.github.com/orgs/org/repos", json=repos)
 
     status = check_source("airbyte/test airbyte/test2 airbytehq/* org/*")
     assert not status.message
     assert status.status == Status.SUCCEEDED
     # Two requests for repos and two for organization
-    assert len(responses.calls) == 5
+    assert requests_mock.call_count == 5
 
 
-@responses.activate
-def test_check_connection_org_only(rate_limit_mock_response):
+def test_check_connection_org_only(rate_limit_mock_response, requests_mock):
     repos = [{"name": f"name {i}", "full_name": f"airbytehq/full name {i}", "updated_at": "2020-01-01T00:00:00Z"} for i in range(1000)]
-    responses.add("GET", "https://api.github.com/orgs/airbytehq/repos", json=repos)
+    requests_mock.get("https://api.github.com/orgs/airbytehq/repos", json=repos)
 
     status = check_source("airbytehq/*")
     assert not status.message
     assert status.status == Status.SUCCEEDED
     # One request to check organization
-    assert len(responses.calls) == 2
+    assert requests_mock.call_count == 2
 
 
 @responses.activate
-def test_get_org_repositories():
-    responses.add(
-        "GET",
+def test_get_org_repositories(requests_mock):
+    requests_mock.get(
         "https://api.github.com/repos/airbytehq/integration-test",
         json={"full_name": "airbytehq/integration-test", "organization": {"login": "airbytehq"}},
     )
 
-    responses.add(
-        "GET",
+    requests_mock.get(
         "https://api.github.com/orgs/docker/repos",
         json=[
             {"full_name": "docker/docker-py", "updated_at": "2020-01-01T00:00:00Z"},
@@ -207,10 +200,11 @@ def test_streams_no_streams_available_error(monkeypatch, rate_limit_mock_respons
     assert str(e.value) == "No streams available. Please check permissions"
 
 
-@responses.activate
-def test_streams_page_size(rate_limit_mock_response):
-    responses.get("https://api.github.com/repos/airbytehq/airbyte", json={"full_name": "airbytehq/airbyte", "default_branch": "master"})
-    responses.get("https://api.github.com/repos/airbytehq/airbyte/branches", json=[{"repository": "airbytehq/airbyte", "name": "master"}])
+def test_streams_page_size(rate_limit_mock_response, requests_mock):
+    requests_mock.get("https://api.github.com/repos/airbytehq/airbyte", json={"full_name": "airbytehq/airbyte", "default_branch": "master"})
+    requests_mock.get(
+        "https://api.github.com/repos/airbytehq/airbyte/branches", json=[{"repository": "airbytehq/airbyte", "name": "master"}]
+    )
 
     config = {
         "credentials": {"access_token": "access_token"},
@@ -229,7 +223,6 @@ def test_streams_page_size(rate_limit_mock_response):
             assert stream.page_size == constants.DEFAULT_PAGE_SIZE
 
 
-@responses.activate
 @pytest.mark.parametrize(
     "config, expected",
     (
@@ -244,15 +237,13 @@ def test_streams_page_size(rate_limit_mock_response):
         ({"access_token": "test_token", "repository": "airbyte/test"}, 39),
     ),
 )
-def test_streams_config_start_date(config, expected, rate_limit_mock_response):
-    responses.add(responses.GET, "https://api.github.com/repos/airbyte/test?per_page=100", json={"full_name": "airbyte/test"})
-    responses.add(
-        responses.GET,
+def test_streams_config_start_date(config, expected, rate_limit_mock_response, requests_mock):
+    requests_mock.get("https://api.github.com/repos/airbyte/test?per_page=100", json={"full_name": "airbyte/test"})
+    requests_mock.get(
         "https://api.github.com/repos/airbyte/test?per_page=100",
         json={"full_name": "airbyte/test", "default_branch": "default_branch"},
     )
-    responses.add(
-        responses.GET,
+    requests_mock.get(
         "https://api.github.com/repos/airbyte/test/branches?per_page=100",
         json=[{"repository": "airbyte/test", "name": "name"}],
     )

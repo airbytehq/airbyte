@@ -6,10 +6,10 @@ import http.client
 import logging
 import re
 import sys
+from datetime import timedelta
 from typing import Any
 
 import backoff
-import pendulum
 from facebook_business.exceptions import FacebookRequestError
 
 from airbyte_cdk.models import FailureType
@@ -36,7 +36,7 @@ FACEBOOK_TEMPORARY_OAUTH_ERROR_CODE = 2
 FACEBOOK_BATCH_ERROR_CODE = 960
 FACEBOOK_UNKNOWN_ERROR_CODE = 99
 FACEBOOK_CONNECTION_RESET_ERROR_CODE = 104
-DEFAULT_SLEEP_INTERVAL = pendulum.duration(minutes=1)
+DEFAULT_SLEEP_INTERVAL = timedelta(minutes=1)
 
 logger = logging.getLogger("airbyte")
 
@@ -148,6 +148,11 @@ def deep_merge(a: Any, b: Any) -> Any:
         return a if b is None else b
 
 
+FACEBOOK_CONFIG_ERRORS_TO_CATCH = [  # list of tuples (code, error_subcode)
+    (100, 2446289),
+]
+
+
 def traced_exception(fb_exception: FacebookRequestError):
     """Add user-friendly message for FacebookRequestError
 
@@ -192,6 +197,9 @@ def traced_exception(fb_exception: FacebookRequestError):
     elif "The start date of the time range cannot be beyond 37 months from the current date" in msg:
         failure_type = FailureType.config_error
         friendly_msg = "Please set the start date of your sync to be within the last 3 years."
+    elif (fb_exception.api_error_code(), fb_exception.api_error_subcode()) in FACEBOOK_CONFIG_ERRORS_TO_CATCH:
+        failure_type = FailureType.config_error
+        friendly_msg = msg
     elif fb_exception.api_error_code() in FACEBOOK_RATE_LIMIT_ERROR_CODES:
         return AirbyteTracedException(
             message="The maximum number of requests on the Facebook API has been reached. See https://developers.facebook.com/docs/graph-api/overview/rate-limiting/ for more information",

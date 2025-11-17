@@ -1,0 +1,163 @@
+name: Auto Upgrade CDK for Certified Connectors
+on:
+  schedule:
+    # Run at 16:37 UTC on the first of every month
+    - cron: "37 16 1 * *"
+  workflow_dispatch:
+  workflow_call:
+    inputs:
+      repositories:
+        description: "Repository name for GitHub App authentication"
+        required: false
+        type: string
+        default: "airbyte"
+
+jobs:
+  list-certified-connectors:
+    name: List Certified Connectors
+    runs-on: ubuntu-24.04
+    outputs:
+      connectors: ${{ steps.list-connectors.outputs.connectors }}
+    steps:
+      - name: Checkout Airbyte
+        uses: actions/checkout@08eba0b27e820071cde6df949e0beb9ba4906955 # v4
+        with:
+          # Needed for when airbyte-enterprise calls this workflow
+          submodules: true
+
+      - name: Install yq
+        run: sudo snap install yq
+
+      - name: List certified connectors
+        id: list-connectors
+        run: |
+          json_array=$(tools/bin/bulk-cdk/get-certified-connectors.sh)
+          echo "connectors=$json_array" >> $GITHUB_OUTPUT
+          echo "Found bulk CDK connectors to upgrade: $json_array"
+
+  upgrade-connector-cdk:
+    name: Upgrade CDK for ${{ matrix.connector }}
+    needs: list-certified-connectors
+    runs-on: ubuntu-24.04
+    strategy:
+      matrix:
+        connector: ${{ fromJson(needs.list-certified-connectors.outputs.connectors) }}
+      fail-fast: false
+      max-parallel: 5
+    steps:
+      - name: Authenticate as GitHub App
+        uses: actions/create-github-app-token@67018539274d69449ef7c02e8e71183d1719ab42 # v2
+        id: app-token
+        with:
+          owner: "airbytehq"
+          repositories: ${{ inputs.repositories || 'airbyte' }}
+          app-id: ${{ secrets.OCTAVIA_BOT_APP_ID }}
+          private-key: ${{ secrets.OCTAVIA_BOT_PRIVATE_KEY }}
+      - name: Get GitHub App User ID
+        id: get-user-id
+        run: echo "user-id=$(gh api "/users/${{ steps.app-token.outputs.app-slug }}[bot]" --jq .id)" >> "$GITHUB_OUTPUT"
+        env:
+          GH_TOKEN: ${{ steps.app-token.outputs.token }}
+      - run: |
+          git config --global user.name '${{ steps.app-token.outputs.app-slug }}[bot]'
+          git config --global user.email '${{ steps.get-user-id.outputs.user-id }}+${{ steps.app-token.outputs.app-slug }}[bot]@users.noreply.github.com'
+
+      - name: Checkout Airbyte
+        uses: actions/checkout@08eba0b27e820071cde6df949e0beb9ba4906955 # v4
+        with:
+          token: ${{ steps.app-token.outputs.token }}
+          # Needed for when airbyte-enterprise calls this workflow
+          submodules: true
+
+      - name: Install yq
+        run: sudo snap install yq
+
+      - name: Setup Java
+        uses: actions/setup-java@c5195efecf7bdfc987ee8bae7a71cb8b11521c00 # v4
+        with:
+          distribution: "zulu"
+          java-version: "21"
+
+      - name: Setup Gradle
+        uses: gradle/actions/setup-gradle@80e941e61874822d2a89974089c4915748e8f4b7 # v4
+
+      - name: Run upgradeCdk for ${{ matrix.connector }}
+        id: upgrade-cdk
+        run: |
+          set -euo pipefail
+          ./gradlew :airbyte-integrations:connectors:${{ matrix.connector }}:upgradeCdk
+          # --quiet disables all of gradle's normal logging, so we only get the CDK version number
+          new_cdk_version=$(./gradlew :airbyte-integrations:connectors:${{ matrix.connector }}:getCdkVersion --quiet)
+          echo "new_cdk_version=$new_cdk_version" >> $GITHUB_OUTPUT
+
+      - name: Check for changes
+        id: check-changes
+        if: steps.upgrade-cdk.outputs.exit_code == '0'
+        run: |
+          if git diff --quiet; then
+            echo "has_changes=false" >> $GITHUB_OUTPUT
+            echo "No changes detected for ${{ matrix.connector }}"
+          else
+            echo "has_changes=true" >> $GITHUB_OUTPUT
+            echo "Changes detected for ${{ matrix.connector }}"
+          fi
+
+      - name: Bump connector version
+        id: bump-version
+        if: steps.check-changes.outputs.has_changes == 'true'
+        run: |
+          set -euo pipefail
+          new_version=$(tools/bin/bulk-cdk/auto-upgrade/bump-connector-metadata.sh "${{ matrix.connector }}")
+          echo "Updated dockerImageTag to $new_version"
+          echo "new_version=$new_version" >> $GITHUB_OUTPUT
+
+      - name: Create Pull Request
+        id: create-pr
+        if: steps.check-changes.outputs.has_changes == 'true'
+        uses: peter-evans/create-pull-request@c5a7806660adbe173f04e3e038b0ccdcd758773c # v6
+        with:
+          token: ${{ steps.app-token.outputs.token }}
+          commit-message: "chore: upgrade bulk CDK for ${{ matrix.connector }}"
+          branch: "auto-upgrade-jvm-bulk-cdk/${{ steps.upgrade-cdk.outputs.new_cdk_version }}/${{ matrix.connector }}"
+          delete-branch: true
+          title: "chore: upgrade ${{ matrix.connector }} to bulk CDK ${{ steps.upgrade-cdk.outputs.new_cdk_version }}"
+          body: |
+            Upgrade Bulk CDK version for `${{ matrix.connector }}`
+
+            🤖 Generated by [automated workflow](${{ github.server_url }}/${{ github.repository }}/actions/runs/${{ github.run_id }}).
+          labels: |
+            area/connectors
+            auto-cdk-upgrade
+          assignees: ""
+          # We'll rely on CODEOWNERS to tag the right people.
+          reviewers: ""
+          # Submit as draft: true, because we need to push another commit to this branch to update the changelog.
+          # The `ready for review` step is where we switch the PR out of draft mode.
+          draft: true
+
+      # Update the connector changelog and push the commit to the new branch
+      - name: Update connector changelog
+        # airbyte-enterprise doesn't have changelogs, so only do this in the OSS repo.
+        if: steps.check-changes.outputs.has_changes == 'true' && inputs.repositories != 'airbyte-enterprise'
+        run: |
+          set -euo pipefail
+          tools/bin/bulk-cdk/auto-upgrade/populate-connector-changelog.sh \
+            "${{ matrix.connector }}" \
+            "${{ steps.bump-version.outputs.new_version }}" \
+            "${{ steps.create-pr.outputs.pull-request-number }}" \
+            "Upgrade to Bulk CDK ${{ steps.upgrade-cdk.outputs.new_cdk_version }}."
+
+          # Commit and push the changelog changes
+          branch_name="${{ steps.create-pr.outputs.pull-request-branch }}"
+          git fetch --depth=1 origin "$branch_name"
+          git checkout "$branch_name"
+          git add docs
+          git commit -m "update changelog for ${{ matrix.connector }}"
+          git push origin "$branch_name"
+
+      # We've pushed all the changes to the PR. Mark it ready for review.
+      - name: Ready for review
+        if: steps.check-changes.outputs.has_changes == 'true'
+        run: gh pr ready "${{ steps.create-pr.outputs.pull-request-number }}"
+        env:
+          GH_TOKEN: ${{ steps.app-token.outputs.token }}

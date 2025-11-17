@@ -5,6 +5,7 @@ import com.fasterxml.jackson.databind.JsonNode
 import com.fasterxml.jackson.databind.node.ObjectNode
 import com.mysql.cj.MysqlType
 import io.airbyte.cdk.command.OpaqueStateValue
+import io.airbyte.cdk.data.JsonEncoder
 import io.airbyte.cdk.discover.CdcIntegerMetaFieldType
 import io.airbyte.cdk.discover.CdcOffsetDateTimeMetaFieldType
 import io.airbyte.cdk.discover.CdcStringMetaFieldType
@@ -87,34 +88,39 @@ class MySqlSourceOperations :
             MySqlSourceCdcMetaFields.CDC_LOG_POS
         )
 
+    @Suppress("UNCHECKED_CAST")
     override fun decorateRecordData(
         timestamp: OffsetDateTime,
         globalStateValue: OpaqueStateValue?,
         stream: Stream,
         recordData: NativeRecordPayload
     ) {
-        recordData.set(
-            CommonMetaField.CDC_UPDATED_AT.id,
-            FieldValueEncoder(timestamp, CdcOffsetDateTimeMetaFieldType.jsonEncoder)
-        )
-        recordData.set(
-            MySqlSourceCdcMetaFields.CDC_LOG_POS.id,
-            FieldValueEncoder(0, CdcIntegerMetaFieldType.jsonEncoder)
-        )
+        recordData[CommonMetaField.CDC_UPDATED_AT.id] =
+            FieldValueEncoder(
+                timestamp,
+                CommonMetaField.CDC_UPDATED_AT.type.jsonEncoder as JsonEncoder<Any>
+            )
+        recordData[MySqlSourceCdcMetaFields.CDC_LOG_POS.id] =
+            FieldValueEncoder(
+                0.toDouble(),
+                MySqlSourceCdcMetaFields.CDC_LOG_POS.type.jsonEncoder as JsonEncoder<Any>
+            )
         if (globalStateValue == null) {
             return
         }
         val offset: DebeziumOffset =
             MySqlSourceDebeziumOperations.deserializeStateUnvalidated(globalStateValue).offset
         val position: MySqlSourceCdcPosition = MySqlSourceDebeziumOperations.position(offset)
-        recordData.set(
-            MySqlSourceCdcMetaFields.CDC_LOG_FILE.id,
-            FieldValueEncoder(position.fileName, CdcStringMetaFieldType.jsonEncoder)
-        )
-        recordData.set(
-            MySqlSourceCdcMetaFields.CDC_LOG_POS.id,
-            FieldValueEncoder(position.position, CdcIntegerMetaFieldType.jsonEncoder)
-        )
+        recordData[MySqlSourceCdcMetaFields.CDC_LOG_FILE.id] =
+            FieldValueEncoder(
+                position.fileName,
+                MySqlSourceCdcMetaFields.CDC_LOG_FILE.type.jsonEncoder as JsonEncoder<Any>
+            )
+        recordData[MySqlSourceCdcMetaFields.CDC_LOG_POS.id] =
+            FieldValueEncoder(
+                position.position.toDouble(),
+                MySqlSourceCdcMetaFields.CDC_LOG_POS.type.jsonEncoder as JsonEncoder<Any>
+            )
     }
 
     override fun decorateRecordData(

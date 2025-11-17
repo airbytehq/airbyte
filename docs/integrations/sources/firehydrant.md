@@ -55,8 +55,15 @@ The Airbyte connector for FireHydrant enables seamless data integration between 
 <details>
   <summary>Expand to review</summary>
 
-| Version          | Date              | Pull Request | Subject        |
-|------------------|-------------------|--------------|----------------|
+| Version | Date              | Pull Request | Subject        |
+|---------|-------------------|--------------|----------------|
+| 0.0.38 | 2025-10-29 | [68816](https://github.com/airbytehq/airbyte/pull/68816) | Update dependencies |
+| 0.0.37 | 2025-10-21 | [68450](https://github.com/airbytehq/airbyte/pull/68450) | Update dependencies |
+| 0.0.36 | 2025-10-14 | [68056](https://github.com/airbytehq/airbyte/pull/68056) | Update dependencies |
+| 0.0.35 | 2025-10-07 | [67293](https://github.com/airbytehq/airbyte/pull/67293) | Update dependencies |
+| 0.0.34 | 2025-09-30 | [66774](https://github.com/airbytehq/airbyte/pull/66774) | Update dependencies |
+| 0.0.33 | 2025-09-24 | [65853](https://github.com/airbytehq/airbyte/pull/65853) | Update dependencies |
+| 0.0.32 | 2025-09-05 | [65966](https://github.com/airbytehq/airbyte/pull/65966) | Update to CDK v7.0.0 |
 | 0.0.31 | 2025-08-23 | [65275](https://github.com/airbytehq/airbyte/pull/65275) | Update dependencies |
 | 0.0.30 | 2025-08-09 | [64699](https://github.com/airbytehq/airbyte/pull/64699) | Update dependencies |
 | 0.0.29 | 2025-08-02 | [64358](https://github.com/airbytehq/airbyte/pull/64358) | Update dependencies |
@@ -87,6 +94,6 @@ The Airbyte connector for FireHydrant enables seamless data integration between 
 | 0.0.4 | 2024-12-21 | [50022](https://github.com/airbytehq/airbyte/pull/50022) | Update dependencies |
 | 0.0.3 | 2024-12-14 | [49520](https://github.com/airbytehq/airbyte/pull/49520) | Update dependencies |
 | 0.0.2 | 2024-12-12 | [49205](https://github.com/airbytehq/airbyte/pull/49205) | Update dependencies |
-| 0.0.1 | 2024-11-08 | | Initial release by [@parthiv11](https://github.com/parthiv11) via Connector Builder |
+| 0.0.1   | 2024-11-08 | | Initial release by [@parthiv11](https://github.com/parthiv11) via Connector Builder |
 
 </details>

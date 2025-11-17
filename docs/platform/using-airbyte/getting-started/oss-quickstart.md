@@ -9,7 +9,7 @@ import { faWindows } from "@fortawesome/free-brands-svg-icons";
 
 # Quickstart
 
-This quickstart guides you through deploying a local instance of Airbyte Self-Managed Community, Airbyte's open source product. Setup only takes a few minutes, and you can start moving data immediately.
+This quickstart guides you through deploying a local instance of Airbyte Core, Airbyte's open source product. Setup only takes a few minutes, and you can start moving data immediately.
 
 ## Overview
 
@@ -25,7 +25,7 @@ This quickstart shows you how to:
 
 If you don't want to self-manage Airbyte, skip this guide. Sign up for an [Airbyte Cloud](https://cloud.airbyte.com/signup) trial and [start syncing data](add-a-source.md) now.
 
-If you want to use Python to move data, Airbyte's Python library, [PyAirbyte](../pyairbyte/getting-started.mdx), might be the best fit for you. It's a good choice if you're using Jupyter Notebook or iterating on an early prototype for a large data project and don't need to run your own server.
+If you want to use Python to move data, Airbyte's Python library, [PyAirbyte](/developers/using-pyairbyte), might be the best fit for you. It's a good choice if you're using Jupyter Notebook or iterating on an early prototype for a large data project and don't need to run your own server.
 
 ## Suggested resources {#suggested-resources}
 
@@ -185,6 +185,10 @@ Use [Homebrew](https://brew.sh/) to install abctl.
     abctl local install
     ```
 
+    :::note
+    If you see the warning `Encountered an issue deploying Airbyte` with the message `Readiness probe failed: HTTP probe failed with statuscode: 503`, allow installation to continue. You may need to allocate more resources for Airbyte, but installation can complete anyway. See [Suggested resources](#suggested-resources).
+    :::
+
 3. Enter your **Email** and **Organization name**, then click **Get Started**.
 
 </TabItem>
@@ -198,7 +202,7 @@ Use [Homebrew](https://brew.sh/) to install abctl.
     abctl local install --host example.com
     ```
 
-    You can turn off the secure cookies requirement if you're running on an insecure/non-HTTPS connection.
+    If you're running on an insecure/non-HTTPS connection, turn off the secure cookies requirement. If you don't do this, abctl gives you the error: `Your credentials were correct, but the server failed to set a cookie. You appear to have deployed over HTTP. Make sure you have disabled secure cookies.` [Learn more about this error](/platform/deploying-airbyte/troubleshoot-deploy#make-sure-you-have-disabled-secure-cookies).
 
     ```bash
     abctl local install --host example.com --insecure-cookies
@@ -221,10 +225,6 @@ Use [Homebrew](https://brew.sh/) to install abctl.
 
 </TabItem>
 </Tabs>
-
-:::note
-If you see the warning `Encountered an issue deploying Airbyte` with the message `Readiness probe failed: HTTP probe failed with statuscode: 503`, allow installation to continue. You may need to allocate more resources for Airbyte, but installation can complete anyway. See [Suggested resources](#suggested-resources).
-:::
 
 Installation may take up to 30 minutes depending on your internet connection. When it completes, your Airbyte instance opens in your web browser at [http://localhost:8000](http://localhost:8000), or the host you specified. As long as Docker Desktop is running in the background, use Airbyte by returning to that page. If you quit Docker Desktop and want to return to Airbyte, start Docker Desktop again. Once your containers are running, you can access Airbyte normally.
 

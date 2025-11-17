@@ -5,7 +5,7 @@
 package io.airbyte.cdk.load.dataflow.aggregate
 
 import io.airbyte.cdk.load.command.DestinationStream
-import io.airbyte.cdk.load.dataflow.config.MemoryAndParallelismConfig
+import io.airbyte.cdk.load.dataflow.config.AggregatePublishingConfig
 import io.airbyte.cdk.load.dataflow.state.PartitionHistogram
 import io.airbyte.cdk.load.dataflow.state.PartitionKey
 import io.airbyte.cdk.load.dataflow.transform.RecordDTO
@@ -30,7 +30,7 @@ class AggregateStoreTest {
 
     @MockK private lateinit var aggregateFactory: AggregateFactory
     @MockK private lateinit var mockAggregate: Aggregate
-    private lateinit var memoryConfig: MemoryAndParallelismConfig
+    private lateinit var memoryConfig: AggregatePublishingConfig
     private lateinit var aggregateStore: AggregateStore
 
     private val testKey = DestinationStream.Descriptor(namespace = "test", name = "stream")
@@ -41,10 +41,10 @@ class AggregateStoreTest {
         every { aggregateFactory.create(any()) } returns mockAggregate
 
         memoryConfig =
-            MemoryAndParallelismConfig(
-                maxOpenAggregates = 5,
+            AggregatePublishingConfig(
+                maxEstBytesAllAggregates = 5000L,
                 maxRecordsPerAgg = 100L,
-                maxEstBytesPerAgg = 1000L,
+                maxEstBytesPerAgg = 2000L,
                 stalenessDeadlinePerAgg = 10.seconds
             )
 
@@ -84,8 +84,8 @@ class AggregateStoreTest {
     fun `acceptFor makes new entries per key`() {
         val newKey = DestinationStream.Descriptor(namespace = "test", name = "other-stream")
         val newAggregate = mockk<Aggregate>(relaxed = true)
-        every { aggregateFactory.create(newKey) } returns newAggregate
         every { aggregateFactory.create(testKey) } returns mockAggregate
+        every { aggregateFactory.create(newKey) } returns newAggregate
 
         val record1 = Fixtures.dto(partitionKey = "partition1", sizeBytes = 50, emittedAtMs = 1000L)
         val record2 = Fixtures.dto(partitionKey = "partition2", sizeBytes = 30, emittedAtMs = 2000L)
@@ -100,6 +100,8 @@ class AggregateStoreTest {
 
         val entries = aggregateStore.getAll()
         assertEquals(2, entries.size)
+        assertTrue(entries.any { it.key == testKey })
+        assertTrue(entries.any { it.key == newKey })
     }
 
     @Test
@@ -111,7 +113,8 @@ class AggregateStoreTest {
         val entry = aggregateStore.getOrCreate(testKey)
         assertEquals(1L, entry.recordCountTrigger.watermark())
         assertEquals(50L, entry.estimatedBytesTrigger.watermark())
-        assertEquals(1L, entry.partitionHistogram.get(PartitionKey("partition1")))
+        assertEquals(1L, entry.partitionCountsHistogram.get(PartitionKey("partition1"))?.toLong())
+        assertEquals(50L, entry.partitionBytesHistogram.get(PartitionKey("partition1"))?.toLong())
     }
 
     @Test
@@ -133,9 +136,9 @@ class AggregateStoreTest {
     @Test
     fun `removeNextComplete should remove complete aggregate by bytes`() {
         // Add records to reach the bytes limit
-        repeat(20) { i ->
+        repeat(20) {
             val record =
-                Fixtures.dto(partitionKey = "partition1", sizeBytes = 60, emittedAtMs = 1000L + i)
+                Fixtures.dto(partitionKey = "partition1", sizeBytes = 110, emittedAtMs = 2000L)
             aggregateStore.acceptFor(testKey, record)
         }
 
@@ -160,30 +163,43 @@ class AggregateStoreTest {
     }
 
     @Test
-    fun `removeNextComplete should evict largest aggregate when exceeding max concurrent`() {
-        // Create aggregates with different sizes
+    fun `removeNextComplete should evict largest aggregate when exceeding max total bytes`() {
+        val iterations = 5
         val keys =
-            (1..6).map { i -> DestinationStream.Descriptor(namespace = "test", name = "stream$i") }
+            (1..iterations).map { i ->
+                DestinationStream.Descriptor(namespace = "test", name = "stream$i")
+            }
 
         keys.forEachIndexed { index, key ->
-            val sizePerRecord = (index + 1) * 10L
-            repeat(5) {
-                val record =
-                    Fixtures.dto(
-                        partitionKey = "partition$index",
-                        sizeBytes = sizePerRecord,
-                        emittedAtMs = 1000L
-                    )
-                aggregateStore.acceptFor(key, record)
-            }
+            // make the 2nd aggregate bigger than the others so we exceed maxEstBytesAllAggregates
+            val recordSize =
+                if (key.name == "stream2") {
+                    (memoryConfig.maxEstBytesAllAggregates / iterations) * 2
+                } else {
+                    memoryConfig.maxEstBytesAllAggregates / iterations
+                }
+
+            val record =
+                Fixtures.dto(
+                    partitionKey = "partition$index",
+                    sizeBytes = recordSize,
+                    emittedAtMs = 1000L
+                )
+            aggregateStore.acceptFor(key, record)
         }
 
-        // Now we have 6 aggregates, but max is 5
-        val result = aggregateStore.removeNextComplete(2000L)
+        // we have an aggregate per key
+        assertEquals(keys.size, aggregateStore.getAll().size)
 
+        // Now we have 6000 bytes of aggregates, but max is 5000
+        val result = aggregateStore.removeNextComplete(1000L)
+
+        // we return an aggregates
         assertNotNull(result)
-        // Should remove the largest one (stream6 with size 60*5=300)
-        assertEquals(5, aggregateStore.getAll().size)
+        // It should be the largest one
+        assertEquals("stream2", result.key.name)
+        // total aggregates less than before
+        assertEquals(keys.size - 1, aggregateStore.getAll().size)
     }
 
     @Test
@@ -209,8 +225,10 @@ class AggregateStoreTest {
     fun `AggregateEntry isComplete should return true when record count trigger is complete`() {
         val entry =
             AggregateEntry(
+                key = Fixtures.key,
                 value = mockAggregate,
-                partitionHistogram = PartitionHistogram(),
+                partitionCountsHistogram = PartitionHistogram(),
+                partitionBytesHistogram = PartitionHistogram(),
                 stalenessTrigger = TimeTrigger(10000),
                 recordCountTrigger = SizeTrigger(10).apply { repeat(10) { increment(1) } },
                 estimatedBytesTrigger = SizeTrigger(1000)
@@ -223,8 +241,10 @@ class AggregateStoreTest {
     fun `AggregateEntry isComplete should return true when bytes trigger is complete`() {
         val entry =
             AggregateEntry(
+                key = Fixtures.key,
                 value = mockAggregate,
-                partitionHistogram = PartitionHistogram(),
+                partitionCountsHistogram = PartitionHistogram(),
+                partitionBytesHistogram = PartitionHistogram(),
                 stalenessTrigger = TimeTrigger(10000),
                 recordCountTrigger = SizeTrigger(100),
                 estimatedBytesTrigger = SizeTrigger(1000).apply { increment(1000) }
@@ -237,8 +257,10 @@ class AggregateStoreTest {
     fun `AggregateEntry isComplete should return false when neither trigger is complete`() {
         val entry =
             AggregateEntry(
+                key = Fixtures.key,
                 value = mockAggregate,
-                partitionHistogram = PartitionHistogram(),
+                partitionCountsHistogram = PartitionHistogram(),
+                partitionBytesHistogram = PartitionHistogram(),
                 stalenessTrigger = TimeTrigger(10000),
                 recordCountTrigger = SizeTrigger(100),
                 estimatedBytesTrigger = SizeTrigger(1000)
@@ -251,8 +273,10 @@ class AggregateStoreTest {
     fun `AggregateEntry isStale should delegate to time trigger`() {
         val entry =
             AggregateEntry(
+                key = Fixtures.key,
                 value = mockAggregate,
-                partitionHistogram = PartitionHistogram(),
+                partitionCountsHistogram = PartitionHistogram(),
+                partitionBytesHistogram = PartitionHistogram(),
                 stalenessTrigger = TimeTrigger(1000).apply { update(5000) },
                 recordCountTrigger = SizeTrigger(100),
                 estimatedBytesTrigger = SizeTrigger(1000)
@@ -292,6 +316,8 @@ class AggregateStoreTest {
     }
 
     object Fixtures {
+        val key = StoreKey("namespace", "name")
+
         fun dto(partitionKey: String, sizeBytes: Long, emittedAtMs: Long): RecordDTO =
             RecordDTO(
                 fields = mapOf(),

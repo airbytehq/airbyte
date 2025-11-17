@@ -154,6 +154,11 @@ For more details, see [Recharge API Rate Limits](https://developer.rechargepayme
 
 | Version | Date       | Pull Request                                             | Subject                                                                                                                        |
 |:--------|:-----------| :------------------------------------------------------- |:-------------------------------------------------------------------------------------------------------------------------------|
+| 3.0.11 | 2025-10-21 | [68391](https://github.com/airbytehq/airbyte/pull/68391) | Update dependencies |
+| 3.0.10 | 2025-10-14 | [67927](https://github.com/airbytehq/airbyte/pull/67927) | Update dependencies |
+| 3.0.9 | 2025-10-07 | [67543](https://github.com/airbytehq/airbyte/pull/67543) | Update dependencies |
+| 3.0.8 | 2025-09-30 | [66444](https://github.com/airbytehq/airbyte/pull/66444) | Update dependencies |
+| 3.0.7 | 2025-09-09 | [65674](https://github.com/airbytehq/airbyte/pull/65674) | Update dependencies |
 | 3.0.6 | 2025-08-24 | [65465](https://github.com/airbytehq/airbyte/pull/65465) | Update dependencies |
 | 3.0.5 | 2025-08-16 | [65034](https://github.com/airbytehq/airbyte/pull/65034) | Update dependencies |
 | 3.0.4 | 2025-08-02 | [64452](https://github.com/airbytehq/airbyte/pull/64452) | Update dependencies |

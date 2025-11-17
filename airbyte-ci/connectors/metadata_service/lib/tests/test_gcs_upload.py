@@ -47,10 +47,10 @@ def stub_is_image_on_docker_hub(image_name: str, version: str, digest: Optional[
 @pytest.fixture(autouse=True)
 def mock_local_doc_path_exists(monkeypatch):
     original_exists = Path.exists
-    mocked_doc_path = Path(DOCS_PATH) / MOCK_DOC_URL_PATH
+    mocked_doc_path = VALID_DOC_FILE_PATH
 
     def fake_exists(self):
-        if self == Path(DOCS_PATH) or self == mocked_doc_path:
+        if self == Path(VALID_DOC_FILE_PATH) or self == mocked_doc_path:
             return True
         return original_exists(self)
 
@@ -136,7 +136,7 @@ def assert_upload_invalid_metadata_fails_correctly(metadata_file_path: Path, exp
             gcs_upload.upload_metadata_to_gcs(
                 "my_bucket",
                 metadata_file_path,
-                validator_opts=ValidatorOptions(docs_path=DOCS_PATH),
+                validator_opts=ValidatorOptions(docs_path=VALID_DOC_FILE_PATH),
             )
         print(f"Upload raised {exc_info.value}")
     except AssertionError as e:
@@ -438,7 +438,7 @@ def test_upload_metadata_to_gcs_valid_metadata(
         # Call function under tests
 
         upload_info = gcs_upload.upload_metadata_to_gcs(
-            "my_bucket", metadata_file_path, validator_opts=ValidatorOptions(docs_path=DOCS_PATH)
+            "my_bucket", metadata_file_path, validator_opts=ValidatorOptions(docs_path=VALID_DOC_FILE_PATH)
         )
 
         # Assert correct file upload attempts were made
@@ -537,7 +537,7 @@ def test_upload_metadata_to_gcs_non_existent_metadata_file():
         gcs_upload.upload_metadata_to_gcs(
             "my_bucket",
             metadata_file_path,
-            validator_opts=ValidatorOptions(docs_path=DOCS_PATH),
+            validator_opts=ValidatorOptions(docs_path=VALID_DOC_FILE_PATH),
         )
 
 
@@ -607,11 +607,13 @@ def test_upload_metadata_to_gcs_with_prerelease(mocker, valid_metadata_upload_fi
         upload_info = gcs_upload.upload_metadata_to_gcs(
             "my_bucket",
             metadata_file_path,
-            ValidatorOptions(docs_path=DOCS_PATH, prerelease_tag=prerelease_image_tag),
+            ValidatorOptions(docs_path=VALID_DOC_FILE_PATH, prerelease_tag=prerelease_image_tag),
         )
 
         # Assert that the metadata is overrode
-        tmp_metadata, error = gcs_upload.validate_and_load(tmp_metadata_file_path, [], validator_opts=ValidatorOptions(docs_path=DOCS_PATH))
+        tmp_metadata, error = gcs_upload.validate_and_load(
+            tmp_metadata_file_path, [], validator_opts=ValidatorOptions(docs_path=VALID_DOC_FILE_PATH)
+        )
         tmp_metadata_dict = to_json_sanitized_dict(tmp_metadata, exclude_none=True)
         assert tmp_metadata_dict["data"]["dockerImageTag"] == prerelease_image_tag
         for registry in get(tmp_metadata_dict, "data.registryOverrides", {}).values():
@@ -704,7 +706,7 @@ def test_upload_metadata_to_gcs_release_candidate(mocker, get_fixture_path, tmp_
     upload_info = gcs_upload.upload_metadata_to_gcs(
         "my_bucket",
         release_candidate_metadata_file_path,
-        ValidatorOptions(docs_path=DOCS_PATH, prerelease_tag=prerelease_tag),
+        ValidatorOptions(docs_path=VALID_DOC_FILE_PATH, prerelease_tag=prerelease_tag),
     )
 
     # Assert versioned uploads happened
@@ -818,7 +820,7 @@ def test_upload_metadata_to_gcs_with_manifest_files(
     upload_info = gcs_upload.upload_metadata_to_gcs(
         "my_bucket",
         metadata_file_path,
-        validator_opts=ValidatorOptions(docs_path=DOCS_PATH),
+        validator_opts=ValidatorOptions(docs_path=VALID_DOC_FILE_PATH),
     )
 
     # Latest Uploads

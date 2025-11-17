@@ -13,11 +13,11 @@ data:
       enabled: false
       packageName: airbyte-source-microsoft-lists
   connectorBuildOptions:
-    baseImage: docker.io/airbyte/source-declarative-manifest:6.60.16@sha256:b8126848437ec5a6cff05fb4796fd775450b83e57925674d856a1838a390a28c
+    baseImage: docker.io/airbyte/source-declarative-manifest:7.4.1@sha256:71df19e2ee555ca5b14abbec01d50104c79c9b84cb9cc323284d24333361900a
   connectorSubtype: api
   connectorType: source
   definitionId: 18ea5fae-f0b1-4d82-9aef-832bb922a5b5
-  dockerImageTag: 0.0.38
+  dockerImageTag: 0.0.44
   dockerRepository: airbyte/source-microsoft-lists
   githubIssueLabel: source-microsoft-lists
   icon: icon.svg

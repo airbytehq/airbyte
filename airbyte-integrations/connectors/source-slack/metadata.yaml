@@ -6,13 +6,17 @@ data:
     hosts:
       - slack.com
   connectorBuildOptions:
-    baseImage: docker.io/airbyte/python-connector-base:4.0.0@sha256:d9894b6895923b379f3006fa251147806919c62b7d9021b5cd125bb67d7bbe22
+    baseImage: docker.io/airbyte/source-declarative-manifest:7.4.1@sha256:71df19e2ee555ca5b14abbec01d50104c79c9b84cb9cc323284d24333361900a
   connectorSubtype: api
   connectorType: source
   definitionId: c2281cee-86f9-4a86-bb48-d23286b4c7bd
-  dockerImageTag: 2.2.0-rc.7
+  dockerImageTag: 3.1.7
   dockerRepository: airbyte/source-slack
   documentationUrl: https://docs.airbyte.com/integrations/sources/slack
+  externalDocumentationUrls:
+    - title: Changelog
+      url: https://api.slack.com/changelog
+      type: api_release_history
   githubIssueLabel: source-slack
   icon: slack.svg
   license: ELv2
@@ -20,7 +24,7 @@ data:
   name: Slack
   remoteRegistries:
     pypi:
-      enabled: true
+      enabled: false
       packageName: airbyte-source-slack
   registryOverrides:
     cloud:
@@ -30,8 +34,15 @@ data:
   releaseStage: generally_available
   releases:
     rolloutConfiguration:
-      enableProgressiveRollout: true
+      enableProgressiveRollout: false
     breakingChanges:
+      3.0.0:
+        message: This update fixes a bug that prevented incremental syncs from progressing for some connections containing the `threads` stream. Affected users should perform a stream refresh. See the [Slack Migration Guide](https://docs.airbyte.com/integrations/sources/slack-migrations) for instructions on identifying impacted connections and refreshing the stream.
+        upgradeDeadline: "2025-09-24"
+        scopedImpact:
+          - scopeType: stream
+            impactedScopes:
+              - "threads"
       2.0.0:
         message: Due to changes in the Slack API Terms of Service, the Slack connector is being migrated to a new Marketplace application to retain a higher rate limit for syncing data. As part of moving from the old OAuth application to the new one, users will need to re-authenticate their source from within the Airbyte application to continue syncing data at a higher speed. For more information, see the [announcement](https://api.slack.com/changelog/2025-05-terms-rate-limit-update-and-faq).
         upgradeDeadline: "2025-06-30"
@@ -57,7 +68,7 @@ data:
       - channel_members
   supportLevel: certified
   tags:
-    - language:python
+    - language:manifest-only
     - cdk:low-code
   connectorTestSuitesOptions:
     - suite: liveTests

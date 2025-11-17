@@ -13,11 +13,11 @@ data:
       enabled: false
       packageName: airbyte-source-mercado-ads
   connectorBuildOptions:
-    baseImage: docker.io/airbyte/source-declarative-manifest:6.60.16@sha256:b8126848437ec5a6cff05fb4796fd775450b83e57925674d856a1838a390a28c
+    baseImage: docker.io/airbyte/source-declarative-manifest:7.4.1@sha256:71df19e2ee555ca5b14abbec01d50104c79c9b84cb9cc323284d24333361900a
   connectorSubtype: api
   connectorType: source
   definitionId: ada19dae-81e5-4241-8e64-a9b2680b1b35
-  dockerImageTag: 0.0.10
+  dockerImageTag: 0.0.16
   dockerRepository: airbyte/source-mercado-ads
   githubIssueLabel: source-mercado-ads
   icon: icon.svg
