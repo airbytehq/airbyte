@@ -15,18 +15,3 @@ acceptance_tests:
     tests:
       - config_path: "secrets/config.json"
         configured_catalog_path: "integration_tests/configured_catalog.json"
-        #empty_streams:
-        #  - name: datasets
-        #    bypass_reason: "no data"
-  #basic_read:
-  #  tests:
-  #    - config_path: "integration_tests/config.json"
-  #      # optional when strictness=low:
-  #      # configured_catalog_path: "integration_tests/configured_catalog.json"
-  #full_refresh:
-  #  tests:
-  #    - config_path: "integration_tests/config.json"
-  #      configured_catalog_path: "integration_tests/configured_catalog.json"
-  #incremental:
-  #  bypass_reason: "Incremental not supported"  # remove if you do support it
-  #

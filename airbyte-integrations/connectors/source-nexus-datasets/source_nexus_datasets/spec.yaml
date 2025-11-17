@@ -1,6 +1,6 @@
 documentationUrl: https://docs.airbyte.com/integrations/sources/nexus-datasets
 connectionSpecification:
-  title: Nexus Datasets Spec
+  title: Infor Nexus Datasets Spec
   type: object
   $schema: http://json-schema.org/draft-07/schema#
   required:
@@ -16,16 +16,16 @@ connectionSpecification:
   properties:
     base_url:
       type: "string"
-      description: "The base URL of the Nexus API."
+      description: "The base URL of the Infor Nexus API."
       default: "https://fte-8faff6f82b424ed489e48095f4e58e91-infornexus.fte.gtnexus.info"
       pattern: "^https?://[\\w.-]+(:\\d+)?(/[\\w.-]+)*/?$"
     user_id:
       type: "string"
-      description: "The user ID for the Nexus API."
+      description: "The user ID for the Infor Nexus API."
       default: "DataApiAgentcj@5717988960038861"
     access_key_id:
       type: "string"
-      description: "The access key ID for the Nexus API."
+      description: "The access key ID for the Infor Nexus API."
       default: "1002n4gZecuf03nvZ37"
     secret_key:
       type: "string"
@@ -33,7 +33,7 @@ connectionSpecification:
       default: "tahzc52va2gds5colxb722p26lt6azrw2ow66hxafafr7v4jwodv3tdyqgdnslr2qodeqnhejveebualhg7fmhhpyv7pzovpa3wnkjy"
     api_key:
       type: string
-      description: "The Nexus Data API Key."
+      description: "The Infor Nexus Data API Key."
       default: "4354c1f5a341853211138ad8afb740ffdafc6527"
     dataset_path:
       type: string

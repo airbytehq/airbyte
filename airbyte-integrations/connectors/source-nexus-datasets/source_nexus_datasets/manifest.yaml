@@ -49,7 +49,7 @@ spec:
   type: Spec
   documentation_url: https://docs.airbyte.com/integrations/sources/nexus-datasets # Replace with your connector's documentation URL
   connection_specification:
-    title: Nexus Datasets Spec
+    title: Infor Nexus Datasets Spec
     type: object
     $schema: http://json-schema.org/draft-07/schema#
     required:
@@ -59,43 +59,47 @@ spec:
       - secret_key
       - api_key
       - dataset_path
-      #- dataset_name
-      # file_type is no longer a required config field for the decoder,
-      # but you might want to keep it if it's used elsewhere or for user clarity.
-      # If it's only for decoder, you can remove it from 'required' and 'properties'.
-      #- file_type
+      - dataset_name
+      - file_type
+      - mode
     additionalProperties: true
     properties:
       base_url:
+        title: "Base URL"
         type: "string"
-        description: "The base URL of the Nexus API."
-        default: "https://fte-8faff6f82b424ed489e48095f4e58e91-infornexus.fte.gtnexus.info"
+        description: "The base URL of the Infor Nexus datasets API."
         pattern: "^https?://[\\w.-]+(:\\d+)?(/[\\w.-]+)*/?$"
+        order: 1
       user_id:
+        title: "User ID"
         type: "string"
-        description: "The user ID for the Nexus API."
-        default: "DataApiAgentcj@5717988960038861"
+        description: "The user ID for the Infor Nexus API."
+        order: 5
       access_key_id:
+        title: "Access Key ID"
         type: "string"
-        description: "The access key ID for the Nexus API."
-        default: "1002n4gZecuf03nvZ37"
+        description: "The access key ID for the Infor Nexus API."
+        order: 6
       secret_key:
+        title: "Secret Key"
         type: "string"
         description: "The secret key for HMAC authentication."
-        default: "tahzc52va2gds5colxb722p26lt6azrw2ow66hxafafr7v4jwodv3tdyqgdnslr2qodeqnhejveebualhg7fmhhpyv7pzovpa3wnkjy"
+        order: 7
       api_key:
+        title: "API Key"
         type: string
-        description: "The Nexus Data API Key."
-        default: "4354c1f5a341853211138ad8afb740ffdafc6527"
+        description: "The Infor Nexus Data API Key."
+        order: 8
       dataset_path:
         type: string
         description: "Data Set Path."
         default: "rest/3.1/analytics/dataset"
         airbyte_hidden: true # Hide this from UI if it's a fixed internal path
       dataset_name:
+        title: "Dataset Name"
         type: string
         description: "The name of the dataset to export."
-        default: "PurchaseOrderexportTest2"
+        order: 2
       dataset_export_prefix:
         type: string
         description: "Data Export Prefix."
@@ -109,6 +113,7 @@ spec:
           - Full
           - Incremental
         default: Full
+        order: 4
       file_type: # Keep this if it's used for path construction or other logic, but not decoder selection
         type: string
         title: File Type
@@ -118,10 +123,12 @@ spec:
           - CSV
           - Parquet
         default: JSONL
+        order: 3
       csv_options: # This section is no longer used by FlexibleDecoder if hardcoded
         type: object
         title: CSV Options
         description: "Options for parsing CSV files. Only applicable if File Type is CSV."
+        airbyte_hidden: true
         properties:
           delimiter:
             type: string

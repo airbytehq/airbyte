@@ -3,16 +3,16 @@ requires = [ "poetry-core>=1.0.0",]
 build-backend = "poetry.core.masonry.api"
 
 [tool.poetry]
-version = "0.3.21"
-name = "source-nexus-datasets"
-description = "Source implementation for nexus-datasets."
+version = "0.1.0"
+name = "source-infor-nexus"
+description = "Infor Nexus datasets source connector"
 authors = [ "Airbyte <contact@airbyte.io>",]
 license = "MIT"
 readme = "README.md"
-documentation = "https://docs.airbyte.com/integrations/sources/nexus-datasets"
+documentation = "https://docs.airbyte.com/integrations/sources/infor-nexus"
 homepage = "https://airbyte.com"
 repository = "https://github.com/airbytehq/airbyte"
-packages = [ { include = "source_nexus_datasets" }]
+packages = [ { include = "source_infor_nexus" }]
 
 [tool.poetry.dependencies]
 python = ">=3.10,<3.12"
@@ -22,7 +22,7 @@ pandas = "2.2.2"
 
 
 [tool.poetry.scripts]
-source-nexus-datasets = "source_nexus_datasets.run:run"
+source_infor_nexus = "source_infor_nexus.run:run"
 
 [tool.poetry.group.dev.dependencies]
 requests-mock = "^1.9.3"

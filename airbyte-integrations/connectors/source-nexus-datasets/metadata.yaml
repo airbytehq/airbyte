@@ -1,16 +1,8 @@
 data:
-  allowedHosts:
-    hosts:
-      - TODO # Please change to the hostname of the source.
-  registries:
-    oss:
-      enabled: true
-    cloud:
-      enabled: false
   remoteRegistries:
     pypi:
       enabled: true
-      packageName: airbyte-source-nexus-datasets
+      packageName: airbyte-source-infor-nexus
   connectorBuildOptions:
     # Please update to the latest version of the connector base image.
     # https://hub.docker.com/r/airbyte/python-connector-base
@@ -23,11 +15,11 @@ data:
   connectorType: source
   definitionId: 9e1fe63c-80ad-44fe-8927-10e66c9e209b
   dockerImageTag: 0.1.0
-  dockerRepository: airbyte/source-nexus-datasets
-  githubIssueLabel: source-nexus-datasets
+  dockerRepository: airbyte/source-infor-nexus
+  githubIssueLabel: source-infor-nexus
   icon: nexus-datasets.svg
   license: MIT
-  name: Nexus Datasets
+  name: Infor Nexus
   releaseDate: 2025-11-15
   releaseStage: alpha
   supportLevel: community
@@ -38,13 +30,13 @@ data:
   connectorTestSuitesOptions:
     - suite: liveTests
       testConnections:
-        - name: nexus_datasets_config_dev_null
+        - name: infor_nexus_config_dev_null
           id: TODO
     - suite: unitTests
     - suite: acceptanceTests
       #optional: if your acceptance tests need credentials from CI secret store
       testSecrets:
-        - name: SECRET_SOURCE-NEXUS-DATASETS__CREDS
+        - name: SECRET_SOURCE-INFOR-NEXUS__CREDS
           fileName: config.json
           secretStore:
             type: GSM
