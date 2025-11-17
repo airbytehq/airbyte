@@ -43,10 +43,10 @@ data:
     - suite: unitTests
     - suite: acceptanceTests
       #optional: if your acceptance tests need credentials from CI secret store
-      #testSecrets:
-      #  - name: SECRET_SOURCE-NEXUS-DATASETS__CREDS
-      #    fileName: config.json
-      #    secretStore:
-      #      type: GSM
-      #      alias: airbyte-connector-testing-secret-store       
+      testSecrets:
+        - name: SECRET_SOURCE-NEXUS-DATASETS__CREDS
+          fileName: config.json
+          secretStore:
+            type: GSM
+            alias: airbyte-connector-testing-secret-store       
 metadataSpecVersion: "1.0"
