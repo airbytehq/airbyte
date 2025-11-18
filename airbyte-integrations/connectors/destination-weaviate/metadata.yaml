@@ -57,4 +57,14 @@ data:
           secretStore:
             type: GSM
             alias: airbyte-connector-testing-secret-store
+  externalDocumentationUrls:
+    - title: Weaviate documentation
+      url: https://weaviate.io/developers/weaviate
+      type: api_reference
+    - title: Authentication
+      url: https://weaviate.io/developers/weaviate/configuration/authentication
+      type: authentication_guide
+    - title: Release notes
+      url: https://weaviate.io/developers/weaviate/release-notes
+      type: api_release_history
 metadataSpecVersion: "1.0"

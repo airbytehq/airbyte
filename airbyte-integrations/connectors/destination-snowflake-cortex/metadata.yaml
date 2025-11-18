@@ -51,4 +51,14 @@ data:
           secretStore:
             type: GSM
             alias: airbyte-connector-testing-secret-store
+  externalDocumentationUrls:
+    - title: Snowflake Cortex documentation
+      url: https://docs.snowflake.com/en/user-guide/snowflake-cortex
+      type: api_reference
+    - title: Snowflake SQL reference
+      url: https://docs.snowflake.com/en/sql-reference
+      type: sql_reference
+    - title: Key pair authentication
+      url: https://docs.snowflake.com/en/user-guide/key-pair-auth
+      type: authentication_guide
 metadataSpecVersion: "1.0"

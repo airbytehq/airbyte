@@ -449,4 +449,31 @@ class JsonSchemaToAirbyteSchemaTypeTest {
             airbyteType,
         )
     }
+
+    @Test
+    fun testEmptySchema() {
+        val schemaNode = Jsons.readTree("{}")
+        val airbyteType = defaultJsonSchemaToAirbyteType.convert(schemaNode)
+        assertEquals(UnknownType(Jsons.readTree("""{}""")), airbyteType)
+    }
+
+    @Test
+    fun testInvalidType() {
+        val schemaNode = Jsons.readTree("""{"type": "foo"}""")
+        val airbyteType = defaultJsonSchemaToAirbyteType.convert(schemaNode)
+        assertEquals(UnknownType(Jsons.readTree("""{"type":"foo"}""")), airbyteType)
+    }
+
+    @Test
+    fun testImplicitObject() {
+        val schemaNode = Jsons.readTree("""{"properties": {"foo": {}}}""")
+        val airbyteType = defaultJsonSchemaToAirbyteType.convert(schemaNode)
+        assertEquals(
+            ObjectType(
+                linkedMapOf("foo" to FieldType(UnknownType(Jsons.readTree("{}")), nullable = true)),
+                additionalProperties = false
+            ),
+            airbyteType,
+        )
+    }
 }

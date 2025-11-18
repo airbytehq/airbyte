@@ -21,6 +21,8 @@ Mobile device management
 
 | Version          | Date              | Pull Request | Subject        |
 |------------------|-------------------|--------------|----------------|
+| 0.0.23 | 2025-11-18 | [69507](https://github.com/airbytehq/airbyte/pull/69507) | Update dependencies |
+| 0.0.22 | 2025-10-29 | [68765](https://github.com/airbytehq/airbyte/pull/68765) | Update dependencies |
 | 0.0.21 | 2025-10-21 | [68529](https://github.com/airbytehq/airbyte/pull/68529) | Update dependencies |
 | 0.0.20 | 2025-10-14 | [67958](https://github.com/airbytehq/airbyte/pull/67958) | Update dependencies |
 | 0.0.19 | 2025-10-07 | [67371](https://github.com/airbytehq/airbyte/pull/67371) | Update dependencies |
