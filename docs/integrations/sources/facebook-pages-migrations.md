@@ -1,6 +1,6 @@
 # Facebook Pages Migration Guide
 
-## Updating to 2.0.0
+## Upgrading to 2.0.0
 
 Version `v2.0.0` updates the API version from v23 to v24.
 Deprecated fields have been removed and new fields have been added for the streams `Post`, `Post Insights` and `Page Insights`.
