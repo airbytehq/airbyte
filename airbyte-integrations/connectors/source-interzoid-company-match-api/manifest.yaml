@@ -1,0 +1,103 @@
+version: 7.4.2
+
+type: DeclarativeSource
+
+description: >-
+  This API provides a powerful mechanism for matching inconsistent company and
+  organization name data within or across various data sources and datasets. It
+  works by generating a similarity key using AI and specialized algorithms, so
+  variations of the same organization name generate the same similarity key (GE,
+  Gen Elec, GE Corp, etc.). Data can then be matched batched on similarity key
+  rather than the organization name data itself for dramatically higher match
+  rates.
+
+check:
+  type: CheckStream
+  stream_names:
+    - simkey
+
+streams:
+  - type: DeclarativeStream
+    name: simkey
+    retriever:
+      type: SimpleRetriever
+      requester:
+        type: HttpRequester
+        url: https://api.interzoid.com/getcompanymatchadvanced
+        http_method: GET
+        authenticator:
+          type: ApiKeyAuthenticator
+          api_token: "{{ config[\"api_key\"] }}"
+          inject_into:
+            type: RequestOption
+            field_name: license
+            inject_into: request_parameter
+        request_parameters:
+          company: ibm
+          algorithm: model-v3-wide
+      record_selector:
+        type: RecordSelector
+        extractor:
+          type: DpathExtractor
+          field_path: []
+    schema_loader:
+      type: InlineSchemaLoader
+      schema:
+        type: object
+        $schema: http://json-schema.org/schema#
+        properties:
+          SimKey:
+            type:
+              - string
+              - "null"
+          Code:
+            type:
+              - string
+              - "null"
+          Credits:
+            type:
+              - string
+              - "null"
+        additionalProperties: true
+
+spec:
+  type: Spec
+  connection_specification:
+    type: object
+    $schema: http://json-schema.org/draft-07/schema#
+    required:
+      - api_key
+    properties:
+      api_key:
+        type: string
+        description: The API key to use for authentication
+        name: api_key
+        order: 0
+        title: API Key
+        airbyte_secret: true
+    additionalProperties: true
+
+metadata:
+  assist:
+    docsUrl: https://www.interzoid.com/apis/company-name-matching
+    openapiSpecUrl: https://www.interzoid.com/openapi/v3-1/company-name-matching.yaml
+  testedStreams:
+    simkey:
+      isStale: false
+      hasRecords: true
+      streamHash: 15cb700febcd1caa47118dc8239c01d2920e0e1d
+      hasResponse: true
+      primaryKeysAreUnique: true
+      primaryKeysArePresent: true
+      responsesAreSuccessful: true
+  autoImportSchema:
+    simkey: true
+  applied_migrations:
+    - migration: HttpRequesterUrlBaseToUrl
+      to_version: "*"
+      migrated_at: "2025-10-29T13:18:41.168050+00:00"
+      from_version: 6.33.4
+    - migration: HttpRequesterPathToUrl
+      to_version: "*"
+      migrated_at: "2025-10-29T13:18:41.168258+00:00"
+      from_version: 6.33.4
