@@ -110,7 +110,7 @@ export default function Home() {
     },
     {
       title: 'Developers',
-      link: '/platform/api-documentation',
+      link: '/developers',
       description: 'Interact with Airbyte programmatically using our API, Terraform provider, and more.',
       icon: DevelopersIcon,
     },
@@ -388,13 +388,13 @@ export default function Home() {
                 alt="GitHub stars" 
               />
             </a>{' '}
-            <a href="/community/developer-guides/licenses/mit-license">
+            <a href="/community/licenses/mit-license">
               <img 
                 src="https://img.shields.io/static/v1?label=license&message=MIT&color=brightgreen" 
                 alt="MIT License" 
               />
             </a>{' '}
-            <a href="/community/developer-guides/licenses/elv2-license">
+            <a href="/community/licenses/elv2-license">
               <img 
                 src="https://img.shields.io/static/v1?label=license&message=ELv2&color=brightgreen" 
                 alt="ELv2 License" 

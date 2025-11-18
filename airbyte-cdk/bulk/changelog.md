@@ -1,3 +1,92 @@
+## Version 0.1.79
+
+**Extract CDK**
+
+* Support multiple ts precision patterns for ts decoding. Expose `columnMetadataFromResultSet` function in `JdbcMetadataQuerier`.
+
+## Version 0.1.78
+
+load cdk: add basic schema evolution test cases
+
+## Version 0.1.77
+
+**Extract CDK**
+
+* Fix duplicate metadata key in JdbcMetadataQuerier.
+
+## Version 0.1.76
+
+**Load CDK**
+
+* Remove a println from our code generating bad logs
+
+## Version 0.1.75
+
+**Extract CDK**
+
+* Improve handling of debezium engine shutdown.
+
+## Version 0.1.74
+
+load cdk: split up ensureSchemaMatches into smaller functions
+
+## Version 0.1.73
+
+**Load CDK**
+
+* More changes to `IcebergTableSynchronizer` to get BigLake working
+
+## Version 0.1.72
+
+**Extract CDK**
+
+* Fix case sensitivity for table filtering.
+
+## Version 0.1.71
+
+**Load CDK**
+
+* Remove noisy logs.
+
+## Version 0.1.70
+
+**Load CDK**
+
+* Changed: Make getOperation in icebergUtil public
+
+## Version 0.1.69
+
+**Load CDK**
+
+* Changed: Update the IcebergTableSynchronizer to allow for individual update operations commit in preparation for BigLake
+
+## Version 0.1.68
+
+**Load CDK**
+
+* Refactor additional state statistic tracking.
+
+## Version 0.1.67
+
+**Load CDK**
+
+* Fix expectations in basic integration tests related to additional stats.
+
+## Version 0.1.66
+
+**Load CDK**
+
+* Added: Support for reporting of additional stats in destination state messages.
+* Changed: Refactor coercer interface to separate out coercion and validation.
+
+## Version 0.1.65
+
+extract cdk: fix bug when getting table metadata that cause timeout
+
+## Version 0.1.64
+
+extract cdk: add table filtering to jdbc connectors
+
 ## Version 0.1.63
 
 introduce extract-trigger toolkit for trigger-based CDC
