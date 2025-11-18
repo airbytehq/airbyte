@@ -113,9 +113,7 @@ def _apply_release_candidates(
 
     # If the relase candidate is older than the latest registry entry, don't apply the release candidate and return the latest registry entry
     try:
-        if parse_version(release_candidate_registry_entry.dockerImageTag) < parse_version(
-            latest_registry_entry["dockerImageTag"]
-        ):
+        if parse_version(release_candidate_registry_entry.dockerImageTag) < parse_version(latest_registry_entry["dockerImageTag"]):
             return latest_registry_entry
     except Exception as e:
         logger.error(f"Error parsing version for release candidate comparison: {e}")
