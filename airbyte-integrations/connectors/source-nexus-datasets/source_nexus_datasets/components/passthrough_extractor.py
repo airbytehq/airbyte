@@ -1,9 +1,13 @@
+# Copyright (c) 2025 Airbyte, Inc., all rights reserved.
+
 import logging
 from typing import Any, Iterable, Mapping
 
 from airbyte_cdk.sources.declarative.extractors.extractor import Extractor
 
+
 logger = logging.getLogger("airbyte")
+
 
 class PassthroughExtractor(Extractor):
     """
@@ -11,6 +15,7 @@ class PassthroughExtractor(Extractor):
     This is useful when the decoder already produces well-formed dictionaries
     that should be treated as individual records.
     """
+
     def __init__(self, config: Mapping[str, Any], **kwargs):
         """
         Initializes the PassthroughExtractor.
@@ -23,9 +28,9 @@ class PassthroughExtractor(Extractor):
 
     def extract_records(
         self,
-        response: Any, # This will be the dictionary yielded by your FlexibleDecoder
-        field_path: list[str] | None = None, # Not used for passthrough
-        config: Mapping[str, Any] | None = None # Not used for passthrough
+        response: Any,  # This will be the dictionary yielded by your FlexibleDecoder
+        field_path: list[str] | None = None,  # Not used for passthrough
+        config: Mapping[str, Any] | None = None,  # Not used for passthrough
     ) -> Iterable[Mapping[str, Any]]:
         """
         Yields the input 'response' directly as a record.

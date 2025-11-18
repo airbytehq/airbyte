@@ -77,8 +77,8 @@ connectionSpecification:
           default: ","
         quote_char:
           type: string
-          description: "Quote character for CSV files (default: '\"')."
-          default: "\""
+          description: 'Quote character for CSV files (default: ''"'').'
+          default: '"'
         encoding:
           type: string
           description: "Encoding for CSV files (default: 'utf-8')."

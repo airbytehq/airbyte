@@ -1,20 +1,22 @@
+# Copyright (c) 2025 Airbyte, Inc., all rights reserved.
+
 import csv
+import io
 import json
 import logging
-import io
+from dataclasses import InitVar, dataclass
+from datetime import date, datetime
+from decimal import Decimal
+from typing import Any, Iterable, Mapping
+
 import pandas as pd
 import pyarrow.parquet as pq
 import requests
-from decimal import Decimal
-from datetime import date, datetime
-
-from dataclasses import dataclass, InitVar
-from typing import Any, Iterable, Mapping
 
 from airbyte_cdk.sources.declarative.decoders.decoder import Decoder
 
 
-@dataclass # Use the dataclass decorator
+@dataclass  # Use the dataclass decorator
 class FlexibleDecoder(Decoder):
     """
     A custom decoder that dynamically selects the appropriate underlying decoder
@@ -22,6 +24,7 @@ class FlexibleDecoder(Decoder):
     CSV parsing options are hardcoded within this class.
     This version assumes files are NOT gzipped.
     """
+
     # config is inherited from Decoder, so it's implicitly a field here.
     # We explicitly declare file_type and csv_options if we want them as direct fields
     # but the request was to remove file_type from __init__ and csv_options from manifest.
@@ -29,11 +32,11 @@ class FlexibleDecoder(Decoder):
 
     # We will still receive config as a parameter due to Decoder's __init__
     # The parameters InitVar will catch any other parameters passed from manifest that are not explicit fields.
-    parameters: InitVar[Mapping[str, Any]] = None # Capture any other parameters from manifest
+    parameters: InitVar[Mapping[str, Any]] = None  # Capture any other parameters from manifest
 
     # CSV parsing options are hardcoded as class attributes or set in __post_init__
     _csv_delimiter: str = ","
-    _csv_quote_char: str = "\""
+    _csv_quote_char: str = '"'
     _csv_encoding: str = "utf-8"
     _csv_skip_rows_before_header: int = 0
 
@@ -66,7 +69,7 @@ class FlexibleDecoder(Decoder):
         if obj is None:
             return None
         elif isinstance(obj, (Decimal, datetime, date)):
-            return str(obj) # Convert Decimal, datetime, date to string
+            return str(obj)  # Convert Decimal, datetime, date to string
         elif isinstance(obj, dict):
             return {k: self._convert_all_to_strings(v) for k, v in obj.items()}
         elif isinstance(obj, list):
@@ -86,12 +89,12 @@ class FlexibleDecoder(Decoder):
         Returns:
             Iterable[Mapping[str, Any]]: An iterable of decoded records (dictionaries).
         """
-        content_type = response.headers.get('Content-Type', '').lower()
+        content_type = response.headers.get("Content-Type", "").lower()
         content_bytes = response.content
 
         self.logger.debug(f"CONTENT TYPE: {content_type}")
 
-        if 'application/json' in content_type or 'application/x-jsonlines' in content_type:
+        if "application/json" in content_type or "application/x-jsonlines" in content_type:
             self.logger.debug("INSIDE JSONL DECODER")
             for line in content_bytes.decode("utf-8").splitlines():
                 if line.strip():
@@ -99,7 +102,7 @@ class FlexibleDecoder(Decoder):
                         yield json.loads(line)
                     except json.JSONDecodeError as e:
                         self.logger.warning(f"Skipping malformed JSONL line: {line.strip()} - Error: {e}")
-        elif 'text/csv' in content_type or 'application/csv' in content_type:
+        elif "text/csv" in content_type or "application/csv" in content_type:
             self.logger.debug("INSIDE CSV DECODER")
             try:
                 df = pd.read_csv(
@@ -107,7 +110,7 @@ class FlexibleDecoder(Decoder):
                     delimiter=self._csv_delimiter,
                     quotechar=self._csv_quote_char,
                     skiprows=self._csv_skip_rows_before_header,
-                    encoding=self._csv_encoding
+                    encoding=self._csv_encoding,
                 )
                 for record in df.to_dict(orient="records"):
                     self.logger.debug(f"CSV Decoded Record: {record}")
@@ -115,7 +118,12 @@ class FlexibleDecoder(Decoder):
             except Exception as e:
                 self.logger.error(f"Error decoding CSV (Content-Type: {content_type}): {e}")
                 raise
-        elif 'application/parquet' in content_type or 'application/x-parquet' in content_type or 'application/vnd.apache.parquet' in content_type or 'application/octet-stream' in content_type:
+        elif (
+            "application/parquet" in content_type
+            or "application/x-parquet" in content_type
+            or "application/vnd.apache.parquet" in content_type
+            or "application/octet-stream" in content_type
+        ):
             self.logger.debug("INSIDE PARQUET DECODER")
             try:
                 table = pq.read_table(io.BytesIO(content_bytes))

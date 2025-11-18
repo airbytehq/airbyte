@@ -40,5 +40,5 @@ data:
           fileName: config.json
           secretStore:
             type: GSM
-            alias: airbyte-connector-testing-secret-store       
+            alias: airbyte-connector-testing-secret-store
 metadataSpecVersion: "1.0"
