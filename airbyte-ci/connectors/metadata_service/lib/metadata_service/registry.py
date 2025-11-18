@@ -5,15 +5,12 @@
 import copy
 import json
 import logging
-import os
 from collections import defaultdict
 from enum import Enum
-from typing import Union
+from typing import Optional, Union
 
-import semver
 import sentry_sdk
 from google.cloud import storage
-from google.oauth2 import service_account
 from packaging.version import parse as parse_version
 from pydash.objects import set_with
 
@@ -115,9 +112,13 @@ def _apply_release_candidates(
         return latest_registry_entry
 
     # If the relase candidate is older than the latest registry entry, don't apply the release candidate and return the latest registry entry
-    if semver.Version.parse(release_candidate_registry_entry.dockerImageTag) < semver.Version.parse(
-        latest_registry_entry["dockerImageTag"]
-    ):
+    try:
+        if parse_version(release_candidate_registry_entry.dockerImageTag) < parse_version(
+            latest_registry_entry["dockerImageTag"]
+        ):
+            return latest_registry_entry
+    except Exception as e:
+        logger.error(f"Error parsing version for release candidate comparison: {e}")
         return latest_registry_entry
 
     updated_registry_entry = copy.deepcopy(latest_registry_entry)
