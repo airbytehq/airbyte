@@ -19,6 +19,7 @@ _Added:_
 - `full_picture`
 
 _Removed:_
+
 - `event`
 - `expanded_height`
 - `expanded_width`
@@ -62,7 +63,6 @@ _Removed:_
 - `post_clicks_unique`
 - `post_clicks_by_type_unique`
 
-
 **Page Insights Stream Metrics:**
 
 _Added:_
@@ -70,6 +70,7 @@ _Added:_
 - `page_media_view`
 
 _Removed:_
+
 - `page_tab_views_login_top_unique`
 - `page_tab_views_login_top`
 - `page_tab_views_logout_top`
@@ -128,7 +129,6 @@ _Removed:_
 - `page_impressions_by_age_gender_unique`
 - `page_impressions_frequency_distribution`
 - `page_impressions_viral_frequency_distribution`
-
 
 ### Migration Steps
 
