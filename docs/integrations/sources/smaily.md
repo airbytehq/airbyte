@@ -39,6 +39,7 @@ The connector has a rate limit of 5 API requests per second per IP-address.
 
 | Version | Date       | Pull Request                                             | Subject        |
 | :------ | :--------- | :------------------------------------------------------- | :------------- |
+| 0.2.40 | 2025-11-18 | [69488](https://github.com/airbytehq/airbyte/pull/69488) | Update dependencies |
 | 0.2.39 | 2025-10-29 | [68825](https://github.com/airbytehq/airbyte/pull/68825) | Update dependencies |
 | 0.2.38 | 2025-10-21 | [68281](https://github.com/airbytehq/airbyte/pull/68281) | Update dependencies |
 | 0.2.37 | 2025-10-14 | [67731](https://github.com/airbytehq/airbyte/pull/67731) | Update dependencies |
