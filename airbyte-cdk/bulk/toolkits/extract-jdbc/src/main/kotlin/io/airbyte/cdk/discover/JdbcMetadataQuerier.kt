@@ -174,12 +174,15 @@ class JdbcMetadataQuerier(
         }
         return@lazy results.groupBy({ it.first }, { it.second }).mapValues {
             (_, columnMetadataByTable: List<ColumnMetadata>) ->
-            columnMetadataByTable.filter { it.ordinal == null } +
-                columnMetadataByTable.filter { it.ordinal != null }.sortedBy { it.ordinal }
+            // Deduplicate columns by name to handle case-insensitive databases
+            // where uppercase/lowercase namespace queries return duplicate columns
+            val deduplicatedColumns = columnMetadataByTable.distinctBy { it.name }
+            deduplicatedColumns.filter { it.ordinal == null } +
+                deduplicatedColumns.filter { it.ordinal != null }.sortedBy { it.ordinal }
         }
     }
 
-    private fun columnMetadataFromResultSet(
+    fun columnMetadataFromResultSet(
         rs: ResultSet,
         isPseudoColumn: Boolean,
     ): Pair<TableName, ColumnMetadata> {

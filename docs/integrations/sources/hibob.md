@@ -80,6 +80,7 @@ Link to HiBob API documentation [here](https://apidocs.hibob.com/docs/).
 
 | Version  | Date       | Pull Request                                             | Subject                                                                                                                              |
 |:---------|:-----------|:---------------------------------------------------------|:-------------------------------------------------------------------------------------------------------------------------------------|
+| 0.2.37 | 2025-11-18 | [69418](https://github.com/airbytehq/airbyte/pull/69418) | Update dependencies |
 | 0.2.36 | 2025-10-29 | [68829](https://github.com/airbytehq/airbyte/pull/68829) | Update dependencies |
 | 0.2.35 | 2025-10-21 | [68251](https://github.com/airbytehq/airbyte/pull/68251) | Update dependencies |
 | 0.2.34 | 2025-10-14 | [67915](https://github.com/airbytehq/airbyte/pull/67915) | Update dependencies |

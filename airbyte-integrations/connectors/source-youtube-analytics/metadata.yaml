@@ -8,7 +8,7 @@ data:
   connectorSubtype: api
   connectorType: source
   definitionId: afa734e4-3571-11ec-991a-1e0031268139
-  dockerImageTag: 1.1.0-rc.1
+  dockerImageTag: 1.1.0
   dockerRepository: airbyte/source-youtube-analytics
   documentationUrl: https://docs.airbyte.com/integrations/sources/youtube-analytics
   githubIssueLabel: source-youtube-analytics
@@ -27,7 +27,7 @@ data:
   releaseStage: beta
   releases:
     rolloutConfiguration:
-      enableProgressiveRollout: true
+      enableProgressiveRollout: false
     breakingChanges:
       1.0.0:
         message: Version 1.0.0 introduces changes to BULK API reports streams due to a deprecation on API side. Users will need to Refresh Source Schema and Clear affected streams. Please, follow the Migration Steps in the [Migration Guide](https://docs.airbyte.com/integrations/sources/youtube-analytics-migrations). For more info about this deprecation see the Youtube API docs [changelog](https://developers.google.com/youtube/reporting/revision_history#bulk-data-reports-for-youtube-analytics).
