@@ -5,7 +5,11 @@ products: embedded
 # PyAirbyte Fast-Coder MCP (Deprecated)
 
 :::warning
-The PyAirbyte Fast-Coder MCP has been deprecated and is no longer actively maintained. If you would like to see continued development on this tool, please let us know by adding feedback on the related GitHub Discussion.
+**This MCP server has been deprecated and is no longer actively maintained.**
+
+Please use the [PyAirbyte MCP](./pyairbyte-mcp.md) instead, which provides a local MCP server for managing Airbyte connectors through AI assistants.
+
+If you would like to see continued development on this tool, please share feedback on the [PyAirbyte GitHub Discussions](https://github.com/airbytehq/PyAirbyte/discussions).
 :::
 
 The PyAirbyte Fast-Coder MCP is a remote MCP server that provides the ability for data engineers to generate a data pipeline in Python using a single prompt. It is currently designed to work within Cursor, with broader support coming in the near future.
