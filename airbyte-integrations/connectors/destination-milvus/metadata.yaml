@@ -1,10 +1,10 @@
 data:
   allowedHosts:
     hosts:
-      - "${indexing.host}"
+      - ${indexing.host}
       - api.openai.com
       - api.cohere.ai
-      - "${embedding.api_base}"
+      - ${embedding.api_base}
   registryOverrides:
     cloud:
       enabled: true
@@ -13,7 +13,6 @@ data:
   resourceRequirements:
     jobSpecific:
       - jobType: sync
-        # TODO: Remove once https://github.com/airbytehq/airbyte/issues/30611 is resolved
         resourceRequirements:
           memory_limit: 2Gi
           memory_request: 2Gi
@@ -22,7 +21,7 @@ data:
   connectorSubtype: vectorstore
   connectorType: destination
   definitionId: 65de8962-48c9-11ee-be56-0242ac120002
-  dockerImageTag: 0.0.56
+  dockerImageTag: 0.0.57
   dockerRepository: airbyte/destination-milvus
   githubIssueLabel: destination-milvus
   icon: milvus.svg
@@ -54,4 +53,14 @@ data:
           secretStore:
             type: GSM
             alias: airbyte-connector-testing-secret-store
+  externalDocumentationUrls:
+    - title: Milvus documentation
+      url: https://milvus.io/docs
+      type: api_reference
+    - title: Authentication
+      url: https://milvus.io/docs/authenticate.md
+      type: authentication_guide
+    - title: Release notes
+      url: https://milvus.io/docs/release_notes.md
+      type: api_release_history
 metadataSpecVersion: "1.0"

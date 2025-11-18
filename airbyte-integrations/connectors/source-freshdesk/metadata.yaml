@@ -6,13 +6,17 @@ data:
     hosts:
       - "*.freshdesk.com"
   connectorBuildOptions:
-    baseImage: docker.io/airbyte/source-declarative-manifest:7.3.3@sha256:f82bb06b14690d093ef0719d02fa57c5aa89b39fffc8cd6230c590f74ec0bace
+    baseImage: docker.io/airbyte/source-declarative-manifest:7.5.0@sha256:92e539d5003b33c3624eae7715aee6e39b7b2f1f0eeb6003d37e649a06847ae8
   connectorSubtype: api
   connectorType: source
   definitionId: ec4b9503-13cb-48ab-a4ab-6ade4be46567
-  dockerImageTag: 3.2.0
+  dockerImageTag: 3.2.4
   dockerRepository: airbyte/source-freshdesk
   documentationUrl: https://docs.airbyte.com/integrations/sources/freshdesk
+  externalDocumentationUrls:
+    - title: Changelog
+      url: https://developers.freshdesk.com/api/#change_log
+      type: api_release_history
   githubIssueLabel: source-freshdesk
   icon: freshdesk.svg
   license: ELv2
@@ -31,6 +35,11 @@ data:
     rolloutConfiguration:
       enableProgressiveRollout: false
   releaseStage: generally_available
+  suggestedStreams:
+    streams:
+      - tickets
+      - agents
+      - groups
   supportLevel: certified
   tags:
     - language:manifest-only

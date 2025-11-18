@@ -12,13 +12,17 @@ data:
       - api.ads.microsoft.com
       - clientcenter.api.bingads.microsoft.com
   connectorBuildOptions:
-    baseImage: docker.io/airbyte/source-declarative-manifest:7.3.4@sha256:ebf5c159101614ec9ab3a5183c92781c397b998d15c0b7e2e561ec1e00397fa4
+    baseImage: docker.io/airbyte/source-declarative-manifest:7.4.1@sha256:71df19e2ee555ca5b14abbec01d50104c79c9b84cb9cc323284d24333361900a
   connectorSubtype: api
   connectorType: source
   definitionId: 47f25999-dd5e-4636-8c39-e7cea2453331
-  dockerImageTag: 2.23.7
+  dockerImageTag: 2.23.9
   dockerRepository: airbyte/source-bing-ads
   documentationUrl: https://docs.airbyte.com/integrations/sources/bing-ads
+  externalDocumentationUrls:
+    - title: Release notes
+      url: https://learn.microsoft.com/en-us/advertising/guides/release-notes?view=bingads-13
+      type: api_release_history
   erdUrl: https://dbdocs.io/airbyteio/source-bing-ads?view=relationships
   githubIssueLabel: source-bing-ads
   icon: bingads.svg

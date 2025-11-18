@@ -60,6 +60,9 @@ Then authorize your source with the required information.
 
 | Version          | Date              | Pull Request | Subject        |
 |------------------|-------------------|--------------|----------------|
+| 0.0.39 | 2025-11-18 | [69638](https://github.com/airbytehq/airbyte/pull/69638) | Update dependencies |
+| 0.0.38 | 2025-10-29 | [68976](https://github.com/airbytehq/airbyte/pull/68976) | Update dependencies |
+| 0.0.37 | 2025-10-21 | [68346](https://github.com/airbytehq/airbyte/pull/68346) | Update dependencies |
 | 0.0.36 | 2025-10-14 | [67955](https://github.com/airbytehq/airbyte/pull/67955) | Update dependencies |
 | 0.0.35 | 2025-10-07 | [67332](https://github.com/airbytehq/airbyte/pull/67332) | Update dependencies |
 | 0.0.34 | 2025-09-30 | [66446](https://github.com/airbytehq/airbyte/pull/66446) | Update dependencies |

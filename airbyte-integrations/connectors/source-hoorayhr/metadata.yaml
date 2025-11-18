@@ -13,11 +13,11 @@ data:
       enabled: false
       packageName: airbyte-source-hoorayhr
   connectorBuildOptions:
-    baseImage: docker.io/airbyte/source-declarative-manifest:7.3.4@sha256:ebf5c159101614ec9ab3a5183c92781c397b998d15c0b7e2e561ec1e00397fa4
+    baseImage: docker.io/airbyte/source-declarative-manifest:7.5.0@sha256:92e539d5003b33c3624eae7715aee6e39b7b2f1f0eeb6003d37e649a06847ae8
   connectorSubtype: api
   connectorType: source
   definitionId: a2e34f7c-7de1-422c-b909-ce12f3e051af
-  dockerImageTag: 0.1.34
+  dockerImageTag: 0.1.37
   dockerRepository: airbyte/source-hoorayhr
   githubIssueLabel: source-hoorayhr
   icon: icon.svg

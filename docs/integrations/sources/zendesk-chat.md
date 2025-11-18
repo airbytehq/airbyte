@@ -83,6 +83,12 @@ The connector is restricted by Zendesk's [requests limitation](https://developer
 
 | Version | Date       | Pull Request                                             | Subject                                                                                                                                                                |
 |:--------|:-----------|:---------------------------------------------------------|:-----------------------------------------------------------------------------------------------------------------------------------------------------------------------|
+| 1.2.27 | 2025-11-18 | [69513](https://github.com/airbytehq/airbyte/pull/69513) | Update dependencies |
+| 1.2.26 | 2025-10-29 | [68958](https://github.com/airbytehq/airbyte/pull/68958) | Update dependencies |
+| 1.2.25 | 2025-10-27 | [68629](https://github.com/airbytehq/airbyte/pull/68629) | Fix Pagination for `chats` and `agent_timeline` streams |
+| 1.2.24 | 2025-10-22 | [68591](https://github.com/airbytehq/airbyte/pull/68591) | Add `suggestedStreams` |
+| 1.2.23 | 2025-10-22 | [67607](https://github.com/airbytehq/airbyte/pull/67607) | Handle 404 errors for deleted records in all streams |
+| 1.2.22 | 2025-10-21 | [68440](https://github.com/airbytehq/airbyte/pull/68440) | Update dependencies |
 | 1.2.21 | 2025-10-14 | [68020](https://github.com/airbytehq/airbyte/pull/68020) | Update dependencies |
 | 1.2.20 | 2025-10-07 | [67238](https://github.com/airbytehq/airbyte/pull/67238) | Update dependencies |
 | 1.2.19 | 2025-09-30 | [66845](https://github.com/airbytehq/airbyte/pull/66845) | Update dependencies |

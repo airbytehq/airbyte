@@ -21,6 +21,9 @@ Plus
 Pro
 Enterprise Flex
 Self-Managed Enterprise
+Elastic License 2.0
+ELv2
+MIT
 
 #
 # Common terms Airbyte uses
@@ -36,6 +39,7 @@ Vale
 OpenTelemetry
 Datadog
 [Dd]eduplication
+[Dd]eduped
 Python
 MarkDownLint
 markdownlint-cli2
@@ -64,6 +68,7 @@ SQL
 IP[s]
 CDC
 CRM[s]
+FAQ
 
 # Airbyte connectors
 
@@ -71,6 +76,8 @@ Nessie
 S3 Data Lake
 PostgreSQL
 Postgres
+NetSuite
+ClickHouse
 
 # Companies, products, and jargon
 
@@ -92,7 +99,7 @@ MinIO
 [Nn]amespaces
 [Ii]nitialisms
 \bCPU(?:s)?\b
-hostname
+\bhostname(?:s)?\b
 
 # API and technical terms
 

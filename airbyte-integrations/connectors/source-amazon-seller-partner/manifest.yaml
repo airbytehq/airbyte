@@ -3007,6 +3007,39 @@ api_budget:
       matchers:
         - method: GET
           url_path_pattern: "orders/v0/orders/[^/]+/orderItems(\\?.*)?$" # matches /orderItems
+
+    # SP-API Reports v2021-06-30
+
+    # 1) Create report  (POST /reports/2021-06-30/reports)
+    #   Default: ~0.0167 rps (≈1/min), burst 15
+    - type: MovingWindowCallRatePolicy
+      rates:
+        - limit: 1
+          interval: PT1M
+      matchers:
+        - method: POST
+          url_path_pattern: "reports/2021-06-30/reports$"
+
+    # 2) Poll report status  (GET /reports/2021-06-30/reports/{reportId})
+    #   Default: 2 rps, burst 15
+    - type: MovingWindowCallRatePolicy
+      rates:
+        - limit: 2
+          interval: PT1S
+      matchers:
+        - method: GET
+          url_path_pattern: "reports/2021-06-30/reports/[^/]+$"
+
+    # 3) Get report document metadata  (GET /reports/2021-06-30/documents/{documentId})
+    #   Default: ~0.0167 rps (≈1/min), burst 15
+    - type: MovingWindowCallRatePolicy
+      rates:
+        - limit: 1
+          interval: PT1M
+      matchers:
+        - method: GET
+          url_path_pattern: "reports/2021-06-30/documents/[^/]+$"
+
   # Other API budget settings:
   status_codes_for_ratelimit_hit: [429]
 

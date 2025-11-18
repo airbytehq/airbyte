@@ -9,9 +9,16 @@ data:
   connectorSubtype: api
   connectorType: source
   definitionId: dfd88b22-b603-4c3d-aad7-3701784586b1
-  dockerImageTag: 6.2.36
+  dockerImageTag: 6.2.38
   dockerRepository: airbyte/source-faker
   documentationUrl: https://docs.airbyte.com/integrations/sources/faker
+  externalDocumentationUrls:
+    - title: Python Faker Library Documentation
+      url: https://faker.readthedocs.io/en/master/
+      type: api_reference
+    - title: Faker Changelog
+      url: https://github.com/joke2k/faker/blob/master/CHANGELOG.md
+      type: api_release_history
   githubIssueLabel: source-faker
   icon: icon.svg
   license: ELv2

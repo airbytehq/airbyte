@@ -38,6 +38,9 @@ Next, head over to Developer Access and click on create. This will generate your
 
 | Version          | Date              | Pull Request | Subject        |
 |------------------|-------------------|--------------|----------------|
+| 0.0.39 | 2025-11-18 | [69474](https://github.com/airbytehq/airbyte/pull/69474) | Update dependencies |
+| 0.0.38 | 2025-10-29 | [68781](https://github.com/airbytehq/airbyte/pull/68781) | Update dependencies |
+| 0.0.37 | 2025-10-21 | [68278](https://github.com/airbytehq/airbyte/pull/68278) | Update dependencies |
 | 0.0.36 | 2025-10-14 | [67751](https://github.com/airbytehq/airbyte/pull/67751) | Update dependencies |
 | 0.0.35 | 2025-10-07 | [67446](https://github.com/airbytehq/airbyte/pull/67446) | Update dependencies |
 | 0.0.34 | 2025-09-30 | [66908](https://github.com/airbytehq/airbyte/pull/66908) | Update dependencies |

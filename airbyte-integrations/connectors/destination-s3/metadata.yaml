@@ -2,7 +2,7 @@ data:
   connectorSubtype: file
   connectorType: destination
   definitionId: 4816b78f-1489-44c1-9060-4b19d5fa9362
-  dockerImageTag: 1.9.3
+  dockerImageTag: 1.9.5
   dockerRepository: airbyte/destination-s3
   githubIssueLabel: destination-s3
   icon: s3.svg
@@ -10,9 +10,13 @@ data:
   name: S3
   connectorIPCOptions:
     dataChannel:
-      version: "0.0.1"
-      supportedSerialization: ["JSONL", "PROTOBUF"]
-      supportedTransport: ["SOCKET", "STDIO"]
+      version: 0.0.2
+      supportedSerialization:
+        - JSONL
+        - PROTOBUF
+      supportedTransport:
+        - SOCKET
+        - STDIO
   connectorBuildOptions:
     baseImage: docker.io/airbyte/java-connector-base:2.0.1@sha256:ec89bd1a89e825514dd2fc8730ba299a3ae1544580a078df0e35c5202c2085b3
   registryOverrides:
@@ -143,4 +147,20 @@ data:
           secretStore:
             type: GSM
             alias: airbyte-connector-testing-secret-store
+  externalDocumentationUrls:
+    - title: AWS S3 documentation
+      url: https://docs.aws.amazon.com/s3/
+      type: api_reference
+    - title: IAM authentication
+      url: https://docs.aws.amazon.com/IAM/latest/UserGuide/id_credentials_access-keys.html
+      type: authentication_guide
+    - title: Bucket policies and permissions
+      url: https://docs.aws.amazon.com/AmazonS3/latest/userguide/access-policy-language-overview.html
+      type: permissions_scopes
+    - title: Request rate and performance
+      url: https://docs.aws.amazon.com/AmazonS3/latest/userguide/optimizing-performance.html
+      type: rate_limits
+    - title: AWS Service Health Dashboard
+      url: https://health.aws.amazon.com/health/status
+      type: status_page
 metadataSpecVersion: "1.0"

@@ -33,6 +33,9 @@ You can learn more about the API here https://developers.taboola.com/backstage-a
 
 | Version          | Date              | Pull Request | Subject        |
 |------------------|-------------------|--------------|----------------|
+| 0.0.35 | 2025-11-18 | [69539](https://github.com/airbytehq/airbyte/pull/69539) | Update dependencies |
+| 0.0.34 | 2025-10-29 | [69017](https://github.com/airbytehq/airbyte/pull/69017) | Update dependencies |
+| 0.0.33 | 2025-10-21 | [68517](https://github.com/airbytehq/airbyte/pull/68517) | Update dependencies |
 | 0.0.32 | 2025-10-14 | [67892](https://github.com/airbytehq/airbyte/pull/67892) | Update dependencies |
 | 0.0.31 | 2025-10-07 | [67460](https://github.com/airbytehq/airbyte/pull/67460) | Update dependencies |
 | 0.0.30 | 2025-09-30 | [66877](https://github.com/airbytehq/airbyte/pull/66877) | Update dependencies |

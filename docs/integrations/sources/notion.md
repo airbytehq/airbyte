@@ -119,6 +119,9 @@ The connector is restricted by Notion [request limits](https://developers.notion
 
 | Version     | Date       | Pull Request                                             | Subject                                                                                                                                                                |
 |:------------|:-----------|:---------------------------------------------------------|:-----------------------------------------------------------------------------------------------------------------------------------------------------------------------|
+| 3.3.6 | 2025-11-18 | [69375](https://github.com/airbytehq/airbyte/pull/69375) | Update dependencies |
+| 3.3.5 | 2025-10-29 | [68750](https://github.com/airbytehq/airbyte/pull/68750) | Update dependencies |
+| 3.3.4 | 2025-10-21 | [68399](https://github.com/airbytehq/airbyte/pull/68399) | Update dependencies |
 | 3.3.3 | 2025-10-14 | [67801](https://github.com/airbytehq/airbyte/pull/67801) | Update dependencies |
 | 3.3.2 | 2025-10-07 | [67422](https://github.com/airbytehq/airbyte/pull/67422) | Update dependencies |
 | 3.3.1 | 2025-09-30 | [66927](https://github.com/airbytehq/airbyte/pull/66927) | Update dependencies |

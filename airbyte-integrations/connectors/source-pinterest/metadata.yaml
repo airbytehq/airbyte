@@ -5,10 +5,10 @@ data:
   connectorSubtype: api
   connectorType: source
   definitionId: 5cb7e5fe-38c2-11ec-8d3d-0242ac130003
-  dockerImageTag: 2.1.15
+  dockerImageTag: 2.1.17
   dockerRepository: airbyte/source-pinterest
   connectorBuildOptions:
-    baseImage: docker.io/airbyte/source-declarative-manifest:7.3.4@sha256:ebf5c159101614ec9ab3a5183c92781c397b998d15c0b7e2e561ec1e00397fa4
+    baseImage: docker.io/airbyte/source-declarative-manifest:7.4.1@sha256:71df19e2ee555ca5b14abbec01d50104c79c9b84cb9cc323284d24333361900a
   githubIssueLabel: source-pinterest
   icon: pinterest.svg
   license: ELv2
@@ -56,6 +56,10 @@ data:
       - ad_group_analytics
       - ad_groups
   documentationUrl: https://docs.airbyte.com/integrations/sources/pinterest
+  externalDocumentationUrls:
+    - title: Changelog
+      url: https://developers.pinterest.com/docs/changelog/changelog/
+      type: api_release_history
   tags:
     - language:manifest-only
     - cdk:low-code
