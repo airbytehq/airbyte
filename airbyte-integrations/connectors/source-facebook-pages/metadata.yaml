@@ -33,7 +33,7 @@ data:
       2.0.0:
         message: >-
           This version updates the API version from v23 to v24. Deprecated fields have been removed and new fields have been added for the streams `Post`, `Post Insights` and `Page Insights`.
-        upgradeDeadline: 2025-12-02
+        upgradeDeadline: "2025-12-02"
         scopedImpact:
           - scopeType: stream
             impactedScopes: ["post", "page_insights", "post_insights"]
