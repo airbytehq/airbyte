@@ -18,11 +18,21 @@ class ExternalDocumentationUrl(BaseModel):
     title: str = Field(..., description="Display title for the documentation link")
     url: AnyUrl = Field(..., description="URL to the external documentation")
     type: Optional[
-        Literal["api_release_history", "api_reference", "api_deprecations", "other"]
-    ] = Field(
-        None,
-        description="Category of documentation (api_release_history, api_reference, api_deprecations, or other)",
-    )
+        Literal[
+            "api_deprecations",
+            "api_reference",
+            "api_release_history",
+            "authentication_guide",
+            "data_model_reference",
+            "developer_community",
+            "migration_guide",
+            "other",
+            "permissions_scopes",
+            "rate_limits",
+            "sql_reference",
+            "status_page",
+        ]
+    ] = Field(None, description="Category of documentation")
     requiresLogin: Optional[bool] = Field(
         False, description="Whether the URL requires authentication to access"
     )
