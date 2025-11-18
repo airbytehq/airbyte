@@ -29,4 +29,17 @@ data:
   supportLevel: certified
   supportsDataActivation: true
   supportsRefreshes: true # needed for the CDK to work as it relies on the generation/sync ids to work
+  externalDocumentationUrls:
+    - title: HubSpot API documentation
+      url: https://developers.hubspot.com/docs/api/overview
+      type: api_reference
+    - title: OAuth
+      url: https://developers.hubspot.com/docs/api/oauth-quickstart-guide
+      type: authentication_guide
+    - title: Rate limits
+      url: https://developers.hubspot.com/docs/api/usage-details
+      type: rate_limits
+    - title: HubSpot Status
+      url: https://status.hubspot.com/
+      type: status_page
 metadataSpecVersion: "1.0"
