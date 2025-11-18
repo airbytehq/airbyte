@@ -1,0 +1,34 @@
+metadataSpecVersion: "1.0"
+data:
+  allowedHosts:
+    hosts:
+  registryOverrides:
+    oss:
+      enabled: true
+    cloud:
+      enabled: true
+  remoteRegistries:
+    pypi:
+      enabled: false
+      packageName: airbyte-source-standardize-company-names-api
+  connectorBuildOptions:
+    baseImage: docker.io/airbyte/source-declarative-manifest:7.5.0@sha256:92e539d5003b33c3624eae7715aee6e39b7b2f1f0eeb6003d37e649a06847ae8
+  connectorSubtype: api
+  connectorType: source
+  definitionId: 77b5214d-bc1b-4451-bff9-ce44c106d48b
+  dockerImageTag: 0.0.1
+  dockerRepository: airbyte/source-standardize-company-names-api
+  githubIssueLabel: source-standardize-company-names-api
+  icon: icon.svg
+  license: ELv2
+  name: Standardize Company Names API
+  releaseDate: 2025-11-18
+  releaseStage: alpha
+  supportLevel: community
+  documentationUrl: https://docs.airbyte.com/integrations/sources/standardize-company-names-api
+  tags:
+    - language:manifest-only
+    - cdk:low-code
+  ab_internal:
+    ql: 100
+    sl: 100
