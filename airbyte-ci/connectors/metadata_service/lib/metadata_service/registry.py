@@ -14,6 +14,7 @@ import semver
 import sentry_sdk
 from google.cloud import storage
 from google.oauth2 import service_account
+from packaging.version import parse as parse_version
 from pydash.objects import set_with
 
 from metadata_service.constants import (
@@ -24,7 +25,7 @@ from metadata_service.constants import (
     REGISTRIES_FOLDER,
     VALID_REGISTRIES,
 )
-from metadata_service.helpers.gcs import get_gcs_storage_client, safe_read_gcs_file
+from metadata_service.helpers.gcs import get_gcs_storage_client, is_version_yanked, safe_read_gcs_file
 from metadata_service.helpers.object_helpers import CaseInsensitiveKeys, default_none_to_dict
 from metadata_service.helpers.slack import send_slack_message
 from metadata_service.models.generated import ConnectorRegistryDestinationDefinition, ConnectorRegistrySourceDefinition, ConnectorRegistryV0
@@ -204,8 +205,6 @@ def _get_latest_non_yanked_version(
     Returns:
         Optional[PolymorphicRegistryEntry]: The latest non-yanked registry entry, or None if all versions are yanked.
     """
-    from metadata_service.helpers.gcs import is_version_yanked
-
     registry_type_file_name = f"{registry_type}.json"
 
     try:
@@ -217,8 +216,8 @@ def _get_latest_non_yanked_version(
         for blob in blobs:
             if blob.name.endswith(f"/{registry_type_file_name}"):
                 parts = blob.name.split("/")
-                if len(parts) >= 4:
-                    version = parts[2]
+                if len(parts) >= 5:
+                    version = parts[3]
                     if version not in ["latest", "release_candidate"]:
                         versions_with_blobs.append((version, blob))
 
@@ -227,9 +226,9 @@ def _get_latest_non_yanked_version(
             return None
 
         try:
-            sorted_versions = sorted(versions_with_blobs, key=lambda x: semver.Version.parse(x[0]), reverse=True)
-        except ValueError as e:
-            logger.error(f"Error parsing semver for {docker_repository}: {e}")
+            sorted_versions = sorted(versions_with_blobs, key=lambda x: parse_version(x[0]), reverse=True)
+        except Exception as e:
+            logger.error(f"Error parsing version for {docker_repository}: {e}")
             sorted_versions = sorted(versions_with_blobs, key=lambda x: x[0], reverse=True)
 
         for version, blob in sorted_versions:
@@ -238,7 +237,12 @@ def _get_latest_non_yanked_version(
                 continue
 
             logger.info(f"Using version {version} of {docker_repository} as latest (non-yanked)")
-            registry_dict = json.loads(safe_read_gcs_file(blob))
+            content = safe_read_gcs_file(blob)
+            if not content:
+                logger.warning(f"Empty content for {blob.name}, skipping")
+                continue
+
+            registry_dict = json.loads(content)
             try:
                 if registry_dict.get(ConnectorTypePrimaryKey.SOURCE.value):
                     return ConnectorRegistrySourceDefinition.parse_obj(registry_dict)
@@ -273,8 +277,6 @@ def _get_latest_registry_entries(bucket: storage.Bucket, registry_type: str) -> 
     Returns:
         list[PolymorphicRegistryEntry]: The latest registry entries.
     """
-    from metadata_service.helpers.gcs import is_version_yanked
-
     registry_type_file_name = f"{registry_type}.json"
 
     try:
@@ -287,11 +289,16 @@ def _get_latest_registry_entries(bucket: storage.Bucket, registry_type: str) -> 
     latest_registry_entries = []
     for blob in blobs:
         logger.info(f"Reading blob: {blob.name}")
-        registry_dict = json.loads(safe_read_gcs_file(blob))
+        content = safe_read_gcs_file(blob)
+        if not content:
+            logger.warning(f"Empty content for {blob.name}, skipping")
+            continue
+
+        registry_dict = json.loads(content)
 
         parts = blob.name.split("/")
-        if len(parts) >= 3:
-            docker_repository = parts[1]
+        if len(parts) >= 4:
+            docker_repository = f"{parts[1]}/{parts[2]}"
             version = registry_dict.get("dockerImageTag")
 
             if version and is_version_yanked(bucket, docker_repository, version):

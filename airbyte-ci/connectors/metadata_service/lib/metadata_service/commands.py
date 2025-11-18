@@ -2,14 +2,16 @@
 # Copyright (c) 2025 Airbyte, Inc., all rights reserved.
 #
 
+import json
 import logging
 import pathlib
+from datetime import datetime
 
 import click
 import sentry_sdk
 from pydantic import ValidationError
 
-from metadata_service.constants import METADATA_FILE_NAME, VALID_REGISTRIES
+from metadata_service.constants import METADATA_FILE_NAME, METADATA_FOLDER, VALID_REGISTRIES
 from metadata_service.gcs_upload import (
     MetadataDeleteInfo,
     MetadataUploadInfo,
@@ -260,10 +262,6 @@ def generate_registry_report(bucket_name: str):
 @click.option("--operator", type=click.STRING, required=False, default="", help="Name of the operator performing the yank.")
 @sentry_sdk.trace
 def yank_version(connector_docker_repository: str, connector_version: str, bucket_name: str, reason: str, operator: str):
-    import json
-    from datetime import datetime
-
-    from metadata_service.constants import METADATA_FOLDER
     from metadata_service.helpers.gcs import get_gcs_storage_client
 
     sentry_sdk.set_tag("command", "yank_version")
@@ -310,7 +308,6 @@ def yank_version(connector_docker_repository: str, connector_version: str, bucke
 @click.argument("bucket-name", type=click.STRING, required=True)
 @sentry_sdk.trace
 def unyank_version(connector_docker_repository: str, connector_version: str, bucket_name: str):
-    from metadata_service.constants import METADATA_FOLDER
     from metadata_service.helpers.gcs import get_gcs_storage_client
 
     sentry_sdk.set_tag("command", "unyank_version")
