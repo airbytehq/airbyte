@@ -37,6 +37,7 @@ First of all you need to register an application in the Microsoft Entra Admin Ce
 
 | Version | Date       | Pull Request                                             | Subject                                                                               |
 | ------- | ---------- | -------------------------------------------------------- | ------------------------------------------------------------------------------------- |
+| 0.0.38 | 2025-11-18 | [69542](https://github.com/airbytehq/airbyte/pull/69542) | Update dependencies |
 | 0.0.37 | 2025-10-29 | [69067](https://github.com/airbytehq/airbyte/pull/69067) | Update dependencies |
 | 0.0.36 | 2025-10-21 | [68465](https://github.com/airbytehq/airbyte/pull/68465) | Update dependencies |
 | 0.0.35 | 2025-10-14 | [67827](https://github.com/airbytehq/airbyte/pull/67827) | Update dependencies |
