@@ -1,0 +1,90 @@
+version: 7.4.2
+
+type: DeclarativeSource
+
+description: >-
+  This API provides a powerful mechanism for matching similar street addresses
+  within or across various data sources and datasets. It works by generating a
+  similarity key using AI and specialized algorithms, so variations of the same
+  street address generate the same similarity key (100 E Main St #2A, 100 East
+  Main Street Apt 2-A, etc.). Data can then be matched based on similarity key
+  rather than the address data itself for dramatically higher match rates.
+
+check:
+  type: CheckStream
+  stream_names:
+    - simkey
+
+streams:
+  - type: DeclarativeStream
+    retriever:
+      type: SimpleRetriever
+      record_selector:
+        type: RecordSelector
+        extractor:
+          type: DpathExtractor
+          field_path: []
+      requester:
+        type: HttpRequester
+        http_method: GET
+        url: https://api.interzoid.com/getaddressmatchadvanced
+        authenticator:
+          type: ApiKeyAuthenticator
+          api_token: "{{ config['api_key'] }}"
+          inject_into:
+            type: RequestOption
+            inject_into: request_parameter
+            field_name: license
+        request_parameters:
+          address: 100 Main Street Apt 2A
+          algorithm: model-v3-narrow
+    name: simkey
+    schema_loader:
+      type: InlineSchemaLoader
+      schema:
+        type: object
+        $schema: http://json-schema.org/schema#
+        properties:
+          SimKey:
+            type:
+              - string
+              - "null"
+          Code:
+            type:
+              - string
+              - "null"
+          Credits:
+            type:
+              - string
+              - "null"
+        additionalProperties: true
+
+spec:
+  type: Spec
+  connection_specification:
+    type: object
+    $schema: http://json-schema.org/draft-07/schema#
+    required:
+      - api_key
+    properties:
+      api_key:
+        type: string
+        title: API Key
+        airbyte_secret: true
+        order: 0
+    additionalProperties: true
+
+metadata:
+  testedStreams:
+    stream_0:
+      streamHash: ad11f9fa446b445a056b0f48d54e74059e0bc977
+    simkey:
+      streamHash: 6c863cd2377b48a7a595bad90571a3a4b60bf68f
+      isStale: false
+      hasResponse: true
+      responsesAreSuccessful: true
+      hasRecords: true
+      primaryKeysArePresent: true
+      primaryKeysAreUnique: true
+  autoImportSchema:
+    simkey: true

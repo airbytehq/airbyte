@@ -1,0 +1,34 @@
+metadataSpecVersion: "1.0"
+data:
+  allowedHosts:
+    hosts:
+  registryOverrides:
+    oss:
+      enabled: true
+    cloud:
+      enabled: true
+  remoteRegistries:
+    pypi:
+      enabled: false
+      packageName: airbyte-source-interzoid-street-address-match-api
+  connectorBuildOptions:
+    baseImage: docker.io/airbyte/source-declarative-manifest:7.5.0@sha256:92e539d5003b33c3624eae7715aee6e39b7b2f1f0eeb6003d37e649a06847ae8
+  connectorSubtype: api
+  connectorType: source
+  definitionId: 188930ae-7ffc-417d-a413-1ee62bf19dd2
+  dockerImageTag: 0.0.1
+  dockerRepository: airbyte/source-interzoid-street-address-match-api
+  githubIssueLabel: source-interzoid-street-address-match-api
+  icon: icon.svg
+  license: ELv2
+  name: Interzoid Street Address Match API
+  releaseDate: 2025-11-18
+  releaseStage: alpha
+  supportLevel: community
+  documentationUrl: https://docs.airbyte.com/integrations/sources/interzoid-street-address-match-api
+  tags:
+    - language:manifest-only
+    - cdk:low-code
+  ab_internal:
+    ql: 100
+    sl: 100
