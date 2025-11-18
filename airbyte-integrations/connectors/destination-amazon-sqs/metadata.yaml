@@ -23,6 +23,10 @@ data:
     ql: 200
   supportLevel: community
   connectorTestSuitesOptions:
+    # Disable unit tests for now
+    # They are not passing
+    # No Airbyte Cloud usage
+    #- suite: unitTests
     - suite: integrationTests
       testSecrets:
         - name: SECRET_DESTINATION-AMAZON-SQS

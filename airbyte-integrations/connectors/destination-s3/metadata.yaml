@@ -28,12 +28,8 @@ data:
   releases:
     breakingChanges:
       1.0.0:
-        message:
-          "**This release includes breaking changes, including major revisions
-          to the schema of stored data. Do not upgrade without reviewing the migration
-          guide.**
-
-          "
+        message: >
+          **This release includes breaking changes, including major revisions to the schema of stored data. Do not upgrade without reviewing the migration guide.**
         upgradeDeadline: "2024-10-08"
     rolloutConfiguration:
       enableProgressiveRollout: false

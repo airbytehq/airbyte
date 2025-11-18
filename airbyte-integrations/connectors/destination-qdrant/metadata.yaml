@@ -13,6 +13,7 @@ data:
   resourceRequirements:
     jobSpecific:
       - jobType: sync
+        # TODO: Remove once https://github.com/airbytehq/airbyte/issues/30611 is resolved
         resourceRequirements:
           memory_limit: 2Gi
           memory_request: 2Gi

@@ -49,22 +49,20 @@ data:
       enableProgressiveRollout: false
     breakingChanges:
       1.0.0:
-        message:
-          '''This version updates the connector''s behavior to match other
-          certified destinations'' behavior. In particular, the `_airbyte_*` columns
-          have been renamed, and files are now placed in `<container>/<stream namespace>/<stream
-          name>/**` (previously, stream namespace was not used in the path).
+        message: >
+          'This version updates the connector's behavior to match other certified destinations' behavior.
+          In particular, the `_airbyte_*` columns have been renamed, and files are now placed in
+          `<container>/<stream namespace>/<stream name>/**` (previously, stream namespace was not used
+          in the path).
 
-          Some options have been renamed for clarity. Notably, the "spill size" option
-          is now named "file split size"; additionally, this option is now correctly
-          applied to CSV files (previously it only applied to JSONL files).
+          Some options have been renamed for clarity. Notably, the "spill size" option is now named
+          "file split size"; additionally, this option is now correctly applied to CSV files (previously
+          it only applied to JSONL files).
 
-          This connector now writes "block" blobs, instead of "append" blobs. This
-          means that you may assume that as soon as a blob shows up in your Azure
-          blob container, it is ready for consumption. (Previously, with append blobs,
-          the connector would first write an empty blob, and fill it gradually.)
-
-          ''
+          This connector now writes "block" blobs, instead of "append" blobs. This means that you may
+          assume that as soon as a blob shows up in your Azure blob container, it is ready for consumption.
+          (Previously, with append blobs, the connector would first write an empty blob, and fill it
+          gradually.)
 
           '
         upgradeDeadline: "2026-03-31"

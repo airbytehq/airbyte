@@ -24,6 +24,16 @@ data:
   supportLevel: community
   connectorTestSuitesOptions:
     - suite: unitTests
+    # Disable integration tests for now
+    # They are not passing
+    # No Airbyte Cloud usage
+    # - suite: integrationTests
+    #   testSecrets:
+    #     - name: SECRET_DESTINATION_DATABEND_CLOUD_CREDS
+    #       fileName: config.json
+    #       secretStore:
+    #         type: GSM
+    #         alias: airbyte-connector-testing-secret-store
   connectorBuildOptions:
     baseImage: docker.io/airbyte/python-connector-base:4.0.0@sha256:d9894b6895923b379f3006fa251147806919c62b7d9021b5cd125bb67d7bbe22
   externalDocumentationUrls:

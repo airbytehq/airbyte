@@ -32,14 +32,14 @@ data:
   releases:
     breakingChanges:
       2.0.0:
-        message:
-          "'This version introduces new configuration options (bulk insert\
-          \ via Azure Cloud Storage) and removes\n the use of a raw table prior to\
-          \ final insertion in the destination table.  These changes will either\n\
-          \ require the execution of a truncate refresh on an existing connection\
-          \ or the creation of a new connection.\n If a new connection is set up,\
-          \ you may delete the old connection and the raw table in the destination\
-          \ after\na successful initial sync of the new connection.\n'\n"
+        message: >
+          'This version introduces new configuration options (bulk insert via Azure Cloud Storage) and removes
+           the use of a raw table prior to final insertion in the destination table.  These changes will either
+           require the execution of a truncate refresh on an existing connection or the creation of a new connection.
+           If a new connection is set up, you may delete the old connection and the raw table in the destination after
+          a successful initial sync of the new connection.
+
+          '
         upgradeDeadline: "2025-09-11"
   releaseStage: generally_available
   supportLevel: certified

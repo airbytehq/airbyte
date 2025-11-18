@@ -28,7 +28,7 @@ data:
     isEnterprise: false
   supportLevel: certified
   supportsDataActivation: true
-  supportsRefreshes: true
+  supportsRefreshes: true # needed for the CDK to work as it relies on the generation/sync ids to work
   externalDocumentationUrls:
     - title: HubSpot API documentation
       url: https://developers.hubspot.com/docs/api/overview

@@ -22,9 +22,7 @@ data:
   releases:
     breakingChanges:
       1.0.0:
-        message:
-          Teradata support now Destination v2 format. Requires you to resync
-          your data to Teradata destination in the new format.
+        message: "Teradata support now Destination v2 format. Requires you to resync your data to Teradata destination in the new format."
         upgradeDeadline: "2025-08-01"
   tags:
     - language:java

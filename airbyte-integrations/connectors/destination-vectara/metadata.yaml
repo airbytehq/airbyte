@@ -21,7 +21,7 @@ data:
   name: Vectara
   remoteRegistries:
     pypi:
-      enabled: false
+      enabled: false # TODO: enable once the CLI is working
       packageName: airbyte-destination-vectara
   releaseDate: 2023-12-16
   releaseStage: alpha

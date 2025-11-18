@@ -28,7 +28,7 @@ data:
     requireVersionIncrementsInPullRequests: false
   supportLevel: certified
   supportsDataActivation: true
-  supportsRefreshes: true
+  supportsRefreshes: true # needed for the CDK to work as it relies on the generation/sync ids to work
   externalDocumentationUrls:
     - title: Customer.io API documentation
       url: https://customer.io/docs/api/

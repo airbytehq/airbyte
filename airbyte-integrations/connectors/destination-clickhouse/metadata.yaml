@@ -30,11 +30,7 @@ data:
       enableProgressiveRollout: false
     breakingChanges:
       2.0.0:
-        message:
-          "This connector has been re-written from scratch. Data will now be
-          typed and stored in final (non-raw) tables. The connector may require changes
-          to its configuration to function properly and downstream pipelines may be
-          affected. Warning: SSH tunneling is in Beta."
+        message: "This connector has been re-written from scratch. Data will now be typed and stored in final (non-raw) tables. The connector may require changes to its configuration to function properly and downstream pipelines may be affected. Warning: SSH tunneling is in Beta."
         upgradeDeadline: "2025-08-19"
   documentationUrl: https://docs.airbyte.com/integrations/destinations/clickhouse
   tags:
