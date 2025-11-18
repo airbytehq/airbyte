@@ -250,3 +250,96 @@ def generate_registry_report(bucket_name: str):
         sentry_sdk.capture_exception(e)
         logger.exception(f"FATAL ERROR: An error occurred when generating and persisting the registry report")
         exit(1)
+
+
+@metadata_service.command(help="Yank a connector version by placing a marker file in GCS.")
+@click.argument("connector-docker-repository", type=click.STRING, required=True)
+@click.argument("connector-version", type=click.STRING, required=True)
+@click.argument("bucket-name", type=click.STRING, required=True)
+@click.option("--reason", type=click.STRING, required=False, default="", help="Reason for yanking this version.")
+@click.option("--operator", type=click.STRING, required=False, default="", help="Name of the operator performing the yank.")
+@sentry_sdk.trace
+def yank_version(connector_docker_repository: str, connector_version: str, bucket_name: str, reason: str, operator: str):
+    import json
+    from datetime import datetime
+
+    from metadata_service.constants import METADATA_FOLDER
+    from metadata_service.helpers.gcs import get_gcs_storage_client
+
+    sentry_sdk.set_tag("command", "yank_version")
+    sentry_sdk.set_tag("bucket_name", bucket_name)
+    sentry_sdk.set_tag("connector", connector_docker_repository)
+    sentry_sdk.set_tag("version", connector_version)
+
+    logger.info(f"Yanking version {connector_version} of {connector_docker_repository}")
+
+    try:
+        gcs_client = get_gcs_storage_client()
+        bucket = gcs_client.bucket(bucket_name)
+
+        yank_marker_path = f"{METADATA_FOLDER}/{connector_docker_repository}/{connector_version}/.yanked"
+        yank_marker_blob = bucket.blob(yank_marker_path)
+
+        if yank_marker_blob.exists():
+            click.secho(f"Version {connector_version} of {connector_docker_repository} is already yanked.", fg="yellow")
+            exit(0)
+
+        yank_data = {
+            "yanked_at": datetime.utcnow().isoformat(),
+            "reason": reason,
+            "operator": operator,
+        }
+
+        yank_marker_blob.upload_from_string(json.dumps(yank_data, indent=2))
+
+        click.secho(f"Successfully yanked version {connector_version} of {connector_docker_repository}", fg="green")
+        click.secho(f"Yank marker created at: {yank_marker_path}", fg="green")
+        sentry_sdk.set_tag("operation_success", True)
+
+    except Exception as e:
+        sentry_sdk.set_tag("operation_success", False)
+        sentry_sdk.capture_exception(e)
+        logger.exception(f"FATAL ERROR: An error occurred when yanking the connector version")
+        click.secho(f"Failed to yank version: {str(e)}", fg="red")
+        exit(1)
+
+
+@metadata_service.command(help="Unyank a connector version by removing the marker file from GCS.")
+@click.argument("connector-docker-repository", type=click.STRING, required=True)
+@click.argument("connector-version", type=click.STRING, required=True)
+@click.argument("bucket-name", type=click.STRING, required=True)
+@sentry_sdk.trace
+def unyank_version(connector_docker_repository: str, connector_version: str, bucket_name: str):
+    from metadata_service.constants import METADATA_FOLDER
+    from metadata_service.helpers.gcs import get_gcs_storage_client
+
+    sentry_sdk.set_tag("command", "unyank_version")
+    sentry_sdk.set_tag("bucket_name", bucket_name)
+    sentry_sdk.set_tag("connector", connector_docker_repository)
+    sentry_sdk.set_tag("version", connector_version)
+
+    logger.info(f"Unyanking version {connector_version} of {connector_docker_repository}")
+
+    try:
+        gcs_client = get_gcs_storage_client()
+        bucket = gcs_client.bucket(bucket_name)
+
+        yank_marker_path = f"{METADATA_FOLDER}/{connector_docker_repository}/{connector_version}/.yanked"
+        yank_marker_blob = bucket.blob(yank_marker_path)
+
+        if not yank_marker_blob.exists():
+            click.secho(f"Version {connector_version} of {connector_docker_repository} is not yanked.", fg="yellow")
+            exit(0)
+
+        yank_marker_blob.delete()
+
+        click.secho(f"Successfully unyanked version {connector_version} of {connector_docker_repository}", fg="green")
+        click.secho(f"Yank marker removed from: {yank_marker_path}", fg="green")
+        sentry_sdk.set_tag("operation_success", True)
+
+    except Exception as e:
+        sentry_sdk.set_tag("operation_success", False)
+        sentry_sdk.capture_exception(e)
+        logger.exception(f"FATAL ERROR: An error occurred when unyanking the connector version")
+        click.secho(f"Failed to unyank version: {str(e)}", fg="red")
+        exit(1)

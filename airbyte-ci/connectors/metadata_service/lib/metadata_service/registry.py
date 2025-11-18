@@ -188,8 +188,83 @@ def _get_connector_type_from_registry_entry(registry_entry: PolymorphicRegistryE
 
 
 @sentry_sdk.trace
+def _get_latest_non_yanked_version(
+    bucket: storage.Bucket, docker_repository: str, registry_type: str
+) -> Optional[PolymorphicRegistryEntry]:
+    """Get the latest non-yanked version for a connector.
+
+    This function finds all versions of a connector, sorts them by semver,
+    and returns the highest version that is not yanked.
+
+    Args:
+        bucket (storage.Bucket): The GCS bucket.
+        docker_repository (str): The docker repository (e.g., 'airbyte/source-postgres').
+        registry_type (str): The registry type.
+
+    Returns:
+        Optional[PolymorphicRegistryEntry]: The latest non-yanked registry entry, or None if all versions are yanked.
+    """
+    from metadata_service.helpers.gcs import is_version_yanked
+
+    registry_type_file_name = f"{registry_type}.json"
+
+    try:
+        logger.info(f"Listing all versions for {docker_repository}")
+        prefix = f"{METADATA_FOLDER}/{docker_repository}/"
+        blobs = bucket.list_blobs(prefix=prefix)
+
+        versions_with_blobs = []
+        for blob in blobs:
+            if blob.name.endswith(f"/{registry_type_file_name}"):
+                parts = blob.name.split("/")
+                if len(parts) >= 4:
+                    version = parts[2]
+                    if version not in ["latest", "release_candidate"]:
+                        versions_with_blobs.append((version, blob))
+
+        if not versions_with_blobs:
+            logger.warning(f"No versions found for {docker_repository}")
+            return None
+
+        try:
+            sorted_versions = sorted(versions_with_blobs, key=lambda x: semver.Version.parse(x[0]), reverse=True)
+        except ValueError as e:
+            logger.error(f"Error parsing semver for {docker_repository}: {e}")
+            sorted_versions = sorted(versions_with_blobs, key=lambda x: x[0], reverse=True)
+
+        for version, blob in sorted_versions:
+            if is_version_yanked(bucket, docker_repository, version):
+                logger.info(f"Version {version} of {docker_repository} is yanked, skipping")
+                continue
+
+            logger.info(f"Using version {version} of {docker_repository} as latest (non-yanked)")
+            registry_dict = json.loads(safe_read_gcs_file(blob))
+            try:
+                if registry_dict.get(ConnectorTypePrimaryKey.SOURCE.value):
+                    return ConnectorRegistrySourceDefinition.parse_obj(registry_dict)
+                elif registry_dict.get(ConnectorTypePrimaryKey.DESTINATION.value):
+                    return ConnectorRegistryDestinationDefinition.parse_obj(registry_dict)
+                else:
+                    logger.warning(f"Failed to parse registry model for {blob.name}")
+                    continue
+            except Exception as e:
+                logger.error(f"Error parsing registry model for {blob.name}: {e}")
+                continue
+
+        logger.warning(f"All versions of {docker_repository} are yanked")
+        return None
+
+    except Exception as e:
+        logger.error(f"Error finding latest non-yanked version for {docker_repository}: {e}")
+        return None
+
+
+@sentry_sdk.trace
 def _get_latest_registry_entries(bucket: storage.Bucket, registry_type: str) -> list[PolymorphicRegistryEntry]:
     """Get the latest registry entries from the GCS bucket.
+
+    This function checks if the current 'latest' version is yanked, and if so,
+    falls back to the highest non-yanked version.
 
     Args:
         bucket (storage.Bucket): The GCS bucket.
@@ -198,6 +273,8 @@ def _get_latest_registry_entries(bucket: storage.Bucket, registry_type: str) -> 
     Returns:
         list[PolymorphicRegistryEntry]: The latest registry entries.
     """
+    from metadata_service.helpers.gcs import is_version_yanked
+
     registry_type_file_name = f"{registry_type}.json"
 
     try:
@@ -211,6 +288,21 @@ def _get_latest_registry_entries(bucket: storage.Bucket, registry_type: str) -> 
     for blob in blobs:
         logger.info(f"Reading blob: {blob.name}")
         registry_dict = json.loads(safe_read_gcs_file(blob))
+
+        parts = blob.name.split("/")
+        if len(parts) >= 3:
+            docker_repository = parts[1]
+            version = registry_dict.get("dockerImageTag")
+
+            if version and is_version_yanked(bucket, docker_repository, version):
+                logger.warning(f"Latest version {version} of {docker_repository} is yanked, finding alternative")
+                alternative_entry = _get_latest_non_yanked_version(bucket, docker_repository, registry_type)
+                if alternative_entry:
+                    latest_registry_entries.append(alternative_entry)
+                else:
+                    logger.warning(f"No non-yanked version found for {docker_repository}, skipping")
+                continue
+
         try:
             if registry_dict.get(ConnectorTypePrimaryKey.SOURCE.value):
                 registry_model = ConnectorRegistrySourceDefinition.parse_obj(registry_dict)
