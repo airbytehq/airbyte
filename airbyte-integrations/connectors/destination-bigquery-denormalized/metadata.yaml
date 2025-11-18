@@ -32,4 +32,14 @@ data:
     sl: 100
     ql: 300
   supportLevel: archived
+  externalDocumentationUrls:
+    - title: BigQuery documentation
+      url: https://cloud.google.com/bigquery/docs
+      type: api_reference
+    - title: Standard SQL reference
+      url: https://cloud.google.com/bigquery/docs/reference/standard-sql
+      type: sql_reference
+    - title: Service account authentication
+      url: https://cloud.google.com/iam/docs/service-accounts
+      type: authentication_guide
 metadataSpecVersion: "1.0"

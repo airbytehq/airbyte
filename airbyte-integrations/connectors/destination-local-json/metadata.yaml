@@ -27,4 +27,8 @@ data:
   supportLevel: community
   tags:
     - language:java
+  externalDocumentationUrls:
+    - title: JSON specification
+      url: https://www.json.org/
+      type: api_reference
 metadataSpecVersion: "1.0"

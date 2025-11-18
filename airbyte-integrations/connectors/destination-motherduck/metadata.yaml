@@ -56,4 +56,14 @@ data:
           secretStore:
             type: GSM
             alias: airbyte-connector-testing-secret-store
+  externalDocumentationUrls:
+    - title: MotherDuck documentation
+      url: https://motherduck.com/docs
+      type: api_reference
+    - title: Authentication
+      url: https://motherduck.com/docs/key-tasks/authenticating-and-connecting-to-motherduck/
+      type: authentication_guide
+    - title: MotherDuck Status
+      url: https://status.motherduck.com/
+      type: status_page
 metadataSpecVersion: "1.0"

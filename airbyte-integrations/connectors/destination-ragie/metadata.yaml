@@ -1,7 +1,7 @@
 data:
   allowedHosts:
     hosts:
-      - "api.ragie.ai"
+      - api.ragie.ai
   registryOverrides:
     oss:
       enabled: true
@@ -25,4 +25,8 @@ data:
   tags:
     - language:python
     - cdk:python
+  externalDocumentationUrls:
+    - title: Ragie documentation
+      url: https://docs.ragie.ai/
+      type: api_reference
 metadataSpecVersion: "1.0"

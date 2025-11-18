@@ -27,4 +27,8 @@ data:
   tags:
     - language:python
     - cdk:python
+  externalDocumentationUrls:
+    - title: SFTP protocol documentation
+      url: https://datatracker.ietf.org/doc/html/draft-ietf-secsh-filexfer
+      type: api_reference
 metadataSpecVersion: "1.0"

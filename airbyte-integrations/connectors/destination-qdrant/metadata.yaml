@@ -6,10 +6,10 @@ data:
       enabled: true
   allowedHosts:
     hosts:
-      - "${indexing.url}"
+      - ${indexing.url}
       - api.openai.com
       - api.cohere.ai
-      - "${embedding.api_base}"
+      - ${embedding.api_base}
   resourceRequirements:
     jobSpecific:
       - jobType: sync
@@ -40,4 +40,14 @@ data:
   supportLevel: community
   connectorTestSuitesOptions:
     - suite: unitTests
+  externalDocumentationUrls:
+    - title: Qdrant documentation
+      url: https://qdrant.tech/documentation/
+      type: api_reference
+    - title: Authentication
+      url: https://qdrant.tech/documentation/guides/security/
+      type: authentication_guide
+    - title: Release notes
+      url: https://github.com/qdrant/qdrant/releases
+      type: api_release_history
 metadataSpecVersion: "1.0"

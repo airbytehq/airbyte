@@ -91,4 +91,23 @@ data:
   supportsRefreshes: true
   tags:
     - language:java
+  externalDocumentationUrls:
+    - title: Release notes
+      url: https://docs.aws.amazon.com/redshift/latest/mgmt/release-notes.html
+      type: api_release_history
+    - title: SQL reference
+      url: https://docs.aws.amazon.com/redshift/latest/dg/c_SQL_reference.html
+      type: sql_reference
+    - title: Database authentication
+      url: https://docs.aws.amazon.com/redshift/latest/mgmt/generating-user-credentials.html
+      type: authentication_guide
+    - title: Access control
+      url: https://docs.aws.amazon.com/redshift/latest/dg/r_GRANT.html
+      type: permissions_scopes
+    - title: Quotas and limits
+      url: https://docs.aws.amazon.com/redshift/latest/mgmt/amazon-redshift-limits.html
+      type: rate_limits
+    - title: AWS Service Health Dashboard
+      url: https://health.aws.amazon.com/health/status
+      type: status_page
 metadataSpecVersion: "1.0"

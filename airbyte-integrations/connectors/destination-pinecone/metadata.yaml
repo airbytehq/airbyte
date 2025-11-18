@@ -57,4 +57,20 @@ data:
           secretStore:
             type: GSM
             alias: airbyte-connector-testing-secret-store
+  externalDocumentationUrls:
+    - title: Pinecone documentation
+      url: https://docs.pinecone.io/
+      type: api_reference
+    - title: Authentication
+      url: https://docs.pinecone.io/guides/get-started/authentication
+      type: authentication_guide
+    - title: Rate limits
+      url: https://docs.pinecone.io/troubleshooting/rate-limits
+      type: rate_limits
+    - title: Release notes
+      url: https://docs.pinecone.io/release-notes
+      type: api_release_history
+    - title: Pinecone Status
+      url: https://status.pinecone.io/
+      type: status_page
 metadataSpecVersion: "1.0"
