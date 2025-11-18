@@ -1,3 +1,5 @@
+import MigrationGuide from '@site/static/_migration_guides_upgrade_guide.md';
+
 # Snowflake Migration Guide
 
 ## Upgrading to 4.0.0
@@ -11,6 +13,8 @@ If you do not interact with the raw tables, you can safely upgrade. There is no 
 If you _only_ interact with the raw tables, make sure that you have the `Disable Final Tables` option enabled before upgrading. This will automatically enable the `Legacy raw tables` option after upgrading.
 
 If you interact with both the raw _and_ final tables, this usecase will no longer be directly supported. You must create two connectors (one with `Disable Final Tables` enabled, and one with it disabled) and run two connections in parallel.
+
+<MigrationGuide />
 
 ## Upgrading to 3.0.0
 
