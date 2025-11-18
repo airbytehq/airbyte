@@ -33,3 +33,10 @@ data:
   ab_internal:
     ql: 100
     sl: 100
+  externalDocumentationUrls:
+    - title: API documentation
+      url: https://developers.acuityscheduling.com/
+      type: api_reference
+    - title: Authentication
+      url: https://developers.acuityscheduling.com/docs/getting-started
+      type: authentication_guide

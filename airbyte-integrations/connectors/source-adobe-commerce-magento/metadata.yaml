@@ -33,3 +33,13 @@ data:
   ab_internal:
     ql: 100
     sl: 100
+  externalDocumentationUrls:
+    - title: REST API reference
+      url: https://developer.adobe.com/commerce/webapi/rest/
+      type: api_reference
+    - title: Authentication
+      url: https://developer.adobe.com/commerce/webapi/get-started/authentication/
+      type: authentication_guide
+    - title: Release notes
+      url: https://experienceleague.adobe.com/docs/commerce-operations/release/notes/overview.html
+      type: api_release_history
