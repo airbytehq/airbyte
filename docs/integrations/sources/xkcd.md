@@ -23,6 +23,7 @@ XKCD does not perform rate limiting.
 
 | Version | Date       | Pull Request                                             | Subject                                   |
 | :------ | :--------- | :------------------------------------------------------- | :---------------------------------------- |
+| 0.2.29 | 2025-11-18 | [69517](https://github.com/airbytehq/airbyte/pull/69517) | Update dependencies |
 | 0.2.28 | 2025-10-29 | [68956](https://github.com/airbytehq/airbyte/pull/68956) | Update dependencies |
 | 0.2.27 | 2025-10-21 | [68446](https://github.com/airbytehq/airbyte/pull/68446) | Update dependencies |
 | 0.2.26 | 2025-10-14 | [67936](https://github.com/airbytehq/airbyte/pull/67936) | Update dependencies |
