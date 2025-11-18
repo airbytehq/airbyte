@@ -44,4 +44,8 @@ data:
             type: GSM
             alias: airbyte-connector-testing-secret-store
   releaseStage: alpha
+  externalDocumentationUrls:
+    - title: Glassflow documentation
+      url: https://docs.glassflow.dev/
+      type: api_reference
 metadataSpecVersion: "1.0"
