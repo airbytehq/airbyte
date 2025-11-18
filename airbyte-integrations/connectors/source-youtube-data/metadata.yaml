@@ -17,7 +17,7 @@ data:
   connectorSubtype: api
   connectorType: source
   definitionId: 743a2a44-fd13-4109-a8fe-fb0e68f467f5
-  dockerImageTag: 0.0.40
+  dockerImageTag: 0.0.41
   dockerRepository: airbyte/source-youtube-data
   githubIssueLabel: source-youtube-data
   icon: icon.svg
