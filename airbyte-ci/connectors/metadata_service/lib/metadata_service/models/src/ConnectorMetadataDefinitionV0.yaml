@@ -58,6 +58,43 @@ properties:
       documentationUrl:
         type: string
         format: uri
+      externalDocumentationUrls:
+        type: array
+        description: "An array of external vendor documentation URLs (changelogs, API references, deprecation notices, etc.)"
+        items:
+          type: object
+          required:
+            - title
+            - url
+          additionalProperties: false
+          properties:
+            title:
+              type: string
+              description: "Display title for the documentation link"
+            url:
+              type: string
+              format: uri
+              description: "URL to the external documentation"
+            type:
+              type: string
+              description: "Category of documentation"
+              enum:
+                - api_deprecations
+                - api_reference
+                - api_release_history
+                - authentication_guide
+                - data_model_reference
+                - developer_community
+                - migration_guide
+                - other
+                - permissions_scopes
+                - rate_limits
+                - sql_reference
+                - status_page
+            requiresLogin:
+              type: boolean
+              description: "Whether the URL requires authentication to access"
+              default: false
       githubIssueLabel:
         type: string
       maxSecondsBetweenMessages:

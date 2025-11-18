@@ -39,6 +39,41 @@
         "minItems": 1,
         "uniqueItems": true
       },
+      "table_filters": {
+        "type": "array",
+        "items": {
+          "type": "object",
+          "additionalProperties": true,
+          "title": "Table Filter",
+          "description": "Inclusion filter configuration for table selection per schema.",
+          "properties": {
+            "schema_name": {
+              "type": "string",
+              "title": "Schema Name",
+              "description": "The name of the schema to apply this filter to. Should match a schema defined in \"Schemas\" field above.",
+              "order": 1,
+              "always_show": true
+            },
+            "table_name_patterns": {
+              "type": "array",
+              "items": {
+                "type": "string"
+              },
+              "title": "Table Filter Patterns",
+              "description": "List of table name patterns to include from this schema. Should be a SQL LIKE pattern.",
+              "order": 2,
+              "always_show": true,
+              "minItems": 1
+            }
+          },
+          "required": ["schema_name", "table_name_patterns"]
+        },
+        "description": "Optional filters to include only specific tables from specific schemas. Works in combination with the 'Schemas' config above.",
+        "title": "Table Filters",
+        "order": 2,
+        "always_show": true,
+        "group": "optional"
+      },
       "tunnel_method": {
         "oneOf": [
           {

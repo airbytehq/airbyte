@@ -34,6 +34,8 @@ This source can sync data from the [Lago API](https://doc.getlago.com/docs/guide
 
 | Version | Date       | Pull Request                                              | Subject                                   |
 | :------ | :--------- | :-------------------------------------------------------- | :---------------------------------------- |
+| 0.7.39 | 2025-11-18 | [69376](https://github.com/airbytehq/airbyte/pull/69376) | Update dependencies |
+| 0.7.38 | 2025-10-29 | [69052](https://github.com/airbytehq/airbyte/pull/69052) | Update dependencies |
 | 0.7.37 | 2025-10-21 | [68329](https://github.com/airbytehq/airbyte/pull/68329) | Update dependencies |
 | 0.7.36 | 2025-10-14 | [68017](https://github.com/airbytehq/airbyte/pull/68017) | Update dependencies |
 | 0.7.35 | 2025-10-07 | [67267](https://github.com/airbytehq/airbyte/pull/67267) | Update dependencies |

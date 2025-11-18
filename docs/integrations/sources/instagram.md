@@ -146,6 +146,8 @@ for more information.
 
 | Version    | Date       | Pull Request                                             | Subject                                                                                                                                                                |
 |:-----------|:-----------|:---------------------------------------------------------|:-----------------------------------------------------------------------------------------------------------------------------------------------------------------------|
+| 4.2.12 | 2025-11-18 | [69536](https://github.com/airbytehq/airbyte/pull/69536) | Update dependencies |
+| 4.2.11 | 2025-10-29 | [68761](https://github.com/airbytehq/airbyte/pull/68761) | Update dependencies |
 | 4.2.10 | 2025-10-21 | [68506](https://github.com/airbytehq/airbyte/pull/68506) | Update dependencies |
 | 4.2.9 | 2025-10-14 | [67975](https://github.com/airbytehq/airbyte/pull/67975) | Update dependencies |
 | 4.2.8 | 2025-10-07 | [67366](https://github.com/airbytehq/airbyte/pull/67366) | Update dependencies |

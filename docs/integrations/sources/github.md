@@ -225,7 +225,11 @@ Your token should have at least the `repo` scope. Depending on which streams you
 
 | Version    | Date       | Pull Request                                                                                                      | Subject                                                                                                                                                                |
 |:-----------|:-----------|:------------------------------------------------------------------------------------------------------------------|:-----------------------------------------------------------------------------------------------------------------------------------------------------------------------|
-| 2.0.0      | 2025-10-14 | [68095](https://github.com/airbytehq/airbyte/pull/68095)                                                          | **Breaking Change**: Renames `+1` and `-1` fields to `plus_one` and `minus_one` respectively. |
+| 2.1.3 | 2025-11-18 | [69421](https://github.com/airbytehq/airbyte/pull/69421) | Update dependencies |
+| 2.1.2 | 2025-11-11 | [69271](https://github.com/airbytehq/airbyte/pull/69271) | Update dependencies |
+| 2.1.1 | 2025-11-04 | [69002](https://github.com/airbytehq/airbyte/pull/69002) | Update dependencies |
+| 2.1.0 | 2025-10-24 | [68637](https://github.com/airbytehq/airbyte/pull/68637) | Update dependencies |
+| 2.0.0 | 2025-10-14 | [68095](https://github.com/airbytehq/airbyte/pull/68095) | **Breaking Change**: Renames `+1` and `-1` fields to `plus_one` and `minus_one` respectively. |
 | 1.9.2 | 2025-10-21 | [68332](https://github.com/airbytehq/airbyte/pull/68332) | Update dependencies |
 | 1.9.1 | 2025-10-20 | [68197](https://github.com/airbytehq/airbyte/pull/68197) | Promoting release candidate 1.9.1-rc.1 to a main version. |
 | 1.9.1-rc.1 | 2025-10-13 | [67584](https://github.com/airbytehq/airbyte/pull/67584)                                                          | Graceful error handling of invalid credentials when running operations                                                                                                 |

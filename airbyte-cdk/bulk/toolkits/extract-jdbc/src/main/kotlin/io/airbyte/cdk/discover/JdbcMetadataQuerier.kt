@@ -23,6 +23,7 @@ import java.sql.ResultSet
 import java.sql.ResultSetMetaData
 import java.sql.SQLException
 import java.sql.Statement
+import kotlin.collections.isNotEmpty
 
 /** Default implementation of [MetadataQuerier]. */
 class JdbcMetadataQuerier(
@@ -63,19 +64,19 @@ class JdbcMetadataQuerier(
         return null
     }
 
+    val tableFiltersBySchema: Map<String, List<String>> =
+        config.tableFilters
+            .groupBy { it.schemaName }
+            .mapValues { (_, filters) -> filters.flatMap { it.patterns } }
+
     val memoizedTableNames: List<TableName> by lazy {
         log.info { "Querying table names for catalog discovery." }
         try {
             val allTables = mutableSetOf<TableName>()
             val dbmd: DatabaseMetaData = conn.metaData
-            for (namespace in config.namespaces + config.namespaces.map { it.uppercase() }) {
-                val (catalog: String?, schema: String?) =
-                    when (constants.namespaceKind) {
-                        NamespaceKind.CATALOG -> namespace to null
-                        NamespaceKind.SCHEMA -> null to namespace
-                        NamespaceKind.CATALOG_AND_SCHEMA -> namespace to namespace
-                    }
-                dbmd.getTables(catalog, schema, null, null).use { rs: ResultSet ->
+
+            fun addTablesFromQuery(catalog: String?, schema: String?, pattern: String?) {
+                dbmd.getTables(catalog, schema, pattern, null).use { rs: ResultSet ->
                     while (rs.next()) {
                         allTables.add(
                             TableName(
@@ -83,9 +84,30 @@ class JdbcMetadataQuerier(
                                 schema = rs.getString("TABLE_SCHEM"),
                                 name = rs.getString("TABLE_NAME"),
                                 type = rs.getString("TABLE_TYPE") ?: "",
-                            ),
+                            )
                         )
                     }
+                }
+            }
+
+            for (namespace in config.namespaces + config.namespaces.map { it.uppercase() }) {
+                val (catalog: String?, schema: String?) =
+                    when (constants.namespaceKind) {
+                        NamespaceKind.CATALOG -> namespace to null
+                        NamespaceKind.SCHEMA -> null to namespace
+                        NamespaceKind.CATALOG_AND_SCHEMA -> namespace to namespace
+                    }
+
+                val patterns =
+                    tableFiltersBySchema.entries
+                        .firstOrNull { it.key.equals(namespace, ignoreCase = true) }
+                        ?.value
+                if (patterns != null && patterns.isNotEmpty()) {
+                    for (pattern in patterns) {
+                        addTablesFromQuery(catalog, schema, pattern)
+                    }
+                } else {
+                    addTablesFromQuery(catalog, schema, null)
                 }
             }
             log.info { "Discovered ${allTables.size} table(s) in namespaces ${config.namespaces}." }
@@ -105,43 +127,62 @@ class JdbcMetadataQuerier(
         log.info { "Querying column names for catalog discovery." }
         try {
             val dbmd: DatabaseMetaData = conn.metaData
-            memoizedTableNames
-                .filter { it.namespace() != null }
-                .map { it.catalog to it.schema }
-                .distinct()
-                .forEach { (catalog: String?, schema: String?) ->
-                    if (constants.includePseudoColumns) {
-                        dbmd.getPseudoColumns(catalog, schema, null, null).use { rs: ResultSet ->
-                            while (rs.next()) {
-                                val (tableName: TableName, metadata: ColumnMetadata) =
-                                    columnMetadataFromResultSet(rs, isPseudoColumn = true)
-                                val joinedTableName: TableName = joinMap[tableName] ?: continue
-                                results.add(joinedTableName to metadata)
-                            }
-                        }
-                    }
-                    dbmd.getColumns(catalog, schema, null, null).use { rs: ResultSet ->
-                        while (rs.next()) {
-                            val (tableName: TableName, metadata: ColumnMetadata) =
-                                columnMetadataFromResultSet(rs, isPseudoColumn = false)
-                            val joinedTableName: TableName = joinMap[tableName] ?: continue
-                            results.add(joinedTableName to metadata)
-                        }
+            fun addColumnsFromQuery(
+                catalog: String?,
+                schema: String?,
+                tablePattern: String?,
+                isPseudoColumn: Boolean
+            ) {
+                val rsMethod = if (isPseudoColumn) dbmd::getPseudoColumns else dbmd::getColumns
+                rsMethod(catalog, schema, tablePattern, null).use { rs: ResultSet ->
+                    while (rs.next()) {
+                        val (tableName: TableName, metadata: ColumnMetadata) =
+                            columnMetadataFromResultSet(rs, isPseudoColumn)
+                        val joinedTableName: TableName = joinMap[tableName] ?: continue
+                        results.add(joinedTableName to metadata)
                     }
                 }
-            val clause = if (constants.includePseudoColumns) " and pseudo-column(s)" else ""
-            log.info { "Discovered ${results.size} column(s)${clause}." }
+            }
+            // Query columns using the same pattern as table discovery:
+            // - If schema has filters, query per filter pattern
+            // - If no filters, query entire schema at once
+            for (namespace in config.namespaces + config.namespaces.map { it.uppercase() }) {
+                val (catalog: String?, schema: String?) =
+                    when (constants.namespaceKind) {
+                        NamespaceKind.CATALOG -> namespace to null
+                        NamespaceKind.SCHEMA -> null to namespace
+                        NamespaceKind.CATALOG_AND_SCHEMA -> namespace to namespace
+                    }
+
+                val patterns =
+                    tableFiltersBySchema.entries
+                        .firstOrNull { it.key.equals(namespace, ignoreCase = true) }
+                        ?.value
+                if (patterns != null && patterns.isNotEmpty()) {
+                    for (pattern in patterns) {
+                        addColumnsFromQuery(catalog, schema, pattern, isPseudoColumn = true)
+                        addColumnsFromQuery(catalog, schema, pattern, isPseudoColumn = false)
+                    }
+                } else {
+                    addColumnsFromQuery(catalog, schema, null, isPseudoColumn = true)
+                    addColumnsFromQuery(catalog, schema, null, isPseudoColumn = false)
+                }
+            }
+            log.info { "Discovered ${results.size} column(s) and pseudo-column(s)." }
         } catch (e: Exception) {
             throw RuntimeException("Column name discovery query failed: ${e.message}", e)
         }
         return@lazy results.groupBy({ it.first }, { it.second }).mapValues {
             (_, columnMetadataByTable: List<ColumnMetadata>) ->
-            columnMetadataByTable.filter { it.ordinal == null } +
-                columnMetadataByTable.filter { it.ordinal != null }.sortedBy { it.ordinal }
+            // Deduplicate columns by name to handle case-insensitive databases
+            // where uppercase/lowercase namespace queries return duplicate columns
+            val deduplicatedColumns = columnMetadataByTable.distinctBy { it.name }
+            deduplicatedColumns.filter { it.ordinal == null } +
+                deduplicatedColumns.filter { it.ordinal != null }.sortedBy { it.ordinal }
         }
     }
 
-    private fun columnMetadataFromResultSet(
+    fun columnMetadataFromResultSet(
         rs: ResultSet,
         isPseudoColumn: Boolean,
     ): Pair<TableName, ColumnMetadata> {
