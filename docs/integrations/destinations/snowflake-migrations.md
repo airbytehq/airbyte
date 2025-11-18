@@ -4,17 +4,55 @@ import MigrationGuide from '@site/static/_migration_guides_upgrade_guide.md';
 
 ## Upgrading to 4.0.0
 
-This version upgrades Destination Snowflake to the [Direct-Load](/platform/using-airbyte/core-concepts/direct-load-tables) paradigm, which improves performance and reduces warehouse spend. If you have unusual requirements around record visibility or schema evolution, read that document for more information about how direct-load differs from Typing and Deduping.
+This version upgrades the Snowflake destination from using [typing and deduping](/platform/using-airbyte/core-concepts/typing-deduping) to [direct loading](/platform/using-airbyte/core-concepts/direct-load-tables). This upgrade improves performance and reduces warehouse spend. If you have unusual requirements around record visibility or schema evolution, read the documentation for those methodologies for more information about how direct loading differs from typing and deduping.
 
-This version also adds an option to enable CDC deletions as soft-deletes.
+This version also adds an option to enable CDC deletions as soft deletes.
 
-If you do not interact with the raw tables, you can safely upgrade. There is no breakage for this usecase.
+### Decide how to handle raw tables
 
-If you _only_ interact with the raw tables, make sure that you have the `Disable Final Tables` option enabled before upgrading. This will automatically enable the `Legacy raw tables` option after upgrading.
+The exact steps to begin the migration depend on whether you interact with Airbyte's raw tables in Snowflake.
 
-If you interact with both the raw _and_ final tables, this usecase will no longer be directly supported. You must create two connectors (one with `Disable Final Tables` enabled, and one with it disabled) and run two connections in parallel.
+#### If you don't interact with raw tables
+
+If you don't interact with the raw tables, you can safely upgrade. There's no breaking change for you.
+
+#### If you only interact with raw tables
+
+If you _only_ interact with the raw tables, enable the `Disable Final Tables` option before upgrading. This enables the `Legacy raw tables` option after upgrading.
+
+1. In the navigation bar, click **Destinations**.
+
+2. Open your **Snowflake** connector.
+
+3. <!-- Devin: fill out the rest of these steps to use Disable Final Tables from Snowflake v3 -->
+
+#### If you interact with both raw and final tables
+
+If you interact with both the raw _and_ final tables, this use case is no longer supported. Instead, create two connectors. One with `Disable Final Tables` turned on, and one with it turned off. Starting now, you must run the two connections in parallel.
+
+1. In the navigation bar, click **Destinations**.
+
+2. For each Snowflake destination you have, add an identical second Snowflake destination.
+
+3. Ensure each pair of Snowflake connectors have opposite settings for <!-- Devin: fill out the rest of this step to use Disable Final Tables from Snowflake v3 -->
+
+4. <!-- Devin: fill out the rest of this process -->
 
 <MigrationGuide />
+
+### Optional: clean up legacy raw tables
+
+The version 4.0 connector doesn't automatically remove tables created by earlier versions. After upgrading to version 4 and verifying your data, you can optionally remove the old raw tables.
+
+For most users, You can find the raw tables <!-- Devin: where? -->. The names match the pattern <!-- Devin: what are the tables and schemas called? -->
+
+:::note
+Version 4 of the Snowfalke destination uses the `airbyte_internal` database for temporary scratch space (for example, streams running in dedup mode, truncate refreshes, and overwrite syncs). Dropping the entire `airbyte_internal database` can interrupt active syncs and cause data loss. Only drop the specific raw tables you no longer need.
+:::
+
+To remove the old raw tables:
+
+<!-- Devin: SQL query to delete a raw table in Snowflake -->
 
 ## Upgrading to 3.0.0
 
