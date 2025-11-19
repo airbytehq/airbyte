@@ -45,4 +45,11 @@ data:
           secretStore:
             type: GSM
             alias: airbyte-connector-testing-secret-store
+  externalDocumentationUrls:
+    - title: Exchange Rates API documentation
+      url: https://exchangeratesapi.io/documentation/
+      type: api_reference
+    - title: Exchange Rates authentication
+      url: https://exchangeratesapi.io/documentation/#authentication
+      type: authentication_guide
 metadataSpecVersion: "1.0"

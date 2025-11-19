@@ -33,3 +33,10 @@ data:
   ab_internal:
     ql: 100
     sl: 100
+  externalDocumentationUrls:
+    - title: Customerly API documentation
+      url: https://docs.customerly.io/api/
+      type: api_reference
+    - title: Customerly authentication
+      url: https://docs.customerly.io/api/#authentication
+      type: authentication_guide

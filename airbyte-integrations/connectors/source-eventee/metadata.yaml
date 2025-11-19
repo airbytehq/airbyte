@@ -33,3 +33,10 @@ data:
   ab_internal:
     ql: 100
     sl: 100
+  externalDocumentationUrls:
+    - title: Eventee API documentation
+      url: https://eventee.co/api-documentation
+      type: api_reference
+    - title: Eventee authentication
+      url: https://eventee.co/api-documentation#authentication
+      type: authentication_guide

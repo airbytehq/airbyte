@@ -29,4 +29,11 @@ data:
   supportLevel: community
   tags:
     - language:java
+  externalDocumentationUrls:
+    - title: IBM Db2 SQL reference
+      url: https://www.ibm.com/docs/en/db2/11.5?topic=reference-sql
+      type: sql_reference
+    - title: IBM Db2 authentication
+      url: https://www.ibm.com/docs/en/db2/11.5?topic=security-authentication
+      type: authentication_guide
 metadataSpecVersion: "1.0"

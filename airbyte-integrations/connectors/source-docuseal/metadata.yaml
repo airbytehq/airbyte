@@ -33,3 +33,10 @@ data:
   ab_internal:
     ql: 100
     sl: 100
+  externalDocumentationUrls:
+    - title: DocuSeal API documentation
+      url: https://www.docuseal.co/docs/api
+      type: api_reference
+    - title: DocuSeal authentication
+      url: https://www.docuseal.co/docs/api#authentication
+      type: authentication_guide

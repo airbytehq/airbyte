@@ -33,3 +33,16 @@ data:
   ab_internal:
     ql: 100
     sl: 100
+  externalDocumentationUrls:
+    - title: Dwolla API reference
+      url: https://developers.dwolla.com/api-reference
+      type: api_reference
+    - title: Dwolla authentication
+      url: https://developers.dwolla.com/guides/auth
+      type: authentication_guide
+    - title: Dwolla rate limits
+      url: https://developers.dwolla.com/api-reference#rate-limits
+      type: rate_limits
+    - title: Dwolla Status
+      url: https://status.dwolla.com/
+      type: status_page
