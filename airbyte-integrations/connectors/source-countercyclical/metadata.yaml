@@ -33,3 +33,7 @@ data:
   ab_internal:
     ql: 100
     sl: 100
+  externalDocumentationUrls:
+    - title: Countercyclical API documentation
+      url: https://countercyclical.io/docs/api
+      type: api_reference

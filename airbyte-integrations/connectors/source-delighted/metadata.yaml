@@ -39,4 +39,14 @@ data:
           secretStore:
             type: GSM
             alias: airbyte-connector-testing-secret-store
+  externalDocumentationUrls:
+    - title: Delighted API reference
+      url: https://delighted.com/docs/api
+      type: api_reference
+    - title: Delighted authentication
+      url: https://delighted.com/docs/api#authentication
+      type: authentication_guide
+    - title: Delighted rate limits
+      url: https://delighted.com/docs/api#rate-limiting
+      type: rate_limits
 metadataSpecVersion: "1.0"

@@ -33,3 +33,13 @@ data:
   ab_internal:
     ql: 100
     sl: 100
+  externalDocumentationUrls:
+    - title: Drip REST API
+      url: https://developer.drip.com/
+      type: api_reference
+    - title: Drip authentication
+      url: https://developer.drip.com/#authentication
+      type: authentication_guide
+    - title: Drip rate limits
+      url: https://developer.drip.com/#rate-limiting
+      type: rate_limits

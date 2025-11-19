@@ -34,3 +34,16 @@ data:
   ab_internal:
     ql: 100
     sl: 100
+  externalDocumentationUrls:
+    - title: eBay Finances API
+      url: https://developer.ebay.com/api-docs/sell/finances/overview.html
+      type: api_reference
+    - title: eBay authentication
+      url: https://developer.ebay.com/api-docs/static/oauth-tokens.html
+      type: authentication_guide
+    - title: eBay rate limits
+      url: https://developer.ebay.com/support/app-check
+      type: rate_limits
+    - title: eBay Developer Status
+      url: https://developer.ebay.com/support/api-status
+      type: status_page

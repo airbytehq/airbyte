@@ -49,4 +49,17 @@ data:
           secretStore:
             type: GSM
             alias: airbyte-connector-testing-secret-store
+  externalDocumentationUrls:
+    - title: Confluence Cloud REST API
+      url: https://developer.atlassian.com/cloud/confluence/rest/v2/intro/
+      type: api_reference
+    - title: Confluence authentication
+      url: https://developer.atlassian.com/cloud/confluence/rest/v2/intro/#authentication
+      type: authentication_guide
+    - title: Confluence rate limits
+      url: https://developer.atlassian.com/cloud/confluence/rate-limiting/
+      type: rate_limits
+    - title: Atlassian Status
+      url: https://status.atlassian.com/
+      type: status_page
 metadataSpecVersion: "1.0"

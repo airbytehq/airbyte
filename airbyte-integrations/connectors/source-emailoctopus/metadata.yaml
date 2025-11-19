@@ -40,4 +40,14 @@ data:
           secretStore:
             type: GSM
             alias: airbyte-connector-testing-secret-store
+  externalDocumentationUrls:
+    - title: EmailOctopus API documentation
+      url: https://emailoctopus.com/api-documentation
+      type: api_reference
+    - title: EmailOctopus authentication
+      url: https://emailoctopus.com/api-documentation#authentication
+      type: authentication_guide
+    - title: EmailOctopus rate limits
+      url: https://emailoctopus.com/api-documentation#rate-limiting
+      type: rate_limits
 metadataSpecVersion: "1.0"

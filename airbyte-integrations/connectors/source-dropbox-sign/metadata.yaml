@@ -33,3 +33,13 @@ data:
   ab_internal:
     ql: 100
     sl: 100
+  externalDocumentationUrls:
+    - title: Dropbox Sign API reference
+      url: https://developers.hellosign.com/api/reference/
+      type: api_reference
+    - title: Dropbox Sign authentication
+      url: https://developers.hellosign.com/api/reference/authentication/
+      type: authentication_guide
+    - title: Dropbox Sign rate limits
+      url: https://developers.hellosign.com/api/reference/rate-limiting/
+      type: rate_limits

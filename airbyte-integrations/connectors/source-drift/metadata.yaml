@@ -45,4 +45,14 @@ data:
           secretStore:
             type: GSM
             alias: airbyte-connector-testing-secret-store
+  externalDocumentationUrls:
+    - title: Drift API reference
+      url: https://devdocs.drift.com/
+      type: api_reference
+    - title: Drift authentication
+      url: https://devdocs.drift.com/#authentication
+      type: authentication_guide
+    - title: Drift rate limits
+      url: https://devdocs.drift.com/#rate-limiting
+      type: rate_limits
 metadataSpecVersion: "1.0"

@@ -26,4 +26,14 @@ data:
   supportLevel: community
   tags:
     - language:java
+  externalDocumentationUrls:
+    - title: Elasticsearch REST APIs
+      url: https://www.elastic.co/guide/en/elasticsearch/reference/current/rest-apis.html
+      type: api_reference
+    - title: Elasticsearch authentication
+      url: https://www.elastic.co/guide/en/elasticsearch/reference/current/setting-up-authentication.html
+      type: authentication_guide
+    - title: Elastic Cloud Status
+      url: https://status.elastic.co/
+      type: status_page
 metadataSpecVersion: "1.0"

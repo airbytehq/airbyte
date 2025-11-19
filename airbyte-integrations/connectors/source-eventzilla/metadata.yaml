@@ -33,3 +33,10 @@ data:
   ab_internal:
     ql: 100
     sl: 100
+  externalDocumentationUrls:
+    - title: Eventzilla API documentation
+      url: https://www.eventzilla.net/api/
+      type: api_reference
+    - title: Eventzilla authentication
+      url: https://www.eventzilla.net/api/#authentication
+      type: authentication_guide

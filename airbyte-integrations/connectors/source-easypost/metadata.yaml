@@ -33,3 +33,16 @@ data:
   ab_internal:
     ql: 100
     sl: 100
+  externalDocumentationUrls:
+    - title: EasyPost API reference
+      url: https://www.easypost.com/docs/api
+      type: api_reference
+    - title: EasyPost authentication
+      url: https://www.easypost.com/docs/api#authentication
+      type: authentication_guide
+    - title: EasyPost rate limits
+      url: https://www.easypost.com/docs/api#rate-limiting
+      type: rate_limits
+    - title: EasyPost Status
+      url: https://status.easypost.com/
+      type: status_page

@@ -33,3 +33,10 @@ data:
   ab_internal:
     ql: 100
     sl: 100
+  externalDocumentationUrls:
+    - title: Encharge API reference
+      url: https://developers.encharge.io/
+      type: api_reference
+    - title: Encharge authentication
+      url: https://developers.encharge.io/#authentication
+      type: authentication_guide

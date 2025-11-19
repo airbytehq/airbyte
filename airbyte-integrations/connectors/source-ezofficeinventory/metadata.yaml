@@ -33,3 +33,13 @@ data:
   ab_internal:
     ql: 100
     sl: 100
+  externalDocumentationUrls:
+    - title: EZOfficeInventory API reference
+      url: https://ezofficeinventory.com/developers
+      type: api_reference
+    - title: EZOfficeInventory authentication
+      url: https://ezofficeinventory.com/developers/docs/authentication
+      type: authentication_guide
+    - title: EZOfficeInventory rate limits
+      url: https://ezofficeinventory.com/developers/docs/rate-limiting
+      type: rate_limits
