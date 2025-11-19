@@ -33,4 +33,11 @@ data:
   tags:
     - cdk:low-code
     - language:manifest-only
+  externalDocumentationUrls:
+    - title: HiBob API documentation
+      url: https://apidocs.hibob.com/
+      type: api_reference
+    - title: HiBob authentication
+      url: https://apidocs.hibob.com/docs/authentication
+      type: authentication_guide
 metadataSpecVersion: "1.0"

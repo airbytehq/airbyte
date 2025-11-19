@@ -40,4 +40,8 @@ data:
           secretStore:
             type: GSM
             alias: airbyte-connector-testing-secret-store
+  externalDocumentationUrls:
+    - title: IP2WHOIS API documentation
+      url: https://www.ip2whois.com/developers-api
+      type: api_reference
 metadataSpecVersion: "1.0"

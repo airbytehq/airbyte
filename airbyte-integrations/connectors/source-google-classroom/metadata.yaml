@@ -33,3 +33,13 @@ data:
   ab_internal:
     ql: 100
     sl: 100
+  externalDocumentationUrls:
+    - title: Google Classroom API reference
+      url: https://developers.google.com/classroom/reference/rest
+      type: api_reference
+    - title: Google Classroom authentication
+      url: https://developers.google.com/classroom/guides/auth
+      type: authentication_guide
+    - title: Google Workspace Status
+      url: https://www.google.com/appsstatus/
+      type: status_page

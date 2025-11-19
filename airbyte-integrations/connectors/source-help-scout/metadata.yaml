@@ -33,3 +33,16 @@ data:
   ab_internal:
     ql: 100
     sl: 100
+  externalDocumentationUrls:
+    - title: Help Scout API reference
+      url: https://developer.helpscout.com/
+      type: api_reference
+    - title: Help Scout authentication
+      url: https://developer.helpscout.com/mailbox-api/overview/authentication/
+      type: authentication_guide
+    - title: Help Scout rate limits
+      url: https://developer.helpscout.com/mailbox-api/overview/rate-limiting/
+      type: rate_limits
+    - title: Help Scout Status
+      url: https://status.helpscout.com/
+      type: status_page

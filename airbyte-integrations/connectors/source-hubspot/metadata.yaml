@@ -165,4 +165,20 @@ data:
           secretStore:
             type: GSM
             alias: airbyte-connector-testing-secret-store
+  externalDocumentationUrls:
+    - title: HubSpot API reference
+      url: https://developers.hubspot.com/docs/api/overview
+      type: api_reference
+    - title: HubSpot API changelog
+      url: https://developers.hubspot.com/changelog
+      type: api_release_history
+    - title: HubSpot authentication
+      url: https://developers.hubspot.com/docs/api/oauth-quickstart-guide
+      type: authentication_guide
+    - title: HubSpot rate limits
+      url: https://developers.hubspot.com/docs/api/usage-details
+      type: rate_limits
+    - title: HubSpot Status
+      url: https://status.hubspot.com/
+      type: status_page
 metadataSpecVersion: "1.0"

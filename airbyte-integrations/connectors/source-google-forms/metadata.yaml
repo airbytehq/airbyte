@@ -33,3 +33,13 @@ data:
   ab_internal:
     ql: 100
     sl: 100
+  externalDocumentationUrls:
+    - title: Google Forms API reference
+      url: https://developers.google.com/forms/api/reference/rest
+      type: api_reference
+    - title: Google Forms authentication
+      url: https://developers.google.com/forms/api/guides/auth
+      type: authentication_guide
+    - title: Google Workspace Status
+      url: https://www.google.com/appsstatus/
+      type: status_page
