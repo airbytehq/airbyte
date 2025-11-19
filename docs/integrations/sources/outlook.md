@@ -82,6 +82,7 @@ For detailed instructions on the OAuth flow, see [Get access on behalf of a user
 | `refresh_token` | `string` | Refresh Token. Refresh token obtained from Microsoft OAuth flow |  |
 
 ## Streams
+
 | Stream Name | Primary Key | Pagination | Supports Full Sync | Supports Incremental |
 |-------------|-------------|------------|---------------------|----------------------|
 | profile |  | No pagination | ✅ |  ❌  |
@@ -104,18 +105,20 @@ For detailed instructions on the OAuth flow, see [Get access on behalf of a user
 
 ## Filtering and Limitations
 
-**Important**: This connector does not currently support filtering emails by specific criteria such as:
+This connector does not currently support filtering emails by specific criteria such as:
+
 - Specific mailbox or folder path
 - Email subject
 - Sender or recipient
 - Date ranges
 
-The connector retrieves all messages from the signed-in user's mailbox. If you need to filter messages, you can apply filters in your downstream data processing or transformation layer after the data has been synced to your destination.
+The connector retrieves all messages from the signed-in user's mailbox via the `/me/messages` endpoint. The Microsoft Graph API does support filtering via OData query parameters (such as `$filter`), but these are not currently exposed as configuration options in this connector.
 
-The Microsoft Graph API does support filtering via OData query parameters (such as `$filter`), but these are not currently exposed as configuration options in this connector. If you require filtering capabilities, consider:
-1. Applying filters in your data warehouse or transformation tool after sync
-2. Using the Microsoft Graph API directly with custom filtering parameters
-3. Contributing to the connector to add filtering configuration options
+To filter messages after extraction, you can:
+
+- Use [Airbyte Mappings](/platform/using-airbyte/mappings) to filter rows based on field values
+- Apply filters in your data warehouse or transformation tool after sync
+- Use the Microsoft Graph API directly with custom filtering parameters
 
 For more information about Microsoft Graph Mail API capabilities, see the [Microsoft Graph Mail API documentation](https://learn.microsoft.com/en-us/graph/api/user-list-messages).
 
