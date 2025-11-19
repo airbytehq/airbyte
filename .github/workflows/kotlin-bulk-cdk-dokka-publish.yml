@@ -4,12 +4,12 @@ on:
   pull_request:
     types: [opened, synchronize, reopened]
     paths:
-      - 'airbyte-cdk/bulk/**'
+      - "airbyte-cdk/bulk/**"
   push:
     branches:
       - master
     paths:
-      - 'airbyte-cdk/bulk/**'
+      - "airbyte-cdk/bulk/**"
   workflow_dispatch:
 
 # Concurrency group ensures only one deployment runs at a time
@@ -29,7 +29,7 @@ jobs:
           filters: |
             bulk-cdk:
               - 'airbyte-cdk/bulk/**'
-    
+
     outputs:
       changed: ${{ steps.detect-changes.outputs.bulk-cdk }}
 
@@ -38,7 +38,7 @@ jobs:
     runs-on: ubuntu-24.04
     needs: detect-changes
     if: needs.detect-changes.outputs.changed == 'true'
-    
+
     steps:
       - name: Checkout Repository
         uses: actions/checkout@v4
@@ -46,26 +46,26 @@ jobs:
           fetch-depth: 0
           repository: ${{ github.event.pull_request.head.repo.full_name || github.repository }}
           ref: ${{ github.head_ref || github.ref }}
-      
+
       - name: Set up Java
         uses: actions/setup-java@v4
         with:
-          distribution: 'zulu'
-          java-version: '21'
-      
+          distribution: "zulu"
+          java-version: "21"
+
       - name: Setup Gradle
         uses: gradle/gradle-build-action@v3
         with:
           gradle-version: wrapper
-      
+
       - name: Generate Dokka Documentation
         run: |
           echo "📚 Generating Dokka documentation for Kotlin Bulk CDK..."
           ./gradlew :airbyte-cdk:bulk:dokkaHtmlMultiModule --no-daemon --no-build-cache
-          
+
           echo "✅ Documentation generated successfully"
           ls -la airbyte-cdk/bulk/build/dokka/htmlMultiModule/
-      
+
       - name: Upload Documentation Artifact
         uses: actions/upload-artifact@v4
         with:
@@ -84,33 +84,32 @@ jobs:
         || github.event.pull_request.head.repo.full_name == github.repository
       )
     runs-on: ubuntu-24.04
-    
     env:
       VERCEL_ORG_ID: ${{ secrets.VERCEL_ORG_ID }}
       VERCEL_PROJECT_ID: ${{ vars.VERCEL_BULK_CDK_DOCS_PROJECT_ID }}
-    
+
     steps:
       - name: Checkout Repository
         uses: actions/checkout@v4
         with:
           fetch-depth: 1
-      
+
       - name: Set up Java
         uses: actions/setup-java@v4
         with:
-          distribution: 'zulu'
-          java-version: '21'
-      
+          distribution: "zulu"
+          java-version: "21"
+
       - name: Setup Gradle
         uses: gradle/gradle-build-action@v3
         with:
           gradle-version: wrapper
-      
+
       - name: Generate Dokka Documentation
         run: |
           echo "📚 Generating Dokka documentation for Vercel deployment..."
           ./gradlew :airbyte-cdk:bulk:dokkaHtmlMultiModule --no-daemon --no-build-cache
-      
+
       - name: Deploy to Vercel
         id: deploy-vercel
         uses: amondnet/vercel-action@v41.1.4
@@ -123,7 +122,7 @@ jobs:
           vercel-args: ${{ github.event_name == 'push' && '--prod' || '' }}
           alias-domains: |
             ${{ github.event_name == 'push' && 'bulk-cdk-docs.vercel.app' || '' }}
-      
+
       - name: Authenticate as GitHub App
         if: github.event_name == 'pull_request'
         uses: actions/create-github-app-token@v2.0.6
@@ -133,7 +132,7 @@ jobs:
           repositories: "airbyte"
           app-id: ${{ secrets.OCTAVIA_BOT_APP_ID }}
           private-key: ${{ secrets.OCTAVIA_BOT_PRIVATE_KEY }}
-      
+
       - name: Post Custom Check with Preview URL
         if: github.event_name == 'pull_request'
         uses: LouisBrunner/checks-action@v2.0.0
