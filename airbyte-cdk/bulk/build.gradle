@@ -92,10 +92,10 @@ subprojects {
                 // Only document public APIs
                 includeNonPublic.set(false)
                 skipEmptyPackages.set(true)
-                
+
                 // Report undocumented members
                 reportUndocumented.set(true)
-                
+
                 // Add external documentation links
                 externalDocumentationLinks {
                     create("kotlin") {
@@ -109,7 +109,7 @@ subprojects {
                         url.set(uri("https://docs.micronaut.io/latest/api/").toURL())
                     }
                 }
-                
+
                 // Source links back to GitHub
                 sourceLink {
                     localDirectory.set(file("src/main"))
@@ -132,7 +132,7 @@ tasks.register('docsGenerate') {
     group = 'documentation'
     description = 'Generate Dokka documentation for all modules'
     dependsOn 'dokkaHtmlMultiModule'
-    
+
     doLast {
         println "Documentation generated at: ${layout.buildDirectory.dir("dokka/htmlMultiModule").get()}"
     }
