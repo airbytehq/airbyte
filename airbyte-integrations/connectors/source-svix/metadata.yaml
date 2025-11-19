@@ -33,3 +33,10 @@ data:
   ab_internal:
     ql: 100
     sl: 100
+  externalDocumentationUrls:
+    - title: Svix API reference
+      url: https://docs.svix.com/api-reference
+      type: api_reference
+    - title: Svix authentication
+      url: https://docs.svix.com/api-reference#section/Authentication
+      type: authentication_guide

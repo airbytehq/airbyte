@@ -43,4 +43,11 @@ data:
           secretStore:
             type: GSM
             alias: airbyte-connector-testing-secret-store
+  externalDocumentationUrls:
+    - title: SonarCloud Web API
+      url: https://sonarcloud.io/web_api
+      type: api_reference
+    - title: SonarCloud authentication
+      url: https://docs.sonarsource.com/sonarcloud/advanced-setup/user-accounts/
+      type: authentication_guide
 metadataSpecVersion: "1.0"

@@ -33,3 +33,16 @@ data:
   ab_internal:
     ql: 100
     sl: 100
+  externalDocumentationUrls:
+    - title: SparkPost API reference
+      url: https://developers.sparkpost.com/api/
+      type: api_reference
+    - title: SparkPost authentication
+      url: https://developers.sparkpost.com/api/#header-authentication
+      type: authentication_guide
+    - title: SparkPost rate limits
+      url: https://developers.sparkpost.com/api/#header-rate-limiting
+      type: rate_limits
+    - title: SparkPost Status
+      url: https://status.sparkpost.com/
+      type: status_page
