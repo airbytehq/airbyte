@@ -33,3 +33,16 @@ data:
   ab_internal:
     ql: 100
     sl: 100
+  externalDocumentationUrls:
+    - title: Rollbar API reference
+      url: https://docs.rollbar.com/reference/getting-started
+      type: api_reference
+    - title: Rollbar authentication
+      url: https://docs.rollbar.com/reference/authentication
+      type: authentication_guide
+    - title: Rollbar rate limits
+      url: https://docs.rollbar.com/reference/rate-limits
+      type: rate_limits
+    - title: Rollbar Status
+      url: https://status.rollbar.com/
+      type: status_page
