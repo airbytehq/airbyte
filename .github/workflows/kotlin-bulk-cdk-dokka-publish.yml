@@ -61,7 +61,7 @@ jobs:
       - name: Generate Dokka Documentation
         run: |
           echo "📚 Generating Dokka documentation for Kotlin Bulk CDK..."
-          ./gradlew :airbyte-cdk:bulk:dokkaHtmlMultiModule --no-daemon --no-build-cache
+          ./gradlew :airbyte-cdk:bulk:dokkaHtmlMultiModule --no-daemon
 
           echo "✅ Documentation generated successfully"
           ls -la airbyte-cdk/bulk/build/dokka/htmlMultiModule/
@@ -94,21 +94,11 @@ jobs:
         with:
           fetch-depth: 1
 
-      - name: Set up Java
-        uses: actions/setup-java@v4
+      - name: Download Documentation Artifact
+        uses: actions/download-artifact@v4
         with:
-          distribution: "zulu"
-          java-version: "21"
-
-      - name: Setup Gradle
-        uses: gradle/gradle-build-action@v3
-        with:
-          gradle-version: wrapper
-
-      - name: Generate Dokka Documentation
-        run: |
-          echo "📚 Generating Dokka documentation for Vercel deployment..."
-          ./gradlew :airbyte-cdk:bulk:dokkaHtmlMultiModule --no-daemon --no-build-cache
+          name: kotlin-bulk-cdk-docs-${{ github.sha }}
+          path: docs-output
 
       - name: Deploy to Vercel
         id: deploy-vercel
@@ -118,7 +108,7 @@ jobs:
           vercel-token: ${{ secrets.VERCEL_TOKEN }}
           vercel-org-id: ${{ env.VERCEL_ORG_ID }}
           vercel-project-id: ${{ env.VERCEL_PROJECT_ID }}
-          working-directory: airbyte-cdk/bulk/build/dokka/htmlMultiModule
+          working-directory: docs-output
           vercel-args: ${{ github.event_name == 'push' && '--prod' || '' }}
           alias-domains: |
             ${{ github.event_name == 'push' && 'bulk-cdk-docs.vercel.app' || '' }}
