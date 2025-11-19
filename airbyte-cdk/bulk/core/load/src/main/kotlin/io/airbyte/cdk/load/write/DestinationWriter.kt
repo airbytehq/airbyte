@@ -12,18 +12,21 @@ import jakarta.inject.Singleton
 /**
  * Main entry point for destination connectors that orchestrates the loading lifecycle.
  *
- * Every destination must implement this interface to handle setup, stream loader creation,
- * and teardown operations. The framework calls these methods in a specific order:
- * 1. [setup] - Initialize destination resources (connections, temp directories, etc.)
- * 2. [createStreamLoader] - Create a loader for each stream being synced
- * 3. [teardown] - Clean up resources after all streams complete
+ * Every destination must implement this interface to handle setup, stream loader creation, and
+ * teardown operations. The framework calls these methods in a specific order:
+ * 1. [setup]
+ * - Initialize destination resources (connections, temp directories, etc.)
+ * 2. [createStreamLoader]
+ * - Create a loader for each stream being synced
+ * 3. [teardown]
+ * - Clean up resources after all streams complete
  */
 interface DestinationWriter {
     /**
      * Initializes destination-level resources before any streams are processed.
      *
-     * Called once at the start of the sync. Use this to establish database connections,
-     * create temporary directories, or perform other one-time setup operations.
+     * Called once at the start of the sync. Use this to establish database connections, create
+     * temporary directories, or perform other one-time setup operations.
      */
     suspend fun setup() {}
 

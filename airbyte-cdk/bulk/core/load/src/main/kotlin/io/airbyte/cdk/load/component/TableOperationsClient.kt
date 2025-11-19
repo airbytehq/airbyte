@@ -15,8 +15,8 @@ import io.airbyte.cdk.load.table.TableName
  * different database implementations. Implementations handle database-specific SQL generation and
  * execution while maintaining consistent behavior.
  *
- * Used by [StreamLoader] implementations to create tables, manage data, and perform operations
- * like upserts and overwrites during the loading process.
+ * Used by [StreamLoader] implementations to create tables, manage data, and perform operations like
+ * upserts and overwrites during the loading process.
  */
 interface TableOperationsClient {
 
@@ -86,8 +86,8 @@ interface TableOperationsClient {
     /**
      * Atomically replaces the target table with the source table.
      *
-     * After this operation, the target table contains the source table's data, and the source
-     * table is dropped. This is typically used to promote staging tables to final tables.
+     * After this operation, the target table contains the source table's data, and the source table
+     * is dropped. This is typically used to promote staging tables to final tables.
      *
      * @param sourceTableName The table to promote
      * @param targetTableName The table to replace
