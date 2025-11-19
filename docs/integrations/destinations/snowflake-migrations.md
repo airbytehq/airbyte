@@ -24,7 +24,15 @@ If you _only_ interact with the raw tables, enable the `Disable Final Tables` op
 
 2. Open your **Snowflake** connector.
 
-3. <!-- Devin: fill out the rest of these steps to use Disable Final Tables from Snowflake v3 -->
+3. Open the **Advanced** section.
+
+4. Turn on **Disable Final Tables**.
+
+5. Click **Test and save**.
+
+:::note
+After upgrading to version 4, this setting appears as **Legacy raw tables** and remains enabled.
+:::
 
 #### If you interact with both raw and final tables
 
@@ -34,9 +42,25 @@ If you interact with both the raw _and_ final tables, this use case is no longer
 
 2. For each Snowflake destination you have, add an identical second Snowflake destination.
 
-3. Ensure each pair of Snowflake connectors have opposite settings for <!-- Devin: fill out the rest of this step to use Disable Final Tables from Snowflake v3 -->
+3. Ensure each pair of Snowflake connectors have opposite settings for **Disable Final Tables**. One connector should have this setting turned on, and the other should have it turned off.
 
-4. <!-- Devin: fill out the rest of this process -->
+4. Configure distinct default schemas for each destination to avoid table name collisions:
+   - For the destination that will create final tables, set a distinct **Schema** in the Snowflake destination configuration (for example, `ANALYTICS_V4`). This is where final tables will be written.
+   - For the raw-only destination (with **Disable Final Tables** turned on), set a distinct **Airbyte Internal Table Dataset Name** under the **Advanced** section (for example, `AIRBYTE_INTERNAL_RAW`). This is where raw tables will be written.
+   - Example configuration:
+     - Destination A (final tables): Schema = `ANALYTICS_V4`, Airbyte Internal Table Dataset Name = `AIRBYTE_INTERNAL`
+     - Destination B (raw-only): Airbyte Internal Table Dataset Name = `AIRBYTE_INTERNAL_RAW`
+   - Using distinct schemas prevents table name collisions when running both destinations in parallel.
+
+5. Update your connections to point to the appropriate destination:
+   - Connections that need raw tables only should target the destination with **Disable Final Tables** turned on.
+   - Connections that need final tables should target the destination with this setting turned off.
+
+6. Run test syncs on both destinations to verify outputs:
+   - The raw-only destination should write only to the internal schema (default `airbyte_internal`).
+   - The standard destination should write only final tables to the target schema.
+
+7. After verifying that both destinations work correctly, continue running both connections in parallel going forward.
 
 <MigrationGuide />
 
@@ -44,15 +68,42 @@ If you interact with both the raw _and_ final tables, this use case is no longer
 
 The version 4.0 connector doesn't automatically remove tables created by earlier versions. After upgrading to version 4 and verifying your data, you can optionally remove the old raw tables.
 
-For most users, You can find the raw tables <!-- Devin: where? -->. The names match the pattern <!-- Devin: what are the tables and schemas called? -->
+For most users, you can find the raw tables in the schema configured as **Airbyte Internal Table Dataset Name** (which defaults to `airbyte_internal`). If you customized this setting, look in that schema instead.
+
+The table names match these patterns depending on which version created them:
+
+- **Version 2/3 (Typing and Deduping)**: `raw_{namespace}__{stream}` (for example, `airbyte_internal.raw_public__users`)
+- **Version 4 (Legacy raw tables mode)**: `{namespace}_raw__stream_{stream}` (for example, `airbyte_internal.public_raw__stream__users`)
+
+Note: The number of underscores between `raw` and `stream` may vary depending on the longest underscore sequence in your namespace and stream names.
 
 :::note
-Version 4 of the Snowfalke destination uses the `airbyte_internal` database for temporary scratch space (for example, streams running in dedup mode, truncate refreshes, and overwrite syncs). Dropping the entire `airbyte_internal database` can interrupt active syncs and cause data loss. Only drop the specific raw tables you no longer need.
+Version 4 of the Snowflake destination uses the `airbyte_internal` schema for temporary scratch space (for example, streams running in dedup mode, truncate refreshes, and overwrite syncs). Dropping the entire `airbyte_internal` schema can interrupt active syncs and cause data loss. Only drop the specific raw tables you no longer need.
 :::
 
 To remove the old raw tables:
 
-<!-- Devin: SQL query to delete a raw table in Snowflake -->
+1. **Pause or allow active syncs to complete** before dropping any tables to avoid interrupting data transfers.
+
+2. **List candidate raw tables** to identify which tables to remove:
+
+   ```sql
+   -- For Version 2/3 raw tables:
+   SHOW TABLES IN SCHEMA <DATABASE>.<INTERNAL_SCHEMA> LIKE 'RAW\_%';
+
+   -- For Version 4 legacy raw tables:
+   SHOW TABLES IN SCHEMA <DATABASE>.<INTERNAL_SCHEMA> LIKE '%_RAW__STREAM_%';
+   ```
+
+   Replace `<DATABASE>` with your Snowflake database name and `<INTERNAL_SCHEMA>` with your internal schema name (default `airbyte_internal`).
+
+3. **Drop specific raw tables** you no longer need:
+
+   ```sql
+   DROP TABLE IF EXISTS <DATABASE>.<INTERNAL_SCHEMA>.<TABLE_NAME>;
+   ```
+
+   Replace `<TABLE_NAME>` with the specific table name you want to remove. Use fully qualified names (database.schema.table) to avoid ambiguity.
 
 ## Upgrading to 3.0.0
 
