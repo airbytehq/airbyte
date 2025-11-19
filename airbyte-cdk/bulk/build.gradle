@@ -123,7 +123,7 @@ subprojects {
 
 // Configure the multi-module documentation task
 tasks.named('dokkaHtmlMultiModule') {
-    moduleName.set("Airbyte Bulk CDK")
+    moduleName.set("Airbyte Kotlin Bulk CDK")
     outputDirectory.set(layout.buildDirectory.dir("dokka/htmlMultiModule"))
 }
 

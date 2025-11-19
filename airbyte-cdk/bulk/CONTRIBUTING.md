@@ -1,6 +1,6 @@
-# Contributing to the Bulk CDK
+# Contributing to the Kotlin Bulk CDK
 
-Thank you for your interest in contributing to the Airbyte Bulk CDK!
+Thank you for your interest in contributing to the Airbyte Kotlin Bulk CDK!
 
 ## Prerequisites
 
@@ -9,7 +9,7 @@ Thank you for your interest in contributing to the Airbyte Bulk CDK!
 
 ## Generating Documentation
 
-The Bulk CDK uses [Dokka](https://kotlinlang.org/docs/dokka-introduction.html) to generate API documentation from KDoc comments.
+The Kotlin Bulk CDK uses [Dokka](https://kotlinlang.org/docs/dokka-introduction.html) to generate API documentation from KDoc comments.
 
 ### Generate Documentation
 

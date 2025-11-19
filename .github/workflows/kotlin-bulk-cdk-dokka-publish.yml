@@ -1,4 +1,4 @@
-name: Bulk CDK Documentation
+name: Kotlin Bulk CDK Documentation
 
 on:
   pull_request:
@@ -14,12 +14,12 @@ on:
 
 # Concurrency group ensures only one deployment runs at a time
 concurrency:
-  group: bulk-cdk-docs-${{ github.ref }}
+  group: kotlin-bulk-cdk-docs-${{ github.ref }}
   cancel-in-progress: false
 
 jobs:
   detect-changes:
-    name: Detect Bulk CDK Changes
+    name: Detect Kotlin Bulk CDK Changes
     runs-on: ubuntu-24.04
     steps:
       - name: Detect Changes
@@ -34,7 +34,7 @@ jobs:
       changed: ${{ steps.detect-changes.outputs.bulk-cdk }}
 
   build-docs:
-    name: Build Bulk CDK Documentation
+    name: Build Kotlin Bulk CDK Documentation
     runs-on: ubuntu-24.04
     needs: detect-changes
     if: needs.detect-changes.outputs.changed == 'true'
@@ -60,7 +60,7 @@ jobs:
       
       - name: Generate Dokka Documentation
         run: |
-          echo "📚 Generating Dokka documentation for Bulk CDK..."
+          echo "📚 Generating Dokka documentation for Kotlin Bulk CDK..."
           ./gradlew :airbyte-cdk:bulk:dokkaHtmlMultiModule --no-daemon --no-build-cache
           
           echo "✅ Documentation generated successfully"
@@ -69,7 +69,7 @@ jobs:
       - name: Upload Documentation Artifact
         uses: actions/upload-artifact@v4
         with:
-          name: bulk-cdk-docs-${{ github.sha }}
+          name: kotlin-bulk-cdk-docs-${{ github.sha }}
           path: airbyte-cdk/bulk/build/dokka/htmlMultiModule/
           retention-days: 30
 
@@ -138,10 +138,10 @@ jobs:
         if: github.event_name == 'pull_request'
         uses: LouisBrunner/checks-action@v2.0.0
         with:
-          name: "Bulk CDK Docs Preview"
+          name: "Kotlin Bulk CDK Docs Preview"
           status: completed
           conclusion: success
           details_url: ${{ steps.deploy-vercel.outputs.preview-url }}
           token: ${{ steps.get-app-token.outputs.token }}
           output: |
-            {"summary":"Documentation preview deployed successfully","text":"View the Bulk CDK documentation at the preview URL"}
+            {"summary":"Documentation preview deployed successfully","text":"View the Kotlin Bulk CDK documentation at the preview URL"}
