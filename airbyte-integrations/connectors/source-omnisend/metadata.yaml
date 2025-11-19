@@ -33,3 +33,10 @@ data:
   ab_internal:
     ql: 100
     sl: 100
+  externalDocumentationUrls:
+    - title: Omnisend API documentation
+      url: https://api-docs.omnisend.com/
+      type: api_reference
+    - title: Omnisend authentication
+      url: https://api-docs.omnisend.com/reference/authentication
+      type: authentication_guide

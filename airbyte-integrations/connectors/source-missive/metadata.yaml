@@ -33,3 +33,7 @@ data:
   ab_internal:
     ql: 100
     sl: 100
+  externalDocumentationUrls:
+    - title: Missive API documentation
+      url: https://missiveapp.com/help/api-documentation
+      type: api_reference
