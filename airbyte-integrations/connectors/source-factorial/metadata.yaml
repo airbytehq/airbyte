@@ -33,3 +33,10 @@ data:
   ab_internal:
     ql: 100
     sl: 100
+  externalDocumentationUrls:
+    - title: Factorial API documentation
+      url: https://apidoc.factorialhr.com/
+      type: api_reference
+    - title: Factorial authentication
+      url: https://apidoc.factorialhr.com/#authentication
+      type: authentication_guide

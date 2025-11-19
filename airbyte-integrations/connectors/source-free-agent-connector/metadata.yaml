@@ -33,3 +33,10 @@ data:
   ab_internal:
     ql: 100
     sl: 100
+  externalDocumentationUrls:
+    - title: FreeAgent API documentation
+      url: https://dev.freeagent.com/
+      type: api_reference
+    - title: FreeAgent OAuth guide
+      url: https://dev.freeagent.com/docs/quick_start
+      type: authentication_guide
