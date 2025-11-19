@@ -128,7 +128,7 @@ tasks.named('dokkaHtmlMultiModule') {
 }
 
 // Convenience task for local development
-tasks.register('dokkaGenerate') {
+tasks.register('docsGenerate') {
     group = 'documentation'
     description = 'Generate Dokka documentation for all modules'
     dependsOn 'dokkaHtmlMultiModule'
@@ -136,6 +136,13 @@ tasks.register('dokkaGenerate') {
     doLast {
         println "Documentation generated at: ${layout.buildDirectory.dir("dokka/htmlMultiModule").get()}"
     }
+}
+
+// Backwards-compatible alias
+tasks.register('dokkaGenerate') {
+    group = 'documentation'
+    description = 'Generate Dokka documentation for all modules (alias for docsGenerate)'
+    dependsOn 'docsGenerate'
 }
 
 tasks.register('checkBuildNumber') {
