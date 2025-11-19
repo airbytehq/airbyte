@@ -34,3 +34,13 @@ data:
   ab_internal:
     ql: 100
     sl: 100
+  externalDocumentationUrls:
+    - title: Reddit API documentation
+      url: https://www.reddit.com/dev/api/
+      type: api_reference
+    - title: Reddit OAuth guide
+      url: https://github.com/reddit-archive/reddit/wiki/OAuth2
+      type: authentication_guide
+    - title: Reddit rate limits
+      url: https://github.com/reddit-archive/reddit/wiki/API#rules
+      type: rate_limits

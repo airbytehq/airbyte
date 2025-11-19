@@ -40,4 +40,8 @@ data:
             alias: airbyte-connector-testing-secret-store
   connectorBuildOptions:
     baseImage: docker.io/airbyte/source-declarative-manifest:7.5.0@sha256:92e539d5003b33c3624eae7715aee6e39b7b2f1f0eeb6003d37e649a06847ae8
+  externalDocumentationUrls:
+    - title: SAP Fieldglass API
+      url: https://api.sap.com/package/SAPFieldglass/rest
+      type: api_reference
 metadataSpecVersion: "1.0"

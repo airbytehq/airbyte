@@ -33,3 +33,10 @@ data:
   ab_internal:
     ql: 100
     sl: 100
+  externalDocumentationUrls:
+    - title: Sharetribe Integration API
+      url: https://www.sharetribe.com/api-reference/
+      type: api_reference
+    - title: Sharetribe authentication
+      url: https://www.sharetribe.com/api-reference/#authentication
+      type: authentication_guide

@@ -33,3 +33,7 @@ data:
   ab_internal:
     ql: 100
     sl: 100
+  externalDocumentationUrls:
+    - title: Rootly API documentation
+      url: https://rootly.com/api
+      type: api_reference

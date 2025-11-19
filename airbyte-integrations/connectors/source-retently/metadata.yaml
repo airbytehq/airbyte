@@ -43,4 +43,8 @@ data:
           secretStore:
             type: GSM
             alias: airbyte-connector-testing-secret-store
+  externalDocumentationUrls:
+    - title: Retently API documentation
+      url: https://www.retently.com/api/
+      type: api_reference
 metadataSpecVersion: "1.0"

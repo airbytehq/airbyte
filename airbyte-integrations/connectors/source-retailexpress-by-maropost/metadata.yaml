@@ -33,3 +33,7 @@ data:
   ab_internal:
     ql: 100
     sl: 100
+  externalDocumentationUrls:
+    - title: Retail Express API
+      url: https://retailexpress.atlassian.net/wiki/spaces/APIDOC/overview
+      type: api_reference
