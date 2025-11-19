@@ -11,12 +11,12 @@ import io.airbyte.cdk.load.table.TableName
 /**
  * Database-agnostic interface for table and namespace operations.
  *
- * Provides CRUD operations for managing database namespaces (schemas/databases) and tables
- * across different database implementations. Implementations handle database-specific SQL
- * generation and execution while maintaining consistent behavior.
+ * Provides CRUD operations for managing database namespaces (schemas/databases) and tables across
+ * different database implementations. Implementations handle database-specific SQL generation and
+ * execution while maintaining consistent behavior.
  *
- * Used by [StreamLoader] implementations to create tables, manage data, and perform
- * operations like upserts and overwrites during the loading process.
+ * Used by [StreamLoader] implementations to create tables, manage data, and perform operations
+ * like upserts and overwrites during the loading process.
  */
 interface TableOperationsClient {
 
@@ -86,9 +86,8 @@ interface TableOperationsClient {
     /**
      * Atomically replaces the target table with the source table.
      *
-     * After this operation, the target table contains the source table's data,
-     * and the source table is dropped. This is typically used to promote staging
-     * tables to final tables.
+     * After this operation, the target table contains the source table's data, and the source
+     * table is dropped. This is typically used to promote staging tables to final tables.
      *
      * @param sourceTableName The table to promote
      * @param targetTableName The table to replace
@@ -101,8 +100,8 @@ interface TableOperationsClient {
     /**
      * Copies all records from the source table to the target table.
      *
-     * Performs an INSERT operation without deduplication. Both tables must exist
-     * and have compatible schemas.
+     * Performs an INSERT operation without deduplication. Both tables must exist and have
+     * compatible schemas.
      *
      * @param columnNameMapping Mapping from logical to physical column names
      * @param sourceTableName The table to copy from
@@ -117,9 +116,8 @@ interface TableOperationsClient {
     /**
      * Upserts records from the source table into the target table.
      *
-     * Performs an INSERT or UPDATE operation based on primary keys. Existing records
-     * with matching keys are updated, new records are inserted. Used for incremental
-     * syncs and deduplication.
+     * Performs an INSERT or UPDATE operation based on primary keys. Existing records with matching
+     * keys are updated, new records are inserted. Used for incremental syncs and deduplication.
      *
      * @param stream The stream configuration containing primary key information
      * @param columnNameMapping Mapping from logical to physical column names
