@@ -25,7 +25,7 @@ This quickstart shows you how to:
 
 If you don't want to self-manage Airbyte, skip this guide. Sign up for an [Airbyte Cloud](https://cloud.airbyte.com/signup) trial and [start syncing data](add-a-source.md) now.
 
-If you want to use Python to move data, Airbyte's Python library, [PyAirbyte](../pyairbyte/getting-started.mdx), might be the best fit for you. It's a good choice if you're using Jupyter Notebook or iterating on an early prototype for a large data project and don't need to run your own server.
+If you want to use Python to move data, Airbyte's Python library, [PyAirbyte](/developers/using-pyairbyte), might be the best fit for you. It's a good choice if you're using Jupyter Notebook or iterating on an early prototype for a large data project and don't need to run your own server.
 
 ## Suggested resources {#suggested-resources}
 

@@ -10,7 +10,7 @@ data:
   connectorSubtype: file
   connectorType: source
   definitionId: 9f8dda77-1048-4368-815b-269bf54ee9b8
-  dockerImageTag: 0.5.2
+  dockerImageTag: 0.5.4
   dockerRepository: airbyte/source-google-drive
   githubIssueLabel: source-google-drive
   icon: google-drive.svg
@@ -49,5 +49,18 @@ data:
           secretStore:
             type: GSM
             alias: airbyte-connector-testing-secret-store
+  externalDocumentationUrls:
+    - title: Google Drive API reference
+      url: https://developers.google.com/drive/api/reference/rest/v3
+      type: api_reference
+    - title: Google Drive authentication
+      url: https://developers.google.com/drive/api/guides/about-auth
+      type: authentication_guide
+    - title: Google Drive quotas
+      url: https://developers.google.com/drive/api/guides/limits
+      type: rate_limits
+    - title: Google Workspace Status
+      url: https://www.google.com/appsstatus/
+      type: status_page
 
 metadataSpecVersion: "1.0"

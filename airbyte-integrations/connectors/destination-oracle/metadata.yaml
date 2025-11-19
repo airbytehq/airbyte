@@ -45,4 +45,20 @@ data:
           secretStore:
             type: GSM
             alias: airbyte-connector-testing-secret-store
+  externalDocumentationUrls:
+    - title: Oracle Database documentation
+      url: https://docs.oracle.com/en/database/
+      type: api_reference
+    - title: Oracle Database Release Notes
+      url: https://docs.oracle.com/en/database/oracle/oracle-database/
+      type: api_release_history
+    - title: Database authentication
+      url: https://docs.oracle.com/en/database/oracle/oracle-database/19/dbseg/configuring-authentication.html
+      type: authentication_guide
+    - title: Managing security
+      url: https://docs.oracle.com/en/database/oracle/oracle-database/19/dbseg/
+      type: permissions_scopes
+    - title: SQL language reference
+      url: https://docs.oracle.com/en/database/oracle/oracle-database/19/sqlrf/
+      type: sql_reference
 metadataSpecVersion: "1.0"

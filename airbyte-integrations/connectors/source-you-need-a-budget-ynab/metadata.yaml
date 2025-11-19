@@ -13,11 +13,11 @@ data:
       enabled: false
       packageName: airbyte-source-you-need-a-budget-ynab
   connectorBuildOptions:
-    baseImage: docker.io/airbyte/source-declarative-manifest:7.4.1@sha256:71df19e2ee555ca5b14abbec01d50104c79c9b84cb9cc323284d24333361900a
+    baseImage: docker.io/airbyte/source-declarative-manifest:7.5.0@sha256:92e539d5003b33c3624eae7715aee6e39b7b2f1f0eeb6003d37e649a06847ae8
   connectorSubtype: api
   connectorType: source
   definitionId: a60d9f16-e0bd-459f-9419-fd47f9788be1
-  dockerImageTag: 0.0.42
+  dockerImageTag: 0.0.43
   dockerRepository: airbyte/source-you-need-a-budget-ynab
   githubIssueLabel: source-you-need-a-budget-ynab
   icon: icon.svg
@@ -33,3 +33,13 @@ data:
   ab_internal:
     ql: 100
     sl: 100
+  externalDocumentationUrls:
+    - title: YNAB API reference
+      url: https://api.ynab.com/
+      type: api_reference
+    - title: YNAB authentication
+      url: https://api.ynab.com/#authentication-overview
+      type: authentication_guide
+    - title: YNAB rate limits
+      url: https://api.ynab.com/#rate-limiting
+      type: rate_limits

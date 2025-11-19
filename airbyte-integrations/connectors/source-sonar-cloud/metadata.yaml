@@ -6,11 +6,11 @@ data:
     hosts:
       - sonarcloud.io
   connectorBuildOptions:
-    baseImage: docker.io/airbyte/source-declarative-manifest:7.4.1@sha256:71df19e2ee555ca5b14abbec01d50104c79c9b84cb9cc323284d24333361900a
+    baseImage: docker.io/airbyte/source-declarative-manifest:7.5.0@sha256:92e539d5003b33c3624eae7715aee6e39b7b2f1f0eeb6003d37e649a06847ae8
   connectorSubtype: api
   connectorType: source
   definitionId: 3ab1d7d0-1577-4ab9-bcc4-1ff6a4c2c9f2
-  dockerImageTag: 0.2.35
+  dockerImageTag: 0.2.36
   dockerRepository: airbyte/source-sonar-cloud
   documentationUrl: https://docs.airbyte.com/integrations/sources/sonar-cloud
   githubIssueLabel: source-sonar-cloud
@@ -43,4 +43,11 @@ data:
           secretStore:
             type: GSM
             alias: airbyte-connector-testing-secret-store
+  externalDocumentationUrls:
+    - title: SonarCloud Web API
+      url: https://sonarcloud.io/web_api
+      type: api_reference
+    - title: SonarCloud authentication
+      url: https://docs.sonarsource.com/sonarcloud/advanced-setup/user-accounts/
+      type: authentication_guide
 metadataSpecVersion: "1.0"

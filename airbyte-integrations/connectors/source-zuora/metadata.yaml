@@ -26,4 +26,14 @@ data:
   tags:
     - language:python
     - cdk:python
+  externalDocumentationUrls:
+    - title: Zuora REST API
+      url: https://www.zuora.com/developer/api-references/api/overview/
+      type: api_reference
+    - title: Zuora authentication
+      url: https://www.zuora.com/developer/api-references/api/overview/#section/Authentication
+      type: authentication_guide
+    - title: Zuora rate limits
+      url: https://knowledgecenter.zuora.com/BB_Introducing_Z_Business/Policies/Concurrent_Request_Limits
+      type: rate_limits
 metadataSpecVersion: "1.0"
