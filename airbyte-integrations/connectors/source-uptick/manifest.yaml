@@ -5904,3 +5904,1157 @@ streams:
             path:
               - asset_count
             value: '{{ record["attributes"]["asset_count"] or "None"}}'
+  - type: DeclarativeStream
+    name: appointments
+    primary_key:
+      - id
+    incremental_sync:
+      $ref: "#/definitions/linked/DeclarativeStream/incremental_sync"
+    retriever:
+      $ref: "#/definitions/linked/BaseSimpleRetriever"
+      requester:
+        $ref: "#/definitions/linked/BaseSimpleRetriever/requester"
+        url: '{{ config["base_url"] }}/api/v2.14/appointments/'
+        request_parameters:
+          ordering: -updated
+          show_deleted: "true"
+          fields[Appointment]: id,created,updated,status,subject,scheduled_start,scheduled_end,scheduler,notes,address,last_reminder_sent,timezone,attendance,category,routine,technicians,task
+    schema_loader:
+      type: InlineSchemaLoader
+      schema:
+        type: object
+        $schema: http://json-schema.org/schema#
+        additionalProperties: true
+        properties:
+          id:
+            type:
+              - integer
+          created:
+            type:
+              - string
+            format: date-time
+            airbyte_type: timestamp_with_timezone
+          updated:
+            type:
+              - string
+            format: date-time
+            airbyte_type: timestamp_with_timezone
+          status:
+            type:
+              - string
+          subject:
+            type:
+              - string
+          scheduled_start:
+            type:
+              - string
+            format: date-time
+            airbyte_type: timestamp_with_timezone
+          scheduled_end:
+            type:
+              - string
+            format: date-time
+            airbyte_type: timestamp_with_timezone
+          scheduler:
+            type:
+              - string
+          notes:
+            type:
+              - string
+          address:
+            type:
+              - string
+          last_reminder_sent:
+            type:
+              - string
+              - "null"
+            format: date-time
+            airbyte_type: timestamp_with_timezone
+          timezone:
+            type:
+              - string
+          attendance:
+            type:
+              - string
+              - "null"
+          category_id:
+            type:
+              - integer
+              - "null"
+          routine_id:
+            type:
+              - integer
+              - "null"
+          technicians:
+            type:
+              - array
+          task_id:
+            type:
+              - integer
+              - "null"
+    transformations:
+      - type: AddFields
+        fields:
+          - type: AddedFieldDefinition
+            path:
+              - id
+            value: '{{ record["id"] }}'
+          - type: AddedFieldDefinition
+            path:
+              - created
+            value: '{{ record["attributes"]["created"] }}'
+          - type: AddedFieldDefinition
+            path:
+              - updated
+            value: '{{ record["attributes"]["updated"] }}'
+          - type: AddedFieldDefinition
+            path:
+              - status
+            value: '{{ record["attributes"]["status"] }}'
+          - type: AddedFieldDefinition
+            path:
+              - subject
+            value: '{{ record["attributes"]["subject"] }}'
+          - type: AddedFieldDefinition
+            path:
+              - scheduled_start
+            value: '{{ record["attributes"]["scheduled_start"] }}'
+          - type: AddedFieldDefinition
+            path:
+              - scheduled_end
+            value: '{{ record["attributes"]["scheduled_end"] }}'
+          - type: AddedFieldDefinition
+            path:
+              - scheduler
+            value: '{{ record["attributes"]["scheduler"] }}'
+          - type: AddedFieldDefinition
+            path:
+              - notes
+            value: '{{ record["attributes"]["notes"] }}'
+          - type: AddedFieldDefinition
+            path:
+              - address
+            value: '{{ record["attributes"]["address"] }}'
+          - type: AddedFieldDefinition
+            path:
+              - last_reminder_sent
+            value: '{{ record["attributes"]["last_reminder_sent"] or "None"}}'
+          - type: AddedFieldDefinition
+            path:
+              - timezone
+            value: '{{ record["attributes"]["timezone"] }}'
+          - type: AddedFieldDefinition
+            path:
+              - attendance
+            value: '{{ record["attributes"]["attendance"] or "None"}}'
+          - type: AddedFieldDefinition
+            path:
+              - category_id
+            value: '{{ record["relationships"]["category"]["data"]["id"] or "None"}}'
+          - type: AddedFieldDefinition
+            path:
+              - routine_id
+            value: '{{ record["relationships"]["routine"]["data"]["id"] or "None"}}'
+          - type: AddedFieldDefinition
+            path:
+              - technicians
+            value: '{{ record["relationships"]["technicians"]["data"] }}'
+          - type: AddedFieldDefinition
+            path:
+              - task_id
+            value: '{{ record["relationships"]["task"]["data"]["id"] or "None"}}'
+  - type: DeclarativeStream
+    name: billingcontracts
+    primary_key:
+      - id
+    incremental_sync:
+      $ref: "#/definitions/linked/DeclarativeStream/incremental_sync"
+    retriever:
+      $ref: "#/definitions/linked/BaseSimpleRetriever"
+      requester:
+        $ref: "#/definitions/linked/BaseSimpleRetriever/requester"
+        url: '{{ config["base_url"] }}/api/v2.14/billingcontracts/'
+        request_parameters:
+          ordering: -updated
+          show_deleted: "true"
+          fields[BillingContract]: id,created,updated,name,type,property,billingcard,recurrence,invoice_mode,is_active,start_date,finish_date,review_date,send_invoice,author,authorisation,authorisation_ref,next_due,value,annual_value,period_begin,period_end,notes,priceincrease_policy,priceincrease_auto_next_date,priceincrease_auto_percentage,extra_fields
+    schema_loader:
+      type: InlineSchemaLoader
+      schema:
+        type: object
+        $schema: http://json-schema.org/schema#
+        additionalProperties: true
+        properties:
+          id:
+            type:
+              - integer
+          created:
+            type:
+              - string
+            format: date-time
+            airbyte_type: timestamp_with_timezone
+          updated:
+            type:
+              - string
+            format: date-time
+            airbyte_type: timestamp_with_timezone
+          name:
+            type:
+              - string
+          type:
+            type:
+              - string
+          property_id:
+            type:
+              - integer
+              - "null"
+          billingcard_id:
+            type:
+              - integer
+              - "null"
+          recurrence:
+            type:
+              - string
+          invoice_mode:
+            type:
+              - string
+          is_active:
+            type:
+              - boolean
+          start_date:
+            type:
+              - string
+            format: date
+          finish_date:
+            type:
+              - string
+              - "null"
+            format: date
+          review_date:
+            type:
+              - string
+              - "null"
+            format: date
+          send_invoice:
+            type:
+              - string
+              - "null"
+            format: date
+          author_id:
+            type:
+              - integer
+              - "null"
+          authorisation:
+            type:
+              - string
+            format: decimal
+          authorisation_ref:
+            type:
+              - string
+          next_due:
+            type:
+              - string
+              - "null"
+            format: date
+          value:
+            type:
+              - string
+          annual_value:
+            type:
+              - string
+            format: decimal
+          period_begin:
+            type:
+              - string
+          period_end:
+            type:
+              - string
+          notes:
+            type:
+              - string
+          priceincrease_policy:
+            type:
+              - string
+          priceincrease_auto_next_date:
+            type:
+              - string
+              - "null"
+            format: date
+          priceincrease_auto_percentage:
+            type:
+              - string
+              - "null"
+            format: decimal
+          extra_fields:
+            type:
+              - object
+    transformations:
+      - type: AddFields
+        fields:
+          - type: AddedFieldDefinition
+            path:
+              - id
+            value: '{{ record["id"] }}'
+          - type: AddedFieldDefinition
+            path:
+              - created
+            value: '{{ record["attributes"]["created"] }}'
+          - type: AddedFieldDefinition
+            path:
+              - updated
+            value: '{{ record["attributes"]["updated"] }}'
+          - type: AddedFieldDefinition
+            path:
+              - name
+            value: '{{ record["attributes"]["name"] }}'
+          - type: AddedFieldDefinition
+            path:
+              - type
+            value: '{{ record["attributes"]["type"] }}'
+          - type: AddedFieldDefinition
+            path:
+              - property_id
+            value: '{{ record["relationships"]["property"]["data"]["id"] or "None"}}'
+          - type: AddedFieldDefinition
+            path:
+              - billingcard_id
+            value: '{{ record["relationships"]["billingcard"]["data"]["id"] or "None"}}'
+          - type: AddedFieldDefinition
+            path:
+              - recurrence
+            value: '{{ record["attributes"]["recurrence"] }}'
+          - type: AddedFieldDefinition
+            path:
+              - invoice_mode
+            value: '{{ record["attributes"]["invoice_mode"] }}'
+          - type: AddedFieldDefinition
+            path:
+              - is_active
+            value: '{{ record["attributes"]["is_active"] }}'
+          - type: AddedFieldDefinition
+            path:
+              - start_date
+            value: '{{ record["attributes"]["start_date"] }}'
+          - type: AddedFieldDefinition
+            path:
+              - finish_date
+            value: '{{ record["attributes"]["finish_date"] or "None"}}'
+          - type: AddedFieldDefinition
+            path:
+              - review_date
+            value: '{{ record["attributes"]["review_date"] or "None"}}'
+          - type: AddedFieldDefinition
+            path:
+              - send_invoice
+            value: '{{ record["attributes"]["send_invoice"] or "None"}}'
+          - type: AddedFieldDefinition
+            path:
+              - author_id
+            value: '{{ record["relationships"]["author"]["data"]["id"] or "None"}}'
+          - type: AddedFieldDefinition
+            path:
+              - authorisation
+            value: '{{ record["attributes"]["authorisation"] }}'
+          - type: AddedFieldDefinition
+            path:
+              - authorisation_ref
+            value: '{{ record["attributes"]["authorisation_ref"] }}'
+          - type: AddedFieldDefinition
+            path:
+              - next_due
+            value: '{{ record["attributes"]["next_due"] or "None"}}'
+          - type: AddedFieldDefinition
+            path:
+              - value
+            value: '{{ record["attributes"]["value"] }}'
+          - type: AddedFieldDefinition
+            path:
+              - annual_value
+            value: '{{ record["attributes"]["annual_value"] }}'
+          - type: AddedFieldDefinition
+            path:
+              - period_begin
+            value: '{{ record["attributes"]["period_begin"] }}'
+          - type: AddedFieldDefinition
+            path:
+              - period_end
+            value: '{{ record["attributes"]["period_end"] }}'
+          - type: AddedFieldDefinition
+            path:
+              - notes
+            value: '{{ record["attributes"]["notes"] }}'
+          - type: AddedFieldDefinition
+            path:
+              - priceincrease_policy
+            value: '{{ record["attributes"]["priceincrease_policy"] }}'
+          - type: AddedFieldDefinition
+            path:
+              - priceincrease_auto_next_date
+            value: '{{ record["attributes"]["priceincrease_auto_next_date"] or "None"}}'
+          - type: AddedFieldDefinition
+            path:
+              - priceincrease_auto_percentage
+            value: '{{ record["attributes"]["priceincrease_auto_percentage"] or "None"}}'
+          - type: AddedFieldDefinition
+            path:
+              - extra_fields
+            value: '{{ record["attributes"]["extra_fields"] }}'
+  - type: DeclarativeStream
+    name: billingcontractlineitems
+    primary_key:
+      - id
+    incremental_sync:
+      $ref: "#/definitions/linked/DeclarativeStream/incremental_sync"
+    retriever:
+      $ref: "#/definitions/linked/BaseSimpleRetriever"
+      requester:
+        $ref: "#/definitions/linked/BaseSimpleRetriever/requester"
+        url: '{{ config["base_url"] }}/api/v2.14/billingcontractlineitems/'
+        request_parameters:
+          ordering: -updated
+          show_deleted: "true"
+          fields[BillingContractLineItem]: id,created,updated,billingcontract,visible,product,description,unit_price,all_routines,price_period,type
+    schema_loader:
+      type: InlineSchemaLoader
+      schema:
+        type: object
+        $schema: http://json-schema.org/schema#
+        additionalProperties: true
+        properties:
+          id:
+            type:
+              - integer
+          created:
+            type:
+              - string
+            format: date-time
+            airbyte_type: timestamp_with_timezone
+          updated:
+            type:
+              - string
+            format: date-time
+            airbyte_type: timestamp_with_timezone
+          billingcontract_id:
+            type:
+              - integer
+              - "null"
+          visible:
+            type:
+              - boolean
+          product_id:
+            type:
+              - integer
+              - "null"
+          description:
+            type:
+              - string
+          unit_price:
+            type:
+              - string
+            format: decimal
+          all_routines:
+            type:
+              - boolean
+          price_period:
+            type:
+              - string
+          type:
+            type:
+              - string
+    transformations:
+      - type: AddFields
+        fields:
+          - type: AddedFieldDefinition
+            path:
+              - id
+            value: '{{ record["id"] }}'
+          - type: AddedFieldDefinition
+            path:
+              - created
+            value: '{{ record["attributes"]["created"] }}'
+          - type: AddedFieldDefinition
+            path:
+              - updated
+            value: '{{ record["attributes"]["updated"] }}'
+          - type: AddedFieldDefinition
+            path:
+              - billingcontract_id
+            value: '{{ record["relationships"]["billingcontract"]["data"]["id"] or "None"}}'
+          - type: AddedFieldDefinition
+            path:
+              - visible
+            value: '{{ record["attributes"]["visible"] }}'
+          - type: AddedFieldDefinition
+            path:
+              - product_id
+            value: '{{ record["relationships"]["product"]["data"]["id"] or "None"}}'
+          - type: AddedFieldDefinition
+            path:
+              - description
+            value: '{{ record["attributes"]["description"] }}'
+          - type: AddedFieldDefinition
+            path:
+              - unit_price
+            value: '{{ record["attributes"]["unit_price"] }}'
+          - type: AddedFieldDefinition
+            path:
+              - all_routines
+            value: '{{ record["attributes"]["all_routines"] }}'
+          - type: AddedFieldDefinition
+            path:
+              - price_period
+            value: '{{ record["attributes"]["price_period"] }}'
+          - type: AddedFieldDefinition
+            path:
+              - type
+            value: '{{ record["attributes"]["type"] }}'
+  - type: DeclarativeStream
+    name: defectquotelineitems
+    primary_key:
+      - id
+    incremental_sync:
+      $ref: "#/definitions/linked/DeclarativeStream/incremental_sync"
+    retriever:
+      $ref: "#/definitions/linked/BaseSimpleRetriever"
+      requester:
+        $ref: "#/definitions/linked/BaseSimpleRetriever/requester"
+        url: '{{ config["base_url"] }}/api/v2.14/defectquotelineitems/'
+        request_parameters:
+          ordering: -updated
+          show_deleted: "true"
+          fields[DefectQuoteLineItem]: id,created,updated,description,unit_price,cost_price,markup,quantity,taxcode,taxrate,subtotal,total,gst,index,estimated_time,product_type,product,quote,asset,remark
+    schema_loader:
+      type: InlineSchemaLoader
+      schema:
+        type: object
+        $schema: http://json-schema.org/schema#
+        additionalProperties: true
+        properties:
+          id:
+            type:
+              - integer
+          created:
+            type:
+              - string
+            format: date-time
+            airbyte_type: timestamp_with_timezone
+          updated:
+            type:
+              - string
+            format: date-time
+            airbyte_type: timestamp_with_timezone
+          description:
+            type:
+              - string
+          unit_price:
+            type:
+              - string
+            format: decimal
+          cost_price:
+            type:
+              - string
+            format: decimal
+          markup:
+            type:
+              - string
+            format: decimal
+          quantity:
+            type:
+              - string
+            format: decimal
+          taxcode:
+            type:
+              - string
+          taxrate:
+            type:
+              - string
+            format: decimal
+          subtotal:
+            type:
+              - string
+          total:
+            type:
+              - string
+          gst:
+            type:
+              - string
+          index:
+            type:
+              - integer
+          estimated_time:
+            type:
+              - integer
+          product_type:
+            type:
+              - string
+              - "null"
+          product_id:
+            type:
+              - integer
+              - "null"
+          quote_id:
+            type:
+              - integer
+              - "null"
+          asset_id:
+            type:
+              - integer
+              - "null"
+          remark_id:
+            type:
+              - integer
+              - "null"
+    transformations:
+      - type: AddFields
+        fields:
+          - type: AddedFieldDefinition
+            path:
+              - id
+            value: '{{ record["id"] }}'
+          - type: AddedFieldDefinition
+            path:
+              - created
+            value: '{{ record["attributes"]["created"] }}'
+          - type: AddedFieldDefinition
+            path:
+              - updated
+            value: '{{ record["attributes"]["updated"] }}'
+          - type: AddedFieldDefinition
+            path:
+              - description
+            value: '{{ record["attributes"]["description"] }}'
+          - type: AddedFieldDefinition
+            path:
+              - unit_price
+            value: '{{ record["attributes"]["unit_price"] }}'
+          - type: AddedFieldDefinition
+            path:
+              - cost_price
+            value: '{{ record["attributes"]["cost_price"] }}'
+          - type: AddedFieldDefinition
+            path:
+              - markup
+            value: '{{ record["attributes"]["markup"] }}'
+          - type: AddedFieldDefinition
+            path:
+              - quantity
+            value: '{{ record["attributes"]["quantity"] }}'
+          - type: AddedFieldDefinition
+            path:
+              - taxcode
+            value: '{{ record["attributes"]["taxcode"] }}'
+          - type: AddedFieldDefinition
+            path:
+              - taxrate
+            value: '{{ record["attributes"]["taxrate"] }}'
+          - type: AddedFieldDefinition
+            path:
+              - subtotal
+            value: '{{ record["attributes"]["subtotal"] }}'
+          - type: AddedFieldDefinition
+            path:
+              - total
+            value: '{{ record["attributes"]["total"] }}'
+          - type: AddedFieldDefinition
+            path:
+              - gst
+            value: '{{ record["attributes"]["gst"] }}'
+          - type: AddedFieldDefinition
+            path:
+              - index
+            value: '{{ record["attributes"]["index"] }}'
+          - type: AddedFieldDefinition
+            path:
+              - estimated_time
+            value: '{{ record["attributes"]["estimated_time"] }}'
+          - type: AddedFieldDefinition
+            path:
+              - product_type
+            value: '{{ record["attributes"]["product_type"] or "None"}}'
+          - type: AddedFieldDefinition
+            path:
+              - product_id
+            value: '{{ record["relationships"]["product"]["data"]["id"] or "None"}}'
+          - type: AddedFieldDefinition
+            path:
+              - quote_id
+            value: '{{ record["relationships"]["quote"]["data"]["id"] or "None"}}'
+          - type: AddedFieldDefinition
+            path:
+              - asset_id
+            value: '{{ record["relationships"]["asset"]["data"]["id"] or "None"}}'
+          - type: AddedFieldDefinition
+            path:
+              - remark_id
+            value: '{{ record["relationships"]["remark"]["data"]["id"] or "None"}}'
+  - type: DeclarativeStream
+    name: servicequotefixedlineitems
+    primary_key:
+      - id
+    incremental_sync:
+      $ref: "#/definitions/linked/DeclarativeStream/incremental_sync"
+    retriever:
+      $ref: "#/definitions/linked/BaseSimpleRetriever"
+      requester:
+        $ref: "#/definitions/linked/BaseSimpleRetriever/requester"
+        url: '{{ config["base_url"] }}/api/v2.14/servicequotefixedlineitems/'
+        request_parameters:
+          ordering: -updated
+          show_deleted: "true"
+          fields[ServiceLineItem]: id,servicequote,description,quantity,unit_price,billingcontract_type,index,estimated_duration,taxcode,taxrate,annual_tax,annual_subtotal
+    schema_loader:
+      type: InlineSchemaLoader
+      schema:
+        type: object
+        $schema: http://json-schema.org/schema#
+        additionalProperties: true
+        properties:
+          id:
+            type:
+              - integer
+          servicequote_id:
+            type:
+              - integer
+              - "null"
+          description:
+            type:
+              - string
+          quantity:
+            type:
+              - string
+            format: decimal
+          unit_price:
+            type:
+              - string
+            format: decimal
+          billingcontract_type:
+            type:
+              - string
+          index:
+            type:
+              - integer
+          estimated_duration:
+            type:
+              - string
+              - "null"
+          taxcode:
+            type:
+              - string
+          taxrate:
+            type:
+              - string
+            format: decimal
+          annual_tax:
+            type:
+              - string
+              - "null"
+            format: decimal
+          annual_subtotal:
+            type:
+              - string
+            format: decimal
+    transformations:
+      - type: AddFields
+        fields:
+          - type: AddedFieldDefinition
+            path:
+              - id
+            value: '{{ record["id"] }}'
+          - type: AddedFieldDefinition
+            path:
+              - servicequote_id
+            value: '{{ record["relationships"]["servicequote"]["data"]["id"] or "None"}}'
+          - type: AddedFieldDefinition
+            path:
+              - description
+            value: '{{ record["attributes"]["description"] }}'
+          - type: AddedFieldDefinition
+            path:
+              - quantity
+            value: '{{ record["attributes"]["quantity"] }}'
+          - type: AddedFieldDefinition
+            path:
+              - unit_price
+            value: '{{ record["attributes"]["unit_price"] }}'
+          - type: AddedFieldDefinition
+            path:
+              - billingcontract_type
+            value: '{{ record["attributes"]["billingcontract_type"] }}'
+          - type: AddedFieldDefinition
+            path:
+              - index
+            value: '{{ record["attributes"]["index"] }}'
+          - type: AddedFieldDefinition
+            path:
+              - estimated_duration
+            value: '{{ record["attributes"]["estimated_duration"] or "None"}}'
+          - type: AddedFieldDefinition
+            path:
+              - taxcode
+            value: '{{ record["attributes"]["taxcode"] }}'
+          - type: AddedFieldDefinition
+            path:
+              - taxrate
+            value: '{{ record["attributes"]["taxrate"] }}'
+          - type: AddedFieldDefinition
+            path:
+              - annual_tax
+            value: '{{ record["attributes"]["annual_tax"] or "None"}}'
+          - type: AddedFieldDefinition
+            path:
+              - annual_subtotal
+            value: '{{ record["attributes"]["annual_subtotal"] }}'
+  - type: DeclarativeStream
+    name: servicequotedoandchargelineitems
+    primary_key:
+      - id
+    incremental_sync:
+      $ref: "#/definitions/linked/DeclarativeStream/incremental_sync"
+    retriever:
+      $ref: "#/definitions/linked/BaseSimpleRetriever"
+      requester:
+        $ref: "#/definitions/linked/BaseSimpleRetriever/requester"
+        url: '{{ config["base_url"] }}/api/v2.14/servicequotedoandchargelineitems/'
+        request_parameters:
+          ordering: -updated
+          show_deleted: "true"
+          fields[ServiceLineItem]: id,servicequote,description,quantity,unit_price,billingcontract_type,index,estimated_duration,taxcode,taxrate,annual_tax,site_price,annual_subtotal,service_price
+    schema_loader:
+      type: InlineSchemaLoader
+      schema:
+        type: object
+        $schema: http://json-schema.org/schema#
+        additionalProperties: true
+        properties:
+          id:
+            type:
+              - integer
+          servicequote_id:
+            type:
+              - integer
+              - "null"
+          description:
+            type:
+              - string
+          quantity:
+            type:
+              - string
+            format: decimal
+          unit_price:
+            type:
+              - string
+            format: decimal
+          billingcontract_type:
+            type:
+              - string
+          index:
+            type:
+              - integer
+          estimated_duration:
+            type:
+              - string
+              - "null"
+          taxcode:
+            type:
+              - string
+          taxrate:
+            type:
+              - string
+            format: decimal
+          annual_tax:
+            type:
+              - string
+              - "null"
+            format: decimal
+          site_price:
+            type:
+              - string
+            format: decimal
+          annual_subtotal:
+            type:
+              - string
+            format: decimal
+          service_price:
+            type:
+              - string
+            format: decimal
+    transformations:
+      - type: AddFields
+        fields:
+          - type: AddedFieldDefinition
+            path:
+              - id
+            value: '{{ record["id"] }}'
+          - type: AddedFieldDefinition
+            path:
+              - servicequote_id
+            value: '{{ record["relationships"]["servicequote"]["data"]["id"] or "None"}}'
+          - type: AddedFieldDefinition
+            path:
+              - description
+            value: '{{ record["attributes"]["description"] }}'
+          - type: AddedFieldDefinition
+            path:
+              - quantity
+            value: '{{ record["attributes"]["quantity"] }}'
+          - type: AddedFieldDefinition
+            path:
+              - unit_price
+            value: '{{ record["attributes"]["unit_price"] }}'
+          - type: AddedFieldDefinition
+            path:
+              - billingcontract_type
+            value: '{{ record["attributes"]["billingcontract_type"] }}'
+          - type: AddedFieldDefinition
+            path:
+              - index
+            value: '{{ record["attributes"]["index"] }}'
+          - type: AddedFieldDefinition
+            path:
+              - estimated_duration
+            value: '{{ record["attributes"]["estimated_duration"] or "None"}}'
+          - type: AddedFieldDefinition
+            path:
+              - taxcode
+            value: '{{ record["attributes"]["taxcode"] }}'
+          - type: AddedFieldDefinition
+            path:
+              - taxrate
+            value: '{{ record["attributes"]["taxrate"] }}'
+          - type: AddedFieldDefinition
+            path:
+              - annual_tax
+            value: '{{ record["attributes"]["annual_tax"] or "None"}}'
+          - type: AddedFieldDefinition
+            path:
+              - site_price
+            value: '{{ record["attributes"]["site_price"] }}'
+          - type: AddedFieldDefinition
+            path:
+              - annual_subtotal
+            value: '{{ record["attributes"]["annual_subtotal"] }}'
+          - type: AddedFieldDefinition
+            path:
+              - service_price
+            value: '{{ record["attributes"]["service_price"] }}'
+  - type: DeclarativeStream
+    name: servicequoteproductlineitems
+    primary_key:
+      - id
+    incremental_sync:
+      $ref: "#/definitions/linked/DeclarativeStream/incremental_sync"
+    retriever:
+      $ref: "#/definitions/linked/BaseSimpleRetriever"
+      requester:
+        $ref: "#/definitions/linked/BaseSimpleRetriever/requester"
+        url: '{{ config["base_url"] }}/api/v2.14/servicequoteproductlineitems/'
+        request_parameters:
+          ordering: -updated
+          show_deleted: "true"
+          fields[ProductLineItem]: id,servicequote,product,description,quantity,unit_price,cost_price,subtotal,taxcode,taxrate,tax,total,index
+    schema_loader:
+      type: InlineSchemaLoader
+      schema:
+        type: object
+        $schema: http://json-schema.org/schema#
+        additionalProperties: true
+        properties:
+          id:
+            type:
+              - integer
+          servicequote_id:
+            type:
+              - integer
+              - "null"
+          product_id:
+            type:
+              - integer
+              - "null"
+          description:
+            type:
+              - string
+          quantity:
+            type:
+              - string
+            format: decimal
+          unit_price:
+            type:
+              - string
+            format: decimal
+          cost_price:
+            type:
+              - string
+            format: decimal
+          subtotal:
+            type:
+              - string
+            format: decimal
+          taxcode:
+            type:
+              - string
+          taxrate:
+            type:
+              - string
+            format: decimal
+          tax:
+            type:
+              - string
+            format: decimal
+          total:
+            type:
+              - string
+            format: decimal
+          index:
+            type:
+              - integer
+    transformations:
+      - type: AddFields
+        fields:
+          - type: AddedFieldDefinition
+            path:
+              - id
+            value: '{{ record["id"] }}'
+          - type: AddedFieldDefinition
+            path:
+              - servicequote_id
+            value: '{{ record["relationships"]["servicequote"]["data"]["id"] or "None"}}'
+          - type: AddedFieldDefinition
+            path:
+              - product_id
+            value: '{{ record["relationships"]["product"]["data"]["id"] or "None"}}'
+          - type: AddedFieldDefinition
+            path:
+              - description
+            value: '{{ record["attributes"]["description"] }}'
+          - type: AddedFieldDefinition
+            path:
+              - quantity
+            value: '{{ record["attributes"]["quantity"] }}'
+          - type: AddedFieldDefinition
+            path:
+              - unit_price
+            value: '{{ record["attributes"]["unit_price"] }}'
+          - type: AddedFieldDefinition
+            path:
+              - cost_price
+            value: '{{ record["attributes"]["cost_price"] }}'
+          - type: AddedFieldDefinition
+            path:
+              - subtotal
+            value: '{{ record["attributes"]["subtotal"] }}'
+          - type: AddedFieldDefinition
+            path:
+              - taxcode
+            value: '{{ record["attributes"]["taxcode"] }}'
+          - type: AddedFieldDefinition
+            path:
+              - taxrate
+            value: '{{ record["attributes"]["taxrate"] }}'
+          - type: AddedFieldDefinition
+            path:
+              - tax
+            value: '{{ record["attributes"]["tax"] }}'
+          - type: AddedFieldDefinition
+            path:
+              - total
+            value: '{{ record["attributes"]["total"] }}'
+          - type: AddedFieldDefinition
+            path:
+              - index
+            value: '{{ record["attributes"]["index"] }}'
+  - type: DeclarativeStream
+    name: remarkevents
+    primary_key:
+      - id
+    incremental_sync:
+      $ref: "#/definitions/linked/DeclarativeStream/incremental_sync"
+    retriever:
+      $ref: "#/definitions/linked/BaseSimpleRetriever"
+      requester:
+        $ref: "#/definitions/linked/BaseSimpleRetriever/requester"
+        url: '{{ config["base_url"] }}/api/v2.14/remarkevents/'
+        request_parameters:
+          ordering: -updated
+          show_deleted: "true"
+          fields[RemarkEvent]: id,created,updated,event,notes,remark,task,servicetask,account
+    schema_loader:
+      type: InlineSchemaLoader
+      schema:
+        type: object
+        $schema: http://json-schema.org/schema#
+        additionalProperties: true
+        properties:
+          id:
+            type:
+              - integer
+          created:
+            type:
+              - string
+            format: date-time
+            airbyte_type: timestamp_with_timezone
+          updated:
+            type:
+              - string
+            format: date-time
+            airbyte_type: timestamp_with_timezone
+          event:
+            type:
+              - string
+          notes:
+            type:
+              - string
+          remark_id:
+            type:
+              - integer
+              - "null"
+          task_id:
+            type:
+              - integer
+              - "null"
+          servicetask_id:
+            type:
+              - integer
+              - "null"
+          account_id:
+            type:
+              - integer
+              - "null"
+    transformations:
+      - type: AddFields
+        fields:
+          - type: AddedFieldDefinition
+            path:
+              - id
+            value: '{{ record["id"] }}'
+          - type: AddedFieldDefinition
+            path:
+              - created
+            value: '{{ record["attributes"]["created"] }}'
+          - type: AddedFieldDefinition
+            path:
+              - updated
+            value: '{{ record["attributes"]["updated"] }}'
+          - type: AddedFieldDefinition
+            path:
+              - event
+            value: '{{ record["attributes"]["event"] }}'
+          - type: AddedFieldDefinition
+            path:
+              - notes
+            value: '{{ record["attributes"]["notes"] }}'
+          - type: AddedFieldDefinition
+            path:
+              - remark_id
+            value: '{{ record["relationships"]["remark"]["data"]["id"] or "None"}}'
+          - type: AddedFieldDefinition
+            path:
+              - task_id
+            value: '{{ record["relationships"]["task"]["data"]["id"] or "None"}}'
+          - type: AddedFieldDefinition
+            path:
+              - servicetask_id
+            value: '{{ record["relationships"]["servicetask"]["data"]["id"] or "None"}}'
+          - type: AddedFieldDefinition
+            path:
+              - account_id
+            value: '{{ record["relationships"]["account"]["data"]["id"] or "None"}}'
