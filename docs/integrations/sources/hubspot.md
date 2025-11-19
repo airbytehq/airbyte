@@ -104,11 +104,12 @@ To set up a Private App, you must manually configure scopes to ensure Airbyte ca
 
 <FieldAnchor field="start_date">
 
-6. For **Start date**, use the provided datepicker or enter the date in the following format: `yyyy-mm-ddThh:mm:ssZ`. Data added on and after this date will be replicated. If this is not set, "2006-06-01T00:00:00Z" (the date Hubspot was created) will be used as a start date.
+6. (Optional) For **Start date**, use the provided datepicker or enter the date in the following format: `yyyy-mm-ddThh:mm:ssZ`. Data added on and after this date will be replicated. If this is not set, "2006-06-01T00:00:00Z" (the date Hubspot was created) will be used as a start date.
 
 </FieldAnchor>
 
-7. Click **Set up source** and wait for the tests to complete.
+7. (Optional) Set the lookback window in minutes to re-fetch data for a specified number of minutes before the state from the previous sync. This helps to capture missing records.
+8. Click **Set up source** and wait for the tests to complete.
 <!-- /env:cloud -->
 
 <!-- env:oss -->
@@ -121,9 +122,10 @@ To set up a Private App, you must manually configure scopes to ensure Airbyte ca
 4. From the **Authentication** dropdown, select your chosen authentication method:
    - (Recommended) To authenticate using a Private App, select **Private App** and enter the Access Token for your HubSpot account.
    - (Not Recommended:) To authenticate using OAuth, select **OAuth** and enter your Client ID, Client Secret, and Refresh Token.
-5. For **Start date**, use the provided datepicker or enter the date in the following format:
+5. (Optional) For **Start date**, use the provided datepicker or enter the date in the following format:
    `yyyy-mm-ddThh:mm:ssZ`. The data added on and after this date will be replicated. If not set, "2006-06-01T00:00:00Z" (Hubspot creation date) will be used as start date. It's recommended to provide relevant to your data start date value to optimize synchronization.
-6. Click **Set up source** and wait for the tests to complete.
+6. (Optional) Set the lookback window in minutes to re-fetch data for a specified number of minutes before the state from the previous sync. This helps to capture missing records.
+7. Click **Set up source** and wait for the tests to complete.
 
 <FieldAnchor field="enable_experimental_streams">
 
@@ -326,6 +328,10 @@ If you use [custom properties](https://knowledge.hubspot.com/properties/create-a
 
 - Check out common troubleshooting issues for the Hubspot source connector on our [Airbyte Forum](https://github.com/airbytehq/airbyte/discussions).
 
+- **Missing records** in CRMSearch streams (`deals`, `companies`, `engagements_calls`, `engagements_emails`, `engagements_meetings`, `engagements_notes`, `engagements_tasks`, `contacts`, `deal_splits`, `leads`, `tickets`): 
+  - If you notice missing records during incremental syncs, it may be due to irregularities in Hubspot's API behavior.
+  - To mitigate this, you can configure a lookback window in the source settings. This setting allows the connector to re-fetch data for a specified number of minutes before the state from the previous sync, helping to capture missing records.
+
 </details>
 
 ## Changelog
@@ -335,7 +341,10 @@ If you use [custom properties](https://knowledge.hubspot.com/properties/create-a
 
 | Version     | Date       | Pull Request                                             | Subject                                                                                                                                                                                                                      |
 |:------------|:-----------|:---------------------------------------------------------|:-----------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------|
-| 6.0.10      | 2025-11-03 | [69145](https://github.com/airbytehq/airbyte/pull/69145) | Promoting release candidate 6.0.10-rc.1 to a main version.                                                                                                                                                                   |
+| 6.0.13      | 2025-11-19 | [69749](https://github.com/airbytehq/airbyte/pull/69749) | Fix retrieving associations for CRMSearch streams                                                                                                                                                                            |
+| 6.0.12      | 2025-11-18 | [69203](https://github.com/airbytehq/airbyte/pull/69203) | Add lookback window                                                                                                                                                                                                          |
+| 6.0.11      | 2025-11-18 | [69381](https://github.com/airbytehq/airbyte/pull/69381) | Update dependencies |
+| 6.0.10      | 2025-11-03 | [69145](https://github.com/airbytehq/airbyte/pull/69145) | Promoting release candidate 6.0.10-rc.1 to a main version. |
 | 6.0.10-rc.1 | 2025-10-30 | [68610](https://github.com/airbytehq/airbyte/pull/68610) | Add APIBudget                                                                                                                                                                                                                |
 | 6.0.9       | 2025-10-29 | [69077](https://github.com/airbytehq/airbyte/pull/69077) | Promoting release candidate 6.0.9-rc.1 to a main version.                                                                                                                                                                    |
 | 6.0.9-rc.1  | 2025-10-27 | [68665](https://github.com/airbytehq/airbyte/pull/68665) | Improve performance following CDK release 7.4.1                                                                                                                                                                              |
