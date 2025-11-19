@@ -33,3 +33,7 @@ data:
   ab_internal:
     ql: 100
     sl: 100
+  externalDocumentationUrls:
+    - title: Salesflare API documentation
+      url: https://api.salesflare.com/docs
+      type: api_reference
