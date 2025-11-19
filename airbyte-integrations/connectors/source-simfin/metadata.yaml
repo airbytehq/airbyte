@@ -33,3 +33,7 @@ data:
   ab_internal:
     ql: 100
     sl: 100
+  externalDocumentationUrls:
+    - title: SimFin API documentation
+      url: https://simfin.com/api/v3/documentation/
+      type: api_reference

@@ -52,4 +52,20 @@ data:
           secretStore:
             type: GSM
             alias: airbyte-connector-testing-secret-store
+  externalDocumentationUrls:
+    - title: Square API reference
+      url: https://developer.squareup.com/reference/square
+      type: api_reference
+    - title: Square API changelog
+      url: https://developer.squareup.com/docs/changelog
+      type: api_release_history
+    - title: Square authentication
+      url: https://developer.squareup.com/docs/build-basics/access-tokens
+      type: authentication_guide
+    - title: Square rate limits
+      url: https://developer.squareup.com/docs/build-basics/api-rate-limits
+      type: rate_limits
+    - title: Square Status
+      url: https://www.issquareup.com/
+      type: status_page
 metadataSpecVersion: "1.0"

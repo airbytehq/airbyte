@@ -42,4 +42,14 @@ data:
     - language:java
   connectorTestSuitesOptions:
     - suite: acceptanceTests
+  externalDocumentationUrls:
+    - title: Snowflake documentation
+      url: https://docs.snowflake.com/
+      type: api_reference
+    - title: Snowflake authentication
+      url: https://docs.snowflake.com/en/user-guide/admin-user-management
+      type: authentication_guide
+    - title: Snowflake Status
+      url: https://status.snowflake.com/
+      type: status_page
 metadataSpecVersion: "1.0"
