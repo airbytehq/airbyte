@@ -35,7 +35,7 @@ The connector requires the following Microsoft Graph API permissions:
 2. Click **Add a permission** > **Microsoft Graph** > **Delegated permissions**
 3. Add the following permissions:
    - **Mail.Read**: Allows the app to read the signed-in user's mailbox. This permission is required to access email messages and their attachments.
-   - **User.Read**: Allows users to sign in to the app and allows the app to read the profile of signed-in users.
+   - `User.Read`: Allows users to sign in to the app and allows the app to read the profile of signed-in users.
 4. Click **Add permissions**
 
 **Note**: Admin consent is not required for Mail.Read delegated permission when used with the signed-in user's own mailbox. However, your organization's policies may require admin consent for all permissions.
