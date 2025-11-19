@@ -68,13 +68,13 @@ data:
     - title: Pipedrive API reference
       url: https://developers.pipedrive.com/docs/api/v1
       type: api_reference
+    - title: Changelog
+      url: https://developers.pipedrive.com/changelog
+      type: api_release_history
     - title: Pipedrive authentication
       url: https://pipedrive.readme.io/docs/core-api-concepts-authentication
       type: authentication_guide
     - title: Pipedrive rate limits
       url: https://pipedrive.readme.io/docs/core-api-concepts-rate-limiting
       type: rate_limits
-    - title: Changelog
-      url: https://developers.pipedrive.com/changelog
-      type: api_release_history
 metadataSpecVersion: "1.0"
