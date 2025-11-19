@@ -37,4 +37,8 @@ data:
           secretStore:
             type: GSM
             alias: airbyte-connector-testing-secret-store
+  externalDocumentationUrls:
+    - title: Visma e-conomic API
+      url: https://restdocs.e-conomic.com/
+      type: api_reference
 metadataSpecVersion: "1.0"

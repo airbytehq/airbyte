@@ -33,3 +33,7 @@ data:
   ab_internal:
     ql: 100
     sl: 100
+  externalDocumentationUrls:
+    - title: Ubidots API documentation
+      url: https://docs.ubidots.com/reference/welcome
+      type: api_reference

@@ -33,3 +33,7 @@ data:
   ab_internal:
     ql: 100
     sl: 100
+  externalDocumentationUrls:
+    - title: Veeqo API documentation
+      url: https://developer.veeqo.com/
+      type: api_reference

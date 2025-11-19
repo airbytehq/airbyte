@@ -33,3 +33,7 @@ data:
   ab_internal:
     ql: 100
     sl: 100
+  externalDocumentationUrls:
+    - title: Ticketmaster Discovery API
+      url: https://developer.ticketmaster.com/products-and-docs/apis/discovery-api/v2/
+      type: api_reference

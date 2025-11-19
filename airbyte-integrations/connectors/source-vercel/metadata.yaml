@@ -33,3 +33,16 @@ data:
   ab_internal:
     ql: 100
     sl: 100
+  externalDocumentationUrls:
+    - title: Vercel API reference
+      url: https://vercel.com/docs/rest-api
+      type: api_reference
+    - title: Vercel authentication
+      url: https://vercel.com/docs/rest-api#authentication
+      type: authentication_guide
+    - title: Vercel rate limits
+      url: https://vercel.com/docs/rest-api#rate-limiting
+      type: rate_limits
+    - title: Vercel Status
+      url: https://www.vercel-status.com/
+      type: status_page

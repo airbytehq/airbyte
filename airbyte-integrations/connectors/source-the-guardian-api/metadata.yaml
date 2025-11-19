@@ -41,4 +41,8 @@ data:
   tags:
     - cdk:low-code
     - language:manifest-only
+  externalDocumentationUrls:
+    - title: The Guardian Open Platform
+      url: https://open-platform.theguardian.com/documentation/
+      type: api_reference
 metadataSpecVersion: "1.0"

@@ -49,3 +49,7 @@ data:
   ab_internal:
     ql: 100
     sl: 100
+  externalDocumentationUrls:
+    - title: Uptick API documentation
+      url: https://developer.uptick.com/
+      type: api_reference
