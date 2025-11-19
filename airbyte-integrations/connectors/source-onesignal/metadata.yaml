@@ -41,4 +41,17 @@ data:
   tags:
     - cdk:low-code
     - language:manifest-only
+  externalDocumentationUrls:
+    - title: OneSignal API reference
+      url: https://documentation.onesignal.com/reference
+      type: api_reference
+    - title: OneSignal authentication
+      url: https://documentation.onesignal.com/docs/accounts-and-keys
+      type: authentication_guide
+    - title: OneSignal rate limits
+      url: https://documentation.onesignal.com/docs/rate-limits
+      type: rate_limits
+    - title: OneSignal Status
+      url: https://status.onesignal.com/
+      type: status_page
 metadataSpecVersion: "1.0"
