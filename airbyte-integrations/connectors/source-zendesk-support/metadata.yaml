@@ -100,4 +100,20 @@ data:
           secretStore:
             type: GSM
             alias: airbyte-connector-testing-secret-store
+  externalDocumentationUrls:
+    - title: Zendesk Support API
+      url: https://developer.zendesk.com/api-reference/ticketing/introduction/
+      type: api_reference
+    - title: Zendesk API changelog
+      url: https://developer.zendesk.com/api-reference/ticketing/introduction/#changes
+      type: api_release_history
+    - title: Zendesk authentication
+      url: https://developer.zendesk.com/api-reference/ticketing/introduction/#security-and-authentication
+      type: authentication_guide
+    - title: Zendesk rate limits
+      url: https://developer.zendesk.com/api-reference/ticketing/account-configuration/usage_limits/
+      type: rate_limits
+    - title: Zendesk Status
+      url: https://status.zendesk.com/
+      type: status_page
 metadataSpecVersion: "1.0"

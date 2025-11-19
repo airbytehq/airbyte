@@ -33,3 +33,16 @@ data:
   ab_internal:
     ql: 100
     sl: 100
+  externalDocumentationUrls:
+    - title: YouTube Data API v3
+      url: https://developers.google.com/youtube/v3
+      type: api_reference
+    - title: YouTube API changelog
+      url: https://developers.google.com/youtube/v3/revision_history
+      type: api_release_history
+    - title: Google OAuth 2.0
+      url: https://developers.google.com/identity/protocols/oauth2
+      type: authentication_guide
+    - title: YouTube API quotas
+      url: https://developers.google.com/youtube/v3/getting-started#quota
+      type: rate_limits
