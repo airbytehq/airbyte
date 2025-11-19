@@ -34,6 +34,7 @@ class JdbcMetadataQuerier(
     val checkQueries: JdbcCheckQueries,
     jdbcConnectionFactory: JdbcConnectionFactory,
 ) : MetadataQuerier {
+
     val conn: Connection = jdbcConnectionFactory.get()
 
     private val log = KotlinLogging.logger {}
@@ -126,7 +127,6 @@ class JdbcMetadataQuerier(
         log.info { "Querying column names for catalog discovery." }
         try {
             val dbmd: DatabaseMetaData = conn.metaData
-
             fun addColumnsFromQuery(
                 catalog: String?,
                 schema: String?,
@@ -247,9 +247,9 @@ class JdbcMetadataQuerier(
 
     override fun fields(
         streamID: StreamIdentifier,
-    ): List<Field> {
+    ): List<EmittedField> {
         val table: TableName = findTableName(streamID) ?: return listOf()
-        return columnMetadata(table).map { Field(it.label, fieldTypeMapper.toFieldType(it)) }
+        return columnMetadata(table).map { EmittedField(it.label, fieldTypeMapper.toFieldType(it)) }
     }
 
     fun columnMetadata(table: TableName): List<ColumnMetadata> {
@@ -279,7 +279,7 @@ class JdbcMetadataQuerier(
     ): String {
         val querySpec =
             SelectQuerySpec(
-                SelectColumns(columnIDs.map { Field(it, NullFieldType) }),
+                SelectColumns(columnIDs.map { EmittedField(it, NullFieldType) }),
                 From(table.name, table.namespace()),
                 limit = Limit(0),
             )
@@ -400,7 +400,7 @@ class JdbcMetadataQuerier(
                 selectQueryGenerator,
                 fieldTypeMapper,
                 checkQueries,
-                jdbcConnectionFactory,
+                jdbcConnectionFactory
             )
         }
     }

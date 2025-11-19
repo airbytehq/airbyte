@@ -14,6 +14,7 @@ import io.airbyte.cdk.StreamIdentifier
 import io.airbyte.cdk.command.OpaqueStateValue
 import io.airbyte.cdk.data.IntCodec
 import io.airbyte.cdk.data.TextCodec
+import io.airbyte.cdk.discover.EmittedField
 import io.airbyte.cdk.discover.Field
 import io.airbyte.cdk.discover.IntFieldType
 import io.airbyte.cdk.discover.TestMetaFieldDecorator
@@ -73,7 +74,7 @@ abstract class AbstractCdcPartitionReaderTest<T : Comparable<T>, C : AutoCloseab
     val stream =
         Stream(
             id = StreamIdentifier.from(StreamDescriptor().withName("tbl").withNamespace(namespace)),
-            schema = setOf(Field("v", IntFieldType), TestMetaFieldDecorator.GlobalCursor),
+            schema = setOf(EmittedField("v", IntFieldType), TestMetaFieldDecorator.GlobalCursor),
             configuredSyncMode = ConfiguredSyncMode.INCREMENTAL,
             configuredPrimaryKey = null,
             configuredCursor = TestMetaFieldDecorator.GlobalCursor,

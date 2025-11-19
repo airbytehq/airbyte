@@ -367,18 +367,23 @@ data class ArrayEncoder<T>(
     override fun encode(decoded: List<T>): JsonNode =
         Jsons.arrayNode().apply {
             for (e in decoded) {
-                add(elementEncoder.encode(e))
+                // Note: in generics, T can be nullable!
+                if (e == null) add(NullCodec.encode(e)) else add(elementEncoder.encode(e))
             }
         }
 }
 
 data class ArrayDecoder<T>(
     val elementDecoder: JsonDecoder<T>,
-) : JsonDecoder<List<T>> {
-    override fun decode(encoded: JsonNode): List<T> {
+) : JsonDecoder<List<T?>> {
+    override fun decode(encoded: JsonNode): List<T?> {
         if (!encoded.isArray) {
             throw IllegalArgumentException("invalid array value $encoded")
         }
-        return encoded.elements().asSequence().map { elementDecoder.decode(it) }.toList()
+        return encoded
+            .elements()
+            .asSequence()
+            .map { if (it == null) null else elementDecoder.decode(it) }
+            .toList()
     }
 }
