@@ -33,3 +33,13 @@ data:
   ab_internal:
     ql: 100
     sl: 100
+  externalDocumentationUrls:
+    - title: Bugsnag Data Access API
+      url: https://bugsnagapiv2.docs.apiary.io/
+      type: api_reference
+    - title: Bugsnag authentication
+      url: https://docs.bugsnag.com/api/data-access/#authentication
+      type: authentication_guide
+    - title: Bugsnag Status
+      url: https://status.bugsnag.com/
+      type: status_page

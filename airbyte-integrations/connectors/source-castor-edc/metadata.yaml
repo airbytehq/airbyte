@@ -33,3 +33,10 @@ data:
   ab_internal:
     ql: 100
     sl: 100
+  externalDocumentationUrls:
+    - title: Castor EDC API reference
+      url: https://data.castoredc.com/api
+      type: api_reference
+    - title: Castor EDC authentication
+      url: https://helpdesk.castoredc.com/article/124-application-programming-interface-api
+      type: authentication_guide

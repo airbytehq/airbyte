@@ -33,3 +33,10 @@ data:
   ab_internal:
     ql: 100
     sl: 100
+  externalDocumentationUrls:
+    - title: Churnkey API documentation
+      url: https://docs.churnkey.co/api
+      type: api_reference
+    - title: Churnkey authentication
+      url: https://docs.churnkey.co/api/authentication
+      type: authentication_guide

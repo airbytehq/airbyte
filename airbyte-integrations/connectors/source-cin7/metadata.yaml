@@ -41,3 +41,10 @@ data:
   ab_internal:
     ql: 100
     sl: 100
+  externalDocumentationUrls:
+    - title: Cin7 Core API reference
+      url: https://api.cin7.com/api/v1
+      type: api_reference
+    - title: Cin7 authentication
+      url: https://support.cin7.com/hc/en-us/articles/360002477115-API-Overview
+      type: authentication_guide

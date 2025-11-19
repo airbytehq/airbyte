@@ -33,3 +33,10 @@ data:
   ab_internal:
     ql: 100
     sl: 100
+  externalDocumentationUrls:
+    - title: Clockodo API documentation
+      url: https://www.clockodo.com/en/api/
+      type: api_reference
+    - title: Clockodo authentication
+      url: https://www.clockodo.com/en/api/#authentication
+      type: authentication_guide

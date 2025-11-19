@@ -43,4 +43,17 @@ data:
           secretStore:
             type: GSM
             alias: airbyte-connector-testing-secret-store
+  externalDocumentationUrls:
+    - title: Braintree API reference
+      url: https://developer.paypal.com/braintree/docs/reference/overview
+      type: api_reference
+    - title: Braintree authentication
+      url: https://developer.paypal.com/braintree/docs/start/authentication
+      type: authentication_guide
+    - title: Braintree API rate limits
+      url: https://developer.paypal.com/braintree/docs/reference/general/rate-limiting
+      type: rate_limits
+    - title: Braintree Status
+      url: https://status.braintreepayments.com/
+      type: status_page
 metadataSpecVersion: "1.0"

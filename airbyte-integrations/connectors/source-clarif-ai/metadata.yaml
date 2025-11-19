@@ -33,3 +33,13 @@ data:
   ab_internal:
     ql: 100
     sl: 100
+  externalDocumentationUrls:
+    - title: Clarifai API reference
+      url: https://docs.clarifai.com/api-guide/api-overview
+      type: api_reference
+    - title: Clarifai authentication
+      url: https://docs.clarifai.com/api-guide/api-overview/api-clients
+      type: authentication_guide
+    - title: Clarifai Status
+      url: https://status.clarifai.com/
+      type: status_page

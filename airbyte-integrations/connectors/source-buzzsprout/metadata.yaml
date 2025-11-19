@@ -33,3 +33,10 @@ data:
   ab_internal:
     ql: 100
     sl: 100
+  externalDocumentationUrls:
+    - title: Buzzsprout API documentation
+      url: https://github.com/Buzzsprout/buzzsprout-api
+      type: api_reference
+    - title: Buzzsprout authentication
+      url: https://github.com/Buzzsprout/buzzsprout-api#authentication
+      type: authentication_guide

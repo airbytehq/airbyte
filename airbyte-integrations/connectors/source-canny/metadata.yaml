@@ -33,3 +33,13 @@ data:
   ab_internal:
     ql: 100
     sl: 100
+  externalDocumentationUrls:
+    - title: Canny API reference
+      url: https://developers.canny.io/api-reference
+      type: api_reference
+    - title: Canny authentication
+      url: https://developers.canny.io/api-reference#authentication
+      type: authentication_guide
+    - title: Canny API rate limits
+      url: https://developers.canny.io/api-reference#rate-limits
+      type: rate_limits

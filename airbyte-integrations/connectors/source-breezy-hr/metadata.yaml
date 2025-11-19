@@ -34,3 +34,10 @@ data:
   ab_internal:
     ql: 100
     sl: 100
+  externalDocumentationUrls:
+    - title: Breezy HR API documentation
+      url: https://developer.breezy.hr/
+      type: api_reference
+    - title: Breezy HR authentication
+      url: https://developer.breezy.hr/#authentication
+      type: authentication_guide

@@ -33,3 +33,7 @@ data:
   ab_internal:
     ql: 100
     sl: 100
+  externalDocumentationUrls:
+    - title: CQC Syndication API
+      url: https://www.cqc.org.uk/about-us/transparency/using-cqc-data
+      type: api_reference

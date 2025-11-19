@@ -44,4 +44,14 @@ data:
           secretStore:
             type: GSM
             alias: airbyte-connector-testing-secret-store
+  externalDocumentationUrls:
+    - title: Coda API reference
+      url: https://coda.io/developers/apis/v1
+      type: api_reference
+    - title: Coda authentication
+      url: https://coda.io/developers/apis/v1#section/Authentication
+      type: authentication_guide
+    - title: Coda rate limits
+      url: https://coda.io/developers/apis/v1#section/Rate-Limiting
+      type: rate_limits
 metadataSpecVersion: "1.0"

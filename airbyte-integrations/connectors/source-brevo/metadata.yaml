@@ -35,3 +35,16 @@ data:
   ab_internal:
     ql: 100
     sl: 100
+  externalDocumentationUrls:
+    - title: Brevo API reference
+      url: https://developers.brevo.com/reference
+      type: api_reference
+    - title: Brevo authentication guide
+      url: https://developers.brevo.com/docs/getting-started
+      type: authentication_guide
+    - title: Brevo API rate limits
+      url: https://developers.brevo.com/docs/api-limits
+      type: rate_limits
+    - title: Brevo Status
+      url: https://status.brevo.com/
+      type: status_page
