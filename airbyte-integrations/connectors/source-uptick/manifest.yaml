@@ -4527,7 +4527,7 @@ streams:
         request_parameters:
           ordering: -updated
           show_deleted: "true"
-          fields[Asset]: id,created,updated,deleted,is_active,internal_note,contractor_note,contractor_ref,is_silent,is_notoncofo,uptick_ref,ref,iotdevice,label,location,standard_maintenance,standard_performance,standard_installation,compliant,status,inspection_ref,barcode,inspection_order,serviced_date,base_date,installation_date,total_expected_life,asset_condition,inspected_date,make,model,size,signoff_date,signoff_method,guid,coord_lat,coord_lng,bsecure_latest_sticker_guid,bsecure_resolved_guid,extra_fields,tags,type,variant,product,property,contractor,serviced_by,servicelevels,floorplan_location,last_service_result,highest_severity
+          fields[Asset]: id,created,updated,deleted,is_active,internal_note,contractor_note,contractor_ref,is_silent,is_notoncofo,uptick_ref,ref,iotdevice,label,location,standard_maintenance,standard_performance,standard_installation,compliant,status,inspection_ref,barcode,inspection_order,serviced_date,base_date,installation_date,total_expected_life,asset_condition,inspected_date,make,model,size,signoff_date,signoff_method,guid,coord_lat,coord_lng,bsecure_latest_sticker_guid,bsecure_resolved_guid,extra_fields,tags,type,variant,product,property,contractor,serviced_by,servicelevels,last_service_result,highest_severity
     schema_loader:
       type: InlineSchemaLoader
       schema:
@@ -4713,10 +4713,6 @@ streams:
           servicelevels:
             type:
               - array
-          floorplan_location_id:
-            type:
-              - integer
-              - "null"
           last_service_result:
             type:
               - string
@@ -4919,10 +4915,6 @@ streams:
             path:
               - servicelevels
             value: '{{ record["relationships"]["servicelevels"]["data"] }}'
-          - type: AddedFieldDefinition
-            path:
-              - floorplan_location_id
-            value: '{{ record["relationships"]["floorplan_location"]["data"]["id"] or "None"}}'
           - type: AddedFieldDefinition
             path:
               - last_service_result
