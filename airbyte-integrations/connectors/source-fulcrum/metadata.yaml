@@ -33,3 +33,10 @@ data:
   ab_internal:
     ql: 100
     sl: 100
+  externalDocumentationUrls:
+    - title: Fulcrum API documentation
+      url: https://developer.fulcrumapp.com/
+      type: api_reference
+    - title: Fulcrum authentication
+      url: https://developer.fulcrumapp.com/general/authentication/
+      type: authentication_guide

@@ -47,4 +47,17 @@ data:
         - name: facebook-pages_config_dev_null
           id: 4446147a-669a-472b-bda8-6ee069eb3099
     - suite: unitTests
+  externalDocumentationUrls:
+    - title: Facebook Pages API reference
+      url: https://developers.facebook.com/docs/pages/
+      type: api_reference
+    - title: Facebook Graph API changelog
+      url: https://developers.facebook.com/docs/graph-api/changelog/
+      type: api_release_history
+    - title: Facebook authentication guide
+      url: https://developers.facebook.com/docs/facebook-login/guides/access-tokens/
+      type: authentication_guide
+    - title: Facebook Platform Status
+      url: https://developers.facebook.com/status/
+      type: status_page
 metadataSpecVersion: "1.0"

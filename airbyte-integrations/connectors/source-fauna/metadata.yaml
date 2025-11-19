@@ -42,4 +42,14 @@ data:
   tags:
     - language:python
     - cdk:python
+  externalDocumentationUrls:
+    - title: Fauna API reference
+      url: https://docs.fauna.com/fauna/current/api/
+      type: api_reference
+    - title: Fauna authentication
+      url: https://docs.fauna.com/fauna/current/security/
+      type: authentication_guide
+    - title: Fauna Status
+      url: https://status.fauna.com/
+      type: status_page
 metadataSpecVersion: "1.0"
