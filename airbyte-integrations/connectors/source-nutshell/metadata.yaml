@@ -33,3 +33,10 @@ data:
   ab_internal:
     ql: 100
     sl: 100
+  externalDocumentationUrls:
+    - title: Nutshell API documentation
+      url: https://developers.nutshell.com/
+      type: api_reference
+    - title: Nutshell authentication
+      url: https://developers.nutshell.com/#authentication
+      type: authentication_guide

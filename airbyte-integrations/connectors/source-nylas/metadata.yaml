@@ -33,3 +33,16 @@ data:
   ab_internal:
     ql: 100
     sl: 100
+  externalDocumentationUrls:
+    - title: Nylas API reference
+      url: https://developer.nylas.com/docs/api/
+      type: api_reference
+    - title: Nylas authentication
+      url: https://developer.nylas.com/docs/the-basics/authentication/
+      type: authentication_guide
+    - title: Nylas rate limits
+      url: https://developer.nylas.com/docs/dev-guide/platform/rate-limits/
+      type: rate_limits
+    - title: Nylas Status
+      url: https://status.nylas.com/
+      type: status_page

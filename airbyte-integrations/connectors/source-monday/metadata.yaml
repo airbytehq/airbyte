@@ -82,4 +82,17 @@ data:
           secretStore:
             type: GSM
             alias: airbyte-connector-testing-secret-store
+  externalDocumentationUrls:
+    - title: monday.com API reference
+      url: https://developer.monday.com/api-reference/docs
+      type: api_reference
+    - title: monday.com authentication
+      url: https://developer.monday.com/api-reference/docs/authentication
+      type: authentication_guide
+    - title: monday.com rate limits
+      url: https://developer.monday.com/api-reference/docs/rate-limits
+      type: rate_limits
+    - title: monday.com Status
+      url: https://status.monday.com/
+      type: status_page
 metadataSpecVersion: "1.0"

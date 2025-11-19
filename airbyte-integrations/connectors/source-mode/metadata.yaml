@@ -33,3 +33,10 @@ data:
   ab_internal:
     ql: 100
     sl: 100
+  externalDocumentationUrls:
+    - title: Mode API documentation
+      url: https://mode.com/developer/api-reference/
+      type: api_reference
+    - title: Mode authentication
+      url: https://mode.com/developer/api-reference/authentication/
+      type: authentication_guide

@@ -32,4 +32,8 @@ data:
   tags:
     - cdk:low-code
     - language:manifest-only
+  externalDocumentationUrls:
+    - title: Northpass API documentation
+      url: https://developers.northpass.com/
+      type: api_reference
 metadataSpecVersion: "1.0"

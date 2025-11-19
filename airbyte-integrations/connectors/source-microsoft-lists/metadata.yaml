@@ -42,3 +42,13 @@ data:
   ab_internal:
     ql: 100
     sl: 100
+  externalDocumentationUrls:
+    - title: Microsoft Lists API
+      url: https://learn.microsoft.com/en-us/graph/api/resources/list
+      type: api_reference
+    - title: Microsoft Graph authentication
+      url: https://learn.microsoft.com/en-us/graph/auth/
+      type: authentication_guide
+    - title: Microsoft 365 Status
+      url: https://status.office365.com/
+      type: status_page
