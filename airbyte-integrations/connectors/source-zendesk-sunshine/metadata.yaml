@@ -51,4 +51,14 @@ data:
           secretStore:
             type: GSM
             alias: airbyte-connector-testing-secret-store
+  externalDocumentationUrls:
+    - title: Zendesk Sunshine API
+      url: https://developer.zendesk.com/api-reference/custom-data/custom-objects-api/introduction/
+      type: api_reference
+    - title: Zendesk authentication
+      url: https://developer.zendesk.com/api-reference/ticketing/introduction/#security-and-authentication
+      type: authentication_guide
+    - title: Zendesk Status
+      url: https://status.zendesk.com/
+      type: status_page
 metadataSpecVersion: "1.0"

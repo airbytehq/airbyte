@@ -33,3 +33,7 @@ data:
   ab_internal:
     ql: 100
     sl: 100
+  externalDocumentationUrls:
+    - title: Zoho Campaigns API
+      url: https://www.zoho.com/campaigns/help/developers/api-overview.html
+      type: api_reference
