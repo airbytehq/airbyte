@@ -110,4 +110,7 @@ data:
     - title: AWS Service Health Dashboard
       url: https://health.aws.amazon.com/health/status
       type: status_page
+    - title: Cluster versions
+      url: https://docs.aws.amazon.com/redshift/latest/mgmt/cluster-versions.html
+      type: api_release_history
 metadataSpecVersion: "1.0"

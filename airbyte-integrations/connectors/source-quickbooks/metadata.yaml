@@ -81,4 +81,7 @@ data:
     - title: QuickBooks rate limits
       url: https://developer.intuit.com/app/developer/qbo/docs/develop/troubleshooting/error-codes#rate-limits
       type: rate_limits
+    - title: QuickBooks Online API Changelog
+      url: https://developer.intuit.com/app/developer/qbo/docs/changelog
+      type: api_release_history
 metadataSpecVersion: "1.0"

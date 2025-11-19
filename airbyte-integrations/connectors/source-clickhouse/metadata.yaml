@@ -42,4 +42,7 @@ data:
     - title: ClickHouse SQL reference
       url: https://clickhouse.com/docs/en/sql-reference
       type: sql_reference
+    - title: Changelog
+      url: https://clickhouse.com/docs/whats-new/changelog
+      type: api_release_history
 metadataSpecVersion: "1.0"

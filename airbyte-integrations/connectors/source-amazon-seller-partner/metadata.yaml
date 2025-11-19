@@ -85,4 +85,10 @@ data:
     - title: Usage plans and rate limits
       url: https://developer-docs.amazon.com/sp-api/docs/usage-plans-and-rate-limits-in-the-sp-api
       type: rate_limits
+    - title: SP-API Release Notes
+      url: https://developer-docs.amazon.com/sp-api/docs/sp-api-release-notes
+      type: api_release_history
+    - title: SP-API Deprecation Schedule
+      url: https://developer-docs.amazon.com/sp-api/docs/sp-api-deprecations
+      type: api_deprecations
 metadataSpecVersion: "1.0"

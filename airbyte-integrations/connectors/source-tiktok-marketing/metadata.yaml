@@ -21,6 +21,9 @@ data:
     - title: Changelog
       url: https://business-api.tiktok.com/portal/docs?id=1740029165513730
       type: api_release_history
+    - title: TikTok Business API Documentation
+      url: https://business-api.tiktok.com/portal/docs?id=1740302848670722
+      type: api_release_history
   githubIssueLabel: source-tiktok-marketing
   icon: tiktok.svg
   license: ELv2

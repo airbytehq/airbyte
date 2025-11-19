@@ -69,4 +69,7 @@ data:
     - title: GRANT statement
       url: https://dev.mysql.com/doc/refman/8.0/en/grant.html
       type: permissions_scopes
+    - title: MySQL Release Notes
+      url: https://dev.mysql.com/doc/relnotes/mysql/en/
+      type: api_release_history
 metadataSpecVersion: "1.0"

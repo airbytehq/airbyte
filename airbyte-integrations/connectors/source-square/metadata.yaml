@@ -68,4 +68,7 @@ data:
     - title: Square Status
       url: https://www.issquareup.com/
       type: status_page
+    - title: Square API Release Notes
+      url: https://developer.squareup.com/docs/release-notes
+      type: api_release_history
 metadataSpecVersion: "1.0"

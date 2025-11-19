@@ -180,4 +180,7 @@ data:
     - title: Shopify Status
       url: https://www.shopifystatus.com/
       type: status_page
+    - title: Developer changelog
+      url: https://shopify.dev/changelog
+      type: api_release_history
 metadataSpecVersion: "1.0"

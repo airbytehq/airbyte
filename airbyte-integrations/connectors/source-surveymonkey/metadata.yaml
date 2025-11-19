@@ -62,4 +62,7 @@ data:
     - title: SurveyMonkey rate limits
       url: https://developer.surveymonkey.com/api/v3/#rate-limits
       type: rate_limits
+    - title: SurveyMonkey API Changelog
+      url: https://developer.surveymonkey.com/api/v3/#changelog
+      type: api_release_history
 metadataSpecVersion: "1.0"

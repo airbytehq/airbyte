@@ -17,6 +17,9 @@ data:
     - title: Changelog
       url: https://developer.atlassian.com/changelog/#
       type: api_release_history
+    - title: Jira Platform API Changelog
+      url: https://developer.atlassian.com/cloud/jira/platform/changelog/
+      type: api_release_history
   erdUrl: https://dbdocs.io/airbyteio/source-jira?view=relationships
   githubIssueLabel: source-jira
   icon: jira.svg

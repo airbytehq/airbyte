@@ -20,6 +20,9 @@ data:
     - title: Unversioned Changes
       url: https://developers.intercom.com/docs/build-an-integration/learn-more/rest-apis/unversioned-changes#unversioned-changes
       type: api_reference
+    - title: API Changelog
+      url: https://developers.intercom.com/docs/references/changelog
+      type: api_release_history
   githubIssueLabel: source-intercom
   icon: intercom.svg
   license: ELv2

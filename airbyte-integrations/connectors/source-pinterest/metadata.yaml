@@ -60,6 +60,9 @@ data:
     - title: Changelog
       url: https://developers.pinterest.com/docs/changelog/changelog/
       type: api_release_history
+    - title: Pinterest API Changelog
+      url: https://developers.pinterest.com/docs/changelog/
+      type: api_release_history
   tags:
     - language:manifest-only
     - cdk:low-code

@@ -60,4 +60,7 @@ data:
     - title: Database roles and privileges
       url: https://www.postgresql.org/docs/current/user-manag.html
       type: permissions_scopes
+    - title: Release Notes
+      url: https://www.postgresql.org/docs/release/
+      type: api_release_history
 metadataSpecVersion: "1.0"

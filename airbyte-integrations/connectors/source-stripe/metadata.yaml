@@ -99,4 +99,10 @@ data:
     - title: Stripe Status
       url: https://status.stripe.com/
       type: status_page
+    - title: API upgrades
+      url: https://docs.stripe.com/upgrades
+      type: api_release_history
+    - title: API changelog
+      url: https://docs.stripe.com/changelog
+      type: api_release_history
 metadataSpecVersion: "1.0"

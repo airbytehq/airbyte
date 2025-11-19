@@ -85,4 +85,7 @@ data:
     - title: MySQL authentication
       url: https://dev.mysql.com/doc/refman/8.0/en/access-control.html
       type: authentication_guide
+    - title: MySQL Release Notes
+      url: https://dev.mysql.com/doc/relnotes/mysql/en/
+      type: api_release_history
 metadataSpecVersion: "1.0"

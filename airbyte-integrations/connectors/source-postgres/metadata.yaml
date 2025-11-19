@@ -71,4 +71,7 @@ data:
     - title: PostgreSQL authentication
       url: https://www.postgresql.org/docs/current/auth-methods.html
       type: authentication_guide
+    - title: Release Notes
+      url: https://www.postgresql.org/docs/release/
+      type: api_release_history
 metadataSpecVersion: "1.0"
