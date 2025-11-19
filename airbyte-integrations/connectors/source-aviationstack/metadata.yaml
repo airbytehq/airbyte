@@ -33,3 +33,7 @@ data:
   ab_internal:
     ql: 100
     sl: 100
+  externalDocumentationUrls:
+    - title: API documentation
+      url: https://aviationstack.com/documentation
+      type: api_reference

@@ -33,3 +33,13 @@ data:
   ab_internal:
     ql: 100
     sl: 100
+  externalDocumentationUrls:
+    - title: API reference
+      url: https://www.100ms.live/docs/api-reference/javascript/v2/home/content
+      type: api_reference
+    - title: Authentication and tokens
+      url: https://www.100ms.live/docs/get-started/v2/get-started/security-and-tokens
+      type: authentication_guide
+    - title: 100ms Status
+      url: https://status.100ms.live
+      type: status_page

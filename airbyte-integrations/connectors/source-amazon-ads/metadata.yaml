@@ -114,4 +114,14 @@ data:
           secretStore:
             type: GSM
             alias: airbyte-connector-testing-secret-store
+  externalDocumentationUrls:
+    - title: Advertising API
+      url: https://advertising.amazon.com/API/docs/en-us
+      type: api_reference
+    - title: Authorization
+      url: https://advertising.amazon.com/API/docs/en-us/get-started/authorization
+      type: authentication_guide
+    - title: Rate limits
+      url: https://advertising.amazon.com/API/docs/en-us/get-started/developer-notes#rate-limiting
+      type: rate_limits
 metadataSpecVersion: "1.0"

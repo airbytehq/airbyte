@@ -33,3 +33,13 @@ data:
   ab_internal:
     ql: 100
     sl: 100
+  externalDocumentationUrls:
+    - title: API reference
+      url: https://www.algolia.com/doc/rest-api/search/
+      type: api_reference
+    - title: Authentication
+      url: https://www.algolia.com/doc/guides/security/api-keys/
+      type: authentication_guide
+    - title: Rate limits
+      url: https://www.algolia.com/doc/guides/scaling/servers-clusters/#rate-limits
+      type: rate_limits

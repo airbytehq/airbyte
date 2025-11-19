@@ -52,4 +52,14 @@ data:
           secretStore:
             type: GSM
             alias: airbyte-connector-testing-secret-store
+  externalDocumentationUrls:
+    - title: API reference
+      url: https://docs.apify.com/api/v2
+      type: api_reference
+    - title: Authentication
+      url: https://docs.apify.com/api/v2#/introduction/authentication
+      type: authentication_guide
+    - title: Rate limiting
+      url: https://docs.apify.com/api/v2#/introduction/rate-limiting
+      type: rate_limits
 metadataSpecVersion: "1.0"
