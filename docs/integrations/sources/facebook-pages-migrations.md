@@ -8,7 +8,7 @@ Deprecated fields have been removed and new fields have been added for the strea
 [Deprecated fields API docs](https://developers.facebook.com/docs/platforminsights/page/deprecated-metrics/).
 
 **Post Stream** - this version declares changes to this stream's schema, removing deprecated fields that are no longer available. Refresh stream schema and clear the stream data to continue using this stream. Please, follow Migration Steps below.
-**Post Insight Stream and Page Insights Stream** - this version removes deprecated metrics which are no longer available in the records. The Schema is not changed so refreshing the schema is not needed. It is only recommended that you Clear affected streams if you would like to have all data in one consistent format.  Please, follow Migration Steps bellow for Clearing streams.  Otherwise, no action is needed for these streams. 
+**Post Insight Stream and Page Insights Stream** - this version removes deprecated metrics which are no longer available in the records. The Schema is not changed so refreshing the schema is not needed. It is only recommended that you Clear affected streams if you would like to have all data in one consistent format.  Please, follow Migration Steps bellow for Clearing streams.  Otherwise, no action is needed for these streams.
 
 **Post Stream Metrics:**
 
