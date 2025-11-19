@@ -10,7 +10,7 @@ data:
   connectorSubtype: api
   connectorType: source
   definitionId: 010eb12f-837b-4685-892d-0a39f76a98f5
-  dockerImageTag: 1.1.4
+  dockerImageTag: 2.0.0
   dockerRepository: airbyte/source-facebook-pages
   documentationUrl: https://docs.airbyte.com/integrations/sources/facebook-pages
   githubIssueLabel: source-facebook-pages
@@ -30,6 +30,13 @@ data:
   supportLevel: community
   releases:
     breakingChanges:
+      2.0.0:
+        message: >-
+          This version updates the API version from v23 to v24. Deprecated fields have been removed and new fields have been added for the streams `Post`, `Post Insights` and `Page Insights`.
+        upgradeDeadline: "2025-12-02"
+        scopedImpact:
+          - scopeType: stream
+            impactedScopes: ["post", "page_insights", "post_insights"]
       1.0.0:
         message: >-
           This version updates the API version from v15 to v19. Deprecated fields have been removed and new fields have been added for the stream `Page`.
