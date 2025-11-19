@@ -66,4 +66,8 @@ data:
           secretStore:
             type: GSM
             alias: airbyte-connector-testing-secret-store
+  externalDocumentationUrls:
+    - title: SFTP protocol documentation
+      url: https://datatracker.ietf.org/doc/html/draft-ietf-secsh-filexfer-02
+      type: api_reference
 metadataSpecVersion: "1.0"

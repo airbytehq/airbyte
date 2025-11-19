@@ -3,11 +3,11 @@ data:
     hosts:
       - api.apify.com
   connectorBuildOptions:
-    baseImage: docker.io/airbyte/source-declarative-manifest:7.4.1@sha256:71df19e2ee555ca5b14abbec01d50104c79c9b84cb9cc323284d24333361900a
+    baseImage: docker.io/airbyte/source-declarative-manifest:7.5.0@sha256:92e539d5003b33c3624eae7715aee6e39b7b2f1f0eeb6003d37e649a06847ae8
   connectorSubtype: api
   connectorType: source
   definitionId: 47f17145-fe20-4ef5-a548-e29b048adf84
-  dockerImageTag: 2.2.32
+  dockerImageTag: 2.2.33
   dockerRepository: airbyte/source-apify-dataset
   documentationUrl: https://docs.airbyte.com/integrations/sources/apify-dataset
   githubIssueLabel: source-apify-dataset
@@ -52,4 +52,14 @@ data:
           secretStore:
             type: GSM
             alias: airbyte-connector-testing-secret-store
+  externalDocumentationUrls:
+    - title: API reference
+      url: https://docs.apify.com/api/v2
+      type: api_reference
+    - title: Authentication
+      url: https://docs.apify.com/api/v2#/introduction/authentication
+      type: authentication_guide
+    - title: Rate limiting
+      url: https://docs.apify.com/api/v2#/introduction/rate-limiting
+      type: rate_limits
 metadataSpecVersion: "1.0"

@@ -6,11 +6,11 @@ data:
     hosts:
       - api.stripe.com
   connectorBuildOptions:
-    baseImage: docker.io/airbyte/source-declarative-manifest:7.4.1@sha256:71df19e2ee555ca5b14abbec01d50104c79c9b84cb9cc323284d24333361900a
+    baseImage: docker.io/airbyte/source-declarative-manifest:7.5.0@sha256:92e539d5003b33c3624eae7715aee6e39b7b2f1f0eeb6003d37e649a06847ae8
   connectorSubtype: api
   connectorType: source
   definitionId: e094cb9a-26de-4645-8761-65c0c425d1de
-  dockerImageTag: 5.15.11
+  dockerImageTag: 5.15.12
   dockerRepository: airbyte/source-stripe
   documentationUrl: https://docs.airbyte.com/integrations/sources/stripe
   erdUrl: https://dbdocs.io/airbyteio/source-stripe?view=relationships
@@ -83,4 +83,26 @@ data:
           secretStore:
             type: GSM
             alias: airbyte-connector-testing-secret-store
+  externalDocumentationUrls:
+    - title: Stripe API reference
+      url: https://stripe.com/docs/api
+      type: api_reference
+    - title: API changelog
+      url: https://docs.stripe.com/changelog
+      type: api_release_history
+    - title: API upgrades
+      url: https://docs.stripe.com/upgrades
+      type: api_release_history
+    - title: Stripe API changelog
+      url: https://stripe.com/docs/upgrades
+      type: api_release_history
+    - title: Stripe authentication
+      url: https://stripe.com/docs/api/authentication
+      type: authentication_guide
+    - title: Stripe rate limits
+      url: https://stripe.com/docs/rate-limits
+      type: rate_limits
+    - title: Stripe Status
+      url: https://status.stripe.com/
+      type: status_page
 metadataSpecVersion: "1.0"

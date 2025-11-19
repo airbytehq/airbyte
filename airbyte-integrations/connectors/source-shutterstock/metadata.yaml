@@ -33,3 +33,10 @@ data:
   ab_internal:
     ql: 100
     sl: 100
+  externalDocumentationUrls:
+    - title: Shutterstock API reference
+      url: https://api-reference.shutterstock.com/
+      type: api_reference
+    - title: Shutterstock authentication
+      url: https://api-reference.shutterstock.com/#authentication
+      type: authentication_guide

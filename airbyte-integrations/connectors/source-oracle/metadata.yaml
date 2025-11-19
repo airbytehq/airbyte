@@ -38,4 +38,14 @@ data:
   supportLevel: community
   tags:
     - language:java
+  externalDocumentationUrls:
+    - title: Oracle Database documentation
+      url: https://docs.oracle.com/en/database/
+      type: api_reference
+    - title: Oracle Database Release Notes
+      url: https://docs.oracle.com/en/database/oracle/oracle-database/
+      type: api_release_history
+    - title: Oracle authentication
+      url: https://docs.oracle.com/en/database/oracle/oracle-database/19/dbseg/introduction-to-oracle-database-security.html
+      type: authentication_guide
 metadataSpecVersion: "1.0"
