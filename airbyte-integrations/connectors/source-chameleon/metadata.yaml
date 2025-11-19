@@ -33,3 +33,13 @@ data:
   ab_internal:
     ql: 100
     sl: 100
+  externalDocumentationUrls:
+    - title: Chameleon API reference
+      url: https://developers.chameleon.io/reference/introduction
+      type: api_reference
+    - title: Chameleon authentication
+      url: https://developers.chameleon.io/reference/authentication
+      type: authentication_guide
+    - title: Chameleon rate limits
+      url: https://developers.chameleon.io/reference/rate-limiting
+      type: rate_limits
