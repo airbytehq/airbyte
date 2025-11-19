@@ -33,3 +33,7 @@ data:
   ab_internal:
     ql: 100
     sl: 100
+  externalDocumentationUrls:
+    - title: Metricool API documentation
+      url: https://metricool.com/api/
+      type: api_reference

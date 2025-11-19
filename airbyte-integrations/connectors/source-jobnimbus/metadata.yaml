@@ -33,3 +33,7 @@ data:
   ab_internal:
     ql: 100
     sl: 100
+  externalDocumentationUrls:
+    - title: JobNimbus API documentation
+      url: https://documenter.getpostman.com/view/3919598/S11PpG4x
+      type: api_reference

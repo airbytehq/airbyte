@@ -33,3 +33,16 @@ data:
   ab_internal:
     ql: 100
     sl: 100
+  externalDocumentationUrls:
+    - title: Lob API reference
+      url: https://docs.lob.com/
+      type: api_reference
+    - title: Lob authentication
+      url: https://docs.lob.com/#authentication
+      type: authentication_guide
+    - title: Lob rate limits
+      url: https://docs.lob.com/#rate-limiting
+      type: rate_limits
+    - title: Lob Status
+      url: https://status.lob.com/
+      type: status_page

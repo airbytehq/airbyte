@@ -33,3 +33,13 @@ data:
   ab_internal:
     ql: 100
     sl: 100
+  externalDocumentationUrls:
+    - title: Lightspeed Retail API
+      url: https://developers.lightspeedhq.com/retail/introduction/introduction/
+      type: api_reference
+    - title: Lightspeed authentication
+      url: https://developers.lightspeedhq.com/retail/authentication/authentication/
+      type: authentication_guide
+    - title: Lightspeed rate limits
+      url: https://developers.lightspeedhq.com/retail/introduction/rate-limiting/
+      type: rate_limits

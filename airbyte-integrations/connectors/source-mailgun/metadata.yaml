@@ -44,4 +44,17 @@ data:
           secretStore:
             type: GSM
             alias: airbyte-connector-testing-secret-store
+  externalDocumentationUrls:
+    - title: Mailgun API reference
+      url: https://documentation.mailgun.com/en/latest/api_reference.html
+      type: api_reference
+    - title: Mailgun authentication
+      url: https://documentation.mailgun.com/en/latest/api-intro.html#authentication
+      type: authentication_guide
+    - title: Mailgun rate limits
+      url: https://documentation.mailgun.com/en/latest/api-intro.html#rate-limiting
+      type: rate_limits
+    - title: Mailgun Status
+      url: https://status.mailgun.com/
+      type: status_page
 metadataSpecVersion: "1.0"

@@ -33,3 +33,7 @@ data:
   ab_internal:
     ql: 100
     sl: 100
+  externalDocumentationUrls:
+    - title: Mention API documentation
+      url: https://dev.mention.com/
+      type: api_reference

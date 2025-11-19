@@ -33,3 +33,7 @@ data:
   ab_internal:
     ql: 100
     sl: 100
+  externalDocumentationUrls:
+    - title: Mercado Libre Ads API
+      url: https://developers.mercadolibre.com.ar/en_us/advertising
+      type: api_reference

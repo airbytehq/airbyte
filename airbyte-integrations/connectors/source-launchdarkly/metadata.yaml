@@ -47,4 +47,17 @@ data:
           secretStore:
             type: GSM
             alias: airbyte-connector-testing-secret-store
+  externalDocumentationUrls:
+    - title: LaunchDarkly API reference
+      url: https://apidocs.launchdarkly.com/
+      type: api_reference
+    - title: LaunchDarkly authentication
+      url: https://docs.launchdarkly.com/home/account-security/api-access-tokens
+      type: authentication_guide
+    - title: LaunchDarkly rate limits
+      url: https://apidocs.launchdarkly.com/#section/Overview/Rate-limiting
+      type: rate_limits
+    - title: LaunchDarkly Status
+      url: https://status.launchdarkly.com/
+      type: status_page
 metadataSpecVersion: "1.0"

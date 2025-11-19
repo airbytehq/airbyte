@@ -33,3 +33,7 @@ data:
   ab_internal:
     ql: 100
     sl: 100
+  externalDocumentationUrls:
+    - title: Judge.me API documentation
+      url: https://judge.me/api
+      type: api_reference

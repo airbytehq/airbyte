@@ -26,4 +26,8 @@ data:
   supportLevel: community
   tags:
     - language:java
+  externalDocumentationUrls:
+    - title: Apache Kafka documentation
+      url: https://kafka.apache.org/documentation/
+      type: api_reference
 metadataSpecVersion: "1.0"

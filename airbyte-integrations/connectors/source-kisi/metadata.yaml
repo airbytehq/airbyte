@@ -33,3 +33,10 @@ data:
   ab_internal:
     ql: 100
     sl: 100
+  externalDocumentationUrls:
+    - title: Kisi API documentation
+      url: https://api.kisi.io/docs
+      type: api_reference
+    - title: Kisi authentication
+      url: https://api.kisi.io/docs#authentication
+      type: authentication_guide

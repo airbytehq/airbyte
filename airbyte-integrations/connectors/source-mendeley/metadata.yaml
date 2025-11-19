@@ -33,3 +33,7 @@ data:
   ab_internal:
     ql: 100
     sl: 100
+  externalDocumentationUrls:
+    - title: Mendeley API documentation
+      url: https://dev.mendeley.com/
+      type: api_reference

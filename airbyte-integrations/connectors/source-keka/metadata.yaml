@@ -33,3 +33,7 @@ data:
   ab_internal:
     ql: 100
     sl: 100
+  externalDocumentationUrls:
+    - title: Keka API documentation
+      url: https://developers.keka.com/
+      type: api_reference

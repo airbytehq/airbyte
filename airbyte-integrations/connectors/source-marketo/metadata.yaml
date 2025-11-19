@@ -45,4 +45,14 @@ data:
           secretStore:
             type: GSM
             alias: airbyte-connector-testing-secret-store
+  externalDocumentationUrls:
+    - title: Marketo REST API
+      url: https://developers.marketo.com/rest-api/
+      type: api_reference
+    - title: Marketo authentication
+      url: https://developers.marketo.com/rest-api/authentication/
+      type: authentication_guide
+    - title: Marketo rate limits
+      url: https://developers.marketo.com/rest-api/marketo-integration-best-practices/#api_limits
+      type: rate_limits
 metadataSpecVersion: "1.0"

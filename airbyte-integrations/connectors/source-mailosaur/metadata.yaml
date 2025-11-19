@@ -33,3 +33,10 @@ data:
   ab_internal:
     ql: 100
     sl: 100
+  externalDocumentationUrls:
+    - title: Mailosaur API reference
+      url: https://mailosaur.com/docs/api/
+      type: api_reference
+    - title: Mailosaur authentication
+      url: https://mailosaur.com/docs/managing-your-account/api-keys/
+      type: authentication_guide

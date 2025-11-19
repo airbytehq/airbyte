@@ -33,3 +33,7 @@ data:
   ab_internal:
     ql: 100
     sl: 100
+  externalDocumentationUrls:
+    - title: Marketstack API documentation
+      url: https://marketstack.com/documentation
+      type: api_reference

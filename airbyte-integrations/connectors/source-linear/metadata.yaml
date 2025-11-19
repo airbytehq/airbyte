@@ -33,3 +33,16 @@ data:
   ab_internal:
     ql: 100
     sl: 100
+  externalDocumentationUrls:
+    - title: Linear API reference
+      url: https://developers.linear.app/docs/graphql/working-with-the-graphql-api
+      type: api_reference
+    - title: Linear authentication
+      url: https://developers.linear.app/docs/oauth/authentication
+      type: authentication_guide
+    - title: Linear rate limits
+      url: https://developers.linear.app/docs/graphql/working-with-the-graphql-api#rate-limiting
+      type: rate_limits
+    - title: Linear Status
+      url: https://status.linear.app/
+      type: status_page
