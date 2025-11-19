@@ -33,3 +33,10 @@ data:
   ab_internal:
     ql: 100
     sl: 100
+  externalDocumentationUrls:
+    - title: HighLevel API documentation
+      url: https://highlevel.stoplight.io/
+      type: api_reference
+    - title: HighLevel authentication
+      url: https://highlevel.stoplight.io/docs/integrations/0443d7d1a4bd0-overview
+      type: authentication_guide

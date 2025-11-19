@@ -33,3 +33,10 @@ data:
   ab_internal:
     ql: 100
     sl: 100
+  externalDocumentationUrls:
+    - title: Guru API documentation
+      url: https://developer.getguru.com/
+      type: api_reference
+    - title: Guru authentication
+      url: https://developer.getguru.com/docs/authentication
+      type: authentication_guide

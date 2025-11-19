@@ -55,4 +55,14 @@ data:
           secretStore:
             type: GSM
             alias: airbyte-connector-testing-secret-store
+  externalDocumentationUrls:
+    - title: Greenhouse Harvest API
+      url: https://developers.greenhouse.io/harvest.html
+      type: api_reference
+    - title: Greenhouse authentication
+      url: https://developers.greenhouse.io/harvest.html#authentication
+      type: authentication_guide
+    - title: Greenhouse rate limits
+      url: https://developers.greenhouse.io/harvest.html#throttling
+      type: rate_limits
 metadataSpecVersion: "1.0"

@@ -40,4 +40,11 @@ data:
           secretStore:
             type: GSM
             alias: airbyte-connector-testing-secret-store
+  externalDocumentationUrls:
+    - title: PageSpeed Insights API
+      url: https://developers.google.com/speed/docs/insights/v5/get-started
+      type: api_reference
+    - title: PageSpeed Insights quotas
+      url: https://developers.google.com/speed/docs/insights/v5/get-started#quota
+      type: rate_limits
 metadataSpecVersion: "1.0"

@@ -33,3 +33,13 @@ data:
   ab_internal:
     ql: 100
     sl: 100
+  externalDocumentationUrls:
+    - title: Invoiced API reference
+      url: https://www.invoiced.com/docs/api/
+      type: api_reference
+    - title: Invoiced authentication
+      url: https://www.invoiced.com/docs/api/#authentication
+      type: authentication_guide
+    - title: Invoiced rate limits
+      url: https://www.invoiced.com/docs/api/#rate-limiting
+      type: rate_limits

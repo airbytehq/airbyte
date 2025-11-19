@@ -47,4 +47,14 @@ data:
             alias: airbyte-connector-testing-secret-store
   connectorBuildOptions:
     baseImage: docker.io/airbyte/python-connector-base:4.0.0@sha256:d9894b6895923b379f3006fa251147806919c62b7d9021b5cd125bb67d7bbe22
+  externalDocumentationUrls:
+    - title: Google Directory API reference
+      url: https://developers.google.com/admin-sdk/directory/reference/rest
+      type: api_reference
+    - title: Google Directory authentication
+      url: https://developers.google.com/admin-sdk/directory/v1/guides/authorizing
+      type: authentication_guide
+    - title: Google Workspace Status
+      url: https://www.google.com/appsstatus/
+      type: status_page
 metadataSpecVersion: "1.0"

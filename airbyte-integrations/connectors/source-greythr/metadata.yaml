@@ -33,3 +33,7 @@ data:
   ab_internal:
     ql: 100
     sl: 100
+  externalDocumentationUrls:
+    - title: greytHR API documentation
+      url: https://help.greythr.com/api/
+      type: api_reference

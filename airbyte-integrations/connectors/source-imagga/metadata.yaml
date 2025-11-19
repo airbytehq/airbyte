@@ -33,3 +33,10 @@ data:
   ab_internal:
     ql: 100
     sl: 100
+  externalDocumentationUrls:
+    - title: Imagga API documentation
+      url: https://docs.imagga.com/
+      type: api_reference
+    - title: Imagga authentication
+      url: https://docs.imagga.com/#authentication
+      type: authentication_guide

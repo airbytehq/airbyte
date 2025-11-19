@@ -33,3 +33,10 @@ data:
   ab_internal:
     ql: 100
     sl: 100
+  externalDocumentationUrls:
+    - title: BaseSpace API reference
+      url: https://developer.basespace.illumina.com/docs/content/documentation/rest-api/api-reference
+      type: api_reference
+    - title: BaseSpace authentication
+      url: https://developer.basespace.illumina.com/docs/content/documentation/authentication/obtaining-access-tokens
+      type: authentication_guide
