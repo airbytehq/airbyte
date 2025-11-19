@@ -5382,7 +5382,7 @@ streams:
         request_parameters:
           ordering: -updated
           show_deleted: "true"
-          fields[TaskSession]: id,created,updated,trashed,submitted,is_approved,is_submitted,type,started,finished,started_coord_lat,started_coord_lng,finished_coord_lat,finished_coord_lng,original_started,original_finished,description,rate,timezone,multiplier,multiplier_label,sell_rate,hours,cost,sell,submitted_at,approved_at,task,technician,sell_product,submitted_by,approved_by,sell_hours,duration,duration_hours,status,payroll_date,appointment_attendance,is_suspicious_started,is_suspicious_finished
+          fields[TaskSession]: id,created,updated,trashed,submitted,is_approved,is_submitted,type,started,finished,started_coord_lat,started_coord_lng,finished_coord_lat,finished_coord_lng,original_started,original_finished,description,rate,timezone,multiplier,multiplier_label,sell_rate,cost,sell,submitted_at,approved_at,task,technician,sell_product,submitted_by,approved_by,duration,duration_hours,status,payroll_date
     schema_loader:
       type: InlineSchemaLoader
       schema:
@@ -5487,11 +5487,6 @@ streams:
               - string
               - "null"
             format: decimal
-          hours:
-            type:
-              - string
-              - "null"
-            format: decimal
           cost:
             type:
               - string
@@ -5534,9 +5529,6 @@ streams:
             type:
               - string
               - "null"
-          sell_hours:
-            type:
-              - string
           duration:
             type:
               - integer
@@ -5555,16 +5547,6 @@ streams:
               - string
               - "null"
             format: date
-          appointment_attendance:
-            type:
-              - string
-              - "null"
-          is_suspicious_started:
-            type:
-              - boolean
-          is_suspicious_finished:
-            type:
-              - boolean
     transformations:
       - type: AddFields
         fields:
@@ -5658,10 +5640,6 @@ streams:
             value: '{{ record["attributes"]["sell_rate"] or "None"}}'
           - type: AddedFieldDefinition
             path:
-              - hours
-            value: '{{ record["attributes"]["hours"] or "None"}}'
-          - type: AddedFieldDefinition
-            path:
               - cost
             value: '{{ record["attributes"]["cost"] or "None"}}'
           - type: AddedFieldDefinition
@@ -5698,10 +5676,6 @@ streams:
             value: '{{ record["relationships"]["approved_by"]["data"]["id"] or "None"}}'
           - type: AddedFieldDefinition
             path:
-              - sell_hours
-            value: '{{ record["attributes"]["sell_hours"] }}'
-          - type: AddedFieldDefinition
-            path:
               - duration
             value: '{{ record["attributes"]["duration"] or "None"}}'
           - type: AddedFieldDefinition
@@ -5716,18 +5690,6 @@ streams:
             path:
               - payroll_date
             value: '{{ record["attributes"]["payroll_date"] or "None"}}'
-          - type: AddedFieldDefinition
-            path:
-              - appointment_attendance
-            value: '{{ record["attributes"]["appointment_attendance"] or "None"}}'
-          - type: AddedFieldDefinition
-            path:
-              - is_suspicious_started
-            value: '{{ record["attributes"]["is_suspicious_started"] }}'
-          - type: AddedFieldDefinition
-            path:
-              - is_suspicious_finished
-            value: '{{ record["attributes"]["is_suspicious_finished"] }}'
   - type: DeclarativeStream
     name: contractors
     primary_key:
