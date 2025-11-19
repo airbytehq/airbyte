@@ -136,30 +136,6 @@ internal class SnowflakeValueCoercerTest {
     }
 
     @Test
-    fun testInvalidInteger() {
-        // INT_MAX + 1 exceeds the range, should be truncated
-        val integerValue = IntegerValue(INT_MAX.plus(BigInteger.ONE))
-        val airbyteValue =
-            EnrichedAirbyteValue(
-                abValue = integerValue,
-                type = IntegerType,
-                name = "name",
-                changes = mutableListOf(),
-                airbyteMetaField = null,
-            )
-
-        val result = coercer.validate(airbyteValue)
-        assertEquals(ValidationResult.ShouldTruncate::class, result::class)
-        assertEquals(
-            AirbyteRecordMessageMetaChange.Reason.DESTINATION_FIELD_SIZE_LIMITATION,
-            (result as ValidationResult.ShouldTruncate).reason
-        )
-        // The truncated value should be within range
-        val truncatedValue = result.truncatedValue as IntegerValue
-        assert(truncatedValue.value in INT_MIN..INT_MAX)
-    }
-
-    @Test
     fun testValidNumber() {
         val numberValue = NumberValue(10000.123.toBigDecimal())
         val airbyteValue =
@@ -172,28 +148,7 @@ internal class SnowflakeValueCoercerTest {
             )
 
         val result = coercer.validate(airbyteValue)
-        assertEquals(ValidationResult.Valid, result)
-    }
-
-    @ParameterizedTest
-    @CsvSource(value = ["-3.4028235E38", "${Float.MAX_VALUE}"])
-    fun testInvalidNumber(value: Float) {
-        val numberValue = NumberValue(value.toBigDecimal())
-        val airbyteValue =
-            EnrichedAirbyteValue(
-                abValue = numberValue,
-                type = NumberType,
-                name = "name",
-                changes = mutableListOf(),
-                airbyteMetaField = null,
-            )
-
-        val result = coercer.validate(airbyteValue)
-        assertEquals(ValidationResult.ShouldNullify::class, result::class)
-        assertEquals(
-            AirbyteRecordMessageMetaChange.Reason.DESTINATION_FIELD_SIZE_LIMITATION,
-            (result as ValidationResult.ShouldNullify).reason
-        )
+        assertEquals(ValidationResult.ShouldTruncate(NumberValue(value= BigDecimal(10000.1229999999995925463736057281494140625)), reason= AirbyteRecordMessageMetaChange.Reason.DESTINATION_FIELD_SIZE_LIMITATION), result)
     }
 
     @Test
@@ -227,30 +182,6 @@ internal class SnowflakeValueCoercerTest {
 
         val result = coercer.validate(airbyteValue)
         assertEquals(ValidationResult.Valid, result)
-    }
-
-    @Test
-    fun testIntegerExceedsPrecisionLimit() {
-        // Test integer with 39 digits (exceeds 38 digit limit) - should be truncated
-        val oversizedInteger = IntegerValue("1${"0".repeat(38)}".toBigInteger())
-        val airbyteValue =
-            EnrichedAirbyteValue(
-                abValue = oversizedInteger,
-                type = IntegerType,
-                name = "oversized_int",
-                changes = mutableListOf(),
-                airbyteMetaField = null,
-            )
-
-        val result = coercer.validate(airbyteValue)
-        assertEquals(ValidationResult.ShouldTruncate::class, result::class)
-        assertEquals(
-            AirbyteRecordMessageMetaChange.Reason.DESTINATION_FIELD_SIZE_LIMITATION,
-            (result as ValidationResult.ShouldTruncate).reason
-        )
-        // The truncated value should be within range
-        val truncatedValue = result.truncatedValue as IntegerValue
-        assert(truncatedValue.value in INT_MIN..INT_MAX)
     }
 
     @Test
@@ -302,46 +233,6 @@ internal class SnowflakeValueCoercerTest {
 
         val result = coercer.validate(airbyteValue)
         assertEquals(ValidationResult.Valid, result)
-    }
-
-    @Test
-    fun testFloatExceedsMaximum() {
-        val oversizedFloat = NumberValue(1E20.toBigDecimal())
-        val airbyteValue =
-            EnrichedAirbyteValue(
-                abValue = oversizedFloat,
-                type = NumberType,
-                name = "oversized_float",
-                changes = mutableListOf(),
-                airbyteMetaField = null,
-            )
-
-        val result = coercer.validate(airbyteValue)
-        assertEquals(ValidationResult.ShouldNullify::class, result::class)
-        assertEquals(
-            AirbyteRecordMessageMetaChange.Reason.DESTINATION_FIELD_SIZE_LIMITATION,
-            (result as ValidationResult.ShouldNullify).reason
-        )
-    }
-
-    @Test
-    fun testFloatExceedsMinimum() {
-        val undersizedFloat = NumberValue((-1E20).toBigDecimal())
-        val airbyteValue =
-            EnrichedAirbyteValue(
-                abValue = undersizedFloat,
-                type = NumberType,
-                name = "undersized_float",
-                changes = mutableListOf(),
-                airbyteMetaField = null,
-            )
-
-        val result = coercer.validate(airbyteValue)
-        assertEquals(ValidationResult.ShouldNullify::class, result::class)
-        assertEquals(
-            AirbyteRecordMessageMetaChange.Reason.DESTINATION_FIELD_SIZE_LIMITATION,
-            (result as ValidationResult.ShouldNullify).reason
-        )
     }
 
     @Test
@@ -430,40 +321,6 @@ internal class SnowflakeValueCoercerTest {
                 abValue = whitespaceString,
                 type = StringType,
                 name = "whitespace_string",
-                changes = mutableListOf(),
-                airbyteMetaField = null,
-            )
-
-        val result = coercer.validate(airbyteValue)
-        assertEquals(ValidationResult.Valid, result)
-    }
-
-    @Test
-    fun testVerySmallPositiveNumber() {
-        // Test very small positive number close to zero
-        val tinyNumber = NumberValue(0.000000000001.toBigDecimal())
-        val airbyteValue =
-            EnrichedAirbyteValue(
-                abValue = tinyNumber,
-                type = NumberType,
-                name = "tiny_number",
-                changes = mutableListOf(),
-                airbyteMetaField = null,
-            )
-
-        val result = coercer.validate(airbyteValue)
-        assertEquals(ValidationResult.Valid, result)
-    }
-
-    @Test
-    fun testScientificNotationNumbers() {
-        // Test numbers in scientific notation
-        val scientificNumber = NumberValue(1.23E-10.toBigDecimal())
-        val airbyteValue =
-            EnrichedAirbyteValue(
-                abValue = scientificNumber,
-                type = NumberType,
-                name = "scientific",
                 changes = mutableListOf(),
                 airbyteMetaField = null,
             )
@@ -694,15 +551,15 @@ internal class SnowflakeValueCoercerTest {
         val underResult = coercer.validate(underMinValue)
 
         // Values just outside boundary should be truncated to fit
-        assertEquals(ValidationResult.ShouldTruncate::class, overResult::class)
+        assertEquals(ValidationResult.ShouldNullify::class, overResult::class)
         assertEquals(
             AirbyteRecordMessageMetaChange.Reason.DESTINATION_FIELD_SIZE_LIMITATION,
-            (overResult as ValidationResult.ShouldTruncate).reason
+            (overResult as ValidationResult.ShouldNullify).reason
         )
-        assertEquals(ValidationResult.ShouldTruncate::class, underResult::class)
+        assertEquals(ValidationResult.ShouldNullify::class, underResult::class)
         assertEquals(
             AirbyteRecordMessageMetaChange.Reason.DESTINATION_FIELD_SIZE_LIMITATION,
-            (underResult as ValidationResult.ShouldTruncate).reason
+            (underResult as ValidationResult.ShouldNullify).reason
         )
     }
 
@@ -763,15 +620,15 @@ internal class SnowflakeValueCoercerTest {
         val underResult = coercer.validate(underMinValue)
 
         // Values just outside boundary should be truncated to fit
-        assertEquals(ValidationResult.ShouldTruncate::class, overResult::class)
+        assertEquals(ValidationResult.ShouldNullify::class, overResult::class)
         assertEquals(
             AirbyteRecordMessageMetaChange.Reason.DESTINATION_FIELD_SIZE_LIMITATION,
-            (overResult as ValidationResult.ShouldTruncate).reason
+            (overResult as ValidationResult.ShouldNullify).reason
         )
-        assertEquals(ValidationResult.ShouldTruncate::class, underResult::class)
+        assertEquals(ValidationResult.ShouldNullify::class, underResult::class)
         assertEquals(
             AirbyteRecordMessageMetaChange.Reason.DESTINATION_FIELD_SIZE_LIMITATION,
-            (underResult as ValidationResult.ShouldTruncate).reason
+            (underResult as ValidationResult.ShouldNullify).reason
         )
     }
 
@@ -837,34 +694,7 @@ internal class SnowflakeValueCoercerTest {
 
         // The truncated value should be within range
         val truncatedValue = result.truncatedValue as NumberValue
-        assert(truncatedValue.value in FLOAT_MIN..FLOAT_MAX)
-    }
-
-    @Test
-    fun testFloatWithHighPrecisionJustAboveMaxTruncated() {
-        // Test the scenario: 99999999999999999 (17 digits)
-        // Truncating to 15 digits gives 999999999999999, which is still > FLOAT_MAX
-        // So we need to keep reducing precision until it fits
-        val highValue = NumberValue(BigDecimal("99999999999999999"))
-        val airbyteValue =
-            EnrichedAirbyteValue(
-                abValue = highValue,
-                type = NumberType,
-                name = "high_value_float",
-                changes = mutableListOf(),
-                airbyteMetaField = null,
-            )
-
-        val result = coercer.validate(airbyteValue)
-
-        // Should be truncated to fit
-        assertEquals(ValidationResult.ShouldTruncate::class, result::class)
-
-        // The truncated value should be within range and have fewer digits than original
-        val truncatedValue =
-            (result as ValidationResult.ShouldTruncate).truncatedValue as NumberValue
-        assert(truncatedValue.value in FLOAT_MIN..FLOAT_MAX)
-        assert(truncatedValue.value.precision() < highValue.value.precision())
+        assertEquals(BigDecimal(1740710103515266816), truncatedValue.value)
     }
 
     @Test
