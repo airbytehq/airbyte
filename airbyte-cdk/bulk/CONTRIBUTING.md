@@ -4,7 +4,7 @@ Thank you for your interest in contributing to the Airbyte Kotlin Bulk CDK!
 
 ## Prerequisites
 
-- **Java 21** or higher
+- **JDK 21** (Java Development Kit) or higher
 - **Gradle** (uses the wrapper, no separate installation needed)
 
 ## Generating Documentation
