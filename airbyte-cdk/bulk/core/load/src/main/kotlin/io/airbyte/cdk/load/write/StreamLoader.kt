@@ -8,25 +8,45 @@ import io.airbyte.cdk.load.command.DestinationStream
 import io.airbyte.cdk.load.state.StreamProcessingFailed
 
 /**
- * Implementor interface. A stream event handler.
+ * Per-stream handler that manages the loading lifecycle for a single data stream.
  *
- * [start] is called once before any records are processed.
- *
- * [close] is called once after all records have been processed, regardless of success or failure,
- * but only if [start] returned successfully. If any exception was thrown during processing, it is
- * passed as an argument to [close]. `hadNonzeroRecords` is only used by legacy typing and deduping
- * and `streamFailure` is only used as a boolean flag - it's internal exception is not read.
- *
- * [teardown] provides a simpler API for calling [close], which itself is used by existing
- * destinations to perform finalization and clean up of temporary tables, etc.
+ * Each stream gets its own loader instance to handle table creation, data loading,
+ * and finalization. The framework calls these methods in order:
+ * 1. [start] - Initialize stream resources (create tables, open buffers)
+ * 2. Records are processed (handled by the framework)
+ * 3. [close] or [teardown] - Finalize the stream (commit data, drop temp tables)
  */
 interface StreamLoader {
+    /** The stream configuration this loader handles. */
     val stream: DestinationStream
 
+    /**
+     * Initializes stream-specific resources before processing records.
+     * 
+     * Called once at the start of stream processing. Use this to create destination
+     * tables, allocate buffers, or perform other stream-level setup.
+     */
     suspend fun start() {}
 
+    /**
+     * Finalizes the stream after all records have been processed.
+     * 
+     * Called once after record processing completes, regardless of success or failure.
+     * Use this to commit buffered data, merge staging tables, or clean up resources.
+     * 
+     * @param hadNonzeroRecords True if at least one record was processed for this stream
+     * @param streamFailure If present, indicates processing failed with this error
+     */
     suspend fun close(hadNonzeroRecords: Boolean, streamFailure: StreamProcessingFailed? = null) {}
 
+    /**
+     * Simplified finalization API that delegates to [close].
+     * 
+     * Provides a boolean success flag instead of an exception object. Most implementations
+     * should override [close] instead of this method.
+     * 
+     * @param completedSuccessfully True if the stream processed successfully
+     */
     suspend fun teardown(completedSuccessfully: Boolean) {
         if (completedSuccessfully) {
             close(true, null)
