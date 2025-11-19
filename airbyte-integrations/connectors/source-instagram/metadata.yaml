@@ -59,6 +59,9 @@ data:
     - title: Release notes
       url: https://developers.facebook.com/docs/instagram-api/changelog
       type: api_release_history
+    - title: Instagram Platform Changelog
+      url: https://developers.facebook.com/docs/instagram-platform/instagram-graph-api/changelog
+      type: api_release_history
   erdUrl: https://dbdocs.io/airbyteio/source-instagram?view=relationships
   tags:
     - language:manifest-only

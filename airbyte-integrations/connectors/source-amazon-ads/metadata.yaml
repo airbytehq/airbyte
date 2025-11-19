@@ -124,4 +124,10 @@ data:
     - title: Rate limits
       url: https://advertising.amazon.com/API/docs/en-us/get-started/developer-notes#rate-limiting
       type: rate_limits
+    - title: All releases
+      url: https://advertising.amazon.com/API/docs/en-us/release-notes/index
+      type: api_release_history
+    - title: Deprecations
+      url: https://advertising.amazon.com/API/docs/en-us/release-notes/deprecations
+      type: api_deprecations
 metadataSpecVersion: "1.0"

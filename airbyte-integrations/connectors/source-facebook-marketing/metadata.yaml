@@ -22,6 +22,9 @@ data:
     - title: API Upgrade Tool
       url: https://developers.facebook.com/tools/api_versioning/600551260845577/
       type: api_reference
+    - title: Graph API Changelog
+      url: https://developers.facebook.com/docs/graph-api/changelog
+      type: api_release_history
   githubIssueLabel: source-facebook-marketing
   erdUrl: https://dbdocs.io/airbyteio/source-facebook-marketing?view=relationships
   icon: facebook.svg

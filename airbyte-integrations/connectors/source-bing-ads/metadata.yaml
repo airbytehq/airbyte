@@ -23,6 +23,9 @@ data:
     - title: Release notes
       url: https://learn.microsoft.com/en-us/advertising/guides/release-notes?view=bingads-13
       type: api_release_history
+    - title: Bing Ads API Release Notes
+      url: https://learn.microsoft.com/en-us/advertising/guides/release-notes
+      type: api_release_history
   erdUrl: https://dbdocs.io/airbyteio/source-bing-ads?view=relationships
   githubIssueLabel: source-bing-ads
   icon: bingads.svg

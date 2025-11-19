@@ -22,6 +22,9 @@ data:
       url: https://community.airtable.com/development-apis-11
     - title: OAuth refference
       url: https://airtable.com/developers/web/api/oauth-reference#authorization-request
+    - title: API deprecation guidelines
+      url: https://support.airtable.com/docs/airtable-api-key-deprecation
+      type: api_deprecations
   resourceRequirements:
     jobSpecific:
       - jobType: discover_schema
