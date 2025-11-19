@@ -33,3 +33,16 @@ data:
   ab_internal:
     ql: 100
     sl: 100
+  externalDocumentationUrls:
+    - title: Fastly API reference
+      url: https://developer.fastly.com/reference/api/
+      type: api_reference
+    - title: Fastly API authentication
+      url: https://developer.fastly.com/reference/api/#authentication
+      type: authentication_guide
+    - title: Fastly API rate limits
+      url: https://developer.fastly.com/reference/api/#rate-limiting
+      type: rate_limits
+    - title: Fastly Status
+      url: https://status.fastly.com/
+      type: status_page

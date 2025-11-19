@@ -33,3 +33,13 @@ data:
   ab_internal:
     ql: 100
     sl: 100
+  externalDocumentationUrls:
+    - title: FireHydrant API documentation
+      url: https://firehydrant.com/docs/api/
+      type: api_reference
+    - title: FireHydrant authentication
+      url: https://firehydrant.com/docs/api/#authentication
+      type: authentication_guide
+    - title: FireHydrant Status
+      url: https://status.firehydrant.io/
+      type: status_page

@@ -44,4 +44,8 @@ data:
           secretStore:
             type: GSM
             alias: airbyte-connector-testing-secret-store
+  externalDocumentationUrls:
+    - title: GlassFrog API documentation
+      url: https://documenter.getpostman.com/view/1014385/glassfrog-api-v3/2SJViY
+      type: api_reference
 metadataSpecVersion: "1.0"

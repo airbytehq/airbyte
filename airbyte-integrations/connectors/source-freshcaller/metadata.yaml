@@ -40,4 +40,14 @@ data:
   tags:
     - language:python
     - cdk:low-code
+  externalDocumentationUrls:
+    - title: Freshcaller API reference
+      url: https://developers.freshcaller.com/api/
+      type: api_reference
+    - title: Freshcaller authentication
+      url: https://developers.freshcaller.com/api/#authentication
+      type: authentication_guide
+    - title: Freshworks Status
+      url: https://status.freshworks.com/
+      type: status_page
 metadataSpecVersion: "1.0"

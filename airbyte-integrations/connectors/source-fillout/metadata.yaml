@@ -33,3 +33,7 @@ data:
   ab_internal:
     ql: 100
     sl: 100
+  externalDocumentationUrls:
+    - title: Fillout API documentation
+      url: https://www.fillout.com/help/fillout-rest-api
+      type: api_reference

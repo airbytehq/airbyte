@@ -33,3 +33,7 @@ data:
   ab_internal:
     ql: 100
     sl: 100
+  externalDocumentationUrls:
+    - title: Gist API documentation
+      url: https://developers.getgist.com/
+      type: api_reference

@@ -33,3 +33,10 @@ data:
   ab_internal:
     ql: 100
     sl: 100
+  externalDocumentationUrls:
+    - title: Finage API documentation
+      url: https://finage.co.uk/docs/api
+      type: api_reference
+    - title: Finage authentication
+      url: https://finage.co.uk/docs/api/getting-started
+      type: authentication_guide

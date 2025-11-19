@@ -33,3 +33,7 @@ data:
   ab_internal:
     ql: 100
     sl: 100
+  externalDocumentationUrls:
+    - title: Financial Modeling Prep API
+      url: https://site.financialmodelingprep.com/developer/docs
+      type: api_reference

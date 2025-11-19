@@ -41,4 +41,14 @@ data:
           secretStore:
             type: GSM
             alias: airbyte-connector-testing-secret-store
+  externalDocumentationUrls:
+    - title: Freshservice API reference
+      url: https://api.freshservice.com/
+      type: api_reference
+    - title: Freshservice authentication
+      url: https://api.freshservice.com/#authentication
+      type: authentication_guide
+    - title: Freshworks Status
+      url: https://status.freshworks.com/
+      type: status_page
 metadataSpecVersion: "1.0"

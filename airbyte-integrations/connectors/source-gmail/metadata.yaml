@@ -33,3 +33,16 @@ data:
   ab_internal:
     ql: 100
     sl: 100
+  externalDocumentationUrls:
+    - title: Gmail API reference
+      url: https://developers.google.com/gmail/api/reference/rest
+      type: api_reference
+    - title: Gmail authentication
+      url: https://developers.google.com/gmail/api/auth/about-auth
+      type: authentication_guide
+    - title: Gmail API quotas
+      url: https://developers.google.com/gmail/api/reference/quota
+      type: rate_limits
+    - title: Google Workspace Status
+      url: https://www.google.com/appsstatus/
+      type: status_page

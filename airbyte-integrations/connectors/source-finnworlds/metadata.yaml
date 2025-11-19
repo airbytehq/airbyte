@@ -33,3 +33,7 @@ data:
   ab_internal:
     ql: 100
     sl: 100
+  externalDocumentationUrls:
+    - title: Finnworlds API documentation
+      url: https://api.finnworlds.com/docs
+      type: api_reference

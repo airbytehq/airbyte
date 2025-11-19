@@ -26,4 +26,11 @@ data:
   tags:
     - cdk:low-code
     - language:manifest-only
+  externalDocumentationUrls:
+    - title: Fleetio API documentation
+      url: https://developer.fleetio.com/
+      type: api_reference
+    - title: Fleetio authentication
+      url: https://developer.fleetio.com/#authentication
+      type: authentication_guide
 metadataSpecVersion: "1.0"

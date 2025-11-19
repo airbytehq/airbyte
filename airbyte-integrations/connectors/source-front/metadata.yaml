@@ -33,3 +33,16 @@ data:
   ab_internal:
     ql: 100
     sl: 100
+  externalDocumentationUrls:
+    - title: Front API reference
+      url: https://dev.frontapp.com/reference/introduction
+      type: api_reference
+    - title: Front authentication
+      url: https://dev.frontapp.com/docs/authentication
+      type: authentication_guide
+    - title: Front rate limits
+      url: https://dev.frontapp.com/docs/rate-limiting
+      type: rate_limits
+    - title: Front Status
+      url: https://status.front.com/
+      type: status_page
