@@ -33,3 +33,7 @@ data:
   ab_internal:
     ql: 100
     sl: 100
+  externalDocumentationUrls:
+    - title: Zoho Desk API
+      url: https://desk.zoho.com/DeskAPIDocument
+      type: api_reference

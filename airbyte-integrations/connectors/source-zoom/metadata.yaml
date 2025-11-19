@@ -52,4 +52,20 @@ data:
           secretStore:
             type: GSM
             alias: airbyte-connector-testing-secret-store
+  externalDocumentationUrls:
+    - title: Zoom API reference
+      url: https://developers.zoom.us/docs/api/
+      type: api_reference
+    - title: Zoom API changelog
+      url: https://developers.zoom.us/changelog/
+      type: api_release_history
+    - title: Zoom authentication
+      url: https://developers.zoom.us/docs/integrations/oauth/
+      type: authentication_guide
+    - title: Zoom rate limits
+      url: https://developers.zoom.us/docs/api/rest/rate-limits/
+      type: rate_limits
+    - title: Zoom Status
+      url: https://status.zoom.us/
+      type: status_page
 metadataSpecVersion: "1.0"

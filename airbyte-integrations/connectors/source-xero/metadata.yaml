@@ -58,4 +58,17 @@ data:
     #       secretStore:
     #         type: GSM
     #         alias: airbyte-connector-testing-secret-store
+  externalDocumentationUrls:
+    - title: Xero API reference
+      url: https://developer.xero.com/documentation/
+      type: api_reference
+    - title: Xero authentication
+      url: https://developer.xero.com/documentation/guides/oauth2/overview/
+      type: authentication_guide
+    - title: Xero rate limits
+      url: https://developer.xero.com/documentation/guides/oauth2/limits/
+      type: rate_limits
+    - title: Xero Status
+      url: https://status.xero.com/
+      type: status_page
 metadataSpecVersion: "1.0"
