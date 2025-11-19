@@ -33,3 +33,7 @@ data:
   ab_internal:
     ql: 100
     sl: 100
+  externalDocumentationUrls:
+    - title: Tremendous API reference
+      url: https://developers.tremendous.com/
+      type: api_reference
