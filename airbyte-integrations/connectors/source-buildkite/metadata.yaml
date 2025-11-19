@@ -33,3 +33,16 @@ data:
   ab_internal:
     ql: 100
     sl: 100
+  externalDocumentationUrls:
+    - title: Buildkite REST API
+      url: https://buildkite.com/docs/apis/rest-api
+      type: api_reference
+    - title: Buildkite authentication
+      url: https://buildkite.com/docs/apis/rest-api#authentication
+      type: authentication_guide
+    - title: Buildkite API rate limits
+      url: https://buildkite.com/docs/apis/rest-api#rate-limiting
+      type: rate_limits
+    - title: Buildkite Status
+      url: https://www.buildkitestatus.com/
+      type: status_page

@@ -29,4 +29,8 @@ data:
   tags:
     - cdk:low-code
     - language:manifest-only
+  externalDocumentationUrls:
+    - title: Clazar API documentation
+      url: https://clazar.io/api-docs
+      type: api_reference
 metadataSpecVersion: "1.0"

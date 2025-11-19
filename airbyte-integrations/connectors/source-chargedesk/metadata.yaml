@@ -33,3 +33,10 @@ data:
   ab_internal:
     ql: 100
     sl: 100
+  externalDocumentationUrls:
+    - title: Chargedesk API documentation
+      url: https://chargedesk.com/api-docs
+      type: api_reference
+    - title: Chargedesk authentication
+      url: https://chargedesk.com/api-docs/authentication
+      type: authentication_guide

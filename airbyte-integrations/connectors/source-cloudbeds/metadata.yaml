@@ -33,3 +33,13 @@ data:
   ab_internal:
     ql: 100
     sl: 100
+  externalDocumentationUrls:
+    - title: Cloudbeds API reference
+      url: https://hotels.cloudbeds.com/api/docs/
+      type: api_reference
+    - title: Cloudbeds OAuth guide
+      url: https://hotels.cloudbeds.com/api/docs/#section/Authentication
+      type: authentication_guide
+    - title: Cloudbeds rate limits
+      url: https://hotels.cloudbeds.com/api/docs/#section/Rate-Limiting
+      type: rate_limits

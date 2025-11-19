@@ -33,3 +33,16 @@ data:
   ab_internal:
     ql: 100
     sl: 100
+  externalDocumentationUrls:
+    - title: Cisco Meraki Dashboard API
+      url: https://developer.cisco.com/meraki/api-v1/
+      type: api_reference
+    - title: Meraki authentication
+      url: https://developer.cisco.com/meraki/api-v1/#!authorization
+      type: authentication_guide
+    - title: Meraki rate limits
+      url: https://developer.cisco.com/meraki/api-v1/#!rate-limit
+      type: rate_limits
+    - title: Meraki Status
+      url: https://status.meraki.com/
+      type: status_page
