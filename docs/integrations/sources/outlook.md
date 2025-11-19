@@ -17,7 +17,7 @@ To use this connector, you need:
 1. Sign in to the [Microsoft Entra admin center](https://entra.microsoft.com)
 2. Navigate to **Identity** > **Applications** > **App registrations**
 3. Select **New registration**
-4. Enter a display name for your application (e.g., "Airbyte Outlook Connector")
+4. Enter a display name for your application (for example, "Airbyte Outlook Connector")
 5. Under **Supported account types**, select the appropriate option:
    - **Accounts in this organizational directory only**: Single-tenant (your organization only)
    - **Accounts in any organizational directory**: Multi-tenant (any Microsoft Entra organization)
