@@ -82,9 +82,15 @@ data:
             type: GSM
             alias: airbyte-connector-testing-secret-store
   externalDocumentationUrls:
+    - title: Breaking changes
+      url: https://docs.github.com/en/rest/about-the-rest-api/breaking-changes
+      type: api_deprecations
     - title: GitHub REST API reference
       url: https://docs.github.com/en/rest
       type: api_reference
+    - title: API Versions
+      url: https://docs.github.com/en/rest/about-the-rest-api/api-versions
+      type: api_release_history
     - title: GitHub API changelog
       url: https://github.blog/changelog/label/api/
       type: api_release_history
@@ -97,10 +103,4 @@ data:
     - title: GitHub Status
       url: https://www.githubstatus.com/
       type: status_page
-    - title: API Versions
-      url: https://docs.github.com/en/rest/about-the-rest-api/api-versions
-      type: api_release_history
-    - title: Breaking changes
-      url: https://docs.github.com/en/rest/about-the-rest-api/breaking-changes
-      type: api_deprecations
 metadataSpecVersion: "1.0"

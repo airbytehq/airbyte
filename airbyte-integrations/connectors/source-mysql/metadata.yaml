@@ -82,10 +82,10 @@ data:
     - title: MySQL documentation
       url: https://dev.mysql.com/doc/
       type: api_reference
-    - title: MySQL authentication
-      url: https://dev.mysql.com/doc/refman/8.0/en/access-control.html
-      type: authentication_guide
     - title: MySQL Release Notes
       url: https://dev.mysql.com/doc/relnotes/mysql/en/
       type: api_release_history
+    - title: MySQL authentication
+      url: https://dev.mysql.com/doc/refman/8.0/en/access-control.html
+      type: authentication_guide
 metadataSpecVersion: "1.0"

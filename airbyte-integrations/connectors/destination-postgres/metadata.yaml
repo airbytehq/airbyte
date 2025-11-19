@@ -51,16 +51,16 @@ data:
     - title: PostgreSQL documentation
       url: https://www.postgresql.org/docs/current/
       type: api_reference
-    - title: SQL commands
-      url: https://www.postgresql.org/docs/current/sql-commands.html
-      type: sql_reference
+    - title: Release Notes
+      url: https://www.postgresql.org/docs/release/
+      type: api_release_history
     - title: Client authentication
       url: https://www.postgresql.org/docs/current/client-authentication.html
       type: authentication_guide
     - title: Database roles and privileges
       url: https://www.postgresql.org/docs/current/user-manag.html
       type: permissions_scopes
-    - title: Release Notes
-      url: https://www.postgresql.org/docs/release/
-      type: api_release_history
+    - title: SQL commands
+      url: https://www.postgresql.org/docs/current/sql-commands.html
+      type: sql_reference
 metadataSpecVersion: "1.0"

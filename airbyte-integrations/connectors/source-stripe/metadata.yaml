@@ -87,6 +87,12 @@ data:
     - title: Stripe API reference
       url: https://stripe.com/docs/api
       type: api_reference
+    - title: API changelog
+      url: https://docs.stripe.com/changelog
+      type: api_release_history
+    - title: API upgrades
+      url: https://docs.stripe.com/upgrades
+      type: api_release_history
     - title: Stripe API changelog
       url: https://stripe.com/docs/upgrades
       type: api_release_history
@@ -99,10 +105,4 @@ data:
     - title: Stripe Status
       url: https://status.stripe.com/
       type: status_page
-    - title: API upgrades
-      url: https://docs.stripe.com/upgrades
-      type: api_release_history
-    - title: API changelog
-      url: https://docs.stripe.com/changelog
-      type: api_release_history
 metadataSpecVersion: "1.0"

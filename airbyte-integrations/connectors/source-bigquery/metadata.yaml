@@ -41,13 +41,13 @@ data:
     - title: BigQuery REST API
       url: https://cloud.google.com/bigquery/docs/reference/rest
       type: api_reference
+    - title: Release notes
+      url: https://cloud.google.com/bigquery/docs/release-notes
+      type: api_release_history
     - title: Authentication
       url: https://cloud.google.com/bigquery/docs/authentication
       type: authentication_guide
     - title: Quotas and limits
       url: https://cloud.google.com/bigquery/quotas
       type: rate_limits
-    - title: Release notes
-      url: https://cloud.google.com/bigquery/docs/release-notes
-      type: api_release_history
 metadataSpecVersion: "1.0"

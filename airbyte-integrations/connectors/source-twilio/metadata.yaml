@@ -66,6 +66,9 @@ data:
     - title: Twilio API reference
       url: https://www.twilio.com/docs/usage/api
       type: api_reference
+    - title: Twilio Changelog
+      url: https://www.twilio.com/en-us/changelog
+      type: api_release_history
     - title: Twilio authentication
       url: https://www.twilio.com/docs/iam/credentials/api-credentials
       type: authentication_guide
@@ -75,7 +78,4 @@ data:
     - title: Twilio Status
       url: https://status.twilio.com/
       type: status_page
-    - title: Twilio Changelog
-      url: https://www.twilio.com/en-us/changelog
-      type: api_release_history
 metadataSpecVersion: "1.0"
