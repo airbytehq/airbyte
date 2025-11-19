@@ -7,7 +7,7 @@ This page contains the setup guide and reference information for the Facebook Pa
 To set up the Facebook Pages source connector with Airbyte, you'll need to create your Facebook Application and use both long-lived Page access token and Facebook Page ID.
 
 :::note
-The Facebook Pages souce connector is currently only compatible with v15 of the Facebook Graph API.
+The Facebook Pages source connector is currently only compatible with v24 of the Facebook Graph API.
 :::
 
 ## Setup guide
@@ -57,10 +57,10 @@ The Facebook Pages source connector supports the following [sync modes](https://
 
 ## Supported Streams
 
-- [Page](https://developers.facebook.com/docs/graph-api/reference/v19.0/page/#overview)
-- [Post](https://developers.facebook.com/docs/graph-api/reference/v19.0/page/feed)
-- [Page Insights](https://developers.facebook.com/docs/graph-api/reference/v19.0/page/insights)
-- [Post Insights](https://developers.facebook.com/docs/graph-api/reference/v19.0/insights)
+- [Page](https://developers.facebook.com/docs/graph-api/reference/v24.0/page/#overview)
+- [Post](https://developers.facebook.com/docs/graph-api/reference/v24.0/page/feed)
+- [Page Insights](https://developers.facebook.com/docs/graph-api/reference/v24.0/page/insights)
+- [Post Insights](https://developers.facebook.com/docs/graph-api/reference/v24.0/insights)
 
 ## Data type map
 
