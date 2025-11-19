@@ -33,7 +33,7 @@ If you _only_ interact with the raw tables, enable the `Disable Final Tables` op
 6. Click **Save**.
 
 :::note
-After upgrading to version 4, this setting appears as **Legacy raw tables** and should remain enabled.
+After upgrading to version 4, this setting appears as **Legacy raw tables** and remains enabled.
 :::
 
 #### If you interact with both raw and final tables
@@ -44,13 +44,19 @@ If you interact with both the raw _and_ final tables, this use case is no longer
 
 2. For each Snowflake destination you have, add an identical second Snowflake destination.
 
-3. Ensure each pair of Snowflake connectors have opposite settings for **Disable Final Tables** (in version 3) or **Legacy raw tables** (in version 4). One connector should have this setting enabled, and the other should have it disabled.
+3. Ensure each pair of Snowflake connectors have opposite settings for **Disable Final Tables**. One connector should have this setting turned on, and the other should have it turned off.
 
-4. Configure distinct default schemas for each destination to avoid table name collisions.
+4. Configure distinct default schemas for each destination to avoid table name collisions:
+   - For the destination that will create final tables, set a distinct **Schema** in the Snowflake destination configuration (for example, `ANALYTICS_V4`). This is where final tables will be written.
+   - For the raw-only destination (with **Disable Final Tables** turned on), set a distinct **Airbyte Internal Table Dataset Name** under the **Advanced** section (for example, `AIRBYTE_INTERNAL_RAW`). This is where raw tables will be written.
+   - Example configuration:
+     - Destination A (final tables): Schema = `ANALYTICS_V4`, Airbyte Internal Table Dataset Name = `AIRBYTE_INTERNAL`
+     - Destination B (raw-only): Airbyte Internal Table Dataset Name = `AIRBYTE_INTERNAL_RAW`
+   - Using distinct schemas prevents table name collisions when running both destinations in parallel.
 
 5. Update your connections to point to the appropriate destination:
-   - Connections that need raw tables only should target the destination with **Disable Final Tables** or **Legacy raw tables** enabled.
-   - Connections that need final tables should target the destination with this setting disabled.
+   - Connections that need raw tables only should target the destination with **Disable Final Tables** turned on.
+   - Connections that need final tables should target the destination with this setting turned off.
 
 6. Run test syncs on both destinations to verify outputs:
    - The raw-only destination should write only to the internal schema (default `airbyte_internal`).
@@ -86,11 +92,11 @@ To remove the old raw tables:
    ```sql
    -- For Version 2/3 raw tables:
    SHOW TABLES IN SCHEMA <DATABASE>.<INTERNAL_SCHEMA> LIKE 'RAW\_%';
-   
+
    -- For Version 4 legacy raw tables:
    SHOW TABLES IN SCHEMA <DATABASE>.<INTERNAL_SCHEMA> LIKE '%_RAW__STREAM_%';
    ```
-   
+
    Replace `<DATABASE>` with your Snowflake database name and `<INTERNAL_SCHEMA>` with your internal schema name (default `airbyte_internal`).
 
 3. **Drop specific raw tables** you no longer need:
@@ -98,7 +104,7 @@ To remove the old raw tables:
    ```sql
    DROP TABLE IF EXISTS <DATABASE>.<INTERNAL_SCHEMA>.<TABLE_NAME>;
    ```
-   
+
    Replace `<TABLE_NAME>` with the specific table name you want to remove. Use fully qualified names (database.schema.table) to avoid ambiguity.
 
 ## Upgrading to 3.0.0
