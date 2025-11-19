@@ -45,4 +45,8 @@ data:
           secretStore:
             type: GSM
             alias: airbyte-connector-testing-secret-store
+  externalDocumentationUrls:
+    - title: Timely API documentation
+      url: https://dev.timelyapp.com/
+      type: api_reference
 metadataSpecVersion: "1.0"
