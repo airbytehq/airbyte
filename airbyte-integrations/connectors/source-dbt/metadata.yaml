@@ -33,3 +33,13 @@ data:
   ab_internal:
     ql: 100
     sl: 100
+  externalDocumentationUrls:
+    - title: dbt Cloud API reference
+      url: https://docs.getdbt.com/dbt-cloud/api-v2
+      type: api_reference
+    - title: dbt Cloud authentication
+      url: https://docs.getdbt.com/dbt-cloud/api-v2#section/Authentication
+      type: authentication_guide
+    - title: dbt Cloud Status
+      url: https://status.getdbt.com/
+      type: status_page

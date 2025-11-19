@@ -33,3 +33,10 @@ data:
   ab_internal:
     ql: 100
     sl: 100
+  externalDocumentationUrls:
+    - title: Easypromos API documentation
+      url: https://developers.easypromos.com/
+      type: api_reference
+    - title: Easypromos authentication
+      url: https://developers.easypromos.com/#authentication
+      type: authentication_guide
