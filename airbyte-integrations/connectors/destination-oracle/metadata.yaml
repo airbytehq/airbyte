@@ -58,4 +58,7 @@ data:
     - title: Managing security
       url: https://docs.oracle.com/en/database/oracle/oracle-database/19/dbseg/
       type: permissions_scopes
+    - title: Oracle Database Release Notes
+      url: https://docs.oracle.com/en/database/oracle/oracle-database/
+      type: api_release_history
 metadataSpecVersion: "1.0"

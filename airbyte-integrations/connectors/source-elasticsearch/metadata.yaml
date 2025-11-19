@@ -36,4 +36,7 @@ data:
     - title: Elastic Cloud Status
       url: https://status.elastic.co/
       type: status_page
+    - title: Elasticsearch Release Notes
+      url: https://www.elastic.co/docs/release-notes/elasticsearch
+      type: api_release_history
 metadataSpecVersion: "1.0"

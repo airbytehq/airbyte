@@ -45,4 +45,7 @@ data:
     - title: Oracle authentication
       url: https://docs.oracle.com/en/database/oracle/oracle-database/19/dbseg/introduction-to-oracle-database-security.html
       type: authentication_guide
+    - title: Oracle Database Release Notes
+      url: https://docs.oracle.com/en/database/oracle/oracle-database/
+      type: api_release_history
 metadataSpecVersion: "1.0"

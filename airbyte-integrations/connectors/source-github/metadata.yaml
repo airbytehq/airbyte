@@ -97,4 +97,10 @@ data:
     - title: GitHub Status
       url: https://www.githubstatus.com/
       type: status_page
+    - title: API Versions
+      url: https://docs.github.com/en/rest/about-the-rest-api/api-versions
+      type: api_release_history
+    - title: Breaking changes
+      url: https://docs.github.com/en/rest/about-the-rest-api/breaking-changes
+      type: api_deprecations
 metadataSpecVersion: "1.0"

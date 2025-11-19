@@ -60,4 +60,7 @@ data:
     - title: User authentication
       url: https://clickhouse.com/docs/en/operations/access-rights
       type: authentication_guide
+    - title: Changelog
+      url: https://clickhouse.com/docs/whats-new/changelog
+      type: api_release_history
 metadataSpecVersion: "1.0"

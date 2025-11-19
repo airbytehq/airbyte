@@ -56,4 +56,7 @@ data:
     - title: Braintree Status
       url: https://status.braintreepayments.com/
       type: status_page
+    - title: Server SDK Deprecation Policy
+      url: https://developer.paypal.com/braintree/docs/reference/general/server-sdk-deprecation-policy
+      type: api_deprecations
 metadataSpecVersion: "1.0"

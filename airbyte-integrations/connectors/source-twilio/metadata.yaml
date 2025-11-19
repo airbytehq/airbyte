@@ -75,4 +75,7 @@ data:
     - title: Twilio Status
       url: https://status.twilio.com/
       type: status_page
+    - title: Twilio Changelog
+      url: https://www.twilio.com/en-us/changelog
+      type: api_release_history
 metadataSpecVersion: "1.0"
