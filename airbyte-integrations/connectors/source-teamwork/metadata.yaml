@@ -33,3 +33,10 @@ data:
   ab_internal:
     ql: 100
     sl: 100
+  externalDocumentationUrls:
+    - title: Teamwork API reference
+      url: https://apidocs.teamwork.com/
+      type: api_reference
+    - title: Teamwork authentication
+      url: https://apidocs.teamwork.com/guides/teamwork/authentication
+      type: authentication_guide

@@ -40,4 +40,8 @@ data:
           secretStore:
             type: GSM
             alias: airbyte-connector-testing-secret-store
+  externalDocumentationUrls:
+    - title: SurveySparrow API documentation
+      url: https://developers.surveysparrow.com/
+      type: api_reference
 metadataSpecVersion: "1.0"

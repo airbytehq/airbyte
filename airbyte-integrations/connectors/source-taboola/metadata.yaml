@@ -33,3 +33,10 @@ data:
   ab_internal:
     ql: 100
     sl: 100
+  externalDocumentationUrls:
+    - title: Taboola Backstage API
+      url: https://developers.taboola.com/backstage-api/reference
+      type: api_reference
+    - title: Taboola authentication
+      url: https://developers.taboola.com/backstage-api/docs/authentication
+      type: authentication_guide

@@ -33,3 +33,10 @@ data:
   ab_internal:
     ql: 100
     sl: 100
+  externalDocumentationUrls:
+    - title: TestRail API reference
+      url: https://support.testrail.com/hc/en-us/articles/7077039051284-Introduction-to-the-TestRail-API
+      type: api_reference
+    - title: TestRail authentication
+      url: https://support.testrail.com/hc/en-us/articles/7077196481428-Accessing-the-TestRail-API
+      type: authentication_guide

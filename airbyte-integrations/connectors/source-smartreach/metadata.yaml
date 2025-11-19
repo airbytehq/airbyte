@@ -33,3 +33,7 @@ data:
   ab_internal:
     ql: 100
     sl: 100
+  externalDocumentationUrls:
+    - title: SmartReach API documentation
+      url: https://api.smartreach.io/
+      type: api_reference

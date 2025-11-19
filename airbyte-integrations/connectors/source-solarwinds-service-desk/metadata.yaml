@@ -33,3 +33,7 @@ data:
   ab_internal:
     ql: 100
     sl: 100
+  externalDocumentationUrls:
+    - title: SolarWinds Service Desk API
+      url: https://documentation.solarwinds.com/en/success_center/swsd/content/api/swsd-api.htm
+      type: api_reference

@@ -40,4 +40,14 @@ data:
           secretStore:
             type: GSM
             alias: airbyte-connector-testing-secret-store
+  externalDocumentationUrls:
+    - title: Strava API reference
+      url: https://developers.strava.com/docs/reference/
+      type: api_reference
+    - title: Strava authentication
+      url: https://developers.strava.com/docs/authentication/
+      type: authentication_guide
+    - title: Strava rate limits
+      url: https://developers.strava.com/docs/rate-limits/
+      type: rate_limits
 metadataSpecVersion: "1.0"

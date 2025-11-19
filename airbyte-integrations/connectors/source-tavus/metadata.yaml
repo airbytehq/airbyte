@@ -33,3 +33,7 @@ data:
   ab_internal:
     ql: 100
     sl: 100
+  externalDocumentationUrls:
+    - title: Tavus API documentation
+      url: https://docs.tavus.io/
+      type: api_reference

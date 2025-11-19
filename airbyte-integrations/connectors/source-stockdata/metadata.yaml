@@ -33,3 +33,7 @@ data:
   ab_internal:
     ql: 100
     sl: 100
+  externalDocumentationUrls:
+    - title: StockData.org API
+      url: https://www.stockdata.org/documentation
+      type: api_reference
