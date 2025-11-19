@@ -34,11 +34,11 @@ The connector requires the following Microsoft Graph API permissions:
 1. In your app registration, navigate to **API permissions**
 2. Click **Add a permission** > **Microsoft Graph** > **Delegated permissions**
 3. Add the following permissions:
-   - **Mail.Read**: Allows the app to read the signed-in user's mailbox. This permission is required to access email messages and their attachments.
+   - `Mail.Read`: Allows the app to read the signed-in user's mailbox. This permission is required to access email messages and their attachments.
    - `User.Read`: Allows users to sign in to the app and allows the app to read the profile of signed-in users.
 4. Click **Add permissions**
 
-**Note**: Admin consent is not required for Mail.Read delegated permission when used with the signed-in user's own mailbox. However, your organization's policies may require admin consent for all permissions.
+**Note**: Admin consent is not required for `Mail.Read` delegated permission when used with the signed-in user's own mailbox. However, your organization's policies may require admin consent for all permissions.
 
 For more information about these permissions, see the [Microsoft Graph permissions reference](https://learn.microsoft.com/en-us/graph/permissions-reference).
 
@@ -50,13 +50,13 @@ For more information about these permissions, see the [Microsoft Graph permissio
 4. Enter the redirect URI provided by Airbyte during the OAuth configuration process
 5. Click **Configure**
 
-The redirect URI is where Microsoft will send the authentication response after the user signs in. Airbyte will provide this URI when you configure the connector.
+The redirect URI is where Microsoft will send the authentication response after the user signs in. Airbyte provides this URI when you configure the connector.
 
 ### Step 4: Create a Client Secret
 
 1. In your app registration, navigate to **Certificates & secrets**
 2. Under **Client secrets**, click **New client secret**
-3. Add a description (e.g., "Airbyte Outlook Connector Secret")
+3. Add a description (for example, "Airbyte Outlook Connector Secret")
 4. Select an expiration period (Microsoft recommends less than 12 months)
 5. Click **Add**
 6. **Important**: Copy the secret value immediately. This value is never displayed again after you leave this page.
@@ -93,15 +93,15 @@ For detailed instructions on the OAuth flow, see [Get access on behalf of a user
 
 ### Stream Details
 
-**messages**: Retrieves all messages from the signed-in user's mailbox using the `/me/messages` endpoint. This stream fetches messages from all folders including Inbox, Sent Items, Deleted Items, and other mail folders.
+`messages`: Retrieves all messages from the signed-in user's mailbox using the `/me/messages` endpoint. This stream fetches messages from all folders including Inbox, Sent Items, Deleted Items, and other mail folders.
 
-**mailboxes**: Retrieves information about mail folders in the user's mailbox.
+`mailboxes`: Retrieves information about mail folders in the user's mailbox.
 
-**profile**: Retrieves the signed-in user's profile information.
+`profile`: Retrieves the signed-in user's profile information.
 
-**conversations**: Retrieves conversation threads from the user's mailbox.
+`conversations`: Retrieves conversation threads from the user's mailbox.
 
-**messages_details**: Retrieves detailed information for individual messages.
+`messages_details`: Retrieves detailed information for individual messages.
 
 ## Filtering and Limitations
 
