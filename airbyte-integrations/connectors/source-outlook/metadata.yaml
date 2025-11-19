@@ -32,3 +32,16 @@ data:
   ab_internal:
     ql: 100
     sl: 100
+  externalDocumentationUrls:
+    - title: Outlook Mail API
+      url: https://learn.microsoft.com/en-us/graph/api/resources/mail-api-overview
+      type: api_reference
+    - title: Microsoft Graph authentication
+      url: https://learn.microsoft.com/en-us/graph/auth/
+      type: authentication_guide
+    - title: Microsoft Graph throttling
+      url: https://learn.microsoft.com/en-us/graph/throttling
+      type: rate_limits
+    - title: Microsoft 365 Status
+      url: https://status.office365.com/
+      type: status_page

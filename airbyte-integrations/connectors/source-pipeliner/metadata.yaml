@@ -33,3 +33,7 @@ data:
   ab_internal:
     ql: 100
     sl: 100
+  externalDocumentationUrls:
+    - title: Pipeliner CRM API
+      url: https://workspace.pipelinersales.com/community/api/
+      type: api_reference

@@ -33,3 +33,10 @@ data:
   ab_internal:
     ql: 100
     sl: 100
+  externalDocumentationUrls:
+    - title: Persona API reference
+      url: https://docs.withpersona.com/reference
+      type: api_reference
+    - title: Persona authentication
+      url: https://docs.withpersona.com/reference/authentication
+      type: authentication_guide
