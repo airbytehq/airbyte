@@ -34,3 +34,13 @@ data:
   ab_internal:
     ql: 100
     sl: 100
+  externalDocumentationUrls:
+    - title: Basecamp 3 API
+      url: https://github.com/basecamp/bc3-api
+      type: api_reference
+    - title: Authentication
+      url: https://github.com/basecamp/api/blob/master/sections/authentication.md
+      type: authentication_guide
+    - title: Rate limiting
+      url: https://github.com/basecamp/bc3-api#rate-limiting
+      type: rate_limits
