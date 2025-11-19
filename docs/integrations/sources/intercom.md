@@ -96,6 +96,7 @@ The Intercom connector should not run into Intercom API limitations under normal
 
 | Version    | Date       | Pull Request                                             | Subject                                                                                                                          |
 |:-----------|:-----------|:---------------------------------------------------------|:---------------------------------------------------------------------------------------------------------------------------------|
+| 0.13.14 | 2025-11-10 | [69151](https://github.com/airbytehq/airbyte/pull/69151) | Fix pagination for `companies` |
 | 0.13.13 | 2025-10-29 | [68767](https://github.com/airbytehq/airbyte/pull/68767) | Update dependencies |
 | 0.13.12 | 2025-10-21 | [68477](https://github.com/airbytehq/airbyte/pull/68477) | Update dependencies |
 | 0.13.11 | 2025-10-14 | [67933](https://github.com/airbytehq/airbyte/pull/67933) | Update dependencies |
