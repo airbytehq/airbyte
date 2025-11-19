@@ -76,19 +76,19 @@ data:
             type: GSM
             alias: airbyte-connector-testing-secret-store
   externalDocumentationUrls:
+    - title: SP-API Deprecation Schedule
+      url: https://developer-docs.amazon.com/sp-api/docs/sp-api-deprecations
+      type: api_deprecations
     - title: SP-API documentation
       url: https://developer-docs.amazon.com/sp-api/
       type: api_reference
+    - title: SP-API Release Notes
+      url: https://developer-docs.amazon.com/sp-api/docs/sp-api-release-notes
+      type: api_release_history
     - title: Authorization
       url: https://developer-docs.amazon.com/sp-api/docs/authorizing-selling-partner-api-applications
       type: authentication_guide
     - title: Usage plans and rate limits
       url: https://developer-docs.amazon.com/sp-api/docs/usage-plans-and-rate-limits-in-the-sp-api
       type: rate_limits
-    - title: SP-API Release Notes
-      url: https://developer-docs.amazon.com/sp-api/docs/sp-api-release-notes
-      type: api_release_history
-    - title: SP-API Deprecation Schedule
-      url: https://developer-docs.amazon.com/sp-api/docs/sp-api-deprecations
-      type: api_deprecations
 metadataSpecVersion: "1.0"
