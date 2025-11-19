@@ -115,19 +115,19 @@ data:
             type: GSM
             alias: airbyte-connector-testing-secret-store
   externalDocumentationUrls:
+    - title: Deprecations
+      url: https://advertising.amazon.com/API/docs/en-us/release-notes/deprecations
+      type: api_deprecations
     - title: Advertising API
       url: https://advertising.amazon.com/API/docs/en-us
       type: api_reference
+    - title: All releases
+      url: https://advertising.amazon.com/API/docs/en-us/release-notes/index
+      type: api_release_history
     - title: Authorization
       url: https://advertising.amazon.com/API/docs/en-us/get-started/authorization
       type: authentication_guide
     - title: Rate limits
       url: https://advertising.amazon.com/API/docs/en-us/get-started/developer-notes#rate-limiting
       type: rate_limits
-    - title: All releases
-      url: https://advertising.amazon.com/API/docs/en-us/release-notes/index
-      type: api_release_history
-    - title: Deprecations
-      url: https://advertising.amazon.com/API/docs/en-us/release-notes/deprecations
-      type: api_deprecations
 metadataSpecVersion: "1.0"

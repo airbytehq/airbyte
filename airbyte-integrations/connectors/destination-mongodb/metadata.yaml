@@ -32,6 +32,9 @@ data:
     - title: MongoDB documentation
       url: https://www.mongodb.com/docs/
       type: api_reference
+    - title: Release Notes
+      url: https://www.mongodb.com/docs/manual/release-notes/
+      type: api_release_history
     - title: Authentication
       url: https://www.mongodb.com/docs/manual/core/authentication/
       type: authentication_guide
@@ -41,7 +44,4 @@ data:
     - title: MongoDB Status
       url: https://status.mongodb.com/
       type: status_page
-    - title: Release Notes
-      url: https://www.mongodb.com/docs/manual/release-notes/
-      type: api_release_history
 metadataSpecVersion: "1.0"

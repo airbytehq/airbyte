@@ -104,6 +104,9 @@ data:
     - title: Zendesk Support API
       url: https://developer.zendesk.com/api-reference/ticketing/introduction/
       type: api_reference
+    - title: API Changelog
+      url: https://developer.zendesk.com/api-reference/changelog/changelog/
+      type: api_release_history
     - title: Zendesk API changelog
       url: https://developer.zendesk.com/api-reference/ticketing/introduction/#changes
       type: api_release_history
@@ -116,7 +119,4 @@ data:
     - title: Zendesk Status
       url: https://status.zendesk.com/
       type: status_page
-    - title: API Changelog
-      url: https://developer.zendesk.com/api-reference/changelog/changelog/
-      type: api_release_history
 metadataSpecVersion: "1.0"

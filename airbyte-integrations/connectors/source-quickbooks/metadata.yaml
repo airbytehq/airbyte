@@ -75,13 +75,13 @@ data:
     - title: QuickBooks Online API
       url: https://developer.intuit.com/app/developer/qbo/docs/api/accounting/all-entities/account
       type: api_reference
+    - title: QuickBooks Online API Changelog
+      url: https://developer.intuit.com/app/developer/qbo/docs/changelog
+      type: api_release_history
     - title: QuickBooks authentication
       url: https://developer.intuit.com/app/developer/qbo/docs/develop/authentication-and-authorization
       type: authentication_guide
     - title: QuickBooks rate limits
       url: https://developer.intuit.com/app/developer/qbo/docs/develop/troubleshooting/error-codes#rate-limits
       type: rate_limits
-    - title: QuickBooks Online API Changelog
-      url: https://developer.intuit.com/app/developer/qbo/docs/changelog
-      type: api_release_history
 metadataSpecVersion: "1.0"

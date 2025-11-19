@@ -55,10 +55,10 @@ data:
     - title: Snowflake Cortex documentation
       url: https://docs.snowflake.com/en/user-guide/snowflake-cortex
       type: api_reference
-    - title: Snowflake SQL reference
-      url: https://docs.snowflake.com/en/sql-reference
-      type: sql_reference
     - title: Key pair authentication
       url: https://docs.snowflake.com/en/user-guide/key-pair-auth
       type: authentication_guide
+    - title: Snowflake SQL reference
+      url: https://docs.snowflake.com/en/sql-reference
+      type: sql_reference
 metadataSpecVersion: "1.0"

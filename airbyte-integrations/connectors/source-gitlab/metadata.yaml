@@ -14,12 +14,12 @@ data:
   dockerRepository: airbyte/source-gitlab
   documentationUrl: https://docs.airbyte.com/integrations/sources/gitlab
   externalDocumentationUrls:
-    - title: API reference
-      url: https://docs.gitlab.com/ee/api/rest/
-      type: api_reference
     - title: Future REST API deprecations and removals
       url: https://docs.gitlab.com/ee/api/rest/deprecations.html
       type: api_deprecations
+    - title: API reference
+      url: https://docs.gitlab.com/ee/api/rest/
+      type: api_reference
   githubIssueLabel: source-gitlab
   icon: gitlab.svg
   license: ELv2

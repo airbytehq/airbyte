@@ -54,10 +54,10 @@ data:
     - title: SQL Server documentation
       url: https://learn.microsoft.com/en-us/sql/sql-server/
       type: api_reference
-    - title: SQL Server authentication
-      url: https://learn.microsoft.com/en-us/sql/relational-databases/security/choose-an-authentication-mode
-      type: authentication_guide
     - title: SQL Server 2022 release notes
       url: https://learn.microsoft.com/en-us/sql/sql-server/sql-server-2022-release-notes
       type: api_release_history
+    - title: SQL Server authentication
+      url: https://learn.microsoft.com/en-us/sql/relational-databases/security/choose-an-authentication-mode
+      type: authentication_guide
 metadataSpecVersion: "1.0"

@@ -44,10 +44,10 @@ data:
     - title: Qdrant documentation
       url: https://qdrant.tech/documentation/
       type: api_reference
-    - title: Authentication
-      url: https://qdrant.tech/documentation/guides/security/
-      type: authentication_guide
     - title: Release notes
       url: https://github.com/qdrant/qdrant/releases
       type: api_release_history
+    - title: Authentication
+      url: https://qdrant.tech/documentation/guides/security/
+      type: authentication_guide
 metadataSpecVersion: "1.0"

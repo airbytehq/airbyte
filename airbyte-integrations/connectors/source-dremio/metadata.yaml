@@ -44,10 +44,10 @@ data:
     - title: Dremio REST API
       url: https://docs.dremio.com/software/rest-api/
       type: api_reference
-    - title: Dremio SQL reference
-      url: https://docs.dremio.com/software/sql-reference/
-      type: sql_reference
     - title: Dremio authentication
       url: https://docs.dremio.com/software/rest-api/authentication/
       type: authentication_guide
+    - title: Dremio SQL reference
+      url: https://docs.dremio.com/software/sql-reference/
+      type: sql_reference
 metadataSpecVersion: "1.0"
