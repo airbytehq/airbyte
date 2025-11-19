@@ -114,7 +114,7 @@ The Nexus Datasets source connector supports the following [sync modes](https://
 
 | Version          | Date              | Pull Request | Subject        |
 |------------------|-------------------|--------------|----------------|
-| 0.0.1 | 2025-09-30 |  | Nexus datasets connector first version |
+| 0.1.0 | 2025-09-30 |  | Nexus datasets connector first version |
 
 
 
