@@ -18,6 +18,7 @@ from source_sftp_bulk.spec import SourceSFTPBulkSpec
 class SFTPBulkUploadableRemoteFile(UploadableRemoteFile):
     sftp_client: Any
     logger: Any
+    config: Any
 
     def __init__(self, sftp_client: SFTPClient, logger: logging.Logger, **kwargs):
         super().__init__(**kwargs)
@@ -28,6 +29,10 @@ class SFTPBulkUploadableRemoteFile(UploadableRemoteFile):
     def size(self) -> int:
         file_size = self.sftp_client.sftp_connection.stat(self.uri).st_size
         return file_size
+
+    @property
+    def source_uri(self) -> str:
+        return f"sftp://{self.config.username}@{self.config.host}:{self.config.port}{self.uri}"
 
     def _create_progress_handler(self, local_file_path: str):
         previous_bytes_copied = 0
@@ -139,6 +144,7 @@ class SourceSFTPBulkStreamReader(AbstractFileBasedStreamReader):
                         uri=f"{current_dir}/{item.filename}",
                         last_modified=datetime.datetime.fromtimestamp(item.st_mtime),
                         updated_at=datetime.datetime.fromtimestamp(item.st_mtime).strftime("%Y-%m-%dT%H:%M:%S.%fZ"),
+                        config=self.config,
                     )
                     yield from self.filter_files_by_globs_and_start_date(
                         [file],
