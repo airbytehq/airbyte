@@ -24,13 +24,11 @@ If you _only_ interact with the raw tables, enable the `Disable Final Tables` op
 
 2. Open your **Snowflake** connector.
 
-3. Click **Edit configuration**.
+3. Open the **Advanced** section.
 
-4. Open the **Advanced** section.
+4. Turn on **Disable Final Tables**.
 
-5. Turn on **Disable Final Tables**.
-
-6. Click **Save**.
+5. Click **Test and save**.
 
 :::note
 After upgrading to version 4, this setting appears as **Legacy raw tables** and remains enabled.
