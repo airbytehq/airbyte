@@ -33,3 +33,10 @@ data:
   ab_internal:
     ql: 100
     sl: 100
+  externalDocumentationUrls:
+    - title: Mailtrap API documentation
+      url: https://api-docs.mailtrap.io/
+      type: api_reference
+    - title: Mailtrap authentication
+      url: https://api-docs.mailtrap.io/docs/mailtrap-api-docs/ZG9jOjI2MjA1MzI2-authentication
+      type: authentication_guide
