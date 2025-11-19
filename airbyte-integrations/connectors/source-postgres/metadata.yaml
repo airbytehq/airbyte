@@ -64,4 +64,11 @@ data:
           secretStore:
             type: GSM
             alias: airbyte-connector-testing-secret-store
+  externalDocumentationUrls:
+    - title: PostgreSQL documentation
+      url: https://www.postgresql.org/docs/
+      type: api_reference
+    - title: PostgreSQL authentication
+      url: https://www.postgresql.org/docs/current/auth-methods.html
+      type: authentication_guide
 metadataSpecVersion: "1.0"

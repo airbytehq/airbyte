@@ -57,4 +57,14 @@ data:
           secretStore:
             type: GSM
             alias: airbyte-connector-testing-secret-store
+  externalDocumentationUrls:
+    - title: PostHog API reference
+      url: https://posthog.com/docs/api
+      type: api_reference
+    - title: PostHog authentication
+      url: https://posthog.com/docs/api/overview#authentication
+      type: authentication_guide
+    - title: PostHog Status
+      url: https://status.posthog.com/
+      type: status_page
 metadataSpecVersion: "1.0"

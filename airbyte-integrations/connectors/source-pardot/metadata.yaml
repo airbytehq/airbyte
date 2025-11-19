@@ -35,4 +35,11 @@ data:
     - suite: unitTests
   connectorBuildOptions:
     baseImage: docker.io/airbyte/source-declarative-manifest:7.5.0@sha256:92e539d5003b33c3624eae7715aee6e39b7b2f1f0eeb6003d37e649a06847ae8
+  externalDocumentationUrls:
+    - title: Pardot API reference
+      url: https://developer.salesforce.com/docs/marketing/pardot/overview
+      type: api_reference
+    - title: Pardot authentication
+      url: https://developer.salesforce.com/docs/marketing/pardot/guide/authentication.html
+      type: authentication_guide
 metadataSpecVersion: "1.0"

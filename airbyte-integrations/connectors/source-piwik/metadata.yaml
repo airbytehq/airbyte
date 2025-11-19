@@ -33,3 +33,10 @@ data:
   ab_internal:
     ql: 100
     sl: 100
+  externalDocumentationUrls:
+    - title: Matomo (Piwik) API reference
+      url: https://developer.matomo.org/api-reference/reporting-api
+      type: api_reference
+    - title: Matomo authentication
+      url: https://matomo.org/faq/general/faq_114/
+      type: authentication_guide

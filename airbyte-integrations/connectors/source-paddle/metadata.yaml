@@ -33,3 +33,16 @@ data:
   ab_internal:
     ql: 100
     sl: 100
+  externalDocumentationUrls:
+    - title: Paddle API reference
+      url: https://developer.paddle.com/api-reference/overview
+      type: api_reference
+    - title: Paddle authentication
+      url: https://developer.paddle.com/api-reference/authentication
+      type: authentication_guide
+    - title: Paddle rate limits
+      url: https://developer.paddle.com/api-reference/rate-limits
+      type: rate_limits
+    - title: Paddle Status
+      url: https://status.paddle.com/
+      type: status_page

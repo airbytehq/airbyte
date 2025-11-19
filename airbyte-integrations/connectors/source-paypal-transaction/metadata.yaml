@@ -76,4 +76,17 @@ data:
           secretStore:
             type: GSM
             alias: airbyte-connector-testing-secret-store
+  externalDocumentationUrls:
+    - title: PayPal API reference
+      url: https://developer.paypal.com/api/rest/
+      type: api_reference
+    - title: PayPal authentication
+      url: https://developer.paypal.com/api/rest/authentication/
+      type: authentication_guide
+    - title: PayPal rate limits
+      url: https://developer.paypal.com/api/rest/rate-limiting/
+      type: rate_limits
+    - title: PayPal Status
+      url: https://www.paypal-status.com/
+      type: status_page
 metadataSpecVersion: "1.0"
