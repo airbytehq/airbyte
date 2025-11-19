@@ -33,3 +33,10 @@ data:
   ab_internal:
     ql: 100
     sl: 100
+  externalDocumentationUrls:
+    - title: Jamf Pro API reference
+      url: https://developer.jamf.com/jamf-pro/reference/classic-api
+      type: api_reference
+    - title: Jamf Pro authentication
+      url: https://developer.jamf.com/jamf-pro/docs/jamf-pro-api-overview
+      type: authentication_guide
