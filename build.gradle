@@ -196,6 +196,7 @@ allprojects {
         }
 
         systemProperty 'junit.jupiter.execution.timeout.default', junitMethodExecutionTimeout
+        systemProperty 'kotlinx.coroutines.test.default_timeout', junitMethodExecutionTimeout
         // This is used by the "old" cdk (i.e. airbyte-cdk/java)
         systemProperty 'JunitMethodExecutionTimeout', junitMethodExecutionTimeout
     }
