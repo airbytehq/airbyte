@@ -37,6 +37,8 @@ The Uptick connector syncs data from the following streams, organized by functio
 - `creditnotes` - Credit notes for refunds and adjustments
 - `creditnotelineitems` - Line items within credit notes
 - `billingcards` - Billing card information for cost allocation
+- `billingcontracts` - Recurring billing contracts for ongoing services
+- `billingcontractlineitems` - Line items within billing contracts
 - `costcentres` - Cost center assignments for financial tracking
 
 ### Purchasing and supply chain
@@ -56,6 +58,8 @@ The Uptick connector syncs data from the following streams, organized by functio
 - `assettypevariants` - Variants and configurations of asset types
 - `routines` - Scheduled maintenance and inspection routines
 - `remarks` - Issues, defects, and observations during inspections
+- `remarkevents` - Events and actions taken on remarks
+- `appointments` - Scheduled appointments for work and inspections
 
 ### Quality and compliance
 
@@ -65,7 +69,11 @@ The Uptick connector syncs data from the following streams, organized by functio
 ### Sales
 
 - `servicequotes` - Quotes for service work
+- `servicequotefixedlineitems` - Fixed price line items within service quotes
+- `servicequotedoandchargelineitems` - Do-and-charge line items within service quotes
+- `servicequoteproductlineitems` - Product line items within service quotes
 - `defectquotes` - Quotes for remedial work on identified defects
+- `defectquotelineitems` - Line items within defect quotes
 
 ### Organization and location
 
@@ -75,40 +83,48 @@ The Uptick connector syncs data from the following streams, organized by functio
 
 | Stream Name | Primary Key | Pagination | Supports Full Sync | Supports Incremental |
 |-------------|-------------|------------|---------------------|----------------------|
-| tasks | id | DefaultPaginator | ✅ |  ✅  |
-| taskcategories | id | DefaultPaginator | ✅ |  ✅  |
-| clients | id | DefaultPaginator | ✅ |  ✅  |
-| clientgroups | id | DefaultPaginator | ✅ |  ✅  |
-| properties | id | DefaultPaginator | ✅ |  ✅  |
-| invoices | id | DefaultPaginator | ✅ |  ✅  |
-| projects | id | DefaultPaginator | ✅ |  ✅  |
-| servicequotes | id | DefaultPaginator | ✅ |  ✅  |
-| defectquotes | id | DefaultPaginator | ✅ |  ✅  |
-| suppliers | id | DefaultPaginator | ✅ |  ✅  |
-| purchaseorders | id | DefaultPaginator | ✅ |  ✅  |
-| assets | id | DefaultPaginator | ✅ |  ✅  |
-| routines | id | DefaultPaginator | ✅ |  ✅  |
-| billingcards | id | DefaultPaginator | ✅ |  ✅  |
-| purchaseorderbills | id | DefaultPaginator | ✅ |  ✅  |
-| purchaseorderdockets | id | DefaultPaginator | ✅ |  ✅  |
-| invoicelineitems | id | DefaultPaginator | ✅ |  ❌  |
-| users | id | DefaultPaginator | ✅ |  ✅  |
-| servicegroups | id | DefaultPaginator | ✅ |  ✅  |
-| costcentres | id | DefaultPaginator | ✅ |  ✅  |
-| purchaseorderlineitems | id | DefaultPaginator | ✅ |  ❌  |
-| purchaseorderbilllineitems | id | DefaultPaginator | ✅ |  ❌  |
-| accreditationtypes | id | DefaultPaginator | ✅ |  ✅  |
-| accreditations | id | DefaultPaginator | ✅ |  ✅  |
-| branches | id | DefaultPaginator | ✅ |  ✅  |
-| creditnotes | id | DefaultPaginator | ✅ |  ✅  |
-| creditnotelineitems | id | DefaultPaginator | ✅ |  ✅  |
-| remarks | id | DefaultPaginator | ✅ |  ✅  |
-| assettypes | id | DefaultPaginator | ✅ |  ✅  |
-| assettypevariants | id | DefaultPaginator | ✅ |  ✅  |
-| products | id | DefaultPaginator | ✅ |  ✅  |
-| rounds | id | DefaultPaginator | ✅ |  ✅  |
-| tasksessions | id | DefaultPaginator | ✅ |  ✅  |
-| contractors | id | DefaultPaginator | ✅ |  ✅  |
+| tasks | id | DefaultPaginator | ✅ | ✅ |
+| taskcategories | id | DefaultPaginator | ✅ | ✅ |
+| clients | id | DefaultPaginator | ✅ | ✅ |
+| clientgroups | id | DefaultPaginator | ✅ | ✅ |
+| properties | id | DefaultPaginator | ✅ | ✅ |
+| invoices | id | DefaultPaginator | ✅ | ✅ |
+| projects | id | DefaultPaginator | ✅ | ✅ |
+| servicequotes | id | DefaultPaginator | ✅ | ✅ |
+| defectquotes | id | DefaultPaginator | ✅ | ✅ |
+| suppliers | id | DefaultPaginator | ✅ | ✅ |
+| purchaseorders | id | DefaultPaginator | ✅ | ✅ |
+| purchaseorderlineitems | id | DefaultPaginator | ✅ | ❌ (no soft delete) |
+| assets | id | DefaultPaginator | ✅ | ✅ |
+| routines | id | DefaultPaginator | ✅ | ✅ |
+| billingcards | id | DefaultPaginator | ✅ | ✅ |
+| purchaseorderbills | id | DefaultPaginator | ✅ | ✅ |
+| purchaseorderbilllineitems | id | DefaultPaginator | ✅ | ❌ (no soft delete) |
+| purchaseorderdockets | id | DefaultPaginator | ✅ | ✅ |
+| invoicelineitems | id | DefaultPaginator | ✅ | ❌ (no soft delete) |
+| users | id | DefaultPaginator | ✅ | ✅ |
+| servicegroups | id | DefaultPaginator | ✅ | ✅ |
+| costcentres | id | DefaultPaginator | ✅ | ✅ |
+| accreditationtypes | id | DefaultPaginator | ✅ | ✅ |
+| accreditations | id | DefaultPaginator | ✅ | ✅ |
+| branches | id | DefaultPaginator | ✅ | ✅ |
+| creditnotes | id | DefaultPaginator | ✅ | ✅ |
+| creditnotelineitems | id | DefaultPaginator | ✅ | ✅ |
+| remarks | id | DefaultPaginator | ✅ | ✅ |
+| assettypes | id | DefaultPaginator | ✅ | ✅ |
+| assettypevariants | id | DefaultPaginator | ✅ | ✅ |
+| products | id | DefaultPaginator | ✅ | ✅ |
+| rounds | id | DefaultPaginator | ✅ | ✅ |
+| tasksessions | id | DefaultPaginator | ✅ | ✅ |
+| contractors | id | DefaultPaginator | ✅ | ✅ |
+| appointments | id | DefaultPaginator | ✅ | ❌ (no soft delete) |
+| billingcontracts | id | DefaultPaginator | ✅ | ❌ (no soft delete) |
+| billingcontractlineitems | id | DefaultPaginator | ✅ | ❌ (no soft delete) |
+| defectquotelineitems | id | DefaultPaginator | ✅ | ❌ (no soft delete) |
+| servicequotefixedlineitems | id | DefaultPaginator | ✅ | ❌ (no soft delete) |
+| servicequotedoandchargelineitems | id | DefaultPaginator | ✅ | ❌ (no soft delete) |
+| servicequoteproductlineitems | id | DefaultPaginator | ✅ | ❌ (no soft delete) |
+| remarkevents | id | DefaultPaginator | ✅ | ❌ (no soft delete) |
 
 ## Changelog
 
@@ -117,6 +133,7 @@ The Uptick connector syncs data from the following streams, organized by functio
 
 | Version          | Date              | Pull Request | Subject        |
 |------------------|-------------------|--------------|----------------|
+| 0.3.9 | 2025-11-19 | [68194](https://github.com/airbytehq/airbyte/pull/68194) | Remove expensive calculation fields from tasksessions, add more streams |
 | 0.3.8 | 2025-11-18 | [69684](https://github.com/airbytehq/airbyte/pull/69684) | Update dependencies |
 | 0.3.7 | 2025-10-29 | [68880](https://github.com/airbytehq/airbyte/pull/68880) | Update dependencies |
 | 0.3.6 | 2025-10-21 | [68365](https://github.com/airbytehq/airbyte/pull/68365) | Update dependencies |

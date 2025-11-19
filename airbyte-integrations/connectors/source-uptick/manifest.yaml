@@ -27,7 +27,7 @@ definitions:
           - type: WaitTimeFromHeader
             header: Retry-After
       request_headers:
-        User-Agent: Airbyte (Connector Version 0.3.5)
+        User-Agent: Airbyte (Connector Version 0.3.9)
     SimpleRetriever:
       requester:
         $ref: "#/definitions/linked/HttpRequester"
