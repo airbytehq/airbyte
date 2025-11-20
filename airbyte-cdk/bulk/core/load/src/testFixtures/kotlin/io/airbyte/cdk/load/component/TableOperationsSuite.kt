@@ -5,9 +5,9 @@
 package io.airbyte.cdk.load.component
 
 import io.airbyte.cdk.load.component.TableOperationsFixtures as Fixtures
+import io.airbyte.cdk.load.component.TableOperationsFixtures.assertEquals
 import io.airbyte.cdk.load.component.TableOperationsFixtures.insertRecords
 import io.airbyte.cdk.load.component.TableOperationsFixtures.reverseColumnNameMapping
-import io.airbyte.cdk.load.component.TableOperationsFixtures.sortByTestField
 import io.airbyte.cdk.load.data.AirbyteValue
 import io.airbyte.cdk.load.data.IntegerValue
 import io.airbyte.cdk.load.data.ObjectValue
@@ -402,13 +402,14 @@ interface TableOperationsSuite {
             val overwrittenTableRecords = harness.readTableWithoutMetaColumns(targetTable)
 
             assertEquals(
-                expectedRecords.sortByTestField(),
-                overwrittenTableRecords
-                    .reverseColumnNameMapping(columnNameMapping, airbyteMetaColumnMapping)
-                    .sortByTestField(),
-            ) {
-                "Expected records were not in the overwritten table."
-            }
+                expectedRecords,
+                overwrittenTableRecords.reverseColumnNameMapping(
+                    columnNameMapping,
+                    airbyteMetaColumnMapping
+                ),
+                "test",
+                "Expected records were not in the overwritten table.",
+            )
 
             assert(!client.tableExists(sourceTable)) {
                 "Source table: ${sourceTable.namespace}.${sourceTable.name} was not dropped as expected."
@@ -473,13 +474,14 @@ interface TableOperationsSuite {
             val copyTableRecords = harness.readTableWithoutMetaColumns(targetTable)
 
             assertEquals(
-                expectedRecords.sortByTestField(),
-                copyTableRecords
-                    .reverseColumnNameMapping(columnNameMapping, airbyteMetaColumnMapping)
-                    .sortByTestField(),
-            ) {
+                expectedRecords,
+                copyTableRecords.reverseColumnNameMapping(
+                    columnNameMapping,
+                    airbyteMetaColumnMapping
+                ),
+                "test",
                 "Expected source records were not copied to the target table."
-            }
+            )
         } finally {
             harness.cleanupTable(sourceTable)
             harness.cleanupTable(targetTable)
@@ -560,13 +562,14 @@ interface TableOperationsSuite {
             val upsertTableRecords = testClient.readTable(targetTable)
 
             assertEquals(
-                expectedRecords.sortByTestField(),
-                upsertTableRecords
-                    .reverseColumnNameMapping(columnNameMapping, airbyteMetaColumnMapping)
-                    .sortByTestField(),
-            ) {
+                expectedRecords,
+                upsertTableRecords.reverseColumnNameMapping(
+                    columnNameMapping,
+                    airbyteMetaColumnMapping
+                ),
+                "id",
                 "Upserted table did not contain expected records."
-            }
+            )
         } finally {
             harness.cleanupTable(sourceTable)
             harness.cleanupTable(targetTable)
