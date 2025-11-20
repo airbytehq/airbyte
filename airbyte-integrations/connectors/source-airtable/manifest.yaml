@@ -595,7 +595,7 @@ api_budget:
 
 concurrency_level:
   type: ConcurrencyLevel
-  default_concurrency: "{{ config.get('num_workers', 1) }}"
+  default_concurrency: "{{ config.get('num_workers', 2) }}"
   max_concurrency: 5
 
 spec:
@@ -608,7 +608,7 @@ spec:
         type: integer
         title: Number of Concurrent Workers
         description: Number of concurrent threads for syncing. Higher values can speed up syncs but may hit rate limits. Airtable limits to 5 requests per second per base.
-        default: 1
+        default: 2
         minimum: 1
         maximum: 5
       credentials:
