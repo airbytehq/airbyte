@@ -5,10 +5,31 @@
 package io.airbyte.cdk.load.component
 
 import io.airbyte.cdk.load.component.TableOperationsFixtures.inputRecord
+import io.airbyte.cdk.load.data.FieldType
+import io.airbyte.cdk.load.data.IntegerType
 import io.airbyte.cdk.load.data.IntegerValue
+import io.airbyte.cdk.load.data.ObjectType
+import io.airbyte.cdk.load.data.StringType
 import io.airbyte.cdk.load.data.StringValue
+import io.airbyte.cdk.load.data.UnknownType
+import io.airbyte.cdk.util.Jsons
 
 object TableSchemaEvolutionFixtures {
+    val ID_AND_STRING_SCHEMA =
+        ObjectType(
+            linkedMapOf(
+                "id" to FieldType(IntegerType, true),
+                "test" to FieldType(StringType, true),
+            ),
+        )
+    val ID_AND_UNKNOWN_SCHEMA =
+        ObjectType(
+            linkedMapOf(
+                "id" to FieldType(IntegerType, true),
+                "test" to FieldType(UnknownType(Jsons.readTree("""{"type": "potato"}""")), true),
+            ),
+        )
+
     val STRING_TO_UNKNOWN_TYPE_INPUT_RECORDS =
         listOf(
             inputRecord("id" to IntegerValue(1), "test" to StringValue("\"foo\"")),

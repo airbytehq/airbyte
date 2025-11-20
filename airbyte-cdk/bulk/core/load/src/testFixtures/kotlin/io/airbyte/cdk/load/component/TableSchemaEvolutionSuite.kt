@@ -20,11 +20,9 @@ import io.airbyte.cdk.load.data.IntegerValue
 import io.airbyte.cdk.load.data.ObjectType
 import io.airbyte.cdk.load.data.StringType
 import io.airbyte.cdk.load.data.StringValue
-import io.airbyte.cdk.load.data.UnknownType
 import io.airbyte.cdk.load.message.Meta
 import io.airbyte.cdk.load.table.ColumnNameMapping
 import io.airbyte.cdk.load.table.TableName
-import io.airbyte.cdk.util.Jsons
 import io.micronaut.test.extensions.junit5.annotation.MicronautTest
 import kotlin.test.assertEquals
 import kotlinx.coroutines.test.runTest
@@ -475,29 +473,14 @@ interface TableSchemaEvolutionSuite {
     ) = runTest {
         val testNamespace = Fixtures.generateTestNamespace("namespace-test")
         val testTable = Fixtures.generateTestTableName("table-test-table", testNamespace)
-        val initialSchema =
-            ObjectType(
-                linkedMapOf(
-                    "id" to FieldType(IntegerType, true),
-                    "test" to FieldType(StringType, true),
-                ),
-            )
-        val modifiedSchema =
-            ObjectType(
-                linkedMapOf(
-                    "id" to FieldType(IntegerType, true),
-                    "test" to
-                        FieldType(UnknownType(Jsons.readTree("""{"type": "potato"}""")), true),
-                ),
-            )
 
         // Create the table and compute the schema changeset
         val (_, expectedSchema, changeset, modifiedStream) =
             computeSchemaEvolution(
                 testTable,
-                initialSchema,
+                TableSchemaEvolutionFixtures.ID_AND_STRING_SCHEMA,
                 initialColumnNameMapping,
-                modifiedSchema,
+                TableSchemaEvolutionFixtures.ID_AND_UNKNOWN_SCHEMA,
                 modifiedColumnNameMapping,
             )
 
