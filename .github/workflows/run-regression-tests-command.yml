@@ -45,13 +45,6 @@ on:
           Connection ID. ID of the connection to test; use "auto" to let the
           connection retriever choose a connection.
         default: "auto"
-      connection_subset:
-        description: The subset of connections to select from.
-        default: "sandboxes"
-        type: choice
-        options:
-          - sandboxes
-          - all
       streams:
         description: >
           (Optional) Streams. Which streams to include in tests.
@@ -71,6 +64,13 @@ on:
         description: Disable proxy for requests
         default: "false"
         type: boolean
+      connection_subset:
+        description: The subset of connections to select from.
+        default: "sandboxes"
+        type: choice
+        options:
+          - sandboxes
+          - all
       control_version:
         description: The version to use as a control version. This is useful when the version defined in the cloud registry does not have a lot of usage (either because a progressive rollout is underway or because a new version has just been released).
         required: false

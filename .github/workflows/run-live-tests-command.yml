@@ -16,20 +16,20 @@ on:
     inputs:
       # Global static-arg inputs for slash commands
       repo:
-        description: "The repository name"
+        description: "The repository name. Optional. Defaults to 'airbytehq/airbyte'."
         required: false
         default: "airbytehq/airbyte"
         type: string
       gitref:
-        description: "The git reference (branch or tag)"
+        description: "The git reference (branch or tag). Optional. Defaults to the default branch."
         required: false
         type: string
       comment-id:
-        description: "The ID of the comment triggering the workflow"
+        description: "The ID of the comment triggering the workflow. Optional."
         required: false
         type: number
       pr:
-        description: "The pull request number, if applicable"
+        description: "The pull request number, if applicable. Optional."
         required: false
         type: number
 
@@ -45,13 +45,6 @@ on:
           Connection ID. ID of the connection to test; use "auto" to let the
           connection retriever choose a connection.
         default: "auto"
-      connection_subset:
-        description: The subset of connections to select from.
-        default: "sandboxes"
-        type: choice
-        options:
-          - sandboxes
-          - all
       streams:
         description: >
           (Optional) Streams. Which streams to include in tests.
@@ -71,6 +64,13 @@ on:
         description: Disable proxy for requests
         default: "false"
         type: boolean
+      connection_subset:
+        description: The subset of connections to select from.
+        default: "sandboxes"
+        type: choice
+        options:
+          - sandboxes
+          - all
 
 jobs:
   live_tests:
