@@ -100,4 +100,14 @@ class SnowflakeTableSchemaEvolutionTest(
             TableSchemaEvolutionFixtures.STRING_TO_UNKNOWN_TYPE_EXPECTED_RECORDS,
         )
     }
+
+    @Test
+    override fun `change from unknown type to string type`() {
+        super.`change from unknown type to string type`(
+            idAndTestMapping,
+            idAndTestMapping,
+            TableSchemaEvolutionFixtures.UNKNOWN_TO_STRING_TYPE_INPUT_RECORDS,
+            TableSchemaEvolutionFixtures.UNKNOWN_TO_STRING_TYPE_EXPECTED_RECORDS,
+        )
+    }
 }

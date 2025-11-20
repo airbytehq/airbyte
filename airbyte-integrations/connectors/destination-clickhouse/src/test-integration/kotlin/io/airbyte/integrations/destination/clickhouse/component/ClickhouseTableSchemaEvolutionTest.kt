@@ -86,4 +86,9 @@ class ClickhouseTableSchemaEvolutionTest(
     override fun `change from string type to unknown type`() {
         super.`change from string type to unknown type`()
     }
+
+    @Test
+    override fun `change from unknown type to string type`() {
+        super.`change from unknown type to string type`()
+    }
 }
