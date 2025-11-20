@@ -18,6 +18,7 @@ include = "source_cart"
 [tool.poetry.dependencies]
 python = "^3.10,<3.14"
 airbyte-cdk = "^7.0.0"
+pendulum = "^3.0.0"  # Used directly by connector for date parsing
 
 [tool.poetry.scripts]
 source-cart = "source_cart.run:run"
