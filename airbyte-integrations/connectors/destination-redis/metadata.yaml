@@ -27,4 +27,14 @@ data:
   connectorTestSuitesOptions:
     - suite: unitTests
     - suite: integrationTests
+  externalDocumentationUrls:
+    - title: Redis documentation
+      url: https://redis.io/docs/
+      type: api_reference
+    - title: Release notes
+      url: https://redis.io/docs/about/releases/
+      type: api_release_history
+    - title: Redis ACL
+      url: https://redis.io/docs/management/security/acl/
+      type: permissions_scopes
 metadataSpecVersion: "1.0"

@@ -7,11 +7,11 @@ data:
       - connect.squareupsandbox.com
       - connect.squareup.com
   connectorBuildOptions:
-    baseImage: docker.io/airbyte/source-declarative-manifest:6.60.16@sha256:b8126848437ec5a6cff05fb4796fd775450b83e57925674d856a1838a390a28c
+    baseImage: docker.io/airbyte/source-declarative-manifest:7.5.0@sha256:92e539d5003b33c3624eae7715aee6e39b7b2f1f0eeb6003d37e649a06847ae8
   connectorSubtype: api
   connectorType: source
   definitionId: 77225a51-cd15-4a13-af02-65816bd0ecf4
-  dockerImageTag: 1.7.7
+  dockerImageTag: 1.7.9
   dockerRepository: airbyte/source-square
   documentationUrl: https://docs.airbyte.com/integrations/sources/square
   githubIssueLabel: source-square
@@ -52,4 +52,23 @@ data:
           secretStore:
             type: GSM
             alias: airbyte-connector-testing-secret-store
+  externalDocumentationUrls:
+    - title: Square API reference
+      url: https://developer.squareup.com/reference/square
+      type: api_reference
+    - title: Square API Release Notes
+      url: https://developer.squareup.com/docs/release-notes
+      type: api_release_history
+    - title: Square API changelog
+      url: https://developer.squareup.com/docs/changelog
+      type: api_release_history
+    - title: Square authentication
+      url: https://developer.squareup.com/docs/build-basics/access-tokens
+      type: authentication_guide
+    - title: Square rate limits
+      url: https://developer.squareup.com/docs/build-basics/api-rate-limits
+      type: rate_limits
+    - title: Square Status
+      url: https://www.issquareup.com/
+      type: status_page
 metadataSpecVersion: "1.0"

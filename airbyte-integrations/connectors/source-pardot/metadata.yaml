@@ -2,7 +2,7 @@ data:
   connectorSubtype: api
   connectorType: source
   definitionId: ad15c7ba-72a7-440b-af15-b9a963dc1a8a
-  dockerImageTag: 1.0.29
+  dockerImageTag: 1.0.31
   dockerRepository: airbyte/source-pardot
   githubIssueLabel: source-pardot
   icon: salesforcepardot.svg
@@ -34,5 +34,12 @@ data:
   connectorTestSuitesOptions:
     - suite: unitTests
   connectorBuildOptions:
-    baseImage: docker.io/airbyte/source-declarative-manifest:7.3.9@sha256:467a90d7721f4e0ca0065e6b2d257abfb371fdeafbc64c8ce63c039270aba0f0
+    baseImage: docker.io/airbyte/source-declarative-manifest:7.5.0@sha256:92e539d5003b33c3624eae7715aee6e39b7b2f1f0eeb6003d37e649a06847ae8
+  externalDocumentationUrls:
+    - title: Pardot API reference
+      url: https://developer.salesforce.com/docs/marketing/pardot/overview
+      type: api_reference
+    - title: Pardot authentication
+      url: https://developer.salesforce.com/docs/marketing/pardot/guide/authentication.html
+      type: authentication_guide
 metadataSpecVersion: "1.0"

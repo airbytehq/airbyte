@@ -13,11 +13,11 @@ data:
       enabled: false
       packageName: airbyte-source-alpaca-broker-api
   connectorBuildOptions:
-    baseImage: docker.io/airbyte/source-declarative-manifest:7.3.4@sha256:ebf5c159101614ec9ab3a5183c92781c397b998d15c0b7e2e561ec1e00397fa4
+    baseImage: docker.io/airbyte/source-declarative-manifest:7.4.1@sha256:71df19e2ee555ca5b14abbec01d50104c79c9b84cb9cc323284d24333361900a
   connectorSubtype: api
   connectorType: source
   definitionId: 9065ae98-3c65-4283-b858-d22772b6fab5
-  dockerImageTag: 0.0.15
+  dockerImageTag: 0.0.16
   dockerRepository: airbyte/source-alpaca-broker-api
   githubIssueLabel: source-alpaca-broker-api
   icon: icon.svg
@@ -33,3 +33,13 @@ data:
   ab_internal:
     ql: 100
     sl: 100
+  externalDocumentationUrls:
+    - title: Broker API documentation
+      url: https://docs.alpaca.markets/docs/broker-api
+      type: api_reference
+    - title: Authentication
+      url: https://docs.alpaca.markets/docs/broker-api-keys
+      type: authentication_guide
+    - title: Rate limits
+      url: https://docs.alpaca.markets/docs/rate-limits
+      type: rate_limits
