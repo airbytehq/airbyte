@@ -20,6 +20,9 @@ data:
     - title: Slack developer changelog
       url: https://docs.slack.dev/changelog/
       type: api_release_history
+    - title: Slack Web API OpenAPI specification
+      url: https://api.slack.com/specs/openapi/v2/slack_web.json
+      type: openapi_spec
   githubIssueLabel: source-slack
   icon: slack.svg
   license: ELv2

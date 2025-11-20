@@ -20,6 +20,9 @@ data:
     - title: Changelog
       url: https://developers.notion.com/page/changelog
       type: api_release_history
+    - title: Notion API OpenAPI specification
+      url: https://github.com/ramnes/notion-sdk-py/blob/main/notion_client/openapi.json
+      type: openapi_spec
   githubIssueLabel: source-notion
   icon: notion.svg
   license: ELv2

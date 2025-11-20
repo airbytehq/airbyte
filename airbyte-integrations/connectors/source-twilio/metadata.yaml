@@ -72,6 +72,9 @@ data:
     - title: Twilio authentication
       url: https://www.twilio.com/docs/iam/credentials/api-credentials
       type: authentication_guide
+    - title: Twilio API OpenAPI specification
+      url: https://github.com/twilio/twilio-oai
+      type: openapi_spec
     - title: Twilio rate limits
       url: https://www.twilio.com/docs/usage/api#rate-limiting
       type: rate_limits

@@ -26,6 +26,7 @@ class ExternalDocumentationUrl(BaseModel):
             "data_model_reference",
             "developer_community",
             "migration_guide",
+            "openapi_spec",
             "other",
             "permissions_scopes",
             "rate_limits",
