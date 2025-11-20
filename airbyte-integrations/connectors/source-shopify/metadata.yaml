@@ -177,6 +177,9 @@ data:
     - title: Shopify authentication
       url: https://shopify.dev/docs/apps/auth
       type: authentication_guide
+    - title: Shopify Admin API OpenAPI specification
+      url: https://shopify.dev/docs/api/admin-rest
+      type: openapi_spec
     - title: Shopify rate limits
       url: https://shopify.dev/docs/api/usage/rate-limits
       type: rate_limits

@@ -20,6 +20,9 @@ data:
     - title: API reference
       url: https://docs.gitlab.com/ee/api/rest/
       type: api_reference
+    - title: GitLab API OpenAPI specification
+      url: https://docs.gitlab.com/ee/api/openapi/openapi.yaml
+      type: openapi_spec
   githubIssueLabel: source-gitlab
   icon: gitlab.svg
   license: ELv2
