@@ -36,3 +36,10 @@ data:
   ab_internal:
     ql: 100
     sl: 100
+  externalDocumentationUrls:
+    - title: Jotform API documentation
+      url: https://api.jotform.com/docs/
+      type: api_reference
+    - title: Jotform authentication
+      url: https://api.jotform.com/docs/#authentication
+      type: authentication_guide

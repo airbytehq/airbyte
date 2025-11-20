@@ -25,10 +25,10 @@ data:
     - title: YugabyteDB documentation
       url: https://docs.yugabyte.com/
       type: api_reference
-    - title: YSQL reference
-      url: https://docs.yugabyte.com/preview/api/ysql/
-      type: sql_reference
     - title: Authentication
       url: https://docs.yugabyte.com/preview/secure/authentication/
       type: authentication_guide
+    - title: YSQL reference
+      url: https://docs.yugabyte.com/preview/api/ysql/
+      type: sql_reference
 metadataSpecVersion: "1.0"

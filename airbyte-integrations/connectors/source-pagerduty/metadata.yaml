@@ -44,4 +44,17 @@ data:
   #           alias: airbyte-connector-testing-secret-store
   connectorBuildOptions:
     baseImage: docker.io/airbyte/source-declarative-manifest:7.5.0@sha256:92e539d5003b33c3624eae7715aee6e39b7b2f1f0eeb6003d37e649a06847ae8
+  externalDocumentationUrls:
+    - title: PagerDuty API reference
+      url: https://developer.pagerduty.com/api-reference/
+      type: api_reference
+    - title: PagerDuty authentication
+      url: https://developer.pagerduty.com/docs/ZG9jOjExMDI5NTUw-authentication
+      type: authentication_guide
+    - title: PagerDuty rate limits
+      url: https://developer.pagerduty.com/docs/ZG9jOjExMDI5NTUx-rate-limiting
+      type: rate_limits
+    - title: PagerDuty Status
+      url: https://status.pagerduty.com/
+      type: status_page
 metadataSpecVersion: "1.0"

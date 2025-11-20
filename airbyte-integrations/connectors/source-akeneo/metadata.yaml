@@ -32,3 +32,10 @@ data:
   ab_internal:
     ql: 100
     sl: 100
+  externalDocumentationUrls:
+    - title: API reference
+      url: https://api.akeneo.com/
+      type: api_reference
+    - title: Authentication
+      url: https://api.akeneo.com/documentation/authentication.html
+      type: authentication_guide

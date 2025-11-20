@@ -33,3 +33,7 @@ data:
   ab_internal:
     ql: 100
     sl: 100
+  externalDocumentationUrls:
+    - title: SendPulse API documentation
+      url: https://sendpulse.com/integrations/api
+      type: api_reference

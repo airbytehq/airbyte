@@ -33,3 +33,13 @@ data:
   ab_internal:
     ql: 100
     sl: 100
+  externalDocumentationUrls:
+    - title: Gorgias API documentation
+      url: https://developers.gorgias.com/reference
+      type: api_reference
+    - title: Gorgias authentication
+      url: https://developers.gorgias.com/reference/authentication
+      type: authentication_guide
+    - title: Gorgias rate limits
+      url: https://developers.gorgias.com/reference/rate-limiting
+      type: rate_limits

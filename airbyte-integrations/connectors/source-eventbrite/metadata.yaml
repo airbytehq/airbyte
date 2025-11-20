@@ -33,3 +33,16 @@ data:
   ab_internal:
     ql: 100
     sl: 100
+  externalDocumentationUrls:
+    - title: Eventbrite API reference
+      url: https://www.eventbrite.com/platform/api
+      type: api_reference
+    - title: Eventbrite authentication
+      url: https://www.eventbrite.com/platform/api#/introduction/authentication
+      type: authentication_guide
+    - title: Eventbrite rate limits
+      url: https://www.eventbrite.com/platform/api#/introduction/rate-limits
+      type: rate_limits
+    - title: Eventbrite Status
+      url: https://status.eventbrite.com/
+      type: status_page

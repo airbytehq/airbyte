@@ -33,3 +33,13 @@ data:
   ab_internal:
     ql: 100
     sl: 100
+  externalDocumentationUrls:
+    - title: Broker API documentation
+      url: https://docs.alpaca.markets/docs/broker-api
+      type: api_reference
+    - title: Authentication
+      url: https://docs.alpaca.markets/docs/broker-api-keys
+      type: authentication_guide
+    - title: Rate limits
+      url: https://docs.alpaca.markets/docs/rate-limits
+      type: rate_limits

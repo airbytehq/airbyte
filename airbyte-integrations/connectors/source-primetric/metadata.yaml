@@ -52,4 +52,8 @@ data:
           secretStore:
             type: GSM
             alias: airbyte-connector-testing-secret-store
+  externalDocumentationUrls:
+    - title: Primetric API documentation
+      url: https://developer.primetric.com/
+      type: api_reference
 metadataSpecVersion: "1.0"

@@ -47,4 +47,8 @@ data:
           secretStore:
             type: GSM
             alias: airbyte-connector-testing-secret-store
+  externalDocumentationUrls:
+    - title: My Hours API documentation
+      url: https://myhours.com/api
+      type: api_reference
 metadataSpecVersion: "1.0"

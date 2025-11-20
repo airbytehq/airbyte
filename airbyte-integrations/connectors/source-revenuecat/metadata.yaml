@@ -33,3 +33,13 @@ data:
   ab_internal:
     ql: 100
     sl: 100
+  externalDocumentationUrls:
+    - title: RevenueCat API reference
+      url: https://www.revenuecat.com/docs/api-v1
+      type: api_reference
+    - title: RevenueCat authentication
+      url: https://www.revenuecat.com/docs/authentication
+      type: authentication_guide
+    - title: RevenueCat Status
+      url: https://status.revenuecat.com/
+      type: status_page

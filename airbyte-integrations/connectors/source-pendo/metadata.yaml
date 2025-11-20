@@ -40,4 +40,11 @@ data:
           secretStore:
             type: GSM
             alias: airbyte-connector-testing-secret-store
+  externalDocumentationUrls:
+    - title: Pendo API reference
+      url: https://engageapi.pendo.io/
+      type: api_reference
+    - title: Pendo authentication
+      url: https://support.pendo.io/hc/en-us/articles/360031862272-Integration-Keys
+      type: authentication_guide
 metadataSpecVersion: "1.0"

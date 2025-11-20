@@ -72,4 +72,14 @@ data:
           secretStore:
             type: GSM
             alias: airbyte-connector-testing-secret-store
+  externalDocumentationUrls:
+    - title: Google Cloud Storage documentation
+      url: https://cloud.google.com/storage/docs
+      type: api_reference
+    - title: GCS authentication
+      url: https://cloud.google.com/storage/docs/authentication
+      type: authentication_guide
+    - title: Google Cloud Status
+      url: https://status.cloud.google.com/
+      type: status_page
 metadataSpecVersion: "1.0"

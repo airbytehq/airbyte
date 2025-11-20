@@ -34,3 +34,16 @@ data:
   ab_internal:
     ql: 100
     sl: 100
+  externalDocumentationUrls:
+    - title: Segment Public API
+      url: https://docs.segmentapis.com/tag/Getting-Started
+      type: api_reference
+    - title: Segment authentication
+      url: https://docs.segmentapis.com/tag/Getting-Started#section/Authentication
+      type: authentication_guide
+    - title: Segment rate limits
+      url: https://docs.segmentapis.com/tag/Getting-Started#section/Rate-Limit
+      type: rate_limits
+    - title: Segment Status
+      url: https://status.segment.com/
+      type: status_page

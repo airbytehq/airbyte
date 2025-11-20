@@ -40,4 +40,8 @@ data:
           secretStore:
             type: GSM
             alias: airbyte-connector-testing-secret-store
+  externalDocumentationUrls:
+    - title: PyPI API documentation
+      url: https://warehouse.pypa.io/api-reference/
+      type: api_reference
 metadataSpecVersion: "1.0"

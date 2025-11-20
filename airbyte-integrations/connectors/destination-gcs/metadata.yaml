@@ -47,6 +47,9 @@ data:
     - title: Cloud Storage documentation
       url: https://cloud.google.com/storage/docs
       type: api_reference
+    - title: Google Cloud Release Notes
+      url: https://cloud.google.com/release-notes
+      type: api_release_history
     - title: Service account authentication
       url: https://cloud.google.com/iam/docs/service-accounts
       type: authentication_guide

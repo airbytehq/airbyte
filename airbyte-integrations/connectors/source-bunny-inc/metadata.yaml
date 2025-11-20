@@ -33,3 +33,10 @@ data:
   ab_internal:
     ql: 100
     sl: 100
+  externalDocumentationUrls:
+    - title: Bunny.net API documentation
+      url: https://docs.bunny.net/reference/bunnynet-api-overview
+      type: api_reference
+    - title: Bunny.net authentication
+      url: https://docs.bunny.net/reference/authentication
+      type: authentication_guide

@@ -33,3 +33,16 @@ data:
   ab_internal:
     ql: 100
     sl: 100
+  externalDocumentationUrls:
+    - title: Google Calendar API reference
+      url: https://developers.google.com/calendar/api/v3/reference
+      type: api_reference
+    - title: Google Calendar authentication
+      url: https://developers.google.com/calendar/api/guides/auth
+      type: authentication_guide
+    - title: Google Calendar quotas
+      url: https://developers.google.com/calendar/api/guides/quota
+      type: rate_limits
+    - title: Google Workspace Status
+      url: https://www.google.com/appsstatus/
+      type: status_page

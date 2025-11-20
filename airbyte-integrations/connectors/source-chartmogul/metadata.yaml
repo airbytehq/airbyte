@@ -56,4 +56,17 @@ data:
           secretStore:
             type: GSM
             alias: airbyte-connector-testing-secret-store
+  externalDocumentationUrls:
+    - title: ChartMogul API reference
+      url: https://dev.chartmogul.com/reference
+      type: api_reference
+    - title: ChartMogul authentication
+      url: https://dev.chartmogul.com/docs/authentication
+      type: authentication_guide
+    - title: ChartMogul rate limits
+      url: https://dev.chartmogul.com/docs/rate-limits
+      type: rate_limits
+    - title: ChartMogul Status
+      url: https://status.chartmogul.com/
+      type: status_page
 metadataSpecVersion: "1.0"

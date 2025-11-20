@@ -54,10 +54,13 @@ data:
     - title: ClickHouse documentation
       url: https://clickhouse.com/docs
       type: api_reference
-    - title: SQL reference
-      url: https://clickhouse.com/docs/en/sql-reference
-      type: sql_reference
+    - title: Changelog
+      url: https://clickhouse.com/docs/whats-new/changelog
+      type: api_release_history
     - title: User authentication
       url: https://clickhouse.com/docs/en/operations/access-rights
       type: authentication_guide
+    - title: SQL reference
+      url: https://clickhouse.com/docs/en/sql-reference
+      type: sql_reference
 metadataSpecVersion: "1.0"

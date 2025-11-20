@@ -33,3 +33,13 @@ data:
   ab_internal:
     ql: 100
     sl: 100
+  externalDocumentationUrls:
+    - title: YNAB API reference
+      url: https://api.ynab.com/
+      type: api_reference
+    - title: YNAB authentication
+      url: https://api.ynab.com/#authentication-overview
+      type: authentication_guide
+    - title: YNAB rate limits
+      url: https://api.ynab.com/#rate-limiting
+      type: rate_limits

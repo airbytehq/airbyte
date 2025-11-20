@@ -33,3 +33,7 @@ data:
   ab_internal:
     ql: 100
     sl: 100
+  externalDocumentationUrls:
+    - title: Sage HR API documentation
+      url: https://developers.sage.hr/
+      type: api_reference

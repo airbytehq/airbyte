@@ -33,3 +33,13 @@ data:
   ab_internal:
     ql: 100
     sl: 100
+  externalDocumentationUrls:
+    - title: Miro REST API
+      url: https://developers.miro.com/reference/api-reference
+      type: api_reference
+    - title: Miro authentication
+      url: https://developers.miro.com/docs/getting-started-with-oauth
+      type: authentication_guide
+    - title: Miro rate limits
+      url: https://developers.miro.com/docs/rate-limits
+      type: rate_limits

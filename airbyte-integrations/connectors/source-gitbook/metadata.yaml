@@ -33,3 +33,10 @@ data:
   ab_internal:
     ql: 100
     sl: 100
+  externalDocumentationUrls:
+    - title: GitBook API documentation
+      url: https://developer.gitbook.com/
+      type: api_reference
+    - title: GitBook authentication
+      url: https://developer.gitbook.com/gitbook-api/authentication
+      type: authentication_guide

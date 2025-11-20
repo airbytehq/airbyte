@@ -33,3 +33,10 @@ data:
   ab_internal:
     ql: 100
     sl: 100
+  externalDocumentationUrls:
+    - title: Coassemble API documentation
+      url: https://developers.coassemble.com/
+      type: api_reference
+    - title: Coassemble authentication
+      url: https://developers.coassemble.com/#authentication
+      type: authentication_guide

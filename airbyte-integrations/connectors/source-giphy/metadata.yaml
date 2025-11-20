@@ -33,3 +33,10 @@ data:
   ab_internal:
     ql: 100
     sl: 100
+  externalDocumentationUrls:
+    - title: GIPHY API documentation
+      url: https://developers.giphy.com/docs/api/
+      type: api_reference
+    - title: GIPHY rate limits
+      url: https://developers.giphy.com/docs/api/#rate-limiting
+      type: rate_limits
