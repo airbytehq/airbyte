@@ -87,7 +87,7 @@ jobs:
     runs-on: ubuntu-24.04
     env:
       VERCEL_ORG_ID: ${{ secrets.VERCEL_ORG_ID }}
-      VERCEL_PROJECT_ID: ${{ vars.VERCEL_BULK_CDK_DOCS_PROJECT_ID }}
+      VERCEL_PROJECT_ID: ${{ vars.VERCEL_KOTLIN_CDK_PROJECT_ID }}
 
     steps:
       - name: Checkout Repository
