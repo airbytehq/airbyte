@@ -427,6 +427,9 @@ interface TableSchemaEvolutionSuite {
             changeset,
         )
 
+        // Many destinations fully recreate the table when changing the sync mode,
+        // so don't use harness.readTableWithoutMetaColumns.
+        // We need to assert that the meta columns were preserved.
         val postAlterationRecords =
             testClient
                 .readTable(testTable)
