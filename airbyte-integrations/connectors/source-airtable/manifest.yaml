@@ -580,12 +580,37 @@ dynamic_streams:
             - table_id
           value: "{{ components_values.id }}"
 
+# Rate limits: https://airtable.com/developers/web/api/rate-limits
+# - 5 requests per second per base
+# - 50 requests per second per user/service account
+api_budget:
+  type: HTTPAPIBudget
+  policies:
+    - type: MovingWindowCallRatePolicy
+      rates:
+        - limit: 5
+          interval: PT1S
+      matchers: []  # Applies to all endpoints
+  status_codes_for_ratelimit_hit: [429]
+
+concurrency_level:
+  type: ConcurrencyLevel
+  default_concurrency: "{{ config.get('num_workers', 1) }}"
+  max_concurrency: 5
+
 spec:
   type: Spec
   connection_specification:
     type: object
     $schema: http://json-schema.org/draft-07/schema#
     properties:
+      num_workers:
+        type: integer
+        title: Number of Concurrent Workers
+        description: Number of concurrent threads for syncing. Higher values can speed up syncs but may hit rate limits. Airtable limits to 5 requests per second per base.
+        default: 1
+        minimum: 1
+        maximum: 5
       credentials:
         title: Authentication
         type: object
