@@ -4,6 +4,7 @@
 package io.airbyte.cdk.db.bigquery
 
 import com.fasterxml.jackson.databind.JsonNode
+import com.fasterxml.jackson.databind.ObjectMapper
 import com.google.api.gax.retrying.RetrySettings
 import com.google.auth.oauth2.GoogleCredentials
 import com.google.cloud.bigquery.*
@@ -40,11 +41,18 @@ constructor(
             val bigQueryBuilder = BigQueryOptions.newBuilder()
             var credentials: GoogleCredentials? = null
             if (!jsonCreds.isNullOrEmpty()) {
+                // Parse credentials JSON to ensure it's valid, but don't modify it
+                // This supports cross-project access where credentials from one project
+                // (CREDENTIALS-PROJECT) can access datasets in another project (DATA-PROJECT)
+                val credentialsJsonString = normalizeCredentialsJson(jsonCreds)
                 credentials =
                     GoogleCredentials.fromStream(
-                        ByteArrayInputStream(jsonCreds.toByteArray(StandardCharsets.UTF_8))
+                        ByteArrayInputStream(credentialsJsonString.toByteArray(StandardCharsets.UTF_8))
                     )
             }
+            // Set project ID separately from credentials to support cross-project access
+            // The projectId parameter is the target data project, which may differ from
+            // the project_id in the credentials JSON
             bigQuery =
                 bigQueryBuilder
                     .setProjectId(projectId)
@@ -65,7 +73,49 @@ constructor(
                     .build()
                     .service
         } catch (e: IOException) {
-            throw RuntimeException(e)
+            throw RuntimeException("Error reading credentials from stream: ${e.message}", e)
+        }
+    }
+
+    /**
+     * Normalizes the credentials JSON string to ensure it's properly formatted.
+     * Handles cases where the JSON might be double-encoded or have formatting issues.
+     * This method does NOT modify the project_id in the credentials JSON, allowing
+     * cross-project access where credentials from one project can access data in another.
+     *
+     * @param jsonCreds The credentials JSON string (may be raw JSON or string-encoded JSON)
+     * @return A normalized JSON string ready for GoogleCredentials.fromStream()
+     */
+    private fun normalizeCredentialsJson(jsonCreds: String): String {
+        return try {
+            // Try to parse as JSON to validate it's well-formed
+            val mapper = ObjectMapper()
+            val jsonNode = mapper.readTree(jsonCreds)
+            
+            // Ensure the JSON has the required "type" field for service account credentials
+            if (!jsonNode.has("type")) {
+                throw IOException("Credentials JSON is missing required 'type' field. Please ensure you're providing a valid service account key JSON.")
+            }
+            
+            // Return the original JSON string (don't modify project_id or other fields)
+            // This preserves cross-project access capabilities
+            jsonCreds
+        } catch (e: com.fasterxml.jackson.core.JsonProcessingException) {
+            // If parsing fails, the JSON might be double-encoded (JSON string within a JSON string)
+            // Try to unescape it
+            try {
+                val mapper = ObjectMapper()
+                val unescaped = mapper.readValue(jsonCreds, String::class.java)
+                // Recursively try to parse the unescaped string
+                val jsonNode = mapper.readTree(unescaped)
+                if (!jsonNode.has("type")) {
+                    throw IOException("Credentials JSON is missing required 'type' field after unescaping. Please ensure you're providing a valid service account key JSON.")
+                }
+                unescaped
+            } catch (e2: Exception) {
+                // If unescaping also fails, throw original error with helpful message
+                throw IOException("Invalid credentials JSON format. Error: ${e.message}. Please ensure you're providing a valid service account key JSON file contents.", e)
+            }
         }
     }
 
