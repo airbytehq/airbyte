@@ -8,19 +8,23 @@ import io.airbyte.cdk.load.command.DestinationStream
 import io.airbyte.cdk.load.component.TableOperationsFixtures as Fixtures
 import io.airbyte.cdk.load.component.TableOperationsFixtures.ID_FIELD
 import io.airbyte.cdk.load.component.TableOperationsFixtures.TEST_FIELD
+import io.airbyte.cdk.load.component.TableOperationsFixtures.assertEquals
 import io.airbyte.cdk.load.component.TableOperationsFixtures.inputRecord
 import io.airbyte.cdk.load.component.TableOperationsFixtures.insertRecords
 import io.airbyte.cdk.load.component.TableOperationsFixtures.removeNulls
 import io.airbyte.cdk.load.component.TableOperationsFixtures.reverseColumnNameMapping
+import io.airbyte.cdk.load.data.AirbyteValue
 import io.airbyte.cdk.load.data.FieldType
 import io.airbyte.cdk.load.data.IntegerType
 import io.airbyte.cdk.load.data.IntegerValue
 import io.airbyte.cdk.load.data.ObjectType
 import io.airbyte.cdk.load.data.StringType
 import io.airbyte.cdk.load.data.StringValue
+import io.airbyte.cdk.load.data.UnknownType
 import io.airbyte.cdk.load.message.Meta
 import io.airbyte.cdk.load.table.ColumnNameMapping
 import io.airbyte.cdk.load.table.TableName
+import io.airbyte.cdk.util.Jsons
 import io.micronaut.test.extensions.junit5.annotation.MicronautTest
 import kotlin.test.assertEquals
 import kotlinx.coroutines.test.runTest
@@ -453,6 +457,74 @@ interface TableSchemaEvolutionSuite {
         )
     }
 
+    fun `change from string type to unknown type`() {
+        `change from string type to unknown type`(
+            Fixtures.ID_AND_TEST_MAPPING,
+            Fixtures.ID_AND_TEST_MAPPING,
+            TableSchemaEvolutionFixtures.STRING_TO_UNKNOWN_TYPE_INPUT_RECORDS,
+            TableSchemaEvolutionFixtures.STRING_TO_UNKNOWN_TYPE_EXPECTED_RECORDS,
+        )
+    }
+
+    // TODO make another one of these, but in the other direction
+    fun `change from string type to unknown type`(
+        initialColumnNameMapping: ColumnNameMapping,
+        modifiedColumnNameMapping: ColumnNameMapping,
+        inputRecords: List<Map<String, AirbyteValue>>,
+        expectedRecords: List<Map<String, Any?>>,
+    ) = runTest {
+        val testNamespace = Fixtures.generateTestNamespace("namespace-test")
+        val testTable = Fixtures.generateTestTableName("table-test-table", testNamespace)
+        val initialSchema =
+            ObjectType(
+                linkedMapOf(
+                    "id" to FieldType(IntegerType, true),
+                    "test" to FieldType(StringType, true),
+                ),
+            )
+        val modifiedSchema =
+            ObjectType(
+                linkedMapOf(
+                    "id" to FieldType(IntegerType, true),
+                    "test" to
+                        FieldType(UnknownType(Jsons.readTree("""{"type": "potato"}""")), true),
+                ),
+            )
+
+        // Create the table and compute the schema changeset
+        val (_, expectedSchema, changeset, modifiedStream) =
+            computeSchemaEvolution(
+                testTable,
+                initialSchema,
+                initialColumnNameMapping,
+                modifiedSchema,
+                modifiedColumnNameMapping,
+            )
+
+        testClient.insertRecords(testTable, inputRecords, initialColumnNameMapping)
+
+        client.applyChangeset(
+            modifiedStream,
+            modifiedColumnNameMapping,
+            testTable,
+            expectedSchema.columns,
+            changeset,
+        )
+
+        val postAlterationRecords =
+            harness
+                .readTableWithoutMetaColumns(testTable)
+                .reverseColumnNameMapping(modifiedColumnNameMapping, airbyteMetaColumnMapping)
+        assertEquals(
+            expectedRecords,
+            postAlterationRecords,
+            "id",
+            "",
+        )
+    }
+
+    // TODO add tests for funky chars (add/drop/change type; funky chars in PK/cursor)
+
     /**
      * Utility method for a typical schema evolution test. Creates a table with [initialSchema]
      * using [initialColumnNameMapping], then computes the column changeset using [modifiedSchema]
@@ -494,6 +566,7 @@ interface TableSchemaEvolutionSuite {
             actualSchema,
             expectedSchema,
             columnChangeset,
+            modifiedStream,
         )
     }
 
@@ -501,6 +574,7 @@ interface TableSchemaEvolutionSuite {
         val discoveredSchema: TableSchema,
         val computedSchema: TableSchema,
         val columnChangeset: ColumnChangeset,
+        val modifiedStream: DestinationStream,
     )
 
     companion object {

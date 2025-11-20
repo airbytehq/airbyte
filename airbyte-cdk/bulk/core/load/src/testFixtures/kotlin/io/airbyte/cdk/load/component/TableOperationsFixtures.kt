@@ -743,6 +743,9 @@ object TableOperationsFixtures {
         // In practice, it's generally some sort of ID column (int/string/etc.).
         @Suppress("UNCHECKED_CAST") this.sortedBy { it[key] as Comparable<Any> }
 
+    fun <V> Map<String, V>.prettyString() =
+        "{" + this.entries.sortedBy { it.key }.joinToString(", ") + "}"
+
     fun <V> List<Map<String, V>>.applyColumnNameMapping(mapping: ColumnNameMapping) =
         map { record ->
             record.mapKeys { (k, _) -> mapping[k] ?: k }
@@ -785,6 +788,15 @@ object TableOperationsFixtures {
             *pairs,
         )
 
+    fun inputRecord(vararg pairs: Pair<String, AirbyteValue>) =
+        inputRecord(
+            rawId = UUID.randomUUID().toString(),
+            extractedAt = "2025-01-23T00:00:00Z",
+            meta = linkedMapOf(),
+            generationId = 1,
+            pairs = pairs,
+        )
+
     fun outputRecord(
         rawId: String,
         extractedAt: String,
@@ -801,14 +813,14 @@ object TableOperationsFixtures {
         )
 
     fun assertEquals(
-        expectedRecords: List<Map<String, Any>>,
-        actualRecords: List<Map<String, Any>>,
+        expectedRecords: List<Map<String, Any?>>,
+        actualRecords: List<Map<String, Any?>>,
         sortKey: String,
         message: String,
     ) =
         Assertions.assertEquals(
-            expectedRecords.sortBy(sortKey).joinToString("\n"),
-            actualRecords.sortBy(sortKey).joinToString("\n"),
+            expectedRecords.sortBy(sortKey).joinToString("\n") { it.prettyString() },
+            actualRecords.sortBy(sortKey).joinToString("\n") { it.prettyString() },
             message,
         )
 }
