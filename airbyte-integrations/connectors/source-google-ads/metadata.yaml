@@ -53,11 +53,6 @@ data:
         upgradeDeadline: "2025-08-19"
   suggestedStreams:
     streams:
-      -
-        -
-          -
-            -
-              -It
       - campaigns
       - accounts
       - ad_group_ads
