@@ -1,4 +1,4 @@
-name: Connector CI - Run Live Validation Tests
+name: On-Demand Live Connector Validation Tests
 
 concurrency:
   # This is the name of the concurrency group. It is used to prevent concurrent runs of the same workflow.
