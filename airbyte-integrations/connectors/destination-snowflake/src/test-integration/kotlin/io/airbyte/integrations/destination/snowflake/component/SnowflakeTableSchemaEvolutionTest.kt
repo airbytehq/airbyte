@@ -4,6 +4,7 @@
 
 package io.airbyte.integrations.destination.snowflake.component
 
+import io.airbyte.cdk.load.component.TableSchemaEvolutionFixtures
 import io.airbyte.cdk.load.component.TableSchemaEvolutionSuite
 import io.airbyte.cdk.load.message.Meta
 import io.airbyte.cdk.load.table.ColumnNameMapping
@@ -87,6 +88,16 @@ class SnowflakeTableSchemaEvolutionTest(
                 ),
             initialStreamIsDedup,
             modifiedStreamIsDedup,
+        )
+    }
+
+    @Test
+    override fun `change from string type to unknown type`() {
+        super.`change from string type to unknown type`(
+            idAndTestMapping,
+            idAndTestMapping,
+            TableSchemaEvolutionFixtures.STRING_TO_UNKNOWN_TYPE_INPUT_RECORDS,
+            TableSchemaEvolutionFixtures.STRING_TO_UNKNOWN_TYPE_EXPECTED_RECORDS,
         )
     }
 }

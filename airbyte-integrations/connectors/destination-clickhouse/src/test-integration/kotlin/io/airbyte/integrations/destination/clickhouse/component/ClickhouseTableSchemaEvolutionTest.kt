@@ -81,4 +81,9 @@ class ClickhouseTableSchemaEvolutionTest(
             modifiedStreamIsDedup,
         )
     }
+
+    @Test
+    override fun `change from string type to unknown type`() {
+        super.`change from string type to unknown type`()
+    }
 }
