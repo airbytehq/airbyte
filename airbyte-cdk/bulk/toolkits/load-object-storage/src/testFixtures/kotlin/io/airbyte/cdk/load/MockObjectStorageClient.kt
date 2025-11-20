@@ -94,6 +94,10 @@ class MockObjectStorageClient : ObjectStorageClient<MockRemoteObject> {
         objects.remove(key)
     }
 
+    override suspend fun delete(keys: Set<String>) {
+        keys.forEach { key -> delete(key = key) }
+    }
+
     override suspend fun delete(remoteObject: MockRemoteObject) {
         objects.remove(remoteObject.key)
     }

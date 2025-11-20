@@ -7,7 +7,7 @@ package io.airbyte.cdk.load.task.internal
 import io.airbyte.cdk.load.command.DestinationCatalog
 import io.airbyte.cdk.load.command.DestinationStream
 import io.airbyte.cdk.load.state.SyncManager
-import io.airbyte.cdk.output.OutputConsumer
+import io.airbyte.cdk.output.StandardOutputConsumer
 import io.airbyte.protocol.models.v0.AirbyteMessage
 import io.mockk.every
 import io.mockk.mockk
@@ -28,7 +28,7 @@ import org.junit.jupiter.api.BeforeEach
 import org.junit.jupiter.api.Test
 
 private class RecordingOutputConsumer(clock: Clock = Clock.fixed(Instant.EPOCH, ZoneOffset.UTC)) :
-    OutputConsumer(clock) {
+    StandardOutputConsumer(clock) {
 
     private val _messages = mutableListOf<AirbyteMessage>()
     val messages: List<AirbyteMessage>
@@ -38,6 +38,7 @@ private class RecordingOutputConsumer(clock: Clock = Clock.fixed(Instant.EPOCH, 
         _messages += airbyteMessage
     }
     override fun close() = Unit
+    override fun withLockFlush() = Unit
 }
 
 class StatsEmitterTest {
@@ -64,8 +65,10 @@ class StatsEmitterTest {
             }
         syncManager = mockk { every { getStreamManager(testDescriptor) } returns streamManager }
 
-        val dstStream =
-            mockk<DestinationStream> { every { this@mockk.descriptor } returns testDescriptor }
+        val dstStream = mockk<DestinationStream>()
+        every { dstStream.unmappedNamespace } returns "foo"
+        every { dstStream.unmappedName } returns "bar"
+        every { dstStream.mappedDescriptor } returns testDescriptor
         catalog = mockk { every { streams } returns listOf(dstStream) }
 
         recordingConsumer = RecordingOutputConsumer()

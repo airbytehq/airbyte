@@ -112,6 +112,23 @@ Gitlab has the [rate limits](https://docs.gitlab.com/ee/user/gitlab_com/index.ht
 
 | Version | Date       | Pull Request                                             | Subject                                                                                                                                                                            |
 | :------ | :--------- | :------------------------------------------------------- | :--------------------------------------------------------------------------------------------------------------------------------------------------------------------------------- |
+| 4.4.15 | 2025-11-18 | [69411](https://github.com/airbytehq/airbyte/pull/69411) | Update dependencies |
+| 4.4.14 | 2025-10-29 | [69030](https://github.com/airbytehq/airbyte/pull/69030) | Update dependencies |
+| 4.4.13 | 2025-10-21 | [68297](https://github.com/airbytehq/airbyte/pull/68297) | Update dependencies |
+| 4.4.12 | 2025-10-14 | [68000](https://github.com/airbytehq/airbyte/pull/68000) | Update dependencies |
+| 4.4.11 | 2025-10-07 | [67266](https://github.com/airbytehq/airbyte/pull/67266) | Update dependencies |
+| 4.4.10 | 2025-09-30 | [66076](https://github.com/airbytehq/airbyte/pull/66076) | Update dependencies |
+| 4.4.9 | 2025-09-08 | [65997](https://github.com/airbytehq/airbyte/pull/65997) | Update dependencies |
+| 4.4.8 | 2025-08-26 | [65556](https://github.com/airbytehq/airbyte/pull/65556) | Update dependencies |
+| 4.4.7 | 2025-08-23 | [65362](https://github.com/airbytehq/airbyte/pull/65362) | Update dependencies |
+| 4.4.6 | 2025-08-09 | [64579](https://github.com/airbytehq/airbyte/pull/64579) | Update dependencies |
+| 4.4.5 | 2025-08-02 | [64222](https://github.com/airbytehq/airbyte/pull/64222) | Update dependencies |
+| 4.4.4 | 2025-07-26 | [63913](https://github.com/airbytehq/airbyte/pull/63913) | Update dependencies |
+| 4.4.3 | 2025-07-19 | [63489](https://github.com/airbytehq/airbyte/pull/63489) | Update dependencies |
+| 4.4.2 | 2025-07-15 | [63309](https://github.com/airbytehq/airbyte/pull/63309) | Adds `type` property to `config_normalization_rules` in manifest |
+| 4.4.1 | 2025-07-12 | [61471](https://github.com/airbytehq/airbyte/pull/61471) | Update dependencies |
+| 4.4.0 | 2025-07-07 | [62831](https://github.com/airbytehq/airbyte/pull/62831) | Promoting release candidate 4.4.0-rc.1 to a main version. |
+| 4.4.0-rc.1 | 2025-07-02 | [62480](https://github.com/airbytehq/airbyte/pull/62480) | Migrate to manifest-only |
 | 4.3.7 | 2025-05-31 | [57264](https://github.com/airbytehq/airbyte/pull/57264) | Update dependencies |
 | 4.3.6 | 2025-03-29 | [54945](https://github.com/airbytehq/airbyte/pull/54945) | Update dependencies |
 | 4.3.5 | 2025-02-22 | [51695](https://github.com/airbytehq/airbyte/pull/51695) | Update dependencies |

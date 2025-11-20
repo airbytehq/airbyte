@@ -27,6 +27,24 @@ the [Youtube Analytics Connector](https://docs.airbyte.com/integrations/sources/
 
 | Version          | Date              | Pull Request | Subject        |
 |------------------|-------------------|--------------|----------------|
+| 0.0.40 | 2025-11-18 | [69532](https://github.com/airbytehq/airbyte/pull/69532) | Update dependencies |
+| 0.0.39 | 2025-10-29 | [68942](https://github.com/airbytehq/airbyte/pull/68942) | Update dependencies |
+| 0.0.38 | 2025-10-21 | [68456](https://github.com/airbytehq/airbyte/pull/68456) | Update dependencies |
+| 0.0.37 | 2025-10-14 | [67987](https://github.com/airbytehq/airbyte/pull/67987) | Update dependencies |
+| 0.0.36 | 2025-10-07 | [67241](https://github.com/airbytehq/airbyte/pull/67241) | Update dependencies |
+| 0.0.35 | 2025-09-30 | [66846](https://github.com/airbytehq/airbyte/pull/66846) | Update dependencies |
+| 0.0.34 | 2025-09-24 | [66475](https://github.com/airbytehq/airbyte/pull/66475) | Update dependencies |
+| 0.0.33 | 2025-09-09 | [65731](https://github.com/airbytehq/airbyte/pull/65731) | Update dependencies |
+| 0.0.32 | 2025-08-24 | [65468](https://github.com/airbytehq/airbyte/pull/65468) | Update dependencies |
+| 0.0.31 | 2025-08-09 | [64863](https://github.com/airbytehq/airbyte/pull/64863) | Update dependencies |
+| 0.0.30 | 2025-08-02 | [64386](https://github.com/airbytehq/airbyte/pull/64386) | Update dependencies |
+| 0.0.29 | 2025-07-26 | [64056](https://github.com/airbytehq/airbyte/pull/64056) | Update dependencies |
+| 0.0.28 | 2025-07-19 | [63640](https://github.com/airbytehq/airbyte/pull/63640) | Update dependencies |
+| 0.0.27 | 2025-07-12 | [63216](https://github.com/airbytehq/airbyte/pull/63216) | Update dependencies |
+| 0.0.26 | 2025-07-05 | [62701](https://github.com/airbytehq/airbyte/pull/62701) | Update dependencies |
+| 0.0.25 | 2025-06-28 | [62233](https://github.com/airbytehq/airbyte/pull/62233) | Update dependencies |
+| 0.0.24 | 2025-06-21 | [61759](https://github.com/airbytehq/airbyte/pull/61759) | Update dependencies |
+| 0.0.23 | 2025-06-15 | [61171](https://github.com/airbytehq/airbyte/pull/61171) | Update dependencies |
 | 0.0.22 | 2025-05-24 | [60786](https://github.com/airbytehq/airbyte/pull/60786) | Update dependencies |
 | 0.0.21 | 2025-05-10 | [59968](https://github.com/airbytehq/airbyte/pull/59968) | Update dependencies |
 | 0.0.20 | 2025-05-04 | [59566](https://github.com/airbytehq/airbyte/pull/59566) | Update dependencies |

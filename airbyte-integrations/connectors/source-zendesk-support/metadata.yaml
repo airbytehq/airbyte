@@ -7,11 +7,11 @@ data:
       - ${subdomain}.zendesk.com
       - zendesk.com
   connectorBuildOptions:
-    baseImage: docker.io/airbyte/python-connector-base:4.0.0@sha256:d9894b6895923b379f3006fa251147806919c62b7d9021b5cd125bb67d7bbe22
+    baseImage: docker.io/airbyte/source-declarative-manifest:7.5.0@sha256:92e539d5003b33c3624eae7715aee6e39b7b2f1f0eeb6003d37e649a06847ae8
   connectorSubtype: api
   connectorType: source
   definitionId: 79c1aa37-dae3-42ae-b333-d1c105477715
-  dockerImageTag: 4.9.1
+  dockerImageTag: 4.10.16
   dockerRepository: airbyte/source-zendesk-support
   documentationUrl: https://docs.airbyte.com/integrations/sources/zendesk-support
   githubIssueLabel: source-zendesk-support
@@ -21,7 +21,7 @@ data:
   name: Zendesk Support
   remoteRegistries:
     pypi:
-      enabled: true
+      enabled: false
       packageName: airbyte-source-zendesk-support
   registryOverrides:
     cloud:
@@ -71,8 +71,8 @@ data:
   supportLevel: certified
   supportsFileTransfer: true
   tags:
-    - language:python
     - cdk:low-code
+    - language:manifest-only
   connectorTestSuitesOptions:
     - suite: liveTests
       testConnections:
@@ -100,4 +100,23 @@ data:
           secretStore:
             type: GSM
             alias: airbyte-connector-testing-secret-store
+  externalDocumentationUrls:
+    - title: Zendesk Support API
+      url: https://developer.zendesk.com/api-reference/ticketing/introduction/
+      type: api_reference
+    - title: API Changelog
+      url: https://developer.zendesk.com/api-reference/changelog/changelog/
+      type: api_release_history
+    - title: Zendesk API changelog
+      url: https://developer.zendesk.com/api-reference/ticketing/introduction/#changes
+      type: api_release_history
+    - title: Zendesk authentication
+      url: https://developer.zendesk.com/api-reference/ticketing/introduction/#security-and-authentication
+      type: authentication_guide
+    - title: Zendesk rate limits
+      url: https://developer.zendesk.com/api-reference/ticketing/account-configuration/usage_limits/
+      type: rate_limits
+    - title: Zendesk Status
+      url: https://status.zendesk.com/
+      type: status_page
 metadataSpecVersion: "1.0"

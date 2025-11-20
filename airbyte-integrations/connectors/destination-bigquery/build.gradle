@@ -8,7 +8,6 @@ plugins {
 airbyteBulkConnector {
     core = 'load'
     toolkits = ['load-gcs', 'load-db', 'load-s3']
-    cdk = 'local'
 }
 
 java {
@@ -34,7 +33,13 @@ application {
 }
 
 dependencies {
-    implementation 'com.google.cloud:google-cloud-bigquery'
+    // Ideally we would just rely on the bom version:
+    // implementation 'com.google.cloud:google-cloud-bigquery'
+    // but we're still waiting for google to cut another release.
+    // so for now, use a specific bigquery version.
+    // https://github.com/airbytehq/airbyte-internal-issues/issues/13662
+    implementation 'com.google.cloud:google-cloud-bigquery:2.53.0'
 
     integrationTestImplementation 'com.google.cloud:google-cloud-bigquery'
+    testImplementation "io.mockk:mockk:1.13.13"
 }

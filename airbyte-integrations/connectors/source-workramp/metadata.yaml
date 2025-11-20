@@ -20,7 +20,7 @@ data:
   dockerRepository: airbyte/source-workramp
   githubIssueLabel: source-workramp
   icon: workramp.svg
-  license: MIT
+  license: ELv2
   name: Workramp
   releaseDate: 2022-01-02
   releaseStage: alpha
@@ -32,4 +32,8 @@ data:
     sl: 100
     ql: 100
   supportLevel: community
+  externalDocumentationUrls:
+    - title: WorkRamp API documentation
+      url: https://developers.workramp.com/
+      type: api_reference
 metadataSpecVersion: "1.0"

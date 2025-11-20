@@ -3,16 +3,16 @@ data:
     hosts:
       - restapi.e-conomic.com
   connectorBuildOptions:
-    baseImage: docker.io/airbyte/source-declarative-manifest:6.51.0@sha256:890b109f243b8b9406f23ea7522de41025f7b3e87f6fc9710bc1e521213a276f
+    baseImage: docker.io/airbyte/source-declarative-manifest:7.5.0@sha256:92e539d5003b33c3624eae7715aee6e39b7b2f1f0eeb6003d37e649a06847ae8
   connectorSubtype: api
   connectorType: source
   definitionId: 42495935-95de-4f5c-ae08-8fac00f6b308
-  dockerImageTag: 0.3.25
+  dockerImageTag: 0.3.42
   dockerRepository: airbyte/source-visma-economic
   documentationUrl: https://docs.airbyte.com/integrations/sources/visma-economic
   githubIssueLabel: source-visma-economic
   icon: visma-economic.svg
-  license: MIT
+  license: ELv2
   name: Visma Economic
   registryOverrides:
     cloud:
@@ -37,4 +37,8 @@ data:
           secretStore:
             type: GSM
             alias: airbyte-connector-testing-secret-store
+  externalDocumentationUrls:
+    - title: Visma e-conomic API
+      url: https://restdocs.e-conomic.com/
+      type: api_reference
 metadataSpecVersion: "1.0"

@@ -2,7 +2,7 @@
 products: all
 ---
 
-# Review connection statuses
+# Connection status
 
 The Connections page, and each connection within, give you tools to monitor the health of your connections. If something goes wrong, you can investigate further and find the root of the problem.
 
@@ -22,7 +22,7 @@ To access the connection dashboard:
 
 Here's an example of how you can put this dashboard to work.
 
-<Arcade id="u3EEEqQoPRA4aoAAFFLO" title="Connection page dashboard" paddingBottom="calc(60% + 41px)" />
+<Navattic id="cmhfdqt0c000204jne5j4hmbd" />
 
 ## Review one connection's status
 

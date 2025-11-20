@@ -454,8 +454,9 @@ definitions:
             inject_into: request_parameter
             field_name: start
           pagination_strategy:
-            type: OffsetIncrement
-            page_size: 500
+            type: CursorPagination
+            cursor_value: "{{ response.get('paging', {}).get('start', 0) + response.get('paging', {}).get('count', 0) }}"
+            stop_condition: "{{ response.get('paging', {}).get('total', 0) == 0 }}"
         partition_router:
           type: SubstreamPartitionRouter
           parent_stream_configs:
@@ -505,8 +506,9 @@ definitions:
             inject_into: request_parameter
             field_name: start
           pagination_strategy:
-            type: OffsetIncrement
-            page_size: 500
+            type: CursorPagination
+            cursor_value: "{{ response.get('paging', {}).get('start', 0) + response.get('paging', {}).get('count', 0) }}"
+            stop_condition: "{{ response.get('paging', {}).get('total', 0) == 0 }}"
         partition_router:
           type: SubstreamPartitionRouter
           parent_stream_configs:
@@ -1604,6 +1606,8 @@ definitions:
       record_merge_strategy:
         type: GroupByKeyMergeStrategy
         key: ["end_date", "string_of_pivot_values"]
+    property_selector:
+      type: JsonSchemaPropertySelector
 
 streams:
   - $ref: "#/definitions/streams/accounts"
@@ -1665,15 +1669,34 @@ dynamic_streams:
 # https://learn.microsoft.com/en-us/linkedin/shared/api-guide/concepts/rate-limits
 # I looked into our test account to establish some baselines, but it seems like each endpoint
 # has its own individually tracked rate limit that resets daily. There are also tiers, but
-# there is not a good way of ascertaining what value are for each. There are 19 streams so
-# as a standard default will be set to 19 so each stream can at least run in parallel. This
-# could require some tuning.
+# there is not a good way of ascertaining what value are for each.
 #
 # It is likely that certain customers may have a greater limit provisioned so allow for a max of 50.
+#
+# Our OAuth app supports 15,000,000 req/day for /adAnalytics endpoints
+#
+# Update 2025-06-16: Added num_workers to the config to allow for more control over the number
+# of workers and set the default to 3. This is because some customers were experiencing rate
+# limiting issues with v5.5.0 of the connector -- migration to manifest-only.
 concurrency_level:
   type: ConcurrencyLevel
-  default_concurrency: "19"
+  default_concurrency: "{{ config.get('num_workers', 6) }}"
   max_concurrency: 50
+
+api_budget:
+  type: HTTPAPIBudget
+  policies:
+    - type: MovingWindowCallRatePolicy
+      rates:
+        # As mentioned, there are no published rate limits, setting an initial max of 5 req per 10 seconds.
+        # We can adjust this as needed.
+        - limit: 6
+          interval: PT10S
+      matchers:
+        - method: GET
+          url_path_pattern: "adAnalytics"
+  status_codes_for_ratelimit_hit:
+    - 429
 
 spec:
   type: Spec
@@ -1803,6 +1826,13 @@ spec:
                 - MONTHLY
                 - YEARLY
         default: []
+      num_workers:
+        title: Number of Workers
+        description: The number of workers to use for the connector. This is used to limit the number of concurrent requests to the LinkedIn Ads API. If not set, the default is 3 workers.
+        type: integer
+        default: 3
+        minimum: 2
+        maximum: 50
   advanced_auth:
     auth_flow_type: oauth2.0
     predicate_key:

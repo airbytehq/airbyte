@@ -28,6 +28,18 @@ An Airbyte connector for [BigMailer](https://bigmailer.com) would facilitate sea
 
 | Version          | Date              | Pull Request | Subject        |
 |------------------|-------------------|--------------|----------------|
+| 0.0.36 | 2025-11-18 | [69575](https://github.com/airbytehq/airbyte/pull/69575) | Update dependencies |
+| 0.0.35 | 2025-10-29 | [68909](https://github.com/airbytehq/airbyte/pull/68909) | Update dependencies |
+| 0.0.34 | 2025-10-21 | [68396](https://github.com/airbytehq/airbyte/pull/68396) | Update dependencies |
+| 0.0.33 | 2025-10-14 | [67967](https://github.com/airbytehq/airbyte/pull/67967) | Update dependencies |
+| 0.0.32 | 2025-10-07 | [67160](https://github.com/airbytehq/airbyte/pull/67160) | Update dependencies |
+| 0.0.31 | 2025-09-30 | [66279](https://github.com/airbytehq/airbyte/pull/66279) | Update dependencies |
+| 0.0.30 | 2025-09-09 | [65635](https://github.com/airbytehq/airbyte/pull/65635) | Update dependencies |
+| 0.0.29 | 2025-08-23 | [65331](https://github.com/airbytehq/airbyte/pull/65331) | Update dependencies |
+| 0.0.28 | 2025-08-09 | [64642](https://github.com/airbytehq/airbyte/pull/64642) | Update dependencies |
+| 0.0.27 | 2025-08-02 | [64414](https://github.com/airbytehq/airbyte/pull/64414) | Update dependencies |
+| 0.0.26 | 2025-07-19 | [63475](https://github.com/airbytehq/airbyte/pull/63475) | Update dependencies |
+| 0.0.25 | 2025-06-28 | [62146](https://github.com/airbytehq/airbyte/pull/62146) | Update dependencies |
 | 0.0.24 | 2025-05-24 | [60718](https://github.com/airbytehq/airbyte/pull/60718) | Update dependencies |
 | 0.0.23 | 2025-05-10 | [59905](https://github.com/airbytehq/airbyte/pull/59905) | Update dependencies |
 | 0.0.22 | 2025-05-03 | [59305](https://github.com/airbytehq/airbyte/pull/59305) | Update dependencies |

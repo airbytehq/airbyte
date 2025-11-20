@@ -6,7 +6,7 @@ from datetime import datetime, timedelta, timezone
 from unittest import TestCase
 
 import freezegun
-from source_stripe import SourceStripe
+from unit_tests.conftest import get_source
 
 from airbyte_cdk.models import ConfiguredAirbyteCatalog, SyncMode
 from airbyte_cdk.test.catalog_builder import CatalogBuilder
@@ -72,7 +72,7 @@ class AccountsTest(TestCase):
             _create_response().with_record(record=_create_record()).build(),
         )
 
-        source = SourceStripe(config=_CONFIG, catalog=_create_catalog(), state=_NO_STATE)
+        source = get_source(config=_CONFIG, state=_NO_STATE)
         actual_messages = read(source, config=_CONFIG, catalog=_create_catalog())
 
         assert len(actual_messages.records) == 1
@@ -88,7 +88,7 @@ class AccountsTest(TestCase):
             _create_response().with_record(record=_create_record()).build(),
         )
 
-        source = SourceStripe(config=_CONFIG, catalog=_create_catalog(), state=_NO_STATE)
+        source = get_source(config=_CONFIG, state=_NO_STATE)
         actual_messages = read(source, config=_CONFIG, catalog=_create_catalog())
 
         assert len(actual_messages.records) == 2

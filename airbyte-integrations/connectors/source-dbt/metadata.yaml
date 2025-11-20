@@ -13,15 +13,15 @@ data:
       enabled: false
       packageName: airbyte-source-dbt
   connectorBuildOptions:
-    baseImage: docker.io/airbyte/source-declarative-manifest:6.51.0@sha256:890b109f243b8b9406f23ea7522de41025f7b3e87f6fc9710bc1e521213a276f
+    baseImage: docker.io/airbyte/source-declarative-manifest:7.4.1@sha256:71df19e2ee555ca5b14abbec01d50104c79c9b84cb9cc323284d24333361900a
   connectorSubtype: api
   connectorType: source
   definitionId: 6eaa4fc5-cf11-413d-a0d6-0023402f71f6
-  dockerImageTag: 0.0.20
+  dockerImageTag: 0.0.32
   dockerRepository: airbyte/source-dbt
   githubIssueLabel: source-dbt
   icon: icon.svg
-  license: MIT
+  license: ELv2
   name: DBT
   releaseDate: 2024-08-22
   releaseStage: alpha
@@ -33,3 +33,13 @@ data:
   ab_internal:
     ql: 100
     sl: 100
+  externalDocumentationUrls:
+    - title: dbt Cloud API reference
+      url: https://docs.getdbt.com/dbt-cloud/api-v2
+      type: api_reference
+    - title: dbt Cloud authentication
+      url: https://docs.getdbt.com/dbt-cloud/api-v2#section/Authentication
+      type: authentication_guide
+    - title: dbt Cloud Status
+      url: https://status.getdbt.com/
+      type: status_page

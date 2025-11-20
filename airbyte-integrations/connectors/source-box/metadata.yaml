@@ -21,7 +21,7 @@ data:
   dockerRepository: airbyte/source-box
   githubIssueLabel: source-box
   icon: icon.svg
-  license: MIT
+  license: ELv2
   name: Box
   releaseDate: 2024-10-24
   releaseStage: alpha
@@ -33,3 +33,16 @@ data:
   ab_internal:
     ql: 100
     sl: 100
+  externalDocumentationUrls:
+    - title: Box API reference
+      url: https://developer.box.com/reference/
+      type: api_reference
+    - title: Authentication
+      url: https://developer.box.com/guides/authentication/
+      type: authentication_guide
+    - title: Rate limits
+      url: https://developer.box.com/guides/api-calls/permissions-and-errors/rate-limits/
+      type: rate_limits
+    - title: Box Status
+      url: https://status.box.com/
+      type: status_page

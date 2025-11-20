@@ -12,7 +12,7 @@ data:
   documentationUrl: https://docs.airbyte.com/integrations/sources/coin-api
   githubIssueLabel: source-coin-api
   icon: coinapi.svg
-  license: MIT
+  license: ELv2
   name: Coin API
   registryOverrides:
     cloud:
@@ -40,4 +40,17 @@ data:
           secretStore:
             type: GSM
             alias: airbyte-connector-testing-secret-store
+  externalDocumentationUrls:
+    - title: CoinAPI documentation
+      url: https://docs.coinapi.io/
+      type: api_reference
+    - title: CoinAPI authentication
+      url: https://docs.coinapi.io/#authentication
+      type: authentication_guide
+    - title: CoinAPI rate limits
+      url: https://docs.coinapi.io/#rate-limits
+      type: rate_limits
+    - title: CoinAPI Status
+      url: https://status.coinapi.io/
+      type: status_page
 metadataSpecVersion: "1.0"

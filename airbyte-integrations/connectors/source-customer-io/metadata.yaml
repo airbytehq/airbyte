@@ -19,11 +19,11 @@ data:
   connectorSubtype: api
   connectorType: source
   definitionId: 34f697bc-b989-4eda-b06f-d0f39b88825b
-  dockerImageTag: 0.3.18
+  dockerImageTag: 0.3.19
   dockerRepository: airbyte/source-customer-io
   githubIssueLabel: source-customer-io
   icon: customer-io.svg
-  license: MIT
+  license: ELv2
   name: Customer.io
   releaseDate: 2023-08-20
   releaseStage: alpha
@@ -32,4 +32,17 @@ data:
   tags:
     - cdk:low-code
     - language:manifest-only
+  externalDocumentationUrls:
+    - title: Customer.io API reference
+      url: https://customer.io/docs/api/
+      type: api_reference
+    - title: Customer.io authentication
+      url: https://customer.io/docs/api/#section/Authentication
+      type: authentication_guide
+    - title: Customer.io rate limits
+      url: https://customer.io/docs/api/#section/Rate-Limiting
+      type: rate_limits
+    - title: Customer.io Status
+      url: https://status.customer.io/
+      type: status_page
 metadataSpecVersion: "1.0"

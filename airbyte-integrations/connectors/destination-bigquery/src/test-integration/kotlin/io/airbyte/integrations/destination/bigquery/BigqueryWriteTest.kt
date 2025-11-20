@@ -4,20 +4,13 @@
 
 package io.airbyte.integrations.destination.bigquery
 
-import io.airbyte.cdk.load.command.Append
-import io.airbyte.cdk.load.command.Dedupe
-import io.airbyte.cdk.load.command.DestinationStream
-import io.airbyte.cdk.load.command.NamespaceMapper
-import io.airbyte.cdk.load.data.ObjectType
-import io.airbyte.cdk.load.message.InputRecord
+import io.airbyte.cdk.load.config.DataChannelFormat
+import io.airbyte.cdk.load.config.DataChannelMedium
 import io.airbyte.cdk.load.test.util.DestinationDataDumper
 import io.airbyte.cdk.load.test.util.ExpectedRecordMapper
-import io.airbyte.cdk.load.test.util.OutputRecord
 import io.airbyte.cdk.load.test.util.UncoercedExpectedRecordMapper
-import io.airbyte.cdk.load.test.util.destination_process.DockerizedDestinationFactory
 import io.airbyte.cdk.load.toolkits.load.db.orchestration.ColumnNameModifyingMapper
 import io.airbyte.cdk.load.toolkits.load.db.orchestration.RootLevelTimestampsToUtcMapper
-import io.airbyte.cdk.load.toolkits.load.db.orchestration.TypingDedupingMetaChangeMapper
 import io.airbyte.cdk.load.write.AllTypesBehavior
 import io.airbyte.cdk.load.write.BasicFunctionalityIntegrationTest
 import io.airbyte.cdk.load.write.DedupBehavior
@@ -25,26 +18,29 @@ import io.airbyte.cdk.load.write.SchematizedNestedValueBehavior
 import io.airbyte.cdk.load.write.SimpleValueBehavior
 import io.airbyte.cdk.load.write.StronglyTyped
 import io.airbyte.cdk.load.write.UnionBehavior
+import io.airbyte.cdk.load.write.UnknownTypesBehavior
 import io.airbyte.cdk.load.write.Untyped
 import io.airbyte.integrations.destination.bigquery.BigQueryDestinationTestUtils.GCS_STAGING_CONFIG
 import io.airbyte.integrations.destination.bigquery.BigQueryDestinationTestUtils.RAW_DATASET_OVERRIDE
 import io.airbyte.integrations.destination.bigquery.BigQueryDestinationTestUtils.STANDARD_INSERT_CONFIG
 import io.airbyte.integrations.destination.bigquery.spec.BigquerySpecification
-import io.airbyte.integrations.destination.bigquery.typing_deduping.BigqueryColumnNameGenerator
-import kotlin.test.assertEquals
-import org.junit.jupiter.api.Assertions.assertTrue
-import org.junit.jupiter.api.Test
-import org.junit.jupiter.api.assertAll
+import io.airbyte.integrations.destination.bigquery.spec.CdcDeletionMode
+import io.airbyte.integrations.destination.bigquery.write.typing_deduping.BigqueryColumnNameGenerator
 
 abstract class BigqueryWriteTest(
     configContents: String,
     dataDumper: DestinationDataDumper,
     expectedRecordMapper: ExpectedRecordMapper,
     isStreamSchemaRetroactive: Boolean,
-    preserveUndeclaredFields: Boolean,
+    commitDataIncrementallyToEmptyDestinationOnAppend: Boolean,
     dedupBehavior: DedupBehavior?,
     nullEqualsUnset: Boolean,
     allTypesBehavior: AllTypesBehavior,
+    coercesLegacyUnions: Boolean,
+    isStreamSchemaRetroactiveForUnknownTypeToString: Boolean = true,
+    unknownTypesBehavior: UnknownTypesBehavior = UnknownTypesBehavior.PASS_THROUGH,
+    dataChannelFormat: DataChannelFormat = DataChannelFormat.JSONL,
+    dataChannelMedium: DataChannelMedium = DataChannelMedium.STDIO
 ) :
     BasicFunctionalityIntegrationTest(
         configContents = configContents,
@@ -58,13 +54,21 @@ abstract class BigqueryWriteTest(
         schematizedObjectBehavior = SchematizedNestedValueBehavior.PASS_THROUGH,
         schematizedArrayBehavior = SchematizedNestedValueBehavior.PASS_THROUGH,
         unionBehavior = UnionBehavior.PASS_THROUGH,
-        preserveUndeclaredFields = preserveUndeclaredFields,
+        coercesLegacyUnions = coercesLegacyUnions,
         supportFileTransfer = false,
         commitDataIncrementally = false,
+        commitDataIncrementallyToEmptyDestinationOnAppend =
+            commitDataIncrementallyToEmptyDestinationOnAppend,
+        commitDataIncrementallyToEmptyDestinationOnDedupe = false,
         allTypesBehavior = allTypesBehavior,
         nullEqualsUnset = nullEqualsUnset,
         configUpdater = BigqueryConfigUpdater,
         additionalMicronautEnvs = additionalMicronautEnvs,
+        isStreamSchemaRetroactiveForUnknownTypeToString =
+            isStreamSchemaRetroactiveForUnknownTypeToString,
+        unknownTypesBehavior = unknownTypesBehavior,
+        dataChannelFormat = dataChannelFormat,
+        dataChannelMedium = dataChannelMedium,
     )
 
 abstract class BigqueryRawTablesWriteTest(
@@ -75,23 +79,43 @@ abstract class BigqueryRawTablesWriteTest(
         BigqueryRawTableDataDumper,
         UncoercedExpectedRecordMapper,
         isStreamSchemaRetroactive = false,
-        preserveUndeclaredFields = true,
+        commitDataIncrementallyToEmptyDestinationOnAppend = false,
         dedupBehavior = null,
         nullEqualsUnset = false,
         Untyped,
+        coercesLegacyUnions = false,
     )
 
-abstract class BigqueryTDWriteTest(configContents: String) :
+abstract class BigqueryDirectLoadWriteTest(
+    configContents: String,
+    cdcDeletionMode: CdcDeletionMode,
+    isStreamSchemaRetroactiveForUnknownTypeToString: Boolean = true,
+    unknownTypesBehavior: UnknownTypesBehavior = UnknownTypesBehavior.PASS_THROUGH,
+    dataChannelFormat: DataChannelFormat = DataChannelFormat.JSONL,
+    dataChannelMedium: DataChannelMedium = DataChannelMedium.STDIO
+) :
     BigqueryWriteTest(
         configContents = configContents,
         BigqueryFinalTableDataDumper,
         ColumnNameModifyingMapper(BigqueryColumnNameGenerator())
+            .compose(TimeWithTimezoneMapper)
             .compose(RootLevelTimestampsToUtcMapper)
-            .compose(TypingDedupingMetaChangeMapper)
             .compose(IntegralNumberRecordMapper),
         isStreamSchemaRetroactive = true,
-        preserveUndeclaredFields = false,
-        dedupBehavior = DedupBehavior(),
+        commitDataIncrementallyToEmptyDestinationOnAppend = true,
+        dedupBehavior =
+            DedupBehavior(
+                cdcDeletionMode =
+                    when (cdcDeletionMode) {
+                        // medium confidence: the CDK might eventually add other deletion modes,
+                        // which this destination won't immediately support,
+                        // so we should have separate enums.
+                        // otherwise the new enum values would show up in the spec, which we don't
+                        // want.
+                        CdcDeletionMode.HARD_DELETE -> DedupBehavior.CdcDeletionMode.HARD_DELETE
+                        CdcDeletionMode.SOFT_DELETE -> DedupBehavior.CdcDeletionMode.SOFT_DELETE
+                    }
+            ),
         nullEqualsUnset = true,
         StronglyTyped(
             convertAllValuesToString = true,
@@ -99,247 +123,123 @@ abstract class BigqueryTDWriteTest(configContents: String) :
             nestedFloatLosesPrecision = true,
             integerCanBeLarge = false,
             numberCanBeLarge = false,
-            timeWithTimezoneBehavior = SimpleValueBehavior.PASS_THROUGH,
+            numberIsFixedPointPrecision38Scale9 = true,
+            timeWithTimezoneBehavior = SimpleValueBehavior.STRONGLY_TYPE,
         ),
-    ) {
-    private val oldCdkDestinationFactory =
-        DockerizedDestinationFactory("airbyte/destination-bigquery", "2.10.2")
+        coercesLegacyUnions = true,
+        isStreamSchemaRetroactiveForUnknownTypeToString =
+            isStreamSchemaRetroactiveForUnknownTypeToString,
+        unknownTypesBehavior = unknownTypesBehavior,
+        dataChannelFormat = dataChannelFormat,
+        dataChannelMedium = dataChannelMedium,
+    )
 
-    @Test
-    open fun testAppendCdkMigration() {
-        val stream =
-            DestinationStream(
-                unmappedNamespace = randomizedNamespace,
-                unmappedName = "test_stream",
-                Append,
-                ObjectType(linkedMapOf("id" to intType)),
-                generationId = 0,
-                minimumGenerationId = 0,
-                syncId = 42,
-                namespaceMapper = NamespaceMapper()
-            )
-        // Run a sync on the old CDK
-        runSync(
-            updatedConfig,
-            stream,
-            listOf(
-                InputRecord(
-                    stream,
-                    data = """{"id": 1234}""",
-                    emittedAtMs = 1234,
-                ),
-            ),
-            destinationProcessFactory = oldCdkDestinationFactory,
-        )
-        // Grab the loaded_at value from this sync
-        val firstSyncLoadedAt =
-            BigqueryRawTableDataDumper.dumpRecords(parsedConfig, stream).first().loadedAt!!
-
-        // Run a sync with the current destination
-        runSync(
-            updatedConfig,
-            stream,
-            listOf(
-                InputRecord(
-                    stream,
-                    data = """{"id": 1234}""",
-                    emittedAtMs = 5678,
-                ),
-            ),
-        )
-        val secondSyncLoadedAt =
-            BigqueryRawTableDataDumper.dumpRecords(parsedConfig, stream)
-                .map { it.loadedAt!! }
-                .toSet()
-        // verify that we didn't execute a soft reset
-        assertAll(
-            {
-                assertEquals(
-                    2,
-                    secondSyncLoadedAt.size,
-                    "Expected two unique values for loaded_at after two syncs. If there is only 1 value, then we likely executed a soft reset.",
-                )
-            },
-            {
-                assertTrue(
-                    secondSyncLoadedAt.contains(firstSyncLoadedAt),
-                    "Expected the first sync's loaded_at value to exist after the second sync. If this is not true, then we likely executed a soft reset.",
-                )
-            },
-        )
-
-        dumpAndDiffRecords(
-            parsedConfig,
-            listOf(
-                OutputRecord(
-                    extractedAt = 1234,
-                    generationId = 0,
-                    data = mapOf("id" to 1234),
-                    airbyteMeta = OutputRecord.Meta(syncId = 42, changes = emptyList()),
-                ),
-                OutputRecord(
-                    extractedAt = 5678,
-                    generationId = 0,
-                    data = mapOf("id" to 1234),
-                    airbyteMeta = OutputRecord.Meta(syncId = 42, changes = emptyList()),
-                ),
-            ),
-            stream,
-            listOf(listOf("id")),
-            cursor = null,
-        )
-    }
-
-    @Test
-    open fun testDedupCdkMigration() {
-        val stream =
-            DestinationStream(
-                unmappedNamespace = randomizedNamespace,
-                unmappedName = "test_stream",
-                Dedupe(primaryKey = listOf(listOf("id")), cursor = emptyList()),
-                ObjectType(linkedMapOf("id" to intType)),
-                generationId = 0,
-                minimumGenerationId = 0,
-                syncId = 42,
-                namespaceMapper = NamespaceMapper(),
-            )
-        // Run a sync on the old CDK
-        runSync(
-            updatedConfig,
-            stream,
-            listOf(
-                InputRecord(
-                    stream,
-                    data = """{"id": 1234}""",
-                    emittedAtMs = 1234,
-                ),
-            ),
-            destinationProcessFactory = oldCdkDestinationFactory,
-        )
-        // Grab the loaded_at value from this sync
-        val firstSyncLoadedAt =
-            BigqueryRawTableDataDumper.dumpRecords(parsedConfig, stream).first().loadedAt!!
-
-        // Run a sync with the current destination
-        runSync(
-            updatedConfig,
-            stream,
-            listOf(
-                InputRecord(
-                    stream = stream,
-                    data = """{"id": 1234}""",
-                    emittedAtMs = 5678,
-                ),
-            ),
-        )
-        val secondSyncLoadedAt =
-            BigqueryRawTableDataDumper.dumpRecords(parsedConfig, stream)
-                .map { it.loadedAt!! }
-                .toSet()
-        // verify that we didn't execute a soft reset
-        assertAll(
-            {
-                assertEquals(
-                    2,
-                    secondSyncLoadedAt.size,
-                    "Expected two unique values for loaded_at after two syncs. If there is only 1 value, then we likely executed a soft reset.",
-                )
-            },
-            {
-                assertTrue(
-                    secondSyncLoadedAt.contains(firstSyncLoadedAt),
-                    "Expected the first sync's loaded_at value to exist after the second sync. If this is not true, then we likely executed a soft reset.",
-                )
-            },
-        )
-
-        dumpAndDiffRecords(
-            parsedConfig,
-            listOf(
-                OutputRecord(
-                    extractedAt = 5678,
-                    generationId = 0,
-                    data = mapOf("id" to 1234),
-                    airbyteMeta = OutputRecord.Meta(syncId = 42, changes = emptyList()),
-                ),
-            ),
-            stream,
-            listOf(listOf("id")),
-            cursor = null,
-        )
-    }
-}
-
-class StandardInsertRawOverrideDisableTd :
+class StandardInsertRawOverrideRawTables :
     BigqueryRawTablesWriteTest(
         BigQueryDestinationTestUtils.createConfig(
             configFile = STANDARD_INSERT_CONFIG,
             rawDatasetId = RAW_DATASET_OVERRIDE,
             disableTypingDeduping = true,
         ),
-    ) {
-    @Test
-    override fun testBasicWrite() {
-        super.testBasicWrite()
-    }
-    @Test
-    override fun testAppendSchemaEvolution() {
-        super.testAppendSchemaEvolution()
-    }
-}
+    )
 
 class StandardInsertRawOverride :
-    BigqueryTDWriteTest(BigQueryDestinationTestUtils.standardInsertRawOverrideConfig) {
-    @Test
-    override fun testBasicWrite() {
-        super.testBasicWrite()
-    }
-    @Test
-    override fun testFunkyCharacters() {
-        super.testFunkyCharacters()
-    }
-}
+    BigqueryDirectLoadWriteTest(
+        BigQueryDestinationTestUtils.standardInsertRawOverrideConfig,
+        CdcDeletionMode.HARD_DELETE,
+    )
 
-class StandardInsert : BigqueryTDWriteTest(BigQueryDestinationTestUtils.standardInsertConfig) {
-    @Test
-    override fun testDedup() {
-        super.testDedup()
-    }
-}
+class StandardInsertRawOverrideProto :
+    BigqueryDirectLoadWriteTest(
+        BigQueryDestinationTestUtils.standardInsertRawOverrideConfig,
+        CdcDeletionMode.HARD_DELETE,
+        isStreamSchemaRetroactiveForUnknownTypeToString = false,
+        unknownTypesBehavior = UnknownTypesBehavior.NULL,
+        dataChannelFormat = DataChannelFormat.PROTOBUF,
+        dataChannelMedium = DataChannelMedium.SOCKET,
+    )
 
-class GcsRawOverrideDisableTd :
+class StandardInsert :
+    BigqueryDirectLoadWriteTest(
+        BigQueryDestinationTestUtils.standardInsertConfig,
+        CdcDeletionMode.HARD_DELETE,
+    )
+
+class StandardInsertProto :
+    BigqueryDirectLoadWriteTest(
+        BigQueryDestinationTestUtils.standardInsertConfig,
+        CdcDeletionMode.HARD_DELETE,
+        isStreamSchemaRetroactiveForUnknownTypeToString = false,
+        unknownTypesBehavior = UnknownTypesBehavior.NULL,
+        dataChannelFormat = DataChannelFormat.PROTOBUF,
+        dataChannelMedium = DataChannelMedium.SOCKET,
+    )
+
+class StandardInsertCdcSoftDeletes :
+    BigqueryDirectLoadWriteTest(
+        BigQueryDestinationTestUtils.createConfig(
+            configFile = STANDARD_INSERT_CONFIG,
+            cdcDeletionMode = CdcDeletionMode.SOFT_DELETE,
+        ),
+        CdcDeletionMode.SOFT_DELETE
+    )
+
+class StandardInsertCdcSoftDeletesProto :
+    BigqueryDirectLoadWriteTest(
+        BigQueryDestinationTestUtils.createConfig(
+            configFile = STANDARD_INSERT_CONFIG,
+            cdcDeletionMode = CdcDeletionMode.SOFT_DELETE,
+        ),
+        CdcDeletionMode.SOFT_DELETE,
+        isStreamSchemaRetroactiveForUnknownTypeToString = false,
+        unknownTypesBehavior = UnknownTypesBehavior.NULL,
+        dataChannelFormat = DataChannelFormat.PROTOBUF,
+        dataChannelMedium = DataChannelMedium.SOCKET,
+    )
+
+class GcsRawOverrideRawTables :
     BigqueryRawTablesWriteTest(
         BigQueryDestinationTestUtils.createConfig(
             configFile = GCS_STAGING_CONFIG,
             rawDatasetId = RAW_DATASET_OVERRIDE,
             disableTypingDeduping = true,
         ),
-    ) {
-    @Test
-    override fun testBasicWrite() {
-        super.testBasicWrite()
-    }
-}
+    )
 
 class GcsRawOverride :
-    BigqueryTDWriteTest(
+    BigqueryDirectLoadWriteTest(
         BigQueryDestinationTestUtils.createConfig(
             configFile = GCS_STAGING_CONFIG,
             rawDatasetId = RAW_DATASET_OVERRIDE,
         ),
-    ) {
-    @Test
-    override fun testBasicWrite() {
-        super.testBasicWrite()
-    }
-}
+        CdcDeletionMode.HARD_DELETE,
+    )
+
+class GcsRawOverrideProto :
+    BigqueryDirectLoadWriteTest(
+        BigQueryDestinationTestUtils.createConfig(
+            configFile = GCS_STAGING_CONFIG,
+            rawDatasetId = RAW_DATASET_OVERRIDE,
+        ),
+        CdcDeletionMode.HARD_DELETE,
+        isStreamSchemaRetroactiveForUnknownTypeToString = false,
+        unknownTypesBehavior = UnknownTypesBehavior.NULL,
+        dataChannelFormat = DataChannelFormat.PROTOBUF,
+        dataChannelMedium = DataChannelMedium.SOCKET,
+    )
 
 class Gcs :
-    BigqueryTDWriteTest(
-        BigQueryDestinationTestUtils.createConfig(configFile = GCS_STAGING_CONFIG)
-    ) {
-    @Test
-    override fun testBasicWrite() {
-        super.testBasicWrite()
-    }
-}
+    BigqueryDirectLoadWriteTest(
+        BigQueryDestinationTestUtils.createConfig(configFile = GCS_STAGING_CONFIG),
+        CdcDeletionMode.HARD_DELETE,
+    )
+
+class GcsProto :
+    BigqueryDirectLoadWriteTest(
+        BigQueryDestinationTestUtils.createConfig(configFile = GCS_STAGING_CONFIG),
+        CdcDeletionMode.HARD_DELETE,
+        isStreamSchemaRetroactiveForUnknownTypeToString = false,
+        unknownTypesBehavior = UnknownTypesBehavior.NULL,
+        dataChannelFormat = DataChannelFormat.PROTOBUF,
+        dataChannelMedium = DataChannelMedium.SOCKET,
+    )

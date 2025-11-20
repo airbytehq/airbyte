@@ -5,8 +5,6 @@
 package io.airbyte.integrations.source.mongodb.cdc;
 
 import static io.airbyte.integrations.source.mongodb.cdc.MongoDbDebeziumConstants.OffsetState.KEY_SERVER_ID;
-import static io.airbyte.integrations.source.mongodb.cdc.MongoDbDebeziumPropertiesManager.DATABASE_INCLUDE_LIST_KEY;
-import static io.airbyte.integrations.source.mongodb.cdc.MongoDbDebeziumPropertiesManager.normalizeName;
 
 import com.fasterxml.jackson.databind.JsonNode;
 import com.mongodb.MongoChangeStreamException;
@@ -103,6 +101,7 @@ public class MongoDbDebeziumStateUtil implements DebeziumStateUtil {
 
     // databaseNames and streamsByDatabase must be the same length
     List<Bson> orFilters = new ArrayList<>();
+    LOGGER.info("The length of the database names is {}", databaseNames.size());
     for (int i = 0; i < databaseNames.size(); i++) {
       String dbName = databaseNames.get(i);
       List<ConfiguredAirbyteStream> streams = streamsByDatabase.get(i);
@@ -116,7 +115,17 @@ public class MongoDbDebeziumStateUtil implements DebeziumStateUtil {
     }
 
     final List<Bson> pipeline = Collections.singletonList(Aggregates.match(Filters.or(orFilters)));
-    final ChangeStreamIterable<BsonDocument> eventStream = mongoClient.watch(pipeline, BsonDocument.class);
+    final ChangeStreamIterable<BsonDocument> eventStream;
+
+    // Use database-level watch when only one database is configured to minimize required permissions.
+    // Empty database validation is handled upstream in MongoDbSource.check()
+    if (databaseNames.size() == 1) {
+      LOGGER.info("Watching for CDC events for a single database stream {}.", databaseNames.getFirst());
+      eventStream = mongoClient.getDatabase(databaseNames.getFirst()).watch(pipeline, BsonDocument.class);
+    } else {
+      LOGGER.info("Watching for CDC events for multiple databases.");
+      eventStream = mongoClient.watch(pipeline, BsonDocument.class);
+    }
 
     // Attempt to start the stream after the saved offset.
     eventStream.resumeAfter(savedOffset);
@@ -158,17 +167,6 @@ public class MongoDbDebeziumStateUtil implements DebeziumStateUtil {
     safeProps.put("mongodb.password", "****");
     LOGGER.info("properties: " + safeProps);
     Optional<BsonDocument> offset = parseSavedOffset(debeziumProperties);
-    if (offset.isEmpty()) {
-      LOGGER
-          .info(
-              "This connector is using the old offset format where server_id is set to database name, migrating to the new offset format where save_id is now connection string.");
-      for (String databaseName : debeziumProperties.getProperty(DATABASE_INCLUDE_LIST_KEY).split(",")) {
-        debeziumProperties.setProperty("name", normalizeName(databaseName));
-        offset = parseSavedOffset(debeziumProperties);
-        if (!offset.isEmpty())
-          break;
-      }
-    }
     return offset;
   }
 
@@ -231,7 +229,7 @@ public class MongoDbDebeziumStateUtil implements DebeziumStateUtil {
      * io.debezium.connector.mongodb.SourceInfo class for the ordering of keys in the list/map.
      */
     final Map<String, String> sourceInfoMap = new LinkedHashMap<>();
-    final String normalizedServerId = MongoDbDebeziumPropertiesManager.normalizeName(serverId);
+    final String normalizedServerId = MongoDbDebeziumPropertiesManager.normalizeToDebeziumFormat(serverId);
     sourceInfoMap.put(KEY_SERVER_ID, normalizedServerId);
 
     final List<Object> key = new LinkedList<>();

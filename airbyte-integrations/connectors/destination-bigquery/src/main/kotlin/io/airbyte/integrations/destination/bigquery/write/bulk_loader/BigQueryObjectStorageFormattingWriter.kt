@@ -5,39 +5,74 @@
 package io.airbyte.integrations.destination.bigquery.write.bulk_loader
 
 import io.airbyte.cdk.load.command.DestinationStream
-import io.airbyte.cdk.load.command.object_storage.ObjectStorageFormatConfigurationProvider
+import io.airbyte.cdk.load.config.DataChannelFormat
+import io.airbyte.cdk.load.data.withAirbyteMeta
+import io.airbyte.cdk.load.file.csv.toCsvPrinterWithHeader
 import io.airbyte.cdk.load.file.object_storage.CSVFormattingWriter
 import io.airbyte.cdk.load.file.object_storage.ObjectStorageFormattingWriter
 import io.airbyte.cdk.load.file.object_storage.ObjectStorageFormattingWriterFactory
+import io.airbyte.cdk.load.file.object_storage.ProtoToCsvFormatter
 import io.airbyte.cdk.load.message.DestinationRecordRaw
+import io.airbyte.integrations.destination.bigquery.spec.BigqueryConfiguration
+import jakarta.inject.Named
 import jakarta.inject.Singleton
 import java.io.OutputStream
 
 class BigQueryObjectStorageFormattingWriter(
-    private val csvFormattingWriter: CSVFormattingWriter,
-) : ObjectStorageFormattingWriter by csvFormattingWriter {
+    stream: DestinationStream,
+    outputStream: OutputStream,
+) : ObjectStorageFormattingWriter {
+    private val finalSchema = stream.schema.withAirbyteMeta(true)
+    private val printer = finalSchema.toCsvPrinterWithHeader(outputStream)
+    private val bigQueryRowGenerator = BigQueryCSVRowGenerator()
 
     override fun accept(record: DestinationRecordRaw) {
-        csvFormattingWriter.accept(record)
+        printer.printRecord(bigQueryRowGenerator.generate(record, finalSchema))
+    }
+
+    override fun flush() {
+        printer.flush()
+    }
+
+    override fun close() {
+        printer.close()
     }
 }
 
 @Singleton
 class BigQueryObjectStorageFormattingWriterFactory(
-    private val formatConfigProvider: ObjectStorageFormatConfigurationProvider,
+    private val config: BigqueryConfiguration,
+    @Named("dataChannelFormat") private val dataChannelFormat: DataChannelFormat
 ) : ObjectStorageFormattingWriterFactory {
     override fun create(
         stream: DestinationStream,
-        outputStream: OutputStream
+        outputStream: OutputStream,
     ): ObjectStorageFormattingWriter {
-        val flatten = formatConfigProvider.objectStorageFormatConfiguration.rootLevelFlattening
-        return BigQueryObjectStorageFormattingWriter(
-            CSVFormattingWriter(
-                stream,
-                outputStream,
-                rootLevelFlattening = flatten,
-                extractedAtAsTimestampWithTimezone = true,
-            ),
-        )
+        return if (config.legacyRawTablesOnly) {
+            if (dataChannelFormat == DataChannelFormat.PROTOBUF) {
+                ProtoToCsvFormatter(
+                    stream = stream,
+                    outputStream = outputStream,
+                    rootLevelFlattening = false,
+                    extractedAtAsTimestampWithTimezone = true,
+                )
+            } else {
+                CSVFormattingWriter(
+                    stream,
+                    outputStream,
+                    rootLevelFlattening = false,
+                    extractedAtAsTimestampWithTimezone = true,
+                )
+            }
+        } else {
+            if (dataChannelFormat == DataChannelFormat.PROTOBUF) {
+                ProtoToBigQueryObjectStorageFormattingWriter(
+                    stream = stream,
+                    outputStream = outputStream,
+                )
+            } else {
+                BigQueryObjectStorageFormattingWriter(stream, outputStream)
+            }
+        }
     }
 }

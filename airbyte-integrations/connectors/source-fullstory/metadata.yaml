@@ -6,7 +6,7 @@ data:
   dockerRepository: airbyte/source-fullstory
   githubIssueLabel: source-fullstory
   icon: fullstory.svg
-  license: MIT
+  license: ELv2
   name: Fullstory
   remoteRegistries:
     pypi:
@@ -38,4 +38,14 @@ data:
   #           alias: airbyte-connector-testing-secret-store
   connectorBuildOptions:
     baseImage: docker.io/airbyte/source-declarative-manifest:6.51.0@sha256:890b109f243b8b9406f23ea7522de41025f7b3e87f6fc9710bc1e521213a276f
+  externalDocumentationUrls:
+    - title: FullStory API reference
+      url: https://developer.fullstory.com/reference
+      type: api_reference
+    - title: FullStory authentication
+      url: https://developer.fullstory.com/introduction
+      type: authentication_guide
+    - title: FullStory Status
+      url: https://status.fullstory.com/
+      type: status_page
 metadataSpecVersion: "1.0"

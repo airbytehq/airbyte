@@ -13,15 +13,15 @@ data:
       enabled: false
       packageName: airbyte-source-buzzsprout
   connectorBuildOptions:
-    baseImage: docker.io/airbyte/source-declarative-manifest:6.51.0@sha256:890b109f243b8b9406f23ea7522de41025f7b3e87f6fc9710bc1e521213a276f
+    baseImage: docker.io/airbyte/source-declarative-manifest:7.5.0@sha256:92e539d5003b33c3624eae7715aee6e39b7b2f1f0eeb6003d37e649a06847ae8
   connectorSubtype: api
   connectorType: source
   definitionId: 6ad23bfc-cb11-4faa-a243-f9ccdb0145cc
-  dockerImageTag: 0.0.26
+  dockerImageTag: 0.0.37
   dockerRepository: airbyte/source-buzzsprout
   githubIssueLabel: source-buzzsprout
   icon: icon.svg
-  license: MIT
+  license: ELv2
   name: Buzzsprout
   releaseDate: 2024-09-16
   releaseStage: alpha
@@ -33,3 +33,10 @@ data:
   ab_internal:
     ql: 100
     sl: 100
+  externalDocumentationUrls:
+    - title: Buzzsprout API documentation
+      url: https://github.com/Buzzsprout/buzzsprout-api
+      type: api_reference
+    - title: Buzzsprout authentication
+      url: https://github.com/Buzzsprout/buzzsprout-api#authentication
+      type: authentication_guide

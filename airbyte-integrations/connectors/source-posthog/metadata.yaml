@@ -16,7 +16,7 @@ data:
   connectorBuildOptions:
     baseImage: docker.io/airbyte/python-connector-base:3.0.2@sha256:73697fbe1c0e2ebb8ed58e2268484bb4bfb2cb56b653808e1680cbc50bafef75
   icon: posthog.svg
-  license: MIT
+  license: ELv2
   name: PostHog
   remoteRegistries:
     pypi:
@@ -57,4 +57,14 @@ data:
           secretStore:
             type: GSM
             alias: airbyte-connector-testing-secret-store
+  externalDocumentationUrls:
+    - title: PostHog API reference
+      url: https://posthog.com/docs/api
+      type: api_reference
+    - title: PostHog authentication
+      url: https://posthog.com/docs/api/overview#authentication
+      type: authentication_guide
+    - title: PostHog Status
+      url: https://status.posthog.com/
+      type: status_page
 metadataSpecVersion: "1.0"

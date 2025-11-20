@@ -36,6 +36,16 @@ Capsule CRM connector  enables seamless data syncing from Capsule CRM to various
 
 | Version          | Date              | Pull Request | Subject        |
 |------------------|-------------------|--------------|----------------|
+| 0.0.32 | 2025-11-18 | [69444](https://github.com/airbytehq/airbyte/pull/69444) | Update dependencies |
+| 0.0.31 | 2025-10-29 | [68700](https://github.com/airbytehq/airbyte/pull/68700) | Update dependencies |
+| 0.0.30 | 2025-10-21 | [68248](https://github.com/airbytehq/airbyte/pull/68248) | Update dependencies |
+| 0.0.29 | 2025-10-14 | [67812](https://github.com/airbytehq/airbyte/pull/67812) | Update dependencies |
+| 0.0.28 | 2025-10-07 | [67198](https://github.com/airbytehq/airbyte/pull/67198) | Update dependencies |
+| 0.0.27 | 2025-09-30 | [66316](https://github.com/airbytehq/airbyte/pull/66316) | Update dependencies |
+| 0.0.26 | 2025-08-09 | [64660](https://github.com/airbytehq/airbyte/pull/64660) | Update dependencies |
+| 0.0.25 | 2025-07-12 | [63037](https://github.com/airbytehq/airbyte/pull/63037) | Update dependencies |
+| 0.0.24 | 2025-06-21 | [61876](https://github.com/airbytehq/airbyte/pull/61876) | Update dependencies |
+| 0.0.23 | 2025-06-15 | [60664](https://github.com/airbytehq/airbyte/pull/60664) | Update dependencies |
 | 0.0.22 | 2025-05-10 | [59856](https://github.com/airbytehq/airbyte/pull/59856) | Update dependencies |
 | 0.0.21 | 2025-05-03 | [58700](https://github.com/airbytehq/airbyte/pull/58700) | Update dependencies |
 | 0.0.20 | 2025-04-19 | [58252](https://github.com/airbytehq/airbyte/pull/58252) | Update dependencies |

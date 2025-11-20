@@ -20,7 +20,7 @@ data:
   dockerRepository: airbyte/source-statuspage
   githubIssueLabel: source-statuspage
   icon: statuspage.svg
-  license: MIT
+  license: ELv2
   name: Statuspage
   releaseDate: 2022-10-30
   releaseStage: alpha
@@ -40,4 +40,11 @@ data:
           secretStore:
             type: GSM
             alias: airbyte-connector-testing-secret-store
+  externalDocumentationUrls:
+    - title: Statuspage API reference
+      url: https://developer.statuspage.io/
+      type: api_reference
+    - title: Statuspage authentication
+      url: https://developer.statuspage.io/#section/Authentication
+      type: authentication_guide
 metadataSpecVersion: "1.0"

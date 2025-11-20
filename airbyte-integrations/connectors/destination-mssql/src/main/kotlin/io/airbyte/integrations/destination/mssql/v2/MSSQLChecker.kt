@@ -99,14 +99,14 @@ class MSSQLChecker(
             MSSQLBulkLoadHandler(
                 dataSource,
                 config.schema,
-                testStream.descriptor.name,
+                testStream.mappedDescriptor.name,
                 bulkLoadConfig.bulkLoadDataSource,
                 sqlBuilder
             )
 
         // Prepare test CSV data
         val csvData = createTestCsvData(testStream)
-        val csvFilePath = "${testStream.descriptor.name}/$TEST_CSV_FILENAME"
+        val csvFilePath = "${testStream.mappedDescriptor.name}/$TEST_CSV_FILENAME"
 
         // Upload files & perform bulk load
         runBlocking {
@@ -121,7 +121,7 @@ class MSSQLChecker(
                 mssqlBulkLoadHandler.bulkLoadForAppendOverwrite(csvBlob.key, formatFileBlob.key)
 
                 // 4) Verify the data loaded successfully
-                verifyDataLoaded(connection, config.schema, testStream.descriptor.name)
+                verifyDataLoaded(connection, config.schema, testStream.mappedDescriptor.name)
             } finally {
                 // 5) Clean up remote files
                 azureBlobClient.delete(formatFileBlob)

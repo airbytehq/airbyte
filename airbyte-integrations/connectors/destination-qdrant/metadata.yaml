@@ -6,10 +6,10 @@ data:
       enabled: true
   allowedHosts:
     hosts:
-      - "${indexing.url}"
+      - ${indexing.url}
       - api.openai.com
       - api.cohere.ai
-      - "${embedding.api_base}"
+      - ${embedding.api_base}
   resourceRequirements:
     jobSpecific:
       - jobType: sync
@@ -26,7 +26,7 @@ data:
   dockerRepository: airbyte/destination-qdrant
   githubIssueLabel: destination-qdrant
   icon: qdrant.svg
-  license: MIT
+  license: ELv2
   name: Qdrant
   releaseDate: 2023-09-22
   releaseStage: alpha
@@ -40,4 +40,14 @@ data:
   supportLevel: community
   connectorTestSuitesOptions:
     - suite: unitTests
+  externalDocumentationUrls:
+    - title: Qdrant documentation
+      url: https://qdrant.tech/documentation/
+      type: api_reference
+    - title: Release notes
+      url: https://github.com/qdrant/qdrant/releases
+      type: api_release_history
+    - title: Authentication
+      url: https://qdrant.tech/documentation/guides/security/
+      type: authentication_guide
 metadataSpecVersion: "1.0"

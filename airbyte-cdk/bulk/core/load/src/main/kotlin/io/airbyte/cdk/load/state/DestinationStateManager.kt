@@ -29,11 +29,11 @@ class DefaultDestinationStateManager<T : DestinationState>(
     private val states: ConcurrentHashMap<DestinationStream.Descriptor, T> = ConcurrentHashMap()
 
     override suspend fun getState(stream: DestinationStream): T {
-        return states.getOrPut(stream.descriptor) { persister.load(stream) }
+        return states.getOrPut(stream.mappedDescriptor) { persister.load(stream) }
     }
 
     override suspend fun persistState(stream: DestinationStream) {
-        states[stream.descriptor]?.let { persister.persist(stream, it) }
+        states[stream.mappedDescriptor]?.let { persister.persist(stream, it) }
     }
 }
 

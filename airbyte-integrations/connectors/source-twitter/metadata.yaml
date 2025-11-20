@@ -13,7 +13,7 @@ data:
   documentationUrl: https://docs.airbyte.com/integrations/sources/twitter
   githubIssueLabel: source-twitter
   icon: twitter.svg
-  license: MIT
+  license: ELv2
   name: Twitter
   remoteRegistries:
     pypi:
@@ -43,4 +43,17 @@ data:
             alias: airbyte-connector-testing-secret-store
   connectorBuildOptions:
     baseImage: docker.io/airbyte/source-declarative-manifest:6.48.10@sha256:09947fb38d07e515f9901a12f22cc44f1512f6148703341de80403c0e0c1b8c3
+  externalDocumentationUrls:
+    - title: Twitter API v2
+      url: https://developer.twitter.com/en/docs/twitter-api
+      type: api_reference
+    - title: Twitter authentication
+      url: https://developer.twitter.com/en/docs/authentication/overview
+      type: authentication_guide
+    - title: Twitter rate limits
+      url: https://developer.twitter.com/en/docs/twitter-api/rate-limits
+      type: rate_limits
+    - title: Twitter API Status
+      url: https://api.twitterstat.us/
+      type: status_page
 metadataSpecVersion: "1.0"

@@ -27,6 +27,16 @@ API Reference: https://aviationstack.com/documentation
 
 | Version          | Date              | Pull Request | Subject        |
 |------------------|-------------------|--------------|----------------|
+| 0.0.17 | 2025-11-18 | [69574](https://github.com/airbytehq/airbyte/pull/69574) | Update dependencies |
+| 0.0.16 | 2025-10-29 | [68842](https://github.com/airbytehq/airbyte/pull/68842) | Update dependencies |
+| 0.0.15 | 2025-10-21 | [68359](https://github.com/airbytehq/airbyte/pull/68359) | Update dependencies |
+| 0.0.14 | 2025-10-14 | [67966](https://github.com/airbytehq/airbyte/pull/67966) | Update dependencies |
+| 0.0.13 | 2025-10-07 | [67165](https://github.com/airbytehq/airbyte/pull/67165) | Update dependencies |
+| 0.0.12 | 2025-09-30 | [66274](https://github.com/airbytehq/airbyte/pull/66274) | Update dependencies |
+| 0.0.11 | 2025-09-09 | [66037](https://github.com/airbytehq/airbyte/pull/66037) | Update dependencies |
+| 0.0.10 | 2025-08-02 | [64407](https://github.com/airbytehq/airbyte/pull/64407) | Update dependencies |
+| 0.0.9 | 2025-07-12 | [63058](https://github.com/airbytehq/airbyte/pull/63058) | Update dependencies |
+| 0.0.8 | 2025-06-28 | [61445](https://github.com/airbytehq/airbyte/pull/61445) | Update dependencies |
 | 0.0.7 | 2025-05-24 | [60599](https://github.com/airbytehq/airbyte/pull/60599) | Update dependencies |
 | 0.0.6 | 2025-05-10 | [59847](https://github.com/airbytehq/airbyte/pull/59847) | Update dependencies |
 | 0.0.5 | 2025-05-03 | [59364](https://github.com/airbytehq/airbyte/pull/59364) | Update dependencies |

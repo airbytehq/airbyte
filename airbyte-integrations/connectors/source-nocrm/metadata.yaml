@@ -13,15 +13,15 @@ data:
       enabled: false
       packageName: airbyte-source-nocrm
   connectorBuildOptions:
-    baseImage: docker.io/airbyte/source-declarative-manifest:6.51.0@sha256:890b109f243b8b9406f23ea7522de41025f7b3e87f6fc9710bc1e521213a276f
+    baseImage: docker.io/airbyte/source-declarative-manifest:7.5.0@sha256:92e539d5003b33c3624eae7715aee6e39b7b2f1f0eeb6003d37e649a06847ae8
   connectorSubtype: api
   connectorType: source
   definitionId: b58ba2a9-6335-496d-8c55-4e9d483f49a1
-  dockerImageTag: 0.0.22
+  dockerImageTag: 0.0.40
   dockerRepository: airbyte/source-nocrm
   githubIssueLabel: source-nocrm
   icon: icon.svg
-  license: MIT
+  license: ELv2
   name: NoCRM
   releaseDate: 2024-11-08
   releaseStage: alpha
@@ -33,3 +33,7 @@ data:
   ab_internal:
     ql: 100
     sl: 100
+  externalDocumentationUrls:
+    - title: noCRM API documentation
+      url: https://www.nocrm.io/api
+      type: api_reference

@@ -1,171 +1,164 @@
 # Copyright (c) 2025 Airbyte, Inc., all rights reserved.
 
 import pytest
-from source_bing_ads.components import BingAdsCampaignsRecordTransformer
 
 
-class TestBingAdsCampaignsRecordTransformer:
-    """Test cases for the BingAdsCampaignsRecordTransformer component."""
-
-    def setup_method(self):
-        """Set up test fixtures."""
-        self.transformer = BingAdsCampaignsRecordTransformer()
-
-    @pytest.mark.parametrize(
-        "test_name,input_record,expected_settings",
-        [
-            (
-                "settings_with_target_setting_details",
-                {
-                    "Id": 486441589,
-                    "Settings": [{"Type": "TargetSetting", "Details": [{"CriterionTypeGroup": "Audience", "TargetAndBid": False}]}],
-                },
-                {
-                    "Setting": [
-                        {
-                            "Type": "TargetSetting",
-                            "Details": {"TargetSettingDetail": [{"CriterionTypeGroup": "Audience", "TargetAndBid": False}]},
-                        }
-                    ]
-                },
-            ),
-            (
-                "settings_with_performance_max_setting",
-                {"Id": 486441589, "Settings": [{"Type": "PerformanceMaxSetting", "FinalUrlExpansionOptOut": False}]},
-                {"Setting": [{"Type": "PerformanceMaxSetting", "FinalUrlExpansionOptOut": False}]},
-            ),
-            (
-                "settings_with_mixed_types",
-                {
-                    "Id": 486441589,
-                    "Settings": [
-                        {"Type": "PerformanceMaxSetting", "FinalUrlExpansionOptOut": False},
-                        {"Type": "TargetSetting", "Details": [{"CriterionTypeGroup": "Audience", "TargetAndBid": False}]},
-                    ],
-                },
-                {
-                    "Setting": [
-                        {"Type": "PerformanceMaxSetting", "FinalUrlExpansionOptOut": False},
-                        {
-                            "Type": "TargetSetting",
-                            "Details": {"TargetSettingDetail": [{"CriterionTypeGroup": "Audience", "TargetAndBid": False}]},
-                        },
-                    ]
-                },
-            ),
-            (
-                "settings_with_additional_properties",
-                {
-                    "Id": 486441589,
-                    "Settings": [
-                        {
-                            "Type": "TargetSetting",
-                            "Details": [{"CriterionTypeGroup": "Audience", "TargetAndBid": False}],
-                            "CustomProperty": "CustomValue",
-                            "AnotherProperty": 123,
-                        }
-                    ],
-                },
-                {
-                    "Setting": [
-                        {
-                            "Type": "TargetSetting",
-                            "Details": {"TargetSettingDetail": [{"CriterionTypeGroup": "Audience", "TargetAndBid": False}]},
-                            "CustomProperty": "CustomValue",
-                            "AnotherProperty": 123,
-                        }
-                    ]
-                },
-            ),
-            (
-                "non_dict_setting_items",
-                {
-                    "Id": 486441589,
-                    "Settings": [
-                        "invalid_setting",
-                        {"Type": "TargetSetting", "Details": [{"CriterionTypeGroup": "Audience", "TargetAndBid": False}]},
-                        123,
-                    ],
-                },
-                {
-                    "Setting": [
-                        "invalid_setting",
-                        {
-                            "Type": "TargetSetting",
-                            "Details": {"TargetSettingDetail": [{"CriterionTypeGroup": "Audience", "TargetAndBid": False}]},
-                        },
-                        123,
-                    ]
-                },
-            ),
-            (
-                "setting_with_empty_details",
-                {"Id": 486441589, "Settings": [{"Type": "TargetSetting", "Details": []}]},
-                {"Setting": [{"Type": "TargetSetting", "Details": {"TargetSettingDetail": []}}]},
-            ),
-            (
-                "setting_with_none_details",
-                {"Id": 486441589, "Settings": [{"Type": "TargetSetting", "Details": None}]},
-                {"Setting": [{"Type": "TargetSetting", "Details": None}]},
-            ),
-            (
-                "setting_without_type_field",
-                {
-                    "Id": 486441589,
-                    "Settings": [{"Details": [{"CriterionTypeGroup": "Audience", "TargetAndBid": False}], "CustomField": "value"}],
-                },
-                {
-                    "Setting": [
-                        {
-                            "Type": None,
-                            "Details": {"TargetSettingDetail": [{"CriterionTypeGroup": "Audience", "TargetAndBid": False}]},
-                            "CustomField": "value",
-                        }
-                    ]
-                },
-            ),
-            (
-                "complex_details_structure",
-                {
-                    "Id": 486441589,
-                    "Settings": [
-                        {
-                            "Type": "TargetSetting",
-                            "Details": [
+@pytest.mark.parametrize(
+    "test_name,input_record,expected_settings",
+    [
+        (
+            "settings_with_target_setting_details",
+            {
+                "Id": 486441589,
+                "Settings": [{"Type": "TargetSetting", "Details": [{"CriterionTypeGroup": "Audience", "TargetAndBid": False}]}],
+            },
+            {
+                "Setting": [
+                    {
+                        "Type": "TargetSetting",
+                        "Details": {"TargetSettingDetail": [{"CriterionTypeGroup": "Audience", "TargetAndBid": False}]},
+                    }
+                ]
+            },
+        ),
+        (
+            "settings_with_performance_max_setting",
+            {"Id": 486441589, "Settings": [{"Type": "PerformanceMaxSetting", "FinalUrlExpansionOptOut": False}]},
+            {"Setting": [{"Type": "PerformanceMaxSetting", "FinalUrlExpansionOptOut": False}]},
+        ),
+        (
+            "settings_with_mixed_types",
+            {
+                "Id": 486441589,
+                "Settings": [
+                    {"Type": "PerformanceMaxSetting", "FinalUrlExpansionOptOut": False},
+                    {"Type": "TargetSetting", "Details": [{"CriterionTypeGroup": "Audience", "TargetAndBid": False}]},
+                ],
+            },
+            {
+                "Setting": [
+                    {"Type": "PerformanceMaxSetting", "FinalUrlExpansionOptOut": False},
+                    {
+                        "Type": "TargetSetting",
+                        "Details": {"TargetSettingDetail": [{"CriterionTypeGroup": "Audience", "TargetAndBid": False}]},
+                    },
+                ]
+            },
+        ),
+        (
+            "settings_with_additional_properties",
+            {
+                "Id": 486441589,
+                "Settings": [
+                    {
+                        "Type": "TargetSetting",
+                        "Details": [{"CriterionTypeGroup": "Audience", "TargetAndBid": False}],
+                        "CustomProperty": "CustomValue",
+                        "AnotherProperty": 123,
+                    }
+                ],
+            },
+            {
+                "Setting": [
+                    {
+                        "Type": "TargetSetting",
+                        "Details": {"TargetSettingDetail": [{"CriterionTypeGroup": "Audience", "TargetAndBid": False}]},
+                        "CustomProperty": "CustomValue",
+                        "AnotherProperty": 123,
+                    }
+                ]
+            },
+        ),
+        (
+            "non_dict_setting_items",
+            {
+                "Id": 486441589,
+                "Settings": [
+                    "invalid_setting",
+                    {"Type": "TargetSetting", "Details": [{"CriterionTypeGroup": "Audience", "TargetAndBid": False}]},
+                    123,
+                ],
+            },
+            {
+                "Setting": [
+                    "invalid_setting",
+                    {
+                        "Type": "TargetSetting",
+                        "Details": {"TargetSettingDetail": [{"CriterionTypeGroup": "Audience", "TargetAndBid": False}]},
+                    },
+                    123,
+                ]
+            },
+        ),
+        (
+            "setting_with_empty_details",
+            {"Id": 486441589, "Settings": [{"Type": "TargetSetting", "Details": []}]},
+            {"Setting": [{"Type": "TargetSetting", "Details": {"TargetSettingDetail": []}}]},
+        ),
+        (
+            "setting_with_none_details",
+            {"Id": 486441589, "Settings": [{"Type": "TargetSetting", "Details": None}]},
+            {"Setting": [{"Type": "TargetSetting", "Details": None}]},
+        ),
+        (
+            "setting_without_type_field",
+            {
+                "Id": 486441589,
+                "Settings": [{"Details": [{"CriterionTypeGroup": "Audience", "TargetAndBid": False}], "CustomField": "value"}],
+            },
+            {
+                "Setting": [
+                    {
+                        "Type": None,
+                        "Details": {"TargetSettingDetail": [{"CriterionTypeGroup": "Audience", "TargetAndBid": False}]},
+                        "CustomField": "value",
+                    }
+                ]
+            },
+        ),
+        (
+            "complex_details_structure",
+            {
+                "Id": 486441589,
+                "Settings": [
+                    {
+                        "Type": "TargetSetting",
+                        "Details": [
+                            {
+                                "CriterionTypeGroup": "Audience",
+                                "TargetAndBid": False,
+                                "NestedObject": {"Property1": "Value1", "Property2": ["item1", "item2"]},
+                            },
+                            {"CriterionTypeGroup": "Location", "TargetAndBid": True},
+                        ],
+                    }
+                ],
+            },
+            {
+                "Setting": [
+                    {
+                        "Type": "TargetSetting",
+                        "Details": {
+                            "TargetSettingDetail": [
                                 {
                                     "CriterionTypeGroup": "Audience",
                                     "TargetAndBid": False,
                                     "NestedObject": {"Property1": "Value1", "Property2": ["item1", "item2"]},
                                 },
                                 {"CriterionTypeGroup": "Location", "TargetAndBid": True},
-                            ],
-                        }
-                    ],
-                },
-                {
-                    "Setting": [
-                        {
-                            "Type": "TargetSetting",
-                            "Details": {
-                                "TargetSettingDetail": [
-                                    {
-                                        "CriterionTypeGroup": "Audience",
-                                        "TargetAndBid": False,
-                                        "NestedObject": {"Property1": "Value1", "Property2": ["item1", "item2"]},
-                                    },
-                                    {"CriterionTypeGroup": "Location", "TargetAndBid": True},
-                                ]
-                            },
-                        }
-                    ]
-                },
-            ),
-        ],
-    )
-    def test_settings_transformation(self, test_name, input_record, expected_settings):
-        """Test various Settings field transformations."""
-        self.transformer.transform(input_record)
-        assert input_record["Settings"] == expected_settings
+                            ]
+                        },
+                    }
+                ]
+            },
+        ),
+    ],
+)
+def test_settings_transformation(test_name, input_record, expected_settings, components_module):
+    """Test various Settings field transformations."""
+    transformer = components_module.BingAdsCampaignsRecordTransformer()
+    transformer.transform(input_record)
+    assert input_record["Settings"] == expected_settings
 
     @pytest.mark.parametrize(
         "test_name,input_record,expected_settings",
@@ -789,3 +782,35 @@ class TestBingAdsCampaignsRecordTransformer:
         # Check BiddingScheme transformation
         expected_bidding_scheme = {"Type": "TargetCpa", "TargetCpa": 40.0, "MaxCpc": {"Amount": 9.0}}
         assert input_record["BiddingScheme"] == expected_bidding_scheme
+
+
+@pytest.mark.parametrize(
+    "stream_state,expected_state",
+    (
+        (
+            {
+                "1111111": {"Modified Time": "2025-01-01T01:01:55.111+00:00"},
+                "Id": "1111111",
+                "Match Type": None,
+                "Modified Time": None,
+            },
+            {"1111111": {"Modified Time": "2025-01-01T01:01:55.111+00:00"}},
+        ),
+        ({"1111111": {"Modified Time": "2025-01-01T01:01:55.111+00:00"}}, {"1111111": {"Modified Time": "2025-01-01T01:01:55.111+00:00"}}),
+        (
+            {
+                "states": [
+                    {"partition": {"account_id": "account_id"}, "cursor": {"Modified Time": "2025-01-01T01:01:55.111+00:00"}},
+                ],
+                "state": {"Modified Time": "2025-06-06T05:13:54.447+00:00"},
+            },
+            {
+                "state": {"Modified Time": "2025-06-06T05:13:54.447+00:00"},
+                "states": [{"cursor": {"Modified Time": "2025-01-01T01:01:55.111+00:00"}, "partition": {"account_id": "account_id"}}],
+            },
+        ),
+    ),
+)
+def test_bulk_stream_state_migration(stream_state, expected_state, components_module):
+    migrator = components_module.BulkStreamsStateMigration()
+    assert migrator.migrate(stream_state) == expected_state

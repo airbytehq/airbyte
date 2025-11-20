@@ -24,6 +24,20 @@ Apptivo connector  seamless data integration between Apptivo and various data wa
 
 | Version          | Date              | Pull Request | Subject        |
 |------------------|-------------------|--------------|----------------|
+| 0.0.35 | 2025-11-18 | [69516](https://github.com/airbytehq/airbyte/pull/69516) | Update dependencies |
+| 0.0.34 | 2025-10-29 | [68845](https://github.com/airbytehq/airbyte/pull/68845) | Update dependencies |
+| 0.0.33 | 2025-10-21 | [68366](https://github.com/airbytehq/airbyte/pull/68366) | Update dependencies |
+| 0.0.32 | 2025-10-14 | [67983](https://github.com/airbytehq/airbyte/pull/67983) | Update dependencies |
+| 0.0.31 | 2025-10-07 | [67166](https://github.com/airbytehq/airbyte/pull/67166) | Update dependencies |
+| 0.0.30 | 2025-09-30 | [66276](https://github.com/airbytehq/airbyte/pull/66276) | Update dependencies |
+| 0.0.29 | 2025-09-09 | [66035](https://github.com/airbytehq/airbyte/pull/66035) | Update dependencies |
+| 0.0.28 | 2025-08-23 | [65347](https://github.com/airbytehq/airbyte/pull/65347) | Update dependencies |
+| 0.0.27 | 2025-08-09 | [64659](https://github.com/airbytehq/airbyte/pull/64659) | Update dependencies |
+| 0.0.26 | 2025-07-26 | [63807](https://github.com/airbytehq/airbyte/pull/63807) | Update dependencies |
+| 0.0.25 | 2025-07-19 | [63481](https://github.com/airbytehq/airbyte/pull/63481) | Update dependencies |
+| 0.0.24 | 2025-07-12 | [63063](https://github.com/airbytehq/airbyte/pull/63063) | Update dependencies |
+| 0.0.23 | 2025-07-05 | [62532](https://github.com/airbytehq/airbyte/pull/62532) | Update dependencies |
+| 0.0.22 | 2025-06-15 | [59839](https://github.com/airbytehq/airbyte/pull/59839) | Update dependencies |
 | 0.0.21 | 2025-05-03 | [59336](https://github.com/airbytehq/airbyte/pull/59336) | Update dependencies |
 | 0.0.20 | 2025-04-26 | [58738](https://github.com/airbytehq/airbyte/pull/58738) | Update dependencies |
 | 0.0.19 | 2025-04-19 | [58278](https://github.com/airbytehq/airbyte/pull/58278) | Update dependencies |

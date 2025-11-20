@@ -20,7 +20,7 @@ data:
   dockerRepository: airbyte/source-lemlist
   githubIssueLabel: source-lemlist
   icon: lemlist.svg
-  license: MIT
+  license: ELv2
   name: Lemlist
   releaseDate: "2021-10-14"
   releaseStage: alpha
@@ -41,4 +41,11 @@ data:
           secretStore:
             type: GSM
             alias: airbyte-connector-testing-secret-store
+  externalDocumentationUrls:
+    - title: Lemlist API documentation
+      url: https://developer.lemlist.com/
+      type: api_reference
+    - title: Lemlist authentication
+      url: https://developer.lemlist.com/#authentication
+      type: authentication_guide
 metadataSpecVersion: "1.0"

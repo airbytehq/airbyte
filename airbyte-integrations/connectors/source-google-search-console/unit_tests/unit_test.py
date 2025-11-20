@@ -2,30 +2,22 @@
 # Copyright (c) 2025 Airbyte, Inc., all rights reserved.
 #
 
+import json
 import logging
+from pathlib import Path
 from unittest.mock import MagicMock
 
 import pytest
 from pytest_lazy_fixtures import lf as lazy_fixture
-from source_google_search_console.source import SourceGoogleSearchConsole
 
-from airbyte_cdk.models import AirbyteConnectionStatus, Status, SyncMode
+from airbyte_cdk import AirbyteConnectionStatus, AirbyteEntrypoint, AirbyteTracedException
+from airbyte_cdk.models import Status, SyncMode
 from airbyte_cdk.sources.types import StreamSlice
-from airbyte_cdk.utils.traced_exception import AirbyteTracedException
 
-from .conftest import find_stream
-from .utils import command_check
+from .conftest import find_stream, get_source
 
 
 logger = logging.getLogger("airbyte")
-
-
-class MockResponse:
-    def __init__(self, data_field: str, count: int):
-        self.value = {data_field: [0 for i in range(count)]}
-
-    def json(self):
-        return self.value
 
 
 @pytest.mark.parametrize(
@@ -61,54 +53,75 @@ def test_slice(config_gen, site_urls, sync_mode, data_state):
                         "end_time": range_["end_time"],
                     },
                     partition={
-                        "site_url": site_url + "/",
                         "search_type": search_type,
+                        "site_url": site_url,
                     },
                 )
                 assert next(stream_slice) == expected
 
 
-def test_check_connection(config_gen, config, mocker, requests_mock):
+def test_check_connection(config_gen, config, requests_mock):
     requests_mock.get("https://www.googleapis.com/webmasters/v3/sites/https%3A%2F%2Fexample.com%2F", json={})
-    requests_mock.get("https://www.googleapis.com/webmasters/v3/sites", json={"siteEntry": [{"siteUrl": "https://example.com/"}]})
     requests_mock.post("https://oauth2.googleapis.com/token", json={"access_token": "token", "expires_in": 10})
 
-    source = SourceGoogleSearchConsole(config=config, catalog=None, state=None)
+    source = get_source(config=config)
 
-    assert command_check(source, config_gen()) == AirbyteConnectionStatus(status=Status.SUCCEEDED)
+    mock_logger = MagicMock()
+
+    assert source.check(logger=mock_logger, config=config_gen()) == AirbyteConnectionStatus(status=Status.SUCCEEDED)
 
     # test site_urls
-    assert command_check(source, config_gen(site_urls=["https://example.com"])) == AirbyteConnectionStatus(status=Status.SUCCEEDED)
+    assert source.check(logger=mock_logger, config=config_gen(site_urls=["https://example.com/"])) == AirbyteConnectionStatus(
+        status=Status.SUCCEEDED
+    )
 
-    # test start_date
-    assert command_check(source, config_gen(start_date=...)) == AirbyteConnectionStatus(status=Status.SUCCEEDED)
-    with pytest.raises(AirbyteTracedException):
-        assert command_check(source, config_gen(start_date="")) == AirbyteConnectionStatus(
-            status=Status.FAILED,
-            message="'' does not match '^[0-9]{4}-[0-9]{2}-[0-9]{2}$'",
-        )
-    with pytest.raises(AirbyteTracedException):
-        assert command_check(source, config_gen(start_date="start_date")) == AirbyteConnectionStatus(
-            status=Status.FAILED,
-            message="'start_date' does not match '^[0-9]{4}-[0-9]{2}-[0-9]{2}$'",
-        )
 
-    # test end_date
-    assert command_check(source, config_gen(end_date=...)) == AirbyteConnectionStatus(status=Status.SUCCEEDED)
-    assert command_check(source, config_gen(end_date="")) == AirbyteConnectionStatus(status=Status.SUCCEEDED)
-    with pytest.raises(Exception):
-        assert command_check(source, config_gen(end_date="end_date"))
+def test_config_migrations(config_gen):
+    try:
+        config_path = Path(__file__).parent / "test_configs" / "config.json"
+        assert config_path.exists()
 
-    # test custom_reports
-    with pytest.raises(AirbyteTracedException):
-        assert command_check(source, config_gen(custom_reports_array="")) == AirbyteConnectionStatus(
-            status=Status.FAILED,
-            message="'<ValidationError: \"{} is not of type \\'array\\'\">'",
-        )
-    with pytest.raises(AirbyteTracedException):
-        assert command_check(source, config_gen(custom_reports_array="{}")) == AirbyteConnectionStatus(
-            status=Status.FAILED, message="'<ValidationError: \"{} is not of type \\'array\\'\">'"
-        )
+        with open(config_path, "r") as f:
+            config = json.load(f)
+
+        og_config = dict(config)
+
+        get_source(config, config_path=str(config_path))
+
+        with open(config_path, "r") as f:
+            migrated_config = json.load(f)
+
+        assert "custom_reports_array" in migrated_config
+        assert migrated_config["custom_reports_array"] == [{"name": "config_migration_test", "dimensions": ["date", "country", "device"]}]
+        assert "custom_reports_array" not in og_config
+    finally:
+        # Reset config
+        with open(config_path, "w") as f:
+            json.dump(
+                config_gen(
+                    custom_reports_array=...,
+                    custom_reports='[{"name": "config_migration_test", "dimensions": ["date", "country", "device"]}]',
+                ),
+                f,
+            )
+
+
+def test_config_validations(config_gen):
+    config_valid = config_gen()
+    config_invalid_custom_reports_type = config_gen(custom_reports_array={}, custom_reports=...)
+    config_invalid_custom_reports_dict_properties = config_gen(
+        custom_reports_array=[{"dimensions": ["date", "country", "device"]}], custom_reports=...
+    )
+
+    assert get_source(config_valid).streams(config=config_valid)
+
+    with pytest.raises(ValueError) as excinfo_invalid_custom_reports_type:
+        get_source(config_invalid_custom_reports_type).streams(config=config_invalid_custom_reports_type)
+    assert "JSON schema validation error: {} is not of type 'array'" in str(excinfo_invalid_custom_reports_type.value)
+
+    with pytest.raises(ValueError) as excinfo_invalid_custom_reports_dict_properties:
+        get_source(config_invalid_custom_reports_dict_properties).streams(config=config_invalid_custom_reports_dict_properties)
+    assert "JSON schema validation error: 'name' is a required property" in str(excinfo_invalid_custom_reports_dict_properties.value)
 
 
 @pytest.mark.parametrize(
@@ -131,22 +144,21 @@ def test_check_connection(config_gen, config, mocker, requests_mock):
     ],
 )
 def test_unauthorized_creds_exceptions(test_config, expected, requests_mock):
-    source = SourceGoogleSearchConsole(config=test_config, catalog=None, state=None)
+    source = get_source(test_config)
     requests_mock.post("https://oauth2.googleapis.com/token", status_code=401, json={})
     actual = source.check_connection(logger, test_config)
     assert actual == expected
 
 
-def test_streams(config_gen):
-    config = config_gen()
-    source = SourceGoogleSearchConsole(config=config, catalog=None, state=None)
+def test_streams(config):
+    source = get_source(config)
     streams = source.streams(config)
     assert len(streams) == 15
 
 
 def test_streams_without_custom_reports(config_gen):
-    config = config_gen(custom_reports_array=...)
-    source = SourceGoogleSearchConsole(config=config, catalog=None, state=None)
+    config = config_gen(custom_reports_array=..., custom_reports=...)
+    source = get_source(config)
     streams = source.streams(config)
     assert len(streams) == 14
 
@@ -155,6 +167,12 @@ def test_streams_without_custom_reports(config_gen):
     "dimensions, expected_status, schema_props, primary_key",
     (
         (["impressions"], Status.FAILED, None, None),
+        (
+            ["date", "country", "device", "page", "query"],
+            Status.SUCCEEDED,
+            ["clicks", "ctr", "impressions", "position", "date", "site_url", "search_type", "country", "device", "page", "query"],
+            ["date", "country", "device", "page", "query", "site_url", "search_type"],
+        ),
         (
             [],
             Status.SUCCEEDED,
@@ -187,13 +205,9 @@ def test_custom_streams(config_gen, requests_mock, dimensions, expected_status, 
     requests_mock.post("https://oauth2.googleapis.com/token", json={"access_token": "token", "expires_in": 10})
     custom_reports = [{"name": "custom", "dimensions": dimensions}]
 
-    custom_report_config = config_gen(custom_reports_array=custom_reports)
+    custom_report_config = config_gen(custom_reports_array=custom_reports, custom_reports=...)
     mock_logger = MagicMock()
-    status = (
-        SourceGoogleSearchConsole(config=custom_report_config, catalog=None, state=None).check(
-            config=custom_report_config, logger=mock_logger
-        )
-    ).status
+    status = get_source(custom_report_config).check(config=custom_report_config, logger=mock_logger).status
     assert status is expected_status
     if status is Status.FAILED:
         return

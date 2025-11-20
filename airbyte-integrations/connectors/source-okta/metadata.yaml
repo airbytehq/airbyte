@@ -23,7 +23,7 @@ data:
   dockerRepository: airbyte/source-okta
   githubIssueLabel: source-okta
   icon: icon.svg
-  license: MIT
+  license: ELv2
   name: Okta
   releaseStage: alpha
   supportLevel: community
@@ -44,4 +44,17 @@ data:
           secretStore:
             type: GSM
             alias: airbyte-connector-testing-secret-store
+  externalDocumentationUrls:
+    - title: Okta API reference
+      url: https://developer.okta.com/docs/reference/
+      type: api_reference
+    - title: Okta authentication
+      url: https://developer.okta.com/docs/guides/implement-oauth-for-okta/main/
+      type: authentication_guide
+    - title: Okta rate limits
+      url: https://developer.okta.com/docs/reference/rate-limits/
+      type: rate_limits
+    - title: Okta Status
+      url: https://status.okta.com/
+      type: status_page
 metadataSpecVersion: "1.0"

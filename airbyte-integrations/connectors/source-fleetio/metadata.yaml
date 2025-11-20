@@ -5,15 +5,15 @@ data:
     oss:
       enabled: true
   connectorBuildOptions:
-    baseImage: docker.io/airbyte/source-declarative-manifest:6.51.0@sha256:890b109f243b8b9406f23ea7522de41025f7b3e87f6fc9710bc1e521213a276f
+    baseImage: docker.io/airbyte/source-declarative-manifest:7.4.1@sha256:71df19e2ee555ca5b14abbec01d50104c79c9b84cb9cc323284d24333361900a
   connectorSubtype: api
   connectorType: source
   definitionId: 13a7652d-1d94-4033-931a-613d22d3cbb3
-  dockerImageTag: 0.2.23
+  dockerImageTag: 0.2.38
   dockerRepository: airbyte/source-fleetio
   githubIssueLabel: source-fleetio
   icon: icon.svg
-  license: MIT
+  license: ELv2
   name: Fleetio
   remoteRegistries:
     pypi:
@@ -26,4 +26,11 @@ data:
   tags:
     - cdk:low-code
     - language:manifest-only
+  externalDocumentationUrls:
+    - title: Fleetio API documentation
+      url: https://developer.fleetio.com/
+      type: api_reference
+    - title: Fleetio authentication
+      url: https://developer.fleetio.com/#authentication
+      type: authentication_guide
 metadataSpecVersion: "1.0"

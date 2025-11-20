@@ -11,6 +11,7 @@ JAVA=false
 NO_JAVA=false
 JSON=false
 PREV_COMMIT=false
+LOCAL_CDK=false
 
 # parse flags
 while [[ $# -gt 0 ]]; do
@@ -26,6 +27,9 @@ while [[ $# -gt 0 ]]; do
       ;;
     --prev-commit|--compare-prev)
       PREV_COMMIT=true
+      ;;
+    --local-cdk|local-cdk)
+      LOCAL_CDK=true
       ;;
     *)
       echo "Unknown argument: $1" >&2;
@@ -47,7 +51,7 @@ git fetch --quiet "$REMOTE" "$DEFAULT_BRANCH"
 ignore_patterns=(
   '.coveragerc'
   'poe_tasks.toml'
-  'README.md'
+  'airbyte-integrations/connectors/[^/]+/README.md'
 )
 # join with | into a grouped regex
 ignore_globs="($(IFS='|'; echo "${ignore_patterns[*]}"))$"
@@ -73,24 +77,52 @@ fi
 # 4) merge into one list
 all_changes=$(printf '%s\n%s\n%s\n%s' "$committed" "$staged" "$unstaged" "$untracked")
 
+# 4.5) Define helper function to return empty JSON when no connectors are found
+return_empty_json() {
+  if [ "$JSON" = true ]; then
+    # When the list is empty and JSON is requested, send one item as empty string.
+    # This allows the matrix to run once as a no-op, and be marked as complete for purposes
+    # of required checks.
+    echo '{"connector": [""]}'
+  fi
+  exit 0
+}
+
 # 5) drop ignored files
-filtered=$(printf '%s\n' "$all_changes" | grep -v -E "/${ignore_globs}")
+filtered=$(printf '%s\n' "$all_changes" | grep -v -E "(/${ignore_globs}|^${ignore_globs})")
+if [ -z "$filtered" ]; then
+  echo "⚠️ Warning: No files remaining after filtering. Returning empty connector list." >&2
+  return_empty_json
+fi
 
 # 6) keep only connector paths
 set +e # Ignore errors from grep if no matches are found
 connectors_paths=$(printf '%s\n' "$filtered" | grep -E '^airbyte-integrations/connectors/(source-[^/]+|destination-[^/]+)(/|$)')
+if [ -z "$connectors_paths" ]; then
+  echo "⚠️ Warning: No connector paths found. Returning empty connector list." >&2
+  return_empty_json
+fi
 set -e
 
 # 7) extract just the connector directory name
 dirs=$(printf '%s\n' "$connectors_paths" \
   | sed -E 's|airbyte-integrations/connectors/([^/]+).*|\1|' \
 )
+if [ -z "$dirs" ]; then
+  echo "⚠️ Warning: Failed to extract connector directories. Returning empty connector list." >&2
+  return_empty_json
+fi
 
 # 8) unique list of modified connectors
 connectors=()
 if [ -n "$dirs" ]; then
   while IFS= read -r d; do
-    connectors+=("$d")
+    connector_folder="airbyte-integrations/connectors/${d}"
+    if [[ -d "$connector_folder" ]]; then
+      connectors+=("$d")
+    else
+      echo "⚠️ '$d' directory was not found. This can happen if a connector is removed. Skipping." >&2
+    fi
   done <<< "$(printf '%s\n' "$dirs" | sort -u)"
 fi
 
@@ -107,12 +139,9 @@ print_list() {
   # If JSON is requested, convert the list to JSON format.
   # This is pre-formatted to send to a GitHub Actions Matrix
   # with 'connector' as the matrix key.
-  # JSON mode: emit {"connector": […]}
+  # E.g.: {"connector": […]}
   if [ $# -eq 0 ]; then
-    # If the list is empty, send one item as empty string.
-    # This allows the matrix to run once as a no-op, and be marked as complete for purposes
-    # of required checks.
-    echo '{"connector": [""]}'
+    return_empty_json
   else
     # If the list is not empty, convert it to JSON format.
     # This is pre-formatted to send to a GitHub Actions Matrix
@@ -125,9 +154,35 @@ print_list() {
 
 # Allow empty arrays without 'unbound variable' error from here on out.
 set +u
+# 10) If --local-cdk flag is set, also add Java connectors with useLocalCdk = true regardless of changes.
+if $LOCAL_CDK; then
+  echo "Finding Java Bulk CDK connectors with version = local..." >&2
 
-# 10) Print all if no filters applied
+  for connector_dir in airbyte-integrations/connectors/*; do
+    if [[ -d "$connector_dir" ]]; then
+      # Check if it's a Java connector (either with build.gradle or build.gradle.kts)
+      if [ -f "$connector_dir/build.gradle" ] || [ -f "$connector_dir/build.gradle.kts" ]; then
+        connector_name=$(basename "$connector_dir")
 
+        # Determine which build file exists
+        build_file="build.gradle"
+        if [ -f "$connector_dir/build.gradle.kts" ]; then
+          build_file="build.gradle.kts"
+        fi
+
+        # Search for cdk = 'local' or cdk = "local" in airbyteBulkConnector block
+        if grep -q "airbyteBulkConnector" "$connector_dir/$build_file" && grep -q "cdk *= *['\"]local['\"]" "$connector_dir/$build_file"; then
+          connectors+=("$connector_name")
+        fi
+      fi
+    fi
+  done
+
+  # Remove any duplicates using sort, parse it using mapfile and assign to $connectors.
+  mapfile -t connectors < <(printf '%s\n' "${connectors[@]}" | sort -u)
+fi
+
+# 11) Print all if no filters applied
 if ! $JAVA && ! $NO_JAVA; then
   print_list "${connectors[@]}"
   exit 0

@@ -25,6 +25,24 @@ The Cal.com connector enables seamless data synchronization between Cal.com’s 
 
 | Version          | Date              | Pull Request | Subject        |
 |------------------|-------------------|--------------|----------------|
+| 0.0.39 | 2025-11-18 | [69436](https://github.com/airbytehq/airbyte/pull/69436) | Update dependencies |
+| 0.0.38 | 2025-10-29 | [68717](https://github.com/airbytehq/airbyte/pull/68717) | Update dependencies |
+| 0.0.37 | 2025-10-21 | [68273](https://github.com/airbytehq/airbyte/pull/68273) | Update dependencies |
+| 0.0.36 | 2025-10-14 | [67839](https://github.com/airbytehq/airbyte/pull/67839) | Update dependencies |
+| 0.0.35 | 2025-10-07 | [67196](https://github.com/airbytehq/airbyte/pull/67196) | Update dependencies |
+| 0.0.34 | 2025-09-30 | [66315](https://github.com/airbytehq/airbyte/pull/66315) | Update dependencies |
+| 0.0.33 | 2025-09-09 | [66029](https://github.com/airbytehq/airbyte/pull/66029) | Update dependencies |
+| 0.0.32 | 2025-08-23 | [65345](https://github.com/airbytehq/airbyte/pull/65345) | Update dependencies |
+| 0.0.31 | 2025-08-09 | [64661](https://github.com/airbytehq/airbyte/pull/64661) | Update dependencies |
+| 0.0.30 | 2025-08-02 | [64423](https://github.com/airbytehq/airbyte/pull/64423) | Update dependencies |
+| 0.0.29 | 2025-06-26 | [64099](https://github.com/airbytehq/airbyte/pull/64099) | Add support for updatedAt, cancelledByEmail, rescheduledByEmail and cancellationReason fields in GET Bookings |
+| 0.0.28 | 2025-07-26 | [63787](https://github.com/airbytehq/airbyte/pull/63787) | Update dependencies |
+| 0.0.27 | 2025-07-19 | [63486](https://github.com/airbytehq/airbyte/pull/63486) | Update dependencies |
+| 0.0.26 | 2025-07-12 | [63075](https://github.com/airbytehq/airbyte/pull/63075) | Update dependencies |
+| 0.0.25 | 2025-07-06 | [62522](https://github.com/airbytehq/airbyte/pull/62522) | Update rescheduled to rescheduledToUid field in GET Bookings |
+| 0.0.24 | 2025-07-05 | [62539](https://github.com/airbytehq/airbyte/pull/62539) | Update dependencies |
+| 0.0.23 | 2025-06-26 | [61717](https://github.com/airbytehq/airbyte/pull/61717) | Add support for createdAt, rescheduled and absentHost fields in GET Bookings |
+| 0.0.22 | 2025-06-15 | [61097](https://github.com/airbytehq/airbyte/pull/61097) | Update dependencies |
 | 0.0.21 | 2025-05-17 | [60707](https://github.com/airbytehq/airbyte/pull/60707) | Update dependencies |
 | 0.0.20 | 2025-05-10 | [59898](https://github.com/airbytehq/airbyte/pull/59898) | Update dependencies |
 | 0.0.19 | 2025-05-03 | [59325](https://github.com/airbytehq/airbyte/pull/59325) | Update dependencies |

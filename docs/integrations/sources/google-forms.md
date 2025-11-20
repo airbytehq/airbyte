@@ -23,6 +23,22 @@ Google Forms is a free online tool from Google that allows users to create custo
 
 | Version          | Date              | Pull Request | Subject        |
 |------------------|-------------------|--------------|----------------|
+| 0.0.38 | 2025-11-18 | [69403](https://github.com/airbytehq/airbyte/pull/69403) | Update dependencies |
+| 0.0.37 | 2025-10-29 | [69005](https://github.com/airbytehq/airbyte/pull/69005) | Update dependencies |
+| 0.0.36 | 2025-10-21 | [68215](https://github.com/airbytehq/airbyte/pull/68215) | Update dependencies |
+| 0.0.35 | 2025-10-14 | [68029](https://github.com/airbytehq/airbyte/pull/68029) | Update dependencies |
+| 0.0.34 | 2025-10-07 | [67256](https://github.com/airbytehq/airbyte/pull/67256) | Update dependencies |
+| 0.0.33 | 2025-09-30 | [66305](https://github.com/airbytehq/airbyte/pull/66305) | Update dependencies |
+| 0.0.32 | 2025-09-09 | [66044](https://github.com/airbytehq/airbyte/pull/66044) | Update dependencies |
+| 0.0.31 | 2025-08-23 | [65367](https://github.com/airbytehq/airbyte/pull/65367) | Update dependencies |
+| 0.0.30 | 2025-08-09 | [64575](https://github.com/airbytehq/airbyte/pull/64575) | Update dependencies |
+| 0.0.29 | 2025-08-02 | [64267](https://github.com/airbytehq/airbyte/pull/64267) | Update dependencies |
+| 0.0.28 | 2025-07-26 | [63860](https://github.com/airbytehq/airbyte/pull/63860) | Update dependencies |
+| 0.0.27 | 2025-07-19 | [63493](https://github.com/airbytehq/airbyte/pull/63493) | Update dependencies |
+| 0.0.26 | 2025-07-12 | [63116](https://github.com/airbytehq/airbyte/pull/63116) | Update dependencies |
+| 0.0.25 | 2025-07-05 | [62544](https://github.com/airbytehq/airbyte/pull/62544) | Update dependencies |
+| 0.0.24 | 2025-06-21 | [61860](https://github.com/airbytehq/airbyte/pull/61860) | Update dependencies |
+| 0.0.23 | 2025-06-14 | [61092](https://github.com/airbytehq/airbyte/pull/61092) | Update dependencies |
 | 0.0.22 | 2025-05-24 | [60634](https://github.com/airbytehq/airbyte/pull/60634) | Update dependencies |
 | 0.0.21 | 2025-05-10 | [59804](https://github.com/airbytehq/airbyte/pull/59804) | Update dependencies |
 | 0.0.20 | 2025-05-03 | [59275](https://github.com/airbytehq/airbyte/pull/59275) | Update dependencies |

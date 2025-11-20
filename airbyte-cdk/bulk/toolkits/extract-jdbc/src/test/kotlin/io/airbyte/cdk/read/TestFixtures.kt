@@ -10,6 +10,7 @@ import io.airbyte.cdk.ClockFactory
 import io.airbyte.cdk.StreamIdentifier
 import io.airbyte.cdk.command.JdbcSourceConfiguration
 import io.airbyte.cdk.command.OpaqueStateValue
+import io.airbyte.cdk.command.TableFilter
 import io.airbyte.cdk.discover.Field
 import io.airbyte.cdk.discover.MetaField
 import io.airbyte.cdk.discover.MetaFieldDecorator
@@ -20,6 +21,9 @@ import io.airbyte.cdk.jdbc.StringFieldType
 import io.airbyte.cdk.output.BufferingCatalogValidationFailureHandler
 import io.airbyte.cdk.output.BufferingOutputConsumer
 import io.airbyte.cdk.output.CatalogValidationFailure
+import io.airbyte.cdk.output.DataChannelFormat
+import io.airbyte.cdk.output.DataChannelMedium
+import io.airbyte.cdk.output.sockets.NativeRecordPayload
 import io.airbyte.cdk.ssh.SshConnectionOptions
 import io.airbyte.cdk.ssh.SshTunnelMethodConfiguration
 import io.airbyte.cdk.util.Jsons
@@ -88,11 +92,14 @@ object TestFixtures {
                 maxConcurrency,
                 maxSnapshotReadTime
             )
+
+        val concurrencyResource = ConcurrencyResource(configuration)
         return DefaultJdbcSharedState(
             configuration,
             MockSelectQuerier(ArrayDeque(mockedQueries.toList())),
             constants.copy(maxMemoryBytesForTesting = maxMemoryBytesForTesting),
-            ConcurrencyResource(configuration),
+            concurrencyResource,
+            ResourceAcquirer(listOf(concurrencyResource))
         )
     }
 
@@ -136,6 +143,8 @@ object TestFixtures {
             get() = TODO("Not yet implemented")
         override val namespaces: Set<String>
             get() = TODO("Not yet implemented")
+        override val tableFilters: List<TableFilter>
+            get() = TODO("Not yet implemented")
         override val realPort: Int
             get() = TODO("Not yet implemented")
         override val sshTunnel: SshTunnelMethodConfiguration
@@ -157,11 +166,11 @@ object TestFixtures {
             Assertions.assertEquals(q.sql, mockedQuery!!.expectedQuerySpec.toString())
             Assertions.assertEquals(parameters, mockedQuery.expectedParameters, q.sql)
             return object : SelectQuerier.Result {
-                val wrapped: Iterator<ObjectNode> = mockedQuery.results.iterator()
+                val wrapped: Iterator<NativeRecordPayload> = mockedQuery.results.iterator()
                 override fun hasNext(): Boolean = wrapped.hasNext()
                 override fun next(): SelectQuerier.ResultRow =
                     object : SelectQuerier.ResultRow {
-                        override val data: ObjectNode = wrapped.next()
+                        override val data: NativeRecordPayload = wrapped.next()
                         override val changes: Map<Field, FieldValueChange> = emptyMap()
                     }
                 override fun close() {}
@@ -172,17 +181,13 @@ object TestFixtures {
     data class MockedQuery(
         val expectedQuerySpec: SelectQuerySpec,
         val expectedParameters: SelectQuerier.Parameters,
-        val results: List<ObjectNode>
+        val results: List<NativeRecordPayload>
     ) {
         constructor(
             expectedQuerySpec: SelectQuerySpec,
             expectedParameters: SelectQuerier.Parameters,
-            vararg rows: String,
-        ) : this(
-            expectedQuerySpec,
-            expectedParameters,
-            rows.map { Jsons.readTree(it) as ObjectNode },
-        )
+            vararg rows: NativeRecordPayload,
+        ) : this(expectedQuerySpec, expectedParameters, rows.toList())
     }
 
     object MockSelectQueryGenerator : SelectQueryGenerator {
@@ -200,6 +205,13 @@ object TestFixtures {
             stream: Stream,
             recordData: ObjectNode
         ) {}
+
+        override fun decorateRecordData(
+            timestamp: OffsetDateTime,
+            globalStateValue: OpaqueStateValue?,
+            stream: Stream,
+            recordData: NativeRecordPayload
+        ) {}
     }
 
     fun Stream.bootstrap(opaqueStateValue: OpaqueStateValue?): StreamFeedBootstrap =
@@ -207,6 +219,10 @@ object TestFixtures {
             outputConsumer = BufferingOutputConsumer(ClockFactory().fixed()),
             metaFieldDecorator = MockMetaFieldDecorator,
             stateManager = StateManager(initialStreamStates = mapOf(this to opaqueStateValue)),
-            stream = this
+            stream = this,
+            DataChannelFormat.JSONL,
+            DataChannelMedium.STDIO,
+            8192,
+            ClockFactory().fixed()
         )
 }

@@ -13,12 +13,12 @@ data:
     - suite: integrationTests
   connectorType: source
   definitionId: 447e0381-3780-4b46-bb62-00a4e3c8b8e2
-  dockerImageTag: 0.3.0
+  dockerImageTag: 0.3.1
   dockerRepository: airbyte/source-db2
   documentationUrl: https://docs.airbyte.com/integrations/sources/db2
   githubIssueLabel: source-db2
   icon: db2.svg
-  license: MIT
+  license: ELv2
   name: IBM Db2
   registryOverrides:
     cloud:
@@ -29,4 +29,11 @@ data:
   supportLevel: community
   tags:
     - language:java
+  externalDocumentationUrls:
+    - title: IBM Db2 authentication
+      url: https://www.ibm.com/docs/en/db2/11.5?topic=security-authentication
+      type: authentication_guide
+    - title: IBM Db2 SQL reference
+      url: https://www.ibm.com/docs/en/db2/11.5?topic=reference-sql
+      type: sql_reference
 metadataSpecVersion: "1.0"

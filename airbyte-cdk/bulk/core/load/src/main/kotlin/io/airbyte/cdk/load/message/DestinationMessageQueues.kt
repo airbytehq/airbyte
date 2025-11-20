@@ -24,6 +24,11 @@ data class GlobalCheckpointWrapped(
     val checkpoint: CheckpointMessage,
 ) : CheckpointMessageWrapped
 
+data class GlobalSnapshotCheckpointWrapped(
+    val checkpointKey: CheckpointKey,
+    val checkpoint: CheckpointMessage,
+) : CheckpointMessageWrapped
+
 /**
  * A single-channel queue for checkpoint messages. This is so updating the checkpoint manager never
  * blocks reading from stdin.

@@ -25,7 +25,7 @@ data:
   documentationUrl: https://docs.airbyte.com/integrations/sources/the-guardian-api
   githubIssueLabel: source-the-guardian-api
   icon: theguardian.svg
-  license: MIT
+  license: ELv2
   name: The Guardian API
   registryOverrides:
     cloud:
@@ -41,4 +41,8 @@ data:
   tags:
     - cdk:low-code
     - language:manifest-only
+  externalDocumentationUrls:
+    - title: The Guardian Open Platform
+      url: https://open-platform.theguardian.com/documentation/
+      type: api_reference
 metadataSpecVersion: "1.0"

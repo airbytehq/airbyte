@@ -20,7 +20,7 @@ data:
   dockerRepository: airbyte/source-avni
   githubIssueLabel: source-avni
   icon: avni.svg
-  license: MIT
+  license: ELv2
   name: Avni
   releaseDate: "2024-03-21"
   releaseStage: alpha
@@ -38,4 +38,8 @@ data:
           secretStore:
             type: GSM
             alias: airbyte-connector-testing-secret-store
+  externalDocumentationUrls:
+    - title: API documentation
+      url: https://avni.readme.io/reference/api-overview
+      type: api_reference
 metadataSpecVersion: "1.0"

@@ -36,7 +36,7 @@ data:
             type: GSM
   connectorType: source
   definitionId: b2e713cd-cc36-4c0a-b5bd-b47cb8a0561e
-  dockerImageTag: 2.0.1
+  dockerImageTag: 2.0.4
   dockerRepository: airbyte/source-mongodb-v2
   documentationUrl: https://docs.airbyte.com/integrations/sources/mongodb-v2
   githubIssueLabel: source-mongodb-v2
@@ -91,4 +91,14 @@ data:
   supportLevel: certified
   tags:
     - language:java
+  externalDocumentationUrls:
+    - title: MongoDB documentation
+      url: https://www.mongodb.com/docs/
+      type: api_reference
+    - title: Release Notes
+      url: https://www.mongodb.com/docs/manual/release-notes/
+      type: api_release_history
+    - title: MongoDB authentication
+      url: https://www.mongodb.com/docs/manual/core/authentication/
+      type: authentication_guide
 metadataSpecVersion: "1.0"

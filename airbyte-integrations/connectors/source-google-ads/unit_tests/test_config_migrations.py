@@ -18,7 +18,7 @@ CMD = "check"
 TEST_CONFIG_PATH = "unit_tests/test_migrations/custom_query/test_config.json"
 NEW_TEST_CONFIG_PATH = "unit_tests/test_migrations/custom_query/test_new_config.json"
 SOURCE_INPUT_ARGS = [CMD, "--config", TEST_CONFIG_PATH]
-SOURCE: Source = SourceGoogleAds()
+SOURCE: Source = SourceGoogleAds({}, None, None)
 
 
 # HELPERS

@@ -13,15 +13,15 @@ data:
       enabled: false
       packageName: airbyte-source-google-calendar
   connectorBuildOptions:
-    baseImage: docker.io/airbyte/source-declarative-manifest:6.51.0@sha256:890b109f243b8b9406f23ea7522de41025f7b3e87f6fc9710bc1e521213a276f
+    baseImage: docker.io/airbyte/source-declarative-manifest:7.5.0@sha256:92e539d5003b33c3624eae7715aee6e39b7b2f1f0eeb6003d37e649a06847ae8
   connectorSubtype: api
   connectorType: source
   definitionId: c01b6259-bdf4-45ff-bcd5-66424cd2f18b
-  dockerImageTag: 0.0.12
+  dockerImageTag: 0.0.29
   dockerRepository: airbyte/source-google-calendar
   githubIssueLabel: source-google-calendar
   icon: icon.svg
-  license: MIT
+  license: ELv2
   name: Google Calendar
   releaseDate: 2024-10-06
   releaseStage: alpha
@@ -33,3 +33,16 @@ data:
   ab_internal:
     ql: 100
     sl: 100
+  externalDocumentationUrls:
+    - title: Google Calendar API reference
+      url: https://developers.google.com/calendar/api/v3/reference
+      type: api_reference
+    - title: Google Calendar authentication
+      url: https://developers.google.com/calendar/api/guides/auth
+      type: authentication_guide
+    - title: Google Calendar quotas
+      url: https://developers.google.com/calendar/api/guides/quota
+      type: rate_limits
+    - title: Google Workspace Status
+      url: https://www.google.com/appsstatus/
+      type: status_page

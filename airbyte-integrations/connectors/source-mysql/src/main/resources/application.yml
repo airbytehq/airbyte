@@ -1,9 +1,15 @@
 ---
 airbyte:
   connector:
+    data-channel:
+      medium: ${DATA_CHANNEL_MEDIUM:STDIO}
+      format: ${DATA_CHANNEL_FORMAT:JSONL}
+      socket-paths: ${DATA_CHANNEL_SOCKET_PATHS}
+    output:
+      buffer-byte-size-threshold-for-flush: 8192
     extract:
       jdbc:
-        mode: sequential
+        mode: concurrent
         with-sampling: true
         table-sample-size: 1024
         throughput-bytes-per-second: 10000000

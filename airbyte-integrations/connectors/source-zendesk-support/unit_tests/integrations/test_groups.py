@@ -1,13 +1,12 @@
 # Copyright (c) 2024 Airbyte, Inc., all rights reserved.
 
-from datetime import datetime, timezone
+from datetime import timedelta
 from unittest import TestCase
-
-import pendulum
 
 from airbyte_cdk.models import SyncMode
 from airbyte_cdk.test.mock_http import HttpMocker
 from airbyte_cdk.test.state_builder import StateBuilder
+from airbyte_cdk.utils.datetime_helpers import ab_datetime_now
 
 from .config import ConfigBuilder
 from .helpers import given_groups_with_later_records
@@ -15,7 +14,7 @@ from .utils import datetime_to_string, read_stream, string_to_datetime
 from .zs_requests.request_authenticators import ApiTokenAuthenticator
 
 
-_NOW = datetime.now(timezone.utc)
+_NOW = ab_datetime_now()
 
 
 class TestGroupsStreamFullRefresh(TestCase):
@@ -25,7 +24,7 @@ class TestGroupsStreamFullRefresh(TestCase):
             ConfigBuilder()
             .with_basic_auth_credentials("user@example.com", "password")
             .with_subdomain("d3v-airbyte")
-            .with_start_date(pendulum.now(tz="UTC").subtract(years=2))
+            .with_start_date(ab_datetime_now().subtract(timedelta(weeks=104)))
             .build()
         )
 
@@ -43,7 +42,7 @@ class TestGroupsStreamFullRefresh(TestCase):
         given_groups_with_later_records(
             http_mocker,
             string_to_datetime(self._config["start_date"]),
-            pendulum.duration(weeks=12),
+            timedelta(weeks=12),
             api_token_authenticator,
         )
 
@@ -60,11 +59,11 @@ class TestGroupsStreamFullRefresh(TestCase):
         given_groups_with_later_records(
             http_mocker,
             string_to_datetime(self._config["start_date"]),
-            pendulum.duration(weeks=12),
+            timedelta(weeks=12),
             api_token_authenticator,
         )
 
-        state_value = {"updated_at": datetime_to_string(pendulum.now(tz="UTC").subtract(years=1, weeks=50))}
+        state_value = {"updated_at": datetime_to_string(ab_datetime_now().subtract(timedelta(weeks=102)))}
 
         state = StateBuilder().with_stream_state("groups", state_value).build()
 

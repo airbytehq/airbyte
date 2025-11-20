@@ -83,6 +83,22 @@ Visit `https://app.productive.io/ORG_ID-UUID/settings/api-integrations` for gett
 
 | Version | Date | Pull Request | Subject |
 | ------------------ | ------------ | -- | ---------------- |
+| 0.0.38 | 2025-11-18 | [69640](https://github.com/airbytehq/airbyte/pull/69640) | Update dependencies |
+| 0.0.37 | 2025-10-29 | [68875](https://github.com/airbytehq/airbyte/pull/68875) | Update dependencies |
+| 0.0.36 | 2025-10-21 | [68388](https://github.com/airbytehq/airbyte/pull/68388) | Update dependencies |
+| 0.0.35 | 2025-10-14 | [67874](https://github.com/airbytehq/airbyte/pull/67874) | Update dependencies |
+| 0.0.34 | 2025-10-07 | [67544](https://github.com/airbytehq/airbyte/pull/67544) | Update dependencies |
+| 0.0.33 | 2025-09-30 | [65701](https://github.com/airbytehq/airbyte/pull/65701) | Update dependencies |
+| 0.0.32 | 2025-08-23 | [65415](https://github.com/airbytehq/airbyte/pull/65415) | Update dependencies |
+| 0.0.31 | 2025-08-09 | [64743](https://github.com/airbytehq/airbyte/pull/64743) | Update dependencies |
+| 0.0.30 | 2025-08-02 | [64244](https://github.com/airbytehq/airbyte/pull/64244) | Update dependencies |
+| 0.0.29 | 2025-07-26 | [63869](https://github.com/airbytehq/airbyte/pull/63869) | Update dependencies |
+| 0.0.28 | 2025-07-19 | [63398](https://github.com/airbytehq/airbyte/pull/63398) | Update dependencies |
+| 0.0.27 | 2025-07-12 | [63246](https://github.com/airbytehq/airbyte/pull/63246) | Update dependencies |
+| 0.0.26 | 2025-07-05 | [62607](https://github.com/airbytehq/airbyte/pull/62607) | Update dependencies |
+| 0.0.25 | 2025-06-28 | [62403](https://github.com/airbytehq/airbyte/pull/62403) | Update dependencies |
+| 0.0.24 | 2025-06-21 | [61892](https://github.com/airbytehq/airbyte/pull/61892) | Update dependencies |
+| 0.0.23 | 2025-06-14 | [61045](https://github.com/airbytehq/airbyte/pull/61045) | Update dependencies |
 | 0.0.22 | 2025-05-24 | [60529](https://github.com/airbytehq/airbyte/pull/60529) | Update dependencies |
 | 0.0.21 | 2025-05-10 | [60061](https://github.com/airbytehq/airbyte/pull/60061) | Update dependencies |
 | 0.0.20 | 2025-05-04 | [59517](https://github.com/airbytehq/airbyte/pull/59517) | Update dependencies |

@@ -30,6 +30,20 @@ Due to some limitation of SmartWaiver API it can have situations where you won't
 
 | Version          | Date              | Pull Request | Subject        |
 |------------------|-------------------|--------------|----------------|
+| 0.0.38 | 2025-11-18 | [69484](https://github.com/airbytehq/airbyte/pull/69484) | Update dependencies |
+| 0.0.37 | 2025-10-29 | [68831](https://github.com/airbytehq/airbyte/pull/68831) | Update dependencies |
+| 0.0.36 | 2025-10-21 | [68259](https://github.com/airbytehq/airbyte/pull/68259) | Update dependencies |
+| 0.0.35 | 2025-10-14 | [67792](https://github.com/airbytehq/airbyte/pull/67792) | Update dependencies |
+| 0.0.34 | 2025-10-07 | [67444](https://github.com/airbytehq/airbyte/pull/67444) | Update dependencies |
+| 0.0.33 | 2025-09-30 | [66899](https://github.com/airbytehq/airbyte/pull/66899) | Update dependencies |
+| 0.0.32 | 2025-09-24 | [66266](https://github.com/airbytehq/airbyte/pull/66266) | Update dependencies |
+| 0.0.31 | 2025-08-23 | [65421](https://github.com/airbytehq/airbyte/pull/65421) | Update dependencies |
+| 0.0.30 | 2025-08-09 | [64837](https://github.com/airbytehq/airbyte/pull/64837) | Update dependencies |
+| 0.0.29 | 2025-08-02 | [64433](https://github.com/airbytehq/airbyte/pull/64433) | Update dependencies |
+| 0.0.28 | 2025-07-12 | [63077](https://github.com/airbytehq/airbyte/pull/63077) | Update dependencies |
+| 0.0.27 | 2025-07-05 | [62736](https://github.com/airbytehq/airbyte/pull/62736) | Update dependencies |
+| 0.0.26 | 2025-06-28 | [62244](https://github.com/airbytehq/airbyte/pull/62244) | Update dependencies |
+| 0.0.25 | 2025-06-14 | [60570](https://github.com/airbytehq/airbyte/pull/60570) | Update dependencies |
 | 0.0.24 | 2025-05-10 | [60115](https://github.com/airbytehq/airbyte/pull/60115) | Update dependencies |
 | 0.0.23 | 2025-05-04 | [59600](https://github.com/airbytehq/airbyte/pull/59600) | Update dependencies |
 | 0.0.22 | 2025-04-27 | [58998](https://github.com/airbytehq/airbyte/pull/58998) | Update dependencies |

@@ -7,6 +7,8 @@ package io.airbyte.cdk.load.task.internal
 import io.airbyte.cdk.load.command.DestinationCatalog
 import io.airbyte.cdk.load.command.DestinationStream
 import io.airbyte.cdk.load.command.MockDestinationCatalogFactory
+import io.airbyte.cdk.load.command.NamespaceMapper
+import io.airbyte.cdk.load.config.NamespaceDefinitionType
 import io.airbyte.cdk.load.message.CheckpointMessageWrapped
 import io.airbyte.cdk.load.message.DestinationMessage
 import io.airbyte.cdk.load.message.DestinationRecordRaw
@@ -59,8 +61,8 @@ class InputConsumerTaskTest {
 
     @BeforeEach
     fun setup() {
-        coEvery { stream1.descriptor } returns STREAM1
-        coEvery { stream2.descriptor } returns STREAM2
+        coEvery { stream1.mappedDescriptor } returns STREAM1
+        coEvery { stream2.mappedDescriptor } returns STREAM2
 
         coEvery { catalog.streams } returns listOf(stream1, stream2)
 
@@ -101,11 +103,11 @@ class InputConsumerTaskTest {
                 fileTransferQueue = mockk(relaxed = true),
                 batchStateUpdateQueue = mockk(relaxed = true),
                 1,
-                false
+                false,
+                NamespaceMapper(NamespaceDefinitionType.SOURCE)
             )
         val task =
             InputConsumerTask(
-                catalog = catalog,
                 inputFlow = inputFlow,
                 pipelineInputQueue = pipelineInputQueue,
                 partitioner = mockk(relaxed = true),
@@ -114,8 +116,8 @@ class InputConsumerTaskTest {
         task.execute()
 
         coVerify(exactly = 3) { pipelineInputQueue.publish(any(), any()) }
-        assert(syncManager.getStreamManager(stream1.descriptor).readCount() == 1L)
-        assert(syncManager.getStreamManager(stream2.descriptor).readCount() == 2L)
+        assert(syncManager.getStreamManager(stream1.mappedDescriptor).readCount() == 1L)
+        assert(syncManager.getStreamManager(stream2.mappedDescriptor).readCount() == 2L)
     }
 
     @Test
@@ -152,11 +154,11 @@ class InputConsumerTaskTest {
                 fileTransferQueue = mockk(relaxed = true),
                 batchStateUpdateQueue = mockk(relaxed = true),
                 1,
-                false
+                false,
+                NamespaceMapper(NamespaceDefinitionType.SOURCE)
             )
         val task =
             InputConsumerTask(
-                catalog = catalog,
                 inputFlow = inputFlow,
                 pipelineInputQueue = mockk(relaxed = true),
                 partitioner = mockk(relaxed = true),
@@ -168,10 +170,10 @@ class InputConsumerTaskTest {
             memoryManager.release(3L)
         }
 
-        assert(syncManager.getStreamManager(stream1.descriptor).readCount() == 1L)
-        assert(syncManager.getStreamManager(stream1.descriptor).endOfStreamRead())
-        assert(syncManager.getStreamManager(stream2.descriptor).readCount() == 0L)
-        assert(syncManager.getStreamManager(stream2.descriptor).endOfStreamRead())
+        assert(syncManager.getStreamManager(stream1.mappedDescriptor).readCount() == 1L)
+        assert(syncManager.getStreamManager(stream1.mappedDescriptor).endOfStreamRead())
+        assert(syncManager.getStreamManager(stream2.mappedDescriptor).readCount() == 0L)
+        assert(syncManager.getStreamManager(stream2.mappedDescriptor).endOfStreamRead())
     }
 
     @Test
@@ -192,7 +194,6 @@ class InputConsumerTaskTest {
 
         val task =
             InputConsumerTask(
-                catalog = catalog,
                 inputFlow = inputFlow,
                 pipelineInputQueue = mockk(relaxed = true),
                 partitioner = mockk(relaxed = true),
@@ -218,7 +219,7 @@ class InputConsumerTaskTest {
         published.toList().zip(batches).forEach { (checkpoint, event) ->
             val wrapped = checkpoint.value
             Assertions.assertEquals(event.expectedStateIndex, wrapped.checkpointKey.checkpointIndex)
-            Assertions.assertEquals(event.stream.descriptor, wrapped.stream)
+            Assertions.assertEquals(event.stream.mappedDescriptor, wrapped.stream)
         }
     }
 
@@ -243,7 +244,6 @@ class InputConsumerTaskTest {
 
         val task =
             InputConsumerTask(
-                catalog = catalog,
                 inputFlow = inputFlow,
                 pipelineInputQueue = mockk(relaxed = true),
                 partitioner = mockk(relaxed = true),

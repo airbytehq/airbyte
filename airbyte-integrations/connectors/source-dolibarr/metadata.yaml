@@ -13,11 +13,11 @@ data:
       enabled: false
       packageName: airbyte-source-dolibarr
   connectorBuildOptions:
-    baseImage: docker.io/airbyte/source-declarative-manifest:6.49.1@sha256:e7f1d592c57477fa44cf36ac835aeabff1299963f343b564d6917e6f17c28261
+    baseImage: docker.io/airbyte/source-declarative-manifest:7.3.1@sha256:04afd30e90f276dae049019427cd519c126203e92a9993de262ff29f73bd8955
   connectorSubtype: api
   connectorType: source
   definitionId: 10c2652f-00cf-421a-bd16-7758357e5d99
-  dockerImageTag: 1.0.0
+  dockerImageTag: 1.0.13
   releases:
     breakingChanges:
       1.0.0:
@@ -26,7 +26,7 @@ data:
   dockerRepository: airbyte/source-dolibarr
   githubIssueLabel: source-dolibarr
   icon: icon.svg
-  license: MIT
+  license: ELv2
   name: Dolibarr
   releaseDate: 2025-06-05
   releaseStage: alpha
@@ -38,3 +38,10 @@ data:
   ab_internal:
     ql: 100
     sl: 100
+  externalDocumentationUrls:
+    - title: Dolibarr REST API
+      url: https://wiki.dolibarr.org/index.php/REST_API
+      type: api_reference
+    - title: Dolibarr authentication
+      url: https://wiki.dolibarr.org/index.php/REST_API#Authentication
+      type: authentication_guide

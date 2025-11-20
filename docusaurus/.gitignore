@@ -22,3 +22,6 @@ src/data/connector_registry_slim.json
 npm-debug.log*
 yarn-debug.log*
 yarn-error.log*
+
+CLAUDE.local.md
+.claude/settings.local.json

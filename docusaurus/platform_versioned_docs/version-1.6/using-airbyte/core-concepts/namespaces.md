@@ -52,6 +52,7 @@ All streams will be replicated and stored in the default namespace defined on th
 | Redshift              | schema            |
 | Snowflake             | schema            |
 | S3                    | path prefix       |
+| ClickHouse            | database          |
 
 :::tip
 If you prefer to replicate multiple sources into the same namespace, use the `Stream Prefix` configuration to differentiate data from these sources to ensure no streams collide when writing to the destination.

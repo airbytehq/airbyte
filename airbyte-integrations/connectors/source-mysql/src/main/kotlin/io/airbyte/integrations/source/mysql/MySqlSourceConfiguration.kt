@@ -8,12 +8,18 @@ import io.airbyte.cdk.command.FeatureFlag
 import io.airbyte.cdk.command.JdbcSourceConfiguration
 import io.airbyte.cdk.command.SourceConfiguration
 import io.airbyte.cdk.command.SourceConfigurationFactory
+import io.airbyte.cdk.command.TableFilter
 import io.airbyte.cdk.jdbc.SSLCertificateUtils
+import io.airbyte.cdk.output.DataChannelMedium
+import io.airbyte.cdk.output.DataChannelMedium.SOCKET
+import io.airbyte.cdk.output.DataChannelMedium.STDIO
+import io.airbyte.cdk.output.sockets.DATA_CHANNEL_PROPERTY_PREFIX
 import io.airbyte.cdk.ssh.SshConnectionOptions
 import io.airbyte.cdk.ssh.SshNoTunnelMethod
 import io.airbyte.cdk.ssh.SshTunnelMethodConfiguration
 import io.github.oshai.kotlinlogging.KotlinLogging
 import io.micronaut.context.annotation.Factory
+import io.micronaut.context.annotation.Value
 import jakarta.inject.Inject
 import jakarta.inject.Singleton
 import java.net.MalformedURLException
@@ -36,6 +42,7 @@ data class MySqlSourceConfiguration(
     override val jdbcUrlFmt: String,
     override val jdbcProperties: Map<String, String>,
     override val namespaces: Set<String>,
+    override val tableFilters: List<TableFilter>,
     val incrementalConfiguration: IncrementalConfiguration,
     override val maxConcurrency: Int,
     override val resourceAcquisitionHeartbeat: Duration = Duration.ofMillis(100L),
@@ -77,10 +84,16 @@ enum class InvalidCdcCursorPositionBehavior {
 }
 
 @Singleton
-class MySqlSourceConfigurationFactory @Inject constructor(val featureFlags: Set<FeatureFlag>) :
-    SourceConfigurationFactory<MySqlSourceConfigurationSpecification, MySqlSourceConfiguration> {
+class MySqlSourceConfigurationFactory
+@Inject
+constructor(
+    val featureFlags: Set<FeatureFlag>,
+    @Value("\${${DATA_CHANNEL_PROPERTY_PREFIX}.medium}") val dataChannelMedium: String = STDIO.name,
+    @Value("\${${DATA_CHANNEL_PROPERTY_PREFIX}.socket-paths}")
+    val socketPaths: List<String> = emptyList(),
+) : SourceConfigurationFactory<MySqlSourceConfigurationSpecification, MySqlSourceConfiguration> {
 
-    constructor() : this(emptySet())
+    constructor() : this(emptySet(), STDIO.name, emptyList())
 
     override fun makeWithoutExceptionHandling(
         pojo: MySqlSourceConfigurationSpecification,
@@ -135,16 +148,55 @@ class MySqlSourceConfigurationFactory @Inject constructor(val featureFlags: Set<
         jdbcProperties["useCursorFetch"] = "true"
         jdbcProperties["sessionVariables"] = "autocommit=0"
 
+        // Only validate table filters if schemas are explicitly configured
+        val tableFilters = pojo.tableFilters ?: emptyList()
+
+        // Convert MySQL TableFilter to JDBC TableFilter for validation
+        val jdbcTableFilters: List<TableFilter> =
+            tableFilters.map {
+                TableFilter().apply {
+                    schemaName = it.databaseName
+                    patterns = it.patterns
+                }
+            }
+
+        pojo.database.let { schema ->
+            JdbcSourceConfiguration.validateTableFilters(setOf(schema), jdbcTableFilters)
+        }
+
         // Internal configuration settings.
         val checkpointTargetInterval: Duration =
             Duration.ofSeconds(pojo.checkpointTargetIntervalSeconds?.toLong() ?: 0)
         if (!checkpointTargetInterval.isPositive) {
             throw ConfigErrorException("Checkpoint Target Interval should be positive")
         }
-        val maxConcurrency: Int = pojo.concurrency ?: 0
+        val maxConcurrencyLegacy: Int = pojo.concurrency ?: 0
         if ((pojo.concurrency ?: 0) <= 0) {
             throw ConfigErrorException("Concurrency setting should be positive")
         }
+
+        val maxDBConnections: Int? = pojo.max_db_connections
+
+        log.info {
+            "maxConcurrencyLegacy: $maxConcurrencyLegacy. maxDBConnections: $maxDBConnections. socket paths: ${socketPaths.size}"
+        }
+
+        // In legacy mode (STDIO), maxConcurrency is taken from the new setting max_db_connections
+        // if set,
+        // otherwise from the old concurrency setting.
+        // Unless the users did something special, most will have concurrency = 1 in legacy mode.
+        // In SOCKET mode, if max_db_connections is set, we use it.
+        // Otherwise, if legacy concurrency is set to something other than the default 1, we use it.
+        // Otherwise, we use the number of socket paths provided.
+        // Most users run with concurrency = num_sockets in SOCKET mode.
+        val maxConcurrency: Int =
+            when (DataChannelMedium.valueOf(dataChannelMedium)) {
+                STDIO -> maxDBConnections ?: maxConcurrencyLegacy
+                SOCKET -> {
+                    maxDBConnections ?: maxConcurrencyLegacy.takeIf { it != 1 } ?: socketPaths.size
+                }
+            }
+        log.info { "Effective concurrency: $maxConcurrency" }
 
         return MySqlSourceConfiguration(
             realHost = realHost,
@@ -154,6 +206,7 @@ class MySqlSourceConfigurationFactory @Inject constructor(val featureFlags: Set<
             jdbcUrlFmt = jdbcUrlFmt,
             jdbcProperties = jdbcProperties,
             namespaces = setOf(pojo.database),
+            tableFilters = jdbcTableFilters,
             incrementalConfiguration = incremental,
             checkpointTargetInterval = checkpointTargetInterval,
             maxConcurrency = maxConcurrency,

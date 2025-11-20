@@ -13,15 +13,15 @@ data:
       enabled: false
       packageName: airbyte-source-fastly
   connectorBuildOptions:
-    baseImage: docker.io/airbyte/source-declarative-manifest:6.51.0@sha256:890b109f243b8b9406f23ea7522de41025f7b3e87f6fc9710bc1e521213a276f
+    baseImage: docker.io/airbyte/source-declarative-manifest:7.5.0@sha256:92e539d5003b33c3624eae7715aee6e39b7b2f1f0eeb6003d37e649a06847ae8
   connectorSubtype: api
   connectorType: source
   definitionId: d14ff3ed-5049-4dfb-bc28-1d7ccaf67182
-  dockerImageTag: 0.0.6
+  dockerImageTag: 0.0.23
   dockerRepository: airbyte/source-fastly
   githubIssueLabel: source-fastly
   icon: icon.svg
-  license: MIT
+  license: ELv2
   name: Fastly
   releaseDate: 2025-04-09
   releaseStage: alpha
@@ -33,3 +33,16 @@ data:
   ab_internal:
     ql: 100
     sl: 100
+  externalDocumentationUrls:
+    - title: Fastly API reference
+      url: https://developer.fastly.com/reference/api/
+      type: api_reference
+    - title: Fastly API authentication
+      url: https://developer.fastly.com/reference/api/#authentication
+      type: authentication_guide
+    - title: Fastly API rate limits
+      url: https://developer.fastly.com/reference/api/#rate-limiting
+      type: rate_limits
+    - title: Fastly Status
+      url: https://status.fastly.com/
+      type: status_page

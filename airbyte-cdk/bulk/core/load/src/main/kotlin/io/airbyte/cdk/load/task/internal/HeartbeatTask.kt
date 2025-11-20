@@ -18,7 +18,7 @@ import kotlinx.coroutines.delay
 class HeartbeatTask(
     private val config: DestinationConfiguration,
     private val outputQueue: PartitionedQueue<PipelineInputEvent>,
-    private val checkpointManager: CheckpointManager<*>,
+    private val checkpointManager: CheckpointManager,
 ) : Task {
     override val terminalCondition: TerminalCondition = OnEndOfSync
 

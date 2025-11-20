@@ -13,15 +13,15 @@ data:
       enabled: false
       packageName: airbyte-source-paddle
   connectorBuildOptions:
-    baseImage: docker.io/airbyte/source-declarative-manifest:6.48.10@sha256:09947fb38d07e515f9901a12f22cc44f1512f6148703341de80403c0e0c1b8c3
+    baseImage: docker.io/airbyte/source-declarative-manifest:7.5.0@sha256:92e539d5003b33c3624eae7715aee6e39b7b2f1f0eeb6003d37e649a06847ae8
   connectorSubtype: api
   connectorType: source
   definitionId: eb34e66a-c9b5-41ca-974f-2b82c26ae71a
-  dockerImageTag: 0.0.7
+  dockerImageTag: 0.2.9
   dockerRepository: airbyte/source-paddle
   githubIssueLabel: source-paddle
   icon: icon.svg
-  license: MIT
+  license: ELv2
   name: Paddle
   releaseDate: 2025-04-04
   releaseStage: alpha
@@ -33,3 +33,16 @@ data:
   ab_internal:
     ql: 100
     sl: 100
+  externalDocumentationUrls:
+    - title: Paddle API reference
+      url: https://developer.paddle.com/api-reference/overview
+      type: api_reference
+    - title: Paddle authentication
+      url: https://developer.paddle.com/api-reference/authentication
+      type: authentication_guide
+    - title: Paddle rate limits
+      url: https://developer.paddle.com/api-reference/rate-limits
+      type: rate_limits
+    - title: Paddle Status
+      url: https://status.paddle.com/
+      type: status_page

@@ -18,7 +18,7 @@ data:
   documentationUrl: https://docs.airbyte.com/integrations/sources/klarna
   githubIssueLabel: source-klarna
   icon: klarna.svg
-  license: MIT
+  license: ELv2
   name: Klarna
   registryOverrides:
     cloud:
@@ -47,4 +47,11 @@ data:
           secretStore:
             type: GSM
             alias: airbyte-connector-testing-secret-store
+  externalDocumentationUrls:
+    - title: Klarna API reference
+      url: https://docs.klarna.com/api/
+      type: api_reference
+    - title: Klarna authentication
+      url: https://docs.klarna.com/api/authentication/
+      type: authentication_guide
 metadataSpecVersion: "1.0"

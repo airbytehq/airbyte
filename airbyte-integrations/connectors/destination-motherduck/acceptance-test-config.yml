@@ -8,3 +8,5 @@ acceptance_tests:
     tests:
       - config_path: "integration_tests/config.json"
         status: "succeed"
+      - config_path: "secrets/config.json"
+        status: "succeed"

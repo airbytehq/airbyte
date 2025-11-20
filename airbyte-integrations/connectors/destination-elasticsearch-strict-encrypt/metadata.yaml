@@ -13,7 +13,7 @@ data:
   dockerRepository: airbyte/destination-elasticsearch-strict-encrypt
   githubIssueLabel: destination-elasticsearch
   icon: elasticsearch.svg
-  license: MIT
+  license: ELv2
   name: ElasticSearch
   releaseStage: alpha
   documentationUrl: https://docs.airbyte.com/integrations/destinations/elasticsearch
@@ -22,4 +22,20 @@ data:
   connectorTestSuitesOptions:
     - suite: unitTests
     - suite: integrationTests
+  externalDocumentationUrls:
+    - title: Elasticsearch documentation
+      url: https://www.elastic.co/guide/en/elasticsearch/reference/current/index.html
+      type: api_reference
+    - title: Release notes
+      url: https://www.elastic.co/guide/en/elasticsearch/reference/current/es-release-notes.html
+      type: api_release_history
+    - title: Authentication
+      url: https://www.elastic.co/guide/en/elasticsearch/reference/current/setting-up-authentication.html
+      type: authentication_guide
+    - title: Security privileges
+      url: https://www.elastic.co/guide/en/elasticsearch/reference/current/security-privileges.html
+      type: permissions_scopes
+    - title: Elastic Cloud Status
+      url: https://status.elastic.co/
+      type: status_page
 metadataSpecVersion: "1.0"

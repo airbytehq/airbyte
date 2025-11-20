@@ -9,7 +9,7 @@ data:
   connectorSubtype: database
   connectorType: source
   definitionId: decd338e-5647-4c0b-adf4-da0e75f5a750
-  dockerImageTag: 3.6.34
+  dockerImageTag: 3.7.0
   dockerRepository: airbyte/source-postgres
   documentationUrl: https://docs.airbyte.com/integrations/sources/postgres
   githubIssueLabel: source-postgres
@@ -64,4 +64,14 @@ data:
           secretStore:
             type: GSM
             alias: airbyte-connector-testing-secret-store
+  externalDocumentationUrls:
+    - title: PostgreSQL documentation
+      url: https://www.postgresql.org/docs/
+      type: api_reference
+    - title: Release Notes
+      url: https://www.postgresql.org/docs/release/
+      type: api_release_history
+    - title: PostgreSQL authentication
+      url: https://www.postgresql.org/docs/current/auth-methods.html
+      type: authentication_guide
 metadataSpecVersion: "1.0"

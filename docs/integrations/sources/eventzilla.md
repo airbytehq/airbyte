@@ -24,6 +24,22 @@ The Airbyte connector for Eventzilla enables seamless integration between Eventz
 
 | Version          | Date              | Pull Request | Subject        |
 |------------------|-------------------|--------------|----------------|
+| 0.0.36 | 2025-11-18 | [69361](https://github.com/airbytehq/airbyte/pull/69361) | Update dependencies |
+| 0.0.35 | 2025-10-29 | [68743](https://github.com/airbytehq/airbyte/pull/68743) | Update dependencies |
+| 0.0.34 | 2025-10-21 | [68550](https://github.com/airbytehq/airbyte/pull/68550) | Update dependencies |
+| 0.0.33 | 2025-10-14 | [67793](https://github.com/airbytehq/airbyte/pull/67793) | Update dependencies |
+| 0.0.32 | 2025-10-07 | [67284](https://github.com/airbytehq/airbyte/pull/67284) | Update dependencies |
+| 0.0.31 | 2025-09-30 | [65852](https://github.com/airbytehq/airbyte/pull/65852) | Update dependencies |
+| 0.0.30 | 2025-08-23 | [65271](https://github.com/airbytehq/airbyte/pull/65271) | Update dependencies |
+| 0.0.29 | 2025-08-09 | [64691](https://github.com/airbytehq/airbyte/pull/64691) | Update dependencies |
+| 0.0.28 | 2025-08-02 | [64336](https://github.com/airbytehq/airbyte/pull/64336) | Update dependencies |
+| 0.0.27 | 2025-07-26 | [64013](https://github.com/airbytehq/airbyte/pull/64013) | Update dependencies |
+| 0.0.26 | 2025-07-19 | [63603](https://github.com/airbytehq/airbyte/pull/63603) | Update dependencies |
+| 0.0.25 | 2025-07-12 | [62980](https://github.com/airbytehq/airbyte/pull/62980) | Update dependencies |
+| 0.0.24 | 2025-07-05 | [62818](https://github.com/airbytehq/airbyte/pull/62818) | Update dependencies |
+| 0.0.23 | 2025-06-28 | [62404](https://github.com/airbytehq/airbyte/pull/62404) | Update dependencies |
+| 0.0.22 | 2025-06-22 | [62005](https://github.com/airbytehq/airbyte/pull/62005) | Update dependencies |
+| 0.0.21 | 2025-06-14 | [61185](https://github.com/airbytehq/airbyte/pull/61185) | Update dependencies |
 | 0.0.20 | 2025-05-24 | [59450](https://github.com/airbytehq/airbyte/pull/59450) | Update dependencies |
 | 0.0.19 | 2025-04-26 | [58333](https://github.com/airbytehq/airbyte/pull/58333) | Update dependencies |
 | 0.0.18 | 2025-04-12 | [57782](https://github.com/airbytehq/airbyte/pull/57782) | Update dependencies |

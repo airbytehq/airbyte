@@ -201,16 +201,20 @@ class MySqlSourceJdbcRfrSnapshotPartition(
     override val lowerBound: List<JsonNode>?,
     override val upperBound: List<JsonNode>?,
 ) : MySqlSourceJdbcResumablePartition(selectQueryGenerator, streamState, primaryKey) {
+    override val isLowerBoundIncluded: Boolean = lowerBound != null
 
     // TODO: this needs to reflect lastRecord. Complete state needs to have last primary key value
     // in RFR case.
     override val completeState: OpaqueStateValue
         get() =
-            MySqlSourceJdbcStreamStateValue.snapshotCheckpoint(
-                primaryKey = checkpointColumns,
-                primaryKeyCheckpoint =
-                    checkpointColumns.map { upperBound?.get(0) ?: Jsons.nullNode() },
-            )
+            when (upperBound) {
+                null -> MySqlSourceJdbcStreamStateValue.snapshotCompleted
+                else ->
+                    MySqlSourceJdbcStreamStateValue.snapshotCheckpoint(
+                        primaryKey = checkpointColumns,
+                        primaryKeyCheckpoint = checkpointColumns.map { upperBound.get(0) },
+                    )
+            }
 
     override fun incompleteState(lastRecord: ObjectNode): OpaqueStateValue =
         MySqlSourceJdbcStreamStateValue.snapshotCheckpoint(
@@ -244,7 +248,32 @@ class MySqlSourceJdbcCdcRfrSnapshotPartition(
         )
 }
 
-typealias MySqlSourceJdbcSplittableCdcRfrSnapshotPartition = MySqlSourceJdbcCdcRfrSnapshotPartition
+// typealias MySqlSourceJdbcSplittableCdcRfrSnapshotPartition = MySqlSourceJdbcCdcSnapshotPartition
+class MySqlSourceJdbcSplittableCdcRfrSnapshotPartition(
+    selectQueryGenerator: SelectQueryGenerator,
+    override val streamState: DefaultJdbcStreamState,
+    primaryKey: List<Field>,
+    override val lowerBound: List<JsonNode>?,
+    override val upperBound: List<JsonNode>?,
+    override val isLowerBoundIncluded: Boolean,
+) : MySqlSourceJdbcResumablePartition(selectQueryGenerator, streamState, primaryKey) {
+    override val completeState: OpaqueStateValue
+        get() =
+            when (upperBound) {
+                null -> MySqlSourceCdcInitialSnapshotStateValue.getSnapshotCompletedState(stream)
+                else ->
+                    MySqlSourceCdcInitialSnapshotStateValue.snapshotCheckpoint(
+                        primaryKey = checkpointColumns,
+                        primaryKeyCheckpoint = checkpointColumns.map { upperBound.get(0) },
+                    )
+            }
+
+    override fun incompleteState(lastRecord: ObjectNode): OpaqueStateValue =
+        MySqlSourceCdcInitialSnapshotStateValue.snapshotCheckpoint(
+            primaryKey = checkpointColumns,
+            primaryKeyCheckpoint = checkpointColumns.map { lastRecord[it.id] ?: Jsons.nullNode() },
+        )
+}
 
 /**
  * Implementation of a [JdbcPartition] for a CDC snapshot partition. Used for incremental CDC
@@ -336,6 +365,7 @@ class MySqlSourceJdbcSplittableSnapshotWithCursorPartition(
     override val upperBound: List<JsonNode>?,
     cursor: Field,
     cursorUpperBound: JsonNode?,
+    override val isLowerBoundIncluded: Boolean
 ) :
     MySqlSourceJdbcCursorPartition(
         selectQueryGenerator,
@@ -500,6 +530,15 @@ class MySqlJdbcConcurrentPartitionsCreator<
                 .filter { random.nextDouble() < secondarySamplingRate }
                 .mapNotNull { (splitBoundary: OpaqueStateValue?, _) -> splitBoundary }
                 .distinct()
+
+        // Handle edge case with empty split boundaries when sampling rate is too low,
+        // causing random filtering to discard all sampled boundaries, which would
+        // lead to division by zero the in the split() function. Fall back to single partition.
+        if (splitBoundaries.isEmpty()) {
+            log.warn { "No split boundaries found, using single partition" }
+            return listOf(JdbcNonResumablePartitionReader(partition))
+        }
+
         val partitions: List<JdbcPartition<*>> = partitionFactory.split(partition, splitBoundaries)
         log.info { "Table will be read by ${partitions.size} concurrent partition reader(s)." }
         return partitions.map { JdbcNonResumablePartitionReader(it) }

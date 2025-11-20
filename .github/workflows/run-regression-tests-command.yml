@@ -71,6 +71,10 @@ on:
         description: Disable proxy for requests
         default: "false"
         type: boolean
+      control_version:
+        description: The version to use as a control version. This is useful when the version defined in the cloud registry does not have a lot of usage (either because a progressive rollout is underway or because a new version has just been released).
+        required: false
+        type: string
 
 jobs:
   regression_tests:
@@ -80,19 +84,14 @@ jobs:
     steps:
       - name: Install Python
         id: install_python
-        uses: actions/setup-python@v4
+        uses: actions/setup-python@7f4fc3e22c37d6ff65e88745f38bd3157c663f7c # v4.9.1
         with:
           python-version: "3.11"
           check-latest: true
           update-environment: true
 
       - name: Checkout Airbyte
-        uses: actions/checkout@v4
-      - name: Check PAT rate limits
-        run: |
-          ./tools/bin/find_non_rate_limited_PAT \
-            ${{ secrets.GH_PAT_BUILD_RUNNER_OSS }} \
-            ${{ secrets.GH_PAT_BUILD_RUNNER_BACKUP }}
+        uses: actions/checkout@08eba0b27e820071cde6df949e0beb9ba4906955 # v4.3.0
       - name: Extract branch name [WORKFLOW DISPATCH]
         shell: bash
         if: github.event_name == 'workflow_dispatch'
@@ -101,7 +100,7 @@ jobs:
 
       - name: Install Poetry
         id: install_poetry
-        uses: snok/install-poetry@v1
+        uses: snok/install-poetry@76e04a911780d5b312d89783f7b1cd627778900a # v1.4.1
         with:
           version: 1.8.5
 
@@ -161,6 +160,19 @@ jobs:
         run: |
           echo "CONNECTION_SUBSET=--connector_live_tests.connection-subset=${{ github.event.inputs.connection_subset }}" >> $GITHUB_ENV
 
+      - name: Setup Control Version
+        if: github.event_name == 'workflow_dispatch'
+        run: |
+          if [ -n "${{ github.event.inputs.control_version }}" ]; then
+            echo "CONTROL_VERSION=--connector_live_tests.control-version=${{ github.event.inputs.control_version }}" >> $GITHUB_ENV
+          else
+            echo "CONTROL_VERSION=" >> $GITHUB_ENV
+          fi
+
+      # NOTE: We still use a PAT here (rather than a GitHub App) because the workflow needs
+      # permissions to add commits to our main repo as well as forks. This will only work on
+      # forks if the user installs the app into their fork. Until we document this as a clear
+      # path, we will have to keep using the PAT.
       - name: Run Regression Tests [WORKFLOW DISPATCH]
         if: github.event_name == 'workflow_dispatch' # TODO: consider using the matrix strategy (https://docs.github.com/en/actions/using-jobs/using-a-matrix-for-your-jobs). See https://github.com/airbytehq/airbyte/pull/37659#discussion_r1583380234 for details.
         uses: ./.github/actions/run-airbyte-ci
@@ -177,4 +189,4 @@ jobs:
           github_token: ${{ secrets.GH_PAT_MAINTENANCE_OSS }}
           s3_build_cache_access_key_id: ${{ secrets.SELF_RUNNER_AWS_ACCESS_KEY_ID }}
           s3_build_cache_secret_key: ${{ secrets.SELF_RUNNER_AWS_SECRET_ACCESS_KEY }}
-          subcommand: connectors ${{ env.USE_LOCAL_CDK_FLAG }} ${{ inputs.connector_filter }} test --only-step connector_live_tests --connector_live_tests.test-suite=regression --connector_live_tests.connection-id=${{ github.event.inputs.connection_id }} --connector_live_tests.pr-url="https://github.com/airbytehq/airbyte/pull/${{ github.event.inputs.pr }}" ${{ env.READ_WITH_STATE_FLAG }} ${{ env.DISABLE_PROXY_FLAG }} ${{ env.STREAM_PARAMS }} ${{ env.CONNECTION_SUBSET }} --global-status-check-context="Regression Tests" --global-status-check-description='Running regression tests'
+          subcommand: connectors ${{ env.USE_LOCAL_CDK_FLAG }} ${{ inputs.connector_filter }} test --only-step connector_live_tests --connector_live_tests.test-suite=regression --connector_live_tests.connection-id=${{ github.event.inputs.connection_id }} --connector_live_tests.pr-url="https://github.com/airbytehq/airbyte/pull/${{ github.event.inputs.pr }}" ${{ env.READ_WITH_STATE_FLAG }} ${{ env.DISABLE_PROXY_FLAG }} ${{ env.STREAM_PARAMS }} ${{ env.CONNECTION_SUBSET }} ${{ env.CONTROL_VERSION }} --global-status-check-context="Regression Tests" --global-status-check-description='Running regression tests'

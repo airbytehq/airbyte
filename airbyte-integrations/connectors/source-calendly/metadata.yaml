@@ -13,15 +13,15 @@ data:
       enabled: false
       packageName: airbyte-source-calendly
   connectorBuildOptions:
-    baseImage: docker.io/airbyte/source-declarative-manifest:6.51.0@sha256:890b109f243b8b9406f23ea7522de41025f7b3e87f6fc9710bc1e521213a276f
+    baseImage: docker.io/airbyte/source-declarative-manifest:7.5.0@sha256:92e539d5003b33c3624eae7715aee6e39b7b2f1f0eeb6003d37e649a06847ae8
   connectorSubtype: api
   connectorType: source
   definitionId: b8f2cbee-b073-4dd8-9b80-97d7bae967a4
-  dockerImageTag: 0.1.14
+  dockerImageTag: 0.1.27
   dockerRepository: airbyte/source-calendly
   githubIssueLabel: source-calendly
   icon: icon.svg
-  license: MIT
+  license: ELv2
   name: Calendly
   releaseDate: 2025-01-27
   releaseStage: alpha
@@ -35,3 +35,16 @@ data:
   ab_internal:
     ql: 100
     sl: 100
+  externalDocumentationUrls:
+    - title: Calendly API reference
+      url: https://developer.calendly.com/api-docs
+      type: api_reference
+    - title: Calendly authentication
+      url: https://developer.calendly.com/getting-started
+      type: authentication_guide
+    - title: Calendly API rate limits
+      url: https://developer.calendly.com/api-docs/ZG9jOjM2MzE2MDM4-api-conventions#rate-limiting
+      type: rate_limits
+    - title: Calendly Status
+      url: https://status.calendly.com/
+      type: status_page

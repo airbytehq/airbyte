@@ -37,7 +37,6 @@ class SocketInputFlow(
     override suspend fun collect(collector: FlowCollector<PipelineInputEvent>) {
         pipelineEventBookkeepingRouter.use {
             socket.connect { inputStream ->
-                val unopenedStreams = catalog.streams.map { it.descriptor }.toMutableSet()
                 var messagesRead = 0L
                 inputFormatReader.read(inputStream).forEach { message ->
                     messagesRead++
@@ -50,7 +49,6 @@ class SocketInputFlow(
                             val event =
                                 pipelineEventBookkeepingRouter.handleStreamMessage(
                                     message,
-                                    unopenedStreams = unopenedStreams
                                 )
                             if (event is PipelineEndOfStream) {
                                 sawEndOfStream.add(event.stream)
@@ -72,9 +70,9 @@ class SocketInputFlow(
             // Treat EOF as end-of-stream. (Source should send end-of-stream on every
             // socket, but currently does not.)
             catalog.streams.forEach {
-                if (!sawEndOfStream.contains(it.descriptor)) {
-                    log.info { "Emitting end-of-stream for ${it.descriptor}" }
-                    collector.emit(PipelineEndOfStream(it.descriptor))
+                if (!sawEndOfStream.contains(it.mappedDescriptor)) {
+                    log.info { "Emitting end-of-stream for ${it.mappedDescriptor}" }
+                    collector.emit(PipelineEndOfStream(it.mappedDescriptor))
                 }
             }
         }

@@ -15,15 +15,15 @@ data:
     # Please update to the latest version of the connector base image.
     # https://hub.docker.com/r/airbyte/python-connector-base
     # Please use the full address with sha256 hash to guarantee build reproducibility.
-    baseImage: docker.io/airbyte/source-declarative-manifest:6.51.0@sha256:890b109f243b8b9406f23ea7522de41025f7b3e87f6fc9710bc1e521213a276f
+    baseImage: docker.io/airbyte/source-declarative-manifest:7.5.0@sha256:92e539d5003b33c3624eae7715aee6e39b7b2f1f0eeb6003d37e649a06847ae8
   connectorSubtype: api
   connectorType: source
   definitionId: 1a3d38e4-dc6b-4154-b56b-582f9e978ecd
-  dockerImageTag: 0.3.22
+  dockerImageTag: 0.3.38
   dockerRepository: airbyte/source-todoist
   githubIssueLabel: source-todoist
   icon: todoist.svg
-  license: MIT
+  license: ELv2
   name: Todoist
   releaseDate: 2023-12-10
   releaseStage: alpha
@@ -44,4 +44,11 @@ data:
           secretStore:
             type: GSM
             alias: airbyte-connector-testing-secret-store
+  externalDocumentationUrls:
+    - title: Todoist REST API
+      url: https://developer.todoist.com/rest/v2/
+      type: api_reference
+    - title: Todoist authentication
+      url: https://developer.todoist.com/rest/v2/#authorization
+      type: authentication_guide
 metadataSpecVersion: "1.0"

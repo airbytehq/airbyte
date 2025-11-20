@@ -74,6 +74,16 @@ Gainsight-PX-API's [API reference](https://gainsightpx.docs.apiary.io/) has v1 a
 
 | Version | Date       | Pull Request                                             | Subject                                 |
 | :------ | :--------- | :------------------------------------------------------- |:----------------------------------------|
+| 0.2.34 | 2025-08-23 | [65292](https://github.com/airbytehq/airbyte/pull/65292) | Update dependencies |
+| 0.2.33 | 2025-08-09 | [64786](https://github.com/airbytehq/airbyte/pull/64786) | Update dependencies |
+| 0.2.32 | 2025-08-02 | [64345](https://github.com/airbytehq/airbyte/pull/64345) | Update dependencies |
+| 0.2.31 | 2025-07-26 | [64048](https://github.com/airbytehq/airbyte/pull/64048) | Update dependencies |
+| 0.2.30 | 2025-07-19 | [63599](https://github.com/airbytehq/airbyte/pull/63599) | Update dependencies |
+| 0.2.29 | 2025-07-12 | [62993](https://github.com/airbytehq/airbyte/pull/62993) | Update dependencies |
+| 0.2.28 | 2025-07-05 | [62800](https://github.com/airbytehq/airbyte/pull/62800) | Update dependencies |
+| 0.2.27 | 2025-06-28 | [62365](https://github.com/airbytehq/airbyte/pull/62365) | Update dependencies |
+| 0.2.26 | 2025-06-21 | [61951](https://github.com/airbytehq/airbyte/pull/61951) | Update dependencies |
+| 0.2.25 | 2025-06-14 | [61165](https://github.com/airbytehq/airbyte/pull/61165) | Update dependencies |
 | 0.2.24 | 2025-05-24 | [60390](https://github.com/airbytehq/airbyte/pull/60390) | Update dependencies |
 | 0.2.23 | 2025-05-10 | [60045](https://github.com/airbytehq/airbyte/pull/60045) | Update dependencies |
 | 0.2.22 | 2025-05-03 | [59391](https://github.com/airbytehq/airbyte/pull/59391) | Update dependencies |

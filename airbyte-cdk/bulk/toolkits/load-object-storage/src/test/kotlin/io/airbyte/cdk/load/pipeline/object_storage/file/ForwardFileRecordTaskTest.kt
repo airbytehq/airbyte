@@ -93,7 +93,7 @@ class ForwardFileRecordTaskTest {
     fun `does nothing if the remote object is null (this is an artifact of End of Stream)`() =
         runTest {
             val stream = Fixtures.stream()
-            val key = StreamKey(stream.descriptor)
+            val key = StreamKey(stream.mappedDescriptor)
             val context =
                 PipelineContext(
                     mapOf(CheckpointId("123") to CheckpointValue(14L, 14L)),
@@ -119,7 +119,7 @@ class ForwardFileRecordTaskTest {
     @Test
     fun `extracts record and checkpoints and forwards them when present`() = runTest {
         val stream = Fixtures.stream()
-        val key = StreamKey(stream.descriptor)
+        val key = StreamKey(stream.mappedDescriptor)
         val context =
             PipelineContext(
                 mapOf(CheckpointId("123") to CheckpointValue(14L, 14L)),

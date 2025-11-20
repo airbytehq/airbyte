@@ -75,31 +75,36 @@ class BigquerySpecification : ConfigurationSpecification() {
     )
     val credentialsJson: String? = null
 
-    @get:JsonSchemaTitle("Transformation Query Run Type")
+    @get:JsonSchemaTitle("CDC deletion mode")
     @get:JsonPropertyDescription(
-        """Interactive run type means that the query is executed as soon as possible, and these queries count towards concurrent rate limit and daily limit. Read more about interactive run type <a href="https://cloud.google.com/bigquery/docs/running-queries#queries">here</a>. Batch queries are queued and started as soon as idle resources are available in the BigQuery shared resource pool, which usually occurs within a few minutes. Batch queries don’t count towards your concurrent rate limit. Read more about batch queries <a href="https://cloud.google.com/bigquery/docs/running-queries#batch">here</a>. The default "interactive" value is used if not set explicitly.""",
+        """Whether to execute CDC deletions as hard deletes (i.e. propagate source deletions to the destination), or soft deletes (i.e. leave a tombstone record in the destination). Defaults to hard deletes.""",
     )
-    @get:JsonProperty("transformation_priority", defaultValue = "interactive")
-    @get:JsonSchemaInject(json = """{"group": "advanced", "order": 5}""")
-    val transformationPriority: TransformationPriority? = null
-
-    @get:JsonSchemaTitle("Raw Table Dataset Name")
-    @get:JsonPropertyDescription(
-        """The dataset to write raw tables into (default: airbyte_internal)""",
+    // default hard delete for backwards compatibility
+    @get:JsonProperty("cdc_deletion_mode", defaultValue = "Hard delete")
+    @get:JsonSchemaInject(
+        json = """{"group": "sync_behavior", "order": 5, "always_show": true}""",
     )
-    @get:JsonProperty("raw_data_dataset")
-    @get:JsonSchemaInject(json = """{"group": "advanced", "order": 7}""")
-    val rawTableDataset: String? = null
+    val cdcDeletionMode: CdcDeletionMode? = null
 
     @get:JsonSchemaTitle(
-        "Disable Final Tables. (WARNING! Unstable option; Columns in raw table schema might change between versions)",
+        """Legacy raw tables""",
     )
     @get:JsonPropertyDescription(
-        """Disable Writing Final Tables. WARNING! The data format in _airbyte_data is likely stable but there are no guarantees that other metadata columns will remain the same in future versions""",
+        """Write the legacy "raw tables" format, to enable backwards compatibility with older versions of this connector.""",
     )
+    // for compatibility with existing actor configs, we keep the old property name.
     @get:JsonProperty("disable_type_dedupe")
-    @get:JsonSchemaInject(json = """{"group": "advanced", "order": 8, "default": false}""")
-    val disableTypingDeduping: Boolean? = null
+    @get:JsonSchemaInject(json = """{"group": "advanced", "order": 7, "default": false}""")
+    val legacyRawTablesOnly: Boolean? = null
+
+    @get:JsonSchemaTitle("Airbyte Internal Table Dataset Name")
+    @get:JsonPropertyDescription(
+        """Airbyte will use this dataset for various internal tables. In legacy raw tables mode, the raw tables will be stored in this dataset. Defaults to "airbyte_internal".""",
+    )
+    // for backwards compatibility, the JSON property is still called raw_data_dataset.
+    @get:JsonProperty("raw_data_dataset")
+    @get:JsonSchemaInject(json = """{"group": "advanced", "order": 8}""")
+    val internalTableDataset: String? = null
 }
 
 @JsonTypeInfo(
@@ -204,6 +209,11 @@ enum class TransformationPriority(@get:JsonValue val transformationPriority: Str
     BATCH("batch")
 }
 
+enum class CdcDeletionMode(@get:JsonValue val cdcDeletionMode: String) {
+    HARD_DELETE("Hard delete"),
+    SOFT_DELETE("Soft delete"),
+}
+
 @Singleton
 class BigquerySpecificationExtension : DestinationSpecificationExtension {
     override val supportedSyncModes =
@@ -216,6 +226,7 @@ class BigquerySpecificationExtension : DestinationSpecificationExtension {
     override val groups =
         listOf(
             DestinationSpecificationExtension.Group("connection", "Connection"),
+            DestinationSpecificationExtension.Group("sync_behavior", "Sync Behavior"),
             DestinationSpecificationExtension.Group("advanced", "Advanced"),
         )
 }

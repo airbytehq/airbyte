@@ -27,6 +27,12 @@ from airbyte_cdk.sources.declarative.interpolation import InterpolatedString
 from airbyte_cdk.sources.declarative.migrations.state_migration import StateMigration
 from airbyte_cdk.sources.declarative.partition_routers.list_partition_router import ListPartitionRouter
 from airbyte_cdk.sources.declarative.requesters import HttpRequester
+from airbyte_cdk.sources.declarative.requesters.error_handlers.backoff_strategies import (
+    ExponentialBackoffStrategy,
+    WaitTimeFromHeaderBackoffStrategy,
+)
+from airbyte_cdk.sources.declarative.requesters.error_handlers.default_error_handler import DefaultErrorHandler
+from airbyte_cdk.sources.declarative.requesters.error_handlers.http_response_filter import HttpResponseFilter
 from airbyte_cdk.sources.declarative.requesters.paginators.strategies.pagination_strategy import PaginationStrategy
 from airbyte_cdk.sources.declarative.requesters.request_options import InterpolatedRequestOptionsProvider
 from airbyte_cdk.sources.declarative.requesters.requester import Requester
@@ -199,6 +205,47 @@ class AddFieldsFromEndpointTransformation(RecordTransformation):
 
 
 @dataclass
+class MarketingEmailStatisticsTransformation(RecordTransformation):
+    """
+    Custom transformation for HubSpot Marketing Emails that fetches statistics from the v3 API.
+
+    This transformation is needed because the v3 API separates email data and statistics into two endpoints:
+    - GET /marketing/v3/emails - for email data
+    - GET /marketing/v3/emails/{emailId}/statistics - for statistics
+
+    This transformation fetches statistics for each email and merges them into the email record.
+    """
+
+    requester: Requester
+    record_selector: HttpSelector
+
+    def transform(
+        self,
+        record: Dict[str, Any],
+        config: Optional[Config] = None,
+        stream_state: Optional[StreamState] = None,
+        stream_slice: Optional[StreamSlice] = None,
+    ) -> None:
+        try:
+            # Fetch statistics for this email using the v3 statistics endpoint
+            statistics_response = self.requester.send_request(
+                stream_slice=StreamSlice(partition={"email_id": record["id"]}, cursor_slice={})
+            )
+            statistics_data = self.record_selector.select_records(response=statistics_response, stream_state={}, records_schema={})
+
+            # Merge statistics into the email record
+            for stats in statistics_data:
+                record.update(stats)
+
+        except Exception as e:
+            # Log the error but don't fail the entire sync
+            # This ensures that if statistics are unavailable for some emails,
+            # we still get the email data
+            logger.warning(f"Failed to fetch statistics for email {record.get('id', 'unknown')}: {str(e)}")
+            pass
+
+
+@dataclass
 class HubspotSchemaExtractor(RecordExtractor):
     """
     Transformation that encapsulates the list of properties under a single object because DynamicSchemaLoader only
@@ -367,8 +414,17 @@ class EntitySchemaNormalization(TypeTransformer):
                 if "number" in target_type:
                     # do not cast numeric IDs into float, use integer instead
                     target_type = int if original_value.isnumeric() else float
-                    transformed_value = target_type(original_value.replace(",", ""))
-                    return transformed_value
+
+                    # In some cases, the returned value from Hubspot is non-numeric despite the discovered schema explicitly declaring a numeric type.
+                    # For example, a field with a type of "number" might return a string: "3092727991;3881228353;15895321999"
+                    # So, we attempt to cast the value to the declared type, and failing that, we log the error and return the original value.
+                    # This matches the previous behavior in the Python implementation.
+                    try:
+                        transformed_value = target_type(original_value.replace(",", ""))
+                        return transformed_value
+                    except ValueError:
+                        logger.exception(f"Could not cast field value {original_value} to {target_type}")
+                        return original_value
                 if "boolean" in target_type and original_value.lower() in ["true", "false"]:
                     transformed_value = str(original_value).lower() == "true"
                     return transformed_value
@@ -426,7 +482,7 @@ class EntitySchemaNormalization(TypeTransformer):
         try:
             return ab_datetime_parse(datetime_str)
         except (ValueError, TypeError, OverflowError) as ex:
-            logger.warning(f"Couldn't parse date/datetime string field. Timestamp field value: {datetime_str}. Ex: {ex}")
+            pass
 
         try:
             return ab_datetime_parse(int(datetime_str) // 1000)
@@ -527,10 +583,14 @@ class HubspotAssociationsExtractor(RecordExtractor):
             elif extracted:
                 raise ValueError(f"field_path should always point towards a list field in the response body")
 
+            # If no records were extracted, no need to call the associations retriever
+            if not records:
+                continue
+
             records_by_pk = {record["id"]: record for record in records}
             record_ids = [{"id": record["id"]} for record in records]
 
-            slices = self._associations_retriever.stream_slices()
+            slices = self._associations_retriever.stream_slicer.stream_slices()
 
             for _slice in slices:
                 # Append the list of extracted records so they are usable during interpolation of the JSON request body
@@ -612,6 +672,58 @@ def build_associations_retriever(
         authenticator=authenticator,
         request_options_provider=InterpolatedRequestOptionsProvider(
             request_body_json={"inputs": "{{ stream_slice.extra_fields['record_ids'] }}"},
+            config=config,
+            parameters=parameters,
+        ),
+        error_handler=DefaultErrorHandler(
+            backoff_strategies=[
+                WaitTimeFromHeaderBackoffStrategy(header="Retry-After", config=config, parameters=parameters),
+                ExponentialBackoffStrategy(config=config, parameters=parameters),
+            ],
+            response_filters=[
+                HttpResponseFilter(
+                    action="RETRY",
+                    http_codes={429},
+                    error_message="HubSpot rate limit reached (429). Backoff based on 'Retry-After' header, then exponential backoff fallback.",
+                    config=config,
+                    parameters=parameters,
+                ),
+                HttpResponseFilter(
+                    action="RETRY",
+                    http_codes={502, 503},
+                    error_message="HubSpot server error (5xx). Retrying with exponential backoff...",
+                    config=config,
+                    parameters=parameters,
+                ),
+                HttpResponseFilter(
+                    action="RETRY",
+                    http_codes={401},
+                    error_message="Authentication to HubSpot has expired. Authentication will be retried, but if this issue persists, re-authenticate to restore access to HubSpot.",
+                    config=config,
+                    parameters=parameters,
+                ),
+                HttpResponseFilter(
+                    action="FAIL",
+                    http_codes={530},
+                    error_message="The user cannot be authorized with provided credentials. Please verify that your credentials are valid and try again.",
+                    config=config,
+                    parameters=parameters,
+                ),
+                HttpResponseFilter(
+                    action="FAIL",
+                    http_codes={403},
+                    error_message="Access denied (403). The authenticated user does not have permissions to access the resource.",
+                    config=config,
+                    parameters=parameters,
+                ),
+                HttpResponseFilter(
+                    action="FAIL",
+                    http_codes={400},
+                    error_message="Bad request (400). Please verify your credentials and try again.",
+                    config=config,
+                    parameters=parameters,
+                ),
+            ],
             config=config,
             parameters=parameters,
         ),

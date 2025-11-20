@@ -13,7 +13,7 @@ data:
   dockerRepository: airbyte/destination-kvdb
   githubIssueLabel: destination-kvdb
   icon: kvdb.svg
-  license: MIT
+  license: ELv2
   name: KVdb
   releaseDate: 2023-07-15
   releaseStage: alpha
@@ -27,4 +27,8 @@ data:
   supportLevel: community
   connectorTestSuitesOptions:
     - suite: unitTests
+  externalDocumentationUrls:
+    - title: KVDB documentation
+      url: https://kvdb.io/
+      type: api_reference
 metadataSpecVersion: "1.0"

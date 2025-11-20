@@ -21,7 +21,7 @@ data:
   dockerRepository: airbyte/source-huntr
   githubIssueLabel: source-huntr
   icon: icon.svg
-  license: MIT
+  license: ELv2
   name: Huntr
   releaseDate: 2025-01-24
   releaseStage: alpha
@@ -33,3 +33,7 @@ data:
   ab_internal:
     ql: 100
     sl: 100
+  externalDocumentationUrls:
+    - title: Huntr API documentation
+      url: https://docs.huntr.co/
+      type: api_reference

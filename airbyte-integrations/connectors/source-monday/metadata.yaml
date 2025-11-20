@@ -6,11 +6,11 @@ data:
     hosts:
       - api.monday.com
   connectorBuildOptions:
-    baseImage: docker.io/airbyte/python-connector-base:4.0.0@sha256:d9894b6895923b379f3006fa251147806919c62b7d9021b5cd125bb67d7bbe22
+    baseImage: docker.io/airbyte/source-declarative-manifest:7.5.0@sha256:92e539d5003b33c3624eae7715aee6e39b7b2f1f0eeb6003d37e649a06847ae8
   connectorSubtype: api
   connectorType: source
   definitionId: 80a54ea2-9959-4040-aac1-eee42423ec9b
-  dockerImageTag: 2.3.1
+  dockerImageTag: 2.4.14
   releases:
     rolloutConfiguration:
       enableProgressiveRollout: false
@@ -34,12 +34,12 @@ data:
   documentationUrl: https://docs.airbyte.com/integrations/sources/monday
   githubIssueLabel: source-monday
   icon: monday.svg
-  license: MIT
+  license: ELv2
   maxSecondsBetweenMessages: 60
   name: Monday
   remoteRegistries:
     pypi:
-      enabled: true
+      enabled: false
       packageName: airbyte-source-monday
   registryOverrides:
     cloud:
@@ -47,9 +47,13 @@ data:
     oss:
       enabled: true
   releaseStage: generally_available
+  suggestedStreams:
+    streams:
+      - items
+      - boards
   supportLevel: certified
   tags:
-    - language:python
+    - language:manifest-only
     - cdk:low-code
   connectorTestSuitesOptions:
     - suite: liveTests
@@ -78,4 +82,17 @@ data:
           secretStore:
             type: GSM
             alias: airbyte-connector-testing-secret-store
+  externalDocumentationUrls:
+    - title: monday.com API reference
+      url: https://developer.monday.com/api-reference/docs
+      type: api_reference
+    - title: monday.com authentication
+      url: https://developer.monday.com/api-reference/docs/authentication
+      type: authentication_guide
+    - title: monday.com rate limits
+      url: https://developer.monday.com/api-reference/docs/rate-limits
+      type: rate_limits
+    - title: monday.com Status
+      url: https://status.monday.com/
+      type: status_page
 metadataSpecVersion: "1.0"

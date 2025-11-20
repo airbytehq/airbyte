@@ -239,6 +239,19 @@ class GcsClientTest {
     }
 
     @Test
+    fun `test delete multiple keys`() = runBlocking {
+        val key1 = "$bucketPath/test-file-1"
+        val key2 = "$bucketPath/test-file-2"
+        val blobIds = setOf(BlobId.of(bucketName, key1), BlobId.of(bucketName, key2))
+
+        every { storage.delete(*blobIds.toTypedArray()) } returns listOf(true, true)
+
+        gcsClient.delete(setOf(key1, key2))
+
+        verify { storage.delete(*blobIds.toTypedArray()) }
+    }
+
+    @Test
     fun `test combinePath with empty path`() = runBlocking {
         val config =
             GcsClientConfiguration(

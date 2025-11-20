@@ -14,16 +14,16 @@ import io.airbyte.cdk.load.test.util.IntegrationTest
 import io.airbyte.cdk.load.test.util.NoopDestinationCleaner
 import io.airbyte.cdk.load.test.util.NoopExpectedRecordMapper
 import io.airbyte.protocol.models.v0.AirbyteMessage
-import io.airbyte.protocol.models.v0.DestinationCatalog
 import kotlin.test.assertEquals
+import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.runBlocking
+import org.junit.jupiter.api.Assertions.assertFalse
 import org.junit.jupiter.api.Test
 
 data class DiscoverTestConfig(
     val configContents: String,
     val featureFlags: Set<FeatureFlag> = emptySet(),
     val name: String? = null,
-    val expectedCatalog: DestinationCatalog,
 )
 
 abstract class DiscoverIntegrationTest<T : ConfigurationSpecification>(
@@ -51,7 +51,7 @@ abstract class DiscoverIntegrationTest<T : ConfigurationSpecification>(
                     featureFlags = tc.featureFlags.toTypedArray(),
                     micronautProperties = micronautProperties,
                 )
-            runBlocking { process.run() }
+            runBlocking((Dispatchers.IO)) { process.run() }
             val messages = process.readMessages()
             val catalogMessages =
                 messages.filter { it.type == AirbyteMessage.Type.DESTINATION_CATALOG }
@@ -62,10 +62,9 @@ abstract class DiscoverIntegrationTest<T : ConfigurationSpecification>(
                 1,
                 "$testName: Expected to receive exactly one destination catalog message, but got ${catalogMessages.size}: $catalogMessages"
             )
-            assertEquals(
-                tc.expectedCatalog,
-                catalogMessages.first().destinationCatalog,
-                "$testName: Catalogs are different expected ${tc.expectedCatalog}, but was ${catalogMessages.first().destinationCatalog}"
+            assertFalse(
+                catalogMessages.first().destinationCatalog.operations.isEmpty(),
+                "$testName: Catalogs is expected to have at least one operation"
             )
         }
     }

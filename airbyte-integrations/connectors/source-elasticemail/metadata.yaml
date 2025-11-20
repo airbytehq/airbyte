@@ -13,15 +13,15 @@ data:
       enabled: false
       packageName: airbyte-source-elasticemail
   connectorBuildOptions:
-    baseImage: docker.io/airbyte/source-declarative-manifest:6.51.0@sha256:890b109f243b8b9406f23ea7522de41025f7b3e87f6fc9710bc1e521213a276f
+    baseImage: docker.io/airbyte/source-declarative-manifest:7.5.0@sha256:92e539d5003b33c3624eae7715aee6e39b7b2f1f0eeb6003d37e649a06847ae8
   connectorSubtype: api
   connectorType: source
   definitionId: ed2c12aa-375c-4d18-9d3b-7e1f8a23245d
-  dockerImageTag: 0.0.22
+  dockerImageTag: 0.0.39
   dockerRepository: airbyte/source-elasticemail
   githubIssueLabel: source-elasticemail
   icon: icon.svg
-  license: MIT
+  license: ELv2
   name: Elasticemail
   releaseDate: 2024-11-08
   releaseStage: alpha
@@ -33,3 +33,13 @@ data:
   ab_internal:
     ql: 100
     sl: 100
+  externalDocumentationUrls:
+    - title: Elastic Email API reference
+      url: https://elasticemail.com/developers/api-documentation/
+      type: api_reference
+    - title: Elastic Email authentication
+      url: https://elasticemail.com/developers/api-documentation/authentication
+      type: authentication_guide
+    - title: Elastic Email rate limits
+      url: https://elasticemail.com/developers/api-documentation/rate-limiting
+      type: rate_limits

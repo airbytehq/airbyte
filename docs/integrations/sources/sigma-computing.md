@@ -38,6 +38,21 @@ Next, head over to Developer Access and click on create. This will generate your
 
 | Version          | Date              | Pull Request | Subject        |
 |------------------|-------------------|--------------|----------------|
+| 0.0.39 | 2025-11-18 | [69474](https://github.com/airbytehq/airbyte/pull/69474) | Update dependencies |
+| 0.0.38 | 2025-10-29 | [68781](https://github.com/airbytehq/airbyte/pull/68781) | Update dependencies |
+| 0.0.37 | 2025-10-21 | [68278](https://github.com/airbytehq/airbyte/pull/68278) | Update dependencies |
+| 0.0.36 | 2025-10-14 | [67751](https://github.com/airbytehq/airbyte/pull/67751) | Update dependencies |
+| 0.0.35 | 2025-10-07 | [67446](https://github.com/airbytehq/airbyte/pull/67446) | Update dependencies |
+| 0.0.34 | 2025-09-30 | [66908](https://github.com/airbytehq/airbyte/pull/66908) | Update dependencies |
+| 0.0.33 | 2025-09-24 | [66268](https://github.com/airbytehq/airbyte/pull/66268) | Update dependencies |
+| 0.0.32 | 2025-09-09 | [66130](https://github.com/airbytehq/airbyte/pull/66130) | Update dependencies |
+| 0.0.31 | 2025-08-23 | [65410](https://github.com/airbytehq/airbyte/pull/65410) | Update dependencies |
+| 0.0.30 | 2025-08-16 | [64477](https://github.com/airbytehq/airbyte/pull/64477) | Update dependencies |
+| 0.0.29 | 2025-07-26 | [63968](https://github.com/airbytehq/airbyte/pull/63968) | Update dependencies |
+| 0.0.28 | 2025-07-12 | [63069](https://github.com/airbytehq/airbyte/pull/63069) | Update dependencies |
+| 0.0.27 | 2025-07-05 | [62695](https://github.com/airbytehq/airbyte/pull/62695) | Update dependencies |
+| 0.0.26 | 2025-06-28 | [62208](https://github.com/airbytehq/airbyte/pull/62208) | Update dependencies |
+| 0.0.25 | 2025-06-21 | [61309](https://github.com/airbytehq/airbyte/pull/61309) | Update dependencies |
 | 0.0.24 | 2025-05-25 | [60448](https://github.com/airbytehq/airbyte/pull/60448) | Update dependencies |
 | 0.0.23 | 2025-05-10 | [60102](https://github.com/airbytehq/airbyte/pull/60102) | Update dependencies |
 | 0.0.22 | 2025-05-04 | [59593](https://github.com/airbytehq/airbyte/pull/59593) | Update dependencies |

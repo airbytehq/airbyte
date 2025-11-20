@@ -1,0 +1,39 @@
+metadataSpecVersion: "1.0"
+data:
+  allowedHosts:
+    hosts:
+      - "api.judge.me"
+  registryOverrides:
+    oss:
+      enabled: true
+    cloud:
+      enabled: true
+  remoteRegistries:
+    pypi:
+      enabled: false
+      packageName: airbyte-source-judge-me-reviews
+  connectorBuildOptions:
+    baseImage: docker.io/airbyte/source-declarative-manifest:7.5.0@sha256:92e539d5003b33c3624eae7715aee6e39b7b2f1f0eeb6003d37e649a06847ae8
+  connectorSubtype: api
+  connectorType: source
+  definitionId: a9184721-17d5-40c0-894d-f49b86749465
+  dockerImageTag: 0.0.14
+  dockerRepository: airbyte/source-judge-me-reviews
+  githubIssueLabel: source-judge-me-reviews
+  icon: icon.svg
+  license: ELv2
+  name: Judge.me Reviews
+  releaseDate: 2025-06-18
+  releaseStage: alpha
+  supportLevel: community
+  documentationUrl: https://docs.airbyte.com/integrations/sources/judge-me-reviews
+  tags:
+    - language:manifest-only
+    - cdk:low-code
+  ab_internal:
+    ql: 100
+    sl: 100
+  externalDocumentationUrls:
+    - title: Judge.me API documentation
+      url: https://judge.me/api
+      type: api_reference

@@ -16,10 +16,15 @@ import io.github.oshai.kotlinlogging.KotlinLogging
 import jakarta.inject.Singleton
 import java.util.concurrent.ConcurrentHashMap
 import java.util.concurrent.atomic.AtomicLong
+import kotlinx.coroutines.Dispatchers
+import kotlinx.coroutines.async
+import kotlinx.coroutines.awaitAll
+import kotlinx.coroutines.coroutineScope
 import kotlinx.coroutines.flow.filter
 import kotlinx.coroutines.flow.fold
 import kotlinx.coroutines.flow.mapNotNull
 import kotlinx.coroutines.flow.toList
+import kotlinx.coroutines.runBlocking
 
 @SuppressFBWarnings("NP_NONNULL_PARAM_VIOLATION", justification = "Kotlin async continuation")
 class ObjectStorageDestinationState(
@@ -34,10 +39,14 @@ class ObjectStorageDestinationState(
     private val fileNumbersByPath: ConcurrentHashMap<String, AtomicLong> = ConcurrentHashMap()
     private val matcher =
         pathFactory.getPathMatcher(stream, suffixPattern = OPTIONAL_ORDINAL_SUFFIX_PATTERN)
+    private val counters = ConcurrentHashMap<String, AtomicLong>()
 
     companion object {
         const val OPTIONAL_ORDINAL_SUFFIX_PATTERN = "(-[0-9]+)?"
     }
+
+    fun getPartCounter(path: String): AtomicLong =
+        counters.computeIfAbsent(path) { runBlocking(Dispatchers.IO) { getPartIdCounter(path) } }
 
     /**
      * Returns (generationId, object) for all objects that should be cleaned up.
@@ -46,6 +55,7 @@ class ObjectStorageDestinationState(
      * * stream.shouldBeTruncatedAtEndOfSync() is true
      * * object's generation id exists and is less than stream.minimumGenerationId
      */
+    @Suppress("UNCHECKED_CAST")
     suspend fun getObjectsToDelete(): List<Pair<Long, RemoteObject<*>>> {
         if (!stream.shouldBeTruncatedAtEndOfSync()) {
             return emptyList()
@@ -60,18 +70,21 @@ class ObjectStorageDestinationState(
             .list(prefix)
             .filter { matcher.match(it.key) != null }
             .toList() // Force the list call to complete before initiating metadata calls
-            .mapNotNull { obj ->
-                val generationId =
-                    client
-                        .getMetadata(obj.key)[destinationConfig.generationIdMetadataKey]
-                        ?.toLongOrNull()
-                        ?: 0L
-                if (generationId < stream.minimumGenerationId) {
-                    Pair(generationId, obj)
-                } else {
-                    null
+            .map { obj ->
+                coroutineScope {
+                    async(Dispatchers.IO) {
+                        Pair(
+                            client
+                                .getMetadata(obj.key)[destinationConfig.generationIdMetadataKey]
+                                ?.toLongOrNull()
+                                ?: 0L,
+                            obj
+                        )
+                    }
                 }
             }
+            .awaitAll()
+            .filter { pair -> pair.first < stream.minimumGenerationId }
     }
 
     /**

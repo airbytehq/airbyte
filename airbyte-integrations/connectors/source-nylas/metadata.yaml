@@ -13,15 +13,15 @@ data:
       enabled: false
       packageName: airbyte-source-nylas
   connectorBuildOptions:
-    baseImage: docker.io/airbyte/source-declarative-manifest:6.48.10@sha256:09947fb38d07e515f9901a12f22cc44f1512f6148703341de80403c0e0c1b8c3
+    baseImage: docker.io/airbyte/source-declarative-manifest:7.5.0@sha256:92e539d5003b33c3624eae7715aee6e39b7b2f1f0eeb6003d37e649a06847ae8
   connectorSubtype: api
   connectorType: source
   definitionId: 136a1ee6-5b95-4e09-9f3f-5c8df35df690
-  dockerImageTag: 0.0.25
+  dockerImageTag: 0.0.43
   dockerRepository: airbyte/source-nylas
   githubIssueLabel: source-nylas
   icon: icon.svg
-  license: MIT
+  license: ELv2
   name: Nylas
   releaseDate: 2024-09-03
   releaseStage: alpha
@@ -33,3 +33,16 @@ data:
   ab_internal:
     ql: 100
     sl: 100
+  externalDocumentationUrls:
+    - title: Nylas API reference
+      url: https://developer.nylas.com/docs/api/
+      type: api_reference
+    - title: Nylas authentication
+      url: https://developer.nylas.com/docs/the-basics/authentication/
+      type: authentication_guide
+    - title: Nylas rate limits
+      url: https://developer.nylas.com/docs/dev-guide/platform/rate-limits/
+      type: rate_limits
+    - title: Nylas Status
+      url: https://status.nylas.com/
+      type: status_page

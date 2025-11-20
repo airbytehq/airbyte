@@ -45,6 +45,24 @@ The New York Times connector should not run into limitations under normal usage.
 
 | Version | Date       | Pull Request                                             | Subject                                                                         |
 | :------ | :--------- | :------------------------------------------------------- | :------------------------------------------------------------------------------ |
+| 0.2.20 | 2025-11-18 | [69377](https://github.com/airbytehq/airbyte/pull/69377) | Update dependencies |
+| 0.2.19 | 2025-10-29 | [68746](https://github.com/airbytehq/airbyte/pull/68746) | Update dependencies |
+| 0.2.18 | 2025-10-21 | [68351](https://github.com/airbytehq/airbyte/pull/68351) | Update dependencies |
+| 0.2.17 | 2025-10-14 | [67738](https://github.com/airbytehq/airbyte/pull/67738) | Update dependencies |
+| 0.2.16 | 2025-10-07 | [67417](https://github.com/airbytehq/airbyte/pull/67417) | Update dependencies |
+| 0.2.15 | 2025-09-30 | [66932](https://github.com/airbytehq/airbyte/pull/66932) | Update dependencies |
+| 0.2.14 | 2025-09-23 | [66609](https://github.com/airbytehq/airbyte/pull/66609) | Update dependencies |
+| 0.2.13 | 2025-09-09 | [65865](https://github.com/airbytehq/airbyte/pull/65865) | Update dependencies |
+| 0.2.12 | 2025-08-23 | [65214](https://github.com/airbytehq/airbyte/pull/65214) | Update dependencies |
+| 0.2.11 | 2025-08-09 | [64733](https://github.com/airbytehq/airbyte/pull/64733) | Update dependencies |
+| 0.2.10 | 2025-08-02 | [64207](https://github.com/airbytehq/airbyte/pull/64207) | Update dependencies |
+| 0.2.9 | 2025-07-26 | [63863](https://github.com/airbytehq/airbyte/pull/63863) | Update dependencies |
+| 0.2.8 | 2025-07-19 | [63392](https://github.com/airbytehq/airbyte/pull/63392) | Update dependencies |
+| 0.2.7 | 2025-07-12 | [63247](https://github.com/airbytehq/airbyte/pull/63247) | Update dependencies |
+| 0.2.6 | 2025-07-05 | [62604](https://github.com/airbytehq/airbyte/pull/62604) | Update dependencies |
+| 0.2.5 | 2025-06-28 | [62397](https://github.com/airbytehq/airbyte/pull/62397) | Update dependencies |
+| 0.2.4 | 2025-06-21 | [61918](https://github.com/airbytehq/airbyte/pull/61918) | Update dependencies |
+| 0.2.3 | 2025-06-14 | [48172](https://github.com/airbytehq/airbyte/pull/48172) | Update dependencies |
 | 0.2.2 | 2024-10-29 | [47728](https://github.com/airbytehq/airbyte/pull/47728) | Update dependencies |
 | 0.2.1 | 2024-10-28 | [47634](https://github.com/airbytehq/airbyte/pull/47634) | Update dependencies |
 | 0.2.0 | 2024-08-22 | [44555](https://github.com/airbytehq/airbyte/pull/44555) | Refactor connector to manifest-only format |

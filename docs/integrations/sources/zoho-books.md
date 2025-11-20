@@ -38,6 +38,24 @@ The Zoho Books connector  enables seamless integration of financial data, automa
 
 | Version          | Date              | Pull Request | Subject        |
 |------------------|-------------------|--------------|----------------|
+| 0.0.41 | 2025-11-18 | [69544](https://github.com/airbytehq/airbyte/pull/69544) | Update dependencies |
+| 0.0.40 | 2025-10-29 | [68980](https://github.com/airbytehq/airbyte/pull/68980) | Update dependencies |
+| 0.0.39 | 2025-10-21 | [68427](https://github.com/airbytehq/airbyte/pull/68427) | Update dependencies |
+| 0.0.38 | 2025-10-14 | [68012](https://github.com/airbytehq/airbyte/pull/68012) | Update dependencies |
+| 0.0.37 | 2025-10-07 | [67237](https://github.com/airbytehq/airbyte/pull/67237) | Update dependencies |
+| 0.0.36 | 2025-09-30 | [66856](https://github.com/airbytehq/airbyte/pull/66856) | Update dependencies |
+| 0.0.35 | 2025-09-24 | [66472](https://github.com/airbytehq/airbyte/pull/66472) | Update dependencies |
+| 0.0.34 | 2025-09-09 | [65720](https://github.com/airbytehq/airbyte/pull/65720) | Update dependencies |
+| 0.0.33 | 2025-08-23 | [65434](https://github.com/airbytehq/airbyte/pull/65434) | Update dependencies |
+| 0.0.32 | 2025-08-09 | [64870](https://github.com/airbytehq/airbyte/pull/64870) | Update dependencies |
+| 0.0.31 | 2025-08-02 | [64361](https://github.com/airbytehq/airbyte/pull/64361) | Update dependencies |
+| 0.0.30 | 2025-07-26 | [64069](https://github.com/airbytehq/airbyte/pull/64069) | Update dependencies |
+| 0.0.29 | 2025-07-19 | [63613](https://github.com/airbytehq/airbyte/pull/63613) | Update dependencies |
+| 0.0.28 | 2025-07-12 | [63242](https://github.com/airbytehq/airbyte/pull/63242) | Update dependencies |
+| 0.0.27 | 2025-07-05 | [62740](https://github.com/airbytehq/airbyte/pull/62740) | Update dependencies |
+| 0.0.26 | 2025-06-28 | [62269](https://github.com/airbytehq/airbyte/pull/62269) | Update dependencies |
+| 0.0.25 | 2025-06-21 | [61756](https://github.com/airbytehq/airbyte/pull/61756) | Update dependencies |
+| 0.0.24 | 2025-06-15 | [61218](https://github.com/airbytehq/airbyte/pull/61218) | Update dependencies |
 | 0.0.23 | 2025-05-24 | [59958](https://github.com/airbytehq/airbyte/pull/59958) | Update dependencies |
 | 0.0.22 | 2025-05-04 | [59536](https://github.com/airbytehq/airbyte/pull/59536) | Update dependencies |
 | 0.0.21 | 2025-04-26 | [58924](https://github.com/airbytehq/airbyte/pull/58924) | Update dependencies |

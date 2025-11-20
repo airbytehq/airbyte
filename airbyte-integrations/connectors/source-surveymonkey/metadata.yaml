@@ -6,16 +6,16 @@ data:
     hosts:
       - api.surveymonkey.com
   connectorBuildOptions:
-    baseImage: docker.io/airbyte/python-connector-base:3.0.2@sha256:73697fbe1c0e2ebb8ed58e2268484bb4bfb2cb56b653808e1680cbc50bafef75
+    baseImage: docker.io/airbyte/python-connector-base:4.0.2@sha256:9fdb1888c4264cf6fee473649ecb593f56f58e5d0096a87ee0b231777e2e3e73
   connectorSubtype: api
   connectorType: source
   definitionId: badc5925-0485-42be-8caa-b34096cb71b5
-  dockerImageTag: 0.3.36
+  dockerImageTag: 0.3.47
   dockerRepository: airbyte/source-surveymonkey
   documentationUrl: https://docs.airbyte.com/integrations/sources/surveymonkey
   githubIssueLabel: source-surveymonkey
   icon: surveymonkey.svg
-  license: MIT
+  license: ELv2
   maxSecondsBetweenMessages: 86400
   name: SurveyMonkey
   registryOverrides:
@@ -52,4 +52,17 @@ data:
           secretStore:
             type: GSM
             alias: airbyte-connector-testing-secret-store
+  externalDocumentationUrls:
+    - title: SurveyMonkey API reference
+      url: https://developer.surveymonkey.com/api/v3/
+      type: api_reference
+    - title: SurveyMonkey API Changelog
+      url: https://developer.surveymonkey.com/api/v3/#changelog
+      type: api_release_history
+    - title: SurveyMonkey authentication
+      url: https://developer.surveymonkey.com/api/v3/#authentication
+      type: authentication_guide
+    - title: SurveyMonkey rate limits
+      url: https://developer.surveymonkey.com/api/v3/#rate-limits
+      type: rate_limits
 metadataSpecVersion: "1.0"

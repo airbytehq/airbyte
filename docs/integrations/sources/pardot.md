@@ -15,6 +15,7 @@ This page contains the setup guide and reference information for the [Pardot (Sa
 ## Setup Guide
 
 ### Required configuration options
+
 - **Pardot Business Unit ID** (`pardot_business_unit_id`): This value uniquely identifies your account, and can be found at Setup > Pardot > Pardot Account Setup
 
 - **Client ID** (`client_id`): The Consumer Key that can be found when viewing your app in Salesforce
@@ -24,9 +25,8 @@ This page contains the setup guide and reference information for the [Pardot (Sa
 - **Refresh Token** (`refresh_token`): Salesforce Refresh Token used for Airbyte to access your Salesforce account. If you don't know what this is, follow [this guide](https://medium.com/@bpmmendis94/obtain-access-refresh-tokens-from-salesforce-rest-api-a324fe4ccd9b) to retrieve it.
 
 ### Optional configuration options
-- **Start Date** (`start_date`): UTC date and time in the format `2020-01-25T00:00:00Z`. Any data before this date will not be replicated. Defaults to `2007-01-01T00:00:00Z` (the year Pardot was launched)
 
-- **Page Size Limit** (`page_size`): The default page size to return; defaults to `1000` (which is Pardot's maximum). Does not apply to the Email Clicks stream which uses the v4 API and is limited to 200 per page.
+- **Start Date** (`start_date`): UTC date and time in the format `2020-01-25T00:00:00Z`. Any data before this date will not be replicated. Defaults to `2007-01-01T00:00:00Z` (the year Pardot was launched)
 
 - **Is Sandbox App?** (`is_sandbox`): Whether or not the app is in a Salesforce sandbox. If you do not know what this is, assume it is false.
 
@@ -87,12 +87,30 @@ Several output streams are available from this source. Unless noted otherwise, s
 - [Visitor Page Views](https://developer.salesforce.com/docs/marketing/pardot/guide/visitor-page-view-v5.html) (incremental)
 - [Visits](https://developer.salesforce.com/docs/marketing/pardot/guide/visit-v5.html) (incremental)
 
+
 If there are more endpoints you'd like Airbyte to support, please [create an issue](https://github.com/airbytehq/airbyte/issues/new/choose).
 
 ## Changelog
 
 | Version | Date       | Pull Request                                             | Subject               |
 | :------ | :--------- | :------------------------------------------------------- | :-------------------- |
+| 1.0.31 | 2025-11-18 | [69674](https://github.com/airbytehq/airbyte/pull/69674) | Update dependencies |
+| 1.0.30 | 2025-10-29 | [69020](https://github.com/airbytehq/airbyte/pull/69020) | Update dependencies |
+| 1.0.29 | 2025-10-21 | [68326](https://github.com/airbytehq/airbyte/pull/68326) | Update dependencies |
+| 1.0.28 | 2025-10-14 | [67800](https://github.com/airbytehq/airbyte/pull/67800) | Update dependencies |
+| 1.0.27 | 2025-10-07 | [67342](https://github.com/airbytehq/airbyte/pull/67342) | Update dependencies |
+| 1.0.26 | 2025-09-30 | [66393](https://github.com/airbytehq/airbyte/pull/66393) | Update dependencies |
+| 1.0.25 | 2025-09-23 | [65782](https://github.com/airbytehq/airbyte/pull/66592) | Fix pagination when >100K records returned |
+| 1.0.24 | 2025-09-09 | [65782](https://github.com/airbytehq/airbyte/pull/65782) | Update dependencies |
+| 1.0.23 | 2025-08-23 | [65172](https://github.com/airbytehq/airbyte/pull/65172) | Update dependencies |
+| 1.0.22 | 2025-08-16 | [64794](https://github.com/airbytehq/airbyte/pull/64794) | Update dependencies |
+| 1.0.21 | 2025-08-02 | [64264](https://github.com/airbytehq/airbyte/pull/64264) | Update dependencies |
+| 1.0.20 | 2025-07-26 | [63887](https://github.com/airbytehq/airbyte/pull/63887) | Update dependencies |
+| 1.0.19 | 2025-07-19 | [63399](https://github.com/airbytehq/airbyte/pull/63399) | Update dependencies |
+| 1.0.18 | 2025-07-12 | [63221](https://github.com/airbytehq/airbyte/pull/63221) | Update dependencies |
+| 1.0.17 | 2025-07-05 | [62559](https://github.com/airbytehq/airbyte/pull/62559) | Update dependencies |
+| 1.0.16 | 2025-06-28 | [61048](https://github.com/airbytehq/airbyte/pull/61048) | Update dependencies |
+| 1.0.15 | 2025-06-20 | [61736](https://github.com/airbytehq/airbyte/pull/61736) | Fix lifecycle_stages -  was erroneously top-level instead of a property of column |
 | 1.0.14 | 2025-05-24 | [60515](https://github.com/airbytehq/airbyte/pull/60515) | Update dependencies |
 | 1.0.13 | 2025-05-10 | [60108](https://github.com/airbytehq/airbyte/pull/60108) | Update dependencies |
 | 1.0.12 | 2025-05-04 | [59521](https://github.com/airbytehq/airbyte/pull/59521) | Update dependencies |

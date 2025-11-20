@@ -13,15 +13,15 @@ data:
       enabled: false
       packageName: airbyte-source-boldsign
   connectorBuildOptions:
-    baseImage: docker.io/airbyte/source-declarative-manifest:6.48.6@sha256:18b5219ed52d5dd26e9a513f5d9c590ddd78da1779e72795f2669bc4420bc576
+    baseImage: docker.io/airbyte/source-declarative-manifest:7.5.0@sha256:92e539d5003b33c3624eae7715aee6e39b7b2f1f0eeb6003d37e649a06847ae8
   connectorSubtype: api
   connectorType: source
   definitionId: b013676a-2286-4f7a-bca4-811477207761
-  dockerImageTag: 0.0.6
+  dockerImageTag: 0.0.18
   dockerRepository: airbyte/source-boldsign
   githubIssueLabel: source-boldsign
   icon: icon.svg
-  license: MIT
+  license: ELv2
   name: BoldSign
   releaseDate: 2025-04-04
   releaseStage: alpha
@@ -33,3 +33,10 @@ data:
   ab_internal:
     ql: 100
     sl: 100
+  externalDocumentationUrls:
+    - title: API reference
+      url: https://developers.boldsign.com/api-reference
+      type: api_reference
+    - title: Authentication
+      url: https://developers.boldsign.com/authentication
+      type: authentication_guide

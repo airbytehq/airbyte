@@ -2,14 +2,10 @@
 # Company vocabulary
 #
 
-Airbyte
-Airbyte's
-Self-Managed Community
-Self-Managed Enterprise
-Cloud
-Cloud Teams
-Cloud Enterprise
+Airbyte('s)?
+[Cc]loud
 abctl
+Airbox
 PyAirbyte
 [Nn]amespace
 Connector Builder
@@ -18,6 +14,16 @@ Low-Code CDK
 Connection Timeline
 Embedded
 Airbyte Embedded
+Sonar
+Core
+Standard
+Plus
+Pro
+Enterprise Flex
+Self-Managed Enterprise
+Elastic License 2.0
+ELv2
+MIT
 
 #
 # Common terms Airbyte uses
@@ -33,10 +39,14 @@ Vale
 OpenTelemetry
 Datadog
 [Dd]eduplication
+[Dd]eduped
 Python
 MarkDownLint
 markdownlint-cli2
 JavaScript
+ETL
+ELT
+[Dd]ata activation
 ID
 
 # Common acronyms and initialisms that don't need definitions
@@ -53,11 +63,21 @@ OAuth
 DPath
 UUID
 URL
+SSO
+SQL
+IP[s]
+CDC
+CRM[s]
+FAQ
 
 # Airbyte connectors
 
 Nessie
 S3 Data Lake
+PostgreSQL
+Postgres
+NetSuite
+ClickHouse
 
 # Companies, products, and jargon
 
@@ -67,6 +87,11 @@ Glue
 npm
 HubSpot
 Zendesk
+Okta
+Entra
+Slack
+Fargate
+MinIO
 
 # Acceptable non-words that shouldn't trigger spellcheck
 
@@ -74,3 +99,47 @@ Zendesk
 [Nn]amespaces
 [Ii]nitialisms
 \bCPU(?:s)?\b
+\bhostname(?:s)?\b
+
+# API and technical terms
+
+CLI
+CLIs
+UUIDs
+JWT
+JWTs
+CORS
+SaaS
+config
+rollout
+CRM
+JSON
+jmespath
+Jmespath
+JMESPath
+Cron
+crons
+subdirectory
+subdirectories
+workspace_id
+source_id
+connection_id
+template_id
+workspaceId
+sourceId
+connectionId
+templateId
+sync_on_create
+non_breaking_changes_preference
+Onboarding
+datetime
+workspace's
+
+# Never lint Docusaurus admonitions markup
+
+:::
+:::note
+:::tip
+:::info
+:::warning
+:::danger

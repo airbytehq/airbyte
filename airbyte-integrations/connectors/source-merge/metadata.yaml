@@ -6,7 +6,7 @@ data:
   dockerRepository: airbyte/source-merge
   githubIssueLabel: source-merge
   icon: merge.svg
-  license: MIT
+  license: ELv2
   name: Merge
   remoteRegistries:
     pypi:
@@ -38,4 +38,17 @@ data:
   #           alias: airbyte-connector-testing-secret-store
   connectorBuildOptions:
     baseImage: docker.io/airbyte/source-declarative-manifest:6.51.0@sha256:890b109f243b8b9406f23ea7522de41025f7b3e87f6fc9710bc1e521213a276f
+  externalDocumentationUrls:
+    - title: Merge API reference
+      url: https://docs.merge.dev/api-reference/
+      type: api_reference
+    - title: Merge authentication
+      url: https://docs.merge.dev/basics/authentication/
+      type: authentication_guide
+    - title: Merge rate limits
+      url: https://docs.merge.dev/basics/rate-limits/
+      type: rate_limits
+    - title: Merge Status
+      url: https://status.merge.dev/
+      type: status_page
 metadataSpecVersion: "1.0"

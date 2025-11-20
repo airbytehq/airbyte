@@ -5,11 +5,11 @@ data:
   connectorSubtype: api
   connectorType: source
   definitionId: 311a7a27-3fb5-4f7e-8265-5e4afe258b66
-  dockerImageTag: 0.3.21
+  dockerImageTag: 0.3.37
   dockerRepository: airbyte/source-clickup-api
   githubIssueLabel: source-clickup-api
   icon: clickup.svg
-  license: MIT
+  license: ELv2
   name: ClickUp
   remoteRegistries:
     pypi:
@@ -43,5 +43,18 @@ data:
             type: GSM
             alias: airbyte-connector-testing-secret-store
   connectorBuildOptions:
-    baseImage: docker.io/airbyte/source-declarative-manifest:6.48.6@sha256:18b5219ed52d5dd26e9a513f5d9c590ddd78da1779e72795f2669bc4420bc576
+    baseImage: docker.io/airbyte/source-declarative-manifest:7.5.0@sha256:92e539d5003b33c3624eae7715aee6e39b7b2f1f0eeb6003d37e649a06847ae8
+  externalDocumentationUrls:
+    - title: ClickUp API reference
+      url: https://clickup.com/api/
+      type: api_reference
+    - title: ClickUp authentication
+      url: https://clickup.com/api/developer-portal/authentication/
+      type: authentication_guide
+    - title: ClickUp rate limits
+      url: https://clickup.com/api/developer-portal/rate-limits/
+      type: rate_limits
+    - title: ClickUp Status
+      url: https://status.clickup.com/
+      type: status_page
 metadataSpecVersion: "1.0"

@@ -1,3 +1,14 @@
+.header  {
+  flex-grow:1;
+} 
+
+.connectorHeader {
+  display: flex;
+  align-items: start;
+  justify-content: space-between;
+  margin-bottom: 12px;
+}
+
 .connectorIcon {
   max-height: 40px;
   max-width: 40px;

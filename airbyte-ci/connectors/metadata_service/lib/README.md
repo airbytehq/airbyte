@@ -10,6 +10,16 @@ To use this submodule, it is recommended that you use Poetry to manage dependenc
 poetry install
 ```
 
+### Node.js Requirement
+
+The model generation process also requires Node.js to bundle JSON schemas. Install Node.js:
+
+- On macOS: `brew install node`
+- On Ubuntu/Debian: `sudo apt-get install nodejs npm`
+- On other systems: https://nodejs.org/
+
+Node.js dependencies will be automatically installed when running `poetry run poe generate-models`.
+
 ## Generating Models
 
 This submodule includes a tool for generating Python models from JSON Schema specifications. To generate the models, we use the library [datamodel-code-generator](https://github.com/koxudaxi/datamodel-code-generator). The generated models are stored in `models/generated`.

@@ -8,7 +8,7 @@ data:
   dockerRepository: airbyte/source-e2e-test
   githubIssueLabel: source-e2e-test
   icon: airbyte.svg
-  license: MIT
+  license: ELv2
   name: E2E Testing
   registryOverrides:
     cloud:
@@ -26,4 +26,8 @@ data:
   connectorTestSuitesOptions:
     - suite: unitTests
     - suite: integrationTests
+  externalDocumentationUrls:
+    - title: Airbyte E2E test source documentation
+      url: https://docs.airbyte.com/integrations/sources/e2e-test
+      type: other
 metadataSpecVersion: "1.0"

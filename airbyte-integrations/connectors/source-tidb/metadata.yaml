@@ -14,12 +14,12 @@ data:
     - suite: integrationTests
   connectorType: source
   definitionId: 0dad1a35-ccf8-4d03-b73e-6788c00b13ae
-  dockerImageTag: 0.3.4
+  dockerImageTag: 0.3.5
   dockerRepository: airbyte/source-tidb
   documentationUrl: https://docs.airbyte.com/integrations/sources/tidb
   githubIssueLabel: source-tidb
   icon: tidb.svg
-  license: MIT
+  license: ELv2
   name: TiDB
   registryOverrides:
     cloud:
@@ -30,4 +30,8 @@ data:
   supportLevel: community
   tags:
     - language:java
+  externalDocumentationUrls:
+    - title: TiDB documentation
+      url: https://docs.pingcap.com/tidb/stable
+      type: api_reference
 metadataSpecVersion: "1.0"

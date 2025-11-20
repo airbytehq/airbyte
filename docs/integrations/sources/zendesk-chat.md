@@ -83,6 +83,26 @@ The connector is restricted by Zendesk's [requests limitation](https://developer
 
 | Version | Date       | Pull Request                                             | Subject                                                                                                                                                                |
 |:--------|:-----------|:---------------------------------------------------------|:-----------------------------------------------------------------------------------------------------------------------------------------------------------------------|
+| 1.2.27 | 2025-11-18 | [69513](https://github.com/airbytehq/airbyte/pull/69513) | Update dependencies |
+| 1.2.26 | 2025-10-29 | [68958](https://github.com/airbytehq/airbyte/pull/68958) | Update dependencies |
+| 1.2.25 | 2025-10-27 | [68629](https://github.com/airbytehq/airbyte/pull/68629) | Fix Pagination for `chats` and `agent_timeline` streams |
+| 1.2.24 | 2025-10-22 | [68591](https://github.com/airbytehq/airbyte/pull/68591) | Add `suggestedStreams` |
+| 1.2.23 | 2025-10-22 | [67607](https://github.com/airbytehq/airbyte/pull/67607) | Handle 404 errors for deleted records in all streams |
+| 1.2.22 | 2025-10-21 | [68440](https://github.com/airbytehq/airbyte/pull/68440) | Update dependencies |
+| 1.2.21 | 2025-10-14 | [68020](https://github.com/airbytehq/airbyte/pull/68020) | Update dependencies |
+| 1.2.20 | 2025-10-07 | [67238](https://github.com/airbytehq/airbyte/pull/67238) | Update dependencies |
+| 1.2.19 | 2025-09-30 | [66845](https://github.com/airbytehq/airbyte/pull/66845) | Update dependencies |
+| 1.2.18 | 2025-09-24 | [66459](https://github.com/airbytehq/airbyte/pull/66459) | Update dependencies |
+| 1.2.17 | 2025-09-09 | [65491](https://github.com/airbytehq/airbyte/pull/65491) | Update dependencies |
+| 1.2.16 | 2025-08-09 | [64864](https://github.com/airbytehq/airbyte/pull/64864) | Update dependencies |
+| 1.2.15 | 2025-08-02 | [64305](https://github.com/airbytehq/airbyte/pull/64305) | Update dependencies |
+| 1.2.14 | 2025-07-26 | [64053](https://github.com/airbytehq/airbyte/pull/64053) | Update dependencies |
+| 1.2.13 | 2025-07-20 | [63650](https://github.com/airbytehq/airbyte/pull/63650) | Update dependencies |
+| 1.2.12 | 2025-07-12 | [63177](https://github.com/airbytehq/airbyte/pull/63177) | Update dependencies |
+| 1.2.11 | 2025-07-05 | [62677](https://github.com/airbytehq/airbyte/pull/62677) | Update dependencies |
+| 1.2.10 | 2025-06-28 | [62247](https://github.com/airbytehq/airbyte/pull/62247) | Update dependencies |
+| 1.2.9 | 2025-06-21 | [61751](https://github.com/airbytehq/airbyte/pull/61751) | Update dependencies |
+| 1.2.8 | 2025-06-15 | [61248](https://github.com/airbytehq/airbyte/pull/61248) | Update dependencies |
 | 1.2.7 | 2025-05-24 | [60782](https://github.com/airbytehq/airbyte/pull/60782) | Update dependencies |
 | 1.2.6 | 2025-05-10 | [59993](https://github.com/airbytehq/airbyte/pull/59993) | Update dependencies |
 | 1.2.5 | 2025-05-04 | [58949](https://github.com/airbytehq/airbyte/pull/58949) | Update dependencies |

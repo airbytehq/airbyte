@@ -51,13 +51,12 @@ class S3DataLakeStreamLoader(
     override suspend fun start() {
         val properties = s3DataLakeUtil.toCatalogProperties(config = icebergConfiguration)
         val catalog = icebergUtil.createCatalog(DEFAULT_CATALOG_NAME, properties)
-        s3DataLakeUtil.createNamespaceWithGlueHandling(stream.descriptor, catalog)
+        s3DataLakeUtil.createNamespaceWithGlueHandling(stream.mappedDescriptor, catalog)
         table =
             icebergUtil.createTable(
-                streamDescriptor = stream.descriptor,
+                streamDescriptor = stream.mappedDescriptor,
                 catalog = catalog,
-                schema = incomingSchema,
-                properties = properties
+                schema = incomingSchema
             )
 
         // Note that if we have columnTypeChangeBehavior OVERWRITE, we don't commit the schema
@@ -73,12 +72,12 @@ class S3DataLakeStreamLoader(
         targetSchema = computeOrExecuteSchemaUpdate().schema
         try {
             logger.info {
-                "maybe creating branch $DEFAULT_STAGING_BRANCH for stream ${stream.descriptor}"
+                "maybe creating branch $DEFAULT_STAGING_BRANCH for stream ${stream.mappedDescriptor}"
             }
             table.manageSnapshots().createBranch(DEFAULT_STAGING_BRANCH).commit()
         } catch (e: IllegalArgumentException) {
             logger.info {
-                "branch $DEFAULT_STAGING_BRANCH already exists for stream ${stream.descriptor}"
+                "branch $DEFAULT_STAGING_BRANCH already exists for stream ${stream.mappedDescriptor}"
             }
         }
 
@@ -87,7 +86,7 @@ class S3DataLakeStreamLoader(
                 table = table,
                 schema = targetSchema,
             )
-        streamStateStore.put(stream.descriptor, state)
+        streamStateStore.put(stream.mappedDescriptor, state)
     }
 
     override suspend fun close(hadNonzeroRecords: Boolean, streamFailure: StreamProcessingFailed?) {
@@ -102,32 +101,22 @@ class S3DataLakeStreamLoader(
             // In principle, this doesn't matter, but the iceberg SDK throws an error about
             // stale table metadata without this.
             table.refresh()
-            computeOrExecuteSchemaUpdate().pendingUpdate?.commit()
-            table.manageSnapshots().fastForwardBranch(mainBranchName, stagingBranchName).commit()
+            // Commit all pending schema updates in order (important for two-phase commits)
+            computeOrExecuteSchemaUpdate().pendingUpdates.forEach { it.commit() }
+            table.manageSnapshots().replaceBranch(mainBranchName, stagingBranchName).commit()
 
-            if (stream.minimumGenerationId > 0) {
+            if (stream.isSingleGenerationTruncate()) {
                 logger.info {
                     "Detected a minimum generation ID (${stream.minimumGenerationId}). Preparing to delete obsolete generation IDs."
                 }
-                val generationIdsToDelete =
-                    (0 until stream.minimumGenerationId).map(
-                        icebergUtil::constructGenerationIdSuffix
-                    )
                 val icebergTableCleaner = IcebergTableCleaner(icebergUtil = icebergUtil)
-                icebergTableCleaner.deleteGenerationId(
-                    table,
-                    stagingBranchName,
-                    generationIdsToDelete
-                )
+                icebergTableCleaner.deleteOldGenerationData(table, stagingBranchName, stream)
                 //  Doing it again to push the deletes from the staging to main branch
                 logger.info {
                     "Deleted obsolete generation IDs up to ${stream.minimumGenerationId - 1}. " +
                         "Pushing these updates to the '$mainBranchName' branch."
                 }
-                table
-                    .manageSnapshots()
-                    .fastForwardBranch(mainBranchName, stagingBranchName)
-                    .commit()
+                table.manageSnapshots().replaceBranch(mainBranchName, stagingBranchName).commit()
             }
         }
     }

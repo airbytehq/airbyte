@@ -39,7 +39,24 @@ MailerLite API has a global rate limit of 120 requests per minute.
 
 | Version | Date       | Pull Request                                             | Subject                                     |
 |:--------|:-----------|:---------------------------------------------------------|:--------------------------------------------|
-| 1.1.1   | 2024-08-16 | [44196](https://github.com/airbytehq/airbyte/pull/44196) | Bump source-declarative-manifest version   |
+| 1.1.18 | 2025-11-18 | [69503](https://github.com/airbytehq/airbyte/pull/69503) | Update dependencies |
+| 1.1.17 | 2025-10-29 | [68963](https://github.com/airbytehq/airbyte/pull/68963) | Update dependencies |
+| 1.1.16 | 2025-10-21 | [68315](https://github.com/airbytehq/airbyte/pull/68315) | Update dependencies |
+| 1.1.15 | 2025-10-14 | [68023](https://github.com/airbytehq/airbyte/pull/68023) | Update dependencies |
+| 1.1.14 | 2025-10-07 | [67521](https://github.com/airbytehq/airbyte/pull/67521) | Update dependencies |
+| 1.1.13 | 2025-09-30 | [66813](https://github.com/airbytehq/airbyte/pull/66813) | Update dependencies |
+| 1.1.12 | 2025-09-24 | [66642](https://github.com/airbytehq/airbyte/pull/66642) | Update dependencies |
+| 1.1.11 | 2025-09-09 | [66071](https://github.com/airbytehq/airbyte/pull/66071) | Update dependencies |
+| 1.1.10 | 2025-08-23 | [65376](https://github.com/airbytehq/airbyte/pull/65376) | Update dependencies |
+| 1.1.9 | 2025-08-09 | [64616](https://github.com/airbytehq/airbyte/pull/64616) | Update dependencies |
+| 1.1.8 | 2025-08-02 | [64294](https://github.com/airbytehq/airbyte/pull/64294) | Update dependencies |
+| 1.1.7 | 2025-07-19 | [63517](https://github.com/airbytehq/airbyte/pull/63517) | Update dependencies |
+| 1.1.6 | 2025-07-12 | [63146](https://github.com/airbytehq/airbyte/pull/63146) | Update dependencies |
+| 1.1.5 | 2025-07-05 | [62655](https://github.com/airbytehq/airbyte/pull/62655) | Update dependencies |
+| 1.1.4 | 2025-06-28 | [62177](https://github.com/airbytehq/airbyte/pull/62177) | Update dependencies |
+| 1.1.3 | 2025-06-21 | [61782](https://github.com/airbytehq/airbyte/pull/61782) | Update dependencies |
+| 1.1.2 | 2025-06-14 | [47585](https://github.com/airbytehq/airbyte/pull/47585) | Update dependencies |
+| 1.1.1 | 2024-08-16 | [44196](https://github.com/airbytehq/airbyte/pull/44196) | Bump source-declarative-manifest version |
 | 1.1.0 | 2024-08-15 | [44131](https://github.com/airbytehq/airbyte/pull/44131) | Refactor connector to manifest-only format |
 | 1.0.13 | 2024-08-12 | [43839](https://github.com/airbytehq/airbyte/pull/43839) | Update dependencies |
 | 1.0.12 | 2024-08-10 | [43483](https://github.com/airbytehq/airbyte/pull/43483) | Update dependencies |

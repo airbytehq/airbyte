@@ -4,8 +4,6 @@
 
 package io.airbyte.cdk.load.file.csv
 
-import com.fasterxml.jackson.databind.JsonNode
-import io.airbyte.cdk.util.Jsons
 import org.junit.jupiter.api.Assertions
 import org.junit.jupiter.api.BeforeEach
 import org.junit.jupiter.api.Test
@@ -34,12 +32,7 @@ class CsvDecoderTest {
         Assertions.assertEquals(csvEntries[1], recordAtIndex(1))
     }
 
-    private fun recordAtIndex(index: Int): JsonNode {
-        return Jsons.readTree("""
-{
-    "id": "ID_${index}",
-    "value": "value_${index}"
-}
-""")
+    private fun recordAtIndex(index: Int): Map<String, String> {
+        return mapOf("id" to "ID_${index}", "value" to "value_${index}")
     }
 }

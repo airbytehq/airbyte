@@ -8,7 +8,7 @@ data:
   dockerRepository: airbyte/destination-duckdb
   githubIssueLabel: destination-duckdb
   icon: duckdb.svg
-  license: MIT
+  license: ELv2
   name: DuckDB
   registryOverrides:
     cloud:
@@ -68,4 +68,11 @@ data:
           secretStore:
             type: GSM
             alias: airbyte-connector-testing-secret-store
+  externalDocumentationUrls:
+    - title: DuckDB documentation
+      url: https://duckdb.org/docs/
+      type: api_reference
+    - title: SQL reference
+      url: https://duckdb.org/docs/sql/introduction
+      type: sql_reference
 metadataSpecVersion: "1.0"

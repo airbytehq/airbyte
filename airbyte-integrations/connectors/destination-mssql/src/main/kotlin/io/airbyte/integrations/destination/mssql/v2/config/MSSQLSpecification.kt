@@ -4,8 +4,11 @@
 
 package io.airbyte.integrations.destination.mssql.v2.config
 
+import com.fasterxml.jackson.annotation.JsonGetter
+import com.fasterxml.jackson.annotation.JsonIgnore
 import com.fasterxml.jackson.annotation.JsonProperty
 import com.fasterxml.jackson.annotation.JsonPropertyDescription
+import com.fasterxml.jackson.annotation.JsonSetter
 import com.fasterxml.jackson.annotation.JsonSubTypes
 import com.fasterxml.jackson.annotation.JsonTypeInfo
 import com.kjetland.jackson.jsonSchema.annotations.JsonSchemaDescription
@@ -14,7 +17,10 @@ import com.kjetland.jackson.jsonSchema.annotations.JsonSchemaTitle
 import edu.umd.cs.findbugs.annotations.SuppressFBWarnings
 import io.airbyte.cdk.command.ConfigurationSpecification
 import io.airbyte.cdk.load.spec.DestinationSpecificationExtension
+import io.airbyte.cdk.ssh.MicronautPropertiesFriendlySshTunnelMethodConfigurationSpecification
+import io.airbyte.cdk.ssh.SshTunnelMethodConfiguration
 import io.airbyte.protocol.models.v0.DestinationSyncMode
+import io.micronaut.context.annotation.ConfigurationBuilder
 import jakarta.inject.Singleton
 
 @Singleton
@@ -78,6 +84,27 @@ class MSSQLSpecification : ConfigurationSpecification(), LoadTypeSpecification {
     @get:JsonProperty("load_type")
     @get:JsonSchemaInject(json = """{"always_show": true,"order":8}""")
     override val loadType: LoadType = InsertLoadSpecification()
+
+    @JsonIgnore
+    @ConfigurationBuilder(configurationPrefix = "tunnel_method")
+    val tunnelMethod = MicronautPropertiesFriendlySshTunnelMethodConfigurationSpecification()
+
+    @JsonIgnore var tunnelMethodJson: SshTunnelMethodConfiguration? = null
+
+    @JsonSetter("tunnel_method")
+    fun setTunnelMethodValue(value: SshTunnelMethodConfiguration?) {
+        tunnelMethodJson = value
+    }
+
+    @JsonGetter("tunnel_method")
+    @JsonSchemaTitle("SSH Tunnel Method")
+    @JsonPropertyDescription(
+        "Whether to initiate an SSH tunnel before connecting to the database," +
+            " and if so, which kind of authentication to use.",
+    )
+    @JsonSchemaInject(json = """{"order":5}""")
+    fun getTunnelMethodValue(): SshTunnelMethodConfiguration? =
+        tunnelMethodJson ?: tunnelMethod.asSshTunnelMethod()
 }
 
 @JsonTypeInfo(use = JsonTypeInfo.Id.NAME, property = "name")

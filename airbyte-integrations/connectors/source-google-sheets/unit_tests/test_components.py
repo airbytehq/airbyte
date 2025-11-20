@@ -5,22 +5,27 @@
 import io
 import json
 from typing import Dict, List, Union
+from unittest.mock import Mock, patch
 
 import dpath
 import pytest
 import requests
-from source_google_sheets import SourceGoogleSheets
-from source_google_sheets.components import DpathSchemaExtractor, DpathSchemaMatchingExtractor
-from source_google_sheets.components.extractors import RawSchemaParser
-from source_google_sheets.utils import _sanitization
+from components import (
+    DpathSchemaExtractor,
+    DpathSchemaMatchingExtractor,
+    GridDataErrorHandler,
+    RawSchemaParser,
+    _sanitization,
+)
 
 from airbyte_cdk.connector_builder.connector_builder_handler import resolve_manifest
-from airbyte_cdk.models import SyncMode
 from airbyte_cdk.sources.declarative.decoders.json_decoder import (
     IterableDecoder,
     JsonDecoder,
 )
-from unit_tests.integration.conftest import catalog_helper, oauth_credentials
+from airbyte_cdk.sources.declarative.yaml_declarative_source import YamlDeclarativeSource
+from unit_tests.conftest import _YAML_FILE_PATH
+from unit_tests.integration.conftest import oauth_credentials
 
 
 config = {"field": "record_array"}
@@ -37,9 +42,9 @@ def create_response(body: Union[Dict, bytes]):
 
 
 _CONFIG = {"spreadsheet_id": "_spread_sheet_id", "credentials": oauth_credentials, "batch_size": 200}
-_MANIFEST = resolve_manifest(
-    source=SourceGoogleSheets(catalog=catalog_helper(SyncMode.full_refresh, "a_stream"), config=_CONFIG, state={})
-).record.data["manifest"]
+_MANIFEST = resolve_manifest(source=YamlDeclarativeSource(path_to_yaml=str(_YAML_FILE_PATH), config=_CONFIG, state=[])).record.data[
+    "manifest"
+]
 _FIELD_PATH = list(
     dpath.get(
         obj=_MANIFEST,
@@ -67,7 +72,7 @@ _SCHEMA_TYPE_IDENTIFIERS = dpath.get(obj=_MANIFEST, glob=["definitions", "schema
                     {"data": [{"rowData": [{"values": [{"formattedValue": "h1"}, {"formattedValue": "h1"}, {"formattedValue": "h3"}]}]}]}
                 ]
             },
-            [{"values": [{"formattedValue": "h3"}]}],
+            [{"values": [{"formattedValue": "h1_A1"}, {"formattedValue": "h1_B1"}, {"formattedValue": "h3"}]}],
         ),
         (
             {
@@ -75,7 +80,7 @@ _SCHEMA_TYPE_IDENTIFIERS = dpath.get(obj=_MANIFEST, glob=["definitions", "schema
                     {"data": [{"rowData": [{"values": [{"formattedValue": "h1"}, {"formattedValue": "h3"}, {"formattedValue": "h3"}]}]}]}
                 ]
             },
-            [{"values": [{"formattedValue": "h1"}]}],
+            [{"values": [{"formattedValue": "h1"}, {"formattedValue": "h3_B1"}, {"formattedValue": "h3_C1"}]}],
         ),
         (
             {
@@ -114,8 +119,14 @@ def test_dpath_schema_extractor(body, expected_records: List):
             {"values": [{"formattedValue": "h1"}, {"formattedValue": "h2"}, {"formattedValue": "h3"}]},
             [(0, "h1", {"formattedValue": "h1"}), (1, "h2", {"formattedValue": "h2"}), (2, "h3", {"formattedValue": "h3"})],
         ),
-        ({"values": [{"formattedValue": "h1"}, {"formattedValue": "h1"}, {"formattedValue": "h3"}]}, [(2, "h3", {"formattedValue": "h3"})]),
-        ({"values": [{"formattedValue": "h1"}, {"formattedValue": "h3"}, {"formattedValue": "h3"}]}, [(0, "h1", {"formattedValue": "h1"})]),
+        (
+            {"values": [{"formattedValue": "h1"}, {"formattedValue": "h1"}, {"formattedValue": "h3"}]},
+            [(0, "h1_A1", {"formattedValue": "h1"}), (1, "h1_B1", {"formattedValue": "h1"}), (2, "h3", {"formattedValue": "h3"})],
+        ),
+        (
+            {"values": [{"formattedValue": "h1"}, {"formattedValue": "h3"}, {"formattedValue": "h3"}]},
+            [(0, "h1", {"formattedValue": "h1"}), (1, "h3_B1", {"formattedValue": "h3"}), (2, "h3_C1", {"formattedValue": "h3"})],
+        ),
         ({"values": [{"formattedValue": "h1"}, {"formattedValue": ""}, {"formattedValue": "h3"}]}, [(0, "h1", {"formattedValue": "h1"})]),
         ({"values": [{"formattedValue": ""}, {"formattedValue": ""}, {"formattedValue": ""}]}, []),
         (
@@ -161,64 +172,6 @@ def test_is_row_empty(values, expected_response):
 def test_row_contains_relevant_data(values, relevant_indices, expected_response):
     is_row_empty = DpathSchemaMatchingExtractor.row_contains_relevant_data(values, relevant_indices)
     assert is_row_empty == expected_response
-
-
-@pytest.mark.parametrize(
-    "raw_schema_data, expected_data, names_conversion",
-    [
-        # Basic header handling
-        (
-            {"values": [{"formattedValue": "h1"}, {"formattedValue": "h2"}, {"formattedValue": "h3"}]},
-            [(0, "h1", {"formattedValue": "h1"}), (1, "h2", {"formattedValue": "h2"}), (2, "h3", {"formattedValue": "h3"})],
-            False,
-        ),
-        # Duplicate headers
-        (
-            {"values": [{"formattedValue": "h1"}, {"formattedValue": "h1"}, {"formattedValue": "h3"}]},
-            [(2, "h3", {"formattedValue": "h3"})],
-            False,
-        ),
-        (
-            {"values": [{"formattedValue": "h1"}, {"formattedValue": "h3"}, {"formattedValue": "h3"}]},
-            [(0, "h1", {"formattedValue": "h1"})],
-            False,
-        ),
-        # Blank values and whitespace
-        (
-            {"values": [{"formattedValue": "h1"}, {"formattedValue": ""}, {"formattedValue": "h3"}]},
-            [(0, "h1", {"formattedValue": "h1"})],
-            False,
-        ),
-        (
-            {"values": [{"formattedValue": ""}, {"formattedValue": ""}, {"formattedValue": ""}]},
-            [],
-            False,
-        ),
-        (
-            {"values": [{"formattedValue": "h1"}, {"formattedValue": "   "}, {"formattedValue": "h3"}]},
-            [(0, "h1", {"formattedValue": "h1"})],
-            False,
-        ),
-    ],
-    ids=[
-        "test_headers",
-        "test_duplicate_headers_retrieved",
-        "test_duplicate_headers_retrieved_not_first_position",
-        "test_blank_values_terminate_row",
-        "test_is_row_empty_with_empty_row",
-        "test_whitespace_terminates_row",
-    ],
-)
-def test_parse_raw_schema_value(raw_schema_data, expected_data, names_conversion):
-    extractor = RawSchemaParser()
-    extractor.config = {"names_conversion": names_conversion}
-    parsed_data = extractor.parse_raw_schema_values(
-        raw_schema_data,
-        schema_pointer=_SCHEMA_TYPE_IDENTIFIERS["schema_pointer"],
-        key_pointer=_SCHEMA_TYPE_IDENTIFIERS["key_pointer"],
-        names_conversion=names_conversion,
-    )
-    assert parsed_data == expected_data
 
 
 @pytest.mark.parametrize(
@@ -323,3 +276,83 @@ def test_multiple_flags_with_special_characters():
         )
         == "50th_percentile"
     )
+
+
+def test_dpath_schema_matching_extractor_without_properties_to_match():
+    """
+    Test that DpathSchemaMatchingExtractor can be instantiated without the
+    "properties_to_match" parameter in cases where it is not provided.
+    """
+    parameters_without_properties = {
+        "values_to_match_key": "values",
+        "schema_type_identifier": {"key_pointer": ["formattedValue"], "schema_pointer": ["values"]},
+    }
+
+    # This should not raise an exception
+    extractor = DpathSchemaMatchingExtractor(
+        field_path=_FIELD_PATH, config=config, decoder=decoder_json, parameters=parameters_without_properties
+    )
+
+    # Verify that the extractor was created successfully
+    assert extractor is not None
+    assert extractor._values_to_match_key == "values"
+    assert extractor._indexed_properties_to_match == {}
+
+
+@pytest.mark.parametrize(
+    "alt_status_code, expected_action, expected_message",
+    [
+        (200, "IGNORE", "Skipping sheet 'TestSheet' due to corrupt grid data"),
+        (500, "RETRY", "Internal server error encountered. Retrying with backoff."),
+    ],
+    ids=["alt_200_ignore", "alt_500_retry"],
+)
+@patch("components.requests.get")
+@patch("components.logger")
+def test_grid_data_error_handler_500_filter(mock_logger, mock_requests_get, alt_status_code, expected_action, expected_message):
+    """Test Filter 3: grid_data_500 handling in GridDataErrorHandler.
+
+    When a 500 error occurs with includeGridData=true, the handler immediately tests
+    with includeGridData=false to determine if it's corrupt grid data or a genuine server error.
+    """
+    # Create handler
+    handler = GridDataErrorHandler(config={}, parameters={"max_retries": 5})
+
+    # Create mock response for 500 error with grid data
+    mock_response = create_response({})
+    mock_response.status_code = 500
+    mock_response.request = Mock()
+    mock_response.request.url = "https://sheets.googleapis.com/v4/spreadsheets/test?includeGridData=true&ranges=TestSheet!1:1"
+    mock_response.request.headers = {"Authorization": "Bearer test"}
+    mock_response.json = Mock(return_value={"error": "Internal Server Error"})
+
+    # Mock the alt response for the test without grid data
+    mock_alt_response = Mock()
+    mock_alt_response.status_code = alt_status_code
+    mock_requests_get.return_value = mock_alt_response
+
+    # Call interpret_response - it should immediately test without grid data
+    resolution = handler.interpret_response(mock_response)
+
+    # Verify the alt request was made immediately
+    mock_requests_get.assert_called_once_with(
+        "https://sheets.googleapis.com/v4/spreadsheets/test?includeGridData=false&ranges=TestSheet!1:1",
+        headers={"Authorization": "Bearer test"},
+        timeout=30,
+    )
+
+    # Check the result based on alt_status_code
+    assert resolution.response_action.name == expected_action
+    assert expected_message in resolution.error_message
+
+    # Verify appropriate logging
+    if alt_status_code == 200:
+        # Corrupt grid data case - should log warning
+        mock_logger.warning.assert_called_once()
+        assert "corrupt or incompatible grid data" in mock_logger.warning.call_args[0][0]
+    else:
+        # Genuine server error case - should log info about retrying
+        mock_logger.info.assert_called()
+        # Check that one of the info calls mentions the failure
+        info_calls = [call[0][0] for call in mock_logger.info.call_args_list]
+        assert any("also failed" in msg for msg in info_calls)

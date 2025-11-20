@@ -6,7 +6,7 @@ data:
   dockerRepository: airbyte/source-tplcentral
   githubIssueLabel: source-tplcentral
   icon: tplcentral.svg
-  license: MIT
+  license: ELv2
   name: TPLcentral
   remoteRegistries:
     pypi:
@@ -30,4 +30,8 @@ data:
     - suite: unitTests
   connectorBuildOptions:
     baseImage: docker.io/airbyte/python-connector-base:4.0.0@sha256:d9894b6895923b379f3006fa251147806919c62b7d9021b5cd125bb67d7bbe22
+  externalDocumentationUrls:
+    - title: TPL Central API
+      url: https://api.3plcentral.com/
+      type: api_reference
 metadataSpecVersion: "1.0"

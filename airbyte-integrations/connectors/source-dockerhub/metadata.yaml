@@ -16,7 +16,7 @@ data:
   documentationUrl: https://docs.airbyte.com/integrations/sources/dockerhub
   githubIssueLabel: source-dockerhub
   icon: dockerhub.svg
-  license: MIT
+  license: ELv2
   name: Dockerhub
   registryOverrides:
     cloud:
@@ -45,4 +45,17 @@ data:
           secretStore:
             type: GSM
             alias: airbyte-connector-testing-secret-store
+  externalDocumentationUrls:
+    - title: Docker Hub API reference
+      url: https://docs.docker.com/docker-hub/api/latest/
+      type: api_reference
+    - title: Docker Hub authentication
+      url: https://docs.docker.com/docker-hub/api/latest/#section/Authentication
+      type: authentication_guide
+    - title: Docker Hub rate limits
+      url: https://docs.docker.com/docker-hub/download-rate-limit/
+      type: rate_limits
+    - title: Docker Status
+      url: https://www.dockerstatus.com/
+      type: status_page
 metadataSpecVersion: "1.0"

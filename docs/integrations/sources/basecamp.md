@@ -30,6 +30,18 @@ To obtain a refresh token, you'd need to register an [oauth application](https:/
 
 | Version | Date | Pull Request | Subject |
 |---------|------|--------------|---------|
+| 0.0.26 | 2025-11-18 | [69521](https://github.com/airbytehq/airbyte/pull/69521) | Update dependencies |
+| 0.0.25 | 2025-10-29 | [68904](https://github.com/airbytehq/airbyte/pull/68904) | Update dependencies |
+| 0.0.24 | 2025-10-21 | [68382](https://github.com/airbytehq/airbyte/pull/68382) | Update dependencies |
+| 0.0.23 | 2025-10-14 | [67965](https://github.com/airbytehq/airbyte/pull/67965) | Update dependencies |
+| 0.0.22 | 2025-10-07 | [67162](https://github.com/airbytehq/airbyte/pull/67162) | Update dependencies |
+| 0.0.21 | 2025-09-30 | [66275](https://github.com/airbytehq/airbyte/pull/66275) | Update dependencies |
+| 0.0.20 | 2025-09-09 | [65643](https://github.com/airbytehq/airbyte/pull/65643) | Update dependencies |
+| 0.0.19 | 2025-08-02 | [64408](https://github.com/airbytehq/airbyte/pull/64408) | Update dependencies |
+| 0.0.18 | 2025-07-26 | [63806](https://github.com/airbytehq/airbyte/pull/63806) | Update dependencies |
+| 0.0.17 | 2025-07-12 | [63042](https://github.com/airbytehq/airbyte/pull/63042) | Update dependencies |
+| 0.0.16 | 2025-06-28 | [62136](https://github.com/airbytehq/airbyte/pull/62136) | Update dependencies |
+| 0.0.15 | 2025-06-15 | [61088](https://github.com/airbytehq/airbyte/pull/61088) | Update dependencies |
 | 0.0.14 | 2025-05-24 | [60678](https://github.com/airbytehq/airbyte/pull/60678) | Update dependencies |
 | 0.0.13 | 2025-05-10 | [59871](https://github.com/airbytehq/airbyte/pull/59871) | Update dependencies |
 | 0.0.12 | 2025-05-03 | [59362](https://github.com/airbytehq/airbyte/pull/59362) | Update dependencies |

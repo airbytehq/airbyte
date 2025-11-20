@@ -19,7 +19,7 @@ data:
   dockerRepository: airbyte/destination-astra
   githubIssueLabel: destination-astra
   icon: astra.svg
-  license: MIT
+  license: ELv2
   name: Astra DB
   releaseDate: 2024-01-10
   releaseStage: alpha
@@ -44,4 +44,14 @@ data:
           secretStore:
             type: GSM
             alias: airbyte-connector-testing-secret-store
+  externalDocumentationUrls:
+    - title: DataStax Astra documentation
+      url: https://docs.datastax.com/en/astra-serverless/docs/
+      type: api_reference
+    - title: Authentication
+      url: https://docs.datastax.com/en/astra-serverless/docs/manage/org/manage-tokens.html
+      type: authentication_guide
+    - title: CQL reference
+      url: https://docs.datastax.com/en/cql-oss/3.x/cql/cql_reference/cqlReferenceTOC.html
+      type: sql_reference
 metadataSpecVersion: "1.0"

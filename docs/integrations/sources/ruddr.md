@@ -31,6 +31,20 @@ Ruddr connector enables seamless data synchronization from Ruddr to various data
 
 | Version          | Date              | Pull Request | Subject        |
 |------------------|-------------------|--------------|----------------|
+| 0.0.34 | 2025-11-18 | [69650](https://github.com/airbytehq/airbyte/pull/69650) | Update dependencies |
+| 0.0.33 | 2025-10-29 | [68886](https://github.com/airbytehq/airbyte/pull/68886) | Update dependencies |
+| 0.0.32 | 2025-10-21 | [68431](https://github.com/airbytehq/airbyte/pull/68431) | Update dependencies |
+| 0.0.31 | 2025-10-14 | [67943](https://github.com/airbytehq/airbyte/pull/67943) | Update dependencies |
+| 0.0.30 | 2025-10-07 | [67226](https://github.com/airbytehq/airbyte/pull/67226) | Update dependencies |
+| 0.0.29 | 2025-09-30 | [66861](https://github.com/airbytehq/airbyte/pull/66861) | Update dependencies |
+| 0.0.28 | 2025-09-23 | [66637](https://github.com/airbytehq/airbyte/pull/66637) | Update dependencies |
+| 0.0.27 | 2025-09-09 | [65696](https://github.com/airbytehq/airbyte/pull/65696) | Update dependencies |
+| 0.0.26 | 2025-08-24 | [65472](https://github.com/airbytehq/airbyte/pull/65472) | Update dependencies |
+| 0.0.25 | 2025-08-16 | [65024](https://github.com/airbytehq/airbyte/pull/65024) | Update dependencies |
+| 0.0.24 | 2025-08-02 | [64473](https://github.com/airbytehq/airbyte/pull/64473) | Update dependencies |
+| 0.0.23 | 2025-07-26 | [63947](https://github.com/airbytehq/airbyte/pull/63947) | Update dependencies |
+| 0.0.22 | 2025-07-05 | [62688](https://github.com/airbytehq/airbyte/pull/62688) | Update dependencies |
+| 0.0.21 | 2025-06-28 | [60454](https://github.com/airbytehq/airbyte/pull/60454) | Update dependencies |
 | 0.0.20 | 2025-05-10 | [60089](https://github.com/airbytehq/airbyte/pull/60089) | Update dependencies |
 | 0.0.19 | 2025-05-04 | [59575](https://github.com/airbytehq/airbyte/pull/59575) | Update dependencies |
 | 0.0.18 | 2025-04-27 | [58996](https://github.com/airbytehq/airbyte/pull/58996) | Update dependencies |

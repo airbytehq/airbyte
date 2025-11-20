@@ -14,6 +14,8 @@ import io.airbyte.cdk.load.message.WithStream
 import io.airbyte.cdk.load.pipeline.PipelineFlushStrategy
 import io.airbyte.cdk.load.pipline.object_storage.ObjectKey
 import io.airbyte.cdk.load.pipline.object_storage.ObjectLoaderCompletedUploadPartitioner
+import io.airbyte.cdk.load.pipline.object_storage.ObjectLoaderOneShotUploader
+import io.airbyte.cdk.load.pipline.object_storage.ObjectLoaderOneShotUploaderStep
 import io.airbyte.cdk.load.pipline.object_storage.ObjectLoaderPartFormatter
 import io.airbyte.cdk.load.pipline.object_storage.ObjectLoaderPartFormatterStep
 import io.airbyte.cdk.load.pipline.object_storage.ObjectLoaderPartLoader
@@ -24,6 +26,7 @@ import io.airbyte.cdk.load.task.internal.LoadPipelineStepTaskFactory
 import io.airbyte.cdk.load.write.object_storage.FilePartAccumulatorFactory
 import io.airbyte.cdk.load.write.object_storage.ObjectLoader
 import io.micronaut.context.annotation.Factory
+import io.micronaut.context.annotation.Requires
 import jakarta.inject.Named
 import jakarta.inject.Singleton
 import java.io.OutputStream
@@ -78,6 +81,7 @@ class ObjectLoaderStepBeanFactory {
 
     @Named("filePartLoaderStep")
     @Singleton
+    @Requires(condition = IsFileTransferCondition::class)
     fun <T : RemoteObject<*>> filePartLoader(
         loader: ObjectLoader,
         partLoader: ObjectLoaderPartLoader<T>,
@@ -110,7 +114,10 @@ class ObjectLoaderStepBeanFactory {
         completedUploadQueue:
             PartitionedQueue<PipelineEvent<K, ObjectLoaderUploadCompleter.UploadResult<T>>>? =
             null,
-        completedUploadPartitioner: ObjectLoaderCompletedUploadPartitioner<K, T>? = null,
+        completedUploadPartitioner:
+            ObjectLoaderCompletedUploadPartitioner<
+                ObjectKey, ObjectLoaderPartLoader.PartResult<T>, K, T>? =
+            null,
         taskFactory: LoadPipelineStepTaskFactory,
     ) =
         ObjectLoaderUploadCompleterStep<K, T>(
@@ -125,6 +132,7 @@ class ObjectLoaderStepBeanFactory {
 
     @Named("fileUploadCompleterStep")
     @Singleton
+    @Requires(condition = IsFileTransferCondition::class)
     fun <K : WithStream, T : RemoteObject<*>> fileUploadCompleter(
         objectLoader: ObjectLoader,
         uploadCompleter: ObjectLoaderUploadCompleter<T>,
@@ -136,7 +144,10 @@ class ObjectLoaderStepBeanFactory {
             PartitionedQueue<PipelineEvent<K, ObjectLoaderUploadCompleter.UploadResult<T>>>? =
             null,
         @Named("fileCompletedOutputPartitioner")
-        completedUploadPartitioner: ObjectLoaderCompletedUploadPartitioner<K, T>? = null,
+        completedUploadPartitioner:
+            ObjectLoaderCompletedUploadPartitioner<
+                ObjectKey, ObjectLoaderPartLoader.PartResult<T>, K, T>? =
+            null,
         taskFactory: LoadPipelineStepTaskFactory,
     ) =
         ObjectLoaderUploadCompleterStep(
@@ -151,6 +162,7 @@ class ObjectLoaderStepBeanFactory {
 
     @Named("fileRecordPartFormatterStep")
     @Singleton
+    @Requires(condition = IsFileTransferCondition::class)
     fun <T : OutputStream> fileRecordPartFormatterStep(
         @Named("numInputPartitions") numInputPartitions: Int,
         partFormatter: ObjectLoaderPartFormatter<T>,
@@ -181,5 +193,36 @@ class ObjectLoaderStepBeanFactory {
         loadStrategy: ObjectLoader
     ): FilePartAccumulatorFactory {
         return FilePartAccumulatorFactory(pathFactory, outputQueue, loadStrategy)
+    }
+
+    @Named("oneShotObjectLoaderStep")
+    @Singleton
+    fun <O : OutputStream, K : WithStream, T : RemoteObject<*>> oneShotObjectLoaderStep(
+        objectLoaderOneShotUploader: ObjectLoaderOneShotUploader<O, T>,
+        @Named("numInputPartitions") numInputPartitions: Int,
+        @Named("objectLoaderCompletedUploadQueue")
+        completedUploadQueue:
+            PartitionedQueue<PipelineEvent<K, ObjectLoaderUploadCompleter.UploadResult<T>>>? =
+            null,
+        completedUploadPartitioner:
+            ObjectLoaderCompletedUploadPartitioner<StreamKey, DestinationRecordRaw, K, T>? =
+            null,
+        taskFactory: LoadPipelineStepTaskFactory,
+    ) =
+        ObjectLoaderOneShotUploaderStep(
+            objectLoaderOneShotUploader,
+            completedUploadQueue,
+            completedUploadPartitioner,
+            taskFactory,
+            numInputPartitions,
+        )
+
+    @Named("uploadParallelismForSocket")
+    @Singleton
+    fun sharedUploadPermits(
+        @Named("dataChannelSocketPaths") dataChannelSocketPaths: List<String>,
+        loader: ObjectLoader
+    ): Int {
+        return loader.socketUploadParallelism(dataChannelSocketPaths.size)
     }
 }

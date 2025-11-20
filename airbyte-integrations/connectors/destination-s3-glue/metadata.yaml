@@ -6,7 +6,7 @@ data:
   dockerRepository: airbyte/destination-s3-glue
   githubIssueLabel: destination-s3-glue
   icon: s3-glue.svg
-  license: MIT
+  license: ELv2
   name: S3 Glue
   registryOverrides:
     cloud:
@@ -29,4 +29,14 @@ data:
           secretStore:
             type: GSM
             alias: airbyte-connector-testing-secret-store
+  externalDocumentationUrls:
+    - title: AWS Glue documentation
+      url: https://docs.aws.amazon.com/glue/
+      type: api_reference
+    - title: IAM authentication
+      url: https://docs.aws.amazon.com/IAM/latest/UserGuide/id_credentials_access-keys.html
+      type: authentication_guide
+    - title: IAM policies
+      url: https://docs.aws.amazon.com/glue/latest/dg/security-iam.html
+      type: permissions_scopes
 metadataSpecVersion: "1.0"

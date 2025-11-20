@@ -13,15 +13,15 @@ data:
       enabled: false
       packageName: airbyte-source-katana
   connectorBuildOptions:
-    baseImage: docker.io/airbyte/source-declarative-manifest:6.51.0@sha256:890b109f243b8b9406f23ea7522de41025f7b3e87f6fc9710bc1e521213a276f
+    baseImage: docker.io/airbyte/source-declarative-manifest:7.5.0@sha256:92e539d5003b33c3624eae7715aee6e39b7b2f1f0eeb6003d37e649a06847ae8
   connectorSubtype: api
   connectorType: source
   definitionId: 7408d324-0442-488c-95e3-9d3ec1d3cf59
-  dockerImageTag: 0.0.24
+  dockerImageTag: 0.0.41
   dockerRepository: airbyte/source-katana
   githubIssueLabel: source-katana
   icon: icon.svg
-  license: MIT
+  license: ELv2
   name: Katana
   releaseDate: 2024-10-12
   releaseStage: alpha
@@ -33,3 +33,7 @@ data:
   ab_internal:
     ql: 100
     sl: 100
+  externalDocumentationUrls:
+    - title: Katana API documentation
+      url: https://docs.katanamrp.com/api/
+      type: api_reference

@@ -19,12 +19,12 @@ data:
             type: GSM
   connectorType: source
   definitionId: aa8ba6fd-4875-d94e-fc8d-4e1e09aa2503
-  dockerImageTag: 0.2.5
+  dockerImageTag: 0.2.6
   dockerRepository: airbyte/source-teradata
   documentationUrl: https://docs.airbyte.com/integrations/sources/teradata
   githubIssueLabel: source-teradata
   icon: teradata.svg
-  license: MIT
+  license: ELv2
   name: Teradata
   registryOverrides:
     cloud:
@@ -35,4 +35,8 @@ data:
   supportLevel: community
   tags:
     - language:java
+  externalDocumentationUrls:
+    - title: Teradata documentation
+      url: https://docs.teradata.com/
+      type: api_reference
 metadataSpecVersion: "1.0"

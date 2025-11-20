@@ -3,16 +3,16 @@ data:
     ql: 100
     sl: 100
   connectorBuildOptions:
-    baseImage: docker.io/airbyte/source-declarative-manifest:6.51.0@sha256:890b109f243b8b9406f23ea7522de41025f7b3e87f6fc9710bc1e521213a276f
+    baseImage: docker.io/airbyte/source-declarative-manifest:7.5.0@sha256:92e539d5003b33c3624eae7715aee6e39b7b2f1f0eeb6003d37e649a06847ae8
   connectorSubtype: api
   connectorType: source
   definitionId: f23b7b7c-d705-49a3-9042-09add3b104a5
-  dockerImageTag: 0.2.24
+  dockerImageTag: 0.2.41
   dockerRepository: airbyte/source-ip2whois
   documentationUrl: https://docs.airbyte.com/integrations/sources/ip2whois
   githubIssueLabel: source-ip2whois
   icon: ip2whois.svg
-  license: MIT
+  license: ELv2
   name: IP2Whois
   registryOverrides:
     cloud:
@@ -40,4 +40,8 @@ data:
           secretStore:
             type: GSM
             alias: airbyte-connector-testing-secret-store
+  externalDocumentationUrls:
+    - title: IP2WHOIS API documentation
+      url: https://www.ip2whois.com/developers-api
+      type: api_reference
 metadataSpecVersion: "1.0"

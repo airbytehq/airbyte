@@ -13,15 +13,15 @@ data:
       enabled: false
       packageName: airbyte-source-less-annoying-crm
   connectorBuildOptions:
-    baseImage: docker.io/airbyte/source-declarative-manifest:6.48.10@sha256:09947fb38d07e515f9901a12f22cc44f1512f6148703341de80403c0e0c1b8c3
+    baseImage: docker.io/airbyte/source-declarative-manifest:7.5.0@sha256:92e539d5003b33c3624eae7715aee6e39b7b2f1f0eeb6003d37e649a06847ae8
   connectorSubtype: api
   connectorType: source
   definitionId: 96f224c5-8e85-4427-b299-dbd5c52de47c
-  dockerImageTag: 0.0.21
+  dockerImageTag: 0.0.39
   dockerRepository: airbyte/source-less-annoying-crm
   githubIssueLabel: source-less-annoying-crm
   icon: icon.svg
-  license: MIT
+  license: ELv2
   name: Less Annoying CRM
   releaseDate: 2024-10-31
   releaseStage: alpha
@@ -33,3 +33,7 @@ data:
   ab_internal:
     ql: 100
     sl: 100
+  externalDocumentationUrls:
+    - title: Less Annoying CRM API
+      url: https://www.lessannoyingcrm.com/help/topic/API
+      type: api_reference

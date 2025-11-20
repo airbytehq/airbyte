@@ -8,7 +8,7 @@ data:
   connectorBuildOptions:
     baseImage: docker.io/airbyte/python-connector-base:4.0.0@sha256:d9894b6895923b379f3006fa251147806919c62b7d9021b5cd125bb67d7bbe22
   icon: firebolt.svg
-  license: MIT
+  license: ELv2
   name: Firebolt
   registryOverrides:
     cloud:
@@ -34,4 +34,14 @@ data:
           secretStore:
             type: GSM
             alias: airbyte-connector-testing-secret-store
+  externalDocumentationUrls:
+    - title: Firebolt documentation
+      url: https://docs.firebolt.io/
+      type: api_reference
+    - title: Authentication
+      url: https://docs.firebolt.io/godocs/Overview/managing-your-organization/service-accounts.html
+      type: authentication_guide
+    - title: SQL reference
+      url: https://docs.firebolt.io/sql_reference/
+      type: sql_reference
 metadataSpecVersion: "1.0"

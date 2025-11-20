@@ -5,11 +5,11 @@
 package io.airbyte.cdk.load.orchestration.db.legacy_typing_deduping
 
 import io.airbyte.cdk.load.command.DestinationStream
-import io.airbyte.cdk.load.orchestration.db.ColumnNameMapping
 import io.airbyte.cdk.load.orchestration.db.TableNames
-import io.airbyte.cdk.load.orchestration.db.TableNames.Companion.NO_SUFFIX
-import io.airbyte.cdk.load.orchestration.db.TableNames.Companion.TMP_TABLE_SUFFIX
 import io.airbyte.cdk.load.state.StreamProcessingFailed
+import io.airbyte.cdk.load.table.ColumnNameMapping
+import io.airbyte.cdk.load.table.TableSuffixes.NO_SUFFIX
+import io.airbyte.cdk.load.table.TableSuffixes.TMP_TABLE_SUFFIX
 import io.airbyte.cdk.load.write.StreamLoader
 import io.airbyte.cdk.load.write.StreamStateStore
 import io.github.oshai.kotlinlogging.KotlinLogging
@@ -64,7 +64,7 @@ class TypingDedupingStreamLoader(
         }
 
         streamStateStore.put(
-            stream.descriptor,
+            stream.mappedDescriptor,
             TypingDedupingExecutionConfig(rawTableSuffix),
         )
     }
@@ -88,7 +88,7 @@ class TypingDedupingStreamLoader(
                 )
             if (tempStageGeneration == null || tempStageGeneration == stream.generationId) {
                 logger.info {
-                    "${stream.descriptor.toPrettyString()}: truncate sync, and existing temp raw table belongs to generation $tempStageGeneration (== current generation ${stream.generationId}). Retaining it."
+                    "${stream.mappedDescriptor.toPrettyString()}: truncate sync, and existing temp raw table belongs to generation $tempStageGeneration (== current generation ${stream.generationId}). Retaining it."
                 }
                 // The temp table is from the correct generation. Set up any other resources
                 // (staging file, etc.), but leave the table untouched.
@@ -99,7 +99,7 @@ class TypingDedupingStreamLoader(
                 return Pair(initialStatus.tempRawTableStatus.reify(), TMP_TABLE_SUFFIX)
             } else {
                 logger.info {
-                    "${stream.descriptor.toPrettyString()}: truncate sync, and existing temp raw table belongs to generation $tempStageGeneration (!= current generation ${stream.generationId}). Truncating it."
+                    "${stream.mappedDescriptor.toPrettyString()}: truncate sync, and existing temp raw table belongs to generation $tempStageGeneration (!= current generation ${stream.generationId}). Truncating it."
                 }
                 // The temp stage is from the wrong generation. Nuke it.
                 rawTableOperations.prepareRawTable(
@@ -122,7 +122,7 @@ class TypingDedupingStreamLoader(
                 rawTableOperations.getRawTableGeneration(tableNames.rawTableName!!, NO_SUFFIX)
             if (realStageGeneration == null || realStageGeneration == stream.generationId) {
                 logger.info {
-                    "${stream.descriptor.toPrettyString()}: truncate sync, no existing temp raw table, and existing real raw table belongs to generation $realStageGeneration (== current generation ${stream.generationId}). Retaining it."
+                    "${stream.mappedDescriptor.toPrettyString()}: truncate sync, no existing temp raw table, and existing real raw table belongs to generation $realStageGeneration (== current generation ${stream.generationId}). Retaining it."
                 }
                 // The real raw table is from the correct generation. Set up any other resources
                 // (staging file, etc.), but leave the table untouched.
@@ -130,7 +130,7 @@ class TypingDedupingStreamLoader(
                 return Pair(initialStatus.rawTableStatus.reify(), NO_SUFFIX)
             } else {
                 logger.info {
-                    "${stream.descriptor.toPrettyString()}: truncate sync, existing real raw table belongs to generation $realStageGeneration (!= current generation ${stream.generationId}), and no preexisting temp raw table. Creating a temp raw table."
+                    "${stream.mappedDescriptor.toPrettyString()}: truncate sync, existing real raw table belongs to generation $realStageGeneration (!= current generation ${stream.generationId}), and no preexisting temp raw table. Creating a temp raw table."
                 }
                 // We're initiating a new truncate refresh. Create a new temp stage.
                 rawTableOperations.prepareRawTable(
@@ -145,7 +145,7 @@ class TypingDedupingStreamLoader(
             }
         } else {
             logger.info {
-                "${stream.descriptor.toPrettyString()}: truncate sync, and no preexisting temp or  raw table. Creating a temp raw table."
+                "${stream.mappedDescriptor.toPrettyString()}: truncate sync, and no preexisting temp or  raw table. Creating a temp raw table."
             }
             // We're initiating a new truncate refresh. Create a new temp stage.
             rawTableOperations.prepareRawTable(
@@ -162,12 +162,12 @@ class TypingDedupingStreamLoader(
 
     private fun prepareStageForNormalSync(): RawTableInitialStatus {
         logger.info {
-            "${stream.descriptor.toPrettyString()}: non-truncate sync. Creating raw table if not exists."
+            "${stream.mappedDescriptor.toPrettyString()}: non-truncate sync. Creating raw table if not exists."
         }
         rawTableOperations.prepareRawTable(tableNames.rawTableName!!, NO_SUFFIX)
         if (initialStatus.tempRawTableStatus != null) {
             logger.info {
-                "${stream.descriptor.toPrettyString()}: non-truncate sync, but temp raw table exists. Transferring it to real raw table."
+                "${stream.mappedDescriptor.toPrettyString()}: non-truncate sync, but temp raw table exists. Transferring it to real raw table."
             }
             // There was a previous truncate refresh attempt, which failed, and left some
             // records behind.
@@ -203,13 +203,13 @@ class TypingDedupingStreamLoader(
                     maxProcessedTimestamp = maxProcessedTimestamp,
                 )
             logger.info {
-                "${stream.descriptor.toPrettyString()}: After record transfer, initial raw table status is $updatedStatus."
+                "${stream.mappedDescriptor.toPrettyString()}: After record transfer, initial raw table status is $updatedStatus."
             }
             return updatedStatus
         } else {
             val initialRawTableStatus = initialStatus.rawTableStatus.reify()
             logger.info {
-                "${stream.descriptor.toPrettyString()}: non-truncate sync and no temp raw table. Initial raw table status is $initialRawTableStatus."
+                "${stream.mappedDescriptor.toPrettyString()}: non-truncate sync and no temp raw table. Initial raw table status is $initialRawTableStatus."
             }
             return initialRawTableStatus
         }
@@ -219,7 +219,7 @@ class TypingDedupingStreamLoader(
         // No special handling if final table doesn't exist, just create and return
         if (initialStatus.finalTableStatus == null) {
             logger.info {
-                "Final table does not exist for stream ${stream.descriptor.toPrettyString()}, creating ${tableNames.finalTableName!!.toPrettyString()}."
+                "Final table does not exist for stream ${stream.mappedDescriptor.toPrettyString()}, creating ${tableNames.finalTableName!!.toPrettyString()}."
             }
             finalTableOperations.createFinalTable(
                 stream,
@@ -231,7 +231,7 @@ class TypingDedupingStreamLoader(
             return NO_SUFFIX
         }
 
-        logger.info { "Final Table exists for stream ${stream.descriptor.toPrettyString()}" }
+        logger.info { "Final Table exists for stream ${stream.mappedDescriptor.toPrettyString()}" }
         // The table already exists. Decide whether we're writing to it directly, or
         // using a tmp table.
         if (isTruncateSync) {
@@ -276,7 +276,9 @@ class TypingDedupingStreamLoader(
                 // Make sure it has the right schema.
                 // Also, if a raw table migration wants us to do a soft reset, do that
                 // here.
-                logger.info { "Executing soft-reset on final table of stream ${stream.descriptor}" }
+                logger.info {
+                    "Executing soft-reset on final table of stream ${stream.mappedDescriptor}"
+                }
                 finalTableOperations.softResetFinalTable(stream, tableNames, columnNameMapping)
             }
             return NO_SUFFIX
@@ -297,7 +299,7 @@ class TypingDedupingStreamLoader(
                 replace = true
             )
             logger.info {
-                "Using temp final table for table ${stream.descriptor.toPrettyString()}, this will be overwritten at end of sync"
+                "Using temp final table for table ${stream.mappedDescriptor.toPrettyString()}, this will be overwritten at end of sync"
             }
             // We want to overwrite an existing table. Write into a tmp table.
             // We'll overwrite the table at the end of the sync.
@@ -305,7 +307,7 @@ class TypingDedupingStreamLoader(
         }
 
         logger.info {
-            "Final Table for stream ${stream.descriptor.toPrettyString()} is empty and matches the expected v2 format, writing to table directly"
+            "Final Table for stream ${stream.mappedDescriptor.toPrettyString()} is empty and matches the expected v2 format, writing to table directly"
         }
         return NO_SUFFIX
     }
@@ -320,12 +322,12 @@ class TypingDedupingStreamLoader(
         // but annoying and confusing.
         if (isTruncateSync && streamSuccessful && rawTableSuffix.isNotEmpty()) {
             logger.info {
-                "Overwriting raw table for ${stream.descriptor.toPrettyString()} because this is a truncate sync, we received a stream success message, and are using a temporary raw table."
+                "Overwriting raw table for ${stream.mappedDescriptor.toPrettyString()} because this is a truncate sync, we received a stream success message, and are using a temporary raw table."
             }
             rawTableOperations.overwriteRawTable(tableNames.rawTableName!!, rawTableSuffix)
         } else {
             logger.info {
-                "Not overwriting raw table for ${stream.descriptor.toPrettyString()}. Truncate sync: $isTruncateSync; stream success: $streamSuccessful; raw table suffix: \"$rawTableSuffix\""
+                "Not overwriting raw table for ${stream.mappedDescriptor.toPrettyString()}. Truncate sync: $isTruncateSync; stream success: $streamSuccessful; raw table suffix: \"$rawTableSuffix\""
             }
         }
 
@@ -341,7 +343,7 @@ class TypingDedupingStreamLoader(
         // We know this is a normal sync, so initialRawTableStatus is nonnull.
         if (!isTruncateSync && !hadNonzeroRecords && !initialRawTableStatus.hasUnprocessedRecords) {
             logger.info {
-                "Skipping typing and deduping for stream ${stream.descriptor.toPrettyString()} because it had no records during this sync and no unprocessed records from a previous sync."
+                "Skipping typing and deduping for stream ${stream.mappedDescriptor.toPrettyString()} because it had no records during this sync and no unprocessed records from a previous sync."
             }
         } else if (
             isTruncateSync &&
@@ -353,7 +355,7 @@ class TypingDedupingStreamLoader(
             // We only run T+D if the current sync had some records, or a previous attempt wrote
             // some records to the temp raw table.
             logger.info {
-                "Skipping typing and deduping for stream ${stream.descriptor.toPrettyString()} running as truncate sync. Stream success: $streamSuccessful; had nonzero records: $hadNonzeroRecords; temp raw table had records: ${initialRawTableStatus.hasUnprocessedRecords}"
+                "Skipping typing and deduping for stream ${stream.mappedDescriptor.toPrettyString()} running as truncate sync. Stream success: $streamSuccessful; had nonzero records: $hadNonzeroRecords; temp raw table had records: ${initialRawTableStatus.hasUnprocessedRecords}"
             }
         } else {
             // When targeting the temp final table, we want to read all the raw records
@@ -379,7 +381,7 @@ class TypingDedupingStreamLoader(
         // empty), in which case we want to overwrite the final table with an empty table.
         if (isTruncateSync && streamSuccessful && finalTmpTableSuffix.isNotBlank()) {
             logger.info {
-                "Overwriting final table for ${stream.descriptor.toPrettyString()} because this is a truncate sync, we received a stream success message, and we are using a temp final table.."
+                "Overwriting final table for ${stream.mappedDescriptor.toPrettyString()} because this is a truncate sync, we received a stream success message, and we are using a temp final table.."
             }
             finalTableOperations.overwriteFinalTable(
                 stream,
@@ -388,7 +390,7 @@ class TypingDedupingStreamLoader(
             )
         } else {
             logger.info {
-                "Not overwriting final table for ${stream.descriptor.toPrettyString()}. Truncate sync: $isTruncateSync; stream success: $streamSuccessful; final table suffix not blank: ${finalTmpTableSuffix.isNotBlank()}"
+                "Not overwriting final table for ${stream.mappedDescriptor.toPrettyString()}. Truncate sync: $isTruncateSync; stream success: $streamSuccessful; final table suffix not blank: ${finalTmpTableSuffix.isNotBlank()}"
             }
         }
     }

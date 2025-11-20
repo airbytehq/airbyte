@@ -7,9 +7,12 @@ package io.airbyte.cdk.load.command
 import io.airbyte.cdk.load.data.AirbyteType
 import io.airbyte.cdk.load.data.AirbyteValueProxy
 import io.airbyte.cdk.load.data.ObjectType
+import io.airbyte.cdk.load.data.collectUnknownPaths
 import io.airbyte.cdk.load.data.json.AirbyteTypeToJsonSchema
 import io.airbyte.cdk.load.data.json.JsonSchemaToAirbyteType
 import io.airbyte.cdk.load.message.DestinationRecord
+import io.airbyte.cdk.load.message.Meta
+import io.airbyte.protocol.models.v0.AirbyteRecordMessageMetaChange
 import io.airbyte.protocol.models.v0.AirbyteStream
 import io.airbyte.protocol.models.v0.ConfiguredAirbyteStream
 import io.airbyte.protocol.models.v0.DestinationSyncMode
@@ -63,7 +66,10 @@ data class DestinationStream(
     val matchingKey: List<String>? = null,
     private val namespaceMapper: NamespaceMapper
 ) {
-    val descriptor = namespaceMapper.map(namespace = unmappedNamespace, name = unmappedName)
+    val unmappedDescriptor = Descriptor(namespace = unmappedNamespace, name = unmappedName)
+    val mappedDescriptor = namespaceMapper.map(namespace = unmappedNamespace, name = unmappedName)
+
+    val unknownColumnChanges by lazy { schema.computeUnknownColumnChanges() }
 
     data class Descriptor(val namespace: String?, val name: String) {
         fun asProtocolObject(): StreamDescriptor =
@@ -133,6 +139,8 @@ data class DestinationStream(
             .withMinimumGenerationId(minimumGenerationId)
             .withSyncId(syncId)
             .withIncludeFiles(includeFiles)
+            .withDestinationObjectName(destinationObjectName)
+            .withPrimaryKey(matchingKey?.map { listOf(it) }.orEmpty())
             .apply {
                 when (importType) {
                     is Append -> {
@@ -146,8 +154,8 @@ data class DestinationStream(
                     Overwrite -> {
                         destinationSyncMode = DestinationSyncMode.OVERWRITE
                     }
-                    SoftDelete -> DestinationSyncMode.SOFT_DELETE
-                    Update -> DestinationSyncMode.UPDATE
+                    SoftDelete -> destinationSyncMode = DestinationSyncMode.SOFT_DELETE
+                    Update -> destinationSyncMode = DestinationSyncMode.UPDATE
                 }
             }
 
@@ -159,6 +167,19 @@ data class DestinationStream(
     fun isSingleGenerationTruncate() =
         shouldBeTruncatedAtEndOfSync() && minimumGenerationId == generationId
 }
+
+/**
+ * This function exists so that our tests can easily mock a DestinationStream, while still getting a
+ * real value for unknownColumnChanges.
+ */
+fun AirbyteType.computeUnknownColumnChanges() =
+    this.collectUnknownPaths().map {
+        Meta.Change(
+            it,
+            AirbyteRecordMessageMetaChange.Change.NULLED,
+            AirbyteRecordMessageMetaChange.Reason.DESTINATION_SERIALIZATION_ERROR,
+        )
+    }
 
 @Singleton
 class DestinationStreamFactory(

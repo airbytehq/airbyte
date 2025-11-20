@@ -64,7 +64,7 @@ class ObjectLoaderPartFormatterTest {
         coEvery { bufferedWriter.flush() } returns Unit
         coEvery { bufferedWriter.close() } returns Unit
         every { objectLoader.objectSizeBytes } returns fileSizeBytes
-        every { stream.descriptor } returns streamDescriptor
+        every { stream.mappedDescriptor } returns streamDescriptor
         every { catalog.getStream(any()) } returns stream
         coEvery { pathFactory.getFinalDirectory(any()) } returns "foo"
         coEvery { stateManager.getState(any()) } returns state
@@ -163,7 +163,7 @@ class ObjectLoaderPartFormatterTest {
 
         coEvery { pathFactory.getPathToFile(any(), any()) } answers { "path.${secondArg<Long>()}" }
 
-        val initialState = acc.start(StreamKey(stream.descriptor), 0)
+        val initialState = acc.start(StreamKey(stream.mappedDescriptor), 0)
         // Object 1
 
         // part 0->1/2b of 4b total => not data sufficient
@@ -200,7 +200,7 @@ class ObjectLoaderPartFormatterTest {
         // Object 2
 
         // Next part 4/4b => data sufficient, should be second and final
-        val initialState2 = acc.start(StreamKey(stream.descriptor), 0)
+        val initialState2 = acc.start(StreamKey(stream.mappedDescriptor), 0)
         when (val result4 = threadRecords(4, acc, initialState2)) {
             is FinalOutput -> {
                 assert(result4.output.part.bytes.contentEquals(makeBytes(2)))

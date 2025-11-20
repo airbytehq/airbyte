@@ -25,7 +25,7 @@ data:
   documentationUrl: https://docs.airbyte.com/integrations/sources/linkedin-pages
   githubIssueLabel: source-linkedin-pages
   icon: linkedin.svg
-  license: MIT
+  license: ELv2
   name: Linkedin Pages
   releaseDate: 2022-08-11
   releaseStage: alpha
@@ -45,4 +45,14 @@ data:
           secretStore:
             type: GSM
             alias: airbyte-connector-testing-secret-store
+  externalDocumentationUrls:
+    - title: LinkedIn Pages API
+      url: https://learn.microsoft.com/en-us/linkedin/marketing/integrations/community-management/organizations
+      type: api_reference
+    - title: LinkedIn authentication
+      url: https://learn.microsoft.com/en-us/linkedin/shared/authentication/authentication
+      type: authentication_guide
+    - title: LinkedIn rate limits
+      url: https://learn.microsoft.com/en-us/linkedin/shared/api-guide/concepts/rate-limits
+      type: rate_limits
 metadataSpecVersion: "1.0"

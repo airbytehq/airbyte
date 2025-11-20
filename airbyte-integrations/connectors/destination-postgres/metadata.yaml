@@ -6,7 +6,7 @@ data:
   connectorSubtype: database
   connectorType: destination
   definitionId: 25c5221d-dce2-4163-ade9-739ef790f503
-  dockerImageTag: 2.4.5
+  dockerImageTag: 2.4.7
   dockerRepository: airbyte/destination-postgres
   documentationUrl: https://docs.airbyte.com/integrations/destinations/postgres
   githubIssueLabel: destination-postgres
@@ -22,6 +22,8 @@ data:
     oss:
       enabled: true
   releases:
+    rolloutConfiguration:
+      enableProgressiveRollout: false
     breakingChanges:
       2.0.0:
         message: >
@@ -45,4 +47,20 @@ data:
           secretStore:
             type: GSM
             alias: airbyte-connector-testing-secret-store
+  externalDocumentationUrls:
+    - title: PostgreSQL documentation
+      url: https://www.postgresql.org/docs/current/
+      type: api_reference
+    - title: Release Notes
+      url: https://www.postgresql.org/docs/release/
+      type: api_release_history
+    - title: Client authentication
+      url: https://www.postgresql.org/docs/current/client-authentication.html
+      type: authentication_guide
+    - title: Database roles and privileges
+      url: https://www.postgresql.org/docs/current/user-manag.html
+      type: permissions_scopes
+    - title: SQL commands
+      url: https://www.postgresql.org/docs/current/sql-commands.html
+      type: sql_reference
 metadataSpecVersion: "1.0"

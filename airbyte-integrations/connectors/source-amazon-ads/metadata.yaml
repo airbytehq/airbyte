@@ -9,23 +9,23 @@ data:
       - advertising-api-eu.amazon.com
       - advertising-api-fe.amazon.com
   connectorBuildOptions:
-    baseImage: docker.io/airbyte/python-connector-base:4.0.0@sha256:d9894b6895923b379f3006fa251147806919c62b7d9021b5cd125bb67d7bbe22
+    baseImage: docker.io/airbyte/source-declarative-manifest:7.4.1@sha256:71df19e2ee555ca5b14abbec01d50104c79c9b84cb9cc323284d24333361900a
   connectorSubtype: api
   connectorType: source
   definitionId: c6b0a29e-1da9-4512-9002-7bfd0cba2246
-  dockerImageTag: 7.2.2
+  dockerImageTag: 7.3.7
   dockerRepository: airbyte/source-amazon-ads
   documentationUrl: https://docs.airbyte.com/integrations/sources/amazon-ads
   githubIssueLabel: source-amazon-ads
   icon: amazonads.svg
-  license: MIT
+  license: ELv2
   # Based on https://advertising.amazon.com/API/docs/en-us/guides/reporting/v3/get-started#checking-report-status, report generation can take up to 3 hours
   # We've added one minute on top of the three hours because of the waiting time before we poll the report status
   maxSecondsBetweenMessages: 10860
   name: Amazon Ads
   remoteRegistries:
     pypi:
-      enabled: true
+      enabled: false
       packageName: airbyte-source-amazon-ads
   registryOverrides:
     cloud:
@@ -92,8 +92,8 @@ data:
       - sponsored_products_report_stream
   supportLevel: certified
   tags:
-    - language:python
     - cdk:low-code
+    - language:manifest-only
   connectorTestSuitesOptions:
     - suite: liveTests
       testConnections:
@@ -114,4 +114,20 @@ data:
           secretStore:
             type: GSM
             alias: airbyte-connector-testing-secret-store
+  externalDocumentationUrls:
+    - title: Deprecations
+      url: https://advertising.amazon.com/API/docs/en-us/release-notes/deprecations
+      type: api_deprecations
+    - title: Advertising API
+      url: https://advertising.amazon.com/API/docs/en-us
+      type: api_reference
+    - title: All releases
+      url: https://advertising.amazon.com/API/docs/en-us/release-notes/index
+      type: api_release_history
+    - title: Authorization
+      url: https://advertising.amazon.com/API/docs/en-us/get-started/authorization
+      type: authentication_guide
+    - title: Rate limits
+      url: https://advertising.amazon.com/API/docs/en-us/get-started/developer-notes#rate-limiting
+      type: rate_limits
 metadataSpecVersion: "1.0"

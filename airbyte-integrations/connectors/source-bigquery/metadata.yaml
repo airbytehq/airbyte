@@ -3,7 +3,7 @@ data:
     ql: 200
     sl: 100
   connectorBuildOptions:
-    baseImage: docker.io/airbyte/java-connector-base:1.0.0@sha256:be86e5684e1e6d9280512d3d8071b47153698fe08ad990949c8eeff02803201a
+    baseImage: docker.io/airbyte/java-connector-base:2.0.0@sha256:5a1a21c75c5e1282606de9fa539ba136520abe2fbd013058e988bb0297a9f454
   connectorSubtype: database
   connectorTestSuitesOptions:
     - suite: unitTests
@@ -21,7 +21,7 @@ data:
             type: GSM
   connectorType: source
   definitionId: bfd1ddf8-ae8a-4620-b1d7-55597d2ba08c
-  dockerImageTag: 0.4.3
+  dockerImageTag: 0.4.4
   dockerRepository: airbyte/source-bigquery
   documentationUrl: https://docs.airbyte.com/integrations/sources/bigquery
   githubIssueLabel: source-bigquery
@@ -37,4 +37,17 @@ data:
   supportLevel: community
   tags:
     - language:java
+  externalDocumentationUrls:
+    - title: BigQuery REST API
+      url: https://cloud.google.com/bigquery/docs/reference/rest
+      type: api_reference
+    - title: Release notes
+      url: https://cloud.google.com/bigquery/docs/release-notes
+      type: api_release_history
+    - title: Authentication
+      url: https://cloud.google.com/bigquery/docs/authentication
+      type: authentication_guide
+    - title: Quotas and limits
+      url: https://cloud.google.com/bigquery/quotas
+      type: rate_limits
 metadataSpecVersion: "1.0"

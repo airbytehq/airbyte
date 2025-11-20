@@ -1,4 +1,4 @@
-version: 6.41.5
+version: 6.48.15
 
 type: DeclarativeSource
 
@@ -97,6 +97,7 @@ definitions:
               partition_field: parent_id
               stream:
                 $ref: "#/definitions/streams/Products list"
+              incremental_dependency: true
         decoder:
           type: JsonDecoder
       transformations:
@@ -289,6 +290,7 @@ definitions:
               partition_field: invoice_id
               stream:
                 $ref: "#/definitions/streams/Customer invoices list"
+              incremental_dependency: true
         decoder:
           type: JsonDecoder
       transformations:
@@ -483,6 +485,7 @@ definitions:
               partition_field: supp_invoice_id
               stream:
                 $ref: "#/definitions/streams/Supplier invoices list"
+              incremental_dependency: true
         decoder:
           type: JsonDecoder
       transformations:
@@ -697,6 +700,7 @@ definitions:
               partition_field: invoice_id
               stream:
                 $ref: "#/definitions/streams/Customer invoices list"
+              incremental_dependency: true
         decoder:
           type: JsonDecoder
       transformations:
@@ -734,6 +738,7 @@ definitions:
               partition_field: supp_invoice_id
               stream:
                 $ref: "#/definitions/streams/Supplier invoices list"
+              incremental_dependency: true
         decoder:
           type: JsonDecoder
       transformations:
@@ -797,10 +802,10 @@ spec:
         title: my_dolibarr_domain/url
       start_date:
         type: string
+        order: 2
         title: Start date
         format: date-time
         pattern: ^[0-9]{4}-[0-9]{2}-[0-9]{2}T[0-9]{2}:[0-9]{2}:[0-9]{2}Z$
-        order: 2
     additionalProperties: true
 
 metadata:
@@ -820,91 +825,91 @@ metadata:
     Supplier invoices payments list: true
   testedStreams:
     Products list:
-      streamHash: 44c16d82c2479520c2a9a7ef0ccbbf9b9d0907ba
+      streamHash: 2fb5b057bb75f280b0df1142cc2d1aabba5d5d86
       hasResponse: true
       responsesAreSuccessful: true
       hasRecords: true
       primaryKeysArePresent: true
       primaryKeysAreUnique: true
     Products category id list:
-      streamHash: f2ea940d0cd5470f96cf4d6929d8af9729245790
+      streamHash: a99b70328eec5c81f2843999437935786a578800
       hasResponse: true
       responsesAreSuccessful: true
       hasRecords: true
       primaryKeysArePresent: true
       primaryKeysAreUnique: true
     Product categories list:
-      streamHash: 2fc69a9eccf2ded04bb2da8ccc9694bbdb2343ea
+      streamHash: 65170488480eec6ca692495a47de3e0c416649dc
       hasResponse: true
       responsesAreSuccessful: true
       hasRecords: true
       primaryKeysArePresent: true
       primaryKeysAreUnique: true
     Customer invoices list:
-      streamHash: 56b77fad6a7cd2269a8a24ba0a725459375bab50
+      streamHash: 7a9744e22fe9d2bd0d3053a983bc42370903ec03
       hasResponse: true
       responsesAreSuccessful: true
       hasRecords: true
       primaryKeysArePresent: true
       primaryKeysAreUnique: true
     Customer invoices lines list:
-      streamHash: ee0b8d8db367025ba817a5b852021cc5a546bf28
+      streamHash: f2a3dec92e92859d2a3728eada618a340c451041
       hasResponse: true
       responsesAreSuccessful: true
       hasRecords: true
       primaryKeysArePresent: true
       primaryKeysAreUnique: true
     Customers list:
-      streamHash: 82e948b035e617fa2b1f0a9c61620892e9242d4e
+      streamHash: 1110c4da83605a812f22b8916e9eaed010439bbc
       hasResponse: true
       responsesAreSuccessful: true
       hasRecords: true
       primaryKeysArePresent: true
       primaryKeysAreUnique: true
     Supplier invoices list:
-      streamHash: f8aa4efbae62abcb6d12883cb35ae4e05df3b459
+      streamHash: b5ea9172c9cea0544ae4dbb649be66f2b9fc2065
       hasResponse: true
       responsesAreSuccessful: true
       hasRecords: true
       primaryKeysArePresent: true
       primaryKeysAreUnique: true
     Supplier invoices lines list:
-      streamHash: df04a717d298430b5145954e73ed8bd4495a6084
+      streamHash: 5b3d27544315fc0ed034f4ddb5f50cba0836f2cb
       hasResponse: true
       responsesAreSuccessful: true
       hasRecords: true
       primaryKeysArePresent: true
       primaryKeysAreUnique: true
     Suppliers list:
-      streamHash: 166ac764576fd1979e4fc1098b41161a11a601eb
+      streamHash: 2466a202e4ca90f796b9435038e2cc5b78088f25
       hasResponse: true
       responsesAreSuccessful: true
       hasRecords: true
       primaryKeysArePresent: true
       primaryKeysAreUnique: true
     Internal Users:
-      streamHash: f49c3622365ccad2f0a940a90a54c15a05ec8d0f
+      streamHash: e3c17621660a0841b984b10c6a158ce5959b04b6
       hasResponse: true
       responsesAreSuccessful: true
       hasRecords: true
       primaryKeysArePresent: true
       primaryKeysAreUnique: true
     Company profile data:
-      streamHash: 522f4167ed17eeeb40fb9f3184386f1135e9e168
+      streamHash: 832a4eef42341e70f364bf401cbbb07fe9570c27
       hasResponse: true
       responsesAreSuccessful: true
       hasRecords: true
       primaryKeysArePresent: true
       primaryKeysAreUnique: true
     Customer invoices payments list:
-      streamHash: 0fc5bd35852ff12c83eaaa9a9e7c1da2acd1f729
+      streamHash: b658014ec61af37eec4577bcb0bc7caebe2a61be
       hasResponse: true
       responsesAreSuccessful: true
       hasRecords: true
       primaryKeysArePresent: true
       primaryKeysAreUnique: true
     Supplier invoices payments list:
-      streamHash: fc2a5f057a0eeb74bd0d56ef5aa3024086b9c49c
+      streamHash: 606b0f811c07ba18ee8173c5568539ae831338b3
       hasResponse: true
       responsesAreSuccessful: true
       hasRecords: true
@@ -952,8 +957,9 @@ schemas:
           - "null"
       array_options:
         type:
-          - array
+          - object
           - "null"
+        properties: {}
       barcode:
         type:
           - string
@@ -984,10 +990,11 @@ schemas:
           - "null"
       date_creation:
         type:
+          - number
           - string
           - "null"
       date_modification:
-        type: string
+        type: number
       desiredstock:
         type:
           - string
@@ -995,6 +1002,10 @@ schemas:
       duration:
         type:
           - string
+          - "null"
+      duration_value:
+        type:
+          - number
           - "null"
       entity:
         type:
@@ -1027,14 +1038,6 @@ schemas:
       label:
         type:
           - string
-          - "null"
-      labelStatus:
-        type:
-          - array
-          - "null"
-      labelStatusShort:
-        type:
-          - array
           - "null"
       length_units:
         type:
@@ -1092,10 +1095,6 @@ schemas:
         type:
           - array
           - "null"
-      nb:
-        type:
-          - array
-          - "null"
       note_private:
         type:
           - string
@@ -1139,6 +1138,10 @@ schemas:
       product_id:
         type: number
       ref:
+        type:
+          - string
+          - "null"
+      sell_or_eat_by_mandatory:
         type:
           - string
           - "null"
@@ -1278,7 +1281,7 @@ schemas:
     properties:
       type:
         type:
-          - number
+          - string
           - "null"
       description:
         type:
@@ -1294,9 +1297,13 @@ schemas:
         type:
           - array
           - "null"
-      date_creation:
+      color:
         type:
           - string
+          - "null"
+      date_creation:
+        type:
+          - number
           - "null"
       date_modification:
         type: number
@@ -1320,17 +1327,13 @@ schemas:
         type:
           - string
           - "null"
-      labelStatus:
+      multilangs:
         type:
           - array
           - "null"
-      labelStatusShort:
+      position:
         type:
-          - array
-          - "null"
-      nb:
-        type:
-          - array
+          - string
           - "null"
       specimen:
         type:
@@ -1448,21 +1451,9 @@ schemas:
           - "null"
       invoice_id:
         type: number
-      labelStatus:
-        type:
-          - array
-          - "null"
-      labelStatusShort:
-        type:
-          - array
-          - "null"
       last_main_doc:
         type:
           - string
-          - "null"
-      linked_objects:
-        type:
-          - array
           - "null"
       location_incoterms:
         type:
@@ -1473,10 +1464,6 @@ schemas:
           - string
           - "null"
       mode_reglement_id:
-        type:
-          - string
-          - "null"
-      model_pdf:
         type:
           - string
           - "null"
@@ -1504,9 +1491,9 @@ schemas:
         type:
           - string
           - "null"
-      nb:
+      online_payment_url:
         type:
-          - array
+          - string
           - "null"
       paye:
         type:
@@ -1629,10 +1616,6 @@ schemas:
         type:
           - array
           - "null"
-      code_ventilation:
-        type:
-          - string
-          - "null"
       date_end:
         type:
           - string
@@ -1661,6 +1644,10 @@ schemas:
         type:
           - string
           - "null"
+      fk_parent_attribute:
+        type:
+          - string
+          - "null"
       fk_product_type:
         type:
           - string
@@ -1676,14 +1663,6 @@ schemas:
       invoice_id:
         type:
           - number
-          - "null"
-      labelStatus:
-        type:
-          - array
-          - "null"
-      labelStatusShort:
-        type:
-          - array
           - "null"
       localtax1_tx:
         type:
@@ -1703,11 +1682,11 @@ schemas:
           - "null"
       marge_tx:
         type:
-          - number
+          - string
           - "null"
       marque_tx:
         type:
-          - number
+          - string
           - "null"
       multicurrency_code:
         type:
@@ -1729,11 +1708,11 @@ schemas:
         type:
           - string
           - "null"
-      nb:
-        type:
-          - array
-          - "null"
       pa_ht:
+        type:
+          - string
+          - "null"
+      parent_element:
         type:
           - string
           - "null"
@@ -1970,23 +1949,11 @@ schemas:
         type:
           - string
           - "null"
-      labelStatus:
-        type:
-          - array
-          - "null"
-      labelStatusShort:
-        type:
-          - array
-          - "null"
       localtax1_value:
         type:
           - string
           - "null"
       localtax2_value:
-        type:
-          - string
-          - "null"
-      model_pdf:
         type:
           - string
           - "null"
@@ -2005,10 +1972,6 @@ schemas:
       name_alias:
         type:
           - string
-          - "null"
-      nb:
-        type:
-          - array
           - "null"
       partnerships:
         type:
@@ -2196,13 +2159,9 @@ schemas:
         type:
           - string
           - "null"
-      labelStatus:
+      last_main_doc:
         type:
-          - array
-          - "null"
-      labelStatusShort:
-        type:
-          - array
+          - string
           - "null"
       libelle:
         type:
@@ -2217,10 +2176,6 @@ schemas:
           - string
           - "null"
       mode_reglement_id:
-        type:
-          - string
-          - "null"
-      model_pdf:
         type:
           - string
           - "null"
@@ -2243,10 +2198,6 @@ schemas:
       multicurrency_tx:
         type:
           - string
-          - "null"
-      nb:
-        type:
-          - array
           - "null"
       note_private:
         type:
@@ -2296,6 +2247,10 @@ schemas:
         type:
           - string
           - "null"
+      subtype:
+        type:
+          - number
+          - "null"
       supp_invoice_id:
         type: number
       supplier_id:
@@ -2334,7 +2289,7 @@ schemas:
           - "null"
       vat_reverse_charge:
         type:
-          - string
+          - number
           - "null"
     required:
       - supp_invoice_id
@@ -2356,7 +2311,7 @@ schemas:
         type:
           - number
           - "null"
-      code_ventilation:
+      desc:
         type:
           - string
           - "null"
@@ -2387,14 +2342,6 @@ schemas:
       info_bits:
         type:
           - string
-          - "null"
-      labelStatus:
-        type:
-          - array
-          - "null"
-      labelStatusShort:
-        type:
-          - array
           - "null"
       localtax1_tx:
         type:
@@ -2431,10 +2378,6 @@ schemas:
       multicurrency_total_tva:
         type:
           - string
-          - "null"
-      nb:
-        type:
-          - array
           - "null"
       product_barcode:
         type:
@@ -2655,23 +2598,11 @@ schemas:
         type:
           - string
           - "null"
-      labelStatus:
-        type:
-          - array
-          - "null"
-      labelStatusShort:
-        type:
-          - array
-          - "null"
       localtax1_value:
         type:
           - string
           - "null"
       localtax2_value:
-        type:
-          - string
-          - "null"
-      model_pdf:
         type:
           - string
           - "null"
@@ -2690,10 +2621,6 @@ schemas:
       name_alias:
         type:
           - string
-          - "null"
-      nb:
-        type:
-          - array
           - "null"
       partnerships:
         type:
@@ -2801,6 +2728,10 @@ schemas:
         type:
           - string
           - "null"
+      accountancy_code_user_general:
+        type:
+          - string
+          - "null"
       address:
         type:
           - string
@@ -2891,6 +2822,10 @@ schemas:
         type:
           - string
           - "null"
+      fk_establishment:
+        type:
+          - string
+          - "null"
       fk_user:
         type:
           - string
@@ -2920,14 +2855,6 @@ schemas:
         type:
           - string
           - "null"
-      labelStatus:
-        type:
-          - array
-          - "null"
-      labelStatusShort:
-        type:
-          - array
-          - "null"
       lastname:
         type:
           - string
@@ -2939,10 +2866,6 @@ schemas:
       national_registration_number:
         type:
           - string
-          - "null"
-      nb:
-        type:
-          - array
           - "null"
       note_private:
         type:
@@ -3070,7 +2993,7 @@ schemas:
           - "null"
       capital:
         type:
-          - string
+          - number
           - "null"
       company_id:
         type:
@@ -3082,7 +3005,7 @@ schemas:
           - "null"
       country_id:
         type:
-          - string
+          - number
           - "null"
       default_lang:
         type:
@@ -3112,6 +3035,10 @@ schemas:
         type:
           - string
           - "null"
+      idprof10:
+        type:
+          - string
+          - "null"
       idprof2:
         type:
           - string
@@ -3132,13 +3059,17 @@ schemas:
         type:
           - string
           - "null"
-      labelStatus:
+      idprof7:
         type:
-          - array
+          - string
           - "null"
-      labelStatusShort:
+      idprof8:
         type:
-          - array
+          - string
+          - "null"
+      idprof9:
+        type:
+          - string
           - "null"
       localtax1_assuj:
         type:
@@ -3184,10 +3115,6 @@ schemas:
         type:
           - string
           - "null"
-      nb:
-        type:
-          - array
-          - "null"
       note_private:
         type:
           - string
@@ -3197,6 +3124,10 @@ schemas:
           - array
           - "null"
       phone:
+        type:
+          - string
+          - "null"
+      phone_mobile:
         type:
           - string
           - "null"
@@ -3227,11 +3158,15 @@ schemas:
           - "null"
       state_id:
         type:
-          - string
+          - number
           - "null"
       status:
         type:
           - number
+          - "null"
+      termsofsale:
+        type:
+          - string
           - "null"
       town:
         type:
@@ -3239,7 +3174,7 @@ schemas:
           - "null"
       tva_assuj:
         type:
-          - string
+          - number
           - "null"
       tva_intra:
         type:
@@ -3296,6 +3231,10 @@ schemas:
         type:
           - string
           - "null"
+      typeline:
+        type:
+          - string
+          - "null"
     required:
       - ref
   Supplier invoices payments list:
@@ -3328,6 +3267,10 @@ schemas:
       supp_invoice_id:
         type:
           - number
+          - "null"
+      typeline:
+        type:
+          - string
           - "null"
     required:
       - ref

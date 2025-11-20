@@ -55,8 +55,26 @@ The Airbyte connector for FireHydrant enables seamless data integration between 
 <details>
   <summary>Expand to review</summary>
 
-| Version          | Date              | Pull Request | Subject        |
-|------------------|-------------------|--------------|----------------|
+| Version | Date              | Pull Request | Subject        |
+|---------|-------------------|--------------|----------------|
+| 0.0.39 | 2025-11-18 | [69449](https://github.com/airbytehq/airbyte/pull/69449) | Update dependencies |
+| 0.0.38 | 2025-10-29 | [68816](https://github.com/airbytehq/airbyte/pull/68816) | Update dependencies |
+| 0.0.37 | 2025-10-21 | [68450](https://github.com/airbytehq/airbyte/pull/68450) | Update dependencies |
+| 0.0.36 | 2025-10-14 | [68056](https://github.com/airbytehq/airbyte/pull/68056) | Update dependencies |
+| 0.0.35 | 2025-10-07 | [67293](https://github.com/airbytehq/airbyte/pull/67293) | Update dependencies |
+| 0.0.34 | 2025-09-30 | [66774](https://github.com/airbytehq/airbyte/pull/66774) | Update dependencies |
+| 0.0.33 | 2025-09-24 | [65853](https://github.com/airbytehq/airbyte/pull/65853) | Update dependencies |
+| 0.0.32 | 2025-09-05 | [65966](https://github.com/airbytehq/airbyte/pull/65966) | Update to CDK v7.0.0 |
+| 0.0.31 | 2025-08-23 | [65275](https://github.com/airbytehq/airbyte/pull/65275) | Update dependencies |
+| 0.0.30 | 2025-08-09 | [64699](https://github.com/airbytehq/airbyte/pull/64699) | Update dependencies |
+| 0.0.29 | 2025-08-02 | [64358](https://github.com/airbytehq/airbyte/pull/64358) | Update dependencies |
+| 0.0.28 | 2025-07-26 | [63989](https://github.com/airbytehq/airbyte/pull/63989) | Update dependencies |
+| 0.0.27 | 2025-07-19 | [63589](https://github.com/airbytehq/airbyte/pull/63589) | Update dependencies |
+| 0.0.26 | 2025-07-12 | [62956](https://github.com/airbytehq/airbyte/pull/62956) | Update dependencies |
+| 0.0.25 | 2025-07-05 | [62798](https://github.com/airbytehq/airbyte/pull/62798) | Update dependencies |
+| 0.0.24 | 2025-06-28 | [62410](https://github.com/airbytehq/airbyte/pull/62410) | Update dependencies |
+| 0.0.23 | 2025-06-21 | [61939](https://github.com/airbytehq/airbyte/pull/61939) | Update dependencies |
+| 0.0.22 | 2025-06-14 | [61278](https://github.com/airbytehq/airbyte/pull/61278) | Update dependencies |
 | 0.0.21 | 2025-05-24 | [60430](https://github.com/airbytehq/airbyte/pull/60430) | Update dependencies |
 | 0.0.20 | 2025-05-10 | [59388](https://github.com/airbytehq/airbyte/pull/59388) | Update dependencies |
 | 0.0.19 | 2025-04-26 | [58327](https://github.com/airbytehq/airbyte/pull/58327) | Update dependencies |
@@ -77,6 +95,6 @@ The Airbyte connector for FireHydrant enables seamless data integration between 
 | 0.0.4 | 2024-12-21 | [50022](https://github.com/airbytehq/airbyte/pull/50022) | Update dependencies |
 | 0.0.3 | 2024-12-14 | [49520](https://github.com/airbytehq/airbyte/pull/49520) | Update dependencies |
 | 0.0.2 | 2024-12-12 | [49205](https://github.com/airbytehq/airbyte/pull/49205) | Update dependencies |
-| 0.0.1 | 2024-11-08 | | Initial release by [@parthiv11](https://github.com/parthiv11) via Connector Builder |
+| 0.0.1   | 2024-11-08 | | Initial release by [@parthiv11](https://github.com/parthiv11) via Connector Builder |
 
 </details>

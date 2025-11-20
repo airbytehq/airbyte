@@ -22,8 +22,11 @@ import io.airbyte.cdk.load.data.TimeTypeWithoutTimezone
 import io.airbyte.cdk.load.data.TimestampTypeWithTimezone
 import io.airbyte.cdk.load.data.TimestampTypeWithoutTimezone
 import io.airbyte.cdk.load.data.UnionType
+import io.airbyte.cdk.load.data.UnknownType
 import io.airbyte.cdk.load.data.json.JsonSchemaToAirbyteType.UnionBehavior
+import io.airbyte.cdk.load.util.Jsons
 import io.airbyte.cdk.load.util.deserializeToNode
+import kotlin.test.assertEquals
 import org.junit.jupiter.api.Assertions
 import org.junit.jupiter.api.Test
 
@@ -359,5 +362,118 @@ class JsonSchemaToAirbyteSchemaTypeTest {
         val schemaNode = ofType("string").put("format", "foo")
         val airbyteType = defaultJsonSchemaToAirbyteType.convert(schemaNode)
         Assertions.assertTrue(airbyteType is StringType)
+    }
+
+    @Test
+    fun testInvalidSchema() {
+        val schemaNode = Jsons.readTree("\"foo\"")
+        val airbyteType = defaultJsonSchemaToAirbyteType.convert(schemaNode)
+        // Note that we inject the original node into a `{type: ____}` node.
+        // Arguably we shouldn't, but this is preserving some legacy type-parsing behavior.
+        assertEquals(UnknownType(Jsons.readTree("""{"type":"foo"}""")), airbyteType)
+    }
+
+    /** Similar to [testInvalidSchema], except we can recognize the type name. */
+    @Test
+    fun testParseableInvalidSchema() {
+        val schemaNode = Jsons.readTree("\"string\"")
+        val airbyteType = defaultJsonSchemaToAirbyteType.convert(schemaNode)
+        assertEquals(StringType, airbyteType)
+    }
+
+    @Test
+    fun testInvalidObject() {
+        val schemaNode =
+            Jsons.readTree(
+                """
+                    {
+                      "type": "object",
+                      "properties": {
+                          "foo": "bar"
+                      }
+                    }
+                """.trimIndent()
+            )
+        val airbyteType = defaultJsonSchemaToAirbyteType.convert(schemaNode)
+        assertEquals(
+            ObjectType(
+                linkedMapOf(
+                    "foo" to FieldType(UnknownType(Jsons.readTree("\"bar\"")), nullable = true)
+                ),
+                additionalProperties = false
+            ),
+            airbyteType,
+        )
+    }
+
+    @Test
+    fun testInvalidArray() {
+        val schemaNode = Jsons.readTree("""{"type": "array", "items": "foo"}""")
+        val airbyteType = defaultJsonSchemaToAirbyteType.convert(schemaNode)
+        assertEquals(
+            ArrayType(FieldType(UnknownType(Jsons.readTree("\"foo\"")), nullable = true)),
+            airbyteType,
+        )
+    }
+
+    @Test
+    fun testInvalidUnion() {
+        // Unions should have a list of options, not a single plain option.
+        // But if it's a single plain option, we can always try parsing it.
+        val schemaNode = Jsons.readTree("""{"oneOf": {"type": "string"}}""")
+        val airbyteType = defaultJsonSchemaToAirbyteType.convert(schemaNode)
+        assertEquals(StringType, airbyteType)
+    }
+
+    @Test
+    fun testInvalidUnionOption() {
+        val schemaNode = Jsons.readTree("""{"oneOf": ["foo"]}""")
+        val airbyteType = defaultJsonSchemaToAirbyteType.convert(schemaNode)
+        // unions with a single option just promote that option to the top-level type.
+        // Similar to testInvalidSchema, we also try promoting to a `{type: __}` schema.
+        assertEquals(UnknownType(Jsons.readTree("""{"type": "foo"}""")), airbyteType)
+    }
+
+    @Test
+    fun testInvalidUnionMultipleOptions() {
+        val schemaNode = Jsons.readTree("""{"oneOf": ["foo", "bar"]}""")
+        val airbyteType = defaultJsonSchemaToAirbyteType.convert(schemaNode)
+        assertEquals(
+            UnionType(
+                setOf(
+                    UnknownType(Jsons.readTree("""{"type": "foo"}""")),
+                    UnknownType(Jsons.readTree("""{"type": "bar"}""")),
+                ),
+                isLegacyUnion = false
+            ),
+            airbyteType,
+        )
+    }
+
+    @Test
+    fun testEmptySchema() {
+        val schemaNode = Jsons.readTree("{}")
+        val airbyteType = defaultJsonSchemaToAirbyteType.convert(schemaNode)
+        assertEquals(UnknownType(Jsons.readTree("""{}""")), airbyteType)
+    }
+
+    @Test
+    fun testInvalidType() {
+        val schemaNode = Jsons.readTree("""{"type": "foo"}""")
+        val airbyteType = defaultJsonSchemaToAirbyteType.convert(schemaNode)
+        assertEquals(UnknownType(Jsons.readTree("""{"type":"foo"}""")), airbyteType)
+    }
+
+    @Test
+    fun testImplicitObject() {
+        val schemaNode = Jsons.readTree("""{"properties": {"foo": {}}}""")
+        val airbyteType = defaultJsonSchemaToAirbyteType.convert(schemaNode)
+        assertEquals(
+            ObjectType(
+                linkedMapOf("foo" to FieldType(UnknownType(Jsons.readTree("{}")), nullable = true)),
+                additionalProperties = false
+            ),
+            airbyteType,
+        )
     }
 }

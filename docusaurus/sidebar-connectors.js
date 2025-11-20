@@ -1,17 +1,11 @@
 const fs = require("fs");
 const path = require("path");
-
-const REGISTRY_CACHE_PATH = path.join(
-  __dirname,
-  "src",
-  "data",
-  "connector_registry_slim.json",
-);
-
-const connectorsDocsRoot = "../docs/integrations";
-const sourcesDocs = `${connectorsDocsRoot}/sources`;
-const destinationDocs = `${connectorsDocsRoot}/destinations`;
-const enterpriseConnectorDocs = `${connectorsDocsRoot}/enterprise-connectors`;
+const {
+  REGISTRY_CACHE_PATH,
+  SOURCES_DOCS,
+  DESTINATIONS_DOCS,
+  ENTERPRISE_CONNECTORS_DOCS,
+} = require("./src/scripts/constants");
 
 function getFilenamesInDir(prefix, dir, excludes) {
   return fs
@@ -52,12 +46,14 @@ function getFilenamesInDir(prefix, dir, excludes) {
         return {
           type: "category",
           label: contentTitle,
+          key: `${prefix}${filename}-category`,
           link: { type: "doc", id: path.join(prefix, filename) },
           items: [
             {
               type: "doc",
               id: path.join(prefix, `${filename}-migrations`),
               label: "Migration Guide",
+              key: `${prefix}${filename}-migrations`,
             },
           ],
         };
@@ -67,6 +63,7 @@ function getFilenamesInDir(prefix, dir, excludes) {
         type: "doc",
         id: prefix + filename,
         label: contentTitle,
+        key: `${prefix}${filename}`,
       };
     });
 }
@@ -108,7 +105,7 @@ function addSupportLevelToConnectors(connectors, registry) {
   });
 }
 
-function groupConnectorsBySupportLevel(connectors) {
+function groupConnectorsBySupportLevel(connectors, keyPrefix = "") {
   const grouped = connectors.reduce(
     (acc, item) => {
       const supportLevel = item.customProps?.supportLevel || "community";
@@ -131,6 +128,7 @@ function groupConnectorsBySupportLevel(connectors) {
       label: "Airbyte",
       collapsible: true,
       collapsed: true,
+      key: `${keyPrefix}airbyte`,
       items: grouped.certified.sort((a, b) => a.label.localeCompare(b.label)),
     });
   }
@@ -141,6 +139,7 @@ function groupConnectorsBySupportLevel(connectors) {
       label: "Marketplace",
       collapsible: true,
       collapsed: true,
+      key: `${keyPrefix}marketplace`,
       items: grouped.community.sort((a, b) => a.label.localeCompare(b.label)),
     });
   }
@@ -151,6 +150,7 @@ function groupConnectorsBySupportLevel(connectors) {
       label: "Enterprise",
       collapsible: true,
       collapsed: true,
+      key: `${keyPrefix}enterprise`,
       items: grouped.enterprise.sort((a, b) => a.label.localeCompare(b.label)),
     });
   }
@@ -161,6 +161,7 @@ function groupConnectorsBySupportLevel(connectors) {
 const sourcePostgres = {
   type: "category",
   label: "Postgres",
+  key: "sources-postgres-category",
   link: {
     type: "doc",
     id: "sources/postgres",
@@ -170,11 +171,13 @@ const sourcePostgres = {
       type: "doc",
       label: "Cloud SQL for Postgres",
       id: "sources/postgres/cloud-sql-postgres",
+      key: "sources-postgres-cloud-sql",
     },
     {
       type: "doc",
       label: "Troubleshooting",
       id: "sources/postgres/postgres-troubleshooting",
+      key: "sources-postgres-troubleshooting",
     },
   ],
 };
@@ -182,6 +185,7 @@ const sourcePostgres = {
 const sourceMongoDB = {
   type: "category",
   label: "Mongo DB",
+  key: "sources-mongodb-v2-category",
   link: {
     type: "doc",
     id: "sources/mongodb-v2",
@@ -191,11 +195,13 @@ const sourceMongoDB = {
       type: "doc",
       label: "Migration Guide",
       id: "sources/mongodb-v2-migrations",
+      key: "sources-mongodb-v2-migrations",
     },
     {
       type: "doc",
       label: "Troubleshooting",
       id: "sources/mongodb-v2/mongodb-v2-troubleshooting",
+      key: "sources-mongodb-v2-troubleshooting",
     },
   ],
 };
@@ -203,6 +209,7 @@ const sourceMongoDB = {
 const sourceMysql = {
   type: "category",
   label: "MySQL",
+  key: "sources-mysql-category",
   link: {
     type: "doc",
     id: "sources/mysql",
@@ -212,6 +219,7 @@ const sourceMysql = {
       type: "doc",
       label: "Troubleshooting",
       id: "sources/mysql/mysql-troubleshooting",
+      key: "sources-mysql-troubleshooting",
     },
   ],
 };
@@ -219,6 +227,7 @@ const sourceMysql = {
 const sourceMssql = {
   type: "category",
   label: "MS SQL Server (MSSQL)",
+  key: "sources-mssql-category",
   link: {
     type: "doc",
     id: "sources/mssql",
@@ -228,11 +237,12 @@ const sourceMssql = {
       type: "doc",
       label: "Troubleshooting",
       id: "sources/mssql/mssql-troubleshooting",
+      key: "sources-mssql-troubleshooting",
     },
   ],
 };
 function getSourceConnectors(registry) {
-  const sources = getFilenamesInDir("sources/", sourcesDocs, [
+  const sources = getFilenamesInDir("sources/", SOURCES_DOCS, [
     "readme",
     "postgres",
     "mongodb-v2",
@@ -248,12 +258,15 @@ function getSourceConnectors(registry) {
   ];
   const enterpriseSources = getFilenamesInDir(
     "enterprise-connectors/",
-    enterpriseConnectorDocs,
+    ENTERPRISE_CONNECTORS_DOCS,
     ["readme"],
   );
   const enterpriseSourcesWithSupportLevel = enterpriseSources
-    .filter((item) => item.id.includes("source"))
-    .map((item) => {
+  .filter((item) => {
+    const itemId = item.id || item.link?.id;
+    return itemId && itemId.includes("source");
+  })
+  .map((item) => {
       return {
         ...item,
         customProps: { ...item.customProps, supportLevel: "enterprise" },
@@ -270,6 +283,7 @@ function getSourceConnectors(registry) {
 const destinationS3 = {
   type: "category",
   label: "S3",
+  key: "destinations-s3-category",
   link: {
     type: "doc",
     id: "destinations/s3",
@@ -279,11 +293,13 @@ const destinationS3 = {
       type: "doc",
       label: "Migration Guide",
       id: "destinations/s3-migrations",
+      key: "destinations-s3-migrations",
     },
     {
       type: "doc",
       label: "Troubleshooting",
       id: "destinations/s3/s3-troubleshooting",
+      key: "destinations-s3-troubleshooting",
     },
   ],
 };
@@ -291,6 +307,7 @@ const destinationS3 = {
 const destinationPostgres = {
   type: "category",
   label: "Postgres",
+  key: "destinations-postgres-category",
   link: {
     type: "doc",
     id: "destinations/postgres",
@@ -300,6 +317,7 @@ const destinationPostgres = {
       type: "doc",
       label: "Troubleshooting",
       id: "destinations/postgres/postgres-troubleshooting",
+      key: "destinations-postgres-troubleshooting",
     },
   ],
 };
@@ -308,6 +326,7 @@ const destinationPostgres = {
 const destinationMsSql = {
   type: "category",
   label: "MS SQL Server (MSSQL)",
+  key: "destinations-mssql-category",
   link: {
     type: "doc",
     id: "destinations/mssql",
@@ -320,13 +339,14 @@ const destinationMsSql = {
       type: "doc",
       label: "Migration Guide",
       id: "destinations/mssql-migrations",
+      key: "destinations-mssql-migrations",
     },
   ],
 };
 
 function getDestinationConnectors(registry) {
   const specialDestinationConnectors = [destinationS3, destinationPostgres];
-  const destinations = getFilenamesInDir("destinations/", destinationDocs, [
+  const destinations = getFilenamesInDir("destinations/", DESTINATIONS_DOCS, [
     "s3",
     "postgres",
     "mssql",
@@ -339,12 +359,15 @@ function getDestinationConnectors(registry) {
 
   const enterpriseDestinations = getFilenamesInDir(
     "enterprise-connectors/",
-    enterpriseConnectorDocs,
+    ENTERPRISE_CONNECTORS_DOCS,
     ["readme"],
   );
   const enterpriseDestinationsWithSupportLevel = enterpriseDestinations
-    .filter((item) => item.id.includes("destination"))
-    .map((item) => {
+  .filter((item) => {
+    const itemId = item.id || item.link?.id;
+    return itemId && itemId.includes("destination");
+  })
+  .map((item) => {
       return {
         ...item,
         customProps: {
@@ -370,9 +393,11 @@ function buildConnectorSidebar() {
 
   const sourcesBySupportLevel = groupConnectorsBySupportLevel(
     sourcesWithSupportLevel,
+    "sources-",
   );
   const destinationsBySupportLevel = groupConnectorsBySupportLevel(
     destinationConnectors,
+    "destinations-",
   );
 
   return {
@@ -412,6 +437,7 @@ function buildConnectorSidebar() {
         id: "custom-connectors",
       },
       "locating-files-local-destination",
+      "speed-improvements",
     ],
   };
 }

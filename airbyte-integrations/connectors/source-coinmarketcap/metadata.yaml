@@ -15,15 +15,15 @@ data:
     # Please update to the latest version of the connector base image.
     # https://hub.docker.com/r/airbyte/python-connector-base
     # Please use the full address with sha256 hash to guarantee build reproducibility.
-    baseImage: docker.io/airbyte/source-declarative-manifest:6.48.10@sha256:09947fb38d07e515f9901a12f22cc44f1512f6148703341de80403c0e0c1b8c3
+    baseImage: docker.io/airbyte/source-declarative-manifest:7.5.0@sha256:92e539d5003b33c3624eae7715aee6e39b7b2f1f0eeb6003d37e649a06847ae8
   connectorSubtype: api
   connectorType: source
   definitionId: 239463f5-64bb-4d88-b4bd-18ce673fd572
-  dockerImageTag: 0.2.18
+  dockerImageTag: 0.2.29
   dockerRepository: airbyte/source-coinmarketcap
   githubIssueLabel: source-coinmarketcap
   icon: coinmarketcap.svg
-  license: MIT
+  license: ELv2
   name: CoinMarketCap
   releaseDate: 2022-10-29
   releaseStage: alpha
@@ -47,4 +47,17 @@ data:
           secretStore:
             type: GSM
             alias: airbyte-connector-testing-secret-store
+  externalDocumentationUrls:
+    - title: CoinMarketCap API reference
+      url: https://coinmarketcap.com/api/documentation/v1/
+      type: api_reference
+    - title: CoinMarketCap authentication
+      url: https://coinmarketcap.com/api/documentation/v1/#section/Authentication
+      type: authentication_guide
+    - title: CoinMarketCap rate limits
+      url: https://coinmarketcap.com/api/documentation/v1/#section/Standards-and-Conventions
+      type: rate_limits
+    - title: CoinMarketCap Status
+      url: https://status.coinmarketcap.com/
+      type: status_page
 metadataSpecVersion: "1.0"
