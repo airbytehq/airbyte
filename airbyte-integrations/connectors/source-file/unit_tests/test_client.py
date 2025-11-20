@@ -99,6 +99,19 @@ def test_load_dataframes_xlsx(config, absolute_path, test_files, file_name, shou
         expected = read_excel(f, engine="openpyxl")
         assert read_file.equals(expected)
 
+@pytest.mark.parametrize("file_name, should_raise_error, sheet_name", [("test-with-multiple-sheets.xlsx", False, "unit_tests"), ("test-with-multiple-sheets.xlsx", False, 0)])
+def test_load_dataframes_xlsx_with_sheets(config, absolute_path, test_files, file_name, should_raise_error, sheet_name):
+    config["format"] = "excel"
+    config["reader_options"] = {"sheet_name": sheet_name}
+    client = Client(**config)
+    f = f"{absolute_path}/{test_files}/{file_name}"
+    if should_raise_error:
+        with pytest.raises(AirbyteTracedException):
+            next(client.load_dataframes(fp=f))
+    else:
+        read_file = next(client.load_dataframes(fp=f))
+        expected = read_excel(f, engine="openpyxl", sheet_name=sheet_name)
+        assert read_file.equals(expected)
 
 @pytest.mark.parametrize("file_format, file_path", [("json", "formats/json/demo.json"), ("jsonl", "formats/jsonl/jsonl_nested.jsonl")])
 def test_load_nested_json(client, config, absolute_path, test_files, file_format, file_path):

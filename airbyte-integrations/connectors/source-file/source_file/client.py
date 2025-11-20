@@ -517,11 +517,18 @@ class Client:
         skiprows = kwargs.get("skiprows", 0)
         user_provided_column_names = kwargs.get("names")
         chunk_size = 500
-
+        sheet_name = kwargs.get("sheet_name", None)
         # Load workbook with data-only to avoid loading formulas
         work_book = load_workbook(filename=file, data_only=True, read_only=True)
 
-        for sheetname in work_book.sheetnames:
+        # Iterate through sheets
+        # Panda's read_excel allows specifying sheet_name as str, int, list of str/int or None (all sheets)
+        # For simplicity, we only support str or int for now as we expect users to read one sheet at a time in most cases.
+        for idx, sheetname in enumerate(work_book.sheetnames):
+            if sheet_name and sheetname is str and sheetname != sheet_name:
+                continue
+            elif sheet_name and sheet_name is int and idx != sheet_name:
+                continue
             work_sheet = work_book[sheetname]
             data = list(work_sheet.iter_rows(values_only=True))
 
