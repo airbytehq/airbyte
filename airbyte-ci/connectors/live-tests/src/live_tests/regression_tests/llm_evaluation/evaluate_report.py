@@ -198,11 +198,8 @@ def evaluate_with_llm(report_text: str, prompt: str | None = None, prompt_yaml_p
             try:
                 response = client.chat.completions.create(
                     model=model,
-                    messages=[
-                        {"role": "system", "content": prompt},
-                        {"role": "user", "content": f"Report:\n\n{report_text}"},
-                    ],
-                    temperature=0.3,
+                    messages=messages,
+                    temperature=temperature,
                 )
                 content = response.choices[0].message.content
                 evaluation = json.loads(content)
