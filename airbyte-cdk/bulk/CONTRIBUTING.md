@@ -7,6 +7,24 @@ Thank you for your interest in contributing to the Airbyte Kotlin Bulk CDK!
 - **JDK 21** (Java Development Kit) or higher
 - **Gradle** (uses the wrapper, no separate installation needed)
 
+### If you need to install Java
+
+```bash
+# Get sdkman (https://sdkman.io/)
+curl -s "https://get.sdkman.io" | bash
+source "$HOME/.sdkman/bin/sdkman-init.sh"
+
+# Verify install
+sdk version
+
+# Show available versions
+sdk list java | grep 21
+
+# Install the latest and set as default
+sdk install java 21.0.9-zulu
+sdk default java 21.0.9-zulu
+```
+
 ## Generating Documentation
 
 The Kotlin Bulk CDK uses [Dokka](https://kotlinlang.org/docs/dokka-introduction.html) to generate API documentation from KDoc comments.
