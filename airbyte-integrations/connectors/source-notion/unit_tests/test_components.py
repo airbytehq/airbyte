@@ -1,11 +1,13 @@
 #
 # Copyright (c) 2023 Airbyte, Inc., all rights reserved.
 #
-from unittest.mock import MagicMock
+from unittest.mock import MagicMock, patch
 
 import pytest
 
 from airbyte_cdk.models import ConfiguredAirbyteCatalogSerializer
+from airbyte_cdk.sources.declarative.retrievers.simple_retriever import SimpleRetriever
+from airbyte_cdk.sources.declarative.types import Record, StreamSlice
 from airbyte_cdk.test.entrypoint_wrapper import read
 from airbyte_cdk.test.state_builder import StateBuilder
 from unit_tests.conftest import get_source
@@ -95,6 +97,57 @@ state_test_records = [
     {"id": "2", "last_edited_time": "2022-01-03T00:00:00.000Z"},
     {"id": "3", "last_edited_time": "2022-01-04T00:00:00.000Z"},
 ]
+
+
+def test_blocks_retriever_depth_counter_bug(components_module):
+    """
+    Test to verify that current_block_depth is correctly incremented and decremented during recursive calls.
+    
+    This test creates a scenario with two sibling blocks at the same level, both having children:
+    - Block A (has_children=True)
+      - Block A1 (has_children=False)
+    - Block B (has_children=True)  
+      - Block B1 (has_children=False)
+    
+    The depth counter should properly increment when entering a child level and decrement when
+    returning to the parent level. This ensures sibling blocks are processed at the correct depth.
+    """
+
+    retriever = components_module.BlocksRetriever(
+        name="test",
+        primary_key=["id"],
+        requester=MagicMock(),
+        record_selector=MagicMock(),
+        paginator=MagicMock(),
+        config={},
+        parameters={},
+    )
+    retriever._paginator = MagicMock()
+    depth_tracker = []
+
+    block_a = Record(data={"id": "block-a", "has_children": True}, stream_name="blocks", associated_slice=StreamSlice(partition={}, cursor_slice={}))
+    block_a1 = Record(data={"id": "block-a1", "has_children": False}, stream_name="blocks", associated_slice=StreamSlice(partition={}, cursor_slice={}))
+    block_b = Record(data={"id": "block-b", "has_children": True}, stream_name="blocks", associated_slice=StreamSlice(partition={}, cursor_slice={}))
+    block_b1 = Record(data={"id": "block-b1", "has_children": False}, stream_name="blocks", associated_slice=StreamSlice(partition={}, cursor_slice={}))
+    
+    def mock_super_read_records(self, records_schema, stream_slice=None):
+        depth_tracker.append(retriever.current_block_depth)
+        
+        if stream_slice is None or not stream_slice.partition:
+            yield block_a
+            yield block_b
+        elif stream_slice.partition.get("block_id") == "block-a":
+            yield block_a1
+        elif stream_slice.partition.get("block_id") == "block-b":
+            yield block_b1
+    
+    with patch.object(SimpleRetriever, 'read_records', mock_super_read_records):
+        stream_slice = StreamSlice(partition={}, cursor_slice={})
+        results = list(retriever.read_records({}, stream_slice))
+
+    assert len(depth_tracker) == 3, f"Expected 3 depth measurements, got {len(depth_tracker)}: {depth_tracker}"
+    assert depth_tracker == [0, 1, 1], f"Depth should be properly managed. Depth tracker: {depth_tracker}"
+    assert retriever.current_block_depth == 0, f"Final depth should be 0, got {retriever.current_block_depth}"
 
 
 def test_blocks_retriever(requests_mock):
