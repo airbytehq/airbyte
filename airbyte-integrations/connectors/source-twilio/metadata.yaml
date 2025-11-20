@@ -66,6 +66,9 @@ data:
     - title: Twilio API reference
       url: https://www.twilio.com/docs/usage/api
       type: api_reference
+    - title: Twilio API OpenAPI specification
+      url: https://github.com/twilio/twilio-oai
+      type: openapi_spec
     - title: Twilio Changelog
       url: https://www.twilio.com/en-us/changelog
       type: api_release_history

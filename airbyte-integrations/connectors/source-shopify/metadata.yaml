@@ -168,6 +168,9 @@ data:
     - title: Shopify Admin API
       url: https://shopify.dev/docs/api/admin-rest
       type: api_reference
+    - title: Shopify Admin API OpenAPI specification
+      url: https://shopify.dev/docs/api/admin-rest
+      type: openapi_spec
     - title: Developer changelog
       url: https://shopify.dev/changelog
       type: api_release_history

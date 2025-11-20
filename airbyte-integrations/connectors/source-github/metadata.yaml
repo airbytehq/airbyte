@@ -88,6 +88,9 @@ data:
     - title: GitHub REST API reference
       url: https://docs.github.com/en/rest
       type: api_reference
+    - title: GitHub REST API OpenAPI specification
+      url: https://github.com/github/rest-api-description
+      type: openapi_spec
     - title: API Versions
       url: https://docs.github.com/en/rest/about-the-rest-api/api-versions
       type: api_release_history

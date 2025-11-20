@@ -14,6 +14,9 @@ data:
   dockerRepository: airbyte/source-sentry
   documentationUrl: https://docs.airbyte.com/integrations/sources/sentry
   externalDocumentationUrls:
+    - title: Sentry API OpenAPI specification
+      url: https://github.com/getsentry/sentry-api-schema
+      type: openapi_spec
     - title: API Reference
       url: https://docs.sentry.io/api/
       type: api_reference

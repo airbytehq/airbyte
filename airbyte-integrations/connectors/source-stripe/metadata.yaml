@@ -87,6 +87,9 @@ data:
     - title: Stripe API reference
       url: https://stripe.com/docs/api
       type: api_reference
+    - title: Stripe API OpenAPI specification
+      url: https://github.com/stripe/openapi
+      type: openapi_spec
     - title: API changelog
       url: https://docs.stripe.com/changelog
       type: api_release_history
