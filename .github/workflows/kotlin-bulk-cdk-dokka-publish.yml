@@ -83,7 +83,7 @@ jobs:
         github.event_name == 'push'
         || github.event.pull_request.head.repo.full_name == github.repository
       )
-      && vars.VERCEL_BULK_CDK_DOCS_PROJECT_ID != ''
+      && vars.VERCEL_KOTLIN_CDK_PROJECT_ID != ''
     runs-on: ubuntu-24.04
     env:
       VERCEL_ORG_ID: ${{ secrets.VERCEL_ORG_ID }}
