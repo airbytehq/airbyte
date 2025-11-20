@@ -53,7 +53,7 @@ Please follow these [steps](https://developers.cart.com/docs/rest-api/docs/READM
 
 | Version | Date       | Pull Request                                             | Subject                                                                                |
 | :------ | :--------- | :------------------------------------------------------- | :------------------------------------------------------------------------------------- |
-| 0.3.36 | 2025-11-20 | [69783](https://github.com/airbytehq/airbyte/pull/69783) | Upgrade base image to python-connector-base:4.1.0 |
+| 0.3.36 | 2025-11-20 | [69783](https://github.com/airbytehq/airbyte/pull/69783) | Upgrade to Python 3.13, base image 4.1.0, and CDK 7.x |
 | 0.3.35 | 2025-10-14 | [68085](https://github.com/airbytehq/airbyte/pull/68085) | Update dependencies |
 | 0.3.34 | 2025-10-07 | [67194](https://github.com/airbytehq/airbyte/pull/67194) | Update dependencies |
 | 0.3.33 | 2025-09-30 | [65341](https://github.com/airbytehq/airbyte/pull/65341) | Update dependencies |
