@@ -43,4 +43,14 @@ data:
           secretStore:
             type: GSM
             alias: airbyte-connector-testing-secret-store
+  externalDocumentationUrls:
+    - title: API reference
+      url: https://www.aha.io/api
+      type: api_reference
+    - title: Authentication
+      url: https://www.aha.io/api/authentication
+      type: authentication_guide
+    - title: Rate limits
+      url: https://www.aha.io/api/rate_limiting
+      type: rate_limits
 metadataSpecVersion: "1.0"

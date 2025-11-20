@@ -38,27 +38,30 @@ jobs:
               - 'airbyte-cdk/java/**/*'
               - 'airbyte-cdk/bulk/**/*'
 
-  changes-in-bulk:
-    name: Detect Changes in Bulk
+  # Check for changes in the actual artifact that we'll publish.
+  # Notably, this does _not_ include test/integrationTest.
+  changes-in-bulk-artifact:
+    name: Detect Changes in Bulk CDK artifact
     runs-on: ubuntu-24.04
     outputs:
-      java: ${{ steps.changes-in-bulk.outputs.java }}
+      java: ${{ steps.changes-in-bulk-artifact.outputs.java }}
 
     steps:
       - name: Checkout Airbyte
         if: github.event_name != 'pull_request'
         uses: actions/checkout@08eba0b27e820071cde6df949e0beb9ba4906955 # v4.3.0
-      - id: changes-in-bulk
+      - id: changes-in-bulk-artifact
         uses: dorny/paths-filter@4512585405083f25c027a35db413c2b3b9006d50 # v2.11.1
         with:
           filters: |
             java:
               - 'airbyte-cdk/bulk/**/**/src/main/**/*'
+              - 'airbyte-cdk/bulk/**/**/src/testFixtures/**/*'
 
   run-check-bulk-cdk-version:
     needs:
-      - changes-in-bulk
-    if: needs.changes-in-bulk.outputs.java == 'true'
+      - changes-in-bulk-artifact
+    if: needs.changes-in-bulk-artifact.outputs.java == 'true'
     runs-on: linux-24.04-large # Custom runner, defined in GitHub org settings
     name: Bulk CDK version check
     timeout-minutes: 60

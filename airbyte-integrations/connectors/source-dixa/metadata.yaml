@@ -40,4 +40,14 @@ data:
             alias: airbyte-connector-testing-secret-store
   connectorBuildOptions:
     baseImage: docker.io/airbyte/source-declarative-manifest:6.51.0@sha256:890b109f243b8b9406f23ea7522de41025f7b3e87f6fc9710bc1e521213a276f
+  externalDocumentationUrls:
+    - title: Dixa API reference
+      url: https://docs.dixa.io/openapi/
+      type: api_reference
+    - title: Dixa authentication
+      url: https://docs.dixa.io/openapi/dixa-api/#section/Authentication
+      type: authentication_guide
+    - title: Dixa rate limits
+      url: https://docs.dixa.io/openapi/dixa-api/#section/Rate-limiting
+      type: rate_limits
 metadataSpecVersion: "1.0"

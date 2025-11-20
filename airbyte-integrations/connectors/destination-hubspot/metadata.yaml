@@ -12,7 +12,7 @@ data:
   connectorSubtype: api
   connectorType: destination
   definitionId: c8ccd253-8525-4bbd-801c-f0b84ac71f61
-  dockerImageTag: 0.0.7
+  dockerImageTag: 0.0.8
   dockerRepository: airbyte/destination-hubspot
   githubIssueLabel: destination-hubspot
   icon: hubspot.svg
@@ -29,4 +29,20 @@ data:
   supportLevel: certified
   supportsDataActivation: true
   supportsRefreshes: true # needed for the CDK to work as it relies on the generation/sync ids to work
+  externalDocumentationUrls:
+    - title: HubSpot API documentation
+      url: https://developers.hubspot.com/docs/api/overview
+      type: api_reference
+    - title: HubSpot Developer Changelog
+      url: https://developers.hubspot.com/changelog
+      type: api_release_history
+    - title: OAuth
+      url: https://developers.hubspot.com/docs/api/oauth-quickstart-guide
+      type: authentication_guide
+    - title: Rate limits
+      url: https://developers.hubspot.com/docs/api/usage-details
+      type: rate_limits
+    - title: HubSpot Status
+      url: https://status.hubspot.com/
+      type: status_page
 metadataSpecVersion: "1.0"

@@ -6,11 +6,11 @@ data:
     # Please update to the latest version of the connector base image.
     # https://hub.docker.com/r/airbyte/python-connector-base
     # Please use the full address with sha256 hash to guarantee build reproducibility.
-    baseImage: docker.io/airbyte/source-declarative-manifest:7.3.9@sha256:467a90d7721f4e0ca0065e6b2d257abfb371fdeafbc64c8ce63c039270aba0f0
+    baseImage: docker.io/airbyte/source-declarative-manifest:7.5.0@sha256:92e539d5003b33c3624eae7715aee6e39b7b2f1f0eeb6003d37e649a06847ae8
   connectorSubtype: api
   connectorType: source
   definitionId: f96bb511-5e3c-48fc-b408-547953cd81a4
-  dockerImageTag: 0.2.40
+  dockerImageTag: 0.2.42
   dockerRepository: airbyte/source-launchdarkly
   githubIssueLabel: source-launchdarkly
   icon: launchdarkly.svg
@@ -47,4 +47,17 @@ data:
           secretStore:
             type: GSM
             alias: airbyte-connector-testing-secret-store
+  externalDocumentationUrls:
+    - title: LaunchDarkly API reference
+      url: https://apidocs.launchdarkly.com/
+      type: api_reference
+    - title: LaunchDarkly authentication
+      url: https://docs.launchdarkly.com/home/account-security/api-access-tokens
+      type: authentication_guide
+    - title: LaunchDarkly rate limits
+      url: https://apidocs.launchdarkly.com/#section/Overview/Rate-limiting
+      type: rate_limits
+    - title: LaunchDarkly Status
+      url: https://status.launchdarkly.com/
+      type: status_page
 metadataSpecVersion: "1.0"

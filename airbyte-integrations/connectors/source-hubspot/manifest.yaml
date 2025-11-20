@@ -143,7 +143,6 @@ definitions:
       datetime: "{{ format_datetime(config.get('start_date', '2006-06-01T00:00:00.000Z'), '%Y-%m-%dT%H:%M:%S.%fZ') }}"
       datetime_format: "%Y-%m-%dT%H:%M:%S.%fZ"
     datetime_format: "%Y-%m-%dT%H:%M:%S.%fZ"
-    lookback_window: P{{ config.get('lookback_window', 0) }}D
     cursor_datetime_formats:
       - "%Y-%m-%dT%H:%M:%S.%fZ"
       - "%Y-%m-%dT%H:%M:%S.%f%z"
@@ -317,7 +316,6 @@ definitions:
         datetime: "{{ format_datetime(config.get('start_date', '2006-06-01T00:00:00.000Z'), '%Y-%m-%dT%H:%M:%S.%fZ') }}"
         datetime_format: "%Y-%m-%dT%H:%M:%S.%fZ"
       datetime_format: "%Y-%m-%dT%H:%M:%S.%fZ"
-      lookback_window: P{{ config.get('lookback_window', 0) }}D
       cursor_datetime_formats:
         - "%Y-%m-%dT%H:%M:%S.%fZ"
         - "%Y-%m-%dT%H:%M:%SZ"
@@ -408,7 +406,6 @@ definitions:
         datetime: "{{ format_datetime(config.get('start_date', '2006-06-01T00:00:00.000Z'), '%Y-%m-%dT%H:%M:%S.%fZ') }}"
         datetime_format: "%Y-%m-%dT%H:%M:%S.%fZ"
       datetime_format: "%Y-%m-%dT%H:%M:%S.%fZ"
-      lookback_window: P{{ config.get('lookback_window', 0) }}D
       cursor_datetime_formats:
         - "%Y-%m-%dT%H:%M:%S.%fZ"
         - "%Y-%m-%dT%H:%M:%SZ"
@@ -531,7 +528,6 @@ definitions:
         datetime: "{{ format_datetime(config.get('start_date', '2006-06-01T00:00:00.000Z'), '%Y-%m-%dT%H:%M:%S.%fZ') }}"
         datetime_format: "%Y-%m-%dT%H:%M:%S.%fZ"
       datetime_format: "%Y-%m-%dT%H:%M:%S.%fZ"
-      lookback_window: P{{ config.get('lookback_window', 0) }}D
       cursor_datetime_formats:
         - "%Y-%m-%dT%H:%M:%S.%fZ"
         - "%Y-%m-%dT%H:%M:%SZ"
@@ -856,7 +852,6 @@ definitions:
         datetime: "{{ format_datetime(config.get('start_date', '2006-06-01T00:00:00.000Z'), '%ms') }}"
         datetime_format: "%ms"
       datetime_format: "%ms"
-      lookback_window: P{{ config.get('lookback_window', 0) }}D
       cursor_datetime_formats:
         - "%ms"
       is_client_side_incremental: true
@@ -1028,7 +1023,6 @@ definitions:
         datetime: "{{ format_datetime(config.get('start_date', '2006-06-01T00:00:00Z'), '%ms', '%Y-%m-%dT%H:%M:%SZ') }}"
         datetime_format: "%ms"
       datetime_format: "%ms"
-      lookback_window: P{{ config.get('lookback_window', 0) }}D
       cursor_datetime_formats:
         - "%ms"
       is_client_side_incremental: true
@@ -1103,7 +1097,6 @@ definitions:
       type: DatetimeBasedCursor
       cursor_field: updatedAt
       datetime_format: "%Y-%m-%dT%H:%M:%S.%fZ"
-      lookback_window: P{{ config.get('lookback_window', 0) }}D
       is_client_side_incremental: true
       cursor_datetime_formats:
         - "%ms" # support previous state format
@@ -1155,7 +1148,6 @@ definitions:
         datetime: "{{ format_datetime(config.get('start_date', '2006-06-01T00:00:00Z'), '%ms', '%Y-%m-%dT%H:%M:%SZ') }}"
         datetime_format: "%ms"
       datetime_format: "%ms"
-      lookback_window: P{{ config.get('lookback_window', 0) }}D
       cursor_datetime_formats:
         - "%ms"
       is_client_side_incremental: true
@@ -1204,7 +1196,6 @@ definitions:
         datetime: "{{ format_datetime(config.get('start_date', '2006-06-01T00:00:00Z'), '%ms', '%Y-%m-%dT%H:%M:%SZ') }}"
         datetime_format: "%ms"
       datetime_format: "%ms"
-      lookback_window: P{{ config.get('lookback_window', 0) }}D
       cursor_datetime_formats:
         - "%ms"
       is_client_side_incremental: true
@@ -1266,9 +1257,8 @@ definitions:
       type: DatetimeBasedCursor
       cursor_field: created
       datetime_format: "%ms"
-      lookback_window: P{{ config.get('lookback_window', 0) }}D
       step: P30D
-      cursor_granularity: PT1S
+      cursor_granularity: PT0.001S
       cursor_datetime_formats:
         - "%ms"
         - "%Y-%m-%dT%H:%M:%S.%fZ"
@@ -1348,7 +1338,6 @@ definitions:
       type: DatetimeBasedCursor
       cursor_field: lastUpdated
       datetime_format: "%ms"
-      lookback_window: P{{ config.get('lookback_window', 0) }}D
       is_client_side_incremental: true
       cursor_datetime_formats:
         - "%ms"
@@ -1453,7 +1442,9 @@ definitions:
           prefix: properties_
     incremental_sync:
       $ref: "#/definitions/incremental_sync"
-      is_client_side_incremental: true
+      step: P30D
+      cursor_granularity: PT0.001S
+      lookback_window: PT{{ config.get('lookback_window', 0) }}M
 
   companies_stream:
     $ref: "#/definitions/base_crm_search_incremental_stream"
@@ -1597,9 +1588,8 @@ definitions:
       type: DatetimeBasedCursor
       cursor_field: timestamp
       datetime_format: "%ms"
-      lookback_window: P{{ config.get('lookback_window', 0) }}D
       step: P30D
-      cursor_granularity: PT1S
+      cursor_granularity: PT0.001S
       cursor_datetime_formats:
         - "%ms"
       start_datetime:
@@ -1669,7 +1659,6 @@ definitions:
         datetime: "{{ format_datetime(config.get('start_date', '2006-06-01T00:00:00Z'), '%Y-%m-%dT%H:%M:%S.%fZ', '%Y-%m-%dT%H:%M:%SZ') }}"
         datetime_format: "%Y-%m-%dT%H:%M:%S.%fZ"
       datetime_format: "%Y-%m-%dT%H:%M:%S.%fZ"
-      lookback_window: P{{ config.get('lookback_window', 0) }}D
       is_client_side_incremental: true
       cursor_datetime_formats:
         - "%ms"
@@ -2126,6 +2115,18 @@ spec:
         examples:
           - "2017-01-25T00:00:00Z"
         format: date-time
+      lookback_window:
+        default: 0
+        description: >-
+          How far back (in minutes) to re-fetch records during incremental syncs. 
+          Set this if you notice missing records in CRMSearch streams to recover data 
+          that may be delayed by the HubSpot API.
+        examples:
+          - 60
+        maximum: 576000
+        minimum: 0
+        title: Lookback window
+        type: integer
       credentials:
         title: Authentication
         description: Choose how to authenticate to HubSpot.
@@ -2204,7 +2205,7 @@ spec:
         title: Number of concurrent workers
         minimum: 1
         maximum: 40
-        default: 3
+        default: 10
         examples: [ 1, 2, 3 ]
         description: The number of worker threads to use for the sync.
   advanced_auth:
@@ -2246,10 +2247,34 @@ spec:
               - credentials
               - client_secret
 
+
+api_budget:
+  type: HTTPAPIBudget
+  policies:
+    # 1) CRM Search: special cap, separate from the global burst
+    - type: MovingWindowCallRatePolicy
+      rates:
+        - limit: 5         # 5 req/second
+          interval: PT1S
+        - limit: 300       # 300 req/min (same ceiling)
+          interval: PT1M
+      matchers:
+        - method: POST
+          url_path_pattern: "^/crm/v3/objects/[^/]+/search$"
+    # 2) General: public app burst = 110 per 10s per installed account
+    - type: MovingWindowCallRatePolicy
+      rates:
+        - limit: 10
+          interval: PT1S
+        - limit: 100
+          interval: PT10S
+      matchers: [ ]
+  status_codes_for_ratelimit_hit: [429]
+
 # HubSpot account is limited to 110 requests every 10 seconds https://developers.hubspot.com/docs/guides/apps/api-usage/usage-details#rate-limits
 concurrency_level:
   type: ConcurrencyLevel
-  default_concurrency: "{{ config.get('num_workers', 3) }}"
+  default_concurrency: "{{ config.get('num_workers', 10) }}"
   max_concurrency: 40
 
 schemas:

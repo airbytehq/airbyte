@@ -5,10 +5,20 @@
 package io.airbyte.cdk.load.component
 
 import io.airbyte.cdk.load.component.TableOperationsFixtures as Fixtures
-import io.airbyte.cdk.load.component.TableOperationsFixtures.sortByTestField
+import io.airbyte.cdk.load.component.TableOperationsFixtures.assertEquals
+import io.airbyte.cdk.load.component.TableOperationsFixtures.insertRecords
+import io.airbyte.cdk.load.component.TableOperationsFixtures.reverseColumnNameMapping
 import io.airbyte.cdk.load.data.AirbyteValue
 import io.airbyte.cdk.load.data.IntegerValue
+import io.airbyte.cdk.load.data.ObjectValue
+import io.airbyte.cdk.load.data.StringValue
+import io.airbyte.cdk.load.data.TimestampWithTimezoneValue
 import io.airbyte.cdk.load.message.Meta
+import io.airbyte.cdk.load.message.Meta.Companion.COLUMN_NAME_AB_EXTRACTED_AT
+import io.airbyte.cdk.load.message.Meta.Companion.COLUMN_NAME_AB_GENERATION_ID
+import io.airbyte.cdk.load.message.Meta.Companion.COLUMN_NAME_AB_META
+import io.airbyte.cdk.load.message.Meta.Companion.COLUMN_NAME_AB_RAW_ID
+import io.airbyte.cdk.load.table.ColumnNameMapping
 import io.micronaut.test.extensions.junit5.annotation.MicronautTest
 import kotlinx.coroutines.test.runTest
 import org.junit.jupiter.api.Assertions.assertEquals
@@ -37,12 +47,16 @@ import org.junit.jupiter.api.assertDoesNotThrow
 interface TableOperationsSuite {
     /** The database client instance to test. Must be properly configured and connected. */
     val client: TableOperationsClient
+    val testClient: TestTableOperationsClient
+    // since ColumnNameMapping doesn't include the airbyte columns...
+    val airbyteMetaColumnMapping: Map<String, String>
+        get() = Meta.COLUMN_NAMES.associateWith { it }
 
     private val harness: TableOperationsTestHarness
-        get() = TableOperationsTestHarness(client)
+        get() = TableOperationsTestHarness(client, testClient, airbyteMetaColumnMapping)
 
     /** Tests basic database connectivity by pinging the database. */
-    fun `connect to database`() = runTest { assertDoesNotThrow { client.ping() } }
+    fun `connect to database`() = runTest { assertDoesNotThrow { testClient.ping() } }
 
     /** Tests namespace creation and deletion operations. */
     fun `create and drop namespaces`() = runTest {
@@ -54,7 +68,7 @@ interface TableOperationsSuite {
 
             assert(client.namespaceExists(testNamespace))
 
-            client.dropNamespace(testNamespace)
+            testClient.dropNamespace(testNamespace)
 
             assert(!client.namespaceExists(testNamespace))
         } finally {
@@ -102,10 +116,12 @@ interface TableOperationsSuite {
      *
      * @param inputRecords Records to insert into the test table
      * @param expectedRecords Expected records after insertion (may differ in type representation)
+     * @param columnNameMapping Column name mapping to use for the test table
      */
     fun `insert records`(
         inputRecords: List<Map<String, AirbyteValue>>,
         expectedRecords: List<Map<String, Any>>,
+        columnNameMapping: ColumnNameMapping,
     ) = runTest {
         val testNamespace = Fixtures.generateTestNamespace("insert-test-namespace")
         harness.createTestNamespaceVerifyExists(testNamespace)
@@ -117,14 +133,17 @@ interface TableOperationsSuite {
             harness.createTestTableAndVerifyExists(
                 tableName = testTable,
                 schema = Fixtures.TEST_INTEGER_SCHEMA,
-                columnNameMapping = Fixtures.TEST_MAPPING,
+                columnNameMapping = columnNameMapping,
             )
 
-            client.insertRecords(testTable, inputRecords)
+            testClient.insertRecords(testTable, inputRecords, columnNameMapping)
 
             val resultRecords = harness.readTableWithoutMetaColumns(testTable)
 
-            assertEquals(expectedRecords, resultRecords)
+            assertEquals(
+                expectedRecords,
+                resultRecords.reverseColumnNameMapping(columnNameMapping, airbyteMetaColumnMapping)
+            )
         } finally {
             harness.cleanupTable(testTable)
             harness.cleanupNamespace(testNamespace)
@@ -136,10 +155,19 @@ interface TableOperationsSuite {
         `insert records`(
             inputRecords = Fixtures.SINGLE_TEST_RECORD_INPUT,
             expectedRecords = Fixtures.SINGLE_TEST_RECORD_EXPECTED,
+            columnNameMapping = Fixtures.TEST_MAPPING,
         )
 
-    /** Tests the ability to count rows in a table across multiple insertions. */
-    fun `count table rows`() = runTest {
+    fun `count table rows`() = `count table rows`(columnNameMapping = Fixtures.TEST_MAPPING)
+
+    /**
+     * Tests the ability to count rows in a table across multiple insertions.
+     *
+     * @param columnNameMapping Column name mapping to use for the test table
+     */
+    fun `count table rows`(
+        columnNameMapping: ColumnNameMapping,
+    ) = runTest {
         val testNamespace = Fixtures.generateTestNamespace("count-test-namespace")
         harness.createTestNamespaceVerifyExists(testNamespace)
 
@@ -150,17 +178,41 @@ interface TableOperationsSuite {
             harness.createTestTableAndVerifyExists(
                 tableName = testTable,
                 schema = Fixtures.TEST_INTEGER_SCHEMA,
-                columnNameMapping = Fixtures.TEST_MAPPING,
+                columnNameMapping = columnNameMapping,
             )
 
             val records1 =
                 listOf(
-                    mapOf("test" to IntegerValue(42)),
-                    mapOf("test" to IntegerValue(42)),
-                    mapOf("test" to IntegerValue(42)),
+                    mapOf(
+                        COLUMN_NAME_AB_RAW_ID to
+                            StringValue("246f1ff1-eae9-4eeb-b02b-9ffecfc46fc1"),
+                        COLUMN_NAME_AB_EXTRACTED_AT to
+                            TimestampWithTimezoneValue("2025-01-22T00:00:00Z"),
+                        COLUMN_NAME_AB_META to ObjectValue(linkedMapOf()),
+                        COLUMN_NAME_AB_GENERATION_ID to IntegerValue(1),
+                        "test" to IntegerValue(42),
+                    ),
+                    mapOf(
+                        COLUMN_NAME_AB_RAW_ID to
+                            StringValue("c9f1272d-df1f-4a3f-95d0-3a704676d743"),
+                        COLUMN_NAME_AB_EXTRACTED_AT to
+                            TimestampWithTimezoneValue("2025-01-22T00:00:00Z"),
+                        COLUMN_NAME_AB_META to ObjectValue(linkedMapOf()),
+                        COLUMN_NAME_AB_GENERATION_ID to IntegerValue(1),
+                        "test" to IntegerValue(42),
+                    ),
+                    mapOf(
+                        COLUMN_NAME_AB_RAW_ID to
+                            StringValue("0dafda3b-d465-4f34-baf2-85f1887cbb95"),
+                        COLUMN_NAME_AB_EXTRACTED_AT to
+                            TimestampWithTimezoneValue("2025-01-22T00:00:00Z"),
+                        COLUMN_NAME_AB_META to ObjectValue(linkedMapOf()),
+                        COLUMN_NAME_AB_GENERATION_ID to IntegerValue(1),
+                        "test" to IntegerValue(42),
+                    ),
                 )
 
-            client.insertRecords(testTable, records1)
+            testClient.insertRecords(testTable, records1, columnNameMapping)
 
             val count1 = client.countTable(testTable)
 
@@ -168,10 +220,18 @@ interface TableOperationsSuite {
 
             val records2 =
                 listOf(
-                    mapOf("test" to IntegerValue(42)),
+                    mapOf(
+                        COLUMN_NAME_AB_RAW_ID to
+                            StringValue("ed1fdd92-06ac-465d-ab87-2f0fe1f09f30"),
+                        COLUMN_NAME_AB_EXTRACTED_AT to
+                            TimestampWithTimezoneValue("2025-01-22T00:00:00Z"),
+                        COLUMN_NAME_AB_META to ObjectValue(linkedMapOf()),
+                        COLUMN_NAME_AB_GENERATION_ID to IntegerValue(1),
+                        "test" to IntegerValue(42),
+                    ),
                 )
 
-            client.insertRecords(testTable, records2)
+            testClient.insertRecords(testTable, records2, columnNameMapping)
 
             val count2 = client.countTable(testTable)
 
@@ -179,15 +239,63 @@ interface TableOperationsSuite {
 
             val records3 =
                 listOf(
-                    mapOf("test" to IntegerValue(42)),
-                    mapOf("test" to IntegerValue(42)),
-                    mapOf("test" to IntegerValue(42)),
-                    mapOf("test" to IntegerValue(42)),
-                    mapOf("test" to IntegerValue(42)),
-                    mapOf("test" to IntegerValue(42)),
+                    mapOf(
+                        COLUMN_NAME_AB_RAW_ID to
+                            StringValue("609ffd26-c8b4-40bb-8020-5b825fc2e585"),
+                        COLUMN_NAME_AB_EXTRACTED_AT to
+                            TimestampWithTimezoneValue("2025-01-22T00:00:00Z"),
+                        COLUMN_NAME_AB_META to ObjectValue(linkedMapOf()),
+                        COLUMN_NAME_AB_GENERATION_ID to IntegerValue(1),
+                        "test" to IntegerValue(42),
+                    ),
+                    mapOf(
+                        COLUMN_NAME_AB_RAW_ID to
+                            StringValue("073a10e8-7a9d-40eb-b268-f0f9110b8ba7"),
+                        COLUMN_NAME_AB_EXTRACTED_AT to
+                            TimestampWithTimezoneValue("2025-01-22T00:00:00Z"),
+                        COLUMN_NAME_AB_META to ObjectValue(linkedMapOf()),
+                        COLUMN_NAME_AB_GENERATION_ID to IntegerValue(1),
+                        "test" to IntegerValue(42),
+                    ),
+                    mapOf(
+                        COLUMN_NAME_AB_RAW_ID to
+                            StringValue("9ddb052c-3658-46be-9dd2-d81fdde895ea"),
+                        COLUMN_NAME_AB_EXTRACTED_AT to
+                            TimestampWithTimezoneValue("2025-01-22T00:00:00Z"),
+                        COLUMN_NAME_AB_META to ObjectValue(linkedMapOf()),
+                        COLUMN_NAME_AB_GENERATION_ID to IntegerValue(1),
+                        "test" to IntegerValue(42),
+                    ),
+                    mapOf(
+                        COLUMN_NAME_AB_RAW_ID to
+                            StringValue("18425373-bb70-4f53-8cac-59f2eba398e6"),
+                        COLUMN_NAME_AB_EXTRACTED_AT to
+                            TimestampWithTimezoneValue("2025-01-22T00:00:00Z"),
+                        COLUMN_NAME_AB_META to ObjectValue(linkedMapOf()),
+                        COLUMN_NAME_AB_GENERATION_ID to IntegerValue(1),
+                        "test" to IntegerValue(42),
+                    ),
+                    mapOf(
+                        COLUMN_NAME_AB_RAW_ID to
+                            StringValue("6081dceb-21ef-46be-bcf4-85b3d719d64es"),
+                        COLUMN_NAME_AB_EXTRACTED_AT to
+                            TimestampWithTimezoneValue("2025-01-22T00:00:00Z"),
+                        COLUMN_NAME_AB_META to ObjectValue(linkedMapOf()),
+                        COLUMN_NAME_AB_GENERATION_ID to IntegerValue(1),
+                        "test" to IntegerValue(42),
+                    ),
+                    mapOf(
+                        COLUMN_NAME_AB_RAW_ID to
+                            StringValue("71eb9718-c6a0-4c8b-875e-cf2de7d98f52"),
+                        COLUMN_NAME_AB_EXTRACTED_AT to
+                            TimestampWithTimezoneValue("2025-01-22T00:00:00Z"),
+                        COLUMN_NAME_AB_META to ObjectValue(linkedMapOf()),
+                        COLUMN_NAME_AB_GENERATION_ID to IntegerValue(1),
+                        "test" to IntegerValue(42),
+                    ),
                 )
 
-            client.insertRecords(testTable, records3)
+            testClient.insertRecords(testTable, records3, columnNameMapping)
 
             val count3 = client.countTable(testTable)
 
@@ -198,8 +306,16 @@ interface TableOperationsSuite {
         }
     }
 
-    /** Tests retrieval of the generation ID from inserted records. */
-    fun `get generation id`() = runTest {
+    fun `get generation id`() = `get generation id`(columnNameMapping = Fixtures.TEST_MAPPING)
+
+    /**
+     * Tests retrieval of the generation ID from inserted records.
+     *
+     * @param columnNameMapping Column name mapping to use for the test table
+     */
+    fun `get generation id`(
+        columnNameMapping: ColumnNameMapping = Fixtures.TEST_MAPPING,
+    ) = runTest {
         val testNamespace = Fixtures.generateTestNamespace("gen-id-test-namespace")
         harness.createTestNamespaceVerifyExists(testNamespace)
 
@@ -210,18 +326,23 @@ interface TableOperationsSuite {
             harness.createTestTableAndVerifyExists(
                 tableName = testTable,
                 schema = Fixtures.TEST_INTEGER_SCHEMA,
-                columnNameMapping = Fixtures.TEST_MAPPING,
+                columnNameMapping = columnNameMapping,
             )
 
             val genId = 17L
             val inputRecords =
                 listOf(
                     mapOf(
+                        COLUMN_NAME_AB_RAW_ID to
+                            StringValue("59ed9e9f-3197-4be5-9ef6-7caf9cc7ee04"),
+                        COLUMN_NAME_AB_EXTRACTED_AT to
+                            TimestampWithTimezoneValue("2025-01-22T00:00:00Z"),
+                        COLUMN_NAME_AB_META to ObjectValue(linkedMapOf()),
+                        COLUMN_NAME_AB_GENERATION_ID to IntegerValue(genId),
                         Fixtures.TEST_FIELD to IntegerValue(42),
-                        Meta.COLUMN_NAME_AB_GENERATION_ID to IntegerValue(genId),
                     ),
                 )
-            client.insertRecords(testTable, inputRecords)
+            testClient.insertRecords(testTable, inputRecords, columnNameMapping)
 
             val result = client.getGenerationId(testTable)
 
@@ -238,11 +359,13 @@ interface TableOperationsSuite {
      * @param sourceInputRecords Records to insert into the source table
      * @param targetInputRecords Initial records in the target table (will be overwritten)
      * @param expectedRecords Expected records in the target table after overwrite
+     * @param columnNameMapping Column name mapping to use for the test tables
      */
     fun `overwrite tables`(
         sourceInputRecords: List<Map<String, AirbyteValue>>,
         targetInputRecords: List<Map<String, AirbyteValue>>,
         expectedRecords: List<Map<String, Any>>,
+        columnNameMapping: ColumnNameMapping,
     ) = runTest {
         assertNotEquals(sourceInputRecords, targetInputRecords) {
             "Source and target table input records must be different to properly test overwrite."
@@ -263,27 +386,30 @@ interface TableOperationsSuite {
             harness.createTestTableAndVerifyExists(
                 sourceTable,
                 Fixtures.TEST_INTEGER_SCHEMA,
-                Fixtures.TEST_MAPPING
+                columnNameMapping,
             )
-            harness.insertAndVerifyRecordCount(sourceTable, sourceInputRecords)
+            harness.insertAndVerifyRecordCount(sourceTable, sourceInputRecords, columnNameMapping)
 
             harness.createTestTableAndVerifyExists(
                 targetTable,
                 Fixtures.TEST_INTEGER_SCHEMA,
-                Fixtures.TEST_MAPPING
+                columnNameMapping,
             )
-            harness.insertAndVerifyRecordCount(targetTable, targetInputRecords)
+            harness.insertAndVerifyRecordCount(targetTable, targetInputRecords, columnNameMapping)
 
             client.overwriteTable(sourceTable, targetTable)
 
             val overwrittenTableRecords = harness.readTableWithoutMetaColumns(targetTable)
 
             assertEquals(
-                expectedRecords.sortByTestField(),
-                overwrittenTableRecords.sortByTestField(),
-            ) {
-                "Expected records were not in the overwritten table."
-            }
+                expectedRecords,
+                overwrittenTableRecords.reverseColumnNameMapping(
+                    columnNameMapping,
+                    airbyteMetaColumnMapping
+                ),
+                "test",
+                "Expected records were not in the overwritten table.",
+            )
 
             assert(!client.tableExists(sourceTable)) {
                 "Source table: ${sourceTable.namespace}.${sourceTable.name} was not dropped as expected."
@@ -301,6 +427,7 @@ interface TableOperationsSuite {
             sourceInputRecords = Fixtures.OVERWRITE_SOURCE_RECORDS,
             targetInputRecords = Fixtures.OVERWRITE_TARGET_RECORDS,
             expectedRecords = Fixtures.OVERWRITE_EXPECTED_RECORDS,
+            columnNameMapping = Fixtures.TEST_MAPPING,
         )
 
     /**
@@ -310,11 +437,13 @@ interface TableOperationsSuite {
      * @param sourceInputRecords Records in the source table to be copied
      * @param targetInputRecords Existing records in the target table
      * @param expectedRecords Expected combined records in the target table after copy
+     * @param columnNameMapping Column name mapping to use for the test tables
      */
     fun `copy tables`(
         sourceInputRecords: List<Map<String, AirbyteValue>>,
         targetInputRecords: List<Map<String, AirbyteValue>>,
         expectedRecords: List<Map<String, Any>>,
+        columnNameMapping: ColumnNameMapping,
     ) = runTest {
         val testNamespace = Fixtures.generateTestNamespace("overwrite-test-namespace")
         harness.createTestNamespaceVerifyExists(testNamespace)
@@ -329,27 +458,30 @@ interface TableOperationsSuite {
             harness.createTestTableAndVerifyExists(
                 sourceTable,
                 Fixtures.TEST_INTEGER_SCHEMA,
-                Fixtures.TEST_MAPPING
+                columnNameMapping,
             )
-            harness.insertAndVerifyRecordCount(sourceTable, sourceInputRecords)
+            harness.insertAndVerifyRecordCount(sourceTable, sourceInputRecords, columnNameMapping)
 
             harness.createTestTableAndVerifyExists(
                 targetTable,
                 Fixtures.TEST_INTEGER_SCHEMA,
-                Fixtures.TEST_MAPPING
+                columnNameMapping,
             )
-            harness.insertAndVerifyRecordCount(targetTable, targetInputRecords)
+            harness.insertAndVerifyRecordCount(targetTable, targetInputRecords, columnNameMapping)
 
-            client.copyTable(Fixtures.TEST_MAPPING, sourceTable, targetTable)
+            client.copyTable(columnNameMapping, sourceTable, targetTable)
 
             val copyTableRecords = harness.readTableWithoutMetaColumns(targetTable)
 
             assertEquals(
-                expectedRecords.sortByTestField(),
-                copyTableRecords.sortByTestField(),
-            ) {
+                expectedRecords,
+                copyTableRecords.reverseColumnNameMapping(
+                    columnNameMapping,
+                    airbyteMetaColumnMapping
+                ),
+                "test",
                 "Expected source records were not copied to the target table."
-            }
+            )
         } finally {
             harness.cleanupTable(sourceTable)
             harness.cleanupTable(targetTable)
@@ -363,6 +495,7 @@ interface TableOperationsSuite {
             sourceInputRecords = Fixtures.OVERWRITE_SOURCE_RECORDS,
             targetInputRecords = Fixtures.OVERWRITE_TARGET_RECORDS,
             expectedRecords = Fixtures.COPY_EXPECTED_RECORDS,
+            columnNameMapping = Fixtures.TEST_MAPPING,
         )
 
     /**
@@ -372,11 +505,13 @@ interface TableOperationsSuite {
      * @param sourceInputRecords Records to upsert from the source table
      * @param targetInputRecords Existing records in the target table
      * @param expectedRecords Expected records in the target table after upsert
+     * @param columnNameMapping Column name mapping to use for the test tables
      */
     fun `upsert tables`(
         sourceInputRecords: List<Map<String, AirbyteValue>>,
         targetInputRecords: List<Map<String, AirbyteValue>>,
         expectedRecords: List<Map<String, Any>>,
+        columnNameMapping: ColumnNameMapping,
     ) = runTest {
         val testNamespace = Fixtures.generateTestNamespace("upsert-test-namespace")
         harness.createTestNamespaceVerifyExists(testNamespace)
@@ -389,7 +524,7 @@ interface TableOperationsSuite {
             Fixtures.createAppendStream(
                 namespace = sourceTable.namespace,
                 name = sourceTable.name,
-                schema = Fixtures.ID_AND_TEST_SCHEMA,
+                schema = Fixtures.ID_TEST_WITH_CDC_SCHEMA,
             )
 
         val targetTable = Fixtures.generateTestTableName("upsert-test-target-table", testNamespace)
@@ -408,35 +543,33 @@ interface TableOperationsSuite {
         try {
             harness.createTestTableAndVerifyExists(
                 tableName = sourceTable,
-                columnNameMapping = Fixtures.ID_TEST_WITH_CDC_MAPPING,
+                columnNameMapping = columnNameMapping,
                 schema = Fixtures.ID_AND_TEST_SCHEMA,
                 stream = sourceStream,
             )
-            harness.insertAndVerifyRecordCount(sourceTable, sourceInputRecords)
+            harness.insertAndVerifyRecordCount(sourceTable, sourceInputRecords, columnNameMapping)
 
             harness.createTestTableAndVerifyExists(
                 tableName = targetTable,
-                columnNameMapping = Fixtures.ID_TEST_WITH_CDC_MAPPING,
+                columnNameMapping = columnNameMapping,
                 schema = Fixtures.ID_TEST_WITH_CDC_SCHEMA,
                 stream = targetStream,
             )
-            harness.insertAndVerifyRecordCount(targetTable, targetInputRecords)
+            harness.insertAndVerifyRecordCount(targetTable, targetInputRecords, columnNameMapping)
 
-            client.upsertTable(
-                targetStream,
-                Fixtures.ID_TEST_WITH_CDC_MAPPING,
-                sourceTable,
-                targetTable
-            )
+            client.upsertTable(targetStream, columnNameMapping, sourceTable, targetTable)
 
-            val upsertTableRecords = harness.readTableWithoutMetaColumns(targetTable)
+            val upsertTableRecords = testClient.readTable(targetTable)
 
             assertEquals(
-                expectedRecords.sortByTestField(),
-                upsertTableRecords.sortByTestField(),
-            ) {
+                expectedRecords,
+                upsertTableRecords.reverseColumnNameMapping(
+                    columnNameMapping,
+                    airbyteMetaColumnMapping
+                ),
+                "id",
                 "Upserted table did not contain expected records."
-            }
+            )
         } finally {
             harness.cleanupTable(sourceTable)
             harness.cleanupTable(targetTable)
@@ -450,5 +583,6 @@ interface TableOperationsSuite {
             sourceInputRecords = Fixtures.UPSERT_SOURCE_RECORDS,
             targetInputRecords = Fixtures.UPSERT_TARGET_RECORDS,
             expectedRecords = Fixtures.UPSERT_EXPECTED_RECORDS,
+            columnNameMapping = Fixtures.ID_TEST_WITH_CDC_MAPPING,
         )
 }

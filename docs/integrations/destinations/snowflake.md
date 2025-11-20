@@ -251,6 +251,17 @@ desired namespace.
 
 | Version         | Date       | Pull Request                                                        | Subject                                                                                                                                                                                |
 |:----------------|:-----------|:--------------------------------------------------------------------|:---------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------|
+| 4.0.28          | 2025-11-13 | [69245](https://github.com/airbytehq/airbyte/pull/69245)            | Upgrade to CDK 0.1.78 |
+| 4.0.27          | 2025-11-11 | [69285](https://github.com/airbytehq/airbyte/pull/69285)  | Remove spurious log messages |
+| 4.0.26          | 2025-11-11 | [69117](https://github.com/airbytehq/airbyte/pull/69117)  | Upgrade to CDK 0.1.74 (internal code changes for schema evolution) |
+| 4.0.25          | 2025-11-06 | [69226](https://github.com/airbytehq/airbyte/pull/69226)  | Improved additional statistics handling                                        |
+| 4.0.24          | 2025-11-05 | [69200](https://github.com/airbytehq/airbyte/pull/69200/)           | Add support for observability metrics                                          |
+| 4.0.23          | 2025-11-03 | [69153](https://github.com/airbytehq/airbyte/pull/69153)            | Fix bug in connector spec |
+| 4.0.22          | 2025-11-03 | [69147](https://github.com/airbytehq/airbyte/pull/69147)            | Upgrade to CDK 0.1.62 to improve handling of unrecognized JSON schema |
+| 4.0.21          | 2025-10-30 | [69100](https://github.com/airbytehq/airbyte/pull/69100)            | Upgrade to CDK 0.1.61 to fix state index bug |
+| 4.0.20          | 2025-10-28 | [68186](https://github.com/airbytehq/airbyte/pull/68186)            | Upgrade to CDK 0.1.59 |
+| 4.0.19          | 2025-10-28 | [68683](https://github.com/airbytehq/airbyte/pull/68683)            | Upgrade to CDK 0.1.58 (improve logging of unflushed states at end of sync) |
+| 4.0.18          | 2025-10-28 | [68125](https://github.com/airbytehq/airbyte/pull/68125)            | Internal refactoring; upgrade to CDK 0.1.56 |
 | 4.0.17          | 2025-10-21 | [68585](https://github.com/airbytehq/airbyte/pull/68585)            | Wrap Snowflake permission errors as ConfigErrorException for better error handling |
 | 4.0.16          | 2025-10-21 | [68516](https://github.com/airbytehq/airbyte/pull/68516)            | Ensure columns are marked as non-nullable in destination schema.                                                                                                                       |
 | 4.0.15          | 2025-10-21 | [67153](https://github.com/airbytehq/airbyte/pull/67153)            | Implement new proto schema implementation |
