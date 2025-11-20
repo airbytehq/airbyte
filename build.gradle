@@ -192,7 +192,7 @@ allprojects {
         if (project.hasProperty('JunitMethodExecutionTimeout')) {
             junitMethodExecutionTimeout = project.property('JunitMethodExecutionTimeout').toString()
         } else {
-            junitMethodExecutionTimeout = '1 m'
+            junitMethodExecutionTimeout = '1m'
         }
 
         systemProperty 'junit.jupiter.execution.timeout.default', junitMethodExecutionTimeout
