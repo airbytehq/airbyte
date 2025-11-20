@@ -24,7 +24,7 @@ If you _only_ interact with the raw tables, enable the `Disable Final Tables` op
 
 2. Open your **Snowflake** connector.
 
-3. Open the **Advanced** section.
+3. Open the **Optional fields** section.
 
 4. Turn on **Disable Final Tables**.
 
@@ -117,6 +117,10 @@ To remove the old raw tables:
    ```
 
    Replace `<TABLE_NAME>` with the specific table name you want to remove. Use fully qualified names (database.schema.table) to avoid ambiguity.
+
+### Update downstream pipelines
+
+If you have downstream apps and resources that interact with raw tables, update them to reference any new schema and table names.
 
 ## Upgrading to 3.0.0
 
