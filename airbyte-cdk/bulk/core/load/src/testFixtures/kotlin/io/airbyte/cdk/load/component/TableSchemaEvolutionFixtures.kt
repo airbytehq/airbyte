@@ -5,10 +5,12 @@
 package io.airbyte.cdk.load.component
 
 import io.airbyte.cdk.load.component.TableOperationsFixtures.inputRecord
+import io.airbyte.cdk.load.data.BooleanValue
 import io.airbyte.cdk.load.data.FieldType
 import io.airbyte.cdk.load.data.IntegerType
 import io.airbyte.cdk.load.data.IntegerValue
 import io.airbyte.cdk.load.data.ObjectType
+import io.airbyte.cdk.load.data.ObjectValue
 import io.airbyte.cdk.load.data.StringType
 import io.airbyte.cdk.load.data.StringValue
 import io.airbyte.cdk.load.data.UnknownType
@@ -45,5 +47,23 @@ object TableSchemaEvolutionFixtures {
             mapOf("id" to 3L, "test" to "true"),
             mapOf("id" to 4L, "test" to "0"),
             mapOf("id" to 5L, "test" to "foo"),
+        )
+
+    val UNKNOWN_TO_STRING_TYPE_INPUT_RECORDS =
+        listOf(
+            inputRecord("id" to IntegerValue(1), "test" to StringValue("foo")),
+            inputRecord(
+                "id" to IntegerValue(2),
+                "test" to ObjectValue(linkedMapOf("foo" to StringValue("bar")))
+            ),
+            inputRecord("id" to IntegerValue(3), "test" to BooleanValue(true)),
+            inputRecord("id" to IntegerValue(4), "test" to IntegerValue(0)),
+        )
+    val UNKNOWN_TO_STRING_TYPE_EXPECTED_RECORDS =
+        listOf(
+            mapOf("id" to 1L, "test" to "foo"),
+            mapOf("id" to 2L, "test" to """{"foo":"bar"}"""),
+            mapOf("id" to 3L, "test" to "true"),
+            mapOf("id" to 4L, "test" to "0"),
         )
 }

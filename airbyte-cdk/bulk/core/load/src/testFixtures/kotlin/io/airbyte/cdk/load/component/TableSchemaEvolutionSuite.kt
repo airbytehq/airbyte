@@ -461,6 +461,12 @@ interface TableSchemaEvolutionSuite {
         )
     }
 
+    /**
+     * Test that we can alter a column from StringType to UnknownType. In many destinations, this
+     * poses some challenges (e.g. naively casting VARCHAR to JSON may not work as expected).
+     *
+     * See also [`change from unknown type to string type`].
+     */
     fun `change from string type to unknown type`() {
         `change from string type to unknown type`(
             Fixtures.ID_AND_TEST_MAPPING,
@@ -470,47 +476,50 @@ interface TableSchemaEvolutionSuite {
         )
     }
 
-    // TODO make another one of these, but in the other direction
     fun `change from string type to unknown type`(
         initialColumnNameMapping: ColumnNameMapping,
         modifiedColumnNameMapping: ColumnNameMapping,
         inputRecords: List<Map<String, AirbyteValue>>,
         expectedRecords: List<Map<String, Any?>>,
-    ) = runTest {
-        val testNamespace = Fixtures.generateTestNamespace("namespace-test")
-        val testTable = Fixtures.generateTestTableName("table-test-table", testNamespace)
-
-        // Create the table and compute the schema changeset
-        val (_, expectedSchema, changeset, modifiedStream) =
-            computeSchemaEvolution(
-                testTable,
-                TableSchemaEvolutionFixtures.ID_AND_STRING_SCHEMA,
-                initialColumnNameMapping,
-                TableSchemaEvolutionFixtures.ID_AND_UNKNOWN_SCHEMA,
-                modifiedColumnNameMapping,
-            )
-
-        testClient.insertRecords(testTable, inputRecords, initialColumnNameMapping)
-
-        client.applyChangeset(
-            modifiedStream,
+    ) =
+        executeAndVerifySchemaEvolution(
+            TableSchemaEvolutionFixtures.ID_AND_STRING_SCHEMA,
+            initialColumnNameMapping,
+            TableSchemaEvolutionFixtures.ID_AND_UNKNOWN_SCHEMA,
             modifiedColumnNameMapping,
-            testTable,
-            expectedSchema.columns,
-            changeset,
+            inputRecords,
+            expectedRecords,
         )
 
-        val postAlterationRecords =
-            harness
-                .readTableWithoutMetaColumns(testTable)
-                .reverseColumnNameMapping(modifiedColumnNameMapping, airbyteMetaColumnMapping)
-        assertEquals(
-            expectedRecords,
-            postAlterationRecords,
-            "id",
-            "",
+    /**
+     * Test that we can alter a column from UnknownType to StringType. In many destinations, this
+     * poses some challenges (e.g. naively casting JSON to VARCHAR may not work as expected).
+     *
+     * See also [`change from string type to unknown type`].
+     */
+    fun `change from unknown type to string type`() {
+        `change from string type to unknown type`(
+            Fixtures.ID_AND_TEST_MAPPING,
+            Fixtures.ID_AND_TEST_MAPPING,
+            TableSchemaEvolutionFixtures.UNKNOWN_TO_STRING_TYPE_INPUT_RECORDS,
+            TableSchemaEvolutionFixtures.UNKNOWN_TO_STRING_TYPE_EXPECTED_RECORDS,
         )
     }
+
+    fun `change from unknown type to string type`(
+        initialColumnNameMapping: ColumnNameMapping,
+        modifiedColumnNameMapping: ColumnNameMapping,
+        inputRecords: List<Map<String, AirbyteValue>>,
+        expectedRecords: List<Map<String, Any?>>,
+    ) =
+        executeAndVerifySchemaEvolution(
+            TableSchemaEvolutionFixtures.ID_AND_UNKNOWN_SCHEMA,
+            initialColumnNameMapping,
+            TableSchemaEvolutionFixtures.ID_AND_STRING_SCHEMA,
+            modifiedColumnNameMapping,
+            inputRecords,
+            expectedRecords,
+        )
 
     // TODO add tests for funky chars (add/drop/change type; funky chars in PK/cursor)
 
@@ -556,6 +565,56 @@ interface TableSchemaEvolutionSuite {
             expectedSchema,
             columnChangeset,
             modifiedStream,
+        )
+    }
+
+    /**
+     * Create a table using [initialSchema]; insert [inputRecords] to the table; execute a schema
+     * evolution to [modifiedSchema]; read back the table and verify that it contains
+     * [expectedRecords].
+     *
+     * By convention: the schemas should use the column name `id` to identify records.
+     */
+    private fun executeAndVerifySchemaEvolution(
+        initialSchema: ObjectType,
+        initialColumnNameMapping: ColumnNameMapping,
+        modifiedSchema: ObjectType,
+        modifiedColumnNameMapping: ColumnNameMapping,
+        inputRecords: List<Map<String, AirbyteValue>>,
+        expectedRecords: List<Map<String, Any?>>,
+    ) = runTest {
+        val testNamespace = Fixtures.generateTestNamespace("namespace-test")
+        val testTable = Fixtures.generateTestTableName("table-test-table", testNamespace)
+
+        // Create the table and compute the schema changeset
+        val (_, expectedSchema, changeset, modifiedStream) =
+            computeSchemaEvolution(
+                testTable,
+                initialSchema,
+                initialColumnNameMapping,
+                modifiedSchema,
+                modifiedColumnNameMapping,
+            )
+
+        testClient.insertRecords(testTable, inputRecords, initialColumnNameMapping)
+
+        client.applyChangeset(
+            modifiedStream,
+            modifiedColumnNameMapping,
+            testTable,
+            expectedSchema.columns,
+            changeset,
+        )
+
+        val postAlterationRecords =
+            harness
+                .readTableWithoutMetaColumns(testTable)
+                .reverseColumnNameMapping(modifiedColumnNameMapping, airbyteMetaColumnMapping)
+        assertEquals(
+            expectedRecords,
+            postAlterationRecords,
+            "id",
+            "",
         )
     }
 
