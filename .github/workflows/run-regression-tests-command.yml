@@ -1,4 +1,4 @@
-name: Connector Ops CI - Run Regression Tests
+name: On-Demand Connector Regression Tests
 
 concurrency:
   # This is the name of the concurrency group. It is used to prevent concurrent runs of the same workflow.
@@ -64,17 +64,20 @@ on:
         description: Disable proxy for requests
         default: "false"
         type: boolean
-      connection_subset:
-        description: The subset of connections to select from.
-        default: "sandboxes"
-        type: choice
-        options:
-          - sandboxes
-          - all
-      control_version:
-        description: The version to use as a control version. This is useful when the version defined in the cloud registry does not have a lot of usage (either because a progressive rollout is underway or because a new version has just been released).
-        required: false
-        type: string
+
+      # Workaround: GitHub currently supports a max of 10 inputs for workflow_dispatch events.
+      # We need to consolidate some inputs to stay within this limit.
+      # connection_subset:
+      #   description: The subset of connections to select from.
+      #   default: "sandboxes"
+      #   type: choice
+      #   options:
+      #     - sandboxes
+      #     - all
+      # control_version:
+      #   description: The version to use as a control version. This is useful when the version defined in the cloud registry does not have a lot of usage (either because a progressive rollout is underway or because a new version has just been released).
+      #   required: false
+      #   type: string
 
 jobs:
   regression_tests:
@@ -158,16 +161,22 @@ jobs:
       - name: Setup Connection Subset Option
         if: github.event_name == 'workflow_dispatch'
         run: |
-          echo "CONNECTION_SUBSET=--connector_live_tests.connection-subset=${{ github.event.inputs.connection_subset }}" >> $GITHUB_ENV
+          echo "CONNECTION_SUBSET=--connector_live_tests.connection-subset=sandboxes" >> $GITHUB_ENV
+        # TODO: re-enable when we have resolved the more-than-10-inputs issue in workflow_dispatch.
+        # run: |
+        #   echo "CONNECTION_SUBSET=--connector_live_tests.connection-subset=${{ github.event.inputs.connection_subset }}" >> $GITHUB_ENV
 
       - name: Setup Control Version
         if: github.event_name == 'workflow_dispatch'
         run: |
-          if [ -n "${{ github.event.inputs.control_version }}" ]; then
-            echo "CONTROL_VERSION=--connector_live_tests.control-version=${{ github.event.inputs.control_version }}" >> $GITHUB_ENV
-          else
-            echo "CONTROL_VERSION=" >> $GITHUB_ENV
-          fi
+          echo "CONTROL_VERSION=" >> $GITHUB_ENV
+        # TODO: re-enable when we have resolved the more-than-10-inputs issue in workflow_dispatch.
+        # run: |
+        #   if [ -n "${{ github.event.inputs.control_version }}" ]; then
+        #     echo "CONTROL_VERSION=--connector_live_tests.control-version=${{ github.event.inputs.control_version }}" >> $GITHUB_ENV
+        #   else
+        #     echo "CONTROL_VERSION=" >> $GITHUB_ENV
+        #   fi
 
       # NOTE: We still use a PAT here (rather than a GitHub App) because the workflow needs
       # permissions to add commits to our main repo as well as forks. This will only work on
