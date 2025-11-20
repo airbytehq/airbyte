@@ -16,7 +16,7 @@ repository = "https://github.com/airbytehq/airbyte"
 include = "source_cart"
 
 [tool.poetry.dependencies]
-python = "^3.9,<3.12"
+python = "^3.9,<3.14"
 airbyte-cdk = "0.80.0"
 
 [tool.poetry.scripts]
