@@ -19,12 +19,12 @@ data:
   dockerRepository: airbyte/source-sendgrid
   documentationUrl: https://docs.airbyte.com/integrations/sources/sendgrid
   externalDocumentationUrls:
-    - title: SendGrid API OpenAPI specification
-      url: https://github.com/sendgrid/sendgrid-oai
-      type: openapi_spec
     - title: API overview
       url: https://docs.sendgrid.com/api-reference/how-to-use-the-sendgrid-v3-api/authentication
       type: api_reference
+    - title: SendGrid API OpenAPI specification
+      url: https://github.com/sendgrid/sendgrid-oai
+      type: openapi_spec
   githubIssueLabel: source-sendgrid
   icon: sendgrid.svg
   license: ELv2

@@ -14,15 +14,15 @@ data:
   dockerRepository: airbyte/source-notion
   documentationUrl: https://docs.airbyte.com/integrations/sources/notion
   externalDocumentationUrls:
-    - title: Notion API OpenAPI specification
-      url: https://github.com/ramnes/notion-sdk-py/blob/main/notion_client/openapi.json
-      type: openapi_spec
     - title: Changes by version
       url: https://developers.notion.com/reference/changes-by-version
       type: api_reference
     - title: Changelog
       url: https://developers.notion.com/page/changelog
       type: api_release_history
+    - title: Notion API OpenAPI specification
+      url: https://github.com/ramnes/notion-sdk-py/blob/main/notion_client/openapi.json
+      type: openapi_spec
   githubIssueLabel: source-notion
   icon: notion.svg
   license: ELv2
