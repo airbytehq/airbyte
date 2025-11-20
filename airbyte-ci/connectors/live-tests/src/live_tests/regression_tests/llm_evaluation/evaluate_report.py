@@ -141,6 +141,9 @@ def evaluate_with_llm(report_text: str, prompt: str | None = None, prompt_yaml_p
 
     Returns:
         Dictionary containing evaluation results with 'pass', 'summary', 'reasoning', 'severity', and 'recommendations' keys
+
+    Raises:
+        Exception: If LLM evaluation fails after retry
     """
     api_key = os.environ.get("OPENAI_API_KEY")
     base_url = os.environ.get("OPENAI_BASE_URL")
@@ -195,28 +198,15 @@ def evaluate_with_llm(report_text: str, prompt: str | None = None, prompt_yaml_p
         error_msg = str(e).lower()
         if "response_format" in error_msg or "json_object" in error_msg:
             print(f"Warning: JSON response format not supported, retrying without it: {e}")
-            try:
-                response = client.chat.completions.create(
-                    model=model,
-                    messages=messages,
-                    temperature=temperature,
-                )
-                content = response.choices[0].message.content
-                evaluation = json.loads(content)
-                return evaluation
-            except Exception as retry_error:
-                print(f"Retry also failed: {retry_error}")
-                e = retry_error
-
-        # Fallback to keyword-based evaluation
-        has_failures = "failed" in report_text.lower() or "error" in report_text.lower()
-        return {
-            "pass": not has_failures,
-            "summary": f"LLM evaluation failed: {str(e)}. Falling back to simple keyword-based evaluation.",
-            "reasoning": "Unable to perform detailed analysis. Check for 'failed' or 'error' keywords in report.",
-            "severity": "critical" if has_failures else "none",
-            "recommendations": "Review the test report manually and retry LLM evaluation.",
-        }
+            response = client.chat.completions.create(
+                model=model,
+                messages=messages,
+                temperature=temperature,
+            )
+            content = response.choices[0].message.content
+            evaluation = json.loads(content)
+            return evaluation
+        raise
 
 
 def write_github_summary(evaluation: dict[str, Any], model: str | None = None) -> None:
@@ -289,21 +279,31 @@ def main():
         prompt_yaml_path = Path(eval_prompt_path)
 
     print("Evaluating report with LLM...")
-    evaluation = evaluate_with_llm(report_text, custom_prompt, prompt_yaml_path)
+    try:
+        evaluation = evaluate_with_llm(report_text, custom_prompt, prompt_yaml_path)
 
-    print(f"\nEvaluation Result: {'PASS' if evaluation['pass'] else 'FAIL'}")
-    print(f"Summary: {evaluation['summary']}")
+        print(f"\nEvaluation Result: {'PASS' if evaluation['pass'] else 'FAIL'}")
+        print(f"Summary: {evaluation['summary']}")
 
-    model = os.environ.get("EVAL_MODEL", "gpt-4o")
-    write_github_summary(evaluation, model)
+        model = os.environ.get("EVAL_MODEL", "gpt-4o")
+        write_github_summary(evaluation, model)
 
-    if args.output_json:
-        output_data = {"evaluation": evaluation}
-        with open(args.output_json, "w", encoding="utf-8") as f:
-            json.dump(output_data, f, indent=2)
-        print(f"Evaluation results written to: {args.output_json}")
+        if args.output_json:
+            output_data = {"evaluation": evaluation}
+            with open(args.output_json, "w", encoding="utf-8") as f:
+                json.dump(output_data, f, indent=2)
+            print(f"Evaluation results written to: {args.output_json}")
 
-    sys.exit(0 if evaluation["pass"] else 1)
+        sys.exit(0 if evaluation["pass"] else 1)
+    except Exception as e:
+        print(f"Error: LLM evaluation failed: {e}", file=sys.stderr)
+
+        summary_file = os.environ.get("GITHUB_STEP_SUMMARY")
+        if summary_file:
+            with open(summary_file, "a", encoding="utf-8") as f:
+                f.write(f"# ❌ LLM Evaluation Failed\n\nError: {str(e)}\n\n")
+
+        sys.exit(1)
 
 
 if __name__ == "__main__":
