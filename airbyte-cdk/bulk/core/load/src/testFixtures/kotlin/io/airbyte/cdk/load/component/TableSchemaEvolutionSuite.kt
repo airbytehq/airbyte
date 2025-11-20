@@ -427,10 +427,18 @@ interface TableSchemaEvolutionSuite {
             changeset,
         )
 
-        val postAlterationRecords = harness.readTableWithoutMetaColumns(testTable)
+        val postAlterationRecords =
+            testClient
+                .readTable(testTable)
+                .removeNulls()
+                .reverseColumnNameMapping(modifiedColumnNameMapping, airbyteMetaColumnMapping)
         Assertions.assertEquals(
             listOf(
                 mapOf(
+                    "_airbyte_raw_id" to "fcc784dd-bf06-468e-ad59-666d5aaceae8",
+                    "_airbyte_extracted_at" to "2025-01-22T00:00:00Z",
+                    "_airbyte_meta" to linkedMapOf<String, Any?>(),
+                    "_airbyte_generation_id" to 1L,
                     "id" to 1234L,
                     "updated_at" to 5678L,
                     "to_retain" to "to_retain original value",
@@ -439,9 +447,7 @@ interface TableSchemaEvolutionSuite {
                     // note the lack of `to_add` - new columns should be initialized to null
                     )
             ),
-            postAlterationRecords
-                .removeNulls()
-                .reverseColumnNameMapping(modifiedColumnNameMapping, airbyteMetaColumnMapping),
+            postAlterationRecords,
         ) {
             "Expected records were not in the overwritten table."
         }
