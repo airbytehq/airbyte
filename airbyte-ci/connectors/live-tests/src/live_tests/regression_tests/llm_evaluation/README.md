@@ -70,7 +70,48 @@ poetry run python src/live_tests/regression_tests/llm_evaluation/evaluate_report
 - `OPENAI_API_KEY` (required): API key for LLM access (use `ollama` for Ollama, or OpenAI API key)
 - `OPENAI_BASE_URL` (optional): Base URL for OpenAI-compatible API (e.g., `http://127.0.0.1:11434/v1` for Ollama)
 - `EVAL_MODEL` (optional): Model name to use (defaults to `gpt-4o`, use `llama3.2:3b` for Ollama)
+- `EVAL_PROMPT_PATH` (optional): Path to custom `.prompt.yaml` file (overrides default location)
 - `GITHUB_STEP_SUMMARY` (optional): Path to GitHub Actions step summary file
+
+### Evaluation Prompt
+
+The evaluation prompt is stored in a GitHub-compatible `.prompt.yaml` file at:
+```
+.github/prompts/regression-evaluation.prompt.yaml
+```
+
+This file follows GitHub's official format for storing prompts in repositories:
+- **Format**: YAML with `name`, `description`, `model`, `modelParameters`, and `messages` fields
+- **Location**: Can be anywhere in the repository, but `.github/prompts/` is the conventional location
+- **Benefits**: Works with GitHub's Models UI, provider-agnostic, version-controlled, reviewable
+
+The prompt file is automatically loaded when the script runs. If the file is not found or invalid, the script falls back to a hardcoded default prompt.
+
+To customize the evaluation prompt:
+1. Edit `.github/prompts/regression-evaluation.prompt.yaml`
+2. Modify the `messages` section (system and user roles)
+3. Optionally adjust `model` and `modelParameters` (temperature, etc.)
+4. Environment variables (`EVAL_MODEL`, etc.) override YAML settings
+
+Example prompt file structure:
+```yaml
+name: Regression Report Evaluation
+description: Evaluate connector regression test reports
+model: llama3.2:3b
+modelParameters:
+  temperature: 0.3
+messages:
+  - role: system
+    content: |
+      Your evaluation instructions here...
+  - role: user
+    content: |
+      Report:
+      
+      {{report_text}}
+```
+
+The `{{report_text}}` placeholder is automatically replaced with the actual report content.
 
 ### Using Ollama (Default in CI)
 
