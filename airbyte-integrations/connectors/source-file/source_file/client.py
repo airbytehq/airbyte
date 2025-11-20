@@ -523,12 +523,15 @@ class Client:
 
         # Iterate through sheets
         # Panda's read_excel allows specifying sheet_name as str, int, list of str/int or None (all sheets)
-        # For simplicity, we only support str or int for now as we expect users to read one sheet at a time in most cases.
         for idx, sheetname in enumerate(work_book.sheetnames):
-            if sheet_name and sheetname is str and sheetname != sheet_name:
+            # Handle sheet_name filtering
+            if sheet_name and isinstance(sheet_name, str) and sheetname != sheet_name:
                 continue
-            elif sheet_name and sheet_name is int and idx != sheet_name:
+            elif sheet_name and isinstance(sheet_name, int) and idx != sheet_name:
                 continue
+            elif sheet_name and isinstance(sheet_name, list) and sheetname not in sheet_name and idx not in sheet_name:
+                continue
+
             work_sheet = work_book[sheetname]
             data = list(work_sheet.iter_rows(values_only=True))
 

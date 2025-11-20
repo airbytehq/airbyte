@@ -99,7 +99,12 @@ def test_load_dataframes_xlsx(config, absolute_path, test_files, file_name, shou
         expected = read_excel(f, engine="openpyxl")
         assert read_file.equals(expected)
 
-@pytest.mark.parametrize("file_name, should_raise_error, sheet_name", [("test-with-multiple-sheets.xlsx", False, "unit_tests"), ("test-with-multiple-sheets.xlsx", False, 0)])
+@pytest.mark.parametrize("file_name, should_raise_error, sheet_name", [
+    ("test-with-multiple-sheets.xlsx", False, "unit_tests"), # single sheet by name
+    ("test-with-multiple-sheets.xlsx", False, 0), # single sheet by index
+    ("test-with-multiple-sheets.xlsx", False, ["unit_tests"]), # list of sheet names
+    ("test-with-multiple-sheets.xlsx", False, [0]) # list of sheet indices
+    ])
 def test_load_dataframes_xlsx_with_sheets(config, absolute_path, test_files, file_name, should_raise_error, sheet_name):
     config["format"] = "excel"
     config["reader_options"] = {"sheet_name": sheet_name}
@@ -111,6 +116,12 @@ def test_load_dataframes_xlsx_with_sheets(config, absolute_path, test_files, fil
     else:
         read_file = next(client.load_dataframes(fp=f))
         expected = read_excel(f, engine="openpyxl", sheet_name=sheet_name)
+        print(sheet_name)
+        if isinstance(sheet_name, list):
+            print(sheet_name)
+            print(expected)
+            expected = expected[sheet_name[0]]
+            print(expected)
         assert read_file.equals(expected)
 
 @pytest.mark.parametrize("file_format, file_path", [("json", "formats/json/demo.json"), ("jsonl", "formats/jsonl/jsonl_nested.jsonl")])
