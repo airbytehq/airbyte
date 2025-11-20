@@ -45,6 +45,8 @@ jobs:
       GCP_GSM_CREDENTIALS: ${{ secrets.GCP_GSM_CREDENTIALS }}
       GCP_PROJECT_ID: ${{ secrets.GCP_PROJECT_ID || vars.GCP_PROJECT_ID }}
       DD_TAGS: "connector.name:${{ matrix.connector }}"
+      # Exclude data activation destinations by default
+      UPGRADE_CDK_GRADLE_PARAMS: ${{ inputs.upgradeCdkGradleParams || '-x :airbyte-integrations:connectors:destination-hubspot:upgradeCdk :airbyte-integrations:connectors:destination-customer-io:upgradeCdk' }}
 
     strategy:
       matrix:
@@ -98,7 +100,7 @@ jobs:
 
       - name: Run CDK upgrade # Run tests against local CDK version
         if: matrix.connector
-        run: ./gradlew upgradeCdk --cdkVersion=local ${{ inputs.upgradeCdkGradleParams }}
+        run: ./gradlew upgradeCdk --cdkVersion=local $UPGRADE_CDK_GRADLE_PARAMS
 
       - name: Run Unit Tests
         id: run-unit-tests
