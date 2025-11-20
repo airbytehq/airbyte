@@ -64,13 +64,16 @@ on:
         description: Disable proxy for requests
         default: "false"
         type: boolean
-      connection_subset:
-        description: The subset of connections to select from.
-        default: "sandboxes"
-        type: choice
-        options:
-          - sandboxes
-          - all
+
+      # Workaround: GitHub currently supports a max of 10 inputs for workflow_dispatch events.
+      # We need to consolidate some inputs to stay within this limit.
+      # connection_subset:
+      #   description: The subset of connections to select from.
+      #   default: "sandboxes"
+      #   type: choice
+      #   options:
+      #     - sandboxes
+      #     - all
 
 jobs:
   live_tests:
@@ -146,7 +149,10 @@ jobs:
       - name: Setup Connection Subset Option
         if: github.event_name == 'workflow_dispatch'
         run: |
-          echo "CONNECTION_SUBSET=--connector_live_tests.connection-subset=${{ github.event.inputs.connection_subset }}" >> $GITHUB_ENV
+          echo "CONNECTION_SUBSET=--connector_live_tests.connection-subset=sandboxes" >> $GITHUB_ENV
+        # TODO: re-enable when we have resolved the more-than-10-inputs issue in workflow_dispatch.
+        # run: |
+        #   echo "CONNECTION_SUBSET=--connector_live_tests.connection-subset=${{ github.event.inputs.connection_subset }}" >> $GITHUB_ENV
 
       # NOTE: We still use a PAT here (rather than a GitHub App) because the workflow needs
       # permissions to add commits to our main repo as well as forks. This will only work on
