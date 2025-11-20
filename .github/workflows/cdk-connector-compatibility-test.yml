@@ -98,7 +98,7 @@ jobs:
 
       - name: Run CDK upgrade # Run tests against local CDK version
         if: matrix.connector
-        run: ./gradlew upgradeCdk --cdkVersion=local
+        run: ./gradlew upgradeCdk --cdkVersion=local ${{ inputs.upgradeCdkGradleParams }}
 
       - name: Run Unit Tests
         id: run-unit-tests
