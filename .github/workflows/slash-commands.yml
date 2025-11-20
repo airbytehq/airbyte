@@ -45,6 +45,8 @@ jobs:
             publish-java-cdk
             run-cat-tests
             run-connector-tests
+            run-live-tests
+            run-regression-tests
             test-performance
             update-connector-cdk-version
 
