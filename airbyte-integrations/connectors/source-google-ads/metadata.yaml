@@ -11,7 +11,7 @@ data:
   connectorSubtype: api
   connectorType: source
   definitionId: 253487c0-2246-43ba-a21f-5116b20a2c50
-  dockerImageTag: "4.1.0-rc.8"
+  dockerImageTag: 4.1.0
   dockerRepository: airbyte/source-google-ads
   documentationUrl: https://docs.airbyte.com/integrations/sources/google-ads
   externalDocumentationUrls:
@@ -37,7 +37,7 @@ data:
   releaseStage: generally_available
   releases:
     rolloutConfiguration:
-      enableProgressiveRollout: true
+      enableProgressiveRollout: false
     breakingChanges:
       1.0.0:
         message: This release introduces fixes to custom query schema creation. Users should refresh the source schema and reset affected streams after upgrading to ensure uninterrupted syncs.
@@ -53,6 +53,11 @@ data:
         upgradeDeadline: "2025-08-19"
   suggestedStreams:
     streams:
+      -
+        -
+          -
+            -
+              -It
       - campaigns
       - accounts
       - ad_group_ads
