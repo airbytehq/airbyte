@@ -186,6 +186,10 @@ For example, you can use the `{"orient" : "records"}` to change how orientation 
 
 If you need to read Excel Binary Workbook, please specify `excel_binary` format in `File Format` select.
 
+#### Excel-specific reader options
+
+- `sheet_name`: Limit the sync to one or more worksheets inside the workbook. Accepts either a single sheet name (string), a zero-based sheet index (integer), or an array mixing names and indexes (for example, `{"sheet_name": ["Finance", 2]}`). When omitted, every sheet in the file is read sequentially and appended into the same destination table. If any requested sheet does not exist, setup will fail with a configuration error.
+
 :::caution
 This connector does not support syncing unstructured data files such as raw text, audio, or videos.
 :::
@@ -298,6 +302,7 @@ In order to read large files from a remote location, this connector uses the [sm
 
 | Version    | Date       | Pull Request                                             | Subject                                                                                                                                                                |
 |:-----------|:-----------|:---------------------------------------------------------|:-----------------------------------------------------------------------------------------------------------------------------------------------------------------------|
+| 0.7.0      | 2025-11-20 | [XXXXX](https://github.com/airbytehq/airbyte/pull/XXXXX) | Add `sheet_name` or `sheet_names` handling for Excel `reader_options`                                                                                                                                             |
 | 0.6.0      | 2025-11-03 | [69148](https://github.com/airbytehq/airbyte/pull/69148) | Promoting release candidate 0.6.0-rc.1 to a main version.                                                                                                                                             |
 | 0.6.0-rc.1 | 2025-10-22 | [68588](https://github.com/airbytehq/airbyte/pull/68588) | Update to airbyte-cdk ^v7                                                                                                                                              |
 | 0.5.46     | 2025-10-21 | [68484](https://github.com/airbytehq/airbyte/pull/68484) | Update dependencies                                                                                                                                                    |
