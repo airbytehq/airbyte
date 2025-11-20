@@ -223,7 +223,6 @@ def write_github_summary(evaluation: dict[str, Any], model: str | None = None) -
         summary_file = "/dev/stdout"
 
     status_emoji = "✅" if evaluation["pass"] else "❌"
-    severity_emoji = {"critical": "🔴", "major": "🟠", "minor": "🟡", "none": "🟢"}.get(evaluation.get("severity", "none"), "⚪")
 
     model_info = f"model: {model}" if model else "OpenAI-compatible API"
 
