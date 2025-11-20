@@ -4,42 +4,18 @@ description: A high level view of Airbyte's components.
 
 # Architecture overview
 
-Airbyte is conceptually composed of two parts: platform and connectors.
+Think of Airbyte as two things:
 
-The platform provides all the horizontal services required to configure and run data movement operations e.g: the UI, configuration API, job scheduling, logging, alerting, etc. and is structured as a set of microservices.
+- The platform
+- Connectors
 
-Connectors are independent modules which push/pull data to/from sources and destinations. Connectors are built in accordance with the [Airbyte Specification](./airbyte-protocol.md), which describes the interface with which data can be moved between a source and a destination using Airbyte. Connectors are packaged as Docker images, which allows total flexibility over the technologies used to implement them.
+The platform provides all the horizontal services required to configure and run data movement operations. This includes the UI, API, job scheduling, logging, alerting, etc. These functions exist as a set of microservices.
 
-## Data Transfer Modes
+Connectors are independent modules which push/pull data to/from sources and destinations. Connectors follow the [Airbyte Specification](./airbyte-protocol.md), which describes the interface with which Airbyte can move data between a source and a destination. Connectors are Docker images, which allows flexibility over the technologies used to implement them.
 
-Airbyte supports two data transfer modes that are automatically selected based on connector capabilities:
+## Platform architecture
 
-- **Socket Mode**: Records flow directly from source to destination via Unix domain sockets, enabling high-throughput parallel data transfer. A lightweight bookkeeper process handles control messages, state, and logs.
-- **Legacy Mode**: Records flow through an orchestrator middleware that sits between source and destination, using standard input/output streams.
-
-Socket mode is used when both source and destination connectors support it, providing significantly higher performance for data movement operations.
-
-### Data Flow Comparison
-
-```mermaid
----
-title: Data Transfer Modes
----
-flowchart LR
-    subgraph Legacy["Legacy Mode"]
-        SRC1[Source] --> ORCH[Orchestrator] --> DEST1[Destination]
-    end
-    
-    subgraph Socket["Socket Mode"]
-        SRC2[Source] -.->|control| BK[Bookkeeper]
-        SRC2 ==>|records via sockets| DEST2[Destination]
-        DEST2 -.->|state| BK
-    end
-```
-
-## Platform Architecture
-
-A more concrete diagram of the platform orchestration can be seen below:
+This diagram describes platform orchestration at a high level.
 
 ```mermaid
 ---
@@ -64,26 +40,63 @@ flowchart LR
     WL -->|queues workload| Q
     Q  -->|reads from| L
     L -->|launches| OP
-    O -->|reports status to| WL
+    OP -->|reports status to| WL
 ```
 
+### Steady state operation
+
 - **Config API Server** [`airbyte-server`, `airbyte-server-api`]: Airbyte's main controller and graphical user interface. All operations in Airbyte such as creating sources, destinations, connections, managing configurations, etc. are configured and invoked from the API.
-- **Database Config & Jobs** [`airbyte-db`]: Stores all the configuration \(credentials, frequency...\) and job history.
-- **Temporal Service** [`airbyte-temporal`]: Manages the scheduling and sequencing task queues and workflows.
-- **Worker** [`airbyte-worker`]: Reads from the task queues and executes the connection scheduling and sequencing logic, making calls to the workload API.
-- **Workload API** [`airbyte-workload-api-server`]: The HTTP interface for enqueuing workloads — the discrete pods that run the connector operations.
-- **Launcher** [`airbyte-workload-launcher`]: Consumes events from the workload API and interfaces with k8s to launch workloads.
 
-### Data Transfer Middleware
+- **Database config & jobs** [`airbyte-db`]: stores all the configuration \(credentials, frequency...\) and job history.
 
-Within connector operation pods, Airbyte runs middleware containers to process connector output:
+- **Temporal service** [`airbyte-temporal`]: manages the scheduling and sequencing task queues and workflows.
+
+- **Worker** [`airbyte-worker`]: reads from the task queues and executes the connection scheduling and sequencing logic, making calls to the workload API.
+
+- **Workload API** [`airbyte-workload-api-server`]: The HTTP interface for enqueuing workloads and the discrete pods that run the connector operations.
+
+- **Launcher** [`airbyte-workload-launcher`]: consumes events from the workload API and interfaces with k8s to launch workloads.
+
+### Additional components
+
+- **Cron** [`airbyte-cron`]: cleans the server and sync logs (when using local logs). Regularly updates connector definitions and sweeps old workloads ensuring eventual consensus.
+
+- **Bootloader** [`airbyte-bootloader`]: upgrades and migrates database tables and confirm the environment is ready to work.
+
+### Data transfer middleware
+
+Airbyte supports two data transfer modes.
+
+- **Socket mode**: Records flow directly from source to destination via Unix domain sockets. This is a high-throughput parallel data transfer. A lightweight bookkeeper process handles control messages, state, and logs.
+
+- **Legacy mode**: Records flow through an orchestrator middleware that sits between source and destination, using standard input/output streams.
+
+Airbyte selects the mode automatically, based on the capabilities of the connectors used in a connection. It uses socket mode when both source and destination connectors support it. Socket mode provides between four and ten times the performance of legacy mode.
+
+Within connector operation pods, Airbyte runs middleware containers to process connector output.
 
 - **Bookkeeper** [`airbyte-bookkeeper`]: Used in socket mode. Processes control messages, state, and logs while records flow directly between connectors via sockets.
+
 - **Container Orchestrator** [`airbyte-container-orchestrator`]: Used in legacy mode. Sits between source and destination connectors, processing all data and control messages.
 
-The diagram shows the steady-state operation of Airbyte, there are components not described you'll see in your deployment:
+#### Data flow comparison
 
-- **Cron** [`airbyte-cron`]: Clean the server and sync logs (when using local logs). Regularly updates connector definitions and sweeps old workloads ensuring eventual consenus.
-- **Bootloader** [`airbyte-bootloader`]: Upgrade and Migrate the Database tables and confirm the environment is ready to work.
+```mermaid
+---
+title: Legacy Mode
+---
+flowchart LR
+    direction LR
+    SRC1[Source] --> ORCH[Orchestrator] --> DEST1[Destination]
+```
 
-This is a holistic high-level description of each component. For Airbyte deployed in Kubernetes the structure is very similar with a few changes.
+```mermaid
+---
+title: Socket Mode
+---
+flowchart LR
+    direction LR
+    SRC2[Source] -.->|control| BK[Bookkeeper]
+    SRC2 ==>|records via sockets| DEST2[Destination]
+    DEST2 -.->|state| BK[Bookkeeper]
+```
