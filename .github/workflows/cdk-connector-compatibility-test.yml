@@ -7,6 +7,15 @@ on:
   schedule:
     - cron: "0 12 * * *"
   workflow_call:
+    inputs:
+      upgradeCdkGradleParams:
+        type: string
+        description: |
+          Additional parameters to pass into the `./gradlew upgradeCdk` call.
+          For example, `-x :airbyte-integrations:connectors:destination-hubspot:upgradeCdk` would allow you
+          to exclude destination-hubspot from being tested.
+        required: false
+        default: ""
 
 jobs:
   generate-matrix:
