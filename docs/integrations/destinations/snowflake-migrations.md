@@ -45,40 +45,53 @@ If you interact with both the raw _and_ final tables, this use case is no longer
 3. Ensure each pair of Snowflake connectors have opposite settings for **Disable Final Tables**. One connector should have this setting turned on, and the other should have it turned off.
 
 4. Configure distinct default schemas for each destination to avoid table name collisions:
-   - For the destination that will create final tables, set a distinct **Schema** in the Snowflake destination configuration (for example, `ANALYTICS_V4`). This is where final tables will be written.
-   - For the raw-only destination (with **Disable Final Tables** turned on), set a distinct **Airbyte Internal Table Dataset Name** under the **Advanced** section (for example, `AIRBYTE_INTERNAL_RAW`). This is where raw tables will be written.
+
+   - For the destination that creates final tables, set a distinct **Schema** in the Snowflake destination configuration. For example, `ANALYTICS_FINAL_TABLES`. This is where Airbyte writes final tables.
+
+   - For the raw-only destination (with **Disable Final Tables** turned on), set a distinct **Airbyte Internal Table Dataset Name** under the **Advanced** section (for example, `AIRBYTE_INTERNAL_RAW`). This is where Airbyte writes raw tables.
+
    - Example configuration:
-     - Destination A (final tables): Schema = `ANALYTICS_V4`, Airbyte Internal Table Dataset Name = `AIRBYTE_INTERNAL`
-     - Destination B (raw-only): Airbyte Internal Table Dataset Name = `AIRBYTE_INTERNAL_RAW`
+
+     - Destination A (final tables): Schema = `ANALYTICS_FINAL_TABLES`, Airbyte Internal Table Dataset Name = `AIRBYTE_INTERNAL`
+
+     - Destination B (raw tables): Airbyte Internal Table Dataset Name = `AIRBYTE_INTERNAL_RAW`
+
    - Using distinct schemas prevents table name collisions when running both destinations in parallel.
 
-5. Update your connections to point to the appropriate destination:
+5. Recreate your connections to point to the appropriate destination.
+
    - Connections that need raw tables only should target the destination with **Disable Final Tables** turned on.
+
    - Connections that need final tables should target the destination with this setting turned off.
 
-6. Run test syncs on both destinations to verify outputs:
-   - The raw-only destination should write only to the internal schema (default `airbyte_internal`).
+6. Run test syncs on both destinations to verify outputs.
+
+   - The raw tables destination should write only to the internal schema. Default: `airbyte_internal`.
+
    - The standard destination should write only final tables to the target schema.
 
 7. After verifying that both destinations work correctly, continue running both connections in parallel going forward.
 
-<MigrationGuide />
+### Do the upgrade
 
-### Optional: clean up legacy raw tables
+Follow the standard [connector upgrade steps](#how-to-upgrade) shown below.
 
-The version 4.0 connector doesn't automatically remove tables created by earlier versions. After upgrading to version 4 and verifying your data, you can optionally remove the old raw tables.
+### Optional: remove legacy raw tables
 
-For most users, you can find the raw tables in the schema configured as **Airbyte Internal Table Dataset Name** (which defaults to `airbyte_internal`). If you customized this setting, look in that schema instead.
+The version 4 connector doesn't automatically remove tables created by earlier versions. After upgrading to version 4 and verifying your data, you can optionally remove the old raw tables.
+
+You can find the raw tables in the schema configured as **Airbyte Internal Table Dataset Name**. This defaults to `airbyte_internal`. If you customized this setting, look in that schema instead.
 
 The table names match these patterns depending on which version created them:
 
-- **Version 2/3 (Typing and Deduping)**: `raw_{namespace}__{stream}` (for example, `airbyte_internal.raw_public__users`)
-- **Version 4 (Legacy raw tables mode)**: `{namespace}_raw__stream_{stream}` (for example, `airbyte_internal.public_raw__stream__users`)
+- **Before version 4:**: `raw_{namespace}__{stream}` (for example, `airbyte_internal.raw_public__users`)
 
-Note: The number of underscores between `raw` and `stream` may vary depending on the longest underscore sequence in your namespace and stream names.
+- **Version 4 with legacy raw tables mode**: `{namespace}_raw__stream_{stream}` (for example, `airbyte_internal.public_raw__stream__users`)
+
+The number of underscores between `raw` and `stream` may vary depending on the longest underscore sequence in your namespace and stream names.
 
 :::note
-Version 4 of the Snowflake destination uses the `airbyte_internal` schema for temporary scratch space (for example, streams running in dedup mode, truncate refreshes, and overwrite syncs). Dropping the entire `airbyte_internal` schema can interrupt active syncs and cause data loss. Only drop the specific raw tables you no longer need.
+Version 4 of the Snowflake destination uses the `airbyte_internal` schema for temporary scratch space. For example, Airbyte needs this for streams running in dedup mode, truncate refreshes, and overwrite syncs. Dropping the entire `airbyte_internal` schema can interrupt active syncs and cause data loss. Only drop the specific raw tables you no longer need.
 :::
 
 To remove the old raw tables:
@@ -92,7 +105,7 @@ To remove the old raw tables:
    SHOW TABLES IN SCHEMA <DATABASE>.<INTERNAL_SCHEMA> LIKE 'RAW\_%';
 
    -- For Version 4 legacy raw tables:
-   SHOW TABLES IN SCHEMA <DATABASE>.<INTERNAL_SCHEMA> LIKE '%_RAW__STREAM_%';
+   SHOW TABLES IN SCHEMA <DATABASE>.<INTERNAL_SCHEMA> LIKE '%RAW%STREAM%';
    ```
 
    Replace `<DATABASE>` with your Snowflake database name and `<INTERNAL_SCHEMA>` with your internal schema name (default `airbyte_internal`).
@@ -121,3 +134,7 @@ Learn more about what's new in Destinations V2 [here](/platform/using-airbyte/co
 ## Upgrading to 2.0.0
 
 Snowflake no longer supports GCS/S3. Please migrate to the Internal Staging option. This is recommended by Snowflake and is cheaper and faster.
+
+## How to upgrade {#how-to-upgrade}
+
+<MigrationGuide />
