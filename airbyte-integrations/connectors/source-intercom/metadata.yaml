@@ -23,6 +23,9 @@ data:
     - title: Changelog
       url: https://developers.intercom.com/docs/build-an-integration/learn-more/rest-apis/api-changelog
       type: api_release_history
+    - title: Intercom API OpenAPI specification
+      url: https://developers.intercom.com/docs/references/rest-api/api.intercom.io/openapi.json
+      type: openapi_spec
   githubIssueLabel: source-intercom
   icon: intercom.svg
   license: ELv2

@@ -32,6 +32,7 @@ jobs:
         with:
           fetch-depth: 0
       - uses: errata-ai/vale-action@d89dee975228ae261d22c15adcd03578634d429c # Pinned to V2.1.1
+        continue-on-error: true # Always pass, even if reviewdog can't post annotations (e.g., fork PRs with read-only tokens)
         with:
           vale_flags: --config=docusaurus/vale-ci.ini --minAlertLevel=warning # CI-specific config that disables certain rules (see vale-ci.ini vs vale.ini)
           files: docs/ # Folder in which to lint
