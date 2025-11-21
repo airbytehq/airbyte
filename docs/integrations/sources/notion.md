@@ -119,7 +119,7 @@ The connector is restricted by Notion [request limits](https://developers.notion
 
 | Version     | Date       | Pull Request                                             | Subject                                                                                                                                                                |
 |:------------|:-----------|:---------------------------------------------------------|:-----------------------------------------------------------------------------------------------------------------------------------------------------------------------|
-| 3.3.7 | 2025-11-20 | [69375](https://github.com/airbytehq/airbyte/pull/69780) | Fix bug in current_block_depth |
+| 3.3.7 | 2025-11-24 | [69375](https://github.com/airbytehq/airbyte/pull/69780) | Fix bug in current_block_depth |
 | 3.3.6 | 2025-11-18 | [69375](https://github.com/airbytehq/airbyte/pull/69375) | Update dependencies |
 | 3.3.5 | 2025-10-29 | [68750](https://github.com/airbytehq/airbyte/pull/68750) | Update dependencies |
 | 3.3.4 | 2025-10-21 | [68399](https://github.com/airbytehq/airbyte/pull/68399) | Update dependencies |

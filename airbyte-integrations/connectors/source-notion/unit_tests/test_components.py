@@ -99,7 +99,7 @@ state_test_records = [
 ]
 
 
-def test_blocks_retriever_depth_counter_bug(components_module):
+def test_blocks_retriever_depth_restored_after_children(components_module):
     """
     Test to verify that current_block_depth is correctly incremented and decremented during recursive calls.
 
