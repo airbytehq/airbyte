@@ -34,7 +34,7 @@ jobs:
       - uses: errata-ai/vale-action@d89dee975228ae261d22c15adcd03578634d429c # Pinned to V2.1.1
         continue-on-error: true # Always pass, even if reviewdog can't post annotations (e.g., fork PRs with read-only tokens)
         with:
-          vale_flags: --config=docusaurus/vale-ci.ini --minAlertLevel=warning # CI-specific config that disables certain rules (see vale-ci.ini vs vale.ini)
+          vale_flags: --config=docusaurus/vale.ini --minAlertLevel=warning # Use vale.ini with minAlertLevel overridden to warning for CI
           files: docs/ # Folder in which to lint
           filter_mode: added # Only lint things that have changed
           fail_on_error: false # Don't fail if the linter finds issues (compliance is optional)
