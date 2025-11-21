@@ -9,7 +9,7 @@ from pathlib import Path
 from typing import Any
 
 
-def write_to_github_output(**outputs: Any) -> None:
+def write_to_github_output(**kwargs: Any) -> None:
     """Write outputs to GitHub Actions GITHUB_OUTPUT file if running in CI.
 
     This allows subsequent workflow steps to access the outputs from this step.
@@ -17,8 +17,8 @@ def write_to_github_output(**outputs: Any) -> None:
     accessible, ensuring that report saving never fails due to output writing issues.
 
     Args:
-        **outputs: Key-value pairs to write to GITHUB_OUTPUT. Values will be
-                   converted to strings.
+        **kwargs: Key-value pairs to write to GITHUB_OUTPUT. Values will be
+                  converted to strings.
 
     Example:
         write_to_github_output(
@@ -27,7 +27,7 @@ def write_to_github_output(**outputs: Any) -> None:
             connector_name="source-postgres"
         )
     """
-    if not outputs:
+    if not kwargs:
         return
 
     if not os.environ.get("CI"):
@@ -44,7 +44,7 @@ def write_to_github_output(**outputs: Any) -> None:
 
     try:
         with github_output_path.open("a", encoding="utf-8") as f:
-            for key, value in outputs.items():
+            for key, value in kwargs.items():
                 value_str = str(value)
                 if "\n" in value_str:
                     delimiter = "EOF"
