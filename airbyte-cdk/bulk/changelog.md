@@ -1,3 +1,13 @@
+## Version 0.1.81
+
+load cdk: components tests: more coverage on upsert
+
+## Version 0.1.80
+
+**Extract CDK**
+
+* Fix default partition_id value for `CheckpointOnlyPartitionReader`.
+
 ## Version 0.1.79
 
 **Extract CDK**

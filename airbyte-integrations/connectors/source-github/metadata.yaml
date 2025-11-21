@@ -97,6 +97,9 @@ data:
     - title: GitHub authentication
       url: https://docs.github.com/en/rest/overview/authenticating-to-the-rest-api
       type: authentication_guide
+    - title: GitHub REST API OpenAPI specification
+      url: https://github.com/github/rest-api-description
+      type: openapi_spec
     - title: GitHub rate limits
       url: https://docs.github.com/en/rest/overview/rate-limits-for-the-rest-api
       type: rate_limits
