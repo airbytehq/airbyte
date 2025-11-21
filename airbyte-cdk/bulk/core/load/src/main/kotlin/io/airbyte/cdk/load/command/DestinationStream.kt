@@ -258,7 +258,7 @@ data class Dedupe(
  * overwrite/record-retaining behavior via the generationId / minimumGenerationId parameters, and
  * should treat this as equivalent to Append.
  *
- * [Overwrite] is approximately equivalent to an [Append] sync, with nonzeao generationId equal to
+ * [Overwrite] is approximately equivalent to an [Append] sync, with non-zero generationId equal to
  * minimumGenerationId.
  */
 // TODO should this even exist?
