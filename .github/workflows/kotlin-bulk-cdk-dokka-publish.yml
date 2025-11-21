@@ -21,21 +21,21 @@ jobs:
   detect-changes:
     name: Detect Kotlin Bulk CDK Changes
     runs-on: ubuntu-24.04
-    outputs:
-      changed: ${{ steps.set-changed.outputs.changed || steps.detect-changes.outputs.bulk-cdk }}
     steps:
-      - name: Manual trigger - mark as changed
+      - name: Force 'changed=true' [Manual Trigger]
         id: set-changed
         if: github.event_name == 'workflow_dispatch'
         run: echo "changed=true" >> "$GITHUB_OUTPUT"
 
-      - name: Checkout Repository (push only, shallow)
+      - name: Checkout Repository [Push Trigger]
         if: github.event_name == 'push'
         uses: actions/checkout@v4
         with:
           fetch-depth: 2
 
-      - name: Detect Changes (PR via API, push via git)
+      - name: Detect Changes
+        # PR triggers will use API (don't require pre-checkout.)
+        # Push triggers will require the checked-out code.
         id: detect-changes
         if: github.event_name != 'workflow_dispatch'
         uses: dorny/paths-filter@v3.0.2
@@ -43,6 +43,9 @@ jobs:
           filters: |
             bulk-cdk:
               - 'airbyte-cdk/bulk/**'
+
+    outputs:
+      changed: ${{ steps.set-changed.outputs.changed || steps.detect-changes.outputs.bulk-cdk }}
 
   build-docs:
     name: Build Kotlin Bulk CDK Documentation
