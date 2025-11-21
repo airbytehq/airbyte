@@ -13,8 +13,6 @@ def write_to_github_output(**kwargs: Any) -> None:
     """Write outputs to GitHub Actions GITHUB_OUTPUT file if running in CI.
 
     This allows subsequent workflow steps to access the outputs from this step.
-    This function is fail-safe and will silently return if GITHUB_OUTPUT is not
-    accessible, ensuring that report saving never fails due to output writing issues.
 
     Args:
         **kwargs: Key-value pairs to write to GITHUB_OUTPUT. Values will be
@@ -39,19 +37,13 @@ def write_to_github_output(**kwargs: Any) -> None:
 
     github_output_path = Path(github_output)
 
-    if github_output_path.exists() and not github_output_path.is_file():
-        return
-
-    try:
-        with github_output_path.open("a", encoding="utf-8") as f:
-            for key, value in kwargs.items():
-                value_str = str(value)
-                if "\n" in value_str:
-                    delimiter = "EOF"
-                    f.write(f"{key}<<{delimiter}\n")
-                    f.write(value_str)
-                    f.write(f"\n{delimiter}\n")
-                else:
-                    f.write(f"{key}={value_str}\n")
-    except OSError:
-        return
+    with github_output_path.open("a", encoding="utf-8") as f:
+        for key, value in kwargs.items():
+            value_str = str(value)
+            if "\n" in value_str:
+                delimiter = "EOF"
+                f.write(f"{key}<<{delimiter}\n")
+                f.write(value_str)
+                f.write(f"\n{delimiter}\n")
+            else:
+                f.write(f"{key}={value_str}\n")
