@@ -146,8 +146,6 @@ jobs:
           vercel-project-id: ${{ env.VERCEL_PROJECT_ID }}
           working-directory: docs-output
           vercel-args: ${{ github.ref == 'refs/heads/master' && '--prod' || '' }}
-          alias-domains: |
-            ${{ github.ref == 'refs/heads/master' && 'bulk-cdk-docs.vercel.app' || '' }}
 
       - name: Authenticate as GitHub App
         if: github.event_name == 'pull_request'
