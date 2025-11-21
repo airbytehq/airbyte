@@ -32,8 +32,10 @@ data:
   registryOverrides:
     cloud:
       enabled: true
+      dockerImageTag: 4.0.2
     oss:
       enabled: true
+      dockerImageTag: 4.0.2
   releaseStage: generally_available
   releases:
     rolloutConfiguration:
