@@ -79,8 +79,8 @@ jobs:
           path: airbyte-cdk/bulk/build/dokka/htmlMultiModule/
           retention-days: 30
 
-  vercel-preview:
-    name: Deploy Docs to Vercel (Preview)
+  vercel-deploy:
+    name: Deploy Docs to Vercel ${{ github.event_name == 'push' && '(Production)' || '(Preview)' }}
     needs: [detect-changes, build-docs]
     # Deploy for: non-fork PRs, master branch pushes, OR manual workflow_dispatch
     # Always require Vercel project to be configured
@@ -93,6 +93,9 @@ jobs:
       )
       && vars.VERCEL_KOTLIN_CDK_PROJECT_ID != ''
     runs-on: ubuntu-24.04
+    environment:
+      name: ${{ github.event_name == 'push' && 'kotlin-cdk-docs' || 'kotlin-cdk-docs-preview' }}
+      url: ${{ steps.deploy-vercel.outputs.preview-url }}
     env:
       VERCEL_ORG_ID: ${{ secrets.VERCEL_ORG_ID }}
       VERCEL_PROJECT_ID: ${{ vars.VERCEL_KOTLIN_CDK_PROJECT_ID }}
