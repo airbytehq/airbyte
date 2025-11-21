@@ -204,6 +204,14 @@ jobs:
           s3_build_cache_secret_key: ${{ secrets.SELF_RUNNER_AWS_SECRET_ACCESS_KEY }}
           subcommand: connectors ${{ env.USE_LOCAL_CDK_FLAG }} ${{ inputs.connector_filter }} test --only-step connector_live_tests --connector_live_tests.test-suite=regression --connector_live_tests.connection-id=${{ github.event.inputs.connection_id }} --connector_live_tests.pr-url="https://github.com/airbytehq/airbyte/pull/${{ github.event.inputs.pr }}" ${{ env.READ_WITH_STATE_FLAG }} ${{ env.DISABLE_PROXY_FLAG }} ${{ env.STREAM_PARAMS }} ${{ env.CONNECTION_SUBSET }} ${{ env.CONTROL_VERSION }} --global-status-check-context="Regression Tests" --global-status-check-description='Running regression tests'
 
+      - name: Upload regression test report
+        if: always() && github.event_name == 'workflow_dispatch'
+        uses: actions/upload-artifact@v4
+        with:
+          name: regression-test-report
+          path: /tmp/regression_tests_artifacts/report.html
+          if-no-files-found: ignore
+
       - name: Install live-tests dependencies for LLM evaluation
         if: always() && github.event_name == 'workflow_dispatch'
         working-directory: airbyte-ci/connectors/live-tests
@@ -258,57 +266,115 @@ jobs:
           echo "result=$RES" >> "$GITHUB_OUTPUT"
 
       - name: Build PR comment body
-        if: always() && steps.llm-eval.outputs.ran == 'true'
+        if: always() && github.event_name == 'workflow_dispatch' && github.event.inputs.pr != ''
         id: comment-body
         env:
           EVAL_MODEL: llama3.2:3b
         run: |
-          OUT_JSON="$RUNNER_TEMP/llm_eval.json"
-          RESULT=$(jq -r '.evaluation.pass' "$OUT_JSON")
-          if [ "$RESULT" = "true" ]; then 
-            STATUS="✅ PASS"
-          else 
-            STATUS="❌ FAIL"
-          fi
-          SUMMARY=$(jq -r '.evaluation.summary' "$OUT_JSON")
-          REASONING=$(jq -r '.evaluation.reasoning' "$OUT_JSON")
-          SEVERITY=$(jq -r '.evaluation.severity' "$OUT_JSON")
-          MODEL="${EVAL_MODEL:-gpt-4o}"
           RUN_URL="${{ github.server_url }}/${{ github.repository }}/actions/runs/${{ github.run_id }}"
 
-          cat > "$RUNNER_TEMP/pr_comment.md" <<'EOF'
-          **LLM Regression Evaluation:** STATUS_PLACEHOLDER
+          # Get regression test outcome
+          TEST_OUTCOME="${{ steps.run-regression-tests.outcome }}"
+          if [ "$TEST_OUTCOME" = "success" ]; then
+            TEST_STATUS="✅ PASSED"
+          elif [ "$TEST_OUTCOME" = "failure" ]; then
+            TEST_STATUS="❌ FAILED"
+          elif [ "$TEST_OUTCOME" = "cancelled" ]; then
+            TEST_STATUS="⚠️ CANCELLED"
+          elif [ "$TEST_OUTCOME" = "skipped" ]; then
+            TEST_STATUS="⏭️ SKIPPED"
+          else
+            TEST_STATUS="❓ UNKNOWN"
+          fi
 
-          **Severity:** SEVERITY_PLACEHOLDER  
-          **Model:** MODEL_PLACEHOLDER  
-          [View workflow run](RUN_URL_PLACEHOLDER)
+          # Start building the comment
+          cat > "$RUNNER_TEMP/pr_comment.md" <<EOF
+          ## Regression Test Results
 
-          **Summary:**  
-          SUMMARY_PLACEHOLDER
+          **Test Status:** $TEST_STATUS
+          **Workflow Run:** [View Details]($RUN_URL)
+          EOF
+
+          # Check if report artifact exists
+          if [ -f "/tmp/regression_tests_artifacts/report.html" ]; then
+            cat >> "$RUNNER_TEMP/pr_comment.md" <<EOF
+          **Test Report:** Available as artifact \`regression-test-report\` in the workflow run
+          EOF
+          else
+            cat >> "$RUNNER_TEMP/pr_comment.md" <<EOF
+          **Test Report:** No report generated
+          EOF
+          fi
+
+          # Add LLM evaluation section
+          cat >> "$RUNNER_TEMP/pr_comment.md" <<EOF
+
+          ---
+
+          ### LLM Evaluation
+          EOF
+
+          # Check if LLM evaluation ran
+          if [ "${{ steps.llm-eval.outputs.ran }}" = "true" ]; then
+            OUT_JSON="$RUNNER_TEMP/llm_eval.json"
+            RESULT=$(jq -r '.evaluation.pass' "$OUT_JSON")
+            if [ "$RESULT" = "true" ]; then 
+              LLM_STATUS="✅ PASS"
+            else 
+              LLM_STATUS="❌ FAIL"
+            fi
+            SUMMARY=$(jq -r '.evaluation.summary' "$OUT_JSON")
+            REASONING=$(jq -r '.evaluation.reasoning' "$OUT_JSON")
+            SEVERITY=$(jq -r '.evaluation.severity' "$OUT_JSON")
+            MODEL="${EVAL_MODEL:-gpt-4o}"
+
+            cat >> "$RUNNER_TEMP/pr_comment.md" <<EOF
+
+          **LLM Judgment:** $LLM_STATUS
+          **Severity:** $SEVERITY
+          **Model:** $MODEL
+
+          **Summary:**
+          $SUMMARY
 
           <details><summary>Show detailed reasoning</summary>
 
-          REASONING_PLACEHOLDER
+          $REASONING
 
           </details>
           EOF
+          else
+            # LLM evaluation did not run - determine why
+            LLM_OUTCOME="${{ steps.llm-eval.outcome }}"
+            if [ "$LLM_OUTCOME" = "failure" ]; then
+              if [ ! -f "/tmp/regression_tests_artifacts/report.html" ]; then
+                cat >> "$RUNNER_TEMP/pr_comment.md" <<EOF
 
-          sed -i "s#STATUS_PLACEHOLDER#$STATUS#g" "$RUNNER_TEMP/pr_comment.md"
-          sed -i "s#SEVERITY_PLACEHOLDER#$SEVERITY#g" "$RUNNER_TEMP/pr_comment.md"
-          sed -i "s#MODEL_PLACEHOLDER#$MODEL#g" "$RUNNER_TEMP/pr_comment.md"
-          sed -i "s#RUN_URL_PLACEHOLDER#$RUN_URL#g" "$RUNNER_TEMP/pr_comment.md"
+          ⚠️ **LLM evaluation could not run:** No regression test report found
+          EOF
+              else
+                cat >> "$RUNNER_TEMP/pr_comment.md" <<EOF
 
-          # Escape special characters for sed
-          SUMMARY_ESCAPED=$(echo "$SUMMARY" | sed 's/[&/\]/\\&/g')
-          REASONING_ESCAPED=$(echo "$REASONING" | sed 's/[&/\]/\\&/g')
+          ⚠️ **LLM evaluation failed:** An error occurred during evaluation (check workflow logs)
+          EOF
+              fi
+            elif [ "$LLM_OUTCOME" = "skipped" ]; then
+              cat >> "$RUNNER_TEMP/pr_comment.md" <<EOF
 
-          sed -i "s#SUMMARY_PLACEHOLDER#$SUMMARY_ESCAPED#g" "$RUNNER_TEMP/pr_comment.md"
-          sed -i "s#REASONING_PLACEHOLDER#$REASONING_ESCAPED#g" "$RUNNER_TEMP/pr_comment.md"
+          ⚠️ **LLM evaluation was skipped**
+          EOF
+            else
+              cat >> "$RUNNER_TEMP/pr_comment.md" <<EOF
+
+          ⚠️ **LLM evaluation did not run** (outcome: $LLM_OUTCOME)
+          EOF
+            fi
+          fi
 
           echo "path=$RUNNER_TEMP/pr_comment.md" >> "$GITHUB_OUTPUT"
 
       - name: Post PR comment
-        if: always() && steps.llm-eval.outputs.ran == 'true'
+        if: always() && github.event_name == 'workflow_dispatch' && github.event.inputs.pr != ''
         uses: peter-evans/create-or-update-comment@v4
         with:
           issue-number: ${{ github.event.inputs.pr }}
