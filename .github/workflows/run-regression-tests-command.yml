@@ -90,7 +90,7 @@ jobs:
       issues: write
     steps:
       - name: Append start with run link
-        id: pr-comment-init
+        id: pr-comment-id
         if: github.event_name == 'workflow_dispatch' && github.event.inputs.pr != ''
         uses: peter-evans/create-or-update-comment@v4
         with:
@@ -101,23 +101,6 @@ jobs:
           body: |
             > Starting regression tests (filter: `${{ github.event.inputs.connector_filter || '--modified' }}`)
             > Workflow run: [${{ github.run_id }}](${{ github.server_url }}/${{ github.repository }}/actions/runs/${{ github.run_id }})
-
-      - name: Create new runner comment if append failed
-        id: pr-comment-create
-        if: github.event_name == 'workflow_dispatch' && github.event.inputs.pr != '' && (failure() || steps.pr-comment-init.outputs.comment-id == '')
-        uses: peter-evans/create-or-update-comment@v4
-        with:
-          token: ${{ github.token }}
-          issue-number: ${{ github.event.inputs.pr }}
-          body: |
-            > Starting regression tests (filter: `${{ github.event.inputs.connector_filter || '--modified' }}`)
-            > Workflow run: [${{ github.run_id }}](${{ github.server_url }}/${{ github.repository }}/actions/runs/${{ github.run_id }})
-
-      - name: Resolve comment id
-        id: pr-comment-id
-        if: always() && github.event_name == 'workflow_dispatch' && github.event.inputs.pr != ''
-        run: |
-          echo "id=${{ steps.pr-comment-init.outputs.comment-id || steps.pr-comment-create.outputs.comment-id }}" >> $GITHUB_OUTPUT
 
       - name: Install Python
         id: install_python
@@ -248,7 +231,7 @@ jobs:
         uses: peter-evans/create-or-update-comment@v4
         with:
           token: ${{ github.token }}
-          comment-id: ${{ steps.pr-comment-id.outputs.id }}
+          comment-id: ${{ steps.pr-comment-id.outputs.comment-id }}
           edit-mode: append
           body: |
             > Regression tests: ${{ steps.run-regression-tests.outcome == 'success' && '✅ PASSED' || steps.run-regression-tests.outcome == 'failure' && '❌ FAILED' || steps.run-regression-tests.outcome == 'cancelled' && '⚠️ CANCELLED' || steps.run-regression-tests.outcome == 'skipped' && '⏭️ SKIPPED' || '❓ UNKNOWN' }}
@@ -314,7 +297,7 @@ jobs:
         uses: peter-evans/create-or-update-comment@v4
         with:
           token: ${{ github.token }}
-          comment-id: ${{ steps.pr-comment-id.outputs.id }}
+          comment-id: ${{ steps.pr-comment-id.outputs.comment-id }}
           edit-mode: append
           body: |
             > LLM Evaluation: ${{ steps.llm-eval.outputs.ran == 'true' && (steps.llm-eval.outputs.result == 'pass' && '✅ PASS' || steps.llm-eval.outputs.result == 'fail' && '❌ FAIL' || '⚠️ ERROR') || '⚠️ Did not run' }}${{ steps.llm-eval.outputs.ran == 'true' && format(' (model: {0})', env.EVAL_MODEL) || '' }}
