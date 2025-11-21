@@ -168,16 +168,12 @@ class ConnectorReport(Report):
         await super().save()
         await self.save_html_report()
 
-        github_outputs = {
-            "connector_name": self.pipeline_context.connector.technical_name,
-            "connector_version": self.pipeline_context.connector.version,
-            "html_report_url": self.html_report_url,
-        }
-
-        if self.pipeline_context.cdk_version:
-            github_outputs["cdk_version"] = self.pipeline_context.cdk_version
-
-        write_to_github_output(github_outputs)
+        write_to_github_output(
+            connector_name=self.pipeline_context.connector.technical_name,
+            connector_version=self.pipeline_context.connector.version,
+            html_report_url=self.html_report_url,
+            **({"cdk_version": self.pipeline_context.cdk_version} if self.pipeline_context.cdk_version else {}),
+        )
 
     def print(self) -> None:
         """Print the test report to the console in a nice way."""

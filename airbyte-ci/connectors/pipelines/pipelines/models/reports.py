@@ -96,20 +96,15 @@ class Report:
         await self.save_json_report()
         await self.save_step_result_artifacts()
 
-        github_outputs = {
-            "success": str(self.success).lower(),
-            "pipeline_name": self.pipeline_context.pipeline_name,
-            "run_duration_seconds": str(self.run_duration.total_seconds()),
-            "failed_steps_count": str(len(self.failed_steps)),
-            "successful_steps_count": str(len(self.successful_steps)),
-            "skipped_steps_count": str(len(self.skipped_steps)),
-        }
-
-        if self.failed_steps:
-            failed_step_names = ", ".join([s.step.__class__.__name__ for s in self.failed_steps])
-            github_outputs["failed_steps"] = failed_step_names
-
-        write_to_github_output(github_outputs)
+        write_to_github_output(
+            success=str(self.success).lower(),
+            pipeline_name=self.pipeline_context.pipeline_name,
+            run_duration_seconds=str(self.run_duration.total_seconds()),
+            failed_steps_count=str(len(self.failed_steps)),
+            successful_steps_count=str(len(self.successful_steps)),
+            skipped_steps_count=str(len(self.skipped_steps)),
+            **({"failed_steps": ", ".join([s.step.__class__.__name__ for s in self.failed_steps])} if self.failed_steps else {}),
+        )
 
     async def save_json_report(self) -> None:
         """Save the report as JSON, upload it to GCS if the pipeline is running in CI"""
