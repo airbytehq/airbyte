@@ -39,7 +39,7 @@ def write_to_github_output(**kwargs: Any) -> None:
 
     github_output_path = Path(github_output)
 
-    if not github_output_path.exists() or not github_output_path.is_file():
+    if github_output_path.exists() and not github_output_path.is_file():
         return
 
     try:
