@@ -38,4 +38,4 @@ jobs:
           files: docs/ # Folder in which to lint
           filter_mode: added # Only lint things that have changed
           fail_on_error: false # Don't fail if the linter finds issues (compliance is optional)
-          reporter: github-pr-check # Post to GitHub Checks tab without inline PR comments
+          reporter: local # Output to job logs only, no PR annotations or comments
