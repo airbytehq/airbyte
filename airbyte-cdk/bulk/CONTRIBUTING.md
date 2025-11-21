@@ -29,7 +29,9 @@ sdk default java 21.0.9-zulu
 
 The Kotlin Bulk CDK uses [Dokka](https://kotlinlang.org/docs/dokka-introduction.html) to generate API documentation from KDoc comments.
 
-### Generate Documentation
+**Published Documentation**: The latest API documentation is available at https://airbyte-kotlin-cdk.vercel.app/
+
+### Generate Documentation Locally
 
 ```bash
 ./gradlew :airbyte-cdk:bulk:docsGenerate
