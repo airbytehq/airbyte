@@ -835,5 +835,9 @@ class LiveTests(Step):
                 )
             )
 
-        container = container.with_exec(["poetry", "lock"], use_entrypoint=True).with_exec(["poetry", "install"], use_entrypoint=True)
+        container = (
+            container.with_exec(["poetry", "lock"], use_entrypoint=True)
+            .with_exec(["poetry", "install"], use_entrypoint=True)
+            .with_exec(["mkdir", "-p", "/tmp/live_tests_artifacts"], use_entrypoint=True)
+        )
         return container
