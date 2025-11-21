@@ -382,6 +382,7 @@ module.exports = {
               items: [
                 "organizations-workspaces/organizations/switch-organizations",
                 "cloud/managing-airbyte-cloud/manage-credits",
+                "cloud/managing-airbyte-cloud/manage-data-workers",
               ],
             },
             {
