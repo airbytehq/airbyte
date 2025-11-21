@@ -32,8 +32,8 @@ internal val INT_MIN = BigInteger("-99999999999999999999999999999999999999") // 
 internal val INT_RANGE = INT_MIN..INT_MAX
 
 // https://docs.snowflake.com/en/sql-reference/data-types-numeric#label-data-type-float
-internal val FLOAT_MAX = BigDecimal(Double.MAX_VALUE)
-internal val FLOAT_MIN = BigDecimal(-Double.MAX_VALUE)
+internal val FLOAT_MAX = BigDecimal.valueOf(Double.MAX_VALUE)
+internal val FLOAT_MIN = BigDecimal.valueOf(-Double.MAX_VALUE)
 internal val FLOAT_RANGE = FLOAT_MIN..FLOAT_MAX
 
 // https://docs.snowflake.com/en/sql-reference/data-types-semistructured#characteristics-of-a-variant-value
@@ -77,7 +77,7 @@ class SnowflakeValueCoercer : ValueCoercer {
         return when (val abValue = value.abValue) {
             is NumberValue -> {
                 if (abValue.value in FLOAT_RANGE) {
-                    val targetValue = BigDecimal(abValue.value.toDouble())
+                    val targetValue = BigDecimal.valueOf(abValue.value.toDouble())
                     // This is done because BigDecimal is stupid and if we don't use compareTo, we
                     // end up with 0 != 0.0
                     if (targetValue.compareTo(abValue.value) == 0) {
