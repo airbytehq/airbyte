@@ -1,4 +1,4 @@
-name: Kotlin Bulk CDK Documentation
+name: Kotlin Bulk CDK Docs
 
 on:
   pull_request:
@@ -79,8 +79,8 @@ jobs:
           path: airbyte-cdk/bulk/build/dokka/htmlMultiModule/
           retention-days: 30
 
-  vercel-preview:
-    name: Deploy Docs to Vercel (Preview)
+  vercel-deploy:
+    name: Deploy Docs to Vercel ${{ github.ref == 'refs/heads/master' && '(Production)' || '(Preview)' }}
     needs: [detect-changes, build-docs]
     # Deploy for: non-fork PRs, master branch pushes, OR manual workflow_dispatch
     # Always require Vercel project to be configured
@@ -93,6 +93,9 @@ jobs:
       )
       && vars.VERCEL_KOTLIN_CDK_PROJECT_ID != ''
     runs-on: ubuntu-24.04
+    environment:
+      name: ${{ github.ref == 'refs/heads/master' && 'kotlin-cdk-docs' || 'kotlin-cdk-docs-preview' }}
+      url: ${{ steps.deploy-vercel.outputs.preview-url }}
     env:
       VERCEL_ORG_ID: ${{ secrets.VERCEL_ORG_ID }}
       VERCEL_PROJECT_ID: ${{ vars.VERCEL_KOTLIN_CDK_PROJECT_ID }}
@@ -120,6 +123,13 @@ jobs:
           echo "✅ Verifying deployment path..."
           test -f docs-output/airbyte-cdk/bulk/index.html && echo "✅ index.html found at expected path" || echo "❌ index.html NOT found at expected path"
 
+      - name: Debug - Deployment Mode
+        run: |
+          echo "Event: ${{ github.event_name }}"
+          echo "Ref: ${{ github.ref }}"
+          echo "Is Production: ${{ github.ref == 'refs/heads/master' }}"
+          echo "Vercel Args: ${{ github.ref == 'refs/heads/master' && '--prod' || '(none - preview)' }}"
+
       - name: Deploy to Vercel
         id: deploy-vercel
         uses: amondnet/vercel-action@v41.1.4
@@ -129,9 +139,9 @@ jobs:
           vercel-org-id: ${{ env.VERCEL_ORG_ID }}
           vercel-project-id: ${{ env.VERCEL_PROJECT_ID }}
           working-directory: docs-output
-          vercel-args: ${{ github.event_name == 'push' && '--prod' || '' }}
+          vercel-args: ${{ github.ref == 'refs/heads/master' && '--prod' || '' }}
           alias-domains: |
-            ${{ github.event_name == 'push' && 'bulk-cdk-docs.vercel.app' || '' }}
+            ${{ github.ref == 'refs/heads/master' && 'bulk-cdk-docs.vercel.app' || '' }}
 
       - name: Authenticate as GitHub App
         if: github.event_name == 'pull_request'
