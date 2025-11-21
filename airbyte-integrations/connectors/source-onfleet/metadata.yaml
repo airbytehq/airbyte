@@ -13,11 +13,11 @@ data:
       enabled: false
       packageName: airbyte-source-onfleet
   connectorBuildOptions:
-    baseImage: docker.io/airbyte/source-declarative-manifest:7.4.1@sha256:71df19e2ee555ca5b14abbec01d50104c79c9b84cb9cc323284d24333361900a
+    baseImage: docker.io/airbyte/source-declarative-manifest:7.5.0@sha256:92e539d5003b33c3624eae7715aee6e39b7b2f1f0eeb6003d37e649a06847ae8
   connectorSubtype: api
   connectorType: source
   definitionId: e4285e7f-ee6c-4b8b-b231-746c9640164e
-  dockerImageTag: 0.0.39
+  dockerImageTag: 0.0.40
   dockerRepository: airbyte/source-onfleet
   githubIssueLabel: source-onfleet
   icon: icon.svg
@@ -33,3 +33,13 @@ data:
   ab_internal:
     ql: 100
     sl: 100
+  externalDocumentationUrls:
+    - title: Onfleet API reference
+      url: https://docs.onfleet.com/reference
+      type: api_reference
+    - title: Onfleet authentication
+      url: https://docs.onfleet.com/reference/authentication
+      type: authentication_guide
+    - title: Onfleet rate limits
+      url: https://docs.onfleet.com/reference/throttling
+      type: rate_limits

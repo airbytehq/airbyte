@@ -13,11 +13,11 @@ data:
       enabled: false
       packageName: airbyte-source-help-scout
   connectorBuildOptions:
-    baseImage: docker.io/airbyte/source-declarative-manifest:7.4.1@sha256:71df19e2ee555ca5b14abbec01d50104c79c9b84cb9cc323284d24333361900a
+    baseImage: docker.io/airbyte/source-declarative-manifest:7.5.0@sha256:92e539d5003b33c3624eae7715aee6e39b7b2f1f0eeb6003d37e649a06847ae8
   connectorSubtype: api
   connectorType: source
   definitionId: 96377d38-0bc6-47c0-9c84-c0fcc0f8ce40
-  dockerImageTag: 0.0.31
+  dockerImageTag: 0.0.32
   dockerRepository: airbyte/source-help-scout
   githubIssueLabel: source-help-scout
   icon: icon.svg
@@ -33,3 +33,16 @@ data:
   ab_internal:
     ql: 100
     sl: 100
+  externalDocumentationUrls:
+    - title: Help Scout API reference
+      url: https://developer.helpscout.com/
+      type: api_reference
+    - title: Help Scout authentication
+      url: https://developer.helpscout.com/mailbox-api/overview/authentication/
+      type: authentication_guide
+    - title: Help Scout rate limits
+      url: https://developer.helpscout.com/mailbox-api/overview/rate-limiting/
+      type: rate_limits
+    - title: Help Scout Status
+      url: https://status.helpscout.com/
+      type: status_page

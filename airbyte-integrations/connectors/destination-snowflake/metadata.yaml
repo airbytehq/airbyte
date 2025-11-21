@@ -6,7 +6,7 @@ data:
   connectorSubtype: database
   connectorType: destination
   definitionId: 424892c4-daac-4491-b35d-c6688ba547ba
-  dockerImageTag: 4.0.23
+  dockerImageTag: 4.0.28
   dockerRepository: airbyte/destination-snowflake
   documentationUrl: https://docs.airbyte.com/integrations/destinations/snowflake
   githubIssueLabel: destination-snowflake
@@ -15,9 +15,13 @@ data:
   name: Snowflake
   connectorIPCOptions:
     dataChannel:
-      version: "0.0.2"
-      supportedSerialization: ["JSONL", "PROTOBUF"]
-      supportedTransport: ["SOCKET", "STDIO"]
+      version: 0.0.2
+      supportedSerialization:
+        - JSONL
+        - PROTOBUF
+      supportedTransport:
+        - SOCKET
+        - STDIO
   connectorBuildOptions:
     baseImage: docker.io/airbyte/java-connector-base:2.0.3@sha256:119b8506bca069bbc8357a275936c7e2b0994e6947b81f1bf8d6ce9e16db7d47
   registryOverrides:
@@ -82,4 +86,23 @@ data:
           secretStore:
             type: GSM
             alias: airbyte-connector-testing-secret-store
+  externalDocumentationUrls:
+    - title: Release notes
+      url: https://docs.snowflake.com/en/release-notes
+      type: api_release_history
+    - title: Snowflake server release notes and feature updates
+      url: https://docs.snowflake.com/en/release-notes/new-features
+      type: api_release_history
+    - title: Key pair authentication
+      url: https://docs.snowflake.com/en/user-guide/key-pair-auth
+      type: authentication_guide
+    - title: Access control
+      url: https://docs.snowflake.com/en/user-guide/security-access-control
+      type: permissions_scopes
+    - title: SQL reference
+      url: https://docs.snowflake.com/en/sql-reference
+      type: sql_reference
+    - title: Snowflake Status
+      url: https://status.snowflake.com/
+      type: status_page
 metadataSpecVersion: "1.0"

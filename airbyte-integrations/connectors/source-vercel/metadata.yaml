@@ -13,11 +13,11 @@ data:
       enabled: false
       packageName: airbyte-source-vercel
   connectorBuildOptions:
-    baseImage: docker.io/airbyte/source-declarative-manifest:7.4.1@sha256:71df19e2ee555ca5b14abbec01d50104c79c9b84cb9cc323284d24333361900a
+    baseImage: docker.io/airbyte/source-declarative-manifest:7.5.0@sha256:92e539d5003b33c3624eae7715aee6e39b7b2f1f0eeb6003d37e649a06847ae8
   connectorSubtype: api
   connectorType: source
   definitionId: 7de74599-7bbe-4610-8635-00c76885e51d
-  dockerImageTag: 0.0.39
+  dockerImageTag: 0.0.40
   dockerRepository: airbyte/source-vercel
   githubIssueLabel: source-vercel
   icon: icon.svg
@@ -33,3 +33,16 @@ data:
   ab_internal:
     ql: 100
     sl: 100
+  externalDocumentationUrls:
+    - title: Vercel API reference
+      url: https://vercel.com/docs/rest-api
+      type: api_reference
+    - title: Vercel authentication
+      url: https://vercel.com/docs/rest-api#authentication
+      type: authentication_guide
+    - title: Vercel rate limits
+      url: https://vercel.com/docs/rest-api#rate-limiting
+      type: rate_limits
+    - title: Vercel Status
+      url: https://www.vercel-status.com/
+      type: status_page

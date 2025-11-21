@@ -32,4 +32,11 @@ data:
     sl: 100
     ql: 100
   supportLevel: community
+  externalDocumentationUrls:
+    - title: Oura API documentation
+      url: https://cloud.ouraring.com/docs/
+      type: api_reference
+    - title: Oura authentication
+      url: https://cloud.ouraring.com/docs/authentication
+      type: authentication_guide
 metadataSpecVersion: "1.0"

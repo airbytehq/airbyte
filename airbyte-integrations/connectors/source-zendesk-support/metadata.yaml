@@ -7,11 +7,11 @@ data:
       - ${subdomain}.zendesk.com
       - zendesk.com
   connectorBuildOptions:
-    baseImage: docker.io/airbyte/source-declarative-manifest:7.4.1@sha256:71df19e2ee555ca5b14abbec01d50104c79c9b84cb9cc323284d24333361900a
+    baseImage: docker.io/airbyte/source-declarative-manifest:7.5.0@sha256:92e539d5003b33c3624eae7715aee6e39b7b2f1f0eeb6003d37e649a06847ae8
   connectorSubtype: api
   connectorType: source
   definitionId: 79c1aa37-dae3-42ae-b333-d1c105477715
-  dockerImageTag: 4.10.15
+  dockerImageTag: 4.10.16
   dockerRepository: airbyte/source-zendesk-support
   documentationUrl: https://docs.airbyte.com/integrations/sources/zendesk-support
   githubIssueLabel: source-zendesk-support
@@ -100,4 +100,23 @@ data:
           secretStore:
             type: GSM
             alias: airbyte-connector-testing-secret-store
+  externalDocumentationUrls:
+    - title: Zendesk Support API
+      url: https://developer.zendesk.com/api-reference/ticketing/introduction/
+      type: api_reference
+    - title: API Changelog
+      url: https://developer.zendesk.com/api-reference/changelog/changelog/
+      type: api_release_history
+    - title: Zendesk API changelog
+      url: https://developer.zendesk.com/api-reference/ticketing/introduction/#changes
+      type: api_release_history
+    - title: Zendesk authentication
+      url: https://developer.zendesk.com/api-reference/ticketing/introduction/#security-and-authentication
+      type: authentication_guide
+    - title: Zendesk rate limits
+      url: https://developer.zendesk.com/api-reference/ticketing/account-configuration/usage_limits/
+      type: rate_limits
+    - title: Zendesk Status
+      url: https://status.zendesk.com/
+      type: status_page
 metadataSpecVersion: "1.0"

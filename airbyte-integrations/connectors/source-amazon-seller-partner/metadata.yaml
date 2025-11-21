@@ -15,7 +15,7 @@ data:
   connectorSubtype: api
   connectorType: source
   definitionId: e55879a8-0ef8-4557-abcf-ab34c53ec460
-  dockerImageTag: 4.8.4
+  dockerImageTag: 4.9.0
   dockerRepository: airbyte/source-amazon-seller-partner
   documentationUrl: https://docs.airbyte.com/integrations/sources/amazon-seller-partner
   erdUrl: https://dbdocs.io/airbyteio/source-amazon-seller-partner?view=relationships
@@ -75,4 +75,20 @@ data:
           secretStore:
             type: GSM
             alias: airbyte-connector-testing-secret-store
+  externalDocumentationUrls:
+    - title: SP-API Deprecation Schedule
+      url: https://developer-docs.amazon.com/sp-api/docs/sp-api-deprecations
+      type: api_deprecations
+    - title: SP-API documentation
+      url: https://developer-docs.amazon.com/sp-api/
+      type: api_reference
+    - title: SP-API Release Notes
+      url: https://developer-docs.amazon.com/sp-api/docs/sp-api-release-notes
+      type: api_release_history
+    - title: Authorization
+      url: https://developer-docs.amazon.com/sp-api/docs/authorizing-selling-partner-api-applications
+      type: authentication_guide
+    - title: Usage plans and rate limits
+      url: https://developer-docs.amazon.com/sp-api/docs/usage-plans-and-rate-limits-in-the-sp-api
+      type: rate_limits
 metadataSpecVersion: "1.0"
