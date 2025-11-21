@@ -93,6 +93,18 @@ jobs:
       - name: Remove any files that have been gitignored
         run: git ls-files -i -c --exclude-from=.gitignore | xargs -r git rm --cached
 
+      - name: Setup Node.js
+        uses: actions/setup-node@39370e3970a6d050c480ffad4ff0ed4d3fdee5af # v4.1.0
+        with:
+          node-version: '20'
+
+      - name: Install markdownlint-cli2
+        run: npm install -g markdownlint-cli2
+
+      - name: Run markdownlint --fix on docs
+        run: markdownlint-cli2 --fix "docs/**/*.md"
+        continue-on-error: true
+
       # Check for changes in git
 
       - name: Check for changes
