@@ -1,5 +1,5 @@
 ---
-products: cloud
+products: cloud-plus
 ---
 
 # Monitor data worker usage
