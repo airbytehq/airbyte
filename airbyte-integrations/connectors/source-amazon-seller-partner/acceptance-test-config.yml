@@ -49,8 +49,6 @@ acceptance_tests:
             bypass_reason: "Data cannot be seeded in the test account, integration tests added for the stream instead"
           - name: GET_FBA_FULFILLMENT_CUSTOMER_RETURNS_DATA
             bypass_reason: "Data cannot be seeded in the test account, integration tests added for the stream instead"
-          - name: GET_FBA_SNS_FORECAST_DATA
-            bypass_reason: "Data cannot be seeded in the test account, integration tests added for the stream instead"
           - name: GET_AFN_INVENTORY_DATA
             bypass_reason: "Data cannot be seeded in the test account, integration tests added for the stream instead"
           - name: GET_MERCHANT_CANCELLED_LISTINGS_DATA
@@ -68,8 +66,6 @@ acceptance_tests:
           - name: GET_FLAT_FILE_ARCHIVED_ORDERS_DATA_BY_ORDER_DATE
             bypass_reason: "Data cannot be seeded in the test account, integration tests added for the stream instead"
           - name: GET_VENDOR_INVENTORY_REPORT
-            bypass_reason: "Data cannot be seeded in the test account, integration tests added for the stream instead"
-          - name: GET_FBA_SNS_PERFORMANCE_DATA
             bypass_reason: "Data cannot be seeded in the test account, integration tests added for the stream instead"
           - name: GET_FBA_ESTIMATED_FBA_FEES_TXT_DATA
             bypass_reason: "Data cannot be seeded in the test account, integration tests added for the stream instead"
