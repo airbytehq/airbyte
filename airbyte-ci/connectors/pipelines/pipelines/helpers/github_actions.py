@@ -6,10 +6,10 @@
 
 import os
 from pathlib import Path
-from typing import Any, Dict, Optional
+from typing import Any
 
 
-def write_to_github_output(outputs: Optional[Dict[str, Any]] = None, **kwargs: Any) -> None:
+def write_to_github_output(**outputs: Any) -> None:
     """Write outputs to GitHub Actions GITHUB_OUTPUT file if running in CI.
 
     This allows subsequent workflow steps to access the outputs from this step.
@@ -17,28 +17,19 @@ def write_to_github_output(outputs: Optional[Dict[str, Any]] = None, **kwargs: A
     accessible, ensuring that report saving never fails due to output writing issues.
 
     Args:
-        outputs: Optional dictionary of key-value pairs to write to GITHUB_OUTPUT.
-                 Values will be converted to strings.
-        **kwargs: Additional key-value pairs to write. These will be merged with
-                  outputs dict, with kwargs taking precedence.
+        **outputs: Key-value pairs to write to GITHUB_OUTPUT. Values will be
+                   converted to strings.
 
     Example:
-        write_to_github_output({
-            "success": True,
-            "report_url": "https://example.com/report.html"
-        })
-
         write_to_github_output(
             success=True,
             report_url="https://example.com/report.html",
             connector_name="source-postgres"
         )
-
-        write_to_github_output(
-            {"success": False},
-            success=True  # This will override the dict value
-        )
     """
+    if not outputs:
+        return
+
     if not os.environ.get("CI"):
         return
 
@@ -51,14 +42,9 @@ def write_to_github_output(outputs: Optional[Dict[str, Any]] = None, **kwargs: A
     if not github_output_path.exists() or not github_output_path.is_file():
         return
 
-    all_outputs = {}
-    if outputs:
-        all_outputs.update(outputs)
-    all_outputs.update(kwargs)
-
     try:
         with github_output_path.open("a", encoding="utf-8") as f:
-            for key, value in all_outputs.items():
+            for key, value in outputs.items():
                 value_str = str(value)
                 if "\n" in value_str:
                     delimiter = "EOF"
