@@ -33,7 +33,7 @@ def write_to_github_output(**kwargs: Any) -> None:
 
     github_output = os.environ.get("GITHUB_OUTPUT")
     if not github_output:
-        return
+        raise RuntimeError("CI env var is set but GITHUB_OUTPUT was not defined.")
 
     github_output_path = Path(github_output)
 
