@@ -341,7 +341,7 @@ If you use [custom properties](https://knowledge.hubspot.com/properties/create-a
 
 | Version     | Date       | Pull Request                                             | Subject                                                                                                                                                                                                                      |
 |:------------|:-----------|:---------------------------------------------------------|:-----------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------|
-| 6.0.14      | 2025-11-03 | [66480](https://github.com/airbytehq/airbyte/pull/66480) | Add missing fields in Marketing Emails stream for Avro/Parquet conversions |
+| 6.0.14      | 2025-11-21 | [66480](https://github.com/airbytehq/airbyte/pull/66480) | Add missing fields in Marketing Emails stream for Avro/Parquet conversions |
 | 6.0.13      | 2025-11-19 | [69749](https://github.com/airbytehq/airbyte/pull/69749) | Fix retrieving associations for CRMSearch streams                                                                                                                                                                            |
 | 6.0.12      | 2025-11-18 | [69203](https://github.com/airbytehq/airbyte/pull/69203) | Add lookback window                                                                                                                                                                                                          |
 | 6.0.11      | 2025-11-18 | [69381](https://github.com/airbytehq/airbyte/pull/69381) | Update dependencies |
