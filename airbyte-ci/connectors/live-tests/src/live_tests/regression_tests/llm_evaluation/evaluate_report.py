@@ -278,31 +278,21 @@ def main():
         prompt_yaml_path = Path(eval_prompt_path)
 
     print("Evaluating report with LLM...")
-    try:
-        evaluation = evaluate_with_llm(report_text, custom_prompt, prompt_yaml_path)
+    evaluation = evaluate_with_llm(report_text, custom_prompt, prompt_yaml_path)
 
-        print(f"\nEvaluation Result: {'PASS' if evaluation['pass'] else 'FAIL'}")
-        print(f"Summary: {evaluation['summary']}")
+    print(f"\nEvaluation Result: {'PASS' if evaluation['pass'] else 'FAIL'}")
+    print(f"Summary: {evaluation['summary']}")
 
-        model = os.environ.get("EVAL_MODEL", "gpt-4o")
-        write_github_summary(evaluation, model)
+    model = os.environ.get("EVAL_MODEL", "gpt-4o")
+    write_github_summary(evaluation, model)
 
-        if args.output_json:
-            output_data = {"evaluation": evaluation}
-            with open(args.output_json, "w", encoding="utf-8") as f:
-                json.dump(output_data, f, indent=2)
-            print(f"Evaluation results written to: {args.output_json}")
+    if args.output_json:
+        output_data = {"evaluation": evaluation}
+        with open(args.output_json, "w", encoding="utf-8") as f:
+            json.dump(output_data, f, indent=2)
+        print(f"Evaluation results written to: {args.output_json}")
 
-        sys.exit(0 if evaluation["pass"] else 1)
-    except Exception as e:
-        print(f"Error: LLM evaluation failed: {e}", file=sys.stderr)
-
-        summary_file = os.environ.get("GITHUB_STEP_SUMMARY")
-        if summary_file:
-            with open(summary_file, "a", encoding="utf-8") as f:
-                f.write(f"# ❌ LLM Evaluation Failed\n\nError: {str(e)}\n\n")
-
-        sys.exit(1)
+    sys.exit(0 if evaluation["pass"] else 1)
 
 
 if __name__ == "__main__":
