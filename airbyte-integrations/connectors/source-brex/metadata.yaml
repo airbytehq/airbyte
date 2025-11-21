@@ -17,7 +17,7 @@ data:
   connectorSubtype: api
   connectorType: source
   definitionId: 7d605ca7-f2b8-41c4-96a7-3d5637e58d6d
-  dockerImageTag: 0.0.31
+  dockerImageTag: 0.0.32
   dockerRepository: airbyte/source-brex
   githubIssueLabel: source-brex
   icon: icon.svg
