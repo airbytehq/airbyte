@@ -209,7 +209,9 @@ class TestAcceptanceTests:
         env_vars = {await env_var.name(): await env_var.value() for env_var in await cat_container.env_variables()}
         assert "CACHEBUSTER" in env_vars
 
-    @pytest.mark.skip(reason="Test uses freeze_time but checks container's real date output instead of cache key - see https://github.com/airbytehq/airbyte-internal-issues/issues/6304")
+    @pytest.mark.skip(
+        reason="Test uses freeze_time but checks container's real date output instead of cache key - see https://github.com/airbytehq/airbyte-internal-issues/issues/6304"
+    )
     async def test_cat_container_caching(
         self,
         dagger_client,
