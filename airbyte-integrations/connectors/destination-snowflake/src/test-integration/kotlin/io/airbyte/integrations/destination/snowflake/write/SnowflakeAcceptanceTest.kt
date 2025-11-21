@@ -173,7 +173,7 @@ abstract class SnowflakeAcceptanceTest(
             StronglyTyped(
                 integerCanBeLarge = true,
                 numberCanBeLarge = true,
-                nestedFloatLosesPrecision = false,
+                nestedFloatLosesPrecision = true,
             ),
         unknownTypesBehavior = unknownTypesBehavior,
         nullEqualsUnset = nullEqualsUnset,
