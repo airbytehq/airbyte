@@ -42,7 +42,8 @@ jobs:
     name: Build Kotlin Bulk CDK Documentation
     runs-on: ubuntu-24.04
     needs: detect-changes
-    if: needs.detect-changes.outputs.changed == 'true'
+    # Build docs if changes detected OR if manually triggered via workflow_dispatch
+    if: needs.detect-changes.outputs.changed == 'true' || github.event_name == 'workflow_dispatch'
 
     steps:
       - name: Checkout Repository
@@ -81,12 +82,14 @@ jobs:
   vercel-preview:
     name: Deploy Docs to Vercel (Preview)
     needs: [detect-changes, build-docs]
-    # Only deploy for non-fork PRs and master branch, and when Vercel project is configured
+    # Deploy for: non-fork PRs, master branch pushes, OR manual workflow_dispatch
+    # Always require Vercel project to be configured
     if: >
-      needs.detect-changes.outputs.changed == 'true'
+      (needs.detect-changes.outputs.changed == 'true' || github.event_name == 'workflow_dispatch')
       && (
         github.event_name == 'push'
         || github.event.pull_request.head.repo.full_name == github.repository
+        || github.event_name == 'workflow_dispatch'
       )
       && vars.VERCEL_KOTLIN_CDK_PROJECT_ID != ''
     runs-on: ubuntu-24.04
