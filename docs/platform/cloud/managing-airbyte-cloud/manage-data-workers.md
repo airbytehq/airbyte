@@ -12,7 +12,7 @@ From the navigation bar, click **Organization settings** > **Usage**.
 
 ## How to interpret the chart
 
-The chart shows daily maximum concurrent data worker usage, from all workspaces in a region, over a period of time. Each bar represents one day. All workspaces in a region are stacked so you can see which workspace uses the most data workers each day.
+The chart shows daily maximum concurrent data worker usage, from all workspaces in a region, over a period of time. Each bar represents one day. The chart stacks all workspaces in that region so you can see which workspace uses the most data workers each day.
 
 ![Page showing a region, a period of time, and a bar chart with maximum daily data worker usage within that period of time and region](assets/data-worker-usage.png)
 
@@ -40,7 +40,7 @@ If you can, it's preferable to optimize Airbyte by rescheduling connections outs
 
 - **If your usage has peaks and valleys**, find connections that run on busy days and move them to lower-usage days.
 
-- **If your usage looks consistently high**, examine your scheduling patterns within a day. If a large number of connections start at the same time, data worker usage spikes. 
+- **If your usage looks consistently high**, examine your scheduling patterns within a day. If a large number of connections start at the same time, data worker usage spikes.
 
     - Stagger start times over a longer period to allow some connections to finish before others begin.
 
