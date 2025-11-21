@@ -56,7 +56,7 @@ class PostgresSourceJdbcConcurrentPartitionsCreator<
         recordMapper: (SelectQuerier.ResultRow) -> T,
     ): Sample<T> {
         val values = mutableListOf<T>()
-        var previousWeight = 0L
+//        var previousWeight = 0L
 //        for (sampleRateInvPow2 in listOf(20, 16, 8, 0)) {
 //            val sampleRateInv: Long = 1L shl sampleRateInvPow2
 //            log.info { "Sampling stream '${stream.label}' at rate 1 / $sampleRateInv." }
