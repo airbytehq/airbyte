@@ -1,4 +1,4 @@
-name: Kotlin Bulk CDK Documentation
+name: Kotlin Bulk CDK Docs
 
 on:
   pull_request:
