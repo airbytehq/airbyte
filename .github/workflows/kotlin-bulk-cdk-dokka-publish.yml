@@ -101,6 +101,14 @@ jobs:
           name: kotlin-bulk-cdk-docs-${{ github.sha }}
           path: docs-output
 
+      - name: Debug - Show artifact structure
+        run: |
+          echo "📂 Artifact structure:"
+          ls -lah docs-output
+          echo ""
+          echo "🔍 Looking for index.html:"
+          find docs-output -maxdepth 3 -type f -name "index.html" -print
+
       - name: Deploy to Vercel
         id: deploy-vercel
         uses: amondnet/vercel-action@v41.1.4
