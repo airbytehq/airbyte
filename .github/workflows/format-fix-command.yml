@@ -93,16 +93,31 @@ jobs:
       - name: Remove any files that have been gitignored
         run: git ls-files -i -c --exclude-from=.gitignore | xargs -r git rm --cached
 
+      - name: Get changed docs files
+        id: changed-docs
+        env:
+          GH_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+        run: |
+          gh api repos/${{ github.repository }}/pulls/${{ github.event.inputs.pr }}/files --paginate \
+            --jq '.[] | select(.status != "removed") | .filename' \
+            | grep -E '^docs/.*\.md$' > changed_docs.txt || true
+          echo "count=$(wc -l < changed_docs.txt | tr -d ' ')" >> $GITHUB_OUTPUT
+
       - name: Setup Node.js
+        if: steps.changed-docs.outputs.count != '0'
         uses: actions/setup-node@39370e3970a6d050c480ffad4ff0ed4d3fdee5af # v4.1.0
         with:
-          node-version: '20'
+          node-version: "20"
 
       - name: Install markdownlint-cli2
-        run: npm install -g markdownlint-cli2
+        if: steps.changed-docs.outputs.count != '0'
+        run: npm install -g markdownlint-cli2@0.14.0
 
-      - name: Run markdownlint --fix on docs
-        run: markdownlint-cli2 --fix "docs/**/*.md"
+      - name: Run markdownlint --fix on changed docs
+        if: steps.changed-docs.outputs.count != '0'
+        run: |
+          # Run markdownlint on changed files only, in batches to avoid arg length limits
+          xargs -a changed_docs.txt -r -n 50 markdownlint-cli2 --fix
         continue-on-error: true
 
       # Check for changes in git
