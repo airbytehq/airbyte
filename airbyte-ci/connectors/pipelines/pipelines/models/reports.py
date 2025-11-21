@@ -22,6 +22,7 @@ from rich.table import Table
 from rich.text import Text
 
 from pipelines.consts import LOCAL_REPORTS_PATH_ROOT
+from pipelines.helpers.github_actions import write_to_github_output
 from pipelines.helpers.utils import format_duration, slugify
 from pipelines.models.artifacts import Artifact
 from pipelines.models.steps import StepResult, StepStatus
@@ -94,6 +95,21 @@ class Report:
         self.report_dir_path.mkdir(parents=True, exist_ok=True)
         await self.save_json_report()
         await self.save_step_result_artifacts()
+
+        github_outputs = {
+            "success": str(self.success).lower(),
+            "pipeline_name": self.pipeline_context.pipeline_name,
+            "run_duration_seconds": str(self.run_duration.total_seconds()),
+            "failed_steps_count": str(len(self.failed_steps)),
+            "successful_steps_count": str(len(self.successful_steps)),
+            "skipped_steps_count": str(len(self.skipped_steps)),
+        }
+
+        if self.failed_steps:
+            failed_step_names = ", ".join([s.step.__class__.__name__ for s in self.failed_steps])
+            github_outputs["failed_steps"] = failed_step_names
+
+        write_to_github_output(github_outputs)
 
     async def save_json_report(self) -> None:
         """Save the report as JSON, upload it to GCS if the pipeline is running in CI"""
