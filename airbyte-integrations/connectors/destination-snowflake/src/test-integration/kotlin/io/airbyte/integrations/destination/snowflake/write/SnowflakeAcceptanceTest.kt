@@ -171,8 +171,8 @@ abstract class SnowflakeAcceptanceTest(
         commitDataIncrementallyToEmptyDestinationOnDedupe = false,
         allTypesBehavior =
             StronglyTyped(
-                integerCanBeLarge = false,
-                numberCanBeLarge = false,
+                integerCanBeLarge = true,
+                numberCanBeLarge = true,
                 nestedFloatLosesPrecision = false,
             ),
         unknownTypesBehavior = unknownTypesBehavior,
