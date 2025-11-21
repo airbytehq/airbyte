@@ -26,8 +26,6 @@ import java.math.BigInteger
 import org.junit.jupiter.api.Assertions.assertEquals
 import org.junit.jupiter.api.BeforeEach
 import org.junit.jupiter.api.Test
-import org.junit.jupiter.params.ParameterizedTest
-import org.junit.jupiter.params.provider.CsvSource
 
 internal class SnowflakeValueCoercerTest {
 
@@ -148,7 +146,13 @@ internal class SnowflakeValueCoercerTest {
             )
 
         val result = coercer.validate(airbyteValue)
-        assertEquals(ValidationResult.ShouldTruncate(NumberValue(value= BigDecimal(10000.1229999999995925463736057281494140625)), reason= AirbyteRecordMessageMetaChange.Reason.DESTINATION_FIELD_SIZE_LIMITATION), result)
+        assertEquals(
+            ValidationResult.ShouldTruncate(
+                NumberValue(value = BigDecimal(10000.1229999999995925463736057281494140625)),
+                reason = AirbyteRecordMessageMetaChange.Reason.DESTINATION_FIELD_SIZE_LIMITATION
+            ),
+            result
+        )
     }
 
     @Test

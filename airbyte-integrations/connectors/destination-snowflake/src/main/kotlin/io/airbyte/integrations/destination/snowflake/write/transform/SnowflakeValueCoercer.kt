@@ -78,7 +78,8 @@ class SnowflakeValueCoercer : ValueCoercer {
             is NumberValue -> {
                 if (abValue.value in FLOAT_RANGE) {
                     val targetValue = BigDecimal(abValue.value.toDouble())
-                    // This is done because BigDecimal is stupid and if we don't use compareTo, we end up with 0 != 0.0
+                    // This is done because BigDecimal is stupid and if we don't use compareTo, we
+                    // end up with 0 != 0.0
                     if (targetValue.compareTo(abValue.value) == 0) {
                         ValidationResult.Valid
                     } else {
@@ -88,14 +89,18 @@ class SnowflakeValueCoercer : ValueCoercer {
                         )
                     }
                 } else {
-                    ValidationResult.ShouldNullify(AirbyteRecordMessageMetaChange.Reason.DESTINATION_FIELD_SIZE_LIMITATION)
+                    ValidationResult.ShouldNullify(
+                        AirbyteRecordMessageMetaChange.Reason.DESTINATION_FIELD_SIZE_LIMITATION
+                    )
                 }
             }
             is IntegerValue -> {
                 if (abValue.value in INT_RANGE) {
                     ValidationResult.Valid
                 } else {
-                    ValidationResult.ShouldNullify(AirbyteRecordMessageMetaChange.Reason.DESTINATION_FIELD_SIZE_LIMITATION)
+                    ValidationResult.ShouldNullify(
+                        AirbyteRecordMessageMetaChange.Reason.DESTINATION_FIELD_SIZE_LIMITATION
+                    )
                 }
             }
             is StringValue -> {
