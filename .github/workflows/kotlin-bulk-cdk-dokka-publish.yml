@@ -99,15 +99,18 @@ jobs:
         uses: actions/download-artifact@v4
         with:
           name: kotlin-bulk-cdk-docs-${{ github.sha }}
-          path: docs-output
+          path: docs-output/airbyte-cdk/bulk
 
       - name: Debug - Show artifact structure
         run: |
           echo "📂 Artifact structure:"
-          ls -lah docs-output
+          ls -lah docs-output/airbyte-cdk/bulk
           echo ""
           echo "🔍 Looking for index.html:"
-          find docs-output -maxdepth 3 -type f -name "index.html" -print
+          find docs-output -type f -name "index.html" -print
+          echo ""
+          echo "✅ Verifying deployment path..."
+          test -f docs-output/airbyte-cdk/bulk/index.html && echo "✅ index.html found at expected path" || echo "❌ index.html NOT found at expected path"
 
       - name: Deploy to Vercel
         id: deploy-vercel
