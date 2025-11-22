@@ -344,11 +344,16 @@ class PostgresSourceJdbcPartitionFactory(
         val relationSize =
             PostgresSourceJdbcConcurrentPartitionsCreator.streamSizes[unsplitPartition.stream] ?: error("Could not get stream size for stream ${unsplitPartition.stream.id}")
 
+        val rowSize: Long = when (PostgresSourceJdbcConcurrentPartitionsCreator.rowSizes[unsplitPartition.stream]) {
+            null, 0L -> blockSize
+            else -> PostgresSourceJdbcConcurrentPartitionsCreator.rowSizes[unsplitPartition.stream]!!
+        }
+
         return when (unsplitPartition) {
             is PostgresSourceJdbcSplittableSnapshotPartition ->
-                unsplitPartition.split(splitPartitionBoundaries.size, splitPartitionBoundaries.first().filenode, relationSize)
+                unsplitPartition.split(splitPartitionBoundaries.size, splitPartitionBoundaries.first().filenode, relationSize, rowSize)
             is PostgresSourceJdbcSplittableSnapshotWithCursorPartition ->
-                unsplitPartition.split(splitPartitionBoundaries.size, splitPartitionBoundaries.first().filenode, relationSize)
+                unsplitPartition.split(splitPartitionBoundaries.size, splitPartitionBoundaries.first().filenode, relationSize, rowSize)
             // TODO: implement split for cursor incremental partition
             else -> listOf(unsplitPartition)
         }
@@ -357,9 +362,11 @@ class PostgresSourceJdbcPartitionFactory(
     private fun computePartitionBounds(
         lowerBound: JsonNode?,
         numPartitions: Int,
-        relationSize: Long
+        relationSize: Long,
+        rowSize: Long
     ): List<Pair<Ctid?, Ctid?>> {
-        val theoreticalLastPage: Long = relationSize / blockSize
+        val theoreticalLastPage: Long = relationSize / rowSize
+        log.info { "Theoretical last page: $theoreticalLastPage" }
         val lowerBoundCtid: Ctid = lowerBound?.let {
             if (it.isNull.not() && it.asText().isEmpty().not()) {
                 Ctid.of(it.asText())
@@ -377,9 +384,10 @@ class PostgresSourceJdbcPartitionFactory(
     private fun PostgresSourceJdbcSplittableSnapshotPartition.split(
         numPartitions: Int,
         filenode: Filenode?,
-        relationSize: Long
+        relationSize: Long,
+        rowSize: Long
     ): List<PostgresSourceJdbcSplittableSnapshotPartition> {
-        val bounds = computePartitionBounds(lowerBound, numPartitions, relationSize)
+        val bounds = computePartitionBounds(lowerBound, numPartitions, relationSize, rowSize)
 
         return bounds.mapIndexed { index, (lowerBound, upperBound) ->
             PostgresSourceJdbcSplittableSnapshotPartition(
@@ -397,9 +405,10 @@ class PostgresSourceJdbcPartitionFactory(
     private fun PostgresSourceJdbcSplittableSnapshotWithCursorPartition.split(
         numPartitions: Int,
         filenode: Filenode?,
-        relationSize: Long
+        relationSize: Long,
+        rowSize: Long
     ): List<PostgresSourceJdbcSplittableSnapshotWithCursorPartition> {
-        val bounds = computePartitionBounds(lowerBound, numPartitions, relationSize)
+        val bounds = computePartitionBounds(lowerBound, numPartitions, relationSize, rowSize)
 
         return bounds.mapIndexed { index, (lowerBound, upperBound) ->
             PostgresSourceJdbcSplittableSnapshotWithCursorPartition(

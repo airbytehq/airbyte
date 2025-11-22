@@ -128,6 +128,7 @@ class PostgresSourceJdbcConcurrentPartitionsCreator<
             return listOf(CheckpointOnlyPartitionReader())
         }
         val rowByteSizeSample: Sample<Long> = sample.map { (_, rowByteSize: Long) -> rowByteSize }
+        rowSizes[stream] = rowByteSizeSample.sampledValues.maxOrNull() ?: 0L
         streamState.fetchSize = sharedState.jdbcFetchSizeEstimator().apply(rowByteSizeSample)
         val expectedTableByteSize: Long = /*rowByteSizeSample.sampledValues.sum() * sample.valueWeight*/ relationSize(stream)
         log.info { "Table memory size estimated at ${expectedTableByteSize shr 20} MiB." }
@@ -192,5 +193,6 @@ class PostgresSourceJdbcConcurrentPartitionsCreator<
 
     companion object {
         val streamSizes: ConcurrentHashMap<Stream, Long> = ConcurrentHashMap()
+        val rowSizes: ConcurrentHashMap<Stream, Long> = ConcurrentHashMap()
     }
 }
