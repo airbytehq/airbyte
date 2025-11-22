@@ -175,7 +175,7 @@ class PostgresSourceJdbcConcurrentPartitionsCreator<
     private fun relationSize(stream: Stream): Long {
         val jdbcConnectionFactory = JdbcConnectionFactory(sharedState.configuration)
         jdbcConnectionFactory.get().use { connection ->
-            val sql = "SELECT pg_relation_size('${
+            val sql = "SELECT pg_total_relation_size('${
                 if (stream.namespace == null) "\"${stream.name}\"" else "\"${stream.namespace}\".\"${stream.name}\""
             }')"
             val stmt = connection.prepareStatement(sql)
