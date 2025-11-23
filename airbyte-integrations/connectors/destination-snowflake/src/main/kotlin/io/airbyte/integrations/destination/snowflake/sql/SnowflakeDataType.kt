@@ -11,6 +11,7 @@ package io.airbyte.integrations.destination.snowflake.sql
 enum class SnowflakeDataType(val typeName: String) {
     // Numeric types
     NUMBER("NUMBER(38,0)"),
+    DECIMAL("NUMBER(38,9)"),
     FLOAT("FLOAT"),
 
     // String & binary types

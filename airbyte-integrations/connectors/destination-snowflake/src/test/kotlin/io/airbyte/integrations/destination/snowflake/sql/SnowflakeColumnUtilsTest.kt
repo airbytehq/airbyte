@@ -265,7 +265,7 @@ internal class SnowflakeColumnUtilsTest {
             snowflakeColumnUtils.toDialectType(IntegerType)
         )
         assertEquals(
-            SnowflakeDataType.FLOAT.typeName,
+            SnowflakeDataType.DECIMAL.typeName,
             snowflakeColumnUtils.toDialectType(NumberType)
         )
         assertEquals(

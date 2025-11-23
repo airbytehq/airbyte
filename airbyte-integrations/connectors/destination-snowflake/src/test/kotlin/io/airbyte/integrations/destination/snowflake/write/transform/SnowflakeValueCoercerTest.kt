@@ -24,6 +24,7 @@ import io.airbyte.protocol.models.v0.AirbyteRecordMessageMetaChange
 import java.math.BigDecimal
 import java.math.BigInteger
 import org.junit.jupiter.api.Assertions.assertEquals
+import org.junit.jupiter.api.Assertions.assertTrue
 import org.junit.jupiter.api.BeforeEach
 import org.junit.jupiter.api.Test
 import org.junit.jupiter.params.ParameterizedTest
@@ -264,14 +265,14 @@ internal class SnowflakeValueCoercerTest {
     }
 
     @Test
-    fun testFloatAtMaximumBoundary() {
-        // Test float at maximum boundary (9.007199E15)
-        val maxFloat = NumberValue(9.007199E15.toBigDecimal())
+    fun testDecimalAtMaximumBoundary() {
+        // Test decimal at maximum boundary for NUMBER(38,9) - 29 integer digits + 9 decimal digits
+        val maxDecimal = NumberValue(BigDecimal("99999999999999999999999999999.999999999"))
         val airbyteValue =
             EnrichedAirbyteValue(
-                abValue = maxFloat,
+                abValue = maxDecimal,
                 type = NumberType,
-                name = "max_float",
+                name = "max_decimal",
                 changes = mutableListOf(),
                 airbyteMetaField = null,
             )
@@ -281,14 +282,14 @@ internal class SnowflakeValueCoercerTest {
     }
 
     @Test
-    fun testFloatAtMinimumBoundary() {
-        // Test float at minimum boundary (-9.007199E15)
-        val minFloat = NumberValue((-9.007199E15).toBigDecimal())
+    fun testDecimalAtMinimumBoundary() {
+        // Test decimal at minimum boundary for NUMBER(38,9) - 29 integer digits + 9 decimal digits
+        val minDecimal = NumberValue(BigDecimal("-99999999999999999999999999999.999999999"))
         val airbyteValue =
             EnrichedAirbyteValue(
-                abValue = minFloat,
+                abValue = minDecimal,
                 type = NumberType,
-                name = "min_float",
+                name = "min_decimal",
                 changes = mutableListOf(),
                 airbyteMetaField = null,
             )
@@ -298,13 +299,14 @@ internal class SnowflakeValueCoercerTest {
     }
 
     @Test
-    fun testFloatExceedsMaximum() {
-        val oversizedFloat = NumberValue(1E20.toBigDecimal())
+    fun testDecimalExceedsMaximum() {
+        // Test decimal exceeding NUMBER(38,9) maximum (30 integer digits)
+        val oversizedDecimal = NumberValue(BigDecimal("999999999999999999999999999999.0"))
         val airbyteValue =
             EnrichedAirbyteValue(
-                abValue = oversizedFloat,
+                abValue = oversizedDecimal,
                 type = NumberType,
-                name = "oversized_float",
+                name = "oversized_decimal",
                 changes = mutableListOf(),
                 airbyteMetaField = null,
             )
@@ -318,13 +320,14 @@ internal class SnowflakeValueCoercerTest {
     }
 
     @Test
-    fun testFloatExceedsMinimum() {
-        val undersizedFloat = NumberValue((-1E20).toBigDecimal())
+    fun testDecimalExceedsMinimum() {
+        // Test decimal exceeding NUMBER(38,9) minimum (30 integer digits)
+        val undersizedDecimal = NumberValue(BigDecimal("-999999999999999999999999999999.0"))
         val airbyteValue =
             EnrichedAirbyteValue(
-                abValue = undersizedFloat,
+                abValue = undersizedDecimal,
                 type = NumberType,
-                name = "undersized_float",
+                name = "undersized_decimal",
                 changes = mutableListOf(),
                 airbyteMetaField = null,
             )
@@ -434,6 +437,8 @@ internal class SnowflakeValueCoercerTest {
     @Test
     fun testVerySmallPositiveNumber() {
         // Test very small positive number close to zero
+        // 0.000000000001 has 12 decimal places, exceeds NUMBER(38,9) scale limit of 9
+        // This should be nulled with NUMBER(38,9) (previously passed with FLOAT)
         val tinyNumber = NumberValue(0.000000000001.toBigDecimal())
         val airbyteValue =
             EnrichedAirbyteValue(
@@ -445,12 +450,18 @@ internal class SnowflakeValueCoercerTest {
             )
 
         val result = coercer.validate(airbyteValue)
-        assertEquals(ValidationResult.Valid, result)
+        assertTrue(result is ValidationResult.ShouldNullify)
+        assertEquals(
+            AirbyteRecordMessageMetaChange.Reason.DESTINATION_FIELD_SIZE_LIMITATION,
+            (result as ValidationResult.ShouldNullify).reason
+        )
     }
 
     @Test
     fun testScientificNotationNumbers() {
         // Test numbers in scientific notation
+        // 1.23E-10 = 0.000000000123 has 12 decimal places, exceeds NUMBER(38,9) scale limit of 9
+        // This should be nulled with NUMBER(38,9) (previously passed with FLOAT)
         val scientificNumber = NumberValue(1.23E-10.toBigDecimal())
         val airbyteValue =
             EnrichedAirbyteValue(
@@ -462,7 +473,11 @@ internal class SnowflakeValueCoercerTest {
             )
 
         val result = coercer.validate(airbyteValue)
-        assertEquals(ValidationResult.Valid, result)
+        assertTrue(result is ValidationResult.ShouldNullify)
+        assertEquals(
+            AirbyteRecordMessageMetaChange.Reason.DESTINATION_FIELD_SIZE_LIMITATION,
+            (result as ValidationResult.ShouldNullify).reason
+        )
     }
 
     @Test
@@ -632,25 +647,25 @@ internal class SnowflakeValueCoercerTest {
     }
 
     @Test
-    fun testFloatAtExactBoundary() {
-        // Test float at exact boundary values defined in FLOAT_RANGE
-        val exactMaxFloat = NumberValue(FLOAT_MAX)
-        val exactMinFloat = NumberValue(FLOAT_MIN)
+    fun testDecimalAtExactBoundary() {
+        // Test decimal at exact boundary values defined in DECIMAL_RANGE
+        val exactMaxDecimal = NumberValue(DECIMAL_MAX)
+        val exactMinDecimal = NumberValue(DECIMAL_MIN)
 
         val maxValue =
             EnrichedAirbyteValue(
-                abValue = exactMaxFloat,
+                abValue = exactMaxDecimal,
                 type = NumberType,
-                name = "exact_max_float",
+                name = "exact_max_decimal",
                 changes = mutableListOf(),
                 airbyteMetaField = null,
             )
 
         val minValue =
             EnrichedAirbyteValue(
-                abValue = exactMinFloat,
+                abValue = exactMinDecimal,
                 type = NumberType,
-                name = "exact_min_float",
+                name = "exact_min_decimal",
                 changes = mutableListOf(),
                 airbyteMetaField = null,
             )
@@ -660,16 +675,16 @@ internal class SnowflakeValueCoercerTest {
     }
 
     @Test
-    fun testFloatJustOutsideBoundary() {
-        // Test float just outside the boundary
-        val justOverMax = NumberValue(FLOAT_MAX.add(BigDecimal.ONE))
-        val justUnderMin = NumberValue(FLOAT_MIN.subtract(BigDecimal.ONE))
+    fun testDecimalJustOutsideBoundary() {
+        // Test decimal just outside the boundary
+        val justOverMax = NumberValue(DECIMAL_MAX.add(BigDecimal.ONE))
+        val justUnderMin = NumberValue(DECIMAL_MIN.subtract(BigDecimal.ONE))
 
         val overMaxValue =
             EnrichedAirbyteValue(
                 abValue = justOverMax,
                 type = NumberType,
-                name = "over_max_float",
+                name = "over_max_decimal",
                 changes = mutableListOf(),
                 airbyteMetaField = null,
             )
@@ -678,7 +693,7 @@ internal class SnowflakeValueCoercerTest {
             EnrichedAirbyteValue(
                 abValue = justUnderMin,
                 type = NumberType,
-                name = "under_min_float",
+                name = "under_min_decimal",
                 changes = mutableListOf(),
                 airbyteMetaField = null,
             )
@@ -763,6 +778,127 @@ internal class SnowflakeValueCoercerTest {
             AirbyteRecordMessageMetaChange.Reason.DESTINATION_FIELD_SIZE_LIMITATION,
             (underResult as ValidationResult.ShouldNullify).reason
         )
+    }
+
+    @Test
+    fun testLargeIntegerAsNumber() {
+        // Test 19-digit integer (like MongoDB NumberLong) that would have failed with FLOAT
+        // This is the exact case from the bug report: submittime: 1740710103515266826
+        val largeInteger = NumberValue(BigDecimal("1740710103515266826"))
+        val airbyteValue =
+            EnrichedAirbyteValue(
+                abValue = largeInteger,
+                type = NumberType,
+                name = "large_integer_as_number",
+                changes = mutableListOf(),
+                airbyteMetaField = null,
+            )
+
+        val result = coercer.validate(airbyteValue)
+        assertEquals(ValidationResult.Valid, result)
+    }
+
+    @Test
+    fun testMultipleLargeIntegersAsNumbers() {
+        // Test multiple 19-digit integers from the bug report
+        val testCases = listOf(
+            "1740710103515266826",
+            "1740710199999999999",
+            "1234567890123456789"
+        )
+
+        testCases.forEach { value ->
+            val numberValue = NumberValue(BigDecimal(value))
+            val airbyteValue =
+                EnrichedAirbyteValue(
+                    abValue = numberValue,
+                    type = NumberType,
+                    name = "large_integer_$value",
+                    changes = mutableListOf(),
+                    airbyteMetaField = null,
+                )
+
+            val result = coercer.validate(airbyteValue)
+            assertEquals(ValidationResult.Valid, result, "Failed for value: $value")
+        }
+    }
+
+    @Test
+    fun testDecimalWithExactly9DecimalPlaces() {
+        // Test decimal with exactly 9 decimal places (should pass)
+        val validDecimal = NumberValue(BigDecimal("1.123456789"))
+        val airbyteValue =
+            EnrichedAirbyteValue(
+                abValue = validDecimal,
+                type = NumberType,
+                name = "valid_9_decimal_places",
+                changes = mutableListOf(),
+                airbyteMetaField = null,
+            )
+
+        val result = coercer.validate(airbyteValue)
+        assertEquals(ValidationResult.Valid, result)
+    }
+
+    @Test
+    fun testDecimalWithMoreThan9DecimalPlaces() {
+        // Test decimal with 10 significant decimal places (should be nulled)
+        // Note: trailing zeros are stripped, so we need 10 non-zero decimal digits
+        val invalidDecimal = NumberValue(BigDecimal("1.1234567891"))
+        val airbyteValue =
+            EnrichedAirbyteValue(
+                abValue = invalidDecimal,
+                type = NumberType,
+                name = "invalid_10_decimal_places",
+                changes = mutableListOf(),
+                airbyteMetaField = null,
+            )
+
+        val result = coercer.validate(airbyteValue)
+        assertTrue(result is ValidationResult.ShouldNullify)
+        assertEquals(
+            AirbyteRecordMessageMetaChange.Reason.DESTINATION_FIELD_SIZE_LIMITATION,
+            (result as ValidationResult.ShouldNullify).reason
+        )
+    }
+
+    @Test
+    fun testDecimalWith30IntegerDigits() {
+        // Test decimal with 30 integer digits (exceeds MAX_INTEGER_DIGITS of 29, should be nulled)
+        val invalidDecimal = NumberValue(BigDecimal("999999999999999999999999999999.0"))
+        val airbyteValue =
+            EnrichedAirbyteValue(
+                abValue = invalidDecimal,
+                type = NumberType,
+                name = "invalid_30_integer_digits",
+                changes = mutableListOf(),
+                airbyteMetaField = null,
+            )
+
+        val result = coercer.validate(airbyteValue)
+        assertTrue(result is ValidationResult.ShouldNullify)
+        assertEquals(
+            AirbyteRecordMessageMetaChange.Reason.DESTINATION_FIELD_SIZE_LIMITATION,
+            (result as ValidationResult.ShouldNullify).reason
+        )
+    }
+
+    @Test
+    fun testDecimalWithTrailingZeros() {
+        // Test that trailing zeros don't cause false negatives
+        // 1.2300000000 has 10 digits after decimal point, but only 2 significant decimal places
+        val validDecimal = NumberValue(BigDecimal("1.2300000000"))
+        val airbyteValue =
+            EnrichedAirbyteValue(
+                abValue = validDecimal,
+                type = NumberType,
+                name = "valid_with_trailing_zeros",
+                changes = mutableListOf(),
+                airbyteMetaField = null,
+            )
+
+        val result = coercer.validate(airbyteValue)
+        assertEquals(ValidationResult.Valid, result)
     }
 
     @Test
