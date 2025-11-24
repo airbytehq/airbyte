@@ -35,7 +35,7 @@ data:
   releases:
     breakingChanges:
       2.0.0:
-        message: In this release, streams 'campaigns', 'email_templates', 'events', 'flows', 'global_exclusions', 'lists', and 'metrics' are now pulling data using latest API which has a different schema. Users will need to refresh the source schemas and reset these streams after upgrading.
+        message: In this release streams 'campaigns', 'email_templates', 'events', 'flows', 'global_exclusions', 'lists', and 'metrics' are now pulling data using latest API which has a different schema. Users will need to refresh the source schemas and reset these streams after upgrading.
         upgradeDeadline: "2023-11-30"
       1.0.0:
         message: In this release, for 'events' stream changed type of 'event_properties/items/quantity' field from integer to number. Users will need to refresh the source schema and reset events streams after upgrading.
