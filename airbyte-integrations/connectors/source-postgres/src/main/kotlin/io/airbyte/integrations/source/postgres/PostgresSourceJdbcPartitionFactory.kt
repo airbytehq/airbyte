@@ -344,10 +344,7 @@ class PostgresSourceJdbcPartitionFactory(
         val relationSize =
             PostgresSourceJdbcConcurrentPartitionsCreator.streamSizes[unsplitPartition.stream] ?: error("Could not get stream size for stream ${unsplitPartition.stream.id}")
 
-        val rowSize: Long = when (PostgresSourceJdbcConcurrentPartitionsCreator.rowSizes[unsplitPartition.stream]) {
-            null, 0L -> blockSize
-            else -> PostgresSourceJdbcConcurrentPartitionsCreator.rowSizes[unsplitPartition.stream]!!
-        }
+        val rowSize: Long = PostgresSourceJdbcConcurrentPartitionsCreator.rowSizes[unsplitPartition.stream] ?: error("Could not get row size for stream ${unsplitPartition.stream.id}")
 
         return when (unsplitPartition) {
             is PostgresSourceJdbcSplittableSnapshotPartition ->
