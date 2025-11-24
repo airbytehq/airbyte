@@ -1,0 +1,246 @@
+version: 7.4.2
+
+type: DeclarativeSource
+
+description: >-
+  Interzoid is an AI-powered API platform providing data quality, data matching,
+  and data enrichment capabilities that help Airbyte pipelines deliver higher
+  data ROI. This connector enables you to call Interzoid’s APIs directly from
+  your Airbyte workflows to match records, enrich attributes, normalize and
+  standardize fields, or verify data as part of your extraction and loading
+  processes. The result is cleaner, more consistent, and more actionable
+  datasets flowing through your Airbyte integrations—without additional
+  engineering overhead.
+
+check:
+  type: CheckStream
+  stream_names:
+    - Company Name Matching
+    - Individual Name Matching
+    - Street Address Matching
+    - Standardize Company Names
+
+streams:
+  - type: DeclarativeStream
+    retriever:
+      type: SimpleRetriever
+      record_selector:
+        type: RecordSelector
+        extractor:
+          type: DpathExtractor
+          field_path: []
+      requester:
+        type: HttpRequester
+        http_method: GET
+        url: https://api.interzoid.com/getcompanymatchadvanced
+        authenticator:
+          type: ApiKeyAuthenticator
+          api_token: "{{ config['api_key'] }}"
+          inject_into:
+            type: RequestOption
+            inject_into: request_parameter
+            field_name: license
+        request_parameters:
+          company: ibm
+          algorithm: model-v4-wide
+    name: Company Name Matching
+    schema_loader:
+      type: InlineSchemaLoader
+      schema:
+        type: object
+        $schema: http://json-schema.org/schema#
+        properties:
+          SimKey:
+            type:
+              - string
+              - "null"
+          Code:
+            type:
+              - string
+              - "null"
+          Credits:
+            type:
+              - string
+              - "null"
+        additionalProperties: true
+  - type: DeclarativeStream
+    retriever:
+      type: SimpleRetriever
+      record_selector:
+        type: RecordSelector
+        extractor:
+          type: DpathExtractor
+          field_path: []
+      requester:
+        type: HttpRequester
+        http_method: GET
+        url: https://api.interzoid.com/getfullnamematch
+        authenticator:
+          type: ApiKeyAuthenticator
+          api_token: "{{ config['api_key'] }}"
+          inject_into:
+            type: RequestOption
+            inject_into: request_parameter
+            field_name: license
+        request_parameters:
+          fullname: John Smith
+    name: Individual Name Matching
+    schema_loader:
+      type: InlineSchemaLoader
+      schema:
+        type: object
+        $schema: http://json-schema.org/schema#
+        properties:
+          SimKey:
+            type:
+              - string
+              - "null"
+          Code:
+            type:
+              - string
+              - "null"
+          Credits:
+            type:
+              - string
+              - "null"
+        additionalProperties: true
+  - type: DeclarativeStream
+    retriever:
+      type: SimpleRetriever
+      record_selector:
+        type: RecordSelector
+        extractor:
+          type: DpathExtractor
+          field_path: []
+      requester:
+        type: HttpRequester
+        http_method: GET
+        url: https://api.interzoid.com/getaddressmatchadvanced
+        authenticator:
+          type: ApiKeyAuthenticator
+          api_token: "{{ config['api_key'] }}"
+          inject_into:
+            type: RequestOption
+            inject_into: request_parameter
+            field_name: license
+        request_parameters:
+          address: 100 Main Street Apt 2A
+          algorithm: model-v3-narrow
+    name: Street Address Matching
+    schema_loader:
+      type: InlineSchemaLoader
+      schema:
+        type: object
+        $schema: http://json-schema.org/schema#
+        properties:
+          SimKey:
+            type:
+              - string
+              - "null"
+          Code:
+            type:
+              - string
+              - "null"
+          Credits:
+            type:
+              - string
+              - "null"
+        additionalProperties: true
+  - type: DeclarativeStream
+    retriever:
+      type: SimpleRetriever
+      record_selector:
+        type: RecordSelector
+        extractor:
+          type: DpathExtractor
+          field_path: []
+      requester:
+        type: HttpRequester
+        http_method: GET
+        url: https://api.interzoid.com/getorgstandard
+        authenticator:
+          type: ApiKeyAuthenticator
+          api_token: "{{ config['api_key'] }}"
+          inject_into:
+            type: RequestOption
+            inject_into: request_parameter
+            field_name: license
+        request_parameters:
+          org: intl bus machines
+    name: Standardize Company Names
+    schema_loader:
+      type: InlineSchemaLoader
+      schema:
+        type: object
+        $schema: http://json-schema.org/schema#
+        properties:
+          Standard:
+            type:
+              - string
+              - "null"
+          Code:
+            type:
+              - string
+              - "null"
+          Credits:
+            type:
+              - string
+              - "null"
+        additionalProperties: true
+
+spec:
+  type: Spec
+  connection_specification:
+    type: object
+    $schema: http://json-schema.org/draft-07/schema#
+    required:
+      - api_key
+    properties:
+      api_key:
+        type: string
+        title: API Key
+        airbyte_secret: true
+        order: 0
+    additionalProperties: true
+
+metadata:
+  testedStreams:
+    stream_0:
+      streamHash: ad11f9fa446b445a056b0f48d54e74059e0bc977
+    Individual Name Matching:
+      streamHash: 7b4a3731bff1138a56f0f49b255bc84deb2e3ed1
+      isStale: false
+      hasResponse: true
+      responsesAreSuccessful: true
+      hasRecords: true
+      primaryKeysArePresent: true
+      primaryKeysAreUnique: true
+    Street Address Matching:
+      streamHash: 2528dce076d13caec394853155e5fe3c5412f25c
+      isStale: false
+      hasResponse: true
+      responsesAreSuccessful: true
+      hasRecords: true
+      primaryKeysArePresent: true
+      primaryKeysAreUnique: true
+    Standardize Company Names:
+      streamHash: c3eb3b91ca19cdd60f674f3774331378e1767dec
+      isStale: false
+      hasResponse: true
+      responsesAreSuccessful: true
+      hasRecords: true
+      primaryKeysArePresent: true
+      primaryKeysAreUnique: true
+    Company Name Matching:
+      streamHash: f3ac4c2ae85b18deb6a55b7f3dc892d736c579be
+      isStale: false
+      hasResponse: true
+      responsesAreSuccessful: true
+      hasRecords: true
+      primaryKeysArePresent: true
+      primaryKeysAreUnique: true
+  autoImportSchema:
+    Company Name Matching: true
+    Individual Name Matching: true
+    Street Address Matching: true
+    Standardize Company Names: true
