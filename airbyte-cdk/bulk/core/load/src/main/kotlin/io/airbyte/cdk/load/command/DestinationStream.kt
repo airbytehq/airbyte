@@ -12,6 +12,7 @@ import io.airbyte.cdk.load.data.json.AirbyteTypeToJsonSchema
 import io.airbyte.cdk.load.message.DestinationRecord
 import io.airbyte.cdk.load.message.Meta
 import io.airbyte.cdk.load.schema.model.StreamTableSchema
+import io.airbyte.cdk.load.schema.model.TableNames
 import io.airbyte.protocol.models.v0.AirbyteRecordMessageMetaChange
 import io.airbyte.protocol.models.v0.AirbyteStream
 import io.airbyte.protocol.models.v0.ConfiguredAirbyteStream
@@ -68,7 +69,8 @@ data class DestinationStream(
     val matchingKey: List<String>? = null,
     private val namespaceMapper: NamespaceMapper,
     // fully munged table and column names with mappings
-    val tableSchema: StreamTableSchema,
+    val tableNames: TableNames,
+    val finalTableSchema: StreamTableSchema,
 ) {
     val unmappedDescriptor = Descriptor(namespace = unmappedNamespace, name = unmappedName)
     val mappedDescriptor = namespaceMapper.map(namespace = unmappedNamespace, name = unmappedName)
