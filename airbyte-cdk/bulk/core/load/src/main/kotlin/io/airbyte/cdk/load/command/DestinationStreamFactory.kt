@@ -4,8 +4,10 @@
 
 package io.airbyte.cdk.load.command
 
+import io.airbyte.cdk.load.data.ObjectType
 import io.airbyte.cdk.load.data.json.JsonSchemaToAirbyteType
-import io.airbyte.cdk.load.schema.ColumnNameResolver
+import io.airbyte.cdk.load.schema.TableSchemaFactory
+import io.airbyte.cdk.load.schema.model.TableName
 import io.airbyte.protocol.models.v0.ConfiguredAirbyteStream
 import io.airbyte.protocol.models.v0.DestinationSyncMode
 import io.github.oshai.kotlinlogging.KotlinLogging
@@ -17,34 +19,31 @@ private val log = KotlinLogging.logger {}
 class DestinationStreamFactory(
     private val jsonSchemaToAirbyteType: JsonSchemaToAirbyteType,
     private val namespaceMapper: NamespaceMapper,
-    private val columnNameResolver: ColumnNameResolver,
+    private val schemaFactory: TableSchemaFactory,
 ) {
-    fun make(stream: ConfiguredAirbyteStream): DestinationStream {
-        // First convert the schema
-        val airbyteSchema = jsonSchemaToAirbyteType.convert(stream.stream.jsonSchema)
+    fun make(stream: ConfiguredAirbyteStream, resolvedTableName: TableName): DestinationStream {
+        val airbyteSchema = jsonSchemaToAirbyteType.convert(stream.stream.jsonSchema) as ObjectType
+        val importType = when (stream.destinationSyncMode) {
+            null -> throw IllegalArgumentException("Destination sync mode was null")
+            DestinationSyncMode.APPEND -> Append
+            DestinationSyncMode.OVERWRITE -> Overwrite
+            DestinationSyncMode.APPEND_DEDUP ->
+                Dedupe(primaryKey = stream.primaryKey, cursor = stream.cursorField)
 
-        // Create column name mapping with collision handling
-        val columnNameMapping =
-            columnNameResolver.createColumnNameMapping(
-                stream.stream.namespace,
-                stream.stream.name,
-                airbyteSchema,
-            )
+            DestinationSyncMode.UPDATE -> Update
+            DestinationSyncMode.SOFT_DELETE -> SoftDelete
+        }
+        val tableSchema = schemaFactory.make(
+            resolvedTableName,
+            airbyteSchema.properties,
+            importType,
+        )
 
         return DestinationStream(
             unmappedNamespace = stream.stream.namespace,
             unmappedName = stream.stream.name,
             namespaceMapper = namespaceMapper,
-            importType =
-                when (stream.destinationSyncMode) {
-                    null -> throw IllegalArgumentException("Destination sync mode was null")
-                    DestinationSyncMode.APPEND -> Append
-                    DestinationSyncMode.OVERWRITE -> Overwrite
-                    DestinationSyncMode.APPEND_DEDUP ->
-                        Dedupe(primaryKey = stream.primaryKey, cursor = stream.cursorField)
-                    DestinationSyncMode.UPDATE -> Update
-                    DestinationSyncMode.SOFT_DELETE -> SoftDelete
-                },
+            importType = importType,
             generationId = stream.generationId,
             minimumGenerationId = stream.minimumGenerationId,
             syncId = stream.syncId,
@@ -56,7 +55,7 @@ class DestinationStreamFactory(
                 stream.destinationObjectName?.let {
                     fromCompositeNestedKeyToCompositeKey(stream.primaryKey)
                 },
-            columnMappings = columnNameMapping,
+            tableSchema = tableSchema,
         )
     }
 

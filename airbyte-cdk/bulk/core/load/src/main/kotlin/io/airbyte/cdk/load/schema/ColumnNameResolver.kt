@@ -7,19 +7,17 @@ package io.airbyte.cdk.load.schema
 import io.github.oshai.kotlinlogging.KotlinLogging
 import jakarta.inject.Singleton
 
-private val log = KotlinLogging.logger {}
-
-
 @Singleton
 class ColumnNameResolver(
     private val mapper: TableSchemaMapper,
     private val ignoreCaseColNames: Boolean,
 ) {
+    private val log = KotlinLogging.logger {}
     /**
      * Creates column name mapping with handling for potential collisions using incremental
      * numbering, with advanced resolution for truncation cases.
      */
-    fun createColumnNameMapping(
+    fun getColumnNameMapping(
         rawColumNames: Set<String>
     ): Map<String, String> {
         val processedColumnNames = mutableSetOf<String>()
