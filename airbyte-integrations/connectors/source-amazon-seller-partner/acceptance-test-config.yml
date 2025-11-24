@@ -63,6 +63,10 @@ acceptance_tests:
             bypass_reason: "Data cannot be seeded in the test account, integration tests added for the stream instead"
           - name: GET_BRAND_ANALYTICS_REPEAT_PURCHASE_REPORT
             bypass_reason: "Data cannot be seeded in the test account, integration tests added for the stream instead"
+          - name: GET_BRAND_ANALYTICS_ALTERNATE_PURCHASE_REPORT
+            bypass_reason: "Data cannot be seeded in the test account, integration tests added for the stream instead"
+          - name: GET_BRAND_ANALYTICS_ITEM_COMPARISON_REPORT
+            bypass_reason: "Data cannot be seeded in the test account, integration tests added for the stream instead"
           - name: VendorDirectFulfillmentShipping
             bypass_reason: "Data cannot be seeded in the test account, integration tests added for the stream instead"
           - name: GET_FLAT_FILE_ARCHIVED_ORDERS_DATA_BY_ORDER_DATE

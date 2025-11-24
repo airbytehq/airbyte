@@ -1,5 +1,6 @@
 # Amazon Seller Partner
 
+
 <HideInUI>
 
 This page contains the setup guide and reference information for the [Amazon Seller Partner](https://developer.amazonservices.com/) source connector.
@@ -154,18 +155,15 @@ The Amazon Seller Partner source connector supports the following [sync modes](h
 - [Vendor Forecasting Report](https://developer-docs.amazon.com/sp-api/docs/report-type-values-analytics#vendor-retail-analytics-reports) \(full-refresh\)
 - [Vendor Orders](https://developer-docs.amazon.com/sp-api/docs/vendor-orders-api-v1-reference#get-vendorordersv1purchaseorders) \(incremental\)
 - [Vendor Order Status](https://developer-docs.amazon.com/sp-api/docs/vendor-orders-api-v1-reference#get-vendorordersv1purchaseOrdersStatus) \(incremental\)
+- [Amazon Search Terms Report](https://developer-docs.amazon.com/sp-api/docs/report-type-values-analytics#brand-analytics-reports) \(incremental\)
+- [Market Basket Analysis Report](https://developer-docs.amazon.com/sp-api/docs/report-type-values-analytics#brand-analytics-reports) \(incremental\)
+- [Repeat Purchase](https://developer-docs.amazon.com/sp-api/docs/report-type-values-analytics#brand-analytics-reports) \(incremental\)
+- [Alternate Purchase Report](https://developer-docs.amazon.com/sp-api/docs/report-type-values-analytics#brand-analytics-reports) \(incremental\)
+- [Item Comparison Report](https://developer-docs.amazon.com/sp-api/docs/report-type-values-analytics#brand-analytics-reports) \(incremental\)
+- [Sales and Traffic Business Report](https://developer-docs.amazon.com/sp-api/docs/report-type-values-analytics#seller-retail-analytics-reports) \(incremental\)
+- [Vendor Sales Report](https://developer-docs.amazon.com/sp-api/docs/report-type-values-analytics#vendor-retail-analytics-reports) \(incremental\)
+- [Vendor Inventory Report](https://developer-docs.amazon.com/sp-api/docs/report-type-values-analytics#vendor-retail-analytics-reports) \(incremental\)
 - [XML Orders By Order Date Report](https://developer-docs.amazon.com/sp-api/docs/report-type-values-order#order-tracking-reports) \(incremental\)
-<!-- env:oss -->
-- [Amazon Search Terms Report](https://developer-docs.amazon.com/sp-api/docs/report-type-values-analytics#brand-analytics-reports) \(only available in OSS, incremental\)
-- [Market Basket Analysis Report](https://developer-docs.amazon.com/sp-api/docs/report-type-values-analytics#brand-analytics-reports) \(only available in OSS, incremental\)
-- [Net Pure Product Margin Report](https://developer-docs.amazon.com/sp-api/docs/report-type-values-analytics#vendor-retail-analytics-reports) \(only available in OSS, incremental\)
-- [Rapid Retail Analytics Inventory Report](https://developer-docs.amazon.com/sp-api/docs/report-type-values-analytics#vendor-retail-analytics-reports) \(only available in OSS, incremental\)
-- [Repeat Purchase](https://developer-docs.amazon.com/sp-api/docs/report-type-values-analytics#brand-analytics-reports) \(only available in OSS, incremental\)
-- [Sales and Traffic Business Report](https://developer-docs.amazon.com/sp-api/docs/report-type-values-analytics#seller-retail-analytics-reports) \(only available in OSS, incremental\)
-- [Vendor Inventory Report](https://developer-docs.amazon.com/sp-api/docs/report-type-values-analytics#vendor-retail-analytics-reports) \(only available in OSS, incremental\)
-- [Vendor Sales Report](https://developer-docs.amazon.com/sp-api/docs/report-type-values-analytics#vendor-retail-analytics-reports) \(only available in OSS, incremental\)
-- [Vendor Traffic Report](https://developer-docs.amazon.com/sp-api/docs/report-type-values-analytics#vendor-retail-analytics-reports) \(only available in OSS, incremental\)
-<!-- /env:oss -->
 
 <HideInUI>
 
@@ -264,6 +262,7 @@ This configuration will sync partial data, until the source gets rate limited. O
 
 | Version    | Date       | Pull Request                                              | Subject                                                                                                                                                                             |
 |:-----------|:-----------|:----------------------------------------------------------|:------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------|
+| 4.10.0 | 2025-11-24 | [9788](https://github.com/airbytehq/airbyte/pull/9788) | Re-add Brand Analytics reports |
 | 4.9.0      | 2025-11-10 | [66995](https://github.com/airbytehq/airbyte/pull/66995) | Add APIBudget for reports streams                                                                                                                                                         |
 | 4.8.4      | 2025-10-29 | [68678](https://github.com/airbytehq/airbyte/pull/68678)  | Increase `maxSecondsBetweenMessages` to 14400                                                                                                                                       |
 | 4.8.3 | 2025-10-29 | [66030](https://github.com/airbytehq/airbyte/pull/66030) | Update dependencies |
@@ -276,8 +275,8 @@ This configuration will sync partial data, until the source gets rate limited. O
 | 4.7.0-rc.1 | 2025-06-30 | [62119](https://github.com/airbytehq/airbyte/pull/62119) | Migrate to manifest-only |
 | 4.6.4 | 2025-06-15 | [54870](https://github.com/airbytehq/airbyte/pull/54870) | Update dependencies |
 | 4.6.3 | 2025-06-03 | [61351](https://github.com/airbytehq/airbyte/pull/61351) | Update dependencies |
-| 4.6.2 | 2025-04-09 | [57537](https://github.com/airbytehq/airbyte/pull/57537)     |Fix Extend Minimum Date Range|
-| 4.6.1 | 2025-04-08 | [55238](https://github.com/airbytehq/airbyte/pull/55238)     |Fix daterange in `DatetimeBasedCursor` and Added configurable step size for financial events streams (`list_financial_event_groups`, `list_financial_events`)|
+| 4.6.2 | 2025-04-09 | [57537](https://github.com/airbytehq/airbyte/pull/57537)     | Fix Extend Minimum Date Range |
+| 4.6.1 | 2025-04-08 | [55238](https://github.com/airbytehq/airbyte/pull/55238)     | Fix daterange in `DatetimeBasedCursor` and Added configurable step size for financial events streams (`list_financial_event_groups`, `list_financial_events`) |
 | 4.6.0 | 2025-02-24 | [53225](https://github.com/airbytehq/airbyte/pull/53225) | Add API Budget |
 | 4.5.3 | 2025-02-22 | [53928](https://github.com/airbytehq/airbyte/pull/53928) | Update dependencies |
 | 4.5.2 | 2025-02-17 | [53693](https://github.com/airbytehq/airbyte/pull/53693) | Add app_id to server configuration (OAuth) |
@@ -382,5 +381,4 @@ This configuration will sync partial data, until the source gets rate limited. O
 | 0.2.0      | 2021-08-06 | [#4863](https://github.com/airbytehq/airbyte/pull/4863)   | Rebuild source with `airbyte-cdk`                                                                                                                                                   |
 | 0.1.3      | 2021-06-23 | [#4288](https://github.com/airbytehq/airbyte/pull/4288)   | Bugfix failing `connection check`                                                                                                                                                   |
 | 0.1.2      | 2021-06-15 | [#4108](https://github.com/airbytehq/airbyte/pull/4108)   | Fixed: Sync fails with timeout when create report is CANCELLED`                                                                                                                     |
-
 </details>
