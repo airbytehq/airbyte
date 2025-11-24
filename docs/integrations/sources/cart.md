@@ -63,6 +63,7 @@ This method is recommended for most users who need to sync data from a single Ca
 8. Copy the access token from the token details view
 
 When configuring the connector in Airbyte, you'll need:
+
 - **Access Token**: The token you generated
 - **Store Name**: Your store's domain name (for example, `mystorename.com`)
 
