@@ -256,7 +256,12 @@ definitions:
       type: MinMaxDatetime
       datetime: "{{ format_datetime(config.get('start_date', '2017-01-25T00:00:00Z'), '%Y-%m-%dT%H:%M:%S%z') }}"
       datetime_format: "%Y-%m-%dT%H:%M:%S%z"
-      min_datetime: "{{ (now_utc() - duration('P30D')).strftime('%Y-%m-%dT%H:%M:%SZ') }}"
+      # API docs https://docs.stripe.com/api/events say events last for last 30 days but sometimes, some events last longer.
+      # We found this due to the events stream also hitting this endpoint without the 30 day limit and producing more records than streams that have this limitation such as invoice_line_items
+      # For more context see OC: https://github.com/airbytehq/oncall/issues/8683 and https://github.com/airbytehq/oncall/issues/10238
+      # Due to this we are commenting this out for now to see if the records match. (Stripe handles this on their end anyways)
+      #
+      # min_datetime: "{{ (now_utc() - duration('P30D')).strftime('%Y-%m-%dT%H:%M:%SZ') }}"
     end_datetime:
       type: MinMaxDatetime
       datetime: "{{ now_utc().strftime('%Y-%m-%dT%H:%M:%SZ') }}"
