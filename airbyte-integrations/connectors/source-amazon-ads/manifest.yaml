@@ -3556,6 +3556,7 @@ api_budget:
           interval: PT1S
         - limit: 100
           interval: PT10S
+      matchers: []  # Applies to all endpoints
   status_codes_for_ratelimit_hit:
     - 429
 
