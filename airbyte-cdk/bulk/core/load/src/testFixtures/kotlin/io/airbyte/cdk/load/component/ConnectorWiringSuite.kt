@@ -14,32 +14,32 @@ import io.airbyte.cdk.load.dataflow.state.PartitionKey
 import io.airbyte.cdk.load.dataflow.transform.RecordDTO
 import io.airbyte.cdk.load.table.TableName
 import io.airbyte.cdk.load.write.DestinationWriter
+import java.util.UUID
 import kotlinx.coroutines.runBlocking
 import org.junit.jupiter.api.Assertions.*
-import java.util.UUID
 
 /**
  * Validates basic Micronaut DI wiring and write path functionality.
  *
  * Tests:
- *  1. all beans are injectable - Catches missing @Singleton, circular dependencies, missing beans
- *  2. writer setup completes - Validates namespace creation and status gathering
- *  3. can create append stream loader - Validates StreamLoader instantiation
- *  4. stream loader start creates table - Validates table creation
- *  5. can write one record - Full write path validation (most important)
+ * 1. all beans are injectable - Catches missing @Singleton, circular dependencies, missing beans
+ * 2. writer setup completes - Validates namespace creation and status gathering
+ * 3. can create append stream loader - Validates StreamLoader instantiation
+ * 4. stream loader start creates table - Validates table creation
+ * 5. can write one record - Full write path validation (most important)
  *
  * Setup:
- *  1. Add testFixtures dependency to build.gradle
- *  2. Create application-component.yml with airbyte.connector.operation="write"
- *  3. Provide @Primary ConfiguredAirbyteCatalog bean (use DefaultComponentTestCatalog.make())
- *  4. Start database in @BeforeAll (testcontainer or real instance)
- *  5. If Writer requires catalog streams: inject DestinationCatalog and override createTestStream()
+ * 1. Add testFixtures dependency to build.gradle
+ * 2. Create application-component.yml with airbyte.connector.operation="write"
+ * 3. Provide @Primary ConfiguredAirbyteCatalog bean (use DefaultComponentTestCatalog.make())
+ * 4. Start database in @BeforeAll (testcontainer or real instance)
+ * 5. If Writer requires catalog streams: inject DestinationCatalog and override createTestStream()
  *
  * Troubleshooting:
- *  - DI errors = test working correctly, add missing beans
- *  - "Property doesn't exist" = missing application-component.yml
- *  - "Catalog must have at least one stream" = missing ConfiguredAirbyteCatalog bean
- *  - NullPointerException in createStreamLoader = override createTestStream()
+ * - DI errors = test working correctly, add missing beans
+ * - "Property doesn't exist" = missing application-component.yml
+ * - "Catalog must have at least one stream" = missing ConfiguredAirbyteCatalog bean
+ * - NullPointerException in createStreamLoader = override createTestStream()
  */
 interface ConnectorWiringSuite {
 
@@ -60,8 +60,8 @@ interface ConnectorWiringSuite {
      * - TableOperationsClient
      * - AggregateFactory
      *
-     * This catches missing @Singleton annotations, circular dependencies,
-     * and missing bean definitions.
+     * This catches missing @Singleton annotations, circular dependencies, and missing bean
+     * definitions.
      */
     fun `all beans are injectable`() {
         assertNotNull(writer, "DestinationWriter should be injectable")
@@ -162,15 +162,10 @@ interface ConnectorWiringSuite {
 
             // 5. Verify data in database
             val count = client.countTable(tableName)
-            assertEquals(
-                1L,
-                count,
-                "Should have exactly 1 record after write. Got $count records."
-            )
+            assertEquals(1L, count, "Should have exactly 1 record after write. Got $count records.")
 
             // 6. Close loader
             loader.close(hadNonzeroRecords = true, streamFailure = null)
-
         } finally {
             // Cleanup
             client.dropTable(tableName)
@@ -180,8 +175,8 @@ interface ConnectorWiringSuite {
     // ========== Helper Methods ==========
 
     /**
-     * Creates a minimal test stream for validation.
-     * Override this if you need custom stream configuration.
+     * Creates a minimal test stream for validation. Override this if you need custom stream
+     * configuration.
      */
     fun createTestStream(
         namespace: String = "test",
@@ -192,22 +187,23 @@ interface ConnectorWiringSuite {
             unmappedNamespace = namespace,
             unmappedName = name,
             importType = importType,
-            schema = ObjectType(
-                properties = linkedMapOf(
-                    "id" to FieldType(IntegerType, nullable = false),
-                    "name" to FieldType(StringType, nullable = true)
-                )
-            ),
+            schema =
+                ObjectType(
+                    properties =
+                        linkedMapOf(
+                            "id" to FieldType(IntegerType, nullable = false),
+                            "name" to FieldType(StringType, nullable = true)
+                        )
+                ),
             generationId = 0,
             minimumGenerationId = 0,
             syncId = 42,
-            namespaceMapper = NamespaceMapper(),  // Default identity mapper
+            namespaceMapper = NamespaceMapper(), // Default identity mapper
         )
     }
 
     /**
-     * Creates a StoreKey for the given stream.
-     * Used to retrieve aggregate from factory.
+     * Creates a StoreKey for the given stream. Used to retrieve aggregate from factory.
      *
      * Note: StoreKey is a typealias for DestinationStream.Descriptor
      */
@@ -217,36 +213,31 @@ interface ConnectorWiringSuite {
     }
 
     /**
-     * Creates a simple column name mapping for test stream.
-     * Maps column names to themselves (identity mapping).
-     * Override if your database requires name transformation.
+     * Creates a simple column name mapping for test stream. Maps column names to themselves
+     * (identity mapping). Override if your database requires name transformation.
      */
     fun createSimpleColumnMapping(): io.airbyte.cdk.load.table.ColumnNameMapping {
-        return io.airbyte.cdk.load.table.ColumnNameMapping(
-            mapOf(
-                "id" to "id",
-                "name" to "name"
-            )
-        )
+        return io.airbyte.cdk.load.table.ColumnNameMapping(mapOf("id" to "id", "name" to "name"))
     }
 
     /**
-     * Creates a test record with all required Airbyte metadata columns.
-     * Override this if you need custom record structure.
+     * Creates a test record with all required Airbyte metadata columns. Override this if you need
+     * custom record structure.
      */
     fun createTestRecord(): RecordDTO {
         return RecordDTO(
-            fields = mapOf(
-                // User columns
-                "id" to IntegerValue(1),
-                "name" to StringValue("Alice"),
-                // Airbyte metadata columns (required)
-                "_airbyte_raw_id" to StringValue(UUID.randomUUID().toString()),
-                "_airbyte_extracted_at" to TimestampWithTimezoneValue("2024-01-01T00:00:00Z"),
-                "_airbyte_meta" to ObjectValue(linkedMapOf()),
-                "_airbyte_generation_id" to IntegerValue(0)
-            ),
-            partitionKey = PartitionKey(""),  // Empty partition for non-partitioned streams
+            fields =
+                mapOf(
+                    // User columns
+                    "id" to IntegerValue(1),
+                    "name" to StringValue("Alice"),
+                    // Airbyte metadata columns (required)
+                    "_airbyte_raw_id" to StringValue(UUID.randomUUID().toString()),
+                    "_airbyte_extracted_at" to TimestampWithTimezoneValue("2024-01-01T00:00:00Z"),
+                    "_airbyte_meta" to ObjectValue(linkedMapOf()),
+                    "_airbyte_generation_id" to IntegerValue(0)
+                ),
+            partitionKey = PartitionKey(""), // Empty partition for non-partitioned streams
             sizeBytes = 100,
             emittedAtMs = System.currentTimeMillis()
         )
