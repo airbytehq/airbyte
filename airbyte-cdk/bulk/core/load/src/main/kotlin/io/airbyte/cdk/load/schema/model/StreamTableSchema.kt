@@ -7,7 +7,7 @@ package io.airbyte.cdk.load.schema.model
 import io.airbyte.cdk.load.command.ImportType
 
 data class StreamTableSchema(
-    val tableNames: TableNames,
+//    val tableNames: TableNames,
     val columnSchema: ColumnSchema,
     val importType: ImportType,
 ) {

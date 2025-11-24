@@ -2,63 +2,56 @@ package io.airbyte.cdk.load.schema
 
 import io.airbyte.cdk.load.command.DestinationStream
 import io.airbyte.cdk.load.schema.model.TableName
+import io.github.oshai.kotlinlogging.KotlinLogging
 import jakarta.inject.Singleton
+import org.apache.commons.codec.digest.DigestUtils
 
 @Singleton
 class TableNameResolver(
     private val mapper: TableSchemaMapper,
-    private val ignoreCaseColNames: Boolean,
 ) {
-    fun cat() {
-     val processedFinalTableNames = mutableSetOf<TableName>()
+    private val log = KotlinLogging.logger {}
 
-        val result = mutableMapOf<DestinationStream, TableName>()
+    fun getTableNameMapping(
+        streamDescriptors: Set<DestinationStream.Descriptor>,
+    ): Map<DestinationStream.Descriptor, TableName> {
+        val processedFinalTableNames = mutableSetOf<TableName>()
 
-        catalog.streams.forEach { stream ->
-            val originalRawTableName = rawTableNameGenerator?.getTableName(stream.mappedDescriptor)
+        val result = mutableMapOf<DestinationStream.Descriptor, TableName>()
+
+        streamDescriptors.forEach { desc ->
             val originalFinalTableName =
-                finalTableNameGenerator.getTableName(stream.mappedDescriptor)
-            val currentRawProcessedName: TableName?
+                mapper.toFinalTableName(desc)
             val currentFinalProcessedName: TableName
 
-            val rawTableNameColliding =
-                processedRawTableNames?.let { originalRawTableName contains it } ?: false
             val finalTableNameColliding = originalFinalTableName in processedFinalTableNames
-            if (rawTableNameColliding || finalTableNameColliding) {
-                LOGGER.info {
-                    "Detected table name collision for ${stream.mappedDescriptor.namespace}.${stream.mappedDescriptor.name}"
+            if (finalTableNameColliding) {
+                log.info {
+                    "Detected table name collision for ${desc.namespace}.${desc.name}"
                 }
                 // Create a hash-suffixed name to avoid collision
                 val hash =
                     DigestUtils.sha1Hex(
-                            "${originalFinalTableName.namespace}&airbyte&${stream.mappedDescriptor.name}"
-                        )
-                        .substring(0, 3)
-                val newName = "${stream.mappedDescriptor.name}_$hash"
-
-                currentRawProcessedName =
-                    rawTableNameGenerator?.getTableName(
-                        stream.mappedDescriptor.copy(name = newName)
+                        "${originalFinalTableName.namespace}&airbyte&${desc.name}",
                     )
-                processedRawTableNames?.add(currentRawProcessedName!!)
+                        .substring(0, 3)
+                val newName = "${desc.name}_$hash"
+
+
                 currentFinalProcessedName =
-                    finalTableNameGenerator.getTableName(
-                        stream.mappedDescriptor.copy(name = newName)
+                    mapper.toFinalTableName(
+                        desc.copy(name = newName),
                     )
                 processedFinalTableNames.add(currentFinalProcessedName)
             } else {
-                processedRawTableNames?.add(originalRawTableName!!)
                 processedFinalTableNames.add(originalFinalTableName)
-                currentRawProcessedName = originalRawTableName
                 currentFinalProcessedName = originalFinalTableName
             }
 
-            result[stream] =
-                TableNameInfo(
-                    TableNames(
-                        rawTableName = currentRawProcessedName,
-                        finalTableName = currentFinalProcessedName,
-                    )
-                )
+            result[desc] =
+                currentFinalProcessedName
         }
+
+        return result
+    }
 }
