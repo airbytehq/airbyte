@@ -3544,6 +3544,21 @@ spec:
 #
 # We've set the default to 10 so we can leverage some concurrency, but this can be tuned as we
 # continue to observe.
+api_budget:
+  type: HTTPAPIBudget
+  policies:
+    - type: MovingWindowCallRatePolicy
+      rates:
+        # Amazon Ads API has dynamic rate limits that vary by region and system load.
+        # Setting conservative initial limits aligned with current concurrency_level (10).
+        # These can be tuned based on monitoring and performance observations.
+        - limit: 10
+          interval: PT1S
+        - limit: 100
+          interval: PT10S
+  status_codes_for_ratelimit_hit:
+    - 429
+
 concurrency_level:
   type: ConcurrencyLevel
   default_concurrency: "{{ config.get('num_workers', 10) }}"
