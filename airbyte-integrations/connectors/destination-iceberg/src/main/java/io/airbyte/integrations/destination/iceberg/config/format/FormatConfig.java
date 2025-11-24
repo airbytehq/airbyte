@@ -8,9 +8,15 @@ import static io.airbyte.integrations.destination.iceberg.IcebergConstants.AUTO_
 import static io.airbyte.integrations.destination.iceberg.IcebergConstants.COMPACT_TARGET_FILE_SIZE_IN_MB_CONFIG_KEY;
 import static io.airbyte.integrations.destination.iceberg.IcebergConstants.FLUSH_BATCH_SIZE_CONFIG_KEY;
 import static io.airbyte.integrations.destination.iceberg.IcebergConstants.FORMAT_TYPE_CONFIG_KEY;
+import static io.airbyte.integrations.destination.iceberg.IcebergConstants.MERGE_KEYS_CONFIG_KEY;
+import static io.airbyte.integrations.destination.iceberg.IcebergConstants.MERGE_MODE_CONFIG_KEY;
+import static io.airbyte.integrations.destination.iceberg.IcebergConstants.PARTITION_KEYS_CONFIG_KEY;
+import static io.airbyte.integrations.destination.iceberg.IcebergConstants.PARTITION_MODE_CONFIG_KEY;
 import static io.airbyte.integrations.destination.iceberg.config.catalog.IcebergCatalogConfigFactory.getProperty;
 
 import com.fasterxml.jackson.databind.JsonNode;
+import java.util.ArrayList;
+import java.util.List;
 import lombok.Data;
 
 /**
@@ -22,11 +28,17 @@ public class FormatConfig {
   public static final int DEFAULT_FLUSH_BATCH_SIZE = 10000;
   public static final boolean DEFAULT_AUTO_COMPACT = false;
   public static final int DEFAULT_COMPACT_TARGET_FILE_SIZE_IN_MB = 100;
+  public static final boolean DEFAULT_MERGE_MODE = false;
+  public static final boolean DEFAULT_PARTITION_MODE = false;
 
   private DataFileFormat format;
   private Integer flushBatchSize;
   private boolean autoCompact;
   private Integer compactTargetFileSizeInMb;
+  private boolean mergeMode;
+  private List<String> mergeKeys;
+  private boolean partitionMode;
+  private List<String> partitionKeys;
 
   // TODO compression config
 
@@ -58,6 +70,42 @@ public class FormatConfig {
           .asInt(DEFAULT_COMPACT_TARGET_FILE_SIZE_IN_MB);
     } else {
       this.compactTargetFileSizeInMb = DEFAULT_COMPACT_TARGET_FILE_SIZE_IN_MB;
+    }
+
+    // mergeMode
+    if (formatConfigJson.has(MERGE_MODE_CONFIG_KEY)) {
+      this.mergeMode = formatConfigJson.get(MERGE_MODE_CONFIG_KEY).asBoolean(DEFAULT_MERGE_MODE);
+    } else {
+      this.mergeMode = DEFAULT_MERGE_MODE;
+    }
+
+    // mergeKeys
+    this.mergeKeys = new ArrayList<>();
+    if (formatConfigJson.has(MERGE_KEYS_CONFIG_KEY)) {
+      JsonNode mergeKeysNode = formatConfigJson.get(MERGE_KEYS_CONFIG_KEY);
+      if (mergeKeysNode.isArray()) {
+        for (JsonNode keyNode : mergeKeysNode) {
+          this.mergeKeys.add(keyNode.asText());
+        }
+      }
+    }
+
+    // partitionMode
+    if (formatConfigJson.has(PARTITION_MODE_CONFIG_KEY)) {
+      this.partitionMode = formatConfigJson.get(PARTITION_MODE_CONFIG_KEY).asBoolean(DEFAULT_PARTITION_MODE);
+    } else {
+      this.partitionMode = DEFAULT_PARTITION_MODE;
+    }
+
+    // partitionKeys
+    this.partitionKeys = new ArrayList<>();
+    if (formatConfigJson.has(PARTITION_KEYS_CONFIG_KEY)) {
+      JsonNode partitionKeysNode = formatConfigJson.get(PARTITION_KEYS_CONFIG_KEY);
+      if (partitionKeysNode.isArray()) {
+        for (JsonNode keyNode : partitionKeysNode) {
+          this.partitionKeys.add(keyNode.asText());
+        }
+      }
     }
   }
 

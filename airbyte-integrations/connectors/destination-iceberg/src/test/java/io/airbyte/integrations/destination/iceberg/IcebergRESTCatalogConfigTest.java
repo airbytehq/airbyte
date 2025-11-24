@@ -110,23 +110,23 @@ class IcebergRESTCatalogConfigTest {
   public void checksRESTServerUri() {
     final IcebergOssDestination destinationFail = new IcebergOssDestination();
     final AirbyteConnectionStatus status = destinationFail.check(Jsons.deserialize("""
-                                                                                   {
-                                                                                     "catalog_config": {
-                                                                                       "catalog_type": "REST",
-                                                                                       "database": "test"
-                                                                                     },
-                                                                                     "storage_config": {
-                                                                                       "storage_type": "S3",
-                                                                                       "access_key_id": "xxxxxxxxxxx",
-                                                                                       "secret_access_key": "yyyyyyyyyyyy",
-                                                                                       "s3_warehouse_uri": "s3://warehouse/hive",
-                                                                                       "s3_bucket_region": "us-east-1",
-                                                                                       "s3_endpoint": "your-own-minio-host:9000"
-                                                                                     },
-                                                                                     "format_config": {
-                                                                                       "format": "Parquet"
-                                                                                     }
-                                                                                   }"""));
+        {
+          "catalog_config": {
+            "catalog_type": "REST",
+            "database": "test"
+          },
+          "storage_config": {
+            "storage_type": "S3",
+            "access_key_id": "xxxxxxxxxxx",
+            "secret_access_key": "yyyyyyyyyyyy",
+            "s3_warehouse_uri": "s3://warehouse/hive",
+            "s3_bucket_region": "us-east-1",
+            "s3_endpoint": "your-own-minio-host:9000"
+          },
+          "format_config": {
+            "format": "Parquet"
+          }
+        }"""));
     log.info("status={}", status);
     assertThat(status.getStatus()).isEqualTo(Status.FAILED);
     assertThat(status.getMessage()).contains("rest_uri is required");
@@ -148,12 +148,8 @@ class IcebergRESTCatalogConfigTest {
     assertThat(sparkConfig.get("spark.sql.catalog.iceberg.s3.endpoint")).isEqualTo(FAKE_ENDPOINT_WITH_SCHEMA);
     assertThat(sparkConfig.get("spark.sql.catalog.iceberg.s3.path-style-access")).isEqualTo("false");
 
-    // Hadoop config
-    assertThat(sparkConfig.get("spark.hadoop.fs.s3a.endpoint")).isEqualTo(FAKE_ENDPOINT);
-    assertThat(sparkConfig.get("spark.hadoop.fs.s3a.access.key")).isEqualTo(FAKE_ACCESS_KEY_ID);
-    assertThat(sparkConfig.get("spark.hadoop.fs.s3a.secret.key")).isEqualTo(FAKE_SECRET_ACCESS_KEY);
-    assertThat(sparkConfig.get("spark.hadoop.fs.s3a.impl")).isEqualTo(S3AFileSystem.class.getName());
-    assertThat(sparkConfig.get("spark.hadoop.fs.s3a.connection.ssl.enabled")).isEqualTo("false");
+    assertThat(sparkConfig.get("spark.sql.catalog.iceberg.client.factory"))
+        .isEqualTo("io.airbyte.integrations.destination.iceberg.io.OssCompatibleS3ClientFactory");
   }
 
   @Test
@@ -162,10 +158,14 @@ class IcebergRESTCatalogConfigTest {
     log.info("S3 Config for RESTCatalog Initialize: {}", properties);
 
     assertThat(properties.get("io-impl")).isEqualTo(S3FileIO.class.getName());
+    assertThat(properties.get("client.factory"))
+        .isEqualTo("io.airbyte.integrations.destination.iceberg.io.OssCompatibleS3ClientFactory");
     assertThat(properties.get("s3.endpoint")).isEqualTo(FAKE_ENDPOINT_WITH_SCHEMA);
     assertThat(properties.get("s3.access-key-id")).isEqualTo(FAKE_ACCESS_KEY_ID);
     assertThat(properties.get("s3.secret-access-key")).isEqualTo(FAKE_SECRET_ACCESS_KEY);
     assertThat(properties.get("s3.path-style-access")).isEqualTo("false");
+    assertThat(properties.get("s3.checksum-enabled")).isEqualTo("false");
+    assertThat(properties.get("s3.multipart.threshold")).isEqualTo("1000");
   }
 
 }

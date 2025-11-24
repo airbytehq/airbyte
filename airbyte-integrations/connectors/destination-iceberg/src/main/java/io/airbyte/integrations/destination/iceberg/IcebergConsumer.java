@@ -33,13 +33,20 @@ import lombok.extern.slf4j.Slf4j;
 import org.apache.iceberg.catalog.Catalog;
 import org.apache.iceberg.catalog.TableIdentifier;
 import org.apache.iceberg.spark.actions.SparkActions;
+import com.fasterxml.jackson.databind.node.ObjectNode;
+import io.airbyte.integrations.destination.iceberg.util.AirbyteSchemaConverter;
+import org.apache.spark.sql.Dataset;
+import org.apache.spark.sql.DataFrameWriterV2;
+import org.apache.spark.sql.Encoders;
 import org.apache.spark.sql.Row;
 import org.apache.spark.sql.SaveMode;
 import org.apache.spark.sql.SparkSession;
 import org.apache.spark.sql.catalyst.expressions.GenericRow;
+import org.apache.spark.sql.functions;
 import org.apache.spark.sql.types.StringType$;
 import org.apache.spark.sql.types.StructType;
 import org.apache.spark.sql.types.TimestampType$;
+import org.apache.spark.sql.Column;
 
 /**
  * @author Leibniz on 2022/10/26.
@@ -53,23 +60,19 @@ public class IcebergConsumer extends CommitOnStateAirbyteMessageConsumer {
 
   private Map<AirbyteStreamNameNamespacePair, WriteConfig> writeConfigs;
 
-  private final StructType normalizationSchema;
-
   public IcebergConsumer(SparkSession spark,
-                         Consumer<AirbyteMessage> outputRecordCollector,
-                         ConfiguredAirbyteCatalog catalog,
-                         IcebergCatalogConfig catalogConfig) {
+      Consumer<AirbyteMessage> outputRecordCollector,
+      ConfiguredAirbyteCatalog catalog,
+      IcebergCatalogConfig catalogConfig) {
     super(outputRecordCollector);
     this.spark = spark;
     this.catalog = catalog;
     this.catalogConfig = catalogConfig;
-    this.normalizationSchema = new StructType().add(COLUMN_NAME_AB_ID, StringType$.MODULE$)
-        .add(COLUMN_NAME_EMITTED_AT, TimestampType$.MODULE$)
-        .add(COLUMN_NAME_DATA, StringType$.MODULE$);
   }
 
   /**
-   * call this method to initialize any resources that need to be created BEFORE the consumer consumes
+   * call this method to initialize any resources that need to be created BEFORE
+   * the consumer consumes
    * any messages
    */
   @Override
@@ -93,9 +96,23 @@ public class IcebergConsumer extends CommitOnStateAirbyteMessageConsumer {
         throw new IllegalStateException("Undefined destination sync mode");
       }
       final boolean isAppendMode = syncMode != DestinationSyncMode.OVERWRITE;
-      AirbyteStreamNameNamespacePair nameNamespacePair = AirbyteStreamNameNamespacePair.fromAirbyteStream(stream.getStream());
+      AirbyteStreamNameNamespacePair nameNamespacePair = AirbyteStreamNameNamespacePair
+          .fromAirbyteStream(stream.getStream());
       Integer flushBatchSize = catalogConfig.getFormatConfig().getFlushBatchSize();
-      WriteConfig writeConfig = new WriteConfig(namespace, streamName, isAppendMode, flushBatchSize);
+
+      // Convert Airbyte Schema to Spark Schema and add metadata columns
+      StructType schema = AirbyteSchemaConverter.toStructType(stream.getStream().getJsonSchema());
+      schema = schema.add(COLUMN_NAME_AB_ID, StringType$.MODULE$)
+          .add(COLUMN_NAME_EMITTED_AT, TimestampType$.MODULE$);
+
+      // Get merge configuration from format config
+      boolean mergeMode = catalogConfig.getFormatConfig().isMergeMode();
+      List<String> mergeKeys = catalogConfig.getFormatConfig().getMergeKeys();
+      boolean partitionMode = catalogConfig.getFormatConfig().isPartitionMode();
+      List<String> partitionKeys = catalogConfig.getFormatConfig().getPartitionKeys();
+
+      WriteConfig writeConfig = new WriteConfig(namespace, streamName, isAppendMode, flushBatchSize, schema,
+          mergeMode, mergeKeys, partitionMode, partitionKeys);
       configs.put(nameNamespacePair, writeConfig);
       try {
         spark.sql("DROP TABLE IF EXISTS " + writeConfig.getFullTempTableName());
@@ -128,10 +145,21 @@ public class IcebergConsumer extends CommitOnStateAirbyteMessageConsumer {
           recordMessage.getStream()));
     }
 
-    // write data
-    Row row = new GenericRow(new Object[] {UUID.randomUUID().toString(), new Timestamp(recordMessage.getEmittedAt()),
-      Jsons.serialize(recordMessage.getData())});
-    boolean needInsert = writeConfig.addData(row);
+    // Prepare data with metadata
+    ObjectNode data = (ObjectNode) recordMessage.getData();
+    data.put(COLUMN_NAME_AB_ID, UUID.randomUUID().toString());
+    // Spark JSON reader expects timestamp in ISO8601 string or specific format,
+    // but here we are defining the schema as TimestampType.
+    // Spark's JSON parser handles ISO8601 strings for TimestampType.
+    // Airbyte's emittedAt is long (millis). We need to convert it to string or let
+    // Spark handle it?
+    // Spark JSON reader might not handle long as Timestamp directly unless
+    // configured.
+    // Safer to pass it as string or use a format.
+    // Let's use ISO string.
+    data.put(COLUMN_NAME_EMITTED_AT, new Timestamp(recordMessage.getEmittedAt()).toInstant().toString());
+
+    boolean needInsert = writeConfig.addData(Jsons.serialize(data));
     if (needInsert) {
       appendToTempTable(writeConfig);
     }
@@ -139,22 +167,37 @@ public class IcebergConsumer extends CommitOnStateAirbyteMessageConsumer {
 
   private void appendToTempTable(WriteConfig writeConfig) {
     String tableName = writeConfig.getFullTempTableName();
-    List<Row> rows = writeConfig.fetchDataCache();
+    List<String> jsonRows = writeConfig.fetchDataCache();
     // saveAsTable even if rows is empty, to ensure table is created.
     // otherwise the table would be missing, and throws exception in close()
-    log.info("=> Flushing {} rows into {}", rows.size(), tableName);
-    spark.createDataFrame(rows, normalizationSchema).write()
-        // append data to temp table
-        .mode(SaveMode.Append)
-        // TODO compression config
-        .option("write-format", catalogConfig.getFormatConfig().getFormat().getFormatName()).saveAsTable(tableName);
+    log.info("=> Flushing {} rows into {}", jsonRows.size(), tableName);
+
+    if (jsonRows.isEmpty()) {
+      // If empty, create an empty DataFrame with the schema
+      spark.createDataFrame(new java.util.ArrayList<>(), writeConfig.getSchema())
+          .write()
+          .mode(SaveMode.Append)
+          .option("write-format", catalogConfig.getFormatConfig().getFormat().getFormatName())
+          .saveAsTable(tableName);
+    } else {
+      Dataset<String> jsonDS = spark.createDataset(jsonRows, Encoders.STRING());
+      spark.read().schema(writeConfig.getSchema()).json(jsonDS)
+          .write()
+          // append data to temp table
+          .mode(SaveMode.Append)
+          // TODO compression config
+          .option("write-format", catalogConfig.getFormatConfig().getFormat().getFormatName())
+          .saveAsTable(tableName);
+    }
   }
 
   /**
-   * call this method when receive a STATE AirbyteMessage ———— it is the last message
+   * call this method when receive a STATE AirbyteMessage ———— it is the last
+   * message
    */
   @Override
-  public void commit() throws Exception {}
+  public void commit() throws Exception {
+  }
 
   @Override
   protected void close(boolean hasFailed) throws Exception {
@@ -167,14 +210,43 @@ public class IcebergConsumer extends CommitOnStateAirbyteMessageConsumer {
           appendToTempTable(writeConfig);
           String tempTableName = writeConfig.getFullTempTableName();
           String finalTableName = writeConfig.getFullTableName();
-          log.info("=> Migration({}) data from {} to {}",
-              writeConfig.isAppendMode() ? "append" : "overwrite",
-              tempTableName,
-              finalTableName);
-          spark.sql("SELECT * FROM %s".formatted(tempTableName))
-              .write()
-              .mode(writeConfig.isAppendMode() ? SaveMode.Append : SaveMode.Overwrite)
-              .saveAsTable(finalTableName);
+          SaveMode saveMode = writeConfig.isAppendMode() ? SaveMode.Append : SaveMode.Overwrite;
+          boolean tableExists = spark.catalog().tableExists(finalTableName);
+
+          // Check if merge mode is enabled for this write config
+          if (writeConfig.shouldMerge() && tableExists) {
+            log.info("=> Migration(merge) data from {} to {}",
+                tempTableName,
+                finalTableName);
+            mergeToFinalTable(writeConfig, tempTableName, finalTableName);
+          } else {
+            log.info("=> Migration({}) data from {} to {}",
+                writeConfig.isAppendMode() ? "append" : "overwrite",
+                tempTableName,
+                finalTableName);
+
+            DataFrameWriterV2<Row> writer = spark.table(tempTableName)
+                .writeTo(finalTableName)
+                .using("iceberg");
+
+            if (writeConfig.shouldPartition()) {
+              // Convert partition column names to Column expressions
+              List<String> partitionCols = writeConfig.getPartitionKeys();
+              Column first = functions.col(partitionCols.get(0));
+              Column[] rest = partitionCols.subList(1, partitionCols.size())
+                  .stream()
+                  .map(functions::col)
+                  .toArray(Column[]::new);
+              writer = writer.partitionedBy(first, rest);
+            }
+
+            if (saveMode == SaveMode.Append && tableExists) {
+              writer.append();
+            } else {
+              writer.createOrReplace();
+            }
+          }
+
           if (catalogConfig.getFormatConfig().isAutoCompact()) {
             tryCompactTable(icebergCatalog, writeConfig);
           }
@@ -194,6 +266,44 @@ public class IcebergConsumer extends CommitOnStateAirbyteMessageConsumer {
     }
   }
 
+  /**
+   * Merge data from temp table to final table using merge keys.
+   * TODO: Fill in the merge implementation details
+   *
+   * @param writeConfig    The write configuration containing merge settings
+   * @param tempTableName  The full temp table name
+   * @param finalTableName The full final table name
+   */
+  private void mergeToFinalTable(WriteConfig writeConfig, String tempTableName, String finalTableName) {
+    log.info("=> Starting merge operation");
+    log.info("   Merge keys: {}", writeConfig.getMergeKeys());
+    log.info("   Temp table: {}", tempTableName);
+    log.info("   Final table: {}", finalTableName);
+
+    StringBuilder condition = new StringBuilder();
+    boolean first = true;
+    for (String col : writeConfig.getMergeKeys()) {
+      if (!first) {
+        condition.append(" and ");
+      }
+      condition.append("increment.%s = %s.%s".formatted(col, finalTableName, col));
+      first = false;
+    }
+
+    log.info("=> Merge condition: {}", condition.toString());
+
+    spark.table(tempTableName)
+        .as("increment")
+        .mergeInto(
+            finalTableName,
+            functions.expr(condition.toString()))
+        .whenMatched()
+        .updateAll()
+        .whenNotMatched()
+        .insertAll()
+        .merge();
+  }
+
   private void tryDropTempTable(Catalog icebergCatalog, WriteConfig writeConfig) {
     try {
       log.info("Trying to drop temp table: {}", writeConfig.getFullTempTableName());
@@ -209,8 +319,7 @@ public class IcebergConsumer extends CommitOnStateAirbyteMessageConsumer {
 
   private void tryCompactTable(Catalog icebergCatalog, WriteConfig writeConfig) {
     log.info("=> Auto-Compact is enabled, try compact Iceberg data files");
-    int compactTargetFileSizeBytes =
-        catalogConfig.getFormatConfig().getCompactTargetFileSizeInMb() * 1024 * 1024;
+    int compactTargetFileSizeBytes = catalogConfig.getFormatConfig().getCompactTargetFileSizeInMb() * 1024 * 1024;
     try {
       TableIdentifier tableIdentifier = TableIdentifier.of(writeConfig.getNamespace(),
           writeConfig.getTableName());

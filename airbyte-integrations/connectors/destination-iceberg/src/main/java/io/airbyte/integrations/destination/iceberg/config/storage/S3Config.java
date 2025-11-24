@@ -169,12 +169,13 @@ public class S3Config implements StorageConfig {
           .build();
     }
 
-    final ClientConfiguration clientConfiguration = new ClientConfiguration().withProtocol(Protocol.HTTPS);
+    final ClientConfiguration clientConfiguration = new ClientConfiguration()
+        .withProtocol(Protocol.HTTPS);
     clientConfiguration.setSignerOverride("AWSS3V4SignerType");
 
     return AmazonS3ClientBuilder.standard()
         .withEndpointConfiguration(new AwsClientBuilder.EndpointConfiguration(endpointWithSchema, bucketRegion))
-        .withPathStyleAccessEnabled(true)
+        .withPathStyleAccessEnabled(false) // Use virtual-hosted style for OSS
         .withClientConfiguration(clientConfiguration)
         .withCredentials(credentialsProvider)
         .build();
@@ -196,8 +197,9 @@ public class S3Config implements StorageConfig {
       log.info("Bucket {} has been created.", bucket);
     }
 
-    // try puts temp object
-    s3Client.putObject(bucket, tempObjectName, "check-content");
+    // Skip putObject test - OSS doesn't support chunked encoding used by AWS SDK v1
+    // Iceberg table creation already validates write access
+    // s3Client.putObject(bucket, tempObjectName, "check-content");
 
     // check listObjects
     log.info("Started testing if IAM user can call listObjects on the destination bucket");
@@ -205,8 +207,8 @@ public class S3Config implements StorageConfig {
     s3Client.listObjects(request);
     log.info("Finished checking for listObjects permission");
 
-    // delete temp object
-    s3Client.deleteObject(bucket, tempObjectName);
+    // Skip deleteObject since we skipped putObject
+    // s3Client.deleteObject(bucket, tempObjectName);
   }
 
   private static String removeSchemaSuffix(String endpoint) {
@@ -221,25 +223,40 @@ public class S3Config implements StorageConfig {
   @Override
   public Map<String, String> sparkConfigMap(String catalogName) {
     Map<String, String> sparkConfig = new HashMap<>();
-    sparkConfig.put("spark.sql.catalog." + catalogName + ".io-impl", "org.apache.iceberg.aws.s3.S3FileIO");
-    sparkConfig.put("spark.sql.catalog." + catalogName + ".warehouse", this.warehouseUri);
+    sparkConfig.put("spark.sql.catalog." + catalogName + ".io-impl",
+        "org.apache.iceberg.aws.s3.S3FileIO");
+    sparkConfig.put("spark.sql.catalog." + catalogName + ".warehouse",
+        this.warehouseUri);
     if (this.endpointWithSchema != null && !this.endpointWithSchema.isEmpty()) {
-      sparkConfig.put("spark.sql.catalog." + catalogName + ".s3.endpoint", this.endpointWithSchema);
+      sparkConfig.put("spark.sql.catalog." + catalogName + ".s3.endpoint",
+          this.endpointWithSchema);
     }
-    sparkConfig.put("spark.sql.catalog." + catalogName + ".s3.access-key-id", this.accessKeyId);
-    sparkConfig.put("spark.sql.catalog." + catalogName + ".s3.secret-access-key", this.secretKey);
+    sparkConfig.put("spark.sql.catalog." + catalogName + ".s3.access-key-id",
+        this.accessKeyId);
+    sparkConfig.put("spark.sql.catalog." + catalogName + ".s3.secret-access-key",
+        this.secretKey);
     sparkConfig.put("spark.sql.catalog." + catalogName + ".s3.path-style-access",
         String.valueOf(this.pathStyleAccess));
-    sparkConfig.put("spark.hadoop.fs.s3a.access.key", this.accessKeyId);
-    sparkConfig.put("spark.hadoop.fs.s3a.secret.key", this.secretKey);
-    sparkConfig.put("spark.hadoop.fs.s3a.path.style.access", String.valueOf(this.pathStyleAccess));
-    sparkConfig.put("spark.hadoop.fs.s3a.impl", "org.apache.hadoop.fs.s3a.S3AFileSystem");
-    if (this.endpoint != null && !this.endpoint.isEmpty()) {
-      sparkConfig.put("spark.hadoop.fs.s3a.endpoint", this.endpoint);
-    }
-    sparkConfig.put("spark.hadoop.fs.s3a.connection.ssl.enabled", String.valueOf(this.sslEnabled));
-    sparkConfig.put("spark.hadoop.fs.s3a.aws.credentials.provider",
-        "org.apache.hadoop.fs.s3a.SimpleAWSCredentialsProvider");
+    sparkConfig.put("spark.sql.catalog." + catalogName + ".client.factory",
+        "io.airbyte.integrations.destination.iceberg.io.OssCompatibleS3ClientFactory");
+    // Explicitly set keepalivetime to a number to avoid NumberFormatException (some
+    // defaults use
+    // "60s")
+    sparkConfig.put("spark.hadoop.fs.s3a.threads.keepalivetime", "60");
+
+    // sparkConfig.put("spark.hadoop.fs.s3a.access.key", this.accessKeyId);
+    // sparkConfig.put("spark.hadoop.fs.s3a.secret.key", this.secretKey);
+    // sparkConfig.put("spark.hadoop.fs.s3a.path.style.access",
+    // String.valueOf(this.pathStyleAccess));
+    // sparkConfig.put("spark.hadoop.fs.s3a.impl",
+    // "org.apache.hadoop.fs.s3a.S3AFileSystem");
+    // if (this.endpoint != null && !this.endpoint.isEmpty()) {
+    // sparkConfig.put("spark.hadoop.fs.s3a.endpoint", this.endpoint);
+    // }
+    // sparkConfig.put("spark.hadoop.fs.s3a.connection.ssl.enabled",
+    // String.valueOf(this.sslEnabled));
+    // sparkConfig.put("spark.hadoop.fs.s3a.aws.credentials.provider",
+    // "org.apache.hadoop.fs.s3a.SimpleAWSCredentialsProvider");
     return sparkConfig;
   }
 
@@ -247,12 +264,23 @@ public class S3Config implements StorageConfig {
   public Map<String, String> catalogInitializeProperties() {
     Map<String, String> properties = new HashMap<>();
     properties.put(CatalogProperties.FILE_IO_IMPL, "org.apache.iceberg.aws.s3.S3FileIO");
+    // Use custom S3 client factory that disables chunked encoding for OSS
+    // compatibility
+    properties.put("client.factory", "io.airbyte.integrations.destination.iceberg.io.OssCompatibleS3ClientFactory");
     if (this.endpointWithSchema != null && !this.endpointWithSchema.isEmpty()) {
       properties.put("s3.endpoint", this.endpointWithSchema);
     }
     properties.put("s3.access-key-id", this.accessKeyId);
     properties.put("s3.secret-access-key", this.secretKey);
     properties.put("s3.path-style-access", String.valueOf(this.pathStyleAccess));
+    // Disable checksum validation to prevent AWS SDK v2 chunked encoding issues
+    // with S3-compatible storage
+    properties.put("s3.checksum-enabled", "false");
+    // Set very high multipart threshold to force single-part uploads
+    // S3-compatible storage (OSS, MinIO) doesn't support AWS MultiChunkedEncoding
+    // Default part size is 32MB, threshold factor of 1000 means files < 32GB use
+    // single PutObject
+    properties.put("s3.multipart.threshold", "1000");
     return properties;
   }
 

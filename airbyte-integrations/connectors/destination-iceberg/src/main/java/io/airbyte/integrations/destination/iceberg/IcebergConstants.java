@@ -50,6 +50,10 @@ public class IcebergConstants {
   public static final String FLUSH_BATCH_SIZE_CONFIG_KEY = "flush_batch_size";
   public static final String AUTO_COMPACT_CONFIG_KEY = "auto_compact";
   public static final String COMPACT_TARGET_FILE_SIZE_IN_MB_CONFIG_KEY = "compact_target_file_size_in_mb";
+  public static final String MERGE_MODE_CONFIG_KEY = "merge_mode";
+  public static final String MERGE_KEYS_CONFIG_KEY = "merge_keys";
+  public static final String PARTITION_MODE_CONFIG_KEY = "partition_mode";
+  public static final String PARTITION_KEYS_CONFIG_KEY = "partition_keys";
 
   /**
    * default values

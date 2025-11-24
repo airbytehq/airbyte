@@ -12,6 +12,7 @@ import java.util.ArrayList;
 import java.util.List;
 import lombok.Data;
 import org.apache.spark.sql.Row;
+import org.apache.spark.sql.types.StructType;
 
 /**
  * Write config for each stream
@@ -32,12 +33,27 @@ public class WriteConfig implements Serializable {
   private final String fullTempTableName;
   private final boolean isAppendMode;
   private final Integer flushBatchSize;
+  private final boolean mergeMode;
+  private final List<String> mergeKeys;
+  private final boolean partitionMode;
+  private final List<String> partitionKeys;
 
   // TODO perf: use stageFile to do cache, see
   // io.airbyte.integrations.destination.bigquery.BigQueryWriteConfig.addStagedFile
-  private final List<Row> dataCache;
+  private final StructType schema;
+  // Store JSON strings instead of Rows to allow Spark to parse them with the
+  // schema
+  private final List<String> dataCache;
 
-  public WriteConfig(String namespace, String streamName, boolean isAppendMode, Integer flushBatchSize) {
+  // Backward-compatible constructor (without merge params)
+  public WriteConfig(String namespace, String streamName, boolean isAppendMode, Integer flushBatchSize,
+      StructType schema) {
+    this(namespace, streamName, isAppendMode, flushBatchSize, schema, false, new ArrayList<>(), false,
+        new ArrayList<>());
+  }
+
+  public WriteConfig(String namespace, String streamName, boolean isAppendMode, Integer flushBatchSize,
+      StructType schema, boolean mergeMode, List<String> mergeKeys, boolean partitionMode, List<String> partitionKeys) {
     this.namespace = namingResolver.convertStreamName(namespace);
     this.tableName = namingResolver.convertStreamName(AIRBYTE_RAW_TABLE_PREFIX + streamName);
     this.tempTableName = namingResolver.convertStreamName(AIRBYTE_TMP_TABLE_PREFIX + streamName);
@@ -47,17 +63,36 @@ public class WriteConfig implements Serializable {
     this.fullTempTableName = tempTableName;
     this.isAppendMode = isAppendMode;
     this.flushBatchSize = flushBatchSize;
+    this.mergeMode = mergeMode;
+    this.mergeKeys = mergeKeys != null ? new ArrayList<>(mergeKeys) : new ArrayList<>();
+    this.partitionMode = partitionMode;
+    this.partitionKeys = partitionKeys != null ? new ArrayList<>(partitionKeys) : new ArrayList<>();
+    this.schema = schema;
     this.dataCache = new ArrayList<>(flushBatchSize);
   }
 
-  public List<Row> fetchDataCache() {
-    List<Row> copied = new ArrayList<>(this.dataCache);
+  /**
+   * Helper method to determine if merge should be performed
+   */
+  public boolean shouldMerge() {
+    return mergeMode && mergeKeys != null && !mergeKeys.isEmpty();
+  }
+
+  /**
+   * Helper method to determine if partition should be performed
+   */
+  public boolean shouldPartition() {
+    return partitionMode && partitionKeys != null && !partitionKeys.isEmpty();
+  }
+
+  public List<String> fetchDataCache() {
+    List<String> copied = new ArrayList<>(this.dataCache);
     this.dataCache.clear();
     return copied;
   }
 
-  public boolean addData(Row row) {
-    this.dataCache.add(row);
+  public boolean addData(String json) {
+    this.dataCache.add(json);
     return this.dataCache.size() >= flushBatchSize;
   }
 

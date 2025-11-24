@@ -149,24 +149,24 @@ class IcebergHiveCatalogConfigTest {
   public void checksHiveThriftUri() throws IllegalAccessException {
     final IcebergOssDestination destinationFail = new IcebergOssDestination();
     final AirbyteConnectionStatus status = destinationFail.check(Jsons.deserialize("""
-                                                                                   {
-                                                                                     "catalog_config": {
-                                                                                       "catalog_type": "Hive",
-                                                                                       "hive_thrift_uri": "server:9083",
-                                                                                       "database": "test"
-                                                                                     },
-                                                                                     "storage_config": {
-                                                                                       "storage_type": "S3",
-                                                                                       "access_key_id": "xxxxxxxxxxx",
-                                                                                       "secret_access_key": "yyyyyyyyyyyy",
-                                                                                       "s3_warehouse_uri": "s3a://warehouse/hive",
-                                                                                       "s3_bucket_region": "us-east-1",
-                                                                                       "s3_endpoint": "your-own-minio-host:9000"
-                                                                                     },
-                                                                                     "format_config": {
-                                                                                       "format": "Parquet"
-                                                                                     }
-                                                                                   }"""));
+        {
+          "catalog_config": {
+            "catalog_type": "Hive",
+            "hive_thrift_uri": "server:9083",
+            "database": "test"
+          },
+          "storage_config": {
+            "storage_type": "S3",
+            "access_key_id": "xxxxxxxxxxx",
+            "secret_access_key": "yyyyyyyyyyyy",
+            "s3_warehouse_uri": "s3a://warehouse/hive",
+            "s3_bucket_region": "us-east-1",
+            "s3_endpoint": "your-own-minio-host:9000"
+          },
+          "format_config": {
+            "format": "Parquet"
+          }
+        }"""));
     log.info("status={}", status);
     assertEquals(Status.FAILED, status.getStatus(), "Connection check should have failed");
     assertTrue(status.getMessage().contains("hive_thrift_uri must start with 'thrift://'"),
@@ -199,12 +199,8 @@ class IcebergHiveCatalogConfigTest {
     assertEquals(FAKE_ENDPOINT_WITH_SCHEMA, sparkConfig.get("spark.sql.catalog.iceberg.s3.endpoint"));
     assertEquals("false", sparkConfig.get("spark.sql.catalog.iceberg.s3.path-style-access"));
 
-    // hadoop config
-    assertEquals(FAKE_ENDPOINT, sparkConfig.get("spark.hadoop.fs.s3a.endpoint"));
-    assertEquals(FAKE_ACCESS_KEY_ID, sparkConfig.get("spark.hadoop.fs.s3a.access.key"));
-    assertEquals(FAKE_SECRET_ACCESS_KEY, sparkConfig.get("spark.hadoop.fs.s3a.secret.key"));
-    assertEquals(S3AFileSystem.class.getName(), sparkConfig.get("spark.hadoop.fs.s3a.impl"));
-    assertEquals("false", sparkConfig.get("spark.hadoop.fs.s3a.connection.ssl.enabled"));
+    assertEquals("io.airbyte.integrations.destination.iceberg.io.OssCompatibleS3ClientFactory",
+        sparkConfig.get("spark.sql.catalog.iceberg.client.factory"));
   }
 
   @Test
@@ -213,10 +209,14 @@ class IcebergHiveCatalogConfigTest {
     log.info("S3 Config for HiveCatalog Initialize: {}", properties);
 
     assertEquals(S3FileIO.class.getName(), properties.get("io-impl"));
+    assertEquals("io.airbyte.integrations.destination.iceberg.io.OssCompatibleS3ClientFactory",
+        properties.get("client.factory"));
     assertEquals(FAKE_ENDPOINT_WITH_SCHEMA, properties.get("s3.endpoint"));
     assertEquals(FAKE_ACCESS_KEY_ID, properties.get("s3.access-key-id"));
     assertEquals(FAKE_SECRET_ACCESS_KEY, properties.get("s3.secret-access-key"));
     assertEquals("false", properties.get("s3.path-style-access"));
+    assertEquals("false", properties.get("s3.checksum-enabled"));
+    assertEquals("1000", properties.get("s3.multipart.threshold"));
   }
 
 }
