@@ -27,8 +27,8 @@ import java.math.BigInteger
  */
 
 // https://docs.snowflake.com/en/sql-reference/data-types-numeric#number
-internal val INT_MAX = BigInteger("99999999999999999999999999999999999999") // 38 9s
-internal val INT_MIN = BigInteger("-99999999999999999999999999999999999999") // 38 9s
+val INT_MAX = BigInteger("99999999999999999999999999999999999999") // 38 9s
+val INT_MIN = BigInteger("-99999999999999999999999999999999999999") // 38 9s
 internal val INT_RANGE = INT_MIN..INT_MAX
 
 // https://docs.snowflake.com/en/sql-reference/data-types-numeric#label-data-type-float

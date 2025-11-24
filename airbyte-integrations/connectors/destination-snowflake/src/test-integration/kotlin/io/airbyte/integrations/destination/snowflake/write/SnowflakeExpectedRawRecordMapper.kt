@@ -20,6 +20,12 @@ import io.airbyte.cdk.load.data.TimestampWithoutTimezoneValue
 import io.airbyte.cdk.load.test.util.ExpectedRecordMapper
 import io.airbyte.cdk.load.test.util.OutputRecord
 import io.airbyte.integrations.destination.snowflake.write.SnowflakeExpectedRecordMapper.mapAirbyteMetadata
+import io.airbyte.integrations.destination.snowflake.write.transform.INT_MAX
+import io.airbyte.integrations.destination.snowflake.write.transform.INT_MIN
+import java.math.BigDecimal
+
+val INT_MIN_NUMBER = INT_MIN.toBigDecimal()
+val INT_MAX_NUMBER = INT_MAX.toBigDecimal()
 
 object SnowflakeExpectedRawRecordMapper : ExpectedRecordMapper {
     override fun mapRecord(expectedRecord: OutputRecord, schema: AirbyteType): OutputRecord {
@@ -58,12 +64,31 @@ object SnowflakeExpectedRawRecordMapper : ExpectedRecordMapper {
             is TimestampWithTimezoneValue -> StringValue(value.value.toString())
             is TimestampWithoutTimezoneValue -> StringValue(value.value.toString())
             is NumberValue ->
-                try {
-                    // If the value is exactly an integer, turn it into an IntegerValue
-                    IntegerValue(value.value.toBigIntegerExact())
-                } catch (_: ArithmeticException) {
-                    // If the value wasn't an integer, then toBigIntegerExact will throw.
-                    // So just return the original NumberValue.
+                // TODO This is a hack -
+                // https://github.com/airbytehq/airbyte-internal-issues/issues/15359
+                // If we're within the weird clamping range, then clamp to 9.999e38
+                if (
+                    BigDecimal("-1.00000000000000001526e39") < value.value &&
+                        value.value < INT_MIN_NUMBER
+                ) {
+                    NumberValue(BigDecimal("-9.999999999999999e38"))
+                } else if (
+                    INT_MAX_NUMBER < value.value &&
+                        value.value < BigDecimal("1.00000000000000001526e39")
+                ) {
+                    NumberValue(BigDecimal("9.999999999999999e38"))
+                } else if (INT_MIN_NUMBER < value.value && value.value < INT_MAX_NUMBER) {
+                    // If we're within snowflake's NUMBER(38, 0) range, then translate to int
+                    try {
+                        // If the value is exactly an integer, turn it into an IntegerValue
+                        IntegerValue(value.value.toBigIntegerExact())
+                    } catch (_: ArithmeticException) {
+                        // If the value wasn't an integer, then toBigIntegerExact will throw.
+                        // So just return the original NumberValue.
+                        value
+                    }
+                } else {
+                    // otherwise, leave the value unchanged
                     value
                 }
             is ArrayValue -> ArrayValue(value.values.map { mapValues(it) })
