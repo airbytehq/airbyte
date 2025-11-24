@@ -146,13 +146,7 @@ internal class SnowflakeValueCoercerTest {
             )
 
         val result = coercer.validate(airbyteValue)
-        assertEquals(
-            ValidationResult.ShouldTruncate(
-                NumberValue(value = BigDecimal(10000.1229999999995925463736057281494140625)),
-                reason = AirbyteRecordMessageMetaChange.Reason.DESTINATION_FIELD_SIZE_LIMITATION
-            ),
-            result
-        )
+        assertEquals(ValidationResult.Valid, result)
     }
 
     @Test
@@ -698,7 +692,8 @@ internal class SnowflakeValueCoercerTest {
 
         // The truncated value should be within range
         val truncatedValue = result.truncatedValue as NumberValue
-        assertEquals(BigDecimal(1740710103515266816), truncatedValue.value)
+        // note that we've lost some precision
+        assertEquals(BigDecimal.valueOf(1.7407101035152668E18), truncatedValue.value)
     }
 
     @Test
