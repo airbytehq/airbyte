@@ -8,12 +8,11 @@ import io.airbyte.cdk.load.component.ColumnType
 import io.airbyte.cdk.load.component.TableOperationsClient
 import io.airbyte.cdk.load.component.TableSchema
 import io.airbyte.cdk.load.component.TableSchemaEvolutionClient
+import io.airbyte.cdk.load.component.TableSchemaEvolutionFixtures
 import io.airbyte.cdk.load.component.TableSchemaEvolutionSuite
 import io.airbyte.cdk.load.component.TestTableOperationsClient
 import io.micronaut.test.extensions.junit5.annotation.MicronautTest
 import org.junit.jupiter.api.Test
-import org.junit.jupiter.params.ParameterizedTest
-import org.junit.jupiter.params.provider.MethodSource
 
 @MicronautTest(environments = ["component"], resolveParameters = false)
 class ClickhouseTableSchemaEvolutionTest(
@@ -70,13 +69,34 @@ class ClickhouseTableSchemaEvolutionTest(
         super.`changeset is correct when changing a column's type`()
     }
 
-    @ParameterizedTest
-    @MethodSource("io.airbyte.cdk.load.component.TableSchemaEvolutionSuite#applyChangesetArguments")
+    @Test
+    override fun `apply changeset - append-append`() {
+        super.`apply changeset - append-append`()
+    }
+
+    @Test
+    override fun `apply changeset - append-dedup`() {
+        super.`apply changeset - append-dedup`()
+    }
+
+    @Test
+    override fun `apply changeset - dedup-append`() {
+        super.`apply changeset - dedup-append`()
+    }
+
+    @Test
+    override fun `apply changeset - dedup-dedup`() {
+        super.`apply changeset - dedup-dedup`()
+    }
+
     override fun `apply changeset`(
         initialStreamIsDedup: Boolean,
         modifiedStreamIsDedup: Boolean,
     ) {
-        super.`apply changeset`(
+        `apply changeset`(
+            TableSchemaEvolutionFixtures.APPLY_CHANGESET_INITIAL_COLUMN_MAPPING,
+            TableSchemaEvolutionFixtures.APPLY_CHANGESET_MODIFIED_COLUMN_MAPPING,
+            expectedExtractedAt = "2025-01-22T00:00Z[UTC]",
             initialStreamIsDedup,
             modifiedStreamIsDedup,
         )

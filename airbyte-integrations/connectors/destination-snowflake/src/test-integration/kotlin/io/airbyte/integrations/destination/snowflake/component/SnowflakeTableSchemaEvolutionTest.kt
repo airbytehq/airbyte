@@ -17,8 +17,6 @@ import io.micronaut.test.extensions.junit5.annotation.MicronautTest
 import org.junit.jupiter.api.Test
 import org.junit.jupiter.api.parallel.Execution
 import org.junit.jupiter.api.parallel.ExecutionMode
-import org.junit.jupiter.params.ParameterizedTest
-import org.junit.jupiter.params.provider.MethodSource
 
 @MicronautTest(environments = ["component"], resolveParameters = false)
 @Execution(ExecutionMode.CONCURRENT)
@@ -59,8 +57,26 @@ class SnowflakeTableSchemaEvolutionTest(
         super.`changeset is correct when changing a column's type`(testMapping)
     }
 
-    @ParameterizedTest
-    @MethodSource("io.airbyte.cdk.load.component.TableSchemaEvolutionSuite#applyChangesetArguments")
+    @Test
+    override fun `apply changeset - append-append`() {
+        super.`apply changeset - append-append`()
+    }
+
+    @Test
+    override fun `apply changeset - append-dedup`() {
+        super.`apply changeset - append-dedup`()
+    }
+
+    @Test
+    override fun `apply changeset - dedup-append`() {
+        super.`apply changeset - dedup-append`()
+    }
+
+    @Test
+    override fun `apply changeset - dedup-dedup`() {
+        super.`apply changeset - dedup-dedup`()
+    }
+
     override fun `apply changeset`(
         initialStreamIsDedup: Boolean,
         modifiedStreamIsDedup: Boolean,
@@ -86,6 +102,7 @@ class SnowflakeTableSchemaEvolutionTest(
                         "to_add" to "TO_ADD",
                     )
                 ),
+            TableSchemaEvolutionFixtures.APPLY_CHANGESET_EXPECTED_EXTRACTED_AT,
             initialStreamIsDedup,
             modifiedStreamIsDedup,
         )
