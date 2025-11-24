@@ -342,15 +342,16 @@ class PostgresSourceJdbcPartitionFactory(
         }
 
         val relationSize =
-            PostgresSourceJdbcConcurrentPartitionsCreator.streamSizes[unsplitPartition.stream] ?: error("Could not get stream size for stream ${unsplitPartition.stream.id}")
+            relationSize(unsplitPartition.stream)
+            /*PostgresSourceJdbcConcurrentPartitionsCreator.streamSizes[unsplitPartition.stream] ?: error("Could not get stream size for stream ${unsplitPartition.stream.id}")*/
 
-        val rowSize: Long = PostgresSourceJdbcConcurrentPartitionsCreator.rowSizes[unsplitPartition.stream] ?: error("Could not get row size for stream ${unsplitPartition.stream.id}")
-
+//        val rowSize: Long = PostgresSourceJdbcConcurrentPartitionsCreator.rowSizes[unsplitPartition.stream] ?: error("Could not get row size for stream ${unsplitPartition.stream.id}")
+//        log.info { "Table row size is $rowSize bytes" }
         return when (unsplitPartition) {
             is PostgresSourceJdbcSplittableSnapshotPartition ->
-                unsplitPartition.split(splitPartitionBoundaries.size, splitPartitionBoundaries.first().filenode, relationSize, rowSize)
+                unsplitPartition.split(splitPartitionBoundaries.size, splitPartitionBoundaries.first().filenode, relationSize, /*rowSize*/)
             is PostgresSourceJdbcSplittableSnapshotWithCursorPartition ->
-                unsplitPartition.split(splitPartitionBoundaries.size, splitPartitionBoundaries.first().filenode, relationSize, rowSize)
+                unsplitPartition.split(splitPartitionBoundaries.size, splitPartitionBoundaries.first().filenode, relationSize, /*rowSize*/)
             // TODO: implement split for cursor incremental partition
             else -> listOf(unsplitPartition)
         }
@@ -360,9 +361,9 @@ class PostgresSourceJdbcPartitionFactory(
         lowerBound: JsonNode?,
         numPartitions: Int,
         relationSize: Long,
-        rowSize: Long
+        /*rowSize: Long*/
     ): List<Pair<Ctid?, Ctid?>> {
-        val theoreticalLastPage: Long = relationSize / rowSize
+        val theoreticalLastPage: Long = relationSize / blockSize
         log.info { "Theoretical last page: $theoreticalLastPage" }
         val lowerBoundCtid: Ctid = lowerBound?.let {
             if (it.isNull.not() && it.asText().isEmpty().not()) {
@@ -382,9 +383,9 @@ class PostgresSourceJdbcPartitionFactory(
         numPartitions: Int,
         filenode: Filenode?,
         relationSize: Long,
-        rowSize: Long
+        /*rowSize: Long*/
     ): List<PostgresSourceJdbcSplittableSnapshotPartition> {
-        val bounds = computePartitionBounds(lowerBound, numPartitions, relationSize, rowSize)
+        val bounds = computePartitionBounds(lowerBound, numPartitions, relationSize, /*rowSize*/)
 
         return bounds.mapIndexed { index, (lowerBound, upperBound) ->
             PostgresSourceJdbcSplittableSnapshotPartition(
@@ -403,9 +404,9 @@ class PostgresSourceJdbcPartitionFactory(
         numPartitions: Int,
         filenode: Filenode?,
         relationSize: Long,
-        rowSize: Long
+        /*rowSize: Long*/
     ): List<PostgresSourceJdbcSplittableSnapshotWithCursorPartition> {
-        val bounds = computePartitionBounds(lowerBound, numPartitions, relationSize, rowSize)
+        val bounds = computePartitionBounds(lowerBound, numPartitions, relationSize, /*rowSize*/)
 
         return bounds.mapIndexed { index, (lowerBound, upperBound) ->
             PostgresSourceJdbcSplittableSnapshotWithCursorPartition(
@@ -419,6 +420,24 @@ class PostgresSourceJdbcPartitionFactory(
                 // The first partition includes the lower bound
                 index == 0
             )
+        }
+    }
+
+    private fun relationSize(stream: Stream): Long {
+        val jdbcConnectionFactory = JdbcConnectionFactory(sharedState.configuration)
+        jdbcConnectionFactory.get().use { connection ->
+            val sql = "SELECT pg_relation_size('${
+                if (stream.namespace == null) "\"${stream.name}\"" else "\"${stream.namespace}\".\"${stream.name}\""
+            }')"
+            val stmt = connection.prepareStatement(sql)
+            val rs = stmt.executeQuery()
+
+            if (rs.next()) {
+                val relationSize = rs.getLong(1)
+                return relationSize
+            }
+            error("Could not get relation size for stream ${stream.id}")
+
         }
     }
 }

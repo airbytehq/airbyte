@@ -128,11 +128,11 @@ class PostgresSourceJdbcConcurrentPartitionsCreator<
             return listOf(CheckpointOnlyPartitionReader())
         }
         val rowByteSizeSample: Sample<Long> = sample.map { (_, rowByteSize: Long) -> rowByteSize }
-        rowSizes[stream] = rowByteSizeSample.sampledValues.maxOrNull() ?: 1L
+//        rowSizes[stream] = rowByteSizeSample.sampledValues.maxOrNull() ?: 1L
         streamState.fetchSize = sharedState.jdbcFetchSizeEstimator().apply(rowByteSizeSample)
-        val expectedTableByteSize: Long = /*rowByteSizeSample.sampledValues.sum() * sample.valueWeight*/ relationSize(stream)
+        val expectedTableByteSize: Long = /*rowByteSizeSample.sampledValues.sum() * sample.valueWeight*/ totalRelationSize(stream)
         log.info { "Table memory size estimated at ${expectedTableByteSize shr 20} MiB." }
-        streamSizes[stream] = expectedTableByteSize
+//        streamSizes[stream] = expectedTableByteSize
         // Handle edge case where the table can't be split.
         if (partition !is JdbcSplittablePartition<*>) {
             log.warn {
@@ -173,6 +173,24 @@ class PostgresSourceJdbcConcurrentPartitionsCreator<
         return partitions.map { JdbcNonResumablePartitionReader(it) }
     }
 
+    private fun totalRelationSize(stream: Stream): Long {
+        val jdbcConnectionFactory = JdbcConnectionFactory(sharedState.configuration)
+        jdbcConnectionFactory.get().use { connection ->
+            val sql = "SELECT pg_total_relation_size('${
+                if (stream.namespace == null) "\"${stream.name}\"" else "\"${stream.namespace}\".\"${stream.name}\""
+            }')"
+            val stmt = connection.prepareStatement(sql)
+            val rs = stmt.executeQuery()
+
+            if (rs.next()) {
+                val relationSize = rs.getLong(1)
+                return relationSize
+            }
+            error("Could not get relation size for stream ${stream.id}")
+
+        }
+    }
+
     private fun relationSize(stream: Stream): Long {
         val jdbcConnectionFactory = JdbcConnectionFactory(sharedState.configuration)
         jdbcConnectionFactory.get().use { connection ->
@@ -191,8 +209,8 @@ class PostgresSourceJdbcConcurrentPartitionsCreator<
         }
     }
 
-    companion object {
+    /*companion object {
         val streamSizes: ConcurrentHashMap<Stream, Long> = ConcurrentHashMap()
         val rowSizes: ConcurrentHashMap<Stream, Long> = ConcurrentHashMap()
-    }
+    }*/
 }
