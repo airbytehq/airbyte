@@ -155,6 +155,7 @@ The connector converts arrays and unions to strings for compatibility. If you ne
 
 | Version    | Date       | Pull Request                                               | Subject                                                                        |
 |:-----------|:-----------|:-----------------------------------------------------------|:-------------------------------------------------------------------------------|
+| 2.1.15     | 2025-11-23 | [69829](https://github.com/airbytehq/airbyte/pull/69829)   | Bump ClickHouse client to 0.9.4 |
 | 2.1.14     | 2025-11-13 | [69245](https://github.com/airbytehq/airbyte/pull/69245)   | Upgrade to CDK 0.1.78 |
 | 2.1.13     | 2025-11-11 | [69116](https://github.com/airbytehq/airbyte/pull/69116)   | Upgrade to CDK 0.1.74 (internal refactor for schema evolution) |
 | 2.1.12     | 2025-11-06 | [69226](https://github.com/airbytehq/airbyte/pull/69226)   | Improved additional statistics handling                                        |
