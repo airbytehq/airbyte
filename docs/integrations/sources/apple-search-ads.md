@@ -41,21 +41,23 @@ The Apple Ads source connector supports the following streams. For more informat
 
 ### Base streams
 
-- [campaigns](https://developer.apple.com/documentation/apple_search_ads/get_all_campaigns)
-- [adgroups](https://developer.apple.com/documentation/apple_search_ads/get_all_ad_groups)
-- [keywords](https://developer.apple.com/documentation/apple_search_ads/get_all_targeting_keywords_in_an_ad_group)
+- [campaigns](https://developer.apple.com/documentation/apple_ads/get-all-campaigns)
+- [adgroups](https://developer.apple.com/documentation/apple_ads/get-all-ad-groups)
+- [keywords](https://developer.apple.com/documentation/apple_ads/get-all-targeting-keywords-in-an-ad-group)
+- [ads](https://developer.apple.com/documentation/apple_ads/get-all-ads)
 
 ### Report Streams
 
-::: note
+:::note
 The usual primary keys for reports are `date` and `campaignId`.
 However, there are cases where active fields must be selected as primary keys to ensure data deduplication is correct.
 One example is `countryOrRegion`.
 :::
 
-- [campaigns_report_daily](https://developer.apple.com/documentation/apple_search_ads/get_campaign-level_reports)
-- [adgroups_report_daily](https://developer.apple.com/documentation/apple_search_ads/get__ad_group-level_reports)
-- [keywords_report_daily](https://developer.apple.com/documentation/apple_search_ads/get_keyword-level_reports)
+- [campaigns_report_daily](https://developer.apple.com/documentation/apple_ads/get-campaign-level-reports)
+- [adgroups_report_daily](https://developer.apple.com/documentation/apple_ads/get-ad-group-level-reports)
+- [keywords_report_daily](https://developer.apple.com/documentation/apple_ads/get-keyword-level-reports)
+- [ads_report_daily](https://developer.apple.com/documentation/apple_ads/get-ad-level-reports)
 
 ### Report aggregation
 
@@ -70,6 +72,7 @@ However, at this moment and as indicated in the stream names, the connector only
 
 | Version | Date       | Pull Request                                             | Subject                                                                              |
 |:--------|:-----------|:---------------------------------------------------------|:-------------------------------------------------------------------------------------|
+| 1.1.0 | 2025-11-18 | [69218](https://github.com/airbytehq/airbyte/pull/69218) | Add two new streams - `ads` & `ads_report_daily` |
 | 1.0.2 | 2025-11-18 | [69577](https://github.com/airbytehq/airbyte/pull/69577) | Update dependencies |
 | 1.0.1 | 2025-10-29 | [68392](https://github.com/airbytehq/airbyte/pull/68392) | Update dependencies |
 | 1.0.0 | 2025-10-15 | [66557](https://github.com/airbytehq/airbyte/pull/66557) | Update `adgroups_report_daily` and `keywords_report_daily` to use global state cursor |
