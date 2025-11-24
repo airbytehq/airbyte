@@ -523,7 +523,7 @@ metadata:
     # Specifies the ARN of the SSL certificate managed by AWS ACM, essential for HTTPS.
     alb.ingress.kubernetes.io/certificate-arn: arn:aws:acm:us-east-x:xxxxxxxxx:certificate/xxxxxxxxx-xxxxx-xxxx-xxxx-xxxxxxxxxxx
     # Sets the idle timeout value for the ALB.
-    alb.ingress.kubernetes.io/load-balancer-attributes: idle_timeout.timeout_seconds=30
+    alb.ingress.kubernetes.io/load-balancer-attributes: idle_timeout.timeout_seconds=300
     # [If Applicable] Specifies the VPC subnets and security groups for the ALB
     # alb.ingress.kubernetes.io/subnets: '' e.g. 'subnet-12345, subnet-67890'
     # alb.ingress.kubernetes.io/security-groups: <SECURITY_GROUP>
