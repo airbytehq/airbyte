@@ -260,6 +260,7 @@ desired namespace.
 
 | Version         | Date       | Pull Request                                                        | Subject                                                                                                                                                                                |
 |:----------------|:-----------|:--------------------------------------------------------------------|:---------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------|
+| 4.0.30          | 2025-11-24 | [69842](https://github.com/airbytehq/airbyte/pull/69842)            | Update documentation about numeric value handling |
 | 4.0.29          | 2025-11-14 | [69342](https://github.com/airbytehq/airbyte/pull/69342)            | Truncate NumberValues and IntegerValues with excessive precision instead of nullifying them |
 | 4.0.28          | 2025-11-13 | [69245](https://github.com/airbytehq/airbyte/pull/69245)            | Upgrade to CDK 0.1.78 |
 | 4.0.27          | 2025-11-11 | [69285](https://github.com/airbytehq/airbyte/pull/69285)  | Remove spurious log messages |
