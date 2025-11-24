@@ -14,6 +14,7 @@ import io.airbyte.cdk.load.data.ObjectValue
 import io.airbyte.cdk.load.data.StringType
 import io.airbyte.cdk.load.data.StringValue
 import io.airbyte.cdk.load.data.UnknownType
+import io.airbyte.cdk.load.table.ColumnNameMapping
 import io.airbyte.cdk.util.Jsons
 
 object TableSchemaEvolutionFixtures {
@@ -66,4 +67,26 @@ object TableSchemaEvolutionFixtures {
             mapOf("id" to 3L, "test" to "true"),
             mapOf("id" to 4L, "test" to "0"),
         )
+
+    val APPLY_CHANGESET_INITIAL_COLUMN_MAPPING =
+        ColumnNameMapping(
+            mapOf(
+                "id" to "id",
+                "updated_at" to "updated_at",
+                "to_retain" to "to_retain",
+                "to_change" to "to_change",
+                "to_drop" to "to_drop",
+            )
+        )
+    val APPLY_CHANGESET_MODIFIED_COLUMN_MAPPING =
+        ColumnNameMapping(
+            mapOf(
+                "id" to "id",
+                "updated_at" to "updated_at",
+                "to_retain" to "to_retain",
+                "to_change" to "to_change",
+                "to_add" to "to_add",
+            )
+        )
+    val APPLY_CHANGESET_EXPECTED_EXTRACTED_AT = "2025-01-22T00:00:00Z"
 }
