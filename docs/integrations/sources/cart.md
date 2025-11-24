@@ -8,10 +8,13 @@ This source can sync data for the [Cart.com API](https://developers.cart.com/doc
 
 This Source is capable of syncing the following core Streams:
 
-- [CustomersCart](https://developers.cart.com/docs/rest-api/restapi.json/paths/~1customers/get)
-- [Orders](https://developers.cart.com/docs/rest-api/restapi.json/paths/~1orders/get)
-- [OrderPayments](https://developers.cart.com/docs/rest-api/restapi.json/paths/~1order_payments/get)
-- [Products](https://developers.cart.com/docs/rest-api/restapi.json/paths/~1products/get)
+- [Addresses](https://developers.cart.com/docs/rest-api/b3A6MjMzMTc3Njc-get-addresses) (Incremental)
+- [CustomersCart](https://developers.cart.com/docs/rest-api/restapi.json/paths/~1customers/get) (Incremental)
+- [OrderItems](https://developers.cart.com/docs/rest-api/restapi.json/paths/~1order_items/get) (Incremental)
+- [OrderPayments](https://developers.cart.com/docs/rest-api/restapi.json/paths/~1order_payments/get) (Incremental)
+- [Orders](https://developers.cart.com/docs/rest-api/restapi.json/paths/~1orders/get) (Incremental)
+- [OrderStatuses](https://developers.cart.com/docs/rest-api/ff5ada86bc8a0-get-order-statuses) (Full Refresh)
+- [Products](https://developers.cart.com/docs/rest-api/restapi.json/paths/~1products/get) (Incremental)
 
 ### Data type mapping
 
@@ -38,13 +41,44 @@ The Cart.com API has some request limitation. See [this](https://developers.cart
 
 ### Requirements
 
-- AmeriCommerce account
-- Admin access
-- Access Token
+- Cart.com account (formerly AmeriCommerce)
+- Admin access to your Cart.com store
+- Authentication credentials (either Single Store Access Token or Central API Router credentials)
 
 ### Setup guide
 
-Please follow these [steps](https://developers.cart.com/docs/rest-api/docs/README.md#setup) to obtain Access Token for your account.
+Cart.com supports two authentication methods. Choose the method that best fits your use case:
+
+#### Single Store Access Token
+
+This method is recommended for most users who need to sync data from a single Cart.com store.
+
+1. Log in to your Cart.com admin console
+2. Navigate to **Tools** > **Apps & Addons** > **API Apps & Integrations**
+3. Find or create your API application
+4. Click the **Tokens** icon (second icon from the left) next to your application
+5. Click **New** to create a new access token
+6. Select the required scopes for your integration
+7. Click **Save**
+8. Copy the access token from the token details view
+
+When configuring the connector in Airbyte, you'll need:
+- **Access Token**: The token you generated
+- **Store Name**: Your store's domain name (for example, `mystorename.com`)
+
+#### Central API Router
+
+This method is designed for applications that need to access multiple Cart.com stores or require programmatic authentication.
+
+1. Contact Cart.com support to set up Central API Router access
+2. Obtain your provisioning credentials:
+   - **User Name**: Your provisioning user name
+   - **User Secret**: Your provisioning user secret
+   - **Site ID**: Your site identifier
+
+When configuring the connector in Airbyte, select the Central API Router authentication method and provide these credentials.
+
+For more details on authentication, see the [Cart.com authentication documentation](https://developers.cart.com/docs/rest-api/authentication).
 
 ## Changelog
 
