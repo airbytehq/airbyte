@@ -31,7 +31,7 @@ import java.util.UUID
  * Setup:
  *  1. Add testFixtures dependency to build.gradle
  *  2. Create application-component.yml with airbyte.connector.operation="write"
- *  3. Provide @Primary ConfiguredAirbyteCatalog bean (use DefaultComponentTestCatalogFactory)
+ *  3. Provide @Primary ConfiguredAirbyteCatalog bean (use DefaultComponentTestCatalog.make())
  *  4. Start database in @BeforeAll (testcontainer or real instance)
  *  5. If Writer requires catalog streams: inject DestinationCatalog and override createTestStream()
  *
