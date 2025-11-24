@@ -1,0 +1,173 @@
+name: Kotlin Bulk CDK Docs
+
+on:
+  pull_request:
+    types: [opened, synchronize, reopened]
+    paths:
+      - "airbyte-cdk/bulk/**"
+  push:
+    branches:
+      - master
+    paths:
+      - "airbyte-cdk/bulk/**"
+  workflow_dispatch:
+
+# Concurrency group ensures only one deployment runs at a time
+concurrency:
+  group: kotlin-bulk-cdk-docs-${{ github.ref }}
+  cancel-in-progress: false
+
+jobs:
+  detect-changes:
+    name: Detect Kotlin Bulk CDK Changes
+    runs-on: ubuntu-24.04
+    steps:
+      - name: Force 'changed=true' [Manual Trigger]
+        id: set-changed
+        if: github.event_name == 'workflow_dispatch'
+        run: echo "changed=true" >> "$GITHUB_OUTPUT"
+
+      - name: Checkout Repository [Push Trigger]
+        if: github.event_name == 'push'
+        uses: actions/checkout@v4
+        with:
+          fetch-depth: 2
+
+      - name: Detect Changes
+        # PR triggers will use API (don't require pre-checkout.)
+        # Push triggers will require the checked-out code.
+        id: detect-changes
+        if: github.event_name != 'workflow_dispatch'
+        uses: dorny/paths-filter@v3.0.2
+        with:
+          filters: |
+            bulk-cdk:
+              - 'airbyte-cdk/bulk/**'
+
+    outputs:
+      changed: ${{ steps.set-changed.outputs.changed || steps.detect-changes.outputs.bulk-cdk }}
+
+  build-docs:
+    name: Build Kotlin Bulk CDK Documentation
+    runs-on: ubuntu-24.04
+    needs: detect-changes
+    # Build docs if changes detected OR if manually triggered via workflow_dispatch
+    if: needs.detect-changes.outputs.changed == 'true' || github.event_name == 'workflow_dispatch'
+
+    steps:
+      - name: Checkout Repository
+        uses: actions/checkout@v4
+        with:
+          fetch-depth: 1
+          repository: ${{ github.event.pull_request.head.repo.full_name || github.repository }}
+          ref: ${{ github.head_ref || github.ref }}
+
+      - name: Set up Java
+        uses: actions/setup-java@v4
+        with:
+          distribution: "zulu"
+          java-version: "21"
+
+      - name: Setup Gradle
+        uses: gradle/gradle-build-action@v3
+        with:
+          gradle-version: wrapper
+
+      - name: Generate Dokka Documentation
+        run: |
+          echo "📚 Generating Dokka documentation for Kotlin Bulk CDK..."
+          ./gradlew :airbyte-cdk:bulk:dokkaHtmlMultiModule --no-daemon
+
+          echo "✅ Documentation generated successfully"
+          ls -la airbyte-cdk/bulk/build/dokka/htmlMultiModule/
+
+      - name: Upload Documentation Artifact
+        uses: actions/upload-artifact@v4
+        with:
+          name: kotlin-bulk-cdk-docs-${{ github.sha }}
+          path: airbyte-cdk/bulk/build/dokka/htmlMultiModule/
+          retention-days: 30
+
+  vercel-deploy:
+    name: Deploy Docs to Vercel ${{ github.ref == 'refs/heads/master' && '(Production)' || '(Preview)' }}
+    needs: [detect-changes, build-docs]
+    # Deploy for: non-fork PRs, master branch pushes, OR manual workflow_dispatch
+    # Always require Vercel project to be configured
+    if: >
+      (needs.detect-changes.outputs.changed == 'true' || github.event_name == 'workflow_dispatch')
+      && (
+        github.event_name == 'push'
+        || github.event.pull_request.head.repo.full_name == github.repository
+        || github.event_name == 'workflow_dispatch'
+      )
+      && vars.VERCEL_KOTLIN_CDK_PROJECT_ID != ''
+    runs-on: ubuntu-24.04
+    environment:
+      name: ${{ github.ref == 'refs/heads/master' && 'kotlin-cdk-docs' || 'kotlin-cdk-docs-preview' }}
+      url: ${{ steps.deploy-vercel.outputs.preview-url }}
+    env:
+      VERCEL_ORG_ID: ${{ secrets.VERCEL_ORG_ID }}
+      VERCEL_PROJECT_ID: ${{ vars.VERCEL_KOTLIN_CDK_PROJECT_ID }}
+
+    steps:
+      - name: Checkout Repository
+        uses: actions/checkout@v4
+        with:
+          fetch-depth: 1
+
+      - name: Download Documentation Artifact
+        uses: actions/download-artifact@v4
+        with:
+          name: kotlin-bulk-cdk-docs-${{ github.sha }}
+          path: docs-output/airbyte-cdk/bulk
+
+      - name: Debug - Show artifact structure
+        run: |
+          echo "📂 Artifact structure:"
+          ls -lah docs-output/airbyte-cdk/bulk
+          echo ""
+          echo "🔍 Looking for index.html:"
+          find docs-output -type f -name "index.html" -print
+          echo ""
+          echo "✅ Verifying deployment path..."
+          test -f docs-output/airbyte-cdk/bulk/index.html && echo "✅ index.html found at expected path" || echo "❌ index.html NOT found at expected path"
+
+      - name: Debug - Deployment Mode
+        run: |
+          echo "Event: ${{ github.event_name }}"
+          echo "Ref: ${{ github.ref }}"
+          echo "Is Production: ${{ github.ref == 'refs/heads/master' }}"
+          echo "Vercel Args: ${{ github.ref == 'refs/heads/master' && '--prod' || '(none - preview)' }}"
+
+      - name: Deploy to Vercel
+        id: deploy-vercel
+        uses: amondnet/vercel-action@v41.1.4
+        with:
+          github-token: ${{ secrets.GITHUB_TOKEN }}
+          vercel-token: ${{ secrets.VERCEL_TOKEN }}
+          vercel-org-id: ${{ env.VERCEL_ORG_ID }}
+          vercel-project-id: ${{ env.VERCEL_PROJECT_ID }}
+          working-directory: docs-output
+          vercel-args: ${{ github.ref == 'refs/heads/master' && '--prod' || '' }}
+
+      - name: Authenticate as GitHub App
+        if: github.event_name == 'pull_request'
+        uses: actions/create-github-app-token@v2.0.6
+        id: get-app-token
+        with:
+          owner: "airbytehq"
+          repositories: "airbyte"
+          app-id: ${{ secrets.OCTAVIA_BOT_APP_ID }}
+          private-key: ${{ secrets.OCTAVIA_BOT_PRIVATE_KEY }}
+
+      - name: Post Custom Check with Preview URL
+        if: github.event_name == 'pull_request'
+        uses: LouisBrunner/checks-action@v2.0.0
+        with:
+          name: "Kotlin Bulk CDK Docs Preview"
+          status: completed
+          conclusion: success
+          details_url: ${{ steps.deploy-vercel.outputs.preview-url }}
+          token: ${{ steps.get-app-token.outputs.token }}
+          output: |
+            {"summary":"Documentation preview deployed successfully","text":"View the Kotlin Bulk CDK documentation at the preview URL"}

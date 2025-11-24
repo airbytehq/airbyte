@@ -9,6 +9,10 @@ import org.gradle.api.tasks.TaskAction
 import org.gradle.api.tasks.options.Option
 import org.w3c.dom.Document
 
+plugins {
+    id 'org.jetbrains.dokka' version '2.0.0'
+}
+
 final var versionFile = file("version.properties")
 
 final var cdkVersion = {
@@ -22,6 +26,7 @@ allprojects {
     version = cdkVersion
     apply plugin: 'java-library'
     apply plugin: 'maven-publish'
+    apply plugin: 'org.jetbrains.dokka'
 
     group 'io.airbyte.bulk-cdk'
 
@@ -77,6 +82,67 @@ allprojects {
             }
         }
     }
+}
+
+// Configure Dokka for all subprojects
+subprojects {
+    tasks.withType(org.jetbrains.dokka.gradle.DokkaTask.class) {
+        dokkaSourceSets {
+            configureEach {
+                // Only document public APIs
+                includeNonPublic.set(false)
+                skipEmptyPackages.set(true)
+
+                // Report undocumented members
+                reportUndocumented.set(true)
+
+                // Add external documentation links
+                externalDocumentationLinks {
+                    create("kotlin") {
+                        url.set(uri("https://kotlinlang.org/api/latest/jvm/stdlib/").toURL())
+                        packageListUrl.set(uri("https://kotlinlang.org/api/latest/jvm/stdlib/package-list").toURL())
+                    }
+                    create("kotlinx-coroutines") {
+                        url.set(uri("https://kotlinlang.org/api/kotlinx.coroutines/").toURL())
+                    }
+                    create("micronaut") {
+                        url.set(uri("https://docs.micronaut.io/latest/api/").toURL())
+                    }
+                }
+
+                // Source links back to GitHub
+                sourceLink {
+                    localDirectory.set(file("src/main"))
+                    remoteUrl.set(uri("https://github.com/airbytehq/airbyte/tree/master/airbyte-cdk/bulk/${project.name}/src/main").toURL())
+                    remoteLineSuffix.set("#L")
+                }
+            }
+        }
+    }
+}
+
+// Configure the multi-module documentation task
+tasks.named('dokkaHtmlMultiModule') {
+    moduleName.set("Airbyte Kotlin Bulk CDK")
+    outputDirectory.set(layout.buildDirectory.dir("dokka/htmlMultiModule"))
+}
+
+// Convenience task for local development
+tasks.register('docsGenerate') {
+    group = 'documentation'
+    description = 'Generate Dokka documentation for all modules'
+    dependsOn 'dokkaHtmlMultiModule'
+
+    doLast {
+        println "Documentation generated at: ${layout.buildDirectory.dir("dokka/htmlMultiModule").get()}"
+    }
+}
+
+// Backwards-compatible alias
+tasks.register('dokkaGenerate') {
+    group = 'documentation'
+    description = 'Generate Dokka documentation for all modules (alias for docsGenerate)'
+    dependsOn 'docsGenerate'
 }
 
 tasks.register('checkBuildNumber') {
