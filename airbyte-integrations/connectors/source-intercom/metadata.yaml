@@ -6,13 +6,26 @@ data:
     hosts:
       - api.intercom.io
   connectorBuildOptions:
-    baseImage: docker.io/airbyte/source-declarative-manifest:7.4.1@sha256:71df19e2ee555ca5b14abbec01d50104c79c9b84cb9cc323284d24333361900a
+    baseImage: docker.io/airbyte/source-declarative-manifest:7.4.4@sha256:b783c9adcfb89a25bbe6be6c4ed08956e9d1617033bf17d5d371b46bb8e85288
   connectorSubtype: api
   connectorType: source
   definitionId: d8313939-3782-41b0-be29-b3ca20d8dd3a
-  dockerImageTag: 0.13.13
+  dockerImageTag: 0.13.14
   dockerRepository: airbyte/source-intercom
   documentationUrl: https://docs.airbyte.com/integrations/sources/intercom
+  externalDocumentationUrls:
+    - title: Unversioned Changes
+      url: https://developers.intercom.com/docs/build-an-integration/learn-more/rest-apis/unversioned-changes#unversioned-changes
+      type: api_reference
+    - title: API Changelog
+      url: https://developers.intercom.com/docs/references/changelog
+      type: api_release_history
+    - title: Changelog
+      url: https://developers.intercom.com/docs/build-an-integration/learn-more/rest-apis/api-changelog
+      type: api_release_history
+    - title: Intercom API OpenAPI specification
+      url: https://developers.intercom.com/docs/references/rest-api/api.intercom.io/openapi.json
+      type: openapi_spec
   githubIssueLabel: source-intercom
   icon: intercom.svg
   license: ELv2

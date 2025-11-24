@@ -6,11 +6,11 @@ data:
     hosts:
       - api.hubapi.com
   connectorBuildOptions:
-    baseImage: docker.io/airbyte/source-declarative-manifest:7.4.1@sha256:71df19e2ee555ca5b14abbec01d50104c79c9b84cb9cc323284d24333361900a
+    baseImage: docker.io/airbyte/source-declarative-manifest:7.5.0@sha256:92e539d5003b33c3624eae7715aee6e39b7b2f1f0eeb6003d37e649a06847ae8
   connectorSubtype: api
   connectorType: source
   definitionId: 36c891d9-4bd9-43ac-bad2-10e12756272c
-  dockerImageTag: 6.0.10
+  dockerImageTag: 6.0.14
   dockerRepository: airbyte/source-hubspot
   documentationUrl: https://docs.airbyte.com/integrations/sources/hubspot
   resourceRequirements:
@@ -165,4 +165,20 @@ data:
           secretStore:
             type: GSM
             alias: airbyte-connector-testing-secret-store
+  externalDocumentationUrls:
+    - title: HubSpot API reference
+      url: https://developers.hubspot.com/docs/api/overview
+      type: api_reference
+    - title: HubSpot API changelog
+      url: https://developers.hubspot.com/changelog
+      type: api_release_history
+    - title: HubSpot authentication
+      url: https://developers.hubspot.com/docs/api/oauth-quickstart-guide
+      type: authentication_guide
+    - title: HubSpot rate limits
+      url: https://developers.hubspot.com/docs/api/usage-details
+      type: rate_limits
+    - title: HubSpot Status
+      url: https://status.hubspot.com/
+      type: status_page
 metadataSpecVersion: "1.0"

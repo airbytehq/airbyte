@@ -38,3 +38,10 @@ data:
   ab_internal:
     ql: 100
     sl: 100
+  externalDocumentationUrls:
+    - title: Dolibarr REST API
+      url: https://wiki.dolibarr.org/index.php/REST_API
+      type: api_reference
+    - title: Dolibarr authentication
+      url: https://wiki.dolibarr.org/index.php/REST_API#Authentication
+      type: authentication_guide

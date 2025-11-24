@@ -13,7 +13,7 @@ data:
       enabled: false
       packageName: airbyte-source-uptick
   connectorBuildOptions:
-    baseImage: docker.io/airbyte/source-declarative-manifest:7.4.1@sha256:71df19e2ee555ca5b14abbec01d50104c79c9b84cb9cc323284d24333361900a
+    baseImage: docker.io/airbyte/source-declarative-manifest:7.5.0@sha256:92e539d5003b33c3624eae7715aee6e39b7b2f1f0eeb6003d37e649a06847ae8
   connectorTestSuitesOptions:
     - suite: unitTests
     - suite: integrationTests
@@ -33,7 +33,7 @@ data:
   connectorSubtype: api
   connectorType: source
   definitionId: 54c75c42-df4a-4f3e-a5f3-d50cf80f1649
-  dockerImageTag: 0.3.7
+  dockerImageTag: 0.3.8
   dockerRepository: airbyte/source-uptick
   githubIssueLabel: source-uptick
   icon: icon.svg
@@ -49,3 +49,7 @@ data:
   ab_internal:
     ql: 100
     sl: 100
+  externalDocumentationUrls:
+    - title: Uptick API documentation
+      url: https://developer.uptick.com/
+      type: api_reference

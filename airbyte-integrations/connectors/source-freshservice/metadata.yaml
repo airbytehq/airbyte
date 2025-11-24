@@ -3,11 +3,11 @@ data:
     hosts:
       - ${domain_name}/api/v2
   connectorBuildOptions:
-    baseImage: docker.io/airbyte/source-declarative-manifest:7.4.1@sha256:71df19e2ee555ca5b14abbec01d50104c79c9b84cb9cc323284d24333361900a
+    baseImage: docker.io/airbyte/source-declarative-manifest:7.5.0@sha256:92e539d5003b33c3624eae7715aee6e39b7b2f1f0eeb6003d37e649a06847ae8
   connectorSubtype: api
   connectorType: source
   definitionId: 9bb85338-ea95-4c93-b267-6be89125b267
-  dockerImageTag: 1.4.42
+  dockerImageTag: 1.4.43
   dockerRepository: airbyte/source-freshservice
   documentationUrl: https://docs.airbyte.com/integrations/sources/freshservice
   githubIssueLabel: source-freshservice
@@ -41,4 +41,14 @@ data:
           secretStore:
             type: GSM
             alias: airbyte-connector-testing-secret-store
+  externalDocumentationUrls:
+    - title: Freshservice API reference
+      url: https://api.freshservice.com/
+      type: api_reference
+    - title: Freshservice authentication
+      url: https://api.freshservice.com/#authentication
+      type: authentication_guide
+    - title: Freshworks Status
+      url: https://status.freshworks.com/
+      type: status_page
 metadataSpecVersion: "1.0"

@@ -42,7 +42,7 @@ import io.airbyte.cdk.load.data.TimestampWithTimezoneValue
 import io.airbyte.cdk.load.data.UnionType
 import io.airbyte.cdk.load.data.UnknownType
 import io.airbyte.cdk.load.data.json.toAirbyteValue
-import io.airbyte.cdk.load.dataflow.stats.ObservabilityMetrics
+import io.airbyte.cdk.load.dataflow.state.stats.StateAdditionalStatsStore
 import io.airbyte.cdk.load.message.CheckpointMessage
 import io.airbyte.cdk.load.message.InputGlobalCheckpoint
 import io.airbyte.cdk.load.message.InputRecord
@@ -355,7 +355,7 @@ abstract class BasicFunctionalityIntegrationTest(
     dataChannelMedium: DataChannelMedium = DataChannelMedium.STDIO,
     dataChannelFormat: DataChannelFormat = DataChannelFormat.JSONL,
     val testSpeedModeStatsEmission: Boolean = true,
-    val includesAdditionalStats: Boolean = true,
+    val useDataFlowPipeline: Boolean = false,
 ) :
     IntegrationTest(
         additionalMicronautEnvs = additionalMicronautEnvs,
@@ -1599,8 +1599,8 @@ abstract class BasicFunctionalityIntegrationTest(
                             totalRecords = 1L,
                             totalBytes = expectedBytes,
                             additionalStats =
-                                if (includesAdditionalStats)
-                                    ObservabilityMetrics.entries
+                                if (useDataFlowPipeline)
+                                    StateAdditionalStatsStore.ObservabilityMetrics.entries
                                         .associate { it.metricName to 0.0 }
                                         .toMutableMap()
                                 else mutableMapOf(),
@@ -5237,13 +5237,14 @@ abstract class BasicFunctionalityIntegrationTest(
         }
     }
 
-    private fun expectedAdditionalStats(): AdditionalStats {
-        val expectedAdditionalStats = AdditionalStats()
-        ObservabilityMetrics.entries.forEach {
-            expectedAdditionalStats.withAdditionalProperty(it.metricName, 0.0)
-        }
-        return expectedAdditionalStats
-    }
+    private fun expectedAdditionalStats(): AdditionalStats? =
+        if (useDataFlowPipeline) {
+            val expectedAdditionalStats = AdditionalStats()
+            StateAdditionalStatsStore.ObservabilityMetrics.entries.forEach {
+                expectedAdditionalStats.withAdditionalProperty(it.metricName, 0.0)
+            }
+            expectedAdditionalStats
+        } else null
 
     protected fun namespaceMapperForMedium(): NamespaceMapper {
         return when (dataChannelMedium) {

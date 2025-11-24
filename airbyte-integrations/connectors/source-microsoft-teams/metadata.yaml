@@ -68,4 +68,17 @@ data:
           secretStore:
             type: GSM
             alias: airbyte-connector-testing-secret-store
+  externalDocumentationUrls:
+    - title: Microsoft Teams API
+      url: https://learn.microsoft.com/en-us/graph/api/resources/teams-api-overview
+      type: api_reference
+    - title: Microsoft Graph authentication
+      url: https://learn.microsoft.com/en-us/graph/auth/
+      type: authentication_guide
+    - title: Microsoft Graph throttling
+      url: https://learn.microsoft.com/en-us/graph/throttling
+      type: rate_limits
+    - title: Microsoft 365 Status
+      url: https://status.office365.com/
+      type: status_page
 metadataSpecVersion: "1.0"

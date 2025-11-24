@@ -51,4 +51,14 @@ data:
           secretStore:
             type: GSM
             alias: airbyte-connector-testing-secret-store
+  externalDocumentationUrls:
+    - title: Lever API reference
+      url: https://hire.lever.co/developer/documentation
+      type: api_reference
+    - title: Lever authentication
+      url: https://hire.lever.co/developer/documentation#authentication
+      type: authentication_guide
+    - title: Lever rate limits
+      url: https://hire.lever.co/developer/documentation#rate-limiting
+      type: rate_limits
 metadataSpecVersion: "1.0"
