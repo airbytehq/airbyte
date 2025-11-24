@@ -26,7 +26,6 @@ import io.airbyte.cdk.load.table.TableName
 import io.micronaut.test.extensions.junit5.annotation.MicronautTest
 import kotlin.test.assertEquals
 import kotlinx.coroutines.test.runTest
-import org.junit.jupiter.api.Assertions
 import org.junit.jupiter.api.Assertions.assertTrue
 import org.junit.jupiter.api.assertAll
 import org.junit.jupiter.params.provider.Arguments.argumentSet
@@ -308,41 +307,44 @@ interface TableSchemaEvolutionSuite {
         )
     }
 
+    fun `apply changeset - append-append`() {
+        `apply changeset`(false, false)
+    }
+
+    fun `apply changeset - append-dedup`() {
+        `apply changeset`(false, true)
+    }
+
+    fun `apply changeset - dedup-append`() {
+        `apply changeset`(true, false)
+    }
+
+    fun `apply changeset - dedup-dedup`() {
+        `apply changeset`(true, true)
+    }
+
     /**
      * Execute a basic set of schema changes, across a variety of sync modes. The types are just
      * string/int (i.e. no JSON), and there's no funky characters anywhere.
      *
-     * You likely will annotate your test method as:
-     * ```kotlin
-     * @ParameterizedTest
-     * @MethodSource("io.airbyte.cdk.load.component.TableSchemaEvolutionSuite#applyChangesetArguments")
+     * You should not directly annotate this function with `@Test`. Instead:
+     * 1. If you need to modify any of the parameters, override this function (if the defaults
      * ```
+     *    work correctly, you can skip this step)
+     * ```
+     * 2. Annotate `@Test` onto [`apply changeset - append-append`], [`apply changeset -
+     * append-dedup`], etc.
      */
     fun `apply changeset`(
         initialStreamIsDedup: Boolean,
         modifiedStreamIsDedup: Boolean,
     ) {
         `apply changeset`(
-            initialColumnNameMapping =
-                ColumnNameMapping(
-                    mapOf(
-                        "id" to "id",
-                        "updated_at" to "updated_at",
-                        "to_retain" to "to_retain",
-                        "to_change" to "to_change",
-                        "to_drop" to "to_drop",
-                    )
-                ),
-            modifiedColumnNameMapping =
-                ColumnNameMapping(
-                    mapOf(
-                        "id" to "id",
-                        "updated_at" to "updated_at",
-                        "to_retain" to "to_retain",
-                        "to_change" to "to_change",
-                        "to_add" to "to_add",
-                    )
-                ),
+            TableSchemaEvolutionFixtures.APPLY_CHANGESET_INITIAL_COLUMN_MAPPING,
+            TableSchemaEvolutionFixtures.APPLY_CHANGESET_MODIFIED_COLUMN_MAPPING,
+            // If your destination reads back timestamps in a nonstandard format, you can override
+            // this value to match that format.
+            TableSchemaEvolutionFixtures.APPLY_CHANGESET_EXPECTED_EXTRACTED_AT,
             initialStreamIsDedup,
             modifiedStreamIsDedup,
         )
@@ -351,6 +353,7 @@ interface TableSchemaEvolutionSuite {
     fun `apply changeset`(
         initialColumnNameMapping: ColumnNameMapping,
         modifiedColumnNameMapping: ColumnNameMapping,
+        expectedExtractedAt: String,
         initialStreamIsDedup: Boolean,
         modifiedStreamIsDedup: Boolean,
     ) = runTest {
@@ -435,11 +438,11 @@ interface TableSchemaEvolutionSuite {
                 .readTable(testTable)
                 .removeNulls()
                 .reverseColumnNameMapping(modifiedColumnNameMapping, airbyteMetaColumnMapping)
-        Assertions.assertEquals(
+        assertEquals(
             listOf(
                 mapOf(
                     "_airbyte_raw_id" to "fcc784dd-bf06-468e-ad59-666d5aaceae8",
-                    "_airbyte_extracted_at" to "2025-01-22T00:00:00Z",
+                    "_airbyte_extracted_at" to expectedExtractedAt,
                     "_airbyte_meta" to linkedMapOf<String, Any?>(),
                     "_airbyte_generation_id" to 1L,
                     "id" to 1234L,
@@ -451,9 +454,9 @@ interface TableSchemaEvolutionSuite {
                     )
             ),
             postAlterationRecords,
-        ) {
+            "id",
             "Expected records were not in the overwritten table."
-        }
+        )
 
         val postAlterationDiscoveredSchema = client.discoverSchema(testTable)
         val postAlterationChangeset =
