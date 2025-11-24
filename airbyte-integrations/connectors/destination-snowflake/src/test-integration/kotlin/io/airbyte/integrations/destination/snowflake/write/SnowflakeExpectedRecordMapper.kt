@@ -7,16 +7,18 @@ package io.airbyte.integrations.destination.snowflake.write
 import io.airbyte.cdk.load.data.AirbyteType
 import io.airbyte.cdk.load.data.AirbyteValue
 import io.airbyte.cdk.load.data.ArrayValue
+import io.airbyte.cdk.load.data.EnrichedAirbyteValue
 import io.airbyte.cdk.load.data.NullValue
 import io.airbyte.cdk.load.data.ObjectValue
 import io.airbyte.cdk.load.data.StringValue
 import io.airbyte.cdk.load.data.TimeWithTimezoneValue
 import io.airbyte.cdk.load.data.json.toJson
+import io.airbyte.cdk.load.dataflow.transform.ValidationResult
 import io.airbyte.cdk.load.message.Meta
 import io.airbyte.cdk.load.test.util.ExpectedRecordMapper
 import io.airbyte.cdk.load.test.util.OutputRecord
 import io.airbyte.integrations.destination.snowflake.db.toSnowflakeCompatibleName
-import io.airbyte.integrations.destination.snowflake.write.transform.isValid
+import io.airbyte.integrations.destination.snowflake.write.transform.SnowflakeValueCoercer
 import io.airbyte.protocol.models.v0.AirbyteRecordMessageMetaChange
 import io.airbyte.protocol.models.v0.AirbyteRecordMessageMetaChange.Change
 
@@ -40,15 +42,26 @@ object SnowflakeExpectedRecordMapper : ExpectedRecordMapper {
     }
 
     private fun mapAirbyteValue(value: AirbyteValue): AirbyteValue {
-        return if (isValid(value)) {
-            when (value) {
-                is TimeWithTimezoneValue -> StringValue(value.value.toString())
-                is ArrayValue,
-                is ObjectValue -> StringValue(value.toJson().toPrettyString())
-                else -> value
-            }
-        } else {
-            NullValue
+        val validationResult =
+            SnowflakeValueCoercer()
+                .validate(
+                    EnrichedAirbyteValue(
+                        value,
+                        value.airbyteType,
+                        name = "unused",
+                        airbyteMetaField = null,
+                    )
+                )
+        return when (validationResult) {
+            is ValidationResult.ShouldNullify -> NullValue
+            is ValidationResult.ShouldTruncate -> validationResult.truncatedValue
+            ValidationResult.Valid ->
+                when (value) {
+                    is TimeWithTimezoneValue -> StringValue(value.value.toString())
+                    is ArrayValue,
+                    is ObjectValue -> StringValue(value.toJson().toPrettyString())
+                    else -> value
+                }
         }
     }
 
