@@ -5,29 +5,28 @@ enterprise-connector: true
 
 # Source SAP HANA
 
-Airbyte's incubating SAP HANA enterprise source connector currently offers Full Refresh and Incrementals syncs for streams. Support for Change Data Capture (CDC) is available using a trigger-based approach.n.
+Airbyte's incubating SAP HANA enterprise source connector currently offers Full Refresh and Incremental syncs for streams. Support for Change Data Capture (CDC) is available using a trigger-based approach.
 
 ## Features
 
-| Feature           | Supported?\(Yes/No\) | Notes |
-| :---------------- | :------------------- | :---- |
-| Full Refresh Sync | Yes                  |       |
-| Incremental Sync - Append | Yes          |       |
-| Change Data Capture (CDC) | Yes          |       |
+| Feature                   | Supported?\(Yes/No\) | Notes |
+| :------------------------ | :------------------- | :---- |
+| Full Refresh Sync         | Yes                  |       |
+| Incremental Sync - Append | Yes                  |       |
+| Change Data Capture (CDC) | Yes                  |       |
 
-
-## Prequisities
+## Prerequisites
 
 - Dedicated read-only Airbyte user with read-only access to tables needed for replication
 - SAP HANA Host Name URL
   - In the SAP HANA Cloud Management Portal, this can be found under the **Connections** tab for you SAP HANA instance
   - The Host Name  is the first portion of the SQL Endpoint before the Port
-  - ie:**01234abce-1234-56fg.us-01-hanacloud.ondemand.com**:123
+  - For example, **01234abce-1234-56fg.us-01-hanacloud.ondemand.com**:123
   - The **Host** is also a combination of the **Instance ID** and **Landscape**
 - Port Number
   - Inside of the SAP HANA Cloud Management Portal, this can be found under the **Connections** tab for you SAP HANA instance
   - The **Port** is listed explicitly in addition to being part of the **SQL Endpoint**
- 
+
 ## Setup Guide
 
 1. Enter your SAP HANA Host Name
@@ -55,10 +54,12 @@ Note: Trigger tables and database triggers must be manually created before enabl
 ### Trigger Table Structure
 
 For each source table, a corresponding trigger table is created with the naming convention:
+
 - **Schema**: `_ab_cdc`
 - **Table name**: `_ab_trigger_{source_schema}_{source_table}`
 
 Each trigger table contains:
+
 - `_ab_trigger_change_id`: Unique identifier for each change (auto-incrementing)
 - `_ab_trigger_change_time`: Timestamp when the change occurred (used as cursor)
 - `_ab_trigger_operation_type`: Type of operation (INSERT, UPDATE, DELETE)
@@ -152,6 +153,7 @@ SAP HANA data types are mapped to the following Airbyte data types when synchron
 #### Update Method Configuration
 
 **User Defined Cursor**:
+
 ```json
 {
   "cursor_method": "user_defined"
@@ -159,6 +161,7 @@ SAP HANA data types are mapped to the following Airbyte data types when synchron
 ```
 
 **Change Data Capture (CDC)**:
+
 ```json
 {
   "cursor_method": "cdc",
@@ -166,5 +169,3 @@ SAP HANA data types are mapped to the following Airbyte data types when synchron
   "invalid_cdc_cursor_position_behavior": "Fail sync"
 }
 ```
-
-
