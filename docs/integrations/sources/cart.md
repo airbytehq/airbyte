@@ -78,7 +78,7 @@ This method is designed for applications that need to access multiple Cart.com s
 
 When configuring the connector in Airbyte, select the Central API Router authentication method and provide these credentials.
 
-For more details on authentication, see the [Cart.com authentication documentation](https://developers.cart.com/docs/rest-api/authentication).
+For more details on authentication, see the [Cart.com authentication documentation](https://developers.cart.com/docs/rest-api/ZG9jOjU4NjM4-cart-com-online-store-api-authentication).
 
 ## Changelog
 
