@@ -122,6 +122,7 @@ maximum number of seconds between API calls.
 
 | Version | Date       | Pull Request                                             | Subject                                                                |
 |:--------| :--------- |:---------------------------------------------------------|:-----------------------------------------------------------------------|
+| 0.5.25 | 2025-11-25 | [70138](https://github.com/airbytehq/airbyte/pull/70138) | Update dependencies |
 | 0.5.24 | 2025-11-18 | [69676](https://github.com/airbytehq/airbyte/pull/69676) | Update dependencies |
 | 0.5.23 | 2025-11-13 | [69282](https://github.com/airbytehq/airbyte/pull/69282) | Add client side incremental sync support for customers stream |
 | 0.5.22 | 2025-10-29 | [68975](https://github.com/airbytehq/airbyte/pull/68975) | Update dependencies |
