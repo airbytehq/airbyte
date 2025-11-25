@@ -49,12 +49,22 @@ If you use Service Key Authentication with the default `ALL` scope, you will see
 
 ### For Airbyte Open Source:
 
-1. Navigate to the Airbyte Open Source dashboard.
-2. Click Sources and then click + New source.
-3. On the Set up the source page, select Microsoft SharePoint from the Source type dropdown.
-4. Enter a name for the Microsoft SharePoint connector.
+This connector supports two authentication methods. Choose ONE method based on your needs:
 
-### Step 1: Set up SharePoint application
+| Authentication Method | Supported Search Scopes | Best For |
+|----------------------|------------------------|----------|
+| **OAuth2.0 (Delegated)** | `ACCESSIBLE_DRIVES`, `SHARED_ITEMS`, `ALL` | Interactive setups, accessing shared items |
+| **Service Key Authentication** | `ACCESSIBLE_DRIVES` only | Automated/background syncs, no shared items needed |
+
+### Option A: Service Key Authentication - Only supports ACCESSIBLE_DRIVES
+
+Use this method for automated or background syncs where no user interaction is required. Service Key Authentication uses application permissions, which run without a signed-in user context.
+
+:::warning
+Service Key Authentication only supports the `ACCESSIBLE_DRIVES` search scope. If you need to access shared items (`SHARED_ITEMS` or `ALL` scopes), you must use OAuth2.0 authentication instead.
+:::
+
+#### Step 1: Set up SharePoint application in Azure
 
 The Microsoft Graph API uses OAuth for authentication. Microsoft Graph exposes granular permissions that control the access that apps have to resources, like users, groups, and mail. When a user signs in to your app, they or in some cases an administrator are given a chance to consent to these permissions. If the user consents, your app is given access to the resources and APIs that it has requested. For apps that don't take a signed-in user, permissions can be pre-consented to by an administrator when the app is installed.
 
@@ -90,13 +100,13 @@ This source requires **Application permissions**. Follow these [instructions](ht
 14. Click **Add permissions**
 15. Click **Grant admin consent**
 
-### Step 2: Set up the Microsoft SharePoint connector in Airbyte
+#### Step 2: Set up the connector in Airbyte
 
 1. Navigate to the Airbyte Open Source dashboard.
 2. Click **Sources** and then click **+ New source**.
 3. On the **Set up** the source page, select **Microsoft SharePoint** from the Source type dropdown.
 4. Enter the name for the Microsoft SharePoint connector.
-5. Select **Search Scope**. Since you will be using Service Key Authentication, you must select `ACCESSIBLE_DRIVES`. The `SHARED_ITEMS` and `ALL` scopes are not supported with Service Key Authentication.
+5. Select **Search Scope**. You must select `ACCESSIBLE_DRIVES` when using Service Key Authentication. The `SHARED_ITEMS` and `ALL` scopes are not supported with this authentication method.
 6. Enter **Folder Path**. Leave empty to search all folders of the drives. This does not apply to shared items.
 7. Switch to **Service Key Authentication**
 8. For **User Practical Name**, enter the [UPN](https://learn.microsoft.com/en-us/sharepoint/list-onedrive-urls) for your user.
