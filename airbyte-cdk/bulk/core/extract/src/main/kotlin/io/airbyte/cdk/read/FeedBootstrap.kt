@@ -225,6 +225,7 @@ sealed class FeedBootstrap<T : Feed>(
         override val stream: Stream,
         private val socketProtobufOutputConsumer: SocketProtobufOutputConsumer,
     ) : StreamRecordConsumer {
+        val log = KotlinLogging.logger {}
         override fun close() {
             socketProtobufOutputConsumer.close()
         }
@@ -235,6 +236,7 @@ sealed class FeedBootstrap<T : Feed>(
             changes: Map<EmittedField, FieldValueChange>?
         ) {
             if (changes.isNullOrEmpty()) {
+                log.info { "*** schema: ${stream.schema}" }
                 acceptWithoutChanges(
                     recordData.toProtobuf(stream.schema, defaultRecordData, valueVBuilder)
                 )
