@@ -7,6 +7,7 @@ package io.airbyte.cdk.load.component
 import io.airbyte.cdk.load.command.Append
 import io.airbyte.cdk.load.command.Dedupe
 import io.airbyte.cdk.load.command.DestinationStream
+import io.airbyte.cdk.load.command.ImportType
 import io.airbyte.cdk.load.command.NamespaceMapper
 import io.airbyte.cdk.load.data.AirbyteValue
 import io.airbyte.cdk.load.data.ArrayType
@@ -717,25 +718,25 @@ object TableOperationsFixtures {
             namespaceMapper = NamespaceMapper(),
         )
 
-    fun createSimpleStream(
+    fun createStream(
         namespace: String,
         name: String,
         schema: ObjectType,
-        isDedup: Boolean,
-        primaryKey: String = "id",
-        cursor: String? = "updated_at",
+        importType: ImportType,
+        generationId: Long = 1,
+        minimumGenerationId: Long = 0,
+        syncId: Long = 1,
     ) =
-        if (isDedup) {
-            createDedupeStream(
-                namespace,
-                name,
-                schema,
-                primaryKey = listOf(listOf(primaryKey)),
-                cursor = cursor?.let { listOf(it) } ?: emptyList(),
-            )
-        } else {
-            createAppendStream(namespace, name, schema)
-        }
+        DestinationStream(
+            unmappedNamespace = namespace,
+            unmappedName = name,
+            importType = importType,
+            generationId = generationId,
+            minimumGenerationId = minimumGenerationId,
+            syncId = syncId,
+            schema = schema,
+            namespaceMapper = NamespaceMapper(),
+        )
 
     fun <V> List<Map<String, V>>.sortBy(key: String) =
         // sketchy unchecked cast is intentional, we're assuming that the tests are written such
