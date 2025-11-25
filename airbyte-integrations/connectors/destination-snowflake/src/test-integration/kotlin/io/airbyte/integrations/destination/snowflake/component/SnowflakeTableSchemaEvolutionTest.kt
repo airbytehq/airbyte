@@ -4,6 +4,7 @@
 
 package io.airbyte.integrations.destination.snowflake.component
 
+import io.airbyte.cdk.load.command.ImportType
 import io.airbyte.cdk.load.component.TableSchemaEvolutionFixtures
 import io.airbyte.cdk.load.component.TableSchemaEvolutionSuite
 import io.airbyte.cdk.load.message.Meta
@@ -78,8 +79,8 @@ class SnowflakeTableSchemaEvolutionTest(
     }
 
     override fun `apply changeset`(
-        initialStreamIsDedup: Boolean,
-        modifiedStreamIsDedup: Boolean,
+        initialStreamImportType: ImportType,
+        modifiedStreamImportType: ImportType,
     ) {
         super.`apply changeset`(
             initialColumnNameMapping =
@@ -103,8 +104,8 @@ class SnowflakeTableSchemaEvolutionTest(
                     )
                 ),
             TableSchemaEvolutionFixtures.APPLY_CHANGESET_EXPECTED_EXTRACTED_AT,
-            initialStreamIsDedup,
-            modifiedStreamIsDedup,
+            initialStreamImportType,
+            modifiedStreamImportType,
         )
     }
 

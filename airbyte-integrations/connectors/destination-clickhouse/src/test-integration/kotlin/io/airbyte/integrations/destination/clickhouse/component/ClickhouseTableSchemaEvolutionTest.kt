@@ -4,6 +4,7 @@
 
 package io.airbyte.integrations.destination.clickhouse.component
 
+import io.airbyte.cdk.load.command.ImportType
 import io.airbyte.cdk.load.component.ColumnType
 import io.airbyte.cdk.load.component.TableOperationsClient
 import io.airbyte.cdk.load.component.TableSchema
@@ -90,15 +91,15 @@ class ClickhouseTableSchemaEvolutionTest(
     }
 
     override fun `apply changeset`(
-        initialStreamIsDedup: Boolean,
-        modifiedStreamIsDedup: Boolean,
+        initialStreamImportType: ImportType,
+        modifiedStreamImportType: ImportType,
     ) {
         `apply changeset`(
             TableSchemaEvolutionFixtures.APPLY_CHANGESET_INITIAL_COLUMN_MAPPING,
             TableSchemaEvolutionFixtures.APPLY_CHANGESET_MODIFIED_COLUMN_MAPPING,
             expectedExtractedAt = "2025-01-22T00:00Z[UTC]",
-            initialStreamIsDedup,
-            modifiedStreamIsDedup,
+            initialStreamImportType,
+            modifiedStreamImportType,
         )
     }
 
