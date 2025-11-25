@@ -238,6 +238,10 @@ def test_custom_query_stream(customers, config_for_custom_query_tests, requests_
 @pytest.mark.parametrize(
     "query, expected_incremental_sync",
     [
+        ("\n select ad.id, segments.date, ad.resource_name\nfrom\nad", True),
+        ("\nselect ad.id, segments.date from ad", True),
+        ("select ad.id, segments.date\nfrom\nad\norder\n  by segments.date", True),
+        ("\nselect\nad.id,\nsegments.date\nfrom\nad\norder\n  by segments.date", True),
         ("SELECT campaign_budget.name, campaign.name, metrics.interaction_event_types FROM campaign_budget", False),
         (
             "SELECT campaign_budget.name, campaign.name, metrics.interaction_event_types FROM campaign_budget ORDER BY campaign_budget.name DESC",
