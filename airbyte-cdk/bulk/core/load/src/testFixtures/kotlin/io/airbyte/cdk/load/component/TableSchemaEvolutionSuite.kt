@@ -4,7 +4,10 @@
 
 package io.airbyte.cdk.load.component
 
+import io.airbyte.cdk.load.command.Append
+import io.airbyte.cdk.load.command.Dedupe
 import io.airbyte.cdk.load.command.DestinationStream
+import io.airbyte.cdk.load.command.ImportType
 import io.airbyte.cdk.load.component.TableOperationsFixtures as Fixtures
 import io.airbyte.cdk.load.component.TableOperationsFixtures.ID_FIELD
 import io.airbyte.cdk.load.component.TableOperationsFixtures.TEST_FIELD
@@ -28,7 +31,6 @@ import kotlin.test.assertEquals
 import kotlinx.coroutines.test.runTest
 import org.junit.jupiter.api.Assertions.assertTrue
 import org.junit.jupiter.api.assertAll
-import org.junit.jupiter.params.provider.Arguments.argumentSet
 
 @MicronautTest(environments = ["component"])
 interface TableSchemaEvolutionSuite {
@@ -308,19 +310,22 @@ interface TableSchemaEvolutionSuite {
     }
 
     fun `apply changeset - handle sync mode append`() {
-        `apply changeset`(false, false)
+        `apply changeset`(Append, Append)
     }
 
     fun `apply changeset - handle changing sync mode from append to dedup`() {
-        `apply changeset`(false, true)
+        `apply changeset`(Append, Dedupe(primaryKey = listOf(listOf("id")), cursor = emptyList()))
     }
 
     fun `apply changeset - handle changing sync mode from dedup to append`() {
-        `apply changeset`(true, false)
+        `apply changeset`(Dedupe(primaryKey = listOf(listOf("id")), cursor = emptyList()), Append)
     }
 
     fun `apply changeset - handle sync mode dedup`() {
-        `apply changeset`(true, true)
+        `apply changeset`(
+            Dedupe(primaryKey = listOf(listOf("id")), cursor = emptyList()),
+            Dedupe(primaryKey = listOf(listOf("id")), cursor = emptyList())
+        )
     }
 
     /**
@@ -336,8 +341,8 @@ interface TableSchemaEvolutionSuite {
      * append-dedup`], etc.
      */
     fun `apply changeset`(
-        initialStreamIsDedup: Boolean,
-        modifiedStreamIsDedup: Boolean,
+        initialStreamImportType: ImportType,
+        modifiedStreamImportType: ImportType,
     ) {
         `apply changeset`(
             TableSchemaEvolutionFixtures.APPLY_CHANGESET_INITIAL_COLUMN_MAPPING,
@@ -345,8 +350,8 @@ interface TableSchemaEvolutionSuite {
             // If your destination reads back timestamps in a nonstandard format, you can override
             // this value to match that format.
             TableSchemaEvolutionFixtures.APPLY_CHANGESET_EXPECTED_EXTRACTED_AT,
-            initialStreamIsDedup,
-            modifiedStreamIsDedup,
+            initialStreamImportType,
+            modifiedStreamImportType,
         )
     }
 
@@ -354,8 +359,8 @@ interface TableSchemaEvolutionSuite {
         initialColumnNameMapping: ColumnNameMapping,
         modifiedColumnNameMapping: ColumnNameMapping,
         expectedExtractedAt: String,
-        initialStreamIsDedup: Boolean,
-        modifiedStreamIsDedup: Boolean,
+        initialStreamImportType: ImportType,
+        modifiedStreamImportType: ImportType,
     ) = runTest {
         val testNamespace = Fixtures.generateTestNamespace("namespace-test")
         val testTable = Fixtures.generateTestTableName("table-test-table", testNamespace)
@@ -370,11 +375,11 @@ interface TableSchemaEvolutionSuite {
                 ),
             )
         val initialStream =
-            Fixtures.createSimpleStream(
+            Fixtures.createStream(
                 testTable.namespace,
                 testTable.name,
                 initialSchema,
-                initialStreamIsDedup,
+                initialStreamImportType,
             )
         val modifiedSchema =
             ObjectType(
@@ -387,11 +392,11 @@ interface TableSchemaEvolutionSuite {
                 ),
             )
         val modifiedStream =
-            Fixtures.createSimpleStream(
+            Fixtures.createStream(
                 testTable.namespace,
                 testTable.name,
                 modifiedSchema,
-                modifiedStreamIsDedup,
+                modifiedStreamImportType,
             )
 
         // Create the table and compute the schema changeset
@@ -630,17 +635,4 @@ interface TableSchemaEvolutionSuite {
         val columnChangeset: ColumnChangeset,
         val modifiedStream: DestinationStream,
     )
-
-    companion object {
-        // junit needs everything annotated with JvmStatic, and doesn't support backtick-quoted
-        // names
-        @JvmStatic
-        fun applyChangesetArguments() =
-            listOf(
-                argumentSet("append -> append", false, false),
-                argumentSet("append -> dedup", false, true),
-                argumentSet("dedup -> append", true, false),
-                argumentSet("dedup -> dedup", true, true),
-            )
-    }
 }
