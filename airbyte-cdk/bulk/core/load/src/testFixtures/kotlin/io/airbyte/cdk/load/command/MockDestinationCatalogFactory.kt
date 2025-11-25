@@ -31,6 +31,7 @@ class MockDestinationCatalogFactory {
                 finalColumnSchema = mapOf(),
             ),
             importType = Append,
+            tableNames = tableNames,
         )
 
         val stream1 =
