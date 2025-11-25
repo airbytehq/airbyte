@@ -110,10 +110,21 @@ class Orders(IncrementalShopifyStreamWithDeletedEvents):
 
 
 class Disputes(IncrementalShopifyStream):
+    """
+    Disputes stream for Shopify Payments API.
+
+    Note: Uses 'initiated_at' as cursor field to ensure dispute status updates are captured
+    during incremental syncs. Previously used 'id' with 'since_id' filtering, which only
+    captured new disputes but missed updates to existing disputes (e.g., status changes
+    from 'needs_response' to 'won' or 'lost').
+
+    API Reference: https://shopify.dev/docs/api/admin-rest/latest/resources/dispute
+    """
+
     data_field = "disputes"
-    filter_field = "since_id"
-    cursor_field = "id"
-    order_field = "id"
+    cursor_field = "initiated_at"
+    order_field = "initiated_at"
+    filter_field = "initiated_at"
 
     def path(self, **kwargs) -> str:
         return f"shopify_payments/{self.data_field}.json"
