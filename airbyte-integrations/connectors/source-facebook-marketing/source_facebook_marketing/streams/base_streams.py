@@ -90,9 +90,17 @@ class FBMarketingStream(Stream, ABC):
 
         if isinstance(record, dict):
             for field, value in record.items():
-                if isinstance(value, str):
-                    if field in date_time_fields:
-                        record[field] = value.replace("t", "T").replace(" 0000", "+0000")
+                if isinstance(value, str) and field in date_time_fields:
+                    fixed = value
+                    # Handle existing transformations
+                    fixed = fixed.replace("t", "T").replace(" 0000", "+0000")
+                    # Handle Meta API format: "YYYY-MM-DD HH:MM:SS UTC" -> "YYYY-MM-DDTHH:MM:SSZ"
+                    if " UTC" in fixed:
+                        fixed = fixed.replace(" UTC", "Z")
+                    # Replace space between date and time with 'T' if not already present
+                    if " " in fixed and "T" not in fixed:
+                        fixed = fixed.replace(" ", "T", 1)
+                    record[field] = fixed
                 else:
                     cls.fix_date_time(value)
 
