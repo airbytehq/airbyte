@@ -537,6 +537,25 @@ class TestBaseInsightsStream:
             ]
         )
 
+    def test_fields_custom_with_objective_results(self, api, some_config):
+        """Test that objective_results field is properly included in custom insights schema"""
+        stream = AdsInsights(
+            api=api,
+            account_ids=some_config["account_ids"],
+            start_date=datetime(2010, 1, 1),
+            end_date=datetime(2011, 1, 1),
+            fields=["objective_results"],
+            insights_lookback_window=28,
+        )
+
+        assert stream.fields() == ["objective_results"]
+        schema = stream.get_json_schema()
+        assert "objective_results" in schema["properties"], "objective_results should be in schema when specified in custom fields"
+        assert "date_start" in schema["properties"]
+        assert "date_stop" in schema["properties"]
+        assert "account_id" in schema["properties"]
+        assert "ad_id" in schema["properties"]
+
     def test_level_custom(self, api, some_config):
         stream = AdsInsights(
             api=api,
