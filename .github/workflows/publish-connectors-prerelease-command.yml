@@ -45,7 +45,20 @@ jobs:
       run-url: ${{ steps.job-vars.outputs.run-url }}
       pr-number: ${{ steps.job-vars.outputs.pr-number }}
       comment-id: ${{ steps.append-start-comment.outputs.comment-id }}
+      short-sha: ${{ steps.get-sha.outputs.short-sha }}
     steps:
+      - name: Checkout to get commit SHA
+        uses: actions/checkout@v4
+        with:
+          repository: ${{ inputs.repo || github.repository }}
+          ref: ${{ inputs.gitref || '' }}
+
+      - name: Get short SHA
+        id: get-sha
+        run: |
+          SHORT_SHA=$(git rev-parse --short=10 HEAD)
+          echo "short-sha=$SHORT_SHA" >> $GITHUB_OUTPUT
+
       - name: Get job variables
         id: job-vars
         run: |
@@ -66,8 +79,8 @@ jobs:
             > Publishing pre-release builds for all modified connectors in this PR.
             > Branch: `${{ inputs.gitref }}`
             >
-            > Pre-release versions are tagged as `{version}-dev.{git-sha}` and are available
-            > for version pinning via the scoped_configuration API.
+            > Pre-release versions will be tagged as `{version}-dev.${{ steps.get-sha.outputs.short-sha }}`
+            > and are available for version pinning via the scoped_configuration API.
             >
             > [View workflow run](${{ steps.job-vars.outputs.run-url }})
 
