@@ -276,6 +276,9 @@ spec:
   connection_specification:
     type: object
     $schema: http://json-schema.org/draft-07/schema#
+    required:
+      - credentials
+      - channel_ids
     properties:
       credentials:
         type: object
@@ -301,7 +304,6 @@ spec:
               - client_id
               - client_secret
               - refresh_token
-              - channel_ids
             properties:
               auth_method:
                 type: string
