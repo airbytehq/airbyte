@@ -47,6 +47,7 @@ class DestinationPinecone(Destination):
             yield AirbyteMessage(type="LOG", message=log_message)
 
     def check(self, logger: logging.Logger, config: Mapping[str, Any]) -> AirbyteConnectionStatus:
+        logger.info("Starting Pinecone destination check...")
         try:
             logger.info("Parsing configuration...")
             parsed_config = ConfigModel.parse_obj(config)
