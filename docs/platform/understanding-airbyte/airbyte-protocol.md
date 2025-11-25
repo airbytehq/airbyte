@@ -2,7 +2,7 @@
 
 ## Goals
 
-The Airbyte Protocol describes a series of standard components and all the interactions between them in order to declare an ELT pipeline. The protocol supports two data channel modes: the traditional STDIO mode using serialized JSON messages for inter-process communication, and the high-performance Socket mode using Protocol Buffers over Unix domain sockets for direct source-to-destination data transfer.
+The Airbyte Protocol describes a series of standard components and all the interactions between them to declare an ELT pipeline. The protocol supports two data channel modes: the traditional STDIO mode using serialized JSON messages for inter-process communication, and the high-performance Socket mode using Protocol Buffers over Unix domain sockets for direct source-to-destination data transfer.
 
 This document describes the protocol as it exists in its CURRENT form. Stay tuned for an RFC on how the protocol will evolve.
 
@@ -119,6 +119,7 @@ In STDIO mode, data flows through the platform orchestrator using standard input
 The data flow in STDIO mode is: Source -> Orchestrator -> Destination
 
 Environment configuration for STDIO mode:
+
 - `DATA_CHANNEL_MEDIUM=STDIO` (default)
 - `DATA_CHANNEL_FORMAT=JSONL` (default)
 
@@ -127,20 +128,24 @@ Environment configuration for STDIO mode:
 Socket mode enables direct source-to-destination communication via Unix domain sockets, bypassing the orchestrator for record data. This architecture achieves 4-10x performance improvements by eliminating serialization overhead and enabling parallel data transfer.
 
 In Socket mode, the architecture splits into two channels:
+
 - **Data channel**: Records and state messages flow directly from source to destination over multiple Unix domain sockets using Protocol Buffers serialization
 - **Control channel**: Logs, state persistence, and metadata flow through a lightweight Bookkeeper component via STDOUT
 
 The data flow in Socket mode is:
+
 - Records: Source -> Unix Domain Sockets -> Destination
 - Control messages: Source -> Bookkeeper (via STDOUT)
 - State messages: Source -> Both Bookkeeper and Destination
 
 Environment configuration for Socket mode:
+
 - `DATA_CHANNEL_MEDIUM=SOCKET`
 - `DATA_CHANNEL_FORMAT=PROTOBUF`
 - `DATA_CHANNEL_SOCKET_PATHS`: Comma-separated list of socket file paths (e.g., `/var/run/sockets/airbyte_socket_0.sock,/var/run/sockets/airbyte_socket_1.sock`)
 
 Socket configuration:
+
 - Socket count is determined by: `min(source_cpu_limit, destination_cpu_limit) * 2`
 - Socket paths follow the pattern: `/var/run/sockets/airbyte_socket_{n}.sock`
 - Sockets are created on memory-based volumes (tmpfs) for high performance
@@ -626,6 +631,7 @@ In Socket mode, state coordination requires additional mechanisms to handle reco
 **Record Count Validation**: The `sourceStats.recordCount` field in state messages enables the destination to verify that all records associated with a state have been received before committing. The destination tracks received records per partition and only commits state when the count matches.
 
 **Dual State Emission**: In Socket mode, sources emit state messages to both:
+
 - The Bookkeeper (via STDOUT) for logging and platform state persistence
 - The Destination (via socket) for checkpoint coordination
 
