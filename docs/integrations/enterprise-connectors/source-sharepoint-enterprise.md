@@ -18,12 +18,6 @@ This page contains the setup guide and reference information for the [SharePoint
 - Client secret
 - For Service Key Authentication: User Principal Name
 
-:::caution Authentication and Search Scope Compatibility
-Service Key Authentication (application permissions) only supports the `ACCESSIBLE_DRIVES` search scope. The `SHARED_ITEMS` and `ALL` scopes require OAuth2.0 (delegated) authentication because they rely on Microsoft Graph's `/me/drive/sharedWithMe` endpoint, which only works with a signed-in user context.
-
-If you use Service Key Authentication with the default `ALL` scope, you will see an error: `/me request is only valid with delegated authentication flow`. To avoid this error, change the Search Scope to `ACCESSIBLE_DRIVES` when using Service Key Authentication.
-:::
-
 ## Setup guide
 
 This connector supports two authentication methods. Choose ONE method based on your needs:
