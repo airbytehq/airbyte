@@ -307,19 +307,19 @@ interface TableSchemaEvolutionSuite {
         )
     }
 
-    fun `apply changeset - append-append`() {
+    fun `apply changeset - handle sync mode append`() {
         `apply changeset`(false, false)
     }
 
-    fun `apply changeset - append-dedup`() {
+    fun `apply changeset - handle changing sync mode from append to dedup`() {
         `apply changeset`(false, true)
     }
 
-    fun `apply changeset - dedup-append`() {
+    fun `apply changeset - handle changing sync mode from dedup to append`() {
         `apply changeset`(true, false)
     }
 
-    fun `apply changeset - dedup-dedup`() {
+    fun `apply changeset - handle sync mode dedup`() {
         `apply changeset`(true, true)
     }
 
