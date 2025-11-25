@@ -7,8 +7,9 @@ name: Publish Connectors Pre-release
 # for version pinning via the scoped_configuration API.
 #
 # Usage:
-#   /publish-connectors-prerelease --name=source-pokeapi
-#   /publish-connectors-prerelease --name=destination-postgres --name=source-faker
+#   /publish-connectors-prerelease
+#
+# This will automatically publish all modified connectors in the PR.
 
 on:
   workflow_dispatch:
@@ -32,14 +33,6 @@ on:
         required: false
         type: number
 
-      # Workflow-specific inputs
-      name:
-        description: >
-          Connector name(s) to publish. Pass one or more connector names.
-          Example: --name=source-pokeapi or --name=source-faker --name=destination-postgres
-        required: true
-        type: string
-
 concurrency:
   group: ${{ github.workflow }}-${{ github.event.inputs.pr || github.run_id }}
   cancel-in-progress: false
@@ -52,22 +45,12 @@ jobs:
       run-url: ${{ steps.job-vars.outputs.run-url }}
       pr-number: ${{ steps.job-vars.outputs.pr-number }}
       comment-id: ${{ steps.append-start-comment.outputs.comment-id }}
-      connectors-arg: ${{ steps.parse-connectors.outputs.connectors-arg }}
     steps:
       - name: Get job variables
         id: job-vars
         run: |
           echo "run-url=https://github.com/${{ github.repository }}/actions/runs/$GITHUB_RUN_ID" >> $GITHUB_OUTPUT
           echo "pr-number=${{ inputs.pr }}" >> $GITHUB_OUTPUT
-
-      - name: Parse connector names
-        id: parse-connectors
-        run: |
-          # The input comes as a space-separated string of --name=connector args
-          # We need to pass it through to the publish workflow
-          CONNECTORS_ARG="${{ inputs.name }}"
-          echo "connectors-arg=$CONNECTORS_ARG" >> $GITHUB_OUTPUT
-          echo "Parsed connectors: $CONNECTORS_ARG"
 
       - name: Append start comment
         id: append-start-comment
@@ -80,7 +63,7 @@ jobs:
           body: |
             > **Pre-release Connector Publish Started**
             >
-            > Publishing pre-release build for: `${{ inputs.name }}`
+            > Publishing pre-release builds for all modified connectors in this PR.
             > Branch: `${{ inputs.gitref }}`
             >
             > Pre-release versions are tagged as `{version}-dev.{git-sha}` and are available
@@ -93,7 +76,7 @@ jobs:
     needs: [init]
     uses: ./.github/workflows/publish_connectors.yml
     with:
-      connectors: ${{ needs.init.outputs.connectors-arg }}
+      connectors: "--modified"
       release-type: pre-release
     secrets: inherit
 
@@ -128,5 +111,4 @@ jobs:
           body: |
             > **Pre-release Publish: ${{ steps.status.outputs.status_text }}** ${{ steps.status.outputs.status_emoji }}
             >
-            > Connectors: `${{ inputs.name }}`
             > See workflow run for details and published image tags.
