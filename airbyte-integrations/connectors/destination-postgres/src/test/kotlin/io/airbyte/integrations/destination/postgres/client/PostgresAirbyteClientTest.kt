@@ -446,6 +446,46 @@ internal class PostgresAirbyteClientTest {
     }
 
     @Test
+    fun testGetColumnsFromDbWithPostgresTypeNormalization() {
+        val tableName = TableName(namespace = "test_namespace", name = "test_table")
+        val resultSet = mockk<ResultSet>()
+        every { resultSet.next() } returns true andThen true andThen true andThen false
+        every { resultSet.close() } just Runs
+        every { resultSet.getString("column_name") } returns "col1" andThen "col2" andThen "col3"
+        // PostgreSQL returns "character varying" and "numeric" from information_schema
+        every { resultSet.getString("data_type") } returns
+            "character varying" andThen
+            "numeric" andThen
+            "timestamp with time zone"
+
+        val statement =
+            mockk<Statement> {
+                every { executeQuery(MOCK_SQL_QUERY) } returns resultSet
+                every { close() } just Runs
+            }
+
+        val connection = mockk<Connection>()
+        every { connection.createStatement() } returns statement
+        every { connection.close() } just Runs
+
+        every { dataSource.connection } returns connection
+        every { sqlGenerator.getTableSchema(tableName) } returns MOCK_SQL_QUERY
+        every { postgresColumnUtils.defaultColumns() } returns emptyList()
+
+        val result = client.getColumnsFromDb(tableName)
+
+        // Types should be normalized to internal representation
+        val expectedColumns =
+            setOf(
+                Column("col1", "varchar"),
+                Column("col2", "decimal"),
+                Column("col3", "timestamp with time zone")
+            )
+
+        assertEquals(expectedColumns, result)
+    }
+
+    @Test
     fun testGenerateSchemaChanges() {
         val column1 = Column("col1", "text")
         val column2 = Column("col2", "integer")

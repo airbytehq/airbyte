@@ -5,7 +5,10 @@
 package io.airbyte.integrations.destination.postgres.client
 
 import io.airbyte.cdk.load.command.DestinationStream
+import io.airbyte.cdk.load.component.ColumnChangeset
+import io.airbyte.cdk.load.component.TableColumns
 import io.airbyte.cdk.load.component.TableOperationsClient
+import io.airbyte.cdk.load.component.TableSchema
 import io.airbyte.cdk.load.component.TableSchemaEvolutionClient
 import io.airbyte.cdk.load.message.Meta.Companion.COLUMN_NAME_AB_GENERATION_ID
 import io.airbyte.cdk.load.table.ColumnNameMapping
@@ -142,6 +145,27 @@ class PostgresAirbyteClient(
         )
     }
 
+    override suspend fun discoverSchema(tableName: TableName): TableSchema {
+        TODO("Not yet implemented")
+    }
+
+    override fun computeSchema(
+        stream: DestinationStream,
+        columnNameMapping: ColumnNameMapping
+    ): TableSchema {
+        TODO("Not yet implemented")
+    }
+
+    override suspend fun applyChangeset(
+        stream: DestinationStream,
+        columnNameMapping: ColumnNameMapping,
+        tableName: TableName,
+        expectedColumns: TableColumns,
+        columnChangeset: ColumnChangeset
+    ) {
+        TODO("Not yet implemented")
+    }
+
     /**
      * Checks if the primary key index matches the current stream configuration. If the primary keys
      * have changed (detected by comparing columns in the index), then this will return true,
@@ -228,10 +252,27 @@ class PostgresAirbyteClient(
                 }
                 val dataType = rs.getString("data_type")
 
-                columnsInDb.add(Column(columnName, dataType))
+                columnsInDb.add(Column(columnName, normalizePostgresType(dataType)))
             }
 
             columnsInDb
+        }
+
+    /**
+     * Normalizes PostgreSQL type names from information_schema to match internal type names.
+     *
+     * PostgreSQL's information_schema.columns.data_type returns standardized SQL type names that
+     * differ from the type names used in DDL statements and internal representations:
+     * - "character varying" -> "varchar"
+     * - "numeric" -> "decimal"
+     * - "timestamp with time zone" -> "timestamp with time zone" (no change)
+     * - etc.
+     */
+    private fun normalizePostgresType(postgresType: String): String =
+        when (postgresType) {
+            "character varying" -> "varchar"
+            "numeric" -> "decimal"
+            else -> postgresType
         }
 
     internal fun generateSchemaChanges(
