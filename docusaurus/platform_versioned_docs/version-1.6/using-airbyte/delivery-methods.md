@@ -51,7 +51,7 @@ Additional destinations may be added later.
 
 #### Limitations
 
-- Maximum file size: `1GB` per file.
+- Maximum file size: 1.5 GB (1,500,000,000 bytes) per file.
 
 ## How to configure the delivery method
 
