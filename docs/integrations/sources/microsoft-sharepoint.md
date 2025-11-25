@@ -110,7 +110,7 @@ This source requires **Application permissions**. Follow these [instructions](ht
 5. Select **Search Scope**. You must select `ACCESSIBLE_DRIVES` when using Service Key Authentication. The `SHARED_ITEMS` and `ALL` scopes are not supported with this authentication method.
 6. Enter **Folder Path**. Leave empty to search all folders of the drives. This does not apply to shared items.
 7. Switch to **Service Key Authentication**
-8. For **User Practical Name**, enter the [UPN](https://learn.microsoft.com/en-us/sharepoint/list-onedrive-urls) for your user.
+8. For **User Principal Name**, enter the [UPN](https://learn.microsoft.com/en-us/sharepoint/list-onedrive-urls) for your user.
 9. Enter **Tenant ID**, **Client ID** and **Client secret**.
 10. For **Start Date**, enter the date in YYYY-MM-DD format. The data added on and after this date will be replicated.
 11. Add a stream:
@@ -252,7 +252,7 @@ The Document file type format is a special format that allows you to extract tex
 
 One record will be emitted for each document. Keep in mind that large files can emit large records that might not fit into every destination as each destination has different limitations for string fields.
 
-Before parsing each document, the connector exports Google Document files to Docx format internally. Google Sheets, Google Slides, and drawings are internally exported and parsed by the connector as PDFs.
+Before parsing each document, the connector exports Word Document files to Docx format internally. Excel spreadsheets and Powerpoint presentations are internally exported and parsed by the connector as PDFs.
 
 <HideInUI>
 
