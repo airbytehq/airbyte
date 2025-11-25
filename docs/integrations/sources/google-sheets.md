@@ -309,6 +309,7 @@ Airbyte batches requests to the API in order to efficiently pull data and respec
 
 | Version    | Date       | Pull Request                                             | Subject                                                                                                                                                                |
 |------------|------------|----------------------------------------------------------|------------------------------------------------------------------------------------------------------------------------------------------------------------------------|
+| 0.12.14 | 2025-11-25 | [69848](https://github.com/airbytehq/airbyte/pull/69848) | Assign position-based names for empty header columns instead of skipping subsequent columns |
 | 0.12.13 | 2025-11-18 | [69396](https://github.com/airbytehq/airbyte/pull/69396) | Update dependencies |
 | 0.12.12 | 2025-10-29 | [68759](https://github.com/airbytehq/airbyte/pull/68759) | Update dependencies |
 | 0.12.11 | 2025-10-21 | [68254](https://github.com/airbytehq/airbyte/pull/68254) | Update dependencies |
