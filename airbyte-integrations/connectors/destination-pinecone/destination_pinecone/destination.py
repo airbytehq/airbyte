@@ -32,19 +32,28 @@ class DestinationPinecone(Destination):
         except Exception as e:
             return AirbyteConnectionStatus(status=Status.FAILED, message=str(e))
 
+    def _log(self, level: Level, message: str) -> AirbyteMessage:
+        return AirbyteMessage(type="LOG", log=AirbyteLogMessage(level=level, message=message))
+
     def write(
         self, config: Mapping[str, Any], configured_catalog: ConfiguredAirbyteCatalog, input_messages: Iterable[AirbyteMessage]
     ) -> Iterable[AirbyteMessage]:
+        yield self._log(Level.INFO, "Starting Pinecone destination write...")
         try:
+            yield self._log(Level.INFO, "Parsing configuration...")
             config_model = ConfigModel.parse_obj(config)
+
+            yield self._log(Level.INFO, "Initializing embedder and indexer...")
             self._init_indexer(config_model)
+
+            yield self._log(Level.INFO, "Creating writer and starting sync...")
             writer = Writer(
                 config_model.processing, self.indexer, self.embedder, batch_size=BATCH_SIZE, omit_raw_text=config_model.omit_raw_text
             )
             yield from writer.write(configured_catalog, input_messages)
+            yield self._log(Level.INFO, "Write operation completed.")
         except Exception as e:
-            log_message = AirbyteLogMessage(level=Level.ERROR, message=str(e))
-            yield AirbyteMessage(type="LOG", message=log_message)
+            yield self._log(Level.ERROR, f"Exception during write: {str(e)}")
 
     def check(self, logger: logging.Logger, config: Mapping[str, Any]) -> AirbyteConnectionStatus:
         logger.info("Starting Pinecone destination check...")
