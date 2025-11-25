@@ -143,7 +143,6 @@ definitions:
       datetime: "{{ format_datetime(config.get('start_date', '2006-06-01T00:00:00.000Z'), '%Y-%m-%dT%H:%M:%S.%fZ') }}"
       datetime_format: "%Y-%m-%dT%H:%M:%S.%fZ"
     datetime_format: "%Y-%m-%dT%H:%M:%S.%fZ"
-    lookback_window: P{{ config.get('lookback_window', 0) }}D
     cursor_datetime_formats:
       - "%Y-%m-%dT%H:%M:%S.%fZ"
       - "%Y-%m-%dT%H:%M:%S.%f%z"
@@ -317,7 +316,6 @@ definitions:
         datetime: "{{ format_datetime(config.get('start_date', '2006-06-01T00:00:00.000Z'), '%Y-%m-%dT%H:%M:%S.%fZ') }}"
         datetime_format: "%Y-%m-%dT%H:%M:%S.%fZ"
       datetime_format: "%Y-%m-%dT%H:%M:%S.%fZ"
-      lookback_window: P{{ config.get('lookback_window', 0) }}D
       cursor_datetime_formats:
         - "%Y-%m-%dT%H:%M:%S.%fZ"
         - "%Y-%m-%dT%H:%M:%SZ"
@@ -408,7 +406,6 @@ definitions:
         datetime: "{{ format_datetime(config.get('start_date', '2006-06-01T00:00:00.000Z'), '%Y-%m-%dT%H:%M:%S.%fZ') }}"
         datetime_format: "%Y-%m-%dT%H:%M:%S.%fZ"
       datetime_format: "%Y-%m-%dT%H:%M:%S.%fZ"
-      lookback_window: P{{ config.get('lookback_window', 0) }}D
       cursor_datetime_formats:
         - "%Y-%m-%dT%H:%M:%S.%fZ"
         - "%Y-%m-%dT%H:%M:%SZ"
@@ -531,7 +528,6 @@ definitions:
         datetime: "{{ format_datetime(config.get('start_date', '2006-06-01T00:00:00.000Z'), '%Y-%m-%dT%H:%M:%S.%fZ') }}"
         datetime_format: "%Y-%m-%dT%H:%M:%S.%fZ"
       datetime_format: "%Y-%m-%dT%H:%M:%S.%fZ"
-      lookback_window: P{{ config.get('lookback_window', 0) }}D
       cursor_datetime_formats:
         - "%Y-%m-%dT%H:%M:%S.%fZ"
         - "%Y-%m-%dT%H:%M:%SZ"
@@ -856,7 +852,6 @@ definitions:
         datetime: "{{ format_datetime(config.get('start_date', '2006-06-01T00:00:00.000Z'), '%ms') }}"
         datetime_format: "%ms"
       datetime_format: "%ms"
-      lookback_window: P{{ config.get('lookback_window', 0) }}D
       cursor_datetime_formats:
         - "%ms"
       is_client_side_incremental: true
@@ -1028,7 +1023,6 @@ definitions:
         datetime: "{{ format_datetime(config.get('start_date', '2006-06-01T00:00:00Z'), '%ms', '%Y-%m-%dT%H:%M:%SZ') }}"
         datetime_format: "%ms"
       datetime_format: "%ms"
-      lookback_window: P{{ config.get('lookback_window', 0) }}D
       cursor_datetime_formats:
         - "%ms"
       is_client_side_incremental: true
@@ -1103,7 +1097,6 @@ definitions:
       type: DatetimeBasedCursor
       cursor_field: updatedAt
       datetime_format: "%Y-%m-%dT%H:%M:%S.%fZ"
-      lookback_window: P{{ config.get('lookback_window', 0) }}D
       is_client_side_incremental: true
       cursor_datetime_formats:
         - "%ms" # support previous state format
@@ -1155,7 +1148,6 @@ definitions:
         datetime: "{{ format_datetime(config.get('start_date', '2006-06-01T00:00:00Z'), '%ms', '%Y-%m-%dT%H:%M:%SZ') }}"
         datetime_format: "%ms"
       datetime_format: "%ms"
-      lookback_window: P{{ config.get('lookback_window', 0) }}D
       cursor_datetime_formats:
         - "%ms"
       is_client_side_incremental: true
@@ -1204,7 +1196,6 @@ definitions:
         datetime: "{{ format_datetime(config.get('start_date', '2006-06-01T00:00:00Z'), '%ms', '%Y-%m-%dT%H:%M:%SZ') }}"
         datetime_format: "%ms"
       datetime_format: "%ms"
-      lookback_window: P{{ config.get('lookback_window', 0) }}D
       cursor_datetime_formats:
         - "%ms"
       is_client_side_incremental: true
@@ -1266,7 +1257,6 @@ definitions:
       type: DatetimeBasedCursor
       cursor_field: created
       datetime_format: "%ms"
-      lookback_window: P{{ config.get('lookback_window', 0) }}D
       step: P30D
       cursor_granularity: PT0.001S
       cursor_datetime_formats:
@@ -1348,7 +1338,6 @@ definitions:
       type: DatetimeBasedCursor
       cursor_field: lastUpdated
       datetime_format: "%ms"
-      lookback_window: P{{ config.get('lookback_window', 0) }}D
       is_client_side_incremental: true
       cursor_datetime_formats:
         - "%ms"
@@ -1455,6 +1444,7 @@ definitions:
       $ref: "#/definitions/incremental_sync"
       step: P30D
       cursor_granularity: PT0.001S
+      lookback_window: PT{{ config.get('lookback_window', 0) }}M
 
   companies_stream:
     $ref: "#/definitions/base_crm_search_incremental_stream"
@@ -1598,7 +1588,6 @@ definitions:
       type: DatetimeBasedCursor
       cursor_field: timestamp
       datetime_format: "%ms"
-      lookback_window: P{{ config.get('lookback_window', 0) }}D
       step: P30D
       cursor_granularity: PT0.001S
       cursor_datetime_formats:
@@ -1670,7 +1659,6 @@ definitions:
         datetime: "{{ format_datetime(config.get('start_date', '2006-06-01T00:00:00Z'), '%Y-%m-%dT%H:%M:%S.%fZ', '%Y-%m-%dT%H:%M:%SZ') }}"
         datetime_format: "%Y-%m-%dT%H:%M:%S.%fZ"
       datetime_format: "%Y-%m-%dT%H:%M:%S.%fZ"
-      lookback_window: P{{ config.get('lookback_window', 0) }}D
       is_client_side_incremental: true
       cursor_datetime_formats:
         - "%ms"
@@ -2127,6 +2115,18 @@ spec:
         examples:
           - "2017-01-25T00:00:00Z"
         format: date-time
+      lookback_window:
+        default: 0
+        description: >-
+          How far back (in minutes) to re-fetch records during incremental syncs. 
+          Set this if you notice missing records in CRMSearch streams to recover data 
+          that may be delayed by the HubSpot API.
+        examples:
+          - 60
+        maximum: 576000
+        minimum: 0
+        title: Lookback window
+        type: integer
       credentials:
         title: Authentication
         description: Choose how to authenticate to HubSpot.
@@ -4509,6 +4509,18 @@ schemas:
         type:
           - "null"
           - string
+      allEmailCampaignIds:
+        type:
+          - "null"
+          - array
+        items:
+          type:
+            - "null"
+            - string
+      primaryEmailCampaignId:
+        type:
+          - "null"
+          - string
       feedbackSurveyId:
         type:
           - "null"
@@ -4810,6 +4822,10 @@ schemas:
               - "null"
               - string
           subscriptionId:
+            type:
+              - "null"
+              - string
+          subscriptionName:
             type:
               - "null"
               - string

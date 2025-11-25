@@ -211,6 +211,15 @@ Again, see [here](/platform/understanding-airbyte/airbyte-metadata-fields) for m
 | OBJECT                              | OBJECT         |
 | ARRAY                               | ARRAY          |
 
+### Precision handling for numeric types
+
+Snowflake has precision limits for numeric types:
+
+- **FLOAT**: Standard 64-bit floating point value.
+- **NUMBER (INTEGER)**: maximum 38 digits
+
+When a value exceeds the _bounds_ of these types, it will be nulled out. However, values within the minimum/maximum boundaries, but with excessive precision, will be rounded off. In both these cases, the `_airbyte_meta` column will contain a `changes` entry to reflect this.
+
 ## Supported sync modes
 
 The Snowflake destination supports the following sync modes:
@@ -251,6 +260,11 @@ desired namespace.
 
 | Version         | Date       | Pull Request                                                        | Subject                                                                                                                                                                                |
 |:----------------|:-----------|:--------------------------------------------------------------------|:---------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------|
+| 4.0.30          | 2025-11-24 | [69842](https://github.com/airbytehq/airbyte/pull/69842)            | Update documentation about numeric value handling |
+| 4.0.29          | 2025-11-14 | [69342](https://github.com/airbytehq/airbyte/pull/69342)            | Truncate NumberValues and IntegerValues with excessive precision instead of nullifying them |
+| 4.0.28          | 2025-11-13 | [69245](https://github.com/airbytehq/airbyte/pull/69245)            | Upgrade to CDK 0.1.78 |
+| 4.0.27          | 2025-11-11 | [69285](https://github.com/airbytehq/airbyte/pull/69285)  | Remove spurious log messages |
+| 4.0.26          | 2025-11-11 | [69117](https://github.com/airbytehq/airbyte/pull/69117)  | Upgrade to CDK 0.1.74 (internal code changes for schema evolution) |
 | 4.0.25          | 2025-11-06 | [69226](https://github.com/airbytehq/airbyte/pull/69226)  | Improved additional statistics handling                                        |
 | 4.0.24          | 2025-11-05 | [69200](https://github.com/airbytehq/airbyte/pull/69200/)           | Add support for observability metrics                                          |
 | 4.0.23          | 2025-11-03 | [69153](https://github.com/airbytehq/airbyte/pull/69153)            | Fix bug in connector spec |

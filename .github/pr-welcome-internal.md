@@ -22,11 +22,13 @@ Airbyte Maintainers (that's you!) can execute the following slash commands on yo
   - You can specify a custom changelog by passing `changelog`. Example: `/bump-version changelog="My cool update"`
   - Leaving the changelog arg blank will auto-populate the changelog from the PR title.
 - `/run-cat-tests` - Runs legacy CAT tests (Connector Acceptance Tests)
+- `/run-live-tests` - Runs live tests for the modified connector(s).
+- `/run-regression-tests` - Runs regression tests for the modified connector(s).
 - `/build-connector-images` - Builds and publishes a pre-release docker image for the modified connector(s).
 - JVM connectors:
   - `/update-connector-cdk-version connector=<CONNECTOR_NAME>` - Updates the specified connector to the latest CDK version.
     Example: `/update-connector-cdk-version connector=destination-bigquery`
-  - `/bump-bulk-cdk-version type=patch changelog='foo'` - Bump the Bulk CDK's version. `type` can be major/minor/patch.
+  - `/bump-bulk-cdk-version bump=patch changelog='foo'` - Bump the Bulk CDK's version. `bump` can be major/minor/patch.
 - Python connectors:
   - `/poe connector source-example lock` - Run the Poe `lock` task on the `source-example` connector, committing the results back to the branch.
   - `/poe source example lock` - Alias for `/poe connector source-example lock`.

@@ -1,7 +1,7 @@
 data:
   allowedHosts:
     hosts:
-      - "track.customer.io"
+      - track.customer.io
   registryOverrides:
     cloud:
       enabled: true
@@ -29,4 +29,17 @@ data:
   supportLevel: certified
   supportsDataActivation: true
   supportsRefreshes: true # needed for the CDK to work as it relies on the generation/sync ids to work
+  externalDocumentationUrls:
+    - title: Customer.io API documentation
+      url: https://customer.io/docs/api/
+      type: api_reference
+    - title: Authentication
+      url: https://customer.io/docs/api/app/#tag/Authentication
+      type: authentication_guide
+    - title: Rate limits
+      url: https://customer.io/docs/api/app/#tag/Rate-Limits
+      type: rate_limits
+    - title: Customer.io Status
+      url: https://status.customer.io/
+      type: status_page
 metadataSpecVersion: "1.0"

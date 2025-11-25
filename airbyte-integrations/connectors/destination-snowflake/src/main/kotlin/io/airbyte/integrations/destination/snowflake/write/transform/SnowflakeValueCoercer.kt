@@ -5,7 +5,6 @@
 package io.airbyte.integrations.destination.snowflake.write.transform
 
 import com.google.common.base.Utf8
-import io.airbyte.cdk.load.data.AirbyteValue
 import io.airbyte.cdk.load.data.ArrayValue
 import io.airbyte.cdk.load.data.EnrichedAirbyteValue
 import io.airbyte.cdk.load.data.IntegerValue
@@ -28,13 +27,13 @@ import java.math.BigInteger
  */
 
 // https://docs.snowflake.com/en/sql-reference/data-types-numeric#number
-internal val INT_MAX = BigInteger("99999999999999999999999999999999999999") // 38 9s
-internal val INT_MIN = BigInteger("-99999999999999999999999999999999999999") // 38 9s
+val INT_MAX = BigInteger("99999999999999999999999999999999999999") // 38 9s
+val INT_MIN = BigInteger("-99999999999999999999999999999999999999") // 38 9s
 internal val INT_RANGE = INT_MIN..INT_MAX
 
 // https://docs.snowflake.com/en/sql-reference/data-types-numeric#label-data-type-float
-internal val FLOAT_MAX = BigDecimal("9007199254740991")
-internal val FLOAT_MIN = BigDecimal("-9007199254740991")
+internal val FLOAT_MAX = BigDecimal.valueOf(Double.MAX_VALUE)
+internal val FLOAT_MIN = BigDecimal.valueOf(-Double.MAX_VALUE)
 internal val FLOAT_RANGE = FLOAT_MIN..FLOAT_MAX
 
 // https://docs.snowflake.com/en/sql-reference/data-types-semistructured#characteristics-of-a-variant-value
@@ -45,17 +44,6 @@ internal const val VARCHAR_LIMIT_BYTES = 16 * 1024 * 1024
 // UTF-8 has max 4 bytes per char, so anything under this length is safe
 internal const val MAX_UTF_8_VARIANT_LENGTH_UNDER_LIMIT = VARIANT_LIMIT_BYTES / 4 // (134217728 / 4)
 internal const val MAX_UTF_8_VARCHAR_LENGTH_UNDER_LIMIT = VARCHAR_LIMIT_BYTES / 4 // (16777216 / 4)
-
-fun isValid(value: AirbyteValue): Boolean {
-    return when (value) {
-        is ArrayValue,
-        is ObjectValue -> isVariantValid(value.toCsvValue().toString())
-        is IntegerValue -> value.value in INT_RANGE
-        is NumberValue -> value.value in FLOAT_RANGE
-        is StringValue -> isVarcharValid(value.value)
-        else -> true
-    }
-}
 
 fun isVariantValid(s: String): Boolean {
     // avoid expensive size calculation if we're safely under the limit
@@ -85,10 +73,56 @@ class SnowflakeValueCoercer : ValueCoercer {
         return value
     }
 
-    override fun validate(value: EnrichedAirbyteValue): ValidationResult =
-        if (!isValid(value.abValue)) {
-            ValidationResult.ShouldNullify(
-                AirbyteRecordMessageMetaChange.Reason.DESTINATION_FIELD_SIZE_LIMITATION
-            )
-        } else ValidationResult.Valid
+    override fun validate(value: EnrichedAirbyteValue): ValidationResult {
+        return when (val abValue = value.abValue) {
+            is NumberValue -> {
+                if (abValue.value in FLOAT_RANGE) {
+                    val targetValue = BigDecimal.valueOf(abValue.value.toDouble())
+                    // This is done because BigDecimal is stupid and if we don't use compareTo, we
+                    // end up with 0 != 0.0
+                    if (targetValue.compareTo(abValue.value) == 0) {
+                        ValidationResult.Valid
+                    } else {
+                        ValidationResult.ShouldTruncate(
+                            NumberValue(targetValue),
+                            AirbyteRecordMessageMetaChange.Reason.DESTINATION_FIELD_SIZE_LIMITATION
+                        )
+                    }
+                } else {
+                    ValidationResult.ShouldNullify(
+                        AirbyteRecordMessageMetaChange.Reason.DESTINATION_FIELD_SIZE_LIMITATION
+                    )
+                }
+            }
+            is IntegerValue -> {
+                if (abValue.value in INT_RANGE) {
+                    ValidationResult.Valid
+                } else {
+                    ValidationResult.ShouldNullify(
+                        AirbyteRecordMessageMetaChange.Reason.DESTINATION_FIELD_SIZE_LIMITATION
+                    )
+                }
+            }
+            is StringValue -> {
+                if (!isVarcharValid(abValue.value)) {
+                    ValidationResult.ShouldNullify(
+                        AirbyteRecordMessageMetaChange.Reason.DESTINATION_FIELD_SIZE_LIMITATION
+                    )
+                } else {
+                    ValidationResult.Valid
+                }
+            }
+            is ArrayValue,
+            is ObjectValue -> {
+                if (!isVariantValid(abValue.toCsvValue().toString())) {
+                    ValidationResult.ShouldNullify(
+                        AirbyteRecordMessageMetaChange.Reason.DESTINATION_FIELD_SIZE_LIMITATION
+                    )
+                } else {
+                    ValidationResult.Valid
+                }
+            }
+            else -> ValidationResult.Valid
+        }
+    }
 }

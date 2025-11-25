@@ -38,4 +38,8 @@ data:
           secretStore:
             type: GSM
             alias: airbyte-connector-testing-secret-store
+  externalDocumentationUrls:
+    - title: API documentation
+      url: https://avni.readme.io/reference/api-overview
+      type: api_reference
 metadataSpecVersion: "1.0"
