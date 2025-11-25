@@ -58,23 +58,23 @@ class SnowflakeTableSchemaEvolutionTest(
     }
 
     @Test
-    override fun `apply changeset - append-append`() {
-        super.`apply changeset - append-append`()
+    override fun `apply changeset - handle sync mode append`() {
+        super.`apply changeset - handle sync mode append`()
     }
 
     @Test
-    override fun `apply changeset - append-dedup`() {
-        super.`apply changeset - append-dedup`()
+    override fun `apply changeset - handle changing sync mode from append to dedup`() {
+        super.`apply changeset - handle changing sync mode from append to dedup`()
     }
 
     @Test
-    override fun `apply changeset - dedup-append`() {
-        super.`apply changeset - dedup-append`()
+    override fun `apply changeset - handle changing sync mode from dedup to append`() {
+        super.`apply changeset - handle changing sync mode from dedup to append`()
     }
 
     @Test
-    override fun `apply changeset - dedup-dedup`() {
-        super.`apply changeset - dedup-dedup`()
+    override fun `apply changeset - handle sync mode dedup`() {
+        super.`apply changeset - handle sync mode dedup`()
     }
 
     override fun `apply changeset`(
