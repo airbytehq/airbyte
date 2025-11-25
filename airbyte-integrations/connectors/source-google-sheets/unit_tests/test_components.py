@@ -88,52 +88,19 @@ _SCHEMA_TYPE_IDENTIFIERS = dpath.get(obj=_MANIFEST, glob=["definitions", "schema
                     {"data": [{"rowData": [{"values": [{"formattedValue": "h1"}, {"formattedValue": ""}, {"formattedValue": "h3"}]}]}]}
                 ]
             },
-            [{"values": [{"formattedValue": "h1"}, {"formattedValue": "column_B"}, {"formattedValue": "h3"}]}],
+            [{"values": [{"formattedValue": "h1"}]}],
         ),
         (
             {"sheets": [{"data": [{"rowData": [{"values": [{"formattedValue": ""}, {"formattedValue": ""}, {"formattedValue": ""}]}]}]}]},
-            [{"values": [{"formattedValue": "column_A"}, {"formattedValue": "column_B"}, {"formattedValue": "column_C"}]}],
-        ),
-        (
-            {
-                "sheets": [
-                    {
-                        "data": [
-                            {
-                                "rowData": [
-                                    {
-                                        "values": [
-                                            {"formattedValue": "columnA"},
-                                            {"formattedValue": "columnB"},
-                                            {"formattedValue": ""},
-                                            {"formattedValue": "columnD"},
-                                        ]
-                                    }
-                                ]
-                            }
-                        ]
-                    }
-                ]
-            },
-            [
-                {
-                    "values": [
-                        {"formattedValue": "columnA"},
-                        {"formattedValue": "columnB"},
-                        {"formattedValue": "column_C"},
-                        {"formattedValue": "columnD"},
-                    ]
-                }
-            ],
+            [{"values": []}],
         ),
     ],
     ids=[
         "test_headers",
         "test_duplicate_headers_retrieved",
         "test_duplicate_headers_retrieved_not_first_position",
-        "test_empty_header_gets_position_name",
-        "test_all_empty_headers_get_position_names",
-        "test_empty_header_does_not_skip_subsequent_columns",
+        "test_blank_values_terminate_row",
+        "test_is_row_empty_with_empty_row",
     ],
 )
 def test_dpath_schema_extractor(body, expected_records: List):
@@ -160,19 +127,57 @@ def test_dpath_schema_extractor(body, expected_records: List):
             {"values": [{"formattedValue": "h1"}, {"formattedValue": "h3"}, {"formattedValue": "h3"}]},
             [(0, "h1", {"formattedValue": "h1"}), (1, "h3_B1", {"formattedValue": "h3"}), (2, "h3_C1", {"formattedValue": "h3"})],
         ),
-        (
-            {"values": [{"formattedValue": "h1"}, {"formattedValue": ""}, {"formattedValue": "h3"}]},
-            [(0, "h1", {"formattedValue": "h1"}), (1, "column_B", {"formattedValue": ""}), (2, "h3", {"formattedValue": "h3"})],
-        ),
-        (
-            {"values": [{"formattedValue": ""}, {"formattedValue": ""}, {"formattedValue": ""}]},
-            [(0, "column_A", {"formattedValue": ""}), (1, "column_B", {"formattedValue": ""}), (2, "column_C", {"formattedValue": ""})],
-        ),
+        ({"values": [{"formattedValue": "h1"}, {"formattedValue": ""}, {"formattedValue": "h3"}]}, [(0, "h1", {"formattedValue": "h1"})]),
+        ({"values": [{"formattedValue": ""}, {"formattedValue": ""}, {"formattedValue": ""}]}, []),
         (
             {"values": [{"formattedValue": "h1"}, {"formattedValue": "   "}, {"formattedValue": "h3"}]},
-            [(0, "h1", {"formattedValue": "h1"}), (1, "column_B", {"formattedValue": "   "}), (2, "h3", {"formattedValue": "h3"})],
+            [(0, "h1", {"formattedValue": "h1"})],
         ),
-        (
+    ],
+    ids=[
+        "test_headers",
+        "test_duplicate_headers_retrieved",
+        "test_duplicate_headers_retrieved_not_first_position",
+        "test_blank_values_terminate_row",
+        "test_is_row_empty_with_empty_row",
+        "test_whitespace_terminates_row",
+    ],
+)
+def test_parse_raw_schema_value(raw_schema_data, expected_data):
+    extractor = RawSchemaParser()
+    parsed_data = extractor.parse_raw_schema_values(
+        raw_schema_data,
+        schema_pointer=_SCHEMA_TYPE_IDENTIFIERS["schema_pointer"],
+        key_pointer=_SCHEMA_TYPE_IDENTIFIERS["key_pointer"],
+        names_conversion=False,
+    )
+    assert parsed_data == expected_data
+
+
+@pytest.mark.parametrize(
+    "raw_schema_data, expected_data",
+    [
+        pytest.param(
+            {"values": [{"formattedValue": "h1"}, {"formattedValue": ""}, {"formattedValue": "h3"}]},
+            [(0, "h1", {"formattedValue": "h1"}), (1, "column_B", {"formattedValue": ""}), (2, "h3", {"formattedValue": "h3"})],
+            id="blank_header_in_middle_generates_placeholder",
+        ),
+        pytest.param(
+            {"values": [{"formattedValue": "h1"}, {"formattedValue": "   "}, {"formattedValue": "h3"}]},
+            [(0, "h1", {"formattedValue": "h1"}), (1, "column_B", {"formattedValue": "   "}), (2, "h3", {"formattedValue": "h3"})],
+            id="whitespace_header_generates_placeholder",
+        ),
+        pytest.param(
+            {"values": [{"formattedValue": ""}, {"formattedValue": ""}, {"formattedValue": "h3"}]},
+            [(0, "column_A", {"formattedValue": ""}), (1, "column_B", {"formattedValue": ""}), (2, "h3", {"formattedValue": "h3"})],
+            id="multiple_blank_headers_generate_placeholders",
+        ),
+        pytest.param(
+            {"values": [{"formattedValue": ""}, {"formattedValue": ""}, {"formattedValue": ""}]},
+            [(0, "column_A", {"formattedValue": ""}), (1, "column_B", {"formattedValue": ""}), (2, "column_C", {"formattedValue": ""})],
+            id="all_blank_headers_generate_placeholders",
+        ),
+        pytest.param(
             {
                 "values": [
                     {"formattedValue": "columnA"},
@@ -187,20 +192,14 @@ def test_dpath_schema_extractor(body, expected_records: List):
                 (2, "column_C", {"formattedValue": ""}),
                 (3, "columnD", {"formattedValue": "columnD"}),
             ],
+            id="empty_header_does_not_skip_subsequent_columns",
         ),
     ],
-    ids=[
-        "test_headers",
-        "test_duplicate_headers_retrieved",
-        "test_duplicate_headers_retrieved_not_first_position",
-        "test_empty_header_gets_position_name",
-        "test_all_empty_headers_get_position_names",
-        "test_whitespace_header_gets_position_name",
-        "test_empty_header_does_not_skip_subsequent_columns",
-    ],
 )
-def test_parse_raw_schema_value(raw_schema_data, expected_data):
+def test_parse_raw_schema_value_with_read_empty_header_columns_enabled(raw_schema_data, expected_data):
+    """Test that when read_empty_header_columns is enabled, empty headers get placeholder names."""
     extractor = RawSchemaParser()
+    extractor.config = {"read_empty_header_columns": True}
     parsed_data = extractor.parse_raw_schema_values(
         raw_schema_data,
         schema_pointer=_SCHEMA_TYPE_IDENTIFIERS["schema_pointer"],

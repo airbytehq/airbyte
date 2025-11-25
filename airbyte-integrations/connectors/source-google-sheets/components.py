@@ -110,9 +110,10 @@ class RawSchemaParser:
         names_conversion: bool,
     ):
         """
-        1. Parses sheet headers from the provided raw schema. Empty or whitespace-only header cells
-            are assigned position-based names (e.g., "column_C") to ensure columns after empty headers
-            are not skipped.
+        1. Parses sheet headers from the provided raw schema. By default, this method assumes that data is contiguous
+            i.e: every cell contains a value and the first cell which does not contain a value denotes the end
+            of the headers. If read_empty_header_columns is enabled, empty headers will be assigned generated
+            column names (e.g., "column_C") and processing will continue.
         2. Makes name conversion if required.
         3. Deduplicates fields from the schema by appending cell positions to duplicate headers.
         Return a list of tuples with correct property index (by found in array), value and raw_schema
@@ -121,6 +122,7 @@ class RawSchemaParser:
         parsed_schema_values = []
         # Gather all sanitisation flags from config
         config = getattr(self, "config", {})
+        read_empty_header_columns = config.get("read_empty_header_columns", False)
         flags = {
             "remove_leading_trailing_underscores": config.get("remove_leading_trailing_underscores", False),
             "combine_number_word_pairs": config.get("combine_number_word_pairs", False),
@@ -133,6 +135,9 @@ class RawSchemaParser:
         for property_index, raw_schema_property in enumerate(raw_schema_properties):
             raw_schema_property_value = self._extract_data(raw_schema_property, key_pointer)
             if not raw_schema_property_value or raw_schema_property_value.isspace():
+                if not read_empty_header_columns:
+                    break
+                # Generate a placeholder column name for empty headers
                 raw_schema_property_value = f"column_{sheet_column_label(property_index)}"
             # Use sanitzation if any flag is set, else legacy
             if names_conversion and use_sanitzation:
