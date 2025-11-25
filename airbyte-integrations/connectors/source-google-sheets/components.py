@@ -90,13 +90,17 @@ class RawSchemaParser:
     ) -> Any:
         """
         Sets data in the body based on the provided extraction path.
+        Creates the path if it doesn't exist (using dpath.new).
         """
         if not extraction_path:
             body = value
+            return
 
         path = [node.eval(self.config) if not isinstance(node, str) else node for node in extraction_path]
 
-        dpath.set(body, path, value=value)
+        # Use dpath.new to create the path if it doesn't exist
+        # dpath.set silently fails if the key doesn't exist
+        dpath.new(body, path, value)
 
     def parse_raw_schema_values(
         self,
