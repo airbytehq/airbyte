@@ -856,7 +856,7 @@ definitions:
       name: ListFinancialEventGroups
       primary_key:
         - FinancialEventGroupId
-      ignore_stream_slicer_parameters_on_paginated_requests: false
+      ignore_stream_slicer_parameters_on_paginated_requests: true
       incremental_sync:
         type: DatetimeBasedCursor
         cursor_field: FinancialEventGroupStart
@@ -931,7 +931,7 @@ definitions:
       type: DeclarativeStream
       name: ListFinancialEvents
       primary_key: []
-      ignore_stream_slicer_parameters_on_paginated_requests: false
+      ignore_stream_slicer_parameters_on_paginated_requests: true
       incremental_sync:
         type: DatetimeBasedCursor
         cursor_field: PostedBefore
