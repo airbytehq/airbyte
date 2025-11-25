@@ -2,7 +2,7 @@
 
 ## Goals
 
-The Airbyte Protocol describes a series of standard components and all the interactions between them in order to declare an ELT pipeline. All message passing across components is done via serialized JSON messages for inter-process communication.
+The Airbyte Protocol describes a series of standard components and all the interactions between them in order to declare an ELT pipeline. The protocol supports two data channel modes: the traditional STDIO mode using serialized JSON messages for inter-process communication, and the high-performance Socket mode using Protocol Buffers over Unix domain sockets for direct source-to-destination data transfer.
 
 This document describes the protocol as it exists in its CURRENT form. Stay tuned for an RFC on how the protocol will evolve.
 
@@ -95,18 +95,57 @@ Additionally, all methods described in the protocol can emit `AirbyteLogMessage`
 Each method in the protocol has 3 parts:
 
 1. **Input**: these are the arguments passed to the method.
-2. **Data Channel Egress (Output)**: all outputs from a method are via STDOUT. While some method signatures declare a single return value, in practice, any number of `AirbyteLogMessage`s and `AirbyteTraceMessage`s may be emitted. An actor is responsible for closing STDOUT to declare that it is done.
-3. **Data Channel Ingress**: after a method begins running, data can be passed to it via STDIN. For example, records are passed to a Destination on STDIN so that it can load them into a data warehouse.
+2. **Data Channel Egress (Output)**: all outputs from a method are via STDOUT (in STDIO mode) or Unix domain sockets (in Socket mode). While some method signatures declare a single return value, in practice, any number of `AirbyteLogMessage`s and `AirbyteTraceMessage`s may be emitted. An actor is responsible for closing STDOUT to declare that it is done.
+3. **Data Channel Ingress**: after a method begins running, data can be passed to it via STDIN (in STDIO mode) or Unix domain sockets (in Socket mode). For example, records are passed to a Destination so that it can load them into a data warehouse.
 
 Sources are a special case and do not have a Data Channel Ingress.
 
 Additional Invariants
 
-- All arguments passed to an Actor and all messages emitted from an Actor are serialized JSON.
+- All arguments passed to an Actor and all messages emitted from an Actor are serialized JSON (in STDIO mode) or Protocol Buffers (in Socket mode).
 - All messages emitted from Actors must be wrapped in an `AirbyteMessage`([ref](#airbytemessage)) envelope.
 - Messages not wrapped in the `AirbyteMessage` must be dropped (e.g. not be passed from Source to Destination). However certain implementations of the Airbyte Protocol may choose to store and log unknown messages for debugging purposes.
 - Each message must be on its own line. Multiple messages _cannot_ be sent on the same line. The JSON objects cannot be serialized across multiple lines.
-- STDERR should only be used for log messages (for errors). All other Data Channel Data moves on STDIN and STDOUT.
+- STDERR should only be used for log messages (for errors). All other Data Channel Data moves on STDIN and STDOUT (in STDIO mode) or Unix domain sockets (in Socket mode).
+
+### Data Channel Modes
+
+The Airbyte Protocol supports two data channel modes that determine how data flows between connectors:
+
+#### STDIO Mode (Legacy)
+
+In STDIO mode, data flows through the platform orchestrator using standard input/output pipes with JSON serialization. This is the traditional architecture where all records pass through the orchestrator, which handles routing, state management, and logging.
+
+The data flow in STDIO mode is: Source -> Orchestrator -> Destination
+
+Environment configuration for STDIO mode:
+- `DATA_CHANNEL_MEDIUM=STDIO` (default)
+- `DATA_CHANNEL_FORMAT=JSONL` (default)
+
+#### Socket Mode (Speed Mode)
+
+Socket mode enables direct source-to-destination communication via Unix domain sockets, bypassing the orchestrator for record data. This architecture achieves 4-10x performance improvements by eliminating serialization overhead and enabling parallel data transfer.
+
+In Socket mode, the architecture splits into two channels:
+- **Data channel**: Records and state messages flow directly from source to destination over multiple Unix domain sockets using Protocol Buffers serialization
+- **Control channel**: Logs, state persistence, and metadata flow through a lightweight Bookkeeper component via STDOUT
+
+The data flow in Socket mode is:
+- Records: Source -> Unix Domain Sockets -> Destination
+- Control messages: Source -> Bookkeeper (via STDOUT)
+- State messages: Source -> Both Bookkeeper and Destination
+
+Environment configuration for Socket mode:
+- `DATA_CHANNEL_MEDIUM=SOCKET`
+- `DATA_CHANNEL_FORMAT=PROTOBUF`
+- `DATA_CHANNEL_SOCKET_PATHS`: Comma-separated list of socket file paths (e.g., `/var/run/sockets/airbyte_socket_0.sock,/var/run/sockets/airbyte_socket_1.sock`)
+
+Socket configuration:
+- Socket count is determined by: `min(source_cpu_limit, destination_cpu_limit) * 2`
+- Socket paths follow the pattern: `/var/run/sockets/airbyte_socket_{n}.sock`
+- Sockets are created on memory-based volumes (tmpfs) for high performance
+
+The platform's ArchitectureDecider component determines whether a sync runs in Socket mode or STDIO mode based on connector compatibility, feature flags, and configuration.
 
 ## Common Interface
 
@@ -575,6 +614,24 @@ These principles are intended to produce simple overall system behavior, and mov
    Order is used by the Platform to determine if a State message was dropped. Out-of-order State messages throw errors, as do skipped state messages. Every state message the destination received must be returned back to the platform, in order.
 
    Order-ness is determined by the type of State message. Per-stream state messages require order per-stream. Global state messages require global ordering.
+
+### State Coordination in Socket Mode
+
+In Socket mode, state coordination requires additional mechanisms to handle records arriving out of order over multiple parallel sockets. The following extensions to state messages enable reliable checkpointing:
+
+**Partition IDs**: Each record and state message includes a `partition_id` that links records to their corresponding state checkpoint. This allows the destination to validate that all records for a partition have been received before committing the state.
+
+**State IDs**: State messages include an incrementing `id` field that ensures ordered state processing across multiple sockets. This is critical because states may arrive out of order when using parallel connections.
+
+**Record Count Validation**: The `sourceStats.recordCount` field in state messages enables the destination to verify that all records associated with a state have been received before committing. The destination tracks received records per partition and only commits state when the count matches.
+
+**Dual State Emission**: In Socket mode, sources emit state messages to both:
+- The Bookkeeper (via STDOUT) for logging and platform state persistence
+- The Destination (via socket) for checkpoint coordination
+
+This dual emission ensures that state is properly tracked by the platform while also enabling the destination to coordinate checkpoints with record receipt.
+
+**CDC State Handling**: For Change Data Capture (CDC) sources in Socket mode, state messages include both `partition_id` and `id` fields at the stream level (for per-stream state) or global level (for global state). This enables proper ordering and validation even when CDC records arrive through multiple parallel channels.
 
 ## Messages
 
