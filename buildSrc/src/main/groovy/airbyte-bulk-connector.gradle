@@ -226,18 +226,33 @@ class AirbyteBulkConnectorPlugin implements Plugin<Project> {
                     showStandardStreams = true
                 }
 
-                retry {
-                    // If running in CI, enable retries to mitigate flakiness
-                    if (System.getenv().containsKey("CI")) {
-                        // Run each test method up to three times
-                        maxRetries = 3
-                        // If any test method fails, disable retries for the other tests
-                        // (unintuitive: if you set this to 1, then as soon as a test case fails, it will disable retries, including for itself.
-                        // So we set to 2, which means: a test case failing will retry itself. If, after three retries, it still fails, then we disable retries globally.)
-                        maxFailures = 2
+                develocity {
+                    testRetry {
+                        // If running in CI, enable retries to mitigate flakiness
+                        if (System.getenv().containsKey("CI")) {
+                            // Run each test method up to three times
+                            maxRetries = 3
+                            // If any test method fails, disable retries for the other tests
+                            // (unintuitive: if you set this to 1, then as soon as a test case fails, it will disable retries, including for itself.
+                            // So we set to 2, which means: a test case failing will retry itself. If, after three retries, it still fails, then we disable retries globally.)
+                            maxFailures = 2
+                        }
+                        // If a test fails, but succeeds on retry - don't fail the task
+                        failOnPassedAfterRetry = false
+                        // If a test fails, but is skipped on retry (e.g., due to failed assumptions) - don't fail the task.
+                        // This handles cases where tests use Assumptions.assumeTrue() to conditionally skip themselves.
+                        failOnSkippedAfterRetry = false
                     }
-                    // If a test fails, but succeeds on retry - don't fail the task
-                    failOnPassedAfterRetry = false
+                }
+                reports {
+                    junitXml {
+                        // Without this flag, the generated test report will list each test attempt.
+                        // This would cause Github to see the report as containing "failed tests,"
+                        // even though the test eventually succeeded.
+                        // So we tell gradle to merge those attempts together, which should tell Github
+                        // to view the overall run as successful.
+                        mergeReruns = true
+                    }
                 }
 
                 // Always re-run integration tests no matter what.

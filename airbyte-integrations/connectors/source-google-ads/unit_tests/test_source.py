@@ -108,13 +108,13 @@ def test_chunk_date_range():
     ] == slices
 
 
-def test_streams_count(config, mock_get_customers):
+def test_streams_count(config):
     streams = get_source(config).streams(config)
     expected_streams_number = 30
     assert len(streams) == expected_streams_number
 
 
-def test_read_missing_stream(config, mock_get_customers):
+def test_read_missing_stream(config):
     catalog = ConfiguredAirbyteCatalog(
         streams=[
             ConfiguredAirbyteStream(
@@ -151,82 +151,6 @@ def test_read_missing_stream(config, mock_get_customers):
     )
     assert len(fake_stream_statuses) == 1
     assert fake_stream_statuses[0].trace.stream_status.status == AirbyteStreamStatus.INCOMPLETE
-
-
-def mock_send_request(query: str, customer_id: str, login_customer_id: str = "default"):
-    print(query, customer_id, login_customer_id)
-    if customer_id == "123":
-        if "WHERE customer_client.status in ('active')" in query:
-            return [
-                [
-                    {"customer_client.id": "123", "customer_client.status": "active"},
-                ]
-            ]
-        else:
-            return [
-                [
-                    {"customer_client.id": "123", "customer_client.status": "active"},
-                    {"customer_client.id": "456", "customer_client.status": "disabled"},
-                ]
-            ]
-    else:
-        return [
-            [
-                {"customer_client.id": "789", "customer_client.status": "active"},
-            ]
-        ]
-
-
-@pytest.mark.parametrize(
-    "customer_status_filter, expected_ids, send_request_calls",
-    [
-        (
-            [],
-            ["123", "456", "789"],
-            [
-                call(
-                    "SELECT customer_client.client_customer, customer_client.level, customer_client.id, customer_client.manager, customer_client.time_zone, customer_client.status FROM customer_client",
-                    customer_id="123",
-                ),
-                call(
-                    "SELECT customer_client.client_customer, customer_client.level, customer_client.id, customer_client.manager, customer_client.time_zone, customer_client.status FROM customer_client",
-                    customer_id="789",
-                ),
-            ],
-        ),  # Empty filter, expect all customers
-        (
-            ["active"],
-            ["123", "789"],
-            [
-                call(
-                    "SELECT customer_client.client_customer, customer_client.level, customer_client.id, customer_client.manager, customer_client.time_zone, customer_client.status FROM customer_client WHERE customer_client.status in ('active')",
-                    customer_id="123",
-                ),
-                call(
-                    "SELECT customer_client.client_customer, customer_client.level, customer_client.id, customer_client.manager, customer_client.time_zone, customer_client.status FROM customer_client WHERE customer_client.status in ('active')",
-                    customer_id="789",
-                ),
-            ],
-        ),  # Non-empty filter, expect filtered customers
-    ],
-)
-def test_get_customers(config, mocker, customer_status_filter, expected_ids, send_request_calls):
-    mock_google_api = Mock()
-
-    mock_google_api.get_accessible_accounts.return_value = ["123", "789"]
-    mock_google_api.send_request.side_effect = mock_send_request
-    mock_google_api.parse_single_result.side_effect = lambda schema, result: result
-
-    mock_config = {"customer_status_filter": customer_status_filter, "customer_ids": ["123", "456", "789"]}
-
-    source = SourceGoogleAds(config, None, None)
-
-    customers = source.get_customers(mock_google_api, mock_config)
-
-    mock_google_api.send_request.assert_has_calls(send_request_calls)
-
-    assert len(customers) == len(expected_ids)
-    assert {customer.id for customer in customers} == set(expected_ids)
 
 
 @pytest.mark.parametrize(

@@ -31,6 +31,7 @@ import io.airbyte.cdk.load.message.Meta.Companion.getEmittedAtMs
 import io.airbyte.cdk.load.state.CheckpointId
 import io.airbyte.cdk.load.state.CheckpointKey
 import io.airbyte.cdk.load.util.deserializeToNode
+import io.airbyte.protocol.models.v0.AdditionalStats
 import io.airbyte.protocol.models.v0.AirbyteGlobalState
 import io.airbyte.protocol.models.v0.AirbyteMessage
 import io.airbyte.protocol.models.v0.AirbyteRecordMessage
@@ -478,6 +479,7 @@ sealed interface CheckpointMessage : DestinationMessage {
     data class Stats(
         val recordCount: Long,
         val rejectedRecordCount: Long = 0, // TODO should not have a default?
+        val additionalStats: Map<String, Double> = emptyMap(),
     )
 
     data class Checkpoint(
@@ -532,12 +534,14 @@ sealed interface CheckpointMessage : DestinationMessage {
     val totalRecords: Long?
     val totalBytes: Long?
     val totalRejectedRecords: Long?
+    val additionalStats: MutableMap<String, Double>
 
     fun updateStats(
         destinationStats: Stats? = null,
         totalRecords: Long? = null,
         totalBytes: Long? = null,
         totalRejectedRecords: Long? = null,
+        additionalStats: Map<String, Double> = emptyMap()
     )
     fun withDestinationStats(stats: Stats): CheckpointMessage
 
@@ -551,12 +555,22 @@ sealed interface CheckpointMessage : DestinationMessage {
                     }
                 }
         }
+        val additionalStatsToAdd = this.additionalStats
         destinationStats?.let {
             message.destinationStats =
                 AirbyteStateStats().apply {
                     withRecordCount(it.recordCount.toDouble())
                     if (it.rejectedRecordCount > 0) {
                         withRejectedRecordCount(it.rejectedRecordCount.toDouble())
+                    }
+                    if (additionalStatsToAdd.isNotEmpty()) {
+                        withAdditionalStats(
+                            AdditionalStats().apply {
+                                additionalStatsToAdd.forEach {
+                                    additionalProperties[it.key] = it.value
+                                }
+                            }
+                        )
                     }
                 }
         }
@@ -590,6 +604,7 @@ data class StreamCheckpoint(
     override var totalRecords: Long? = null,
     override var totalBytes: Long? = null,
     override var totalRejectedRecords: Long? = null,
+    override var additionalStats: MutableMap<String, Double> = mutableMapOf(),
 ) : CheckpointMessage {
     /** Convenience constructor, intended for use in tests. */
     constructor(
@@ -601,7 +616,8 @@ data class StreamCheckpoint(
         destinationRecordCount: Long? = null,
         checkpointKey: CheckpointKey? = null,
         totalRecords: Long? = null,
-        totalBytes: Long? = null
+        totalBytes: Long? = null,
+        additionalStats: MutableMap<String, Double> = mutableMapOf(),
     ) : this(
         Checkpoint(
             unmappedNamespace = unmappedNamespace,
@@ -609,12 +625,13 @@ data class StreamCheckpoint(
             state = blob.deserializeToNode(),
         ),
         Stats(sourceRecordCount),
-        destinationRecordCount?.let { Stats(it) },
+        destinationRecordCount?.let { Stats(recordCount = it, additionalStats = additionalStats) },
         additionalProperties,
         serializedSizeBytes = 0L,
         checkpointKey = checkpointKey,
         totalRecords = totalRecords,
-        totalBytes = totalBytes
+        totalBytes = totalBytes,
+        additionalStats = additionalStats,
     )
 
     override val checkpoints: List<Checkpoint>
@@ -624,14 +641,17 @@ data class StreamCheckpoint(
         destinationStats: Stats?,
         totalRecords: Long?,
         totalBytes: Long?,
-        totalRejectedRecords: Long?
+        totalRejectedRecords: Long?,
+        additionalStats: Map<String, Double>
     ) {
         destinationStats?.let { this.destinationStats = it }
         totalRecords?.let { this.totalRecords = it }
         totalBytes?.let { this.totalBytes = it }
         totalRejectedRecords?.let { this.totalRejectedRecords = it }
+        this.additionalStats.putAll(additionalStats)
     }
-    override fun withDestinationStats(stats: Stats) = copy(destinationStats = stats)
+    override fun withDestinationStats(stats: Stats) =
+        copy(destinationStats = stats, additionalStats = additionalStats)
 
     override fun asProtocolMessage(): AirbyteMessage {
         val stateMessage =
@@ -656,6 +676,7 @@ data class GlobalCheckpoint(
     override var totalRecords: Long? = null,
     override var totalBytes: Long? = null,
     override var totalRejectedRecords: Long? = null,
+    override var additionalStats: MutableMap<String, Double> = mutableMapOf(),
 ) : CheckpointMessage {
     /** Convenience constructor, primarily intended for use in tests. */
     constructor(
@@ -672,12 +693,14 @@ data class GlobalCheckpoint(
         destinationStats: Stats?,
         totalRecords: Long?,
         totalBytes: Long?,
-        totalRejectedRecords: Long?
+        totalRejectedRecords: Long?,
+        additionalStats: Map<String, Double>
     ) {
         destinationStats?.let { this.destinationStats = it }
         totalRecords?.let { this.totalRecords = it }
         totalBytes?.let { this.totalBytes = it }
         totalRejectedRecords?.let { this.totalRejectedRecords = it }
+        this.additionalStats.putAll(additionalStats)
     }
     override fun withDestinationStats(stats: Stats) = copy(destinationStats = stats)
 
@@ -708,6 +731,7 @@ data class GlobalSnapshotCheckpoint(
     override var totalRecords: Long? = null,
     override var totalBytes: Long? = null,
     override var totalRejectedRecords: Long? = null,
+    override var additionalStats: MutableMap<String, Double> = mutableMapOf(),
     val streamCheckpoints: Map<DestinationStream.Descriptor, CheckpointKey>
 ) : CheckpointMessage {
 
@@ -721,12 +745,14 @@ data class GlobalSnapshotCheckpoint(
         destinationStats: Stats?,
         totalRecords: Long?,
         totalBytes: Long?,
-        totalRejectedRecords: Long?
+        totalRejectedRecords: Long?,
+        additionalStats: Map<String, Double>
     ) {
         destinationStats?.let { this.destinationStats = it }
         totalRecords?.let { this.totalRecords = it }
         totalBytes?.let { this.totalBytes = it }
         totalRejectedRecords?.let { this.totalRejectedRecords = it }
+        this.additionalStats.putAll(additionalStats)
     }
     override fun withDestinationStats(stats: Stats) = copy(destinationStats = stats)
 

@@ -65,7 +65,7 @@ class InputBeanFactoryTest {
 
     @MockK private lateinit var flushDispatcher: CoroutineDispatcher
 
-    private var memoryAndParallelismConfig = MemoryAndParallelismConfig()
+    private var aggregatePublishingConfig = AggregatePublishingConfig()
 
     private lateinit var factory: InputBeanFactory
 
@@ -243,7 +243,7 @@ class InputBeanFactoryTest {
                 aggregateStoreFactory = aggregateStoreFactory,
                 stateHistogramStore = stateHistogramStore,
                 statsStore = committedStatsStore,
-                memoryAndParallelismConfig = memoryAndParallelismConfig,
+                aggregatePublishingConfig = aggregatePublishingConfig,
                 aggregationDispatcher = aggregationDispatcher,
                 flushDispatcher = flushDispatcher,
             )
@@ -280,7 +280,7 @@ class InputBeanFactoryTest {
                 aggregateStoreFactory = aggregateStoreFactory,
                 stateHistogramStore = stateHistogramStore,
                 statsStore = committedStatsStore,
-                memoryAndParallelismConfig = memoryAndParallelismConfig,
+                aggregatePublishingConfig = aggregatePublishingConfig,
                 aggregationDispatcher = aggregationDispatcher,
                 flushDispatcher = flushDispatcher,
             )
@@ -332,7 +332,7 @@ class InputBeanFactoryTest {
                 aggregateStoreFactory = aggregateStoreFactory,
                 stateHistogramStore = stateHistogramStore,
                 statsStore = committedStatsStore,
-                memoryAndParallelismConfig = memoryAndParallelismConfig,
+                aggregatePublishingConfig = aggregatePublishingConfig,
                 aggregationDispatcher = aggregationDispatcher,
                 flushDispatcher = flushDispatcher,
             )

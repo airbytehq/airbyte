@@ -60,7 +60,7 @@ jobs:
       # forks if the user installs the app into their fork. Until we document this as a clear
       # path, we will have to keep using the PAT.
       - name: Checkout Airbyte
-        uses: actions/checkout@v4
+        uses: actions/checkout@08eba0b27e820071cde6df949e0beb9ba4906955 # v4.3.0
         with:
           repository: ${{ steps.job-vars.outputs.repo }}
           ref: ${{ steps.job-vars.outputs.branch }}
@@ -73,7 +73,7 @@ jobs:
         # If comment-id is not provided, this will create a new
         # comment with the job run link.
         id: first-comment-action
-        uses: peter-evans/create-or-update-comment@v4
+        uses: peter-evans/create-or-update-comment@71345be0265236311c031f5c7866368bd1eff043 # v4.0.0
         with:
           comment-id: ${{ github.event.inputs.comment-id }}
           issue-number: ${{ github.event.inputs.pr }}
@@ -135,7 +135,7 @@ jobs:
           git push contributor HEAD:'${{ steps.job-vars.outputs.branch }}'
 
       - name: Append success comment
-        uses: peter-evans/create-or-update-comment@v4
+        uses: peter-evans/create-or-update-comment@71345be0265236311c031f5c7866368bd1eff043 # v4.0.0
         if: steps.git-diff.outputs.changes == 'true'
         with:
           comment-id: ${{ steps.first-comment-action.outputs.comment-id }}
@@ -144,7 +144,7 @@ jobs:
             > ✅ Changes applied successfully. (${{ steps.commit-step.outputs.sha }})
 
       - name: Append success comment (no-op)
-        uses: peter-evans/create-or-update-comment@v4
+        uses: peter-evans/create-or-update-comment@71345be0265236311c031f5c7866368bd1eff043 # v4.0.0
         if: steps.git-diff.outputs.changes != 'true'
         with:
           comment-id: ${{ steps.first-comment-action.outputs.comment-id }}
@@ -153,7 +153,7 @@ jobs:
             > 🔴 Job completed successfully (no changes, this is sus).
 
       - name: Append failure comment
-        uses: peter-evans/create-or-update-comment@v4
+        uses: peter-evans/create-or-update-comment@71345be0265236311c031f5c7866368bd1eff043 # v4.0.0
         if: failure()
         with:
           comment-id: ${{ steps.first-comment-action.outputs.comment-id }}
