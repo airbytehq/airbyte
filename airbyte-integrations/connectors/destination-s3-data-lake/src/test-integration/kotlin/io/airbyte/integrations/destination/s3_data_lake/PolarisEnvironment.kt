@@ -114,6 +114,8 @@ object PolarisEnvironment {
           "catalog_name": "$CATALOG_NAME",
           "client_id": "$appClientId",
           "client_secret": "$appClientSecret",
+          "scope": "PRINCIPAL_ROLE:$PRINCIPAL_ROLE",
+          "oauth2_server_uri": "$OAUTH_TOKEN_URL",
           "namespace": "<DEFAULT_NAMESPACE_PLACEHOLDER>"
         },
         "s3_bucket_name": "$BUCKET",
