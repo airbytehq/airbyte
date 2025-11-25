@@ -2,13 +2,13 @@
 
 [[package]]
 name = "airbyte-cdk"
-version = "7.5.0"
+version = "7.5.1"
 description = "A framework for writing Airbyte Connectors."
 optional = false
 python-versions = "<3.14,>=3.10"
 files = [
-    {file = "airbyte_cdk-7.5.0-py3-none-any.whl", hash = "sha256:b904c629017e0616bb7b6f733a98274b8c3b3efdff575077ec7c2e95f36a3c1d"},
-    {file = "airbyte_cdk-7.5.0.tar.gz", hash = "sha256:cc25d5d0abb5a04e3f0030fa612214cc13591741cfad12d15cafe5ce37bee933"},
+    {file = "airbyte_cdk-7.5.1-py3-none-any.whl", hash = "sha256:ab80a6ca0c50c24247a37476d03355fe421b55212fc57fd838412ba5f98695df"},
+    {file = "airbyte_cdk-7.5.1.tar.gz", hash = "sha256:9690309d8573791f94d82de92fca66cebbc0429ab31266abe03463df53835c21"},
 ]
 
 [package.dependencies]
@@ -780,13 +780,13 @@ dev = ["coverage", "pytest (>=7.4.4)"]
 
 [[package]]
 name = "exceptiongroup"
-version = "1.3.0"
+version = "1.3.1"
 description = "Backport of PEP 654 (exception groups)"
 optional = false
 python-versions = ">=3.7"
 files = [
-    {file = "exceptiongroup-1.3.0-py3-none-any.whl", hash = "sha256:4d111e6e0c13d0644cad6ddaa7ed0261a0b36971f6d23e7ec9b4b9097da78a10"},
-    {file = "exceptiongroup-1.3.0.tar.gz", hash = "sha256:b241f5885f560bc56a59ee63ca4c6a8bfa46ae4ad651af316d4e81817bb9fd88"},
+    {file = "exceptiongroup-1.3.1-py3-none-any.whl", hash = "sha256:a7a39a3bd276781e98394987d3a5701d0c4edffb633bb7a5144577f82c773598"},
+    {file = "exceptiongroup-1.3.1.tar.gz", hash = "sha256:8b412432c6055b0b7d14c310000ae93352ed6754f70fa8f7c34141f91c4e3219"},
 ]
 
 [package.dependencies]
