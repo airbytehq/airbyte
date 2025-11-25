@@ -22,7 +22,7 @@ pandas = "2.2.2"
 
 
 [tool.poetry.scripts]
-source_nexus_datasets = "source_nexus_datasets.run:run"
+source-nexus-datasets = "source_nexus_datasets.run:run"
 
 [tool.poetry.group.dev.dependencies]
 requests-mock = "^1.9.3"
