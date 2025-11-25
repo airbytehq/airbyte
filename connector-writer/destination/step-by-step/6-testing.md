@@ -346,56 +346,35 @@ class {DB}BasicFunctionalityTest : BasicFunctionalityIntegrationTest(
 
 ---
 
-## Step 3: Parameter Guide
+## Step 3: Configure Test Parameters
 
-### configContents & configSpecClass
+### Quick Reference Table
 
-**What:** Database connection configuration
+| Parameter | Typical Value | Purpose |
+|-----------|---------------|---------|
+| configContents | `Path.of("secrets/config.json").toFile().readText()` | DB connection config |
+| configSpecClass | `{DB}Specification::class.java` | Your spec class |
+| dataDumper | `{DB}DataDumper(testDataSource)` | Read test data (from Step 1) |
+| destinationCleaner | `{DB}Cleaner(testDataSource)` | Cleanup test data (from Step 1) |
+| isStreamSchemaRetroactive | `true` | Schema changes apply to existing data |
+| supportFileTransfer | `false` | Database destinations don't support files |
+| commitDataIncrementally | `true` | Commit batches as written |
+| nullEqualsUnset | `true` | Treat `{"x": null}` same as `{}` |
+| stringifySchemalessObjects | `false` | Use native JSON if available |
+| unknownTypesBehavior | `PASS_THROUGH` | Store unrecognized types as-is |
+| unionBehavior | `STRINGIFY` | Convert union types to JSON string |
+| schematizedObjectBehavior | `PASS_THROUGH` or `STRINGIFY` | See below |
+| schematizedArrayBehavior | `STRINGIFY` | See below |
 
-**Value:**
-```kotlin
-configContents = Path.of("secrets/config.json").toFile().readText()
-configSpecClass = {DB}Specification::class.java
-```
+### Complex Parameters (Database-Specific)
 
-**File:** `secrets/config.json`
-```json
-{
-  "hostname": "localhost",
-  "port": 3306,
-  "database": "test",
-  "username": "test",
-  "password": "test"
-}
-```
+#### dedupBehavior
 
-### dataDumper & destinationCleaner
-
-**What:** Test helpers (implemented in Step 1)
-
-**Value:**
-```kotlin
-dataDumper = {DB}DataDumper(testDataSource)
-destinationCleaner = {DB}Cleaner(testDataSource)
-```
-
-### isStreamSchemaRetroactive
-
-**What:** Whether schema changes apply to existing data
-
-**Options:**
-- `true`: Schema changes retroactively modify existing records (most databases)
-- `false`: Schema changes only apply to new records
-
-**Recommended:** `true` for databases
-
-### dedupBehavior
-
-**What:** How to handle CDC deletions
+**Purpose:** How to handle CDC deletions
 
 **Options:**
 ```kotlin
-// Hard delete - actually remove records
+// Hard delete - remove CDC-deleted records
 DedupBehavior(DedupBehavior.CdcDeletionMode.HARD_DELETE)
 
 // Soft delete - keep tombstone records
@@ -405,149 +384,43 @@ DedupBehavior(DedupBehavior.CdcDeletionMode.SOFT_DELETE)
 null
 ```
 
-**Recommended:** Start with `HARD_DELETE`, implement `SOFT_DELETE` in Phase 14
+#### allTypesBehavior
 
-### stringifySchemalessObjects
+**Purpose:** Configure type precision limits
 
-**What:** Convert objects without schema to JSON strings
-
-**Options:**
-- `false`: Store objects natively (JSONB, VARIANT, etc.)
-- `true`: Convert to JSON string (VARCHAR)
-
-**Recommended:** `false` if your DB has JSON type
-
-### schematizedObjectBehavior
-
-**What:** How to handle nested objects WITH schema
-
-**Options:**
-- `SchematizedNestedValueBehavior.PASS_THROUGH`: Store as native JSON/JSONB
-- `SchematizedNestedValueBehavior.STRINGIFY`: Convert to JSON string
-
-**Recommended:** `PASS_THROUGH` if your DB has JSON type, otherwise `STRINGIFY`
-
-### schematizedArrayBehavior
-
-**What:** How to handle arrays WITH schema
-
-**Options:**
-- `SchematizedNestedValueBehavior.PASS_THROUGH`: Store as native array type
-- `SchematizedNestedValueBehavior.STRINGIFY`: Convert to JSON string
-
-**Recommended:** `STRINGIFY` (most databases don't have typed arrays)
-
-**Exception:** Postgres has native arrays, can use `PASS_THROUGH`
-
-### unionBehavior
-
-**What:** How to handle fields that can be multiple types
-
-**Options:**
-- `UnionBehavior.STRINGIFY`: Convert union types to JSON string
-- `UnionBehavior.PROMOTE_TO_OBJECT`: Store as object/JSONB
-
-**Recommended:** `STRINGIFY` (simpler, works everywhere)
-
-**Example:**
-```json
-// Source data: {"value": 123} or {"value": "abc"}
-// STRINGIFY: {"value": "123"} and {"value": "\"abc\""}
-// PROMOTE_TO_OBJECT: {"value": {"type": "integer", "value": 123}}
-```
-
-### supportFileTransfer
-
-**What:** Whether connector can receive file uploads
-
-**Value:** `false` for database destinations (only S3, GCS, Azure Blob use `true`)
-
-### commitDataIncrementally
-
-**What:** Commit data during sync or wait until end
-
-**Options:**
-- `true`: Commit batches as they're written (safer, faster recovery)
-- `false`: Commit everything at end (all-or-nothing)
-
-**Recommended:** `true` (better for large syncs)
-
-### allTypesBehavior
-
-**What:** Detailed type handling configuration
-
-**Structure:**
 ```kotlin
+// Snowflake/BigQuery: Unlimited precision
 AllTypesBehavior.StronglyTyped(
-    integerCanBeLarge = false,      // true if unlimited integer precision
-    numberCanBeLarge = false,       // true if unlimited decimal precision
-    nestedFloatLosesPrecision = false,  // true if nested floats lose precision
-)
-```
-
-**Database-specific:**
-
-**Snowflake/BigQuery:**
-```kotlin
-AllTypesBehavior.StronglyTyped(
-    integerCanBeLarge = true,   // NUMBER/NUMERIC unlimited
+    integerCanBeLarge = true,
     numberCanBeLarge = true,
     nestedFloatLosesPrecision = false,
 )
-```
 
-**MySQL/Postgres:**
-```kotlin
+// MySQL/Postgres: Limited precision
 AllTypesBehavior.StronglyTyped(
-    integerCanBeLarge = false,  // BIGINT has limits
-    numberCanBeLarge = false,   // DECIMAL has limits
+    integerCanBeLarge = false,  // BIGINT limits
+    numberCanBeLarge = false,   // DECIMAL limits
     nestedFloatLosesPrecision = false,
 )
 ```
 
-### unknownTypesBehavior
+#### schematizedObjectBehavior / schematizedArrayBehavior
 
-**What:** How to handle unrecognized JSON schema types
-
-**Options:**
-- `UnknownTypesBehavior.PASS_THROUGH`: Store as-is (string representation)
-- `UnknownTypesBehavior.CONVERT_TO_STRING`: Explicitly convert to string
-
-**Recommended:** `PASS_THROUGH`
-
-### nullEqualsUnset
-
-**What:** Treat explicit null same as missing field
+**Purpose:** How to store nested objects and arrays
 
 **Options:**
-- `true`: `{"name": null}` same as `{}`
-- `false`: Distinguish between null and absent
+- `PASS_THROUGH`: Use native JSON/array types (Postgres JSONB, Snowflake VARIANT)
+- `STRINGIFY`: Convert to JSON strings (fallback for databases without native types)
 
-**Recommended:** `true` (simpler semantics)
+**Recommendations:**
+- **Objects:** `PASS_THROUGH` if DB has native JSON, else `STRINGIFY`
+- **Arrays:** `STRINGIFY` (most DBs don't have typed arrays, except Postgres)
 
-### useDataFlowPipeline
+#### useDataFlowPipeline ⚠️
 
-**What:** Use dataflow CDK architecture (new bulk CDK)
+**Value:** `true` - **REQUIRED for dataflow CDK connectors**
 
-**Value:** `true` ⚠️ **REQUIRED for dataflow CDK connectors**
-
-**Why critical:**
-- Dataflow CDK (what this guide is for) uses new architecture with:
-  - Aggregate-based buffering
-  - StreamLoader pattern
-  - Dataflow pipeline
-- Old CDK used different architecture (direct table writing)
-- **Setting to `false` will use wrong code path and fail!**
-
-**Always set:**
-```kotlin
-useDataFlowPipeline = true  // For all dataflow CDK connectors
-```
-
-**What happens if you set false:**
-- Test will try to use old CDK code paths
-- Will fail with "method not implemented" errors
-- InsertBuffer/Aggregate pattern won't be used
+**Why critical:** Setting to `false` uses old CDK code paths that don't work with Aggregate/InsertBuffer pattern. Always use `true`.
 
 ---
 
