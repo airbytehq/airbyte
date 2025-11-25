@@ -13,9 +13,7 @@ import io.mockk.coEvery
 import io.mockk.coVerify
 import io.mockk.every
 import io.mockk.mockk
-import kotlinx.coroutines.runBlocking
 import org.junit.jupiter.api.Assertions.assertEquals
-import org.junit.jupiter.api.Assertions.assertTrue
 import org.junit.jupiter.api.BeforeEach
 import org.junit.jupiter.api.Test
 import org.junit.jupiter.api.assertThrows
@@ -70,9 +68,7 @@ internal class PostgresOssCheckerTest {
         coEvery { postgresAirbyteClient.countTable(any()) } returns 0L
         coEvery { postgresAirbyteClient.dropTable(any()) } returns Unit
 
-        val exception = assertThrows<IllegalArgumentException> {
-            checker.check()
-        }
+        val exception = assertThrows<IllegalArgumentException> { checker.check() }
 
         assertEquals(
             "Failed to insert expected rows into check table. Actual written: 0",

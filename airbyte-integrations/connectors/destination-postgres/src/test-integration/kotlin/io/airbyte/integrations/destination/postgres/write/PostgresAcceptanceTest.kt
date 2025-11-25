@@ -15,7 +15,6 @@ import io.airbyte.integrations.destination.postgres.PostgresContainerHelper
 import io.airbyte.integrations.destination.postgres.spec.PostgresConfigurationFactory
 import io.airbyte.integrations.destination.postgres.spec.PostgresSpecification
 import io.airbyte.integrations.destination.postgres.spec.PostgresSpecificationCloud
-import io.airbyte.integrations.destination.postgres.spec.PostgresSpecificationOss
 import org.junit.jupiter.api.BeforeAll
 
 class PostgresAcceptanceTest :

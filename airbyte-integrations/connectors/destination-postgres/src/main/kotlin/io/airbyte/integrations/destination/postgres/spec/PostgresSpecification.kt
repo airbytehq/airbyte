@@ -26,7 +26,6 @@ import io.micronaut.context.annotation.ConfigurationBuilder
 import io.micronaut.context.annotation.Requires
 import jakarta.inject.Singleton
 
-
 sealed class PostgresSpecification : ConfigurationSpecification() {
     abstract val host: String
     abstract val port: Int
@@ -95,7 +94,9 @@ class PostgresSpecificationOss : PostgresSpecification() {
     override val password: String? = null
 
     @get:JsonSchemaTitle("SSL Connection")
-    @get:JsonPropertyDescription("Encrypt data using SSL. When activating SSL, please select one of the connection modes.")
+    @get:JsonPropertyDescription(
+        "Encrypt data using SSL. When activating SSL, please select one of the connection modes."
+    )
     @get:JsonProperty("ssl")
     @get:JsonSchemaInject(json = """{"group": "connection", "order": 6}""")
     @Suppress("RedundantNullableReturnType")
@@ -207,7 +208,10 @@ class PostgresSpecificationCloud : PostgresSpecification() {
     @get:JsonSchemaTitle("Port")
     @get:JsonPropertyDescription("Port of the database.")
     @get:JsonProperty("port")
-    @get:JsonSchemaInject(json = """{"group": "connection", "order": 1, "minimum": 0, "maximum": 65536, "examples": ["5432"]}""")
+    @get:JsonSchemaInject(
+        json =
+            """{"group": "connection", "order": 1, "minimum": 0, "maximum": 65536, "examples": ["5432"]}"""
+    )
     override val port: Int = 5432
 
     @get:JsonSchemaTitle("Database Name")
@@ -221,7 +225,10 @@ class PostgresSpecificationCloud : PostgresSpecification() {
         "The default schema tables are written. If not specified otherwise, the \"public\" schema will be used."
     )
     @get:JsonProperty("schema")
-    @get:JsonSchemaInject(json = """{"group": "connection", "order": 3, "examples": ["public"], "default": "public"}""")
+    @get:JsonSchemaInject(
+        json =
+            """{"group": "connection", "order": 3, "examples": ["public"], "default": "public"}"""
+    )
     override val schema: String = "public"
 
     @get:JsonSchemaTitle("Username")
@@ -237,7 +244,9 @@ class PostgresSpecificationCloud : PostgresSpecification() {
     override val password: String? = null
 
     @get:JsonSchemaTitle("SSL Connection")
-    @get:JsonPropertyDescription("Encrypt data using SSL. When activating SSL, please select one of the connection modes.")
+    @get:JsonPropertyDescription(
+        "Encrypt data using SSL. When activating SSL, please select one of the connection modes."
+    )
     @get:JsonProperty("ssl")
     @get:JsonSchemaInject(json = """{"default": true, "airbyte_hidden": true, "order": 6}""")
     @Suppress("RedundantNullableReturnType")
@@ -284,7 +293,9 @@ class PostgresSpecificationCloud : PostgresSpecification() {
     @get:JsonSchemaInject(json = """{"group": "connection", "order": 10}""")
     override val internalTableSchema: String? = null
 
-    @get:JsonSchemaTitle("Disable Final Tables. (WARNING! Unstable option; Columns in raw table schema might change between versions)")
+    @get:JsonSchemaTitle(
+        "Disable Final Tables. (WARNING! Unstable option; Columns in raw table schema might change between versions)"
+    )
     @get:JsonPropertyDescription(
         """Disable Writing Final Tables. WARNING! The data format in _airbyte_data is likely stable but there are no guarantees that other metadata columns will remain the same in future versions""",
     )

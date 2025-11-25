@@ -1,3 +1,7 @@
+/*
+ * Copyright (c) 2025 Airbyte, Inc., all rights reserved.
+ */
+
 package io.airbyte.integrations.destination.postgres.check
 
 import io.airbyte.cdk.command.AIRBYTE_CLOUD_ENV
@@ -31,7 +35,11 @@ class PostgresCloudChecker(
     override fun check() {
         if (postgresConfiguration.tunnelMethod is SshNoTunnelMethod) {
             val sslMode = postgresConfiguration.sslMode
-            require(sslMode is SslModeRequire || sslMode is SslModeVerifyCa || sslMode is SslModeVerifyFull) {
+            require(
+                sslMode is SslModeRequire ||
+                    sslMode is SslModeVerifyCa ||
+                    sslMode is SslModeVerifyFull
+            ) {
                 "Unsecured connection not allowed. If no SSH Tunnel set up, please use one of the following SSL modes: require, verify-ca, verify-full"
             }
         }

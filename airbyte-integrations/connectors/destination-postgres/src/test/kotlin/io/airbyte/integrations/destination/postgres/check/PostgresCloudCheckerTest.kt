@@ -40,18 +40,10 @@ internal class PostgresCloudCheckerTest {
 
     companion object {
         @JvmStatic
-        fun secureSSLModes() = listOf(
-            SslModeRequire(),
-            SslModeVerifyCa(),
-            SslModeVerifyFull()
-        )
+        fun secureSSLModes() = listOf(SslModeRequire(), SslModeVerifyCa(), SslModeVerifyFull())
 
         @JvmStatic
-        fun insecureSSLModes() = listOf(
-            SslModeDisable(),
-            SslModeAllow(),
-            SslModePrefer()
-        )
+        fun insecureSSLModes() = listOf(SslModeDisable(), SslModeAllow(), SslModePrefer())
     }
 
     @ParameterizedTest
@@ -70,12 +62,7 @@ internal class PostgresCloudCheckerTest {
     @Test
     fun testCheckSucceedsTunnelMethod() {
         every { postgresConfiguration.tunnelMethod } returns
-            SshKeyAuthTunnelMethod(
-                host = "localhost",
-                port = 22,
-                user = "user",
-                key = "key"
-            )
+            SshKeyAuthTunnelMethod(host = "localhost", port = 22, user = "user", key = "key")
         every { ossChecker.check() } just runs
 
         checker = PostgresCloudChecker(postgresConfiguration, ossChecker)
