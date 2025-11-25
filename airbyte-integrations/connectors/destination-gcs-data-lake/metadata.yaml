@@ -34,8 +34,8 @@ data:
   connectorIPCOptions:
     dataChannel:
       version: "0.0.2"
-      supportedSerialization: [ "JSONL", "PROTOBUF" ]
-      supportedTransport: [ "SOCKET", "STDIO" ]
+      supportedSerialization: ["JSONL", "PROTOBUF"]
+      supportedTransport: ["SOCKET", "STDIO"]
   tags:
     - language:java
   externalDocumentationUrls:
