@@ -10,6 +10,12 @@ This page contains the setup guide and reference information for the Microsoft O
 - Folder Path
 - Client secrets
 
+:::caution Authentication and Search Scope Compatibility
+Service Key Authentication (application permissions) only supports the `ACCESSIBLE_DRIVES` search scope. The `SHARED_ITEMS` and `ALL` scopes require OAuth2.0 (delegated) authentication because they rely on Microsoft Graph's `/me/drive/sharedWithMe` endpoint, which only works with a signed-in user context.
+
+If you use Service Key Authentication with the default `ALL` scope, you will see an error: `/me request is only valid with delegated authentication flow`. To avoid this error, change the Search Scope to `ACCESSIBLE_DRIVES` when using Service Key Authentication.
+:::
+
 ## Setup guide
 
 <!-- env:cloud -->
@@ -81,7 +87,7 @@ This source requires **Application permissions**. Follow these [instructions](ht
 3. On the **Set up** the source page, select **Microsoft OneDrive** from the Source type dropdown.
 4. Enter the name for the Microsoft OneDrive connector.
 5. Enter **Drive Name**. To find your drive name go to settings and at the top of setting menu you can find the name of your drive.
-6. Select **Search Scope**. Specifies the location(s) to search for files. Valid options are 'ACCESSIBLE_DRIVES' to search in the selected OneDrive drive, 'SHARED_ITEMS' for shared items the user has access to, and 'ALL' to search both. Default value is 'ALL'.
+6. Select **Search Scope**. Since you will be using Service Key Authentication, you must select `ACCESSIBLE_DRIVES`. The `SHARED_ITEMS` and `ALL` scopes are not supported with Service Key Authentication.
 7. Enter **Folder Path**. Leave empty to search all folders of the drives. This does not apply to shared items.
 8. Switch to **Service Key Authentication**
 9. For **User Practical Name**, enter the [UPN](https://learn.microsoft.com/en-us/sharepoint/list-onedrive-urls) for your user.
