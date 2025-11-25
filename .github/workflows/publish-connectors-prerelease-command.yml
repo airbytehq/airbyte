@@ -1,0 +1,127 @@
+name: Publish Connectors Pre-release
+# This workflow publishes pre-release connector builds from PR branches.
+# It can be triggered via the /publish-connectors-prerelease slash command from PR comments.
+#
+# Pre-release versions are tagged with the format: {version}-dev.{10-char-git-sha}
+# These versions are NOT eligible for semver auto-advancement but ARE available
+# for version pinning via the scoped_configuration API.
+#
+# Usage:
+#   /publish-connectors-prerelease
+#
+# This will automatically publish all modified connectors in the PR.
+
+on:
+  workflow_dispatch:
+    inputs:
+      # Global static-arg inputs for slash commands
+      repo:
+        description: "The repository name"
+        required: false
+        default: "airbytehq/airbyte"
+        type: string
+      gitref:
+        description: "The git reference (branch or tag)"
+        required: false
+        type: string
+      comment-id:
+        description: "The ID of the comment triggering the workflow"
+        required: false
+        type: number
+      pr:
+        description: "The pull request number, if applicable"
+        required: false
+        type: number
+
+concurrency:
+  group: ${{ github.workflow }}-${{ github.event.inputs.pr || github.run_id }}
+  cancel-in-progress: false
+
+jobs:
+  init:
+    name: Initialize Pre-release Publish
+    runs-on: ubuntu-24.04
+    outputs:
+      run-url: ${{ steps.job-vars.outputs.run-url }}
+      pr-number: ${{ steps.job-vars.outputs.pr-number }}
+      comment-id: ${{ steps.append-start-comment.outputs.comment-id }}
+      short-sha: ${{ steps.get-sha.outputs.short-sha }}
+    steps:
+      - name: Checkout to get commit SHA
+        uses: actions/checkout@v4
+        with:
+          repository: ${{ inputs.repo || github.repository }}
+          ref: ${{ inputs.gitref || '' }}
+
+      - name: Get short SHA
+        id: get-sha
+        run: |
+          SHORT_SHA=$(git rev-parse --short=10 HEAD)
+          echo "short-sha=$SHORT_SHA" >> $GITHUB_OUTPUT
+
+      - name: Get job variables
+        id: job-vars
+        run: |
+          echo "run-url=https://github.com/${{ github.repository }}/actions/runs/$GITHUB_RUN_ID" >> $GITHUB_OUTPUT
+          echo "pr-number=${{ inputs.pr }}" >> $GITHUB_OUTPUT
+
+      - name: Append start comment
+        id: append-start-comment
+        if: inputs.comment-id != ''
+        uses: peter-evans/create-or-update-comment@71345be0265236311c031f5c7866368bd1eff043 # v4.0.0
+        with:
+          comment-id: ${{ inputs.comment-id }}
+          issue-number: ${{ steps.job-vars.outputs.pr-number }}
+          reactions: "+1"
+          body: |
+            > **Pre-release Connector Publish Started**
+            >
+            > Publishing pre-release builds for all modified connectors in this PR.
+            > Branch: `${{ inputs.gitref }}`
+            >
+            > Pre-release versions will be tagged as `{version}-dev.${{ steps.get-sha.outputs.short-sha }}`
+            > and are available for version pinning via the scoped_configuration API.
+            >
+            > [View workflow run](${{ steps.job-vars.outputs.run-url }})
+
+  publish:
+    name: Publish Pre-release
+    needs: [init]
+    uses: ./.github/workflows/publish_connectors.yml
+    with:
+      connectors: "--modified"
+      release-type: pre-release
+    secrets: inherit
+
+  post-completion:
+    name: Post Completion Status
+    needs: [init, publish]
+    runs-on: ubuntu-24.04
+    if: always() && inputs.comment-id != ''
+    steps:
+      - name: Determine publish status
+        id: status
+        run: |
+          if [[ "${{ needs.publish.result }}" == "success" ]]; then
+            echo "status_emoji=:white_check_mark:" >> $GITHUB_OUTPUT
+            echo "status_text=SUCCESS" >> $GITHUB_OUTPUT
+          elif [[ "${{ needs.publish.result }}" == "failure" ]]; then
+            echo "status_emoji=:x:" >> $GITHUB_OUTPUT
+            echo "status_text=FAILED" >> $GITHUB_OUTPUT
+          elif [[ "${{ needs.publish.result }}" == "cancelled" ]]; then
+            echo "status_emoji=:warning:" >> $GITHUB_OUTPUT
+            echo "status_text=CANCELLED" >> $GITHUB_OUTPUT
+          else
+            echo "status_emoji=:grey_question:" >> $GITHUB_OUTPUT
+            echo "status_text=UNKNOWN" >> $GITHUB_OUTPUT
+          fi
+
+      - name: Append completion comment
+        uses: peter-evans/create-or-update-comment@71345be0265236311c031f5c7866368bd1eff043 # v4.0.0
+        with:
+          comment-id: ${{ needs.init.outputs.comment-id }}
+          issue-number: ${{ needs.init.outputs.pr-number }}
+          body: |
+            > **Pre-release Publish: ${{ steps.status.outputs.status_text }}** ${{ steps.status.outputs.status_emoji }}
+            >
+            > See workflow run for details and published image tags.

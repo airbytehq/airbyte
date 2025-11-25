@@ -25,6 +25,7 @@ Airbyte Maintainers (that's you!) can execute the following slash commands on yo
 - `/run-live-tests` - Runs live tests for the modified connector(s).
 - `/run-regression-tests` - Runs regression tests for the modified connector(s).
 - `/build-connector-images` - Builds and publishes a pre-release docker image for the modified connector(s).
+- `/publish-connectors-prerelease` - Publishes pre-release connector builds (tagged as `{version}-dev.{git-sha}`) for all modified connectors in the PR.
 - JVM connectors:
   - `/update-connector-cdk-version connector=<CONNECTOR_NAME>` - Updates the specified connector to the latest CDK version.
     Example: `/update-connector-cdk-version connector=destination-bigquery`
