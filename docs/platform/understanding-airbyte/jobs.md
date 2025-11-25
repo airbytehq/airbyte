@@ -15,28 +15,97 @@ Generally, there are 2 types of workload pods:
 
 ## Airbyte Middleware and Bookkeeping Containers
 
-Inside any connector operation pod, a special airbyte controlled container will run alongside the connector container(s) to process and interpret the results as well as perform necessary side effects.
+Inside any connector operation pod, a special Airbyte-controlled container runs alongside the connector container(s) to process and interpret results and perform necessary side effects.
 
 There are two types of middleware containers:
-* The Container Orchestrator
-* The Connector Sidecar
+* The Container Orchestrator (legacy mode)
+* The Bookkeeper (socket mode)
+* The Connector Sidecar (for CHECK, DISCOVER, SPEC operations)
 
-#### Container Orchestrator
+### Replication Architecture Modes
 
-An airbyte controlled container that sits between the source and destination connector containers inside a Replication Pod.
+Airbyte supports two architecture modes for replication (sync) jobs, with the platform automatically selecting the optimal mode based on connector capabilities and connection configuration.
 
-Responsibilities:
-* Hosts middleware capabilities such as scrubbing PPI, aggregating stats, transforming data, and checkpointing progress.
+#### Socket Mode (Bookkeeper)
+
+Socket mode is Airbyte's high-performance architecture that enables 4-10x faster data movement compared to legacy mode. In this mode, data flows directly from source to destination via Unix domain sockets, while control messages (logs, state, statistics) flow through the Bookkeeper via standard I/O.
+
+**Architecture:**
+```
+Source ────→ Unix Socket Files → Destination (direct data transfer)
+   │                                  │
+   └─────────→ Bookkeeper ←───────────┘
+       (control messages, state, logs via STDIO)
+```
+
+**Bookkeeper Responsibilities:**
+* Processes control messages from source and destination via STDIO
+* Persists state messages and statistics
+* Handles heartbeating and job lifecycle management
+* Lightweight resource footprint (1 CPU, 1024Mi memory)
+
+**Performance Benefits:**
+* **Parallel Processing**: Multiple Unix domain sockets enable concurrent data streams
+* **Binary Serialization**: Protocol Buffers provide efficient data encoding and strong type safety
+* **Lower Latency**: Eliminates STDIO buffering delays
+* **Higher Throughput**: Direct socket communication reduces overhead
+
+**Socket Count:** The number of sockets is determined by `min(source_cpu_limit, destination_cpu_limit) * 2`, allowing parallel data transfer. For example, connectors with 4 CPU limits will use 8 sockets.
+
+#### Legacy Mode (Container Orchestrator)
+
+Legacy mode uses the traditional STDIO-based architecture where all data flows through the Container Orchestrator.
+
+**Architecture:**
+```
+Source → STDIO → Container Orchestrator → STDIO → Destination
+```
+
+**Container Orchestrator Responsibilities:**
+* Sits between source and destination connector containers
+* Hosts middleware capabilities such as scrubbing PII, aggregating stats, transforming data, and checkpointing progress
 * Interprets and records connector operation results
-* Handles miscellaneous side effects (e.g. logging, auth token refresh flows, etc. )
+* Handles miscellaneous side effects (logging, auth token refresh flows, etc.)
 
-#### Connector Sidecar
+#### Architecture Selection
 
-An airbyte controlled container that reads the output of a connector container inside a Connector Pod (CHECK, DISCOVER, SPEC).
+The platform automatically determines which mode to use based on several factors:
 
-Responsibilities:
+**Socket mode is used when ALL conditions are met:**
+1. Not a file transfer operation
+2. Not a reset operation
+3. Both source and destination declare IPC capabilities in their metadata
+4. No hashed fields or mappers configured in the connection
+5. Matching data channel versions between source and destination
+6. Both connectors support socket transport
+7. Compatible serialization format exists (PROTOBUF preferred, JSONL fallback)
+
+**Legacy mode is used when:**
+* Any of the above conditions are not met
+* The `ForceRunStdioMode` feature flag is enabled
+* IPC options are missing or incompatible
+
+#### State Management in Socket Mode
+
+Socket mode introduces enhanced state management to support parallel processing and ensure data consistency:
+
+**Partition Identifiers:** Each record and state message includes a `partition_id` (a random alphanumeric string) that links records to their corresponding checkpoint state. This enables the destination to verify that all records from a partition have been received before committing the state.
+
+**State Ordering:** State messages include an incrementing `id` field to maintain proper ordering. Since states can arrive on any socket in any order due to parallel processing, the destination uses these IDs to commit states in the correct sequence, ensuring resumability if a sync fails.
+
+**Dual State Emission:** In socket mode, state messages are sent to both:
+* The destination via socket (for record count verification and ordering)
+* The Bookkeeper via STDIO (for persistence and platform tracking)
+
+This dual emission ensures both the destination and platform maintain consistent state information throughout the sync.
+
+### Connector Sidecar
+
+An Airbyte-controlled container that reads the output of a connector container inside a Connector Pod for non-replication operations (CHECK, DISCOVER, SPEC).
+
+**Responsibilities:**
 * Interprets and records connector operation results
-* Handles miscellaneous side effects (e.g. logging, auth token refresh flows, etc. )
+* Handles miscellaneous side effects (logging, auth token refresh flows, etc.)
 
 
 ## Workload launching architecture
