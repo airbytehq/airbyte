@@ -1,3 +1,7 @@
+## Version 0.1.82
+
+load cdk: Introduce scope and oauth server uri attributes in iceberg polaris spec
+
 ## Version 0.1.81
 
 load cdk: components tests: more coverage on upsert
