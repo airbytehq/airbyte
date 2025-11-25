@@ -294,8 +294,8 @@ definitions:
             include: metric,attributions
             fields[metric]: name
             filter: >-
-              greater-than(datetime,{{
-              stream_interval.start_time }})
+              greater-or-equal(datetime,{{
+              stream_interval.start_time }}),less-or-equal(datetime,{{ stream_interval.end_time }})
             sort: "datetime"
           request_headers:
             Accept: application/json
@@ -344,6 +344,8 @@ definitions:
           - "%Y-%m-%dT%H:%M:%S%z"
           - "%Y-%m-%d %H:%M:%S%z"
         datetime_format: "%Y-%m-%dT%H:%M:%S%z"
+        step: P7D
+        cursor_granularity: PT1S
         start_datetime:
           type: MinMaxDatetime
           datetime: "{{ config.get('start_date', '2012-01-01T00:00:00Z') }}"
