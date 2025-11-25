@@ -25,7 +25,9 @@ class TableSchemaFactory(
         )
 
         val rawToFinalColumnNames = colNameResolver.getColumnNameMapping(rawSchema.keys)
-        val finalColumnSchema = rawSchema.map { rawToFinalColumnNames[it.key]!! to mapper.toColumnType(it.value) }.toMap()
+        val finalColumnSchema = rawSchema.map {
+            rawToFinalColumnNames[it.key]!! to mapper.toColumnType(it.value)
+        }.toMap()
 
         val columnSchema = ColumnSchema(
             rawSchema = rawSchema,

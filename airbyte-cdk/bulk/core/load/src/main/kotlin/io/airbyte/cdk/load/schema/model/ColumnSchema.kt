@@ -13,5 +13,5 @@ data class ColumnSchema(
     // raw schema name to final resolved name
     val rawToFinalColumnNames: Map<String, String>,
     // resolved name to resolved type
-    val finalColumnSchema: Map<String, ColumnType>
+    val finalColumnSchema: Map<String, ColumnType>,
 )

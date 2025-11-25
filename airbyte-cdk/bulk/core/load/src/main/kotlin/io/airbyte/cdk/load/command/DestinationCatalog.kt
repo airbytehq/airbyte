@@ -147,14 +147,14 @@ class DefaultDestinationCatalogFactory {
                         minimumGenerationId = 0,
                         syncId = 1,
                         namespaceMapper = namespaceMapper,
-                        tableNames = TableNames(),
-                        finalTableSchema = StreamTableSchema(
+                        tableSchema = StreamTableSchema(
                             columnSchema = ColumnSchema(
                                 rawSchema = mapOf(),
                                 rawToFinalColumnNames = mapOf(),
                                 finalColumnSchema = mapOf()
                             ),
                             importType = Append,
+                            tableNames = TableNames(),
                         ),
                     )
                 )
