@@ -28,6 +28,7 @@ class AggregateStage(
                     aggregate = next.value,
                     partitionCountsHistogram = next.partitionCountsHistogram,
                     partitionBytesHistogram = next.partitionBytesHistogram,
+                    mappedDesc = next.key,
                 )
             )
             next = store.removeNextComplete(rec.emittedAtMs)

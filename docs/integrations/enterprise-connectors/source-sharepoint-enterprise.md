@@ -1,5 +1,6 @@
 ---
-  dockerRepository: airbyte/source-sharepoint-enterprise
+dockerRepository: airbyte/source-sharepoint-enterprise
+enterprise-connector: true
 ---
 
 # SharePoint Enterprise

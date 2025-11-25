@@ -169,6 +169,13 @@ The Jira connector should not run into Jira API limitations under normal usage. 
 
 | Version    | Date       | Pull Request                                               | Subject                                                                                                                                                                |
 |:-----------|:-----------|:-----------------------------------------------------------|:-----------------------------------------------------------------------------------------------------------------------------------------------------------------------|
+| 4.3.8 | 2025-11-25 | [70186](https://github.com/airbytehq/airbyte/pull/70186) | Update dependencies |
+| 4.3.7 | 2025-11-18 | [69571](https://github.com/airbytehq/airbyte/pull/69571) | Update dependencies |
+| 4.3.6 | 2025-10-29 | [68818](https://github.com/airbytehq/airbyte/pull/68818) | Update dependencies |
+| 4.3.5 | 2025-10-21 | [68478](https://github.com/airbytehq/airbyte/pull/68478) | Update dependencies |
+| 4.3.4 | 2025-10-14 | [67962](https://github.com/airbytehq/airbyte/pull/67962) | Update dependencies |
+| 4.3.3 | 2025-10-07 | [67375](https://github.com/airbytehq/airbyte/pull/67375) | Update dependencies |
+| 4.3.2 | 2025-09-30 | [66791](https://github.com/airbytehq/airbyte/pull/66791) | Update dependencies |
 | 4.3.1 | 2025-09-09 | [65900](https://github.com/airbytehq/airbyte/pull/65900) | Update dependencies |
 | 4.3.0 | 2025-09-03 | [65917](https://github.com/airbytehq/airbyte/pull/65917) | Add issue_changelogs stream |
 | 4.2.5 | 2025-08-26 | [65565](https://github.com/airbytehq/airbyte/pull/65565) | Increases `maxSecondsBetweenMessages` and defaults start_date to 2 years in the past |

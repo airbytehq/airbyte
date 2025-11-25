@@ -9,6 +9,7 @@ import com.google.cloud.bigquery.BigQueryException
 import com.google.cloud.bigquery.FormatOptions
 import com.google.cloud.bigquery.JobId
 import com.google.cloud.bigquery.JobInfo
+import com.google.cloud.bigquery.JobStatistics
 import com.google.cloud.bigquery.Schema
 import com.google.cloud.bigquery.TableDataWriteChannel
 import com.google.cloud.bigquery.TableId
@@ -30,10 +31,12 @@ import io.airbyte.integrations.destination.bigquery.formatter.BigQueryRecordForm
 import io.airbyte.integrations.destination.bigquery.formatter.ProtoToBigQueryStandardInsertRecordFormatter
 import io.airbyte.integrations.destination.bigquery.spec.BatchedStandardInsertConfiguration
 import io.airbyte.integrations.destination.bigquery.spec.BigqueryConfiguration
+import io.airbyte.integrations.destination.bigquery.toPrettyString
 import io.airbyte.integrations.destination.bigquery.write.standard_insert.BigqueryBatchStandardInsertsLoaderFactory.Companion.CONFIG_ERROR_MSG
 import io.airbyte.integrations.destination.bigquery.write.standard_insert.BigqueryBatchStandardInsertsLoaderFactory.Companion.HTTP_STATUS_CODE_FORBIDDEN
 import io.airbyte.integrations.destination.bigquery.write.standard_insert.BigqueryBatchStandardInsertsLoaderFactory.Companion.HTTP_STATUS_CODE_NOT_FOUND
 import io.airbyte.integrations.destination.bigquery.write.typing_deduping.toTableId
+import io.github.oshai.kotlinlogging.KotlinLogging
 import io.micronaut.context.annotation.Requires
 import io.micronaut.context.condition.Condition
 import io.micronaut.context.condition.ConditionContext
@@ -42,6 +45,8 @@ import jakarta.inject.Singleton
 import java.io.ByteArrayOutputStream
 import java.nio.ByteBuffer
 import java.nio.charset.StandardCharsets
+
+private val logger = KotlinLogging.logger {}
 
 interface RecordFormatter {
     fun formatRecord(record: DestinationRecordRaw): String
@@ -91,6 +96,17 @@ class BigqueryBatchStandardInsertsLoader(
         }
         writer.close()
         BigQueryUtils.waitForJobFinish(writer.job)
+        val stats = writer.job.reload().getStatistics<JobStatistics.LoadStatistics>()
+        logger.info {
+            "Finished loading data into table ${writeChannelConfiguration.destinationTable.toPrettyString()}. ${stats.outputRows} rows loaded; ${stats.badRecords} bad records."
+        }
+        if (stats.badRecords > 0) {
+            // This should be impossible: the load job uses the default setting of maxBadRecords=0,
+            // so the job is supposed to fail if there were any bad records.
+            throw RuntimeException(
+                "${writeChannelConfiguration.destinationTable.toPrettyString()}: Nonzero bad records detected: ${stats.badRecords}"
+            )
+        }
     }
 
     override fun close() {}

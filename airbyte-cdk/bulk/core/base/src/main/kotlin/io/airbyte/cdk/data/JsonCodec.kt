@@ -260,14 +260,19 @@ data object LocalTimeCodec : JsonCodec<LocalTime> {
     override fun decode(encoded: JsonNode): LocalTime {
         val str: String = TextCodec.decode(encoded)
         try {
-            return LocalTime.parse(str, formatter)
+            return LocalTime.parse(str, flexibleFormatter)
         } catch (e: DateTimeParseException) {
-            throw IllegalArgumentException("invalid value $str for pattern '$PATTERN'", e)
+            throw IllegalArgumentException("invalid value $str for flexible time pattern", e)
         }
     }
 
     const val PATTERN = "HH:mm:ss.SSSSSS"
     val formatter: DateTimeFormatter = DateTimeFormatter.ofPattern(PATTERN)
+    // Flexible formatter accepts 0-9 decimal places for fractional seconds
+    private val flexibleFormatter: DateTimeFormatter =
+        DateTimeFormatter.ofPattern(
+            "HH:mm:ss[.SSSSSSSSS][.SSSSSSSS][.SSSSSSS][.SSSSSS][.SSSSS][.SSSS][.SSS][.SS][.S]"
+        )
 }
 
 data object LocalDateTimeCodec : JsonCodec<LocalDateTime> {
@@ -277,14 +282,20 @@ data object LocalDateTimeCodec : JsonCodec<LocalDateTime> {
     override fun decode(encoded: JsonNode): LocalDateTime {
         val str: String = TextCodec.decode(encoded)
         try {
-            return LocalDateTime.parse(str, formatter)
+            return LocalDateTime.parse(str, flexibleFormatter)
         } catch (e: DateTimeParseException) {
-            throw IllegalArgumentException("invalid value $str for pattern '$PATTERN'", e)
+            throw IllegalArgumentException("invalid value $str for flexible datetime pattern", e)
         }
     }
 
     const val PATTERN = "yyyy-MM-dd'T'HH:mm:ss.SSSSSS"
     val formatter: DateTimeFormatter = DateTimeFormatter.ofPattern(PATTERN)
+    // Flexible formatter accepts 0-9 decimal places for fractional seconds (needed for MSSQL
+    // datetime2)
+    private val flexibleFormatter: DateTimeFormatter =
+        DateTimeFormatter.ofPattern(
+            "yyyy-MM-dd'T'HH:mm:ss[.SSSSSSSSS][.SSSSSSSS][.SSSSSSS][.SSSSSS][.SSSSS][.SSSS][.SSS][.SS][.S]"
+        )
 }
 
 data object OffsetTimeCodec : JsonCodec<OffsetTime> {
@@ -293,14 +304,22 @@ data object OffsetTimeCodec : JsonCodec<OffsetTime> {
     override fun decode(encoded: JsonNode): OffsetTime {
         val str: String = TextCodec.decode(encoded)
         try {
-            return OffsetTime.parse(str, formatter)
+            return OffsetTime.parse(str, flexibleFormatter)
         } catch (e: DateTimeParseException) {
-            throw IllegalArgumentException("invalid value $str for pattern '$PATTERN'", e)
+            throw IllegalArgumentException(
+                "invalid value $str for flexible time with offset pattern",
+                e
+            )
         }
     }
 
     const val PATTERN = "HH:mm:ss.SSSSSSXXX"
     val formatter: DateTimeFormatter = DateTimeFormatter.ofPattern(PATTERN)
+    // Flexible formatter accepts 0-9 decimal places for fractional seconds
+    private val flexibleFormatter: DateTimeFormatter =
+        DateTimeFormatter.ofPattern(
+            "HH:mm:ss[.SSSSSSSSS][.SSSSSSSS][.SSSSSSS][.SSSSSS][.SSSSS][.SSSS][.SSS][.SS][.S]XXX"
+        )
 }
 
 data object OffsetDateTimeCodec : JsonCodec<OffsetDateTime> {
@@ -310,15 +329,27 @@ data object OffsetDateTimeCodec : JsonCodec<OffsetDateTime> {
     override fun decode(encoded: JsonNode): OffsetDateTime {
         val str: String = TextCodec.decode(encoded)
         try {
-            return OffsetDateTime.parse(str, formatter)
+            return OffsetDateTime.parse(str, flexibleFormatter)
         } catch (e: DateTimeParseException) {
-            throw IllegalArgumentException("invalid value $str for pattern '$PATTERN'", e)
+            throw IllegalArgumentException(
+                "invalid value $str for flexible datetime with offset pattern",
+                e
+            )
         }
     }
 
     const val PATTERN = "yyyy-MM-dd'T'HH:mm:ss.SSSSSSXXX"
     val formatter: DateTimeFormatter = DateTimeFormatter.ofPattern(PATTERN)
+    // Flexible formatter accepts 0-9 decimal places for fractional seconds
+    private val flexibleFormatter: DateTimeFormatter =
+        DateTimeFormatter.ofPattern(
+            "yyyy-MM-dd'T'HH:mm:ss[.SSSSSSSSS][.SSSSSSSS][.SSSSSSS][.SSSSSS][.SSSSS][.SSSS][.SSS][.SS][.S]XXX"
+        )
 }
+
+// We need a specialized CDC OffsetDateTimeCodec to support CDC metafield that are string
+// In catalog but are OffsetDateTime - CDC_UPDATED_AT, CDC_DELETED_AT etc.
+data object CdcOffsetDateTimeCodec : JsonCodec<OffsetDateTime> by OffsetDateTimeCodec
 
 data object NullCodec : JsonCodec<Any?> {
     override fun encode(decoded: Any?): JsonNode = Jsons.nullNode()

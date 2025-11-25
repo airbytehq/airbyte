@@ -13,41 +13,35 @@ class StateHistogramStore {
     private val flushed: PartitionHistogram = PartitionHistogram(ConcurrentHashMap())
     // Counts of expected messages by state id
     private val expected: StateHistogram = StateHistogram(ConcurrentHashMap())
-    // Counts of flushed bytes by partition id
-    private val bytes: PartitionHistogram = PartitionHistogram(ConcurrentHashMap())
 
     fun acceptFlushedCounts(value: PartitionHistogram): PartitionHistogram {
         return flushed.merge(value)
     }
 
-    fun acceptFlushedBytes(value: PartitionHistogram): PartitionHistogram {
-        return bytes.merge(value)
-    }
-
     fun acceptExpectedCounts(key: StateKey, count: Long): StateHistogram {
-        val inner = ConcurrentHashMap<StateKey, Long>()
-        inner[key] = count
+        val inner = ConcurrentHashMap<StateKey, Double>()
+        inner[key] = count.toDouble()
 
         return expected.merge(StateHistogram(inner))
     }
 
     fun isComplete(key: StateKey): Boolean {
         val expectedCount = expected.get(key)
-        val flushedCount = key.partitionKeys.sumOf { flushed.get(it) ?: 0 }
+        val flushedCount = key.partitionKeys.sumOf { flushed.get(it) ?: 0.0 }
 
         return expectedCount == flushedCount
     }
 
-    fun remove(key: StateKey): StateHistogramStats {
-        val bytes =
-            key.partitionKeys.sumOf {
-                flushed.remove(it)
-                bytes.remove(it) ?: 0
-            }
-        val count = expected.remove(key) ?: 0
+    // mirrors isComplete. Purely for debugging purposes.
+    fun whyIsStateIncomplete(key: StateKey): String {
+        val expectedCount = expected.get(key)
+        val partitionFlushCounts = key.partitionKeys.map { flushed.get(it) ?: 0.0 }
+        val flushedCount = partitionFlushCounts.sum()
+        return "expectedCount $expectedCount does not equal flushedCount $flushedCount (by partition: $partitionFlushCounts)"
+    }
 
-        return StateHistogramStats(count, bytes)
+    fun remove(key: StateKey): Long? {
+        key.partitionKeys.forEach { flushed.remove(it) }
+        return expected.remove(key)?.toLong()
     }
 }
-
-data class StateHistogramStats(val count: Long, val bytes: Long)

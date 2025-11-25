@@ -6,12 +6,24 @@ acceptance_tests:
     tests:
       - spec_path: "manifest.yaml"
   connection:
-    bypass_reason: "This is a builder contribution, and we do not have secrets at this time"
+    tests:
+      - config_path: "secrets/config.json"
+        status: "succeed"
   discovery:
-    bypass_reason: "This is a builder contribution, and we do not have secrets at this time"
+    tests:
+      - config_path: "secrets/config.json"
   basic_read:
-    bypass_reason: "This is a builder contribution, and we do not have secrets at this time"
+    tests:
+      - config_path: "secrets/config.json"
+        configured_catalog_path: "integration_tests/configured_catalog.json"
+        empty_streams: []
   incremental:
-    bypass_reason: "This is a builder contribution, and we do not have secrets at this time"
+    tests:
+      - config_path: secrets/config.json
+        configured_catalog_path: integration_tests/configured_catalog.json
+        future_state:
+          future_state_path: integration_tests/abnormal_state.json
   full_refresh:
-    bypass_reason: "This is a builder contribution, and we do not have secrets at this time"
+    tests:
+      - config_path: "secrets/config.json"
+        configured_catalog_path: "integration_tests/configured_catalog.json"

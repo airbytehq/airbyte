@@ -3,10 +3,10 @@
 #
 
 import logging
+from datetime import date, timedelta
 from functools import cache, cached_property
 from typing import Any, Iterable, Iterator, List, Mapping, MutableMapping, Optional, Union
 
-import pendulum
 from facebook_business.exceptions import FacebookBadObjectError, FacebookRequestError
 
 import airbyte_cdk.sources.utils.casing as casing
@@ -14,9 +14,11 @@ from airbyte_cdk.models import FailureType, SyncMode
 from airbyte_cdk.sources.streams.core import package_name_from_class
 from airbyte_cdk.sources.utils.schema_helpers import ResourceSchemaLoader
 from airbyte_cdk.utils import AirbyteTracedException
+from airbyte_cdk.utils.datetime_helpers import AirbyteDateTime, ab_datetime_now, ab_datetime_parse
 from source_facebook_marketing.streams.async_job import AsyncJob, InsightAsyncJob
 from source_facebook_marketing.streams.async_job_manager import InsightAsyncJobManager
 from source_facebook_marketing.streams.common import traced_exception
+from source_facebook_marketing.utils import DateInterval
 
 from .base_streams import FBMarketingIncrementalStream
 
@@ -58,7 +60,8 @@ class AdsInsights(FBMarketingIncrementalStream):
     # Facebook store metrics maximum of 37 months old. Any time range that
     # older than 37 months from current date would result in 400 Bad request HTTP response.
     # https://developers.facebook.com/docs/marketing-api/reference/ad-account/insights/#overview
-    INSIGHTS_RETENTION_PERIOD = pendulum.duration(months=37)
+    # Min number of days that can occur in 37 months is 1123 days.
+    INSIGHTS_RETENTION_PERIOD = timedelta(days=1123)
 
     action_attribution_windows = ALL_ACTION_ATTRIBUTION_WINDOWS
     time_increment = 1
@@ -98,7 +101,7 @@ class AdsInsights(FBMarketingIncrementalStream):
         self.entity_prefix = level
 
         # state
-        self._cursor_values: Optional[Mapping[str, pendulum.Date]] = None  # latest period that was read for each account
+        self._cursor_values: Optional[Mapping[str, date]] = None  # latest period that was read for each account
         self._next_cursor_values = self._get_start_date()
         self._completed_slices = {account_id: set() for account_id in self._account_ids}
 
@@ -130,11 +133,11 @@ class AdsInsights(FBMarketingIncrementalStream):
         But in some cases users my have define their own lookback window, that's
         why the value for `insights_lookback_window` is set through the config.
         """
-        return pendulum.duration(days=self._insights_lookback_window)
+        return timedelta(days=self._insights_lookback_window)
 
     @property
     def insights_job_timeout(self):
-        return pendulum.duration(minutes=self._insights_job_timeout)
+        return timedelta(minutes=self._insights_job_timeout)
 
     def _transform_breakdown(self, record: Mapping[str, Any]) -> Mapping[str, Any]:
         for breakdown in self.breakdowns:
@@ -214,24 +217,28 @@ class AdsInsights(FBMarketingIncrementalStream):
             return
 
         self._cursor_values = {
-            account_id: pendulum.parse(transformed_state[account_id][self.cursor_field]).date()
+            account_id: ab_datetime_parse(transformed_state[account_id][self.cursor_field]).date()
             if transformed_state.get(account_id, {}).get(self.cursor_field)
             else None
             for account_id in self._account_ids
         }
         self._completed_slices = {
-            account_id: set(pendulum.parse(v).date() for v in transformed_state.get(account_id, {}).get("slices", []))
+            account_id: set(ab_datetime_parse(v).date() for v in transformed_state.get(account_id, {}).get("slices", []))
             for account_id in self._account_ids
         }
 
         self._next_cursor_values = self._get_start_date()
 
-    def _date_intervals(self, account_id: str) -> Iterator[pendulum.Date]:
+    def _date_intervals(self, account_id: str) -> Iterator[date]:
         """Get date period to sync"""
         if self._end_date < self._next_cursor_values[account_id]:
             return
-        date_range = self._end_date - self._next_cursor_values[account_id]
-        yield from date_range.range("days", self.time_increment)
+
+        # Generate date intervals manually using standard datetime arithmetic
+        current_date = self._next_cursor_values[account_id]
+        while current_date <= self._end_date:
+            yield current_date
+            current_date += timedelta(days=self.time_increment)
 
     def _advance_cursor(self, account_id: str):
         """Iterate over state, find continuing sequence of slices. Get last value, advance cursor there and remove slices from state"""
@@ -259,14 +266,16 @@ class AdsInsights(FBMarketingIncrementalStream):
                 and ts_start < self._next_cursor_values.get(account_id, self._start_date) - self.insights_lookback_period
             ):
                 continue
-            ts_end = ts_start + pendulum.duration(days=self.time_increment - 1)
-            interval = pendulum.Period(ts_start, ts_end)
+            ts_end = ts_start + timedelta(days=self.time_increment - 1)
+            interval = DateInterval(start=ts_start, end=ts_end)
             yield InsightAsyncJob(
                 api=self._api.api,
                 edge_object=self._api.get_account(account_id=account_id),
                 interval=interval,
                 params=params,
                 job_timeout=self.insights_job_timeout,
+                primary_key=self.primary_key,
+                object_breakdowns=self.object_breakdowns,
             )
 
     def check_breakdowns(self, account_id: str):
@@ -320,7 +329,7 @@ class AdsInsights(FBMarketingIncrementalStream):
             except FacebookRequestError as exc:
                 raise traced_exception(exc)
 
-    def _get_start_date(self) -> Mapping[str, pendulum.Date]:
+    def _get_start_date(self) -> Mapping[str, date]:
         """Get start date to begin sync with. It is not that trivial as it might seem.
         There are few rules:
             - don't read data older than start_date
@@ -332,7 +341,7 @@ class AdsInsights(FBMarketingIncrementalStream):
 
         :return: the first date to sync
         """
-        today = pendulum.today(tz=pendulum.tz.UTC).date()
+        today = ab_datetime_now().date()
         oldest_date = today - self.INSIGHTS_RETENTION_PERIOD
 
         start_dates_for_account = {}
@@ -340,7 +349,7 @@ class AdsInsights(FBMarketingIncrementalStream):
             cursor_value = self._cursor_values.get(account_id) if self._cursor_values else None
             if cursor_value:
                 start_date = cursor_value
-                refresh_date: pendulum.Date = cursor_value - self.insights_lookback_period
+                refresh_date: date = cursor_value - self.insights_lookback_period
                 if start_date > refresh_date:
                     logger.info(
                         f"The cursor value within refresh period ({self.insights_lookback_period}), start sync from {refresh_date} instead."

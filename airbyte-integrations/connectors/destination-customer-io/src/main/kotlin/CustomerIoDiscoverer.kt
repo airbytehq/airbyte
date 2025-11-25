@@ -4,50 +4,13 @@
 
 package io.airbyte.integrations.destination.customerio
 
-import io.airbyte.cdk.load.command.Append
-import io.airbyte.cdk.load.command.Dedupe
 import io.airbyte.cdk.load.command.DestinationDiscoverCatalog
-import io.airbyte.cdk.load.command.DestinationOperation
-import io.airbyte.cdk.load.data.FieldType
-import io.airbyte.cdk.load.data.IntegerType
-import io.airbyte.cdk.load.data.ObjectType
-import io.airbyte.cdk.load.data.StringType
 import io.airbyte.cdk.load.discover.DestinationDiscoverer
+import io.airbyte.cdk.load.discoverer.operation.OperationProvider
 
-class CustomerIoDiscoverer() : DestinationDiscoverer {
+class CustomerIoDiscoverer(private val operationProvider: OperationProvider) :
+    DestinationDiscoverer {
     override fun discover(): DestinationDiscoverCatalog {
-        return DestinationDiscoverCatalog(
-            listOf(
-                DestinationOperation(
-                    "person_identify",
-                    Dedupe(emptyList(), emptyList()),
-                    ObjectType(
-                        properties =
-                            linkedMapOf(
-                                "person_email" to FieldType(StringType, false),
-                            ),
-                        additionalProperties = true,
-                        required = listOf("person_email"),
-                    ),
-                    matchingKeys = emptyList()
-                ),
-                DestinationOperation(
-                    "person_event",
-                    Append,
-                    ObjectType(
-                        properties =
-                            linkedMapOf(
-                                "person_email" to FieldType(StringType, false),
-                                "event_name" to FieldType(StringType, false),
-                                "event_id" to FieldType(StringType, false),
-                                "timestamp" to FieldType(IntegerType, false),
-                            ),
-                        additionalProperties = true,
-                        required = listOf("person_email", "event_name"),
-                    ),
-                    matchingKeys = emptyList()
-                )
-            )
-        )
+        return DestinationDiscoverCatalog(operationProvider.get())
     }
 }

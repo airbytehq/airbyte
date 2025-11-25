@@ -8,9 +8,10 @@ data:
   connectorSubtype: database
   connectorTestSuitesOptions:
     - suite: integrationTests
+    - suite: acceptanceTests
   connectorType: source
   definitionId: bad83517-5e54-4a3d-9b53-63e85fbd4d7c
-  dockerImageTag: 0.2.4
+  dockerImageTag: 0.2.6
   dockerRepository: airbyte/source-clickhouse-strict-encrypt
   documentationUrl: https://docs.airbyte.com/integrations/sources/clickhouse
   githubIssueLabel: source-clickhouse
@@ -25,4 +26,14 @@ data:
   releaseStage: alpha
   tags:
     - language:java
+  externalDocumentationUrls:
+    - title: ClickHouse HTTP interface
+      url: https://clickhouse.com/docs/en/interfaces/http
+      type: api_reference
+    - title: ClickHouse authentication
+      url: https://clickhouse.com/docs/en/operations/access-rights
+      type: authentication_guide
+    - title: ClickHouse SQL reference
+      url: https://clickhouse.com/docs/en/sql-reference
+      type: sql_reference
 metadataSpecVersion: "1.0"

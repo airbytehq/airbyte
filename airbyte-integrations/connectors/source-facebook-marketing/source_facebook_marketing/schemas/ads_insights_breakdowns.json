@@ -319,6 +319,10 @@
     "video_asset_id": {
       "description": "The ID of the video asset used in the ad.",
       "type": ["null", "string"]
+    },
+    "user_segment_key": {
+      "description": "User segment (ex: new, existing) of Advantage+ Shopping Campaigns (ASC). Existing user is specified by the custom audience in ASC settings.",
+      "type": ["null", "string"]
     }
   }
 }

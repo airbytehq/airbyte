@@ -58,7 +58,6 @@ class GcsClientFactory(
                                         )
                                 },
                                 assumeRoleCredentials = null,
-                                null
                             )
                             .make(),
                     config = config,

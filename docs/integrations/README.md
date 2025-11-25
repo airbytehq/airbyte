@@ -10,15 +10,15 @@ Browse Airbyte's catalog below to see which connectors are available, read their
 
 ## Contribute to Airbyte's connectors
 
-Don't see the connector you need? Need a connector to do something it doesn't currently do? Airbyte's connectors are open source. You can [build entirely new connectors](../platform/connector-development/) or contribute enhancements, bug fixes, and features to existing connectors. We encourage contributors to [add your changes](../platform/contributing-to-airbyte/) to Airbyte's public connector catalog, but you always have the option to publish them privately in your own workspaces.
+Don't see the connector you need? Need a connector to do something it doesn't currently do? Airbyte's connectors are open source. You can [build entirely new connectors](../platform/connector-development/) or contribute enhancements, bug fixes, and features to existing connectors. We encourage contributors to [add your changes](/community/contributing-to-airbyte/) to Airbyte's public connector catalog, but you always have the option to publish them privately in your own workspaces.
 
 ## Connector support levels
 
-Each connector has one of the following support levels. Review [Connector support levels](connector-support-levels) for details on each tier.
+Each connector has one of the following support levels. Review [Connector support levels](/integrations/connector-support-levels) for details on each tier.
 
 - **Airbyte**: maintained by Airbyte.
 
-- **Enterprise**: special, premium connectors available to Enterprise and Teams customers **for an additional cost**. To learn more about enterprise connectors, [talk to Sales](https://airbyte.com/company/talk-to-sales).
+- **Enterprise**: special, premium connectors available to Enterprise and Pro customers **for an additional cost**. To learn more about enterprise connectors, [talk to Sales](https://airbyte.com/company/talk-to-sales).
 
 - **Marketplace**: maintained by the open source community.
 

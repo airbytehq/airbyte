@@ -139,6 +139,9 @@ With root level flattening, the output JSONL is:
 
 | Version  | Date       | Pull Request                                               | Subject                                                                                                                                                         |
 |:---------|:-----------|:-----------------------------------------------------------|:----------------------------------------------------------------------------------------------------------------------------------------------------------------|
+| 1.1.4 | 2025-11-01 | [69127](https://github.com/airbytehq/airbyte/pull/69127) | Upgrade to Bulk CDK 0.1.61. |
+| 1.1.3 | 2025-10-21 | [67153](https://github.com/airbytehq/airbyte/pull/67153) | Implement new proto schema implementation |
+| 1.1.2 | 2025-10-05 | [67078](https://github.com/airbytehq/airbyte/pull/67078) | Remove memory limit for sync jobs to improve performance and resource utilization. |
 | 1.1.1 | 2025-09-10 | [66139](https://github.com/airbytehq/airbyte/pull/66139)   | Fix inconsistent field name casing and improve tooltip clarity. Field names now use consistent title casing and tooltips reference exact field names. |
 | 1.1.0 | 2025-09-03 | [65933](https://github.com/airbytehq/airbyte/pull/65933)   | Add support for Azure Entra ID (Service Principal) authentication. You can now authenticate using Azure AD tenant ID, client ID, and client secret. |
 | 1.0.4 | 2025-08-07 | [64556](https://github.com/airbytehq/airbyte/pull/64556)   | Promoting release candidate 1.0.4-rc.1 to a main version. |

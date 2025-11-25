@@ -187,7 +187,7 @@ class DockerizedDestination(
         val micronautEnvEnvVar =
             listOf(
                 "-e",
-                "MICRONAUT_ENVIRONMENTS=test,cli,destination,connector",
+                "MICRONAUT_ENVIRONMENTS=test,docker,cli,destination,connector",
             )
 
         val additionalEnvEntries =

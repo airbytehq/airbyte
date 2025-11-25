@@ -1,0 +1,88 @@
+name: Bump Bulk CDK Version
+on:
+  workflow_dispatch:
+    inputs:
+      bump:
+        description: The type of bump (major/minor/patch)
+        type: choice
+        options:
+          - major
+          - minor
+          - patch
+      changelog:
+        description: The changelog entry
+        type: string
+      pr:
+        description: "Pull request where workflow status messages will be posted."
+        type: number
+        required: true
+      comment-id:
+        description: "Optional. Where the workflow status messages will be posted. If not provided, a new messages will be posted."
+        required: false
+
+        # These must be declared, but they are unused and ignored.
+      repo:
+        description: "Repo (Ignored)"
+        required: false
+      gitref:
+        description: "Ref (Ignored)"
+        required: false
+
+jobs:
+  update-connector-cdk-version:
+    name: Update Connector CDK Version
+    runs-on: ubuntu-24.04
+    steps:
+      - name: Resolve job vars
+        id: resolve-job-vars
+        run: |
+          echo "run-url=https://github.com/$GITHUB_REPOSITORY/actions/runs/$GITHUB_RUN_ID" >> $GITHUB_OUTPUT
+
+      - name: Append comment with job run link
+        id: first-comment-action
+        uses: peter-evans/create-or-update-comment@71345be0265236311c031f5c7866368bd1eff043 # v4.0.0
+        with:
+          comment-id: ${{ github.event.inputs.comment-id }}
+          issue-number: ${{ github.event.inputs.pr }}
+          body: |
+            > Update bulk CDK version job started. Check the [job logs](${{ steps.resolve-job-vars.outputs.run-url }}) for details.
+
+      - name: Checkout Airbyte
+        uses: actions/checkout@08eba0b27e820071cde6df949e0beb9ba4906955 # v4.3.0
+
+      - name: Setup Java
+        uses: actions/setup-java@c5195efecf7bdfc987ee8bae7a71cb8b11521c00 # v4.7.1
+        with:
+          distribution: "zulu"
+          java-version: "21"
+
+      - name: Setup Gradle
+        uses: gradle/actions/setup-gradle@748248ddd2a24f49513d8f472f81c3a07d4d50e1 # v4.4.4
+
+      - name: Run CDK version bump
+        run: ./gradlew :airbyte-cdk:bulk:bumpVersion --${{ github.event.inputs.bump }} --changelog "${{ github.event.inputs.changelog }}"
+
+      - name: Commit changes
+        run: |
+          git config --global user.name "Octavia Squidington III"
+          git config --global user.email "octavia-squidington-iii@users.noreply.github.com"
+          git add .
+          git commit -m "Bump cdk version"
+          git push
+
+      - name: Append success comment
+        uses: peter-evans/create-or-update-comment@71345be0265236311c031f5c7866368bd1eff043 # v4.0.0
+        with:
+          comment-id: ${{ steps.first-comment-action.outputs.comment-id }}
+          reactions: hooray
+          body: |
+            > ✅ Successfully bumped CDK version.
+
+      - name: Append failure comment
+        uses: peter-evans/create-or-update-comment@71345be0265236311c031f5c7866368bd1eff043 # v4.0.0
+        if: failure()
+        with:
+          comment-id: ${{ steps.first-comment-action.outputs.comment-id }}
+          reactions: confused
+          body: |
+            > 🔴 Job failed while bumping CDK version. Check the [job logs](${{ steps.resolve-job-vars.outputs.run-url }}) for details.

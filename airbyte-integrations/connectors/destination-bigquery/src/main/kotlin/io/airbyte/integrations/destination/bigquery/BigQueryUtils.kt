@@ -177,3 +177,5 @@ object BigQueryUtils {
                 .map { name: String -> name.replace("airbyte/", "").replace(":", "/") }
                 .orElse("destination-bigquery")
 }
+
+fun TableId.toPrettyString() = "${this.dataset}.${this.table}"
