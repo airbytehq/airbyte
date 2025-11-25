@@ -27,6 +27,14 @@ This page contains the setup guide and reference information for the [Microsoft 
 3. On the Set up the source page, select Microsoft SharePoint from the Source type dropdown.
 4. Enter a name for the Microsoft SharePoint connector.
 5. Select **Search Scope**. Specifies the location(s) to search for files. Valid options are 'ACCESSIBLE_DRIVES' for all SharePoint drives the user can access, 'SHARED_ITEMS' for shared items the user has access to, and 'ALL' to search both. Default value is 'ALL'.
+
+:::warning Authentication and Scope Compatibility
+- **Service Key Authentication** only supports the `ACCESSIBLE_DRIVES` scope
+- **OAuth2.0 (delegated)** authentication is required for `SHARED_ITEMS` or `ALL` scopes
+
+This is because the `SHARED_ITEMS` scope uses the Microsoft Graph `/me/drive/sharedWithMe` endpoint, which requires a user context (delegated permissions). Using Service Key Authentication with `SHARED_ITEMS` or `ALL` will result in the error: "/me request is only valid with delegated authentication flow."
+:::
+
 6. Enter **Folder Path**. Leave empty to search all folders of the drives. This does not apply to shared items.
 7. The **OAuth2.0** authorization method is selected by default. Click **Authenticate your Microsoft SharePoint account**. Log in and authorize your Microsoft account.
 8. For **Start Date**, enter the date in YYYY-MM-DD format. The data added on and after this date will be replicated.
@@ -91,6 +99,14 @@ This source requires **Application permissions**. Follow these [instructions](ht
 3. On the **Set up** the source page, select **Microsoft SharePoint** from the Source type dropdown.
 4. Enter the name for the Microsoft SharePoint connector.
 5. Select **Search Scope**. Specifies the location(s) to search for files. Valid options are 'ACCESSIBLE_DRIVES' for all SharePoint drives the user can access, 'SHARED_ITEMS' for shared items the user has access to, and 'ALL' to search both. Default value is 'ALL'.
+
+:::warning Authentication and Scope Compatibility
+- **Service Key Authentication** only supports the `ACCESSIBLE_DRIVES` scope
+- **OAuth2.0 (delegated)** authentication is required for `SHARED_ITEMS` or `ALL` scopes
+
+This is because the `SHARED_ITEMS` scope uses the Microsoft Graph `/me/drive/sharedWithMe` endpoint, which requires a user context (delegated permissions). Using Service Key Authentication with `SHARED_ITEMS` or `ALL` will result in the error: "/me request is only valid with delegated authentication flow."
+:::
+
 6. Enter **Folder Path**. Leave empty to search all folders of the drives. This does not apply to shared items.
 7. Switch to **Service Key Authentication**
 8. For **User Practical Name**, enter the [UPN](https://learn.microsoft.com/en-us/sharepoint/list-onedrive-urls) for your user.

@@ -27,7 +27,15 @@ This page contains the setup guide and reference information for the [SharePoint
 2. On the Set up the source page, select SharePoint Enterprise from the Source type dropdown.
 3. Enter a name for the SharePoint Enterprise connector.
 4. Select **Search Scope**. Specifies the location(s) to search for files. Valid options are 'ACCESSIBLE_DRIVES' for all SharePoint drives the user can access, 'SHARED_ITEMS' for shared items the user has access to, and 'ALL' to search both. Default value is 'ALL'.
-5. Enter **Folder Path**. Leave empty to search all folders of the drives. This does not apply to shared items.
+
+:::warning Authentication and Scope Compatibility
+- **Service Key Authentication** only supports the `ACCESSIBLE_DRIVES` scope
+- **OAuth2.0 (delegated)** authentication is required for `SHARED_ITEMS` or `ALL` scopes
+
+This is because the `SHARED_ITEMS` scope uses the Microsoft Graph `/me/drive/sharedWithMe` endpoint, which requires a user context (delegated permissions). Using Service Key Authentication with `SHARED_ITEMS` or `ALL` will result in the error: "/me request is only valid with delegated authentication flow."
+:::
+
+5. Enter **Folder Path**.Leave empty to search all folders of the drives. This does not apply to shared items.
 6. The **OAuth2.0** authorization method is selected by default. Click **Authenticate your Microsoft SharePoint account**. Log in and authorize your Microsoft account.
 7. For **Start Date**, enter the date in YYYY-MM-DD format. The data added on and after this date will be replicated.
 8. Add a stream:
