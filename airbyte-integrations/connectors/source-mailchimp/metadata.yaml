@@ -15,9 +15,15 @@ data:
   dockerRepository: airbyte/source-mailchimp
   documentationUrl: https://docs.airbyte.com/integrations/sources/mailchimp
   externalDocumentationUrls:
+    - title: Mailchimp Marketing API Release Notes
+      url: https://mailchimp.com/developer/release-notes/
+      type: api_release_history
     - title: Release Notes
       url: https://mailchimp.com/developer/release-notes/?filter=marketing
       type: api_release_history
+    - title: Mailchimp Marketing API OpenAPI specification
+      url: https://api.mailchimp.com/schema/3.0/Swagger.json
+      type: openapi_spec
   githubIssueLabel: source-mailchimp
   icon: mailchimp.svg
   license: ELv2

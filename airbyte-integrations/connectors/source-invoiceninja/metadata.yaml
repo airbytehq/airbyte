@@ -33,3 +33,7 @@ data:
   ab_internal:
     ql: 100
     sl: 100
+  externalDocumentationUrls:
+    - title: Invoice Ninja API documentation
+      url: https://api-docs.invoicing.co/
+      type: api_reference

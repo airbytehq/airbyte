@@ -33,3 +33,7 @@ data:
   ab_internal:
     ql: 100
     sl: 100
+  externalDocumentationUrls:
+    - title: Perigon API documentation
+      url: https://docs.goperigon.com/
+      type: api_reference

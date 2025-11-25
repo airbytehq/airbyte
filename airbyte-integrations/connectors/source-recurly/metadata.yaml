@@ -49,4 +49,14 @@ data:
           secretStore:
             type: GSM
             alias: airbyte-connector-testing-secret-store
+  externalDocumentationUrls:
+    - title: Recurly API reference
+      url: https://developers.recurly.com/api/v2021-02-25/
+      type: api_reference
+    - title: Recurly authentication
+      url: https://developers.recurly.com/api/v2021-02-25/#section/Authentication
+      type: authentication_guide
+    - title: Recurly rate limits
+      url: https://developers.recurly.com/api/v2021-02-25/#section/Rate-Limits
+      type: rate_limits
 metadataSpecVersion: "1.0"

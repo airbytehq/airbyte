@@ -17,6 +17,12 @@ data:
     - title: Changelog
       url: https://developer.atlassian.com/changelog/#
       type: api_release_history
+    - title: Jira Platform API Changelog
+      url: https://developer.atlassian.com/cloud/jira/platform/changelog/
+      type: api_release_history
+    - title: Jira Cloud Platform API OpenAPI specification
+      url: https://developer.atlassian.com/cloud/jira/platform/swagger-v3.v3.json
+      type: openapi_spec
   erdUrl: https://dbdocs.io/airbyteio/source-jira?view=relationships
   githubIssueLabel: source-jira
   icon: jira.svg

@@ -28,4 +28,8 @@ data:
   supportLevel: community
   connectorBuildOptions:
     baseImage: docker.io/airbyte/source-declarative-manifest:6.51.0@sha256:890b109f243b8b9406f23ea7522de41025f7b3e87f6fc9710bc1e521213a276f
+  externalDocumentationUrls:
+    - title: tyntec SMS API
+      url: https://api.tyntec.com/reference/messaging
+      type: api_reference
 metadataSpecVersion: "1.0"

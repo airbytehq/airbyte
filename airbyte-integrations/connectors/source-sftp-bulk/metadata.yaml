@@ -17,13 +17,14 @@ data:
   connectorSubtype: file
   connectorType: source
   definitionId: 31e3242f-dee7-4cdc-a4b8-8e06c5458517
-  dockerImageTag: 1.8.8
+  dockerImageTag: 1.8.9
   dockerRepository: airbyte/source-sftp-bulk
   documentationUrl: https://docs.airbyte.com/integrations/sources/sftp-bulk
   githubIssueLabel: source-sftp-bulk
   icon: sftp.svg
   license: ELv2
   name: SFTP Bulk
+  maxSecondsBetweenMessages: 10800
   remoteRegistries:
     pypi:
       enabled: true
@@ -66,4 +67,8 @@ data:
           secretStore:
             type: GSM
             alias: airbyte-connector-testing-secret-store
+  externalDocumentationUrls:
+    - title: SFTP protocol documentation
+      url: https://datatracker.ietf.org/doc/html/draft-ietf-secsh-filexfer-02
+      type: api_reference
 metadataSpecVersion: "1.0"

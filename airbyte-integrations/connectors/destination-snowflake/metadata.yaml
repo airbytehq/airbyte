@@ -6,7 +6,7 @@ data:
   connectorSubtype: database
   connectorType: destination
   definitionId: 424892c4-daac-4491-b35d-c6688ba547ba
-  dockerImageTag: 4.0.28
+  dockerImageTag: 4.0.30
   dockerRepository: airbyte/destination-snowflake
   documentationUrl: https://docs.airbyte.com/integrations/destinations/snowflake
   githubIssueLabel: destination-snowflake
@@ -90,15 +90,18 @@ data:
     - title: Release notes
       url: https://docs.snowflake.com/en/release-notes
       type: api_release_history
-    - title: SQL reference
-      url: https://docs.snowflake.com/en/sql-reference
-      type: sql_reference
+    - title: Snowflake server release notes and feature updates
+      url: https://docs.snowflake.com/en/release-notes/new-features
+      type: api_release_history
     - title: Key pair authentication
       url: https://docs.snowflake.com/en/user-guide/key-pair-auth
       type: authentication_guide
     - title: Access control
       url: https://docs.snowflake.com/en/user-guide/security-access-control
       type: permissions_scopes
+    - title: SQL reference
+      url: https://docs.snowflake.com/en/sql-reference
+      type: sql_reference
     - title: Snowflake Status
       url: https://status.snowflake.com/
       type: status_page

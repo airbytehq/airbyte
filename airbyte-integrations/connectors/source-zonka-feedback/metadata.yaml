@@ -33,3 +33,7 @@ data:
   ab_internal:
     ql: 100
     sl: 100
+  externalDocumentationUrls:
+    - title: Zonka Feedback API
+      url: https://help.zonkafeedback.com/en/articles/6273783-api-documentation
+      type: api_reference

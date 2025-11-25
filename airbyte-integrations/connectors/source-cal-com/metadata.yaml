@@ -33,3 +33,10 @@ data:
   ab_internal:
     ql: 100
     sl: 100
+  externalDocumentationUrls:
+    - title: Cal.com API reference
+      url: https://cal.com/docs/api-reference/introduction
+      type: api_reference
+    - title: Cal.com authentication
+      url: https://cal.com/docs/api-reference/authentication
+      type: authentication_guide

@@ -35,3 +35,16 @@ data:
   ab_internal:
     ql: 100
     sl: 100
+  externalDocumentationUrls:
+    - title: Calendly API reference
+      url: https://developer.calendly.com/api-docs
+      type: api_reference
+    - title: Calendly authentication
+      url: https://developer.calendly.com/getting-started
+      type: authentication_guide
+    - title: Calendly API rate limits
+      url: https://developer.calendly.com/api-docs/ZG9jOjM2MzE2MDM4-api-conventions#rate-limiting
+      type: rate_limits
+    - title: Calendly Status
+      url: https://status.calendly.com/
+      type: status_page

@@ -33,3 +33,13 @@ data:
   ab_internal:
     ql: 100
     sl: 100
+  externalDocumentationUrls:
+    - title: Onfleet API reference
+      url: https://docs.onfleet.com/reference
+      type: api_reference
+    - title: Onfleet authentication
+      url: https://docs.onfleet.com/reference/authentication
+      type: authentication_guide
+    - title: Onfleet rate limits
+      url: https://docs.onfleet.com/reference/throttling
+      type: rate_limits

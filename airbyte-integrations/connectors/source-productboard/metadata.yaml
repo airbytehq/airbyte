@@ -33,3 +33,10 @@ data:
   ab_internal:
     ql: 100
     sl: 100
+  externalDocumentationUrls:
+    - title: Productboard API reference
+      url: https://developer.productboard.com/
+      type: api_reference
+    - title: Productboard authentication
+      url: https://developer.productboard.com/#section/Authentication
+      type: authentication_guide

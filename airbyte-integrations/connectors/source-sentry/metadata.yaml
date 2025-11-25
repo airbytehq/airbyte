@@ -20,6 +20,9 @@ data:
     - title: Changelog
       url: https://sentry.io/changelog/
       type: api_release_history
+    - title: Sentry API OpenAPI specification
+      url: https://github.com/getsentry/sentry-api-schema
+      type: openapi_spec
   githubIssueLabel: source-sentry
   icon: sentry.svg
   license: ELv2

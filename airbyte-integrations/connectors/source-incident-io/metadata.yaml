@@ -33,3 +33,13 @@ data:
   ab_internal:
     ql: 100
     sl: 100
+  externalDocumentationUrls:
+    - title: incident.io API reference
+      url: https://api-docs.incident.io/
+      type: api_reference
+    - title: incident.io authentication
+      url: https://api-docs.incident.io/#section/Authentication
+      type: authentication_guide
+    - title: incident.io Status
+      url: https://status.incident.io/
+      type: status_page

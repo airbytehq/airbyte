@@ -78,15 +78,15 @@ data:
     - title: Release notes
       url: https://docs.databricks.com/release-notes/index.html
       type: api_release_history
-    - title: SQL reference
-      url: https://docs.databricks.com/sql/language-manual/index.html
-      type: sql_reference
     - title: Authentication
       url: https://docs.databricks.com/dev-tools/auth.html
       type: authentication_guide
     - title: Access control
       url: https://docs.databricks.com/security/access-control/index.html
       type: permissions_scopes
+    - title: SQL reference
+      url: https://docs.databricks.com/sql/language-manual/index.html
+      type: sql_reference
     - title: Databricks Status
       url: https://status.databricks.com/
       type: status_page

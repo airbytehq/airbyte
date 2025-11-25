@@ -33,4 +33,17 @@ data:
   supportLevel: community
   tags:
     - language:java
+  externalDocumentationUrls:
+    - title: Amazon DynamoDB API reference
+      url: https://docs.aws.amazon.com/amazondynamodb/latest/APIReference/
+      type: api_reference
+    - title: DynamoDB authentication
+      url: https://docs.aws.amazon.com/amazondynamodb/latest/developerguide/authentication-and-access-control.html
+      type: authentication_guide
+    - title: DynamoDB rate limits
+      url: https://docs.aws.amazon.com/amazondynamodb/latest/developerguide/Limits.html
+      type: rate_limits
+    - title: AWS Service Health Dashboard
+      url: https://health.aws.amazon.com/health/status
+      type: status_page
 metadataSpecVersion: "1.0"

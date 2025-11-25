@@ -33,3 +33,13 @@ data:
   ab_internal:
     ql: 100
     sl: 100
+  externalDocumentationUrls:
+    - title: Campaign Monitor API reference
+      url: https://www.campaignmonitor.com/api/
+      type: api_reference
+    - title: Campaign Monitor authentication
+      url: https://www.campaignmonitor.com/api/getting-started/#authenticating
+      type: authentication_guide
+    - title: Campaign Monitor rate limits
+      url: https://www.campaignmonitor.com/api/getting-started/#rate-limiting
+      type: rate_limits

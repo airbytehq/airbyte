@@ -33,3 +33,7 @@ data:
   ab_internal:
     ql: 100
     sl: 100
+  externalDocumentationUrls:
+    - title: Partnerize API documentation
+      url: https://api-documentation.partnerize.com/
+      type: api_reference

@@ -38,10 +38,10 @@ data:
     - title: Firebolt documentation
       url: https://docs.firebolt.io/
       type: api_reference
-    - title: SQL reference
-      url: https://docs.firebolt.io/sql_reference/
-      type: sql_reference
     - title: Authentication
       url: https://docs.firebolt.io/godocs/Overview/managing-your-organization/service-accounts.html
       type: authentication_guide
+    - title: SQL reference
+      url: https://docs.firebolt.io/sql_reference/
+      type: sql_reference
 metadataSpecVersion: "1.0"

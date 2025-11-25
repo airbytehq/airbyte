@@ -41,4 +41,8 @@ data:
           secretStore:
             type: GSM
             alias: airbyte-connector-testing-secret-store
+  externalDocumentationUrls:
+    - title: Younium API documentation
+      url: https://developer.younium.com/
+      type: api_reference
 metadataSpecVersion: "1.0"

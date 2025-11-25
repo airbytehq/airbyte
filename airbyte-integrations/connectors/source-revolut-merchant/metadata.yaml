@@ -33,3 +33,10 @@ data:
   ab_internal:
     ql: 100
     sl: 100
+  externalDocumentationUrls:
+    - title: Revolut Merchant API
+      url: https://developer.revolut.com/docs/merchant-api/
+      type: api_reference
+    - title: Revolut authentication
+      url: https://developer.revolut.com/docs/merchant-api/#merchant-api-authentication
+      type: authentication_guide

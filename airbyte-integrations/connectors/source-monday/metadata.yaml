@@ -6,11 +6,11 @@ data:
     hosts:
       - api.monday.com
   connectorBuildOptions:
-    baseImage: docker.io/airbyte/source-declarative-manifest:7.5.0@sha256:92e539d5003b33c3624eae7715aee6e39b7b2f1f0eeb6003d37e649a06847ae8
+    baseImage: docker.io/airbyte/source-declarative-manifest:7.5.1@sha256:8da9d362c184e2e46532ab94f6f9968a74835c0882d6a4a2f9f9c9e5b972f2a1
   connectorSubtype: api
   connectorType: source
   definitionId: 80a54ea2-9959-4040-aac1-eee42423ec9b
-  dockerImageTag: 2.4.14
+  dockerImageTag: 2.4.15
   releases:
     rolloutConfiguration:
       enableProgressiveRollout: false
@@ -82,4 +82,17 @@ data:
           secretStore:
             type: GSM
             alias: airbyte-connector-testing-secret-store
+  externalDocumentationUrls:
+    - title: monday.com API reference
+      url: https://developer.monday.com/api-reference/docs
+      type: api_reference
+    - title: monday.com authentication
+      url: https://developer.monday.com/api-reference/docs/authentication
+      type: authentication_guide
+    - title: monday.com rate limits
+      url: https://developer.monday.com/api-reference/docs/rate-limits
+      type: rate_limits
+    - title: monday.com Status
+      url: https://status.monday.com/
+      type: status_page
 metadataSpecVersion: "1.0"

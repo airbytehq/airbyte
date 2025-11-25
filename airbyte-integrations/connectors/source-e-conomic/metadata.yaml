@@ -33,3 +33,13 @@ data:
   ab_internal:
     ql: 100
     sl: 100
+  externalDocumentationUrls:
+    - title: e-conomic REST API
+      url: https://restdocs.e-conomic.com/
+      type: api_reference
+    - title: e-conomic authentication
+      url: https://www.e-conomic.com/developer/connect
+      type: authentication_guide
+    - title: e-conomic rate limits
+      url: https://restdocs.e-conomic.com/#rate-limiting
+      type: rate_limits

@@ -33,3 +33,13 @@ data:
   ab_internal:
     ql: 100
     sl: 100
+  externalDocumentationUrls:
+    - title: ShipStation API reference
+      url: https://www.shipstation.com/docs/api/
+      type: api_reference
+    - title: ShipStation authentication
+      url: https://www.shipstation.com/docs/api/requirements/
+      type: authentication_guide
+    - title: ShipStation rate limits
+      url: https://www.shipstation.com/docs/api/requirements/#rate-limits
+      type: rate_limits

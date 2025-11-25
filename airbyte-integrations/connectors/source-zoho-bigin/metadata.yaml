@@ -33,3 +33,7 @@ data:
   ab_internal:
     ql: 100
     sl: 100
+  externalDocumentationUrls:
+    - title: Zoho Bigin API
+      url: https://www.zoho.com/bigin/developer/api.html
+      type: api_reference
