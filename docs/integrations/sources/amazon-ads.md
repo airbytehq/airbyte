@@ -159,6 +159,7 @@ Information about expected report generation waiting time can be found [here](ht
 
 | Version    | Date       | Pull Request                                             | Subject                                                                                                                                                                |
 |:-----------|:-----------|:---------------------------------------------------------|:-----------------------------------------------------------------------------------------------------------------------------------------------------------------------|
+| 7.3.8 | 2025-11-25 | [69911](https://github.com/airbytehq/airbyte/pull/69911) | Update dependencies |
 | 7.3.7 | 2025-10-29 | [69040](https://github.com/airbytehq/airbyte/pull/69040) | Update dependencies |
 | 7.3.6 | 2025-10-21 | [68579](https://github.com/airbytehq/airbyte/pull/68579) | Raise report creation errors as customer config errors instead of system errors. |
 | 7.3.5 | 2025-09-30 | [66760](https://github.com/airbytehq/airbyte/pull/66760) | Update dependencies |
