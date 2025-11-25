@@ -48,19 +48,32 @@ class DestinationPinecone(Destination):
 
     def check(self, logger: logging.Logger, config: Mapping[str, Any]) -> AirbyteConnectionStatus:
         try:
+            logger.info("Parsing configuration...")
             parsed_config = ConfigModel.parse_obj(config)
+
+            logger.info("Initializing embedder and indexer...")
             init_status = self._init_indexer(parsed_config)
             if init_status and init_status.status == Status.FAILED:
                 logger.error(f"Initialization failed with message: {init_status.message}")
-                return init_status  # Return the failure status immediately if initialization fails
+                return init_status
 
-            checks = [self.embedder.check(), self.indexer.check(), DocumentProcessor.check_config(parsed_config.processing)]
+            logger.info("Running embedder check...")
+            embedder_check_result = self.embedder.check()
+
+            logger.info("Running indexer check...")
+            indexer_check_result = self.indexer.check()
+
+            logger.info("Running document processor config check...")
+            processor_check_result = DocumentProcessor.check_config(parsed_config.processing)
+
+            checks = [embedder_check_result, indexer_check_result, processor_check_result]
             errors = [error for error in checks if error is not None]
             if len(errors) > 0:
                 error_message = "\n".join(errors)
                 logger.error(f"Configuration check failed: {error_message}")
                 return AirbyteConnectionStatus(status=Status.FAILED, message=error_message)
             else:
+                logger.info("Configuration check succeeded.")
                 return AirbyteConnectionStatus(status=Status.SUCCEEDED)
         except Exception as e:
             logger.error(f"Exception during configuration check: {str(e)}")
