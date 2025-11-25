@@ -69,8 +69,7 @@ data class DestinationStream(
     val matchingKey: List<String>? = null,
     private val namespaceMapper: NamespaceMapper,
     // fully munged table and column names with mappings
-    val tableNames: TableNames,
-    val finalTableSchema: StreamTableSchema,
+    val tableSchema: StreamTableSchema,
 ) {
     val unmappedDescriptor = Descriptor(namespace = unmappedNamespace, name = unmappedName)
     val mappedDescriptor = namespaceMapper.map(namespace = unmappedNamespace, name = unmappedName)

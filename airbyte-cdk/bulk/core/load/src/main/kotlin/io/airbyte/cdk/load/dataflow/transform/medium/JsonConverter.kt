@@ -20,10 +20,9 @@ class JsonConverter(
                 extractedAtAsTimestampWithTimezone = true
             )
 
-        val result = HashMap<String, AirbyteValue>()
-
-        // Column names are already mapped in the enriched value
+        val munged = HashMap<String, AirbyteValue>()
         enriched.declaredFields.forEach { field ->
+            val mappedKey = enriched.stream.tableSchema.getFinalColumnName(field.key)
             val mappedValue =
                 field.value
                     .let { coercer.map(it) }
@@ -36,11 +35,11 @@ class JsonConverter(
                         )
                     }
 
-            result[field.key] = mappedValue.abValue
+            munged[mappedKey] = mappedValue.abValue
         }
 
-        enriched.airbyteMetaFields.forEach { result[it.key] = it.value.abValue }
+        enriched.airbyteMetaFields.forEach { munged[it.key] = it.value.abValue }
 
-        return result
+        return munged
     }
 }
