@@ -30,6 +30,7 @@ import io.airbyte.protocol.protobuf.AirbyteMessage.AirbyteMessageProtobuf
 import io.airbyte.protocol.protobuf.AirbyteRecordMessage.AirbyteRecordMessageProtobuf
 import io.airbyte.protocol.protobuf.AirbyteRecordMessage.AirbyteValueProtobuf
 import io.airbyte.protocol.protobuf.AirbyteRecordMessageMetaOuterClass
+import io.github.oshai.kotlinlogging.KotlinLogging
 import java.time.Clock
 import java.time.ZoneOffset
 
@@ -114,10 +115,12 @@ sealed class FeedBootstrap<T : Feed>(
             outputDataChannel.close()
         }
 
+        val log = KotlinLogging.logger {}
         override fun accept(
             recordData: NativeRecordPayload,
             changes: Map<Field, FieldValueChange>?
         ) {
+            log.info { "*** schema: ${stream.schema}" }
             if (changes.isNullOrEmpty()) {
                 acceptWithoutChanges(recordData.toJson())
             } else {
@@ -227,11 +230,13 @@ sealed class FeedBootstrap<T : Feed>(
             socketProtobufOutputConsumer.close()
         }
 
+        val log = KotlinLogging.logger {}
         val valueVBuilder = AirbyteValueProtobuf.newBuilder()!!
         override fun accept(
             recordData: NativeRecordPayload,
             changes: Map<Field, FieldValueChange>?
         ) {
+            log.info { "*** schema: ${stream.schema}" }
             if (changes.isNullOrEmpty()) {
                 acceptWithoutChanges(
                     recordData.toProtobuf(stream.schema, defaultRecordData, valueVBuilder)

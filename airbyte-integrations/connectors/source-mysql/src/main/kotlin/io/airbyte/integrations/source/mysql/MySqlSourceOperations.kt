@@ -4,6 +4,7 @@ package io.airbyte.integrations.source.mysql
 import com.fasterxml.jackson.databind.JsonNode
 import com.fasterxml.jackson.databind.node.ObjectNode
 import com.mysql.cj.MysqlType
+import io.airbyte.cdk.StreamIdentifier
 import io.airbyte.cdk.command.OpaqueStateValue
 import io.airbyte.cdk.data.JsonEncoder
 import io.airbyte.cdk.discover.CdcIntegerMetaFieldType
@@ -68,13 +69,14 @@ import io.airbyte.cdk.read.WhereClauseNode
 import io.airbyte.cdk.read.WhereNode
 import io.airbyte.cdk.read.cdc.DebeziumOffset
 import io.airbyte.cdk.util.Jsons
+import io.airbyte.protocol.models.v0.ConfiguredAirbyteCatalog
 import io.micronaut.context.annotation.Primary
 import jakarta.inject.Singleton
 import java.time.OffsetDateTime
 
 @Singleton
 @Primary
-class MySqlSourceOperations :
+class MySqlSourceOperations(val configuredCatalog: ConfiguredAirbyteCatalog,) :
     JdbcMetadataQuerier.FieldTypeMapper, SelectQueryGenerator, JdbcAirbyteStreamFactory {
 
     override val globalCursor: MetaField = MySqlSourceCdcMetaFields.CDC_CURSOR
@@ -86,7 +88,11 @@ class MySqlSourceOperations :
             CommonMetaField.CDC_DELETED_AT,
             MySqlSourceCdcMetaFields.CDC_LOG_FILE,
             MySqlSourceCdcMetaFields.CDC_LOG_POS
-        )
+        ).filter { metaField ->
+            configuredCatalog.streams.any { configuredStream ->
+                configuredStream.stream?.jsonSchema?.get("properties")?.has(metaField.id) == true
+            }
+        }.toSet()
 
     @Suppress("UNCHECKED_CAST")
     override fun decorateRecordData(
@@ -129,28 +135,45 @@ class MySqlSourceOperations :
         stream: Stream,
         recordData: ObjectNode
     ) {
-        recordData.set<JsonNode>(
-            CommonMetaField.CDC_UPDATED_AT.id,
-            CdcOffsetDateTimeMetaFieldType.jsonEncoder.encode(timestamp),
-        )
-        recordData.set<JsonNode>(
-            MySqlSourceCdcMetaFields.CDC_LOG_POS.id,
-            CdcIntegerMetaFieldType.jsonEncoder.encode(0),
-        )
+/*
+        val airbyteSteam = configuredCatalog.streams.mapNotNull { it.stream }.first { stream.id == StreamIdentifier.from(it) }
+        val jsonSchemaProperties: JsonNode = airbyteSteam.jsonSchema["properties"]
+*/
+
+//        jsonSchemaProperties.properties().firstOrNull { it.key == CommonMetaField.CDC_UPDATED_AT.id }?.run {
+        if (stream.schema.any { it.id == CommonMetaField.CDC_UPDATED_AT.id }) {
+            recordData.set<JsonNode>(
+                CommonMetaField.CDC_UPDATED_AT.id,
+                CdcOffsetDateTimeMetaFieldType.jsonEncoder.encode(timestamp),
+            )
+        }
+//        }
+        if (stream.schema.any { it.id == MySqlSourceCdcMetaFields.CDC_LOG_POS.id }) {
+            recordData.set<JsonNode>(
+                MySqlSourceCdcMetaFields.CDC_LOG_POS.id,
+                CdcIntegerMetaFieldType.jsonEncoder.encode(0),
+            )
+        }
         if (globalStateValue == null) {
             return
         }
         val offset: DebeziumOffset =
             MySqlSourceDebeziumOperations.deserializeStateUnvalidated(globalStateValue).offset
         val position: MySqlSourceCdcPosition = MySqlSourceDebeziumOperations.position(offset)
-        recordData.set<JsonNode>(
-            MySqlSourceCdcMetaFields.CDC_LOG_FILE.id,
-            CdcStringMetaFieldType.jsonEncoder.encode(position.fileName),
-        )
-        recordData.set<JsonNode>(
-            MySqlSourceCdcMetaFields.CDC_LOG_POS.id,
-            CdcIntegerMetaFieldType.jsonEncoder.encode(position.position),
-        )
+
+        if (stream.schema.any { it.id == MySqlSourceCdcMetaFields.CDC_LOG_FILE.id }) {
+            recordData.set<JsonNode>(
+                MySqlSourceCdcMetaFields.CDC_LOG_FILE.id,
+                CdcStringMetaFieldType.jsonEncoder.encode(position.fileName),
+            )
+        }
+
+        if (stream.schema.any { it.id == MySqlSourceCdcMetaFields.CDC_LOG_POS.id }) {
+            recordData.set<JsonNode>(
+                MySqlSourceCdcMetaFields.CDC_LOG_POS.id,
+                CdcIntegerMetaFieldType.jsonEncoder.encode(position.position),
+            )
+        }
     }
 
     override fun toFieldType(c: JdbcMetadataQuerier.ColumnMetadata): FieldType =
