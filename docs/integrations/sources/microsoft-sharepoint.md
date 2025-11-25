@@ -22,17 +22,26 @@ If you use Service Key Authentication with the default `ALL` scope, you will see
 
 ## Setup guide
 
-### Set up Microsoft SharePoint
+This connector supports two authentication methods. Choose ONE method based on your needs:
+
+| Authentication Method | Supported Search Scopes | Best For |
+|----------------------|------------------------|----------|
+| **OAuth2.0 (Delegated)** | `ACCESSIBLE_DRIVES`, `SHARED_ITEMS`, `ALL` | Interactive setups, accessing shared items |
+| **Service Key Authentication** | `ACCESSIBLE_DRIVES` only | Automated/background syncs, no shared items needed |
+
+### Option A: OAuth2.0 (Delegated) - Supports all search scopes
+
+Use this method if you need to access shared items (`SHARED_ITEMS` or `ALL` scopes). OAuth2.0 uses delegated permissions, which means the connector acts on behalf of a signed-in user.
 
 <!-- env:cloud -->
 
-### For Airbyte Cloud:
+#### For Airbyte Cloud
 
 1. [Log into your Airbyte Cloud](https://cloud.airbyte.com/workspaces) account.
 2. Click Sources and then click + New source.
 3. On the Set up the source page, select Microsoft SharePoint from the Source type dropdown.
 4. Enter a name for the Microsoft SharePoint connector.
-5. Select **Search Scope**. Specifies the location(s) to search for files. Valid options are 'ACCESSIBLE_DRIVES' for all SharePoint drives the user can access, 'SHARED_ITEMS' for shared items the user has access to, and 'ALL' to search both. Default value is 'ALL'.
+5. Select **Search Scope**. Valid options are `ACCESSIBLE_DRIVES` for all SharePoint drives the user can access, `SHARED_ITEMS` for shared items the user has access to, and `ALL` to search both. Default value is `ALL`.
 6. Enter **Folder Path**. Leave empty to search all folders of the drives. This does not apply to shared items.
 7. The **OAuth2.0** authorization method is selected by default. Click **Authenticate your Microsoft SharePoint account**. Log in and authorize your Microsoft account.
 8. For **Start Date**, enter the date in YYYY-MM-DD format. The data added on and after this date will be replicated.
@@ -43,25 +52,23 @@ If you use Service Key Authentication with the default `ALL` scope, you will see
    4. (Optional) - If you want to enforce a specific schema, you can enter a **Input schema**. By default, this value is set to `{}` and will automatically infer the schema from the file\(s\) you are replicating. For details on providing a custom schema, refer to the [User Schema section](#user-schema).
    5. Optionally, enter the **Globs** which dictates which files to be synced. This is a regular expression that allows Airbyte to pattern match the specific files to replicate. If you are replicating all the files within your bucket, use `**` as the pattern. For more precise pattern matching options, refer to the [Path Patterns section](#path-patterns) below.
 10. Click **Set up source**
+
 <!-- /env:cloud -->
 
 <!-- env:oss -->
 
-### For Airbyte Open Source:
+#### For Airbyte Open Source
 
-This connector supports two authentication methods. Choose ONE method based on your needs:
+For Airbyte Open Source, OAuth2.0 authentication requires manual configuration of an Azure application with delegated permissions. If you need the simpler setup flow, consider using Option B (Service Key Authentication) with the `ACCESSIBLE_DRIVES` scope instead.
 
-| Authentication Method | Supported Search Scopes | Best For |
-|----------------------|------------------------|----------|
-| **OAuth2.0 (Delegated)** | `ACCESSIBLE_DRIVES`, `SHARED_ITEMS`, `ALL` | Interactive setups, accessing shared items |
-| **Service Key Authentication** | `ACCESSIBLE_DRIVES` only | Automated/background syncs, no shared items needed |
+<!-- /env:oss -->
 
-### Option A: Service Key Authentication - Only supports ACCESSIBLE_DRIVES
+### Option B: Service Key Authentication - Only supports ACCESSIBLE_DRIVES
 
 Use this method for automated or background syncs where no user interaction is required. Service Key Authentication uses application permissions, which run without a signed-in user context.
 
 :::warning
-Service Key Authentication only supports the `ACCESSIBLE_DRIVES` search scope. If you need to access shared items (`SHARED_ITEMS` or `ALL` scopes), you must use OAuth2.0 authentication instead.
+Service Key Authentication only supports the `ACCESSIBLE_DRIVES` search scope. If you need to access shared items (`SHARED_ITEMS` or `ALL` scopes), you must use OAuth2.0 authentication (Option A) instead.
 :::
 
 #### Step 1: Set up SharePoint application in Azure
@@ -102,7 +109,7 @@ This source requires **Application permissions**. Follow these [instructions](ht
 
 #### Step 2: Set up the connector in Airbyte
 
-1. Navigate to the Airbyte Open Source dashboard.
+1. Navigate to the Airbyte dashboard.
 2. Click **Sources** and then click **+ New source**.
 3. On the **Set up** the source page, select **Microsoft SharePoint** from the Source type dropdown.
 4. Enter the name for the Microsoft SharePoint connector.
@@ -119,8 +126,6 @@ This source requires **Application permissions**. Follow these [instructions](ht
     4. (Optional) - If you want to enforce a specific schema, you can enter a **Input schema**. By default, this value is set to `{}` and will automatically infer the schema from the file\(s\) you are replicating. For details on providing a custom schema, refer to the [User Schema section](#user-schema).
     5. Optionally, enter the **Globs** which dictates which files to be synced. This is a regular expression that allows Airbyte to pattern match the specific files to replicate. If you are replicating all the files within your bucket, use `**` as the pattern. For more precise pattern matching options, refer to the [Path Patterns section](#path-patterns) below.
 12. Click **Set up source**
-
-<!-- /env:oss -->
 
 ## Path Patterns
 
