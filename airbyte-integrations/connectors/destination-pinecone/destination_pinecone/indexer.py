@@ -31,12 +31,21 @@ AIRBYTE_TAG = "airbyte"
 AIRBYTE_TEST_TAG = "airbyte_test"
 
 
+class PineconeIndexerInitError(Exception):
+    """Raised when the Pinecone indexer fails to initialize."""
+
+    pass
+
+
 class PineconeIndexer(Indexer):
     config: PineconeIndexingModel
 
     def __init__(self, config: PineconeIndexingModel, embedding_dimensions: int):
         super().__init__(config)
-        self.pc = PineconeGRPC(api_key=config.pinecone_key, source_tag=self.get_source_tag, threaded=True)
+        try:
+            self.pc = PineconeGRPC(api_key=config.pinecone_key, source_tag=self.get_source_tag, threaded=True)
+        except PineconeException as e:
+            raise PineconeIndexerInitError(f"Failed to initialize Pinecone client: {e}") from e
         self.pinecone_index = self.pc.Index(config.index)
         self.embedding_dimensions = embedding_dimensions
 
