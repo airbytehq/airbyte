@@ -21,6 +21,7 @@ connects to churnkey to retrieve session details
 
 | Version          | Date              | Pull Request | Subject        |
 |------------------|-------------------|--------------|----------------|
+| 0.0.17 | 2025-11-25 | [69906](https://github.com/airbytehq/airbyte/pull/69906) | Update dependencies |
 | 0.0.16 | 2025-11-18 | [69633](https://github.com/airbytehq/airbyte/pull/69633) | Update dependencies |
 | 0.0.15 | 2025-10-29 | [68859](https://github.com/airbytehq/airbyte/pull/68859) | Update dependencies |
 | 0.0.14 | 2025-10-21 | [68511](https://github.com/airbytehq/airbyte/pull/68511) | Update dependencies |

@@ -609,7 +609,7 @@ spec:
         title: Number of Concurrent Workers
         description: Number of concurrent threads for syncing. Higher values can speed up syncs but may hit rate limits. Airtable limits to 5 requests per second per base.
         default: 2
-        minimum: 1
+        minimum: 2
         maximum: 5
       credentials:
         title: Authentication

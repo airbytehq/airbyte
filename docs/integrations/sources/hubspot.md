@@ -341,10 +341,12 @@ If you use [custom properties](https://knowledge.hubspot.com/properties/create-a
 
 | Version     | Date       | Pull Request                                             | Subject                                                                                                                                                                                                                      |
 |:------------|:-----------|:---------------------------------------------------------|:-----------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------|
-| 6.0.13      | 2025-11-19 | [69749](https://github.com/airbytehq/airbyte/pull/69749) | Fix retrieving associations for CRMSearch streams                                                                                                                                                                            |
-| 6.0.12      | 2025-11-18 | [69203](https://github.com/airbytehq/airbyte/pull/69203) | Add lookback window                                                                                                                                                                                                          |
-| 6.0.11      | 2025-11-18 | [69381](https://github.com/airbytehq/airbyte/pull/69381) | Update dependencies |
-| 6.0.10      | 2025-11-03 | [69145](https://github.com/airbytehq/airbyte/pull/69145) | Promoting release candidate 6.0.10-rc.1 to a main version. |
+| 6.0.15 | 2025-11-25 | [70053](https://github.com/airbytehq/airbyte/pull/70053) | Update dependencies |
+| 6.0.14 | 2025-11-21 | [69803](https://github.com/airbytehq/airbyte/pull/69803) | Add missing fields in Marketing Emails stream for Avro/Parquet conversions |
+| 6.0.13 | 2025-11-19 | [69749](https://github.com/airbytehq/airbyte/pull/69749) | Fix retrieving associations for CRMSearch streams |
+| 6.0.12 | 2025-11-18 | [69203](https://github.com/airbytehq/airbyte/pull/69203) | Add lookback window |
+| 6.0.11 | 2025-11-18 | [69381](https://github.com/airbytehq/airbyte/pull/69381) | Update dependencies |
+| 6.0.10 | 2025-11-03 | [69145](https://github.com/airbytehq/airbyte/pull/69145) | Promoting release candidate 6.0.10-rc.1 to a main version. |
 | 6.0.10-rc.1 | 2025-10-30 | [68610](https://github.com/airbytehq/airbyte/pull/68610) | Add APIBudget                                                                                                                                                                                                                |
 | 6.0.9       | 2025-10-29 | [69077](https://github.com/airbytehq/airbyte/pull/69077) | Promoting release candidate 6.0.9-rc.1 to a main version.                                                                                                                                                                    |
 | 6.0.9-rc.1  | 2025-10-27 | [68665](https://github.com/airbytehq/airbyte/pull/68665) | Improve performance following CDK release 7.4.1                                                                                                                                                                              |

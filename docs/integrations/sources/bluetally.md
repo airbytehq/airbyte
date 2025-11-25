@@ -21,6 +21,7 @@ Connector for fetching asset and employee data from Bluetelly
 
 | Version          | Date              | Pull Request | Subject        |
 |------------------|-------------------|--------------|----------------|
+| 0.0.17 | 2025-11-25 | [69980](https://github.com/airbytehq/airbyte/pull/69980) | Update dependencies |
 | 0.0.16 | 2025-11-18 | [69429](https://github.com/airbytehq/airbyte/pull/69429) | Update dependencies |
 | 0.0.15 | 2025-10-29 | [68735](https://github.com/airbytehq/airbyte/pull/68735) | Update dependencies |
 | 0.0.14 | 2025-10-21 | [68214](https://github.com/airbytehq/airbyte/pull/68214) | Update dependencies |
