@@ -102,7 +102,7 @@ class MsSqlServerJdbcPartitionFactory(
         val orderedColumns = getOrderedColumnAsList(stream)
 
         if (stream.configuredSyncMode == ConfiguredSyncMode.FULL_REFRESH) {
-            if (orderedColumns == null) {
+            if (isView || orderedColumns == null) {
                 return MsSqlServerJdbcNonResumableSnapshotPartition(
                     selectQueryGenerator,
                     streamState,
@@ -131,7 +131,7 @@ class MsSqlServerJdbcPartitionFactory(
 
         if (sharedState.configuration.global) {
             // CDC mode: try to use ordered column for resumable snapshots
-            if (orderedColumns == null) {
+            if (isView || orderedColumns == null) {
                 return MsSqlServerJdbcNonResumableSnapshotPartition(
                     selectQueryGenerator,
                     streamState,
@@ -209,12 +209,15 @@ class MsSqlServerJdbcPartitionFactory(
         }
 
         val isCursorBased: Boolean = !sharedState.configuration.global
+        val isView = isView(stream)
         val orderedColumns = getOrderedColumnAsList(stream)
 
-        if (stream.configuredSyncMode == ConfiguredSyncMode.FULL_REFRESH) {
-            if (orderedColumns == null) {
-                return handleFullRefreshWithoutPk(streamState)
-            }
+        // Views cannot use TABLESAMPLE, so use non-resumable partitions
+        if (
+            stream.configuredSyncMode == ConfiguredSyncMode.FULL_REFRESH &&
+                (isView || orderedColumns == null)
+        ) {
+            return handleFullRefreshWithoutPk(streamState)
         }
 
         // CDC sync
@@ -226,17 +229,14 @@ class MsSqlServerJdbcPartitionFactory(
                 )
 
             if (stream.configuredSyncMode == ConfiguredSyncMode.FULL_REFRESH) {
-                if (orderedColumns == null) {
-                    return handleFullRefreshWithoutPk(streamState)
-                }
-
                 val upperBound = findPkUpperBound(stream)
                 if (sv.pkVal == upperBound.asText()) {
                     return null
                 }
-                val pkLowerBound: JsonNode = stateValueToJsonNode(orderedColumns.first(), sv.pkVal)
+                val pkLowerBound: JsonNode =
+                    stateValueToJsonNode(orderedColumns!!.first(), sv.pkVal)
 
-                return MsSqlServerJdbcRfrSnapshotPartition(
+                return MsSqlServerJdbcCdcRfrSnapshotPartition(
                     selectQueryGenerator,
                     streamState,
                     orderedColumns,
@@ -253,9 +253,10 @@ class MsSqlServerJdbcPartitionFactory(
             } else {
                 // This branch indicates snapshot is incomplete. We need to resume based on previous
                 // snapshot state.
-                if (orderedColumns == null) {
+                // Views cannot use TABLESAMPLE, so use non-resumable partitions
+                if (isView || orderedColumns == null) {
                     log.warn {
-                        "Table ${stream.name} has no PK or clustered index. Cannot resume CDC snapshot."
+                        "Stream ${stream.name} ${if (isView) "is a view" else "has no PK or clustered index"}. Using non-resumable CDC snapshot."
                     }
                     return MsSqlServerJdbcNonResumableSnapshotPartition(
                         selectQueryGenerator,
@@ -276,12 +277,9 @@ class MsSqlServerJdbcPartitionFactory(
                 MsSqlServerStateMigration.parseStateValue(opaqueStateValue)
 
             if (stream.configuredSyncMode == ConfiguredSyncMode.FULL_REFRESH) {
-                if (orderedColumns == null) {
-                    return handleFullRefreshWithoutPk(streamState)
-                }
-
                 val upperBound = findPkUpperBound(stream)
-                val pkLowerBound: JsonNode = extractPkLowerBound(sv.pkValue, orderedColumns.first())
+                val pkLowerBound: JsonNode =
+                    extractPkLowerBound(sv.pkValue, orderedColumns!!.first())
 
                 if (!pkLowerBound.isNull && areValuesEqual(pkLowerBound, upperBound)) {
                     return null

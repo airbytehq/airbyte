@@ -359,7 +359,7 @@ const config: Config = {
     ],
     () => ({
       name: "Yaml loader",
-      configureWebpack() {
+      configureWebpack(config, isServer) {
         return {
           module: {
             rules: [
@@ -373,6 +373,15 @@ const config: Config = {
               },
             ],
           },
+          ignoreWarnings: [
+            (warning) => {
+              const msg = String(warning?.message || "");
+              return (
+                /Can't resolve ['"]bufferutil['"]/.test(msg) ||
+                /Can't resolve ['"]utf-8-validate['"]/.test(msg)
+              );
+            },
+          ],
         };
       },
     }),
