@@ -305,41 +305,15 @@ override suspend fun ensureSchemaMatches(
 
 ### Step 12.7: Validate Schema Evolution
 
-**Run component tests:**
+**Validate:**
 ```bash
-$ ./gradlew :destination-{db}:componentTest
+$ ./gradlew :destination-{db}:componentTest  # 12 tests should pass
+$ ./gradlew :destination-{db}:integrationTest  # 3 tests should pass
 ```
 
-**Expected:**
-```
-Component: 12 tests pass (no new tests added - schema evolution tested in integration)
-```
+✅ **Checkpoint:** Schema evolution works + all previous phases still work
 
-**Run integration tests:**
-```bash
-$ ./gradlew :destination-{db}:integrationTest
-```
-
-**Expected:**
-```
-Integration: 3 tests pass (existing tests now support schema evolution automatically)
-```
-
-**Manual validation:**
-
-If you want to explicitly test schema evolution:
-
-```kotlin
-// In integration test or manual testing
-// 1. Sync with schema v1 (3 columns)
-// 2. Modify source schema to v2 (4 columns - added "age")
-// 3. Sync again
-// 4. Verify table has 4 columns
-```
-
-✅ **Checkpoint Complete:** Schema evolution works
-
-**You're ready for Phase 13 when:** Schema evolution methods implemented and tests pass
+---
 
 ---
 
@@ -624,30 +598,16 @@ override fun `upsert tables`() {
 
 ### Step 13.5: Validate
 
+**Validate:**
 ```bash
-$ ./gradlew :destination-{db}:testComponentUpsertTables
+$ ./gradlew :destination-{db}:testComponentUpsertTables  # 1 test should pass
+$ ./gradlew :destination-{db}:componentTest  # 13 tests should pass
+$ ./gradlew :destination-{db}:integrationTest  # 3 tests should pass
 ```
 
-**Expected new passes:**
-```
-✓ upsert tables
-```
+✅ **Checkpoint:** Dedupe mode works + all previous phases still work
 
-**Regression check:**
-```bash
-$ ./gradlew :destination-{db}:componentTest
-$ ./gradlew :destination-{db}:integrationTest
-```
-
-**Expected:**
-```
-Component: 13 tests pass (added upsert tables)
-Integration: 3 tests pass (no change)
-```
-
-✅ **Checkpoint Complete:** Dedupe mode works!
-
-**You're ready for Phase 14 when:** All core tests pass including upsert
+---
 
 ---
 
@@ -772,20 +732,15 @@ CDC tests are typically included in integration tests automatically if you have 
 
 ### Step 14.4: Validate
 
+**Validate:**
 ```bash
-$ ./gradlew :destination-{db}:componentTest
-$ ./gradlew :destination-{db}:integrationTest
+$ ./gradlew :destination-{db}:componentTest  # 13 tests should pass
+$ ./gradlew :destination-{db}:integrationTest  # 3 tests should pass (CDC tested automatically if applicable)
 ```
 
-**Expected:**
-```
-Component: 13 tests pass (no change)
-Integration: 3 tests pass (CDC tested automatically if applicable)
-```
+✅ **Checkpoint:** Full CDC support + all previous phases still work
 
-✅ **Checkpoint Complete:** Full CDC support
-
-**You're ready for Phase 15 when:** CDC logic implemented and tests pass
+---
 
 ---
 

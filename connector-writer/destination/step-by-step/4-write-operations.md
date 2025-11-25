@@ -28,17 +28,6 @@
 **Key insight:** Infrastructure DI (Phase 7) is separate from business logic DI (Phase 8).
 Phase 7 validates "can we start?" Phase 8 validates "can we write data?"
 
-### Why This Phase Structure (REFACTORED in V2)
-
-⚠️ **V1 problem:** Phase 7 contained 13 steps mixing infrastructure + business logic
-
-**V2 approach:**
-- Phase 6: Name generators (pure infrastructure)
-- Phase 7: Write operation setup (pure infrastructure)
-- Phase 8: Write business logic (THIS PHASE)
-
-**Result:** Clear separation, incremental validation, easier debugging
-
 ### Step 8.1: Create InsertBuffer
 
 **File:** `write/load/{DB}InsertBuffer.kt`
@@ -446,28 +435,15 @@ class {DB}WiringTest(
 
 ### Step 8.7: Validate ConnectorWiringSuite
 
+**Validate:**
 ```bash
-$ ./gradlew :destination-{db}:testComponentAllBeansAreInjectable
-$ ./gradlew :destination-{db}:testComponentWriterSetupCompletes
-$ ./gradlew :destination-{db}:testComponentCanCreateAppendStreamLoader
-$ ./gradlew :destination-{db}:testComponentCanWriteOneRecord
+$ ./gradlew :destination-{db}:testComponentAllBeansAreInjectable \
+             :destination-{db}:testComponentWriterSetupCompletes \
+             :destination-{db}:testComponentCanCreateAppendStreamLoader \
+             :destination-{db}:testComponentCanWriteOneRecord  # 4 tests should pass
+$ ./gradlew :destination-{db}:componentTest  # 9 tests should pass
+$ ./gradlew :destination-{db}:integrationTest  # 3 tests should pass
 ```
-
-**Expected new passes:**
-```
-✓ all beans are injectable
-✓ writer setup completes
-✓ can create append stream loader
-✓ can write one record
-```
-
-**The last test (`can write one record`) validates:**
-- ✅ Full DI wiring works (Writer, AggregateFactory, Client)
-- ✅ Writer.setup() creates namespaces
-- ✅ StreamLoader.start() creates tables
-- ✅ Aggregate.accept() buffers records
-- ✅ InsertBuffer.flush() writes to database
-- ✅ **Data actually appears in your database!**
 
 **If `can write one record` FAILS:**
 
@@ -489,52 +465,9 @@ $ ./gradlew :destination-{db}:testComponentCanWriteOneRecord
 → Check SQL INSERT statement is correct
 → Query database directly to debug
 
-**Regression check:**
-```bash
-$ ./gradlew :destination-{db}:componentTest
-```
+✅ **Checkpoint:** First working sync + all previous phases still work
 
-**Expected:**
-```
-✓ connect to database (Phase 2)
-✓ create and drop namespaces (Phase 3)
-✓ create and drop tables (Phase 4)
-✓ insert records (Phase 4)
-✓ count table rows (Phase 4)
-✓ all beans are injectable (Phase 8 - new)
-✓ writer setup completes (Phase 8 - new)
-✓ can create append stream loader (Phase 8 - new)
-✓ can write one record (Phase 8 - new)
-
-Total: 9 component tests passing
-```
-
-**Integration test regression:**
-```bash
-$ ./gradlew :destination-{db}:integrationTest
-```
-
-**Expected:**
-```
-✓ testSpecOss (Phase 1)
-✓ testSuccessConfigs (Phase 5)
-✓ writer can be instantiated with real catalog (Phase 7)
-
-Total: 3 integration tests passing
-```
-
-✅ **Checkpoint Complete:** First working sync!
-
-**Exit Criteria:**
-- ✅ InsertBuffer created (accumulates and flushes records)
-- ✅ Aggregate created (delegates to InsertBuffer)
-- ✅ AggregateFactory created with @Factory (creates Aggregates per stream)
-- ✅ Writer created with @Singleton (orchestrates setup and StreamLoaders)
-- ✅ All ConnectorWiringSuite tests pass
-- ✅ `can write one record` test passes (end-to-end validation)
-- ✅ Regression tests pass (all previous phases still work)
-
-**You're ready for Phase 9 when:** ConnectorWiringSuite tests pass and you can write data end-to-end
+---
 
 ---
 
@@ -571,39 +504,15 @@ override fun `get generation id`() {
 
 ### Step 9.2: Validate
 
+**Validate:**
 ```bash
-$ ./gradlew :destination-{db}:testComponentGetGenerationId
+$ ./gradlew :destination-{db}:testComponentGetGenerationId  # 1 test should pass
+$ ./gradlew :destination-{db}:componentTest  # 10 tests should pass
 ```
 
-**Expected new passes:**
-```
-✓ get generation id
-```
+✅ **Checkpoint:** Generation ID tracking works + all previous phases still work
 
-**Regression check:**
-```bash
-$ ./gradlew :destination-{db}:componentTest
-```
-
-**Expected:**
-```
-✓ connect to database (Phase 2)
-✓ create and drop namespaces (Phase 3)
-✓ create and drop tables (Phase 4)
-✓ insert records (Phase 4)
-✓ count table rows (Phase 4)
-✓ get generation id (Phase 9 - new)
-✓ all beans are injectable (Phase 8)
-✓ writer setup completes (Phase 8)
-✓ can create append stream loader (Phase 8)
-✓ can write one record (Phase 8)
-
-Total: 10 component tests passing
-```
-
-✅ **Checkpoint Complete:** Generation ID tracking works
-
-**You're ready for Phase 10 when:** `get generation id` test passes
+---
 
 ---
 
@@ -741,30 +650,16 @@ override fun `overwrite tables`() {
 
 ### Step 10.5: Validate
 
+**Validate:**
 ```bash
-$ ./gradlew :destination-{db}:testComponentOverwriteTables
+$ ./gradlew :destination-{db}:testComponentOverwriteTables  # 1 test should pass
+$ ./gradlew :destination-{db}:componentTest  # 11 tests should pass
+$ ./gradlew :destination-{db}:integrationTest  # 3 tests should pass
 ```
 
-**Expected new passes:**
-```
-✓ overwrite tables
-```
+✅ **Checkpoint:** Full refresh mode works + all previous phases still work
 
-**Regression check:**
-```bash
-$ ./gradlew :destination-{db}:componentTest
-$ ./gradlew :destination-{db}:integrationTest
-```
-
-**Expected:**
-```
-Component: 11 tests pass (added overwrite tables)
-Integration: 3 tests pass (no change)
-```
-
-✅ **Checkpoint Complete:** Full refresh mode works
-
-**You're ready for Phase 11 when:** `overwrite tables` test passes
+---
 
 ---
 
@@ -856,29 +751,16 @@ override fun `copy tables`() {
 
 ### Step 11.4: Validate
 
+**Validate:**
 ```bash
-$ ./gradlew :destination-{db}:testComponentCopyTables
+$ ./gradlew :destination-{db}:testComponentCopyTables  # 1 test should pass
+$ ./gradlew :destination-{db}:componentTest  # 12 tests should pass
+$ ./gradlew :destination-{db}:integrationTest  # 3 tests should pass
 ```
 
-**Expected new passes:**
-```
-✓ copy tables
-```
+✅ **Checkpoint:** Copy operation works + all previous phases still work
 
-**Regression check:**
-```bash
-$ ./gradlew :destination-{db}:componentTest
-```
-
-**Expected:**
-```
-Component: 12 tests pass (added copy tables)
-Integration: 3 tests pass (no change)
-```
-
-✅ **Checkpoint Complete:** Copy operation works
-
-**You're ready for Phase 12 when:** `copy tables` test passes
+---
 
 ---
 

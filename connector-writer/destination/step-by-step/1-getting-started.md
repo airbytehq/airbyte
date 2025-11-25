@@ -287,14 +287,7 @@ $ docker images | grep destination-{db}
 airbyte/destination-{db}    0.1.0    abc123def456    2 minutes ago    500MB
 ```
 
-✅ **Checkpoint Complete:** Docker container builds
-
-**You're ready for Phase 1 when:**
-- `./gradlew :destination-{db}:build` succeeds
-- `./gradlew :destination-{db}:assemble` creates Docker image
-
-**Note:** Full Docker validation (--spec, --check, --write) will be tested in later phases
-with proper integration tests, not manual commands.
+✅ **Checkpoint:** Project compiles and Docker image builds successfully
 
 ---
 
@@ -609,20 +602,10 @@ $ ./gradlew :destination-{db}:integrationTestSpecOss
 ```
 
 **Troubleshooting:**
-- **Spec operation fails:**
-    - Check `application.yml` has documentation-url
-    - Verify Specification class has proper Jackson annotations
-    - Check SpecificationExtension is a `@Singleton`
+- **Spec operation fails:** Check `application.yml` has documentation-url, verify Specification class has Jackson annotations
+- **Spec test fails:** Actual spec doesn't match expected-spec-oss.json - update expected file with correct output
 
-- **Spec test fails:**
-    - Actual spec doesn't match expected-spec-oss.json
-    - Run `--spec` manually to see what's generated
-    - Update expected-spec-oss.json with correct output
-    - Ensure JSON formatting matches (no trailing commas, consistent order)
-
-✅ **Checkpoint Complete:** Spec operation works
-
-**You're ready for Phase 2 when:** `./gradlew :destination-{db}:integrationTestSpecOss` passes
+✅ **Checkpoint:** `integrationTestSpecOss` passes, --spec operation returns valid JSON schema
 
 ---
 

@@ -268,23 +268,10 @@ class {DB}TableOperationsTest(
 
 ### Step 2.6: Validate Connection
 
+**Validate:**
 ```bash
-$ ./gradlew :destination-{db}:testComponentConnectToDatabase
-```
-
-**Expected new passes:**
-```
-✓ connect to database
-```
-
-**Regression check:**
-```bash
-$ ./gradlew :destination-{db}:componentTest
-```
-
-**Expected:**
-```
-✓ connect to database
+$ ./gradlew :destination-{db}:testComponentConnectToDatabase  # 1 test should pass
+$ ./gradlew :destination-{db}:componentTest  # Regression check
 ```
 
 **Troubleshooting:**
@@ -293,9 +280,9 @@ $ ./gradlew :destination-{db}:componentTest
 - Database doesn't exist? Create test database first or use Testcontainers
 - Timeout? Check firewall/network connectivity
 
-✅ **Checkpoint Complete:** Can connect to database
+✅ **Checkpoint:** Can connect to database + all previous phases still work
 
-**You're ready for Phase 3 when:** `connect to database` test passes
+---
 
 ---
 
@@ -455,29 +442,15 @@ override fun `create and drop namespaces`() {
 
 ### Step 2.6: Validate
 
+**Validate:**
 ```bash
-$ ./gradlew :destination-{db}:testComponentCreateAndDropNamespaces
+$ ./gradlew :destination-{db}:testComponentCreateAndDropNamespaces  # 1 test should pass
+$ ./gradlew :destination-{db}:componentTest  # 2 tests should pass
 ```
 
-**Expected new passes:**
-```
-✓ create and drop namespaces
-```
+✅ **Checkpoint:** Can manage namespaces + all previous phases still work
 
-**Regression check:**
-```bash
-$ ./gradlew :destination-{db}:componentTest
-```
-
-**Expected:**
-```
-✓ connect to database
-✓ create and drop namespaces (new)
-```
-
-✅ **Checkpoint Complete:** Can manage namespaces
-
-**You're ready for Phase 3 when:** `create and drop namespaces` test passes
+---
 
 ---
 
@@ -740,36 +713,17 @@ override fun `count table rows`() {
 
 ### Step 3.6: Validate
 
+**Validate:**
 ```bash
 $ ./gradlew :destination-{db}:testComponentCreateAndDropTables \
              :destination-{db}:testComponentInsertRecords \
-             :destination-{db}:testComponentCountTableRows
+             :destination-{db}:testComponentCountTableRows  # 3 tests should pass
+$ ./gradlew :destination-{db}:componentTest  # 5 tests should pass
 ```
 
-**Expected new passes:**
-```
-✓ create and drop tables
-✓ insert records
-✓ count table rows
-```
+✅ **Checkpoint:** Can manage tables and data + all previous phases still work
 
-**Regression check:**
-```bash
-$ ./gradlew :destination-{db}:componentTest
-```
-
-**Expected:**
-```
-✓ connect to database
-✓ create and drop namespaces
-✓ create and drop tables (new)
-✓ insert records (new)
-✓ count table rows (new)
-```
-
-✅ **Checkpoint Complete:** Can manage tables and data
-
-**You're ready for Phase 4 when:** All table operation tests pass
+---
 
 ---
 
@@ -862,55 +816,16 @@ class {DB}CheckTest :
 
 ### Step 5.3: Validate Check Operation
 
-**Via Docker:**
+**Validate:**
 ```bash
-# Create test config
-cat > /tmp/test-config.json << EOF
-{
-  "hostname": "localhost",
-  "port": 5432,
-  "database": "test",
-  "username": "test",
-  "password": "test"
-}
-EOF
-
-# Run check operation
-docker run --rm --network host \
-  -v /tmp/test-config.json:/config.json \
-  airbyte/destination-{db}:0.1.0 --check --config /config.json
+$ ./gradlew :destination-{db}:integrationTestCheckSuccessConfigs  # 1 test should pass
+$ ./gradlew :destination-{db}:componentTest  # 5 tests should pass
+$ ./gradlew :destination-{db}:integrationTest  # testSpecOss, testSuccessConfigs should pass
 ```
 
-**Expected:**
-```json
-{"type":"CONNECTION_STATUS","connectionStatus":{"status":"SUCCEEDED"}}
-```
+✅ **Checkpoint:** --check operation works + all previous phases still work
 
-**Via integration test:**
-```bash
-$ ./gradlew :destination-{db}:integrationTestCheckSuccessConfigs
-```
-
-**Expected:**
-```
-✓ testSuccessConfigs
-```
-
-**Regression check:**
-```bash
-$ ./gradlew :destination-{db}:componentTest
-$ ./gradlew :destination-{db}:integrationTest
-```
-
-**Expected:**
-```
-Component: 8 tests pass
-Integration: testSpecOss, testSuccessConfigs pass
-```
-
-✅ **Checkpoint Complete:** --check operation works
-
-**You're ready for Phase 6 when:** Check test passes
+---
 
 ---
 

@@ -173,7 +173,6 @@ fun tempTableNameGenerator(...): TempTableNameGenerator { ... }
 
 **What it means:**
 - Class exists but bean registration missing
-- Common mistake in V1 guide
 
 **Fix:** Add bean registration (Phase 7, Step 7.3)
 
