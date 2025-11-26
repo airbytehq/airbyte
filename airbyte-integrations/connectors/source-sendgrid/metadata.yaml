@@ -6,11 +6,11 @@ data:
     hosts:
       - api.sendgrid.com
   connectorBuildOptions:
-    baseImage: docker.io/airbyte/source-declarative-manifest:7.4.1@sha256:71df19e2ee555ca5b14abbec01d50104c79c9b84cb9cc323284d24333361900a
+    baseImage: docker.io/airbyte/source-declarative-manifest:7.5.1@sha256:8da9d362c184e2e46532ab94f6f9968a74835c0882d6a4a2f9f9c9e5b972f2a1
   connectorSubtype: api
   connectorType: source
   definitionId: fbb5fbe2-16ad-4cf4-af7d-ff9d9c316c87
-  dockerImageTag: 1.3.18
+  dockerImageTag: 1.3.20
   releases:
     breakingChanges:
       1.0.0:
@@ -18,6 +18,13 @@ data:
         upgradeDeadline: "2024-04-29"
   dockerRepository: airbyte/source-sendgrid
   documentationUrl: https://docs.airbyte.com/integrations/sources/sendgrid
+  externalDocumentationUrls:
+    - title: API overview
+      url: https://docs.sendgrid.com/api-reference/how-to-use-the-sendgrid-v3-api/authentication
+      type: api_reference
+    - title: SendGrid API OpenAPI specification
+      url: https://github.com/sendgrid/sendgrid-oai
+      type: openapi_spec
   githubIssueLabel: source-sendgrid
   icon: sendgrid.svg
   license: ELv2

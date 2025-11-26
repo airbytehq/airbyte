@@ -20,6 +20,10 @@ interface TestTableOperationsClient {
      */
     suspend fun insertRecords(table: TableName, records: List<Map<String, AirbyteValue>>) = Unit
 
+    suspend fun insertRecords(table: TableName, vararg records: Map<String, AirbyteValue>) {
+        insertRecords(table, records.toList())
+    }
+
     /**
      * Reads all records from a table for test verification. Do not use in production code - this
      * loads entire table into memory.

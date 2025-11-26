@@ -215,6 +215,22 @@ const config: Config = {
         ],
       },
     ],
+    // This plugin controls Developers docs, which are not versioned
+    [
+      "@docusaurus/plugin-content-docs",
+      {
+        id: "developers",
+        path: "../docs/developers",
+        routeBasePath: "/developers",
+        sidebarPath: "./sidebar-developers.js",
+        editUrl: "https://github.com/airbytehq/airbyte/blob/master/docs",
+        remarkPlugins: [
+          plugins.productInformation,
+          plugins.docMetaTags,
+          plugins.addButtonToTitle,
+        ],
+      },
+    ],
     // This plugin controls Community docs, which are not versioned
     [
       "@docusaurus/plugin-content-docs",
@@ -343,7 +359,7 @@ const config: Config = {
     ],
     () => ({
       name: "Yaml loader",
-      configureWebpack() {
+      configureWebpack(config, isServer) {
         return {
           module: {
             rules: [
@@ -357,6 +373,15 @@ const config: Config = {
               },
             ],
           },
+          ignoreWarnings: [
+            (warning) => {
+              const msg = String(warning?.message || "");
+              return (
+                /Can't resolve ['"]bufferutil['"]/.test(msg) ||
+                /Can't resolve ['"]utf-8-validate['"]/.test(msg)
+              );
+            },
+          ],
         };
       },
     }),
@@ -460,9 +485,16 @@ const config: Config = {
         {
           type: "docSidebar",
           position: "left",
+          docsPluginId: "developers",
+          sidebarId: "developers",
+          label: "Developers",
+        },
+        {
+          type: "docSidebar",
+          position: "left",
           docsPluginId: "community",
           sidebarId: "community",
-          label: "Community & support",
+          label: "Community",
         },
         {
           href: "https://status.airbyte.com",

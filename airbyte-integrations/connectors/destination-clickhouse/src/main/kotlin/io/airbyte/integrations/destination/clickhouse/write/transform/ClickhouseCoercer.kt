@@ -18,6 +18,7 @@ import io.airbyte.cdk.load.data.TimeWithoutTimezoneValue
 import io.airbyte.cdk.load.data.TimestampWithTimezoneValue
 import io.airbyte.cdk.load.data.TimestampWithoutTimezoneValue
 import io.airbyte.cdk.load.data.UnionType
+import io.airbyte.cdk.load.dataflow.transform.ValidationResult
 import io.airbyte.cdk.load.dataflow.transform.ValueCoercer
 import io.airbyte.cdk.load.util.serializeToString
 import io.airbyte.integrations.destination.clickhouse.write.transform.ClickhouseCoercer.Constants.DATE32_MAX
@@ -67,49 +68,48 @@ class ClickhouseCoercer : ValueCoercer {
         return value
     }
 
-    override fun validate(value: EnrichedAirbyteValue): EnrichedAirbyteValue {
+    override fun validate(value: EnrichedAirbyteValue): ValidationResult =
         when (val abValue = value.abValue) {
             is NumberValue ->
                 if (abValue.value <= DECIMAL128_MIN || abValue.value >= DECIMAL128_MAX) {
-                    value.nullify(
+                    ValidationResult.ShouldNullify(
                         AirbyteRecordMessageMetaChange.Reason.DESTINATION_FIELD_SIZE_LIMITATION
                     )
-                }
+                } else ValidationResult.Valid
             is IntegerValue ->
                 if (abValue.value < INT64_MIN || abValue.value > INT64_MAX) {
-                    value.nullify(
+                    ValidationResult.ShouldNullify(
                         AirbyteRecordMessageMetaChange.Reason.DESTINATION_FIELD_SIZE_LIMITATION
                     )
-                }
+                } else ValidationResult.Valid
             is DateValue -> {
                 val days = abValue.value.toEpochDay()
                 if (days < DATE32_MIN || days > DATE32_MAX) {
-                    value.nullify(
+                    ValidationResult.ShouldNullify(
                         AirbyteRecordMessageMetaChange.Reason.DESTINATION_FIELD_SIZE_LIMITATION
                     )
-                }
+                } else ValidationResult.Valid
             }
             is TimestampWithTimezoneValue -> {
                 val seconds = abValue.value.toEpochSecond()
                 if (seconds < DATETIME64_MIN || seconds > DATETIME64_MAX) {
-                    value.nullify(
+                    ValidationResult.ShouldNullify(
                         AirbyteRecordMessageMetaChange.Reason.DESTINATION_FIELD_SIZE_LIMITATION
                     )
-                }
+                } else ValidationResult.Valid
             }
             is TimestampWithoutTimezoneValue -> {
                 val seconds = abValue.value.toEpochSecond(ZoneOffset.UTC)
                 if (seconds < DATETIME64_MIN || seconds > DATETIME64_MAX) {
-                    value.nullify(
+                    ValidationResult.ShouldNullify(
                         AirbyteRecordMessageMetaChange.Reason.DESTINATION_FIELD_SIZE_LIMITATION
                     )
-                }
+                } else ValidationResult.Valid
             }
-            else -> {}
+            else -> {
+                ValidationResult.Valid
+            }
         }
-
-        return value
-    }
 
     object Constants {
         // CH will overflow ints without erroring

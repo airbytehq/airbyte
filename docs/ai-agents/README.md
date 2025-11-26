@@ -6,13 +6,12 @@ products: embedded
 
 Airbyte provides multiple tools to help you build data applications.
 
-- **Airbyte Embedded Widget**: App development teams who have signed up for Airbyte Embedded and are looking to get started onboarding customers using the Embedded Widget can follow the get started guide at the bottom of this page, which will step you through a complete sample onboarding app.
-- **Authentication Proxies**: Connect safely to third party APIs using Airbyte's Authentication Proxies.
 - **MCP Servers**: Airbyte provides multiple MCP (Model Context Protocol) servers for different use cases:
   - [**PyAirbyte MCP**](#pyairbyte-mcp): Local MCP server for managing Airbyte connectors through AI assistants.
   - [**Connector Builder MCP**](#connector-builder-mcp): AI-assisted connector development - _**coming soon!**_
   - [**Embedded Operator MCP**](#embedded-operator-mcp): Manage embedded configurations and pipelines.
-  - [**PyAirbyte Fast-Coder MCP**](#pyairbyte-fast-coder-mcp) _(deprecated)_: Remote MCP server for rapid pipeline code generation.
+- **Airbyte Embedded Widget**: App development teams who have signed up for Airbyte Embedded and are looking to get started onboarding customers using the Embedded Widget can follow the get started guide at the bottom of this page, which will step you through a complete sample onboarding app.
+- **Authentication Proxies**: Connect safely to third party APIs using Airbyte's Authentication Proxies.
 
 ## Prerequisites
 
@@ -48,13 +47,10 @@ Airbyte provides multiple MCP (Model Context Protocol) servers to enable AI-assi
 
 [The Embedded Operator MCP](./embedded/operator-mcp/README.md) is a remote MCP server providing tools that enable managing embedded configurations and the resulting pipelines. Users can create connection and source templates, securely create sources, query API and File Storage sources, monitor connections and jobs, and more.
 
-### PyAirbyte Fast-Coder MCP
-
-[The PyAirbyte Fast-Coder MCP](./pyairbyte-fast-coder-mcp.md) is a remote MCP server that provides the ability for data engineers to generate a data pipeline in Python using a single prompt. It is currently designed to work within Cursor, with broader support coming in the near future.
-
 ## Proxy Requests
 
 ### API Sources
+
 :::warning
 The Airbyte Proxy feature is in alpha, which means it is still in active development and may include backward-incompatible changes. [Share feedback and requests directly with us](mailto:sonar@airbyte.io).
 :::
@@ -82,6 +78,7 @@ curl -X POST -H 'Content-Type: application/json' \
 Airbyte's Authentication Proxy can be used to authenticate using a Source configured through the Widget.
 
 The following integrations are currently supported. More will follow shortly:
+
 - Stripe
 
 ### File Storage Sources
@@ -89,6 +86,7 @@ The following integrations are currently supported. More will follow shortly:
 Airbyte's File Storage Proxy enables you to submit authenticated requests to file storage sources. It can be used to list or fetch files.
 
 Here's an example of how to list files:
+
 ```bash
 curl -X GET -H 'Content-Type: application/json' \
 -H 'Authorization: Bearer {AIRBYTE_ACCESS_TOKEN}' \
@@ -96,6 +94,7 @@ curl -X GET -H 'Content-Type: application/json' \
 ```
 
 Here's an example of how to fetch a file:
+
 ```bash
 curl -X GET -H 'Content-Type: application/octet-stream' \
 -H 'Authorization: Bearer {AIRBYTE_ACCESS_TOKEN}' \
@@ -106,4 +105,5 @@ curl -X GET -H 'Content-Type: application/octet-stream' \
 For small files, you may omit the `Range` header.
 
 The following integrations are currently supported. More will follow shortly:
+
 - S3

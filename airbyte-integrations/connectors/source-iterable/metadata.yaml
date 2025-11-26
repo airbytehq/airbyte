@@ -45,4 +45,17 @@ data:
           secretStore:
             type: GSM
             alias: airbyte-connector-testing-secret-store
+  externalDocumentationUrls:
+    - title: Iterable API reference
+      url: https://api.iterable.com/api/docs
+      type: api_reference
+    - title: Iterable authentication
+      url: https://support.iterable.com/hc/en-us/articles/360043464871-API-Keys-
+      type: authentication_guide
+    - title: Iterable rate limits
+      url: https://support.iterable.com/hc/en-us/articles/360045714132-API-Rate-Limits
+      type: rate_limits
+    - title: Iterable Status
+      url: https://status.iterable.com/
+      type: status_page
 metadataSpecVersion: "1.0"

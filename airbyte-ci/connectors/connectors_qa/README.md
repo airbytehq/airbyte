@@ -85,7 +85,7 @@ commit it in your PR.**:
 
 ```bash
 # From airbyte repo root
-connectors-qa generate-documentation docs/contributing-to-airbyte/resources/qa-checks.md
+connectors-qa generate-documentation docs/community/contributing-to-airbyte/resources/qa-checks.md
 ```
 
 ### Running tests
