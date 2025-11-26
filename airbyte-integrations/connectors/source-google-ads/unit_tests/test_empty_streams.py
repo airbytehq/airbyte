@@ -236,39 +236,58 @@ def test_custom_query_stream(customers, config_for_custom_query_tests, requests_
 
 
 @pytest.mark.parametrize(
-    "query, expected_incremental_sync",
+    "query, expected_incremental_sync, expected_step_days",
     [
-        ("\tselect\rad.id,\tsegments.date,\tad.resource_name\nfrom\nad", True),
-        ("\nselect ad.id, segments.date from ad", True),
-        ("select ad.id, segments.date\nfrom\nad\norder\n  by segments.date", True),
-        ("\nselect\nad.id,\nsegments.date\nfrom\nad\norder\n  by segments.date", True),
-        ("SELECT campaign_budget.name, campaign.name, metrics.interaction_event_types FROM campaign_budget", False),
+        ("\tselect\rad.id,\tsegments.date,\tad.resource_name\nfrom\nad", True, 14),
+        ("\nselect ad.id, segments.date from ad", True, 14),
+        ("select ad.id, segments.date\nfrom\nad\norder\n  by segments.date", True, 14),
+        ("\nselect\nad.id,\nsegments.date\nfrom\nad\norder\n  by segments.date", True, 14),
+        ("SELECT campaign_budget.name, campaign.name, metrics.interaction_event_types FROM campaign_budget", False, None),
         (
             "SELECT campaign_budget.name, campaign.name, metrics.interaction_event_types FROM campaign_budget ORDER BY campaign_budget.name DESC",
             False,
+            None,
         ),
-        ("SELECT ad_group_ad.ad.name, segments.date FROM ad_group_ad", True),
-        ("SELECT \n ad_group_ad.ad.name, \n segments.date FROM ad_group_ad ORDER BY \n segments.date DESC", True),
-        ("SELECT ad_group_ad.ad.name, segments.date FROM ad_group_ad ORDER BY segments.date DESC", True),
-        ("SELECT ad_group_ad.ad.name, segments.date FROM ad_group_ad ORDER BY ad_group_ad.ad.name, segments.date DESC", True),
-        ("SELECT ad_group_ad.ad.name, segments.date FROM ad_group_ad ORDER BY segments.date DESC LIMIT 100", True),
+        ("SELECT ad_group_ad.ad.name, segments.date FROM ad_group_ad", True, 14),
+        ("SELECT \n ad_group_ad.ad.name, \n segments.date FROM ad_group_ad ORDER BY \n segments.date DESC", True, 14),
+        ("SELECT ad_group_ad.ad.name, segments.date FROM ad_group_ad ORDER BY segments.date DESC", True, 14),
+        ("SELECT ad_group_ad.ad.name, segments.date FROM ad_group_ad ORDER BY ad_group_ad.ad.name, segments.date DESC", True, 14),
+        ("SELECT ad_group_ad.ad.name, segments.date FROM ad_group_ad ORDER BY segments.date DESC LIMIT 100", True, 14),
         (
             "SELECT ad_group_ad.ad.name, segments.date FROM ad_group_ad ORDER BY ad_group_ad.ad.name DESC, segments.date DESC LIMIT 100",
             True,
+            14,
         ),
         (
             "SELECT ad_group_ad.ad.name, segments.date FROM ad_group_ad ORDER BY segments.date DESC, ad_group_ad.ad.name DESC LIMIT 100",
             True,
+            14,
         ),
-        ("SELECT ad_group_ad.ad.name, segments.date FROM ad_group_ad WHERE segments.date DURING LAST_30_DAYS", False),
-        ("SELECT ad_group_ad.ad.name, segments.date FROM ad_group_ad WHERE \n segments.date DURING LAST_30_DAYS", False),
+        ("SELECT ad_group_ad.ad.name, segments.date FROM ad_group_ad WHERE segments.date DURING LAST_30_DAYS", False, None),
+        ("SELECT ad_group_ad.ad.name, segments.date FROM ad_group_ad WHERE \n segments.date DURING LAST_30_DAYS", False, None),
         (
             "SELECT ad_group_ad.ad.name, segments.date FROM ad_group_ad WHERE segments.date DURING LAST_30_DAYS ORDER BY ad_group_ad.ad.name",
             False,
+            None,
         ),
+        # Click view queries should get step=P1D (1 day)
+        ("SELECT click_view.gclid, segments.date FROM click_view", True, 1),
+        ("select click_view.gclid, segments.date from click_view", True, 1),
+        ("SELECT click_view.gclid, segments.date FROM click_view ORDER BY segments.date", True, 1),
+        ("SELECT click_view.gclid, segments.date FROM click_view ORDER BY segments.date ASC", True, 1),
+        (
+            """SELECT
+                click_view.gclid,
+                segments.date
+            FROM
+                click_view""",
+            True,
+            1,
+        ),
+        ("SELECT click_view.gclid, click_view.ad_group_ad, segments.date FROM click_view WHERE segments.date BETWEEN '2025-10-21' AND '2025-10-21'", False, None),
     ],
 )
-def test_custom_query_stream_with_different_queries(query, expected_incremental_sync, config_for_custom_query_tests, requests_mock):
+def test_custom_query_stream_with_different_queries(query, expected_incremental_sync, expected_step_days, config_for_custom_query_tests):
     config = config_for_custom_query_tests
     config["custom_queries_array"][0]["query"] = query
 
@@ -279,8 +298,14 @@ def test_custom_query_stream_with_different_queries(query, expected_incremental_
     # by checking the stream_cursor_field which is set by the ComponentMappingDefinition
     # The condition matches:
     # - 1 segments.date with SELECT...FROM pattern, OR
-    # - 2 segments.date with SELECT...FROM AND ORDER BY...LIMIT patterns
+    # - 2 segments.date with SELECT...FROM AND ORDER BY patterns
     if expected_incremental_sync:
         assert stream.cursor_field == "segments.date", f"Stream cursor field should be 'segments.date' for query: {query}"
+
+        # Check the step value for incremental streams
+        if hasattr(stream, 'state') and hasattr(stream.state, '_cursor'):
+            cursor = stream.state._cursor
+            actual_step_days = cursor.step.days
+            assert actual_step_days == expected_step_days, f"Stream step should be {expected_step_days} days for query: {query}"
     else:
         assert stream.cursor_field != "segments.date", f"Stream should not have segments.date as cursor field for query: {query}"
