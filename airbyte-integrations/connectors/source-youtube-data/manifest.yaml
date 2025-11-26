@@ -372,29 +372,28 @@ spec:
             path_in_connector_config:
               - credentials
               - client_secret
-          
 
-    config_normalization_rules:
-      type: ConfigNormalizationRules
-      config_migrations:
-        - type: ConfigMigration
-          description: |
-            Remaps the existing config authentication format to a new format
-            OLD: {"api_key": ...}
-            NEW: {"credentials": {"api_key": ..., "auth_method": "api_key"}}
-          transformations:
-            - type: ConfigAddFields
-              fields:
-                - type: AddedFieldDefinition
-                  path: ["credentials", "api_key"]
-                  value: "{{ config['api_key'] }}"
-              condition: "{{ config.get('api_key', False) }}"
-            - type: ConfigAddFields
-              fields:
-                - type: AddedFieldDefinition
-                  path: ["credentials", "auth_method"]
-                  value: "api_key"
-              condition: "{{ config.get('api_key', False) }}"
+  config_normalization_rules:
+    type: ConfigNormalizationRules
+    config_migrations:
+      - type: ConfigMigration
+        description: |
+          Remaps the existing config authentication format to a new format
+          OLD: {"api_key": ...}
+          NEW: {"credentials": {"api_key": ..., "auth_method": "api_key"}}
+        transformations:
+          - type: ConfigAddFields
+            fields:
+              - type: AddedFieldDefinition
+                path: ["credentials", "api_key"]
+                value: "{{ config['api_key'] }}"
+            condition: "{{ config.get('api_key', False) }}"
+          - type: ConfigAddFields
+            fields:
+              - type: AddedFieldDefinition
+                path: ["credentials", "auth_method"]
+                value: "api_key"
+            condition: "{{ config.get('api_key', False) }}"
 
 metadata:
   autoImportSchema:
