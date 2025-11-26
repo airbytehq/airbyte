@@ -272,7 +272,7 @@ def test_custom_query_stream_with_different_queries(query, expected_incremental_
     config = config_for_custom_query_tests
     config["custom_queries_array"][0]["query"] = query
 
-    streams = SourceGoogleAds(None, config, None).streams(config=config)
+    streams = get_source(config=config).streams(config=config)
     stream = next(filter(lambda s: s.name == "custom_ga_query", streams))
 
     # Verify that the regex matching in the manifest correctly applies incremental sync
