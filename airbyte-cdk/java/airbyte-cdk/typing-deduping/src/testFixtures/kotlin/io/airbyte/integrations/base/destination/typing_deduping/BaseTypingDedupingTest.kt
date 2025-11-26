@@ -12,12 +12,11 @@ import io.airbyte.commons.json.Jsons
 import io.airbyte.commons.lang.Exceptions
 import io.airbyte.commons.resources.MoreResources
 import io.airbyte.configoss.WorkerDestinationConfig
-import io.airbyte.protocol.models.AirbyteStreamStatusTraceMessage
-import io.airbyte.protocol.models.AirbyteStreamStatusTraceMessage.AirbyteStreamStatus
-import io.airbyte.protocol.models.AirbyteTraceMessage
-import io.airbyte.protocol.models.ConfiguredAirbyteCatalog
-import io.airbyte.protocol.models.StreamDescriptor
 import io.airbyte.protocol.models.v0.*
+import io.airbyte.protocol.models.v0.AirbyteStreamStatusTraceMessage
+import io.airbyte.protocol.models.v0.AirbyteStreamStatusTraceMessage.AirbyteStreamStatus
+import io.airbyte.protocol.models.v0.AirbyteTraceMessage
+import io.airbyte.protocol.models.v0.StreamDescriptor
 import io.airbyte.workers.exception.TestHarnessException
 import io.airbyte.workers.internal.AirbyteDestination
 import io.airbyte.workers.internal.DefaultAirbyteDestination
@@ -195,6 +194,10 @@ abstract class BaseTypingDedupingTest {
         return false
     }
 
+    protected open fun disableRawTableComparison(): Boolean {
+        return false
+    }
+
     @BeforeEach
     @Throws(Exception::class)
     fun setup() {
@@ -262,7 +265,7 @@ abstract class BaseTypingDedupingTest {
 
         val expectedRawRecords1 = readRecords("dat/sync1_expectedrecords_raw.jsonl")
         val expectedFinalRecords1 = readRecords("dat/sync1_expectedrecords_nondedup_final.jsonl")
-        verifySyncResult(expectedRawRecords1, expectedFinalRecords1, disableFinalTableComparison())
+        verifySyncResult(expectedRawRecords1, expectedFinalRecords1)
 
         // Second sync
         val messages2 = readMessages("dat/sync2_messages.jsonl")
@@ -294,7 +297,7 @@ abstract class BaseTypingDedupingTest {
             readRecords(
                 "dat/sync2_expectedrecords_fullrefresh_overwrite_with_new_gen_id_final.jsonl"
             )
-        verifySyncResult(expectedRawRecords2, expectedFinalRecords2, disableFinalTableComparison())
+        verifySyncResult(expectedRawRecords2, expectedFinalRecords2)
     }
 
     /**
@@ -332,7 +335,7 @@ abstract class BaseTypingDedupingTest {
 
         val expectedRawRecords1 = readRecords("dat/sync1_expectedrecords_raw.jsonl")
         val expectedFinalRecords1 = readRecords("dat/sync1_expectedrecords_nondedup_final.jsonl")
-        verifySyncResult(expectedRawRecords1, expectedFinalRecords1, disableFinalTableComparison())
+        verifySyncResult(expectedRawRecords1, expectedFinalRecords1)
 
         // Second sync
         val messages2 = readMessages("dat/sync2_messages.jsonl")
@@ -361,7 +364,7 @@ abstract class BaseTypingDedupingTest {
         val expectedRawRecords2 = readRecords("dat/sync2_expectedrecords_with_new_gen_id_raw.jsonl")
         val expectedFinalRecords2 =
             readRecords("dat/sync2_expectedrecords_fullrefresh_append_with_new_gen_id_final.jsonl")
-        verifySyncResult(expectedRawRecords2, expectedFinalRecords2, disableFinalTableComparison())
+        verifySyncResult(expectedRawRecords2, expectedFinalRecords2)
     }
 
     @ParameterizedTest
@@ -395,7 +398,7 @@ abstract class BaseTypingDedupingTest {
         val expectedRawRecords1 = readRecords("dat/sync1_expectedrecords_raw.jsonl")
         val expectedFinalRecords1 = readRecords("dat/sync1_expectedrecords_nondedup_final.jsonl")
         fixGenerationId(expectedRawRecords1, expectedFinalRecords1, inputGenerationId)
-        verifySyncResult(expectedRawRecords1, expectedFinalRecords1, disableFinalTableComparison())
+        verifySyncResult(expectedRawRecords1, expectedFinalRecords1)
 
         // Second sync
         val messages2 = readMessages("dat/sync2_messages.jsonl")
@@ -406,7 +409,7 @@ abstract class BaseTypingDedupingTest {
         val expectedFinalRecords2 =
             readRecords("dat/sync2_expectedrecords_fullrefresh_append_with_new_gen_id_final.jsonl")
         fixGenerationId(expectedRawRecords2, expectedFinalRecords2, inputGenerationId)
-        verifySyncResult(expectedRawRecords2, expectedFinalRecords2, disableFinalTableComparison())
+        verifySyncResult(expectedRawRecords2, expectedFinalRecords2)
     }
 
     /**
@@ -451,7 +454,7 @@ abstract class BaseTypingDedupingTest {
         val expectedRawRecords1 = readRecords("dat/sync1_expectedrecords_raw.jsonl")
         val expectedFinalRecords1 = readRecords("dat/sync1_expectedrecords_nondedup_final.jsonl")
         fixGenerationId(expectedRawRecords1, expectedFinalRecords1, inputGenerationId)
-        verifySyncResult(expectedRawRecords1, expectedFinalRecords1, disableFinalTableComparison())
+        verifySyncResult(expectedRawRecords1, expectedFinalRecords1)
 
         // Second sync
         val messages2 = readMessages("dat/sync2_messages.jsonl")
@@ -462,7 +465,7 @@ abstract class BaseTypingDedupingTest {
         val expectedFinalRecords2 =
             readRecords("dat/sync2_expectedrecords_fullrefresh_append_final.jsonl")
         fixGenerationId(expectedRawRecords2, expectedFinalRecords2, inputGenerationId)
-        verifySyncResult(expectedRawRecords2, expectedFinalRecords2, disableFinalTableComparison())
+        verifySyncResult(expectedRawRecords2, expectedFinalRecords2)
     }
 
     /**
@@ -504,7 +507,7 @@ abstract class BaseTypingDedupingTest {
         val expectedRawRecords1 = readRecords("dat/sync1_expectedrecords_raw.jsonl")
         val expectedFinalRecords1 = readRecords("dat/sync1_expectedrecords_dedup_final.jsonl")
         fixGenerationId(expectedRawRecords1, expectedFinalRecords1, inputGenerationId)
-        verifySyncResult(expectedRawRecords1, expectedFinalRecords1, disableFinalTableComparison())
+        verifySyncResult(expectedRawRecords1, expectedFinalRecords1)
 
         // Second sync
         val messages2 = readMessages("dat/sync2_messages.jsonl")
@@ -515,7 +518,7 @@ abstract class BaseTypingDedupingTest {
         val expectedFinalRecords2 =
             readRecords("dat/sync2_expectedrecords_incremental_dedup_final.jsonl")
         fixGenerationId(expectedRawRecords2, expectedFinalRecords2, inputGenerationId)
-        verifySyncResult(expectedRawRecords2, expectedFinalRecords2, disableFinalTableComparison())
+        verifySyncResult(expectedRawRecords2, expectedFinalRecords2)
     }
 
     /**
@@ -560,7 +563,7 @@ abstract class BaseTypingDedupingTest {
         // But the final table should be fully deduped
         val expectedFinalRecords1 = readRecords("dat/sync1_expectedrecords_dedup_final.jsonl")
         fixGenerationId(expectedRawRecords1, expectedFinalRecords1, inputGenerationId)
-        verifySyncResult(expectedRawRecords1, expectedFinalRecords1, disableFinalTableComparison())
+        verifySyncResult(expectedRawRecords1, expectedFinalRecords1)
     }
 
     /** Identical to [.incrementalDedup], except that the stream has no namespace. */
@@ -601,8 +604,7 @@ abstract class BaseTypingDedupingTest {
             expectedRawRecords1,
             expectedFinalRecords1,
             null,
-            streamName,
-            disableFinalTableComparison()
+            streamName
         )
 
         // Second sync
@@ -618,8 +620,7 @@ abstract class BaseTypingDedupingTest {
             expectedRawRecords2,
             expectedFinalRecords2,
             null,
-            streamName,
-            disableFinalTableComparison()
+            streamName
         )
     }
 
@@ -683,7 +684,7 @@ abstract class BaseTypingDedupingTest {
         val expectedRawRecords1 = readRecords("dat/sync1_expectedrecords_raw.jsonl")
         val expectedFinalRecords1 = readRecords("dat/sync1_expectedrecords_nondedup_final.jsonl")
         fixGenerationId(expectedRawRecords1, expectedFinalRecords1, inputGenerationId)
-        verifySyncResult(expectedRawRecords1, expectedFinalRecords1, disableFinalTableComparison())
+        verifySyncResult(expectedRawRecords1, expectedFinalRecords1)
 
         // Second sync
         val messages2 = readMessages("dat/sync2_messages.jsonl")
@@ -703,7 +704,7 @@ abstract class BaseTypingDedupingTest {
         }
         fixGenerationId(expectedRawRecords2, expectedFinalRecords2, inputGenerationId)
 
-        verifySyncResult(expectedRawRecords2, expectedFinalRecords2, disableFinalTableComparison())
+        verifySyncResult(expectedRawRecords2, expectedFinalRecords2)
     }
 
     @Test
@@ -795,15 +796,13 @@ abstract class BaseTypingDedupingTest {
             readRecords("dat/sync1_expectedrecords_raw.jsonl"),
             readRecords("dat/sync1_expectedrecords_dedup_final.jsonl"),
             namespace1,
-            streamName,
-            disableFinalTableComparison()
+            streamName
         )
         verifySyncResult(
             readRecords("dat/sync1_expectedrecords_raw2.jsonl"),
             readRecords("dat/sync1_expectedrecords_dedup_final2.jsonl"),
             namespace2,
-            streamName,
-            disableFinalTableComparison()
+            streamName
         )
 
         // Second sync
@@ -816,15 +815,13 @@ abstract class BaseTypingDedupingTest {
             readRecords("dat/sync2_expectedrecords_raw.jsonl"),
             readRecords("dat/sync2_expectedrecords_incremental_dedup_final.jsonl"),
             namespace1,
-            streamName,
-            disableFinalTableComparison()
+            streamName
         )
         verifySyncResult(
             readRecords("dat/sync2_expectedrecords_raw2.jsonl"),
             readRecords("dat/sync2_expectedrecords_incremental_dedup_final2.jsonl"),
             namespace2,
-            streamName,
-            disableFinalTableComparison()
+            streamName
         )
     }
 
@@ -914,22 +911,24 @@ abstract class BaseTypingDedupingTest {
         pushStatusMessages(catalog2, sync2, AirbyteStreamStatus.COMPLETE)
         endSync(sync2, outFuture2)
 
-        // For simplicity, just assert on raw record count.
-        // Seems safe to assume that if we have the right number of records on both tables,
-        // that we wrote the data correctly.
-        val rawRecords1 = dumpRawTableRecords(namespace1, streamName)
-        val rawRecords2 = dumpRawTableRecords(namespace2, streamName)
-        Assertions.assertAll(
-            Executable {
-                Assertions.assertEquals(messages1.size.toLong(), rawRecords1.size.toLong())
-            },
-            Executable {
-                Assertions.assertEquals(
-                    2 * nTimes * messages2.size.toLong(),
-                    rawRecords2.size.toLong()
-                )
-            },
-        )
+        if (!disableRawTableComparison()) {
+            // For simplicity, just assert on raw record count.
+            // Seems safe to assume that if we have the right number of records on both tables,
+            // that we wrote the data correctly.
+            val rawRecords1 = dumpRawTableRecords(namespace1, streamName)
+            val rawRecords2 = dumpRawTableRecords(namespace2, streamName)
+            Assertions.assertAll(
+                Executable {
+                    Assertions.assertEquals(messages1.size.toLong(), rawRecords1.size.toLong())
+                },
+                Executable {
+                    Assertions.assertEquals(
+                        2 * nTimes * messages2.size.toLong(),
+                        rawRecords2.size.toLong()
+                    )
+                },
+            )
+        }
 
         if (!disableFinalTableComparison()) {
             Assertions.assertAll(
@@ -970,7 +969,7 @@ abstract class BaseTypingDedupingTest {
     @ParameterizedTest
     @ValueSource(longs = [0L, 42L])
     @Throws(Exception::class)
-    fun incrementalDedupChangeCursor(inputGenerationId: Long) {
+    open fun incrementalDedupChangeCursor(inputGenerationId: Long) {
         val mangledSchema = SCHEMA.deepCopy<JsonNode>()
         (mangledSchema["properties"] as ObjectNode).remove("updated_at")
         (mangledSchema["properties"] as ObjectNode).set<JsonNode>(
@@ -1012,7 +1011,7 @@ abstract class BaseTypingDedupingTest {
         val expectedFinalRecords1 =
             readRecords("dat/sync1_cursorchange_expectedrecords_dedup_final.jsonl")
         fixGenerationId(expectedRawRecords1, expectedFinalRecords1, inputGenerationId)
-        verifySyncResult(expectedRawRecords1, expectedFinalRecords1, disableFinalTableComparison())
+        verifySyncResult(expectedRawRecords1, expectedFinalRecords1)
 
         // Second sync
         val messages2 = readMessages("dat/sync2_messages.jsonl")
@@ -1026,7 +1025,7 @@ abstract class BaseTypingDedupingTest {
         val expectedFinalRecords2 =
             readRecords("dat/sync2_cursorchange_expectedrecords_incremental_dedup_final.jsonl")
         fixGenerationId(expectedRawRecords2, expectedFinalRecords2, inputGenerationId)
-        verifySyncResult(expectedRawRecords2, expectedFinalRecords2, disableFinalTableComparison())
+        verifySyncResult(expectedRawRecords2, expectedFinalRecords2)
     }
 
     @Test
@@ -1118,7 +1117,7 @@ abstract class BaseTypingDedupingTest {
         val expectedFinalRecords0 =
             readRecords("dat/sync2_expectedrecords_fullrefresh_append_final.jsonl")
         fixGenerationId(expectedRawRecords0, expectedFinalRecords0, 41)
-        verifySyncResult(expectedRawRecords0, expectedFinalRecords0, disableFinalTableComparison())
+        verifySyncResult(expectedRawRecords0, expectedFinalRecords0)
 
         val catalog =
             io.airbyte.protocol.models.v0
@@ -1149,7 +1148,7 @@ abstract class BaseTypingDedupingTest {
         } catch (e: TestHarnessException) {}
 
         // raw and final table should have been left alone as is
-        verifySyncResult(expectedRawRecords0, expectedFinalRecords0, disableFinalTableComparison())
+        verifySyncResult(expectedRawRecords0, expectedFinalRecords0)
 
         // notice we re-write the same records we wrote earlier
         runSync(catalog, readMessages("dat/sync1_messages.jsonl"))
@@ -1158,8 +1157,7 @@ abstract class BaseTypingDedupingTest {
         val expectedFinalRecords1 = readRecords("dat/sync1_expectedrecords_nondedup_final.jsonl")
         verifySyncResult(
             expectedRawRecords1 + expectedRawRecords1,
-            expectedFinalRecords1 + expectedFinalRecords1,
-            disableFinalTableComparison()
+            expectedFinalRecords1 + expectedFinalRecords1
         )
     }
 
@@ -1192,14 +1190,14 @@ abstract class BaseTypingDedupingTest {
 
         val expectedRawRecords1 = readRecords("dat/sync1_expectedrecords_raw.jsonl")
         val expectedFinalRecords1 = readRecords("dat/sync1_expectedrecords_nondedup_final.jsonl")
-        verifySyncResult(expectedRawRecords1, expectedFinalRecords1, disableFinalTableComparison())
+        verifySyncResult(expectedRawRecords1, expectedFinalRecords1)
 
         runSync(catalog, readMessages("dat/sync2_messages.jsonl"))
 
         val expectedRawRecords2 = readRecords("dat/sync2_expectedrecords_raw.jsonl")
         val expectedFinalRecords2 =
             readRecords("dat/sync2_expectedrecords_fullrefresh_append_final.jsonl")
-        verifySyncResult(expectedRawRecords2, expectedFinalRecords2, disableFinalTableComparison())
+        verifySyncResult(expectedRawRecords2, expectedFinalRecords2)
     }
 
     /**
@@ -1240,7 +1238,7 @@ abstract class BaseTypingDedupingTest {
 
         val expectedRawRecords1 = readRecords("dat/sync1_expectedrecords_raw.jsonl")
         val expectedFinalRecords1 = readRecords("dat/sync1_expectedrecords_nondedup_final.jsonl")
-        verifySyncResult(expectedRawRecords1, expectedFinalRecords1, disableFinalTableComparison())
+        verifySyncResult(expectedRawRecords1, expectedFinalRecords1)
 
         val catalog2 =
             io.airbyte.protocol.models.v0
@@ -1273,7 +1271,7 @@ abstract class BaseTypingDedupingTest {
         }
 
         // We should still have the exact same records as after the initial sync
-        verifySyncResult(expectedRawRecords1, expectedFinalRecords1, disableFinalTableComparison())
+        verifySyncResult(expectedRawRecords1, expectedFinalRecords1)
 
         val catalog3 =
             io.airbyte.protocol.models.v0
@@ -1331,7 +1329,7 @@ abstract class BaseTypingDedupingTest {
                     }
                 expectedFinalRecords1 + sync2Records + sync2Records
             }
-        verifySyncResult(expectedRawRecords2, expectedFinalRecords2, disableFinalTableComparison())
+        verifySyncResult(expectedRawRecords2, expectedFinalRecords2)
     }
 
     open val manyStreamCount = 20
@@ -1374,16 +1372,9 @@ abstract class BaseTypingDedupingTest {
     @Throws(Exception::class)
     protected fun verifySyncResult(
         expectedRawRecords: List<JsonNode>,
-        expectedFinalRecords: List<JsonNode>,
-        disableFinalTableComparison: Boolean
+        expectedFinalRecords: List<JsonNode>
     ) {
-        verifySyncResult(
-            expectedRawRecords,
-            expectedFinalRecords,
-            streamNamespace,
-            streamName,
-            disableFinalTableComparison
-        )
+        verifySyncResult(expectedRawRecords, expectedFinalRecords, streamNamespace, streamName)
     }
 
     @Throws(Exception::class)
@@ -1391,21 +1382,16 @@ abstract class BaseTypingDedupingTest {
         expectedRawRecords: List<JsonNode>,
         expectedFinalRecords: List<JsonNode>,
         streamNamespace: String?,
-        streamName: String,
-        disableFinalTableComparison: Boolean
+        streamName: String
     ) {
-        val actualRawRecords = dumpRawTableRecords(streamNamespace, streamName)
-
-        if (disableFinalTableComparison) {
-            DIFFER!!.diffRawTableRecords(expectedRawRecords, actualRawRecords)
-        } else {
+        if (!disableFinalTableComparison()) {
             val actualFinalRecords = dumpFinalTableRecords(streamNamespace, streamName)
-            DIFFER!!.verifySyncResult(
-                expectedRawRecords,
-                actualRawRecords,
-                expectedFinalRecords,
-                actualFinalRecords
-            )
+            DIFFER!!.diffFinalTableRecords(expectedFinalRecords, actualFinalRecords)
+        }
+
+        if (!disableRawTableComparison()) {
+            val actualRawRecords = dumpRawTableRecords(streamNamespace, streamName)
+            DIFFER!!.diffRawTableRecords(expectedRawRecords, actualRawRecords)
         }
     }
 
