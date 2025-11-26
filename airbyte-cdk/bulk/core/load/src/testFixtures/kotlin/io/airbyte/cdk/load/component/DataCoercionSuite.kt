@@ -14,6 +14,7 @@ import io.airbyte.cdk.load.data.EnrichedAirbyteValue
 import io.airbyte.cdk.load.data.FieldType
 import io.airbyte.cdk.load.data.IntegerType
 import io.airbyte.cdk.load.data.NullValue
+import io.airbyte.cdk.load.data.NumberType
 import io.airbyte.cdk.load.data.ObjectType
 import io.airbyte.cdk.load.dataflow.transform.ValidationResult
 import io.airbyte.cdk.load.dataflow.transform.ValueCoercer
@@ -45,6 +46,16 @@ interface DataCoercionSuite {
         testValueCoercion(
             columnNameMapping,
             FieldType(IntegerType, nullable = true),
+            inputValue,
+            expectedValue,
+        )
+    }
+
+    /** Fixtures are defined in [DataCoercionNumberFixtures]. */
+    fun `handle number values`(inputValue: AirbyteValue, expectedValue: Any?) = runTest {
+        testValueCoercion(
+            columnNameMapping,
+            FieldType(NumberType, nullable = true),
             inputValue,
             expectedValue,
         )

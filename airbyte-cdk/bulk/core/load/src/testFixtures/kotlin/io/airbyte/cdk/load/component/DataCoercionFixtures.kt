@@ -5,6 +5,7 @@
 package io.airbyte.cdk.load.component
 
 import io.airbyte.cdk.load.data.IntegerValue
+import io.airbyte.cdk.load.data.NumberValue
 import java.math.BigDecimal
 import java.math.BigInteger
 import org.junit.jupiter.params.provider.Arguments
@@ -60,6 +61,9 @@ object DataCoercionIntegerFixtures {
             IntegerValue(bigint(Long.MIN_VALUE) - BigInteger.ONE) to null,
             // NUMERIC(38, 9) bounds, and slightly out of bounds
             // (these are all out of bounds for an int64 value, so they all get nulled)
+            // TODO turn this into a struct
+            //   DataCoercionTestCase(inputValue: AirbyteValue, expectedValue: Any?, changeReason:
+            // Meta.Change.Reason?, description: String?)
             IntegerValue(numeric38_0Max) to null,
             IntegerValue(numeric38_0Min) to null,
             IntegerValue(numeric38_0Max + BigInteger.ONE) to null,
@@ -118,6 +122,81 @@ object DataCoercionIntegerFixtures {
     @JvmStatic fun numeric38_0() = numeric38_0.toArgs()
 }
 
+object DataCoercionNumberFixtures {
+    val numeric38_9Max = bigdec("99999999999999999999999999999.999999999")
+    val numeric38_9Min = bigdec("-99999999999999999999999999999.999999999")
+
+    val float64 =
+        listOf(
+            NumberValue(bigdec(0)) to 0.0,
+            NumberValue(bigdec(1)) to 1.0,
+            NumberValue(bigdec(-1)) to -1.0,
+            // This value isn't exactly representable as a float64
+            // (the exact value is `123.400000000000005684341886080801486968994140625`)
+            // but we should preserve the canonical representation
+            NumberValue(bigdec("123.4")) to 123.4,
+            NumberValue(bigdec("-123.4")) to -123.4,
+            // These values have too much precision for a float64, so we round them
+            // TODO snowflake rounds these differently than expected, figure out why. Or make it
+            // easier
+            //   for snowflake to override specific entries in this list.
+            NumberValue(bigdec("1234567890.1234567890123456789")) to 1234567890.1234567,
+            NumberValue(bigdec("-1234567890.1234567890123456789")) to -1234567890.1234567,
+            NumberValue(numeric38_9Max) to 1.0E29,
+            NumberValue(numeric38_9Min) to -1.0E29,
+            // min/max_value are all positive values, so we need to manually test their negative
+            // version
+            NumberValue(bigdec(Float.MIN_VALUE.toDouble())) to Float.MIN_VALUE.toDouble(),
+            NumberValue(bigdec(-Float.MIN_VALUE.toDouble())) to -Float.MIN_VALUE.toDouble(),
+            NumberValue(bigdec(Float.MAX_VALUE.toDouble())) to Float.MAX_VALUE.toDouble(),
+            NumberValue(bigdec(-Float.MAX_VALUE.toDouble())) to -Float.MAX_VALUE.toDouble(),
+            NumberValue(bigdec(Double.MIN_VALUE)) to Double.MIN_VALUE,
+            NumberValue(bigdec(-Double.MIN_VALUE)) to -Double.MIN_VALUE,
+            // TODO snowflake writes this value correctly, but reads it back as infinity. Need to
+            // fix SnowflakeTestOperationClient
+            NumberValue(bigdec(Double.MAX_VALUE)) to Double.MAX_VALUE,
+            NumberValue(bigdec(-Double.MAX_VALUE)) to -Double.MAX_VALUE,
+            // These values are out of bounds, so we null them
+            NumberValue(bigdec(Double.MAX_VALUE) + bigdec(Double.MIN_VALUE)) to null,
+            NumberValue(bigdec(-Double.MAX_VALUE) - bigdec(Double.MIN_VALUE)) to null,
+        )
+
+    val numeric38_9 =
+        listOf(
+                NumberValue(bigdec(0)) to bigdec(0.0),
+                NumberValue(bigdec(1)) to bigdec(1.0),
+                NumberValue(bigdec(-1)) to bigdec(-1.0),
+                // This value isn't exactly representable as a float64
+                // (the exact value is `123.400000000000005684341886080801486968994140625`)
+                // but it's perfectly fine as a numeric(38, 9)
+                NumberValue(bigdec("123.4")) to bigdec("123.4"),
+                NumberValue(bigdec("-123.4")) to bigdec("-123.4"),
+                // These values have too much precision for a numeric(38, 9), so we round them
+                NumberValue(bigdec("1234567890.1234567890123456789")) to
+                    bigdec("1234567890.123456789"),
+                NumberValue(bigdec("-1234567890.1234567890123456789")) to
+                    bigdec("-1234567890.123456789"),
+                NumberValue(bigdec(Float.MIN_VALUE.toDouble())) to bigdec(0),
+                NumberValue(bigdec(-Float.MIN_VALUE.toDouble())) to bigdec(0),
+                NumberValue(bigdec(Double.MIN_VALUE)) to bigdec(0),
+                NumberValue(bigdec(-Double.MIN_VALUE)) to bigdec(0),
+                // numeric bounds are perfectly fine
+                NumberValue(numeric38_9Max) to numeric38_9Max,
+                NumberValue(numeric38_9Min) to numeric38_9Min,
+                // These values are out of bounds, so we null them
+                NumberValue(bigdec(Float.MAX_VALUE.toDouble())) to null,
+                NumberValue(bigdec(-Float.MAX_VALUE.toDouble())) to null,
+                NumberValue(bigdec(Double.MAX_VALUE)) to null,
+                NumberValue(bigdec(-Double.MAX_VALUE)) to null,
+                NumberValue(bigdec(Double.MAX_VALUE) + bigdec(Double.MIN_VALUE)) to null,
+                NumberValue(bigdec(-Double.MAX_VALUE) - bigdec(Double.MIN_VALUE)) to null,
+            )
+            .map { (input, output) -> input to output?.setScale(9) }
+
+    @JvmStatic fun float64() = float64.toArgs()
+    @JvmStatic fun numeric38_9() = numeric38_9.toArgs()
+}
+
 fun <T, U> List<Pair<T, U>>.toArgs(): List<Arguments> =
     this.map { Arguments.of(it.first, it.second) }.toList()
 
@@ -129,3 +208,9 @@ fun bigint(str: String): BigInteger = BigDecimal(str).toBigIntegerExact()
 
 /** Shorthand utility method to construct a bigint from a long */
 fun bigint(long: Long): BigInteger = BigInteger.valueOf(long)
+
+fun bigdec(str: String): BigDecimal = BigDecimal(str)
+
+fun bigdec(double: Double): BigDecimal = BigDecimal.valueOf(double)
+
+fun bigdec(int: Int): BigDecimal = BigDecimal.valueOf(int.toDouble())
