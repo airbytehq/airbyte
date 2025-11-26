@@ -30,7 +30,10 @@ import io.airbyte.cdk.load.message.Meta.Companion.COLUMN_NAME_AB_EXTRACTED_AT
 import io.airbyte.cdk.load.message.Meta.Companion.COLUMN_NAME_AB_GENERATION_ID
 import io.airbyte.cdk.load.message.Meta.Companion.COLUMN_NAME_AB_META
 import io.airbyte.cdk.load.message.Meta.Companion.COLUMN_NAME_AB_RAW_ID
+import io.airbyte.cdk.load.schema.model.ColumnSchema
+import io.airbyte.cdk.load.schema.model.StreamTableSchema
 import io.airbyte.cdk.load.schema.model.TableName
+import io.airbyte.cdk.load.schema.model.TableNames
 import io.airbyte.cdk.load.table.CDC_DELETED_AT_COLUMN
 import io.airbyte.cdk.load.table.ColumnNameMapping
 import io.airbyte.cdk.load.util.Jsons
@@ -691,6 +694,17 @@ object TableOperationsFixtures {
             syncId = syncId,
             schema = schema,
             namespaceMapper = NamespaceMapper(),
+            tableSchema =
+                StreamTableSchema(
+                    tableNames = TableNames(finalTableName = TableName(namespace, name)),
+                    columnSchema =
+                        ColumnSchema(
+                            rawSchema = schema.properties,
+                            rawToFinalColumnNames = schema.properties.keys.associateWith { it },
+                            finalColumnSchema = mapOf(),
+                        ),
+                    importType = Append,
+                )
         )
 
     fun createDedupeStream(
@@ -716,6 +730,21 @@ object TableOperationsFixtures {
             syncId = syncId,
             schema = schema,
             namespaceMapper = NamespaceMapper(),
+            tableSchema =
+                StreamTableSchema(
+                    tableNames = TableNames(finalTableName = TableName(namespace, name)),
+                    columnSchema =
+                        ColumnSchema(
+                            rawSchema = schema.properties,
+                            rawToFinalColumnNames = schema.properties.keys.associateWith { it },
+                            finalColumnSchema = mapOf(),
+                        ),
+                    importType =
+                        Dedupe(
+                            primaryKey = primaryKey,
+                            cursor = cursor,
+                        ),
+                )
         )
 
     fun createStream(

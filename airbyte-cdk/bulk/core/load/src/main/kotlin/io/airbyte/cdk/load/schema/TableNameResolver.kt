@@ -1,3 +1,7 @@
+/*
+ * Copyright (c) 2025 Airbyte, Inc., all rights reserved.
+ */
+
 package io.airbyte.cdk.load.schema
 
 import io.airbyte.cdk.load.command.DestinationStream
@@ -20,23 +24,19 @@ class TableNameResolver(
         val result = mutableMapOf<DestinationStream.Descriptor, TableName>()
 
         streamDescriptors.forEach { desc ->
-            val originalFinalTableName =
-                mapper.toFinalTableName(desc)
+            val originalFinalTableName = mapper.toFinalTableName(desc)
             val currentFinalProcessedName: TableName
 
             val finalTableNameColliding = originalFinalTableName in processedFinalTableNames
             if (finalTableNameColliding) {
-                log.info {
-                    "Detected table name collision for ${desc.namespace}.${desc.name}"
-                }
+                log.info { "Detected table name collision for ${desc.namespace}.${desc.name}" }
                 // Create a hash-suffixed name to avoid collision
                 val hash =
                     DigestUtils.sha1Hex(
-                        "${originalFinalTableName.namespace}&airbyte&${desc.name}",
-                    )
+                            "${originalFinalTableName.namespace}&airbyte&${desc.name}",
+                        )
                         .substring(0, 3)
                 val newName = "${desc.name}_$hash"
-
 
                 currentFinalProcessedName =
                     mapper.toFinalTableName(
@@ -48,8 +48,7 @@ class TableNameResolver(
                 currentFinalProcessedName = originalFinalTableName
             }
 
-            result[desc] =
-                currentFinalProcessedName
+            result[desc] = currentFinalProcessedName
         }
 
         return result

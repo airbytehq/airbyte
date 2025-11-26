@@ -55,7 +55,25 @@ class ParseStageTest {
                 generationId = 1L,
                 minimumGenerationId = 1L,
                 syncId = 1L,
-                namespaceMapper = NamespaceMapper()
+                namespaceMapper = NamespaceMapper(),
+                tableSchema =
+                    io.airbyte.cdk.load.schema.model.StreamTableSchema(
+                        tableNames =
+                            io.airbyte.cdk.load.schema.model.TableNames(
+                                finalTableName =
+                                    io.airbyte.cdk.load.schema.model.TableName(
+                                        "test-namespace",
+                                        "test-stream"
+                                    )
+                            ),
+                        columnSchema =
+                            io.airbyte.cdk.load.schema.model.ColumnSchema(
+                                rawSchema = mapOf(),
+                                rawToFinalColumnNames = mapOf(),
+                                finalColumnSchema = mapOf(),
+                            ),
+                        importType = Append,
+                    )
             )
         rawRecord =
             DestinationRecordRaw(
