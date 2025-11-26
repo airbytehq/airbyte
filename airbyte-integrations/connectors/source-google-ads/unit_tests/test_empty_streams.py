@@ -284,7 +284,11 @@ def test_custom_query_stream(customers, config_for_custom_query_tests, requests_
             True,
             1,
         ),
-        ("SELECT click_view.gclid, click_view.ad_group_ad, segments.date FROM click_view WHERE segments.date BETWEEN '2025-10-21' AND '2025-10-21'", False, None),
+        (
+            "SELECT click_view.gclid, click_view.ad_group_ad, segments.date FROM click_view WHERE segments.date BETWEEN '2025-10-21' AND '2025-10-21'",
+            False,
+            None,
+        ),
     ],
 )
 def test_custom_query_stream_with_different_queries(query, expected_incremental_sync, expected_step_days, config_for_custom_query_tests):
@@ -303,9 +307,8 @@ def test_custom_query_stream_with_different_queries(query, expected_incremental_
         assert stream.cursor_field == "segments.date", f"Stream cursor field should be 'segments.date' for query: {query}"
 
         # Check the step value for incremental streams
-        if hasattr(stream, 'state') and hasattr(stream.state, '_cursor'):
-            cursor = stream.state._cursor
-            actual_step_days = cursor.step.days
-            assert actual_step_days == expected_step_days, f"Stream step should be {expected_step_days} days for query: {query}"
+        cursor = stream.cursor._create_cursor({})
+        actual_step_days = cursor._slice_range.days
+        assert actual_step_days == expected_step_days, f"Stream step should be {expected_step_days} days for query: {query}"
     else:
         assert stream.cursor_field != "segments.date", f"Stream should not have segments.date as cursor field for query: {query}"
