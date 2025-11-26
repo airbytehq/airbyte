@@ -209,8 +209,6 @@ sealed class PostgresSourceSplittablePartition(
             SelectQuerySpec(
                 SelectColumns((listOf(ctidField) + stream.fields).distinct()),
                 From(stream.name, stream.namespace),
-/*                where,*/
-                /*OrderBy(listOf(ctidField)),*/
                 limit = Limit(sampleSize.toLong())
             )
         return selectQueryGenerator.generate(querySpec.optimize())
@@ -385,8 +383,6 @@ class PostgresSourceJdbcCursorIncrementalPartition(
             SelectQuerySpec(
                 SelectColumns((stream.fields).distinct()),
                 From(stream.name, stream.namespace),
-                //                where,
-                //orderBy = OrderBy(cursor),
                 limit = Limit(sampleSize.toLong())
             )
         return selectQueryGenerator.generate(querySpec.optimize())

@@ -56,44 +56,16 @@ class PostgresSourceJdbcConcurrentPartitionsCreator<
         recordMapper: (SelectQuerier.ResultRow) -> T,
     ): Sample<T> {
         val values = mutableListOf<T>()
-//        var previousWeight = 0L
-//        for (sampleRateInvPow2 in listOf(20, 16, 8, 0)) {
-//            val sampleRateInv: Long = 1L shl sampleRateInvPow2
-//            log.info { "Sampling stream '${stream.label}' at rate 1 / $sampleRateInv." }
-//            values.clear()
             val samplingQuery: SelectQuery = partition.samplingQuery(/*sampleRateInvPow2*/0)
             selectQuerier.executeQuery(samplingQuery).use {
                 for (row in it) {
                     values.add(recordMapper(row))
                 }
             }
-/*
-            if (values.size < sharedState.maxSampleSize) {
-                previousWeight = sampleRateInv * values.size / sharedState.maxSampleSize
-                continue
-            }
-*/
-/*
-            val kind: Sample.Kind =
-                when (sampleRateInvPow2) {
-                    20,
-                    16 -> Sample.Kind.LARGE
-                    8 -> Sample.Kind.MEDIUM
-                    else -> Sample.Kind.SMALL
-                }
-*/
-//            log.info { "Sampled ${values.size} rows in ${kind.name} stream '${stream.label}'." }
-//            return Sample(values, /*kind*/Sample.Kind.LARGE, /*previousWeight.coerceAtLeast(sampleRateInv)*/0)
-//        }
         val kind: Sample.Kind = if (values.isEmpty()) Sample.Kind.EMPTY else Sample.Kind.LARGE
         log.info { "Sampled ${values.size} rows in ${kind.name} stream '${stream.label}'." }
         return Sample(values, kind, 0)
     }
-
-    /*override suspend fun run(): List<PartitionReader> {
-        return super.run().takeUnless { it.isEmpty() }
-            ?: listOf(JdbcNonResumablePartitionReader(partition))
-    }*/
 
     override suspend fun run(): List<PartitionReader> {
         // Ensure that the cursor upper bound is known, if required.
@@ -128,11 +100,9 @@ class PostgresSourceJdbcConcurrentPartitionsCreator<
             return listOf(CheckpointOnlyPartitionReader())
         }
         val rowByteSizeSample: Sample<Long> = sample.map { (_, rowByteSize: Long) -> rowByteSize }
-//        rowSizes[stream] = rowByteSizeSample.sampledValues.maxOrNull() ?: 1L
         streamState.fetchSize = sharedState.jdbcFetchSizeEstimator().apply(rowByteSizeSample)
         val expectedTableByteSize: Long = /*rowByteSizeSample.sampledValues.sum() * sample.valueWeight*/ totalRelationSize(stream)
         log.info { "Table memory size estimated at ${expectedTableByteSize shr 20} MiB." }
-//        streamSizes[stream] = expectedTableByteSize
         // Handle edge case where the table can't be split.
         if (partition !is JdbcSplittablePartition<*>) {
             log.warn {
@@ -173,8 +143,12 @@ class PostgresSourceJdbcConcurrentPartitionsCreator<
         return partitions.map { JdbcNonResumablePartitionReader(it) }
     }
 
+    /**
+     * Get total relation size in bytes for a given table - this icludes toast data.
+     */
     private fun totalRelationSize(stream: Stream): Long {
         val jdbcConnectionFactory = JdbcConnectionFactory(sharedState.configuration)
+        log.info { "Querying total table relation size." }
         jdbcConnectionFactory.get().use { connection ->
             val sql = "SELECT pg_total_relation_size('${
                 if (stream.namespace == null) "\"${stream.name}\"" else "\"${stream.namespace}\".\"${stream.name}\""
@@ -184,6 +158,7 @@ class PostgresSourceJdbcConcurrentPartitionsCreator<
 
             if (rs.next()) {
                 val relationSize = rs.getLong(1)
+                log.info { "Found total table relation size $relationSize for ${stream.name}." }
                 return relationSize
             }
             error("Could not get relation size for stream ${stream.id}")

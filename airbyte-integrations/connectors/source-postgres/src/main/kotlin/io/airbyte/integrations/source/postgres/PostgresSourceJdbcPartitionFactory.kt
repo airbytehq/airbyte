@@ -74,7 +74,7 @@ class PostgresSourceJdbcPartitionFactory(
                     lowerBound = null,
                     upperBound = null,
                     filenode,
-                    false
+                    true
                 )
             }
                 ?: PostgresSourceJdbcUnsplittableSnapshotPartition(
@@ -93,7 +93,7 @@ class PostgresSourceJdbcPartitionFactory(
                 cursorChosenFromCatalog,
                 cursorUpperBound = null,
                 filenode,
-                false
+                true
             )
         }
             ?: PostgresSourceJdbcUnsplittableSnapshotWithCursorPartition(
@@ -318,6 +318,7 @@ class PostgresSourceJdbcPartitionFactory(
 
     val blockSize: Long by lazy(mode = LazyThreadSafetyMode.SYNCHRONIZED) {
         val jdbcConnectionFactory = JdbcConnectionFactory(config)
+        log.info { "Querying server block size setting." }
         jdbcConnectionFactory.get().use { connection ->
             val sql = "SELECT current_setting('block_size')::int"
             val stmt = connection.prepareStatement(sql)
@@ -325,9 +326,30 @@ class PostgresSourceJdbcPartitionFactory(
 
             if (rs.next()) {
                 val blockSize = rs.getLong(1)
+                log.warn { "Server block size is $blockSize." }
                 return@lazy blockSize
             }
             error("Could not get server block size")
+        }
+    }
+
+    private fun relationSize(stream: Stream): Long {
+        val jdbcConnectionFactory = JdbcConnectionFactory(sharedState.configuration)
+        log.info { "Querying table relation size." }
+        jdbcConnectionFactory.get().use { connection ->
+            val sql = "SELECT pg_relation_size('${
+                if (stream.namespace == null) "\"${stream.name}\"" else "\"${stream.namespace}\".\"${stream.name}\""
+            }')"
+            val stmt = connection.prepareStatement(sql)
+            val rs = stmt.executeQuery()
+
+            if (rs.next()) {
+                val relationSize = rs.getLong(1)
+                log.info { "Found table relation size $relationSize for ${stream.name}." }
+                return relationSize
+            }
+            error("Could not get relation size for stream ${stream.id}")
+
         }
     }
 
@@ -341,27 +363,27 @@ class PostgresSourceJdbcPartitionFactory(
             }
         }
 
+        // pg_relation_size retruns the size of the table on disk, only the data in the main table file
+        // not including indexes or toast data
         val relationSize =
             relationSize(unsplitPartition.stream)
-            /*PostgresSourceJdbcConcurrentPartitionsCreator.streamSizes[unsplitPartition.stream] ?: error("Could not get stream size for stream ${unsplitPartition.stream.id}")*/
-
-//        val rowSize: Long = PostgresSourceJdbcConcurrentPartitionsCreator.rowSizes[unsplitPartition.stream] ?: error("Could not get row size for stream ${unsplitPartition.stream.id}")
-//        log.info { "Table row size is $rowSize bytes" }
         return when (unsplitPartition) {
             is PostgresSourceJdbcSplittableSnapshotPartition ->
-                unsplitPartition.split(splitPartitionBoundaries.size, splitPartitionBoundaries.first().filenode, relationSize, /*rowSize*/)
+                unsplitPartition.split(splitPartitionBoundaries.size, splitPartitionBoundaries.first().filenode, relationSize)
             is PostgresSourceJdbcSplittableSnapshotWithCursorPartition ->
-                unsplitPartition.split(splitPartitionBoundaries.size, splitPartitionBoundaries.first().filenode, relationSize, /*rowSize*/)
+                unsplitPartition.split(splitPartitionBoundaries.size, splitPartitionBoundaries.first().filenode, relationSize)
             // TODO: implement split for cursor incremental partition
             else -> listOf(unsplitPartition)
         }
     }
 
+    /** Given table size and a starting point lower bound, the function will return a list of (lowerBound, upperBound) pairs for each
+     * partition. This is done by calculating the theoretical last page of the table (table size / block size), then dividing the range to get to the desired number of partitions.
+     */
     private fun computePartitionBounds(
         lowerBound: JsonNode?,
         numPartitions: Int,
         relationSize: Long,
-        /*rowSize: Long*/
     ): List<Pair<Ctid?, Ctid?>> {
         val theoreticalLastPage: Long = relationSize / blockSize
         log.info { "Theoretical last page: $theoreticalLastPage" }
@@ -383,7 +405,6 @@ class PostgresSourceJdbcPartitionFactory(
         numPartitions: Int,
         filenode: Filenode?,
         relationSize: Long,
-        /*rowSize: Long*/
     ): List<PostgresSourceJdbcSplittableSnapshotPartition> {
         val bounds = computePartitionBounds(lowerBound, numPartitions, relationSize, /*rowSize*/)
 
@@ -404,7 +425,6 @@ class PostgresSourceJdbcPartitionFactory(
         numPartitions: Int,
         filenode: Filenode?,
         relationSize: Long,
-        /*rowSize: Long*/
     ): List<PostgresSourceJdbcSplittableSnapshotWithCursorPartition> {
         val bounds = computePartitionBounds(lowerBound, numPartitions, relationSize, /*rowSize*/)
 
@@ -420,24 +440,6 @@ class PostgresSourceJdbcPartitionFactory(
                 // The first partition includes the lower bound
                 index == 0
             )
-        }
-    }
-
-    private fun relationSize(stream: Stream): Long {
-        val jdbcConnectionFactory = JdbcConnectionFactory(sharedState.configuration)
-        jdbcConnectionFactory.get().use { connection ->
-            val sql = "SELECT pg_relation_size('${
-                if (stream.namespace == null) "\"${stream.name}\"" else "\"${stream.namespace}\".\"${stream.name}\""
-            }')"
-            val stmt = connection.prepareStatement(sql)
-            val rs = stmt.executeQuery()
-
-            if (rs.next()) {
-                val relationSize = rs.getLong(1)
-                return relationSize
-            }
-            error("Could not get relation size for stream ${stream.id}")
-
         }
     }
 }
