@@ -164,8 +164,9 @@ class TestSourceDiscovery(GoogleSheetsBaseTest):
     @HttpMocker()
     def test_discover_empty_column_return_expected_schema(self, http_mocker: HttpMocker) -> None:
         """
-        The response from headers (first row) has columns "name | age | | address | address2". Empty columns
-        are assigned position-based names (e.g., "column_C") so all columns are included in the schema.
+        The response from headers (first row) has columns "name | age | | address | address2". When
+        read_empty_header_columns is enabled, empty columns are assigned position-based names
+        (e.g., "column_C") so all columns are included in the schema.
         """
         expected_schemas_properties = {
             _STREAM_NAME: {
@@ -198,7 +199,9 @@ class TestSourceDiscovery(GoogleSheetsBaseTest):
         expected_catalog = AirbyteCatalog(streams=expected_streams)
         expected_message = AirbyteMessage(type=Type.CATALOG, catalog=expected_catalog)
 
-        output = self._discover(self._config, expecting_exception=False)
+        config = deepcopy(self._config)
+        config["read_empty_header_columns"] = True
+        output = self._discover(config, expecting_exception=False)
         assert output.catalog == expected_message
 
     @HttpMocker()
@@ -329,8 +332,9 @@ class TestSourceRead(GoogleSheetsBaseTest):
     @HttpMocker()
     def test_when_read_empty_column_then_return_records(self, http_mocker: HttpMocker) -> None:
         """
-        The response from headers (first row) has columns "header_1 | header_2 | | address | address2". Empty columns
-        are assigned position-based names (e.g., "column_C") so all columns are included in the records.
+        The response from headers (first row) has columns "header_1 | header_2 | | address | address2". When
+        read_empty_header_columns is enabled, empty columns are assigned position-based names
+        (e.g., "column_C") so all columns are included in the records.
         """
         test_file_base_name = "read_with_empty_column"
         GoogleSheetsBaseTest.get_spreadsheet_info_and_sheets(http_mocker, f"{test_file_base_name}_{GET_SPREADSHEET_INFO}")
@@ -361,7 +365,9 @@ class TestSourceRead(GoogleSheetsBaseTest):
             .build()
         )
 
-        output = self._read(self._config, catalog=configured_catalog, expecting_exception=False)
+        config = deepcopy(self._config)
+        config["read_empty_header_columns"] = True
+        output = self._read(config, catalog=configured_catalog, expecting_exception=False)
         expected_records = [
             AirbyteMessage(
                 type=Type.RECORD,
