@@ -600,12 +600,7 @@ abstract class BaseTypingDedupingTest {
         val expectedRawRecords1 = readRecords("dat/sync1_expectedrecords_raw.jsonl")
         val expectedFinalRecords1 = readRecords("dat/sync1_expectedrecords_dedup_final.jsonl")
         fixGenerationId(expectedRawRecords1, expectedFinalRecords1, inputGenerationId)
-        verifySyncResult(
-            expectedRawRecords1,
-            expectedFinalRecords1,
-            null,
-            streamName
-        )
+        verifySyncResult(expectedRawRecords1, expectedFinalRecords1, null, streamName)
 
         // Second sync
         val messages2 = readMessages("dat/sync2_messages.jsonl", null, streamName)
@@ -616,12 +611,7 @@ abstract class BaseTypingDedupingTest {
         val expectedFinalRecords2 =
             readRecords("dat/sync2_expectedrecords_incremental_dedup_final.jsonl")
         fixGenerationId(expectedRawRecords2, expectedFinalRecords2, inputGenerationId)
-        verifySyncResult(
-            expectedRawRecords2,
-            expectedFinalRecords2,
-            null,
-            streamName
-        )
+        verifySyncResult(expectedRawRecords2, expectedFinalRecords2, null, streamName)
     }
 
     @Test
