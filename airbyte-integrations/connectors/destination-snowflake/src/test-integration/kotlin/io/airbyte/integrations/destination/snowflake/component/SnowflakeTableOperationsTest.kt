@@ -6,7 +6,7 @@ package io.airbyte.integrations.destination.snowflake.component
 
 import io.airbyte.cdk.load.component.TableOperationsFixtures
 import io.airbyte.cdk.load.component.TableOperationsSuite
-import io.airbyte.cdk.load.message.Meta
+import io.airbyte.cdk.load.schema.TableSchemaFactory
 import io.airbyte.integrations.destination.snowflake.client.SnowflakeAirbyteClient
 import io.airbyte.integrations.destination.snowflake.component.SnowflakeComponentTestFixtures.idTestWithCdcMapping
 import io.airbyte.integrations.destination.snowflake.component.SnowflakeComponentTestFixtures.testMapping
@@ -20,8 +20,9 @@ import org.junit.jupiter.api.parallel.ExecutionMode
 class SnowflakeTableOperationsTest(
     override val client: SnowflakeAirbyteClient,
     override val testClient: SnowflakeTestTableOperationsClient,
+    override val schemaFactory: TableSchemaFactory,
 ) : TableOperationsSuite {
-    override val airbyteMetaColumnMapping = Meta.COLUMN_NAMES.associateWith { it.uppercase() }
+    override val airbyteMetaColumnMapping = SnowflakeComponentTestFixtures.airbyteMetaColumnMapping
 
     @Test
     override fun `connect to database`() {
