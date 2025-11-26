@@ -308,6 +308,9 @@ spec:
               auth_method:
                 type: string
                 const: oauth2.0
+                default: oauth2.0
+                enum:
+                  - oauth2.0
               client_id:
                 type: string
                 order: 0
