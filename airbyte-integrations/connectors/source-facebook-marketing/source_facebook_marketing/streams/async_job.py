@@ -40,12 +40,13 @@ def update_in_batch(api: FacebookAdsApi, jobs: List["AsyncJob"]):
     :param jobs:
     """
     batch = api.new_batch()
-    max_batch_size = 50
+    max_batch_size = 30  # Reduced from 50 to be more conservative with Facebook's batch API
     for job in jobs:
         if not job.started or job.completed:
             continue
         # we check it here because job can be already finished
-        if len(batch) == max_batch_size:
+        if len(batch) >= max_batch_size:  # Changed from == to >= to prevent oversized batches
+            logger.info(f"Executing batch with {len(batch)} requests")
             while batch:
                 # If some of the calls from batch have failed, it returns  a new
                 # FacebookAdsApiBatch object with those calls
@@ -53,6 +54,8 @@ def update_in_batch(api: FacebookAdsApi, jobs: List["AsyncJob"]):
             batch = api.new_batch()
         job.update_job(batch=batch)
 
+    if batch:
+        logger.info(f"Executing final batch with {len(batch)} requests")
     while batch:
         # If some of the calls from batch have failed, it returns  a new
         # FacebookAdsApiBatch object with those calls
