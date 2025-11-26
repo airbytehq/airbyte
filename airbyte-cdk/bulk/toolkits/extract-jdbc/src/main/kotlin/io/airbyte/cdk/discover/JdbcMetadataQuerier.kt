@@ -160,11 +160,11 @@ class JdbcMetadataQuerier(
                         ?.value
                 if (patterns != null && patterns.isNotEmpty()) {
                     for (pattern in patterns) {
-                        addColumnsFromQuery(catalog, schema, pattern, isPseudoColumn = true)
+//                        addColumnsFromQuery(catalog, schema, pattern, isPseudoColumn = true)
                         addColumnsFromQuery(catalog, schema, pattern, isPseudoColumn = false)
                     }
                 } else {
-                    addColumnsFromQuery(catalog, schema, null, isPseudoColumn = true)
+//                    addColumnsFromQuery(catalog, schema, null, isPseudoColumn = true)
                     addColumnsFromQuery(catalog, schema, null, isPseudoColumn = false)
                 }
             }
