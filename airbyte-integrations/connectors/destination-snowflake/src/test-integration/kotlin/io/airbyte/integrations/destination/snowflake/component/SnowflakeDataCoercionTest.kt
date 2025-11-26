@@ -37,6 +37,13 @@ class SnowflakeDataCoercionTest(
         super.`handle integer values`(inputValue, expectedValue)
     }
 
+    @ParameterizedTest
+    // for historical reasons, we use snowflake's FLOAT data type, which is a float64
+    @MethodSource("io.airbyte.cdk.load.component.DataCoercionNumberFixtures#float64")
+    override fun `handle number values`(inputValue: AirbyteValue, expectedValue: Any?) {
+        super.`handle number values`(inputValue, expectedValue)
+    }
+
     companion object {
         /**
          * Snowflake does two interesting things when querying a `NUMERIC(38, 0)` column:
