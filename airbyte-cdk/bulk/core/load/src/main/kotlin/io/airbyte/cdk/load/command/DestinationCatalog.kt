@@ -97,7 +97,7 @@ data class DestinationCatalog(val streams: List<DestinationStream> = emptyList()
 
 @Factory
 class DefaultDestinationCatalogFactory {
-    @Requires(property = Operation.PROPERTY, value = "sync")
+    @Requires(property = Operation.PROPERTY, notEquals = "check")
     @Singleton
     fun syncCatalog(
         catalog: ConfiguredAirbyteCatalog,
