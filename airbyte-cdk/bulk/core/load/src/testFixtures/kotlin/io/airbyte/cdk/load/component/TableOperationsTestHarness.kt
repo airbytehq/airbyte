@@ -7,6 +7,7 @@ package io.airbyte.cdk.load.component
 import io.airbyte.cdk.load.command.DestinationStream
 import io.airbyte.cdk.load.component.TableOperationsFixtures.createAppendStream
 import io.airbyte.cdk.load.component.TableOperationsFixtures.insertRecords
+import io.airbyte.cdk.load.component.TableOperationsFixtures.removeAirbyteColumns
 import io.airbyte.cdk.load.data.AirbyteValue
 import io.airbyte.cdk.load.data.ObjectType
 import io.airbyte.cdk.load.table.ColumnNameMapping
@@ -108,8 +109,6 @@ class TableOperationsTestHarness(
     /** Reads records from a table, filtering out Meta columns. */
     suspend fun readTableWithoutMetaColumns(tableName: TableName): List<Map<String, Any>> {
         val tableRead = testClient.readTable(tableName)
-        return tableRead.map { rec ->
-            rec.filter { !airbyteMetaColumnMapping.containsValue(it.key) }
-        }
+        return tableRead.removeAirbyteColumns(airbyteMetaColumnMapping)
     }
 }

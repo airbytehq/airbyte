@@ -759,6 +759,11 @@ object TableOperationsFixtures {
         return map { record -> record.mapKeys { (k, _) -> totalMapping.originalName(k) ?: k } }
     }
 
+    fun <V> List<Map<String, V>>.removeAirbyteColumns(
+        airbyteMetaColumnMapping: Map<String, String>
+    ): List<Map<String, V>> =
+        this.map { rec -> rec.filter { !airbyteMetaColumnMapping.containsValue(it.key) } }
+
     fun <V> List<Map<String, V>>.removeNulls() =
         this.map { record -> record.filterValues { it != null } }
 
