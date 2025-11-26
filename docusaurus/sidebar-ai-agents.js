@@ -1,4 +1,35 @@
+import fs from "fs";
 import apiSidebarItems from "../docs/ai-agents/embedded/api-reference/sidebar.ts";
+
+// Path to the cached embedded API OpenAPI specification
+const SPEC_CACHE_PATH = "./src/data/embedded_api_spec.json";
+
+/**
+ * Load the allowed tags from the OpenAPI spec.
+ * Only tags explicitly defined in the spec's top-level `tags` array should be shown in the sidebar.
+ * This filters out tags that are only assigned to operations but not formally defined.
+ */
+function loadAllowedTags() {
+  try {
+    const specJson = JSON.parse(fs.readFileSync(SPEC_CACHE_PATH, "utf8"));
+    return specJson.tags?.map((tag) => tag.name) ?? [];
+  } catch (e) {
+    console.warn("Could not load embedded API spec for sidebar filtering:", e);
+    return null; // fall back to no filtering if something goes wrong
+  }
+}
+
+/**
+ * Filter sidebar items to only include categories whose label matches an allowed tag.
+ * Non-category items (like docs) are always included.
+ */
+function filterSidebarByTags(items, allowedTags) {
+  if (!allowedTags) return items; // graceful fallback if spec couldn't be loaded
+  return items.filter((item) => {
+    if (item.type !== "category") return true;
+    return allowedTags.includes(item.label);
+  });
+}
 
 // Helper function to add unique keys to sidebar items to avoid duplicate translation key errors
 // The generated sidebar already has correct IDs, we just need to add unique keys
@@ -25,9 +56,13 @@ function addUniqueKeys(items) {
   });
 }
 
+// Load allowed tags from the OpenAPI spec and filter the sidebar items
+const allowedTags = loadAllowedTags();
+const filteredSidebar = filterSidebarByTags(apiSidebarItems, allowedTags);
+
 // Get the generated API sidebar items with unique keys
 // Skip the first item (sonar overview) since we use it as the category link
-const [, ...apiSidebarItemsWithKeys] = addUniqueKeys(apiSidebarItems);
+const [, ...apiSidebarItemsWithKeys] = addUniqueKeys(filteredSidebar);
 
 export default {
   "ai-agents": [
