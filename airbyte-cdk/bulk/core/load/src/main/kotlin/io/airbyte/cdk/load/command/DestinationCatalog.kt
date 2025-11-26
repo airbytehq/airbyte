@@ -104,15 +104,19 @@ class DefaultDestinationCatalogFactory {
         streamFactory: DestinationStreamFactory,
         tableNameResolver: TableNameResolver,
     ): DestinationCatalog {
-        val descriptors = catalog.streams.map {
-            DestinationStream.Descriptor(it.stream.namespace, it.stream.name)
-        }.toSet()
+        val descriptors =
+            catalog.streams
+                .map { DestinationStream.Descriptor(it.stream.namespace, it.stream.name) }
+                .toSet()
         val names = tableNameResolver.getTableNameMapping(descriptors)
 
-        return DestinationCatalog(streams = catalog.streams.map {
-            val key = DestinationStream.Descriptor(it.stream.namespace, it.stream.name)
-            streamFactory.make(it, names[key]!!)
-        })
+        return DestinationCatalog(
+            streams =
+                catalog.streams.map {
+                    val key = DestinationStream.Descriptor(it.stream.namespace, it.stream.name)
+                    streamFactory.make(it, names[key]!!)
+                }
+        )
     }
 
     /**
@@ -128,37 +132,36 @@ class DefaultDestinationCatalogFactory {
         @Named("checkNamespace") checkNamespace: String?,
         namespaceMapper: NamespaceMapper
     ): DestinationCatalog {
-            // generate a string like "20240523"
-            val date = LocalDate.now().format(DateTimeFormatter.ofPattern("yyyyMMdd"))
-            // generate 5 random characters
-            val random = RandomStringUtils.insecure().nextAlphabetic(5).lowercase()
-            val namespace = checkNamespace ?: "${CHECK_STREAM_NAMESPACE}_$date$random"
-            return DestinationCatalog(
-                listOf(
-                    DestinationStream(
-                        unmappedNamespace = namespace,
-                        unmappedName = "test$date$random",
-                        importType = Append,
-                        schema =
-                            ObjectType(
-                                linkedMapOf("test" to FieldType(IntegerType, nullable = true))
-                            ),
-                        generationId = 1,
-                        minimumGenerationId = 0,
-                        syncId = 1,
-                        namespaceMapper = namespaceMapper,
-                        tableSchema = StreamTableSchema(
-                            columnSchema = ColumnSchema(
-                                rawSchema = mapOf(),
-                                rawToFinalColumnNames = mapOf(),
-                                finalColumnSchema = mapOf()
-                            ),
+        // generate a string like "20240523"
+        val date = LocalDate.now().format(DateTimeFormatter.ofPattern("yyyyMMdd"))
+        // generate 5 random characters
+        val random = RandomStringUtils.insecure().nextAlphabetic(5).lowercase()
+        val namespace = checkNamespace ?: "${CHECK_STREAM_NAMESPACE}_$date$random"
+        return DestinationCatalog(
+            listOf(
+                DestinationStream(
+                    unmappedNamespace = namespace,
+                    unmappedName = "test$date$random",
+                    importType = Append,
+                    schema =
+                        ObjectType(linkedMapOf("test" to FieldType(IntegerType, nullable = true))),
+                    generationId = 1,
+                    minimumGenerationId = 0,
+                    syncId = 1,
+                    namespaceMapper = namespaceMapper,
+                    tableSchema =
+                        StreamTableSchema(
+                            columnSchema =
+                                ColumnSchema(
+                                    rawSchema = mapOf(),
+                                    rawToFinalColumnNames = mapOf(),
+                                    finalColumnSchema = mapOf()
+                                ),
                             importType = Append,
                             tableNames = TableNames(),
                         ),
-                    )
                 )
             )
-
+        )
     }
 }

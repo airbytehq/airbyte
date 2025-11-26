@@ -1,3 +1,7 @@
+/*
+ * Copyright (c) 2025 Airbyte, Inc., all rights reserved.
+ */
+
 package io.airbyte.cdk.load.schema
 
 import io.airbyte.cdk.load.command.ImportType
@@ -17,23 +21,26 @@ class TableSchemaFactory(
         finalTableName: TableName,
         rawSchema: Map<String, FieldType>,
         importType: ImportType,
-    ) : StreamTableSchema {
+    ): StreamTableSchema {
         val tempTableName = mapper.toTempTableName(finalTableName)
-        val tableNames = TableNames(
-            finalTableName = finalTableName,
-            tempTableName = tempTableName,
-        )
+        val tableNames =
+            TableNames(
+                finalTableName = finalTableName,
+                tempTableName = tempTableName,
+            )
 
         val rawToFinalColumnNames = colNameResolver.getColumnNameMapping(rawSchema.keys)
-        val finalColumnSchema = rawSchema.map {
-            rawToFinalColumnNames[it.key]!! to mapper.toColumnType(it.value)
-        }.toMap()
+        val finalColumnSchema =
+            rawSchema
+                .map { rawToFinalColumnNames[it.key]!! to mapper.toColumnType(it.value) }
+                .toMap()
 
-        val columnSchema = ColumnSchema(
-            rawSchema = rawSchema,
-            rawToFinalColumnNames = rawToFinalColumnNames,
-            finalColumnSchema = finalColumnSchema,
-        )
+        val columnSchema =
+            ColumnSchema(
+                rawSchema = rawSchema,
+                rawToFinalColumnNames = rawToFinalColumnNames,
+                finalColumnSchema = finalColumnSchema,
+            )
 
         return StreamTableSchema(
             tableNames,

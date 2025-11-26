@@ -40,7 +40,8 @@ abstract class BaseDirectLoadInitialStatusGatherer(
     private val catalog: DestinationCatalog,
 ) : DatabaseInitialStatusGatherer<DirectLoadInitialStatus> {
     override suspend fun gatherInitialStatus(): Map<DestinationStream, DirectLoadInitialStatus> {
-        val map = ConcurrentHashMap<DestinationStream, DirectLoadInitialStatus>(catalog.streams.size)
+        val map =
+            ConcurrentHashMap<DestinationStream, DirectLoadInitialStatus>(catalog.streams.size)
         coroutineScope {
             catalog.streams.forEach { s ->
                 launch {

@@ -17,9 +17,7 @@ class ColumnNameResolver(
      * Creates column name mapping with handling for potential collisions using incremental
      * numbering, with advanced resolution for truncation cases.
      */
-    fun getColumnNameMapping(
-        rawColumNames: Set<String>
-    ): Map<String, String> {
+    fun getColumnNameMapping(rawColumNames: Set<String>): Map<String, String> {
         val processedColumnNames = mutableSetOf<String>()
         val columnMappings = mutableMapOf<String, String>()
 
@@ -59,9 +57,7 @@ class ColumnNameResolver(
             return processedName
         }
 
-        log.info {
-            "Detected column name collision for $originalColumnName"
-        }
+        log.info { "Detected column name collision for $originalColumnName" }
 
         // Try adding incremental suffixes until we find a non-colliding name
         var counter = 1
@@ -70,8 +66,7 @@ class ColumnNameResolver(
 
         do {
             // Generate candidate name by adding numeric suffix
-            candidateName =
-                mapper.toColumnName("${originalColumnName}_$counter")
+            candidateName = mapper.toColumnName("${originalColumnName}_$counter")
 
             // Check if we're making progress (detecting potential truncation)
             if (colsConflicts(candidateName, previousCandidate)) {
@@ -137,5 +132,6 @@ class ColumnNameResolver(
 
     fun colsConflicts(a: String, b: String): Boolean = a.equals(b, ignoreCase = ignoreCaseColNames)
 
-    fun hasConflict(existingNames: Set<String>, candidate: String) = existingNames.any { colsConflicts(it, candidate) }
+    fun hasConflict(existingNames: Set<String>, candidate: String) =
+        existingNames.any { colsConflicts(it, candidate) }
 }
