@@ -238,7 +238,7 @@ def test_custom_query_stream(customers, config_for_custom_query_tests, requests_
 @pytest.mark.parametrize(
     "query, expected_incremental_sync",
     [
-        ("\n select ad.id, segments.date, ad.resource_name\nfrom\nad", True),
+        ("\tselect\rad.id,\tsegments.date,\tad.resource_name\nfrom\nad", True),
         ("\nselect ad.id, segments.date from ad", True),
         ("select ad.id, segments.date\nfrom\nad\norder\n  by segments.date", True),
         ("\nselect\nad.id,\nsegments.date\nfrom\nad\norder\n  by segments.date", True),
@@ -272,7 +272,7 @@ def test_custom_query_stream_with_different_queries(query, expected_incremental_
     config = config_for_custom_query_tests
     config["custom_queries_array"][0]["query"] = query
 
-    streams = get_source(config=config).streams(config=config)
+    streams = SourceGoogleAds(None, config, None).streams(config=config)
     stream = next(filter(lambda s: s.name == "custom_ga_query", streams))
 
     # Verify that the regex matching in the manifest correctly applies incremental sync

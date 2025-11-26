@@ -34,6 +34,12 @@ class SourceGoogleAds(YamlDeclarativeSource):
             config["customer_ids"] = config["customer_id"].split(",")
             config.pop("customer_id")
 
+        # Replace tabs with spaces in custom queries to prevent YAML parsing errors
+        if "custom_queries_array" in config:
+            for query_config in config["custom_queries_array"]:
+                if "query" in query_config and isinstance(query_config["query"], str):
+                    query_config["query"] = query_config["query"].replace("\t", " ")
+
         return config
 
     def streams(self, config: Mapping[str, Any]) -> List[Stream]:
