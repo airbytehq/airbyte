@@ -10,7 +10,6 @@ import jakarta.inject.Singleton
 @Singleton
 class ColumnNameResolver(
     private val mapper: TableSchemaMapper,
-    private val ignoreCaseColNames: Boolean,
 ) {
     private val log = KotlinLogging.logger {}
     /**
@@ -69,7 +68,7 @@ class ColumnNameResolver(
             candidateName = mapper.toColumnName("${originalColumnName}_$counter")
 
             // Check if we're making progress (detecting potential truncation)
-            if (colsConflicts(candidateName, previousCandidate)) {
+            if (colsConflict(candidateName, previousCandidate)) {
                 // We're not making progress, likely due to name truncation
                 // Use the more powerful resolution method with the ORIGINAL column name
                 return superResolveColumnCollisions(
@@ -81,7 +80,7 @@ class ColumnNameResolver(
 
             previousCandidate = candidateName
             counter++
-        } while (existingNames.any { colsConflicts(it, candidateName) })
+        } while (existingNames.any { colsConflict(it, candidateName) })
 
         return candidateName
     }
@@ -130,8 +129,8 @@ class ColumnNameResolver(
         return newColumnName
     }
 
-    fun colsConflicts(a: String, b: String): Boolean = a.equals(b, ignoreCase = ignoreCaseColNames)
+    fun colsConflict(a: String, b: String): Boolean = mapper.colsConflict(a, b)
 
     fun hasConflict(existingNames: Set<String>, candidate: String) =
-        existingNames.any { colsConflicts(it, candidate) }
+        existingNames.any { colsConflict(it, candidate) }
 }
