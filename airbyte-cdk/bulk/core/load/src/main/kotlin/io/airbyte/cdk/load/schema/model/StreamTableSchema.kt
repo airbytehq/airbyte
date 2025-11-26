@@ -15,16 +15,13 @@ data class StreamTableSchema(
     fun getFinalColumnName(rawName: String) = columnSchema.rawToFinalColumnNames[rawName]!!
 
     fun getCursor() =
-        if (importType is Dedupe)
-            importType.cursor.map { columnSchema.rawToFinalColumnNames[it]!! }
-        else
-            emptyList()
+        if (importType is Dedupe) importType.cursor.map { columnSchema.rawToFinalColumnNames[it]!! }
+        else emptyList()
 
     fun getPrimaryKey() =
         if (importType is Dedupe)
-            importType.primaryKey.map {
-                keys -> keys.map { columnSchema.rawToFinalColumnNames[it]!! }
+            importType.primaryKey.map { keys ->
+                keys.map { columnSchema.rawToFinalColumnNames[it]!! }
             }
-        else
-            emptyList()
+        else emptyList()
 }

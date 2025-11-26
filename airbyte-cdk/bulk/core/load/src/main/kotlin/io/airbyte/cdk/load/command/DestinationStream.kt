@@ -12,7 +12,6 @@ import io.airbyte.cdk.load.data.json.AirbyteTypeToJsonSchema
 import io.airbyte.cdk.load.message.DestinationRecord
 import io.airbyte.cdk.load.message.Meta
 import io.airbyte.cdk.load.schema.model.StreamTableSchema
-import io.airbyte.cdk.load.schema.model.TableNames
 import io.airbyte.protocol.models.v0.AirbyteRecordMessageMetaChange
 import io.airbyte.protocol.models.v0.AirbyteStream
 import io.airbyte.protocol.models.v0.ConfiguredAirbyteStream

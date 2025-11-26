@@ -10,6 +10,7 @@ import io.airbyte.cdk.load.data.ObjectType
 import io.airbyte.cdk.load.data.StringType
 import io.airbyte.cdk.load.schema.model.ColumnSchema
 import io.airbyte.cdk.load.schema.model.StreamTableSchema
+import io.airbyte.cdk.load.schema.model.TableName
 import io.airbyte.cdk.load.schema.model.TableNames
 import io.micronaut.context.annotation.Factory
 import io.micronaut.context.annotation.Primary
@@ -23,16 +24,18 @@ import jakarta.inject.Singleton
 @Factory
 class MockDestinationCatalogFactory {
     companion object {
-        val tableNames = TableNames()
-        val finalTableSchema = StreamTableSchema(
-            columnSchema = ColumnSchema(
-                rawSchema = mapOf(),
-                rawToFinalColumnNames = mapOf(),
-                finalColumnSchema = mapOf(),
-            ),
-            importType = Append,
-            tableNames = tableNames,
-        )
+        val tableNames = TableNames(finalTableName = TableName("test", "stream"))
+        val tableSchema =
+            StreamTableSchema(
+                columnSchema =
+                    ColumnSchema(
+                        rawSchema = mapOf(),
+                        rawToFinalColumnNames = mapOf(),
+                        finalColumnSchema = mapOf(),
+                    ),
+                importType = Append,
+                tableNames = tableNames,
+            )
 
         val stream1 =
             DestinationStream(
@@ -51,8 +54,7 @@ class MockDestinationCatalogFactory {
                 minimumGenerationId = 0,
                 syncId = 42,
                 namespaceMapper = NamespaceMapper(),
-                tableNames = tableNames,
-                finalTableSchema = finalTableSchema,
+                tableSchema = tableSchema,
             )
         val stream2 =
             DestinationStream(
@@ -71,8 +73,7 @@ class MockDestinationCatalogFactory {
                 minimumGenerationId = 0,
                 syncId = 42,
                 namespaceMapper = NamespaceMapper(),
-                tableNames = tableNames,
-                finalTableSchema = finalTableSchema,
+                tableSchema = tableSchema,
             )
     }
 

@@ -23,21 +23,22 @@ class DestinationStreamFactory(
 ) {
     fun make(stream: ConfiguredAirbyteStream, resolvedTableName: TableName): DestinationStream {
         val airbyteSchema = jsonSchemaToAirbyteType.convert(stream.stream.jsonSchema) as ObjectType
-        val importType = when (stream.destinationSyncMode) {
-            null -> throw IllegalArgumentException("Destination sync mode was null")
-            DestinationSyncMode.APPEND -> Append
-            DestinationSyncMode.OVERWRITE -> Overwrite
-            DestinationSyncMode.APPEND_DEDUP ->
-                Dedupe(primaryKey = stream.primaryKey, cursor = stream.cursorField)
-
-            DestinationSyncMode.UPDATE -> Update
-            DestinationSyncMode.SOFT_DELETE -> SoftDelete
-        }
-        val tableSchema = schemaFactory.make(
-            resolvedTableName,
-            airbyteSchema.properties,
-            importType,
-        )
+        val importType =
+            when (stream.destinationSyncMode) {
+                null -> throw IllegalArgumentException("Destination sync mode was null")
+                DestinationSyncMode.APPEND -> Append
+                DestinationSyncMode.OVERWRITE -> Overwrite
+                DestinationSyncMode.APPEND_DEDUP ->
+                    Dedupe(primaryKey = stream.primaryKey, cursor = stream.cursorField)
+                DestinationSyncMode.UPDATE -> Update
+                DestinationSyncMode.SOFT_DELETE -> SoftDelete
+            }
+        val tableSchema =
+            schemaFactory.make(
+                resolvedTableName,
+                airbyteSchema.properties,
+                importType,
+            )
 
         return DestinationStream(
             unmappedNamespace = stream.stream.namespace,
