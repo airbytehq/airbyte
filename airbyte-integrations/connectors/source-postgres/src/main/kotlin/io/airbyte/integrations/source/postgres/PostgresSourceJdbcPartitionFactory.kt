@@ -41,7 +41,7 @@ import java.util.concurrent.ConcurrentHashMap
 
 @Primary
 @Singleton
-class PostgresSourceJdbcPartitionFactory(
+open class PostgresSourceJdbcPartitionFactory(
     override val sharedState: DefaultJdbcSharedState,
     val selectQueryGenerator: PostgresSourceSelectQueryGenerator,
     val config: PostgresSourceConfiguration,
@@ -316,7 +316,7 @@ class PostgresSourceJdbcPartitionFactory(
         return cursor to cursors[cursorLabel]!!
     }
 
-    val blockSize: Long by lazy(mode = LazyThreadSafetyMode.SYNCHRONIZED) {
+    open val blockSize: Long by lazy(mode = LazyThreadSafetyMode.SYNCHRONIZED) {
         val jdbcConnectionFactory = JdbcConnectionFactory(config)
         log.info { "Querying server block size setting." }
         jdbcConnectionFactory.get().use { connection ->
@@ -380,7 +380,7 @@ class PostgresSourceJdbcPartitionFactory(
     /** Given table size and a starting point lower bound, the function will return a list of (lowerBound, upperBound) pairs for each
      * partition. This is done by calculating the theoretical last page of the table (table size / block size), then dividing the range to get to the desired number of partitions.
      */
-    private fun computePartitionBounds(
+    internal fun computePartitionBounds(
         lowerBound: JsonNode?,
         numPartitions: Int,
         relationSize: Long,
