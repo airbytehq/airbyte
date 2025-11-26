@@ -229,14 +229,14 @@ class DpathSchemaMatchingExtractor(DpathExtractor, RawSchemaParser):
         return indexed_properties
 
     @staticmethod
-    def match_properties_with_values(unmatched_values: List[str], indexed_properties: Dict[int, str]):
+    def match_properties_with_values(unmatched_values: List[str], indexed_properties: Dict[int, str], include_empty_values: bool = False):
         data = {}
         for relevant_index in sorted(indexed_properties.keys()):
             if relevant_index >= len(unmatched_values):
                 break
 
             unmatch_value = unmatched_values[relevant_index]
-            if unmatch_value.strip() != "":
+            if unmatch_value.strip() != "" or include_empty_values:
                 data[indexed_properties[relevant_index]] = unmatch_value
         yield data
 
@@ -256,6 +256,7 @@ class DpathSchemaMatchingExtractor(DpathExtractor, RawSchemaParser):
 
     def extract_records(self, response: requests.Response) -> Iterable[MutableMapping[Any, Any]]:
         raw_records_extracted = super().extract_records(response=response)
+        include_empty_values = self.config.get("read_empty_header_columns", False)
         for raw_record in raw_records_extracted:
             unmatched_values_collection = raw_record.get(self._values_to_match_key, [])
             for unmatched_values in unmatched_values_collection:
@@ -263,7 +264,7 @@ class DpathSchemaMatchingExtractor(DpathExtractor, RawSchemaParser):
                     unmatched_values
                 ) and DpathSchemaMatchingExtractor.row_contains_relevant_data(unmatched_values, self._indexed_properties_to_match.keys()):
                     yield from DpathSchemaMatchingExtractor.match_properties_with_values(
-                        unmatched_values, self._indexed_properties_to_match
+                        unmatched_values, self._indexed_properties_to_match, include_empty_values
                     )
 
 
