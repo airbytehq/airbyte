@@ -9,7 +9,6 @@ Airbyte provides multiple tools to help you build data applications.
 - **MCP Servers**: Airbyte provides multiple MCP (Model Context Protocol) servers for different use cases:
   - [**PyAirbyte MCP**](#pyairbyte-mcp): Local MCP server for managing Airbyte connectors through AI assistants.
   - [**Connector Builder MCP**](#connector-builder-mcp): AI-assisted connector development - _**coming soon!**_
-  - [**Embedded Operator MCP**](#embedded-operator-mcp): Manage embedded configurations and pipelines.
 - **Airbyte Embedded Widget**: App development teams who have signed up for Airbyte Embedded and are looking to get started onboarding customers using the Embedded Widget can follow the get started guide at the bottom of this page, which will step you through a complete sample onboarding app.
 - **Authentication Proxies**: Connect safely to third party APIs using Airbyte's Authentication Proxies.
 
@@ -42,10 +41,6 @@ Airbyte provides multiple MCP (Model Context Protocol) servers to enable AI-assi
 ### Connector Builder MCP
 
 [The Connector Builder MCP server](./connector-builder-mcp.md) (coming soon) will provide AI-assisted capabilities for building and testing Airbyte connectors using the Model Context Protocol.
-
-### Embedded Operator MCP
-
-[The Embedded Operator MCP](./embedded/operator-mcp/README.md) is a remote MCP server providing tools that enable managing embedded configurations and the resulting pipelines. Users can create connection and source templates, securely create sources, query API and File Storage sources, monitor connections and jobs, and more.
 
 ## Proxy Requests
 

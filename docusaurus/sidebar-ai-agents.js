@@ -62,11 +62,6 @@ export default {
               id: "connector-builder-mcp",
               label: "Connector Builder MCP",
             },
-            {
-              type: "doc",
-              id: "embedded/operator-mcp/README",
-              label: "Embedded Operator MCP",
-            }
           ]
         }
       ]
