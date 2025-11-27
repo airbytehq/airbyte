@@ -147,7 +147,8 @@ The connector is restricted by [requests limitation](https://business-api.tiktok
 
 | Version    | Date       | Pull Request                                              | Subject                                                                                                                                                                |
 |:-----------|:-----------|:----------------------------------------------------------|:-----------------------------------------------------------------------------------------------------------------------------------------------------------------------|
-| 4.8.11-rc.1      | 2025-10-06 | [65623](https://github.com/airbytehq/airbyte/pull/65623) | Fix missing deleted data on some streams |=======>>>>>>> master
+| 4.8.11-rc.2 | 2025-11-27 | [70241](https://github.com/airbytehq/airbyte/pull/70241) | Fix `pixel_events_statistics` stream sending `pixel_ids` as string instead of array |
+| 4.8.11-rc.1 | 2025-10-06 | [65623](https://github.com/airbytehq/airbyte/pull/65623) | Fix missing deleted data on some streams |
 | 4.8.10     | 2025-11-04 | [69170](https://github.com/airbytehq/airbyte/pull/69170) | Revert api budget and concurrency back to a safe number                                                                                                                |
 | 4.8.9      | 2025-10-30 | [69101](https://github.com/airbytehq/airbyte/pull/69101) | Revert aggressive rate limiting                                                                                                                                        |
 | 4.8.8      | 2025-10-29 | [69082](https://github.com/airbytehq/airbyte/pull/69082) | Aggressively fail on rate limiting issues                                                                                                                              |
