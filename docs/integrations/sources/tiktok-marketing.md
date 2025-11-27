@@ -144,7 +144,6 @@ The connector is restricted by [requests limitation](https://business-api.tiktok
 <details>
   <summary>Expand to review</summary>
 
-
 | Version    | Date       | Pull Request                                              | Subject                                                                                                                                                                |
 |:-----------|:-----------|:----------------------------------------------------------|:-----------------------------------------------------------------------------------------------------------------------------------------------------------------------|
 | 4.8.11-rc.2 | 2025-11-27 | [70241](https://github.com/airbytehq/airbyte/pull/70241) | Fix `pixel_events_statistics` stream sending `pixel_ids` as string instead of array |
