@@ -8,8 +8,8 @@ data:
     jobSpecific:
       - jobType: check_connection
         resourceRequirements:
-          memory_limit: 1600Mi
-          memory_request: 1600Mi
+          memory_limit: 4096Mi
+          memory_request: 4096Mi
   ab_internal:
     ql: 400
     sl: 300
