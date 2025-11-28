@@ -2,6 +2,7 @@
 
 
 import logging
+from datetime import datetime
 from io import IOBase
 from typing import Any, Iterable, List, Mapping, MutableMapping, Optional, Union
 
@@ -150,16 +151,26 @@ class SourceAzureBlobStorageStreamReader(AbstractFileBasedStreamReader):
     ) -> Iterable[AzureBlobStorageUploadableRemoteFile]:
         prefixes = [prefix] if prefix else self.get_prefixes_from_globs(globs)
         prefixes = prefixes or [None]
+
+        end_date = None
+        if self.config and self.config.end_date:
+            end_date = datetime.strptime(self.config.end_date, self.DATE_TIME_FORMAT)
+
         try:
             for prefix in prefixes:
                 for blob in self.azure_container_client.list_blobs(name_starts_with=prefix):
+                    last_modified = blob.last_modified.astimezone(pytz.utc).replace(tzinfo=None)
+
+                    if end_date and last_modified > end_date:
+                        continue
+
                     remote_file = AzureBlobStorageUploadableRemoteFile(
                         uri=blob.name,
-                        last_modified=blob.last_modified.astimezone(pytz.utc).replace(tzinfo=None),
+                        last_modified=last_modified,
                         blob_client=self.azure_blob_service_client,
                         blob_properties=blob,
                         created_at=blob.creation_time.astimezone(pytz.utc).replace(tzinfo=None).strftime("%Y-%m-%dT%H:%M:%S.%fZ"),
-                        updated_at=blob.last_modified.astimezone(pytz.utc).replace(tzinfo=None).strftime("%Y-%m-%dT%H:%M:%S.%fZ"),
+                        updated_at=last_modified.strftime("%Y-%m-%dT%H:%M:%S.%fZ"),
                     )
                     yield from self.filter_files_by_globs_and_start_date([remote_file], globs)
         except ResourceNotFoundError as e:

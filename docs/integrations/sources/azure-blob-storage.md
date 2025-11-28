@@ -98,6 +98,7 @@ In the `Manage / Certificates & secrets` panel, click `Client Secrets` and creat
    5. Optionally, enter the **Globs** which dictates which files to be synced. This is a regular expression that allows Airbyte to pattern match the specific files to replicate. If you are replicating all the files within your bucket, use `**` as the pattern. For more precise pattern matching options, refer to the [Path Patterns section](#path-patterns) below.
 10. (Optional) Enter the endpoint to use for the data replication.
 11. (Optional) Enter the desired start date from which to begin replicating data.
+12. (Optional) Enter the desired end date to stop replicating data. This is useful for breaking down large backfills into smaller date ranges.
 <!-- /env:cloud -->
 
 <!-- env:oss -->
@@ -123,6 +124,7 @@ In the `Manage / Certificates & secrets` panel, click `Client Secrets` and creat
    5. Optionally, enter the **Globs** which dictates which files to be synced. This is a regular expression that allows Airbyte to pattern match the specific files to replicate. If you are replicating all the files within your bucket, use `**` as the pattern. For more precise pattern matching options, refer to the [Path Patterns section](#path-patterns) below.
 10. (Optional) Enter the endpoint to use for the data replication.
 11. (Optional) Enter the desired start date from which to begin replicating data.
+12. (Optional) Enter the desired end date to stop replicating data. This is useful for breaking down large backfills into smaller date ranges.
 <!-- /env:oss -->
 
 ## Supported sync modes
@@ -301,6 +303,7 @@ The Azure Blob Storage connector should not encounter any [Microsoft API limitat
 
 | Version    | Date       | Pull Request                                             | Subject                                                                                      |
 |:-----------|:-----------|:---------------------------------------------------------|:---------------------------------------------------------------------------------------------|
+| 0.8.6 | 2025-11-28 | [70246](https://github.com/airbytehq/airbyte/pull/70246) | Increase memory for check operation to 4096Mi |
 | 0.8.5 | 2025-11-25 | [69910](https://github.com/airbytehq/airbyte/pull/69910) | Update dependencies |
 | 0.8.4 | 2025-11-18 | [69579](https://github.com/airbytehq/airbyte/pull/69579) | Update dependencies |
 | 0.8.3 | 2025-11-11 | [69269](https://github.com/airbytehq/airbyte/pull/69269) | Update dependencies |
