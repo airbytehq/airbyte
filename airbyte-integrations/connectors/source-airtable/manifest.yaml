@@ -541,7 +541,7 @@ dynamic_streams:
         - type: ComponentMappingDefinition
           field_path:
             - name
-          value: "{{ stream_slice.extra_fields.name.replace(' ', '_').lower().strip() }}/{{ components_values.name.replace(' ', '_').lower().strip() }}/{{ components_values.id }}"
+          value: "{{ stream_slice.extra_fields.name.replace(' ', '_').lower().strip() }}/{{ components_values.name.replace(' ', '_').lower().strip() }}/{{ stream_slice.base_id }}_{{ components_values.id }}"
         - type: ComponentMappingDefinition
           field_path:
             - retriever
