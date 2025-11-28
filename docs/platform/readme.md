@@ -15,27 +15,27 @@ Whether you're part of a large organization managing complex data pipelines or a
 
 Airbyte is available as a self-managed, hybrid, or fully managed cloud solution. [Compare plans and pricing >](https://airbyte.com/pricing)
 
-### Self-managed plans
-
-<Grid columns="2">
-
-<CardWithIcon title="Self-Managed Enterprise" description="Highly available, secure data movement for your entire organization. Keep your data sovereign and on your premises with self-managed data planes" ctaText="Enterprise setup" ctaLink="/platform/enterprise-setup" icon="fa-lock" />
-
-<CardWithIcon title="Core" description="Our free and open-source version of Airbyte. Deploy locally or in your own infrastructure. Get started immediately and keep your data on your premises." ctaText="Quickstart" ctaLink="using-airbyte/getting-started/oss-quickstart" icon="fa-download" />
-
-</Grid>
-
 ### Cloud and hybrid plans
 
 <Grid columns="2">
 
-<CardWithIcon title="Standard" description="A cloud solution that provides a fully managed experience for data replication. Focus on moving data while Airbyte manages the infrastructure. Free 30-day trial." ctaText="Sign up" ctaLink="https://cloud.airbyte.com/signup" icon="fa-cloud" />
+<CardWithIcon title="Standard" description="A managed cloud solution for data replication. Move data while Airbyte manages your infrastructure. Free 30-day trial, then volume-based pricing." ctaText="Sign up" ctaLink="https://cloud.airbyte.com/signup" icon="fa-cloud" />
 
-<CardWithIcon title="Plus" description="A cloud solution with all the capabilities of Standard, plus higher priority support and predictable, capacity-based annual pricing." ctaText="Talk to Sales" ctaLink="https://airbyte.com/company/talk-to-sales" icon="fa-lock" />
+<CardWithIcon title="Plus" description="A cloud solution with all the capabilities of Standard, plus accelerated support, single sign on, and predictable, capacity-based pricing." ctaText="Talk to Sales" ctaLink="https://airbyte.com/company/talk-to-sales" icon="fa-lock" />
 
-<CardWithIcon title="Pro" description="A cloud solution for organizations looking to scale efficiently. Role based access control, single sign on, and more ensure Pro is a robust solution that can grow with your team." ctaText="Talk to Sales" ctaLink="https://airbyte.com/company/talk-to-sales" icon="fa-lock" />
+<CardWithIcon title="Pro" description="A cloud solution for organizations looking to scale efficiently. Multiple workspaces, role based access control, premium support, and more ensure Pro is a robust solution that grows with your team." ctaText="Talk to Sales" ctaLink="https://airbyte.com/company/talk-to-sales" icon="fa-lock" />
 
-<CardWithIcon title="Enterprise Flex" description="An enterprise-grade, hybrid solution with for organizatons seeking the convenience of a fully managed solution with separate data planes for compliance and data sovereignty." ctaText="Learn more" ctaLink="enterprise-flex" icon="fa-lock" />
+<CardWithIcon title="Enterprise Flex" description="An enterprise-grade, hybrid solution with for organizatons seeking the convenience of a fully managed solution with separate data planes for compliance and data sovereignty." ctaText="Set up guide" ctaLink="enterprise-flex" icon="fa-lock" />
+
+</Grid>
+
+### Self-managed plans
+
+<Grid columns="2">
+
+<CardWithIcon title="Core" description="The free and open source version of Airbyte. Deploy locally or in your own infrastructure. Get started immediately and keep your data on premise." ctaText="Quickstart guide" ctaLink="using-airbyte/getting-started/oss-quickstart" icon="fa-download" />
+
+<CardWithIcon title="Self-Managed Enterprise" description="Enterprise-grade, secure data movement for your entire organization. Keep your data sovereign and on premise with self-managed data planes." ctaText="Set up guide" ctaLink="/platform/enterprise-setup" icon="fa-lock" />
 
 </Grid>
 

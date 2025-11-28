@@ -373,6 +373,14 @@ svg.inline-svg {
   max-width: 1em;
 }
 
+.good-icon {
+  color: var(--color-green-600);
+}
+
+.bad-icon {
+  color: var(--color-red-400);
+}
+
 nav a.navbar__link--active {
   color: var(--ifm-color-primary) !important;
   border-bottom: 3px solid var(--ifm-color-primary);

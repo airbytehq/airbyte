@@ -438,23 +438,6 @@ module.exports = {
         deployAirbyte,
         {
           type: "category",
-          label: "Self-Managed Enterprise",
-          link: {
-            type: "doc",
-            id: "enterprise-setup/README",
-          },
-          items: [
-            "enterprise-setup/implementation-guide",
-            "enterprise-setup/multi-region",
-            "enterprise-setup/audit-logging",
-            "enterprise-setup/scaling-airbyte",
-            "enterprise-setup/upgrade-service-account",
-            "enterprise-setup/upgrading-from-community",
-            "enterprise-setup/chart-v2-enterprise",
-          ],
-        },
-        {
-          type: "category",
           label: "Enterprise Flex",
           link: {
             type: "doc",
@@ -466,6 +449,23 @@ module.exports = {
             "enterprise-flex/data-plane-util",
           ],
         },
+        {
+          type: "category",
+          label: "Self-Managed Enterprise",
+          link: {
+            type: "doc",
+            id: "enterprise-setup/README",
+          },
+          items: [
+            "enterprise-setup/implementation-guide",
+            "enterprise-setup/multi-region",
+            "enterprise-setup/audit-logging",
+            "enterprise-setup/scaling-airbyte",
+            "enterprise-setup/upgrade-service-account",
+            "enterprise-setup/chart-v2-enterprise",
+          ],
+        },
+        
         {
           type: "category",
           label: "Upgrading Airbyte",
