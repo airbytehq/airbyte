@@ -130,18 +130,18 @@ class SourceAzureBlobStorageSpec(AbstractFileBasedSpec):
         airbyte_hidden=True,
     )
 
-    @validator("end_date")
-    def validate_end_date(cls, end_date: Optional[str], values: Dict[str, Any]) -> Optional[str]:
-        if end_date is None:
+    @validator("end_date", allow_reuse=True)
+    def validate_end_date(cls, value: Optional[str], values: Dict[str, Any]) -> Optional[str]:
+        if value is None:
             return None
         start_date = values.get("start_date")
         if start_date is None:
-            return end_date
+            return value
         start = datetime.strptime(start_date, "%Y-%m-%dT%H:%M:%S.%fZ")
-        end = datetime.strptime(end_date, "%Y-%m-%dT%H:%M:%S.%fZ")
+        end = datetime.strptime(value, "%Y-%m-%dT%H:%M:%S.%fZ")
         if end < start:
             raise ValueError("End date must be after start date")
-        return end_date
+        return value
 
     @classmethod
     def schema(cls, *args: Any, **kwargs: Any) -> Dict[str, Any]:
