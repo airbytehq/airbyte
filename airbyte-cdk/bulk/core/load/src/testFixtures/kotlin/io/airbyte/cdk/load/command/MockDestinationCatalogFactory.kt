@@ -8,6 +8,9 @@ import io.airbyte.cdk.load.data.FieldType
 import io.airbyte.cdk.load.data.IntegerType
 import io.airbyte.cdk.load.data.ObjectType
 import io.airbyte.cdk.load.data.StringType
+import io.airbyte.cdk.load.schema.model.ColumnSchema
+import io.airbyte.cdk.load.schema.model.StreamTableSchema
+import io.airbyte.cdk.load.schema.model.TableNames
 import io.micronaut.context.annotation.Factory
 import io.micronaut.context.annotation.Primary
 import io.micronaut.context.annotation.Requires
@@ -18,8 +21,19 @@ import jakarta.inject.Singleton
  * `@MicronautTest(environments = [ ..., MockDestinationCatalog])`.
  */
 @Factory
-class MockDestinationCatalogFactory : DestinationCatalogFactory {
+class MockDestinationCatalogFactory {
     companion object {
+        val tableNames = TableNames()
+        val finalTableSchema = StreamTableSchema(
+            columnSchema = ColumnSchema(
+                rawSchema = mapOf(),
+                rawToFinalColumnNames = mapOf(),
+                finalColumnSchema = mapOf(),
+            ),
+            importType = Append,
+            tableNames = tableNames,
+        )
+
         val stream1 =
             DestinationStream(
                 unmappedNamespace = "test",
@@ -36,7 +50,9 @@ class MockDestinationCatalogFactory : DestinationCatalogFactory {
                 generationId = 42,
                 minimumGenerationId = 0,
                 syncId = 42,
-                namespaceMapper = NamespaceMapper()
+                namespaceMapper = NamespaceMapper(),
+                tableNames = tableNames,
+                finalTableSchema = finalTableSchema,
             )
         val stream2 =
             DestinationStream(
@@ -54,14 +70,16 @@ class MockDestinationCatalogFactory : DestinationCatalogFactory {
                 generationId = 42,
                 minimumGenerationId = 0,
                 syncId = 42,
-                namespaceMapper = NamespaceMapper()
+                namespaceMapper = NamespaceMapper(),
+                tableNames = tableNames,
+                finalTableSchema = finalTableSchema,
             )
     }
 
     @Singleton
     @Primary
     @Requires(env = ["MockDestinationCatalog"])
-    override fun make(): DestinationCatalog {
+    fun make(): DestinationCatalog {
         return DestinationCatalog(streams = listOf(stream1, stream2))
     }
 }
