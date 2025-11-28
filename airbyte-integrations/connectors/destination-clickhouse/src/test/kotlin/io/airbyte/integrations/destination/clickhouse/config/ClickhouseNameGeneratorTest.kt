@@ -4,6 +4,7 @@
 
 package io.airbyte.integrations.destination.clickhouse.config
 
+import io.airbyte.integrations.destination.clickhouse.schema.toClickHouseCompatibleName
 import java.util.UUID
 import org.junit.jupiter.api.Assertions
 import org.junit.jupiter.api.Test
