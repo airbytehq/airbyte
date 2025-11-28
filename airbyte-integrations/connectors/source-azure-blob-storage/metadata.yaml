@@ -4,6 +4,12 @@ data:
       - "${azure_blob_storage_account_name}.blob.core.windows.net"
       - "${azure_blob_storage_endpoint}"
       - "login.microsoftonline.com/${credentials.tenant_id}/oauth2/v2.0/token"
+  resourceRequirements:
+    jobSpecific:
+      - jobType: check_connection
+        resourceRequirements:
+          memory_limit: 4096Mi
+          memory_request: 4096Mi
   ab_internal:
     ql: 400
     sl: 300
