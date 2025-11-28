@@ -131,7 +131,7 @@ class SourceAzureBlobStorageSpec(AbstractFileBasedSpec):
     )
 
     @validator("end_date")
-    def validate_end_date(cls, end_date: Optional[str], values: Dict[str, Any]) -> Optional[str]:
+    def validate_end_date(self, end_date: Optional[str], values: Dict[str, Any]) -> Optional[str]:
         if end_date is None:
             return None
         start_date = values.get("start_date")
