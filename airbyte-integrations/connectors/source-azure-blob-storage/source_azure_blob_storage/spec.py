@@ -3,10 +3,11 @@
 #
 
 
+from datetime import datetime
 from typing import Any, Dict, Literal, Optional, Union
 
 import dpath.util
-from pydantic.v1 import AnyUrl, BaseModel, Field
+from pydantic.v1 import AnyUrl, BaseModel, Field, validator
 
 from airbyte_cdk import OneOfOptionConfig
 from airbyte_cdk.sources.file_based.config.abstract_file_based_spec import AbstractFileBasedSpec, DeliverRawFiles, DeliverRecords
@@ -107,6 +108,17 @@ class SourceAzureBlobStorageSpec(AbstractFileBasedSpec):
         order=11,
     )
 
+    end_date: Optional[str] = Field(
+        title="End Date",
+        description="UTC date and time in the format 2017-01-25T00:00:00.000000Z. Any file modified after this date will not be replicated.",
+        examples=["2021-01-01T00:00:00.000000Z"],
+        format="date-time",
+        pattern="^[0-9]{4}-[0-9]{2}-[0-9]{2}T[0-9]{2}:[0-9]{2}:[0-9]{2}.[0-9]{6}Z$",
+        pattern_descriptor="YYYY-MM-DDTHH:mm:ss.SSSSSSZ",
+        order=12,
+        default=None,
+    )
+
     delivery_method: Union[DeliverRecords, DeliverRawFiles] = Field(
         title="Delivery Method",
         discriminator="delivery_type",
@@ -117,6 +129,19 @@ class SourceAzureBlobStorageSpec(AbstractFileBasedSpec):
         default="use_records_transfer",
         airbyte_hidden=True,
     )
+
+    @validator("end_date")
+    def validate_end_date(cls, end_date: Optional[str], values: Dict[str, Any]) -> Optional[str]:
+        if end_date is None:
+            return None
+        start_date = values.get("start_date")
+        if start_date is None:
+            return end_date
+        start = datetime.strptime(start_date, "%Y-%m-%dT%H:%M:%S.%fZ")
+        end = datetime.strptime(end_date, "%Y-%m-%dT%H:%M:%S.%fZ")
+        if end < start:
+            raise ValueError("End date must be after start date")
+        return end_date
 
     @classmethod
     def schema(cls, *args: Any, **kwargs: Any) -> Dict[str, Any]:
