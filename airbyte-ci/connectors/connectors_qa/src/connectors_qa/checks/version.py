@@ -93,7 +93,15 @@ class CheckVersionIncrement(Check):
             current_version = self._get_current_connector_version(connector)
 
             # Require a version increment
-            if current_version <= master_version:
+            if current_version < master_version:
+                return self.fail(
+                    connector,
+                    f"The dockerImageTag in {consts.METADATA_FILE_NAME} appears to be lower than the "
+                    f"version on the default branch. Master version is {master_version}, current "
+                    f"version is {current_version}. "
+                    f"Update your PR branch from the default branch to get the latest connector version.",
+                )
+            if current_version == master_version:
                 return self.fail(
                     connector,
                     f"The dockerImageTag in {consts.METADATA_FILE_NAME} was not incremented. "
