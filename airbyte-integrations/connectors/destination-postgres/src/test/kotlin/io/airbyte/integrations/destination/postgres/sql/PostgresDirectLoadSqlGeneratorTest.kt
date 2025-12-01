@@ -1030,4 +1030,40 @@ internal class PostgresDirectLoadSqlGeneratorTest {
             )
         )
     }
+
+    @Test
+    fun testMatchSchemasRemoveColumnsWithCascade() {
+        val cascadeConfig =
+            mockk<PostgresConfiguration> {
+                every { legacyRawTablesOnly } returns false
+                every { dropCascade } returns true
+            }
+        val cascadeColumnUtils = PostgresColumnUtils(cascadeConfig)
+        val cascadeSqlGenerator = PostgresDirectLoadSqlGenerator(cascadeColumnUtils, cascadeConfig)
+
+        val tableName = TableName(namespace = "test_schema", name = "test_table")
+        val columnsToAdd = emptySet<Column>()
+        val columnsToRemove =
+            setOf(Column("old_column1", "varchar"), Column("old_column2", "bigint"))
+        val columnsToModify = emptySet<Column>()
+        val columnsInDb = setOf(Column("old_column1", "varchar"), Column("old_column2", "bigint"))
+
+        val sql =
+            cascadeSqlGenerator.matchSchemas(
+                tableName,
+                columnsToAdd,
+                columnsToRemove,
+                columnsToModify,
+                columnsInDb,
+                recreatePrimaryKeyIndex = false,
+                primaryKeyColumnNames = emptyList(),
+                recreateCursorIndex = false,
+                cursorColumnName = null
+            )
+
+        assert(sql.contains("BEGIN TRANSACTION;"))
+        assert(sql.contains("COMMIT;"))
+        assert(sql.contains("DROP COLUMN \"old_column1\" CASCADE"))
+        assert(sql.contains("DROP COLUMN \"old_column2\" CASCADE"))
+    }
 }

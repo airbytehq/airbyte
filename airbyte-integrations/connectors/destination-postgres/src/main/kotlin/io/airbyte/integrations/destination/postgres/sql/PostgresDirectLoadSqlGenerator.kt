@@ -581,7 +581,7 @@ class PostgresDirectLoadSqlGenerator(
             )
         }
         columnsToRemove.forEach {
-            clauses.add("ALTER TABLE $fullyQualifiedTableName DROP COLUMN ${getName(it)};")
+            clauses.add("ALTER TABLE $fullyQualifiedTableName DROP COLUMN ${getName(it)}$dropTableSuffix;")
         }
 
         columnsToModify.forEach { newColumn ->
