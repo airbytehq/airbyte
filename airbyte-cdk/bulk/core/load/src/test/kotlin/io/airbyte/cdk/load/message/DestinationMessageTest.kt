@@ -71,7 +71,25 @@ internal class DestinationMessageTest {
                         generationId = 42,
                         minimumGenerationId = 0,
                         syncId = 42,
-                        namespaceMapper = namespaceMapper
+                        namespaceMapper = namespaceMapper,
+                        tableSchema =
+                            io.airbyte.cdk.load.schema.model.StreamTableSchema(
+                                tableNames =
+                                    io.airbyte.cdk.load.schema.model.TableNames(
+                                        finalTableName =
+                                            io.airbyte.cdk.load.schema.model.TableName(
+                                                descriptor.namespace ?: "default",
+                                                descriptor.name
+                                            )
+                                    ),
+                                columnSchema =
+                                    io.airbyte.cdk.load.schema.model.ColumnSchema(
+                                        rawSchema = mapOf(),
+                                        rawToFinalColumnNames = mapOf(),
+                                        finalColumnSchema = mapOf(),
+                                    ),
+                                importType = Append,
+                            )
                     )
                 )
             ),
@@ -614,6 +632,14 @@ internal class DestinationMessageTest {
     @Test
     fun `message factory creates record from protobuf`() {
         // Note: can't be a mock or `schemaInAirbyteProxyOrder` won't return the correct value
+        val streamSchema =
+            ObjectType(
+                properties =
+                    linkedMapOf(
+                        "id" to FieldType(IntegerType, nullable = true),
+                        "name" to FieldType(StringType, nullable = true)
+                    )
+            )
         val stream =
             DestinationStream(
                 unmappedNamespace = "namespace",
@@ -622,15 +648,24 @@ internal class DestinationMessageTest {
                 generationId = 1,
                 minimumGenerationId = 0,
                 syncId = 1,
-                schema =
-                    ObjectType(
-                        properties =
-                            linkedMapOf(
-                                "id" to FieldType(IntegerType, nullable = true),
-                                "name" to FieldType(StringType, nullable = true)
-                            )
-                    ),
-                namespaceMapper = NamespaceMapper()
+                schema = streamSchema,
+                namespaceMapper = NamespaceMapper(),
+                tableSchema =
+                    io.airbyte.cdk.load.schema.model.StreamTableSchema(
+                        tableNames =
+                            io.airbyte.cdk.load.schema.model.TableNames(
+                                finalTableName =
+                                    io.airbyte.cdk.load.schema.model.TableName("namespace", "name")
+                            ),
+                        columnSchema =
+                            io.airbyte.cdk.load.schema.model.ColumnSchema(
+                                rawSchema = streamSchema.properties,
+                                rawToFinalColumnNames =
+                                    streamSchema.properties.keys.associateWith { it },
+                                finalColumnSchema = mapOf(),
+                            ),
+                        importType = Append,
+                    )
             )
         val catalog = DestinationCatalog(streams = listOf(stream))
 
