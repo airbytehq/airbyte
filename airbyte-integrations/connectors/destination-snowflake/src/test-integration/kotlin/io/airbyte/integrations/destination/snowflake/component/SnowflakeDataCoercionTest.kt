@@ -11,7 +11,9 @@ import io.airbyte.cdk.load.component.TestTableOperationsClient
 import io.airbyte.cdk.load.component.toArgs
 import io.airbyte.cdk.load.data.AirbyteValue
 import io.airbyte.cdk.load.dataflow.transform.ValueCoercer
+import io.airbyte.protocol.models.v0.AirbyteRecordMessageMetaChange.Reason
 import io.micronaut.test.extensions.junit5.annotation.MicronautTest
+import java.math.BigInteger
 import org.junit.jupiter.api.parallel.Execution
 import org.junit.jupiter.api.parallel.ExecutionMode
 import org.junit.jupiter.params.ParameterizedTest
@@ -31,15 +33,23 @@ class SnowflakeDataCoercionTest(
     @MethodSource(
         "io.airbyte.integrations.destination.snowflake.component.SnowflakeDataCoercionTest#integers"
     )
-    override fun `handle integer values`(inputValue: AirbyteValue, expectedValue: Any?) {
-        super.`handle integer values`(inputValue, expectedValue)
+    override fun `handle integer values`(
+        inputValue: AirbyteValue,
+        expectedValue: Any?,
+        expectedChangeReason: Reason?
+    ) {
+        super.`handle integer values`(inputValue, expectedValue, expectedChangeReason)
     }
 
     @ParameterizedTest
     // for historical reasons, we use snowflake's FLOAT data type, which is a float64
     @MethodSource("io.airbyte.cdk.load.component.DataCoercionNumberFixtures#float64")
-    override fun `handle number values`(inputValue: AirbyteValue, expectedValue: Any?) {
-        super.`handle number values`(inputValue, expectedValue)
+    override fun `handle number values`(
+        inputValue: AirbyteValue,
+        expectedValue: Any?,
+        expectedChangeReason: Reason?
+    ) {
+        super.`handle number values`(inputValue, expectedValue, expectedChangeReason)
     }
 
     companion object {
@@ -54,18 +64,20 @@ class SnowflakeDataCoercionTest(
         @JvmStatic
         fun integers() =
             DataCoercionIntegerFixtures.numeric38_0
-                .map { (input, output) ->
-                    input to
-                        output?.let {
-                            try {
-                                // try to convert to long
-                                it.longValueExact()
-                            } catch (_: Exception) {
-                                // if we can't (probably because the value is too large),
-                                // convert to bigdecimal
-                                it.toBigDecimal()
+                .map {
+                    it.copy(
+                        outputValue =
+                            (it.outputValue as BigInteger?)?.let {
+                                try {
+                                    // try to convert to long
+                                    it.longValueExact()
+                                } catch (_: Exception) {
+                                    // if we can't (probably because the value is too large),
+                                    // convert to bigdecimal
+                                    it.toBigDecimal()
+                                }
                             }
-                        }
+                    )
                 }
                 .toArgs()
     }
