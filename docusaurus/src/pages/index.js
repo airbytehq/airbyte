@@ -110,7 +110,7 @@ export default function Home() {
     },
     {
       title: 'Developers',
-      link: '/platform/api-documentation',
+      link: '/developers',
       description: 'Interact with Airbyte programmatically using our API, Terraform provider, and more.',
       icon: DevelopersIcon,
     },

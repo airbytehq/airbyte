@@ -8,29 +8,39 @@ import io.airbyte.cdk.load.command.DestinationStream
 import io.airbyte.cdk.load.data.AirbyteValue
 import io.airbyte.cdk.load.data.EnrichedAirbyteValue
 import io.airbyte.cdk.load.data.NullValue
-import io.airbyte.cdk.load.dataflow.stats.MetricTracker
-import io.airbyte.cdk.load.dataflow.stats.ObservabilityMetrics
+import io.airbyte.cdk.load.dataflow.state.PartitionKey
+import io.airbyte.cdk.load.dataflow.state.stats.StateAdditionalStatsStore
 import io.airbyte.cdk.load.dataflow.transform.ValidationResult
 import io.airbyte.cdk.load.message.Meta
 import io.airbyte.protocol.models.v0.AirbyteRecordMessageMetaChange.Change
 import io.airbyte.protocol.models.v0.AirbyteRecordMessageMetaChange.Reason
 import jakarta.inject.Singleton
 
+/**
+ * Handles validation results by appropriately performing actions such as truncating, nullifying, or
+ * leaving values unchanged. Updates internal state statistics based on the applied actions.
+ *
+ * @constructor Creates an instance of `ValidationResultHandler` with the provided state statistics
+ * store.
+ * @param stateAdditionalStatsStore Store for tracking additional statistics related to state
+ * changes.
+ */
 @Singleton
-class ValidationResultHandler(private val metricTracker: MetricTracker) {
+class ValidationResultHandler(private val stateAdditionalStatsStore: StateAdditionalStatsStore) {
 
     /**
-     * Processes an `EnrichedAirbyteValue` based on its corresponding `ValidationResult`. The method
-     * handles three cases:
-     * - If the result requires truncation, the value is truncated using the `truncate` method.
-     * - If the result requires nullification, the value is nullified using the `nullify` method.
-     * - If the result is valid, the original value is returned.
+     * Handles the provided validation result for a given value, partition, and stream.
      *
-     * @param stream The descriptor of the destination stream where the value belongs.
-     * @param result The validation result indicating how the value should be handled.
+     * Depending on the validation result, the method may truncate the value, nullify it, or leave
+     * it unchanged.
+     *
+     * @param partitionKey The partition key associated with the record.
+     * @param stream The descriptor of the destination stream the value belongs to.
+     * @param result The result of the validation process, which determines the action to take.
      * @param value The enriched Airbyte value to process based on the validation result.
      */
     fun handle(
+        partitionKey: PartitionKey,
         stream: DestinationStream.Descriptor,
         result: ValidationResult,
         value: EnrichedAirbyteValue
@@ -38,27 +48,35 @@ class ValidationResultHandler(private val metricTracker: MetricTracker) {
         when (result) {
             is ValidationResult.ShouldTruncate ->
                 truncate(
+                    partitionKey = partitionKey,
                     stream = stream,
                     value = value,
                     truncatedValue = result.truncatedValue,
                     reason = result.reason
                 )
             is ValidationResult.ShouldNullify ->
-                nullify(stream = stream, value = value, reason = result.reason)
+                nullify(
+                    partitionKey = partitionKey,
+                    stream = stream,
+                    value = value,
+                    reason = result.reason
+                )
             is ValidationResult.Valid -> value
         }
 
     /**
-     * Creates a nullified version of this value with the specified reason.
+     * Nullifies the provided enriched Airbyte value by setting its value to null and recording the
+     * change. Additionally, updates the state statistics for the nullification event.
      *
-     * @param stream The [DestinationStream.Descriptor] for the stream that this nulled value
-     * belongs to.
-     * @param value The [EnrichedAirbyteValue] to nullify
-     * @param reason The [Reason] for nullification, defaults to DESTINATION_SERIALIZATION_ERROR
-     *
-     * @return The nullified [EnrichedAirbyteValue].
+     * @param partitionKey The partition key associated with the record.
+     * @param stream The descriptor of the destination stream that the value belongs to.
+     * @param value The enriched Airbyte value to be nullified.
+     * @param reason The reason for nullifying the value, defaulting to
+     * DESTINATION_SERIALIZATION_ERROR.
+     * @return The updated enriched Airbyte value with a nullified state and recorded change.
      */
     fun nullify(
+        partitionKey: PartitionKey,
         stream: DestinationStream.Descriptor,
         value: EnrichedAirbyteValue,
         reason: Reason = Reason.DESTINATION_SERIALIZATION_ERROR
@@ -66,22 +84,29 @@ class ValidationResultHandler(private val metricTracker: MetricTracker) {
         val nullChange = Meta.Change(field = value.name, change = Change.NULLED, reason = reason)
         value.abValue = NullValue
         value.changes.add(nullChange)
-        metricTracker.add(stream, ObservabilityMetrics.NULLED_VALUE_COUNT, 1.0)
+        stateAdditionalStatsStore.add(
+            partitionKey = partitionKey,
+            streamDescriptor = stream,
+            metric = StateAdditionalStatsStore.ObservabilityMetrics.NULLED_VALUE_COUNT,
+            value = 1.0
+        )
         return value
     }
 
     /**
-     * Creates a truncated version of this value with the specified reason and new value.
+     * Truncates the provided enriched Airbyte value to adhere to a specified limit. Records the
+     * truncation event as a change and updates the state statistics for the truncation event.
      *
-     * @param stream The [DestinationStream.Descriptor] for the stream that this truncated value
-     * belongs to.
-     * @param value The original [EnrichedAirbyteValue] that is to be truncated
-     * @param truncatedValue The new, truncated value to use
-     * @param reason The [Reason] for truncation, defaults to DESTINATION_RECORD_SIZE_LIMITATION
-     *
-     * @return The truncated [EnrichedAirbyteValue].
+     * @param partitionKey The partition key associated with the record.
+     * @param stream The descriptor of the destination stream the value belongs to.
+     * @param value The enriched Airbyte value that needs to be truncated.
+     * @param truncatedValue The truncated version of the Airbyte value.
+     * @param reason The reason for truncating the value, defaulting to
+     * DESTINATION_RECORD_SIZE_LIMITATION.
+     * @return The updated enriched Airbyte value with the truncation applied and recorded.
      */
     fun truncate(
+        partitionKey: PartitionKey,
         stream: DestinationStream.Descriptor,
         value: EnrichedAirbyteValue,
         truncatedValue: AirbyteValue,
@@ -91,7 +116,12 @@ class ValidationResultHandler(private val metricTracker: MetricTracker) {
             Meta.Change(field = value.name, change = Change.TRUNCATED, reason = reason)
         value.abValue = truncatedValue
         value.changes.add(truncateChange)
-        metricTracker.add(stream, ObservabilityMetrics.TRUNCATED_VALUE_COUNT, 1.0)
+        stateAdditionalStatsStore.add(
+            partitionKey = partitionKey,
+            streamDescriptor = stream,
+            metric = StateAdditionalStatsStore.ObservabilityMetrics.TRUNCATED_VALUE_COUNT,
+            value = 1.0
+        )
         return value
     }
 }

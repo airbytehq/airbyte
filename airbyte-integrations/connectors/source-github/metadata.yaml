@@ -10,7 +10,7 @@ data:
   connectorSubtype: api
   connectorType: source
   definitionId: ef69ef6e-aa7f-4af1-a01d-ef775033524e
-  dockerImageTag: 2.1.1
+  dockerImageTag: 2.1.4
   dockerRepository: airbyte/source-github
   documentationUrl: https://docs.airbyte.com/integrations/sources/github
   erdUrl: https://dbdocs.io/airbyteio/source-github?view=relationships
@@ -81,4 +81,29 @@ data:
           secretStore:
             type: GSM
             alias: airbyte-connector-testing-secret-store
+  externalDocumentationUrls:
+    - title: Breaking changes
+      url: https://docs.github.com/en/rest/about-the-rest-api/breaking-changes
+      type: api_deprecations
+    - title: GitHub REST API reference
+      url: https://docs.github.com/en/rest
+      type: api_reference
+    - title: API Versions
+      url: https://docs.github.com/en/rest/about-the-rest-api/api-versions
+      type: api_release_history
+    - title: GitHub API changelog
+      url: https://github.blog/changelog/label/api/
+      type: api_release_history
+    - title: GitHub authentication
+      url: https://docs.github.com/en/rest/overview/authenticating-to-the-rest-api
+      type: authentication_guide
+    - title: GitHub REST API OpenAPI specification
+      url: https://github.com/github/rest-api-description
+      type: openapi_spec
+    - title: GitHub rate limits
+      url: https://docs.github.com/en/rest/overview/rate-limits-for-the-rest-api
+      type: rate_limits
+    - title: GitHub Status
+      url: https://www.githubstatus.com/
+      type: status_page
 metadataSpecVersion: "1.0"

@@ -67,9 +67,11 @@ class MsSqlServerSourceConfigurationSpecification : ConfigurationSpecification()
 
     @JsonProperty("schemas")
     @JsonSchemaTitle("Schemas")
-    @JsonPropertyDescription("The list of schemas to sync from. Defaults to user. Case sensitive.")
-    @JsonSchemaInject(json = """{"order":3, "default":["dbo"], "minItems":0, "uniqueItems":true}""")
-    var schemas: Array<String>? = arrayOf("dbo")
+    @JsonPropertyDescription(
+        "The list of schemas to sync from. If not specified, all schemas will be discovered. Case sensitive."
+    )
+    @JsonSchemaInject(json = """{"order":3, "minItems":0, "uniqueItems":true}""")
+    var schemas: Array<String>? = null
 
     @JsonProperty("username")
     @JsonSchemaTitle("Username")

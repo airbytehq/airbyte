@@ -12,9 +12,13 @@ data:
   connectorSubtype: file
   connectorType: source
   definitionId: fdaaba68-4875-4ed9-8fcd-4ae1e0a25093
-  dockerImageTag: 0.8.2
+  dockerImageTag: 0.8.5
   dockerRepository: airbyte/source-azure-blob-storage
   documentationUrl: https://docs.airbyte.com/integrations/sources/azure-blob-storage
+  externalDocumentationUrls:
+    - title: API versions
+      url: https://learn.microsoft.com/en-us/rest/api/storageservices/previous-azure-storage-service-versions
+      type: api_reference
   githubIssueLabel: source-azure-blob-storage
   icon: azureblobstorage.svg
   license: ELv2
