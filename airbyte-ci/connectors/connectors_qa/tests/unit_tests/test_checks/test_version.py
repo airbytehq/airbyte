@@ -37,7 +37,7 @@ class TestVersionIncrementCheck:
         assert result.status == CheckStatus.FAILED
         assert (
             result.message
-            == f"The dockerImageTag in {consts.METADATA_FILE_NAME} was not incremented. Master version is 1.0.0, current version is 1.0.0"
+            == f"The dockerImageTag in {consts.METADATA_FILE_NAME} was not incremented. Master version is 1.0.0, current version is 1.0.0. Ignore this message if you do not intend to re-release the connector."
         )
 
     def test_validate_success_rc_increment(self, mock_connector, mocker):
