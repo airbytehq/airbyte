@@ -48,6 +48,18 @@ After all the steps, it should look something like this
 4. Fill in Page Access Token with Long-Lived Page Token
 5. Fill in Page ID (if you have a page URL such as `https://www.facebook.com/Test-1111111111`, the ID would be`Test-1111111111`)
 
+### Creating your own OAuth App
+
+Please, follow this [Facebook documentation](https://developers.facebook.com/docs/development/create-an-app/) to create an OAuth App.
+
+Required Permissions/Features which your OAuth App should have to sync data using The Facebook Pages source connector:
+* `pages_manage_ads`
+* `pages_manage_metadata`
+* `pages_read_engagement`
+* `pages_read_user_content`
+* `pages_show_list`
+* `catalog_management`
+
 ## Supported sync modes
 
 The Facebook Pages source connector supports the following [sync modes](https://docs.airbyte.com/cloud/core-concepts#connection-sync-modes):
