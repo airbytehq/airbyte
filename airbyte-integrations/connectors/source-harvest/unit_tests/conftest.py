@@ -1,11 +1,15 @@
+# Copyright (c) 2025 Airbyte, Inc., all rights reserved.
+
 import os
 import sys
 from pathlib import Path
+
 from pytest import fixture
 
 from airbyte_cdk.sources.declarative.yaml_declarative_source import YamlDeclarativeSource
 from airbyte_cdk.test.catalog_builder import CatalogBuilder
 from airbyte_cdk.test.state_builder import StateBuilder
+
 
 # Load CDK's manifest-only test fixtures
 pytest_plugins = ["airbyte_cdk.test.utils.manifest_only_fixtures"]
@@ -42,12 +46,7 @@ def get_source(config, state=None) -> YamlDeclarativeSource:
     """
     catalog = CatalogBuilder().build()
     state = StateBuilder().build() if not state else state
-    return YamlDeclarativeSource(
-        path_to_yaml=str(_YAML_FILE_PATH),
-        catalog=catalog,
-        config=config,
-        state=state
-    )
+    return YamlDeclarativeSource(path_to_yaml=str(_YAML_FILE_PATH), catalog=catalog, config=config, state=state)
 
 
 @fixture(autouse=True)

@@ -1,17 +1,20 @@
+# Copyright (c) 2025 Airbyte, Inc., all rights reserved.
+
 import json
 from datetime import datetime, timezone
 from unittest import TestCase
+
 import freezegun
+from unit_tests.conftest import get_source
 
 from airbyte_cdk.models import SyncMode
 from airbyte_cdk.test.catalog_builder import CatalogBuilder
 from airbyte_cdk.test.entrypoint_wrapper import read
 from airbyte_cdk.test.mock_http import HttpMocker, HttpResponse
 from airbyte_cdk.test.state_builder import StateBuilder
-
-from unit_tests.conftest import get_source
 from integration.config import ConfigBuilder
 from integration.request_builder import HarvestRequestBuilder
+
 
 _NOW = datetime.now(timezone.utc)
 _STREAM_NAME = "time_entries"
@@ -48,42 +51,44 @@ class TestTimeEntriesStream(TestCase):
         # Note: The time_entries stream has incremental_sync configured, so it always sends updated_since
         http_mocker.get(
             HarvestRequestBuilder.time_entries_endpoint(_ACCOUNT_ID, _API_TOKEN)
-                .with_per_page(50)
-                .with_updated_since("2021-01-01T00:00:00Z")
-                .build(),
+            .with_per_page(50)
+            .with_updated_since("2021-01-01T00:00:00Z")
+            .build(),
             HttpResponse(
-                body=json.dumps({
-                    "time_entries": [
-                        {
-                            "id": 636709355,
-                            "spent_date": "2024-01-15",
-                            "hours": 3.5,
-                            "rounded_hours": 3.5,
-                            "notes": "Worked on API integration",
-                            "is_locked": False,
-                            "is_closed": False,
-                            "is_billed": False,
-                            "is_running": False,
-                            "billable": True,
-                            "budgeted": True,
-                            "billable_rate": 100.0,
-                            "cost_rate": 50.0,
-                            "created_at": "2024-01-15T12:30:00Z",
-                            "updated_at": "2024-01-15T12:30:00Z",
-                            "user": {"id": 1782884, "name": "John Doe"},
-                            "client": {"id": 5735776, "name": "ABC Corp", "currency": "USD"},
-                            "project": {"id": 14307913, "name": "Online Store - Phase 1", "code": "OS1"},
-                            "task": {"id": 8083365, "name": "Development"}
-                        }
-                    ],
-                    "per_page": 50,
-                    "total_pages": 1,
-                    "total_entries": 1,
-                    "page": 1,
-                    "links": {}
-                }),
-                status_code=200
-            )
+                body=json.dumps(
+                    {
+                        "time_entries": [
+                            {
+                                "id": 636709355,
+                                "spent_date": "2024-01-15",
+                                "hours": 3.5,
+                                "rounded_hours": 3.5,
+                                "notes": "Worked on API integration",
+                                "is_locked": False,
+                                "is_closed": False,
+                                "is_billed": False,
+                                "is_running": False,
+                                "billable": True,
+                                "budgeted": True,
+                                "billable_rate": 100.0,
+                                "cost_rate": 50.0,
+                                "created_at": "2024-01-15T12:30:00Z",
+                                "updated_at": "2024-01-15T12:30:00Z",
+                                "user": {"id": 1782884, "name": "John Doe"},
+                                "client": {"id": 5735776, "name": "ABC Corp", "currency": "USD"},
+                                "project": {"id": 14307913, "name": "Online Store - Phase 1", "code": "OS1"},
+                                "task": {"id": 8083365, "name": "Development"},
+                            }
+                        ],
+                        "per_page": 50,
+                        "total_pages": 1,
+                        "total_entries": 1,
+                        "page": 1,
+                        "links": {},
+                    }
+                ),
+                status_code=200,
+            ),
         )
 
         # ACT: Run the connector
@@ -114,45 +119,71 @@ class TestTimeEntriesStream(TestCase):
         # ARRANGE: Mock first page with pagination
         http_mocker.get(
             HarvestRequestBuilder.time_entries_endpoint(_ACCOUNT_ID, _API_TOKEN)
-                .with_per_page(50)
-                .with_updated_since("2021-01-01T00:00:00Z")
-                .build(),
+            .with_per_page(50)
+            .with_updated_since("2021-01-01T00:00:00Z")
+            .build(),
             HttpResponse(
-                body=json.dumps({
-                    "time_entries": [
-                        {"id": 1001, "spent_date": "2024-01-01", "hours": 2.0, "billable": True, "is_running": False, "created_at": "2024-01-01T10:00:00Z", "updated_at": "2024-01-01T10:00:00Z"},
-                        {"id": 1002, "spent_date": "2024-01-02", "hours": 4.5, "billable": True, "is_running": False, "created_at": "2024-01-02T10:00:00Z", "updated_at": "2024-01-02T10:00:00Z"}
-                    ],
-                    "per_page": 50,
-                    "total_pages": 2,
-                    "page": 1,
-                    "links": {
-                        "next": "https://api.harvestapp.com/v2/time_entries?page=2&per_page=50"
+                body=json.dumps(
+                    {
+                        "time_entries": [
+                            {
+                                "id": 1001,
+                                "spent_date": "2024-01-01",
+                                "hours": 2.0,
+                                "billable": True,
+                                "is_running": False,
+                                "created_at": "2024-01-01T10:00:00Z",
+                                "updated_at": "2024-01-01T10:00:00Z",
+                            },
+                            {
+                                "id": 1002,
+                                "spent_date": "2024-01-02",
+                                "hours": 4.5,
+                                "billable": True,
+                                "is_running": False,
+                                "created_at": "2024-01-02T10:00:00Z",
+                                "updated_at": "2024-01-02T10:00:00Z",
+                            },
+                        ],
+                        "per_page": 50,
+                        "total_pages": 2,
+                        "page": 1,
+                        "links": {"next": "https://api.harvestapp.com/v2/time_entries?page=2&per_page=50"},
                     }
-                }),
-                status_code=200
-            )
+                ),
+                status_code=200,
+            ),
         )
 
         # ARRANGE: Mock second page (last page)
         http_mocker.get(
             HarvestRequestBuilder.time_entries_endpoint(_ACCOUNT_ID, _API_TOKEN)
-                .with_per_page(50)
-                .with_page(2)
-                .with_updated_since("2021-01-01T00:00:00Z")
-                .build(),
+            .with_per_page(50)
+            .with_page(2)
+            .with_updated_since("2021-01-01T00:00:00Z")
+            .build(),
             HttpResponse(
-                body=json.dumps({
-                    "time_entries": [
-                        {"id": 1003, "spent_date": "2024-01-03", "hours": 8.0, "billable": False, "is_running": False, "created_at": "2024-01-03T10:00:00Z", "updated_at": "2024-01-03T10:00:00Z"}
-                    ],
-                    "per_page": 50,
-                    "total_pages": 2,
-                    "page": 2,
-                    "links": {}
-                }),
-                status_code=200
-            )
+                body=json.dumps(
+                    {
+                        "time_entries": [
+                            {
+                                "id": 1003,
+                                "spent_date": "2024-01-03",
+                                "hours": 8.0,
+                                "billable": False,
+                                "is_running": False,
+                                "created_at": "2024-01-03T10:00:00Z",
+                                "updated_at": "2024-01-03T10:00:00Z",
+                            }
+                        ],
+                        "per_page": 50,
+                        "total_pages": 2,
+                        "page": 2,
+                        "links": {},
+                    }
+                ),
+                status_code=200,
+            ),
         )
 
         # ACT: Run the connector
@@ -184,30 +215,32 @@ class TestTimeEntriesStream(TestCase):
         # ARRANGE: Mock incremental request with updated_since parameter
         http_mocker.get(
             HarvestRequestBuilder.time_entries_endpoint(_ACCOUNT_ID, _API_TOKEN)
-                .with_per_page(50)
-                .with_updated_since("2024-01-01T00:00:00Z")
-                .build(),
+            .with_per_page(50)
+            .with_updated_since("2024-01-01T00:00:00Z")
+            .build(),
             HttpResponse(
-                body=json.dumps({
-                    "time_entries": [
-                        {
-                            "id": 2001,
-                            "spent_date": "2024-01-02",
-                            "hours": 5.5,
-                            "billable": True,
-                            "is_running": False,
-                            "notes": "New time entry after last sync",
-                            "created_at": "2024-01-02T14:00:00Z",
-                            "updated_at": "2024-01-02T14:00:00Z"
-                        }
-                    ],
-                    "per_page": 50,
-                    "total_pages": 1,
-                    "page": 1,
-                    "links": {}
-                }),
-                status_code=200
-            )
+                body=json.dumps(
+                    {
+                        "time_entries": [
+                            {
+                                "id": 2001,
+                                "spent_date": "2024-01-02",
+                                "hours": 5.5,
+                                "billable": True,
+                                "is_running": False,
+                                "notes": "New time entry after last sync",
+                                "created_at": "2024-01-02T14:00:00Z",
+                                "updated_at": "2024-01-02T14:00:00Z",
+                            }
+                        ],
+                        "per_page": 50,
+                        "total_pages": 1,
+                        "page": 1,
+                        "links": {},
+                    }
+                ),
+                status_code=200,
+            ),
         )
 
         # ACT: Run incremental sync
@@ -237,58 +270,60 @@ class TestTimeEntriesStream(TestCase):
         # ARRANGE: Mock response with different time entry states
         http_mocker.get(
             HarvestRequestBuilder.time_entries_endpoint(_ACCOUNT_ID, _API_TOKEN)
-                .with_per_page(50)
-                .with_updated_since("2021-01-01T00:00:00Z")
-                .build(),
+            .with_per_page(50)
+            .with_updated_since("2021-01-01T00:00:00Z")
+            .build(),
             HttpResponse(
-                body=json.dumps({
-                    "time_entries": [
-                        {
-                            "id": 3001,
-                            "spent_date": "2024-01-15",
-                            "hours": 2.0,
-                            "billable": True,
-                            "is_running": True,
-                            "timer_started_at": "2024-01-15T09:00:00Z",
-                            "is_locked": False,
-                            "is_billed": False,
-                            "notes": "Currently running timer",
-                            "created_at": "2024-01-15T09:00:00Z",
-                            "updated_at": "2024-01-15T11:00:00Z"
-                        },
-                        {
-                            "id": 3002,
-                            "spent_date": "2024-01-14",
-                            "hours": 8.0,
-                            "billable": True,
-                            "is_running": False,
-                            "is_locked": True,
-                            "locked_reason": "Approved timesheet",
-                            "is_billed": True,
-                            "notes": "Locked and billed entry",
-                            "created_at": "2024-01-14T09:00:00Z",
-                            "updated_at": "2024-01-14T17:00:00Z"
-                        },
-                        {
-                            "id": 3003,
-                            "spent_date": "2024-01-13",
-                            "hours": 3.5,
-                            "billable": False,
-                            "is_running": False,
-                            "is_locked": False,
-                            "is_billed": False,
-                            "notes": "Non-billable internal work",
-                            "created_at": "2024-01-13T09:00:00Z",
-                            "updated_at": "2024-01-13T12:30:00Z"
-                        }
-                    ],
-                    "per_page": 50,
-                    "total_pages": 1,
-                    "page": 1,
-                    "links": {}
-                }),
-                status_code=200
-            )
+                body=json.dumps(
+                    {
+                        "time_entries": [
+                            {
+                                "id": 3001,
+                                "spent_date": "2024-01-15",
+                                "hours": 2.0,
+                                "billable": True,
+                                "is_running": True,
+                                "timer_started_at": "2024-01-15T09:00:00Z",
+                                "is_locked": False,
+                                "is_billed": False,
+                                "notes": "Currently running timer",
+                                "created_at": "2024-01-15T09:00:00Z",
+                                "updated_at": "2024-01-15T11:00:00Z",
+                            },
+                            {
+                                "id": 3002,
+                                "spent_date": "2024-01-14",
+                                "hours": 8.0,
+                                "billable": True,
+                                "is_running": False,
+                                "is_locked": True,
+                                "locked_reason": "Approved timesheet",
+                                "is_billed": True,
+                                "notes": "Locked and billed entry",
+                                "created_at": "2024-01-14T09:00:00Z",
+                                "updated_at": "2024-01-14T17:00:00Z",
+                            },
+                            {
+                                "id": 3003,
+                                "spent_date": "2024-01-13",
+                                "hours": 3.5,
+                                "billable": False,
+                                "is_running": False,
+                                "is_locked": False,
+                                "is_billed": False,
+                                "notes": "Non-billable internal work",
+                                "created_at": "2024-01-13T09:00:00Z",
+                                "updated_at": "2024-01-13T12:30:00Z",
+                            },
+                        ],
+                        "per_page": 50,
+                        "total_pages": 1,
+                        "page": 1,
+                        "links": {},
+                    }
+                ),
+                status_code=200,
+            ),
         )
 
         # ACT: Run the connector
@@ -331,20 +366,13 @@ class TestTimeEntriesStream(TestCase):
         # ARRANGE: Mock empty response
         http_mocker.get(
             HarvestRequestBuilder.time_entries_endpoint(_ACCOUNT_ID, _API_TOKEN)
-                .with_per_page(50)
-                .with_updated_since("2021-01-01T00:00:00Z")
-                .build(),
+            .with_per_page(50)
+            .with_updated_since("2021-01-01T00:00:00Z")
+            .build(),
             HttpResponse(
-                body=json.dumps({
-                    "time_entries": [],
-                    "per_page": 50,
-                    "total_pages": 0,
-                    "total_entries": 0,
-                    "page": 1,
-                    "links": {}
-                }),
-                status_code=200
-            )
+                body=json.dumps({"time_entries": [], "per_page": 50, "total_pages": 0, "total_entries": 0, "page": 1, "links": {}}),
+                status_code=200,
+            ),
         )
 
         # ACT: Run the connector
@@ -369,59 +397,37 @@ class TestTimeEntriesStream(TestCase):
         # ARRANGE: Mock response with full nested data
         http_mocker.get(
             HarvestRequestBuilder.time_entries_endpoint(_ACCOUNT_ID, _API_TOKEN)
-                .with_per_page(50)
-                .with_updated_since("2021-01-01T00:00:00Z")
-                .build(),
+            .with_per_page(50)
+            .with_updated_since("2021-01-01T00:00:00Z")
+            .build(),
             HttpResponse(
-                body=json.dumps({
-                    "time_entries": [
-                        {
-                            "id": 4001,
-                            "spent_date": "2024-01-15",
-                            "hours": 6.0,
-                            "billable": True,
-                            "is_running": False,
-                            "created_at": "2024-01-15T09:00:00Z",
-                            "updated_at": "2024-01-15T15:00:00Z",
-                            "user": {
-                                "id": 1782884,
-                                "name": "Jane Smith"
-                            },
-                            "client": {
-                                "id": 5735776,
-                                "name": "Tech Startup Inc",
-                                "currency": "USD"
-                            },
-                            "project": {
-                                "id": 14307913,
-                                "name": "Mobile App Development",
-                                "code": "MAD"
-                            },
-                            "task": {
-                                "id": 8083365,
-                                "name": "Backend Development"
-                            },
-                            "user_assignment": {
-                                "id": 130403296,
-                                "is_project_manager": True,
-                                "is_active": True,
-                                "hourly_rate": 150.0
-                            },
-                            "task_assignment": {
-                                "id": 155505014,
+                body=json.dumps(
+                    {
+                        "time_entries": [
+                            {
+                                "id": 4001,
+                                "spent_date": "2024-01-15",
+                                "hours": 6.0,
                                 "billable": True,
-                                "is_active": True,
-                                "hourly_rate": 150.0
+                                "is_running": False,
+                                "created_at": "2024-01-15T09:00:00Z",
+                                "updated_at": "2024-01-15T15:00:00Z",
+                                "user": {"id": 1782884, "name": "Jane Smith"},
+                                "client": {"id": 5735776, "name": "Tech Startup Inc", "currency": "USD"},
+                                "project": {"id": 14307913, "name": "Mobile App Development", "code": "MAD"},
+                                "task": {"id": 8083365, "name": "Backend Development"},
+                                "user_assignment": {"id": 130403296, "is_project_manager": True, "is_active": True, "hourly_rate": 150.0},
+                                "task_assignment": {"id": 155505014, "billable": True, "is_active": True, "hourly_rate": 150.0},
                             }
-                        }
-                    ],
-                    "per_page": 50,
-                    "total_pages": 1,
-                    "page": 1,
-                    "links": {}
-                }),
-                status_code=200
-            )
+                        ],
+                        "per_page": 50,
+                        "total_pages": 1,
+                        "page": 1,
+                        "links": {},
+                    }
+                ),
+                status_code=200,
+            ),
         )
 
         # ACT: Run the connector

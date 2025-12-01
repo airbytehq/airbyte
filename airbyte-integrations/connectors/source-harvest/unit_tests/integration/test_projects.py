@@ -1,8 +1,11 @@
+# Copyright (c) 2025 Airbyte, Inc., all rights reserved.
+
 import json
 import sys
 from datetime import datetime, timezone
 from pathlib import Path
 from unittest import TestCase
+
 import freezegun
 
 from airbyte_cdk.models import SyncMode
@@ -11,12 +14,15 @@ from airbyte_cdk.test.entrypoint_wrapper import read
 from airbyte_cdk.test.mock_http import HttpMocker, HttpResponse
 from airbyte_cdk.test.state_builder import StateBuilder
 
+
 # Add parent directory to path to allow imports
 sys.path.insert(0, str(Path(__file__).parent.parent))
 
 from unit_tests.conftest import get_source
+
 from integration.config import ConfigBuilder
 from integration.request_builder import HarvestRequestBuilder
+
 
 _NOW = datetime.now(timezone.utc)
 _STREAM_NAME = "projects"
@@ -50,38 +56,43 @@ class TestProjectsStream(TestCase):
 
         # ARRANGE: Mock the API response
         http_mocker.get(
-            HarvestRequestBuilder.projects_endpoint(_ACCOUNT_ID, _API_TOKEN).with_per_page(50).with_updated_since("2021-01-01T00:00:00Z").build(),
+            HarvestRequestBuilder.projects_endpoint(_ACCOUNT_ID, _API_TOKEN)
+            .with_per_page(50)
+            .with_updated_since("2021-01-01T00:00:00Z")
+            .build(),
             HttpResponse(
-                body=json.dumps({
-                    "projects": [
-                        {
-                            "id": 14307913,
-                            "name": "Online Store - Phase 1",
-                            "code": "OS1",
-                            "is_active": True,
-                            "is_billable": True,
-                            "is_fixed_fee": False,
-                            "bill_by": "Project",
-                            "client_id": 5735776,
-                            "starts_on": "2023-01-01",
-                            "ends_on": None,
-                            "budget": 5000.0,
-                            "budget_by": "project",
-                            "budget_is_monthly": False,
-                            "notify_when_over_budget": True,
-                            "over_budget_notification_percentage": 80.0,
-                            "created_at": "2023-01-15T11:00:00Z",
-                            "updated_at": "2023-06-20T15:00:00Z"
-                        }
-                    ],
-                    "per_page": 50,
-                    "total_pages": 1,
-                    "total_entries": 1,
-                    "page": 1,
-                    "links": {}
-                }),
-                status_code=200
-            )
+                body=json.dumps(
+                    {
+                        "projects": [
+                            {
+                                "id": 14307913,
+                                "name": "Online Store - Phase 1",
+                                "code": "OS1",
+                                "is_active": True,
+                                "is_billable": True,
+                                "is_fixed_fee": False,
+                                "bill_by": "Project",
+                                "client_id": 5735776,
+                                "starts_on": "2023-01-01",
+                                "ends_on": None,
+                                "budget": 5000.0,
+                                "budget_by": "project",
+                                "budget_is_monthly": False,
+                                "notify_when_over_budget": True,
+                                "over_budget_notification_percentage": 80.0,
+                                "created_at": "2023-01-15T11:00:00Z",
+                                "updated_at": "2023-06-20T15:00:00Z",
+                            }
+                        ],
+                        "per_page": 50,
+                        "total_pages": 1,
+                        "total_entries": 1,
+                        "page": 1,
+                        "links": {},
+                    }
+                ),
+                status_code=200,
+            ),
         )
 
         # ACT: Run the connector
@@ -112,39 +123,75 @@ class TestProjectsStream(TestCase):
 
         # ARRANGE: Mock first page with pagination
         http_mocker.get(
-            HarvestRequestBuilder.projects_endpoint(_ACCOUNT_ID, _API_TOKEN).with_per_page(50).with_updated_since("2021-01-01T00:00:00Z").build(),
+            HarvestRequestBuilder.projects_endpoint(_ACCOUNT_ID, _API_TOKEN)
+            .with_per_page(50)
+            .with_updated_since("2021-01-01T00:00:00Z")
+            .build(),
             HttpResponse(
-                body=json.dumps({
-                    "projects": [
-                        {"id": 1001, "name": "Project Alpha", "code": "PA", "is_active": True, "is_billable": True, "client_id": 101, "created_at": "2023-01-01T00:00:00Z", "updated_at": "2023-01-01T00:00:00Z"},
-                        {"id": 1002, "name": "Project Beta", "code": "PB", "is_active": True, "is_billable": False, "client_id": 102, "created_at": "2023-01-02T00:00:00Z", "updated_at": "2023-01-02T00:00:00Z"}
-                    ],
-                    "per_page": 50,
-                    "total_pages": 2,
-                    "page": 1,
-                    "links": {
-                        "next": "https://api.harvestapp.com/v2/projects?page=2&per_page=50"
+                body=json.dumps(
+                    {
+                        "projects": [
+                            {
+                                "id": 1001,
+                                "name": "Project Alpha",
+                                "code": "PA",
+                                "is_active": True,
+                                "is_billable": True,
+                                "client_id": 101,
+                                "created_at": "2023-01-01T00:00:00Z",
+                                "updated_at": "2023-01-01T00:00:00Z",
+                            },
+                            {
+                                "id": 1002,
+                                "name": "Project Beta",
+                                "code": "PB",
+                                "is_active": True,
+                                "is_billable": False,
+                                "client_id": 102,
+                                "created_at": "2023-01-02T00:00:00Z",
+                                "updated_at": "2023-01-02T00:00:00Z",
+                            },
+                        ],
+                        "per_page": 50,
+                        "total_pages": 2,
+                        "page": 1,
+                        "links": {"next": "https://api.harvestapp.com/v2/projects?page=2&per_page=50"},
                     }
-                }),
-                status_code=200
-            )
+                ),
+                status_code=200,
+            ),
         )
 
         # ARRANGE: Mock second page (last page)
         http_mocker.get(
-            HarvestRequestBuilder.projects_endpoint(_ACCOUNT_ID, _API_TOKEN).with_per_page(50).with_page(2).with_updated_since("2021-01-01T00:00:00Z").build(),
+            HarvestRequestBuilder.projects_endpoint(_ACCOUNT_ID, _API_TOKEN)
+            .with_per_page(50)
+            .with_page(2)
+            .with_updated_since("2021-01-01T00:00:00Z")
+            .build(),
             HttpResponse(
-                body=json.dumps({
-                    "projects": [
-                        {"id": 1003, "name": "Project Gamma", "code": "PG", "is_active": False, "is_billable": True, "client_id": 103, "created_at": "2023-01-03T00:00:00Z", "updated_at": "2023-01-03T00:00:00Z"}
-                    ],
-                    "per_page": 50,
-                    "total_pages": 2,
-                    "page": 2,
-                    "links": {}
-                }),
-                status_code=200
-            )
+                body=json.dumps(
+                    {
+                        "projects": [
+                            {
+                                "id": 1003,
+                                "name": "Project Gamma",
+                                "code": "PG",
+                                "is_active": False,
+                                "is_billable": True,
+                                "client_id": 103,
+                                "created_at": "2023-01-03T00:00:00Z",
+                                "updated_at": "2023-01-03T00:00:00Z",
+                            }
+                        ],
+                        "per_page": 50,
+                        "total_pages": 2,
+                        "page": 2,
+                        "links": {},
+                    }
+                ),
+                status_code=200,
+            ),
         )
 
         # ACT: Run the connector
@@ -176,30 +223,32 @@ class TestProjectsStream(TestCase):
         # ARRANGE: Mock incremental request with updated_since parameter
         http_mocker.get(
             HarvestRequestBuilder.projects_endpoint(_ACCOUNT_ID, _API_TOKEN)
-                .with_per_page(50)
-                .with_updated_since("2024-01-01T00:00:00Z")
-                .build(),
+            .with_per_page(50)
+            .with_updated_since("2024-01-01T00:00:00Z")
+            .build(),
             HttpResponse(
-                body=json.dumps({
-                    "projects": [
-                        {
-                            "id": 2001,
-                            "name": "New Project Delta",
-                            "code": "NPD",
-                            "is_active": True,
-                            "is_billable": True,
-                            "client_id": 201,
-                            "created_at": "2024-01-02T10:00:00Z",
-                            "updated_at": "2024-01-02T10:00:00Z"
-                        }
-                    ],
-                    "per_page": 50,
-                    "total_pages": 1,
-                    "page": 1,
-                    "links": {}
-                }),
-                status_code=200
-            )
+                body=json.dumps(
+                    {
+                        "projects": [
+                            {
+                                "id": 2001,
+                                "name": "New Project Delta",
+                                "code": "NPD",
+                                "is_active": True,
+                                "is_billable": True,
+                                "client_id": 201,
+                                "created_at": "2024-01-02T10:00:00Z",
+                                "updated_at": "2024-01-02T10:00:00Z",
+                            }
+                        ],
+                        "per_page": 50,
+                        "total_pages": 1,
+                        "page": 1,
+                        "links": {},
+                    }
+                ),
+                status_code=200,
+            ),
         )
 
         # ACT: Run incremental sync
@@ -228,58 +277,63 @@ class TestProjectsStream(TestCase):
 
         # ARRANGE: Mock response with different project types
         http_mocker.get(
-            HarvestRequestBuilder.projects_endpoint(_ACCOUNT_ID, _API_TOKEN).with_per_page(50).with_updated_since("2021-01-01T00:00:00Z").build(),
+            HarvestRequestBuilder.projects_endpoint(_ACCOUNT_ID, _API_TOKEN)
+            .with_per_page(50)
+            .with_updated_since("2021-01-01T00:00:00Z")
+            .build(),
             HttpResponse(
-                body=json.dumps({
-                    "projects": [
-                        {
-                            "id": 3001,
-                            "name": "Fixed Fee Project",
-                            "code": "FFP",
-                            "is_active": True,
-                            "is_billable": True,
-                            "is_fixed_fee": True,
-                            "bill_by": "Project",
-                            "client_id": 301,
-                            "fee": 10000.0,
-                            "created_at": "2023-01-01T00:00:00Z",
-                            "updated_at": "2023-01-01T00:00:00Z"
-                        },
-                        {
-                            "id": 3002,
-                            "name": "Hourly Project",
-                            "code": "HP",
-                            "is_active": True,
-                            "is_billable": True,
-                            "is_fixed_fee": False,
-                            "bill_by": "Project",
-                            "client_id": 302,
-                            "hourly_rate": 150.0,
-                            "budget": 5000.0,
-                            "budget_by": "project",
-                            "created_at": "2023-01-02T00:00:00Z",
-                            "updated_at": "2023-01-02T00:00:00Z"
-                        },
-                        {
-                            "id": 3003,
-                            "name": "Non-Billable Internal",
-                            "code": "NBI",
-                            "is_active": True,
-                            "is_billable": False,
-                            "is_fixed_fee": False,
-                            "bill_by": "none",
-                            "client_id": None,
-                            "created_at": "2023-01-03T00:00:00Z",
-                            "updated_at": "2023-01-03T00:00:00Z"
-                        }
-                    ],
-                    "per_page": 50,
-                    "total_pages": 1,
-                    "page": 1,
-                    "links": {}
-                }),
-                status_code=200
-            )
+                body=json.dumps(
+                    {
+                        "projects": [
+                            {
+                                "id": 3001,
+                                "name": "Fixed Fee Project",
+                                "code": "FFP",
+                                "is_active": True,
+                                "is_billable": True,
+                                "is_fixed_fee": True,
+                                "bill_by": "Project",
+                                "client_id": 301,
+                                "fee": 10000.0,
+                                "created_at": "2023-01-01T00:00:00Z",
+                                "updated_at": "2023-01-01T00:00:00Z",
+                            },
+                            {
+                                "id": 3002,
+                                "name": "Hourly Project",
+                                "code": "HP",
+                                "is_active": True,
+                                "is_billable": True,
+                                "is_fixed_fee": False,
+                                "bill_by": "Project",
+                                "client_id": 302,
+                                "hourly_rate": 150.0,
+                                "budget": 5000.0,
+                                "budget_by": "project",
+                                "created_at": "2023-01-02T00:00:00Z",
+                                "updated_at": "2023-01-02T00:00:00Z",
+                            },
+                            {
+                                "id": 3003,
+                                "name": "Non-Billable Internal",
+                                "code": "NBI",
+                                "is_active": True,
+                                "is_billable": False,
+                                "is_fixed_fee": False,
+                                "bill_by": "none",
+                                "client_id": None,
+                                "created_at": "2023-01-03T00:00:00Z",
+                                "updated_at": "2023-01-03T00:00:00Z",
+                            },
+                        ],
+                        "per_page": 50,
+                        "total_pages": 1,
+                        "page": 1,
+                        "links": {},
+                    }
+                ),
+                status_code=200,
+            ),
         )
 
         # ACT: Run the connector
@@ -321,18 +375,14 @@ class TestProjectsStream(TestCase):
 
         # ARRANGE: Mock empty response
         http_mocker.get(
-            HarvestRequestBuilder.projects_endpoint(_ACCOUNT_ID, _API_TOKEN).with_per_page(50).with_updated_since("2021-01-01T00:00:00Z").build(),
+            HarvestRequestBuilder.projects_endpoint(_ACCOUNT_ID, _API_TOKEN)
+            .with_per_page(50)
+            .with_updated_since("2021-01-01T00:00:00Z")
+            .build(),
             HttpResponse(
-                body=json.dumps({
-                    "projects": [],
-                    "per_page": 50,
-                    "total_pages": 0,
-                    "total_entries": 0,
-                    "page": 1,
-                    "links": {}
-                }),
-                status_code=200
-            )
+                body=json.dumps({"projects": [], "per_page": 50, "total_pages": 0, "total_entries": 0, "page": 1, "links": {}}),
+                status_code=200,
+            ),
         )
 
         # ACT: Run the connector

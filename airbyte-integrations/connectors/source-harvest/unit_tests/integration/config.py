@@ -1,3 +1,5 @@
+# Copyright (c) 2025 Airbyte, Inc., all rights reserved.
+
 from datetime import datetime
 from typing import Optional
 
@@ -43,11 +45,8 @@ class ConfigBuilder:
 
         config = {
             "account_id": self._account_id or "123456",
-            "credentials": {
-                "auth_type": "Token",
-                "api_token": self._api_token or "test_token_abc123"
-            },
-            "replication_start_date": start_date
+            "credentials": {"auth_type": "Token", "api_token": self._api_token or "test_token_abc123"},
+            "replication_start_date": start_date,
         }
 
         return config

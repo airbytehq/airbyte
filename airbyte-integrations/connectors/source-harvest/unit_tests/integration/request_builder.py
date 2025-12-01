@@ -1,4 +1,7 @@
+# Copyright (c) 2025 Airbyte, Inc., all rights reserved.
+
 from typing import Optional
+
 from airbyte_cdk.test.mock_http import HttpRequest
 
 
@@ -106,8 +109,5 @@ class HarvestRequestBuilder:
         return HttpRequest(
             url=f"{self.BASE_URL}/{self._resource}",
             query_params=query_params if query_params else None,
-            headers={
-                "Harvest-Account-Id": self._account_id,
-                "Authorization": f"Bearer {self._api_token}"
-            }
+            headers={"Harvest-Account-Id": self._account_id, "Authorization": f"Bearer {self._api_token}"},
         )
