@@ -97,7 +97,8 @@ class CheckVersionIncrement(Check):
                 return self.fail(
                     connector,
                     f"The dockerImageTag in {consts.METADATA_FILE_NAME} was not incremented. "
-                    f"Master version is {master_version}, current version is {current_version}",
+                    f"Master version is {master_version}, current version is {current_version}. "
+                    f"Ignore this message if you do not intend to re-release the connector.",
                 )
 
             if self._are_both_versions_release_candidates(master_version, current_version):
