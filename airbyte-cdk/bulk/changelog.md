@@ -1,3 +1,7 @@
+## Version 0.1.82
+
+load cdk: more tests to help guide dependency injection dependency implemenations
+
 ## Version 0.1.81
 
 load cdk: components tests: more coverage on upsert
