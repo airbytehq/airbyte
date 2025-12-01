@@ -20,6 +20,7 @@ import io.airbyte.cdk.load.dataflow.transform.ValidationResult
 import io.airbyte.cdk.load.dataflow.transform.ValueCoercer
 import io.airbyte.cdk.load.message.Meta
 import io.airbyte.cdk.load.table.ColumnNameMapping
+import io.airbyte.protocol.models.v0.AirbyteRecordMessageMetaChange.Reason
 import io.micronaut.test.extensions.junit5.annotation.MicronautTest
 import kotlinx.coroutines.test.runTest
 import org.junit.jupiter.api.Assertions.assertEquals
@@ -42,22 +43,32 @@ interface DataCoercionSuite {
     val testClient: TestTableOperationsClient
 
     /** Fixtures are defined in [DataCoercionIntegerFixtures]. */
-    fun `handle integer values`(inputValue: AirbyteValue, expectedValue: Any?) = runTest {
+    fun `handle integer values`(
+        inputValue: AirbyteValue,
+        expectedValue: Any?,
+        expectedChangeReason: Reason?
+    ) = runTest {
         testValueCoercion(
             columnNameMapping,
             FieldType(IntegerType, nullable = true),
             inputValue,
             expectedValue,
+            expectedChangeReason,
         )
     }
 
     /** Fixtures are defined in [DataCoercionNumberFixtures]. */
-    fun `handle number values`(inputValue: AirbyteValue, expectedValue: Any?) = runTest {
+    fun `handle number values`(
+        inputValue: AirbyteValue,
+        expectedValue: Any?,
+        expectedChangeReason: Reason?
+    ) = runTest {
         testValueCoercion(
             columnNameMapping,
             FieldType(NumberType, nullable = true),
             inputValue,
             expectedValue,
+            expectedChangeReason,
         )
     }
 
@@ -67,6 +78,7 @@ interface DataCoercionSuite {
         fieldType: FieldType,
         inputValue: AirbyteValue,
         expectedValue: Any?,
+        expectedChangeReason: Reason?,
     ) {
         val testNamespace = TableOperationsFixtures.generateTestNamespace("test")
         val tableName =
@@ -89,12 +101,22 @@ interface DataCoercionSuite {
                 )
             )
         val validatedValue = coercer.validate(mappedValue)
-        val valueToInsert =
-            when (validatedValue) {
-                is ValidationResult.ShouldNullify -> NullValue
-                is ValidationResult.ShouldTruncate -> validatedValue.truncatedValue
-                ValidationResult.Valid -> inputValue
+        val valueToInsert: AirbyteValue
+        val changeReason: Reason?
+        when (validatedValue) {
+            is ValidationResult.ShouldNullify -> {
+                valueToInsert = NullValue
+                changeReason = validatedValue.reason
             }
+            is ValidationResult.ShouldTruncate -> {
+                valueToInsert = validatedValue.truncatedValue
+                changeReason = validatedValue.reason
+            }
+            ValidationResult.Valid -> {
+                valueToInsert = inputValue
+                changeReason = null
+            }
+        }
 
         opsClient.createNamespace(testNamespace)
         opsClient.createTable(stream, tableName, columnNameMapping, replace = false)
@@ -115,5 +137,6 @@ interface DataCoercionSuite {
             actualRecords,
             "For input $inputValue, expected $expectedValue. Coercer output was $validatedValue.",
         )
+        assertEquals(expectedChangeReason, changeReason)
     }
 }

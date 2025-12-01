@@ -4,8 +4,10 @@
 
 package io.airbyte.cdk.load.component
 
+import io.airbyte.cdk.load.data.AirbyteValue
 import io.airbyte.cdk.load.data.IntegerValue
 import io.airbyte.cdk.load.data.NumberValue
+import io.airbyte.protocol.models.v0.AirbyteRecordMessageMetaChange.Reason
 import java.math.BigDecimal
 import java.math.BigInteger
 import org.junit.jupiter.params.provider.Arguments
@@ -43,31 +45,66 @@ object DataCoercionIntegerFixtures {
      */
     val int64 =
         listOf(
-            IntegerValue(0) to 0L,
-            IntegerValue(1) to 1L,
-            IntegerValue(-1) to -1L,
-            IntegerValue(42) to 42L,
-            IntegerValue(-42) to -42L,
+            test("0", IntegerValue(0), 0L),
+            test("1", IntegerValue(1), 1L),
+            test("-1", IntegerValue(-1), -1L),
+            test("42", IntegerValue(42), 42L),
+            test("-42", IntegerValue(-42), -42L),
             // int32 bounds, and slightly out of bounds
-            IntegerValue(Integer.MAX_VALUE.toLong()) to Integer.MAX_VALUE.toLong(),
-            IntegerValue(Integer.MIN_VALUE.toLong()) to Integer.MIN_VALUE.toLong(),
-            IntegerValue(Integer.MAX_VALUE.toLong() + 1) to Integer.MAX_VALUE.toLong() + 1,
-            IntegerValue(Integer.MIN_VALUE.toLong() - 1) to Integer.MIN_VALUE.toLong() - 1,
+            test("int32 max", IntegerValue(Integer.MAX_VALUE.toLong()), Integer.MAX_VALUE.toLong()),
+            test("int32 min", IntegerValue(Integer.MIN_VALUE.toLong()), Integer.MIN_VALUE.toLong()),
+            test(
+                "int32_max + 1",
+                IntegerValue(Integer.MAX_VALUE.toLong() + 1),
+                Integer.MAX_VALUE.toLong() + 1
+            ),
+            test(
+                "int32_min - 1",
+                IntegerValue(Integer.MIN_VALUE.toLong() - 1),
+                Integer.MIN_VALUE.toLong() - 1
+            ),
             // int64 bounds, and slightly out of bounds
-            IntegerValue(Long.MAX_VALUE) to Long.MAX_VALUE,
-            IntegerValue(Long.MIN_VALUE) to Long.MIN_VALUE,
+            test("int64 max", IntegerValue(Long.MAX_VALUE), Long.MAX_VALUE),
+            test("int64 min", IntegerValue(Long.MIN_VALUE), Long.MIN_VALUE),
             // values out of int64 bounds are nulled
-            IntegerValue(bigint(Long.MAX_VALUE) + BigInteger.ONE) to null,
-            IntegerValue(bigint(Long.MIN_VALUE) - BigInteger.ONE) to null,
+            test(
+                "int64_max + 1",
+                IntegerValue(bigint(Long.MAX_VALUE) + BigInteger.ONE),
+                null,
+                Reason.DESTINATION_FIELD_SIZE_LIMITATION
+            ),
+            test(
+                "int64_min - 1",
+                IntegerValue(bigint(Long.MIN_VALUE) - BigInteger.ONE),
+                null,
+                Reason.DESTINATION_FIELD_SIZE_LIMITATION
+            ),
             // NUMERIC(38, 9) bounds, and slightly out of bounds
             // (these are all out of bounds for an int64 value, so they all get nulled)
-            // TODO turn this into a struct
-            //   DataCoercionTestCase(inputValue: AirbyteValue, expectedValue: Any?, changeReason:
-            // Meta.Change.Reason?, description: String?)
-            IntegerValue(numeric38_0Max) to null,
-            IntegerValue(numeric38_0Min) to null,
-            IntegerValue(numeric38_0Max + BigInteger.ONE) to null,
-            IntegerValue(numeric38_0Min - BigInteger.ONE) to null,
+            test(
+                "numeric(38,0) max",
+                IntegerValue(numeric38_0Max),
+                null,
+                Reason.DESTINATION_FIELD_SIZE_LIMITATION
+            ),
+            test(
+                "numeric(38,0) min",
+                IntegerValue(numeric38_0Min),
+                null,
+                Reason.DESTINATION_FIELD_SIZE_LIMITATION
+            ),
+            test(
+                "numeric(38,0)_max + 1",
+                IntegerValue(numeric38_0Max + BigInteger.ONE),
+                null,
+                Reason.DESTINATION_FIELD_SIZE_LIMITATION
+            ),
+            test(
+                "numeric(38,0)_min - 1",
+                IntegerValue(numeric38_0Min - BigInteger.ONE),
+                null,
+                Reason.DESTINATION_FIELD_SIZE_LIMITATION
+            ),
         )
 
     /**
@@ -77,29 +114,61 @@ object DataCoercionIntegerFixtures {
      */
     val numeric38_0 =
         listOf(
-            IntegerValue(0) to bigint(0L),
-            IntegerValue(1) to bigint(1L),
-            IntegerValue(-1) to bigint(-1L),
-            IntegerValue(42) to bigint(42L),
-            IntegerValue(-42) to bigint(-42L),
+            test("0", IntegerValue(0), bigint(0L)),
+            test("1", IntegerValue(1), bigint(1L)),
+            test("-1", IntegerValue(-1), bigint(-1L)),
+            test("42", IntegerValue(42), bigint(42L)),
+            test("-42", IntegerValue(-42), bigint(-42L)),
             // int32 bounds, and slightly out of bounds
-            IntegerValue(Integer.MAX_VALUE.toLong()) to bigint(Integer.MAX_VALUE.toLong()),
-            IntegerValue(Integer.MIN_VALUE.toLong()) to bigint(Integer.MIN_VALUE.toLong()),
-            IntegerValue(Integer.MAX_VALUE.toLong() + 1) to bigint(Integer.MAX_VALUE.toLong() + 1),
-            IntegerValue(Integer.MIN_VALUE.toLong() - 1) to bigint(Integer.MIN_VALUE.toLong() - 1),
+            test(
+                "int32 max",
+                IntegerValue(Integer.MAX_VALUE.toLong()),
+                bigint(Integer.MAX_VALUE.toLong())
+            ),
+            test(
+                "int32 min",
+                IntegerValue(Integer.MIN_VALUE.toLong()),
+                bigint(Integer.MIN_VALUE.toLong())
+            ),
+            test(
+                "int32_max + 1",
+                IntegerValue(Integer.MAX_VALUE.toLong() + 1),
+                bigint(Integer.MAX_VALUE.toLong() + 1)
+            ),
+            test(
+                "int32_min - 1",
+                IntegerValue(Integer.MIN_VALUE.toLong() - 1),
+                bigint(Integer.MIN_VALUE.toLong() - 1)
+            ),
             // int64 bounds, and slightly out of bounds
-            IntegerValue(Long.MAX_VALUE) to bigint(Long.MAX_VALUE),
-            IntegerValue(Long.MIN_VALUE) to bigint(Long.MIN_VALUE),
-            IntegerValue(bigint(Long.MAX_VALUE) + BigInteger.ONE) to
-                bigint(Long.MAX_VALUE) + BigInteger.ONE,
-            IntegerValue(bigint(Long.MIN_VALUE) - BigInteger.ONE) to
-                bigint(Long.MIN_VALUE) - BigInteger.ONE,
+            test("int64 max", IntegerValue(Long.MAX_VALUE), bigint(Long.MAX_VALUE)),
+            test("int64 min", IntegerValue(Long.MIN_VALUE), bigint(Long.MIN_VALUE)),
+            test(
+                "int64_max + 1",
+                IntegerValue(bigint(Long.MAX_VALUE) + BigInteger.ONE),
+                bigint(Long.MAX_VALUE) + BigInteger.ONE
+            ),
+            test(
+                "int64_min - 1",
+                IntegerValue(bigint(Long.MIN_VALUE) - BigInteger.ONE),
+                bigint(Long.MIN_VALUE) - BigInteger.ONE
+            ),
             // NUMERIC(38, 9) bounds, and slightly out of bounds
-            IntegerValue(numeric38_0Max) to numeric38_0Max,
-            IntegerValue(numeric38_0Min) to numeric38_0Min,
+            test("numeric(38,0) max", IntegerValue(numeric38_0Max), numeric38_0Max),
+            test("numeric(38,0) min", IntegerValue(numeric38_0Min), numeric38_0Min),
             // These values exceed the 38-digit range, so they get nulled out
-            IntegerValue(numeric38_0Max + BigInteger.ONE) to null,
-            IntegerValue(numeric38_0Min - BigInteger.ONE) to null,
+            test(
+                "numeric(38,0)_max + 1",
+                IntegerValue(numeric38_0Max + BigInteger.ONE),
+                null,
+                Reason.DESTINATION_FIELD_SIZE_LIMITATION
+            ),
+            test(
+                "numeric(38,0)_min - 1",
+                IntegerValue(numeric38_0Min - BigInteger.ONE),
+                null,
+                Reason.DESTINATION_FIELD_SIZE_LIMITATION
+            ),
         )
 
     @JvmStatic fun int64() = int64.toArgs()
@@ -109,7 +178,8 @@ object DataCoercionIntegerFixtures {
      * rather than [Long].
      */
     @JvmStatic
-    fun int64AsBigInteger() = int64.map { (input, output) -> input to output?.let { bigint(it) } }
+    fun int64AsBigInteger() =
+        int64.map { it.copy(outputValue = it.outputValue?.let { bigint(it as Long) }) }
 
     /**
      * Convenience fixture if your [TestTableOperationsClient] returns integers as [BigDecimal]
@@ -117,7 +187,7 @@ object DataCoercionIntegerFixtures {
      */
     @JvmStatic
     fun int64AsBigDecimal() =
-        int64.map { (input, output) -> input to output?.let { BigDecimal.valueOf(it) } }
+        int64.map { it.copy(outputValue = it.outputValue?.let { BigDecimal.valueOf(it as Long) }) }
 
     @JvmStatic fun numeric38_0() = numeric38_0.toArgs()
 }
@@ -128,77 +198,197 @@ object DataCoercionNumberFixtures {
 
     val float64 =
         listOf(
-            NumberValue(bigdec(0)) to 0.0,
-            NumberValue(bigdec(1)) to 1.0,
-            NumberValue(bigdec(-1)) to -1.0,
+            test("0", NumberValue(bigdec(0)), 0.0),
+            test("1", NumberValue(bigdec(1)), 1.0),
+            test("-1", NumberValue(bigdec(-1)), -1.0),
             // This value isn't exactly representable as a float64
             // (the exact value is `123.400000000000005684341886080801486968994140625`)
             // but we should preserve the canonical representation
-            NumberValue(bigdec("123.4")) to 123.4,
-            NumberValue(bigdec("-123.4")) to -123.4,
+            test("123.4", NumberValue(bigdec("123.4")), 123.4),
+            test("-123.4", NumberValue(bigdec("-123.4")), -123.4),
             // These values have too much precision for a float64, so we round them
             // TODO snowflake rounds these differently than expected, figure out why. Or make it
-            // easier
-            //   for snowflake to override specific entries in this list.
-            NumberValue(bigdec("1234567890.1234567890123456789")) to 1234567890.1234567,
-            NumberValue(bigdec("-1234567890.1234567890123456789")) to -1234567890.1234567,
-            NumberValue(numeric38_9Max) to 1.0E29,
-            NumberValue(numeric38_9Min) to -1.0E29,
+            // easier for snowflake to override specific entries in this list.
+            test(
+                "positive high-precision float",
+                NumberValue(bigdec("1234567890.1234567890123456789")),
+                1234567890.1234567,
+                Reason.DESTINATION_FIELD_SIZE_LIMITATION
+            ),
+            test(
+                "negative high-precision float",
+                NumberValue(bigdec("-1234567890.1234567890123456789")),
+                -1234567890.1234567,
+                Reason.DESTINATION_FIELD_SIZE_LIMITATION
+            ),
+            test(
+                "numeric(38,9) max",
+                NumberValue(numeric38_9Max),
+                1.0E29,
+                Reason.DESTINATION_FIELD_SIZE_LIMITATION
+            ),
+            test(
+                "numeric(38,9) min",
+                NumberValue(numeric38_9Min),
+                -1.0E29,
+                Reason.DESTINATION_FIELD_SIZE_LIMITATION
+            ),
             // min/max_value are all positive values, so we need to manually test their negative
             // version
-            NumberValue(bigdec(Float.MIN_VALUE.toDouble())) to Float.MIN_VALUE.toDouble(),
-            NumberValue(bigdec(-Float.MIN_VALUE.toDouble())) to -Float.MIN_VALUE.toDouble(),
-            NumberValue(bigdec(Float.MAX_VALUE.toDouble())) to Float.MAX_VALUE.toDouble(),
-            NumberValue(bigdec(-Float.MAX_VALUE.toDouble())) to -Float.MAX_VALUE.toDouble(),
-            NumberValue(bigdec(Double.MIN_VALUE)) to Double.MIN_VALUE,
-            NumberValue(bigdec(-Double.MIN_VALUE)) to -Double.MIN_VALUE,
+            test(
+                "smallest positive float32",
+                NumberValue(bigdec(Float.MIN_VALUE.toDouble())),
+                Float.MIN_VALUE.toDouble()
+            ),
+            test(
+                "smallest negative float32",
+                NumberValue(bigdec(-Float.MIN_VALUE.toDouble())),
+                -Float.MIN_VALUE.toDouble()
+            ),
+            test(
+                "largest positive float32",
+                NumberValue(bigdec(Float.MAX_VALUE.toDouble())),
+                Float.MAX_VALUE.toDouble()
+            ),
+            test(
+                "largest negative float32",
+                NumberValue(bigdec(-Float.MAX_VALUE.toDouble())),
+                -Float.MAX_VALUE.toDouble()
+            ),
+            test(
+                "smallest positive float64",
+                NumberValue(bigdec(Double.MIN_VALUE)),
+                Double.MIN_VALUE
+            ),
+            test(
+                "smallest negative float64",
+                NumberValue(bigdec(-Double.MIN_VALUE)),
+                -Double.MIN_VALUE
+            ),
             // TODO snowflake writes this value correctly, but reads it back as infinity. Need to
             // fix SnowflakeTestOperationClient
-            NumberValue(bigdec(Double.MAX_VALUE)) to Double.MAX_VALUE,
-            NumberValue(bigdec(-Double.MAX_VALUE)) to -Double.MAX_VALUE,
+            test(
+                "largest positive float64",
+                NumberValue(bigdec(Double.MAX_VALUE)),
+                Double.MAX_VALUE
+            ),
+            test(
+                "largest negative float64",
+                NumberValue(bigdec(-Double.MAX_VALUE)),
+                -Double.MAX_VALUE
+            ),
             // These values are out of bounds, so we null them
-            NumberValue(bigdec(Double.MAX_VALUE) + bigdec(Double.MIN_VALUE)) to null,
-            NumberValue(bigdec(-Double.MAX_VALUE) - bigdec(Double.MIN_VALUE)) to null,
+            test(
+                "slightly above largest positive float64",
+                NumberValue(bigdec(Double.MAX_VALUE) + bigdec(Double.MIN_VALUE)),
+                null,
+                Reason.DESTINATION_FIELD_SIZE_LIMITATION
+            ),
+            test(
+                "slightly below largest negative float64",
+                NumberValue(bigdec(-Double.MAX_VALUE) - bigdec(Double.MIN_VALUE)),
+                null,
+                Reason.DESTINATION_FIELD_SIZE_LIMITATION
+            ),
         )
 
     val numeric38_9 =
         listOf(
-                NumberValue(bigdec(0)) to bigdec(0.0),
-                NumberValue(bigdec(1)) to bigdec(1.0),
-                NumberValue(bigdec(-1)) to bigdec(-1.0),
+                test("0", NumberValue(bigdec(0)), bigdec(0.0)),
+                test("1", NumberValue(bigdec(1)), bigdec(1.0)),
+                test("-1", NumberValue(bigdec(-1)), bigdec(-1.0)),
                 // This value isn't exactly representable as a float64
                 // (the exact value is `123.400000000000005684341886080801486968994140625`)
                 // but it's perfectly fine as a numeric(38, 9)
-                NumberValue(bigdec("123.4")) to bigdec("123.4"),
-                NumberValue(bigdec("-123.4")) to bigdec("-123.4"),
+                test("123.4", NumberValue(bigdec("123.4")), bigdec("123.4")),
+                test("-123.4", NumberValue(bigdec("-123.4")), bigdec("-123.4")),
                 // These values have too much precision for a numeric(38, 9), so we round them
-                NumberValue(bigdec("1234567890.1234567890123456789")) to
+                test(
+                    "positive high-precision float",
+                    NumberValue(bigdec("1234567890.1234567890123456789")),
                     bigdec("1234567890.123456789"),
-                NumberValue(bigdec("-1234567890.1234567890123456789")) to
+                    Reason.DESTINATION_FIELD_SIZE_LIMITATION
+                ),
+                test(
+                    "negative high-precision float",
+                    NumberValue(bigdec("-1234567890.1234567890123456789")),
                     bigdec("-1234567890.123456789"),
-                NumberValue(bigdec(Float.MIN_VALUE.toDouble())) to bigdec(0),
-                NumberValue(bigdec(-Float.MIN_VALUE.toDouble())) to bigdec(0),
-                NumberValue(bigdec(Double.MIN_VALUE)) to bigdec(0),
-                NumberValue(bigdec(-Double.MIN_VALUE)) to bigdec(0),
+                    Reason.DESTINATION_FIELD_SIZE_LIMITATION
+                ),
+                test(
+                    "smallest positive float32",
+                    NumberValue(bigdec(Float.MIN_VALUE.toDouble())),
+                    bigdec(0),
+                    Reason.DESTINATION_FIELD_SIZE_LIMITATION
+                ),
+                test(
+                    "smallest negative float32",
+                    NumberValue(bigdec(-Float.MIN_VALUE.toDouble())),
+                    bigdec(0),
+                    Reason.DESTINATION_FIELD_SIZE_LIMITATION
+                ),
+                test(
+                    "smallest positive float64",
+                    NumberValue(bigdec(Double.MIN_VALUE)),
+                    bigdec(0),
+                    Reason.DESTINATION_FIELD_SIZE_LIMITATION
+                ),
+                test(
+                    "smallest negative float64",
+                    NumberValue(bigdec(-Double.MIN_VALUE)),
+                    bigdec(0),
+                    Reason.DESTINATION_FIELD_SIZE_LIMITATION
+                ),
                 // numeric bounds are perfectly fine
-                NumberValue(numeric38_9Max) to numeric38_9Max,
-                NumberValue(numeric38_9Min) to numeric38_9Min,
+                test("numeric(38,9) max", NumberValue(numeric38_9Max), numeric38_9Max),
+                test("numeric(38,9) min", NumberValue(numeric38_9Min), numeric38_9Min),
                 // These values are out of bounds, so we null them
-                NumberValue(bigdec(Float.MAX_VALUE.toDouble())) to null,
-                NumberValue(bigdec(-Float.MAX_VALUE.toDouble())) to null,
-                NumberValue(bigdec(Double.MAX_VALUE)) to null,
-                NumberValue(bigdec(-Double.MAX_VALUE)) to null,
-                NumberValue(bigdec(Double.MAX_VALUE) + bigdec(Double.MIN_VALUE)) to null,
-                NumberValue(bigdec(-Double.MAX_VALUE) - bigdec(Double.MIN_VALUE)) to null,
+                test(
+                    "largest positive float32",
+                    NumberValue(bigdec(Float.MAX_VALUE.toDouble())),
+                    null,
+                    Reason.DESTINATION_FIELD_SIZE_LIMITATION
+                ),
+                test(
+                    "largest negative float32",
+                    NumberValue(bigdec(-Float.MAX_VALUE.toDouble())),
+                    null,
+                    Reason.DESTINATION_FIELD_SIZE_LIMITATION
+                ),
+                test(
+                    "largest positive float64",
+                    NumberValue(bigdec(Double.MAX_VALUE)),
+                    null,
+                    Reason.DESTINATION_FIELD_SIZE_LIMITATION
+                ),
+                test(
+                    "largest negative float64",
+                    NumberValue(bigdec(-Double.MAX_VALUE)),
+                    null,
+                    Reason.DESTINATION_FIELD_SIZE_LIMITATION
+                ),
+                test(
+                    "slightly above largest positive float64",
+                    NumberValue(bigdec(Double.MAX_VALUE) + bigdec(Double.MIN_VALUE)),
+                    null,
+                    Reason.DESTINATION_FIELD_SIZE_LIMITATION
+                ),
+                test(
+                    "slightly below largest negative float64",
+                    NumberValue(bigdec(-Double.MAX_VALUE) - bigdec(Double.MIN_VALUE)),
+                    null,
+                    Reason.DESTINATION_FIELD_SIZE_LIMITATION
+                ),
             )
-            .map { (input, output) -> input to output?.setScale(9) }
+            .map { it.copy(outputValue = (it.outputValue as BigDecimal?)?.setScale(9)) }
 
     @JvmStatic fun float64() = float64.toArgs()
     @JvmStatic fun numeric38_9() = numeric38_9.toArgs()
 }
 
-fun <T, U> List<Pair<T, U>>.toArgs(): List<Arguments> =
-    this.map { Arguments.of(it.first, it.second) }.toList()
+fun List<DataCoercionFixture>.toArgs(): List<Arguments> =
+    this.map { Arguments.argumentSet(it.name, it.inputValue, it.outputValue, it.changeReason) }
+        .toList()
 
 /**
  * Utility method to use the BigDecimal constructor (supports exponential notation like `1e38`) to
@@ -214,3 +404,17 @@ fun bigdec(str: String): BigDecimal = BigDecimal(str)
 fun bigdec(double: Double): BigDecimal = BigDecimal.valueOf(double)
 
 fun bigdec(int: Int): BigDecimal = BigDecimal.valueOf(int.toDouble())
+
+data class DataCoercionFixture(
+    val name: String,
+    val inputValue: AirbyteValue,
+    val outputValue: Any?,
+    val changeReason: Reason? = null,
+)
+
+fun test(
+    name: String,
+    inputValue: AirbyteValue,
+    outputValue: Any?,
+    changeReason: Reason? = null,
+) = DataCoercionFixture(name, inputValue, outputValue, changeReason)
