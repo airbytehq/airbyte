@@ -13,12 +13,10 @@ definitions:
     error_handler:
       type: DefaultErrorHandler
       response_filters:
-        - http_codes: [400]
-          action: FAIL
+        - action: FAIL
           error_message_contains: This application has not been approved to use this API
-          error_message: The application used to create the Facebook access token has not been approved to use this API. Possibly, some of the requested fields require additional scopes/permissions. The Airbyte OAuth App is being in process of requesting needed scopes. In the meantime, we suggest you use your own access token with the necessary permissions
-        - http_codes: [400]
-          action: FAIL
+          error_message: The application used to create the Facebook access token has not been approved to use this API. Possibly, some of the requested fields require additional scopes/permissions. The Airbyte OAuth App is being in process of requesting needed scopes. In the meantime, we suggest you use your own access token with the necessary permissions. Please, visit https://docs.airbyte.com/integrations/sources/facebook-pages#creating-your-own-oauth-app for more info about your own OAuth App.
+        - action: FAIL
           error_message_contains: Tried accessing nonexisting field
           error_message: Request contains invalid/deprecated field.
         - http_codes: [400]
