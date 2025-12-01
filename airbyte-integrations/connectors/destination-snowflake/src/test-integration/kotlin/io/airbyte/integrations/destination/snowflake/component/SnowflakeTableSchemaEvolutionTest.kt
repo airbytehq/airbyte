@@ -4,6 +4,8 @@
 
 package io.airbyte.integrations.destination.snowflake.component
 
+import io.airbyte.cdk.load.command.ImportType
+import io.airbyte.cdk.load.component.TableSchemaEvolutionFixtures
 import io.airbyte.cdk.load.component.TableSchemaEvolutionSuite
 import io.airbyte.cdk.load.message.Meta
 import io.airbyte.cdk.load.table.ColumnNameMapping
@@ -17,7 +19,7 @@ import org.junit.jupiter.api.Test
 import org.junit.jupiter.api.parallel.Execution
 import org.junit.jupiter.api.parallel.ExecutionMode
 
-@MicronautTest(environments = ["component"])
+@MicronautTest(environments = ["component"], resolveParameters = false)
 @Execution(ExecutionMode.CONCURRENT)
 class SnowflakeTableSchemaEvolutionTest(
     override val client: SnowflakeAirbyteClient,
@@ -57,11 +59,35 @@ class SnowflakeTableSchemaEvolutionTest(
     }
 
     @Test
-    override fun `basic apply changeset`() {
-        super.`basic apply changeset`(
+    override fun `apply changeset - handle sync mode append`() {
+        super.`apply changeset - handle sync mode append`()
+    }
+
+    @Test
+    override fun `apply changeset - handle changing sync mode from append to dedup`() {
+        super.`apply changeset - handle changing sync mode from append to dedup`()
+    }
+
+    @Test
+    override fun `apply changeset - handle changing sync mode from dedup to append`() {
+        super.`apply changeset - handle changing sync mode from dedup to append`()
+    }
+
+    @Test
+    override fun `apply changeset - handle sync mode dedup`() {
+        super.`apply changeset - handle sync mode dedup`()
+    }
+
+    override fun `apply changeset`(
+        initialStreamImportType: ImportType,
+        modifiedStreamImportType: ImportType,
+    ) {
+        super.`apply changeset`(
             initialColumnNameMapping =
                 ColumnNameMapping(
                     mapOf(
+                        "id" to "ID",
+                        "updated_at" to "UPDATED_AT",
                         "to_retain" to "TO_RETAIN",
                         "to_change" to "TO_CHANGE",
                         "to_drop" to "TO_DROP",
@@ -70,11 +96,36 @@ class SnowflakeTableSchemaEvolutionTest(
             modifiedColumnNameMapping =
                 ColumnNameMapping(
                     mapOf(
+                        "id" to "ID",
+                        "updated_at" to "UPDATED_AT",
                         "to_retain" to "TO_RETAIN",
                         "to_change" to "TO_CHANGE",
                         "to_add" to "TO_ADD",
                     )
                 ),
+            TableSchemaEvolutionFixtures.APPLY_CHANGESET_EXPECTED_EXTRACTED_AT,
+            initialStreamImportType,
+            modifiedStreamImportType,
+        )
+    }
+
+    @Test
+    override fun `change from string type to unknown type`() {
+        super.`change from string type to unknown type`(
+            idAndTestMapping,
+            idAndTestMapping,
+            TableSchemaEvolutionFixtures.STRING_TO_UNKNOWN_TYPE_INPUT_RECORDS,
+            TableSchemaEvolutionFixtures.STRING_TO_UNKNOWN_TYPE_EXPECTED_RECORDS,
+        )
+    }
+
+    @Test
+    override fun `change from unknown type to string type`() {
+        super.`change from unknown type to string type`(
+            idAndTestMapping,
+            idAndTestMapping,
+            TableSchemaEvolutionFixtures.UNKNOWN_TO_STRING_TYPE_INPUT_RECORDS,
+            TableSchemaEvolutionFixtures.UNKNOWN_TO_STRING_TYPE_EXPECTED_RECORDS,
         )
     }
 }
