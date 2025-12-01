@@ -5,14 +5,14 @@
 package io.airbyte.integrations.destination.clickhouse.write
 
 import io.airbyte.cdk.SystemErrorException
-import io.airbyte.cdk.load.command.DestinationCatalog
 import io.airbyte.cdk.load.command.DestinationStream
-import io.airbyte.cdk.load.table.ColumnNameMapping
-import io.airbyte.cdk.load.table.DatabaseInitialStatusGatherer
-import io.airbyte.cdk.load.table.directload.DirectLoadInitialStatus
-import io.airbyte.cdk.load.table.directload.DirectLoadTableAppendStreamLoader
-import io.airbyte.cdk.load.table.directload.DirectLoadTableAppendTruncateStreamLoader
-import io.airbyte.cdk.load.table.directload.DirectLoadTableExecutionConfig
+import io.airbyte.cdk.load.orchestration.db.DatabaseInitialStatusGatherer
+import io.airbyte.cdk.load.orchestration.db.TempTableNameGenerator
+import io.airbyte.cdk.load.orchestration.db.direct_load_table.DirectLoadInitialStatus
+import io.airbyte.cdk.load.orchestration.db.direct_load_table.DirectLoadTableAppendStreamLoader
+import io.airbyte.cdk.load.orchestration.db.direct_load_table.DirectLoadTableAppendTruncateStreamLoader
+import io.airbyte.cdk.load.orchestration.db.direct_load_table.DirectLoadTableExecutionConfig
+import io.airbyte.cdk.load.orchestration.db.legacy_typing_deduping.TableCatalog
 import io.airbyte.cdk.load.write.DestinationWriter
 import io.airbyte.cdk.load.write.StreamLoader
 import io.airbyte.cdk.load.write.StreamStateStore
@@ -21,26 +21,28 @@ import jakarta.inject.Singleton
 
 @Singleton
 class ClickHouseWriter(
-    private val names: DestinationCatalog,
+    private val names: TableCatalog,
     private val stateGatherer: DatabaseInitialStatusGatherer<DirectLoadInitialStatus>,
     private val streamStateStore: StreamStateStore<DirectLoadTableExecutionConfig>,
     private val clickhouseClient: ClickhouseAirbyteClient,
+    private val tempTableNameGenerator: TempTableNameGenerator,
 ) : DestinationWriter {
     private lateinit var initialStatuses: Map<DestinationStream, DirectLoadInitialStatus>
 
     override suspend fun setup() {
-        names.streams
-            .map {  it.tableSchema.tableNames.finalTableName!!.namespace }
+        names.values
+            .map { (tableNames, _) -> tableNames.finalTableName!!.namespace }
             .forEach { clickhouseClient.createNamespace(it) }
 
-        initialStatuses = stateGatherer.gatherInitialStatus()
+        initialStatuses = stateGatherer.gatherInitialStatus(names)
     }
 
     override fun createStreamLoader(stream: DestinationStream): StreamLoader {
         val initialStatus = initialStatuses[stream]!!
-        val realTableName = stream.tableSchema.tableNames.finalTableName!!
-        val tempTableName = stream.tableSchema.tableNames.tempTableName!!
-        val columnNameMapping = ColumnNameMapping(stream.tableSchema.columnSchema.inputToFinalColumnNames)
+        val tableNameInfo = names[stream]!!
+        val realTableName = tableNameInfo.tableNames.finalTableName!!
+        val tempTableName = tempTableNameGenerator.generate(realTableName)
+        val columnNameMapping = tableNameInfo.columnNameMapping
         return when (stream.minimumGenerationId) {
             0L ->
                 DirectLoadTableAppendStreamLoader(

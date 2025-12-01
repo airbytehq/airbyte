@@ -4,17 +4,17 @@
 
 package io.airbyte.integrations.destination.clickhouse.config
 
-import io.airbyte.cdk.load.command.DestinationCatalog
 import io.airbyte.cdk.load.component.TableOperationsClient
-import io.airbyte.cdk.load.table.BaseDirectLoadInitialStatusGatherer
+import io.airbyte.cdk.load.orchestration.db.BaseDirectLoadInitialStatusGatherer
+import io.airbyte.cdk.load.orchestration.db.TempTableNameGenerator
 import jakarta.inject.Singleton
 
 @Singleton
 class ClickhouseDirectLoadDatabaseInitialStatusGatherer(
     tableOperationsClient: TableOperationsClient,
-    destinationCatalog: DestinationCatalog,
+    tempTableNameGenerator: TempTableNameGenerator,
 ) :
     BaseDirectLoadInitialStatusGatherer(
         tableOperationsClient,
-        destinationCatalog,
+        tempTableNameGenerator,
     )

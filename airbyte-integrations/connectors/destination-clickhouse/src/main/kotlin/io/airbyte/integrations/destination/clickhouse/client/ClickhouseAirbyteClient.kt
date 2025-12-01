@@ -21,8 +21,9 @@ import io.airbyte.cdk.load.component.TableColumns
 import io.airbyte.cdk.load.component.TableOperationsClient
 import io.airbyte.cdk.load.component.TableSchemaEvolutionClient
 import io.airbyte.cdk.load.message.Meta.Companion.COLUMN_NAMES
-import io.airbyte.cdk.load.schema.model.TableName
+import io.airbyte.cdk.load.orchestration.db.TempTableNameGenerator
 import io.airbyte.cdk.load.table.ColumnNameMapping
+import io.airbyte.cdk.load.table.TableName
 import io.airbyte.integrations.destination.clickhouse.client.ClickhouseSqlGenerator.Companion.DATETIME_WITH_PRECISION
 import io.airbyte.integrations.destination.clickhouse.client.ClickhouseSqlGenerator.Companion.DECIMAL_WITH_PRECISION_AND_SCALE
 import io.airbyte.integrations.destination.clickhouse.spec.ClickhouseConfiguration
@@ -40,6 +41,7 @@ val log = KotlinLogging.logger {}
 class ClickhouseAirbyteClient(
     private val client: ClickHouseClientRaw,
     private val sqlGenerator: ClickhouseSqlGenerator,
+    private val tempTableNameGenerator: TempTableNameGenerator,
     private val clickhouseConfiguration: ClickhouseConfiguration,
 ) : TableOperationsClient, TableSchemaEvolutionClient {
 
@@ -206,8 +208,7 @@ class ClickhouseAirbyteClient(
         columnNameMapping: ColumnNameMapping,
         columnChangeset: ColumnChangeset,
     ) {
-        val tempTableName = stream.tableSchema.tableNames.tempTableName
-            ?: throw IllegalStateException("Temp table name not available in stream tableSchema")
+        val tempTableName = tempTableNameGenerator.generate(properTableName)
         execute(sqlGenerator.createNamespace(tempTableName.namespace))
         execute(
             sqlGenerator.createTable(
