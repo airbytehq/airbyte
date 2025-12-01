@@ -52,13 +52,17 @@ After all the steps, it should look something like this
 
 Please, follow this [Facebook documentation](https://developers.facebook.com/docs/development/create-an-app/) to create an OAuth App.
 
-Required Permissions/Features which your OAuth App should have to sync data using The Facebook Pages source connector:
+Required Permissions/Features which your OAuth App should have to sync data using the Facebook Pages source connector:
 
-- `pages_manage_ads`
-- `pages_manage_metadata`
 - `pages_read_engagement`
 - `pages_read_user_content`
 - `pages_show_list`
+- `read_insights`
+
+If you want to sync all fields from the Page stream, you may also need these additional permissions:
+
+- `pages_manage_ads`
+- `pages_manage_metadata`
 - `catalog_management`
 
 ## Supported sync modes
