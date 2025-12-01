@@ -1,7 +1,11 @@
 # Copyright (c) 2024 Airbyte, Inc., all rights reserved.
 
+# Import conftest helper
+import sys
 from datetime import datetime, timezone
+from pathlib import Path
 from unittest import TestCase
+
 import freezegun
 
 from airbyte_cdk.models import SyncMode
@@ -14,11 +18,10 @@ from integration.config import ConfigBuilder
 from integration.request_builder import SentryRequestBuilder
 from integration.response_builder import create_response, error_response
 
-# Import conftest helper
-import sys
-from pathlib import Path
+
 sys.path.insert(0, str(Path(__file__).parent.parent))
 from conftest import get_source
+
 
 # Test constants
 _NOW = datetime.now(timezone.utc)
@@ -48,8 +51,7 @@ class TestEventsStream(TestCase):
         """
         # ARRANGE
         http_mocker.get(
-            SentryRequestBuilder.events_endpoint(_ORGANIZATION, _PROJECT, _AUTH_TOKEN).build(),
-            create_response("events", has_next=False)
+            SentryRequestBuilder.events_endpoint(_ORGANIZATION, _PROJECT, _AUTH_TOKEN).build(), create_response("events", has_next=False)
         )
 
         # ACT
@@ -73,10 +75,7 @@ class TestEventsStream(TestCase):
         # ARRANGE: Mock returns two responses sequentially
         http_mocker.get(
             SentryRequestBuilder.events_endpoint(_ORGANIZATION, _PROJECT, _AUTH_TOKEN).build(),
-            [
-                create_response("events", has_next=True, cursor="page2"),
-                create_response("events", has_next=False, cursor="page2")
-            ]
+            [create_response("events", has_next=True, cursor="page2"), create_response("events", has_next=False, cursor="page2")],
         )
 
         # ACT
@@ -93,10 +92,7 @@ class TestEventsStream(TestCase):
         Test that connector handles 401 authentication errors appropriately.
         """
         # ARRANGE
-        http_mocker.get(
-            SentryRequestBuilder.events_endpoint(_ORGANIZATION, _PROJECT, _AUTH_TOKEN).build(),
-            error_response(401)
-        )
+        http_mocker.get(SentryRequestBuilder.events_endpoint(_ORGANIZATION, _PROJECT, _AUTH_TOKEN).build(), error_response(401))
 
         # ACT
         source = get_source(config=self._config())
@@ -112,10 +108,7 @@ class TestEventsStream(TestCase):
         Test that connector handles 429 rate limit errors.
         """
         # ARRANGE
-        http_mocker.get(
-            SentryRequestBuilder.events_endpoint(_ORGANIZATION, _PROJECT, _AUTH_TOKEN).build(),
-            error_response(429)
-        )
+        http_mocker.get(SentryRequestBuilder.events_endpoint(_ORGANIZATION, _PROJECT, _AUTH_TOKEN).build(), error_response(429))
 
         # ACT
         source = get_source(config=self._config())
