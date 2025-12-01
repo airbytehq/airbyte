@@ -27,6 +27,7 @@ API Reference: https://developers.dwolla.com/docs
 
 | Version          | Date              | Pull Request | Subject        |
 |------------------|-------------------|--------------|----------------|
+| 0.0.25 | 2025-11-25 | [70175](https://github.com/airbytehq/airbyte/pull/70175) | Update dependencies |
 | 0.0.24 | 2025-11-18 | [69362](https://github.com/airbytehq/airbyte/pull/69362) | Update dependencies |
 | 0.0.23 | 2025-10-29 | [68701](https://github.com/airbytehq/airbyte/pull/68701) | Update dependencies |
 | 0.0.22 | 2025-10-21 | [68564](https://github.com/airbytehq/airbyte/pull/68564) | Update dependencies |
