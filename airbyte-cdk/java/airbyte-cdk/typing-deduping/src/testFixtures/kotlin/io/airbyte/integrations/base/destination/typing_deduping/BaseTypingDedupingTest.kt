@@ -1187,10 +1187,7 @@ abstract class BaseTypingDedupingTest {
         val expectedRawRecords2 = readRecords("dat/sync2_expectedrecords_raw.jsonl")
         val expectedFinalRecords2 =
             readRecords("dat/sync2_expectedrecords_fullrefresh_append_final.jsonl")
-        verifySyncResult(
-            expectedRawRecords2,
-            expectedFinalRecords2,
-        )
+        verifySyncResult(expectedRawRecords2, expectedFinalRecords2)
     }
 
     /**
