@@ -113,8 +113,8 @@ class DestinationCatalogTest {
                         tableNames = TableNames(finalTableName = TableName("namespace1", "name1")),
                         columnSchema =
                             ColumnSchema(
-                                rawSchema = mapOf(),
-                                rawToFinalColumnNames = mapOf(),
+                                inputSchema = mapOf(),
+                                inputToFinalColumnNames = mapOf(),
                                 finalColumnSchema = mapOf(),
                             ),
                         importType = Append,
@@ -152,13 +152,13 @@ class DestinationCatalogTest {
                         tableNames = TableNames(finalTableName = TableName("namespace", "name")),
                         columnSchema =
                             ColumnSchema(
-                                rawSchema =
+                                inputSchema =
                                     linkedMapOf(
                                         "z" to FieldType(StringType, nullable = true),
                                         "y" to FieldType(BooleanType, nullable = true),
                                         "x" to FieldType(IntegerType, nullable = true),
                                     ),
-                                rawToFinalColumnNames = mapOf("z" to "z", "y" to "y", "x" to "x"),
+                                inputToFinalColumnNames = mapOf("z" to "z", "y" to "y", "x" to "x"),
                                 finalColumnSchema = mapOf(),
                             ),
                         importType = Append,
@@ -198,8 +198,8 @@ class DestinationCatalogTest {
                                         TableNames(finalTableName = TableName("default", "foo")),
                                     columnSchema =
                                         ColumnSchema(
-                                            rawSchema = mapOf(),
-                                            rawToFinalColumnNames = mapOf(),
+                                            inputSchema = mapOf(),
+                                            inputToFinalColumnNames = mapOf(),
                                             finalColumnSchema = mapOf(),
                                         ),
                                     importType = Append,
@@ -221,8 +221,8 @@ class DestinationCatalogTest {
                                         TableNames(finalTableName = TableName("default", "foo")),
                                     columnSchema =
                                         ColumnSchema(
-                                            rawSchema = mapOf(),
-                                            rawToFinalColumnNames = mapOf(),
+                                            inputSchema = mapOf(),
+                                            inputToFinalColumnNames = mapOf(),
                                             finalColumnSchema = mapOf(),
                                         ),
                                     importType = Append,
@@ -257,8 +257,8 @@ class DestinationCatalogTest {
                                         TableNames(finalTableName = TableName("default", "foo")),
                                     columnSchema =
                                         ColumnSchema(
-                                            rawSchema = mapOf(),
-                                            rawToFinalColumnNames = mapOf(),
+                                            inputSchema = mapOf(),
+                                            inputToFinalColumnNames = mapOf(),
                                             finalColumnSchema = mapOf(),
                                         ),
                                     importType =
@@ -306,11 +306,11 @@ class DestinationCatalogTest {
                                         TableNames(finalTableName = TableName("default", "foo")),
                                     columnSchema =
                                         ColumnSchema(
-                                            rawSchema =
+                                            inputSchema =
                                                 linkedMapOf(
                                                     "id" to FieldType(IntegerType, nullable = true)
                                                 ),
-                                            rawToFinalColumnNames = mapOf("id" to "id"),
+                                            inputToFinalColumnNames = mapOf("id" to "id"),
                                             finalColumnSchema = mapOf(),
                                         ),
                                     importType =

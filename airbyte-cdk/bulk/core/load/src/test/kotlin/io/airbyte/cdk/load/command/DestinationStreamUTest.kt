@@ -121,14 +121,14 @@ class DestinationStreamUTest {
         every { mockSchemaFactory.make(any(), any(), any()) } answers
             {
                 val finalTableName = firstArg<TableName>()
-                val rawSchema = secondArg<Map<String, FieldType>>()
+                val inputSchema = secondArg<Map<String, FieldType>>()
                 val importType = thirdArg<io.airbyte.cdk.load.command.ImportType>()
                 StreamTableSchema(
                     tableNames = TableNames(finalTableName = finalTableName),
                     columnSchema =
                         ColumnSchema(
-                            rawSchema = rawSchema,
-                            rawToFinalColumnNames = rawSchema.keys.associateWith { it },
+                            inputSchema = inputSchema,
+                            inputToFinalColumnNames = inputSchema.keys.associateWith { it },
                             finalColumnSchema = mapOf(),
                         ),
                     importType = importType,

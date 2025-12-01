@@ -153,8 +153,8 @@ class DefaultDestinationCatalogFactory {
                         StreamTableSchema(
                             columnSchema =
                                 ColumnSchema(
-                                    rawSchema = mapOf(),
-                                    rawToFinalColumnNames = mapOf(),
+                                    inputSchema = mapOf(),
+                                    inputToFinalColumnNames = mapOf(),
                                     finalColumnSchema = mapOf()
                                 ),
                             importType = Append,

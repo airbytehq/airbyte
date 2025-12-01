@@ -84,8 +84,8 @@ internal class DestinationMessageTest {
                                     ),
                                 columnSchema =
                                     io.airbyte.cdk.load.schema.model.ColumnSchema(
-                                        rawSchema = mapOf(),
-                                        rawToFinalColumnNames = mapOf(),
+                                        inputSchema = mapOf(),
+                                        inputToFinalColumnNames = mapOf(),
                                         finalColumnSchema = mapOf(),
                                     ),
                                 importType = Append,
@@ -659,8 +659,8 @@ internal class DestinationMessageTest {
                             ),
                         columnSchema =
                             io.airbyte.cdk.load.schema.model.ColumnSchema(
-                                rawSchema = streamSchema.properties,
-                                rawToFinalColumnNames =
+                                inputSchema = streamSchema.properties,
+                                inputToFinalColumnNames =
                                     streamSchema.properties.keys.associateWith { it },
                                 finalColumnSchema = mapOf(),
                             ),

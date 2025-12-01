@@ -16,11 +16,11 @@ class ColumnNameResolver(
      * Creates column name mapping with handling for potential collisions using incremental
      * numbering, with advanced resolution for truncation cases.
      */
-    fun getColumnNameMapping(rawColumNames: Set<String>): Map<String, String> {
+    fun getColumnNameMapping(protocolColumNames: Set<String>): Map<String, String> {
         val processedColumnNames = mutableSetOf<String>()
         val columnMappings = mutableMapOf<String, String>()
 
-        rawColumNames.forEach { columnName ->
+        protocolColumNames.forEach { columnName ->
             val processedColumnName = mapper.toColumnName(columnName)
 
             // Get a unique column name by adding incremental numbers if necessary

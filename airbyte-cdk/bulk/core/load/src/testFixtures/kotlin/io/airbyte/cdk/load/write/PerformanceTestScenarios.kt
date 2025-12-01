@@ -85,8 +85,8 @@ class SingleStreamInsert(
                         TableNames(finalTableName = TableName(randomizedNamespace, streamName)),
                     columnSchema =
                         ColumnSchema(
-                            rawSchema = streamSchema.properties,
-                            rawToFinalColumnNames =
+                            inputSchema = streamSchema.properties,
+                            inputToFinalColumnNames =
                                 streamSchema.properties.keys.associateWith { it },
                             finalColumnSchema = mapOf(),
                         ),
@@ -212,8 +212,8 @@ class SingleStreamFileTransfer(
                         TableNames(finalTableName = TableName(randomizedNamespace, streamName)),
                     columnSchema =
                         ColumnSchema(
-                            rawSchema = mapOf(),
-                            rawToFinalColumnNames = mapOf(),
+                            inputSchema = mapOf(),
+                            inputToFinalColumnNames = mapOf(),
                             finalColumnSchema = mapOf(),
                         ),
                     importType = Append,
@@ -240,8 +240,8 @@ class SingleStreamFileTransfer(
                                 ),
                             columnSchema =
                                 ColumnSchema(
-                                    rawSchema = mapOf(),
-                                    rawToFinalColumnNames = mapOf(),
+                                    inputSchema = mapOf(),
+                                    inputToFinalColumnNames = mapOf(),
                                     finalColumnSchema = mapOf(),
                                 ),
                             importType = Append,
@@ -321,8 +321,8 @@ class SingleStreamFileAndMetadataTransfer(
                         TableNames(finalTableName = TableName(randomizedNamespace, streamName)),
                     columnSchema =
                         ColumnSchema(
-                            rawSchema = mapOf(),
-                            rawToFinalColumnNames = mapOf(),
+                            inputSchema = mapOf(),
+                            inputToFinalColumnNames = mapOf(),
                             finalColumnSchema = mapOf(),
                         ),
                     importType = Append,
@@ -350,8 +350,8 @@ class SingleStreamFileAndMetadataTransfer(
                                 ),
                             columnSchema =
                                 ColumnSchema(
-                                    rawSchema = mapOf(),
-                                    rawToFinalColumnNames = mapOf(),
+                                    inputSchema = mapOf(),
+                                    inputToFinalColumnNames = mapOf(),
                                     finalColumnSchema = mapOf(),
                                 ),
                             importType = Append,
@@ -469,8 +469,8 @@ class MultiStreamInsert(
                             TableNames(finalTableName = TableName(randomizedNamespace, streamName)),
                         columnSchema =
                             ColumnSchema(
-                                rawSchema = streamSchema.properties,
-                                rawToFinalColumnNames =
+                                inputSchema = streamSchema.properties,
+                                inputToFinalColumnNames =
                                     streamSchema.properties.keys.associateWith { it },
                                 finalColumnSchema = mapOf(),
                             ),

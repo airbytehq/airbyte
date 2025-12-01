@@ -56,8 +56,8 @@ interface DestinationChecker<C : DestinationConfiguration> {
                     tableNames = TableNames(finalTableName = TableName("testing", "test")),
                     columnSchema =
                         ColumnSchema(
-                            rawSchema = mapOf(),
-                            rawToFinalColumnNames = mapOf(),
+                            inputSchema = mapOf(),
+                            inputToFinalColumnNames = mapOf(),
                             finalColumnSchema = mapOf(),
                         ),
                     importType = Append,
