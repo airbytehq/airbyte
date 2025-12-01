@@ -48,6 +48,19 @@ After all the steps, it should look something like this
 4. Fill in Page Access Token with Long-Lived Page Token
 5. Fill in Page ID (if you have a page URL such as `https://www.facebook.com/Test-1111111111`, the ID would be`Test-1111111111`)
 
+### Creating your own OAuth App
+
+Please, follow this [Facebook documentation](https://developers.facebook.com/docs/development/create-an-app/) to create an OAuth App.
+
+Required Permissions/Features which your OAuth App should have to sync data using The Facebook Pages source connector:
+
+- `pages_manage_ads`
+- `pages_manage_metadata`
+- `pages_read_engagement`
+- `pages_read_user_content`
+- `pages_show_list`
+- `catalog_management`
+
 ## Supported sync modes
 
 The Facebook Pages source connector supports the following [sync modes](https://docs.airbyte.com/cloud/core-concepts#connection-sync-modes):
@@ -84,6 +97,7 @@ See Facebook's [documentation on rate limiting](https://developers.facebook.com/
 
 | Version | Date       | Pull Request                                                   | Subject                                                                                                                                                                |
 |:--------|:-----------|:---------------------------------------------------------------|:-----------------------------------------------------------------------------------------------------------------------------------------------------------------------|
+| 2.0.2   | 2025-12-01 | [70258](https://github.com/airbytehq/airbyte/pull/70258)       | Use Post stream for check, handle 400 error in Page stream                                                                                                             |
 | 2.0.1   | 2025-11-27 | [70242](https://github.com/airbytehq/airbyte/pull/70242)       | Refresh in-app documentation to reflect v24 API version                                                                                                                |
 | 2.0.0   | 2025-11-18 | [69714](https://github.com/airbytehq/airbyte/pull/69714)       | Upgrade Facebook API to v24.0                                                                                                                                          |
 | 1.1.4   | 2025-07-31 | [64141](https://github.com/airbytehq/airbyte/pull/64141)       | Upgrade Facebook API to v23.0                                                                                                                                          |
