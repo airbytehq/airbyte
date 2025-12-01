@@ -19,7 +19,7 @@ class TableSchemaFactory(
 ) {
     fun make(
         finalTableName: TableName,
-        rawSchema: Map<String, FieldType>,
+        inputSchema: Map<String, FieldType>,
         importType: ImportType,
     ): StreamTableSchema {
         val tempTableName = mapper.toTempTableName(finalTableName)
@@ -29,16 +29,16 @@ class TableSchemaFactory(
                 tempTableName = tempTableName,
             )
 
-        val rawToFinalColumnNames = colNameResolver.getColumnNameMapping(rawSchema.keys)
+        val inputToFinalColumnNames = colNameResolver.getColumnNameMapping(inputSchema.keys)
         val finalColumnSchema =
-            rawSchema
-                .map { rawToFinalColumnNames[it.key]!! to mapper.toColumnType(it.value) }
+            inputSchema
+                .map { inputToFinalColumnNames[it.key]!! to mapper.toColumnType(it.value) }
                 .toMap()
 
         val columnSchema =
             ColumnSchema(
-                rawSchema = rawSchema,
-                rawToFinalColumnNames = rawToFinalColumnNames,
+                inputSchema = inputSchema,
+                inputToFinalColumnNames = inputToFinalColumnNames,
                 finalColumnSchema = finalColumnSchema,
             )
 

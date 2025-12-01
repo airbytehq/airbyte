@@ -699,8 +699,8 @@ object TableOperationsFixtures {
                     tableNames = TableNames(finalTableName = TableName(namespace, name)),
                     columnSchema =
                         ColumnSchema(
-                            rawSchema = schema.properties,
-                            rawToFinalColumnNames = schema.properties.keys.associateWith { it },
+                            inputSchema = schema.properties,
+                            inputToFinalColumnNames = schema.properties.keys.associateWith { it },
                             finalColumnSchema = mapOf(),
                         ),
                     importType = Append,
@@ -735,8 +735,8 @@ object TableOperationsFixtures {
                     tableNames = TableNames(finalTableName = TableName(namespace, name)),
                     columnSchema =
                         ColumnSchema(
-                            rawSchema = schema.properties,
-                            rawToFinalColumnNames = schema.properties.keys.associateWith { it },
+                            inputSchema = schema.properties,
+                            inputToFinalColumnNames = schema.properties.keys.associateWith { it },
                             finalColumnSchema = mapOf(),
                         ),
                     importType =

@@ -39,8 +39,8 @@ class EnrichedDestinationRecordAirbyteValueTest {
                         ),
                     columnSchema =
                         io.airbyte.cdk.load.schema.model.ColumnSchema(
-                            rawSchema = mapOf(),
-                            rawToFinalColumnNames = mapOf(),
+                            inputSchema = mapOf(),
+                            inputToFinalColumnNames = mapOf(),
                             finalColumnSchema = mapOf(),
                         ),
                     importType = Append,

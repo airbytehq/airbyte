@@ -8,10 +8,10 @@ import io.airbyte.cdk.load.component.ColumnType
 import io.airbyte.cdk.load.data.FieldType
 
 data class ColumnSchema(
-    // schema off catalog
-    val rawSchema: Map<String, FieldType>,
-    // raw schema name to final resolved name
-    val rawToFinalColumnNames: Map<String, String>,
+    // schema on input catalog
+    val inputSchema: Map<String, FieldType>,
+    // name on input catalog to final resolved name
+    val inputToFinalColumnNames: Map<String, String>,
     // resolved name to resolved type
     val finalColumnSchema: Map<String, ColumnType>,
 )

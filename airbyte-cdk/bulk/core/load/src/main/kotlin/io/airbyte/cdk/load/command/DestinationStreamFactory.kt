@@ -4,7 +4,10 @@
 
 package io.airbyte.cdk.load.command
 
+import io.airbyte.cdk.load.data.FieldType
 import io.airbyte.cdk.load.data.ObjectType
+import io.airbyte.cdk.load.data.ObjectTypeWithEmptySchema
+import io.airbyte.cdk.load.data.ObjectTypeWithoutSchema
 import io.airbyte.cdk.load.data.json.JsonSchemaToAirbyteType
 import io.airbyte.cdk.load.schema.TableSchemaFactory
 import io.airbyte.cdk.load.schema.model.TableName
@@ -22,7 +25,12 @@ class DestinationStreamFactory(
     private val schemaFactory: TableSchemaFactory,
 ) {
     fun make(stream: ConfiguredAirbyteStream, resolvedTableName: TableName): DestinationStream {
-        val airbyteSchema = jsonSchemaToAirbyteType.convert(stream.stream.jsonSchema) as ObjectType
+        val airbyteSchemaType = jsonSchemaToAirbyteType.convert(stream.stream.jsonSchema)
+        val airbyteSchema: Map<String, FieldType> = when (airbyteSchemaType) {
+            is ObjectType -> airbyteSchemaType.properties
+            is ObjectTypeWithEmptySchema, is ObjectTypeWithoutSchema -> emptyMap()
+            else -> throw IllegalStateException("")
+        }
         val importType =
             when (stream.destinationSyncMode) {
                 null -> throw IllegalArgumentException("Destination sync mode was null")
@@ -36,7 +44,7 @@ class DestinationStreamFactory(
         val tableSchema =
             schemaFactory.make(
                 resolvedTableName,
-                airbyteSchema.properties,
+                airbyteSchema,
                 importType,
             )
 
@@ -48,7 +56,7 @@ class DestinationStreamFactory(
             generationId = stream.generationId,
             minimumGenerationId = stream.minimumGenerationId,
             syncId = stream.syncId,
-            schema = airbyteSchema,
+            schema = airbyteSchemaType,
             isFileBased = stream.stream.isFileBased ?: false,
             includeFiles = stream.includeFiles ?: false,
             destinationObjectName = stream.destinationObjectName,

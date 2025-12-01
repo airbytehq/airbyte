@@ -103,8 +103,8 @@ class AirbyteValueProxyTest {
                         ),
                     columnSchema =
                         io.airbyte.cdk.load.schema.model.ColumnSchema(
-                            rawSchema = ALL_TYPES_SCHEMA.properties,
-                            rawToFinalColumnNames =
+                            inputSchema = ALL_TYPES_SCHEMA.properties,
+                            inputToFinalColumnNames =
                                 ALL_TYPES_SCHEMA.properties.keys.associateWith { it },
                             finalColumnSchema = mapOf(),
                         ),

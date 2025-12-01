@@ -373,7 +373,7 @@ abstract class BasicFunctionalityIntegrationTest(
         schema: AirbyteType,
         importType: ImportType
     ): StreamTableSchema {
-        val rawSchema = if (schema is ObjectType) schema.properties else mapOf()
+        val inputSchema = if (schema is ObjectType) schema.properties else mapOf()
         val columnNames =
             if (schema is ObjectType) schema.properties.keys.associateWith { it } else mapOf()
 
@@ -381,8 +381,8 @@ abstract class BasicFunctionalityIntegrationTest(
             tableNames = TableNames(finalTableName = TableName(namespace ?: "default", name)),
             columnSchema =
                 ColumnSchema(
-                    rawSchema = rawSchema,
-                    rawToFinalColumnNames = columnNames,
+                    inputSchema = inputSchema,
+                    inputToFinalColumnNames = columnNames,
                     finalColumnSchema = mapOf(),
                 ),
             importType = importType,

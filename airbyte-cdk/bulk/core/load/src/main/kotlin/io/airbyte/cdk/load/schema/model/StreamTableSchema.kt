@@ -12,16 +12,16 @@ data class StreamTableSchema(
     val columnSchema: ColumnSchema,
     val importType: ImportType,
 ) {
-    fun getFinalColumnName(rawName: String) = columnSchema.rawToFinalColumnNames[rawName]!!
+    fun getFinalColumnName(rawName: String) = columnSchema.inputToFinalColumnNames[rawName]!!
 
     fun getCursor() =
-        if (importType is Dedupe) importType.cursor.map { columnSchema.rawToFinalColumnNames[it]!! }
+        if (importType is Dedupe) importType.cursor.map { columnSchema.inputToFinalColumnNames[it]!! }
         else emptyList()
 
     fun getPrimaryKey() =
         if (importType is Dedupe)
             importType.primaryKey.map { keys ->
-                keys.map { columnSchema.rawToFinalColumnNames[it]!! }
+                keys.map { columnSchema.inputToFinalColumnNames[it]!! }
             }
         else emptyList()
 }

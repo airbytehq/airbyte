@@ -34,8 +34,8 @@ class NamespaceMapperTest {
                         TableNames(finalTableName = TableName(unmappedNamespace, unmappedName)),
                     columnSchema =
                         ColumnSchema(
-                            rawSchema = mapOf(),
-                            rawToFinalColumnNames = mapOf(),
+                            inputSchema = mapOf(),
+                            inputToFinalColumnNames = mapOf(),
                             finalColumnSchema = mapOf(),
                         ),
                     importType = Append,
