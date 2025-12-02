@@ -20,7 +20,6 @@ import java.time.LocalTime
 import java.time.OffsetDateTime
 import java.time.OffsetTime
 import java.time.ZonedDateTime
-import java.time.format.DateTimeFormatter
 
 sealed interface AirbyteValue {
     val airbyteType: AirbyteType
