@@ -59,6 +59,7 @@ class PostgresRawAcceptanceTest :
         nullEqualsUnset = false,
         configUpdater = PostgresConfigUpdater(),
         recordMangler = PostgresExpectedRawRecordMapper,
+        useDataFlowPipeline = true,
     ) {
     companion object {
         @JvmStatic
@@ -66,10 +67,5 @@ class PostgresRawAcceptanceTest :
         fun beforeAll() {
             PostgresContainerHelper.start()
         }
-    }
-
-    @org.junit.jupiter.api.Test
-    override fun testBasicWrite() {
-        super.testBasicWrite()
     }
 }

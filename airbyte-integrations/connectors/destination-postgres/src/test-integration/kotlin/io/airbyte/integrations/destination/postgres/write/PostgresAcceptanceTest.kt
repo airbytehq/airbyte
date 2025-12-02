@@ -59,6 +59,7 @@ class PostgresAcceptanceTest :
         nullEqualsUnset = true,
         configUpdater = PostgresConfigUpdater(),
         recordMangler = PostgresTimestampNormalizationMapper,
+        useDataFlowPipeline = true,
     ) {
     companion object {
         @JvmStatic
