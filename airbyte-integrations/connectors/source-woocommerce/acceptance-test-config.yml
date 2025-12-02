@@ -18,7 +18,13 @@ acceptance_tests:
         backward_compatibility_tests_config:
           disable_for_version: "0.1.2"
   basic_read:
-    bypass_reason: "No valid WooCommerce test credentials configured in GCP Secret Manager"
+    tests:
+      - config_path: "secrets/config.json"
+        configured_catalog_path: "integration_tests/configured_catalog.json"
+        timeout_seconds: 3600
+        expect_records:
+          path: "integration_tests/expected_records.jsonl"
+        fail_on_extra_columns: false
   incremental:
     tests:
       - config_path: "secrets/config.json"
