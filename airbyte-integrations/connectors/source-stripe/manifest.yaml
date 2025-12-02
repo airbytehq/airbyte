@@ -1446,6 +1446,8 @@ definitions:
                 - lines
                 - data
               remain_original_record: true
+            record_filter:
+              condition: "{{ 'original_record' in record }}"
             transform_before_filtering: true
         schema_loader:
           type: InlineSchemaLoader
