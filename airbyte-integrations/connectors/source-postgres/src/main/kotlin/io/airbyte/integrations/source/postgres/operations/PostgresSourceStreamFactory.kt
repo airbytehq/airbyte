@@ -62,6 +62,7 @@ class PostgresSourceStreamFactory : JdbcAirbyteStreamFactory {
         )
     }
 
+    @Suppress("UNCHECKED_CAST")
     override fun decorateRecordData(
         timestamp: OffsetDateTime,
         globalStateValue: OpaqueStateValue?,
@@ -84,7 +85,6 @@ class PostgresSourceStreamFactory : JdbcAirbyteStreamFactory {
         val offset: DebeziumOffset =
             PostgresSourceDebeziumOperations.deserializeStateUnvalidated(globalStateValue)
         val position: PostgresSourceCdcPosition = PostgresSourceDebeziumOperations.position(offset)
-        @Suppress("UNCHECKED_CAST")
         recordData[PostgresSourceCdcMetaFields.CDC_LSN.id] =
             FieldValueEncoder(
                 position.lsn,
