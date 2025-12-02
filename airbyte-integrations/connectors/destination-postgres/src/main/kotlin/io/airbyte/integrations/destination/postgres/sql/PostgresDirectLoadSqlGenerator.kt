@@ -604,7 +604,7 @@ class PostgresDirectLoadSqlGenerator(
                     else -> "USING ${getName(newColumn)}::$newType"
                 }
             clauses.add(
-                "ALTER TABLE $fullyQualifiedTableName ALTER COLUMN ${getName(newColumn)} TYPE $newType $usingClause;"
+                "ALTER TABLE $fullyQualifiedTableName ALTER COLUMN ${getName(newColumn)} TYPE $newType $usingClause$dropTableSuffix;"
             )
         }
 

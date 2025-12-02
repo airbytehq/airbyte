@@ -1066,4 +1066,38 @@ internal class PostgresDirectLoadSqlGeneratorTest {
         assert(sql.contains("DROP COLUMN \"old_column1\" CASCADE"))
         assert(sql.contains("DROP COLUMN \"old_column2\" CASCADE"))
     }
+
+    @Test
+    fun testMatchSchemasModifyColumnsWithCascade() {
+        val cascadeConfig =
+            mockk<PostgresConfiguration> {
+                every { legacyRawTablesOnly } returns false
+                every { dropCascade } returns true
+            }
+        val cascadeColumnUtils = PostgresColumnUtils(cascadeConfig)
+        val cascadeSqlGenerator = PostgresDirectLoadSqlGenerator(cascadeColumnUtils, cascadeConfig)
+
+        val tableName = TableName(namespace = "test_schema", name = "test_table")
+        val columnsToAdd = emptySet<Column>()
+        val columnsToRemove = emptySet<Column>()
+        val columnsToModify = setOf(Column("modified_col", "jsonb"))
+        val columnsInDb = setOf(Column("modified_col", "varchar"))
+
+        val sql =
+            cascadeSqlGenerator.matchSchemas(
+                tableName,
+                columnsToAdd,
+                columnsToRemove,
+                columnsToModify,
+                columnsInDb,
+                recreatePrimaryKeyIndex = false,
+                primaryKeyColumnNames = emptyList(),
+                recreateCursorIndex = false,
+                cursorColumnName = null
+            )
+
+        assert(sql.contains("BEGIN TRANSACTION;"))
+        assert(sql.contains("COMMIT;"))
+        assert(sql.contains("ALTER COLUMN \"modified_col\" TYPE jsonb USING to_jsonb(\"modified_col\") CASCADE"))
+    }
 }
