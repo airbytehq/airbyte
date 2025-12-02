@@ -6,15 +6,13 @@ from pathlib import Path
 
 import pytest
 
-from pipelines.airbyte_ci.connectors.test.pipeline import _has_non_metadata_changes
-
 
 @pytest.mark.parametrize(
     "modified_files,expected_result",
     [
         pytest.param(
             frozenset([Path("/path/to/connector/metadata.yaml")]),
-            False,
+            True,
             id="only_metadata_yaml_changed",
         ),
         pytest.param(
@@ -24,7 +22,7 @@ from pipelines.airbyte_ci.connectors.test.pipeline import _has_non_metadata_chan
                     Path("/path/to/connector/src/main.py"),
                 ]
             ),
-            True,
+            False,
             id="multiple_files_including_metadata_yaml",
         ),
         pytest.param(
@@ -34,21 +32,23 @@ from pipelines.airbyte_ci.connectors.test.pipeline import _has_non_metadata_chan
                     Path("/path/to/connector/README.md"),
                 ]
             ),
-            True,
+            False,
             id="multiple_files_without_metadata_yaml",
         ),
         pytest.param(
             frozenset(),
-            False,
+            True,
             id="no_modified_files",
         ),
     ],
 )
-def test_has_non_metadata_changes(mocker, modified_files, expected_result):
-    """Test that _has_non_metadata_changes correctly identifies when non-metadata files are modified."""
-    context = mocker.Mock()
-    context.modified_files = modified_files
+def test_metadata_yaml_only_change(mocker, modified_files, expected_result):
+    """Test that metadata_yaml_only_change correctly identifies when only metadata.yaml is modified."""
+    from pipelines.airbyte_ci.connectors.test.context import ConnectorTestContext
 
-    result = _has_non_metadata_changes(context)
+    mock_context = mocker.Mock(spec=ConnectorTestContext)
+    mock_context.modified_files = modified_files
+
+    result = ConnectorTestContext.metadata_yaml_only_change.fget(mock_context)
 
     assert result == expected_result

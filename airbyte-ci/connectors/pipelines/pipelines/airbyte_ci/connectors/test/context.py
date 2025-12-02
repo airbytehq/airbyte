@@ -13,6 +13,7 @@ from pydash import find  # type: ignore
 from pipelines.airbyte_ci.connectors.consts import CONNECTOR_TEST_STEP_ID
 from pipelines.airbyte_ci.connectors.context import ConnectorContext
 from pipelines.helpers.execution.run_steps import RunStepOptions
+from pipelines.helpers.utils import METADATA_FILE_NAME
 from pipelines.models.secrets import Secret, SecretNotFoundError, SecretStore
 
 # These test suite names are declared in metadata.yaml files
@@ -33,6 +34,18 @@ class ConnectorTestContext(ConnectorContext):
         super().__init__(*args, **kwargs)
         self.run_step_options = self._skip_metadata_disabled_test_suites(self.run_step_options)
         self.step_id_to_secrets_mapping = self._get_step_id_to_secret_mapping()
+
+    @property
+    def metadata_yaml_only_change(self) -> bool:
+        """Check if the only modified file is metadata.yaml.
+
+        Returns:
+            bool: True if the only modified file is metadata.yaml, False otherwise.
+        """
+        for modified_file in self.modified_files:
+            if not str(modified_file).endswith(METADATA_FILE_NAME):
+                return False
+        return True
 
     @staticmethod
     def _handle_missing_secret_store(
