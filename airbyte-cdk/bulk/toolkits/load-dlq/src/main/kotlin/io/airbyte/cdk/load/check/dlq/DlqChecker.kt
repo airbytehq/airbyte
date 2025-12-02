@@ -18,6 +18,9 @@ import io.airbyte.cdk.load.file.StreamProcessor
 import io.airbyte.cdk.load.file.object_storage.ObjectStorageClient
 import io.airbyte.cdk.load.file.object_storage.ObjectStoragePathFactory
 import io.airbyte.cdk.load.file.object_storage.RemoteObject
+import io.airbyte.cdk.load.schema.model.ColumnSchema
+import io.airbyte.cdk.load.schema.model.StreamTableSchema
+import io.airbyte.cdk.load.schema.model.TableNames
 import io.airbyte.cdk.load.util.write
 import io.github.oshai.kotlinlogging.KotlinLogging
 import io.micronaut.context.BeanProvider
@@ -40,7 +43,13 @@ class DlqChecker(private val objectStorageClientProvider: BeanProvider<ObjectSto
             generationId = 1,
             minimumGenerationId = 0,
             syncId = 1,
-            namespaceMapper = NamespaceMapper()
+            namespaceMapper = NamespaceMapper(),
+            tableSchema =
+                StreamTableSchema(
+                    tableNames = TableNames(),
+                    columnSchema = ColumnSchema(mapOf(), mapOf(), mapOf()),
+                    importType = Append,
+                )
         )
 
     fun check(objectStorageConfig: ObjectStorageConfig) {

@@ -7,6 +7,7 @@ package io.airbyte.cdk.load.component
 import io.airbyte.cdk.load.command.Append
 import io.airbyte.cdk.load.command.Dedupe
 import io.airbyte.cdk.load.command.DestinationStream
+import io.airbyte.cdk.load.command.ImportType
 import io.airbyte.cdk.load.command.NamespaceMapper
 import io.airbyte.cdk.load.data.AirbyteValue
 import io.airbyte.cdk.load.data.ArrayType
@@ -765,6 +766,17 @@ object TableOperationsFixtures {
             syncId = syncId,
             schema = schema,
             namespaceMapper = NamespaceMapper(),
+            tableSchema =
+                StreamTableSchema(
+                    tableNames = TableNames(),
+                    columnSchema =
+                        ColumnSchema(
+                            inputSchema = schema.properties,
+                            inputToFinalColumnNames = mapOf(),
+                            finalSchema = mapOf(),
+                        ),
+                    importType = importType,
+                )
         )
 
     fun <V> List<Map<String, V>>.sortBy(key: String) =
