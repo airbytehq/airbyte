@@ -1,0 +1,12 @@
+{
+  "list": [
+    {
+      "event": {
+        "id": "ev_001",
+        "event_type": "subscription_created",
+        "occurred_at": 1705312800
+      }
+    }
+  ],
+  "next_offset": "offset_page_2"
+}

@@ -1,0 +1,14 @@
+{
+  "list": [
+    {
+      "addon": {
+        "id": "addon_001",
+        "name": "Test Addon",
+        "price": 500,
+        "type": "on_off",
+        "status": "active",
+        "updated_at": 1705312800
+      }
+    }
+  ]
+}

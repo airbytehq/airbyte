@@ -44,7 +44,7 @@ def config() -> ConfigBuilder:
 def read_output(
     config_builder: ConfigBuilder,
     stream_name: str,
-    sync_mode: SyncMode,
+    sync_mode: SyncMode = SyncMode.full_refresh,
     state: Optional[List[AirbyteStateMessage]] = None,
     expecting_exception: bool = False,
 ) -> EntrypointOutput:
