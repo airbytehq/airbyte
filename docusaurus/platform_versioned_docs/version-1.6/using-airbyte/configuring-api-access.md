@@ -11,7 +11,7 @@ The Airbyte API enables you to programmatically interact with Airbyte: create so
 
 Access to the API is controlled through application keys. Applications keys are tied to individual users and their respective permissions.
 
-# Prerequisites
+## Prerequisites
 
 <Tabs groupId="cloud-hosted">
   <TabItem value="cloud" label="Cloud">

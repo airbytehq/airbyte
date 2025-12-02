@@ -2,7 +2,7 @@
 
 This page guides you through the process of setting up the Kafka source connector.
 
-# Set up guide
+## Set up guide
 
 ## Step 1: Set up Kafka
 
