@@ -312,7 +312,14 @@ public class PostgresConverter implements CustomConverter<SchemaBuilder, Relatio
       case "TIME":
         return resolveTime(field, x);
       case "INTERVAL":
-        return convertInterval((PGInterval) x);
+        if (x instanceof PGInterval) {
+          return convertInterval((PGInterval) x);
+        } else if (x instanceof Number) {
+          return convertIntervalFromMicros(((Number) x).longValue());
+        } else {
+          LOGGER.warn("Unexpected INTERVAL value type: {}", x.getClass());
+          return x.toString();
+        }
       default:
         throw new IllegalArgumentException("Unknown field type  " + field.typeName().toUpperCase(Locale.ROOT));
     }
@@ -340,6 +347,25 @@ public class PostgresConverter implements CustomConverter<SchemaBuilder, Relatio
 
     formatTimeValues(resultInterval, pgInterval);
     return resultInterval.toString();
+  }
+
+  private String convertIntervalFromMicros(final long micros) {
+    final boolean negative = micros < 0;
+    final long absMicros = Math.abs(micros);
+
+    final long totalSeconds = absMicros / 1_000_000L;
+    final int days = (int) (totalSeconds / 86_400L);
+    final int hours = (int) ((totalSeconds % 86_400L) / 3_600L);
+    final int minutes = (int) ((totalSeconds % 3_600L) / 60L);
+    final int seconds = (int) (totalSeconds % 60L);
+
+    final PGInterval interval = new PGInterval(0, 0,
+        negative ? -days : days,
+        negative ? -hours : hours,
+        negative ? -minutes : minutes,
+        negative ? -seconds : seconds);
+
+    return convertInterval(interval);
   }
 
   private void registerMoney(final RelationalColumn field, final ConverterRegistration<SchemaBuilder> registration) {
