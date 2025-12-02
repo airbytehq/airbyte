@@ -6,12 +6,21 @@ package io.airbyte.cdk.load.component
 
 import io.airbyte.cdk.load.command.DestinationStream
 import io.airbyte.cdk.load.component.TableOperationsFixtures.createAppendStream
+import io.airbyte.cdk.load.component.TableOperationsFixtures.inputRecord
 import io.airbyte.cdk.load.component.TableOperationsFixtures.insertRecords
 import io.airbyte.cdk.load.component.TableOperationsFixtures.removeAirbyteColumns
+import io.airbyte.cdk.load.component.TableOperationsFixtures.removeNulls
+import io.airbyte.cdk.load.component.TableOperationsFixtures.reverseColumnNameMapping
 import io.airbyte.cdk.load.data.AirbyteValue
+import io.airbyte.cdk.load.data.EnrichedAirbyteValue
+import io.airbyte.cdk.load.data.FieldType
+import io.airbyte.cdk.load.data.NullValue
 import io.airbyte.cdk.load.data.ObjectType
+import io.airbyte.cdk.load.dataflow.transform.ValidationResult
+import io.airbyte.cdk.load.dataflow.transform.ValueCoercer
 import io.airbyte.cdk.load.table.ColumnNameMapping
 import io.airbyte.cdk.load.table.TableName
+import io.airbyte.protocol.models.v0.AirbyteRecordMessageMetaChange.Reason
 import io.github.oshai.kotlinlogging.KotlinLogging
 import org.junit.jupiter.api.Assertions.assertEquals
 
@@ -110,5 +119,72 @@ class TableOperationsTestHarness(
     suspend fun readTableWithoutMetaColumns(tableName: TableName): List<Map<String, Any>> {
         val tableRead = testClient.readTable(tableName)
         return tableRead.removeAirbyteColumns(airbyteMetaColumnMapping)
+    }
+
+    /** Apply the coercer to a value and verify that we can write the coerced value correctly */
+    suspend fun testValueCoercion(
+        coercer: ValueCoercer,
+        columnNameMapping: ColumnNameMapping,
+        fieldType: FieldType,
+        inputValue: AirbyteValue,
+        expectedValue: Any?,
+        expectedChangeReason: Reason?,
+    ) {
+        val testNamespace = TableOperationsFixtures.generateTestNamespace("test")
+        val tableName =
+            TableOperationsFixtures.generateTestTableName("table-test-table", testNamespace)
+        val schema = ObjectType(linkedMapOf("test" to fieldType))
+        val stream =
+            createAppendStream(
+                tableName.namespace,
+                tableName.name,
+                schema,
+            )
+
+        val inputValueAsEnrichedAirbyteValue =
+            EnrichedAirbyteValue(
+                inputValue,
+                fieldType.type,
+                "test",
+                airbyteMetaField = null,
+            )
+        val validatedValue = coercer.validate(inputValueAsEnrichedAirbyteValue)
+        val valueToInsert: AirbyteValue
+        val changeReason: Reason?
+        when (validatedValue) {
+            is ValidationResult.ShouldNullify -> {
+                valueToInsert = NullValue
+                changeReason = validatedValue.reason
+            }
+            is ValidationResult.ShouldTruncate -> {
+                valueToInsert = validatedValue.truncatedValue
+                changeReason = validatedValue.reason
+            }
+            ValidationResult.Valid -> {
+                valueToInsert = inputValue
+                changeReason = null
+            }
+        }
+
+        client.createNamespace(testNamespace)
+        client.createTable(stream, tableName, columnNameMapping, replace = false)
+        testClient.insertRecords(
+            tableName,
+            columnNameMapping,
+            inputRecord("test" to valueToInsert),
+        )
+
+        val actualRecords =
+            testClient
+                .readTable(tableName)
+                .removeAirbyteColumns(airbyteMetaColumnMapping)
+                .reverseColumnNameMapping(columnNameMapping, airbyteMetaColumnMapping)
+                .removeNulls()
+        assertEquals(
+            listOf(mapOf("test" to expectedValue)).removeNulls(),
+            actualRecords,
+            "For input $inputValue, expected $expectedValue. Coercer output was $validatedValue.",
+        )
+        assertEquals(expectedChangeReason, changeReason)
     }
 }
