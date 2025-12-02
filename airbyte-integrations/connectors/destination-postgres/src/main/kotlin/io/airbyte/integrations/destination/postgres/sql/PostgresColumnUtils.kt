@@ -42,6 +42,7 @@ class PostgresColumnUtils(private val postgresConfiguration: PostgresConfigurati
     companion object {
         private const val CURSOR_INDEX_PREFIX = "idx_cursor_"
         private const val PRIMARY_KEY_INDEX_PREFIX = "idx_pk_"
+        private const val EXTRACTED_AT_INDEX_PREFIX = "idx_extracted_at_"
         // Default columns that are always present in both raw and typed tables.
         private val DEFAULT_COLUMNS =
             listOf(
@@ -205,6 +206,9 @@ class PostgresColumnUtils(private val postgresConfiguration: PostgresConfigurati
 
     internal fun getPrimaryKeyIndexName(tableName: TableName): String =
         PRIMARY_KEY_INDEX_PREFIX + tableName.name
+
+    internal fun getExtractedAtIndexName(tableName: TableName): String =
+        EXTRACTED_AT_INDEX_PREFIX + tableName.name
 }
 
 data class Column(val columnName: String, val columnTypeName: String, val nullable: Boolean = true)

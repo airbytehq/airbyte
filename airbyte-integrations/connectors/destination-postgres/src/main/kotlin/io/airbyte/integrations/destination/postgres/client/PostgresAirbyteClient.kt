@@ -76,7 +76,25 @@ class PostgresAirbyteClient(
         columnNameMapping: ColumnNameMapping,
         replace: Boolean
     ) {
-        execute(sqlGenerator.createTable(stream, tableName, columnNameMapping, replace))
+        val (createTableSql, createIndexesSql) =
+            sqlGenerator.createTable(stream, tableName, columnNameMapping, replace)
+        execute(createTableSql)
+        try {
+            execute(createIndexesSql)
+        } catch (e: org.postgresql.util.PSQLException) {
+            // Handle race condition when multiple connections try to create indexes with the same
+            // truncated name (PostgreSQL truncates identifiers to 63 characters)
+            if (
+                e.message?.contains("pg_class_relname_nsp_index") == true ||
+                    e.message?.contains("already exists") == true
+            ) {
+                log.debug(e) {
+                    "Index already exists for table ${tableName.namespace}.${tableName.name} (race condition), ignoring error"
+                }
+            } else {
+                throw e
+            }
+        }
     }
 
     override suspend fun overwriteTable(sourceTableName: TableName, targetTableName: TableName) {

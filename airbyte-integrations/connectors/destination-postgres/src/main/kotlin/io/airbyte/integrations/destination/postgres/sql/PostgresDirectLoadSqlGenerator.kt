@@ -36,12 +36,18 @@ class PostgresDirectLoadSqlGenerator(
         private fun quoteIdentifier(identifier: String) = "\"${identifier}\""
     }
 
+    /**
+     * Returns a pair of (createTableSql, createIndexesSql).
+     * The table creation is wrapped in a transaction while indexes are created separately
+     * to handle potential race conditions when multiple streams create indexes with similar
+     * truncated names.
+     */
     fun createTable(
         stream: DestinationStream,
         tableName: TableName,
         columnNameMapping: ColumnNameMapping,
         replace: Boolean
-    ): String {
+    ): Pair<String, String> {
         val columnDeclarations =
             postgresColumnUtils.getTargetColumns(stream, columnNameMapping).joinToString(",\n") {
                 it.toSQLString()
@@ -49,16 +55,17 @@ class PostgresDirectLoadSqlGenerator(
         val dropTableIfExistsStatement =
             if (replace) "DROP TABLE IF EXISTS ${getFullyQualifiedName(tableName)}$dropTableSuffix;"
             else ""
-        val createIndexesStatement = createIndexes(stream, tableName, columnNameMapping)
-        return """
+        val createTableSql =
+            """
             BEGIN TRANSACTION;
             $dropTableIfExistsStatement
-            CREATE TABLE ${getFullyQualifiedName(tableName)} (
+            CREATE TABLE IF NOT EXISTS ${getFullyQualifiedName(tableName)} (
                 $columnDeclarations
             );
-            $createIndexesStatement
             COMMIT;
             """
+        val createIndexesSql = createIndexes(stream, tableName, columnNameMapping)
+        return Pair(createTableSql, createIndexesSql)
     }
 
     /**
@@ -80,7 +87,7 @@ class PostgresDirectLoadSqlGenerator(
         val cursorColumnName = getCursorColumnName(stream, columnNameMapping)
         val cursorIndexStatement = createCursorIndexStatement(cursorColumnName, tableName)
         val extractedAtIndexStatement =
-            "CREATE INDEX ON ${getFullyQualifiedName(tableName)} ($EXTRACTED_AT_COLUMN_NAME);"
+            "CREATE INDEX IF NOT EXISTS ${getExtractedAtIndexName(tableName)} ON ${getFullyQualifiedName(tableName)} ($EXTRACTED_AT_COLUMN_NAME);"
 
         return """
             $primaryKeyIndexStatement
@@ -144,7 +151,7 @@ class PostgresDirectLoadSqlGenerator(
         return primaryKeyColumnNames
             .takeIf { it.isNotEmpty() }
             ?.let {
-                "CREATE INDEX ${getPrimaryKeyIndexName(tableName)} ON ${getFullyQualifiedName(tableName)} (${it.joinToString(", ")});"
+                "CREATE INDEX IF NOT EXISTS ${getPrimaryKeyIndexName(tableName)} ON ${getFullyQualifiedName(tableName)} (${it.joinToString(", ")});"
             }
             ?: ""
     }
@@ -165,7 +172,7 @@ class PostgresDirectLoadSqlGenerator(
         tableName: TableName
     ): String {
         return cursorColumnName?.let {
-            "CREATE INDEX ${getCursorIndexName(tableName)} ON ${getFullyQualifiedName(tableName)} ($it);"
+            "CREATE INDEX IF NOT EXISTS ${getCursorIndexName(tableName)} ON ${getFullyQualifiedName(tableName)} ($it);"
         }
             ?: ""
     }
@@ -175,6 +182,9 @@ class PostgresDirectLoadSqlGenerator(
 
     private fun getCursorIndexName(tableName: TableName): String =
         quoteIdentifier(postgresColumnUtils.getCursorIndexName(tableName))
+
+    private fun getExtractedAtIndexName(tableName: TableName): String =
+        quoteIdentifier(postgresColumnUtils.getExtractedAtIndexName(tableName))
 
     fun overwriteTable(sourceTableName: TableName, targetTableName: TableName): String {
         return """
