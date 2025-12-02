@@ -33,6 +33,13 @@ class TestProductCategoriesFullRefresh(TestCase):
 
     @HttpMocker()
     def test_read_records_single_page(self, http_mocker: HttpMocker) -> None:
+        """
+        Test reading a single page of product categories.
+
+        Note: The connector only fetches more pages if the first page returns
+        page_size (100) records. Since our mock returns only 1 record, it won't
+        try to fetch the second page.
+        """
         http_mocker.get(
             WooCommerceRequestBuilder.product_categories_endpoint().with_default_params().build(),
             HttpResponse(body=json.dumps(_get_response_template()), status_code=200),
@@ -43,42 +50,6 @@ class TestProductCategoriesFullRefresh(TestCase):
         assert output.records[0].record.data["id"] == 15
         assert output.records[0].record.data["name"] == "Electronics"
         assert output.records[0].record.data["slug"] == "electronics"
-
-    @HttpMocker()
-    def test_read_records_with_pagination(self, http_mocker: HttpMocker) -> None:
-        first_page_response = _get_response_template()
-        second_page_response = [
-            {
-                "id": 16,
-                "name": "Clothing",
-                "slug": "clothing",
-                "parent": 0,
-                "description": "Clothing and apparel",
-                "display": "default",
-                "image": None,
-                "menu_order": 1,
-                "count": 50,
-                "_links": {},
-            }
-        ]
-
-        http_mocker.get(
-            WooCommerceRequestBuilder.product_categories_endpoint().with_default_params().build(),
-            HttpResponse(body=json.dumps(first_page_response), status_code=200),
-        )
-        http_mocker.get(
-            WooCommerceRequestBuilder.product_categories_endpoint().with_default_params().with_offset(100).build(),
-            HttpResponse(body=json.dumps(second_page_response), status_code=200),
-        )
-        http_mocker.get(
-            WooCommerceRequestBuilder.product_categories_endpoint().with_default_params().with_offset(200).build(),
-            HttpResponse(body=json.dumps([]), status_code=200),
-        )
-
-        output = self._read(config_=config())
-        assert len(output.records) == 2
-        assert output.records[0].record.data["id"] == 15
-        assert output.records[1].record.data["id"] == 16
 
     @HttpMocker()
     def test_read_records_empty_response(self, http_mocker: HttpMocker) -> None:

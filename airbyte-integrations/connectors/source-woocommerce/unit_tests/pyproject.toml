@@ -7,6 +7,7 @@ name = "source-woocommerce-tests"
 version = "0.0.0"
 description = "Unit tests for source-woocommerce"
 authors = ["Airbyte <contact@airbyte.io>"]
+package-mode = false
 
 [tool.poetry.dependencies]
 python = "^3.10,<3.13"
