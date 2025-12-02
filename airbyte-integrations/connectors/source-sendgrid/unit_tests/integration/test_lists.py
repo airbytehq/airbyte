@@ -11,8 +11,8 @@ from airbyte_cdk.models import SyncMode
 from airbyte_cdk.test.catalog_builder import CatalogBuilder
 from airbyte_cdk.test.entrypoint_wrapper import read
 from airbyte_cdk.test.mock_http import HttpMocker, HttpRequest, HttpResponse
-
 from unit_tests.conftest import get_source
+
 from .config import ConfigBuilder
 
 
@@ -66,12 +66,10 @@ class TestListsStream:
                         "id": "list-1",
                         "name": "List 1",
                         "contact_count": 100,
-                        "_metadata": {"self": "https://api.sendgrid.com/v3/marketing/lists/list-1"}
+                        "_metadata": {"self": "https://api.sendgrid.com/v3/marketing/lists/list-1"},
                     }
                 ],
-                "_metadata": {
-                    "next": "https://api.sendgrid.com/v3/marketing/lists?page_token=token123&page_size=1000"
-                }
+                "_metadata": {"next": "https://api.sendgrid.com/v3/marketing/lists?page_token=token123&page_size=1000"},
             }
             http_mocker.get(
                 HttpRequest(

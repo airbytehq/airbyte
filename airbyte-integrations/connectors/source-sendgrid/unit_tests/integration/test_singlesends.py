@@ -11,8 +11,8 @@ from airbyte_cdk.models import SyncMode
 from airbyte_cdk.test.catalog_builder import CatalogBuilder
 from airbyte_cdk.test.entrypoint_wrapper import read
 from airbyte_cdk.test.mock_http import HttpMocker, HttpRequest, HttpResponse
-
 from unit_tests.conftest import get_source
+
 from .config import ConfigBuilder
 
 
@@ -69,12 +69,10 @@ class TestSinglesendsStream:
                         "send_at": None,
                         "is_abtest": False,
                         "created_at": "2024-01-01T00:00:00Z",
-                        "updated_at": "2024-01-01T00:00:00Z"
+                        "updated_at": "2024-01-01T00:00:00Z",
                     }
                 ],
-                "_metadata": {
-                    "next": "https://api.sendgrid.com/v3/marketing/singlesends?page_token=token123&page_size=100"
-                }
+                "_metadata": {"next": "https://api.sendgrid.com/v3/marketing/singlesends?page_token=token123&page_size=100"},
             }
             http_mocker.get(
                 HttpRequest(

@@ -11,8 +11,8 @@ from airbyte_cdk.models import SyncMode
 from airbyte_cdk.test.catalog_builder import CatalogBuilder
 from airbyte_cdk.test.entrypoint_wrapper import read
 from airbyte_cdk.test.mock_http import HttpMocker, HttpRequest, HttpResponse
-
 from unit_tests.conftest import get_source
+
 from .config import ConfigBuilder
 
 
@@ -69,12 +69,10 @@ class TestTemplatesStream:
                         "name": "First Template",
                         "generation": "dynamic",
                         "updated_at": "2024-01-01T00:00:00Z",
-                        "versions": []
+                        "versions": [],
                     }
                 ],
-                "_metadata": {
-                    "next": "https://api.sendgrid.com/v3/templates?page_token=token123&page_size=200&generations=legacy,dynamic"
-                }
+                "_metadata": {"next": "https://api.sendgrid.com/v3/templates?page_token=token123&page_size=200&generations=legacy,dynamic"},
             }
             http_mocker.get(
                 HttpRequest(
