@@ -1423,16 +1423,25 @@ abstract class BaseTypingDedupingTest {
                     .AirbyteMessage()
                     .withType(io.airbyte.protocol.models.AirbyteMessage.Type.TRACE)
                     .withTrace(
-                        AirbyteTraceMessage()
-                            .withType(AirbyteTraceMessage.Type.STREAM_STATUS)
+                        io.airbyte.protocol.models
+                            .AirbyteTraceMessage()
+                            .withType(
+                                io.airbyte.protocol.models.AirbyteTraceMessage.Type.STREAM_STATUS
+                            )
                             .withStreamStatus(
-                                AirbyteStreamStatusTraceMessage()
+                                io.airbyte.protocol.models
+                                    .AirbyteStreamStatusTraceMessage()
                                     .withStreamDescriptor(
-                                        StreamDescriptor()
+                                        io.airbyte.protocol.models
+                                            .StreamDescriptor()
                                             .withNamespace(it.stream.namespace)
                                             .withName(it.stream.name),
                                     )
-                                    .withStatus(streamStatus),
+                                    .withStatus(
+                                        io.airbyte.protocol.models.AirbyteStreamStatusTraceMessage
+                                            .AirbyteStreamStatus
+                                            .valueOf(streamStatus.name)
+                                    ),
                             ),
                     ),
             )
@@ -1509,7 +1518,12 @@ abstract class BaseTypingDedupingTest {
         val destinationConfig =
             WorkerDestinationConfig()
                 .withConnectionId(UUID.randomUUID())
-                .withCatalog(convertProtocolObject(catalog, ConfiguredAirbyteCatalog::class.java))
+                .withCatalog(
+                    convertProtocolObject(
+                        catalog,
+                        io.airbyte.protocol.models.ConfiguredAirbyteCatalog::class.java
+                    )
+                )
                 .withDestinationConnectionConfiguration(transformedConfig)
         val destination: AirbyteDestination =
             DefaultAirbyteDestination(
