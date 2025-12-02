@@ -77,10 +77,18 @@ class RequestBuilder:
     def contacts_export_status_endpoint(cls, export_id: str) -> "RequestBuilder":
         return cls(resource=f"v3/marketing/contacts/exports/{export_id}")
 
+    @classmethod
+    def contacts_download_endpoint(cls, download_url: str) -> "RequestBuilder":
+        """Create a request builder for the contacts download URL (external S3/storage URL)"""
+        builder = cls()
+        builder._full_url = download_url
+        return builder
+
     def __init__(self, resource: str = "") -> None:
         self._resource = resource
         self._query_params: Dict[str, Any] = {}
         self._any_query_params = False
+        self._full_url: Optional[str] = None
 
     def with_query_param(self, key: str, value: Any) -> "RequestBuilder":
         self._query_params[key] = value
@@ -113,7 +121,9 @@ class RequestBuilder:
 
     def build(self) -> HttpRequest:
         query_params = ANY_QUERY_PARAMS if self._any_query_params else (self._query_params if self._query_params else None)
+        # Use full URL if set (for external URLs like S3 download), otherwise build from base + resource
+        url = self._full_url if self._full_url else f"{API_BASE_URL}/{self._resource}"
         return HttpRequest(
-            url=f"{API_BASE_URL}/{self._resource}",
+            url=url,
             query_params=query_params,
         )

@@ -13,6 +13,8 @@ from airbyte_cdk.test.mock_http import HttpMocker
 from .config import ConfigBuilder
 from .request_builder import RequestBuilder
 from .response_builder import (
+    CONTACTS_DOWNLOAD_URL,
+    contacts_download_response,
     contacts_export_create_response,
     contacts_export_status_response,
     error_response,
@@ -65,15 +67,18 @@ class TestContactsStream(TestCase):
             contacts_export_status_response(
                 export_id=export_id,
                 status="ready",
-                urls=["https://sendgrid-contacts-export.s3.amazonaws.com/contacts.json"],
+                urls=[CONTACTS_DOWNLOAD_URL],
             ),
         )
 
-        # Note: The actual download of contacts data from S3 URLs would require
-        # additional mocking. For this test, we verify the export flow works.
-        output = _read(config_builder=config(), expecting_exception=True)
-        # The test may fail at the S3 download step, but the export flow is tested
-        assert output is not None
+        # Mock the download endpoint - returns gzipped CSV data
+        http_mocker.get(
+            RequestBuilder.contacts_download_endpoint(CONTACTS_DOWNLOAD_URL).build(),
+            contacts_download_response(),
+        )
+
+        output = _read(config_builder=config())
+        assert len(output.records) >= 1
 
     @HttpMocker()
     def test_export_pending_then_ready(self, http_mocker: HttpMocker) -> None:
@@ -94,13 +99,19 @@ class TestContactsStream(TestCase):
                 contacts_export_status_response(
                     export_id=export_id,
                     status="ready",
-                    urls=["https://sendgrid-contacts-export.s3.amazonaws.com/contacts.json"],
+                    urls=[CONTACTS_DOWNLOAD_URL],
                 ),
             ],
         )
 
-        output = _read(config_builder=config(), expecting_exception=True)
-        assert output is not None
+        # Mock the download endpoint - returns gzipped CSV data
+        http_mocker.get(
+            RequestBuilder.contacts_download_endpoint(CONTACTS_DOWNLOAD_URL).build(),
+            contacts_download_response(),
+        )
+
+        output = _read(config_builder=config())
+        assert len(output.records) >= 1
 
 
 @freezegun.freeze_time("2024-01-31T00:00:00Z")

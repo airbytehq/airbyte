@@ -322,17 +322,64 @@ def contacts_export_create_response(export_id: str = "export-id-123") -> HttpRes
 
 
 def contacts_export_status_response(
+    export_id: str = "export-id-123",
     status: str = "ready",
     urls: Optional[List[str]] = None,
 ) -> HttpResponse:
     if urls is None:
-        urls = ["https://sendgrid-contacts-export.s3.amazonaws.com/export-file.csv.gz"]
+        urls = ["https://mock-sendgrid-export.test/contacts-export.csv.gz"]
     body = {
-        "id": "export-id-123",
+        "id": export_id,
         "status": status,
         "urls": urls if status == "ready" else [],
     }
     return build_response(body=body, status_code=HTTPStatus.OK)
+
+
+# Mock download URL for contacts export - must match the URL returned in contacts_export_status_response
+CONTACTS_DOWNLOAD_URL = "https://mock-sendgrid-export.test/contacts-export.csv.gz"
+
+
+def contacts_download_response(
+    records: Optional[List[Dict[str, Any]]] = None,
+) -> HttpResponse:
+    """
+    Returns a gzipped CSV response for the contacts download endpoint.
+    The contacts stream uses GzipDecoder + CsvDecoder, so we need to return
+    properly formatted gzipped CSV data.
+    """
+    import gzip
+    import io
+
+    if records is None:
+        records = [
+            {
+                "contact_id": "contact-123",
+                "email": "test@example.com",
+                "first_name": "Test",
+                "last_name": "User",
+                "created_at": "2024-01-01T00:00:00Z",
+                "updated_at": "2024-01-15T00:00:00Z",
+            }
+        ]
+
+    # Convert records to CSV format
+    if records:
+        headers = list(records[0].keys())
+        csv_lines = [",".join(headers)]
+        for record in records:
+            csv_lines.append(",".join(str(record.get(h, "")) for h in headers))
+        csv_content = "\n".join(csv_lines)
+    else:
+        csv_content = ""
+
+    # Gzip the CSV content
+    buffer = io.BytesIO()
+    with gzip.GzipFile(fileobj=buffer, mode="wb") as gz:
+        gz.write(csv_content.encode("utf-8"))
+    gzipped_content = buffer.getvalue()
+
+    return HttpResponse(body=gzipped_content, status_code=HTTPStatus.OK.value, headers={"Content-Type": "application/gzip"})
 
 
 def empty_response() -> HttpResponse:
