@@ -265,6 +265,8 @@ class PostgresAirbyteClient(
      * differ from the type names used in DDL statements and internal representations:
      * - "character varying" -> "varchar"
      * - "numeric" -> "decimal"
+     * - "timestamp without time zone" -> "timestamp"
+     * - "time without time zone" -> "time"
      * - "timestamp with time zone" -> "timestamp with time zone" (no change)
      * - etc.
      */
@@ -272,6 +274,8 @@ class PostgresAirbyteClient(
         when (postgresType) {
             "character varying" -> "varchar"
             "numeric" -> "decimal"
+            "timestamp without time zone" -> "timestamp"
+            "time without time zone" -> "time"
             else -> postgresType
         }
 
