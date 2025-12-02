@@ -7,10 +7,11 @@ import sys
 from pathlib import Path
 from typing import Any, Mapping
 
+from pytest import fixture
+
 from airbyte_cdk.sources.declarative.yaml_declarative_source import YamlDeclarativeSource
 from airbyte_cdk.test.catalog_builder import CatalogBuilder
 from airbyte_cdk.test.state_builder import StateBuilder
-from pytest import fixture
 
 
 pytest_plugins = ["airbyte_cdk.test.utils.manifest_only_fixtures"]
