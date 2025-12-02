@@ -42,10 +42,14 @@ internal suspend fun <T> bigQueryCall(block: () -> T): T =
             block()
         } catch (e: InterruptedException) {
             // Direct InterruptedException (e.g., from Thread.sleep in polling loops)
+            // Restore the interrupt status before converting to CancellationException
+            Thread.currentThread().interrupt()
             throw CancellationException("Interrupted during BigQuery call", e)
         } catch (e: BigQueryException) {
             // BigQuery SDK wraps InterruptedException in BigQueryException
             if (e.cause is InterruptedException) {
+                // Restore the interrupt status before converting to CancellationException
+                Thread.currentThread().interrupt()
                 throw CancellationException("BigQuery call was interrupted", e)
             }
             throw e
