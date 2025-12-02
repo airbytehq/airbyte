@@ -150,28 +150,6 @@ const buildAConnector = {
   ],
 };
 
-const contributeToAirbyte = {
-  type: "category",
-  label: "Contribute to Airbyte",
-  link: {
-    type: "doc",
-    id: "contributing-to-airbyte/README",
-  },
-  items: [
-    "contributing-to-airbyte/issues-and-requests",
-    "contributing-to-airbyte/developing-locally",
-    "contributing-to-airbyte/writing-docs",
-    {
-      type: "category",
-      label: "Resources",
-      items: [
-        "contributing-to-airbyte/resources/pull-requests-handbook",
-        "contributing-to-airbyte/resources/qa-checks",
-      ],
-    },
-  ],
-};
-
 const deployAirbyte = {
   type: "category",
   label: "Deploy Airbyte",
@@ -467,7 +445,6 @@ module.exports = {
           },
           items: [
             "enterprise-setup/implementation-guide",
-            "enterprise-setup/api-access-config",
             "enterprise-setup/multi-region",
             "enterprise-setup/audit-logging",
             "enterprise-setup/scaling-airbyte",
@@ -550,7 +527,6 @@ module.exports = {
           type: "category",
           label: "Integrating with Airbyte",
           items: [
-            "using-airbyte/configuring-api-access",
             "operator-guides/using-the-airflow-airbyte-operator",
             "operator-guides/using-prefect-task",
             "operator-guides/using-dagster-integration",
@@ -558,45 +534,9 @@ module.exports = {
             "operator-guides/using-orchestra-task",
           ],
         },
-        sectionHeader("Developer guides"),
-        {
-          type: "doc",
-          id: "api-documentation",
-        },
-        {
-          type: "doc",
-          id: "terraform-documentation",
-        },
-        {
-          type: "doc",
-          label: "Using PyAirbyte",
-          id: "using-airbyte/pyairbyte/getting-started",
-        },
+        sectionHeader("Advanced"),
+        "using-airbyte/configuring-api-access",
         understandingAirbyte,
-        {
-          type: "category",
-          label: "Licenses",
-          link: {
-            type: "doc",
-            id: "developer-guides/licenses/README",
-          },
-          items: [
-            "developer-guides/licenses/license-faq",
-            "developer-guides/licenses/elv2-license",
-            "developer-guides/licenses/mit-license",
-            "developer-guides/licenses/examples",
-          ],
-        },
-        sectionHeader("Community"),
-        contributeToAirbyte,
-        "community/getting-support",
-        "community/code-of-conduct",
-        sectionHeader("Product updates"),
-        {
-          type: "link",
-          label: "Roadmap",
-          href: "https://go.airbyte.com/roadmap",
-        },
       ],
     },
   ],

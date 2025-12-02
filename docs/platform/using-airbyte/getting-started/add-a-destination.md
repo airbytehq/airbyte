@@ -23,7 +23,7 @@ Add a new destination connector to Airbyte.
 
 5. Click **Set up destination**. Airbyte tests the destination to ensure it can make a connection. Once the test completes, Airbyte takes you to that connector's Connections page, which is empty at this point.
 
-<Arcade id="qeqpYHmsne7855bFou5Z" title="Set up a new source" paddingBottom="calc(50%)" />
+<Navattic id="cmhfhih81000204la4795erqd" />
 
 ## Modify a destination connector
 
@@ -62,6 +62,6 @@ Connectors are reusable. In most cases, you only need to set up the connector on
 Airbyte has other options to manage connectors, too.
 
 - [Airbyte API](https://reference.airbyte.com/reference/createdestination#/)
-- [Terraform](../../terraform-documentation)
+- [Terraform](/developers/terraform-documentation)
 
 In these cases, you can speed up the process by entering your values into the UI, then clicking the **Copy JSON** button. This copies your configuration as a JSON string that you can paste into your code.

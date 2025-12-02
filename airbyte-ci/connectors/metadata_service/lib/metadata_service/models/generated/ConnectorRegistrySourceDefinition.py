@@ -98,7 +98,7 @@ class StreamBreakingChangeScope(BaseModel):
     class Config:
         extra = Extra.forbid
 
-    scopeType: Any = Field("stream", const=True)
+    scopeType: str = Field("stream", const=True)
     impactedScopes: List[str] = Field(
         ...,
         description="List of streams that are impacted by the breaking change.",
@@ -135,16 +135,6 @@ class AirbyteInternal(BaseModel):
         True,
         description="When false, version increment checks will be skipped for this connector",
     )
-
-
-class ConnectorIPCDataChannel(BaseModel):
-    version: str = Field(..., description="Version of the data channel specification")
-    supportedSerialization: List[Literal["JSONL", "PROTOBUF", "FLATBUFFERS"]]
-    supportedTransport: List[Literal["STDIO", "SOCKET"]]
-
-
-class ConnectorIPCOptions(BaseModel):
-    dataChannel: ConnectorIPCDataChannel
 
 
 class GitInfo(BaseModel):
@@ -404,10 +394,6 @@ class ConnectorRegistryDestinationDefinition(BaseModel):
     supportsRefreshes: Optional[bool] = False
     supportsFileTransfer: Optional[bool] = False
     supportsDataActivation: Optional[bool] = False
-    connectorIPCOptions: Optional[ConnectorIPCOptions] = Field(
-            None,
-            description="Advanced options related to connector's inter-process communication"
-        )
     generated: Optional[GeneratedFields] = None
     packageInfo: Optional[ConnectorPackageInfo] = None
     language: Optional[str] = Field(

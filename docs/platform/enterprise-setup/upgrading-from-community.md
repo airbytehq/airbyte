@@ -55,8 +55,7 @@ Update your `values.yaml` file as explained in the [Self-Managed Enterprise impl
     helm upgrade airbyte airbyte-v2/airbyte \
       --namespace airbyte-v2 \       # Target Kubernetes namespace
       --values ./values.yaml \       # Custom configuration values
-      --version 2.0.3 \              # Helm chart version to use
-      --set global.image.tag=1.7.0   # Airbyte version to use
+      --version 2.x.x                # Helm chart version to use
     ```
 
     </TabItem>
