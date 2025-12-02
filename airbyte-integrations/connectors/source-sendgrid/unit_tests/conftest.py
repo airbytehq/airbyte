@@ -10,6 +10,7 @@ from airbyte_cdk.sources.declarative.yaml_declarative_source import YamlDeclarat
 from airbyte_cdk.test.catalog_builder import CatalogBuilder
 from airbyte_cdk.test.state_builder import StateBuilder
 
+
 pytest_plugins = ["airbyte_cdk.test.utils.manifest_only_fixtures"]
 os.environ["REQUEST_CACHE_PATH"] = "REQUEST_CACHE_PATH"
 
@@ -29,12 +30,7 @@ sys.path.append(str(_SOURCE_FOLDER_PATH))
 def get_source(config, state=None) -> YamlDeclarativeSource:
     catalog = CatalogBuilder().build()
     state = StateBuilder().build() if not state else state
-    return YamlDeclarativeSource(
-        path_to_yaml=str(_YAML_FILE_PATH),
-        catalog=catalog,
-        config=config,
-        state=state
-    )
+    return YamlDeclarativeSource(path_to_yaml=str(_YAML_FILE_PATH), catalog=catalog, config=config, state=state)
 
 
 @fixture(autouse=True)
