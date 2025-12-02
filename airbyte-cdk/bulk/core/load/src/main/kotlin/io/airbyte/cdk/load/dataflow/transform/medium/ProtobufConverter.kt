@@ -40,6 +40,7 @@ import io.airbyte.cdk.load.data.UnknownType
 import io.airbyte.cdk.load.data.json.toAirbyteValue
 import io.airbyte.cdk.load.dataflow.transform.ColumnNameMapper
 import io.airbyte.cdk.load.dataflow.transform.ValueCoercer
+import io.airbyte.cdk.load.dataflow.transform.data.ValidationResultHandler
 import io.airbyte.cdk.load.dataflow.transform.defaults.NoOpColumnNameMapper
 import io.airbyte.cdk.load.message.DestinationRecordProtobufSource
 import io.airbyte.cdk.load.message.DestinationRecordRaw
@@ -67,7 +68,8 @@ import javax.inject.Singleton
 class ProtobufConverter(
     private val columnNameMapper: ColumnNameMapper,
     private val coercer: ValueCoercer,
-) {
+    private val validationResultHandler: ValidationResultHandler,
+) : MediumConverter {
 
     private val isNoOpMapper = columnNameMapper is NoOpColumnNameMapper
     private val decoder = AirbyteValueProtobufDecoder()
@@ -91,21 +93,16 @@ class ProtobufConverter(
         }
     }
 
-    /**
-     * Converts protobuf data to a complete map of AirbyteValue including metadata fields. This
-     * method handles both data fields and metadata fields in one operation.
-     *
-     * @param msg The destination record raw containing stream information
-     * @param source The protobuf source containing data and metadata
-     * @return Map of column names to AirbyteValue including all metadata fields
-     */
-    fun convert(
-        msg: DestinationRecordRaw,
-        source: DestinationRecordProtobufSource,
-    ): Map<String, AirbyteValue> {
-        val stream = msg.stream
+    override fun convert(input: ConversionInput): Map<String, AirbyteValue> {
+        check(input.msg.rawData is DestinationRecordProtobufSource) {
+            "The raw data must be a protobuf source."
+        }
+        checkNotNull(input.msg.rawData) {
+            "The protobuf source containing data and metadata must be non-null."
+        }
+        val stream = input.msg.stream
         val fieldAccessors = stream.airbyteValueProxyFieldAccessors
-        val data = source.source.record.dataList
+        val data = input.msg.rawData.source.record.dataList
 
         val result =
             HashMap<String, AirbyteValue>(fieldAccessors.size + 4) // +4 for metadata fields
@@ -132,7 +129,13 @@ class ProtobufConverter(
             enrichedValue.abValue = airbyteValue
 
             val mappedValue = coercer.map(enrichedValue)
-            val validatedValue = coercer.validate(mappedValue)
+            val validatedValue =
+                validationResultHandler.handle(
+                    partitionKey = input.partitionKey,
+                    stream = stream.mappedDescriptor,
+                    result = coercer.validate(mappedValue),
+                    value = mappedValue
+                )
 
             allParsingFailures.addAll(validatedValue.changes)
 
@@ -147,7 +150,7 @@ class ProtobufConverter(
             }
         }
 
-        addMetadataFields(result, msg, source, allParsingFailures)
+        addMetadataFields(result, input.msg, input.msg.rawData, allParsingFailures)
 
         return result
     }

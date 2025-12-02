@@ -52,4 +52,17 @@ data:
           secretStore:
             type: GSM
             alias: airbyte-connector-testing-secret-store
+  externalDocumentationUrls:
+    - title: SurveyMonkey API reference
+      url: https://developer.surveymonkey.com/api/v3/
+      type: api_reference
+    - title: SurveyMonkey API Changelog
+      url: https://developer.surveymonkey.com/api/v3/#changelog
+      type: api_release_history
+    - title: SurveyMonkey authentication
+      url: https://developer.surveymonkey.com/api/v3/#authentication
+      type: authentication_guide
+    - title: SurveyMonkey rate limits
+      url: https://developer.surveymonkey.com/api/v3/#rate-limits
+      type: rate_limits
 metadataSpecVersion: "1.0"

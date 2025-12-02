@@ -1,16 +1,21 @@
 # ClickHouse
 
-A fresh implementation of ClickHouse leveraging our new CDK.
+The ClickHouse destination connector syncs data from Airbyte sources to [ClickHouse](https://clickhouse.com/), a high-performance columnar database designed for online analytical processing (OLAP). This connector writes data directly to ClickHouse tables with proper typing, enabling fast analytical queries on your replicated data.
 
-## Improvements over v1
-* All sync modes supported
-* Data will be typed and written to columns matching the defined schema (Direct Load)
-* Performance improvements
-* Actively maintained and developed by Airbyte
+This is a complete rewrite of the ClickHouse destination connector built on Airbyte's Bulk CDK framework, replacing the legacy v1 connector.
 
-## Features
+## How version 2 improves on version 1
 
-All sync modes are supported.
+Version 2.0.0 represents a complete architectural redesign of the ClickHouse destination connector with significant improvements:
+
+- **All sync modes supported**: Full Refresh (Overwrite and Append) and Incremental (Append and Append + Deduped) sync modes are now fully supported.
+- **[Direct Load](/platform/using-airbyte/core-concepts/direct-load-tables) with typed columns**: Airbyte writes data directly to typed columns matching your source schema, rather than storing everything as JSON in raw tables. This improves query performance and reduces storage requirements.
+- **Improved performance**: The new architecture uses ClickHouse's native binary protocol and batch inserts for faster data loading.
+- **Active maintenance**: Built on Airbyte's modern CDK framework with ongoing development and support from the Airbyte team.
+
+## Supported sync modes
+
+The connectors supports all sync modes.
 
 | Feature                        | Supported?\(Yes/No\) | Notes                          |
 | :----------------------------- |:---------------------|:-------------------------------|
@@ -19,53 +24,59 @@ All sync modes are supported.
 | Incremental - Append + Deduped | Yes                  | Leverages `ReplacingMergeTree` |
 | Namespaces                     | Yes                  |                                |
 
-### Deduplication
+## Deduplication
 
 For optimal deduplication in Incremental - Append + Deduped sync mode, use a cursor column with one of these types:
 
-- Integer types (Int64, etc.)
+- Integer types (`Int64`, etc.)
 - Date
-- Timestamp (DateTime64)
+- Timestamp (`DateTime64`)
 
-If you use a different cursor column type (such as String), the connector will fall back to using the `_airbyte_extracted_at` timestamp for deduplication ordering. This fallback may not accurately reflect your source data's natural ordering, and you'll see a warning in the sync logs.
+If you use a different cursor column type, like `string`, the connector falls back to using the `_airbyte_extracted_at` timestamp for deduplication ordering. This fallback may not accurately reflect the natural ordering of your source data, and you'll see a warning in the sync logs.
 
-### Output Schema
+## Requirements
 
-Each stream will be output into its own table in ClickHouse in either the configured default database (`default`) or a database corresponding to the specified namespace on the stream.
+To use the ClickHouse destination connector, you need:
 
-Airbyte types will be converted to ClickHouse types as follows:
+- A ClickHouse instance (ClickHouse Cloud or self-hosted)
+- ClickHouse server version 21.8.10.19 or later
+- Network access from Airbyte to your ClickHouse instance
+- A ClickHouse user with appropriate permissions (see below)
 
-- Decimal types are Decimal(38, 9) — 38 digit precision with 9 decimal places
-- Timestamp are DateTime64(3) — millisecond precision
-- Object types are JSON **if JSON is enabled in the actor config**; otherwise they are converted to String
-- Integers are Int64
-- Booleans are Bool
-- Strings are String
-- Unions will be converted to String
-- Arrays will be converted to String
+## Setup guide
 
-### Requirements
+### 1. Configure network access
 
-To use the ClickHouse destination, you'll need:
+Ensure your ClickHouse database is accessible from Airbyte.
 
-- A cloud ClickHouse instance
-- A ClickHouse server version 21.8.10.19 or above
+| Airbyte deployment | Clickhouse deployment | Do this                                                                                                                                                                                           |
+| ------------------ | --------------------- | ------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------- |
+| Cloud              | Cloud                 | Whitelist Airbyte Cloud's [IP addresses](/platform/operating-airbyte/ip-allowlist) in your ClickHouse Cloud settings.                                                                             |
+| Cloud              | Self-managed          | Configure your firewall to allow inbound connections on port 8443 (HTTPS) or 8123 (HTTP) from Airbyte Cloud's [IP addresses](/platform/operating-airbyte/ip-allowlist).                                                                       |
+| Self-managed       | Cloud                 | Whitelist your Airbyte server's public IP address in ClickHouse Cloud settings.                                                                                                                   |
+| Self-managed       | Self-managed          | Ensure port 8443 (HTTPS) or 8123 (HTTP) is accessible from your Airbyte host. If both are in the same private network, configure security groups or firewall rules to allow traffic between them. |
 
-### Configure Network Access
+If you can't expose ClickHouse publicly, use SSH Tunneling via a bastion host that can reach ClickHouse.
 
-Make sure your ClickHouse database can be accessed by Airbyte. If your database is within a VPC, you may need to allow access from the IP you're using to expose Airbyte.
+### 2. Create a dedicated user with permissions
 
-### **Permissions**
+:::tip
+It's best to create a dedicated ClickHouse user for Airbyte rather than using an existing user. This improves security and makes it easier to audit Airbyte's database operations.
+:::
 
-You need a ClickHouse user with the following permissions:
+Create a ClickHouse user for Airbyte with the following permissions:
 
-- create tables and write rows
-- create databases
-- alter, drop and exchange tables
+- Create and manage databases
+- Create, alter, drop, and truncate tables
+- Insert and select data
 
-You can create such a user by running the following:
+To create a user with the required permissions, run the following SQL commands in your ClickHouse instance:
 
-```
+```sql
+-- Create the user (replace 'your_password' with a secure password)
+CREATE USER airbyte_user IDENTIFIED BY 'your_password';
+
+-- Grant permissions on the default database
 GRANT CREATE ON * TO airbyte_user;
 GRANT CREATE ON {database}.* TO airbyte_user;
 GRANT ALTER ON {database}.* TO airbyte_user;
@@ -77,11 +88,11 @@ GRANT CREATE TABLE ON {database}.* TO airbyte_user;
 GRANT DROP TABLE ON {database}.* TO airbyte_user;
 ```
 
-Where `{database}` is the database configured on your connector.
+Replace `{database}` with the database name you configure in the connector settings. It's typically `default`.
 
-Then for each connection using this connector with a custom namespace, run:
+If you configure custom namespaces in your Airbyte connections, grant permissions for each namespace:
 
-```
+```sql
 GRANT CREATE ON {namespace}.* TO airbyte_user;
 GRANT ALTER ON {namespace}.* TO airbyte_user;
 GRANT TRUNCATE ON {namespace}.* TO airbyte_user;
@@ -92,18 +103,63 @@ GRANT CREATE TABLE ON {namespace}.* TO airbyte_user;
 GRANT DROP TABLE ON {namespace}.* TO airbyte_user;
 ```
 
-Where `{namespace}` is the custom namespace configured for that connection.
+Replace `{namespace}` with each custom namespace you plan to use.
 
+### 3. Configure the connector
 
-You can also use a pre-existing user but we highly recommend creating a dedicated user for Airbyte.
+1. In Airbyte, click **Destinations** > **ClickHouse**.
+
+2. Configure the destination with the following information.
+
+    - **Hostname**: Your ClickHouse server hostname (without protocol prefix like `http://` or `https://`)
+    - **Port**: HTTP port for ClickHouse (defaults are 8123 for HTTP and 8443 for HTTPS)
+    - **Protocol** (self-hosted only): Choose HTTP or HTTPS. In Airbyte Cloud, this option is hidden and managed by the platform.
+    - **Database**: Target database name (default: `default`)
+    - **Username**: The ClickHouse user you created (for example, `airbyte_user`)
+    - **Password**: The password for the ClickHouse user
+    - **Enable JSON**: Whether to use ClickHouse's JSON type for object fields (recommended if your ClickHouse version supports it)
+
+### 4. SSH tunnel (optional)
+
+:::warning
+SSH tunneling support is currently in **Beta**.
+:::
+
+If your ClickHouse instance isn't directly accessible from Airbyte, you can use SSH tunneling to establish a secure connection. Configure the SSH tunnel settings in the connector configuration with your SSH host, port, username, and authentication method (password or private key).
+
+## Output schema
+
+Airbyte writes each stream to its own table in ClickHouse. It creates tables in either the configured default database, typically `default`, or in a database corresponding to the namespace you specify for the stream when you set up your connection.
+
+The connector converts Airbyte data types to ClickHouse types as follows:
+
+- **Decimal** types → `Decimal(38, 9)` (38 digit precision with 9 decimal places)
+- **Timestamp** types → `DateTime64(3)` (millisecond precision)
+- **Object** types → `JSON` if you enable JSON in the connector configuration, otherwise → `String`
+- **Integer** types → `Int64`
+- **Boolean** types → `Bool`
+- **String** types → `String`
+- **Union** types → `String`
+- **Array** types → `String`
+
+:::note
+The connector converts arrays and unions to strings for compatibility. If you need to query these as structured data, use ClickHouse's JSON functions to parse the string values.
+:::
 
 ## Changelog
+
+<!-- vale off -->
 
 <details>
   <summary>Expand to review</summary>
 
 | Version    | Date       | Pull Request                                               | Subject                                                                        |
 |:-----------|:-----------|:-----------------------------------------------------------|:-------------------------------------------------------------------------------|
+| 2.1.14     | 2025-11-13 | [69245](https://github.com/airbytehq/airbyte/pull/69245)   | Upgrade to CDK 0.1.78 |
+| 2.1.13     | 2025-11-11 | [69116](https://github.com/airbytehq/airbyte/pull/69116)   | Upgrade to CDK 0.1.74 (internal refactor for schema evolution) |
+| 2.1.12     | 2025-11-06 | [69226](https://github.com/airbytehq/airbyte/pull/69226)   | Improved additional statistics handling                                        |
+| 2.1.11     | 2025-11-05 | [69200](https://github.com/airbytehq/airbyte/pull/69200/)  | Add support for observability metrics                                          |
+| 2.1.10     | 2025-11-03 | [69154](https://github.com/airbytehq/airbyte/pull/69154)   | Fix decimal validation                                                         |
 | 2.1.9      | 2025-10-30 | [69100](https://github.com/airbytehq/airbyte/pull/69100)   | Upgrade to CDK 0.1.61 to fix state index bug                                   |
 | 2.1.8      | 2025-10-28 | [68186](https://github.com/airbytehq/airbyte/pull/68186)   | Upgrade to CDK 0.1.59                                                          |
 | 2.1.7      | 2025-10-21 | [67153](https://github.com/airbytehq/airbyte/pull/67153)   | Implement new proto schema implementation                                      |
@@ -143,4 +199,7 @@ You can also use a pre-existing user but we highly recommend creating a dedicate
 | 0.1.2      | 2025-06-23 | [\#62028](https://github.com/airbytehq/airbyte/pull/62028) | Enable the registry in OSS and cloud.                                          |
 | 0.1.1      | 2025-06-23 | [\#62022](https://github.com/airbytehq/airbyte/pull/62022) | Publish first beta version and pin the CDK version.                            |
 | 0.1.0      | 2025-06-23 | [\#62024](https://github.com/airbytehq/airbyte/pull/62024) | Release first beta version.                                                    |
+
 </details>
+
+<!-- vale on -->

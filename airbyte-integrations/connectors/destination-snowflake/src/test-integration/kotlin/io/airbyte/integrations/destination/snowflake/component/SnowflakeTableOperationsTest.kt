@@ -7,24 +7,21 @@ package io.airbyte.integrations.destination.snowflake.component
 import io.airbyte.cdk.load.component.TableOperationsFixtures
 import io.airbyte.cdk.load.component.TableOperationsSuite
 import io.airbyte.cdk.load.message.Meta
-import io.airbyte.cdk.load.table.ColumnNameMapping
 import io.airbyte.integrations.destination.snowflake.client.SnowflakeAirbyteClient
+import io.airbyte.integrations.destination.snowflake.component.SnowflakeComponentTestFixtures.idTestWithCdcMapping
+import io.airbyte.integrations.destination.snowflake.component.SnowflakeComponentTestFixtures.testMapping
+import io.micronaut.test.extensions.junit5.annotation.MicronautTest
 import org.junit.jupiter.api.Test
 import org.junit.jupiter.api.parallel.Execution
 import org.junit.jupiter.api.parallel.ExecutionMode
 
+@MicronautTest(environments = ["component"])
 @Execution(ExecutionMode.CONCURRENT)
 class SnowflakeTableOperationsTest(
     override val client: SnowflakeAirbyteClient,
     override val testClient: SnowflakeTestTableOperationsClient,
 ) : TableOperationsSuite {
     override val airbyteMetaColumnMapping = Meta.COLUMN_NAMES.associateWith { it.uppercase() }
-
-    private fun ColumnNameMapping.transformColumns() =
-        ColumnNameMapping(mapValues { (_, v) -> v.uppercase() })
-    private val testMapping = TableOperationsFixtures.TEST_MAPPING.transformColumns()
-    private val idTestWithCdcMapping =
-        TableOperationsFixtures.ID_TEST_WITH_CDC_MAPPING.transformColumns()
 
     @Test
     override fun `connect to database`() {

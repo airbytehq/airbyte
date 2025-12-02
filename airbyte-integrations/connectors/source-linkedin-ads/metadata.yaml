@@ -11,9 +11,13 @@ data:
   connectorSubtype: api
   connectorType: source
   definitionId: 137ece28-5434-455c-8f34-69dc3782f451
-  dockerImageTag: 5.6.0-rc.1
+  dockerImageTag: 5.6.0
   dockerRepository: airbyte/source-linkedin-ads
   documentationUrl: https://docs.airbyte.com/integrations/sources/linkedin-ads
+  externalDocumentationUrls:
+    - title: Changelog
+      url: https://learn.microsoft.com/en-us/linkedin/marketing/integrations/recent-changes?view=li-lms-2024-10
+      type: api_release_history
   githubIssueLabel: source-linkedin-ads
   icon: linkedin.svg
   license: ELv2
@@ -31,7 +35,7 @@ data:
   releaseStage: generally_available
   releases:
     rolloutConfiguration:
-      enableProgressiveRollout: true
+      enableProgressiveRollout: false
     breakingChanges:
       1.0.0:
         message: This upgrade brings changes in primary key to *-analytics streams.
