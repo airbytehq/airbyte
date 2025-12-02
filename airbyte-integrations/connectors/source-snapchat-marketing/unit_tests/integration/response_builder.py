@@ -113,6 +113,44 @@ def adaccounts_response(
     return build_response(body=body, status_code=HTTPStatus.OK)
 
 
+def adaccounts_response_multiple(
+    ad_account_ids: List[str],
+    organization_id: str = ORGANIZATION_ID,
+) -> HttpResponse:
+    """Create response with multiple ad accounts for testing substreams with multiple parents."""
+    adaccounts = []
+    for ad_account_id in ad_account_ids:
+        adaccounts.append(
+            {
+                "sub_request_status": "SUCCESS",
+                "adaccount": {
+                    "id": ad_account_id,
+                    "updated_at": "2024-01-15T10:00:00.000Z",
+                    "created_at": "2023-01-01T00:00:00.000Z",
+                    "name": f"Test Ad Account {ad_account_id}",
+                    "type": "PARTNER",
+                    "status": "ACTIVE",
+                    "organization_id": organization_id,
+                    "currency": "USD",
+                    "timezone": "America/Los_Angeles",
+                    "advertiser_organization_id": organization_id,
+                    "advertiser": "Test Advertiser",
+                    "billing_type": "IO",
+                    "billing_center_id": "test_billing_center",
+                    "lifetime_spend_cap_micro": 0,
+                    "agency_representing_client": False,
+                    "client_paying_invoices": False,
+                },
+            }
+        )
+    body = {
+        "request_status": "SUCCESS",
+        "request_id": "test_request_id",
+        "adaccounts": adaccounts,
+    }
+    return build_response(body=body, status_code=HTTPStatus.OK)
+
+
 def creatives_response(
     creative_id: str = "test_creative_123",
     ad_account_id: str = AD_ACCOUNT_ID,
