@@ -155,7 +155,7 @@ class DefaultDestinationCatalogFactory {
                                 ColumnSchema(
                                     inputSchema = mapOf(),
                                     inputToFinalColumnNames = mapOf(),
-                                    finalColumnSchema = mapOf()
+                                    finalSchema = mapOf()
                                 ),
                             importType = Append,
                             tableNames = TableNames(),

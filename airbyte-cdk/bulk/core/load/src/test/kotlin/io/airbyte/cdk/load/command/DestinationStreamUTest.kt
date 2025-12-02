@@ -129,7 +129,7 @@ class DestinationStreamUTest {
                         ColumnSchema(
                             inputSchema = inputSchema,
                             inputToFinalColumnNames = inputSchema.keys.associateWith { it },
-                            finalColumnSchema = mapOf(),
+                            finalSchema = mapOf(),
                         ),
                     importType = importType,
                 )

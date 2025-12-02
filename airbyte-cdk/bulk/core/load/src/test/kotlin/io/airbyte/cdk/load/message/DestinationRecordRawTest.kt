@@ -63,7 +63,7 @@ class DestinationRecordRawTest {
                             inputSchema = recordSchema.properties,
                             inputToFinalColumnNames =
                                 recordSchema.properties.keys.associateWith { it },
-                            finalColumnSchema = mapOf(),
+                            finalSchema = mapOf(),
                         ),
                     importType = Append,
                 )
@@ -312,7 +312,7 @@ class DestinationRecordRawTest {
                             io.airbyte.cdk.load.schema.model.ColumnSchema(
                                 inputSchema = mapOf(),
                                 inputToFinalColumnNames = mapOf(),
-                                finalColumnSchema = mapOf(),
+                                finalSchema = mapOf(),
                             ),
                         importType = Append,
                     )
@@ -411,7 +411,7 @@ class DestinationRecordRawTest {
                                 inputSchema = complexSchema.properties,
                                 inputToFinalColumnNames =
                                     complexSchema.properties.keys.associateWith { it },
-                                finalColumnSchema = mapOf(),
+                                finalSchema = mapOf(),
                             ),
                         importType = Append,
                     )

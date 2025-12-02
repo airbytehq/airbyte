@@ -63,7 +63,7 @@ class PipelineEventBookkeepingRouterTest {
                         io.airbyte.cdk.load.schema.model.ColumnSchema(
                             inputSchema = mapOf(),
                             inputToFinalColumnNames = mapOf(),
-                            finalColumnSchema = mapOf(),
+                            finalSchema = mapOf(),
                         ),
                     importType = io.airbyte.cdk.load.command.Append,
                 )
@@ -88,7 +88,7 @@ class PipelineEventBookkeepingRouterTest {
                         io.airbyte.cdk.load.schema.model.ColumnSchema(
                             inputSchema = mapOf(),
                             inputToFinalColumnNames = mapOf(),
-                            finalColumnSchema = mapOf(),
+                            finalSchema = mapOf(),
                         ),
                     importType = io.airbyte.cdk.load.command.Append,
                 )

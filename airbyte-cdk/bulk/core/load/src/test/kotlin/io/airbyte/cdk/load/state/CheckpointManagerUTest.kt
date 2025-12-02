@@ -55,7 +55,7 @@ class CheckpointManagerUTest {
                         io.airbyte.cdk.load.schema.model.ColumnSchema(
                             inputSchema = mapOf(),
                             inputToFinalColumnNames = mapOf(),
-                            finalColumnSchema = mapOf(),
+                            finalSchema = mapOf(),
                         ),
                     importType = Append,
                 )
@@ -82,7 +82,7 @@ class CheckpointManagerUTest {
                         io.airbyte.cdk.load.schema.model.ColumnSchema(
                             inputSchema = mapOf(),
                             inputToFinalColumnNames = mapOf(),
-                            finalColumnSchema = mapOf(),
+                            finalSchema = mapOf(),
                         ),
                     importType = Append,
                 )

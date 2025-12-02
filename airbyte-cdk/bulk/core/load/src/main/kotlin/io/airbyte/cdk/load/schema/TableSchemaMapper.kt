@@ -9,6 +9,7 @@ import io.airbyte.cdk.load.component.ColumnType
 import io.airbyte.cdk.load.data.FieldType
 import io.airbyte.cdk.load.schema.model.TableName
 
+/** Transforms input schema elements to destination-specific naming and type conventions. */
 interface TableSchemaMapper {
     fun toFinalTableName(desc: DestinationStream.Descriptor): TableName
 

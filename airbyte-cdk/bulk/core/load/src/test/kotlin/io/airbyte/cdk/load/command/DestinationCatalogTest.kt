@@ -93,40 +93,6 @@ class DestinationCatalogTest {
             )
 
     @Test
-    fun roundTrip() {
-        // This test has been simplified due to API changes
-        // The original getDestinationCatalog method no longer exists
-        // Creating a simple catalog manually instead
-        val stream1 =
-            DestinationStream(
-                unmappedNamespace = "namespace1",
-                unmappedName = "name1",
-                importType = Append,
-                generationId = 56,
-                minimumGenerationId = 34,
-                syncId = 12,
-                includeFiles = false,
-                schema = ObjectType(linkedMapOf()),
-                namespaceMapper = NamespaceMapper(),
-                tableSchema =
-                    StreamTableSchema(
-                        tableNames = TableNames(finalTableName = TableName("namespace1", "name1")),
-                        columnSchema =
-                            ColumnSchema(
-                                inputSchema = mapOf(),
-                                inputToFinalColumnNames = mapOf(),
-                                finalColumnSchema = mapOf(),
-                            ),
-                        importType = Append,
-                    )
-            )
-        val destinationCatalog = DestinationCatalog(listOf(stream1))
-        // Basic assertion to ensure catalog creation works
-        assertEquals(1, destinationCatalog.streams.size)
-        assertEquals("name1", destinationCatalog.streams[0].unmappedName)
-    }
-
-    @Test
     fun proxyOrderedSchema() {
         val stream =
             DestinationStream(
@@ -159,7 +125,7 @@ class DestinationCatalogTest {
                                         "x" to FieldType(IntegerType, nullable = true),
                                     ),
                                 inputToFinalColumnNames = mapOf("z" to "z", "y" to "y", "x" to "x"),
-                                finalColumnSchema = mapOf(),
+                                finalSchema = mapOf(),
                             ),
                         importType = Append,
                     )
@@ -200,7 +166,7 @@ class DestinationCatalogTest {
                                         ColumnSchema(
                                             inputSchema = mapOf(),
                                             inputToFinalColumnNames = mapOf(),
-                                            finalColumnSchema = mapOf(),
+                                            finalSchema = mapOf(),
                                         ),
                                     importType = Append,
                                 )
@@ -223,7 +189,7 @@ class DestinationCatalogTest {
                                         ColumnSchema(
                                             inputSchema = mapOf(),
                                             inputToFinalColumnNames = mapOf(),
-                                            finalColumnSchema = mapOf(),
+                                            finalSchema = mapOf(),
                                         ),
                                     importType = Append,
                                 )
@@ -259,7 +225,7 @@ class DestinationCatalogTest {
                                         ColumnSchema(
                                             inputSchema = mapOf(),
                                             inputToFinalColumnNames = mapOf(),
-                                            finalColumnSchema = mapOf(),
+                                            finalSchema = mapOf(),
                                         ),
                                     importType =
                                         Dedupe(
@@ -311,7 +277,7 @@ class DestinationCatalogTest {
                                                     "id" to FieldType(IntegerType, nullable = true)
                                                 ),
                                             inputToFinalColumnNames = mapOf("id" to "id"),
-                                            finalColumnSchema = mapOf(),
+                                            finalSchema = mapOf(),
                                         ),
                                     importType =
                                         Dedupe(

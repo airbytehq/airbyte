@@ -9,6 +9,7 @@ import io.airbyte.cdk.load.schema.model.TableName
 import io.airbyte.cdk.load.table.TableSuffixes.TMP_TABLE_SUFFIX
 import org.apache.commons.codec.digest.DigestUtils
 
+@Deprecated("Deprecated in favor of TableSchemaMapper")
 fun interface TempTableNameGenerator {
     fun generate(originalName: TableName): TableName
 }
@@ -20,6 +21,8 @@ fun interface TempTableNameGenerator {
  *
  * T+D destinations simply appended [TMP_TABLE_SUFFIX] to the table name, and should use
  * [TableName.asOldStyleTempTable] instead
+ *
+ * Not deprecated, but the interface it implements is deprecated.
  */
 open class DefaultTempTableNameGenerator(
     private val internalNamespace: String? = null,
@@ -71,6 +74,7 @@ sealed interface TableNameGenerator {
 
 fun interface RawTableNameGenerator : TableNameGenerator
 
+@Deprecated("Deprecated in favor of TableSchemaMapper")
 fun interface FinalTableNameGenerator : TableNameGenerator
 
 fun interface ColumnNameGenerator {

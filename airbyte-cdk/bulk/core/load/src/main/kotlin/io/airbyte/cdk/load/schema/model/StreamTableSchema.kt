@@ -7,6 +7,11 @@ package io.airbyte.cdk.load.schema.model
 import io.airbyte.cdk.load.command.Dedupe
 import io.airbyte.cdk.load.command.ImportType
 
+/**
+ * Schema information for a stream's table representation resolved for the target destination.
+ *
+ * Contains everything necessary to perform table operations for the associated stream.
+ */
 data class StreamTableSchema(
     val tableNames: TableNames,
     val columnSchema: ColumnSchema,
@@ -15,7 +20,8 @@ data class StreamTableSchema(
     fun getFinalColumnName(rawName: String) = columnSchema.inputToFinalColumnNames[rawName]!!
 
     fun getCursor() =
-        if (importType is Dedupe) importType.cursor.map { columnSchema.inputToFinalColumnNames[it]!! }
+        if (importType is Dedupe)
+            importType.cursor.map { columnSchema.inputToFinalColumnNames[it]!! }
         else emptyList()
 
     fun getPrimaryKey() =

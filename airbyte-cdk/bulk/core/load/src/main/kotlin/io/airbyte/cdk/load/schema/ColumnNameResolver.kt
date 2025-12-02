@@ -7,6 +7,7 @@ package io.airbyte.cdk.load.schema
 import io.github.oshai.kotlinlogging.KotlinLogging
 import jakarta.inject.Singleton
 
+/** Applies destination-specific column name munging logic and handles any naming collisions. */
 @Singleton
 class ColumnNameResolver(
     private val mapper: TableSchemaMapper,
@@ -16,11 +17,11 @@ class ColumnNameResolver(
      * Creates column name mapping with handling for potential collisions using incremental
      * numbering, with advanced resolution for truncation cases.
      */
-    fun getColumnNameMapping(protocolColumNames: Set<String>): Map<String, String> {
+    fun getColumnNameMapping(inputColumNames: Set<String>): Map<String, String> {
         val processedColumnNames = mutableSetOf<String>()
         val columnMappings = mutableMapOf<String, String>()
 
-        protocolColumNames.forEach { columnName ->
+        inputColumNames.forEach { columnName ->
             val processedColumnName = mapper.toColumnName(columnName)
 
             // Get a unique column name by adding incremental numbers if necessary

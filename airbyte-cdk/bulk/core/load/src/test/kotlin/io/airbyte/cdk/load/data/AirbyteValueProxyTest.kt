@@ -106,7 +106,7 @@ class AirbyteValueProxyTest {
                             inputSchema = ALL_TYPES_SCHEMA.properties,
                             inputToFinalColumnNames =
                                 ALL_TYPES_SCHEMA.properties.keys.associateWith { it },
-                            finalColumnSchema = mapOf(),
+                            finalSchema = mapOf(),
                         ),
                     importType = Append,
                 )

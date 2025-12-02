@@ -58,7 +58,7 @@ interface DestinationChecker<C : DestinationConfiguration> {
                         ColumnSchema(
                             inputSchema = mapOf(),
                             inputToFinalColumnNames = mapOf(),
-                            finalColumnSchema = mapOf(),
+                            finalSchema = mapOf(),
                         ),
                     importType = Append,
                 )

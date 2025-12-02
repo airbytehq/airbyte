@@ -10,6 +10,7 @@ import io.github.oshai.kotlinlogging.KotlinLogging
 import jakarta.inject.Singleton
 import org.apache.commons.codec.digest.DigestUtils
 
+/** Applies destination-specific table name munging logic and handles any naming collisions. */
 @Singleton
 class TableNameResolver(
     private val mapper: TableSchemaMapper,

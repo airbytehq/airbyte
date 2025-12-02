@@ -26,11 +26,13 @@ class DestinationStreamFactory(
 ) {
     fun make(stream: ConfiguredAirbyteStream, resolvedTableName: TableName): DestinationStream {
         val airbyteSchemaType = jsonSchemaToAirbyteType.convert(stream.stream.jsonSchema)
-        val airbyteSchema: Map<String, FieldType> = when (airbyteSchemaType) {
-            is ObjectType -> airbyteSchemaType.properties
-            is ObjectTypeWithEmptySchema, is ObjectTypeWithoutSchema -> emptyMap()
-            else -> throw IllegalStateException("")
-        }
+        val airbyteSchema: Map<String, FieldType> =
+            when (airbyteSchemaType) {
+                is ObjectType -> airbyteSchemaType.properties
+                is ObjectTypeWithEmptySchema,
+                is ObjectTypeWithoutSchema -> emptyMap()
+                else -> throw IllegalStateException("")
+            }
         val importType =
             when (stream.destinationSyncMode) {
                 null -> throw IllegalArgumentException("Destination sync mode was null")

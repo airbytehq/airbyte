@@ -7,11 +7,12 @@ package io.airbyte.cdk.load.schema.model
 import io.airbyte.cdk.load.component.ColumnType
 import io.airbyte.cdk.load.data.FieldType
 
+/** Defines column mappings and types from source input to destination table schema. */
 data class ColumnSchema(
     // schema on input catalog
     val inputSchema: Map<String, FieldType>,
-    // name on input catalog to final resolved name
+    // column name on input catalog to resolved name
     val inputToFinalColumnNames: Map<String, String>,
     // resolved name to resolved type
-    val finalColumnSchema: Map<String, ColumnType>,
+    val finalSchema: Map<String, ColumnType>,
 )

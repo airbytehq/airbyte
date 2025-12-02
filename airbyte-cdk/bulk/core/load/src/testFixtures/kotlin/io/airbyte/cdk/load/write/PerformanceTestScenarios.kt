@@ -88,7 +88,7 @@ class SingleStreamInsert(
                             inputSchema = streamSchema.properties,
                             inputToFinalColumnNames =
                                 streamSchema.properties.keys.associateWith { it },
-                            finalColumnSchema = mapOf(),
+                            finalSchema = mapOf(),
                         ),
                     importType = importType,
                 )
@@ -214,7 +214,7 @@ class SingleStreamFileTransfer(
                         ColumnSchema(
                             inputSchema = mapOf(),
                             inputToFinalColumnNames = mapOf(),
-                            finalColumnSchema = mapOf(),
+                            finalSchema = mapOf(),
                         ),
                     importType = Append,
                 )
@@ -242,7 +242,7 @@ class SingleStreamFileTransfer(
                                 ColumnSchema(
                                     inputSchema = mapOf(),
                                     inputToFinalColumnNames = mapOf(),
-                                    finalColumnSchema = mapOf(),
+                                    finalSchema = mapOf(),
                                 ),
                             importType = Append,
                         )
@@ -323,7 +323,7 @@ class SingleStreamFileAndMetadataTransfer(
                         ColumnSchema(
                             inputSchema = mapOf(),
                             inputToFinalColumnNames = mapOf(),
-                            finalColumnSchema = mapOf(),
+                            finalSchema = mapOf(),
                         ),
                     importType = Append,
                 )
@@ -352,7 +352,7 @@ class SingleStreamFileAndMetadataTransfer(
                                 ColumnSchema(
                                     inputSchema = mapOf(),
                                     inputToFinalColumnNames = mapOf(),
-                                    finalColumnSchema = mapOf(),
+                                    finalSchema = mapOf(),
                                 ),
                             importType = Append,
                         )
@@ -472,7 +472,7 @@ class MultiStreamInsert(
                                 inputSchema = streamSchema.properties,
                                 inputToFinalColumnNames =
                                     streamSchema.properties.keys.associateWith { it },
-                                finalColumnSchema = mapOf(),
+                                finalSchema = mapOf(),
                             ),
                         importType = importType,
                     )

@@ -30,7 +30,7 @@ class TableSchemaFactory(
             )
 
         val inputToFinalColumnNames = colNameResolver.getColumnNameMapping(inputSchema.keys)
-        val finalColumnSchema =
+        val finalSchema =
             inputSchema
                 .map { inputToFinalColumnNames[it.key]!! to mapper.toColumnType(it.value) }
                 .toMap()
@@ -39,7 +39,7 @@ class TableSchemaFactory(
             ColumnSchema(
                 inputSchema = inputSchema,
                 inputToFinalColumnNames = inputToFinalColumnNames,
-                finalColumnSchema = finalColumnSchema,
+                finalSchema = finalSchema,
             )
 
         return StreamTableSchema(

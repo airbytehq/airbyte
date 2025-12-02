@@ -701,7 +701,7 @@ object TableOperationsFixtures {
                         ColumnSchema(
                             inputSchema = schema.properties,
                             inputToFinalColumnNames = schema.properties.keys.associateWith { it },
-                            finalColumnSchema = mapOf(),
+                            finalSchema = mapOf(),
                         ),
                     importType = Append,
                 )
@@ -737,7 +737,7 @@ object TableOperationsFixtures {
                         ColumnSchema(
                             inputSchema = schema.properties,
                             inputToFinalColumnNames = schema.properties.keys.associateWith { it },
-                            finalColumnSchema = mapOf(),
+                            finalSchema = mapOf(),
                         ),
                     importType =
                         Dedupe(

@@ -383,7 +383,7 @@ abstract class BasicFunctionalityIntegrationTest(
                 ColumnSchema(
                     inputSchema = inputSchema,
                     inputToFinalColumnNames = columnNames,
-                    finalColumnSchema = mapOf(),
+                    finalSchema = mapOf(),
                 ),
             importType = importType,
         )
