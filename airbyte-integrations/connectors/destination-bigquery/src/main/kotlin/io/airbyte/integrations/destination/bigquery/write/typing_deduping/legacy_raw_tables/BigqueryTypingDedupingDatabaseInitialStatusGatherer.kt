@@ -23,11 +23,8 @@ class BigqueryTypingDedupingDatabaseInitialStatusGatherer(private val bq: BigQue
         rawTableName: TableName,
         suffix: String
     ): RawTableInitialStatus? {
-        val table =
-            bigQueryCall {
-                bq.getTable(TableId.of(rawTableName.namespace, rawTableName.name + suffix))
-            }
-            // Table doesn't exist. There are no unprocessed records, and no timestamp.
+        // Table doesn't exist. There are no unprocessed records, and no timestamp.
+        bigQueryCall { bq.getTable(TableId.of(rawTableName.namespace, rawTableName.name + suffix)) }
             ?: return null
 
         val rawTableIdQuoted = """`${rawTableName.namespace}`.`${rawTableName.name}$suffix`"""
