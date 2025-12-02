@@ -7,6 +7,7 @@ package io.airbyte.cdk.load.component
 import io.airbyte.cdk.load.data.AirbyteValue
 import io.airbyte.cdk.load.data.IntegerValue
 import io.airbyte.cdk.load.data.NumberValue
+import io.airbyte.cdk.load.dataflow.transform.ValueCoercer
 import io.airbyte.protocol.models.v0.AirbyteRecordMessageMetaChange.Reason
 import java.math.BigDecimal
 import java.math.BigInteger
@@ -405,6 +406,18 @@ fun bigdec(double: Double): BigDecimal = BigDecimal.valueOf(double)
 
 fun bigdec(int: Int): BigDecimal = BigDecimal.valueOf(int.toDouble())
 
+/**
+ * Represents a single data coercion test case. You probably want to use [test] as a shorthand
+ * constructor.
+ *
+ * @param name A short human-readable name for the test. Primarily useful for tests where
+ * [inputValue] is either very long, or otherwise hard to read.
+ * @param inputValue The value to pass into [ValueCoercer.validate]
+ * @param outputValue The value that we expect to read back from the destination. Should be
+ * basically equivalent to the output of [ValueCoercer.validate]
+ * @param changeReason If `validate` returns Truncate/Nullify, the reason for that
+ * truncation/nullification. If `validate` returns Valid, this should be null.
+ */
 data class DataCoercionFixture(
     val name: String,
     val inputValue: AirbyteValue,
