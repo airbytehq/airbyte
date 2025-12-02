@@ -1,0 +1,46 @@
+data:
+  ab_internal:
+    ql: 300
+    sl: 300
+  connectorBuildOptions:
+    baseImage: docker.io/airbyte/java-connector-base:2.0.3@sha256:119b8506bca069bbc8357a275936c7e2b0994e6947b81f1bf8d6ce9e16db7d47
+  registryOverrides:
+    cloud:
+      enabled: true
+    oss:
+      enabled: true
+  connectorSubtype: file
+  connectorTestSuitesOptions:
+    - suite: unitTests
+    - suite: integrationTests
+      testSecrets:
+        - name: SECRET_DESTINATION_GCS_DATA_LAKE_BIGLAKE
+          fileName: biglake.json
+          secretStore:
+            type: GSM
+            alias: airbyte-connector-testing-secret-store
+  connectorType: destination
+  definitionId: 8c8a2d3e-1b4f-4a9c-9e7d-6f5a4b3c2d1e
+  dockerImageTag: 1.0.2
+  dockerRepository: airbyte/destination-gcs-data-lake
+  documentationUrl: https://docs.airbyte.com/integrations/destinations/gcs-data-lake
+  githubIssueLabel: destination-gcs-data-lake
+  icon: icon.svg
+  license: ELv2
+  name: GCS Data Lake
+  releaseStage: generally_available
+  supportLevel: certified
+  supportsRefreshes: true
+  tags:
+    - language:java
+  externalDocumentationUrls:
+    - title: Cloud Storage documentation
+      url: https://cloud.google.com/storage/docs
+      type: api_reference
+    - title: Service account authentication
+      url: https://cloud.google.com/iam/docs/service-accounts
+      type: authentication_guide
+    - title: Access control
+      url: https://cloud.google.com/storage/docs/access-control
+      type: permissions_scopes
+metadataSpecVersion: "1.0"

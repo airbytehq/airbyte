@@ -62,6 +62,6 @@ Connectors are reusable. In most cases, you only need to set up the connector on
 Airbyte has other options to manage connectors, too.
 
 - [Airbyte API](https://reference.airbyte.com/reference/createdestination#/)
-- [Terraform](../../terraform-documentation)
+- [Terraform](/developers/terraform-documentation)
 
 In these cases, you can speed up the process by entering your values into the UI, then clicking the **Copy JSON** button. This copies your configuration as a JSON string that you can paste into your code.

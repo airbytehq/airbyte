@@ -8,6 +8,7 @@ import io.airbyte.cdk.ConfigErrorException
 import io.airbyte.cdk.load.command.DestinationStream
 import io.airbyte.cdk.load.command.NamespaceMapper
 import io.airbyte.cdk.load.command.Overwrite
+import io.airbyte.cdk.load.component.ColumnType
 import io.airbyte.cdk.load.config.NamespaceDefinitionType
 import io.airbyte.cdk.load.data.AirbyteType
 import io.airbyte.cdk.load.data.FieldType
@@ -573,9 +574,9 @@ internal class SnowflakeAirbyteClientTest {
         val result = client.getColumnsFromDb(tableName)
 
         val expectedColumns =
-            setOf(
-                ColumnDefinition("COL1", "VARCHAR", false),
-                ColumnDefinition("COL2", "NUMBER", false)
+            mapOf(
+                "COL1" to ColumnType("VARCHAR", true),
+                "COL2" to ColumnType("NUMBER", false),
             )
 
         assertEquals(expectedColumns, result)
@@ -623,9 +624,9 @@ internal class SnowflakeAirbyteClientTest {
         val result = client.getColumnsFromStream(stream, columnNameMapping)
 
         val expectedColumns =
-            setOf(
-                ColumnDefinition("COL1_MAPPED", "VARCHAR", false),
-                ColumnDefinition("COL2_MAPPED", "NUMBER", false)
+            mapOf(
+                "COL1_MAPPED" to ColumnType("VARCHAR", true),
+                "COL2_MAPPED" to ColumnType("NUMBER", true),
             )
 
         assertEquals(expectedColumns, result)
@@ -635,15 +636,15 @@ internal class SnowflakeAirbyteClientTest {
     fun `generateSchemaChanges should correctly identify changes`() {
         val columnsInDb =
             setOf(
-                ColumnDefinition("COL1", "VARCHAR", false),
-                ColumnDefinition("COL2", "NUMBER", false),
-                ColumnDefinition("COL3", "BOOLEAN", false)
+                ColumnDefinition("COL1", "VARCHAR"),
+                ColumnDefinition("COL2", "NUMBER"),
+                ColumnDefinition("COL3", "BOOLEAN")
             )
         val columnsInStream =
             setOf(
-                ColumnDefinition("COL1", "VARCHAR", false), // Unchanged
-                ColumnDefinition("COL3", "TEXT", false), // Modified
-                ColumnDefinition("COL4", "DATE", false) // Added
+                ColumnDefinition("COL1", "VARCHAR"), // Unchanged
+                ColumnDefinition("COL3", "TEXT"), // Modified
+                ColumnDefinition("COL4", "DATE") // Added
             )
 
         val (added, deleted, modified) = client.generateSchemaChanges(columnsInDb, columnsInStream)

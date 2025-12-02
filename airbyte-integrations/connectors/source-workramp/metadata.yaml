@@ -32,4 +32,8 @@ data:
     sl: 100
     ql: 100
   supportLevel: community
+  externalDocumentationUrls:
+    - title: WorkRamp API documentation
+      url: https://developers.workramp.com/
+      type: api_reference
 metadataSpecVersion: "1.0"

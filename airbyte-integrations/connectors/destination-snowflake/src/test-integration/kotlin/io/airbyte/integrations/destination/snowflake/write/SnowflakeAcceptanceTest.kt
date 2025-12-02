@@ -49,8 +49,8 @@ class SnowflakeInsertAcceptanceTest :
         unknownTypesBehavior = UnknownTypesBehavior.SERIALIZE,
     ) {
     @Test
-    override fun testFunkyCharactersDedup() {
-        super.testFunkyCharactersDedup()
+    override fun testAppendSchemaEvolution() {
+        super.testAppendSchemaEvolution()
     }
 }
 
@@ -186,6 +186,7 @@ abstract class SnowflakeAcceptanceTest(
         recordMangler = recordMapper,
         nameMapper = nameMapper,
         coercesLegacyUnions = coercesLegacyUnions,
+        useDataFlowPipeline = true,
     ) {
 
     @Disabled override fun testUnions() {}

@@ -53,6 +53,8 @@ Airbyte connector for UserVoice.com allows users to efficiently extract data fro
 
 | Version          | Date              | Pull Request | Subject        |
 |------------------|-------------------|--------------|----------------|
+| 0.0.42 | 2025-11-25 | [70169](https://github.com/airbytehq/airbyte/pull/70169) | Update dependencies |
+| 0.0.41 | 2025-11-18 | [69654](https://github.com/airbytehq/airbyte/pull/69654) | Update dependencies |
 | 0.0.40 | 2025-10-29 | [68849](https://github.com/airbytehq/airbyte/pull/68849) | Update dependencies |
 | 0.0.39 | 2025-10-21 | [68390](https://github.com/airbytehq/airbyte/pull/68390) | Update dependencies |
 | 0.0.38 | 2025-10-14 | [67959](https://github.com/airbytehq/airbyte/pull/67959) | Update dependencies |

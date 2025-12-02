@@ -7,6 +7,8 @@ package io.airbyte.integrations.destination.clickhouse.client
 import com.clickhouse.data.ClickHouseDataType
 import io.airbyte.cdk.load.command.Dedupe
 import io.airbyte.cdk.load.command.DestinationStream
+import io.airbyte.cdk.load.component.ColumnChangeset
+import io.airbyte.cdk.load.component.ColumnType
 import io.airbyte.cdk.load.data.AirbyteType
 import io.airbyte.cdk.load.data.ArrayType
 import io.airbyte.cdk.load.data.ArrayTypeWithoutSchema
@@ -32,7 +34,6 @@ import io.airbyte.cdk.load.table.ColumnNameMapping
 import io.airbyte.cdk.load.table.TableName
 import io.airbyte.integrations.destination.clickhouse.client.ClickhouseSqlGenerator.Companion.DATETIME_WITH_PRECISION
 import io.airbyte.integrations.destination.clickhouse.client.ClickhouseSqlGenerator.Companion.DECIMAL_WITH_PRECISION_AND_SCALE
-import io.airbyte.integrations.destination.clickhouse.model.AlterationSummary
 import io.airbyte.integrations.destination.clickhouse.spec.ClickhouseConfiguration
 import io.github.oshai.kotlinlogging.KotlinLogging
 import jakarta.inject.Singleton
@@ -306,27 +307,23 @@ class ClickhouseSqlGenerator(
             .map { (fieldName, type) ->
                 val columnName = columnNameMapping[fieldName]!!
                 val typeName = type.type.toDialectType(clickhouseConfiguration.enableJson)
-                "`$columnName` ${if (nonNullableColumns.contains(columnName))
-                    "$typeName"
-                else
-                    "Nullable($typeName)"
-                }"
+                "`$columnName` ${typeDecl(typeName, !nonNullableColumns.contains(columnName))}"
             }
             .joinToString(",\n")
     }
 
-    fun alterTable(alterationSummary: AlterationSummary, tableName: TableName): String {
+    fun alterTable(alterationSummary: ColumnChangeset, tableName: TableName): String {
         val builder =
             StringBuilder()
                 .append("ALTER TABLE `${tableName.namespace}`.`${tableName.name}`")
                 .appendLine()
-        alterationSummary.added.forEach { (columnName, columnType) ->
-            builder.append(" ADD COLUMN `$columnName` $columnType,")
+        alterationSummary.columnsToAdd.forEach { (columnName, columnType) ->
+            builder.append(" ADD COLUMN `$columnName` ${columnType.typeDecl()},")
         }
-        alterationSummary.modified.forEach { (columnName, columnType) ->
-            builder.append(" MODIFY COLUMN `$columnName` $columnType,")
+        alterationSummary.columnsToChange.forEach { (columnName, columnType) ->
+            builder.append(" MODIFY COLUMN `$columnName` ${columnType.newType.typeDecl()},")
         }
-        alterationSummary.deleted.forEach { columnName ->
+        alterationSummary.columnsToDrop.forEach { (columnName, _) ->
             builder.append(" DROP COLUMN `$columnName`,")
         }
 
@@ -374,3 +371,12 @@ fun AirbyteType.toDialectType(enableJson: Boolean): String =
             }
         }
     }
+
+fun typeDecl(type: String, nullable: Boolean) =
+    if (nullable) {
+        type.sqlNullable()
+    } else {
+        type
+    }
+
+fun ColumnType.typeDecl() = typeDecl(this.type, this.nullable)

@@ -22,17 +22,21 @@ data class PartitionKey(
     val id: String,
 )
 
-open class Histogram<T>(private val map: ConcurrentMap<T, Long> = ConcurrentHashMap()) {
-    fun increment(key: T, quantity: Long): Histogram<T> =
-        this.apply { map.merge(key, quantity, Long::plus) }
+open class Histogram<T>(private val map: ConcurrentMap<T, Double> = ConcurrentHashMap()) {
+    fun increment(key: T, quantity: Double): Histogram<T> =
+        this.apply { map.merge(key, quantity, Double::plus) }
 
     fun merge(other: Histogram<T>): Histogram<T> =
-        this.apply { other.map.forEach { map.merge(it.key, it.value, Long::plus) } }
+        this.apply { other.map.forEach { map.merge(it.key, it.value, Double::plus) } }
 
-    fun get(key: T): Long? = map[key]
+    fun get(key: T): Double? = map[key]
 
-    fun remove(key: T): Long? = map.remove(key)
+    fun remove(key: T): Double? = map.remove(key)
+
+    fun toMap(): Map<T, Double> = map.toMap()
 }
+
+typealias AdditionalStatsHistogram = Histogram<String>
 
 typealias StateHistogram = Histogram<StateKey>
 

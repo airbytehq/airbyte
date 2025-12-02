@@ -3,12 +3,27 @@
   "redirects": [
     {
       "source": "/api-documentation",
-      "destination": "/platform/api-documentation",
+      "destination": "/developers/api-documentation",
       "statusCode": 301
     },
     {
       "source": "/terraform-documentation",
-      "destination": "/platform/terraform-documentation",
+      "destination": "/developers/terraform-documentation",
+      "statusCode": 301
+    },
+    {
+      "source": "/platform/api-documentation",
+      "destination": "/developers/api-documentation",
+      "statusCode": 301
+    },
+    {
+      "source": "/platform/terraform-documentation",
+      "destination": "/developers/terraform-documentation",
+      "statusCode": 301
+    },
+    {
+      "source": "/platform/using-airbyte/pyairbyte/getting-started",
+      "destination": "/developers/using-pyairbyte",
       "statusCode": 301
     },
     {
@@ -253,7 +268,7 @@
     },
     {
       "source": "/pyairbyte",
-      "destination": "/platform/using-airbyte/pyairbyte/getting-started",
+      "destination": "/developers/using-pyairbyte",
       "statusCode": 301
     },
     {

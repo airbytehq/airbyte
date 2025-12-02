@@ -73,7 +73,9 @@ class MsSqlSourceMetadataQuerierTest {
                     "DROP TABLE IF EXISTS dbo.table_with_pk_no_clustered",
                     "DROP TABLE IF EXISTS dbo.table_with_pk_and_single_clustered",
                     "DROP TABLE IF EXISTS dbo.table_with_pk_and_composite_clustered",
-                    "DROP TABLE IF EXISTS dbo.table_no_pk_no_clustered"
+                    "DROP TABLE IF EXISTS dbo.table_no_pk_no_clustered",
+                    "DROP TABLE IF EXISTS dbo.table_with_non_unique_clustered",
+                    "DROP TABLE IF EXISTS dbo.table_with_composite_pk"
                 )
 
             for (ddl in dropStatements) {
@@ -86,8 +88,9 @@ class MsSqlSourceMetadataQuerierTest {
                 }
             }
 
-            // Test Case 1: Table with clustered index but no primary key
-            // Expected: Should use the clustered index column as primary key
+            // Test Case 1: Table with UNIQUE clustered index but no primary key
+            // Expected PK: Empty (no PK constraint)
+            // Expected OC: Use the unique clustered index column
             connection.createStatement().use { stmt ->
                 stmt.execute(
                     """
@@ -100,7 +103,7 @@ class MsSqlSourceMetadataQuerierTest {
                 )
                 stmt.execute(
                     """
-                    CREATE CLUSTERED INDEX idx_clustered_id 
+                    CREATE UNIQUE CLUSTERED INDEX idx_clustered_id
                     ON dbo.table_with_clustered_no_pk (id)
                 """
                 )
@@ -121,9 +124,10 @@ class MsSqlSourceMetadataQuerierTest {
                 )
             }
 
-            // Test Case 3: Table with both primary key and single-column clustered index on
+            // Test Case 3: Table with both primary key and single-column UNIQUE clustered index on
             // different columns
-            // Expected: Should use the single-column clustered index
+            // Expected PK: Should return actual PK (id)
+            // Expected OC: Should use single-column unique clustered index (code)
             connection.createStatement().use { stmt ->
                 stmt.execute(
                     """
@@ -138,14 +142,15 @@ class MsSqlSourceMetadataQuerierTest {
                 )
                 stmt.execute(
                     """
-                    CREATE CLUSTERED INDEX idx_clustered_code 
+                    CREATE UNIQUE CLUSTERED INDEX idx_clustered_code
                     ON dbo.table_with_pk_and_single_clustered (code)
                 """
                 )
             }
 
-            // Test Case 4: Table with primary key and composite clustered index
-            // Expected: Should use the primary key (not the composite clustered index)
+            // Test Case 4: Table with primary key and UNIQUE composite clustered index
+            // Expected PK: Should return actual PK (id)
+            // Expected OC: Should use first PK column since CI is composite
             connection.createStatement().use { stmt ->
                 stmt.execute(
                     """
@@ -161,7 +166,7 @@ class MsSqlSourceMetadataQuerierTest {
                 )
                 stmt.execute(
                     """
-                    CREATE CLUSTERED INDEX idx_clustered_composite 
+                    CREATE UNIQUE CLUSTERED INDEX idx_clustered_composite
                     ON dbo.table_with_pk_and_composite_clustered (code, category)
                 """
                 )
@@ -180,21 +185,64 @@ class MsSqlSourceMetadataQuerierTest {
                 """
                 )
             }
+
+            // Test Case 6: Table with PK and NON-UNIQUE clustered index
+            // Expected PK: Should return actual PK (id)
+            // Expected OC: Should fall back to first PK column (not CI, since CI is non-unique)
+            connection.createStatement().use { stmt ->
+                stmt.execute(
+                    """
+                    CREATE TABLE dbo.table_with_non_unique_clustered (
+                        id INT NOT NULL,
+                        category NVARCHAR(50) NOT NULL,
+                        name NVARCHAR(100),
+                        created_at DATETIME2,
+                        CONSTRAINT pk_table6 PRIMARY KEY NONCLUSTERED (id)
+                    )
+                """
+                )
+                stmt.execute(
+                    """
+                    CREATE CLUSTERED INDEX idx_non_unique_category
+                    ON dbo.table_with_non_unique_clustered (category)
+                """
+                )
+            }
+
+            // Test Case 7: Table with composite PK (3 columns)
+            // Expected PK: Should return all 3 columns
+            // Expected OC: Should use first PK column
+            connection.createStatement().use { stmt ->
+                stmt.execute(
+                    """
+                    CREATE TABLE dbo.table_with_composite_pk (
+                        reg_id INT NOT NULL,
+                        agent_id INT NOT NULL,
+                        assigned_date DATE NOT NULL,
+                        name NVARCHAR(100),
+                        CONSTRAINT pk_table7 PRIMARY KEY NONCLUSTERED (reg_id, agent_id, assigned_date)
+                    )
+                """
+                )
+            }
         }
     }
 
     @Test
-    @DisplayName("Should use single-column clustered index when no primary key exists")
+    @DisplayName("Should return empty PK when only clustered index exists (no PK constraint)")
     fun testClusteredIndexNoPrimaryKey() {
         val streamId =
             StreamIdentifier.from(
                 StreamDescriptor().withName("table_with_clustered_no_pk").withNamespace("dbo")
             )
 
+        // Test discovery: should return empty (no PK constraint)
         val primaryKey = metadataQuerier.primaryKey(streamId)
+        assertTrue(primaryKey.isEmpty(), "Should return empty list when no PK constraint exists")
 
-        assertEquals(1, primaryKey.size, "Should have one primary key column")
-        assertEquals(listOf("id"), primaryKey[0], "Should use clustered index column 'id'")
+        // Test sync strategy: should use clustered index column
+        val orderedColumn = metadataQuerier.getOrderedColumnForSync(streamId)
+        assertEquals("id", orderedColumn, "Should use clustered index column 'id' for syncing")
     }
 
     @Test
@@ -212,7 +260,7 @@ class MsSqlSourceMetadataQuerierTest {
     }
 
     @Test
-    @DisplayName("Should prefer single-column clustered index over primary key")
+    @DisplayName("Discovery returns PK, sync strategy prefers clustered index")
     fun testSingleClusteredIndexOverPrimaryKey() {
         val streamId =
             StreamIdentifier.from(
@@ -221,13 +269,17 @@ class MsSqlSourceMetadataQuerierTest {
                     .withNamespace("dbo")
             )
 
+        // Test discovery: should return actual PK constraint
         val primaryKey = metadataQuerier.primaryKey(streamId)
-
         assertEquals(1, primaryKey.size, "Should have one primary key column")
+        assertEquals(listOf("id"), primaryKey[0], "Discovery should return actual primary key 'id'")
+
+        // Test sync strategy: should prefer clustered index over PK
+        val orderedColumn = metadataQuerier.getOrderedColumnForSync(streamId)
         assertEquals(
-            listOf("code"),
-            primaryKey[0],
-            "Should use single-column clustered index 'code' instead of primary key 'id'"
+            "code",
+            orderedColumn,
+            "Sync strategy should prefer clustered index 'code' over PK"
         )
     }
 
@@ -382,6 +434,56 @@ class MsSqlSourceMetadataQuerierTest {
     }
 
     @Test
+    @DisplayName("Should filter out non-unique clustered index and fall back to PK")
+    fun testNonUniqueClusteredIndexFiltered() {
+        val streamId =
+            StreamIdentifier.from(
+                StreamDescriptor().withName("table_with_non_unique_clustered").withNamespace("dbo")
+            )
+
+        // Test discovery: should return actual PK constraint
+        val primaryKey = metadataQuerier.primaryKey(streamId)
+        assertEquals(1, primaryKey.size, "Should have one primary key column")
+        assertEquals(listOf("id"), primaryKey[0], "Discovery should return actual primary key 'id'")
+
+        // Verify that non-unique CI is NOT in memoizedClusteredIndexKeys
+        val tables = metadataQuerier.memoizedTableNames
+        val table =
+            tables.find { it.name == "table_with_non_unique_clustered" && it.schema == "dbo" }
+        assertNotNull(table, "Should find table_with_non_unique_clustered")
+        val clusteredKeys = metadataQuerier.memoizedClusteredIndexKeys[table]
+        assertNull(clusteredKeys, "Non-unique clustered index should be filtered out")
+
+        // Test sync strategy: should fall back to first PK column (not CI)
+        val orderedColumn = metadataQuerier.getOrderedColumnForSync(streamId)
+        assertEquals("id", orderedColumn, "Should fall back to PK 'id' since CI is non-unique")
+    }
+
+    @Test
+    @DisplayName("Should discover all columns in composite primary key")
+    fun testCompositePrimaryKey() {
+        val streamId =
+            StreamIdentifier.from(
+                StreamDescriptor().withName("table_with_composite_pk").withNamespace("dbo")
+            )
+
+        // Test discovery: should return all 3 PK columns
+        val primaryKey = metadataQuerier.primaryKey(streamId)
+        assertEquals(3, primaryKey.size, "Should have three primary key columns")
+        assertEquals(listOf("reg_id"), primaryKey[0], "First PK column should be 'reg_id'")
+        assertEquals(listOf("agent_id"), primaryKey[1], "Second PK column should be 'agent_id'")
+        assertEquals(
+            listOf("assigned_date"),
+            primaryKey[2],
+            "Third PK column should be 'assigned_date'"
+        )
+
+        // Test sync strategy: should use first PK column
+        val orderedColumn = metadataQuerier.getOrderedColumnForSync(streamId)
+        assertEquals("reg_id", orderedColumn, "Should use first PK column 'reg_id' for syncing")
+    }
+
+    @Test
     @DisplayName("Should prefer physical PK over user-defined logical PK")
     fun testPhysicalPrimaryKeyPreferredOverLogical() {
         val streamId =
@@ -443,7 +545,9 @@ class MsSqlSourceMetadataQuerierTest {
                         "DROP TABLE IF EXISTS dbo.table_with_pk_no_clustered",
                         "DROP TABLE IF EXISTS dbo.table_with_pk_and_single_clustered",
                         "DROP TABLE IF EXISTS dbo.table_with_pk_and_composite_clustered",
-                        "DROP TABLE IF EXISTS dbo.table_no_pk_no_clustered"
+                        "DROP TABLE IF EXISTS dbo.table_no_pk_no_clustered",
+                        "DROP TABLE IF EXISTS dbo.table_with_non_unique_clustered",
+                        "DROP TABLE IF EXISTS dbo.table_with_composite_pk"
                     )
 
                 for (ddl in dropStatements) {

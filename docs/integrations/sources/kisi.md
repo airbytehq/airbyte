@@ -39,6 +39,8 @@ You can learn more about the API key here https://api.kisi.io/docs#/
 
 | Version          | Date              | Pull Request | Subject        |
 |------------------|-------------------|--------------|----------------|
+| 0.0.46 | 2025-11-25 | [70037](https://github.com/airbytehq/airbyte/pull/70037) | Update dependencies |
+| 0.0.45 | 2025-11-18 | [69483](https://github.com/airbytehq/airbyte/pull/69483) | Update dependencies |
 | 0.0.44 | 2025-10-29 | [68758](https://github.com/airbytehq/airbyte/pull/68758) | Update dependencies |
 | 0.0.43 | 2025-10-21 | [68313](https://github.com/airbytehq/airbyte/pull/68313) | Update dependencies |
 | 0.0.42 | 2025-10-14 | [67960](https://github.com/airbytehq/airbyte/pull/67960) | Update dependencies |

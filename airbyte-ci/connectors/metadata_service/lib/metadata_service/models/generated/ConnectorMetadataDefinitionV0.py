@@ -11,6 +11,34 @@ from pydantic import AnyUrl, BaseModel, Extra, Field, conint, constr
 from typing_extensions import Literal
 
 
+class ExternalDocumentationUrl(BaseModel):
+    class Config:
+        extra = Extra.forbid
+
+    title: str = Field(..., description="Display title for the documentation link")
+    url: AnyUrl = Field(..., description="URL to the external documentation")
+    type: Optional[
+        Literal[
+            "api_deprecations",
+            "api_reference",
+            "api_release_history",
+            "authentication_guide",
+            "data_model_reference",
+            "developer_community",
+            "migration_guide",
+            "openapi_spec",
+            "other",
+            "permissions_scopes",
+            "rate_limits",
+            "sql_reference",
+            "status_page",
+        ]
+    ] = Field(None, description="Category of documentation")
+    requiresLogin: Optional[bool] = Field(
+        False, description="Whether the URL requires authentication to access"
+    )
+
+
 class ConnectorBuildOptions(BaseModel):
     class Config:
         extra = Extra.forbid
@@ -144,7 +172,7 @@ class StreamBreakingChangeScope(BaseModel):
     class Config:
         extra = Extra.forbid
 
-    scopeType: Any = Field("stream", const=True)
+    scopeType: str = Field("stream", const=True)
     impactedScopes: List[str] = Field(
         ...,
         description="List of streams that are impacted by the breaking change.",
@@ -163,16 +191,6 @@ class AirbyteInternal(BaseModel):
         True,
         description="When false, version increment checks will be skipped for this connector",
     )
-
-
-class ConnectorIPCDataChannel(BaseModel):
-    version: str = Field(..., description="Version of the data channel specification")
-    supportedSerialization: List[Literal["JSONL", "PROTOBUF", "FLATBUFFERS"]]
-    supportedTransport: List[Literal["STDIO", "SOCKET"]]
-
-
-class ConnectorIPCOptions(BaseModel):
-    dataChannel: ConnectorIPCDataChannel
 
 
 class PyPi(BaseModel):
@@ -226,6 +244,22 @@ class ConnectorMetric(BaseModel):
     usage: Optional[Union[str, Literal["low", "medium", "high"]]] = None
     sync_success_rate: Optional[Union[str, Literal["low", "medium", "high"]]] = None
     connector_version: Optional[str] = None
+
+
+class DataChannel(BaseModel):
+    class Config:
+        extra = Extra.forbid
+
+    version: str
+    supportedSerialization: List[Literal["JSONL", "PROTOBUF", "FLATBUFFERS"]]
+    supportedTransport: List[Literal["STDIO", "SOCKET"]]
+
+
+class ConnectorIPCOptions(BaseModel):
+    class Config:
+        extra = Extra.forbid
+
+    dataChannel: DataChannel
 
 
 class Secret(BaseModel):
@@ -387,6 +421,10 @@ class Data(BaseModel):
     supportsNormalization: Optional[bool] = None
     license: str
     documentationUrl: AnyUrl
+    externalDocumentationUrls: Optional[List[ExternalDocumentationUrl]] = Field(
+        None,
+        description="An array of external vendor documentation URLs (changelogs, API references, deprecation notices, etc.)",
+    )
     githubIssueLabel: str
     maxSecondsBetweenMessages: Optional[int] = Field(
         None,
@@ -430,10 +468,7 @@ class Data(BaseModel):
     generated: Optional[GeneratedFields] = None
     supportsFileTransfer: Optional[bool] = False
     supportsDataActivation: Optional[bool] = False
-    connectorIPCOptions: Optional[ConnectorIPCOptions] = Field(
-            None,
-            description="Advanced options related to connector's inter-process communication"
-        )
+    connectorIPCOptions: Optional[ConnectorIPCOptions] = None
 
 
 class ConnectorMetadataDefinitionV0(BaseModel):

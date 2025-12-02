@@ -285,6 +285,8 @@ definitions:
       state_migrations:
         - type: CustomStateMigration
           class_name: source_google_ads.components.GoogleAdsCriterionParentStateMigration
+        - type: CustomStateMigration
+          class_name: source_google_ads.components.GoogleAdsGlobalStateMigration
 
   accessible_accounts:
     $ref: "#/definitions/stream_base"
@@ -843,8 +845,7 @@ definitions:
     $parameters:
       url_base: "https://googleads.googleapis.com/v20/{{ stream_partition['customer_id'] }}/googleAds:search"
     retriever:
-      type: CustomRetriever
-      class_name: "source_google_ads.components.ChangeStatusRetriever"
+      type: SimpleRetriever
       requester:
         type: CustomRequester
         class_name: "source_google_ads.components.ChangeStatusRequester"
@@ -860,6 +861,12 @@ definitions:
         name: change_status
       paginator:
         $ref: "#/definitions/cursor_paginator"
+      pagination_reset:
+        type: PaginationReset
+        action: SPLIT_USING_CURSOR
+        limits:
+          type: PaginationResetLimits
+          number_of_records: 10000
       record_selector:
         type: RecordSelector
         $parameters:
@@ -1009,7 +1016,19 @@ definitions:
                 "datetime_format": "%Y-%m-%d"
               }
             }
-          condition: "{{ (components_values.get('query', '').count('segments.date') == 1 and (components_values.get('query') | regex_search('SELECT.*segments\\.date.*FROM')) is not none) or (components_values.get('query', '').count('segments.date') == 2 and (components_values.get('query') | regex_search('SELECT.*segments\\.date.*FROM')) is not none and (components_values.get('query') | regex_search('ORDER BY.*?segments\\.date.*?LIMIT')) is not none) }}"
+          condition: >-
+            {{
+              (
+                components_values.get('query', '').count('segments.date') == 1
+                and (components_values.get('query') | regex_search('(?i)(\\bSELECT\\b[\\s\\S]*?segments\\.date[\\s\\S]*?\\bFROM\\b)'))
+              )
+              or
+              (
+                components_values.get('query', '').count('segments.date') == 2
+                and (components_values.get('query') | regex_search('(?i)(\\bSELECT\\b[\\s\\S]*?segments\\.date[\\s\\S]*?\\bFROM\\b)'))
+                and (components_values.get('query') | regex_search('(?i)(\\bORDER\\s+BY\\b[\\s\\S]*?segments\\.date)'))
+              )
+            }}
           create_or_update: true
         - type: ComponentMappingDefinition
           field_path:
@@ -1026,7 +1045,19 @@ definitions:
             - $parameters
             - cursor_field
           value: "segments.date"
-          condition: "{{ (components_values.get('query', '').count('segments.date') == 1 and (components_values.get('query') | regex_search('SELECT.*segments\\.date.*FROM')) is not none) or (components_values.get('query', '').count('segments.date') == 2 and (components_values.get('query') | regex_search('SELECT.*segments\\.date.*FROM')) is not none and (components_values.get('query') | regex_search('ORDER BY.*?segments\\.date.*?LIMIT')) is not none) }}"
+          condition: >-
+            {{
+              (
+                components_values.get('query', '').count('segments.date') == 1
+                and (components_values.get('query') | regex_search('(?i)(\\bSELECT\\b[\\s\\S]*?segments\\.date[\\s\\S]*?\\bFROM\\b)'))
+              )
+              or
+              (
+                components_values.get('query', '').count('segments.date') == 2
+                and (components_values.get('query') | regex_search('(?i)(\\bSELECT\\b[\\s\\S]*?segments\\.date[\\s\\S]*?\\bFROM\\b)'))
+                and (components_values.get('query') | regex_search('(?i)(\\bORDER\\s+BY\\b[\\s\\S]*?segments\\.date)'))
+              )
+            }}
           create_or_update: true
         - type: ComponentMappingDefinition
           field_path:
@@ -1040,7 +1071,19 @@ definitions:
             - schema_loader
             - cursor_field
           value: "segments.date"
-          condition: "{{ (components_values.get('query', '').count('segments.date') == 1 and (components_values.get('query') | regex_search('SELECT.*segments\\.date.*FROM')) is not none) or (components_values.get('query', '').count('segments.date') == 2 and (components_values.get('query') | regex_search('SELECT.*segments\\.date.*FROM')) is not none and (components_values.get('query') | regex_search('ORDER BY.*?segments\\.date.*?LIMIT')) is not none) }}"
+          condition: >-
+            {{
+              (
+                components_values.get('query', '').count('segments.date') == 1
+                and (components_values.get('query') | regex_search('(?i)(\\bSELECT\\b[\\s\\S]*?segments\\.date[\\s\\S]*?\\bFROM\\b)'))
+              )
+              or
+              (
+                components_values.get('query', '').count('segments.date') == 2
+                and (components_values.get('query') | regex_search('(?i)(\\bSELECT\\b[\\s\\S]*?segments\\.date[\\s\\S]*?\\bFROM\\b)'))
+                and (components_values.get('query') | regex_search('(?i)(\\bORDER\\s+BY\\b[\\s\\S]*?segments\\.date)'))
+              )
+            }}
           create_or_update: true
         - type: ComponentMappingDefinition
           field_path:

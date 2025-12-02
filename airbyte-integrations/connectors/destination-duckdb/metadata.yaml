@@ -68,4 +68,11 @@ data:
           secretStore:
             type: GSM
             alias: airbyte-connector-testing-secret-store
+  externalDocumentationUrls:
+    - title: DuckDB documentation
+      url: https://duckdb.org/docs/
+      type: api_reference
+    - title: SQL reference
+      url: https://duckdb.org/docs/sql/introduction
+      type: sql_reference
 metadataSpecVersion: "1.0"

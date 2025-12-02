@@ -41,4 +41,17 @@ data:
           secretStore:
             type: GSM
             alias: airbyte-connector-testing-secret-store
+  externalDocumentationUrls:
+    - title: OneDrive API reference
+      url: https://learn.microsoft.com/en-us/onedrive/developer/
+      type: api_reference
+    - title: OneDrive authentication
+      url: https://learn.microsoft.com/en-us/onedrive/developer/rest-api/getting-started/authentication
+      type: authentication_guide
+    - title: Microsoft Graph throttling
+      url: https://learn.microsoft.com/en-us/graph/throttling
+      type: rate_limits
+    - title: Microsoft 365 Status
+      url: https://status.office365.com/
+      type: status_page
 metadataSpecVersion: "1.0"

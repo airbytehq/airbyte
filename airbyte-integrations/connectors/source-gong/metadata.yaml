@@ -36,4 +36,14 @@ data:
           secretStore:
             type: GSM
             alias: airbyte-connector-testing-secret-store
+  externalDocumentationUrls:
+    - title: Gong API reference
+      url: https://us-66463.app.gong.io/settings/api/documentation
+      type: api_reference
+    - title: Gong authentication
+      url: https://us-66463.app.gong.io/settings/api/documentation#overview
+      type: authentication_guide
+    - title: Gong rate limits
+      url: https://us-66463.app.gong.io/settings/api/documentation#rate-limits
+      type: rate_limits
 metadataSpecVersion: "1.0"

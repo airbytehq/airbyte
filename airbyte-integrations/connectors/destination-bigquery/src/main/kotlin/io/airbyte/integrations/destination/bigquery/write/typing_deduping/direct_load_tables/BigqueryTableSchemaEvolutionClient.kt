@@ -13,7 +13,10 @@ import com.google.common.annotations.VisibleForTesting
 import edu.umd.cs.findbugs.annotations.SuppressFBWarnings
 import io.airbyte.cdk.ConfigErrorException
 import io.airbyte.cdk.load.command.DestinationStream
+import io.airbyte.cdk.load.component.ColumnChangeset
+import io.airbyte.cdk.load.component.TableColumns
 import io.airbyte.cdk.load.component.TableOperationsClient
+import io.airbyte.cdk.load.component.TableSchema
 import io.airbyte.cdk.load.component.TableSchemaEvolutionClient
 import io.airbyte.cdk.load.message.Meta
 import io.airbyte.cdk.load.orchestration.db.Sql
@@ -89,6 +92,29 @@ class BigqueryTableSchemaEvolutionClient(
             }
             throw e
         }
+    }
+
+    // Leave these unimplemented for now, since we're just overriding ensureSchemaMatches.
+    // https://github.com/airbytehq/airbyte-internal-issues/issues/15163
+    override suspend fun discoverSchema(tableName: TableName): TableSchema {
+        TODO("Not yet implemented")
+    }
+
+    override fun computeSchema(
+        stream: DestinationStream,
+        columnNameMapping: ColumnNameMapping
+    ): TableSchema {
+        TODO("Not yet implemented")
+    }
+
+    override suspend fun applyChangeset(
+        stream: DestinationStream,
+        columnNameMapping: ColumnNameMapping,
+        tableName: TableName,
+        expectedColumns: TableColumns,
+        columnChangeset: ColumnChangeset
+    ) {
+        TODO("Not yet implemented")
     }
 
     /**
@@ -188,18 +214,18 @@ class BigqueryTableSchemaEvolutionClient(
             // but that seems like a weird enough situation that we shouldn't worry about it.
             return """
                 CAST(
-                  CASE JSON_TYPE($columnName)
-                    WHEN 'object' THEN TO_JSON_STRING($columnName)
-                    WHEN 'array' THEN TO_JSON_STRING($columnName)
-                    ELSE JSON_VALUE($columnName)
+                  CASE JSON_TYPE(`$columnName`)
+                    WHEN 'object' THEN TO_JSON_STRING(`$columnName`)
+                    WHEN 'array' THEN TO_JSON_STRING(`$columnName`)
+                    ELSE JSON_VALUE(`$columnName`)
                   END
                   AS $newType
                 )
                 """.trimIndent()
         } else if (newType == StandardSQLTypeName.JSON) {
-            return "TO_JSON($columnName)"
+            return "TO_JSON(`$columnName`)"
         } else {
-            return "CAST($columnName AS $newType)"
+            return "CAST(`$columnName` AS $newType)"
         }
     }
 
@@ -368,12 +394,12 @@ class BigqueryTableSchemaEvolutionClient(
             databaseHandler.executeWithRetries(
                 """
                 ALTER TABLE $tableId
-                  RENAME COLUMN `$realColumnName` TO $backupColumnName,
-                  RENAME COLUMN `$tempColumnName` TO $realColumnName
+                  RENAME COLUMN `$realColumnName` TO `$backupColumnName`,
+                  RENAME COLUMN `$tempColumnName` TO `$realColumnName`
                 """.trimIndent(),
             )
             databaseHandler.executeWithRetries(
-                """ALTER TABLE $tableId DROP COLUMN $backupColumnName""",
+                """ALTER TABLE $tableId DROP COLUMN `$backupColumnName`""",
             )
         }
     }

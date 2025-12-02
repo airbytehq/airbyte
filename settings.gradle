@@ -1,5 +1,3 @@
-import com.gradle.scan.plugin.PublishedBuildScan
-
 pluginManagement {
     repositories {
         // # Gradle looks for dependency artifacts in repositories listed in 'repositories' blocks in descending order.
@@ -20,7 +18,7 @@ pluginManagement {
 // Configure the gradle enterprise plugin to enable build scans. Enabling the plugin at the top of the settings file allows the build scan to record
 // as much information as possible.
 plugins {
-    id "com.gradle.enterprise" version "3.15.1"
+    id "com.gradle.develocity" version "3.19.2"
     id 'com.github.burrunan.s3-build-cache' version "1.8.1"
 }
 
@@ -114,12 +112,12 @@ dependencyResolutionManagement {
     }
 }
 
-gradleEnterprise {
+develocity {
     buildScan {
-        termsOfServiceUrl = "https://gradle.com/terms-of-service"
-        termsOfServiceAgree = "yes"
+        termsOfUseUrl = "https://gradle.com/terms-of-service"
+        termsOfUseAgree = "yes"
         uploadInBackground = !isCI // Disable in CI or scan URLs may not work.
-        buildScanPublished { PublishedBuildScan scan ->
+        buildScanPublished { scan ->
             file("scan-journal.log") << "${new Date()} - ${scan.buildScanId} - ${scan.buildScanUri}\n"
         }
     }

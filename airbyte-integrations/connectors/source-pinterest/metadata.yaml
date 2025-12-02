@@ -56,6 +56,13 @@ data:
       - ad_group_analytics
       - ad_groups
   documentationUrl: https://docs.airbyte.com/integrations/sources/pinterest
+  externalDocumentationUrls:
+    - title: Changelog
+      url: https://developers.pinterest.com/docs/changelog/changelog/
+      type: api_release_history
+    - title: Pinterest API Changelog
+      url: https://developers.pinterest.com/docs/changelog/
+      type: api_release_history
   tags:
     - language:manifest-only
     - cdk:low-code

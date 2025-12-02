@@ -91,13 +91,19 @@ class MsSqlSourceMetadataQuerier(
 
     override fun fields(streamID: StreamIdentifier): List<Field> {
         val table: TableName = findTableName(streamID) ?: return listOf()
-        if (table !in base.memoizedColumnMetadata) return listOf()
-        return base.memoizedColumnMetadata[table]!!.map {
+        if (table !in memoizedColumnMetadata) return listOf()
+        return memoizedColumnMetadata[table]!!.map {
             Field(it.label, base.fieldTypeMapper.toFieldType(it))
         }
     }
 
-    override fun streamNamespaces(): List<String> = base.config.namespaces.toList()
+    override fun streamNamespaces(): List<String> {
+        // If no namespaces are configured, return all discovered schemas
+        if (base.config.namespaces.isEmpty()) {
+            return memoizedTableNames.mapNotNull { it.schema }.distinct()
+        }
+        return base.config.namespaces.toList()
+    }
 
     val memoizedTableNames: List<TableName> by lazy {
         log.info { "Querying SQL Server table names for catalog discovery." }
@@ -106,19 +112,42 @@ class MsSqlSourceMetadataQuerier(
             val dbmd = base.conn.metaData
             val currentDatabase = base.conn.catalog
 
-            for (namespace in
-                base.config.namespaces + base.config.namespaces.map { it.uppercase() }) {
-                // For SQL Server with SCHEMA namespace kind, use current database as catalog
-                dbmd.getTables(currentDatabase, namespace, null, null).use { rs ->
+            // If no namespaces are configured, discover all schemas
+            if (base.config.namespaces.isEmpty()) {
+                log.info {
+                    "No schemas explicitly configured, discovering all non-system schemas in the database."
+                }
+                dbmd.getTables(currentDatabase, null, null, null).use { rs ->
                     while (rs.next()) {
-                        allTables.add(
-                            TableName(
-                                catalog = rs.getString("TABLE_CAT"),
-                                schema = rs.getString("TABLE_SCHEM"),
-                                name = rs.getString("TABLE_NAME"),
-                                type = rs.getString("TABLE_TYPE") ?: "",
-                            ),
-                        )
+                        val schema = rs.getString("TABLE_SCHEM")
+                        // Filter out SQL Server system schemas unless explicitly configured
+                        if (schema != null && !isSystemSchema(schema)) {
+                            allTables.add(
+                                TableName(
+                                    catalog = rs.getString("TABLE_CAT"),
+                                    schema = schema,
+                                    name = rs.getString("TABLE_NAME"),
+                                    type = rs.getString("TABLE_TYPE") ?: "",
+                                ),
+                            )
+                        }
+                    }
+                }
+            } else {
+                for (namespace in
+                    base.config.namespaces + base.config.namespaces.map { it.uppercase() }) {
+                    // For SQL Server with SCHEMA namespace kind, use current database as catalog
+                    dbmd.getTables(currentDatabase, namespace, null, null).use { rs ->
+                        while (rs.next()) {
+                            allTables.add(
+                                TableName(
+                                    catalog = rs.getString("TABLE_CAT"),
+                                    schema = rs.getString("TABLE_SCHEM"),
+                                    name = rs.getString("TABLE_NAME"),
+                                    type = rs.getString("TABLE_TYPE") ?: "",
+                                ),
+                            )
+                        }
                     }
                 }
             }
@@ -128,6 +157,57 @@ class MsSqlSourceMetadataQuerier(
             return@lazy allTables.toList()
         } catch (e: Exception) {
             throw RuntimeException("SQL Server table discovery query failed: ${e.message}", e)
+        }
+    }
+
+    val memoizedColumnMetadata: Map<TableName, List<JdbcMetadataQuerier.ColumnMetadata>> by lazy {
+        val joinMap: Map<TableName, TableName> =
+            memoizedTableNames.associateBy { it.copy(type = "") }
+        val results = mutableListOf<Pair<TableName, JdbcMetadataQuerier.ColumnMetadata>>()
+        log.info { "Querying SQL Server column names for catalog discovery." }
+        try {
+            val dbmd = base.conn.metaData
+            val currentDatabase = base.conn.catalog
+
+            fun addColumnsFromQuery(
+                catalog: String?,
+                schema: String?,
+                tablePattern: String?,
+                isPseudoColumn: Boolean
+            ) {
+                val rsMethod = if (isPseudoColumn) dbmd::getPseudoColumns else dbmd::getColumns
+                rsMethod(catalog, schema, tablePattern, null).use { rs ->
+                    while (rs.next()) {
+                        val (tableName: TableName, metadata: JdbcMetadataQuerier.ColumnMetadata) =
+                            base.columnMetadataFromResultSet(rs, isPseudoColumn)
+                        val joinedTableName: TableName = joinMap[tableName] ?: continue
+                        results.add(joinedTableName to metadata)
+                    }
+                }
+            }
+
+            // If no namespaces are configured, discover all schemas
+            if (base.config.namespaces.isEmpty()) {
+                log.info { "Querying columns for all schemas." }
+                addColumnsFromQuery(currentDatabase, null, null, isPseudoColumn = true)
+                addColumnsFromQuery(currentDatabase, null, null, isPseudoColumn = false)
+            } else {
+                for (namespace in
+                    base.config.namespaces + base.config.namespaces.map { it.uppercase() }) {
+                    addColumnsFromQuery(currentDatabase, namespace, null, isPseudoColumn = true)
+                    addColumnsFromQuery(currentDatabase, namespace, null, isPseudoColumn = false)
+                }
+            }
+            log.info { "Discovered ${results.size} column(s) and pseudo-column(s)." }
+        } catch (e: Exception) {
+            throw RuntimeException("SQL Server column discovery query failed: ${e.message}", e)
+        }
+        return@lazy results.groupBy({ it.first }, { it.second }).mapValues {
+            (_, columnMetadataByTable) ->
+            // Deduplicate columns by name to handle case-insensitive databases
+            val deduplicatedColumns = columnMetadataByTable.distinctBy { it.name }
+            deduplicatedColumns.filter { it.ordinal == null } +
+                deduplicatedColumns.filter { it.ordinal != null }.sortedBy { it.ordinal }
         }
     }
 
@@ -204,48 +284,31 @@ class MsSqlSourceMetadataQuerier(
     }
 
     /**
+     * Returns the primary key for discovery/catalog purposes.
+     *
+     * This returns the actual PRIMARY KEY constraint defined on the table, which represents the
+     * logical uniqueness constraint. This is used for catalog discovery and schema definition.
+     *
+     * Note: This is separate from the sync strategy (which column to use for ordered column
+     * loading), which is determined by [getOrderedColumnForSync].
+     *
      * The logic flow:
-     * 1. Check for clustered index
-     * 2. If single-column clustered index exists → Use it
-     * 3. If composite clustered index exists → Use primary key
-     * 4. If no clustered index exists → Use primary key
-     * 5. If no primary key exists → Check configured catalog for user-defined logical PK
-     * 6. If no logical PK exists → Return empty list
+     * 1. Check for primary key constraint
+     * 2. If primary key exists → Use it
+     * 3. If no primary key exists → Check configured catalog for user-defined logical PK
+     * 4. If no logical PK exists → Return empty list
      */
     override fun primaryKey(
         streamID: StreamIdentifier,
     ): List<List<String>> {
         val table: TableName = findTableName(streamID) ?: return listOf()
 
-        // First try to get clustered index keys
-        val clusteredIndexKeys = memoizedClusteredIndexKeys[table]
-
-        // Use clustered index if it exists and is a single column
-        // For composite clustered indexes, fall back to primary key
-        val databasePK =
-            when {
-                clusteredIndexKeys != null && clusteredIndexKeys.size == 1 -> {
-                    log.info {
-                        "Using single-column clustered index for table ${table.schema}.${table.name}"
-                    }
-                    clusteredIndexKeys
-                }
-                clusteredIndexKeys != null && clusteredIndexKeys.size > 1 -> {
-                    log.info {
-                        "Clustered index is composite for table ${table.schema}.${table.name}. Falling back to primary key."
-                    }
-                    memoizedPrimaryKeys[table]
-                }
-                else -> {
-                    log.info {
-                        "No clustered index found for table ${table.schema}.${table.name}. Using primary key."
-                    }
-                    memoizedPrimaryKeys[table]
-                }
-            }
-
-        // If we found a database PK, use it
+        // First try to get the actual primary key constraint
+        val databasePK = memoizedPrimaryKeys[table]
         if (!databasePK.isNullOrEmpty()) {
+            log.info {
+                "Found primary key for table ${table.schema}.${table.name}: ${databasePK.flatten()}"
+            }
             return databasePK
         }
 
@@ -261,7 +324,61 @@ class MsSqlSourceMetadataQuerier(
             return logicalPK
         }
 
+        log.info { "No primary key or logical PK found for table ${table.schema}.${table.name}" }
         return listOf()
+    }
+
+    /**
+     * Returns the column to use for ordered column (OC) syncing strategy.
+     *
+     * This determines which column should be used for incremental sync with ordered column loading,
+     * prioritizing SQL Server performance characteristics.
+     *
+     * The logic flow:
+     * 1. If single-column clustered index exists → Use it (best performance for SQL Server)
+     * 2. If composite clustered index or no clustered index → Use first column of primary key
+     * 3. If no primary key → Use first column of logical PK from configured catalog
+     * 4. If nothing available → Return null
+     *
+     * Note: This is separate from [primaryKey] which returns the full PK for discovery purposes.
+     */
+    fun getOrderedColumnForSync(streamID: StreamIdentifier): String? {
+        val table: TableName = findTableName(streamID) ?: return null
+
+        // Prefer single-column clustered index for best SQL Server performance
+        val clusteredIndexKeys = memoizedClusteredIndexKeys[table]
+        if (clusteredIndexKeys != null && clusteredIndexKeys.size == 1) {
+            val column = clusteredIndexKeys[0][0]
+            log.info {
+                "Using single-column clustered index for sync: ${table.schema}.${table.name} -> $column"
+            }
+            return column
+        }
+
+        // Fall back to first column of primary key
+        val databasePK = memoizedPrimaryKeys[table]
+        if (!databasePK.isNullOrEmpty()) {
+            val column = databasePK[0][0]
+            log.info {
+                "Clustered index is composite or not found. Using first PK column for sync: ${table.schema}.${table.name} -> $column"
+            }
+            return column
+        }
+
+        // Fall back to first column of logical PK
+        val logicalPK = getUserDefinedPrimaryKey(streamID)
+        if (logicalPK.isNotEmpty()) {
+            val column = logicalPK[0][0]
+            log.info {
+                "No physical primary key. Using first logical PK column for sync: ${table.schema}.${table.name} -> $column"
+            }
+            return column
+        }
+
+        log.warn {
+            "No suitable column found for ordered column sync: ${table.schema}.${table.name}"
+        }
+        return null
     }
 
     /**
@@ -355,29 +472,76 @@ class MsSqlSourceMetadataQuerier(
 
     companion object {
 
+        /**
+         * SQL Server system schemas that should be excluded from auto-discovery. These schemas
+         * contain system objects and should not be synced unless explicitly configured.
+         */
+        private val SYSTEM_SCHEMAS =
+            setOf(
+                // Core system schemas (cannot be dropped)
+                "sys",
+                "INFORMATION_SCHEMA",
+
+                // CDC schema (change data capture)
+                "cdc",
+
+                // Guest user schema
+                "guest",
+
+                // Fixed database role schemas (backward compatibility)
+                "db_accessadmin",
+                "db_backupoperator",
+                "db_datareader",
+                "db_datawriter",
+                "db_ddladmin",
+                "db_denydatareader",
+                "db_denydatawriter",
+                "db_owner",
+                "db_securityadmin",
+
+                // Legacy system support tables/schemas
+                "spt_fallback_db",
+                "spt_fallback_dev",
+                "spt_fallback_usg",
+                "spt_monitor",
+                "spt_values",
+
+                // Replication system schema
+                "MSreplication_options"
+            )
+
+        /**
+         * Checks if a schema is a SQL Server system schema. System schemas are excluded from
+         * auto-discovery unless explicitly configured by the user.
+         */
+        private fun isSystemSchema(schema: String): Boolean {
+            return SYSTEM_SCHEMAS.contains(schema)
+        }
+
         const val CLUSTERED_INDEX_QUERY_FMTSTR =
             """
-        SELECT 
+        SELECT
             s.name as table_schema,
             t.name as table_name,
             i.name as index_name,
             ic.key_ordinal,
             c.name as column_name
-        FROM 
+        FROM
             sys.tables t
-        INNER JOIN 
+        INNER JOIN
             sys.schemas s ON t.schema_id = s.schema_id
-        INNER JOIN 
+        INNER JOIN
             sys.indexes i ON t.object_id = i.object_id
-        INNER JOIN 
+        INNER JOIN
             sys.index_columns ic ON i.object_id = ic.object_id AND i.index_id = ic.index_id
-        INNER JOIN 
+        INNER JOIN
             sys.columns c ON ic.object_id = c.object_id AND ic.column_id = c.column_id
-        WHERE 
+        WHERE
             s.name IN (%s)
             AND i.type = 1  -- Clustered index
+            AND i.is_unique = 1  -- Only unique indexes
             AND ic.is_included_column = 0  -- Only key columns, not included columns
-        ORDER BY 
+        ORDER BY
             s.name, t.name, ic.key_ordinal;
             """
 

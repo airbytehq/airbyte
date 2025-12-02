@@ -23,4 +23,11 @@ data:
   tags:
     - language:python
     - cdk:python
+  externalDocumentationUrls:
+    - title: Couchbase documentation
+      url: https://docs.couchbase.com/
+      type: api_reference
+    - title: Authentication
+      url: https://docs.couchbase.com/server/current/learn/security/authentication.html
+      type: authentication_guide
 metadataSpecVersion: "1.0"

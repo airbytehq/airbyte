@@ -13,11 +13,11 @@ data:
       enabled: false
       packageName: airbyte-source-imagga
   connectorBuildOptions:
-    baseImage: docker.io/airbyte/source-declarative-manifest:7.4.1@sha256:71df19e2ee555ca5b14abbec01d50104c79c9b84cb9cc323284d24333361900a
+    baseImage: docker.io/airbyte/source-declarative-manifest:7.5.1@sha256:8da9d362c184e2e46532ab94f6f9968a74835c0882d6a4a2f9f9c9e5b972f2a1
   connectorSubtype: api
   connectorType: source
   definitionId: 3d4a824d-13a1-441a-ae9d-610b10013b49
-  dockerImageTag: 0.0.23
+  dockerImageTag: 0.0.25
   dockerRepository: airbyte/source-imagga
   githubIssueLabel: source-imagga
   icon: icon.svg
@@ -33,3 +33,10 @@ data:
   ab_internal:
     ql: 100
     sl: 100
+  externalDocumentationUrls:
+    - title: Imagga API documentation
+      url: https://docs.imagga.com/
+      type: api_reference
+    - title: Imagga authentication
+      url: https://docs.imagga.com/#authentication
+      type: authentication_guide

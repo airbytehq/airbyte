@@ -6,12 +6,13 @@ package io.airbyte.integrations.destination.snowflake.sql
 
 import io.airbyte.cdk.load.command.Dedupe
 import io.airbyte.cdk.load.command.DestinationStream
+import io.airbyte.cdk.load.component.ColumnType
+import io.airbyte.cdk.load.component.ColumnTypeChange
 import io.airbyte.cdk.load.message.Meta.Companion.COLUMN_NAME_AB_EXTRACTED_AT
 import io.airbyte.cdk.load.table.CDC_DELETED_AT_COLUMN
 import io.airbyte.cdk.load.table.ColumnNameMapping
 import io.airbyte.cdk.load.table.TableName
 import io.airbyte.cdk.load.util.UUIDGenerator
-import io.airbyte.integrations.destination.snowflake.db.ColumnDefinition
 import io.airbyte.integrations.destination.snowflake.db.toSnowflakeCompatibleName
 import io.airbyte.integrations.destination.snowflake.spec.CdcDeletionMode
 import io.airbyte.integrations.destination.snowflake.spec.SnowflakeConfiguration
@@ -385,42 +386,67 @@ class SnowflakeDirectLoadSqlGenerator(
 
     fun alterTable(
         tableName: TableName,
-        addedColumns: Set<ColumnDefinition>,
-        deletedColumns: Set<ColumnDefinition>,
-        modifiedColumns: Set<ColumnDefinition>,
+        addedColumns: Map<String, ColumnType>,
+        deletedColumns: Map<String, ColumnType>,
+        modifiedColumns: Map<String, ColumnTypeChange>,
     ): Set<String> {
         val clauses = mutableSetOf<String>()
         val prettyTableName = snowflakeSqlNameUtils.fullyQualifiedName(tableName)
-        addedColumns.forEach {
+        addedColumns.forEach { (name, columnType) ->
             clauses.add(
-                "ALTER TABLE $prettyTableName ADD COLUMN ${it.name.quote()} ${it.type};".andLog()
+                // Note that we intentionally don't set NOT NULL.
+                // We're adding a new column, and we don't know what constitutes a reasonable
+                // default value for preexisting records.
+                // So we add the column as nullable.
+                "ALTER TABLE $prettyTableName ADD COLUMN ${name.quote()} ${columnType.type};".andLog()
             )
         }
         deletedColumns.forEach {
-            clauses.add("ALTER TABLE $prettyTableName DROP COLUMN ${it.name.quote()};".andLog())
+            clauses.add("ALTER TABLE $prettyTableName DROP COLUMN ${it.key.quote()};".andLog())
         }
-        modifiedColumns.forEach {
-            val tempColumn = "${it.name}_${uuidGenerator.v4()}"
-            clauses.add(
-                "ALTER TABLE $prettyTableName ADD COLUMN ${tempColumn.quote()} ${it.type};".andLog()
-            )
-            clauses.add(
-                "UPDATE $prettyTableName SET ${tempColumn.quote()} = CAST(${it.name.quote()} AS ${it.type});".andLog()
-            )
-            val backupColumn = "${tempColumn}_backup"
-            clauses.add(
-                """ALTER TABLE $prettyTableName
-                RENAME COLUMN "${it.name}" TO "$backupColumn";
-            """.trimIndent()
-            )
-            clauses.add(
-                """ALTER TABLE $prettyTableName
-                RENAME COLUMN "$tempColumn" TO "${it.name}";
-            """.trimIndent()
-            )
-            clauses.add(
-                "ALTER TABLE $prettyTableName DROP COLUMN ${backupColumn.quote()};".andLog()
-            )
+        modifiedColumns.forEach { (name, typeChange) ->
+            if (typeChange.originalType.type != typeChange.newType.type) {
+                // If we're changing the actual column type, then we need to add a temp column,
+                // cast the original column to that column, drop the original column,
+                // and rename the temp column.
+                val tempColumn = "${name}_${uuidGenerator.v4()}"
+                clauses.add(
+                    // As above: we add the column as nullable.
+                    "ALTER TABLE $prettyTableName ADD COLUMN ${tempColumn.quote()} ${typeChange.newType.type};".andLog()
+                )
+                clauses.add(
+                    "UPDATE $prettyTableName SET ${tempColumn.quote()} = CAST(${name.quote()} AS ${typeChange.newType.type});".andLog()
+                )
+                val backupColumn = "${tempColumn}_backup"
+                clauses.add(
+                    """
+                    ALTER TABLE $prettyTableName
+                    RENAME COLUMN "$name" TO "$backupColumn";
+                    """.trimIndent()
+                )
+                clauses.add(
+                    """
+                    ALTER TABLE $prettyTableName
+                    RENAME COLUMN "$tempColumn" TO "$name";
+                    """.trimIndent()
+                )
+                clauses.add(
+                    "ALTER TABLE $prettyTableName DROP COLUMN ${backupColumn.quote()};".andLog()
+                )
+            } else if (!typeChange.originalType.nullable && typeChange.newType.nullable) {
+                // If the type is unchanged, we can change a column from NOT NULL to nullable.
+                // But we'll never do the reverse, because there's a decent chance that historical
+                // records
+                // had null values.
+                // Users can always manually ALTER COLUMN ... SET NOT NULL if they want.
+                clauses.add(
+                    """ALTER TABLE $prettyTableName ALTER COLUMN "$name" DROP NOT NULL;""".andLog()
+                )
+            } else {
+                log.info {
+                    "Table ${tableName.toPrettyString()} column $name wants to change from nullable to non-nullable; ignoring this change."
+                }
+            }
         }
         return clauses
     }

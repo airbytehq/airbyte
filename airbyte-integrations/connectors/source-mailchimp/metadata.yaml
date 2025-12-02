@@ -7,13 +7,23 @@ data:
       - "*.api.mailchimp.com"
       - "login.mailchimp.com"
   connectorBuildOptions:
-    baseImage: docker.io/airbyte/source-declarative-manifest:7.4.1@sha256:71df19e2ee555ca5b14abbec01d50104c79c9b84cb9cc323284d24333361900a
+    baseImage: docker.io/airbyte/source-declarative-manifest:7.5.1@sha256:8da9d362c184e2e46532ab94f6f9968a74835c0882d6a4a2f9f9c9e5b972f2a1
   connectorSubtype: api
   connectorType: source
   definitionId: b03a9f3e-22a5-11eb-adc1-0242ac120002
-  dockerImageTag: 2.1.11
+  dockerImageTag: 2.1.13
   dockerRepository: airbyte/source-mailchimp
   documentationUrl: https://docs.airbyte.com/integrations/sources/mailchimp
+  externalDocumentationUrls:
+    - title: Mailchimp Marketing API Release Notes
+      url: https://mailchimp.com/developer/release-notes/
+      type: api_release_history
+    - title: Release Notes
+      url: https://mailchimp.com/developer/release-notes/?filter=marketing
+      type: api_release_history
+    - title: Mailchimp Marketing API OpenAPI specification
+      url: https://api.mailchimp.com/schema/3.0/Swagger.json
+      type: openapi_spec
   githubIssueLabel: source-mailchimp
   icon: mailchimp.svg
   license: ELv2

@@ -52,6 +52,8 @@ For more details about the API, check out https://www.sharetribe.com/api-referen
 
 | Version          | Date              | Pull Request | Subject        |
 |------------------|-------------------|--------------|----------------|
+| 0.0.35 | 2025-11-25 | [70074](https://github.com/airbytehq/airbyte/pull/70074) | Update dependencies |
+| 0.0.34 | 2025-11-18 | [69469](https://github.com/airbytehq/airbyte/pull/69469) | Update dependencies |
 | 0.0.33 | 2025-10-29 | [68890](https://github.com/airbytehq/airbyte/pull/68890) | Update dependencies |
 | 0.0.32 | 2025-10-21 | [68265](https://github.com/airbytehq/airbyte/pull/68265) | Update dependencies |
 | 0.0.31 | 2025-10-14 | [67926](https://github.com/airbytehq/airbyte/pull/67926) | Update dependencies |

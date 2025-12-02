@@ -56,4 +56,14 @@ data:
           secretStore:
             type: GSM
             alias: airbyte-connector-testing-secret-store
+  externalDocumentationUrls:
+    - title: Firebolt API reference
+      url: https://docs.firebolt.io/godocs/Overview/api-reference.html
+      type: api_reference
+    - title: Firebolt authentication
+      url: https://docs.firebolt.io/godocs/Guides/managing-your-organization/service-accounts.html
+      type: authentication_guide
+    - title: Firebolt Status
+      url: https://status.firebolt.io/
+      type: status_page
 metadataSpecVersion: "1.0"

@@ -40,4 +40,17 @@ data:
           secretStore:
             type: GSM
             alias: airbyte-connector-testing-secret-store
+  externalDocumentationUrls:
+    - title: Postmark API reference
+      url: https://postmarkapp.com/developer
+      type: api_reference
+    - title: Postmark authentication
+      url: https://postmarkapp.com/developer/api/overview#authentication
+      type: authentication_guide
+    - title: Postmark rate limits
+      url: https://postmarkapp.com/developer/api/overview#rate-limiting
+      type: rate_limits
+    - title: Postmark Status
+      url: https://status.postmarkapp.com/
+      type: status_page
 metadataSpecVersion: "1.0"

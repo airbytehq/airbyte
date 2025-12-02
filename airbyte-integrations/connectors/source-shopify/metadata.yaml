@@ -164,4 +164,26 @@ data:
           secretStore:
             type: GSM
             alias: airbyte-connector-testing-secret-store
+  externalDocumentationUrls:
+    - title: Shopify Admin API
+      url: https://shopify.dev/docs/api/admin-rest
+      type: api_reference
+    - title: Developer changelog
+      url: https://shopify.dev/changelog
+      type: api_release_history
+    - title: Shopify API changelog
+      url: https://shopify.dev/docs/api/release-notes
+      type: api_release_history
+    - title: Shopify authentication
+      url: https://shopify.dev/docs/apps/auth
+      type: authentication_guide
+    - title: Shopify Admin API OpenAPI specification
+      url: https://shopify.dev/docs/api/admin-rest
+      type: openapi_spec
+    - title: Shopify rate limits
+      url: https://shopify.dev/docs/api/usage/rate-limits
+      type: rate_limits
+    - title: Shopify Status
+      url: https://www.shopifystatus.com/
+      type: status_page
 metadataSpecVersion: "1.0"

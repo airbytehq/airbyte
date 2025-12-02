@@ -257,7 +257,7 @@ constructor(
             sshConnectionOptions = SshConnectionOptions.fromAdditionalProperties(emptyMap()),
             checkpointTargetInterval = checkpointTargetInterval,
             jdbcUrlFmt = "jdbc:sqlserver://%s:%d;databaseName=${pojo.database}",
-            namespaces = pojo.schemas?.takeIf { it.isNotEmpty() }?.toSet() ?: setOf("dbo"),
+            namespaces = pojo.schemas?.takeIf { it.isNotEmpty() }?.toSet() ?: emptySet(),
             jdbcProperties = jdbcProperties,
             maxConcurrency = maxConcurrency,
             checkPrivileges = pojo.checkPrivileges ?: true,
@@ -265,7 +265,6 @@ constructor(
                 Duration.ofMillis(
                     MsSqlServerSourceConfigurationSpecification.DEFAULT_HEARTBEAT_INTERVAL_MS
                 ),
-            resourceAcquisitionHeartbeat = Duration.ofSeconds(15),
             incrementalReplicationConfiguration = incrementalReplicationConfiguration,
             databaseName = pojo.database
         )

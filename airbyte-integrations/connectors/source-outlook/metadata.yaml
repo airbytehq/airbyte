@@ -12,11 +12,11 @@ data:
       enabled: false
       packageName: airbyte-source-outlook
   connectorBuildOptions:
-    baseImage: docker.io/airbyte/source-declarative-manifest:7.4.1@sha256:71df19e2ee555ca5b14abbec01d50104c79c9b84cb9cc323284d24333361900a
+    baseImage: docker.io/airbyte/source-declarative-manifest:7.5.1@sha256:8da9d362c184e2e46532ab94f6f9968a74835c0882d6a4a2f9f9c9e5b972f2a1
   connectorSubtype: api
   connectorType: source
   definitionId: 886bdbfe-7935-4d96-b097-e3c1db73b951
-  dockerImageTag: 0.0.9
+  dockerImageTag: 0.0.11
   dockerRepository: airbyte/source-outlook
   githubIssueLabel: source-outlook
   icon: icon.svg
@@ -32,3 +32,16 @@ data:
   ab_internal:
     ql: 100
     sl: 100
+  externalDocumentationUrls:
+    - title: Outlook Mail API
+      url: https://learn.microsoft.com/en-us/graph/api/resources/mail-api-overview
+      type: api_reference
+    - title: Microsoft Graph authentication
+      url: https://learn.microsoft.com/en-us/graph/auth/
+      type: authentication_guide
+    - title: Microsoft Graph throttling
+      url: https://learn.microsoft.com/en-us/graph/throttling
+      type: rate_limits
+    - title: Microsoft 365 Status
+      url: https://status.office365.com/
+      type: status_page

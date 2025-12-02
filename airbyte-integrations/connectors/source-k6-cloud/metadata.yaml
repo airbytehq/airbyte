@@ -40,4 +40,11 @@ data:
           secretStore:
             type: GSM
             alias: airbyte-connector-testing-secret-store
+  externalDocumentationUrls:
+    - title: k6 Cloud API documentation
+      url: https://k6.io/docs/cloud/cloud-reference/cloud-rest-api/
+      type: api_reference
+    - title: k6 Cloud Status
+      url: https://status.k6.io/
+      type: status_page
 metadataSpecVersion: "1.0"

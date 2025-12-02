@@ -41,4 +41,17 @@ data:
           secretStore:
             type: GSM
             alias: airbyte-connector-testing-secret-store
+  externalDocumentationUrls:
+    - title: Braze REST API reference
+      url: https://www.braze.com/docs/api/home
+      type: api_reference
+    - title: Braze API authentication
+      url: https://www.braze.com/docs/api/basics/
+      type: authentication_guide
+    - title: Braze API rate limits
+      url: https://www.braze.com/docs/api/api_limits/
+      type: rate_limits
+    - title: Braze Status
+      url: https://status.braze.com/
+      type: status_page
 metadataSpecVersion: "1.0"
