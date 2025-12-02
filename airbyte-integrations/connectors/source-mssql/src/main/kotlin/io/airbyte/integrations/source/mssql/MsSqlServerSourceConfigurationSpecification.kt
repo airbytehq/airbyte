@@ -164,7 +164,7 @@ class MsSqlServerSourceConfigurationSpecification : ConfigurationSpecification()
     @JsonSchemaTitle("Concurrency")
     @JsonSchemaInject(json = """{"order":12}""")
     @JsonPropertyDescription("Maximum number of concurrent queries to the database.")
-    var concurrency: Int? = 1
+    var concurrency: Int? = null
 
     @JsonProperty("check_privileges")
     @JsonSchemaTitle("Check Table and Column Access Privileges")
