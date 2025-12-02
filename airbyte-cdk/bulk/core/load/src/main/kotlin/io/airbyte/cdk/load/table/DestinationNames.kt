@@ -7,6 +7,7 @@ package io.airbyte.cdk.load.table
 import io.airbyte.cdk.load.command.DestinationStream
 import io.airbyte.cdk.load.schema.model.TableName
 import io.airbyte.cdk.load.table.TableSuffixes.TMP_TABLE_SUFFIX
+import jakarta.inject.Singleton
 import org.apache.commons.codec.digest.DigestUtils
 
 @Deprecated("Deprecated in favor of TableSchemaMapper")
@@ -24,6 +25,7 @@ fun interface TempTableNameGenerator {
  *
  * Not deprecated, but the interface it implements is deprecated.
  */
+@Singleton
 open class DefaultTempTableNameGenerator(
     private val internalNamespace: String? = null,
     private val affixLength: Int = 8,
