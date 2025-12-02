@@ -47,14 +47,16 @@ import org.junit.jupiter.api.assertDoesNotThrow
 interface TableOperationsSuite {
     /** The database client instance to test. Must be properly configured and connected. */
     val client: TableOperationsClient
-    val airbyteMetaColumns: Set<String>
-        get() = Meta.COLUMN_NAMES
+    val testClient: TestTableOperationsClient
+    // since ColumnNameMapping doesn't include the airbyte columns...
+    val airbyteMetaColumnMapping: Map<String, String>
+        get() = Meta.COLUMN_NAMES.associateWith { it }
 
     private val harness: TableOperationsTestHarness
-        get() = TableOperationsTestHarness(client, airbyteMetaColumns)
+        get() = TableOperationsTestHarness(client, testClient, airbyteMetaColumnMapping)
 
     /** Tests basic database connectivity by pinging the database. */
-    fun `connect to database`() = runTest { assertDoesNotThrow { client.ping() } }
+    fun `connect to database`() = runTest { assertDoesNotThrow { testClient.ping() } }
 
     /** Tests namespace creation and deletion operations. */
     fun `create and drop namespaces`() = runTest {
@@ -66,7 +68,7 @@ interface TableOperationsSuite {
 
             assert(client.namespaceExists(testNamespace))
 
-            client.dropNamespace(testNamespace)
+            testClient.dropNamespace(testNamespace)
 
             assert(!client.namespaceExists(testNamespace))
         } finally {
@@ -134,11 +136,14 @@ interface TableOperationsSuite {
                 columnNameMapping = columnNameMapping,
             )
 
-            client.insertRecords(testTable, inputRecords, columnNameMapping)
+            testClient.insertRecords(testTable, inputRecords, columnNameMapping)
 
             val resultRecords = harness.readTableWithoutMetaColumns(testTable)
 
-            assertEquals(expectedRecords, resultRecords.reverseColumnNameMapping(columnNameMapping))
+            assertEquals(
+                expectedRecords,
+                resultRecords.reverseColumnNameMapping(columnNameMapping, airbyteMetaColumnMapping)
+            )
         } finally {
             harness.cleanupTable(testTable)
             harness.cleanupNamespace(testNamespace)
@@ -207,7 +212,7 @@ interface TableOperationsSuite {
                     ),
                 )
 
-            client.insertRecords(testTable, records1, columnNameMapping)
+            testClient.insertRecords(testTable, records1, columnNameMapping)
 
             val count1 = client.countTable(testTable)
 
@@ -226,7 +231,7 @@ interface TableOperationsSuite {
                     ),
                 )
 
-            client.insertRecords(testTable, records2, columnNameMapping)
+            testClient.insertRecords(testTable, records2, columnNameMapping)
 
             val count2 = client.countTable(testTable)
 
@@ -290,7 +295,7 @@ interface TableOperationsSuite {
                     ),
                 )
 
-            client.insertRecords(testTable, records3, columnNameMapping)
+            testClient.insertRecords(testTable, records3, columnNameMapping)
 
             val count3 = client.countTable(testTable)
 
@@ -337,7 +342,7 @@ interface TableOperationsSuite {
                         Fixtures.TEST_FIELD to IntegerValue(42),
                     ),
                 )
-            client.insertRecords(testTable, inputRecords, columnNameMapping)
+            testClient.insertRecords(testTable, inputRecords, columnNameMapping)
 
             val result = client.getGenerationId(testTable)
 
@@ -399,7 +404,7 @@ interface TableOperationsSuite {
             assertEquals(
                 expectedRecords.sortByTestField(),
                 overwrittenTableRecords
-                    .reverseColumnNameMapping(columnNameMapping)
+                    .reverseColumnNameMapping(columnNameMapping, airbyteMetaColumnMapping)
                     .sortByTestField(),
             ) {
                 "Expected records were not in the overwritten table."
@@ -469,7 +474,9 @@ interface TableOperationsSuite {
 
             assertEquals(
                 expectedRecords.sortByTestField(),
-                copyTableRecords.reverseColumnNameMapping(columnNameMapping).sortByTestField(),
+                copyTableRecords
+                    .reverseColumnNameMapping(columnNameMapping, airbyteMetaColumnMapping)
+                    .sortByTestField(),
             ) {
                 "Expected source records were not copied to the target table."
             }
@@ -515,7 +522,7 @@ interface TableOperationsSuite {
             Fixtures.createAppendStream(
                 namespace = sourceTable.namespace,
                 name = sourceTable.name,
-                schema = Fixtures.ID_AND_TEST_SCHEMA,
+                schema = Fixtures.ID_TEST_WITH_CDC_SCHEMA,
             )
 
         val targetTable = Fixtures.generateTestTableName("upsert-test-target-table", testNamespace)
@@ -550,11 +557,13 @@ interface TableOperationsSuite {
 
             client.upsertTable(targetStream, columnNameMapping, sourceTable, targetTable)
 
-            val upsertTableRecords = harness.readTableWithoutMetaColumns(targetTable)
+            val upsertTableRecords = testClient.readTable(targetTable)
 
             assertEquals(
                 expectedRecords.sortByTestField(),
-                upsertTableRecords.reverseColumnNameMapping(columnNameMapping).sortByTestField(),
+                upsertTableRecords
+                    .reverseColumnNameMapping(columnNameMapping, airbyteMetaColumnMapping)
+                    .sortByTestField(),
             ) {
                 "Upserted table did not contain expected records."
             }

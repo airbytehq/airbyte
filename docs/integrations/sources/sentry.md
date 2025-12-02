@@ -65,6 +65,8 @@ Please be aware: this also means that any change older than 90 days will not be 
 
 | Version | Date       | Pull Request                                             | Subject                                                                                                                                                                |
 |:--------|:-----------|:---------------------------------------------------------|:-----------------------------------------------------------------------------------------------------------------------------------------------------------------------|
+| 0.9.10 | 2025-11-18 | [69655](https://github.com/airbytehq/airbyte/pull/69655) | Update dependencies |
+| 0.9.9 | 2025-10-29 | [68882](https://github.com/airbytehq/airbyte/pull/68882) | Update dependencies |
 | 0.9.8 | 2025-10-22 | [68591](https://github.com/airbytehq/airbyte/pull/68591) | Add `suggestedStreams` |
 | 0.9.7 | 2025-10-21 | [68468](https://github.com/airbytehq/airbyte/pull/68468) | Update dependencies |
 | 0.9.6 | 2025-10-14 | [67945](https://github.com/airbytehq/airbyte/pull/67945) | Update dependencies |

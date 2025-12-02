@@ -11,8 +11,6 @@ import io.airbyte.cdk.data.JsonCodec
 import io.airbyte.cdk.data.LeafAirbyteSchemaType
 import io.airbyte.cdk.jdbc.JdbcAccessor
 import io.airbyte.cdk.jdbc.SymmetricJdbcFieldType
-import io.airbyte.cdk.output.sockets.ConnectorJsonEncoder
-import io.airbyte.cdk.output.sockets.ProtoEncoder
 import io.airbyte.cdk.util.Jsons
 import java.sql.PreparedStatement
 import java.sql.ResultSet
@@ -43,26 +41,13 @@ class ObjectAccessor<T : PGobject>(val kClass: KClass<T>) : JdbcAccessor<T> {
     }
 }
 
-class ObjectCodec<T : PGobject>() : JsonCodec<T>, ConnectorJsonEncoder {
+class ObjectCodec<T : PGobject>() : JsonCodec<T> {
     override fun encode(decoded: T): JsonNode {
         return TextNode(decoded.value)
     }
 
     override fun decode(encoded: JsonNode): T {
         return Jsons.readValue(encoded.asText(), object : TypeReference<T>() {})
-    }
-
-    override fun toProtobufEncoder(): ProtoEncoder<*> {
-        return ObjectProtoEncoder<T>()
-    }
-}
-
-class ObjectProtoEncoder<T : PGobject> : ProtoEncoder<T> {
-    override fun encode(
-        builder: io.airbyte.protocol.protobuf.AirbyteRecordMessage.AirbyteValueProtobuf.Builder,
-        decoded: T,
-    ): io.airbyte.protocol.protobuf.AirbyteRecordMessage.AirbyteValueProtobuf.Builder {
-        return builder.setString(decoded.value)
     }
 }
 

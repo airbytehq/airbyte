@@ -126,6 +126,8 @@ Now that you have set up the Mailchimp source connector, check out the following
 
 | Version | Date       | Pull Request                                             | Subject                                                                   |
 |--------|------------|----------------------------------------------------------|---------------------------------------------------------------------------|
+| 2.1.12 | 2025-11-18 | [69453](https://github.com/airbytehq/airbyte/pull/69453) | Update dependencies |
+| 2.1.11 | 2025-10-29 | [68941](https://github.com/airbytehq/airbyte/pull/68941) | Update dependencies |
 | 2.1.10 | 2025-10-21 | [68319](https://github.com/airbytehq/airbyte/pull/68319) | Update dependencies |
 | 2.1.9 | 2025-10-14 | [68062](https://github.com/airbytehq/airbyte/pull/68062) | Update dependencies |
 | 2.1.8 | 2025-10-07 | [67516](https://github.com/airbytehq/airbyte/pull/67516) | Update dependencies |

@@ -9,6 +9,5 @@ package io.airbyte.integrations.destination.snowflake.db
  *
  * @param name
  * @param type
- * @param isPrimaryKey
  */
-data class ColumnDefinition(val name: String, val type: String, val isPrimaryKey: Boolean)
+data class ColumnDefinition(val name: String, val type: String)

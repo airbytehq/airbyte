@@ -17,7 +17,7 @@ data:
             type: GSM
   connectorType: destination
   definitionId: d4353156-9217-4cad-8dd7-c108fd4f74cf
-  dockerImageTag: 2.2.13
+  dockerImageTag: 2.2.14
   dockerRepository: airbyte/destination-mssql
   documentationUrl: https://docs.airbyte.com/integrations/destinations/mssql
   githubIssueLabel: destination-mssql
@@ -46,4 +46,17 @@ data:
   supportsRefreshes: true
   tags:
     - language:java
+  externalDocumentationUrls:
+    - title: SQL Server documentation
+      url: https://learn.microsoft.com/en-us/sql/sql-server/
+      type: api_reference
+    - title: Transact-SQL reference
+      url: https://learn.microsoft.com/en-us/sql/t-sql/language-reference
+      type: sql_reference
+    - title: Authentication and authorization
+      url: https://learn.microsoft.com/en-us/sql/relational-databases/security/authentication-access/getting-started-with-database-engine-permissions
+      type: authentication_guide
+    - title: Permissions
+      url: https://learn.microsoft.com/en-us/sql/relational-databases/security/permissions-database-engine
+      type: permissions_scopes
 metadataSpecVersion: "1.0"

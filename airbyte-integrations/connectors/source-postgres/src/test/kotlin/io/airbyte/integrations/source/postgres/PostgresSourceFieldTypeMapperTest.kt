@@ -46,7 +46,15 @@ class PostgresSourceFieldTypeMapperTest : FieldTypeMapperTest() {
         scalarAndArray(
             "DECIMAL",
             LeafAirbyteSchemaType.NUMBER,
-            AnsiSql.decimalValues.plus(preservedInfinities).plus(preservedNaN)
+            AnsiSql.decimalValues,
+            baseTestName = "DECIMAL SUPPORTED VALS"
+        )
+        scalarAndArray(
+            "DECIMAL",
+            LeafAirbyteSchemaType.NUMBER,
+            nulledInfinities.plus(nulledNaN),
+            arrayIsNulled = true,
+            baseTestName = "DECIMAL UNSUPPORTED VALS"
         )
         scalarAndArray("DECIMAL(20,0)", LeafAirbyteSchemaType.INTEGER, AnsiSql.intValues)
         scalarAndArray("DECIMAL(20,9)", LeafAirbyteSchemaType.NUMBER, AnsiSql.decimalValues)
@@ -54,7 +62,7 @@ class PostgresSourceFieldTypeMapperTest : FieldTypeMapperTest() {
         scalarAndArray(
             "REAL",
             LeafAirbyteSchemaType.NUMBER,
-            AnsiSql.realValues.plus(preservedInfinities).plus(preservedNaN)
+            AnsiSql.realValues.plus(preservedInfinities).plus(preservedNaN),
         )
         scalarAndArray(
             "DOUBLE PRECISION",
@@ -146,7 +154,15 @@ class PostgresSourceFieldTypeMapperTest : FieldTypeMapperTest() {
         scalarAndArray(
             "DATE",
             LeafAirbyteSchemaType.DATE,
-            AnsiSql.dateValues.plus(preservedInfinities).mapKeys { "${it.key}::date" }
+            AnsiSql.dateValues.mapKeys { "${it.key}::date" },
+            baseTestName = "DATE SUPPORTED VALS"
+        )
+        scalarAndArray(
+            "DATE",
+            LeafAirbyteSchemaType.DATE,
+            nulledInfinities.mapKeys { "${it.key}::date" },
+            baseTestName = "DATE UNSUPPORTED VALS",
+            arrayIsNulled = true
         )
         scalarAndArray(
             "TIME",
@@ -156,14 +172,28 @@ class PostgresSourceFieldTypeMapperTest : FieldTypeMapperTest() {
         scalarAndArray(
             "TIMESTAMP",
             LeafAirbyteSchemaType.TIMESTAMP_WITHOUT_TIMEZONE,
-            AnsiSql.timestampValues.plus(preservedInfinities).mapKeys { "${it.key}::timestamp" }
+            AnsiSql.timestampValues.mapKeys { "${it.key}::timestamp" },
+            baseTestName = "TIMESTAMP SUPPORTED VALS",
+        )
+        scalarAndArray(
+            "TIMESTAMP",
+            LeafAirbyteSchemaType.TIMESTAMP_WITHOUT_TIMEZONE,
+            nulledInfinities.mapKeys { "${it.key}::timestamp" },
+            baseTestName = "TIMESTAMP UNSUPPORTED VALS",
+            arrayIsNulled = true
         )
         scalarAndArray(
             "TIMESTAMP WITH TIME ZONE",
             LeafAirbyteSchemaType.TIMESTAMP_WITH_TIMEZONE,
-            AnsiSql.timestampWithTzValues.plus(preservedInfinities).mapKeys {
-                "${it.key}::timestamptz"
-            }
+            AnsiSql.timestampWithTzValues.mapKeys { "${it.key}::timestamptz" },
+            baseTestName = "TIMESTAMP WITH TIME ZONE SUPPORTED VALS",
+        )
+        scalarAndArray(
+            "TIMESTAMP WITH TIME ZONE",
+            LeafAirbyteSchemaType.TIMESTAMP_WITH_TIMEZONE,
+            nulledInfinities.mapKeys { "${it.key}::timestamptz" },
+            baseTestName = "TIMESTAMP WITH TIME ZONE UNSUPPORTED VALS",
+            arrayIsNulled = true
         )
 
         // Geometric types
@@ -223,13 +253,18 @@ class PostgresSourceFieldTypeMapperTest : FieldTypeMapperTest() {
             val executor = JdbcTestDbExecutor(schema, jdbcConfig)
             executor.executeUpdate("CREATE EXTENSION IF NOT EXISTS hstore;")
         }
-
         private val preservedInfinities =
             mapOf(
                 "'Infinity'" to "\"Infinity\"",
                 "'-Infinity'" to "\"-Infinity\"",
             )
+        private val nulledInfinities =
+            mapOf(
+                "'Infinity'" to "null",
+                "'-Infinity'" to "null",
+            )
         private val preservedNaN = mapOf("'NaN'" to "\"NaN\"")
+        private val nulledNaN = mapOf("'NaN'" to "null")
     }
 
     override val setupDdl: List<String> =
@@ -247,29 +282,49 @@ class PostgresSourceFieldTypeMapperTest : FieldTypeMapperTest() {
     private fun testCase(
         sqlType: String,
         type: AirbyteSchemaType,
-        values: Map<String, String>
+        values: Map<String, String>,
+        testName: String
     ): TestCase {
-        return TestCase(schema, sqlType, values, type)
+        return TestCase(schema, sqlType, values, type, testName)
     }
 
     private fun MutableList<TestCase>.scalarAndArray(
         sqlType: String,
         type: AirbyteSchemaType,
-        values: Map<String, String>
+        values: Map<String, String>,
+        arrayIsNulled: Boolean = false,
+        baseTestName: String = sqlType,
     ) {
         val valsWithNull = values.plus("null" to "null")
-        this.add(testCase(sqlType, type, valsWithNull))
-        this.add(testCase("$sqlType[]", ArrayAirbyteSchemaType(type), valsWithNull.toArrayVals()))
+        add(testCase(sqlType, type, valsWithNull, baseTestName))
+        val arrayType = "$sqlType[]"
+        add(
+            testCase(
+                arrayType,
+                ArrayAirbyteSchemaType(type),
+                valsWithNull.toArrayVals(arrayType, arrayIsNulled),
+                "$baseTestName ARRAY"
+            )
+        )
     }
 
     // We created maps of inserted values to expected values to be used in tests of scalar types.
     // Here we flatten one of these for use in an array test, e.g.:
     //   input:  {"'1'" to "\"1\"", "'A'" to "\"A\""}
     //   output: {"['1', 'A']" to "[\"1\", \"A\"]"}
-    private fun Map<String, String>.toArrayVals(): Map<String, String> {
+    private fun Map<String, String>.toArrayVals(
+        sqlType: String,
+        nullResult: Boolean = false
+    ): Map<String, String> {
         return mapOf(
-            this.keys.joinToString(", ", "array[", "]") { it } to
-                this.values.joinToString(",", "[", "]") { it }
+            this.keys.joinToString(", ", "array[", "]::$sqlType") { it } to
+                // When an array field contains an unsupported value, the entire field is set to
+                // null
+                if (nullResult) {
+                    "null"
+                } else {
+                    this.values.joinToString(",", "[", "]") { it }
+                }
         )
     }
 }

@@ -105,11 +105,16 @@ tasks.register('checkBuildNumber') {
 
             XPath xpath = XPathFactory.newInstance().newXPath()
 
-            String expression = "/metadata/versioning/latest"
+            String expression = "/metadata/versioning/versions/version"
 
-            String latestVersion = (String) xpath.compile(expression).evaluate(doc, XPathConstants.STRING)
-            if (version.toString() == latestVersion) {
-                throw new GradleException("Version already exist")
+            var versionNodes = xpath.compile(expression).evaluate(doc, XPathConstants.NODESET)
+            var allVersions = []
+            for (int i = 0; i < versionNodes.length; i++) {
+                allVersions.add(versionNodes.item(i).textContent)
+            }
+
+            if (allVersions.contains(version.toString())) {
+                throw new GradleException("Version ${version} already exists in the repository")
             }
         } finally {
             connection.disconnect()

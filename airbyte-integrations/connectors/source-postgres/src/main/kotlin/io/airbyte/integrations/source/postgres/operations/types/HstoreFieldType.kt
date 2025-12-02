@@ -12,8 +12,6 @@ import io.airbyte.cdk.data.JsonCodec
 import io.airbyte.cdk.data.LeafAirbyteSchemaType
 import io.airbyte.cdk.jdbc.JdbcAccessor
 import io.airbyte.cdk.jdbc.SymmetricJdbcFieldType
-import io.airbyte.cdk.output.sockets.ConnectorJsonEncoder
-import io.airbyte.cdk.output.sockets.ProtoEncoder
 import java.sql.PreparedStatement
 import java.sql.ResultSet
 
@@ -53,13 +51,9 @@ object HstoreAccessor : JdbcAccessor<Map<String, String?>> {
     }
 }
 
-object HstoreCodec : JsonCodec<Map<String, String?>>, ConnectorJsonEncoder {
+object HstoreCodec : JsonCodec<Map<String, String?>> {
     override fun encode(decoded: Map<String, String?>): JsonNode {
         return TextNode(nullValuePreservingObjectMapper.writeValueAsString(decoded))
-    }
-
-    override fun toProtobufEncoder(): ProtoEncoder<*> {
-        return HstoreProtoEncoder()
     }
 
     override fun decode(encoded: JsonNode): Map<String, String?> {
@@ -67,15 +61,6 @@ object HstoreCodec : JsonCodec<Map<String, String?>>, ConnectorJsonEncoder {
             encoded.asText(),
             object : TypeReference<Map<String, String?>>() {}
         )
-    }
-}
-
-class HstoreProtoEncoder : ProtoEncoder<Map<String, String?>> {
-    override fun encode(
-        builder: io.airbyte.protocol.protobuf.AirbyteRecordMessage.AirbyteValueProtobuf.Builder,
-        decoded: Map<String, String?>,
-    ): io.airbyte.protocol.protobuf.AirbyteRecordMessage.AirbyteValueProtobuf.Builder {
-        return builder.setString(nullValuePreservingObjectMapper.writeValueAsString(decoded))
     }
 }
 

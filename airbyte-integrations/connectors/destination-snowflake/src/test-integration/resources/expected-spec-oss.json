@@ -80,7 +80,8 @@
               "type" : "string",
               "description" : "Passphrase for private key",
               "title" : "Passphrase",
-              "order" : 0
+              "order" : 0,
+              "airbyte_secret" : true
             }
           },
           "required" : [ "auth_type", "private_key" ]

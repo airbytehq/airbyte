@@ -38,4 +38,17 @@ data:
   connectorTestSuitesOptions:
     - suite: unitTests
     - suite: integrationTests
+  externalDocumentationUrls:
+    - title: PostgreSQL documentation
+      url: https://www.postgresql.org/docs/current/
+      type: api_reference
+    - title: SQL commands
+      url: https://www.postgresql.org/docs/current/sql-commands.html
+      type: sql_reference
+    - title: Client authentication
+      url: https://www.postgresql.org/docs/current/client-authentication.html
+      type: authentication_guide
+    - title: Database roles and privileges
+      url: https://www.postgresql.org/docs/current/user-manag.html
+      type: permissions_scopes
 metadataSpecVersion: "1.0"

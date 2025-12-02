@@ -44,4 +44,17 @@ data:
   supportsDbt: true
   tags:
     - language:java
+  externalDocumentationUrls:
+    - title: MySQL documentation
+      url: https://dev.mysql.com/doc/
+      type: api_reference
+    - title: SQL statement syntax
+      url: https://dev.mysql.com/doc/refman/8.0/en/sql-statements.html
+      type: sql_reference
+    - title: Access control and account management
+      url: https://dev.mysql.com/doc/refman/8.0/en/access-control.html
+      type: authentication_guide
+    - title: GRANT statement
+      url: https://dev.mysql.com/doc/refman/8.0/en/grant.html
+      type: permissions_scopes
 metadataSpecVersion: "1.0"

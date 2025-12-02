@@ -20,6 +20,7 @@ import edu.umd.cs.findbugs.annotations.SuppressFBWarnings
 import io.airbyte.cdk.ConfigErrorException
 import io.airbyte.cdk.command.CONNECTOR_CONFIG_PREFIX
 import io.airbyte.cdk.command.ConfigurationSpecification
+import io.airbyte.cdk.command.TableFilter
 import io.airbyte.cdk.ssh.MicronautPropertiesFriendlySshTunnelMethodConfigurationSpecification
 import io.airbyte.cdk.ssh.SshTunnelMethodConfiguration
 import io.micronaut.context.annotation.ConfigurationBuilder
@@ -71,6 +72,15 @@ class H2SourceConfigurationSpecification : ConfigurationSpecification() {
     @JsonPropertyDescription("The list of schemas to sync from. Defaults to PUBLIC.")
     @JsonSchemaInject(json = """{"order":4,"minItems":1,"uniqueItems":true}""")
     var schemas: List<String>? = null
+
+    @JsonProperty("table_filters")
+    @JsonSchemaTitle("Table Filters")
+    @JsonPropertyDescription(
+        "Optional filters to include only specific tables from specific schemas. " +
+            "Works in combination with the 'Schemas' config above."
+    )
+    @JsonSchemaInject(json = """{"order":2,"always_show":true,"group":"optional"}""")
+    var tableFilters: List<TableFilter>? = emptyList()
 
     @JsonIgnore
     @ConfigurationBuilder(configurationPrefix = "tunnel_method")
