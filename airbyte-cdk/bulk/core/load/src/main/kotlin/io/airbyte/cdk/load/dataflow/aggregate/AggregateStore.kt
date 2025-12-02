@@ -29,8 +29,8 @@ class AggregateStore(
         val (_, agg, counts, bytes, timeTrigger, countTrigger, bytesTrigger) = getOrCreate(key)
 
         agg.accept(record)
-        counts.increment(record.partitionKey, 1)
-        bytes.increment(record.partitionKey, record.sizeBytes)
+        counts.increment(record.partitionKey, 1.0)
+        bytes.increment(record.partitionKey, record.sizeBytes.toDouble())
         countTrigger.increment(1)
         bytesTrigger.increment(record.sizeBytes)
         timeTrigger.update(record.emittedAtMs)

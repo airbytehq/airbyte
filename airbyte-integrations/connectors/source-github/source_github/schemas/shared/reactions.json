@@ -7,10 +7,10 @@
     "total_count": {
       "type": ["null", "integer"]
     },
-    "+1": {
+    "plus_one": {
       "type": ["null", "integer"]
     },
-    "-1": {
+    "minus_one": {
       "type": ["null", "integer"]
     },
     "laugh": {
