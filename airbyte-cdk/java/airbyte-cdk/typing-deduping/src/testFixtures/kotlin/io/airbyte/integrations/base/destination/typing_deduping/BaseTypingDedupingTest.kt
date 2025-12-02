@@ -476,7 +476,7 @@ abstract class BaseTypingDedupingTest {
     @ParameterizedTest
     @ValueSource(longs = [0L, 42L])
     @Throws(Exception::class)
-    open fun incrementalDedup(inputGenerationId: Long) {
+    fun incrementalDedup(inputGenerationId: Long) {
         val catalog =
             io.airbyte.protocol.models.v0
                 .ConfiguredAirbyteCatalog()
@@ -570,7 +570,7 @@ abstract class BaseTypingDedupingTest {
     @ParameterizedTest
     @ValueSource(longs = [0L, 42L])
     @Throws(Exception::class)
-    open fun incrementalDedupDefaultNamespace(inputGenerationId: Long) {
+    fun incrementalDedupDefaultNamespace(inputGenerationId: Long) {
         val catalog =
             io.airbyte.protocol.models.v0
                 .ConfiguredAirbyteCatalog()
@@ -644,7 +644,7 @@ abstract class BaseTypingDedupingTest {
     @ParameterizedTest
     @ValueSource(longs = [0L, 42L])
     @Throws(Exception::class)
-    open fun testIncrementalSyncDropOneColumn(inputGenerationId: Long) {
+    fun testIncrementalSyncDropOneColumn(inputGenerationId: Long) {
         val stream =
             AirbyteStream()
                 .withNamespace(streamNamespace)
@@ -736,7 +736,7 @@ abstract class BaseTypingDedupingTest {
      */
     @Test
     @Throws(Exception::class)
-    open fun incrementalDedupIdenticalName() {
+    fun incrementalDedupIdenticalName() {
         val namespace1 = streamNamespace + "_1"
         val namespace2 = streamNamespace + "_2"
         val catalog =
@@ -1419,25 +1419,31 @@ abstract class BaseTypingDedupingTest {
     ) {
         catalog.streams.forEach {
             destination.accept(
-                convertProtocolObject(
-                    io.airbyte.protocol.models.v0
-                        .AirbyteMessage()
-                        .withType(io.airbyte.protocol.models.v0.AirbyteMessage.Type.TRACE)
-                        .withTrace(
-                            AirbyteTraceMessage()
-                                .withType(AirbyteTraceMessage.Type.STREAM_STATUS)
-                                .withStreamStatus(
-                                    AirbyteStreamStatusTraceMessage()
-                                        .withStreamDescriptor(
-                                            StreamDescriptor()
-                                                .withNamespace(it.stream.namespace)
-                                                .withName(it.stream.name),
-                                        )
-                                        .withStatus(streamStatus),
-                                ),
-                        ),
-                    io.airbyte.protocol.models.AirbyteMessage::class.java
-                )!!
+                io.airbyte.protocol.models
+                    .AirbyteMessage()
+                    .withType(io.airbyte.protocol.models.AirbyteMessage.Type.TRACE)
+                    .withTrace(
+                        io.airbyte.protocol.models
+                            .AirbyteTraceMessage()
+                            .withType(
+                                io.airbyte.protocol.models.AirbyteTraceMessage.Type.STREAM_STATUS
+                            )
+                            .withStreamStatus(
+                                io.airbyte.protocol.models
+                                    .AirbyteStreamStatusTraceMessage()
+                                    .withStreamDescriptor(
+                                        io.airbyte.protocol.models
+                                            .StreamDescriptor()
+                                            .withNamespace(it.stream.namespace)
+                                            .withName(it.stream.name),
+                                    )
+                                    .withStatus(
+                                        io.airbyte.protocol.models.AirbyteStreamStatusTraceMessage
+                                            .AirbyteStreamStatus
+                                            .valueOf(streamStatus.name)
+                                    ),
+                            ),
+                    ),
             )
         }
     }
