@@ -16,6 +16,7 @@ from pipelines.airbyte_ci.connectors.test.context import ConnectorTestContext
 from pipelines.airbyte_ci.connectors.test.steps import java_connectors, manifest_only_connectors, python_connectors
 from pipelines.airbyte_ci.connectors.test.steps.common import QaChecks, VersionIncrementCheck
 from pipelines.helpers.execution.run_steps import StepToRun, run_steps
+from pipelines.helpers.utils import METADATA_FILE_NAME
 
 if TYPE_CHECKING:
     from pipelines.helpers.execution.run_steps import STEP_TREE
@@ -28,6 +29,21 @@ LANGUAGE_MAPPING = {
         ConnectorLanguage.JAVA: java_connectors.get_test_steps,
     },
 }
+
+
+def _has_non_metadata_changes(context: ConnectorTestContext) -> bool:
+    """Check if the connector has modified files other than metadata.yaml.
+
+    Args:
+        context (ConnectorTestContext): The current connector context.
+
+    Returns:
+        bool: True if there are modified files other than metadata.yaml, False otherwise.
+    """
+    for modified_file in context.modified_files:
+        if not str(modified_file).endswith(METADATA_FILE_NAME):
+            return True
+    return False
 
 
 def get_test_steps(context: ConnectorTestContext) -> STEP_TREE:
@@ -54,7 +70,7 @@ async def run_connector_test_pipeline(context: ConnectorTestContext, semaphore: 
 
     all_steps_to_run += get_test_steps(context)
 
-    if not context.code_tests_only:
+    if not context.code_tests_only and _has_non_metadata_changes(context):
         static_analysis_steps_to_run = [
             [
                 StepToRun(id=CONNECTOR_TEST_STEP_ID.VERSION_INC_CHECK, step=VersionIncrementCheck(context)),
