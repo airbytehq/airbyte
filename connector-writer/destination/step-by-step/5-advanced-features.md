@@ -22,6 +22,7 @@ After completing this guide, you'll have a production-ready connector with:
 
 ---
 
+## Advanced Phase 1: Schema Evolution
 
 **Goal:** Automatically adapt to schema changes
 
@@ -33,7 +34,7 @@ After completing this guide, you'll have a production-ready connector with:
 3. **Change type**: Source changes field type → alter column (with casting)
 4. **Change nullability**: Source changes nullable → alter column constraints
 
-### Step 12.1: Implement discoverSchema()
+### Advanced Step 1: Implement discoverSchema()
 
 **File:** Update `client/{DB}AirbyteClient.kt`
 
@@ -90,7 +91,7 @@ private val AIRBYTE_META_COLUMNS = setOf(
 - **ClickHouse**: `system.columns` or client API `getTableSchema()`
 - **BigQuery**: `INFORMATION_SCHEMA.COLUMNS`
 
-### Step 12.2: Implement computeSchema()
+### Advanced Step 2: Implement computeSchema()
 
 **File:** Update `client/{DB}AirbyteClient.kt`
 
@@ -117,7 +118,7 @@ override fun computeSchema(
 - Applies column name mapping (Phase 6 generators)
 - Uses ColumnUtils.toDialectType() from Phase 4
 
-### Step 12.3: Implement alterTable() - ADD COLUMN
+### Advanced Step 3: Implement alterTable() - ADD COLUMN
 
 **File:** Update `client/{DB}SqlGenerator.kt`
 
@@ -154,7 +155,7 @@ fun alterTable(
 }
 ```
 
-### Step 12.4: Implement alterTable() - MODIFY COLUMN
+### Advanced Step 4: Implement alterTable() - MODIFY COLUMN
 
 **Add to alterTable():**
 
@@ -245,7 +246,7 @@ fun recreateTable(
 }
 ```
 
-### Step 12.5: Implement applyChangeset()
+### Advanced Step 5: Implement applyChangeset()
 
 **File:** Update `client/{DB}AirbyteClient.kt`
 
@@ -275,7 +276,7 @@ override suspend fun applyChangeset(
 }
 ```
 
-### Step 12.6: Implement ensureSchemaMatches()
+### Advanced Step 6: Implement ensureSchemaMatches()
 
 **File:** Update `client/{DB}AirbyteClient.kt`
 
@@ -303,7 +304,7 @@ override suspend fun ensureSchemaMatches(
 - If source schema changed since last sync, applies schema changes
 - Automatic - no user intervention needed
 
-### Step 12.7: Validate Schema Evolution
+### Advanced Step 7: Validate Schema Evolution
 
 **Validate:**
 ```bash
@@ -317,7 +318,7 @@ $ ./gradlew :destination-{db}:integrationTest  # 3 tests should pass
 
 ---
 
-## Phase 13: Dedupe Mode
+## Advanced Phase 2: Dedupe Mode
 
 **Goal:** Support primary key deduplication
 
@@ -336,7 +337,7 @@ $ ./gradlew :destination-{db}:integrationTest  # 3 tests should pass
 - **Overwrite** (Phase 10): Swap tables
 - **Dedupe** (Phase 13): Upsert with primary key
 
-### Step 13.1: Implement upsertTable() in SQL Generator
+### Advanced Step 1: Implement upsertTable() in SQL Generator
 
 **Option A: MERGE Statement (Snowflake, SQL Server, BigQuery)**
 
@@ -500,7 +501,7 @@ fun upsertTable(...): List<String> {
 }
 ```
 
-### Step 13.2: Implement upsertTable() in Client
+### Advanced Step 2: Implement upsertTable() in Client
 
 **File:** Update `client/{DB}AirbyteClient.kt`
 
@@ -523,7 +524,7 @@ override suspend fun upsertTable(
 }
 ```
 
-### Step 13.3: Update Writer for Dedupe Mode
+### Advanced Step 3: Update Writer for Dedupe Mode
 
 **File:** Update `write/{DB}Writer.kt`
 
@@ -585,7 +586,7 @@ override fun createStreamLoader(stream: DestinationStream): StreamLoader {
   - DirectLoadTableDedupStreamLoader (incremental dedupe)
   - DirectLoadTableDedupTruncateStreamLoader (full refresh dedupe)
 
-### Step 13.4: Enable Tests
+### Advanced Step 4: Enable Tests
 
 **File:** Update `src/test-integration/kotlin/.../component/{DB}TableOperationsTest.kt`
 
@@ -596,7 +597,7 @@ override fun `upsert tables`() {
 }
 ```
 
-### Step 13.5: Validate
+### Advanced Step 5: Validate
 
 **Validate:**
 ```bash
@@ -611,7 +612,7 @@ $ ./gradlew :destination-{db}:integrationTest  # 3 tests should pass
 
 ---
 
-## Phase 14: CDC Support (Optional)
+## Advanced Phase 3: CDC Support (Optional)
 
 **Goal:** Handle source deletions
 
@@ -624,7 +625,7 @@ $ ./gradlew :destination-{db}:integrationTest  # 3 tests should pass
   - **Hard delete**: Remove record from destination
   - **Soft delete**: Keep record with deletion timestamp
 
-### Step 14.1: Add CDC Configuration
+### Advanced Step 1: Add CDC Configuration
 
 **File:** Update `spec/{DB}Specification.kt`
 
@@ -659,7 +660,7 @@ override fun makeWithoutExceptionHandling(pojo: {DB}Specification): {DB}Configur
 }
 ```
 
-### Step 14.2: Add CDC Logic to upsertTable()
+### Advanced Step 2: Add CDC Logic to upsertTable()
 
 **File:** Update `client/{DB}SqlGenerator.kt`
 
@@ -726,11 +727,11 @@ private val CDC_DELETED_AT_COLUMN = "_ab_cdc_deleted_at"
 - Skip INSERT for deleted records (don't re-insert deleted rows)
 - Soft delete: No special clauses (just upsert the deletion record with timestamp)
 
-### Step 14.3: Test CDC
+### Advanced Step 3: Test CDC
 
 CDC tests are typically included in integration tests automatically if you have CDC streams configured. No separate test enablement needed - the framework tests CDC if the stream has `_ab_cdc_deleted_at` column.
 
-### Step 14.4: Validate
+### Advanced Step 4: Validate
 
 **Validate:**
 ```bash
@@ -744,7 +745,7 @@ $ ./gradlew :destination-{db}:integrationTest  # 3 tests should pass (CDC tested
 
 ---
 
-## Phase 15: Optimization & Polish
+## Advanced Phase 4: Optimization & Polish
 
 **Goal:** Production-ready performance
 
