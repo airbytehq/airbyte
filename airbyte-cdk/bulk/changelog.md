@@ -1,7 +1,3 @@
-## Version 0.1.84
-
-Add flags to the acceptance tests
-
 ## Version 0.1.83
 
 load cdk: more tests to help guide dependency injection dependency implemenations

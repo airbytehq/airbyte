@@ -53,7 +53,6 @@ class PostgresAcceptanceTest :
                 integerCanBeLarge = false,
                 numberCanBeLarge = true,
                 nestedFloatLosesPrecision = true,
-                stripsNullBytes = true,
             ),
         unknownTypesBehavior = UnknownTypesBehavior.PASS_THROUGH,
         nullEqualsUnset = true,

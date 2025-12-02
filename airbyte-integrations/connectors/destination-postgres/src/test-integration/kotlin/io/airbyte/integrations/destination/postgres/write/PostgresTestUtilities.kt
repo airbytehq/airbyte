@@ -10,6 +10,7 @@ import io.airbyte.cdk.load.data.AirbyteType
 import io.airbyte.cdk.load.data.AirbyteValue
 import io.airbyte.cdk.load.data.ArrayValue
 import io.airbyte.cdk.load.data.ObjectValue
+import io.airbyte.cdk.load.data.StringValue
 import io.airbyte.cdk.load.data.TimestampWithTimezoneValue
 import io.airbyte.cdk.load.message.Meta
 import io.airbyte.cdk.load.test.util.DestinationCleaner
@@ -18,23 +19,35 @@ import io.airbyte.cdk.load.test.util.OutputRecord
 import io.airbyte.cdk.load.util.Jsons
 import io.airbyte.integrations.destination.postgres.PostgresContainerHelper
 import io.airbyte.protocol.models.v0.AirbyteRecordMessageMetaChange
+import java.time.ZoneOffset
 
 /**
  * PostgreSQL normalizes timestamptz values to UTC and doesn't preserve the original timezone
- * offset. This mapper converts expected timestamp_with_timezone values to UTC for comparison.
+ * offset. It also strips null bytes from strings. This mapper converts expected
+ * timestamp_with_timezone values to UTC and removes null characters for comparison.
  */
 object PostgresTimestampNormalizationMapper : ExpectedRecordMapper {
     override fun mapRecord(expectedRecord: OutputRecord, schema: AirbyteType): OutputRecord {
-        val mappedData = normalizeTimestampsToUtc(expectedRecord.data)
-        return expectedRecord.copy(data = mappedData as ObjectValue)
+        val sanitized = removeNullCharacters(expectedRecord.data)
+        val normalized = normalizeTimestampsToUtc(sanitized)
+        return expectedRecord.copy(data = normalized as ObjectValue)
     }
+
+    private fun removeNullCharacters(value: AirbyteValue): AirbyteValue =
+        when (value) {
+            is StringValue -> StringValue(value.value.replace("\u0000", ""))
+            is ArrayValue -> ArrayValue(value.values.map { removeNullCharacters(it) })
+            is ObjectValue ->
+                ObjectValue(
+                    value.values.mapValuesTo(linkedMapOf()) { (_, v) -> removeNullCharacters(v) }
+                )
+            else -> value
+        }
 
     private fun normalizeTimestampsToUtc(value: AirbyteValue): AirbyteValue =
         when (value) {
             is TimestampWithTimezoneValue ->
-                TimestampWithTimezoneValue(
-                    value.value.withOffsetSameInstant(java.time.ZoneOffset.UTC)
-                )
+                TimestampWithTimezoneValue(value.value.withOffsetSameInstant(ZoneOffset.UTC))
             is ArrayValue -> ArrayValue(value.values.map { normalizeTimestampsToUtc(it) })
             is ObjectValue ->
                 ObjectValue(
