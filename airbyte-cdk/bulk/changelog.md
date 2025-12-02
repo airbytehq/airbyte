@@ -1,6 +1,10 @@
+## Version 0.1.84
+
+load cdk: Move most DB packages into core. Refactor table schema interface into TableSchemaMapper.
+
 ## Version 0.1.83
 
-load cdk: more tests to help guide dependency injection dependency implemenations
+load cdk: more tests to help guide dependency injection dependency implementations
 
 ## Version 0.1.82
 
