@@ -6,9 +6,11 @@ from pathlib import Path
 from typing import Any, Mapping
 
 from pytest import fixture
+
 from airbyte_cdk.sources.declarative.yaml_declarative_source import YamlDeclarativeSource
 from airbyte_cdk.test.catalog_builder import CatalogBuilder
 from airbyte_cdk.test.state_builder import StateBuilder
+
 
 pytest_plugins = ["airbyte_cdk.test.utils.manifest_only_fixtures"]
 os.environ["REQUEST_CACHE_PATH"] = "REQUEST_CACHE_PATH"
@@ -31,12 +33,7 @@ def get_source(config: Mapping[str, Any], state=None) -> YamlDeclarativeSource:
     """Create a YamlDeclarativeSource instance with the given config."""
     catalog = CatalogBuilder().build()
     state = StateBuilder().build() if not state else state
-    return YamlDeclarativeSource(
-        path_to_yaml=str(_YAML_FILE_PATH),
-        catalog=catalog,
-        config=config,
-        state=state
-    )
+    return YamlDeclarativeSource(path_to_yaml=str(_YAML_FILE_PATH), catalog=catalog, config=config, state=state)
 
 
 @fixture(autouse=True)
