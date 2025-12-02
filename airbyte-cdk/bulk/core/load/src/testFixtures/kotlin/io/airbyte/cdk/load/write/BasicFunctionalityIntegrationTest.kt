@@ -51,10 +51,6 @@ import io.airbyte.cdk.load.message.Meta.Change
 import io.airbyte.cdk.load.message.Meta.Companion.CHECKPOINT_ID_NAME
 import io.airbyte.cdk.load.message.Meta.Companion.CHECKPOINT_INDEX_NAME
 import io.airbyte.cdk.load.message.StreamCheckpoint
-import io.airbyte.cdk.load.schema.model.ColumnSchema
-import io.airbyte.cdk.load.schema.model.StreamTableSchema
-import io.airbyte.cdk.load.schema.model.TableName
-import io.airbyte.cdk.load.schema.model.TableNames
 import io.airbyte.cdk.load.state.CheckpointId
 import io.airbyte.cdk.load.state.CheckpointIndex
 import io.airbyte.cdk.load.state.CheckpointKey
@@ -366,29 +362,6 @@ abstract class BasicFunctionalityIntegrationTest(
     val updatedConfig = configUpdater.update(configContents)
     val parsedConfig = ValidatedJsonUtils.parseOne(configSpecClass, updatedConfig)
 
-    // Helper function to create a default tableSchema for tests
-    private fun createTestTableSchema(
-        namespace: String?,
-        name: String,
-        schema: AirbyteType,
-        importType: ImportType
-    ): StreamTableSchema {
-        val inputSchema = if (schema is ObjectType) schema.properties else mapOf()
-        val columnNames =
-            if (schema is ObjectType) schema.properties.keys.associateWith { it } else mapOf()
-
-        return StreamTableSchema(
-            tableNames = TableNames(finalTableName = TableName(namespace ?: "default", name)),
-            columnSchema =
-                ColumnSchema(
-                    inputSchema = inputSchema,
-                    inputToFinalColumnNames = columnNames,
-                    finalSchema = mapOf(),
-                ),
-            importType = importType,
-        )
-    }
-
     @Test
     open fun testOutOfOrderStateMessages() {
         if (
@@ -397,19 +370,16 @@ abstract class BasicFunctionalityIntegrationTest(
         ) {
             return
         }
-        val streamSchema = ObjectType(linkedMapOf("id" to intType))
         val stream =
             DestinationStream(
                 randomizedNamespace,
                 "test_stream",
                 Append,
-                streamSchema,
+                ObjectType(linkedMapOf("id" to intType)),
                 generationId = 0,
                 minimumGenerationId = 0,
                 syncId = 42,
                 namespaceMapper = namespaceMapperForMedium(),
-                tableSchema =
-                    createTestTableSchema(randomizedNamespace, "test_stream", streamSchema, Append)
             )
         val messages =
             runSync(
@@ -512,19 +482,16 @@ abstract class BasicFunctionalityIntegrationTest(
         ) {
             return
         }
-        val streamSchema = ObjectType(linkedMapOf("id" to intType))
         val stream =
             DestinationStream(
                 randomizedNamespace,
                 "test_stream",
                 Append,
-                streamSchema,
+                ObjectType(linkedMapOf("id" to intType)),
                 generationId = 0,
                 minimumGenerationId = 0,
                 syncId = 42,
                 namespaceMapper = namespaceMapperForMedium(),
-                tableSchema =
-                    createTestTableSchema(randomizedNamespace, "test_stream", streamSchema, Append)
             )
         val messages =
             runSync(
@@ -691,57 +658,38 @@ abstract class BasicFunctionalityIntegrationTest(
         ) {
             return
         }
-        val streamSchema = ObjectType(linkedMapOf("id" to intType))
         val stream =
             DestinationStream(
                 randomizedNamespace,
                 "test_stream",
                 Append,
-                streamSchema,
+                ObjectType(linkedMapOf("id" to intType)),
                 generationId = 0,
                 minimumGenerationId = 0,
                 syncId = 42,
                 namespaceMapper = namespaceMapperForMedium(),
-                tableSchema =
-                    createTestTableSchema(randomizedNamespace, "test_stream", streamSchema, Append)
             )
-        val stream2Schema = ObjectType(linkedMapOf("id" to intType))
         val stream2 =
             DestinationStream(
                 randomizedNamespace,
                 "test_stream_2",
                 Append,
-                stream2Schema,
+                ObjectType(linkedMapOf("id" to intType)),
                 generationId = 0,
                 minimumGenerationId = 0,
                 syncId = 42,
                 namespaceMapper = namespaceMapperForMedium(),
-                tableSchema =
-                    createTestTableSchema(
-                        randomizedNamespace,
-                        "test_stream_2",
-                        stream2Schema,
-                        Append
-                    )
             )
-        val stream3Schema = ObjectType(linkedMapOf("id" to intType))
         val stream3 =
             DestinationStream(
                 randomizedNamespace,
                 "test_stream_3",
                 Append,
-                stream3Schema,
+                ObjectType(linkedMapOf("id" to intType)),
                 generationId = 0,
                 minimumGenerationId = 0,
                 syncId = 42,
                 namespaceMapper = namespaceMapperForMedium(),
-                tableSchema =
-                    createTestTableSchema(
-                        randomizedNamespace,
-                        "test_stream_3",
-                        stream3Schema,
-                        Append
-                    )
             )
         val messages =
             runSync(
@@ -1067,57 +1015,38 @@ abstract class BasicFunctionalityIntegrationTest(
         ) {
             return
         }
-        val streamSchema = ObjectType(linkedMapOf("id" to intType))
         val stream =
             DestinationStream(
                 randomizedNamespace,
                 "test_stream",
                 Append,
-                streamSchema,
+                ObjectType(linkedMapOf("id" to intType)),
                 generationId = 0,
                 minimumGenerationId = 0,
                 syncId = 42,
                 namespaceMapper = namespaceMapperForMedium(),
-                tableSchema =
-                    createTestTableSchema(randomizedNamespace, "test_stream", streamSchema, Append)
             )
-        val stream2Schema = ObjectType(linkedMapOf("id" to intType))
         val stream2 =
             DestinationStream(
                 randomizedNamespace,
                 "test_stream_2",
                 Append,
-                stream2Schema,
+                ObjectType(linkedMapOf("id" to intType)),
                 generationId = 0,
                 minimumGenerationId = 0,
                 syncId = 42,
                 namespaceMapper = namespaceMapperForMedium(),
-                tableSchema =
-                    createTestTableSchema(
-                        randomizedNamespace,
-                        "test_stream_2",
-                        stream2Schema,
-                        Append
-                    )
             )
-        val stream3Schema = ObjectType(linkedMapOf("id" to intType))
         val stream3 =
             DestinationStream(
                 randomizedNamespace,
                 "test_stream_3",
                 Append,
-                stream3Schema,
+                ObjectType(linkedMapOf("id" to intType)),
                 generationId = 0,
                 minimumGenerationId = 0,
                 syncId = 42,
                 namespaceMapper = namespaceMapperForMedium(),
-                tableSchema =
-                    createTestTableSchema(
-                        randomizedNamespace,
-                        "test_stream_3",
-                        stream3Schema,
-                        Append
-                    )
             )
         val messages =
             runSync(
@@ -1590,19 +1519,16 @@ abstract class BasicFunctionalityIntegrationTest(
 
     @Test
     open fun testBasicWrite() {
-        val streamSchema = ObjectType(linkedMapOf("id" to intType))
         val stream =
             DestinationStream(
                 randomizedNamespace,
                 "test_stream",
                 Append,
-                streamSchema,
+                ObjectType(linkedMapOf("id" to intType)),
                 generationId = 0,
                 minimumGenerationId = 0,
                 syncId = 42,
-                namespaceMapper = namespaceMapperForMedium(),
-                tableSchema =
-                    createTestTableSchema(randomizedNamespace, "test_stream", streamSchema, Append)
+                namespaceMapper = namespaceMapperForMedium()
             )
         val messages =
             runSync(
@@ -1715,26 +1641,18 @@ abstract class BasicFunctionalityIntegrationTest(
     @Test
     open fun testBasicWriteFile() {
         assumeTrue(supportFileTransfer)
-        val streamSchema = ObjectType(linkedMapOf("id" to intType))
         val stream =
             DestinationStream(
                 randomizedNamespace,
                 "test_stream_file",
                 Append,
-                streamSchema,
+                ObjectType(linkedMapOf("id" to intType)),
                 generationId = 0,
                 minimumGenerationId = 0,
                 syncId = 42,
                 isFileBased = true,
                 includeFiles = true,
-                namespaceMapper = namespaceMapperForMedium(),
-                tableSchema =
-                    createTestTableSchema(
-                        randomizedNamespace,
-                        "test_stream_file",
-                        streamSchema,
-                        Append
-                    )
+                namespaceMapper = namespaceMapperForMedium()
             )
 
         val sourcePath = "path/to/file"
@@ -1817,24 +1735,16 @@ abstract class BasicFunctionalityIntegrationTest(
     open fun testMidSyncCheckpointingStreamState(): Unit =
         runBlocking(Dispatchers.IO) {
             assumeTrue(verifyDataWriting)
-            val streamSchema = ObjectType(linkedMapOf("id" to intType))
             val stream =
                 DestinationStream(
                     randomizedNamespace,
                     "test_stream",
                     Append,
-                    streamSchema,
+                    ObjectType(linkedMapOf("id" to intType)),
                     generationId = 0,
                     minimumGenerationId = 0,
                     syncId = 42,
-                    namespaceMapper = namespaceMapperForMedium(),
-                    tableSchema =
-                        createTestTableSchema(
-                            randomizedNamespace,
-                            "test_stream",
-                            streamSchema,
-                            Append
-                        )
+                    namespaceMapper = namespaceMapperForMedium()
                 )
             val stateMessage =
                 runSyncUntilStateAckAndExpectFailure(
@@ -1908,25 +1818,21 @@ abstract class BasicFunctionalityIntegrationTest(
     @Test
     open fun testNamespaces() {
         assumeTrue(verifyDataWriting)
-        fun makeStream(namespace: String?): DestinationStream {
-            val streamSchema = ObjectType(linkedMapOf("id" to intType))
-            val streamName = "test_stream_$randomizedNamespace"
-            return DestinationStream(
+        fun makeStream(namespace: String?) =
+            DestinationStream(
                 // We need to randomize the stream name for destinations which support
                 // namespace=null natively.
                 // Otherwise, multiple test runs would write to `<null>.test_stream`.
                 // Now, they instead write to `<null>.test_stream_test20250123abcd`.
                 namespace,
-                streamName,
+                "test_stream_$randomizedNamespace",
                 Append,
-                streamSchema,
+                ObjectType(linkedMapOf("id" to intType)),
                 generationId = 0,
                 minimumGenerationId = 0,
                 syncId = 42,
-                namespaceMapper = namespaceMapperForMedium(),
-                tableSchema = createTestTableSchema(namespace, streamName, streamSchema, Append)
+                namespaceMapper = namespaceMapperForMedium()
             )
-        }
         val stream1 = makeStream(randomizedNamespace + "_1")
         val stream2 = makeStream(randomizedNamespace + "_2")
         val streamWithDefaultNamespace = makeStream(null)
@@ -2021,21 +1927,17 @@ abstract class BasicFunctionalityIntegrationTest(
             name: String,
             schema: LinkedHashMap<String, FieldType> = linkedMapOf("id" to intType),
             namespaceSuffix: String = "",
-        ): DestinationStream {
-            val streamSchema = ObjectType(schema)
-            val namespace = randomizedNamespace + namespaceSuffix
-            return DestinationStream(
-                namespace,
+        ) =
+            DestinationStream(
+                randomizedNamespace + namespaceSuffix,
                 name,
                 Append,
-                streamSchema,
+                ObjectType(schema),
                 generationId = 0,
                 minimumGenerationId = 0,
                 syncId = 42,
-                namespaceMapper = namespaceMapperForMedium(),
-                tableSchema = createTestTableSchema(namespace, name, streamSchema, Append)
+                namespaceMapper = namespaceMapperForMedium()
             )
-        }
         // Catalog with some weird schemas.
         // Every stream has an int `id`, and maybe some string fields.
         val catalog =
@@ -2138,42 +2040,33 @@ abstract class BasicFunctionalityIntegrationTest(
     open fun testFunkyCharactersDedup() {
         assumeTrue(verifyDataWriting)
         assumeTrue(dedupBehavior != null)
-        val streamSchema =
-            ObjectType(
-                properties =
-                    linkedMapOf(
-                        "id~!@#\$%^&*()`[]{}|;':\",./<>?" to intType,
-                        "updated_at~!@#\$%^&*()`[]{}|;':\",./<>?" to timestamptzType,
-                        "name~!@#\$%^&*()`[]{}|;':\",./<>?" to stringType,
-                    )
-            )
-        val dedupeType =
-            Dedupe(
-                // the actual string here is id~!@#$%^&*()`[]{}|;':",./<>?
-                // note: no `\` character, because it causes significant problems in some
-                // destinations (T+D destinations with noncompliant JSONPath
-                // implementations,
-                // e.g. bigquery)
-                primaryKey = listOf(listOf("id~!@#\$%^&*()`[]{}|;':\",./<>?")),
-                cursor = listOf("updated_at~!@#$%^&*()`[]{}|;':\",./<>?"),
-            )
         val stream =
             DestinationStream(
                 randomizedNamespace,
                 "test_stream",
-                importType = dedupeType,
-                schema = streamSchema,
+                importType =
+                    Dedupe(
+                        // the actual string here is id~!@#$%^&*()`[]{}|;':",./<>?
+                        // note: no `\` character, because it causes significant problems in some
+                        // destinations (T+D destinations with noncompliant JSONPath
+                        // implementations,
+                        // e.g. bigquery)
+                        primaryKey = listOf(listOf("id~!@#\$%^&*()`[]{}|;':\",./<>?")),
+                        cursor = listOf("updated_at~!@#$%^&*()`[]{}|;':\",./<>?"),
+                    ),
+                schema =
+                    ObjectType(
+                        properties =
+                            linkedMapOf(
+                                "id~!@#\$%^&*()`[]{}|;':\",./<>?" to intType,
+                                "updated_at~!@#\$%^&*()`[]{}|;':\",./<>?" to timestamptzType,
+                                "name~!@#\$%^&*()`[]{}|;':\",./<>?" to stringType,
+                            )
+                    ),
                 generationId = 42,
                 minimumGenerationId = 0,
                 syncId = 42,
-                namespaceMapper = namespaceMapperForMedium(),
-                tableSchema =
-                    createTestTableSchema(
-                        randomizedNamespace,
-                        "test_stream",
-                        streamSchema,
-                        dedupeType
-                    )
+                namespaceMapper = namespaceMapperForMedium()
             )
         runSync(
             updatedConfig,
@@ -2218,25 +2111,17 @@ abstract class BasicFunctionalityIntegrationTest(
     @Test
     open fun testTruncateRefresh() {
         assumeTrue(verifyDataWriting)
-        fun makeStream(
-            generationId: Long,
-            minimumGenerationId: Long,
-            syncId: Long
-        ): DestinationStream {
-            val streamSchema = ObjectType(linkedMapOf("id" to intType, "name" to stringType))
-            return DestinationStream(
+        fun makeStream(generationId: Long, minimumGenerationId: Long, syncId: Long) =
+            DestinationStream(
                 randomizedNamespace,
                 "test_stream",
                 Append,
-                streamSchema,
+                ObjectType(linkedMapOf("id" to intType, "name" to stringType)),
                 generationId,
                 minimumGenerationId,
                 syncId,
-                namespaceMapper = namespaceMapperForMedium(),
-                tableSchema =
-                    createTestTableSchema(randomizedNamespace, "test_stream", streamSchema, Append)
+                namespaceMapper = namespaceMapperForMedium()
             )
-        }
         val stream =
             makeStream(
                 generationId = 12,
@@ -2358,26 +2243,17 @@ abstract class BasicFunctionalityIntegrationTest(
             minimumGenerationId: Long,
             syncId: Long,
             importType: ImportType
-        ): DestinationStream {
-            val streamSchema = ObjectType(linkedMapOf("id" to intType, "name" to stringType))
-            return DestinationStream(
+        ) =
+            DestinationStream(
                 randomizedNamespace,
                 "test_stream",
                 importType,
-                streamSchema,
+                ObjectType(linkedMapOf("id" to intType, "name" to stringType)),
                 generationId,
                 minimumGenerationId,
                 syncId,
-                namespaceMapper = namespaceMapperForMedium(),
-                tableSchema =
-                    createTestTableSchema(
-                        randomizedNamespace,
-                        "test_stream",
-                        streamSchema,
-                        importType
-                    )
+                namespaceMapper = namespaceMapperForMedium()
             )
-        }
         val stream =
             makeStream(
                 generationId = 12,
@@ -2475,26 +2351,22 @@ abstract class BasicFunctionalityIntegrationTest(
     @Test
     open fun testInterruptedTruncateWithPriorData() {
         assumeTrue(verifyDataWriting)
-        val streamSchema =
-            ObjectType(
-                linkedMapOf(
-                    "id" to intType,
-                    "updated_at" to timestamptzType,
-                    "name" to stringType,
-                )
-            )
         val stream1 =
             DestinationStream(
                 randomizedNamespace,
                 "test_stream",
                 Append,
-                streamSchema,
+                ObjectType(
+                    linkedMapOf(
+                        "id" to intType,
+                        "updated_at" to timestamptzType,
+                        "name" to stringType,
+                    )
+                ),
                 generationId = 41,
                 minimumGenerationId = 0,
                 syncId = 41,
-                namespaceMapper = namespaceMapperForMedium(),
-                tableSchema =
-                    createTestTableSchema(randomizedNamespace, "test_stream", streamSchema, Append)
+                namespaceMapper = namespaceMapperForMedium()
             )
         fun makeInputRecord(id: Int, updatedAt: String, extractedAt: Long) =
             InputRecord(
@@ -2651,26 +2523,22 @@ abstract class BasicFunctionalityIntegrationTest(
     @Test
     open fun testInterruptedTruncateWithoutPriorData() {
         assumeTrue(verifyDataWriting)
-        val streamSchema =
-            ObjectType(
-                linkedMapOf(
-                    "id" to intType,
-                    "updated_at" to timestamptzType,
-                    "name" to stringType,
-                )
-            )
         val stream =
             DestinationStream(
                 randomizedNamespace,
                 "test_stream",
                 Append,
-                streamSchema,
+                ObjectType(
+                    linkedMapOf(
+                        "id" to intType,
+                        "updated_at" to timestamptzType,
+                        "name" to stringType,
+                    )
+                ),
                 generationId = 42,
                 minimumGenerationId = 42,
                 syncId = 42,
-                namespaceMapper = namespaceMapperForMedium(),
-                tableSchema =
-                    createTestTableSchema(randomizedNamespace, "test_stream", streamSchema, Append)
+                namespaceMapper = namespaceMapperForMedium()
             )
         fun makeInputRecord(id: Int, updatedAt: String, extractedAt: Long) =
             InputRecord(
@@ -2780,26 +2648,22 @@ abstract class BasicFunctionalityIntegrationTest(
     @Disabled("Still flaky")
     open fun resumeAfterCancelledTruncate() {
         assumeTrue(verifyDataWriting)
-        val streamSchema =
-            ObjectType(
-                linkedMapOf(
-                    "id" to intType,
-                    "updated_at" to timestamptzType,
-                    "name" to stringType,
-                )
-            )
         val stream1 =
             DestinationStream(
                 randomizedNamespace,
                 "test_stream",
                 Append,
-                streamSchema,
+                ObjectType(
+                    linkedMapOf(
+                        "id" to intType,
+                        "updated_at" to timestamptzType,
+                        "name" to stringType,
+                    )
+                ),
                 generationId = 41,
                 minimumGenerationId = 0,
                 syncId = 41,
-                namespaceMapper = namespaceMapperForMedium(),
-                tableSchema =
-                    createTestTableSchema(randomizedNamespace, "test_stream", streamSchema, Append)
+                namespaceMapper = namespaceMapperForMedium()
             )
         fun makeInputRecord(id: Int, updatedAt: String, extractedAt: Long) =
             InputRecord(
@@ -2974,21 +2838,17 @@ abstract class BasicFunctionalityIntegrationTest(
     @Test
     open fun testAppend() {
         assumeTrue(verifyDataWriting)
-        fun makeStream(syncId: Long): DestinationStream {
-            val streamSchema = ObjectType(linkedMapOf("id" to intType, "name" to stringType))
-            return DestinationStream(
+        fun makeStream(syncId: Long) =
+            DestinationStream(
                 randomizedNamespace,
                 "test_stream",
                 Append,
-                streamSchema,
+                ObjectType(linkedMapOf("id" to intType, "name" to stringType)),
                 generationId = 0,
                 minimumGenerationId = 0,
                 syncId,
-                namespaceMapper = namespaceMapperForMedium(),
-                tableSchema =
-                    createTestTableSchema(randomizedNamespace, "test_stream", streamSchema, Append)
+                namespaceMapper = namespaceMapperForMedium()
             )
-        }
         val stream = makeStream(syncId = 42)
         runSync(
             updatedConfig,
@@ -3048,21 +2908,17 @@ abstract class BasicFunctionalityIntegrationTest(
     open fun testAppendSchemaEvolution() {
         assumeTrue(verifyDataWriting)
         assumeTrue(isStreamSchemaRetroactive)
-        fun makeStream(syncId: Long, schema: LinkedHashMap<String, FieldType>): DestinationStream {
-            val streamSchema = ObjectType(schema)
-            return DestinationStream(
+        fun makeStream(syncId: Long, schema: LinkedHashMap<String, FieldType>) =
+            DestinationStream(
                 randomizedNamespace,
                 "test_stream",
                 Append,
-                streamSchema,
+                ObjectType(schema),
                 generationId = 0,
                 minimumGenerationId = 0,
                 syncId,
-                namespaceMapper = namespaceMapperForMedium(),
-                tableSchema =
-                    createTestTableSchema(randomizedNamespace, "test_stream", streamSchema, Append)
+                namespaceMapper = namespaceMapperForMedium()
             )
-        }
         val stream =
             makeStream(
                 syncId = 42,
@@ -3131,21 +2987,17 @@ abstract class BasicFunctionalityIntegrationTest(
         assumeTrue(verifyDataWriting)
         assumeTrue(isStreamSchemaRetroactive)
         assumeTrue(isStreamSchemaRetroactiveForUnknownTypeToString)
-        fun makeStream(schema: LinkedHashMap<String, FieldType>): DestinationStream {
-            val streamSchema = ObjectType(schema)
-            return DestinationStream(
+        fun makeStream(schema: LinkedHashMap<String, FieldType>) =
+            DestinationStream(
                 randomizedNamespace,
                 "test_stream",
                 Append,
-                streamSchema,
+                ObjectType(schema),
                 generationId = 0,
                 minimumGenerationId = 0,
                 syncId = 0,
                 namespaceMapper = namespaceMapperForMedium(),
-                tableSchema =
-                    createTestTableSchema(randomizedNamespace, "test_stream", streamSchema, Append)
             )
-        }
 
         val stream1 =
             makeStream(linkedMapOf("id" to intType, "a" to unknownType, "b" to stringType))
@@ -3214,21 +3066,17 @@ abstract class BasicFunctionalityIntegrationTest(
             schema: LinkedHashMap<String, FieldType>,
             generationId: Long,
             minimumGenerationId: Long,
-        ): DestinationStream {
-            val streamSchema = ObjectType(schema)
-            return DestinationStream(
+        ) =
+            DestinationStream(
                 randomizedNamespace,
                 "test_stream",
                 Append,
-                streamSchema,
+                ObjectType(schema),
                 generationId = generationId,
                 minimumGenerationId = minimumGenerationId,
                 syncId,
-                namespaceMapper = namespaceMapperForMedium(),
-                tableSchema =
-                    createTestTableSchema(randomizedNamespace, "test_stream", streamSchema, Append)
+                namespaceMapper = namespaceMapperForMedium()
             )
-        }
         val stream =
             makeStream(
                 syncId = 42,
@@ -3328,41 +3176,31 @@ abstract class BasicFunctionalityIntegrationTest(
     ) {
         assumeTrue(verifyDataWriting)
         assumeTrue(dedupBehavior != null)
-        fun makeStream(syncId: Long): DestinationStream {
-            val streamSchema =
-                ObjectType(
-                    properties =
-                        linkedMapOf(
-                            "id1" to FieldType(idType, nullable = false),
-                            "id2" to intType,
-                            "updated_at" to timestamptzType,
-                            "name" to stringType,
-                            "_ab_cdc_deleted_at" to timestamptzType,
-                        )
-                )
-            val dedupeType =
-                Dedupe(
-                    primaryKey = listOf(listOf("id1"), listOf("id2")),
-                    cursor = listOf("updated_at"),
-                )
-            return DestinationStream(
+        fun makeStream(syncId: Long) =
+            DestinationStream(
                 unmappedNamespace = randomizedNamespace,
                 unmappedName = "test_stream",
-                importType = dedupeType,
-                schema = streamSchema,
+                importType =
+                    Dedupe(
+                        primaryKey = listOf(listOf("id1"), listOf("id2")),
+                        cursor = listOf("updated_at"),
+                    ),
+                schema =
+                    ObjectType(
+                        properties =
+                            linkedMapOf(
+                                "id1" to FieldType(idType, nullable = false),
+                                "id2" to intType,
+                                "updated_at" to timestamptzType,
+                                "name" to stringType,
+                                "_ab_cdc_deleted_at" to timestamptzType,
+                            )
+                    ),
                 generationId = 42,
                 minimumGenerationId = 0,
                 syncId = syncId,
-                namespaceMapper = namespaceMapperForMedium(),
-                tableSchema =
-                    createTestTableSchema(
-                        randomizedNamespace,
-                        "test_stream",
-                        streamSchema,
-                        dedupeType
-                    )
+                namespaceMapper = namespaceMapperForMedium()
             )
-        }
         val sync1Stream = makeStream(syncId = 42)
         fun makeRecord(data: String, extractedAt: Long) =
             InputRecord(
@@ -3560,25 +3398,16 @@ abstract class BasicFunctionalityIntegrationTest(
     @Test
     open fun testDedupNoCursor() {
         assumeTrue(verifyDataWriting && dedupBehavior != null)
-        val streamSchema = ObjectType(linkedMapOf("id" to intType, "name" to stringType))
-        val dedupeType = Dedupe(primaryKey = listOf(listOf("id")), cursor = emptyList())
         val stream =
             DestinationStream(
                 unmappedNamespace = randomizedNamespace,
                 unmappedName = "test_stream",
-                dedupeType,
-                streamSchema,
+                Dedupe(primaryKey = listOf(listOf("id")), cursor = emptyList()),
+                ObjectType(linkedMapOf("id" to intType, "name" to stringType)),
                 generationId = 0,
                 minimumGenerationId = 0,
                 syncId = 42,
-                namespaceMapper = namespaceMapperForMedium(),
-                tableSchema =
-                    createTestTableSchema(
-                        randomizedNamespace,
-                        "test_stream",
-                        streamSchema,
-                        dedupeType
-                    )
+                namespaceMapper = namespaceMapperForMedium()
             )
         runSync(
             updatedConfig,
@@ -3631,38 +3460,27 @@ abstract class BasicFunctionalityIntegrationTest(
     open fun testDedupChangeCursor() {
         assumeTrue(verifyDataWriting)
         assumeTrue(dedupBehavior != null)
-        fun makeStream(cursor: String): DestinationStream {
-            val streamSchema =
-                ObjectType(
-                    linkedMapOf(
-                        "id" to intType,
-                        cursor to intType,
-                        "name" to stringType,
-                    )
-                )
-            val dedupeType =
+        fun makeStream(cursor: String) =
+            DestinationStream(
+                unmappedNamespace = randomizedNamespace,
+                unmappedName = "test_stream",
                 Dedupe(
                     primaryKey = listOf(listOf("id")),
                     cursor = listOf(cursor),
-                )
-            return DestinationStream(
-                unmappedNamespace = randomizedNamespace,
-                unmappedName = "test_stream",
-                dedupeType,
-                schema = streamSchema,
+                ),
+                schema =
+                    ObjectType(
+                        linkedMapOf(
+                            "id" to intType,
+                            cursor to intType,
+                            "name" to stringType,
+                        )
+                    ),
                 generationId = 42,
                 minimumGenerationId = 0,
                 syncId = 42,
-                namespaceMapper = namespaceMapperForMedium(),
-                tableSchema =
-                    createTestTableSchema(
-                        randomizedNamespace,
-                        "test_stream",
-                        streamSchema,
-                        dedupeType
-                    )
+                namespaceMapper = namespaceMapperForMedium()
             )
-        }
         val stream1 = makeStream("cursor1")
         fun makeRecord(stream: DestinationStream, cursorName: String, emittedAtMs: Long) =
             InputRecord(
@@ -3712,40 +3530,29 @@ abstract class BasicFunctionalityIntegrationTest(
     open fun testDedupChangePk() {
         assumeTrue(verifyDataWriting)
         assumeTrue(dedupBehavior != null)
-        fun makeStream(secondPk: String): DestinationStream {
-            val streamSchema =
-                ObjectType(
-                    linkedMapOf(
-                        "id1" to intType,
-                        "id2" to intType,
-                        "id3" to intType,
-                        "updated_at" to intType,
-                        "name" to stringType,
-                    )
-                )
-            val dedupeType =
+        fun makeStream(secondPk: String) =
+            DestinationStream(
+                randomizedNamespace,
+                "test_stream",
                 Dedupe(
                     primaryKey = listOf(listOf("id1"), listOf(secondPk)),
                     cursor = listOf("updated_at"),
-                )
-            return DestinationStream(
-                randomizedNamespace,
-                "test_stream",
-                dedupeType,
-                schema = streamSchema,
+                ),
+                schema =
+                    ObjectType(
+                        linkedMapOf(
+                            "id1" to intType,
+                            "id2" to intType,
+                            "id3" to intType,
+                            "updated_at" to intType,
+                            "name" to stringType,
+                        )
+                    ),
                 generationId = 42,
                 minimumGenerationId = 0,
                 syncId = 42,
                 namespaceMapper = namespaceMapperForMedium(),
-                tableSchema =
-                    createTestTableSchema(
-                        randomizedNamespace,
-                        "test_stream",
-                        streamSchema,
-                        dedupeType
-                    )
             )
-        }
         fun makeRecord(stream: DestinationStream, secondPk: String, emittedAtMs: Long) =
             InputRecord(
                 stream,
@@ -3816,23 +3623,15 @@ abstract class BasicFunctionalityIntegrationTest(
         )
         val streams =
             (0..manyStreamCount).map { i ->
-                val streamSchema = ObjectType(linkedMapOf("id" to intType, "name" to stringType))
                 DestinationStream(
                     unmappedNamespace = randomizedNamespace,
                     unmappedName = "test_stream_$i",
                     Append,
-                    streamSchema,
+                    ObjectType(linkedMapOf("id" to intType, "name" to stringType)),
                     generationId = 42,
                     minimumGenerationId = 42,
                     syncId = 42,
-                    namespaceMapper = namespaceMapperForMedium(),
-                    tableSchema =
-                        createTestTableSchema(
-                            randomizedNamespace,
-                            "test_stream_$i",
-                            streamSchema,
-                            Append
-                        )
+                    namespaceMapper = namespaceMapperForMedium()
                 )
             }
         val messages =
@@ -3859,38 +3658,38 @@ abstract class BasicFunctionalityIntegrationTest(
     @Test
     open fun testBasicTypes() {
         assumeTrue(verifyDataWriting)
-        val streamSchema =
-            ObjectType(
-                linkedMapOf(
-                    "id" to intType,
-                    // Some destinations handle numbers differently in root and nested fields
-                    "struct" to
-                        FieldType(ObjectType(linkedMapOf("foo" to numberType)), nullable = true),
-                    "string" to FieldType(StringType, nullable = true),
-                    "number" to FieldType(NumberType, nullable = true),
-                    "integer" to FieldType(IntegerType, nullable = true),
-                    "boolean" to FieldType(BooleanType, nullable = true),
-                    "timestamp_with_timezone" to
-                        FieldType(TimestampTypeWithTimezone, nullable = true),
-                    "timestamp_without_timezone" to
-                        FieldType(TimestampTypeWithoutTimezone, nullable = true),
-                    "time_with_timezone" to FieldType(TimeTypeWithTimezone, nullable = true),
-                    "time_without_timezone" to FieldType(TimeTypeWithoutTimezone, nullable = true),
-                    "date" to FieldType(DateType, nullable = true),
-                )
-            )
         val stream =
             DestinationStream(
                 unmappedNamespace = randomizedNamespace,
                 unmappedName = "test_stream",
                 Append,
-                streamSchema,
+                ObjectType(
+                    linkedMapOf(
+                        "id" to intType,
+                        // Some destinations handle numbers differently in root and nested fields
+                        "struct" to
+                            FieldType(
+                                ObjectType(linkedMapOf("foo" to numberType)),
+                                nullable = true
+                            ),
+                        "string" to FieldType(StringType, nullable = true),
+                        "number" to FieldType(NumberType, nullable = true),
+                        "integer" to FieldType(IntegerType, nullable = true),
+                        "boolean" to FieldType(BooleanType, nullable = true),
+                        "timestamp_with_timezone" to
+                            FieldType(TimestampTypeWithTimezone, nullable = true),
+                        "timestamp_without_timezone" to
+                            FieldType(TimestampTypeWithoutTimezone, nullable = true),
+                        "time_with_timezone" to FieldType(TimeTypeWithTimezone, nullable = true),
+                        "time_without_timezone" to
+                            FieldType(TimeTypeWithoutTimezone, nullable = true),
+                        "date" to FieldType(DateType, nullable = true),
+                    )
+                ),
                 generationId = 42,
                 minimumGenerationId = 0,
                 syncId = 42,
-                namespaceMapper = namespaceMapperForMedium(),
-                tableSchema =
-                    createTestTableSchema(randomizedNamespace, "test_stream", streamSchema, Append)
+                namespaceMapper = namespaceMapperForMedium()
             )
         fun makeRecord(data: String) =
             InputRecord(
@@ -4353,26 +4152,22 @@ abstract class BasicFunctionalityIntegrationTest(
         // TODO ideally we would have some more flexibility here, but it's kind of painful to
         //   configure our tests already.
         assumeTrue((allTypesBehavior as StronglyTyped).numberIsFixedPointPrecision38Scale9)
-        val streamSchema =
-            ObjectType(
-                linkedMapOf(
-                    "id" to intType,
-                    "number" to FieldType(NumberType, nullable = true),
-                    "integer" to FieldType(IntegerType, nullable = true),
-                )
-            )
         val stream =
             DestinationStream(
                 unmappedNamespace = randomizedNamespace,
                 unmappedName = "test_stream",
                 Append,
-                streamSchema,
+                ObjectType(
+                    linkedMapOf(
+                        "id" to intType,
+                        "number" to FieldType(NumberType, nullable = true),
+                        "integer" to FieldType(IntegerType, nullable = true),
+                    )
+                ),
                 generationId = 42,
                 minimumGenerationId = 0,
                 syncId = 42,
-                namespaceMapper = namespaceMapperForMedium(),
-                tableSchema =
-                    createTestTableSchema(randomizedNamespace, "test_stream", streamSchema, Append)
+                namespaceMapper = namespaceMapperForMedium()
             )
         fun makeRecord(data: String) =
             InputRecord(
@@ -4512,43 +4307,34 @@ abstract class BasicFunctionalityIntegrationTest(
     @Test
     open fun testContainerTypes() {
         assumeTrue(verifyDataWriting)
-        val streamSchema =
-            ObjectType(
-                linkedMapOf(
-                    "id" to FieldType(IntegerType, nullable = true),
-                    "schematized_object" to
-                        FieldType(
-                            ObjectType(
-                                linkedMapOf(
-                                    "id" to FieldType(IntegerType, nullable = true),
-                                    "name" to FieldType(StringType, nullable = true),
-                                )
-                            ),
-                            nullable = true,
-                        ),
-                    "empty_object" to FieldType(ObjectTypeWithEmptySchema, nullable = true),
-                    "schemaless_object" to FieldType(ObjectTypeWithoutSchema, nullable = true),
-                    "schematized_array" to FieldType(ArrayType(intType), nullable = true),
-                    "schemaless_array" to FieldType(ArrayTypeWithoutSchema, nullable = true),
-                ),
-            )
         val stream =
             DestinationStream(
                 unmappedNamespace = randomizedNamespace,
                 unmappedName = "problematic_types",
                 Append,
-                streamSchema,
+                ObjectType(
+                    linkedMapOf(
+                        "id" to FieldType(IntegerType, nullable = true),
+                        "schematized_object" to
+                            FieldType(
+                                ObjectType(
+                                    linkedMapOf(
+                                        "id" to FieldType(IntegerType, nullable = true),
+                                        "name" to FieldType(StringType, nullable = true),
+                                    )
+                                ),
+                                nullable = true,
+                            ),
+                        "empty_object" to FieldType(ObjectTypeWithEmptySchema, nullable = true),
+                        "schemaless_object" to FieldType(ObjectTypeWithoutSchema, nullable = true),
+                        "schematized_array" to FieldType(ArrayType(intType), nullable = true),
+                        "schemaless_array" to FieldType(ArrayTypeWithoutSchema, nullable = true),
+                    ),
+                ),
                 generationId = 42,
                 minimumGenerationId = 0,
                 syncId = 42,
-                namespaceMapper = namespaceMapperForMedium(),
-                tableSchema =
-                    createTestTableSchema(
-                        randomizedNamespace,
-                        "problematic_types",
-                        streamSchema,
-                        Append
-                    )
+                namespaceMapper = namespaceMapperForMedium()
             )
         runSync(
             updatedConfig,
@@ -4709,24 +4495,16 @@ abstract class BasicFunctionalityIntegrationTest(
     @Test
     open fun testUnknownTypes() {
         assumeTrue(verifyDataWriting)
-        val streamSchema = ObjectType(linkedMapOf("id" to intType, "name" to unknownType))
         val stream =
             DestinationStream(
                 unmappedNamespace = randomizedNamespace,
                 unmappedName = "problematic_types",
                 Append,
-                streamSchema,
+                ObjectType(linkedMapOf("id" to intType, "name" to unknownType)),
                 generationId = 42,
                 minimumGenerationId = 0,
                 syncId = 42,
-                namespaceMapper = namespaceMapperForMedium(),
-                tableSchema =
-                    createTestTableSchema(
-                        randomizedNamespace,
-                        "problematic_types",
-                        streamSchema,
-                        Append
-                    )
+                namespaceMapper = namespaceMapperForMedium()
             )
 
         fun runSync() =
@@ -4812,116 +4590,107 @@ abstract class BasicFunctionalityIntegrationTest(
     @Test
     open fun testUnions() {
         assumeTrue(verifyDataWriting)
-        val streamSchema =
-            ObjectType(
-                linkedMapOf(
-                    "id" to FieldType(IntegerType, nullable = true),
-                    // in jsonschema, there are two ways to achieve this:
-                    // {type: [string, int]}
-                    // {oneOf: [{type: string}, {type: int}]}
-                    // Our AirbyteType treats them identically, so we don't need two test cases.
-                    "combined_type" to
-                        FieldType(UnionType.of(StringType, IntegerType), nullable = true),
-                    // For destinations which promote unions to objects,
-                    // and also stringify schemaless values,
-                    // we should verify that the promoted schemaless value
-                    // is still labelled as "object" rather than "string".
-                    "union_of_string_and_schemaless_type" to
-                        FieldType(
-                            UnionType.of(ObjectTypeWithoutSchema, IntegerType),
-                            nullable = true,
-                        ),
-                    "union_of_objects_with_properties_identical" to
-                        FieldType(
-                            UnionType.of(
-                                ObjectType(
-                                    linkedMapOf(
-                                        "id" to FieldType(IntegerType, nullable = true),
-                                        "name" to FieldType(StringType, nullable = true),
-                                    )
-                                ),
-                                ObjectType(
-                                    linkedMapOf(
-                                        "id" to FieldType(IntegerType, nullable = true),
-                                        "name" to FieldType(StringType, nullable = true),
-                                    )
-                                )
-                            ),
-                            nullable = true,
-                        ),
-                    "union_of_objects_with_properties_overlapping" to
-                        FieldType(
-                            UnionType.of(
-                                ObjectType(
-                                    linkedMapOf(
-                                        "id" to FieldType(IntegerType, nullable = true),
-                                        "name" to FieldType(StringType, nullable = true),
-                                    )
-                                ),
-                                ObjectType(
-                                    linkedMapOf(
-                                        "name" to FieldType(StringType, nullable = true),
-                                        "flagged" to FieldType(BooleanType, nullable = true),
-                                    )
-                                )
-                            ),
-                            nullable = true,
-                        ),
-                    "union_of_objects_with_properties_nonoverlapping" to
-                        FieldType(
-                            UnionType.of(
-                                ObjectType(
-                                    linkedMapOf(
-                                        "id" to FieldType(IntegerType, nullable = true),
-                                        "name" to FieldType(StringType, nullable = true),
-                                    )
-                                ),
-                                ObjectType(
-                                    linkedMapOf(
-                                        "flagged" to FieldType(BooleanType, nullable = true),
-                                        "description" to FieldType(StringType, nullable = true),
-                                    )
-                                )
-                            ),
-                            nullable = true,
-                        ),
-                    "union_of_objects_with_properties_contradicting" to
-                        FieldType(
-                            UnionType.of(
-                                ObjectType(
-                                    linkedMapOf(
-                                        "id" to FieldType(IntegerType, nullable = true),
-                                        "name" to FieldType(StringType, nullable = true),
-                                    )
-                                ),
-                                ObjectType(
-                                    linkedMapOf(
-                                        "id" to FieldType(StringType, nullable = true),
-                                        "name" to FieldType(StringType, nullable = true),
-                                    )
-                                )
-                            ),
-                            nullable = true,
-                        ),
-                ),
-            )
         val stream =
             DestinationStream(
                 unmappedNamespace = randomizedNamespace,
                 unmappedName = "problematic_types",
                 Append,
-                streamSchema,
+                ObjectType(
+                    linkedMapOf(
+                        "id" to FieldType(IntegerType, nullable = true),
+                        // in jsonschema, there are two ways to achieve this:
+                        // {type: [string, int]}
+                        // {oneOf: [{type: string}, {type: int}]}
+                        // Our AirbyteType treats them identically, so we don't need two test cases.
+                        "combined_type" to
+                            FieldType(UnionType.of(StringType, IntegerType), nullable = true),
+                        // For destinations which promote unions to objects,
+                        // and also stringify schemaless values,
+                        // we should verify that the promoted schemaless value
+                        // is still labelled as "object" rather than "string".
+                        "union_of_string_and_schemaless_type" to
+                            FieldType(
+                                UnionType.of(ObjectTypeWithoutSchema, IntegerType),
+                                nullable = true,
+                            ),
+                        "union_of_objects_with_properties_identical" to
+                            FieldType(
+                                UnionType.of(
+                                    ObjectType(
+                                        linkedMapOf(
+                                            "id" to FieldType(IntegerType, nullable = true),
+                                            "name" to FieldType(StringType, nullable = true),
+                                        )
+                                    ),
+                                    ObjectType(
+                                        linkedMapOf(
+                                            "id" to FieldType(IntegerType, nullable = true),
+                                            "name" to FieldType(StringType, nullable = true),
+                                        )
+                                    )
+                                ),
+                                nullable = true,
+                            ),
+                        "union_of_objects_with_properties_overlapping" to
+                            FieldType(
+                                UnionType.of(
+                                    ObjectType(
+                                        linkedMapOf(
+                                            "id" to FieldType(IntegerType, nullable = true),
+                                            "name" to FieldType(StringType, nullable = true),
+                                        )
+                                    ),
+                                    ObjectType(
+                                        linkedMapOf(
+                                            "name" to FieldType(StringType, nullable = true),
+                                            "flagged" to FieldType(BooleanType, nullable = true),
+                                        )
+                                    )
+                                ),
+                                nullable = true,
+                            ),
+                        "union_of_objects_with_properties_nonoverlapping" to
+                            FieldType(
+                                UnionType.of(
+                                    ObjectType(
+                                        linkedMapOf(
+                                            "id" to FieldType(IntegerType, nullable = true),
+                                            "name" to FieldType(StringType, nullable = true),
+                                        )
+                                    ),
+                                    ObjectType(
+                                        linkedMapOf(
+                                            "flagged" to FieldType(BooleanType, nullable = true),
+                                            "description" to FieldType(StringType, nullable = true),
+                                        )
+                                    )
+                                ),
+                                nullable = true,
+                            ),
+                        "union_of_objects_with_properties_contradicting" to
+                            FieldType(
+                                UnionType.of(
+                                    ObjectType(
+                                        linkedMapOf(
+                                            "id" to FieldType(IntegerType, nullable = true),
+                                            "name" to FieldType(StringType, nullable = true),
+                                        )
+                                    ),
+                                    ObjectType(
+                                        linkedMapOf(
+                                            "id" to FieldType(StringType, nullable = true),
+                                            "name" to FieldType(StringType, nullable = true),
+                                        )
+                                    )
+                                ),
+                                nullable = true,
+                            ),
+                    ),
+                ),
                 generationId = 42,
                 minimumGenerationId = 0,
                 syncId = 42,
-                namespaceMapper = namespaceMapperForMedium(),
-                tableSchema =
-                    createTestTableSchema(
-                        randomizedNamespace,
-                        "problematic_types",
-                        streamSchema,
-                        Append
-                    )
+                namespaceMapper = namespaceMapperForMedium()
             )
         runSync(
             updatedConfig,
@@ -5134,31 +4903,27 @@ abstract class BasicFunctionalityIntegrationTest(
     open fun testCoerceLegacyUnions() {
         assumeTrue(verifyDataWriting)
         assumeTrue(coercesLegacyUnions)
-        val streamSchema =
-            ObjectType(
-                linkedMapOf(
-                    "x" to
-                        FieldType(
-                            // It's easier to just hardcode a jsonschema here.
-                            // In theory we could modify AirbyteTypeToJsonSchema to do this,
-                            // but legacy unions are really annoying to construct.
-                            UnknownType(Jsons.readTree("""{"type": ["number", "boolean"]}""")),
-                            nullable = true
-                        ),
-                )
-            )
         val stream =
             DestinationStream(
                 randomizedNamespace,
                 "test_stream",
                 Append,
-                streamSchema,
+                ObjectType(
+                    linkedMapOf(
+                        "x" to
+                            FieldType(
+                                // It's easier to just hardcode a jsonschema here.
+                                // In theory we could modify AirbyteTypeToJsonSchema to do this,
+                                // but legacy unions are really annoying to construct.
+                                UnknownType(Jsons.readTree("""{"type": ["number", "boolean"]}""")),
+                                nullable = true
+                            ),
+                    )
+                ),
                 generationId = 42,
                 minimumGenerationId = 0,
                 syncId = 12,
                 namespaceMapper = namespaceMapperForMedium(),
-                tableSchema =
-                    createTestTableSchema(randomizedNamespace, "test_stream", streamSchema, Append)
             )
         runSync(
             updatedConfig,
@@ -5211,19 +4976,16 @@ abstract class BasicFunctionalityIntegrationTest(
     @Test
     open fun testNoColumns() {
         assumeTrue(verifyDataWriting)
-        val streamSchema = ObjectType(linkedMapOf())
         val stream =
             DestinationStream(
                 unmappedNamespace = randomizedNamespace,
                 unmappedName = "test_stream",
                 Append,
-                streamSchema,
+                ObjectType(linkedMapOf()),
                 generationId = 42,
                 minimumGenerationId = 0,
                 syncId = 42,
-                namespaceMapper = namespaceMapperForMedium(),
-                tableSchema =
-                    createTestTableSchema(randomizedNamespace, "test_stream", streamSchema, Append)
+                namespaceMapper = namespaceMapperForMedium()
             )
         runSync(
             updatedConfig,
@@ -5284,19 +5046,16 @@ abstract class BasicFunctionalityIntegrationTest(
     @Test
     open fun testNoData() {
         assumeTrue(verifyDataWriting)
-        val streamSchema = ObjectType(linkedMapOf("id" to intType))
         val stream =
             DestinationStream(
                 randomizedNamespace,
                 "test_stream",
                 Append,
-                streamSchema,
+                ObjectType(linkedMapOf("id" to intType)),
                 generationId = 0,
                 minimumGenerationId = 0,
                 syncId = 42,
-                namespaceMapper = namespaceMapperForMedium(),
-                tableSchema =
-                    createTestTableSchema(randomizedNamespace, "test_stream", streamSchema, Append)
+                namespaceMapper = namespaceMapperForMedium()
             )
         assertDoesNotThrow { runSync(updatedConfig, stream, messages = emptyList()) }
         dumpAndDiffRecords(
@@ -5311,25 +5070,17 @@ abstract class BasicFunctionalityIntegrationTest(
     @Test
     open fun testTruncateRefreshNoData() {
         assumeTrue(verifyDataWriting)
-        fun makeStream(
-            generationId: Long,
-            minimumGenerationId: Long,
-            syncId: Long
-        ): DestinationStream {
-            val streamSchema = ObjectType(linkedMapOf("id" to intType, "name" to stringType))
-            return DestinationStream(
+        fun makeStream(generationId: Long, minimumGenerationId: Long, syncId: Long) =
+            DestinationStream(
                 randomizedNamespace,
                 "test_stream",
                 Append,
-                streamSchema,
+                ObjectType(linkedMapOf("id" to intType, "name" to stringType)),
                 generationId,
                 minimumGenerationId,
                 syncId,
-                namespaceMapper = namespaceMapperForMedium(),
-                tableSchema =
-                    createTestTableSchema(randomizedNamespace, "test_stream", streamSchema, Append)
+                namespaceMapper = namespaceMapperForMedium()
             )
-        }
         val firstStream = makeStream(generationId = 12, minimumGenerationId = 0, syncId = 42)
         runSync(
             updatedConfig,
@@ -5357,19 +5108,16 @@ abstract class BasicFunctionalityIntegrationTest(
     @Test
     open fun testClear() {
         assumeTrue(verifyDataWriting)
-        val streamSchema = ObjectType(linkedMapOf("id" to intType))
         val stream =
             DestinationStream(
                 randomizedNamespace,
                 "test_stream",
                 Append,
-                streamSchema,
+                ObjectType(linkedMapOf("id" to intType)),
                 generationId = 1,
                 minimumGenerationId = 1,
                 syncId = 42,
                 namespaceMapper = namespaceMapperForMedium(),
-                tableSchema =
-                    createTestTableSchema(randomizedNamespace, "test_stream", streamSchema, Append)
             )
         assertDoesNotThrow {
             runSync(
