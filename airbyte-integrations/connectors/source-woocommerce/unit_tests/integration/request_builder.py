@@ -42,6 +42,30 @@ class WooCommerceRequestBuilder:
     def product_variations_endpoint(cls, product_id: int, shop: str = SHOP) -> WooCommerceRequestBuilder:
         return cls(resource=f"products/{product_id}/variations", shop=shop)
 
+    @classmethod
+    def payment_gateways_endpoint(cls, shop: str = SHOP) -> WooCommerceRequestBuilder:
+        return cls(resource="payment_gateways", shop=shop)
+
+    @classmethod
+    def product_reviews_endpoint(cls, shop: str = SHOP) -> WooCommerceRequestBuilder:
+        return cls(resource="products/reviews", shop=shop)
+
+    @classmethod
+    def product_attributes_endpoint(cls, shop: str = SHOP) -> WooCommerceRequestBuilder:
+        return cls(resource="products/attributes", shop=shop)
+
+    @classmethod
+    def product_tags_endpoint(cls, shop: str = SHOP) -> WooCommerceRequestBuilder:
+        return cls(resource="products/tags", shop=shop)
+
+    @classmethod
+    def shipping_zones_endpoint(cls, shop: str = SHOP) -> WooCommerceRequestBuilder:
+        return cls(resource="shipping/zones", shop=shop)
+
+    @classmethod
+    def tax_classes_endpoint(cls, shop: str = SHOP) -> WooCommerceRequestBuilder:
+        return cls(resource="taxes/classes", shop=shop)
+
     def __init__(self, resource: str, shop: str = SHOP) -> None:
         self._resource = resource
         self._shop = shop
@@ -73,6 +97,14 @@ class WooCommerceRequestBuilder:
 
     def with_modified_before(self, modified_before: str) -> WooCommerceRequestBuilder:
         self._query_params["modified_before"] = modified_before
+        return self
+
+    def with_after(self, after: str) -> WooCommerceRequestBuilder:
+        self._query_params["after"] = after
+        return self
+
+    def with_before(self, before: str) -> WooCommerceRequestBuilder:
+        self._query_params["before"] = before
         return self
 
     def with_default_params(self) -> WooCommerceRequestBuilder:
