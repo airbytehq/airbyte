@@ -1098,6 +1098,10 @@ internal class PostgresDirectLoadSqlGeneratorTest {
 
         assert(sql.contains("BEGIN TRANSACTION;"))
         assert(sql.contains("COMMIT;"))
-        assert(sql.contains("ALTER COLUMN \"modified_col\" TYPE jsonb USING to_jsonb(\"modified_col\") CASCADE"))
+        assert(
+            sql.contains(
+                "ALTER COLUMN \"modified_col\" TYPE jsonb USING to_jsonb(\"modified_col\") CASCADE"
+            )
+        )
     }
 }
