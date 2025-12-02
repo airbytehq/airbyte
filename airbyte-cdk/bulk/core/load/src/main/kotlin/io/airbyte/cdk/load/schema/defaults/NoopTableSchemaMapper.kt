@@ -1,3 +1,7 @@
+/*
+ * Copyright (c) 2025 Airbyte, Inc., all rights reserved.
+ */
+
 package io.airbyte.cdk.load.schema.defaults
 
 import io.airbyte.cdk.load.command.DestinationStream
@@ -15,7 +19,7 @@ import jakarta.inject.Singleton
  */
 @Singleton
 @Secondary
-class NoopTableSchemaMapper: TableSchemaMapper {
+class NoopTableSchemaMapper : TableSchemaMapper {
     override fun toFinalTableName(desc: DestinationStream.Descriptor) =
         TableName(desc.namespace ?: "", desc.name)
 
@@ -23,8 +27,9 @@ class NoopTableSchemaMapper: TableSchemaMapper {
 
     override fun toColumnName(name: String) = name
 
-    override fun toColumnType(fieldType: FieldType): ColumnType = ColumnType(
-        fieldType.type.toString(),
-        fieldType.nullable,
-    )
+    override fun toColumnType(fieldType: FieldType): ColumnType =
+        ColumnType(
+            fieldType.type.toString(),
+            fieldType.nullable,
+        )
 }
