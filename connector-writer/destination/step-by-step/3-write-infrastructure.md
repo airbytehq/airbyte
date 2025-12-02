@@ -12,7 +12,7 @@ After completing this guide, you'll have:
 
 ---
 
-## Phase 6: Name Generators & TableCatalog DI
+## Infrastructure Phase 1: Name Generators & TableCatalog DI
 
 **Goal:** Create name generator beans required for TableCatalog instantiation
 
@@ -25,7 +25,7 @@ After completing this guide, you'll have:
 
 Without these beans, you'll get **"Error instantiating TableCatalog"** or **"No bean of type [FinalTableNameGenerator]"** errors in Phase 7 write tests.
 
-### Step 6.1: Create RawTableNameGenerator
+### Infrastructure Step 1: Create RawTableNameGenerator
 
 **File:** `config/{DB}NameGenerators.kt`
 
@@ -58,7 +58,7 @@ class {DB}RawTableNameGenerator(
 - Modern connectors typically use final tables only, but interface must be implemented
 - Keep implementation simple (identity mapping is fine)
 
-### Step 6.2: Create FinalTableNameGenerator
+### Infrastructure Step 2: Create FinalTableNameGenerator
 
 **Add to same file:** `config/{DB}NameGenerators.kt`
 
@@ -90,7 +90,7 @@ class {DB}FinalTableNameGenerator(
 // Output: TableName("my_database", "customers")  // Uses config.database as fallback
 ```
 
-### Step 6.3: Create ColumnNameGenerator
+### Infrastructure Step 3: Create ColumnNameGenerator
 
 **Add to same file:** `config/{DB}NameGenerators.kt`
 
@@ -123,7 +123,7 @@ class {DB}ColumnNameGenerator : ColumnNameGenerator {
 "userId" → "userId"
 ```
 
-### Step 6.4: Add Name Transformation Helper
+### Infrastructure Step 4: Add Name Transformation Helper
 
 **Add to same file:** `config/{DB}NameGenerators.kt`
 
@@ -177,7 +177,7 @@ private fun String.toDbCompatible(): String {
 private val POSTGRES_RESERVED_WORDS = setOf("user", "table", "select", ...)
 ```
 
-### Step 6.5: Register TempTableNameGenerator in BeanFactory
+### Infrastructure Step 5: Register TempTableNameGenerator in BeanFactory
 
 **File:** Update `{DB}BeanFactory.kt`
 
@@ -200,7 +200,7 @@ fun tempTableNameGenerator(config: {DB}Configuration): TempTableNameGenerator {
 - CDK provides implementation, but YOU must register it
 - Used by Writer to create staging tables
 
-### Step 6.6: Verify Compilation
+### Infrastructure Step 6: Verify Compilation
 
 **Validate:**
 ```bash
@@ -227,7 +227,7 @@ $ ./gradlew :destination-{db}:integrationTest  # testSpecOss, testSuccessConfigs
 
 ---
 
-## Phase 7: Write Operation Infrastructure
+## Infrastructure Phase 2: Write Operation Infrastructure
 
 **Goal:** Create write operation infrastructure beans (no business logic yet)
 
@@ -242,7 +242,7 @@ $ ./gradlew :destination-{db}:integrationTest  # testSpecOss, testSuccessConfigs
 
 **Key insight:** Separate infrastructure DI from business logic DI to catch errors incrementally.
 
-### Step 7.1: Create WriteOperationV2
+### Infrastructure Step 1: Create WriteOperationV2
 
 **File:** `cdk/WriteOperationV2.kt`
 
@@ -293,7 +293,7 @@ IllegalStateException: A legal sync requires a declared @Singleton of a type tha
 - Many connectors keep this file identical across databases
 - Signals "this is infrastructure, not business logic"
 
-### Step 7.2: Create DatabaseInitialStatusGatherer
+### Infrastructure Step 2: Create DatabaseInitialStatusGatherer
 
 **File:** `config/{DB}DirectLoadDatabaseInitialStatusGatherer.kt`
 
@@ -337,7 +337,7 @@ DirectLoadInitialStatus(
 
 ⚠️ **MISSING IN V1 GUIDE:** This step existed as code but bean registration was missing!
 
-### Step 7.3: Register DatabaseInitialStatusGatherer in BeanFactory
+### Infrastructure Step 3: Register DatabaseInitialStatusGatherer in BeanFactory
 
 **File:** Update `{DB}BeanFactory.kt`
 
@@ -363,7 +363,7 @@ fun initialStatusGatherer(
 - Micronaut needs explicit return type for generic beans
 - Factory method provides type safety
 
-### Step 7.4: Create ColumnNameMapper
+### Infrastructure Step 4: Create ColumnNameMapper
 
 **File:** `write/transform/{DB}ColumnNameMapper.kt`
 
@@ -407,7 +407,7 @@ class {DB}ColumnNameMapper(
 - ColumnNameMapper: Uses mappings during transform (Phase 7)
 - Separation of concerns: generation vs. application
 
-### Step 7.5: Register AggregatePublishingConfig in BeanFactory
+### Infrastructure Step 5: Register AggregatePublishingConfig in BeanFactory
 
 **File:** Update `{DB}BeanFactory.kt`
 
@@ -449,7 +449,7 @@ fun aggregatePublishingConfig(dataChannelMedium: DataChannelMedium): AggregatePu
 - Tune later based on performance requirements
 - Start with defaults - they work for most databases
 
-### Step 7.6: Create WriteInitializationTest
+### Infrastructure Step 6: Create WriteInitializationTest
 
 **File:** `src/test-integration/kotlin/.../write/{DB}WriteInitTest.kt`
 
@@ -498,7 +498,7 @@ Phase 7: WriteInitTest validates they work with real catalog
 Phase 8: ConnectorWiringSuite validates full write path with mock catalog
 ```
 
-### Step 7.6: Create Test Config File
+### Infrastructure Step 7: Create Test Config File
 
 **File:** `secrets/config.json`
 
@@ -525,7 +525,7 @@ $ mkdir -p destination-{db}/secrets
 
 **Note:** Add `secrets/` to `.gitignore` to avoid committing credentials
 
-### Step 7.7: Validate WriteInitializationTest
+### Infrastructure Step 8: Validate WriteInitializationTest
 
 **Validate:**
 ```bash
