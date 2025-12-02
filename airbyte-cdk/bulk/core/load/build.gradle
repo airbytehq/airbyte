@@ -13,6 +13,7 @@ kotlin {
 
 dependencies {
     api("com.github.f4b6a3:uuid-creator:6.1.1")
+    implementation 'commons-codec:commons-codec:1.16.0'
 
     implementation project(':airbyte-cdk:bulk:core:bulk-cdk-core-base')
     implementation 'org.apache.commons:commons-lang3:3.17.0'

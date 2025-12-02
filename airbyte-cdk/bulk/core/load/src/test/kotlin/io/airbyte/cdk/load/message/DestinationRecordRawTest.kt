@@ -4,6 +4,7 @@
 
 package io.airbyte.cdk.load.message
 
+import io.airbyte.cdk.load.command.Append
 import io.airbyte.cdk.load.command.DestinationStream
 import io.airbyte.cdk.load.command.NamespaceMapper
 import io.airbyte.cdk.load.data.*
@@ -41,7 +42,7 @@ class DestinationRecordRawTest {
         DestinationStream(
             unmappedNamespace = "test_namespace",
             unmappedName = "test_stream",
-            io.airbyte.cdk.load.command.Append,
+            Append,
             recordSchema,
             generationId = 42L,
             minimumGenerationId = 0L,
@@ -272,7 +273,7 @@ class DestinationRecordRawTest {
             DestinationStream(
                 unmappedNamespace = "test_namespace",
                 unmappedName = "test_stream",
-                io.airbyte.cdk.load.command.Append,
+                Append,
                 emptySchema,
                 generationId = 42L,
                 minimumGenerationId = 0L,
@@ -352,7 +353,7 @@ class DestinationRecordRawTest {
             DestinationStream(
                 unmappedNamespace = "test_namespace",
                 unmappedName = "test_stream",
-                io.airbyte.cdk.load.command.Append,
+                Append,
                 complexSchema,
                 generationId = 42L,
                 minimumGenerationId = 0L,

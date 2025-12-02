@@ -14,7 +14,8 @@ import io.airbyte.cdk.load.data.ObjectType
 import io.airbyte.cdk.load.data.json.toAirbyteValue
 import io.airbyte.cdk.load.state.CheckpointId
 import io.airbyte.protocol.models.v0.AirbyteRecordMessageMetaChange
-import java.util.*
+import java.util.SequencedMap
+import java.util.UUID
 import kotlin.collections.LinkedHashMap
 
 data class DestinationRecordRaw(
@@ -77,11 +78,13 @@ data class DestinationRecordRaw(
             }
 
             val fieldValue = rawJson[fieldName]
+            // Apply column name mapping from the stream
+            val mappedFieldName = stream.tableSchema.getFinalColumnName(fieldName)
             val enrichedValue =
                 EnrichedAirbyteValue(
                     abValue = NullValue,
                     type = fieldType.type,
-                    name = fieldName,
+                    name = mappedFieldName, // Use mapped name here
                     airbyteMetaField = null,
                 )
             AirbyteValueCoercer.coerce(
@@ -94,7 +97,7 @@ data class DestinationRecordRaw(
                     AirbyteRecordMessageMetaChange.Reason.DESTINATION_SERIALIZATION_ERROR
                 )
 
-            declaredFields[fieldName] = enrichedValue
+            declaredFields[mappedFieldName] = enrichedValue // Store with mapped name as key
         }
         // Then, get the undeclared fields
         rawJson.fields().forEach { (fieldName, fieldValue) ->
