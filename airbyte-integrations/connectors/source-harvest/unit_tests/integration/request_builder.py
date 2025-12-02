@@ -53,6 +53,56 @@ class HarvestRequestBuilder:
         """Create a request builder for the /company endpoint."""
         return cls("company", account_id, api_token)
 
+    @classmethod
+    def contacts_endpoint(cls, account_id: str, api_token: str) -> "HarvestRequestBuilder":
+        """Create a request builder for the /contacts endpoint."""
+        return cls("contacts", account_id, api_token)
+
+    @classmethod
+    def estimates_endpoint(cls, account_id: str, api_token: str) -> "HarvestRequestBuilder":
+        """Create a request builder for the /estimates endpoint."""
+        return cls("estimates", account_id, api_token)
+
+    @classmethod
+    def expenses_endpoint(cls, account_id: str, api_token: str) -> "HarvestRequestBuilder":
+        """Create a request builder for the /expenses endpoint."""
+        return cls("expenses", account_id, api_token)
+
+    @classmethod
+    def invoices_endpoint(cls, account_id: str, api_token: str) -> "HarvestRequestBuilder":
+        """Create a request builder for the /invoices endpoint."""
+        return cls("invoices", account_id, api_token)
+
+    @classmethod
+    def roles_endpoint(cls, account_id: str, api_token: str) -> "HarvestRequestBuilder":
+        """Create a request builder for the /roles endpoint."""
+        return cls("roles", account_id, api_token)
+
+    @classmethod
+    def user_assignments_endpoint(cls, account_id: str, api_token: str) -> "HarvestRequestBuilder":
+        """Create a request builder for the /user_assignments endpoint."""
+        return cls("user_assignments", account_id, api_token)
+
+    @classmethod
+    def task_assignments_endpoint(cls, account_id: str, api_token: str) -> "HarvestRequestBuilder":
+        """Create a request builder for the /task_assignments endpoint."""
+        return cls("task_assignments", account_id, api_token)
+
+    @classmethod
+    def invoice_payments_endpoint(cls, account_id: str, api_token: str) -> "HarvestRequestBuilder":
+        """Create a request builder for the /invoice_payments endpoint."""
+        return cls("invoice_payments", account_id, api_token)
+
+    @classmethod
+    def project_assignments_endpoint(cls, account_id: str, api_token: str) -> "HarvestRequestBuilder":
+        """Create a request builder for the /project_assignments endpoint."""
+        return cls("project_assignments", account_id, api_token)
+
+    @classmethod
+    def billable_rates_endpoint(cls, account_id: str, api_token: str) -> "HarvestRequestBuilder":
+        """Create a request builder for the /billable_rates endpoint."""
+        return cls("billable_rates", account_id, api_token)
+
     def __init__(self, resource: str, account_id: str, api_token: str):
         """
         Initialize the request builder.
