@@ -7,8 +7,11 @@ from unittest.mock import MagicMock, patch
 
 import freezegun
 import paramiko
+import pytest
 from source_sftp_bulk.spec import SourceSFTPBulkSpec
 from source_sftp_bulk.stream_reader import SourceSFTPBulkStreamReader
+
+from airbyte_cdk.sources.file_based.exceptions import FileSizeLimitError
 
 
 logger = logging.Logger("")
@@ -40,3 +43,23 @@ def test_stream_reader_files_read_and_filter_by_date():
         assert len(files) == 1
         assert files[0].uri == "//sample_file_1.csv"
         assert files[0].last_modified == datetime.datetime(2024, 1, 1, 0, 0)
+
+
+@patch("source_sftp_bulk.stream_reader.SourceSFTPBulkStreamReader.file_size")
+def test_upload_file_size_error(file_size_mock):
+    file_size_mock.return_value = SourceSFTPBulkStreamReader.FILE_SIZE_LIMIT + 1
+    reader = SourceSFTPBulkStreamReader()
+    config = SourceSFTPBulkSpec(
+        host="localhost",
+        username="username",
+        credentials={"auth_type": "password", "password": "password"},
+        port=123,
+        streams=[],
+        start_date="2024-01-01T00:00:00.000000Z",
+    )
+    reader.config = config
+
+    file = MagicMock(uri="//sample_file_1.csv")
+    with pytest.raises(FileSizeLimitError) as err:
+        reader.upload(file, "/test", MagicMock())
+    assert str(err.value) == "File size exceeds the 1 GB limit. File uri: //sample_file_1.csv"

@@ -957,13 +957,46 @@ helm install airbyte-enterprise airbyte/airbyte \
 </TabItem>
 <TabItem value='helm-2' label='Helm chart V2' default>
 
-```bash
-helm install airbyte-enterprise airbyte-v2/airbyte \
-  --namespace airbyte-v2 \       # Target Kubernetes namespace
-  --values ./values.yaml \       # Custom configuration values
-  --version 2.0.3 \              # Helm chart version to use
-  --set global.image.tag=1.7.0   # Airbyte version to use
-```
+1. Identify the Helm chart version that corresponds to the platform version you want to run. Most Helm chart versions are designed to work with one Airbyte version, and they don't necessarily have the same version number.
+
+    ```bash
+    helm search repo airbyte-v2 --versions
+    ```
+
+    You should see something like this:
+
+    ```text
+    NAME                            CHART VERSION   APP VERSION     DESCRIPTION
+    airbyte-v2/airbyte              2.0.18          2.0.0           Helm chart to deploy airbyte
+    airbyte-v2/airbyte              2.0.17          1.8.5           Helm chart to deploy airbyte
+    airbyte-v2/airbyte              2.0.16          1.8.4           Helm chart to deploy airbyte
+    airbyte-v2/airbyte              2.0.15          1.8.4           Helm chart to deploy airbyte
+    airbyte-v2/airbyte              2.0.14          1.8.4           Helm chart to deploy airbyte
+    airbyte-v2/airbyte              2.0.13          1.8.3           Helm chart to deploy airbyte
+    airbyte-v2/airbyte              2.0.12          1.8.2           Helm chart to deploy airbyte
+    airbyte-v2/airbyte              2.0.11          1.8.2           Helm chart to deploy airbyte
+    airbyte-v2/airbyte              2.0.10          1.8.1           Helm chart to deploy airbyte
+    airbyte-v2/airbyte              2.0.9           1.8.0           Helm chart to deploy airbyte
+    airbyte-v2/airbyte              2.0.8           1.8.0           Helm chart to deploy airbyte
+    airbyte-v2/airbyte              2.0.7           1.7.1           Helm chart to deploy airbyte
+    airbyte-v2/airbyte              2.0.6           1.7.1           Helm chart to deploy airbyte
+    airbyte-v2/airbyte              2.0.5           1.7.0           Helm chart to deploy airbyte
+    airbyte-v2/airbyte              2.0.4           1.6.3           Helm chart to deploy airbyte
+    airbyte-v2/airbyte              2.0.3           1.6.2           Helm chart to deploy airbyte
+    airbyte-v2/airbyte              2.0.2           1.6.2           Helm chart to deploy airbyte
+    airbyte-v2/airbyte              2.0.1           1.6.1           Helm chart to deploy airbyte
+    airbyte-v2/airbyte              2.0.0           1.6.0           Helm chart to deploy airbyte
+    airbyte-v2/airbyte-data-plane   2.0.0           2.0.0           A Helm chart for installing an Airbyte Data Plane.
+    ```
+
+2. Install Airbyte into your Helm chart V2 namespace. In this example, you install Airbyte version 2.0.
+
+    ```bash
+    helm install airbyte airbyte-v2/airbyte \
+      --namespace airbyte-v2 \       # Target Kubernetes namespace
+      --values ./values.yaml \       # Custom configuration values
+      --version 2.0.18               # Helm chart version to use
+    ```
 
 </TabItem>
 </Tabs>
@@ -990,11 +1023,10 @@ Upgrade Airbyte Self-Managed Enterprise by:
     <TabItem value='helm-2' label='Helm chart V2' default>
 
     ```bash
-    helm upgrade airbyte-enterprise airbyte-v2/airbyte \
+    helm upgrade airbyte airbyte-v2/airbyte \
       --namespace airbyte-v2 \       # Target Kubernetes namespace
       --values ./values.yaml \       # Custom configuration values
-      --version 2.0.3 \              # Helm chart version to use
-      --set global.image.tag=1.7.0   # Airbyte version to use
+      --version 2.x.x                # Helm chart version to use
     ```
 
     </TabItem>
@@ -1022,8 +1054,7 @@ After specifying your own configuration, run the following command:
     helm upgrade airbyte-enterprise airbyte-v2/airbyte \
       --namespace airbyte-v2 \       # Target Kubernetes namespace
       --values ./values.yaml \       # Custom configuration values
-      --version 2.0.3 \              # Helm chart version to use
-      --set global.image.tag=1.7.0   # Airbyte version to use
+      --version 2.x.x                # Helm chart version to use
     ```
 
     </TabItem>
@@ -1243,5 +1274,45 @@ The [following policies](https://docs.aws.amazon.com/AmazonS3/latest/userguide/e
             }
         }
     ]
+}
+```
+
+## Azure Policies Appendix
+
+### Azure Key Vault Policy
+
+Airbyte requires the ability to write and read secrets in an Azure Key Vault. The built-in role that supports this is the Key Vault Secrets Officer role, whose JSON configuration can be viewed below to understand the specific permissions needed.
+
+```yaml
+{
+    "id": "/providers/Microsoft.Authorization/roleDefinitions/b86a8fe4-44ce-4948-aee5-eccb2c155cd7",
+    "properties": {
+        "roleName": "Key Vault Secrets Officer",
+        "description": "Perform any action on the secrets of a key vault, except manage permissions. Only works for key vaults that use the 'Azure role-based access control' permission model.",
+        "assignableScopes": [
+            "/"
+        ],
+        "permissions": [
+            {
+                "actions": [
+                    "Microsoft.Authorization/*/read",
+                    "Microsoft.Insights/alertRules/*",
+                    "Microsoft.Resources/deployments/*",
+                    "Microsoft.Resources/subscriptions/resourceGroups/read",
+                    "Microsoft.Support/*",
+                    "Microsoft.KeyVault/checkNameAvailability/read",
+                    "Microsoft.KeyVault/deletedVaults/read",
+                    "Microsoft.KeyVault/locations/*/read",
+                    "Microsoft.KeyVault/vaults/*/read",
+                    "Microsoft.KeyVault/operations/read"
+                ],
+                "notActions": [],
+                "dataActions": [
+                    "Microsoft.KeyVault/vaults/secrets/*"
+                ],
+                "notDataActions": []
+            }
+        ]
+    }
 }
 ```
