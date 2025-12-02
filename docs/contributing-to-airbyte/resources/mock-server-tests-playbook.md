@@ -55,9 +55,11 @@ For each stream, document these key properties from `manifest.yaml`:
 | Datetime Format | `incremental_sync.datetime_format` | Format for date parameters |
 | Start Time Parameter | `incremental_sync.start_time_option.field_name` | Query param name (e.g., updated_since) |
 
-### 1.3 Prioritize Streams for Testing
+### 1.3 Select Streams for Testing (Minimum 50% Coverage Required)
 
-If targeting a specific coverage percentage (e.g., 50%), prioritize:
+You must test at least 50% of all streams in the connector. Count the total number of streams and ensure your test coverage meets this threshold.
+
+When selecting which streams to test, prioritize:
 
 1. Streams listed in `metadata.yaml` under `suggestedStreams.streams`
 2. Streams that exercise different patterns:
@@ -67,7 +69,7 @@ If targeting a specific coverage percentage (e.g., 50%), prioritize:
    - Incremental streams with `DatetimeBasedCursor`
    - Substreams that depend on parent streams (`SubstreamPartitionRouter`)
 
-The goal is to cover each distinct pattern at least once, not just a random subset.
+The goal is to cover at least 50% of streams while ensuring each distinct pattern is tested at least once.
 
 ## Step 2: Create Test Directory Structure
 
@@ -565,17 +567,15 @@ poetry run pytest integration/test_clients.py::TestClientsStream::test_full_refr
 
 After tests pass locally:
 
-1. Bump version in `metadata.yaml` (patch version for test additions)
-2. Add changelog entry in `docs/integrations/sources/<name>.md`
-3. Create PR with descriptive title: `test(source-<name>): Add mock server tests`
-4. Wait for CI to complete
+1. Create PR with descriptive title: `test(source-<name>): Add mock server tests`
+2. Wait for CI to complete
 
 ## Quick Reference Checklist
 
 - [ ] Confirm connector is declarative (`manifest.yaml` exists, `language:manifest-only` tag)
-- [ ] List all streams from manifest
+- [ ] List all streams from manifest and count total
 - [ ] Identify patterns: simple, paginated, incremental, substreams
-- [ ] Select streams for coverage target (e.g., 50%)
+- [ ] Select streams for testing (minimum 50% of total streams required)
 - [ ] Create `unit_tests/` directory structure
 - [ ] Create `pyproject.toml` with dependencies
 - [ ] Create `conftest.py` with `get_source()` and cache clearing
@@ -590,7 +590,6 @@ After tests pass locally:
   - [ ] Error handling test (if applicable)
 - [ ] Run tests locally: `poetry run pytest -v`
 - [ ] Fix any failures and iterate
-- [ ] Bump version and add changelog
 - [ ] Create PR and wait for CI
 
 ## Additional Resources
