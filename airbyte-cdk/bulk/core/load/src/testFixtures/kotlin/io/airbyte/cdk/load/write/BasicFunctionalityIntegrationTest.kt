@@ -5492,4 +5492,16 @@ abstract class BasicFunctionalityIntegrationTest(
                 NamespaceMapper(namespaceDefinitionType = NamespaceDefinitionType.SOURCE)
         }
     }
+
+    protected val emptyTableSchema =
+        StreamTableSchema(
+            columnSchema =
+                ColumnSchema(
+                    inputSchema = mapOf(),
+                    inputToFinalColumnNames = mapOf(),
+                    finalSchema = mapOf(),
+                ),
+            importType = Append,
+            tableNames = TableNames(),
+        )
 }
