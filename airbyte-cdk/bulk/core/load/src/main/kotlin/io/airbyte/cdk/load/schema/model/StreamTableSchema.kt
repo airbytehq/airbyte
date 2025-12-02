@@ -19,11 +19,13 @@ data class StreamTableSchema(
 ) {
     fun getFinalColumnName(rawName: String) = columnSchema.inputToFinalColumnNames[rawName]!!
 
+    /** Note: Returns final munged column names. */
     fun getCursor() =
         if (importType is Dedupe)
             importType.cursor.map { columnSchema.inputToFinalColumnNames[it]!! }
         else emptyList()
 
+    /** Note: Returns final munged column names. */
     fun getPrimaryKey() =
         if (importType is Dedupe)
             importType.primaryKey.map { keys ->
