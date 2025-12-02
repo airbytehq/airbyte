@@ -43,9 +43,7 @@ class TestProductAttributesFullRefresh(TestCase):
     def test_read_records(self, http_mocker: HttpMocker) -> None:
         """Test reading product attributes."""
         http_mocker.get(
-            WooCommerceRequestBuilder.product_attributes_endpoint()
-            .with_default_params()
-            .build(),
+            WooCommerceRequestBuilder.product_attributes_endpoint().with_default_params().build(),
             HttpResponse(body=json.dumps(_get_response_template()), status_code=200),
         )
 
@@ -59,9 +57,7 @@ class TestProductAttributesFullRefresh(TestCase):
     def test_read_records_empty_response(self, http_mocker: HttpMocker) -> None:
         """Test reading when there are no product attributes."""
         http_mocker.get(
-            WooCommerceRequestBuilder.product_attributes_endpoint()
-            .with_default_params()
-            .build(),
+            WooCommerceRequestBuilder.product_attributes_endpoint().with_default_params().build(),
             HttpResponse(body=json.dumps([]), status_code=200),
         )
 
