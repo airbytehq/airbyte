@@ -240,7 +240,7 @@ class SourceSFTPBulkStreamReader(AbstractFileBasedStreamReader):
                         if self._directory_could_match_globs(dir_path, normalized_globs, root_folder):
                             directories.append(dir_path)
                         else:
-                            logger.info(f"Skipping directory {dir_path} (no globs match)")
+                            logger.debug(f"Skipping directory {dir_path} (no globs match)")
                     else:
                         file_uri = f"{current_dir}/{item.filename}"
                         file_mtime = datetime.fromtimestamp(item.st_mtime)
