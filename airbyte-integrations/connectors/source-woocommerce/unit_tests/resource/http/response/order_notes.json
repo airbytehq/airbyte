@@ -7,9 +7,19 @@
     "note": "Payment received via Stripe.",
     "customer_note": false,
     "_links": {
-      "self": [{"href": "https://test-shop.example.com/wp-json/wc/v3/orders/727/notes/281"}],
-      "collection": [{"href": "https://test-shop.example.com/wp-json/wc/v3/orders/727/notes"}],
-      "up": [{"href": "https://test-shop.example.com/wp-json/wc/v3/orders/727"}]
+      "self": [
+        {
+          "href": "https://test-shop.example.com/wp-json/wc/v3/orders/727/notes/281"
+        }
+      ],
+      "collection": [
+        {
+          "href": "https://test-shop.example.com/wp-json/wc/v3/orders/727/notes"
+        }
+      ],
+      "up": [
+        { "href": "https://test-shop.example.com/wp-json/wc/v3/orders/727" }
+      ]
     }
   }
 ]

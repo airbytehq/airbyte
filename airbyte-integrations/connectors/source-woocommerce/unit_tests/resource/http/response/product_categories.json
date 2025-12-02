@@ -19,8 +19,16 @@
     "menu_order": 0,
     "count": 25,
     "_links": {
-      "self": [{"href": "https://test-shop.example.com/wp-json/wc/v3/products/categories/15"}],
-      "collection": [{"href": "https://test-shop.example.com/wp-json/wc/v3/products/categories"}]
+      "self": [
+        {
+          "href": "https://test-shop.example.com/wp-json/wc/v3/products/categories/15"
+        }
+      ],
+      "collection": [
+        {
+          "href": "https://test-shop.example.com/wp-json/wc/v3/products/categories"
+        }
+      ]
     }
   }
 ]

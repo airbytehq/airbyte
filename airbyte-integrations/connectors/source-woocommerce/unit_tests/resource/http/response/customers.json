@@ -38,8 +38,12 @@
     "avatar_url": "https://secure.gravatar.com/avatar/abc123?s=96&d=mm&r=g",
     "meta_data": [],
     "_links": {
-      "self": [{"href": "https://test-shop.example.com/wp-json/wc/v3/customers/1"}],
-      "collection": [{"href": "https://test-shop.example.com/wp-json/wc/v3/customers"}]
+      "self": [
+        { "href": "https://test-shop.example.com/wp-json/wc/v3/customers/1" }
+      ],
+      "collection": [
+        { "href": "https://test-shop.example.com/wp-json/wc/v3/customers" }
+      ]
     }
   }
 ]

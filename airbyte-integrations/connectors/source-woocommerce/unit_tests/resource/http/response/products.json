@@ -88,8 +88,12 @@
     "meta_data": [],
     "stock_status": "instock",
     "_links": {
-      "self": [{"href": "https://test-shop.example.com/wp-json/wc/v3/products/99"}],
-      "collection": [{"href": "https://test-shop.example.com/wp-json/wc/v3/products"}]
+      "self": [
+        { "href": "https://test-shop.example.com/wp-json/wc/v3/products/99" }
+      ],
+      "collection": [
+        { "href": "https://test-shop.example.com/wp-json/wc/v3/products" }
+      ]
     }
   }
 ]

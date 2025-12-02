@@ -89,8 +89,12 @@
     "coupon_lines": [],
     "refunds": [],
     "_links": {
-      "self": [{"href": "https://test-shop.example.com/wp-json/wc/v3/orders/727"}],
-      "collection": [{"href": "https://test-shop.example.com/wp-json/wc/v3/orders"}]
+      "self": [
+        { "href": "https://test-shop.example.com/wp-json/wc/v3/orders/727" }
+      ],
+      "collection": [
+        { "href": "https://test-shop.example.com/wp-json/wc/v3/orders" }
+      ]
     }
   }
 ]
