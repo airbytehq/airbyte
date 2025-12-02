@@ -6,18 +6,54 @@ This release changes the primary key for the `workflow_runs` stream to correctly
 
 ### What changed
 
-The primary key for the `workflow_runs` stream has been changed from `[id]` to `[id, run_attempt]`. Previously, when a workflow was re-run, only the latest attempt was preserved because all attempts share the same `id`. With this change, all attempts are now preserved as separate records.
+The primary key for the `workflow_runs` stream has been changed from `[id]` to `[id, run_attempt]`. Previously, when a GitHub workflow was re-run, only the latest attempt was preserved because all attempts share the same `id`. With this change, all attempts are now preserved as separate records.
+
+GitHub allows workflows to be [re-run within 30 days](https://docs.github.com/en/actions/managing-workflow-runs/re-running-workflows-and-jobs) of the original run. Each re-run increments the `run_attempt` field while keeping the same `id`. The new composite primary key ensures that all attempts are captured and deduplicated correctly.
+
+### Primary Key changes
+
+| Stream Name     | Old Primary Key | New Primary Key        |
+|-----------------|-----------------|------------------------|
+| `workflow_runs` | `[id]`          | `[id, run_attempt]`    |
 
 ### Affected streams
 
 - `workflow_runs`
 
-### Required actions
+### Refresh affected schemas and reset data
 
-After upgrading to version 3.0.0:
+1. Select **Connections** in the main navbar.
+   1. Select the connection(s) affected by the update.
+2. Select the **Replication** tab.
+   1. Select **Refresh source schema**.
+   2. Select **OK**.
 
-1. **Reset the `workflow_runs` stream** to re-sync all historical data with the new composite primary key
-2. **Update downstream queries and dashboards** that rely on the `workflow_runs` primary key to account for the new `[id, run_attempt]` composite key
+```note
+Any detected schema changes will be listed for your review.
+```
+
+3. Select **Save changes** at the bottom of the page.
+   1. Ensure the **Reset affected streams** option is checked.
+
+```note
+Depending on destination type you may not be prompted to reset your data.
+```
+
+4. Select **Save connection**.
+
+```note
+This will reset the data in your destination and initiate a fresh sync.
+```
+
+For more information on resetting your data in Airbyte, see [this page](/platform/operator-guides/clear).
+
+### Update downstream systems
+
+After the data reset completes, update any downstream queries, dashboards, or applications that rely on the `workflow_runs` primary key:
+
+- If you were using `id` as a unique identifier, update your queries to use the composite key `(id, run_attempt)` instead
+- If you have foreign key relationships based on `id`, consider whether you need to account for multiple attempts per workflow run
+- Review any deduplication logic that assumed `id` was unique
 
 ## Upgrading to 2.0.0
 
