@@ -67,14 +67,11 @@ class ConnectorTestContext(ConnectorContext):
         return True
 
     @property
-    def should_run_static_analysis(self) -> bool:
-        """Check if static analysis steps should run.
-
-        Static analysis should run if there are modified files that are not metadata.yaml
-        and not in unit_tests or integration_tests directories.
+    def metadata_or_test_only_change(self) -> bool:
+        """Check if all modified files are either metadata.yaml or in test directories.
 
         Returns:
-            bool: True if static analysis should run, False otherwise.
+            bool: True if all modified files are metadata.yaml or in unit_tests/integration_tests, False otherwise.
         """
         test_directories = ("unit_tests", "integration_tests")
         for modified_file in self.modified_files:
@@ -89,12 +86,12 @@ class ConnectorTestContext(ConnectorContext):
                 if top_level_dir in test_directories:
                     continue
             except ValueError:
-                # File not under connector directory, treat as requiring static analysis
-                return True
+                # File not under connector directory, not a metadata or test file
+                return False
 
             # Found a file that's not metadata.yaml and not in test directories
-            return True
-        return False
+            return False
+        return True
 
     @staticmethod
     def _handle_missing_secret_store(
