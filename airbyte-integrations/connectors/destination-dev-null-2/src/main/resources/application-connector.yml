@@ -9,11 +9,11 @@ airbyte:
         unions: DEFAULT
       # Data channel configuration (required)
       data-channel:
-        medium: STDIO  # STDIO or SOCKET (platform sets this)
-        format: JSONL  # JSONL or PROTOBUF
+        medium: STDIO # STDIO or SOCKET (platform sets this)
+        format: JSONL # JSONL or PROTOBUF
       # Namespace mapping (required)
       mappers:
-        namespace-mapping-config-path: ""  # Empty = no custom mapping (identity)
+        namespace-mapping-config-path: "" # Empty = no custom mapping (identity)
       # File transfer (required)
       file-transfer:
-        enabled: false  # false for dev-null since we don't actually store files
+        enabled: false # false for dev-null since we don't actually store files

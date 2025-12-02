@@ -12,10 +12,9 @@ import io.airbyte.cdk.load.table.TableName
 import jakarta.inject.Singleton
 
 /**
- * Name generators for dev-null destination.
- * These are required by the CDK's TableCatalog even though we don't actually create tables.
+ * Name generators for dev-null destination. These are required by the CDK's TableCatalog even
+ * though we don't actually create tables.
  */
-
 @Singleton
 class DevNull2RawTableNameGenerator : RawTableNameGenerator {
     override fun getTableName(streamDescriptor: DestinationStream.Descriptor): TableName {

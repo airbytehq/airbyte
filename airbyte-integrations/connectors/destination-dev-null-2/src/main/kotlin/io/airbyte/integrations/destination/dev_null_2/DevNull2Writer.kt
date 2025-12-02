@@ -14,8 +14,8 @@ import jakarta.inject.Singleton
 private val log = KotlinLogging.logger {}
 
 /**
- * Writer for Dev Null 2 destination.
- * Creates no-op stream loaders since this destination discards all data.
+ * Writer for Dev Null 2 destination. Creates no-op stream loaders since this destination discards
+ * all data.
  */
 @Singleton
 class DevNull2Writer(
@@ -28,25 +28,28 @@ class DevNull2Writer(
     }
 
     override fun createStreamLoader(stream: DestinationStream): StreamLoader {
-        log.info { "Creating StreamLoader for stream: ${stream.mappedDescriptor.namespace}.${stream.mappedDescriptor.name}" }
+        log.info {
+            "Creating StreamLoader for stream: ${stream.mappedDescriptor.namespace}.${stream.mappedDescriptor.name}"
+        }
         return DevNull2StreamLoader(stream)
     }
 }
 
-/**
- * No-op StreamLoader for dev-null destination.
- * All actual work happens in the Aggregate.
- */
+/** No-op StreamLoader for dev-null destination. All actual work happens in the Aggregate. */
 class DevNull2StreamLoader(
     override val stream: DestinationStream,
 ) : StreamLoader {
     private val log = KotlinLogging.logger {}
 
     override suspend fun start() {
-        log.debug { "DevNull2StreamLoader start for stream: ${stream.mappedDescriptor.namespace}.${stream.mappedDescriptor.name}" }
+        log.debug {
+            "DevNull2StreamLoader start for stream: ${stream.mappedDescriptor.namespace}.${stream.mappedDescriptor.name}"
+        }
     }
 
     override suspend fun close(hadNonzeroRecords: Boolean, streamFailure: StreamProcessingFailed?) {
-        log.debug { "DevNull2StreamLoader close for stream: ${stream.mappedDescriptor.namespace}.${stream.mappedDescriptor.name}, hadNonzeroRecords=$hadNonzeroRecords, failure=$streamFailure" }
+        log.debug {
+            "DevNull2StreamLoader close for stream: ${stream.mappedDescriptor.namespace}.${stream.mappedDescriptor.name}, hadNonzeroRecords=$hadNonzeroRecords, failure=$streamFailure"
+        }
     }
 }

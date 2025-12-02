@@ -87,7 +87,9 @@ class DevNull2ConfigurationFactory :
                         DevNull2Configuration(type = Silent)
                     }
                     is ThrottledDestination -> {
-                        DevNull2Configuration(type = Throttled(pojo.testDestination.millisPerRecord))
+                        DevNull2Configuration(
+                            type = Throttled(pojo.testDestination.millisPerRecord)
+                        )
                     }
                     is FailingDestination -> {
                         DevNull2Configuration(type = Failing(pojo.testDestination.numMessages))

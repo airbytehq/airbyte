@@ -27,10 +27,11 @@ class DevNull2Aggregate(
 ) : Aggregate {
     private var recordCount: Long = 0L
     private var logCount: Long = 0L
-    private val prng: Random = when (val type = config.type) {
-        is Logging -> type.seed?.let { Random(it) } ?: Random.Default
-        else -> Random.Default
-    }
+    private val prng: Random =
+        when (val type = config.type) {
+            is Logging -> type.seed?.let { Random(it) } ?: Random.Default
+            else -> Random.Default
+        }
 
     override fun accept(record: RecordDTO) {
         recordCount++
@@ -56,8 +57,9 @@ class DevNull2Aggregate(
             }
             is io.airbyte.integrations.destination.dev_null_2.Failing -> {
                 if (recordCount > type.numMessages) {
-                    val message = "Failing Destination(stream=$streamName, numMessages=${type.numMessages}): " +
-                        "failing at record $recordCount"
+                    val message =
+                        "Failing Destination(stream=$streamName, numMessages=${type.numMessages}): " +
+                            "failing at record $recordCount"
                     log.info { message }
                     throw RuntimeException(message)
                 }
@@ -67,7 +69,9 @@ class DevNull2Aggregate(
 
     override suspend fun flush() {
         // Nothing to flush - we don't persist data
-        log.debug { "DevNull2Aggregate flush called for stream=$streamName, processed $recordCount records" }
+        log.debug {
+            "DevNull2Aggregate flush called for stream=$streamName, processed $recordCount records"
+        }
     }
 }
 
@@ -81,7 +85,9 @@ class DevNull2AggregateFactory(
             override fun create(key: StoreKey): Aggregate {
                 // StoreKey is a typealias for DestinationStream.Descriptor
                 val streamName = "${key.namespace ?: "default"}.${key.name}"
-                log.info { "Creating DevNull2Aggregate for stream=$streamName with mode=${config.type::class.simpleName}" }
+                log.info {
+                    "Creating DevNull2Aggregate for stream=$streamName with mode=${config.type::class.simpleName}"
+                }
                 return DevNull2Aggregate(config, streamName)
             }
         }
