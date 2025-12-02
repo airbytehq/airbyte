@@ -5,6 +5,7 @@
 package io.airbyte.integrations.destination.snowflake.component
 
 import io.airbyte.cdk.load.component.DataCoercionIntegerFixtures
+import io.airbyte.cdk.load.component.DataCoercionNumberFixtures
 import io.airbyte.cdk.load.component.DataCoercionSuite
 import io.airbyte.cdk.load.component.TableOperationsClient
 import io.airbyte.cdk.load.component.TestTableOperationsClient
@@ -14,6 +15,7 @@ import io.airbyte.cdk.load.dataflow.transform.ValueCoercer
 import io.airbyte.cdk.load.schema.TableSchemaFactory
 import io.airbyte.protocol.models.v0.AirbyteRecordMessageMetaChange.Reason
 import io.micronaut.test.extensions.junit5.annotation.MicronautTest
+import java.math.BigDecimal
 import java.math.BigInteger
 import org.junit.jupiter.api.parallel.Execution
 import org.junit.jupiter.api.parallel.ExecutionMode
@@ -45,7 +47,9 @@ class SnowflakeDataCoercionTest(
 
     @ParameterizedTest
     // for historical reasons, we use snowflake's FLOAT data type, which is a float64
-    @MethodSource("io.airbyte.cdk.load.component.DataCoercionNumberFixtures#float64")
+    @MethodSource(
+        "io.airbyte.integrations.destination.snowflake.component.SnowflakeDataCoercionTest#numbers"
+    )
     override fun `handle number values`(
         inputValue: AirbyteValue,
         expectedValue: Any?,
@@ -80,6 +84,85 @@ class SnowflakeDataCoercionTest(
                                 }
                             }
                     )
+                }
+                .toArgs()
+
+        @JvmStatic
+        fun numbers() =
+            DataCoercionNumberFixtures.float64
+                .map {
+                    when (it.name) {
+                        // Snowflake rounds off floats in weird ways, most of which we don't track
+                        // in the value coercer. E.g.:
+                        // 1.7976931348623157e308 (Double.MAX_VALUE)
+                        // 1.79769313486232e308 (value read back from Snowflake)
+                        // Note that snowflake's value is rounded up, so it isn't actually
+                        // representable as a java double (BigDecimal(it).toDouble() => Infinity)
+                        // so we have to convert to bigdecimal.
+                        "largest positive float64" ->
+                            it.copy(
+                                outputValue = BigDecimal("1.79769313486232e308"),
+                                changeReason = null
+                            )
+                        "largest negative float64" ->
+                            it.copy(
+                                outputValue = BigDecimal("-1.79769313486232e308"),
+                                changeReason = null
+                            )
+                        // 1234567890.1234567 -> 1234567890.12346
+                        // this one preserves the DESTINATION_FIELD_SIZE_LIMITATION reason,
+                        // because the coercer correctly detects that the input value has too much
+                        // precision for a java double
+                        "positive high-precision float" ->
+                            it.copy(outputValue = BigDecimal("1234567890.12346"))
+                        "negative high-precision float" ->
+                            it.copy(outputValue = BigDecimal("-1234567890.12346"))
+                        // 1.401298464324817E-45 -> 1.401298464E-45
+                        "smallest positive float32" ->
+                            it.copy(
+                                outputValue = BigDecimal("1.401298464E-45"),
+                                changeReason = null
+                            )
+                        "smallest negative float32" ->
+                            it.copy(
+                                outputValue = BigDecimal("-1.401298464E-45"),
+                                changeReason = null
+                            )
+                        // 3.4028234663852886E+38 -> 3.40282346638529E+38
+                        "largest positive float32" ->
+                            it.copy(
+                                outputValue = BigDecimal("3.40282346638529E+38"),
+                                changeReason = null
+                            )
+                        "largest negative float32" ->
+                            it.copy(
+                                outputValue = BigDecimal("-3.40282346638529E+38"),
+                                changeReason = null
+                            )
+                        // 4.9E-324 -> 4.940656458E-324
+                        // (this looks like snowflake is basically doing BigDecimal(4.9e-324) rather
+                        // than BigDecimal.valueOf(), but that doesn't really explain the other
+                        // rounding behaviors)
+                        "smallest positive float64" ->
+                            it.copy(
+                                outputValue = BigDecimal("4.940656458E-324"),
+                                changeReason = null
+                            )
+                        "smallest negative float64" ->
+                            it.copy(
+                                outputValue = BigDecimal("-4.940656458E-324"),
+                                changeReason = null
+                            )
+                        // convert to bigdecimal + kill unnecessary decimal points (e.g. use `1`
+                        // instead of `1.0`) but otherwise leave the value unchanged
+                        else ->
+                            it.copy(
+                                outputValue =
+                                    (it.outputValue as Double?)?.let {
+                                        BigDecimal.valueOf(it).stripTrailingZeros()
+                                    }
+                            )
+                    }
                 }
                 .toArgs()
     }
