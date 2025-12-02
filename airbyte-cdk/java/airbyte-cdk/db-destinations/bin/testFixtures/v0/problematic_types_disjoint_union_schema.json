@@ -1,0 +1,186 @@
+{
+  "type": "object",
+  "properties": {
+    "schemaless_object": {
+      "type": "string"
+    },
+    "schematized_object": {
+      "type": "object",
+      "properties": {
+        "id": {
+          "type": "integer"
+        },
+        "name": {
+          "type": "string"
+        }
+      }
+    },
+    "combined_type": {
+      "type": "object",
+      "properties": {
+        "type": {
+          "type": "string"
+        },
+        "string": {
+          "type": "string"
+        },
+        "integer": {
+          "type": "integer"
+        }
+      }
+    },
+    "union_type": {
+      "type": "object",
+      "properties": {
+        "type": {
+          "type": "string"
+        },
+        "string": {
+          "type": "string"
+        },
+        "integer": {
+          "type": "integer"
+        }
+      }
+    },
+    "schemaless_array": {
+      "type": "string"
+    },
+    "mixed_array_integer_and_schemaless_object": {
+      "type": "array",
+      "items": [
+        {
+          "type": "integer"
+        },
+        {
+          "type": "string"
+        }
+      ]
+    },
+    "array_of_union_integer_and_schemaless_array": {
+      "type": "array",
+      "items": [
+        {
+          "type": "object",
+          "properties": {
+            "type": {
+              "type": "string"
+            },
+            "integer": {
+              "type": "integer"
+            },
+            "string": {
+              "type": "string"
+            }
+          }
+        }
+      ]
+    },
+    "union_of_objects_with_properties_identical": {
+      "type": "object",
+      "properties": {
+        "type": {
+          "type": "string"
+        },
+        "object": {
+          "type": "object",
+          "properties": {
+            "id": {
+              "type": "integer"
+            },
+            "name": {
+              "type": "string"
+            }
+          }
+        }
+      }
+    },
+    "union_of_objects_with_properties_overlapping": {
+      "type": "object",
+      "properties": {
+        "type": {
+          "type": "string"
+        },
+        "object": {
+          "type": "object",
+          "properties": {
+            "id": {
+              "type": "integer"
+            },
+            "name": {
+              "type": "string"
+            },
+            "flagged": {
+              "type": "boolean"
+            }
+          }
+        }
+      }
+    },
+    "union_of_objects_with_properties_nonoverlapping": {
+      "type": "object",
+      "properties": {
+        "type": {
+          "type": "string"
+        },
+        "object": {
+          "type": "object",
+          "properties": {
+            "id": {
+              "type": "integer"
+            },
+            "name": {
+              "type": "string"
+            },
+            "flagged": {
+              "type": "boolean"
+            },
+            "description": {
+              "type": "string"
+            }
+          }
+        }
+      }
+    },
+    "empty_object": {
+      "type": "string"
+    },
+    "object_with_null_properties": {
+      "type": "string"
+    },
+    "combined_with_null": {
+      "type": ["string", "null"]
+    },
+    "union_with_null": {
+      "oneOf": [
+        {
+          "type": "string"
+        },
+        {
+          "type": "null"
+        }
+      ]
+    },
+    "combined_nulls": {
+      "type": "null"
+    },
+    "compact_union": {
+      "oneOf": [
+        {
+          "type": "object",
+          "properties": {
+            "id": {
+              "type": "integer"
+            },
+            "name": {
+              "type": "string"
+            }
+          }
+        },
+        {
+          "type": "integer"
+        }
+      ]
+    }
+  }
+}

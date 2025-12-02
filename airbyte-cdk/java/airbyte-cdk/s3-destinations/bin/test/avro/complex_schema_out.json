@@ -1,0 +1,172 @@
+{
+  "type": "object",
+  "properties": {
+    "null_type": {
+      "type": "null"
+    },
+    "combined_null_string": {
+      "type": "string"
+    },
+    "redundant_null": {
+      "type": "null"
+    },
+    "integer_type": {
+      "type": "integer"
+    },
+    "integer_type_alt": {
+      "type": "integer"
+    },
+    "number_type": {
+      "type": "number"
+    },
+    "timestamp_without_timezone": {
+      "type": "string",
+      "format": "date-time",
+      "airbyte_type": "timestamp_without_timezone"
+    },
+    "timestamp_with_timezone": {
+      "type": "string",
+      "format": "date-time",
+      "airbyte_type": "timestamp_with_timezone"
+    },
+    "timestamp_unspecified": {
+      "type": "string",
+      "format": "date-time",
+      "airbyte_type": "timestamp_with_timezone"
+    },
+    "time_without_timezone": {
+      "type": "string",
+      "format": "time",
+      "airbyte_type": "time_without_timezone"
+    },
+    "time_with_timezone": {
+      "type": "string",
+      "format": "time",
+      "airbyte_type": "time_with_timezone"
+    },
+    "time_unspecified": {
+      "type": "string",
+      "format": "time",
+      "airbyte_type": "time_with_timezone"
+    },
+    "binary_type": {
+      "$ref": "WellKnownTypes.json#/definitions/BinaryData"
+    },
+    "string_type": {
+      "type": "string"
+    },
+    "array_type": {
+      "type": "array",
+      "items": {
+        "type": "integer"
+      }
+    },
+    "object_type": {
+      "type": "object",
+      "properties": {
+        "nested_integer_type": {
+          "type": "integer"
+        },
+        "nested_string_type": {
+          "type": "string"
+        }
+      }
+    },
+    "combined_type": {
+      "oneOf": [
+        {
+          "type": "integer"
+        },
+        {
+          "type": "string"
+        }
+      ]
+    },
+    "combined_type_alt": {
+      "oneOf": [
+        {
+          "type": "integer"
+        },
+        {
+          "type": "string"
+        }
+      ]
+    },
+    "combined_type_singleton": {
+      "type": "string"
+    },
+    "extremely_nested_type": {
+      "type": "object",
+      "properties": {
+        "nested_object_type": {
+          "type": "object",
+          "properties": {
+            "nested_nested_integer_type": {
+              "type": "integer"
+            },
+            "nested_nested_string_type": {
+              "type": "string"
+            },
+            "nested_union_of_arrays_of_objects_with_unions": {
+              "oneOf": [
+                {
+                  "type": "array",
+                  "items": [
+                    {
+                      "type": "object",
+                      "properties": {
+                        "nested_nested_nested_integer_type": {
+                          "type": "integer"
+                        },
+                        "nested_nested_nested_string_type": {
+                          "type": "string"
+                        }
+                      }
+                    }
+                  ]
+                },
+                {
+                  "type": "object",
+                  "properties": {
+                    "nested_nested_nested_integer_type": {
+                      "type": "integer"
+                    },
+                    "nested_nested_nested_string_type": {
+                      "type": "string"
+                    },
+                    "another_union_of_array_and_string_and_obect": {
+                      "oneOf": [
+                        {
+                          "type": "array",
+                          "items": [
+                            {
+                              "type": "string"
+                            }
+                          ]
+                        },
+                        {
+                          "type": "string"
+                        },
+                        {
+                          "type": "object",
+                          "properties": {
+                            "nested_nested_nested_nested_integer_type": {
+                              "type": "integer"
+                            },
+                            "nested_nested_nested_nested_anon_array_type": {
+                              "type": "array"
+                            }
+                          }
+                        }
+                      ]
+                    }
+                  }
+                }
+              ]
+            }
+          }
+        }
+      }
+    }
+  }
+}
