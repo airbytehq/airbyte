@@ -6,6 +6,8 @@ from pathlib import Path
 
 import pytest
 
+CONNECTOR_CODE_DIRECTORY = Path("/path/to/connector")
+
 
 @pytest.mark.parametrize(
     "modified_files,expected_result",
@@ -50,5 +52,153 @@ def test_metadata_yaml_only_change(mocker, modified_files, expected_result):
     mock_context.modified_files = modified_files
 
     result = ConnectorTestContext.metadata_yaml_only_change.fget(mock_context)
+
+    assert result == expected_result
+
+
+@pytest.mark.parametrize(
+    "modified_files,expected_result",
+    [
+        pytest.param(
+            frozenset([CONNECTOR_CODE_DIRECTORY / "unit_tests" / "test_source.py"]),
+            True,
+            id="only_unit_tests_changed",
+        ),
+        pytest.param(
+            frozenset([CONNECTOR_CODE_DIRECTORY / "integration_tests" / "test_integration.py"]),
+            True,
+            id="only_integration_tests_changed",
+        ),
+        pytest.param(
+            frozenset(
+                [
+                    CONNECTOR_CODE_DIRECTORY / "unit_tests" / "test_source.py",
+                    CONNECTOR_CODE_DIRECTORY / "integration_tests" / "test_integration.py",
+                ]
+            ),
+            True,
+            id="both_unit_and_integration_tests_changed",
+        ),
+        pytest.param(
+            frozenset(
+                [
+                    CONNECTOR_CODE_DIRECTORY / "unit_tests" / "test_source.py",
+                    CONNECTOR_CODE_DIRECTORY / "src" / "main.py",
+                ]
+            ),
+            False,
+            id="unit_tests_and_source_code_changed",
+        ),
+        pytest.param(
+            frozenset([CONNECTOR_CODE_DIRECTORY / "src" / "main.py"]),
+            False,
+            id="only_source_code_changed",
+        ),
+        pytest.param(
+            frozenset(),
+            True,
+            id="no_modified_files",
+        ),
+    ],
+)
+def test_test_only_change(mocker, modified_files, expected_result):
+    """Test that test_only_change correctly identifies when only test files are modified."""
+    from pipelines.airbyte_ci.connectors.test.context import ConnectorTestContext
+
+    mock_connector = mocker.Mock()
+    mock_connector.code_directory = CONNECTOR_CODE_DIRECTORY
+
+    mock_context = mocker.Mock(spec=ConnectorTestContext)
+    mock_context.modified_files = modified_files
+    mock_context.connector = mock_connector
+
+    result = ConnectorTestContext.test_only_change.fget(mock_context)
+
+    assert result == expected_result
+
+
+@pytest.mark.parametrize(
+    "modified_files,expected_result",
+    [
+        pytest.param(
+            frozenset([CONNECTOR_CODE_DIRECTORY / "metadata.yaml"]),
+            False,
+            id="only_metadata_yaml_changed",
+        ),
+        pytest.param(
+            frozenset([CONNECTOR_CODE_DIRECTORY / "unit_tests" / "test_source.py"]),
+            False,
+            id="only_unit_tests_changed",
+        ),
+        pytest.param(
+            frozenset([CONNECTOR_CODE_DIRECTORY / "integration_tests" / "test_integration.py"]),
+            False,
+            id="only_integration_tests_changed",
+        ),
+        pytest.param(
+            frozenset(
+                [
+                    CONNECTOR_CODE_DIRECTORY / "metadata.yaml",
+                    CONNECTOR_CODE_DIRECTORY / "unit_tests" / "test_source.py",
+                ]
+            ),
+            False,
+            id="metadata_and_unit_tests_changed",
+        ),
+        pytest.param(
+            frozenset(
+                [
+                    CONNECTOR_CODE_DIRECTORY / "metadata.yaml",
+                    CONNECTOR_CODE_DIRECTORY / "unit_tests" / "test_source.py",
+                    CONNECTOR_CODE_DIRECTORY / "integration_tests" / "test_integration.py",
+                ]
+            ),
+            False,
+            id="metadata_and_both_test_types_changed",
+        ),
+        pytest.param(
+            frozenset([CONNECTOR_CODE_DIRECTORY / "src" / "main.py"]),
+            True,
+            id="only_source_code_changed",
+        ),
+        pytest.param(
+            frozenset(
+                [
+                    CONNECTOR_CODE_DIRECTORY / "metadata.yaml",
+                    CONNECTOR_CODE_DIRECTORY / "src" / "main.py",
+                ]
+            ),
+            True,
+            id="metadata_and_source_code_changed",
+        ),
+        pytest.param(
+            frozenset(
+                [
+                    CONNECTOR_CODE_DIRECTORY / "unit_tests" / "test_source.py",
+                    CONNECTOR_CODE_DIRECTORY / "src" / "main.py",
+                ]
+            ),
+            True,
+            id="unit_tests_and_source_code_changed",
+        ),
+        pytest.param(
+            frozenset(),
+            False,
+            id="no_modified_files",
+        ),
+    ],
+)
+def test_should_run_static_analysis(mocker, modified_files, expected_result):
+    """Test that should_run_static_analysis correctly identifies when static analysis should run."""
+    from pipelines.airbyte_ci.connectors.test.context import ConnectorTestContext
+
+    mock_connector = mocker.Mock()
+    mock_connector.code_directory = CONNECTOR_CODE_DIRECTORY
+
+    mock_context = mocker.Mock(spec=ConnectorTestContext)
+    mock_context.modified_files = modified_files
+    mock_context.connector = mock_connector
+
+    result = ConnectorTestContext.should_run_static_analysis.fget(mock_context)
 
     assert result == expected_result
