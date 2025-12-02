@@ -13,6 +13,7 @@ from pathlib import Path
 from unittest import TestCase
 
 import freezegun
+
 from airbyte_cdk.models import SyncMode
 from airbyte_cdk.test.entrypoint_wrapper import EntrypointOutput
 from airbyte_cdk.test.mock_http import HttpMocker, HttpResponse
