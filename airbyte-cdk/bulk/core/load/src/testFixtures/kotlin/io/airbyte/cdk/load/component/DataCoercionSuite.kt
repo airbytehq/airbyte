@@ -30,6 +30,12 @@ import org.junit.jupiter.api.Assertions.assertEquals
  * `DataCoercionFixtures.kt`. For example, you might annotate [`handle integer values`] with
  * `@MethodSource("io.airbyte.cdk.load.component.DataCoercionIntegerFixtures#int32")`. See each
  * fixture class for explanations of what behavior they are exercising.
+ *
+ * Note that this class _only_ exercises [ValueCoercer.validate]. You should write separate unit
+ * tests for [ValueCoercer.map]. For now, the `map` function is primarily intended for transforming
+ * `UnionType` fields into other types (typically `StringType`), at which point your `validate`
+ * implementation should be able to handle any StringValue (regardless of whether it was originally
+ * a StringType or UnionType).
  */
 @MicronautTest(environments = ["component"], resolveParameters = false)
 interface DataCoercionSuite {
@@ -91,16 +97,14 @@ interface DataCoercionSuite {
                 schema,
             )
 
-        val mappedValue =
-            coercer.map(
-                EnrichedAirbyteValue(
-                    inputValue,
-                    fieldType.type,
-                    "test",
-                    airbyteMetaField = null,
-                )
+        val inputValueAsEnrichedAirbyteValue =
+            EnrichedAirbyteValue(
+                inputValue,
+                fieldType.type,
+                "test",
+                airbyteMetaField = null,
             )
-        val validatedValue = coercer.validate(mappedValue)
+        val validatedValue = coercer.validate(inputValueAsEnrichedAirbyteValue)
         val valueToInsert: AirbyteValue
         val changeReason: Reason?
         when (validatedValue) {
