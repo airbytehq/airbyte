@@ -175,7 +175,7 @@ internal class PostgresAirbyteClientTest {
 
         every { dataSource.connection } returns mockConnection
         every { sqlGenerator.createTable(stream, tableName, columnNameMapping, true) } returns
-            MOCK_SQL_QUERY
+            Pair(MOCK_SQL_QUERY, "CREATE INDEX IF NOT EXISTS idx ON table (col);")
 
         runBlocking {
             client.createTable(
@@ -184,8 +184,8 @@ internal class PostgresAirbyteClientTest {
                 columnNameMapping = columnNameMapping,
                 replace = true
             )
-            verify(exactly = 1) { statement.execute(MOCK_SQL_QUERY) }
-            verify(exactly = 1) { mockConnection.close() }
+            verify(exactly = 2) { statement.execute(any()) }
+            verify(exactly = 2) { mockConnection.close() }
         }
     }
 

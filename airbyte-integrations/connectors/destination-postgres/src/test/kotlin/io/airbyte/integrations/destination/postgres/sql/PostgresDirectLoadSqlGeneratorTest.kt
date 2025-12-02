@@ -60,7 +60,7 @@ internal class PostgresDirectLoadSqlGeneratorTest {
         val columnNameMapping = ColumnNameMapping(mapOf("sourceId" to "targetId"))
         val tableName = TableName(namespace = "namespace", name = "name")
 
-        val sql =
+        val (createTableSql, createIndexesSql) =
             postgresDirectLoadSqlGenerator.createTable(
                 stream = stream,
                 tableName = tableName,
@@ -68,11 +68,11 @@ internal class PostgresDirectLoadSqlGeneratorTest {
                 replace = true
             )
 
-        val expected =
+        val expectedTableSql =
             """
             BEGIN TRANSACTION;
             DROP TABLE IF EXISTS "namespace"."name";
-            CREATE TABLE "namespace"."name" (
+            CREATE TABLE IF NOT EXISTS "namespace"."name" (
             "_airbyte_raw_id" varchar NOT NULL,
             "_airbyte_extracted_at" timestamp with time zone NOT NULL,
             "_airbyte_meta" jsonb NOT NULL,
@@ -80,11 +80,16 @@ internal class PostgresDirectLoadSqlGeneratorTest {
             "targetId" varchar,
             "sourceName" varchar NOT NULL
             );
-            CREATE INDEX ON "namespace"."name" ("_airbyte_extracted_at");
             COMMIT;
             """
 
-        assertEqualsIgnoreWhitespace(expected, sql)
+        val expectedIndexesSql =
+            """
+            CREATE INDEX IF NOT EXISTS "idx_extracted_at_name" ON "namespace"."name" ("_airbyte_extracted_at");
+            """
+
+        assertEqualsIgnoreWhitespace(expectedTableSql, createTableSql)
+        assertEqualsIgnoreWhitespace(expectedIndexesSql, createIndexesSql)
     }
 
     private fun assertEqualsIgnoreWhitespace(expected: String, actual: String) {
@@ -116,7 +121,7 @@ internal class PostgresDirectLoadSqlGeneratorTest {
             )
         val tableName = TableName(namespace = "namespace", name = "name")
 
-        val sql =
+        val (createTableSql, createIndexesSql) =
             postgresDirectLoadSqlGenerator.createTable(
                 stream = stream,
                 tableName = tableName,
@@ -124,21 +129,26 @@ internal class PostgresDirectLoadSqlGeneratorTest {
                 replace = false
             )
 
-        val expected =
+        val expectedTableSql =
             """
             BEGIN TRANSACTION;
-            CREATE TABLE "namespace"."name" (
+            CREATE TABLE IF NOT EXISTS "namespace"."name" (
             "_airbyte_raw_id" varchar NOT NULL,
             "_airbyte_extracted_at" timestamp with time zone NOT NULL,
             "_airbyte_meta" jsonb NOT NULL,
             "_airbyte_generation_id" bigint NOT NULL,
             "targetId" varchar
             );
-            CREATE INDEX ON "namespace"."name" ("_airbyte_extracted_at");
             COMMIT;
             """
 
-        assertEqualsIgnoreWhitespace(expected, sql)
+        val expectedIndexesSql =
+            """
+            CREATE INDEX IF NOT EXISTS "idx_extracted_at_name" ON "namespace"."name" ("_airbyte_extracted_at");
+            """
+
+        assertEqualsIgnoreWhitespace(expectedTableSql, createTableSql)
+        assertEqualsIgnoreWhitespace(expectedIndexesSql, createIndexesSql)
     }
 
     @Test
@@ -160,7 +170,7 @@ internal class PostgresDirectLoadSqlGeneratorTest {
         val columnNameMapping = ColumnNameMapping(emptyMap())
         val tableName = TableName(namespace = "test_schema", name = "test_table")
 
-        val sql =
+        val (createTableSql, createIndexesSql) =
             postgresDirectLoadSqlGenerator.createTable(
                 stream = stream,
                 tableName = tableName,
@@ -168,11 +178,11 @@ internal class PostgresDirectLoadSqlGeneratorTest {
                 replace = true
             )
 
-        val expected =
+        val expectedTableSql =
             """
             BEGIN TRANSACTION;
             DROP TABLE IF EXISTS "test_schema"."test_table";
-            CREATE TABLE "test_schema"."test_table" (
+            CREATE TABLE IF NOT EXISTS "test_schema"."test_table" (
             "_airbyte_raw_id" varchar NOT NULL,
             "_airbyte_extracted_at" timestamp with time zone NOT NULL,
             "_airbyte_meta" jsonb NOT NULL,
@@ -181,13 +191,18 @@ internal class PostgresDirectLoadSqlGeneratorTest {
             "name" varchar,
             "updatedAt" timestamp with time zone
             );
-            CREATE INDEX "idx_pk_test_table" ON "test_schema"."test_table" ("id");
-            CREATE INDEX "idx_cursor_test_table" ON "test_schema"."test_table" ("updatedAt");
-            CREATE INDEX ON "test_schema"."test_table" ("_airbyte_extracted_at");
             COMMIT;
             """
 
-        assertEqualsIgnoreWhitespace(expected, sql)
+        val expectedIndexesSql =
+            """
+            CREATE INDEX IF NOT EXISTS "idx_pk_test_table" ON "test_schema"."test_table" ("id");
+            CREATE INDEX IF NOT EXISTS "idx_cursor_test_table" ON "test_schema"."test_table" ("updatedAt");
+            CREATE INDEX IF NOT EXISTS "idx_extracted_at_test_table" ON "test_schema"."test_table" ("_airbyte_extracted_at");
+            """
+
+        assertEqualsIgnoreWhitespace(expectedTableSql, createTableSql)
+        assertEqualsIgnoreWhitespace(expectedIndexesSql, createIndexesSql)
     }
 
     @Test
@@ -953,7 +968,7 @@ internal class PostgresDirectLoadSqlGeneratorTest {
         assert(sql.contains("DROP INDEX IF EXISTS \"test_schema\".\"idx_pk_test_table\""))
         assert(
             sql.contains(
-                "CREATE INDEX \"idx_pk_test_table\" ON \"test_schema\".\"test_table\" (\"id\", \"user_id\")"
+                "CREATE INDEX IF NOT EXISTS \"idx_pk_test_table\" ON \"test_schema\".\"test_table\" (\"id\", \"user_id\")"
             )
         )
     }
@@ -986,7 +1001,7 @@ internal class PostgresDirectLoadSqlGeneratorTest {
         assert(sql.contains("DROP INDEX IF EXISTS \"test_schema\".\"idx_cursor_test_table\""))
         assert(
             sql.contains(
-                "CREATE INDEX \"idx_cursor_test_table\" ON \"test_schema\".\"test_table\" (\"updated_at\")"
+                "CREATE INDEX IF NOT EXISTS \"idx_cursor_test_table\" ON \"test_schema\".\"test_table\" (\"updated_at\")"
             )
         )
     }
@@ -1020,13 +1035,13 @@ internal class PostgresDirectLoadSqlGeneratorTest {
         assert(sql.contains("DROP INDEX IF EXISTS \"test_schema\".\"idx_pk_test_table\""))
         assert(
             sql.contains(
-                "CREATE INDEX \"idx_pk_test_table\" ON \"test_schema\".\"test_table\" (\"id\")"
+                "CREATE INDEX IF NOT EXISTS \"idx_pk_test_table\" ON \"test_schema\".\"test_table\" (\"id\")"
             )
         )
         assert(sql.contains("DROP INDEX IF EXISTS \"test_schema\".\"idx_cursor_test_table\""))
         assert(
             sql.contains(
-                "CREATE INDEX \"idx_cursor_test_table\" ON \"test_schema\".\"test_table\" (\"updated_at\")"
+                "CREATE INDEX IF NOT EXISTS \"idx_cursor_test_table\" ON \"test_schema\".\"test_table\" (\"updated_at\")"
             )
         )
     }
