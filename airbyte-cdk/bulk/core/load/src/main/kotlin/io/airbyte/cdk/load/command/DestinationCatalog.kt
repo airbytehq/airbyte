@@ -159,9 +159,10 @@ class DefaultDestinationCatalogFactory {
                                     finalSchema = mapOf()
                                 ),
                             importType = Append,
-                            tableNames = TableNames(
-                                finalTableName = TableName("namespace", "test"),
-                            ),
+                            tableNames =
+                                TableNames(
+                                    finalTableName = TableName("namespace", "test"),
+                                ),
                         ),
                 )
             )
