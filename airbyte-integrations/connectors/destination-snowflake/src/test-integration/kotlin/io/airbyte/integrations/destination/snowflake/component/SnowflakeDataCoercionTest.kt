@@ -44,7 +44,6 @@ class SnowflakeDataCoercionTest(
     }
 
     @ParameterizedTest
-    // for historical reasons, we use snowflake's FLOAT data type, which is a float64
     @MethodSource(
         "io.airbyte.integrations.destination.snowflake.component.SnowflakeDataCoercionTest#numbers"
     )
@@ -87,6 +86,7 @@ class SnowflakeDataCoercionTest(
 
         @JvmStatic
         fun numbers() =
+            // for historical reasons, we use snowflake's FLOAT data type, which is a float64
             DataCoercionNumberFixtures.float64
                 .map {
                     when (it.name) {
