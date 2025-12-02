@@ -29,6 +29,7 @@ class DevNull2BasicFunctionalityIntegrationTest :
         supportFileTransfer = false,
         commitDataIncrementally = false,
         allTypesBehavior = Untyped,
+        useDataFlowPipeline = true,
     ) {
     @Test
     override fun testBasicWrite() {

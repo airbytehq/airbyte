@@ -4,6 +4,7 @@
 
 package io.airbyte.integrations.destination.dev_null_2
 
+import io.airbyte.cdk.command.ConfigurationSpecificationSupplier
 import io.airbyte.cdk.load.command.DestinationConfiguration
 import io.airbyte.cdk.load.command.DestinationConfigurationFactory
 import io.micronaut.context.annotation.Factory
@@ -104,11 +105,27 @@ class DevNull2ConfigurationFactory :
     }
 }
 
-/** This allows micronaut to inject the simplified configuration into the implementation. */
+/** Bean factory providing configuration instances via Micronaut DI. */
 @Factory
-class DevNull2ConfigurationProvider(private val config: DestinationConfiguration) {
+class DevNull2BeanFactory {
     @Singleton
-    fun get(): DevNull2Configuration {
-        return config as DevNull2Configuration
+    fun devNull2Configuration(
+        configFactory: DevNull2ConfigurationFactory,
+        specFactory: ConfigurationSpecificationSupplier<DevNull2Specification>,
+    ): DevNull2Configuration {
+        val spec = specFactory.get()
+        return configFactory.makeWithoutExceptionHandling(spec)
     }
+
+    @Singleton
+    fun tempTableNameGenerator(): io.airbyte.cdk.load.orchestration.db.TempTableNameGenerator =
+        io.airbyte.cdk.load.orchestration.db.DefaultTempTableNameGenerator()
+
+    @Singleton
+    fun aggregatePublishingConfig(): io.airbyte.cdk.load.dataflow.config.AggregatePublishingConfig =
+        io.airbyte.cdk.load.dataflow.config.AggregatePublishingConfig(
+            maxRecordsPerAgg = 10_000_000_000_000L,
+            maxEstBytesPerAgg = 350_000_000L,
+            maxEstBytesAllAggregates = 350_000_000L * 5,
+        )
 }

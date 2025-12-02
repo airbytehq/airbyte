@@ -7,7 +7,7 @@ plugins {
 
 airbyteBulkConnector {
     core = "load"
-    toolkits = listOf()
+    toolkits = listOf("load-db")
 }
 
 application {
