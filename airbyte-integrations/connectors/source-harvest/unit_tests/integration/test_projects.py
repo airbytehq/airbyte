@@ -1,9 +1,7 @@
 # Copyright (c) 2025 Airbyte, Inc., all rights reserved.
 
 import json
-import sys
 from datetime import datetime, timezone
-from pathlib import Path
 from unittest import TestCase
 
 import freezegun
@@ -13,13 +11,7 @@ from airbyte_cdk.test.catalog_builder import CatalogBuilder
 from airbyte_cdk.test.entrypoint_wrapper import read
 from airbyte_cdk.test.mock_http import HttpMocker, HttpResponse
 from airbyte_cdk.test.state_builder import StateBuilder
-
-
-# Add parent directory to path to allow imports
-sys.path.insert(0, str(Path(__file__).parent.parent))
-
 from unit_tests.conftest import get_source
-
 from integration.config import ConfigBuilder
 from integration.request_builder import HarvestRequestBuilder
 
@@ -100,7 +92,7 @@ class TestProjectsStream(TestCase):
         catalog = CatalogBuilder().with_stream(_STREAM_NAME, SyncMode.full_refresh).build()
         output = read(source, config=config, catalog=catalog)
 
-        # ASSERT: Verify results
+        # ASSERT: Should retrieve exactly one record with correct data
         assert len(output.records) == 1
         record = output.records[0].record.data
         assert record["id"] == 14307913
@@ -109,6 +101,9 @@ class TestProjectsStream(TestCase):
         assert record["is_active"] is True
         assert record["is_billable"] is True
         assert record["client_id"] == 5735776
+
+        # ASSERT: Should have stream status messages indicating successful sync
+        assert output.records[0].record.stream == _STREAM_NAME
 
     @HttpMocker()
     def test_pagination_multiple_pages(self, http_mocker: HttpMocker):
@@ -199,11 +194,14 @@ class TestProjectsStream(TestCase):
         catalog = CatalogBuilder().with_stream(_STREAM_NAME, SyncMode.full_refresh).build()
         output = read(source, config=config, catalog=catalog)
 
-        # ASSERT: Should have records from both pages
+        # ASSERT: Should retrieve records from both pages in correct order
         assert len(output.records) == 3
         assert output.records[0].record.data["id"] == 1001
         assert output.records[1].record.data["id"] == 1002
         assert output.records[2].record.data["id"] == 1003
+
+        # ASSERT: All records should belong to the correct stream
+        assert all(record.record.stream == _STREAM_NAME for record in output.records)
 
     @HttpMocker()
     def test_incremental_sync_with_state(self, http_mocker: HttpMocker):
@@ -261,8 +259,11 @@ class TestProjectsStream(TestCase):
         assert output.records[0].record.data["id"] == 2001
         assert output.records[0].record.data["name"] == "New Project Delta"
 
-        # ASSERT: State should be updated
+        # ASSERT: State should be updated with the timestamp of the latest record
         assert len(output.state_messages) > 0
+        latest_state = output.state_messages[-1].state.stream.stream_state
+        assert latest_state.__dict__["updated_at"] == "2024-01-02T10:00:00Z", \
+            "State should be updated to the updated_at timestamp of the latest record"
 
     @HttpMocker()
     def test_projects_with_various_configurations(self, http_mocker: HttpMocker):
@@ -341,23 +342,23 @@ class TestProjectsStream(TestCase):
         catalog = CatalogBuilder().with_stream(_STREAM_NAME, SyncMode.full_refresh).build()
         output = read(source, config=config, catalog=catalog)
 
-        # ASSERT: All project types should be present
+        # ASSERT: Should retrieve all three project types with different configurations
         assert len(output.records) == 3
 
-        # Fixed fee project
+        # ASSERT: Fixed fee project should have correct structure
         fixed_fee_project = output.records[0].record.data
         assert fixed_fee_project["id"] == 3001
         assert fixed_fee_project["is_fixed_fee"] is True
         assert "fee" in fixed_fee_project
 
-        # Hourly project with budget
+        # ASSERT: Hourly project should have rate and budget information
         hourly_project = output.records[1].record.data
         assert hourly_project["id"] == 3002
         assert hourly_project["is_fixed_fee"] is False
         assert "hourly_rate" in hourly_project
         assert "budget" in hourly_project
 
-        # Non-billable project
+        # ASSERT: Non-billable project should have correct billing configuration
         non_billable = output.records[2].record.data
         assert non_billable["id"] == 3003
         assert non_billable["is_billable"] is False
@@ -390,5 +391,9 @@ class TestProjectsStream(TestCase):
         catalog = CatalogBuilder().with_stream(_STREAM_NAME, SyncMode.full_refresh).build()
         output = read(source, config=config, catalog=catalog)
 
-        # ASSERT: No records but no errors
+        # ASSERT: Should return zero records without raising errors
         assert len(output.records) == 0
+
+        # ASSERT: Should have log messages indicating successful sync completion
+        log_messages = [log.log.message for log in output.logs]
+        assert any("Finished syncing" in msg for msg in log_messages)

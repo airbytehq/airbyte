@@ -58,15 +58,24 @@ class TestCompanyStream(TestCase):
         catalog = CatalogBuilder().with_stream(_STREAM_NAME, SyncMode.full_refresh).build()
         output = read(source, config=config, catalog=catalog)
 
+        # ASSERT: Should retrieve exactly one company record
         assert len(output.records) == 1
         assert output.records[0].record.stream == _STREAM_NAME
         assert output.records[0].record.data["name"] == "Test Company"
         assert output.records[0].record.data["is_active"] is True
 
+        # ASSERT: Should have log messages indicating successful sync completion
+        log_messages = [log.log.message for log in output.logs]
+        assert any("Finished syncing" in msg for msg in log_messages)
+
     @HttpMocker()
     def test_unauthorized_error(self, http_mocker: HttpMocker):
         """
-        Test that connector handles 401 Unauthorized errors correctly.
+        Test that connector handles 401 Unauthorized errors gracefully.
+
+        The company stream does not have a custom error handler, so 401 errors
+        are treated as sync failures but the sync completes with 0 records
+        and the error is logged rather than raising an exception.
         """
         config = ConfigBuilder().with_account_id(_ACCOUNT_ID).with_api_token("invalid_token").build()
 
@@ -85,5 +94,5 @@ class TestCompanyStream(TestCase):
         catalog = CatalogBuilder().with_stream(_STREAM_NAME, SyncMode.full_refresh).build()
         output = read(source, config=config, catalog=catalog)
 
-        # Should handle gracefully without crashing
+        # ASSERT: Sync completes with 0 records (error is handled gracefully)
         assert len(output.records) == 0

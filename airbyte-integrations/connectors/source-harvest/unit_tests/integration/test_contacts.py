@@ -45,6 +45,10 @@ class TestContactsStream(TestCase):
         catalog = CatalogBuilder().with_stream(_STREAM_NAME, SyncMode.full_refresh).build()
         output = read(source, config=config, catalog=catalog)
 
+        # ASSERT: Should retrieve exactly one contact record with correct data
         assert len(output.records) == 1
         assert output.records[0].record.data["first_name"] == "Jane"
         assert output.records[0].record.data["last_name"] == "Doe"
+
+        # ASSERT: Record should belong to the correct stream
+        assert output.records[0].record.stream == _STREAM_NAME

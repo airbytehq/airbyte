@@ -6,7 +6,6 @@ from unittest import TestCase
 
 import freezegun
 from unit_tests.conftest import get_source
-
 from airbyte_cdk.models import SyncMode
 from airbyte_cdk.test.catalog_builder import CatalogBuilder
 from airbyte_cdk.test.entrypoint_wrapper import read
@@ -247,8 +246,11 @@ class TestClientsStream(TestCase):
         assert output.records[0].record.data["id"] == 201
         assert output.records[0].record.data["name"] == "New Client Corp"
 
-        # ASSERT: State should be updated
+        # ASSERT: State should be updated with the timestamp of the latest record
         assert len(output.state_messages) > 0
+        latest_state = output.state_messages[-1].state.stream.stream_state
+        assert latest_state.__dict__["updated_at"] == "2024-01-02T10:00:00Z", \
+            "State should be updated to the updated_at timestamp of the latest record"
 
     @HttpMocker()
     def test_empty_results(self, http_mocker: HttpMocker):
@@ -284,11 +286,15 @@ class TestClientsStream(TestCase):
     @HttpMocker()
     def test_unauthorized_error_handling(self, http_mocker: HttpMocker):
         """
-        Test that connector handles 401 authentication errors appropriately.
+        Test that connector ignores 401 authentication errors and completes sync successfully.
+
+        The manifest configures 401 errors with action: IGNORE, which means the connector
+        silently ignores auth failures and continues the sync, marking it as successful
+        with 0 records rather than failing the sync.
 
         Given: Invalid API credentials
-        When: Making an API request
-        Then: The connector should handle the 401 error gracefully
+        When: Making an API request that returns 401
+        Then: The connector should ignore the error, return 0 records, and complete successfully
         """
         config = ConfigBuilder().with_account_id(_ACCOUNT_ID).with_api_token("invalid_token").build()
 
@@ -301,13 +307,98 @@ class TestClientsStream(TestCase):
             HttpResponse(body=json.dumps({"error": "invalid_token", "error_description": "The access token is invalid"}), status_code=401),
         )
 
-        # ACT: Run the connector (expecting it to handle error)
+        # ACT: Run the connector (401 errors are ignored, not raised)
         source = get_source(config=config)
         catalog = CatalogBuilder().with_stream(_STREAM_NAME, SyncMode.full_refresh).build()
         output = read(source, config=config, catalog=catalog, expecting_exception=False)
 
-        # ASSERT: No records due to auth failure
+        # ASSERT: Sync completes successfully with 0 records (401 is ignored per manifest config)
         assert len(output.records) == 0
+
+        # ASSERT: Should have the expected error message in logs
+        log_messages = [log.log.message for log in output.logs]
+        expected_msg = "Please ensure your credentials are valid."
+        assert any(expected_msg in msg for msg in log_messages), f"Expected auth error message in logs"
+
+    @HttpMocker()
+    def test_forbidden_error_handling(self, http_mocker: HttpMocker):
+        """
+        Test that connector ignores 403 Forbidden errors and completes sync successfully.
+
+        The manifest configures 403 errors with action: IGNORE, which means the connector
+        silently ignores permission errors and continues the sync, marking it as successful
+        with 0 records rather than failing the sync.
+
+        Given: API credentials with insufficient permissions
+        When: Making an API request that returns 403
+        Then: The connector should ignore the error, return 0 records, and complete successfully
+        """
+        config = ConfigBuilder().with_account_id(_ACCOUNT_ID).with_api_token(_API_TOKEN).build()
+
+        # ARRANGE: Mock 403 Forbidden response
+        http_mocker.get(
+            HarvestRequestBuilder.clients_endpoint(_ACCOUNT_ID, _API_TOKEN)
+            .with_per_page(50)
+            .with_updated_since("2021-01-01T00:00:00Z")
+            .build(),
+            HttpResponse(
+                body=json.dumps({"error": "forbidden", "error_description": "Insufficient permissions"}),
+                status_code=403
+            ),
+        )
+
+        # ACT: Run the connector (403 errors are ignored, not raised)
+        source = get_source(config=config)
+        catalog = CatalogBuilder().with_stream(_STREAM_NAME, SyncMode.full_refresh).build()
+        output = read(source, config=config, catalog=catalog, expecting_exception=False)
+
+        # ASSERT: Sync completes successfully with 0 records (403 is ignored per manifest config)
+        assert len(output.records) == 0
+
+        # ASSERT: Should have the expected error message in logs
+        log_messages = [log.log.message for log in output.logs]
+        expected_msg = "This is most likely due to insufficient permissions on the credentials in use."
+        assert any(expected_msg in msg for msg in log_messages), f"Expected permission error message in logs"
+
+    @HttpMocker()
+    def test_not_found_error_handling(self, http_mocker: HttpMocker):
+        """
+        Test that connector ignores 404 Not Found errors and completes sync successfully.
+
+        The manifest configures 404 errors with action: IGNORE, which means the connector
+        silently ignores not found errors (e.g., invalid account ID) and continues the sync,
+        marking it as successful with 0 records rather than failing the sync.
+
+        Given: An invalid account ID or resource
+        When: Making an API request that returns 404
+        Then: The connector should ignore the error, return 0 records, and complete successfully
+        """
+        config = ConfigBuilder().with_account_id("invalid_account").with_api_token(_API_TOKEN).build()
+
+        # ARRANGE: Mock 404 Not Found response
+        http_mocker.get(
+            HarvestRequestBuilder.clients_endpoint("invalid_account", _API_TOKEN)
+            .with_per_page(50)
+            .with_updated_since("2021-01-01T00:00:00Z")
+            .build(),
+            HttpResponse(
+                body=json.dumps({"error": "not_found", "error_description": "Account not found"}),
+                status_code=404
+            ),
+        )
+
+        # ACT: Run the connector (404 errors are ignored, not raised)
+        source = get_source(config=config)
+        catalog = CatalogBuilder().with_stream(_STREAM_NAME, SyncMode.full_refresh).build()
+        output = read(source, config=config, catalog=catalog, expecting_exception=False)
+
+        # ASSERT: Sync completes successfully with 0 records (404 is ignored per manifest config)
+        assert len(output.records) == 0
+
+        # ASSERT: Should have the expected error message in logs
+        log_messages = [log.log.message for log in output.logs]
+        expected_msg = "Please ensure that your account ID is properly set"
+        assert any(expected_msg in msg for msg in log_messages), f"Expected account ID error message in logs"
 
     @HttpMocker()
     def test_rate_limit_handling(self, http_mocker: HttpMocker):
@@ -360,3 +451,18 @@ class TestClientsStream(TestCase):
         # ASSERT: Should eventually succeed and return records
         assert len(output.records) == 1
         assert output.records[0].record.data["id"] == 101
+
+        # ASSERT: Should have log messages indicating rate limiting was encountered and handled
+        log_messages = [log.log.message for log in output.logs]
+
+        # Check for backoff message mentioning 429 status code
+        backoff_logs = [msg for msg in log_messages if "Backing off" in msg and "429" in msg]
+        assert len(backoff_logs) > 0, "Expected backoff log message mentioning 429 rate limit"
+
+        # Check for retry message
+        retry_logs = [msg for msg in log_messages if "Retrying" in msg and "Sleeping" in msg]
+        assert len(retry_logs) > 0, "Expected retry log message with sleep duration"
+
+        # ASSERT: Sync should complete successfully despite rate limiting
+        completion_logs = [msg for msg in log_messages if "Finished syncing" in msg]
+        assert len(completion_logs) > 0, "Expected successful sync completion"

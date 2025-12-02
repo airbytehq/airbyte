@@ -96,7 +96,7 @@ class TestTimeEntriesStream(TestCase):
         catalog = CatalogBuilder().with_stream(_STREAM_NAME, SyncMode.full_refresh).build()
         output = read(source, config=config, catalog=catalog)
 
-        # ASSERT: Verify results
+        # ASSERT: Should retrieve exactly one record with correct data
         assert len(output.records) == 1
         record = output.records[0].record.data
         assert record["id"] == 636709355
@@ -104,6 +104,9 @@ class TestTimeEntriesStream(TestCase):
         assert record["billable"] is True
         assert record["user"]["name"] == "John Doe"
         assert record["project"]["name"] == "Online Store - Phase 1"
+
+        # ASSERT: Record should belong to the correct stream
+        assert output.records[0].record.stream == _STREAM_NAME
 
     @HttpMocker()
     def test_pagination_multiple_pages(self, http_mocker: HttpMocker):
@@ -191,11 +194,14 @@ class TestTimeEntriesStream(TestCase):
         catalog = CatalogBuilder().with_stream(_STREAM_NAME, SyncMode.full_refresh).build()
         output = read(source, config=config, catalog=catalog)
 
-        # ASSERT: Should have records from both pages
+        # ASSERT: Should retrieve records from both pages in correct order
         assert len(output.records) == 3
         assert output.records[0].record.data["id"] == 1001
         assert output.records[1].record.data["id"] == 1002
         assert output.records[2].record.data["id"] == 1003
+
+        # ASSERT: All records should belong to the correct stream
+        assert all(record.record.stream == _STREAM_NAME for record in output.records)
 
     @HttpMocker()
     def test_incremental_sync_with_state(self, http_mocker: HttpMocker):
@@ -253,8 +259,11 @@ class TestTimeEntriesStream(TestCase):
         assert output.records[0].record.data["id"] == 2001
         assert output.records[0].record.data["hours"] == 5.5
 
-        # ASSERT: State should be updated
+        # ASSERT: State should be updated with the timestamp of the latest record
         assert len(output.state_messages) > 0
+        latest_state = output.state_messages[-1].state.stream.stream_state
+        assert latest_state.__dict__["updated_at"] == "2024-01-02T14:00:00Z", \
+            "State should be updated to the updated_at timestamp of the latest record"
 
     @HttpMocker()
     def test_time_entries_with_various_states(self, http_mocker: HttpMocker):
@@ -331,23 +340,23 @@ class TestTimeEntriesStream(TestCase):
         catalog = CatalogBuilder().with_stream(_STREAM_NAME, SyncMode.full_refresh).build()
         output = read(source, config=config, catalog=catalog)
 
-        # ASSERT: All time entry types should be present
+        # ASSERT: Should retrieve all three time entry types with different states
         assert len(output.records) == 3
 
-        # Running timer
+        # ASSERT: Running timer should have correct state and timer information
         running_entry = output.records[0].record.data
         assert running_entry["id"] == 3001
         assert running_entry["is_running"] is True
         assert "timer_started_at" in running_entry
 
-        # Locked and billed
+        # ASSERT: Locked and billed entry should have correct status flags
         locked_entry = output.records[1].record.data
         assert locked_entry["id"] == 3002
         assert locked_entry["is_locked"] is True
         assert locked_entry["is_billed"] is True
         assert "locked_reason" in locked_entry
 
-        # Non-billable
+        # ASSERT: Non-billable entry should have correct billing configuration
         non_billable = output.records[2].record.data
         assert non_billable["id"] == 3003
         assert non_billable["billable"] is False
@@ -380,8 +389,12 @@ class TestTimeEntriesStream(TestCase):
         catalog = CatalogBuilder().with_stream(_STREAM_NAME, SyncMode.full_refresh).build()
         output = read(source, config=config, catalog=catalog)
 
-        # ASSERT: No records but no errors
+        # ASSERT: Should return zero records without raising errors
         assert len(output.records) == 0
+
+        # ASSERT: Should have log messages indicating successful sync completion
+        log_messages = [log.log.message for log in output.logs]
+        assert any("Finished syncing" in msg for msg in log_messages)
 
     @HttpMocker()
     def test_time_entry_with_nested_objects(self, http_mocker: HttpMocker):
@@ -435,24 +448,24 @@ class TestTimeEntriesStream(TestCase):
         catalog = CatalogBuilder().with_stream(_STREAM_NAME, SyncMode.full_refresh).build()
         output = read(source, config=config, catalog=catalog)
 
-        # ASSERT: Verify nested objects are correctly parsed
+        # ASSERT: Should retrieve exactly one record with complete nested data
         assert len(output.records) == 1
         record = output.records[0].record.data
 
-        # Verify nested user object
+        # ASSERT: Nested user object should be correctly parsed
         assert record["user"]["id"] == 1782884
         assert record["user"]["name"] == "Jane Smith"
 
-        # Verify nested client object
+        # ASSERT: Nested client object should contain all expected fields
         assert record["client"]["id"] == 5735776
         assert record["client"]["currency"] == "USD"
 
-        # Verify nested project object
+        # ASSERT: Nested project object should have project code
         assert record["project"]["code"] == "MAD"
 
-        # Verify nested task object
+        # ASSERT: Nested task object should have task name
         assert record["task"]["name"] == "Backend Development"
 
-        # Verify nested assignments
+        # ASSERT: Nested assignment objects should contain rate information
         assert record["user_assignment"]["is_project_manager"] is True
         assert record["task_assignment"]["hourly_rate"] == 150.0
