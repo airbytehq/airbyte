@@ -1,3 +1,15 @@
+## Version 0.1.84
+
+Add flags to the acceptance tests
+
+## Version 0.1.83
+
+load cdk: more tests to help guide dependency injection dependency implemenations
+
+## Version 0.1.82
+
+load cdk: components tests: more schema evolution testcases
+
 ## Version 0.1.81
 
 load cdk: components tests: more coverage on upsert
