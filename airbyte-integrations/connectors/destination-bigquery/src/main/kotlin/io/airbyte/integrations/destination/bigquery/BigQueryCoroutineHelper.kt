@@ -12,16 +12,18 @@ import kotlinx.coroutines.withContext
 /**
  * Helper function for executing blocking BigQuery SDK calls within a coroutine context.
  *
- * This function addresses the issue where BigQuery SDK's blocking calls (like `getTable()`, `query()`)
- * use `AbstractFuture.get()` internally, which throws `InterruptedException` when the thread is
- * interrupted. When running in a coroutine context, if the coroutine is cancelled (e.g., due to
- * timeout or parent scope cancellation), the thread may be interrupted, causing the BigQuery SDK
- * to throw `BigQueryException` with `InterruptedException` as the cause.
+ * This function addresses the issue where BigQuery SDK's blocking calls (like `getTable()`,
+ * `query()`) use `AbstractFuture.get()` internally, which throws `InterruptedException` when the
+ * thread is interrupted. When running in a coroutine context, if the coroutine is cancelled (e.g.,
+ * due to timeout or parent scope cancellation), the thread may be interrupted, causing the BigQuery
+ * SDK to throw `BigQueryException` with `InterruptedException` as the cause.
  *
  * This helper:
  * 1. Ensures the blocking call runs on `Dispatchers.IO` (appropriate for blocking I/O operations)
  * 2. Converts `BigQueryException` caused by `InterruptedException` to `CancellationException`,
+ * ```
  *    allowing proper coroutine cancellation handling
+ * ```
  * 3. Also handles direct `InterruptedException` for cases like `Thread.sleep()` in polling loops
  *
  * Usage:

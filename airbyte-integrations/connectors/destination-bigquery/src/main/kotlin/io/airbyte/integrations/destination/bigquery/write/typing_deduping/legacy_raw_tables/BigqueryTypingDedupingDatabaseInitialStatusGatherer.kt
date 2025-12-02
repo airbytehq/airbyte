@@ -24,23 +24,25 @@ class BigqueryTypingDedupingDatabaseInitialStatusGatherer(private val bq: BigQue
         suffix: String
     ): RawTableInitialStatus? {
         val table =
-            bigQueryCall { bq.getTable(TableId.of(rawTableName.namespace, rawTableName.name + suffix)) }
-        // Table doesn't exist. There are no unprocessed records, and no timestamp.
+            bigQueryCall {
+                bq.getTable(TableId.of(rawTableName.namespace, rawTableName.name + suffix))
+            }
+            // Table doesn't exist. There are no unprocessed records, and no timestamp.
             ?: return null
 
         val rawTableIdQuoted = """`${rawTableName.namespace}`.`${rawTableName.name}$suffix`"""
         val unloadedRecordTimestamp =
             bigQueryCall {
-                bq.query(
-                    QueryJobConfiguration.of(
-                        """
+                    bq.query(
+                        QueryJobConfiguration.of(
+                            """
                             SELECT TIMESTAMP_SUB(MIN(_airbyte_extracted_at), INTERVAL 1 MICROSECOND)
                             FROM $rawTableIdQuoted
                             WHERE _airbyte_loaded_at IS NULL
                             """.trimIndent()
+                        )
                     )
-                )
-            }
+                }
                 .iterateAll()
                 .iterator()
                 .next()
@@ -57,15 +59,15 @@ class BigqueryTypingDedupingDatabaseInitialStatusGatherer(private val bq: BigQue
 
         val loadedRecordTimestamp =
             bigQueryCall {
-                bq.query(
-                    QueryJobConfiguration.of(
-                        """
+                    bq.query(
+                        QueryJobConfiguration.of(
+                            """
                     SELECT MAX(_airbyte_extracted_at)
                     FROM $rawTableIdQuoted
                     """.trimIndent()
+                        )
                     )
-                )
-            }
+                }
                 .iterateAll()
                 .iterator()
                 .next()
