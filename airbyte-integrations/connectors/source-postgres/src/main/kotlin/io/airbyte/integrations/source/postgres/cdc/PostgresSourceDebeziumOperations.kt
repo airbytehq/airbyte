@@ -172,7 +172,6 @@ class PostgresSourceDebeziumOperations(val config: PostgresSourceConfiguration) 
     }
 
     override fun generateColdStartProperties(streams: List<Stream>): Map<String, String> =
-        // TODO: I think we are reading the binlog or snapshotting here... need "snapshot.mode"?
         commonPropertiesBuilder.withStreams(streams).buildMap()
 
     override fun deserializeState(opaqueStateValue: OpaqueStateValue): DebeziumWarmStartState {
@@ -242,11 +241,9 @@ class PostgresSourceDebeziumOperations(val config: PostgresSourceConfiguration) 
                 (if (isDelete) CommonMetaField.CDC_DELETED_AT.type.jsonEncoder else NullCodec)
                     as JsonEncoder<Any>,
             )
-
-        // Set the _ab_cdc_cursor meta-field value.
         resultRow[PostgresSourceCdcMetaFields.CDC_LSN.id] =
             FieldValueEncoder(
-                source["lsn"].asText(),
+                source[LSN].asText(),
                 PostgresSourceCdcMetaFields.CDC_LSN.type.jsonEncoder as JsonEncoder<Any>,
             )
 
@@ -283,9 +280,9 @@ class PostgresSourceDebeziumOperations(val config: PostgresSourceConfiguration) 
     // modeled on https://github.com/airbytehq/airbyte/pull/35939/files
     override fun position(recordValue: DebeziumRecordValue): PostgresSourceCdcPosition? {
         val source = recordValue.source
-        val lsn = source["lsn"]
+        val lsn = source[LSN]
         if (lsn == null || lsn is NullNode) return null
-        val lsnProc = source["lsn_proc"]
+        val lsnProc = source[LSN_PROC]
         if (lsnProc == null || lsnProc is NullNode) return null
         return PostgresSourceCdcPosition(
             lsn = Lsn.valueOf(lsn.asLong()),
@@ -295,8 +292,8 @@ class PostgresSourceDebeziumOperations(val config: PostgresSourceConfiguration) 
 
     override fun position(sourceRecord: SourceRecord): PostgresSourceCdcPosition? {
         // TODO: are both required?
-        val lsn = sourceRecord.sourceOffset()["lsn"] as Long? ?: return null
-        val lsnProc = sourceRecord.sourceOffset()["lsn_proc"] as Long? ?: return null
+        val lsn = sourceRecord.sourceOffset()[LSN] as Long? ?: return null
+        val lsnProc = sourceRecord.sourceOffset()[LSN_PROC] as Long? ?: return null
         return PostgresSourceCdcPosition(Lsn.valueOf(lsn), Lsn.valueOf(lsnProc))
     }
 }
