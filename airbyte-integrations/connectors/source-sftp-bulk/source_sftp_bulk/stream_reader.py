@@ -1,13 +1,14 @@
 # Copyright (c) 2024 Airbyte, Inc., all rights reserved.
 
 
-import datetime
 import logging
 import stat
+from datetime import datetime
 from io import IOBase
 from typing import Any, Iterable, List, Optional
 
 import psutil
+from wcmatch.glob import GLOBSTAR, globmatch
 
 from airbyte_cdk.sources.file_based.file_based_stream_reader import AbstractFileBasedStreamReader, FileReadMode
 from airbyte_cdk.sources.file_based.remote_file import UploadableRemoteFile
@@ -123,33 +124,154 @@ class SourceSFTPBulkStreamReader(AbstractFileBasedStreamReader):
             )
         return self._sftp_client
 
+    @staticmethod
+    def _directory_could_match_globs(dir_path: str, globs: List[str], root_folder: str) -> bool:
+        """
+        Check if this directory path could potentially contain files matching any of the globs.
+        Returns True if we should traverse this directory, False to skip it entirely.
+
+        Examples:
+            - dir_path="/data/2024", glob="/data/2024/*.csv" -> True (exact match)
+            - dir_path="/data", glob="/data/2024/*.csv" -> True (prefix of match)
+            - dir_path="/logs", glob="/data/**/*.csv" -> False (cannot match)
+            - dir_path="/anything", glob="**/*.csv" -> True (recursive wildcard)
+            - dir_path="/data", glob="/*/folder/folder2/*" -> True (could lead to match)
+            - dir_path="/data/folder", glob="/*/folder/folder2/*" -> True (partial match)
+        """
+        for glob_pattern in globs:
+            # Handle recursive wildcard - it matches everything
+            if "**" in glob_pattern:
+                # Extract the prefix before **
+                prefix = glob_pattern.split("**")[0].rstrip("/")
+                if not prefix or dir_path.startswith(prefix) or prefix.startswith(dir_path):
+                    return True
+
+            # Extract directory part from glob (everything before the last /)
+            if "/" in glob_pattern:
+                glob_dir = glob_pattern.rsplit("/", 1)[0]
+
+                # For patterns without wildcards, use simple string matching
+                if "*" not in glob_dir:
+                    # Check if dir_path could lead to matching files
+                    if glob_dir.startswith(dir_path):
+                        # glob_dir is deeper than or equal to dir_path, so dir_path could lead to matches
+                        return True
+                    elif dir_path.startswith(glob_dir):
+                        # dir_path is deeper than glob_dir
+                        # Only traverse if dir_path equals glob_dir (we're at the right level)
+                        # Don't traverse if dir_path is deeper (e.g., /data/2024/subdir for glob /data/2024/*.csv)
+                        return dir_path == glob_dir
+                else:
+                    # For patterns with wildcards in directory positions (e.g., /*/folder/folder2/*)
+                    # we need to check if this directory could be part of a matching path
+
+                    # Check if the directory exactly matches the pattern
+                    if globmatch(dir_path, glob_dir, flags=GLOBSTAR):
+                        return True
+
+                    # Count depth: if dir is shallower than the pattern, check if it could lead to a match
+                    dir_depth = dir_path.count("/")
+                    glob_depth = glob_dir.count("/")
+
+                    if dir_depth <= glob_depth:
+                        # Try to match the directory against the partial glob pattern
+                        # by checking if the parts we have so far are compatible
+                        glob_parts = glob_dir.split("/")
+                        dir_parts = dir_path.split("/")
+
+                        # Check if each directory part matches the corresponding glob part
+                        could_match = True
+                        for i, dir_part in enumerate(dir_parts):
+                            if i < len(glob_parts):
+                                glob_part = glob_parts[i]
+                                # Skip empty parts (from leading slashes)
+                                if dir_part == "" and glob_part == "":
+                                    continue
+                                # Check if this part could match (including wildcards)
+                                if glob_part == "*":
+                                    # Wildcard matches anything (single level)
+                                    continue
+                                elif glob_part == "**":
+                                    # Recursive wildcard matches anything
+                                    return True
+                                elif not globmatch(dir_part, glob_part):
+                                    # This part doesn't match the pattern
+                                    could_match = False
+                                    break
+
+                        if could_match:
+                            return True
+            else:
+                # Glob has no directory component (e.g., "*.csv")
+                # Only matches files in the root folder
+                if dir_path == root_folder:
+                    return True
+
+        return False
+
     def get_matching_files(
         self,
         globs: List[str],
         prefix: Optional[str],
         logger: logging.Logger,
     ) -> Iterable[SFTPBulkUploadableRemoteFile]:
-        directories = [self._config.folder_path or "/"]
+        root_folder = self._config.folder_path or "/"
+        directories = [root_folder]
+        files_batch = []
+        BATCH_SIZE = 100  # Process files in batches to reduce overhead
+
+        # Normalize globs to handle root folder correctly
+        normalized_globs = []
+        for glob_pattern in globs:
+            # If glob doesn't start with /, make it relative to root_folder
+            if not glob_pattern.startswith("/"):
+                normalized_globs.append(f"{root_folder.rstrip('/')}/{glob_pattern}")
+            else:
+                normalized_globs.append(glob_pattern)
 
         # Iterate through directories and subdirectories
         while directories:
             current_dir = directories.pop()
-            for item in self.sftp_client.sftp_connection.listdir_iter(current_dir):
-                if item.st_mode and stat.S_ISDIR(item.st_mode):
-                    directories.append(f"{current_dir}/{item.filename}")
-                else:
-                    file = SFTPBulkUploadableRemoteFile(
-                        sftp_client=self.sftp_client,
-                        logger=logger,
-                        uri=f"{current_dir}/{item.filename}",
-                        last_modified=datetime.datetime.fromtimestamp(item.st_mtime),
-                        updated_at=datetime.datetime.fromtimestamp(item.st_mtime).strftime("%Y-%m-%dT%H:%M:%S.%fZ"),
-                        config=self.config,
-                    )
-                    yield from self.filter_files_by_globs_and_start_date(
-                        [file],
-                        globs,
-                    )
+            try:
+                for item in self.sftp_client.sftp_connection.listdir_iter(current_dir):
+                    if item.st_mode and stat.S_ISDIR(item.st_mode):
+                        dir_path = f"{current_dir.rstrip('/')}/{item.filename}"
+                        # Only traverse directories that could contain matching files
+                        if self._directory_could_match_globs(dir_path, normalized_globs, root_folder):
+                            directories.append(dir_path)
+                        else:
+                            logger.info(f"Skipping directory {dir_path} (no globs match)")
+                    else:
+                        file_uri = f"{current_dir}/{item.filename}"
+                        file_mtime = datetime.fromtimestamp(item.st_mtime)
+
+                        file = SFTPBulkUploadableRemoteFile(
+                            sftp_client=self.sftp_client,
+                            logger=logger,
+                            uri=file_uri,
+                            last_modified=file_mtime,
+                            updated_at=file_mtime.strftime("%Y-%m-%dT%H:%M:%S.%fZ"),
+                            config=self.config,
+                        )
+                        files_batch.append(file)
+
+                        # Process batch when it reaches BATCH_SIZE
+                        if len(files_batch) >= BATCH_SIZE:
+                            yield from self.filter_files_by_globs_and_start_date(
+                                files_batch,
+                                globs,
+                            )
+                            files_batch = []
+            except Exception as e:
+                logger.warning(f"Error listing directory {current_dir}: {e}")
+                continue
+
+        # Process remaining files
+        if files_batch:
+            yield from self.filter_files_by_globs_and_start_date(
+                files_batch,
+                globs,
+            )
 
     def open_file(self, file: SFTPBulkUploadableRemoteFile, mode: FileReadMode, encoding: Optional[str], logger: logging.Logger) -> IOBase:
         remote_file = self.sftp_client.sftp_connection.open(file.uri, mode=mode.value)
