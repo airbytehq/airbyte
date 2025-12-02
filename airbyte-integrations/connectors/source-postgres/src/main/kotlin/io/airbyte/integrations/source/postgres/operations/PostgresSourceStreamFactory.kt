@@ -29,7 +29,12 @@ class PostgresSourceStreamFactory : JdbcAirbyteStreamFactory {
 
     override val globalCursor: DataOrMetaField = PostgresSourceCdcMetaFields.CDC_LSN
 
-    override val globalMetaFields: Set<MetaField> = emptySet() // TEMP
+    override val globalMetaFields: Set<MetaField> =
+        setOf(
+            PostgresSourceCdcMetaFields.CDC_LSN,
+            CommonMetaField.CDC_UPDATED_AT,
+            CommonMetaField.CDC_DELETED_AT,
+        )
 
     override fun decorateRecordData(
         timestamp: OffsetDateTime,
