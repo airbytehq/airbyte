@@ -13,6 +13,7 @@ import io.airbyte.cdk.load.data.ObjectType
 import io.airbyte.cdk.load.schema.TableNameResolver
 import io.airbyte.cdk.load.schema.model.ColumnSchema
 import io.airbyte.cdk.load.schema.model.StreamTableSchema
+import io.airbyte.cdk.load.schema.model.TableName
 import io.airbyte.cdk.load.schema.model.TableNames
 import io.airbyte.protocol.models.v0.ConfiguredAirbyteCatalog
 import io.github.oshai.kotlinlogging.KotlinLogging
@@ -158,7 +159,9 @@ class DefaultDestinationCatalogFactory {
                                     finalSchema = mapOf()
                                 ),
                             importType = Append,
-                            tableNames = TableNames(),
+                            tableNames = TableNames(
+                                finalTableName = TableName("namespace", "test"),
+                            ),
                         ),
                 )
             )

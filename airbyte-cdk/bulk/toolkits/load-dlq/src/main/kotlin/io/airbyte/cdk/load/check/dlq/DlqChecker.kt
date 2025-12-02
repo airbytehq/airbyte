@@ -46,7 +46,7 @@ class DlqChecker(private val objectStorageClientProvider: BeanProvider<ObjectSto
             namespaceMapper = NamespaceMapper(),
             tableSchema =
                 StreamTableSchema(
-                    tableNames = TableNames(),
+                    tableNames = TableNames(finalTableName = TableName("namespace", "test")),
                     columnSchema = ColumnSchema(mapOf(), mapOf(), mapOf()),
                     importType = Append,
                 )

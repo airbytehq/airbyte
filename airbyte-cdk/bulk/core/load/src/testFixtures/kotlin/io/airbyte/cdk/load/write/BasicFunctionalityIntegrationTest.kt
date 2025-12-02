@@ -5502,6 +5502,6 @@ abstract class BasicFunctionalityIntegrationTest(
                     finalSchema = mapOf(),
                 ),
             importType = Append,
-            tableNames = TableNames(),
+            tableNames = TableNames(finalTableName = TableName("namespace", "test")),
         )
 }

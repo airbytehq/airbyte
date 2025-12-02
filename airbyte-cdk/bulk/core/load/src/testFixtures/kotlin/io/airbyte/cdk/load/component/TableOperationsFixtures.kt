@@ -768,7 +768,7 @@ object TableOperationsFixtures {
             namespaceMapper = NamespaceMapper(),
             tableSchema =
                 StreamTableSchema(
-                    tableNames = TableNames(),
+                    tableNames = TableNames(finalTableName = TableName("namespace", "test")),
                     columnSchema =
                         ColumnSchema(
                             inputSchema = schema.properties,
