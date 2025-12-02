@@ -37,10 +37,9 @@ class PostgresDirectLoadSqlGenerator(
     }
 
     /**
-     * Returns a pair of (createTableSql, createIndexesSql).
-     * The table creation is wrapped in a transaction while indexes are created separately
-     * to handle potential race conditions when multiple streams create indexes with similar
-     * truncated names.
+     * Returns a pair of (createTableSql, createIndexesSql). The table creation is wrapped in a
+     * transaction while indexes are created separately to handle potential race conditions when
+     * multiple streams create indexes with similar truncated names.
      */
     fun createTable(
         stream: DestinationStream,
