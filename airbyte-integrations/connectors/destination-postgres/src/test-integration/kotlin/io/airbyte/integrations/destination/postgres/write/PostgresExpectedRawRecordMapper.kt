@@ -10,20 +10,24 @@ import io.airbyte.cdk.load.data.ArrayValue
 import io.airbyte.cdk.load.data.NullValue
 import io.airbyte.cdk.load.data.ObjectValue
 import io.airbyte.cdk.load.data.StringValue
-import io.airbyte.cdk.load.data.TimestampWithTimezoneValue
 import io.airbyte.cdk.load.test.util.ExpectedRecordMapper
 import io.airbyte.cdk.load.test.util.OutputRecord
-import java.time.ZoneOffset
 
+/**
+ * Mapper for raw table records in PostgreSQL. Raw tables store data in JSONB format, which:
+ * - Filters out null values
+ * - Strips null characters from strings (PostgreSQL doesn't support \u0000 in text)
+ *
+ * Note: Unlike typed tables, raw tables do NOT normalize timestamps to UTC because JSONB stores
+ * timestamps as strings with their original timezone offset.
+ */
 object PostgresExpectedRawRecordMapper : ExpectedRecordMapper {
     override fun mapRecord(expectedRecord: OutputRecord, schema: AirbyteType): OutputRecord {
         // Null values are filtered from raw records, so remove them from the expected records.
         // Null characters are also removed from string values.
-        // Timestamps with timezone are normalized to UTC.q
         val filtered = filterNullValues(expectedRecord.data) as ObjectValue
         val sanitized = removeNullCharacters(filtered) as ObjectValue
-        val normalized = normalizeTimestampsToUtc(sanitized) as ObjectValue
-        return expectedRecord.copy(data = normalized)
+        return expectedRecord.copy(data = sanitized)
     }
 
     private fun filterNullValues(value: AirbyteValue): AirbyteValue =
@@ -45,20 +49,6 @@ object PostgresExpectedRawRecordMapper : ExpectedRecordMapper {
             is ObjectValue ->
                 ObjectValue(
                     value.values.mapValuesTo(linkedMapOf()) { (_, v) -> removeNullCharacters(v) }
-                )
-            else -> value
-        }
-
-    private fun normalizeTimestampsToUtc(value: AirbyteValue): AirbyteValue =
-        when (value) {
-            is TimestampWithTimezoneValue ->
-                TimestampWithTimezoneValue(value.value.withOffsetSameInstant(ZoneOffset.UTC))
-            is ArrayValue -> ArrayValue(value.values.map { normalizeTimestampsToUtc(it) })
-            is ObjectValue ->
-                ObjectValue(
-                    value.values.mapValuesTo(linkedMapOf()) { (_, v) ->
-                        normalizeTimestampsToUtc(v)
-                    }
                 )
             else -> value
         }
