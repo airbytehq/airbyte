@@ -1442,10 +1442,12 @@ definitions:
               field_path:
                 - data
                 - object
-              expand_records_from_field:
-                - lines
-                - data
-              remain_original_record: true
+              record_expander:
+                type: RecordExpander
+                expand_records_from_field:
+                  - lines
+                  - data
+                remain_original_record: true
             record_filter:
               condition: "{{ 'original_record' in record }}"
             transform_before_filtering: true
