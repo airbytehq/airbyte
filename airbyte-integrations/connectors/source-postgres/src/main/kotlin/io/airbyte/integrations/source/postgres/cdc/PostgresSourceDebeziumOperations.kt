@@ -60,7 +60,7 @@ class PostgresSourceDebeziumOperations(val config: PostgresSourceConfiguration) 
             // {
             //     "state": {
             //         "[\"postgres\",{\"server\":\"postgres\"}]":
-            //              "{\"lsn_proc\":3575761602216,\"lsn\":3575761602216"}
+            //              "{\"lsn_proc\":3575761602216,\"lsn\":3575761602216}"
             //     }
             // }
             val stateNode: ObjectNode = opaqueStateValue[STATE] as ObjectNode
@@ -268,7 +268,7 @@ class PostgresSourceDebeziumOperations(val config: PostgresSourceConfiguration) 
         // {
         //     "state": {
         //         "[\"postgres\",{\"server\":\"postgres\"}]":
-        //              "{\"lsn_proc\":3575761602216,\"lsn\":3575761602216"}
+        //              "{\"lsn_proc\":3575761602216,\"lsn\":3575761602216}"
         //     }
         // }
         val stateValueNode: ObjectNode =
