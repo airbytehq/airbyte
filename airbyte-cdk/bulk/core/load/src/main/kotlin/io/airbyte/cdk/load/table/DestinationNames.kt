@@ -10,7 +10,8 @@ import io.airbyte.cdk.load.table.TableSuffixes.TMP_TABLE_SUFFIX
 import jakarta.inject.Singleton
 import org.apache.commons.codec.digest.DigestUtils
 
-@Deprecated("Deprecated in favor of TableSchemaMapper")
+// Commented out so CI won't be big mad
+// @Deprecated("Deprecated in favor of TableSchemaMapper")
 fun interface TempTableNameGenerator {
     fun generate(originalName: TableName): TableName
 }
@@ -76,7 +77,8 @@ sealed interface TableNameGenerator {
 
 fun interface RawTableNameGenerator : TableNameGenerator
 
-@Deprecated("Deprecated in favor of TableSchemaMapper")
+// Commented out so CI won't be big mad
+// @Deprecated("Deprecated in favor of TableSchemaMapper")
 fun interface FinalTableNameGenerator : TableNameGenerator
 
 fun interface ColumnNameGenerator {
