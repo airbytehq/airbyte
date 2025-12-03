@@ -355,6 +355,7 @@ According to Postgres [documentation](https://www.postgresql.org/docs/14/datatyp
 
 | Version | Date       | Pull Request                                               | Subject                                                                                                                                                                    |
 |---------|------------|------------------------------------------------------------|----------------------------------------------------------------------------------------------------------------------------------------------------------------------------|
+| 3.7.1   | 2025-12-03 | [70297](https://github.com/airbytehq/airbyte/pull/70297)   | Fix ClassCastException with interval columns having DEFAULT values on PostgreSQL 16.x                                                                                      |
 | 3.7.0   | 2025-07-21 | [57511](https://github.com/airbytehq/airbyte/pull/57511)   | Add configurations for Azure authentication to Azure Postgres servers.                                                                                                     |
 | 3.6.35  | 2025-06-12 | [61527](https://github.com/airbytehq/airbyte/pull/61527)   | Add error handling for connection issues and adopt the latest CDK version.
 | 3.6.34  | 2025-05-11 | [60876](https://github.com/airbytehq/airbyte/pull/60876)   | Cache CDC initial state once constructed.
