@@ -14,9 +14,11 @@ This version introduces [Direct Load](/platform/using-airbyte/core-concepts/dire
 
 1. **If you only use final tables**: No action required. Your syncs will automatically use the new Direct Load architecture.
 
-2. **If you depend on raw tables**: Enable the "Raw tables only" option in the connector configuration before upgrading. This will maintain backward compatibility with existing workflows that read from raw tables.
+2. **If you only depend on raw tables**: Enable the "Raw tables only" option in the connector configuration before upgrading. This will maintain backward compatibility with existing workflows that read from raw tables.
 
-3. **If you have downstream processes**: Review any dbt models or SQL queries that reference the old `_airbyte_loaded_at` column or raw tables, and update them accordingly.
+3. **If you depend on both raw and final tables**: This is no longer supported. To include both raw and final tables, create another Postgres destination. In the first destination connector, do not enable "Raw tables only". In the second destination connector, enable "Raw tables only". Then, create dual connections for each source that you need to sync to Postgres.
+
+4. **If you have downstream processes**: Review any dbt models or SQL queries that reference the old `_airbyte_loaded_at` column or raw tables, and update them accordingly.
 
 ### Backward compatibility
 
