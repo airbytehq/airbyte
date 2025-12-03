@@ -38,6 +38,32 @@ _YAML_FILE_PATH = _SOURCE_FOLDER_PATH / "manifest.yaml"
 sys.path.append(str(_SOURCE_FOLDER_PATH))
 
 
+def get_resource_path(resource_file: str) -> Path:
+    """
+    Get absolute path to a test resource file.
+
+    Works both when tests run from unit_tests/ directory and from connector root.
+
+    Args:
+        resource_file: Relative path like "http/response/users.json"
+
+    Returns:
+        Absolute path to the resource file
+    """
+    # If running from unit_tests/ directory
+    local_path = Path("resource") / resource_file
+    if local_path.exists():
+        return local_path
+
+    # If running from connector root (e.g., in CI)
+    connector_root_path = Path(__file__).parent / "resource" / resource_file
+    if connector_root_path.exists():
+        return connector_root_path
+
+    # Fallback - return the local path and let it fail with a clear error
+    return local_path
+
+
 def get_source(config, state=None) -> YamlDeclarativeSource:
     """
     Create a YamlDeclarativeSource instance for testing.

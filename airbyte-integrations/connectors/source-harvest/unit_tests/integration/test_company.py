@@ -5,7 +5,7 @@ from datetime import datetime, timezone
 from unittest import TestCase
 
 import freezegun
-from unit_tests.conftest import get_source
+from unit_tests.conftest import get_source, get_resource_path
 
 from airbyte_cdk.models import SyncMode
 from airbyte_cdk.test.catalog_builder import CatalogBuilder
@@ -40,7 +40,7 @@ class TestCompanyStream(TestCase):
         config = ConfigBuilder().with_account_id(_ACCOUNT_ID).with_api_token(_API_TOKEN).build()
 
         # Load response from JSON file
-        with open("unit_tests/resource/http/response/company.json") as f:
+        with open(get_resource_path("http/response/company.json")) as f:
             company_data = json.load(f)
 
         http_mocker.get(

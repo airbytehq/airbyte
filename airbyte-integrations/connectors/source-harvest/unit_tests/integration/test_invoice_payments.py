@@ -5,7 +5,7 @@ from datetime import datetime, timezone
 from unittest import TestCase
 
 import freezegun
-from unit_tests.conftest import get_source
+from unit_tests.conftest import get_source, get_resource_path
 
 from airbyte_cdk.models import SyncMode
 from airbyte_cdk.test.catalog_builder import CatalogBuilder
@@ -34,7 +34,7 @@ class TestInvoicePaymentsStream(TestCase):
         config = ConfigBuilder().with_account_id(_ACCOUNT_ID).with_api_token(_API_TOKEN).build()
 
         # Mock the parent invoices stream first
-        with open("unit_tests/resource/http/response/invoices.json") as f:
+        with open(get_resource_path("http/response/invoices.json")) as f:
             invoices_data = json.load(f)
 
         http_mocker.get(
@@ -46,7 +46,7 @@ class TestInvoicePaymentsStream(TestCase):
         )
 
         # Mock the invoice_payments substream for the invoice
-        with open("unit_tests/resource/http/response/invoice_payments.json") as f:
+        with open(get_resource_path("http/response/invoice_payments.json")) as f:
             response_data = json.load(f)
 
         # The path will be /invoices/{invoice_id}/payments
