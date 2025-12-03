@@ -428,8 +428,6 @@ class CdcReplicationMethodConfigurationSpecification : IncrementalConfigurationS
     @JsonSchemaInject(json = """{"order":3,"min":1,"max":3600,"always_show":true}""")
     var debeziumShutdownTimeoutSeconds: Int? = 60
 
-    // TODO: plugin was in old spec.json but had only one value ("pgoutput") & didn't appear in UI?
-
     @JsonProperty("replication_slot", required = true)
     @JsonSchemaTitle("Replication Slot")
     @JsonPropertyDescription(
