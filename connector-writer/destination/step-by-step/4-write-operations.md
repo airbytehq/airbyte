@@ -13,7 +13,7 @@
 
 ---
 
-## Phase 8: Writer & Append Mode (Business Logic)
+## Write Phase 1: Writer & Append Mode (Business Logic)
 
 **Goal:** Implement actual data writing (Writer, Aggregate, InsertBuffer)
 
@@ -28,7 +28,7 @@
 **Key insight:** Infrastructure DI (Phase 7) is separate from business logic DI (Phase 8).
 Phase 7 validates "can we start?" Phase 8 validates "can we write data?"
 
-### Step 8.1: Create InsertBuffer
+### Write Step 1: Create InsertBuffer
 
 **File:** `write/load/{DB}InsertBuffer.kt`
 
@@ -109,7 +109,7 @@ class {DB}InsertBuffer(
 - Buffers hold stream-specific state (table name, accumulated records)
 - AggregateFactory creates one buffer per stream
 
-### Step 8.2: Add executeInsert() to Client
+### Write Step 2: Add executeInsert() to Client
 
 **File:** Update `client/{DB}AirbyteClient.kt`
 
@@ -145,7 +145,7 @@ private fun setParameter(statement: PreparedStatement, index: Int, value: Airbyt
 
 **Note:** For non-JDBC databases, use native client APIs (e.g., MongoDB insertOne, ClickHouse native client)
 
-### Step 8.3: Create Aggregate
+### Write Step 3: Create Aggregate
 
 **File:** `dataflow/{DB}Aggregate.kt`
 
@@ -199,7 +199,7 @@ InsertBuffer.accumulate()
 Database
 ```
 
-### Step 8.4: Create AggregateFactory
+### Write Step 4: Create AggregateFactory
 
 **File:** `dataflow/{DB}AggregateFactory.kt`
 
@@ -249,7 +249,7 @@ class {DB}AggregateFactory(
 - Can't use constructor injection (dynamic stream list)
 - Factory receives StoreKey, looks up stream config, creates Aggregate
 
-### Step 8.5: Create Writer
+### Write Step 5: Create Writer
 
 **File:** `write/{DB}Writer.kt`
 
@@ -352,7 +352,7 @@ class {DB}Writer(
 - DirectLoadTableDedupStreamLoader
 - DirectLoadTableDedupTruncateStreamLoader
 
-### Step 8.6: Create ConnectorWiringSuite Test
+### Write Step 6: Create ConnectorWiringSuite Test
 
 **File:** `src/test-integration/kotlin/.../component/{DB}WiringTest.kt`
 
@@ -433,7 +433,7 @@ class {DB}WiringTest(
 - Creates dynamic test streams
 - Focuses on write logic, not catalog parsing
 
-### Step 8.7: Validate ConnectorWiringSuite
+### Write Step 7: Validate ConnectorWiringSuite
 
 **Validate:**
 ```bash
@@ -471,7 +471,7 @@ $ ./gradlew :destination-{db}:integrationTest  # 3 tests should pass
 
 ---
 
-## Phase 9: Generation ID Support
+## Write Phase 2: Generation ID Support
 
 **Goal:** Track sync generations for refresh handling
 
@@ -486,7 +486,7 @@ $ ./gradlew :destination-{db}:integrationTest  # 3 tests should pass
 - Full refresh: minimumGenerationId = generationId (replace all data)
 - Incremental: minimumGenerationId = 0 (keep all data)
 
-### Step 9.1: Enable Generation ID Test
+### Write Step 1: Enable Generation ID Test
 
 **File:** Update `src/test-integration/kotlin/.../component/{DB}TableOperationsTest.kt`
 
@@ -502,7 +502,7 @@ override fun `get generation id`() {
 - Returns 0L for tables without generation ID
 - Returns actual generation ID from `_airbyte_generation_id` column
 
-### Step 9.2: Validate
+### Write Step 2: Validate
 
 **Validate:**
 ```bash
@@ -516,7 +516,7 @@ $ ./gradlew :destination-{db}:componentTest  # 10 tests should pass
 
 ---
 
-## Phase 10: Overwrite Mode
+## Write Phase 3: Overwrite Mode
 
 **Goal:** Support full refresh (replace all data)
 
@@ -531,7 +531,7 @@ $ ./gradlew :destination-{db}:componentTest  # 10 tests should pass
 - **Append** (Phase 8): INSERT into existing table
 - **Overwrite** (Phase 10): SWAP temp table with final table
 
-### Step 10.1: Implement overwriteTable() in SQL Generator
+### Write Step 1: Implement overwriteTable() in SQL Generator
 
 **File:** Update `client/{DB}SqlGenerator.kt`
 
@@ -571,7 +571,7 @@ fun overwriteTable(source: TableName, target: TableName): List<String> {
 - **Postgres/MySQL**: DROP + RENAME requires transaction for atomicity
 - **BigQuery**: CREATE OR REPLACE TABLE (different pattern)
 
-### Step 10.2: Implement overwriteTable() in Client
+### Write Step 2: Implement overwriteTable() in Client
 
 **File:** Update `client/{DB}AirbyteClient.kt`
 
@@ -585,7 +585,7 @@ override suspend fun overwriteTable(
 }
 ```
 
-### Step 10.3: Update Writer for Truncate Mode
+### Write Step 3: Update Writer for Truncate Mode
 
 **File:** Update `write/{DB}Writer.kt`
 
@@ -637,7 +637,7 @@ override fun createStreamLoader(stream: DestinationStream): StreamLoader {
 - **AppendStreamLoader**: Writes directly to final table
 - **AppendTruncateStreamLoader**: Writes to temp table, then swaps
 
-### Step 10.4: Enable Tests
+### Write Step 4: Enable Tests
 
 **File:** Update `src/test-integration/kotlin/.../component/{DB}TableOperationsTest.kt`
 
@@ -648,7 +648,7 @@ override fun `overwrite tables`() {
 }
 ```
 
-### Step 10.5: Validate
+### Write Step 5: Validate
 
 **Validate:**
 ```bash
@@ -663,7 +663,7 @@ $ ./gradlew :destination-{db}:integrationTest  # 3 tests should pass
 
 ---
 
-## Phase 11: Copy Operation
+## Write Phase 4: Copy Operation
 
 **Goal:** Support table copying (used internally by some modes)
 
@@ -674,7 +674,7 @@ $ ./gradlew :destination-{db}:integrationTest  # 3 tests should pass
 - Some overwrite implementations: Copy instead of swap
 - Schema evolution: Copy to new schema
 
-### Step 11.1: Implement copyTable() in SQL Generator
+### Write Step 1: Implement copyTable() in SQL Generator
 
 **File:** Update `client/{DB}SqlGenerator.kt`
 
@@ -724,7 +724,7 @@ fun copyTable(
 }
 ```
 
-### Step 11.2: Implement copyTable() in Client
+### Write Step 2: Implement copyTable() in Client
 
 **File:** Update `client/{DB}AirbyteClient.kt`
 
@@ -738,7 +738,7 @@ override suspend fun copyTable(
 }
 ```
 
-### Step 11.3: Enable Test
+### Write Step 3: Enable Test
 
 **File:** Update `src/test-integration/kotlin/.../component/{DB}TableOperationsTest.kt`
 
@@ -749,7 +749,7 @@ override fun `copy tables`() {
 }
 ```
 
-### Step 11.4: Validate
+### Write Step 4: Validate
 
 **Validate:**
 ```bash

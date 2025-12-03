@@ -21,6 +21,10 @@ import io.airbyte.cdk.load.message.PipelineHeartbeat
 import io.airbyte.cdk.load.message.PipelineMessage
 import io.airbyte.cdk.load.message.StreamKey
 import io.airbyte.cdk.load.pipline.object_storage.file.RouteEventTask
+import io.airbyte.cdk.load.schema.model.ColumnSchema
+import io.airbyte.cdk.load.schema.model.StreamTableSchema
+import io.airbyte.cdk.load.schema.model.TableName
+import io.airbyte.cdk.load.schema.model.TableNames
 import io.airbyte.cdk.load.state.CheckpointId
 import io.airbyte.cdk.load.state.CheckpointValue
 import io.airbyte.cdk.load.write.object_storage.ObjectLoader
@@ -196,7 +200,18 @@ class RouteEventTaskTest {
                 syncId = 3,
                 schema = schema,
                 includeFiles = includeFiles,
-                namespaceMapper = NamespaceMapper()
+                namespaceMapper = NamespaceMapper(),
+                tableSchema =
+                    StreamTableSchema(
+                        columnSchema =
+                            ColumnSchema(
+                                inputSchema = mapOf(),
+                                inputToFinalColumnNames = mapOf(),
+                                finalSchema = mapOf(),
+                            ),
+                        importType = Append,
+                        tableNames = TableNames(finalTableName = TableName("namespace", "test")),
+                    ),
             )
 
         fun record(message: AirbyteMessage = message(), stream: DestinationStream = stream()) =

@@ -8,7 +8,7 @@ data:
   connectorSubtype: api
   connectorType: source
   definitionId: afa734e4-3571-11ec-991a-1e0031268139
-  dockerImageTag: 1.1.0
+  dockerImageTag: 1.1.1
   dockerRepository: airbyte/source-youtube-analytics
   documentationUrl: https://docs.airbyte.com/integrations/sources/youtube-analytics
   githubIssueLabel: source-youtube-analytics
@@ -45,7 +45,7 @@ data:
             type: GSM
             alias: airbyte-connector-testing-secret-store
   connectorBuildOptions:
-    baseImage: docker.io/airbyte/source-declarative-manifest:7.4.1@sha256:71df19e2ee555ca5b14abbec01d50104c79c9b84cb9cc323284d24333361900a
+    baseImage: docker.io/airbyte/source-declarative-manifest:7.5.1@sha256:8da9d362c184e2e46532ab94f6f9968a74835c0882d6a4a2f9f9c9e5b972f2a1
   externalDocumentationUrls:
     - title: YouTube Analytics API
       url: https://developers.google.com/youtube/analytics
