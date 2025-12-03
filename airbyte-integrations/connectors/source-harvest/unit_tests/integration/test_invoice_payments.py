@@ -5,7 +5,7 @@ from datetime import datetime, timezone
 from unittest import TestCase
 
 import freezegun
-from unit_tests.conftest import get_source, get_resource_path
+from unit_tests.conftest import get_resource_path, get_source
 
 from airbyte_cdk.models import SyncMode
 from airbyte_cdk.test.catalog_builder import CatalogBuilder
@@ -42,7 +42,7 @@ class TestInvoicePaymentsStream(TestCase):
             .with_per_page(50)
             .with_updated_since("2021-01-01T00:00:00Z")
             .build(),
-            HttpResponse(body=json.dumps(invoices_data), status_code=200)
+            HttpResponse(body=json.dumps(invoices_data), status_code=200),
         )
 
         # Mock the invoice_payments substream for the invoice
@@ -51,17 +51,15 @@ class TestInvoicePaymentsStream(TestCase):
 
         # The path will be /invoices/{invoice_id}/payments
         from airbyte_cdk.test.mock_http import HttpRequest
-        invoice_id = invoices_data['invoices'][0]['id']
+
+        invoice_id = invoices_data["invoices"][0]["id"]
         http_mocker.get(
             HttpRequest(
                 url=f"https://api.harvestapp.com/v2/invoices/{invoice_id}/payments",
                 query_params={"per_page": "50", "updated_since": "2021-01-01T00:00:00Z"},
-                headers={
-                    "Harvest-Account-Id": _ACCOUNT_ID,
-                    "Authorization": f"Bearer {_API_TOKEN}"
-                }
+                headers={"Harvest-Account-Id": _ACCOUNT_ID, "Authorization": f"Bearer {_API_TOKEN}"},
             ),
-            HttpResponse(body=json.dumps(response_data), status_code=200)
+            HttpResponse(body=json.dumps(response_data), status_code=200),
         )
 
         source = get_source(config=config)

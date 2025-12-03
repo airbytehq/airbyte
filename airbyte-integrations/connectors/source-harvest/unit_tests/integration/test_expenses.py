@@ -5,7 +5,7 @@ from datetime import datetime, timezone
 from unittest import TestCase
 
 import freezegun
-from unit_tests.conftest import get_source, get_resource_path
+from unit_tests.conftest import get_resource_path, get_source
 
 from airbyte_cdk.models import SyncMode
 from airbyte_cdk.test.catalog_builder import CatalogBuilder
@@ -38,7 +38,7 @@ class TestExpensesStream(TestCase):
             .with_per_page(50)
             .with_updated_since("2021-01-01T00:00:00Z")
             .build(),
-            HttpResponse(body=json.dumps(response_data), status_code=200)
+            HttpResponse(body=json.dumps(response_data), status_code=200),
         )
 
         source = get_source(config=config)

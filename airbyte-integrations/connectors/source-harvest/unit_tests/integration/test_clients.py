@@ -6,6 +6,7 @@ from unittest import TestCase
 
 import freezegun
 from unit_tests.conftest import get_source
+
 from airbyte_cdk.models import SyncMode
 from airbyte_cdk.test.catalog_builder import CatalogBuilder
 from airbyte_cdk.test.entrypoint_wrapper import read
@@ -249,8 +250,9 @@ class TestClientsStream(TestCase):
         # ASSERT: State should be updated with the timestamp of the latest record
         assert len(output.state_messages) > 0
         latest_state = output.state_messages[-1].state.stream.stream_state
-        assert latest_state.__dict__["updated_at"] == "2024-01-02T10:00:00Z", \
-            "State should be updated to the updated_at timestamp of the latest record"
+        assert (
+            latest_state.__dict__["updated_at"] == "2024-01-02T10:00:00Z"
+        ), "State should be updated to the updated_at timestamp of the latest record"
 
     @HttpMocker()
     def test_empty_results(self, http_mocker: HttpMocker):
@@ -341,10 +343,7 @@ class TestClientsStream(TestCase):
             .with_per_page(50)
             .with_updated_since("2021-01-01T00:00:00Z")
             .build(),
-            HttpResponse(
-                body=json.dumps({"error": "forbidden", "error_description": "Insufficient permissions"}),
-                status_code=403
-            ),
+            HttpResponse(body=json.dumps({"error": "forbidden", "error_description": "Insufficient permissions"}), status_code=403),
         )
 
         # ACT: Run the connector (403 errors are ignored, not raised)
@@ -381,10 +380,7 @@ class TestClientsStream(TestCase):
             .with_per_page(50)
             .with_updated_since("2021-01-01T00:00:00Z")
             .build(),
-            HttpResponse(
-                body=json.dumps({"error": "not_found", "error_description": "Account not found"}),
-                status_code=404
-            ),
+            HttpResponse(body=json.dumps({"error": "not_found", "error_description": "Account not found"}), status_code=404),
         )
 
         # ACT: Run the connector (404 errors are ignored, not raised)

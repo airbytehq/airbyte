@@ -3,9 +3,7 @@
     {
       "id": 1234567,
       "name": "Developer",
-      "user_ids": [
-        1782884
-      ],
+      "user_ids": [1782884],
       "created_at": "2023-01-05T10:00:00Z",
       "updated_at": "2023-01-05T10:00:00Z"
     }

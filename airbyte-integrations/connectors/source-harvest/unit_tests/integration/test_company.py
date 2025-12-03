@@ -5,7 +5,7 @@ from datetime import datetime, timezone
 from unittest import TestCase
 
 import freezegun
-from unit_tests.conftest import get_source, get_resource_path
+from unit_tests.conftest import get_resource_path, get_source
 
 from airbyte_cdk.models import SyncMode
 from airbyte_cdk.test.catalog_builder import CatalogBuilder
@@ -46,12 +46,9 @@ class TestCompanyStream(TestCase):
         http_mocker.get(
             HttpRequest(
                 url="https://api.harvestapp.com/v2/company",
-                headers={
-                    "Harvest-Account-Id": _ACCOUNT_ID,
-                    "Authorization": f"Bearer {_API_TOKEN}"
-                }
+                headers={"Harvest-Account-Id": _ACCOUNT_ID, "Authorization": f"Bearer {_API_TOKEN}"},
             ),
-            HttpResponse(body=json.dumps(company_data), status_code=200)
+            HttpResponse(body=json.dumps(company_data), status_code=200),
         )
 
         source = get_source(config=config)
@@ -82,12 +79,9 @@ class TestCompanyStream(TestCase):
         http_mocker.get(
             HttpRequest(
                 url="https://api.harvestapp.com/v2/company",
-                headers={
-                    "Harvest-Account-Id": _ACCOUNT_ID,
-                    "Authorization": "Bearer invalid_token"
-                }
+                headers={"Harvest-Account-Id": _ACCOUNT_ID, "Authorization": "Bearer invalid_token"},
             ),
-            HttpResponse(body=json.dumps({"error": "Unauthorized"}), status_code=401)
+            HttpResponse(body=json.dumps({"error": "Unauthorized"}), status_code=401),
         )
 
         source = get_source(config=config)

@@ -262,8 +262,9 @@ class TestTimeEntriesStream(TestCase):
         # ASSERT: State should be updated with the timestamp of the latest record
         assert len(output.state_messages) > 0
         latest_state = output.state_messages[-1].state.stream.stream_state
-        assert latest_state.__dict__["updated_at"] == "2024-01-02T14:00:00Z", \
-            "State should be updated to the updated_at timestamp of the latest record"
+        assert (
+            latest_state.__dict__["updated_at"] == "2024-01-02T14:00:00Z"
+        ), "State should be updated to the updated_at timestamp of the latest record"
 
     @HttpMocker()
     def test_time_entries_with_various_states(self, http_mocker: HttpMocker):
