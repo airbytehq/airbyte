@@ -38,8 +38,8 @@ data:
     jobSpecific:
       - jobType: check_connection
         resourceRequirements:
-          memory_limit: 2Gi
-          memory_request: 2Gi
+          memory_limit: 4096Mi
+          memory_request: 4096Mi
   releases:
     rolloutConfiguration:
       enableProgressiveRollout: false
