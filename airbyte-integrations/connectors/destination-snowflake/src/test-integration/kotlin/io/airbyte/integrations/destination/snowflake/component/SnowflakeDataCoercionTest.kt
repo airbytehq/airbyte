@@ -17,6 +17,8 @@ import io.airbyte.cdk.load.component.DataCoercionNumberFixtures.SMALLEST_NEGATIV
 import io.airbyte.cdk.load.component.DataCoercionNumberFixtures.SMALLEST_POSITIVE_FLOAT32
 import io.airbyte.cdk.load.component.DataCoercionNumberFixtures.SMALLEST_POSITIVE_FLOAT64
 import io.airbyte.cdk.load.component.DataCoercionSuite
+import io.airbyte.cdk.load.component.DataCoercionTimestampTzFixtures
+import io.airbyte.cdk.load.component.DataCoercionTimestampTzFixtures.OUT_OF_RANGE_TIMESTAMP
 import io.airbyte.cdk.load.component.TableOperationsClient
 import io.airbyte.cdk.load.component.TestTableOperationsClient
 import io.airbyte.cdk.load.component.toArgs
@@ -65,6 +67,18 @@ class SnowflakeDataCoercionTest(
         expectedChangeReason: Reason?
     ) {
         super.`handle number values`(inputValue, expectedValue, expectedChangeReason)
+    }
+
+    @ParameterizedTest
+    @MethodSource(
+        "io.airbyte.integrations.destination.snowflake.component.SnowflakeDataCoercionTest#timestampTz"
+    )
+    override fun `handle timestamptz values`(
+        inputValue: AirbyteValue,
+        expectedValue: Any?,
+        expectedChangeReason: Reason?
+    ) {
+        super.`handle timestamptz values`(inputValue, expectedValue, expectedChangeReason)
     }
 
     companion object {
@@ -174,6 +188,14 @@ class SnowflakeDataCoercionTest(
                             )
                     }
                 }
+                .toArgs()
+
+        @JvmStatic
+        fun timestampTz() =
+            DataCoercionTimestampTzFixtures.commonWarehouse
+                // our ValueCoercer doesn't actually validate timestamps being in-bounds yet
+                // (https://github.com/airbytehq/airbyte-internal-issues/issues/15484)
+                .filter { it.name != OUT_OF_RANGE_TIMESTAMP }
                 .toArgs()
     }
 }
