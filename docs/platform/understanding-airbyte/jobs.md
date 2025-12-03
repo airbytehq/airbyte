@@ -134,6 +134,7 @@ Dumb workers now communicate with the Workload API Server to create a Workload i
 The **Workload API Server** places the job in a queue. The **Launcher** picks up the job and launches the resources needed to run the job e.g. Kuberenetes pods. It throttles job creation based on available resources, minimising deadlock situations.
 
 With this set up, Airbyte now supports:
+
 - configuring the maximum number of concurrent jobs via `MAX_CHECK_WORKERS` and `MAX_SYNC_WORKERS` environment variables.`
 - configuring the maximum number of jobs that can be started at once via ``
 - differentiating between job schedule time & job start time via the Workload API, though this is not exposed to the UI.
