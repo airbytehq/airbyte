@@ -107,8 +107,6 @@ class PostgresSourceDebeziumOperations(val config: PostgresSourceConfiguration) 
             .with("datetime.type", PostgresDebeziumDatetimeConverter::class.java.name)
             .with("include.unknown.datatypes", "true")
             .with("flush.lsn.source", cdcConfig.debeziumCommitsLsn.toString())
-            // TODO: was plugin ever configurable?
-            // PostgresUtils.getPluginValue(sourceConfig.get("replication_method")),
             .with("plugin.name", "pgoutput")
             .with("slot.name", cdcConfig.replicationSlot)
             .with("publication.name", cdcConfig.publication)
@@ -120,7 +118,7 @@ class PostgresSourceDebeziumOperations(val config: PostgresSourceConfiguration) 
     val startupState: StartupState by lazy {
         val txId: Long
         val lsn: Long
-        // TODO: Does it matter if we take timestamp before or after fetching lsn and txid?
+        // TODO: Take timestamp from DB, not application
         val time: Instant = Instant.now()
         JdbcConnectionFactory(config).get().use { connection ->
             connection.createStatement().use {
