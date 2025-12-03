@@ -11,13 +11,16 @@ definitions:
     url_base: "https://graph.facebook.com/v24.0"
     http_method: "GET"
     error_handler:
-      type: CompositeErrorHandler
-      error_handlers:
-        - type: DefaultErrorHandler
-          response_filters:
-            - http_codes: [400]
-              action: RETRY
-        - type: DefaultErrorHandler
+      type: DefaultErrorHandler
+      response_filters:
+        - action: FAIL
+          error_message_contains: This application has not been approved to use this API
+          error_message: The application used to create the Facebook access token has not been approved to use this API. Possibly, some of the requested fields require additional scopes/permissions. The Airbyte OAuth App is being in process of requesting needed scopes. In the meantime, we suggest you use your own access token with the necessary permissions. Please, visit https://docs.airbyte.com/integrations/sources/facebook-pages#creating-your-own-oauth-app for more info about your own OAuth App.
+        - action: FAIL
+          error_message_contains: Tried accessing nonexisting field
+          error_message: Request contains invalid/deprecated field.
+        - http_codes: [400]
+          action: RETRY
     authenticator:
       type: CustomAuthenticator
       class_name: source_facebook_pages.components.AuthenticatorFacebookPageAccessToken
@@ -31,7 +34,7 @@ definitions:
       stop_condition: "{{ response.paging == '' or not response.paging.get('next') }}"
       page_size: 100
     page_size_option:
-      field_name: "page_size"
+      field_name: "limit"
       inject_into: "request_parameter"
     page_token_option:
       type: RequestOption
@@ -348,4 +351,4 @@ streams:
 
 check:
   stream_names:
-    - "page"
+    - "post"
