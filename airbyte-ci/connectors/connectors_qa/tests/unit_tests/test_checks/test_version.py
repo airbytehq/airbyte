@@ -16,7 +16,9 @@ class TestVersionIncrementCheck:
         connector.metadata = {"dockerImageTag": "1.0.0"}
         return connector
 
-    def _get_version_increment_check(self, mocker, master_version="1.0.0", current_version="1.0.1", master_metadata=None, current_metadata=None):
+    def _get_version_increment_check(
+        self, mocker, master_version="1.0.0", current_version="1.0.1", master_metadata=None, current_metadata=None
+    ):
         # Default master metadata if not provided
         if master_metadata is None:
             master_metadata = {"dockerImageTag": master_version}
