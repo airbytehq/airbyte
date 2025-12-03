@@ -190,7 +190,14 @@ class VersionIncrementCheck(VersionCheck):
             # Allow version to stay the same if registryOverrides.cloud.dockerImageTag or
             # registryOverrides.oss.dockerImageTag has been added, removed, or changed
             if self._has_registry_override_docker_tag_change():
-                return self.success_result
+                return StepResult(
+                    step=self,
+                    status=StepStatus.SKIPPED,
+                    stdout=(
+                        f"The current change is modifying the registryOverrides pinned version on Cloud or OSS. Skipping this check "
+                        f"because the defined version {self.current_connector_version} is allowed to be unchanged"
+                    ),
+                )
             return self._get_failure_result(
                 (
                     f"The dockerImageTag in {METADATA_FILE_NAME} was not incremented. "

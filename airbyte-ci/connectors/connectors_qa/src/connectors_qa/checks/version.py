@@ -130,6 +130,7 @@ class CheckVersionIncrement(Check):
             master_metadata = self._get_master_metadata(connector)
             master_version = self._parse_version_from_metadata(master_metadata) if master_metadata else semver.Version.parse("0.0.0")
             current_version = self._get_current_connector_version(connector)
+            same_versions_but_has_registry_override = False
 
             # Require a version increment
             if current_version < master_version:
@@ -150,6 +151,8 @@ class CheckVersionIncrement(Check):
                         f"Master version is {master_version}, current version is {current_version}. "
                         f"Ignore this message if you do not intend to re-release the connector.",
                     )
+                else:
+                    same_versions_but_has_registry_override = True
 
             if self._are_both_versions_release_candidates(master_version, current_version):
                 if not self._have_same_major_minor_patch(master_version, current_version):
@@ -160,7 +163,14 @@ class CheckVersionIncrement(Check):
                         f"current version is {current_version}",
                     )
 
-            return self.pass_(connector, f"Version was properly incremented from {master_version} to {current_version}.")
+            if same_versions_but_has_registry_override:
+                return self.skip(
+                    connector,
+                    f"The current change is modifying the registryOverrides pinned version on Cloud or OSS. Skipping this check "
+                    f"because the defined version {current_version} is allowed to be unchanged",
+                )
+            else:
+                return self.pass_(connector, f"Version was properly incremented from {master_version} to {current_version}.")
         except (requests.HTTPError, ValueError, TypeError) as e:
             return self.fail(connector, str(e))
 
