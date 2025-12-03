@@ -44,13 +44,13 @@ class PostgresGenerationIdMigration(
 
             if (existingRawTable.columns[JavaBaseConstants.COLUMN_NAME_AB_GENERATION_ID] != null) {
                 // The raw table already has the _airbyte_meta column. No migration necessary.
-                logger.info(
+                logger.info {
                     "Skipping migration for ${stream.id.rawNamespace}.${stream.id.rawName}'s raw table because the generation_id column is already present"
-                )
+                }
             } else {
-                logger.info(
+                logger.info {
                     "Executing migration for ${stream.id.rawNamespace}.${stream.id.rawName}'s raw table for real"
-                )
+                }
 
                 needsStateRefresh = true
                 destinationHandler.execute(
@@ -74,9 +74,9 @@ class PostgresGenerationIdMigration(
                 stream.id.finalName
             )
         if (maybeExistingFinalTable.isEmpty) {
-            logger.info(
+            logger.info {
                 "Stopping migration for ${stream.id.originalNamespace}.${stream.id.originalName} because the final table doesn't exist"
-            )
+            }
             return Migration.MigrationResult(
                 state.destinationState.copy(isAirbyteGenerationIdPresent = true),
                 needsStateRefresh
@@ -86,13 +86,13 @@ class PostgresGenerationIdMigration(
         if (existingFinalTable.columns[JavaBaseConstants.COLUMN_NAME_AB_GENERATION_ID] != null) {
             // The raw table already has the _airbyte_meta column. No migration necessary. Update
             // the state.
-            logger.info(
+            logger.info {
                 "Skipping migration for ${stream.id.finalNamespace}.${stream.id.finalName} because the generation_id column is already present"
-            )
+            }
         } else {
-            logger.info(
+            logger.info {
                 "Executing migration for ${stream.id.finalNamespace}.${stream.id.finalName} for real"
-            )
+            }
 
             needsStateRefresh = true
             destinationHandler.execute(

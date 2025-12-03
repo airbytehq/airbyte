@@ -28,8 +28,8 @@ class PostgresSQLNameTransformer : StandardNameTransformer() {
     // migration
     @Deprecated("") // Overriding a deprecated method is, itself, a warning
     @Suppress("deprecation")
-    override fun getRawTableName(streamName: String): String {
-        return convertStreamName("_airbyte_raw_" + streamName.lowercase(Locale.getDefault()))
+    override fun getRawTableName(name: String): String {
+        return convertStreamName("_airbyte_raw_" + name.lowercase(Locale.getDefault()))
     }
 
     /**
