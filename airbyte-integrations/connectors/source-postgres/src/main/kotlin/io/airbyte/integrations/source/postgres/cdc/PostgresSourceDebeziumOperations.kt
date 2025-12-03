@@ -4,6 +4,7 @@
 
 package io.airbyte.integrations.source.postgres.cdc
 
+import com.fasterxml.jackson.core.type.TypeReference
 import com.fasterxml.jackson.databind.JsonNode
 import com.fasterxml.jackson.databind.node.NullNode
 import com.fasterxml.jackson.databind.node.ObjectNode
@@ -53,6 +54,7 @@ class PostgresSourceDebeziumOperations(val config: PostgresSourceConfiguration) 
         const val SERVER = "server"
         const val LSN = "lsn"
         const val LSN_PROC = "lsn_proc"
+        const val LSN_COMMIT = "lsn_commit"
 
         internal fun deserializeStateUnvalidated(
             opaqueStateValue: OpaqueStateValue
@@ -77,15 +79,10 @@ class PostgresSourceDebeziumOperations(val config: PostgresSourceConfiguration) 
         internal fun position(offset: DebeziumOffset): PostgresSourceCdcPosition {
             check(offset.wrapped.size == 1) { "Debezium offset has unrecognized format" }
             val value = offset.wrapped.values.first()
-            val lsn =
-                value[LSN]?.asLong()
-                    ?: throw IllegalStateException("\"$LSN\" missing from DebeziumOffset")
-            val lsnProc =
-                value[LSN_PROC]?.asLong()
-                    ?: throw IllegalStateException("\"$LSN_PROC\" missing from DebeziumOffset")
+            val lsn = value[LSN]?.asLong()
             return PostgresSourceCdcPosition(
                 lsn = Lsn.valueOf(lsn),
-                lsnProc = Lsn.valueOf(lsnProc),
+                lsnCommit = null, // not present in state
             )
         }
     }
@@ -107,7 +104,7 @@ class PostgresSourceDebeziumOperations(val config: PostgresSourceConfiguration) 
             .with("snapshot.mode", "initial")
             .with("publication.autocreate.mode", "disabled")
             .with("converters", "datetime")
-            .with("datetime.type", PostgresDebeziumConverter::class.java.name)
+            .with("datetime.type", PostgresDebeziumDatetimeConverter::class.java.name)
             .with("include.unknown.datatypes", "true")
             .with("flush.lsn.source", cdcConfig.debeziumCommitsLsn.toString())
             // TODO: was plugin ever configurable?
@@ -277,23 +274,24 @@ class PostgresSourceDebeziumOperations(val config: PostgresSourceConfiguration) 
         return Jsons.objectNode().apply { set<JsonNode>(STATE, stateValueNode) }
     }
 
-    // modeled on https://github.com/airbytehq/airbyte/pull/35939/files
     override fun position(recordValue: DebeziumRecordValue): PostgresSourceCdcPosition? {
         val source = recordValue.source
-        val lsn = source[LSN]
-        if (lsn == null || lsn is NullNode) return null
-        val lsnProc = source[LSN_PROC]
-        if (lsnProc == null || lsnProc is NullNode) return null
+        val lsn = source[LSN]?.asLong()
+        val sequence =
+            Jsons.readValue(
+                source["sequence"].toString(),
+                object : TypeReference<List<String>>() {}
+            )
+        val lsnCommit = sequence?.get(0)?.toLong()
         return PostgresSourceCdcPosition(
-            lsn = Lsn.valueOf(lsn.asLong()),
-            lsnProc = Lsn.valueOf(lsnProc.asLong()),
+            lsn = Lsn.valueOf(lsn),
+            lsnCommit = Lsn.valueOf(lsnCommit),
         )
     }
 
     override fun position(sourceRecord: SourceRecord): PostgresSourceCdcPosition? {
-        // TODO: are both required?
-        val lsn = sourceRecord.sourceOffset()[LSN] as Long? ?: return null
-        val lsnProc = sourceRecord.sourceOffset()[LSN_PROC] as Long? ?: return null
-        return PostgresSourceCdcPosition(Lsn.valueOf(lsn), Lsn.valueOf(lsnProc))
+        val lsn = sourceRecord.sourceOffset()[LSN] as Long?
+        val lsnCommit = sourceRecord.sourceOffset()[LSN_COMMIT] as Long?
+        return PostgresSourceCdcPosition(Lsn.valueOf(lsn), Lsn.valueOf(lsnCommit))
     }
 }

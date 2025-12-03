@@ -53,13 +53,16 @@ class PostgresSourceStreamFactory : JdbcAirbyteStreamFactory {
         val offset: DebeziumOffset =
             PostgresSourceDebeziumOperations.deserializeStateUnvalidated(globalStateValue)
         val position: PostgresSourceCdcPosition = PostgresSourceDebeziumOperations.position(offset)
-        recordData.set<JsonNode>(
-            PostgresSourceCdcMetaFields.CDC_LSN.id,
-            // TODO: Duplicates CDC_LSN.type.
-            //  Unable to use the reference due to * star projection.
-            //  Note: the same is true in the MySQL connector.
-            CdcStringMetaFieldType.jsonEncoder.encode(position.lsn.asString()),
-        )
+        val lsn = position.lsn?.asString()
+        if (lsn != null) {
+            recordData.set<JsonNode>(
+                PostgresSourceCdcMetaFields.CDC_LSN.id,
+                // TODO: Duplicates CDC_LSN.type.
+                //  Unable to use the reference due to * star projection.
+                //  Note: the same is true in the MySQL connector.
+                CdcStringMetaFieldType.jsonEncoder.encode(lsn),
+            )
+        }
     }
 
     @Suppress("UNCHECKED_CAST")

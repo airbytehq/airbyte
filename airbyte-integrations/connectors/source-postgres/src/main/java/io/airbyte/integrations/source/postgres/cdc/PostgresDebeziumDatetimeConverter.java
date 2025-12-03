@@ -39,9 +39,9 @@ import org.postgresql.util.PGInterval;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
-public class PostgresDebeziumConverter implements CustomConverter<SchemaBuilder, RelationalColumn> {
+public class PostgresDebeziumDatetimeConverter implements CustomConverter<SchemaBuilder, RelationalColumn> {
 
-  private static final Logger LOGGER = LoggerFactory.getLogger(PostgresDebeziumConverter.class);
+  private static final Logger LOGGER = LoggerFactory.getLogger(PostgresDebeziumDatetimeConverter.class);
 
   private final String[] DATE_TYPES = {"DATE", "TIME", "TIMETZ", "INTERVAL", "TIMESTAMP", "TIMESTAMPTZ"};
   private final String[] BIT_TYPES = {"BIT", "VARBIT"};
