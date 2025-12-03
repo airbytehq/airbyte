@@ -194,7 +194,7 @@ following[ sync modes](https://docs.airbyte.com/cloud/core-concepts#connection-s
 
 ### Output Schema (Direct Load)
 
-Starting with version 3.0.0, the Postgres destination uses Direct Load architecture. Each stream is written directly to a final table in your configured schema. The table includes your data columns plus the following Airbyte metadata columns:
+The Postgres destination uses Direct Load architecture. Each stream is written directly to a final table in your configured schema. The table includes your data columns plus the following Airbyte metadata columns:
 
 - `_airbyte_raw_id`: a uuid assigned by Airbyte to each event that is processed. The column type in
   Postgres is `VARCHAR`.
