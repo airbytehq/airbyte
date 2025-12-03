@@ -251,8 +251,8 @@ public class BigQuerySource extends AbstractDbSource<StandardSQLTypeName, BigQue
 
   private String buildFullyQualifiedTableName(final String projectId, final String datasetId, final String tableName) {
     return getIdentifierWithQuoting(projectId, getQuoteString()) + NAMESPACE_SEPARATOR +
-           getIdentifierWithQuoting(datasetId, getQuoteString()) + NAMESPACE_SEPARATOR +
-           getIdentifierWithQuoting(tableName, getQuoteString());
+        getIdentifierWithQuoting(datasetId, getQuoteString()) + NAMESPACE_SEPARATOR +
+        getIdentifierWithQuoting(tableName, getQuoteString());
   }
 
   private String getIdentifierWithQuoting(final String identifier, final String quoteString) {
