@@ -2,6 +2,13 @@
   "name": "docu",
   "version": "0.0.0",
   "private": true,
+  "volta": {
+    "node": "22.21.1",
+    "pnpm": "9.4.0"
+  },
+  "engines": {
+    "node": ">=20 <25"
+  },
   "scripts": {
     "prepare-registry-cache": "node src/scripts/prepare-registry-cache.js",
     "gen-embedded-api-docs": "pnpm exec docusaurus clean-api-docs all && pnpm exec docusaurus gen-api-docs all",

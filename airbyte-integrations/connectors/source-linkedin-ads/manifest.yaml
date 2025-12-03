@@ -1606,6 +1606,8 @@ definitions:
       record_merge_strategy:
         type: GroupByKeyMergeStrategy
         key: ["end_date", "string_of_pivot_values"]
+    property_selector:
+      type: JsonSchemaPropertySelector
 
 streams:
   - $ref: "#/definitions/streams/accounts"

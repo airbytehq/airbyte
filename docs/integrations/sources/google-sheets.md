@@ -309,6 +309,8 @@ Airbyte batches requests to the API in order to efficiently pull data and respec
 
 | Version    | Date       | Pull Request                                             | Subject                                                                                                                                                                |
 |------------|------------|----------------------------------------------------------|------------------------------------------------------------------------------------------------------------------------------------------------------------------------|
+| 0.12.13 | 2025-11-18 | [69396](https://github.com/airbytehq/airbyte/pull/69396) | Update dependencies |
+| 0.12.12 | 2025-10-29 | [68759](https://github.com/airbytehq/airbyte/pull/68759) | Update dependencies |
 | 0.12.11 | 2025-10-21 | [68254](https://github.com/airbytehq/airbyte/pull/68254) | Update dependencies |
 | 0.12.10 | 2025-10-16 | [67531](https://github.com/airbytehq/airbyte/pull/67531) | Add error handling for unexpected data in sheets causing 500 responses. |
 | 0.12.9 | 2025-10-14 | [67876](https://github.com/airbytehq/airbyte/pull/67876) | Update dependencies |

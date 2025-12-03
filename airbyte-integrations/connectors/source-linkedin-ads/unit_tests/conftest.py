@@ -6,7 +6,9 @@ import json
 import os
 import sys
 from pathlib import Path
-from typing import Any, Mapping
+from typing import Any, Mapping, Optional
+
+from airbyte_protocol_dataclasses.models import ConfiguredAirbyteCatalog
 
 from airbyte_cdk.sources.declarative.yaml_declarative_source import YamlDeclarativeSource
 from airbyte_cdk.test.catalog_builder import CatalogBuilder
@@ -31,8 +33,8 @@ _YAML_FILE_PATH = _SOURCE_FOLDER_PATH / "manifest.yaml"
 sys.path.append(str(_SOURCE_FOLDER_PATH))  # to allow loading custom components
 
 
-def get_source(config) -> YamlDeclarativeSource:
-    catalog = CatalogBuilder().build()
+def get_source(config, catalog: Optional[ConfiguredAirbyteCatalog] = None) -> YamlDeclarativeSource:
+    catalog = catalog or CatalogBuilder().build()
     state = StateBuilder().build()
     return YamlDeclarativeSource(path_to_yaml=str(_YAML_FILE_PATH), catalog=catalog, config=config, state=state)
 
@@ -42,7 +44,7 @@ def find_stream(stream_name, config):
 
     # cache should be disabled once this issue is fixed https://github.com/airbytehq/airbyte-internal-issues/issues/6513
     for stream in streams:
-        stream.retriever.requester.use_cache = True
+        stream._stream_partition_generator._partition_factory._retriever.requester.use_cache = True
 
     # find by name
     for stream in streams:

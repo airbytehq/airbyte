@@ -70,6 +70,8 @@ However, at this moment and as indicated in the stream names, the connector only
 
 | Version | Date       | Pull Request                                             | Subject                                                                              |
 |:--------|:-----------|:---------------------------------------------------------|:-------------------------------------------------------------------------------------|
+| 1.0.2 | 2025-11-18 | [69577](https://github.com/airbytehq/airbyte/pull/69577) | Update dependencies |
+| 1.0.1 | 2025-10-29 | [68392](https://github.com/airbytehq/airbyte/pull/68392) | Update dependencies |
 | 1.0.0 | 2025-10-15 | [66557](https://github.com/airbytehq/airbyte/pull/66557) | Update `adgroups_report_daily` and `keywords_report_daily` to use global state cursor |
 | 0.8.10 | 2025-10-14 | [67979](https://github.com/airbytehq/airbyte/pull/67979) | Update dependencies |
 | 0.8.9 | 2025-10-07 | [67173](https://github.com/airbytehq/airbyte/pull/67173) | Update dependencies |
