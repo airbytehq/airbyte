@@ -28,7 +28,7 @@ CONFIG = BASE_CONFIG | {"projects_list": ["p_1"]}
 )
 def test_should_retry(requests_mock, stream_name, extra_mocks):
     """Test that 403 responses are handled gracefully and don't produce records.
-    
+
     Note: The groups API is not called when only projects_list is set (no groups_list),
     so we only expect calls for the extra_mocks.
     """
@@ -170,7 +170,7 @@ def test_stream_slices_child_stream(requests_mock):
         url="https://gitlab.com/api/v4/projects/p_1?per_page=50&statistics=1",
         json=[{"id": 13082000, "description": "", "name": "New CI Test Project"}],
     )
-    stream_state = {"13082000": {"" "created_at": "2021-03-10T23:58:1213"}}
+    stream_state = {"13082000": {"created_at": "2021-03-10T23:58:1213"}}
 
     slices = list(map(lambda partition: partition.to_slice(), commits.generate_partitions()))
     assert slices
