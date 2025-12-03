@@ -91,4 +91,14 @@ data:
   supportLevel: certified
   tags:
     - language:java
+  externalDocumentationUrls:
+    - title: MongoDB documentation
+      url: https://www.mongodb.com/docs/
+      type: api_reference
+    - title: Release Notes
+      url: https://www.mongodb.com/docs/manual/release-notes/
+      type: api_release_history
+    - title: MongoDB authentication
+      url: https://www.mongodb.com/docs/manual/core/authentication/
+      type: authentication_guide
 metadataSpecVersion: "1.0"
