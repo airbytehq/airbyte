@@ -16,6 +16,10 @@ import io.airbyte.cdk.load.message.PipelineContext
 import io.airbyte.cdk.load.message.PipelineEvent
 import io.airbyte.cdk.load.message.PipelineMessage
 import io.airbyte.cdk.load.message.StreamKey
+import io.airbyte.cdk.load.schema.model.ColumnSchema
+import io.airbyte.cdk.load.schema.model.StreamTableSchema
+import io.airbyte.cdk.load.schema.model.TableName
+import io.airbyte.cdk.load.schema.model.TableNames
 import io.airbyte.cdk.load.state.CheckpointId
 import io.airbyte.cdk.load.state.CheckpointValue
 import io.airbyte.protocol.models.Jsons
@@ -142,6 +146,17 @@ class FlattenQueueAdapterTest {
                 destinationObjectName = null,
                 matchingKey = null,
                 namespaceMapper = NamespaceMapper(),
+                tableSchema =
+                    StreamTableSchema(
+                        columnSchema =
+                            ColumnSchema(
+                                inputSchema = mapOf(),
+                                inputToFinalColumnNames = mapOf(),
+                                finalSchema = mapOf(),
+                            ),
+                        importType = Append,
+                        tableNames = TableNames(finalTableName = TableName("namespace", "test")),
+                    ),
             )
     }
 

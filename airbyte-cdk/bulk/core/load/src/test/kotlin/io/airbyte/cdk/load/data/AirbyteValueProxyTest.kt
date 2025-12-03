@@ -93,7 +93,23 @@ class AirbyteValueProxyTest {
             syncId = 1,
             includeFiles = false,
             schema = ALL_TYPES_SCHEMA,
-            namespaceMapper = NamespaceMapper()
+            namespaceMapper = NamespaceMapper(),
+            tableSchema =
+                io.airbyte.cdk.load.schema.model.StreamTableSchema(
+                    tableNames =
+                        io.airbyte.cdk.load.schema.model.TableNames(
+                            finalTableName =
+                                io.airbyte.cdk.load.schema.model.TableName("namespace", "name")
+                        ),
+                    columnSchema =
+                        io.airbyte.cdk.load.schema.model.ColumnSchema(
+                            inputSchema = ALL_TYPES_SCHEMA.properties,
+                            inputToFinalColumnNames =
+                                ALL_TYPES_SCHEMA.properties.keys.associateWith { it },
+                            finalSchema = mapOf(),
+                        ),
+                    importType = Append,
+                )
         )
 
     private fun ifNull(value: JsonNode?): JsonNode? {

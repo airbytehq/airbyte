@@ -10,10 +10,15 @@ import io.airbyte.cdk.load.config.CHECK_STREAM_NAMESPACE
 import io.airbyte.cdk.load.data.FieldType
 import io.airbyte.cdk.load.data.IntegerType
 import io.airbyte.cdk.load.data.ObjectType
+import io.airbyte.cdk.load.schema.TableNameResolver
+import io.airbyte.cdk.load.schema.model.ColumnSchema
+import io.airbyte.cdk.load.schema.model.StreamTableSchema
+import io.airbyte.cdk.load.schema.model.TableName
+import io.airbyte.cdk.load.schema.model.TableNames
 import io.airbyte.protocol.models.v0.ConfiguredAirbyteCatalog
 import io.github.oshai.kotlinlogging.KotlinLogging
 import io.micronaut.context.annotation.Factory
-import io.micronaut.context.annotation.Value
+import io.micronaut.context.annotation.Requires
 import jakarta.inject.Named
 import jakarta.inject.Singleton
 import java.time.LocalDate
@@ -91,45 +96,76 @@ data class DestinationCatalog(val streams: List<DestinationStream> = emptyList()
     }
 }
 
-interface DestinationCatalogFactory {
-    fun make(): DestinationCatalog
-}
-
 @Factory
 class DefaultDestinationCatalogFactory {
+    @Requires(property = Operation.PROPERTY, notEquals = "check")
     @Singleton
-    fun getDestinationCatalog(
+    fun syncCatalog(
         catalog: ConfiguredAirbyteCatalog,
         streamFactory: DestinationStreamFactory,
-        @Value("\${${Operation.PROPERTY}}") operation: String,
+        tableNameResolver: TableNameResolver,
+    ): DestinationCatalog {
+        val descriptors =
+            catalog.streams
+                .map { DestinationStream.Descriptor(it.stream.namespace, it.stream.name) }
+                .toSet()
+        val names = tableNameResolver.getTableNameMapping(descriptors)
+
+        return DestinationCatalog(
+            streams =
+                catalog.streams.map {
+                    val key = DestinationStream.Descriptor(it.stream.namespace, it.stream.name)
+                    streamFactory.make(it, names[key]!!)
+                }
+        )
+    }
+
+    /**
+     * Warning: Most destinations do not use this.
+     *
+     * Catalog stub for running SYNC from within a CHECK operation.
+     *
+     * Used exclusively by the DefaultDestinationChecker.
+     */
+    @Requires(property = Operation.PROPERTY, value = "check")
+    @Singleton
+    fun checkCatalog(
         @Named("checkNamespace") checkNamespace: String?,
         namespaceMapper: NamespaceMapper
     ): DestinationCatalog {
-        if (operation == "check") {
-            // generate a string like "20240523"
-            val date = LocalDate.now().format(DateTimeFormatter.ofPattern("yyyyMMdd"))
-            // generate 5 random characters
-            val random = RandomStringUtils.insecure().nextAlphabetic(5).lowercase()
-            val namespace = checkNamespace ?: "${CHECK_STREAM_NAMESPACE}_$date$random"
-            return DestinationCatalog(
-                listOf(
-                    DestinationStream(
-                        unmappedNamespace = namespace,
-                        unmappedName = "test$date$random",
-                        importType = Append,
-                        schema =
-                            ObjectType(
-                                linkedMapOf("test" to FieldType(IntegerType, nullable = true))
-                            ),
-                        generationId = 1,
-                        minimumGenerationId = 0,
-                        syncId = 1,
-                        namespaceMapper = namespaceMapper
-                    )
+        // generate a string like "20240523"
+        val date = LocalDate.now().format(DateTimeFormatter.ofPattern("yyyyMMdd"))
+        // generate 5 random characters
+        val random = RandomStringUtils.insecure().nextAlphabetic(5).lowercase()
+        val namespace = checkNamespace ?: "${CHECK_STREAM_NAMESPACE}_$date$random"
+        return DestinationCatalog(
+            listOf(
+                DestinationStream(
+                    unmappedNamespace = namespace,
+                    unmappedName = "test$date$random",
+                    importType = Append,
+                    schema =
+                        ObjectType(linkedMapOf("test" to FieldType(IntegerType, nullable = true))),
+                    generationId = 1,
+                    minimumGenerationId = 0,
+                    syncId = 1,
+                    namespaceMapper = namespaceMapper,
+                    tableSchema =
+                        StreamTableSchema(
+                            columnSchema =
+                                ColumnSchema(
+                                    inputSchema = mapOf(),
+                                    inputToFinalColumnNames = mapOf(),
+                                    finalSchema = mapOf()
+                                ),
+                            importType = Append,
+                            tableNames =
+                                TableNames(
+                                    finalTableName = TableName("namespace", "test"),
+                                ),
+                        ),
                 )
             )
-        } else {
-            return DestinationCatalog(streams = catalog.streams.map { streamFactory.make(it) })
-        }
+        )
     }
 }

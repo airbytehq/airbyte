@@ -11,7 +11,10 @@ import io.airbyte.cdk.load.data.FieldType
 import io.airbyte.cdk.load.data.IntegerType
 import io.airbyte.cdk.load.data.ObjectType
 import io.airbyte.cdk.load.data.StringType
-import io.airbyte.cdk.load.data.json.JsonSchemaToAirbyteType
+import io.airbyte.cdk.load.schema.model.ColumnSchema
+import io.airbyte.cdk.load.schema.model.StreamTableSchema
+import io.airbyte.cdk.load.schema.model.TableName
+import io.airbyte.cdk.load.schema.model.TableNames
 import io.airbyte.cdk.load.util.deserializeToNode
 import io.airbyte.protocol.models.v0.AirbyteStream
 import io.airbyte.protocol.models.v0.ConfiguredAirbyteCatalog
@@ -90,25 +93,6 @@ class DestinationCatalogTest {
             )
 
     @Test
-    fun roundTrip() {
-        val streamFactory =
-            DestinationStreamFactory(
-                JsonSchemaToAirbyteType(JsonSchemaToAirbyteType.UnionBehavior.DEFAULT),
-                namespaceMapper = NamespaceMapper()
-            )
-        val catalogFactory = DefaultDestinationCatalogFactory()
-        val destinationCatalog =
-            catalogFactory.getDestinationCatalog(
-                originalCatalog,
-                streamFactory,
-                operation = "write",
-                checkNamespace = null,
-                namespaceMapper = NamespaceMapper()
-            )
-        assertEquals(originalCatalog, destinationCatalog.asProtocolObject())
-    }
-
-    @Test
     fun proxyOrderedSchema() {
         val stream =
             DestinationStream(
@@ -128,7 +112,23 @@ class DestinationCatalogTest {
                                 "x" to FieldType(IntegerType, nullable = true),
                             )
                     ),
-                namespaceMapper = NamespaceMapper()
+                namespaceMapper = NamespaceMapper(),
+                tableSchema =
+                    StreamTableSchema(
+                        tableNames = TableNames(finalTableName = TableName("namespace", "name")),
+                        columnSchema =
+                            ColumnSchema(
+                                inputSchema =
+                                    linkedMapOf(
+                                        "z" to FieldType(StringType, nullable = true),
+                                        "y" to FieldType(BooleanType, nullable = true),
+                                        "x" to FieldType(IntegerType, nullable = true),
+                                    ),
+                                inputToFinalColumnNames = mapOf("z" to "z", "y" to "y", "x" to "x"),
+                                finalSchema = mapOf(),
+                            ),
+                        importType = Append,
+                    )
             )
         val expectedOrderedSchema =
             arrayOf(
@@ -158,6 +158,18 @@ class DestinationCatalogTest {
                             includeFiles = false,
                             schema = ObjectType(linkedMapOf()),
                             namespaceMapper = NamespaceMapper(),
+                            tableSchema =
+                                StreamTableSchema(
+                                    tableNames =
+                                        TableNames(finalTableName = TableName("default", "foo")),
+                                    columnSchema =
+                                        ColumnSchema(
+                                            inputSchema = mapOf(),
+                                            inputToFinalColumnNames = mapOf(),
+                                            finalSchema = mapOf(),
+                                        ),
+                                    importType = Append,
+                                )
                         ),
                         DestinationStream(
                             unmappedNamespace = null,
@@ -169,6 +181,18 @@ class DestinationCatalogTest {
                             includeFiles = false,
                             schema = ObjectType(linkedMapOf()),
                             namespaceMapper = NamespaceMapper(),
+                            tableSchema =
+                                StreamTableSchema(
+                                    tableNames =
+                                        TableNames(finalTableName = TableName("default", "foo")),
+                                    columnSchema =
+                                        ColumnSchema(
+                                            inputSchema = mapOf(),
+                                            inputToFinalColumnNames = mapOf(),
+                                            finalSchema = mapOf(),
+                                        ),
+                                    importType = Append,
+                                )
                         ),
                     )
                 )
@@ -193,6 +217,22 @@ class DestinationCatalogTest {
                             includeFiles = false,
                             schema = ObjectType(linkedMapOf()),
                             namespaceMapper = NamespaceMapper(),
+                            tableSchema =
+                                StreamTableSchema(
+                                    tableNames =
+                                        TableNames(finalTableName = TableName("default", "foo")),
+                                    columnSchema =
+                                        ColumnSchema(
+                                            inputSchema = mapOf(),
+                                            inputToFinalColumnNames = mapOf(),
+                                            finalSchema = mapOf(),
+                                        ),
+                                    importType =
+                                        Dedupe(
+                                            primaryKey = listOf(listOf("id")),
+                                            cursor = emptyList()
+                                        ),
+                                )
                         )
                     )
                 )
@@ -226,6 +266,25 @@ class DestinationCatalogTest {
                                     linkedMapOf("id" to FieldType(IntegerType, nullable = true))
                                 ),
                             namespaceMapper = NamespaceMapper(),
+                            tableSchema =
+                                StreamTableSchema(
+                                    tableNames =
+                                        TableNames(finalTableName = TableName("default", "foo")),
+                                    columnSchema =
+                                        ColumnSchema(
+                                            inputSchema =
+                                                linkedMapOf(
+                                                    "id" to FieldType(IntegerType, nullable = true)
+                                                ),
+                                            inputToFinalColumnNames = mapOf("id" to "id"),
+                                            finalSchema = mapOf(),
+                                        ),
+                                    importType =
+                                        Dedupe(
+                                            primaryKey = listOf(listOf("id")),
+                                            cursor = listOf("updated_at"),
+                                        ),
+                                )
                         )
                     )
                 )

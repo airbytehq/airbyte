@@ -12,6 +12,10 @@ import io.airbyte.cdk.load.data.ObjectTypeWithoutSchema
 import io.airbyte.cdk.load.data.StringType
 import io.airbyte.cdk.load.message.DestinationRecordJsonSource
 import io.airbyte.cdk.load.message.DestinationRecordRaw
+import io.airbyte.cdk.load.schema.model.ColumnSchema
+import io.airbyte.cdk.load.schema.model.StreamTableSchema
+import io.airbyte.cdk.load.schema.model.TableName
+import io.airbyte.cdk.load.schema.model.TableNames
 import io.airbyte.cdk.load.state.CheckpointId
 import io.airbyte.protocol.models.Jsons
 import io.airbyte.protocol.models.v0.AirbyteMessage
@@ -115,6 +119,17 @@ class DlqRecordBuilderTest {
             minimumGenerationId = 1,
             syncId = 27,
             namespaceMapper = NamespaceMapper(),
+            tableSchema =
+                StreamTableSchema(
+                    columnSchema =
+                        ColumnSchema(
+                            inputSchema = mapOf(),
+                            inputToFinalColumnNames = mapOf(),
+                            finalSchema = mapOf(),
+                        ),
+                    importType = Append,
+                    tableNames = TableNames(finalTableName = TableName("namespace", "test")),
+                ),
         )
 
     private val defaultRecordMessage =

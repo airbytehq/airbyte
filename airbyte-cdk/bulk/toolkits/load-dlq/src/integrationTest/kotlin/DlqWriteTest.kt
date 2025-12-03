@@ -15,6 +15,10 @@ import io.airbyte.cdk.load.message.CheckpointMessage
 import io.airbyte.cdk.load.message.InputRecord
 import io.airbyte.cdk.load.message.InputStreamCheckpoint
 import io.airbyte.cdk.load.message.StreamCheckpoint
+import io.airbyte.cdk.load.schema.model.ColumnSchema
+import io.airbyte.cdk.load.schema.model.StreamTableSchema
+import io.airbyte.cdk.load.schema.model.TableName
+import io.airbyte.cdk.load.schema.model.TableNames
 import io.airbyte.cdk.load.test.mock.MockDestinationDataDumper
 import io.airbyte.cdk.load.test.util.IntegrationTest
 import io.airbyte.cdk.load.test.util.NoopDestinationCleaner
@@ -55,6 +59,17 @@ open class AbstractDlqWriteTest(
                 minimumGenerationId = 0,
                 syncId = 42,
                 namespaceMapper = NamespaceMapper(),
+                tableSchema =
+                    StreamTableSchema(
+                        columnSchema =
+                            ColumnSchema(
+                                inputSchema = mapOf(),
+                                inputToFinalColumnNames = mapOf(),
+                                finalSchema = mapOf(),
+                            ),
+                        importType = Append,
+                        tableNames = TableNames(finalTableName = TableName("namespace", "test")),
+                    ),
             )
         val messages =
             runSync(

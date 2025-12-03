@@ -8,7 +8,6 @@ import io.airbyte.cdk.load.command.Append
 import io.airbyte.cdk.load.command.DestinationCatalog
 import io.airbyte.cdk.load.command.DestinationStream
 import io.airbyte.cdk.load.command.NamespaceMapper
-import io.airbyte.cdk.load.data.StringType
 import io.airbyte.cdk.load.dataflow.state.stats.EmissionStats
 import io.airbyte.cdk.output.OutputConsumer
 import io.airbyte.protocol.models.Jsons
@@ -235,11 +234,29 @@ class EmittedStatsStoreImplTest {
                 unmappedNamespace = namespace,
                 unmappedName = name,
                 importType = Append,
-                schema = StringType,
+                schema = io.airbyte.cdk.load.data.ObjectType(linkedMapOf()),
                 generationId = 1L,
                 minimumGenerationId = 1L,
                 syncId = 1L,
-                namespaceMapper = namespaceMapper
+                namespaceMapper = namespaceMapper,
+                tableSchema =
+                    io.airbyte.cdk.load.schema.model.StreamTableSchema(
+                        tableNames =
+                            io.airbyte.cdk.load.schema.model.TableNames(
+                                finalTableName =
+                                    io.airbyte.cdk.load.schema.model.TableName(
+                                        namespace ?: "default",
+                                        name
+                                    )
+                            ),
+                        columnSchema =
+                            io.airbyte.cdk.load.schema.model.ColumnSchema(
+                                inputSchema = mapOf(),
+                                inputToFinalColumnNames = mapOf(),
+                                finalSchema = mapOf(),
+                            ),
+                        importType = Append,
+                    )
             )
         }
     }

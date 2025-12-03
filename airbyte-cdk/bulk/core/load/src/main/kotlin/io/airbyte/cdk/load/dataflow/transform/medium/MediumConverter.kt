@@ -8,11 +8,9 @@ import io.airbyte.cdk.load.dataflow.state.PartitionKey
 import io.airbyte.cdk.load.message.DestinationRecordRaw
 
 /**
- * Defines a contract for converting a given input into a structured map representation.
+ * Converts raw destination records into a map of final column name to munged final value.
  *
- * This interface provides the blueprint for implementing a conversion process that transforms raw
- * destination record data, partitioning metadata, and optional source records into a map structure
- * with specific key-value pairs.
+ * This interface provides the blueprint for different serialization intermediate representations.
  */
 interface MediumConverter {
     /**

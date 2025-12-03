@@ -16,6 +16,10 @@ import io.airbyte.cdk.load.data.json.toAirbyteValue
 import io.airbyte.cdk.load.message.DestinationFile
 import io.airbyte.cdk.load.message.InputFile
 import io.airbyte.cdk.load.message.InputRecord
+import io.airbyte.cdk.load.schema.model.ColumnSchema
+import io.airbyte.cdk.load.schema.model.StreamTableSchema
+import io.airbyte.cdk.load.schema.model.TableName
+import io.airbyte.cdk.load.schema.model.TableNames
 import io.airbyte.cdk.load.state.CheckpointId
 import io.airbyte.cdk.load.test.util.destination_process.DestinationProcess
 import io.airbyte.cdk.load.util.CloseableCoroutine
@@ -60,20 +64,34 @@ class SingleStreamInsert(
                     primaryKey = listOf(listOf(idColumn.name)),
                     cursor = listOf(idColumn.name),
                 )
-        val schema =
+        val schemaFields =
             (listOf(idColumn) + columns).map {
                 Pair(it.name, FieldType(type = it.type, nullable = true))
             }
+        val streamSchema = ObjectType(linkedMapOf(*schemaFields.toTypedArray()))
 
         DestinationStream(
             unmappedNamespace = randomizedNamespace,
             unmappedName = streamName,
             importType = importType,
-            schema = ObjectType(linkedMapOf(*schema.toTypedArray())),
+            schema = streamSchema,
             generationId = generationId,
             minimumGenerationId = minGenerationId,
             syncId = 1,
-            namespaceMapper = NamespaceMapper()
+            namespaceMapper = NamespaceMapper(),
+            tableSchema =
+                StreamTableSchema(
+                    tableNames =
+                        TableNames(finalTableName = TableName(randomizedNamespace, streamName)),
+                    columnSchema =
+                        ColumnSchema(
+                            inputSchema = streamSchema.properties,
+                            inputToFinalColumnNames =
+                                streamSchema.properties.keys.associateWith { it },
+                            finalSchema = mapOf(),
+                        ),
+                    importType = importType,
+                )
         )
     }
 
@@ -177,16 +195,29 @@ class SingleStreamFileTransfer(
 ) : PerformanceTestScenario {
     private val log = KotlinLogging.logger {}
 
+    private val streamSchema = ObjectType(linkedMapOf())
     private val stream =
         DestinationStream(
             unmappedNamespace = randomizedNamespace,
             unmappedName = streamName,
             importType = Append,
-            schema = ObjectType(linkedMapOf()),
+            schema = streamSchema,
             generationId = 1,
             minimumGenerationId = 0,
             syncId = 1,
-            namespaceMapper = NamespaceMapper()
+            namespaceMapper = NamespaceMapper(),
+            tableSchema =
+                StreamTableSchema(
+                    tableNames =
+                        TableNames(finalTableName = TableName(randomizedNamespace, streamName)),
+                    columnSchema =
+                        ColumnSchema(
+                            inputSchema = mapOf(),
+                            inputToFinalColumnNames = mapOf(),
+                            finalSchema = mapOf(),
+                        ),
+                    importType = Append,
+                )
         )
 
     override val catalog: DestinationCatalog =
@@ -201,6 +232,20 @@ class SingleStreamFileTransfer(
                     minimumGenerationId = 1,
                     syncId = 101,
                     namespaceMapper = NamespaceMapper(),
+                    tableSchema =
+                        StreamTableSchema(
+                            tableNames =
+                                TableNames(
+                                    finalTableName = TableName(randomizedNamespace, streamName)
+                                ),
+                            columnSchema =
+                                ColumnSchema(
+                                    inputSchema = mapOf(),
+                                    inputToFinalColumnNames = mapOf(),
+                                    finalSchema = mapOf(),
+                                ),
+                            importType = Append,
+                        )
                 )
             )
         )
@@ -258,17 +303,30 @@ class SingleStreamFileAndMetadataTransfer(
 ) : PerformanceTestScenario {
     private val log = KotlinLogging.logger {}
 
+    private val streamSchema = ObjectType(linkedMapOf())
     private val stream =
         DestinationStream(
             unmappedNamespace = randomizedNamespace,
             unmappedName = streamName,
             importType = Append,
-            schema = ObjectType(linkedMapOf()),
+            schema = streamSchema,
             generationId = 1,
             minimumGenerationId = 0,
             syncId = 1,
             includeFiles = true,
-            namespaceMapper = NamespaceMapper()
+            namespaceMapper = NamespaceMapper(),
+            tableSchema =
+                StreamTableSchema(
+                    tableNames =
+                        TableNames(finalTableName = TableName(randomizedNamespace, streamName)),
+                    columnSchema =
+                        ColumnSchema(
+                            inputSchema = mapOf(),
+                            inputToFinalColumnNames = mapOf(),
+                            finalSchema = mapOf(),
+                        ),
+                    importType = Append,
+                )
         )
 
     override val catalog: DestinationCatalog =
@@ -283,7 +341,21 @@ class SingleStreamFileAndMetadataTransfer(
                     minimumGenerationId = 1,
                     syncId = 101,
                     includeFiles = true,
-                    namespaceMapper = NamespaceMapper()
+                    namespaceMapper = NamespaceMapper(),
+                    tableSchema =
+                        StreamTableSchema(
+                            tableNames =
+                                TableNames(
+                                    finalTableName = TableName(randomizedNamespace, streamName)
+                                ),
+                            columnSchema =
+                                ColumnSchema(
+                                    inputSchema = mapOf(),
+                                    inputToFinalColumnNames = mapOf(),
+                                    finalSchema = mapOf(),
+                                ),
+                            importType = Append,
+                        )
                 )
             )
         )
@@ -374,21 +446,36 @@ class MultiStreamInsert(
 
     private val streams = run {
         val importType = Append
-        val schema =
+        val schemaFields =
             (listOf(idColumn) + columns).map {
                 Pair(it.name, FieldType(type = it.type, nullable = true))
             }
 
-        (0 until numStreams).map {
+        (0 until numStreams).map { index ->
+            val streamSchema = ObjectType(linkedMapOf(*schemaFields.toTypedArray()))
+            val streamName = "${streamNamePrefix}__$index"
             DestinationStream(
                 unmappedNamespace = randomizedNamespace,
-                unmappedName = "${streamNamePrefix}__$it",
+                unmappedName = streamName,
                 importType = importType,
-                schema = ObjectType(linkedMapOf(*schema.toTypedArray())),
+                schema = streamSchema,
                 generationId = generationId,
                 minimumGenerationId = minGenerationId,
                 syncId = 1,
-                namespaceMapper = NamespaceMapper()
+                namespaceMapper = NamespaceMapper(),
+                tableSchema =
+                    StreamTableSchema(
+                        tableNames =
+                            TableNames(finalTableName = TableName(randomizedNamespace, streamName)),
+                        columnSchema =
+                            ColumnSchema(
+                                inputSchema = streamSchema.properties,
+                                inputToFinalColumnNames =
+                                    streamSchema.properties.keys.associateWith { it },
+                                finalSchema = mapOf(),
+                            ),
+                        importType = importType,
+                    )
             )
         }
     }

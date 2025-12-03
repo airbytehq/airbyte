@@ -12,6 +12,10 @@ import io.airbyte.cdk.load.command.NamespaceMapper
 import io.airbyte.cdk.load.data.ObjectTypeWithoutSchema
 import io.airbyte.cdk.load.message.DestinationRecordStreamComplete
 import io.airbyte.cdk.load.message.InputRecord
+import io.airbyte.cdk.load.schema.model.ColumnSchema
+import io.airbyte.cdk.load.schema.model.StreamTableSchema
+import io.airbyte.cdk.load.schema.model.TableName
+import io.airbyte.cdk.load.schema.model.TableNames
 import io.airbyte.cdk.load.util.serializeToString
 import io.airbyte.cdk.load.write.WriteOperation
 import io.github.oshai.kotlinlogging.KotlinLogging
@@ -46,7 +50,18 @@ interface DestinationChecker<C : DestinationConfiguration> {
             generationId = 1,
             minimumGenerationId = 0,
             syncId = 1,
-            namespaceMapper = NamespaceMapper()
+            namespaceMapper = NamespaceMapper(),
+            tableSchema =
+                StreamTableSchema(
+                    tableNames = TableNames(finalTableName = TableName("testing", "test")),
+                    columnSchema =
+                        ColumnSchema(
+                            inputSchema = mapOf(),
+                            inputToFinalColumnNames = mapOf(),
+                            finalSchema = mapOf(),
+                        ),
+                    importType = Append,
+                )
         )
 
     fun check(config: C)

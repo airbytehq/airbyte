@@ -24,8 +24,8 @@ import io.airbyte.cdk.load.data.ObjectType
 import io.airbyte.cdk.load.data.StringType
 import io.airbyte.cdk.load.data.StringValue
 import io.airbyte.cdk.load.message.Meta
+import io.airbyte.cdk.load.schema.model.TableName
 import io.airbyte.cdk.load.table.ColumnNameMapping
-import io.airbyte.cdk.load.table.TableName
 import io.micronaut.test.extensions.junit5.annotation.MicronautTest
 import kotlin.test.assertEquals
 import kotlinx.coroutines.test.runTest
