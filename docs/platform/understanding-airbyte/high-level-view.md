@@ -2,7 +2,7 @@
 description: A high level view of Airbyte's components.
 ---
 
-# Architecture overview
+# Understand Airbyte
 
 Think of Airbyte as two things:
 
@@ -12,6 +12,10 @@ Think of Airbyte as two things:
 The platform provides all the horizontal services required to configure and run data movement operations. This includes the UI, API, job scheduling, logging, alerting, etc. These functions exist as a set of microservices.
 
 Connectors are independent modules which push/pull data to/from sources and destinations. Connectors follow the [Airbyte Specification](./airbyte-protocol.md), which describes the interface with which Airbyte can move data between a source and a destination. Connectors are Docker images, which allows flexibility over the technologies used to implement them.
+
+## Who should read this
+
+In most cases, you don't need to understand the information in this section to use Airbyte. This information outlines the design decisions and architecture behind Airbyte, and how it moves data in the background. You probably only need it to help you troubleshoot complex deployment issues if you're self-managing, or if you want to fork Airbyte and work on it yourself.
 
 ## Platform architecture
 
