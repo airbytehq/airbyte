@@ -20,6 +20,8 @@ import io.airbyte.integrations.destination.snowflake.sql.andLog
 import io.airbyte.integrations.destination.snowflake.write.load.SnowflakeInsertBuffer
 import io.micronaut.context.annotation.Requires
 import jakarta.inject.Singleton
+import java.sql.Timestamp
+import java.time.ZoneOffset
 import java.time.format.DateTimeFormatter
 import javax.sql.DataSource
 import net.snowflake.client.jdbc.SnowflakeTimestampWithTimezone
@@ -71,15 +73,23 @@ class SnowflakeTestTableOperationsClient(
                                 val columnType = metaData.getColumnTypeName(i)
                                 when (columnType) {
                                     "TIMESTAMPTZ" -> {
-                                        val value =
-                                            resultSet.getTimestamp(i)
-                                                as SnowflakeTimestampWithTimezone?
-                                        if (value != null) {
-                                            val formattedTimestamp =
-                                                DateTimeFormatter.ISO_DATE_TIME.format(
-                                                    value.toZonedDateTime().toOffsetDateTime()
-                                                )
-                                            row[columnName] = formattedTimestamp
+                                        resultSet.getTimestamp(i)?.let {
+                                            val odt =
+                                                when (it) {
+                                                    // Most timestamps are returned as
+                                                    // SnowflakeTimestampWithTimezone,
+                                                    // which has a toZonedDateTime function
+                                                    is SnowflakeTimestampWithTimezone ->
+                                                        it.toZonedDateTime().toOffsetDateTime()
+                                                    // Some timestamps are returned as
+                                                    // java.sql.Timestamp,
+                                                    // so we just assume UTC.
+                                                    is Timestamp ->
+                                                        it.toLocalDateTime()
+                                                            .atOffset(ZoneOffset.UTC)
+                                                }
+                                            row[columnName] =
+                                                DateTimeFormatter.ISO_DATE_TIME.format(odt)
                                         }
                                     }
                                     "VARIANT",
