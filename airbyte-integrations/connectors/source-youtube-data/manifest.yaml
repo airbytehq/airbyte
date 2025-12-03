@@ -10,7 +10,7 @@ description: >-
 check:
   type: CheckStream
   stream_names:
-    - video
+    - channels
 
 definitions:
   streams:
