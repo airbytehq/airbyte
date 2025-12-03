@@ -22,28 +22,28 @@
 **Timeline:** 2-3 days
 
 **Steps:**
-1. **1-getting-started.md** (Phases 0-1, ~4 hours)
+1. **1-getting-started.md** (Setup Phases 1-2, ~4 hours)
    - Project scaffolding and build setup
    - Spec operation implementation
    - **Milestone:** `./destination-{db} --spec` works
 
-2. **2-database-setup.md** (Phases 2-5, ~6 hours)
-   - Database connectivity and basic operations
-   - Namespace and table operations
+2. **2-database-setup.md** (Database Phases 1-2, ~6 hours)
+   - Database connectivity and all table operations
    - Check operation implementation
    - **Milestone:** `./destination-{db} --check --config config.json` works
 
-3. **3-write-infrastructure.md** (Phases 6-7, ~4 hours)
+3. **3-write-infrastructure.md** (Infrastructure Phases 1-2, ~4 hours)
    - Name generators and DI setup
    - Write operation infrastructure
    - Understanding test contexts
    - **Milestone:** DI configured, ready for business logic
 
-4. **4-write-operations.md** (Phases 8-11, ~8 hours)
+4. **4-write-operations.md** (Write Phases 1-4, ~8 hours)
    - InsertBuffer, Aggregate, Writer implementation
    - Append mode (direct writes)
    - Generation ID support
    - Overwrite mode (atomic swap)
+   - Copy operation
    - **Milestone:** `./destination-{db} --write` works with append + overwrite modes
 
 **Result:** Working connector suitable for PoC and simple use cases
@@ -59,14 +59,14 @@
 **Steps:**
 1-4. Complete Fast Path (above)
 
-5. **5-advanced-features.md** (Phases 12-15, ~12 hours)
+5. **5-advanced-features.md** (Advanced Phases 1-4, ~12 hours)
    - Schema evolution (automatic column add/drop/modify)
    - Dedupe mode (MERGE with primary key)
    - CDC support (hard/soft deletes)
    - Optimization and polish
    - **Milestone:** Full-featured, production-ready connector
 
-6. **6-testing.md** (~2 hours)
+6. **6-testing.md** (Testing Phase 1, ~2 hours)
    - Run BasicFunctionalityIntegrationTest
    - Validate all sync modes
    - Test schema evolution and CDC
@@ -98,12 +98,12 @@
 
 | Guide | Phases | What Works | Lines | Time | Prerequisites |
 |-------|--------|------------|-------|------|---------------|
-| **1-getting-started.md** | 0-1 | --spec | ~626 | 4h | None |
-| **2-database-setup.md** | 2-5 | --check | ~902 | 6h | Guide 1 |
-| **3-write-infrastructure.md** | 6-7 | DI ready | ~855 | 4h | Guide 2 |
-| **4-write-operations.md** | 8-11 | --write (append, overwrite) | ~869 | 8h | Guide 3 |
-| **5-advanced-features.md** | 12-15 | All features | ~1020 | 12h | Guide 4 |
-| **6-testing.md** | Tests | All tests pass | ~878 | 2h | Guide 5 |
+| **1-getting-started.md** | Setup 1-2 | --spec | ~626 | 4h | None |
+| **2-database-setup.md** | Database 1-2 | --check | ~1180 | 6h | Guide 1 |
+| **3-write-infrastructure.md** | Infrastructure 1-2 | DI ready | ~600 | 4h | Guide 2 |
+| **4-write-operations.md** | Write 1-4 | --write (append, overwrite) | ~780 | 8h | Guide 3 |
+| **5-advanced-features.md** | Advanced 1-4 | All features | ~900 | 12h | Guide 4 |
+| **6-testing.md** | Testing 1 | All tests pass | ~730 | 2h | Guide 5 |
 | **7-troubleshooting.md** | Reference | Debug help | ~280 | As needed | Any |
 
 ---
@@ -234,7 +234,7 @@ Platform → stdin → Lifecycle → Writer.setup()
 - Look at destination-snowflake or destination-clickhouse for examples
 
 **Common pitfalls:**
-- Not reading test contexts section (causes confusion in Phase 7)
+- Not reading test contexts section (causes confusion in Infrastructure Phase 2)
 - Missing DI registration (causes "No bean found" errors)
 - Skipping CDK version pinning (causes build issues)
 - Not understanding StreamLoader variants (causes wrong finalization)
