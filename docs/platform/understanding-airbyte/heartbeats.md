@@ -41,10 +41,11 @@ If these issues show up on Airbyte Cloud,
 
 #### Heartbeating logic
 
-The platform considers both `RECORD` and `STATE` messages emitted by the source as source heartbeats.
-The Airbyte platform has a process which monitors when the last beat was send and if it reaches a threshold,
-the synchronization attempt will be failed. It fails with a cause being the source an message saying
-`The source is unresponsive`. Internal the error has a heartbeat timeout type, which is not display in the UI.
+For connections running in legacy mode, the platform considers both `RECORD` and `STATE` messages emitted by the source as source heartbeats. These messages flow through the container orchestrator, which monitors when the last beat was sent.
+
+For connections running in socket mode, records flow directly from source to destination via Unix domain sockets and do not pass through the platform. In this mode, the platform monitors activity through control messages visible to the Bookkeeper, such as state updates and statistics. Heartbeat protection remains active regardless of which mode is used.
+
+If the platform detects that the source has not sent any activity within the configured threshold, the synchronization attempt fails with the message `The source is unresponsive`.
 
 #### Configuration
 

@@ -3,11 +3,14 @@
 ## Airbyte Core Backend
 
 - [Java 21](https://jdk.java.net/archive/)
+- [Kotlin](https://kotlinlang.org/) for socket mode components
 - Framework: [Micronaut](https://micronaut.io/)
 - API: [OAS3](https://www.openapis.org/)
 - Databases: [PostgreSQL](https://www.postgresql.org/)
 - Unit & E2E testing: [JUnit 5](https://junit.org/junit5)
 - Orchestration: [Temporal](https://temporal.io)
+- Data serialization: [Protocol Buffers](https://protobuf.dev/) for high-performance socket mode
+- Inter-process communication: Unix domain sockets for direct source-to-destination data transfer
 
 ## Connectors
 
