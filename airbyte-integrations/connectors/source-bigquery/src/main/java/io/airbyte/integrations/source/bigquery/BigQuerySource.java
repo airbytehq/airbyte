@@ -33,6 +33,7 @@ import io.airbyte.protocol.models.CommonField;
 import io.airbyte.protocol.models.JsonSchemaType;
 import io.airbyte.protocol.models.v0.SyncMode;
 import java.util.ArrayList;
+import java.util.Arrays;
 import java.util.Collections;
 import java.util.List;
 import java.util.Map;
@@ -56,6 +57,8 @@ public class BigQuerySource extends AbstractDbSource<StandardSQLTypeName, BigQue
   private JsonNode dbConfig;
   private final BigQuerySourceOperations sourceOperations = new BigQuerySourceOperations();
 
+  private static final String NAMESPACE_SEPARATOR = ".";
+
   protected BigQuerySource() {
     super(null);
   }
@@ -74,7 +77,8 @@ public class BigQuerySource extends AbstractDbSource<StandardSQLTypeName, BigQue
   @Override
   protected BigQueryDatabase createDatabase(final JsonNode sourceConfig) {
     dbConfig = Jsons.clone(sourceConfig);
-    final BigQueryDatabase database = new BigQueryDatabase(sourceConfig.get(CONFIG_PROJECT_ID).asText(), sourceConfig.get(CONFIG_CREDS).asText());
+    final String firstProjectId = getFirstProjectId(sourceConfig);
+    final BigQueryDatabase database = new BigQueryDatabase(firstProjectId, sourceConfig.get(CONFIG_CREDS).asText());
     database.setSourceConfig(sourceConfig);
     database.setDatabaseConfig(toDatabaseConfig(sourceConfig));
     return database;
@@ -120,26 +124,35 @@ public class BigQuerySource extends AbstractDbSource<StandardSQLTypeName, BigQue
 
   @Override
   protected List<TableInfo<CommonField<StandardSQLTypeName>>> discoverInternal(final BigQueryDatabase database, final String schema) {
-    final String projectId = dbConfig.get(CONFIG_PROJECT_ID).asText();
-    final List<Table> tables =
-        (isDatasetConfigured(database) ? database.getDatasetTables(getConfigDatasetId(database)) : database.getProjectTables(projectId));
+    final List<String> projectIds = getProjectIds(dbConfig);
     final List<TableInfo<CommonField<StandardSQLTypeName>>> result = new ArrayList<>();
-    tables.stream().map(table -> TableInfo.<CommonField<StandardSQLTypeName>>builder()
-        .nameSpace(table.getTableId().getDataset())
-        .name(table.getTableId().getTable())
-        .fields(Objects.requireNonNull(table.getDefinition().getSchema()).getFields().stream()
-            .map(f -> {
-              final StandardSQLTypeName standardType;
-              if (f.getType().getStandardType() == StandardSQLTypeName.STRUCT && f.getMode() == Field.Mode.REPEATED) {
-                standardType = StandardSQLTypeName.ARRAY;
-              } else
-                standardType = f.getType().getStandardType();
 
-              return new CommonField<>(f.getName(), standardType);
-            })
-            .collect(Collectors.toList()))
-        .build())
-        .forEach(result::add);
+    for (final String projectId : projectIds) {
+      LOGGER.info("Discovering tables for project: {}", projectId);
+      final List<Table> tables;
+      if (isDatasetConfigured(database)) {
+        tables = database.getDatasetTables(getConfigDatasetId(database));
+      } else {
+        tables = database.getProjectTables(projectId);
+      }
+
+      tables.stream().map(table -> TableInfo.<CommonField<StandardSQLTypeName>>builder()
+          .nameSpace(buildNamespace(projectId, table.getTableId().getDataset()))
+          .name(table.getTableId().getTable())
+          .fields(Objects.requireNonNull(table.getDefinition().getSchema()).getFields().stream()
+              .map(f -> {
+                final StandardSQLTypeName standardType;
+                if (f.getType().getStandardType() == StandardSQLTypeName.STRUCT && f.getMode() == Field.Mode.REPEATED) {
+                  standardType = StandardSQLTypeName.ARRAY;
+                } else
+                  standardType = f.getType().getStandardType();
+
+                return new CommonField<>(f.getName(), standardType);
+              })
+              .collect(Collectors.toList()))
+          .build())
+          .forEach(result::add);
+    }
     return result;
   }
 
@@ -161,9 +174,12 @@ public class BigQuerySource extends AbstractDbSource<StandardSQLTypeName, BigQue
                                                                final String tableName,
                                                                final CursorInfo cursorInfo,
                                                                final StandardSQLTypeName cursorFieldType) {
+    final String projectId = extractProjectIdFromNamespace(schemaName);
+    final String datasetId = extractDatasetIdFromNamespace(schemaName);
+    final String fullyQualifiedTableName = buildFullyQualifiedTableName(projectId, datasetId, tableName);
     return queryTableWithParams(database, String.format("SELECT %s FROM %s WHERE %s > ?",
         RelationalDbQueryUtils.enquoteIdentifierList(columnNames, getQuoteString()),
-        getFullyQualifiedTableNameWithQuoting(schemaName, tableName, getQuoteString()),
+        fullyQualifiedTableName,
         cursorInfo.getCursorField()),
         schemaName,
         tableName,
@@ -178,9 +194,12 @@ public class BigQuerySource extends AbstractDbSource<StandardSQLTypeName, BigQue
                                                                   final SyncMode syncMode,
                                                                   final Optional<String> cursorField) {
     LOGGER.info("Queueing query for table: {}", tableName);
+    final String projectId = extractProjectIdFromNamespace(schemaName);
+    final String datasetId = extractDatasetIdFromNamespace(schemaName);
+    final String fullyQualifiedTableName = buildFullyQualifiedTableName(projectId, datasetId, tableName);
     return queryTable(database, String.format("SELECT %s FROM %s",
         enquoteIdentifierList(columnNames, getQuoteString()),
-        getFullyQualifiedTableNameWithQuoting(schemaName, tableName, getQuoteString())),
+        fullyQualifiedTableName),
         tableName, schemaName);
   }
 
@@ -212,6 +231,51 @@ public class BigQuerySource extends AbstractDbSource<StandardSQLTypeName, BigQue
 
   private String getConfigDatasetId(final SqlDatabase database) {
     return (isDatasetConfigured(database) ? database.getSourceConfig().get(CONFIG_DATASET_ID).asText() : "");
+  }
+
+  private List<String> getProjectIds(final JsonNode config) {
+    final String projectIdConfig = config.get(CONFIG_PROJECT_ID).asText();
+    return Arrays.stream(projectIdConfig.split(","))
+        .map(String::trim)
+        .filter(s -> !s.isEmpty())
+        .collect(Collectors.toList());
+  }
+
+  private String getFirstProjectId(final JsonNode config) {
+    final List<String> projectIds = getProjectIds(config);
+    if (projectIds.isEmpty()) {
+      throw new IllegalArgumentException("At least one project ID must be specified");
+    }
+    return projectIds.get(0);
+  }
+
+  private String buildFullyQualifiedTableName(final String projectId, final String datasetId, final String tableName) {
+    return getIdentifierWithQuoting(projectId, getQuoteString()) + NAMESPACE_SEPARATOR +
+           getIdentifierWithQuoting(datasetId, getQuoteString()) + NAMESPACE_SEPARATOR +
+           getIdentifierWithQuoting(tableName, getQuoteString());
+  }
+
+  private String getIdentifierWithQuoting(final String identifier, final String quoteString) {
+    return quoteString + identifier + quoteString;
+  }
+
+  private String buildNamespace(final String projectId, final String datasetId) {
+    return projectId + NAMESPACE_SEPARATOR + datasetId;
+  }
+
+  private String extractProjectIdFromNamespace(final String namespace) {
+    if (namespace == null || !namespace.contains(NAMESPACE_SEPARATOR)) {
+      return null;
+    }
+    return namespace.split("\\" + NAMESPACE_SEPARATOR)[0];
+  }
+
+  private String extractDatasetIdFromNamespace(final String namespace) {
+    if (namespace == null || !namespace.contains(NAMESPACE_SEPARATOR)) {
+      return namespace;
+    }
+    final String[] parts = namespace.split("\\" + NAMESPACE_SEPARATOR);
+    return parts.length > 1 ? parts[1] : namespace;
   }
 
   public static void main(final String[] args) throws Exception {

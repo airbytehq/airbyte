@@ -10,7 +10,7 @@
     "properties": {
       "project_id": {
         "type": "string",
-        "description": "The GCP project ID for the project containing the target BigQuery dataset.",
+        "description": "The GCP project ID for the project containing the target BigQuery dataset. You can specify multiple project IDs separated by commas to pull data from multiple projects.",
         "title": "Project ID"
       },
       "dataset_id": {
