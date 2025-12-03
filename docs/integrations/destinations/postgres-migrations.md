@@ -24,6 +24,20 @@ This version introduces [Direct Load](/platform/using-airbyte/core-concepts/dire
 
 Existing raw tables will not be deleted during the upgrade. However, new syncs will not write to raw tables unless you enable the "Raw tables only" option.
 
+### Removing old raw tables
+
+After upgrading to version 3.0.0 and confirming your syncs are working correctly with Direct Load, you can optionally remove the old raw tables to free up storage space:
+
+1. Verify that your syncs are completing successfully with the new Direct Load architecture.
+2. Confirm that any downstream processes (dbt models, SQL queries, etc.) have been updated to use final tables instead of raw tables.
+3. Once confirmed, you can safely drop the old raw tables from the `airbyte_internal` schema (or your configured raw table schema).
+
+:::caution
+
+Only remove raw tables after you have verified that all your workflows are working correctly with the new architecture. This action is irreversible.
+
+:::
+
 ## Upgrading to 2.0.0
 
 This version introduces [Destinations V2](/release_notes/upgrading_to_destinations_v2/#what-is-destinations-v2), which provides better error handling, incremental delivery of data for large syncs, and improved final table structures. To review the breaking changes, and how to upgrade, see [here](/release_notes/upgrading_to_destinations_v2/#quick-start-to-upgrading). These changes will likely require updates to downstream dbt / SQL models, which we walk through [here](/release_notes/upgrading_to_destinations_v2/#updating-downstream-transformations). Selecting `Upgrade` will upgrade **all** connections using this destination at their next sync. You can manually sync existing connections prior to the next scheduled sync to start the upgrade early.

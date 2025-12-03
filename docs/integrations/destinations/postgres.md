@@ -6,7 +6,7 @@ This page guides you through the process of setting up the Postgres destination 
 
 Starting with version 3.0.0, the Postgres destination uses **Direct Load** architecture. This means data is written directly to final tables without using intermediate raw tables, providing improved performance and reduced storage costs.
 
-If you need raw tables for backward compatibility, you can enable the "Raw tables only" option in the connector configuration.
+For migration details and backward compatibility options, see the [Postgres Migration Guide](postgres-migrations.md#upgrading-to-300).
 
 :::
 
@@ -209,7 +209,7 @@ The Postgres destination uses Direct Load architecture. Each stream is written d
 
 :::warning Deprecated
 
-Raw tables are deprecated starting with version 3.0.0. The connector now uses Direct Load to write directly to final tables. If you still need raw tables for backward compatibility, enable the "Raw tables only" option in the connector configuration.
+Raw tables are deprecated starting with version 3.0.0. The connector now uses Direct Load to write directly to final tables. For backward compatibility options and migration guidance, see the [Postgres Migration Guide](postgres-migrations.md#upgrading-to-300).
 
 :::
 
