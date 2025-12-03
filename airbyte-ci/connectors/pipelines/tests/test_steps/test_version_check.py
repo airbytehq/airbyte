@@ -5,6 +5,7 @@ from connector_ops.utils import METADATA_FILE_NAME
 from semver import VersionInfo
 
 from pipelines.airbyte_ci.connectors.test.steps.common import VersionIncrementCheck
+from pipelines.models.steps import StepStatus
 
 
 class TestVersionIncrementCheck:
@@ -78,8 +79,8 @@ class TestVersionIncrementCheck:
         result = version_increment_check.validate()
         assert result.success
 
-    def test_validate_success_registry_override_oss_added(self, context, mocker):
-        """Test that version increment check passes when registryOverrides.oss.dockerImageTag is added."""
+    def test_validate_skipped_registry_override_oss_added(self, context, mocker):
+        """Test that version increment check is skipped when registryOverrides.oss.dockerImageTag is added."""
         version_increment_check = self._get_version_increment_check(mocker, context, master_version="1.0.0", current_version="1.0.0")
         mocker.patch.object(
             version_increment_check,
@@ -88,10 +89,10 @@ class TestVersionIncrementCheck:
         )
         context.metadata = {"data": {"dockerImageTag": "1.0.0", "registryOverrides": {"oss": {"dockerImageTag": "1.0.0-oss"}}}}
         result = version_increment_check.validate()
-        assert result.success
+        assert result.status == StepStatus.SKIPPED
 
-    def test_validate_success_registry_override_oss_removed(self, context, mocker):
-        """Test that version increment check passes when registryOverrides.oss.dockerImageTag is removed."""
+    def test_validate_skipped_registry_override_oss_removed(self, context, mocker):
+        """Test that version increment check is skipped when registryOverrides.oss.dockerImageTag is removed."""
         version_increment_check = self._get_version_increment_check(mocker, context, master_version="1.0.0", current_version="1.0.0")
         mocker.patch.object(
             version_increment_check,
@@ -100,10 +101,10 @@ class TestVersionIncrementCheck:
         )
         context.metadata = {"data": {"dockerImageTag": "1.0.0"}}
         result = version_increment_check.validate()
-        assert result.success
+        assert result.status == StepStatus.SKIPPED
 
-    def test_validate_success_registry_override_oss_changed(self, context, mocker):
-        """Test that version increment check passes when registryOverrides.oss.dockerImageTag is changed."""
+    def test_validate_skipped_registry_override_oss_changed(self, context, mocker):
+        """Test that version increment check is skipped when registryOverrides.oss.dockerImageTag is changed."""
         version_increment_check = self._get_version_increment_check(mocker, context, master_version="1.0.0", current_version="1.0.0")
         mocker.patch.object(
             version_increment_check,
@@ -112,10 +113,10 @@ class TestVersionIncrementCheck:
         )
         context.metadata = {"data": {"dockerImageTag": "1.0.0", "registryOverrides": {"oss": {"dockerImageTag": "1.0.1-oss"}}}}
         result = version_increment_check.validate()
-        assert result.success
+        assert result.status == StepStatus.SKIPPED
 
-    def test_validate_success_registry_override_cloud_added(self, context, mocker):
-        """Test that version increment check passes when registryOverrides.cloud.dockerImageTag is added."""
+    def test_validate_skipped_registry_override_cloud_added(self, context, mocker):
+        """Test that version increment check is skipped when registryOverrides.cloud.dockerImageTag is added."""
         version_increment_check = self._get_version_increment_check(mocker, context, master_version="1.0.0", current_version="1.0.0")
         mocker.patch.object(
             version_increment_check,
@@ -124,10 +125,10 @@ class TestVersionIncrementCheck:
         )
         context.metadata = {"data": {"dockerImageTag": "1.0.0", "registryOverrides": {"cloud": {"dockerImageTag": "1.0.0-cloud"}}}}
         result = version_increment_check.validate()
-        assert result.success
+        assert result.status == StepStatus.SKIPPED
 
-    def test_validate_success_registry_override_cloud_removed(self, context, mocker):
-        """Test that version increment check passes when registryOverrides.cloud.dockerImageTag is removed."""
+    def test_validate_skipped_registry_override_cloud_removed(self, context, mocker):
+        """Test that version increment check is skipped when registryOverrides.cloud.dockerImageTag is removed."""
         version_increment_check = self._get_version_increment_check(mocker, context, master_version="1.0.0", current_version="1.0.0")
         mocker.patch.object(
             version_increment_check,
@@ -136,10 +137,10 @@ class TestVersionIncrementCheck:
         )
         context.metadata = {"data": {"dockerImageTag": "1.0.0"}}
         result = version_increment_check.validate()
-        assert result.success
+        assert result.status == StepStatus.SKIPPED
 
-    def test_validate_success_registry_override_cloud_changed(self, context, mocker):
-        """Test that version increment check passes when registryOverrides.cloud.dockerImageTag is changed."""
+    def test_validate_skipped_registry_override_cloud_changed(self, context, mocker):
+        """Test that version increment check is skipped when registryOverrides.cloud.dockerImageTag is changed."""
         version_increment_check = self._get_version_increment_check(mocker, context, master_version="1.0.0", current_version="1.0.0")
         mocker.patch.object(
             version_increment_check,
@@ -148,7 +149,7 @@ class TestVersionIncrementCheck:
         )
         context.metadata = {"data": {"dockerImageTag": "1.0.0", "registryOverrides": {"cloud": {"dockerImageTag": "1.0.1-cloud"}}}}
         result = version_increment_check.validate()
-        assert result.success
+        assert result.status == StepStatus.SKIPPED
 
     def test_validate_failure_no_increment_registry_override_unchanged(self, context, mocker):
         """Test that version increment check fails when dockerImageTag is not incremented and registryOverrides are unchanged."""

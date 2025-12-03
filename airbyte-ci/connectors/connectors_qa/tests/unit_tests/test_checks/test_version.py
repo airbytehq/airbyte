@@ -75,25 +75,25 @@ class TestVersionIncrementCheck:
             == f"Master and current version are release candidates but they have different major, minor or patch versions. Release candidates should only differ in the prerelease part. Master version is 1.0.0-rc.1, current version is 1.0.1-rc.1"
         )
 
-    def test_validate_success_registry_override_cloud_added(self, mock_connector, mocker):
-        """Test that validation passes when registryOverrides.cloud.dockerImageTag is added."""
+    def test_validate_skipped_registry_override_cloud_added(self, mock_connector, mocker):
+        """Test that validation is skipped when registryOverrides.cloud.dockerImageTag is added."""
         master_metadata = {"dockerImageTag": "1.0.0"}
         mock_connector.metadata = {"dockerImageTag": "1.0.0", "registryOverrides": {"cloud": {"dockerImageTag": "1.0.0-cloud"}}}
         version_increment_check = self._get_version_increment_check(
             mocker, master_version="1.0.0", current_version="1.0.0", master_metadata=master_metadata
         )
         result = version_increment_check._run(mock_connector)
-        assert result.status == CheckStatus.PASSED
+        assert result.status == CheckStatus.SKIPPED
 
-    def test_validate_success_registry_override_oss_changed(self, mock_connector, mocker):
-        """Test that validation passes when registryOverrides.oss.dockerImageTag is changed."""
+    def test_validate_skipped_registry_override_oss_changed(self, mock_connector, mocker):
+        """Test that validation is skipped when registryOverrides.oss.dockerImageTag is changed."""
         master_metadata = {"dockerImageTag": "1.0.0", "registryOverrides": {"oss": {"dockerImageTag": "1.0.0-oss"}}}
         mock_connector.metadata = {"dockerImageTag": "1.0.0", "registryOverrides": {"oss": {"dockerImageTag": "1.0.1-oss"}}}
         version_increment_check = self._get_version_increment_check(
             mocker, master_version="1.0.0", current_version="1.0.0", master_metadata=master_metadata
         )
         result = version_increment_check._run(mock_connector)
-        assert result.status == CheckStatus.PASSED
+        assert result.status == CheckStatus.SKIPPED
 
     def test_validate_failure_no_increment_registry_override_unchanged(self, mock_connector, mocker):
         """Test that validation fails when version is not incremented and registryOverrides are unchanged."""
