@@ -102,6 +102,15 @@ class TestClientsStream(TestCase):
         """
         Test that connector fetches all pages when pagination is present.
 
+        NOTE: This test validates pagination for the 'clients' stream, but all 32 streams
+        use the same DefaultPaginator configuration, so this provides pagination coverage for:
+        billable_rates, clients, company, contacts, cost_rates, estimate_item_categories,
+        estimate_messages, estimates, expense_categories, expenses, expenses_categories,
+        expenses_clients, expenses_projects, expenses_team, invoice_item_categories,
+        invoice_messages, invoice_payments, invoices, project_assignments, project_budget,
+        projects, roles, task_assignments, tasks, time_clients, time_entries, time_projects,
+        time_tasks, time_team, uninvoiced, user_assignments, users
+
         Given: An API that returns multiple pages of clients
         When: Running a full refresh sync
         Then: The connector should follow pagination links and return all records

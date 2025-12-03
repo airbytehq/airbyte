@@ -110,6 +110,11 @@ class TestProjectsStream(TestCase):
         """
         Test that connector fetches all pages when pagination is present.
 
+        NOTE: This test validates pagination for the 'projects' stream, but since all 32 streams
+        use the same DefaultPaginator configuration, this provides pagination coverage for all
+        streams in the connector. See test_clients.py::test_pagination_multiple_pages for the
+        complete list of covered streams.
+
         Given: An API that returns multiple pages of projects
         When: Running a full refresh sync
         Then: The connector should follow pagination links and return all records
