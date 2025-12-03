@@ -67,6 +67,8 @@ object DateTimeConverter {
     @JvmStatic
     fun convertToTimestampWithTimezone(timestamp: Any): String {
         if (timestamp is Timestamp) {
+            // TODO: Old comment from when dbz snapshot was used is preserved below. We should
+            //  determine whether this is still necessary and delete or revise accordingly.
             // In snapshot mode, debezium produces a java.sql.Timestamp object for the TIMESTAMPTZ
             // type. Conceptually, a timestamp with timezone is an Instant. But t.toInstant()
             // actually mangles the value for ancient dates, because leap years weren't applied
