@@ -103,6 +103,86 @@ class HarvestRequestBuilder:
         """Create a request builder for the /billable_rates endpoint."""
         return cls("billable_rates", account_id, api_token)
 
+    @classmethod
+    def cost_rates_endpoint(cls, account_id: str, api_token: str, user_id: int) -> "HarvestRequestBuilder":
+        """Create a request builder for the /users/{user_id}/cost_rates endpoint."""
+        return cls(f"users/{user_id}/cost_rates", account_id, api_token)
+
+    @classmethod
+    def estimate_item_categories_endpoint(cls, account_id: str, api_token: str) -> "HarvestRequestBuilder":
+        """Create a request builder for the /estimate_item_categories endpoint."""
+        return cls("estimate_item_categories", account_id, api_token)
+
+    @classmethod
+    def estimate_messages_endpoint(cls, account_id: str, api_token: str, estimate_id: int) -> "HarvestRequestBuilder":
+        """Create a request builder for the /estimates/{estimate_id}/messages endpoint."""
+        return cls(f"estimates/{estimate_id}/messages", account_id, api_token)
+
+    @classmethod
+    def expense_categories_endpoint(cls, account_id: str, api_token: str) -> "HarvestRequestBuilder":
+        """Create a request builder for the /expense_categories endpoint."""
+        return cls("expense_categories", account_id, api_token)
+
+    @classmethod
+    def expenses_categories_endpoint(cls, account_id: str, api_token: str) -> "HarvestRequestBuilder":
+        """Create a request builder for the /reports/expenses/categories endpoint."""
+        return cls("reports/expenses/categories", account_id, api_token)
+
+    @classmethod
+    def expenses_clients_endpoint(cls, account_id: str, api_token: str) -> "HarvestRequestBuilder":
+        """Create a request builder for the /reports/expenses/clients endpoint."""
+        return cls("reports/expenses/clients", account_id, api_token)
+
+    @classmethod
+    def expenses_projects_endpoint(cls, account_id: str, api_token: str) -> "HarvestRequestBuilder":
+        """Create a request builder for the /reports/expenses/projects endpoint."""
+        return cls("reports/expenses/projects", account_id, api_token)
+
+    @classmethod
+    def expenses_team_endpoint(cls, account_id: str, api_token: str) -> "HarvestRequestBuilder":
+        """Create a request builder for the /reports/expenses/team endpoint."""
+        return cls("reports/expenses/team", account_id, api_token)
+
+    @classmethod
+    def invoice_item_categories_endpoint(cls, account_id: str, api_token: str) -> "HarvestRequestBuilder":
+        """Create a request builder for the /invoice_item_categories endpoint."""
+        return cls("invoice_item_categories", account_id, api_token)
+
+    @classmethod
+    def invoice_messages_endpoint(cls, account_id: str, api_token: str, invoice_id: int) -> "HarvestRequestBuilder":
+        """Create a request builder for the /invoices/{invoice_id}/messages endpoint."""
+        return cls(f"invoices/{invoice_id}/messages", account_id, api_token)
+
+    @classmethod
+    def project_budget_endpoint(cls, account_id: str, api_token: str) -> "HarvestRequestBuilder":
+        """Create a request builder for the /reports/project_budget endpoint."""
+        return cls("reports/project_budget", account_id, api_token)
+
+    @classmethod
+    def time_clients_endpoint(cls, account_id: str, api_token: str) -> "HarvestRequestBuilder":
+        """Create a request builder for the /reports/time/clients endpoint."""
+        return cls("reports/time/clients", account_id, api_token)
+
+    @classmethod
+    def time_projects_endpoint(cls, account_id: str, api_token: str) -> "HarvestRequestBuilder":
+        """Create a request builder for the /reports/time/projects endpoint."""
+        return cls("reports/time/projects", account_id, api_token)
+
+    @classmethod
+    def time_tasks_endpoint(cls, account_id: str, api_token: str) -> "HarvestRequestBuilder":
+        """Create a request builder for the /reports/time/tasks endpoint."""
+        return cls("reports/time/tasks", account_id, api_token)
+
+    @classmethod
+    def time_team_endpoint(cls, account_id: str, api_token: str) -> "HarvestRequestBuilder":
+        """Create a request builder for the /reports/time/team endpoint."""
+        return cls("reports/time/team", account_id, api_token)
+
+    @classmethod
+    def uninvoiced_endpoint(cls, account_id: str, api_token: str) -> "HarvestRequestBuilder":
+        """Create a request builder for the /reports/uninvoiced endpoint."""
+        return cls("reports/uninvoiced", account_id, api_token)
+
     def __init__(self, resource: str, account_id: str, api_token: str):
         """
         Initialize the request builder.
@@ -133,6 +213,16 @@ class HarvestRequestBuilder:
     def with_updated_since(self, updated_since: str) -> "HarvestRequestBuilder":
         """Set the updated_since query parameter for incremental syncs."""
         self._updated_since = updated_since
+        return self
+
+    def with_from_date(self, from_date: str) -> "HarvestRequestBuilder":
+        """Set the from query parameter for report streams."""
+        self._query_params["from"] = from_date
+        return self
+
+    def with_to_date(self, to_date: str) -> "HarvestRequestBuilder":
+        """Set the to query parameter for report streams."""
+        self._query_params["to"] = to_date
         return self
 
     def with_query_param(self, key: str, value: str) -> "HarvestRequestBuilder":

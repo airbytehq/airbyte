@@ -14,6 +14,7 @@ from airbyte_cdk.test.mock_http import HttpMocker, HttpResponse
 from airbyte_cdk.test.state_builder import StateBuilder
 from integration.config import ConfigBuilder
 from integration.request_builder import HarvestRequestBuilder
+from integration.response_builder import HarvestPaginatedResponseBuilder
 
 
 _NOW = datetime.now(timezone.utc)
@@ -113,39 +114,28 @@ class TestClientsStream(TestCase):
             .with_per_page(50)
             .with_updated_since("2021-01-01T00:00:00Z")
             .build(),
-            HttpResponse(
-                body=json.dumps(
-                    {
-                        "clients": [
-                            {
-                                "id": 101,
-                                "name": "Client 1",
-                                "is_active": True,
-                                "currency": "USD",
-                                "created_at": "2023-01-01T00:00:00Z",
-                                "updated_at": "2023-01-01T00:00:00Z",
-                            },
-                            {
-                                "id": 102,
-                                "name": "Client 2",
-                                "is_active": True,
-                                "currency": "EUR",
-                                "created_at": "2023-01-02T00:00:00Z",
-                                "updated_at": "2023-01-02T00:00:00Z",
-                            },
-                        ],
-                        "per_page": 50,
-                        "total_pages": 2,
-                        "page": 1,
-                        "links": {
-                            "first": "https://api.harvestapp.com/v2/clients?page=1&per_page=50",
-                            "next": "https://api.harvestapp.com/v2/clients?page=2&per_page=50",
-                            "last": "https://api.harvestapp.com/v2/clients?page=2&per_page=50",
-                        },
-                    }
-                ),
-                status_code=200,
-            ),
+            HarvestPaginatedResponseBuilder("clients")
+            .with_records([
+                {
+                    "id": 101,
+                    "name": "Client 1",
+                    "is_active": True,
+                    "currency": "USD",
+                    "created_at": "2023-01-01T00:00:00Z",
+                    "updated_at": "2023-01-01T00:00:00Z",
+                },
+                {
+                    "id": 102,
+                    "name": "Client 2",
+                    "is_active": True,
+                    "currency": "EUR",
+                    "created_at": "2023-01-02T00:00:00Z",
+                    "updated_at": "2023-01-02T00:00:00Z",
+                },
+            ])
+            .with_page(1, total_pages=2)
+            .with_next_page()
+            .build(),
         )
 
         # ARRANGE: Mock second page (last page)
@@ -155,31 +145,20 @@ class TestClientsStream(TestCase):
             .with_page(2)
             .with_updated_since("2021-01-01T00:00:00Z")
             .build(),
-            HttpResponse(
-                body=json.dumps(
-                    {
-                        "clients": [
-                            {
-                                "id": 103,
-                                "name": "Client 3",
-                                "is_active": False,
-                                "currency": "GBP",
-                                "created_at": "2023-01-03T00:00:00Z",
-                                "updated_at": "2023-01-03T00:00:00Z",
-                            }
-                        ],
-                        "per_page": 50,
-                        "total_pages": 2,
-                        "page": 2,
-                        "links": {
-                            "first": "https://api.harvestapp.com/v2/clients?page=1&per_page=50",
-                            "previous": "https://api.harvestapp.com/v2/clients?page=1&per_page=50",
-                            "last": "https://api.harvestapp.com/v2/clients?page=2&per_page=50",
-                        },
-                    }
-                ),
-                status_code=200,
-            ),
+            HarvestPaginatedResponseBuilder("clients")
+            .with_records([
+                {
+                    "id": 103,
+                    "name": "Client 3",
+                    "is_active": False,
+                    "currency": "GBP",
+                    "created_at": "2023-01-03T00:00:00Z",
+                    "updated_at": "2023-01-03T00:00:00Z",
+                }
+            ])
+            .with_page(2, total_pages=2)
+            .with_previous_page()
+            .build(),
         )
 
         # ACT: Run the connector
@@ -187,11 +166,14 @@ class TestClientsStream(TestCase):
         catalog = CatalogBuilder().with_stream(_STREAM_NAME, SyncMode.full_refresh).build()
         output = read(source, config=config, catalog=catalog)
 
-        # ASSERT: Should have records from both pages
+        # ASSERT: Should retrieve records from both pages in correct order
         assert len(output.records) == 3
         assert output.records[0].record.data["id"] == 101
         assert output.records[1].record.data["id"] == 102
         assert output.records[2].record.data["id"] == 103
+
+        # ASSERT: All records should belong to the correct stream
+        assert all(record.record.stream == _STREAM_NAME for record in output.records)
 
     @HttpMocker()
     def test_incremental_sync_with_state(self, http_mocker: HttpMocker):
@@ -271,10 +253,7 @@ class TestClientsStream(TestCase):
             .with_per_page(50)
             .with_updated_since("2021-01-01T00:00:00Z")
             .build(),
-            HttpResponse(
-                body=json.dumps({"clients": [], "per_page": 50, "total_pages": 0, "total_entries": 0, "page": 1, "links": {}}),
-                status_code=200,
-            ),
+            HarvestPaginatedResponseBuilder.empty_page("clients"),
         )
 
         # ACT: Run the connector
