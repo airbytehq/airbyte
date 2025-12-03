@@ -64,6 +64,14 @@ airbyte:
             output: The sync encountered a communication issue while reading data from the MySQL server, will retry.
             reference-links: https://docs.oracle.com/javase/8/docs/api/java/io/EOFException.html
 
+          - pattern: (?i).*Expected ([1-9]\d*) bytes, received only ([1-9]\d*) bytes.*
+            input-example: >-
+              java.io.EOFException: Expected 252 bytes, received only 227 bytes
+            error: transient
+            group: MySQL EOF Exception
+            output: The sync was interrupted due to incomplete data received from the MySQL server, will retry.
+            reference-links: https://docs.oracle.com/javase/8/docs/api/java/io/EOFException.html
+
           - pattern: (?i)\s*Error processing row in\s.*
             input-example: >-
               io.debezium.DebeziumException: Error processing row in banking_safe, internal schema size 11, but row size 1 , restart connector with schema recovery mode.
