@@ -19,7 +19,8 @@ import java.nio.file.Path
  * - ConnectorWiringSuite: Fast component test, validates write path
  * - WriteInitializationTest: Integration test, validates catalog loading
  */
-class SnowflakeWriteInitializationTest : WriteInitializationTest<SnowflakeSpecification>(
-    configContents = Path.of("secrets/config.json").toFile().readText(),
-    configSpecClass = SnowflakeSpecification::class.java,
-)
+class SnowflakeWriteInitializationTest :
+    WriteInitializationTest<SnowflakeSpecification>(
+        configContents = Path.of("secrets/config.json").toFile().readText(),
+        configSpecClass = SnowflakeSpecification::class.java,
+    )

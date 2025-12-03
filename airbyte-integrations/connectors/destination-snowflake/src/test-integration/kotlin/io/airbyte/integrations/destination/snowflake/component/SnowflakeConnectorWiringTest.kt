@@ -6,9 +6,6 @@ package io.airbyte.integrations.destination.snowflake.component
 
 import io.airbyte.cdk.load.component.ConnectorWiringSuite
 import io.airbyte.cdk.load.component.DefaultComponentTestCatalog
-import io.airbyte.cdk.load.component.TableOperationsClient
-import io.airbyte.cdk.load.dataflow.aggregate.AggregateFactory
-import io.airbyte.cdk.load.write.DestinationWriter
 import io.airbyte.integrations.destination.snowflake.client.SnowflakeAirbyteClient
 import io.airbyte.integrations.destination.snowflake.dataflow.SnowflakeAggregateFactory
 import io.airbyte.integrations.destination.snowflake.write.SnowflakeWriter
@@ -63,13 +60,11 @@ class SnowflakeConnectorWiringTest(
 }
 
 /**
- * Factory providing beans required for ConnectorWiringSuite tests.
- * Creates a default catalog matching the test record schema.
+ * Factory providing beans required for ConnectorWiringSuite tests. Creates a default catalog
+ * matching the test record schema.
  */
 @Requires(env = ["component"])
 @Singleton
 class SnowflakeConnectorWiringTestCatalogFactory {
-    @Singleton
-    @Primary
-    fun catalog(): ConfiguredAirbyteCatalog = DefaultComponentTestCatalog.make()
+    @Singleton @Primary fun catalog(): ConfiguredAirbyteCatalog = DefaultComponentTestCatalog.make()
 }
