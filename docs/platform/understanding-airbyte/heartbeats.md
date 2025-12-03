@@ -39,13 +39,15 @@ If these issues show up on Airbyte Cloud,
 
 ### Source
 
-#### Heartbeating logic
+#### Heartbeat logic
 
-For connections running in legacy mode, the platform considers both `RECORD` and `STATE` messages emitted by the source as source heartbeats. These messages flow through the container orchestrator, which monitors when the last beat was sent.
+The exact heartbeat logic depends on whether a connection is running in [legacy mode or socket mode](jobs#replication-architecture-modes).
 
-For connections running in socket mode, records flow directly from source to destination via Unix domain sockets and do not pass through the platform. In this mode, the platform monitors activity through control messages visible to the Bookkeeper, such as state updates and statistics. Heartbeat protection remains active regardless of which mode is used.
+- In legacy mode, the platform considers both `RECORD` and `STATE` messages emitted by the source as source heartbeats. These messages flow through the container orchestrator, which monitors when the last beat was sent.
 
-If the platform detects that the source has not sent any activity within the configured threshold, the synchronization attempt fails with the message `The source is unresponsive`.
+- In socket mode, records flow directly from source to destination via Unix domain sockets and don't pass through the platform. In this mode, the platform monitors activity through control messages visible to the Bookkeeper, such as state updates and statistics.
+
+Heartbeat protection remains active regardless of which mode it uses. If the platform detects that the source hasn't sent any activity within the configured threshold, the synchronization attempt fails with the message `The source is unresponsive`.
 
 #### Configuration
 
