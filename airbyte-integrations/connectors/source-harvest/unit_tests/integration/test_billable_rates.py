@@ -11,6 +11,7 @@ from airbyte_cdk.models import SyncMode
 from airbyte_cdk.test.catalog_builder import CatalogBuilder
 from airbyte_cdk.test.entrypoint_wrapper import read
 from airbyte_cdk.test.mock_http import HttpMocker, HttpResponse
+from airbyte_cdk.test.state_builder import StateBuilder
 from integration.config import ConfigBuilder
 from integration.request_builder import HarvestRequestBuilder
 
@@ -69,3 +70,27 @@ class TestBillableRatesStream(TestCase):
 
         assert len(output.records) >= 1
         assert output.records[0].record.stream == _STREAM_NAME
+
+
+
+    @HttpMocker()
+    def test_unauthorized_error_handling(self, http_mocker: HttpMocker) -> None:
+        """Test that connector ignores 401 errors per manifest config."""
+        config = ConfigBuilder().with_account_id(_ACCOUNT_ID).with_api_token("invalid_token").build()
+
+        # Mock parent users stream with auth error
+        http_mocker.get(
+            HarvestRequestBuilder.users_endpoint(_ACCOUNT_ID, "invalid_token")
+            .with_per_page(50)
+            .with_updated_since("2021-01-01T00:00:00Z")
+            .build(),
+            HttpResponse(body=json.dumps({"error": "invalid_token"}), status_code=401),
+        )
+
+        source = get_source(config=config)
+        catalog = CatalogBuilder().with_stream(_STREAM_NAME, SyncMode.full_refresh).build()
+        output = read(source, config=config, catalog=catalog, expecting_exception=False)
+
+        assert len(output.records) == 0
+        log_messages = [log.log.message for log in output.logs]
+        assert any("Please ensure your credentials are valid" in msg for msg in log_messages)

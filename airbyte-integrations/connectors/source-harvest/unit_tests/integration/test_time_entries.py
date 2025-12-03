@@ -470,3 +470,24 @@ class TestTimeEntriesStream(TestCase):
         # ASSERT: Nested assignment objects should contain rate information
         assert record["user_assignment"]["is_project_manager"] is True
         assert record["task_assignment"]["hourly_rate"] == 150.0
+
+    @HttpMocker()
+    def test_unauthorized_error_handling(self, http_mocker: HttpMocker) -> None:
+        """Test that connector ignores 401 errors per manifest config."""
+        config = ConfigBuilder().with_account_id(_ACCOUNT_ID).with_api_token("invalid_token").build()
+
+        http_mocker.get(
+            HarvestRequestBuilder.time_entries_endpoint(_ACCOUNT_ID, "invalid_token")
+            .with_per_page(50)
+            .with_updated_since("2021-01-01T00:00:00Z")
+            .build(),
+            HttpResponse(body=json.dumps({"error": "invalid_token"}), status_code=401),
+        )
+
+        source = get_source(config=config)
+        catalog = CatalogBuilder().with_stream(_STREAM_NAME, SyncMode.full_refresh).build()
+        output = read(source, config=config, catalog=catalog, expecting_exception=False)
+
+        assert len(output.records) == 0
+        log_messages = [log.log.message for log in output.logs]
+        assert any("Please ensure your credentials are valid" in msg for msg in log_messages)
