@@ -39,7 +39,7 @@ Some optional fields that are recommended to set according to your use
 - **Test Topic** - The Topic to test whether Airbyte can consume messages. (e.g. test.topic)
 - **Polling Time** - Amount of time in milliseconds Kafka connector should try to poll for messages, per sync
 
-#### For Airbyte Open Source:
+#### For Airbyte Open Source
 
 1. Go to the Airbyte UI and in the left navigation bar, click **Sources**. In the top-right corner, click **+new source**.
 2. On the Set up the source page, enter the name for the Kafka connector and select **Kafka** from the Source type dropdown.

@@ -39,7 +39,6 @@ After you connect a source and the first stream synchronization succeeds, your r
 
 ## Changelog
 
-
 <details>
   <summary>Expand to review</summary>
 
