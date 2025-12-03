@@ -8,6 +8,7 @@ import io.airbyte.cdk.load.data.AirbyteValue
 import io.airbyte.cdk.load.data.FieldType
 import io.airbyte.cdk.load.data.IntegerType
 import io.airbyte.cdk.load.data.NumberType
+import io.airbyte.cdk.load.data.TimestampTypeWithTimezone
 import io.airbyte.cdk.load.dataflow.transform.ValueCoercer
 import io.airbyte.cdk.load.message.Meta
 import io.airbyte.cdk.load.schema.TableSchemaFactory
@@ -75,6 +76,22 @@ interface DataCoercionSuite {
             coercer,
             columnNameMapping,
             FieldType(NumberType, nullable = true),
+            inputValue,
+            expectedValue,
+            expectedChangeReason,
+        )
+    }
+
+    /** Fixtures are defined in [DataCoercionTimestampTzFixtures]. */
+    fun `handle timestamptz values`(
+        inputValue: AirbyteValue,
+        expectedValue: Any?,
+        expectedChangeReason: Reason?
+    ) = runTest {
+        harness.testValueCoercion(
+            coercer,
+            columnNameMapping,
+            FieldType(TimestampTypeWithTimezone, nullable = true),
             inputValue,
             expectedValue,
             expectedChangeReason,
