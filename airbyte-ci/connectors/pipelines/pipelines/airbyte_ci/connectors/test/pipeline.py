@@ -54,9 +54,8 @@ async def run_connector_test_pipeline(context: ConnectorTestContext, semaphore: 
 
     all_steps_to_run += get_test_steps(context)
 
-    # Note: Static analysis will still run when both metadata.yaml and test files are modified together,
-    # as this is an unlikely scenario and we prefer to err on the side of running the checks.
-    if not context.code_tests_only and not (context.metadata_yaml_only_change or context.test_only_change):
+    # Skip static analysis steps when only test files are modified
+    if not context.code_tests_only and not context.test_only_change:
         static_analysis_steps_to_run = [
             [
                 StepToRun(id=CONNECTOR_TEST_STEP_ID.VERSION_INC_CHECK, step=VersionIncrementCheck(context)),

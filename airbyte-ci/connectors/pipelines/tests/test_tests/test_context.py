@@ -13,53 +13,6 @@ CONNECTOR_CODE_DIRECTORY = Path("/path/to/connector")
     "modified_files,expected_result",
     [
         pytest.param(
-            frozenset([Path("/path/to/connector/metadata.yaml")]),
-            True,
-            id="only_metadata_yaml_changed",
-        ),
-        pytest.param(
-            frozenset(
-                [
-                    Path("/path/to/connector/metadata.yaml"),
-                    Path("/path/to/connector/src/main.py"),
-                ]
-            ),
-            False,
-            id="multiple_files_including_metadata_yaml",
-        ),
-        pytest.param(
-            frozenset(
-                [
-                    Path("/path/to/connector/src/main.py"),
-                    Path("/path/to/connector/README.md"),
-                ]
-            ),
-            False,
-            id="multiple_files_without_metadata_yaml",
-        ),
-        pytest.param(
-            frozenset(),
-            True,
-            id="no_modified_files",
-        ),
-    ],
-)
-def test_metadata_yaml_only_change(mocker, modified_files, expected_result):
-    """Test that metadata_yaml_only_change correctly identifies when only metadata.yaml is modified."""
-    from pipelines.airbyte_ci.connectors.test.context import ConnectorTestContext
-
-    mock_context = mocker.Mock(spec=ConnectorTestContext)
-    mock_context.modified_files = modified_files
-
-    result = ConnectorTestContext.metadata_yaml_only_change.fget(mock_context)
-
-    assert result == expected_result
-
-
-@pytest.mark.parametrize(
-    "modified_files,expected_result",
-    [
-        pytest.param(
             frozenset([CONNECTOR_CODE_DIRECTORY / "unit_tests" / "test_source.py"]),
             True,
             id="only_unit_tests_changed",
