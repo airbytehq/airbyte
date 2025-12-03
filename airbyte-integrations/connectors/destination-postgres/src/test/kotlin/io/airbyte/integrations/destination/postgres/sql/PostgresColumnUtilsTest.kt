@@ -211,4 +211,30 @@ internal class PostgresColumnUtilsTest {
             UnionType(options = setOf(StringType, IntegerType), isLegacyUnion = true)
         assertEquals("jsonb", columnUtils.toDialectType(unionWithBasicTypes))
     }
+
+    @Test
+    fun testGetPrimaryKeysColumnNamesInRawMode() {
+        every { config.legacyRawTablesOnly } returns true
+
+        val stream = mockk<DestinationStream> {
+            every { importType } returns io.airbyte.cdk.load.command.Dedupe(primaryKey = listOf(listOf("id")), cursor = emptyList())
+        }
+        val columnNameMapping = ColumnNameMapping(mapOf("id" to "targetId"))
+
+        val pkColumns = columnUtils.getPrimaryKeysColumnNames(stream, columnNameMapping)
+        assertTrue(pkColumns.isEmpty())
+    }
+
+    @Test
+    fun testGetCursorColumnNameInRawMode() {
+        every { config.legacyRawTablesOnly } returns true
+
+        val stream = mockk<DestinationStream> {
+            every { importType } returns io.airbyte.cdk.load.command.Dedupe(cursor = listOf("cursor"), primaryKey = emptyList())
+        }
+        val columnNameMapping = ColumnNameMapping(mapOf("cursor" to "targetCursor"))
+
+        val cursorColumn = columnUtils.getCursorColumnName(stream, columnNameMapping)
+        assertEquals(null, cursorColumn)
+    }
 }
