@@ -226,6 +226,7 @@ To enable badges, include `products` in the Markdown metadata. The following val
 - `oss-community`: Core only
 - `oss-enterprise`: Self-Managed Enterprise only
 - `cloud`: Standard and Plus (also enables Pro and Enterprise Flex due to Cloud tier inheritance)
+- `cloud-plus`: Plus only (also enables Pro and Enterprise Flex due to Cloud tier inheritance)
 - `cloud-teams`: Pro only (also enables Enterprise Flex due to Cloud tier inheritance)
 - `enterprise-flex`: Enterprise Flex only
 - `embedded`: Embedded only (hidden if not specified - there is no off state for the Embedded badge)
@@ -233,6 +234,7 @@ To enable badges, include `products` in the Markdown metadata. The following val
 **Cloud tier inheritance:** higher Cloud plans automatically inherit availability from lower tiers:
 
 - If you specify `cloud`: Standard, Plus, Pro, and Enterprise Flex badges all become enabled
+- If you specify `cloud-plus`: Plus, Pro, and Enterprise Flex badges become enabled - Standard turns off
 - If you specify `cloud-teams`: Pro and Enterprise Flex badges become enabled - Standard and Plus turn off
 - If you specify `enterprise-flex`: Only Enterprise Flex badge becomes enabled
 
@@ -348,10 +350,11 @@ Vale and MarkDownLint are newly implemented. They might still generate false pos
 
 Both Vale and MarkDownLint run automatically on pull requests through the [Reviewdog workflow](https://github.com/airbytehq/airbyte/blob/master/.github/workflows/reviewdog.yml). When you open or update a pull request that modifies documentation in `docs/**/*.md`, the workflow:
 
-- Runs Vale with a minimum alert level of **warning** (errors and warnings are reported, suggestions are not)
-- Runs MarkDownLint to check for structural issues
-- Posts any violations as annotations on the "Files Changed" page in your pull request
+- Runs Vale with a minimum alert level of **warning** (errors and warnings are reported, suggestions are not). Vale prints violations to the CI job logs only (no PR annotations or comments).
+- Runs MarkDownLint to check for structural issues. MarkDownLint posts violations as annotations on the "Files changed" tab in your pull request.
 - Does not fail the build (compliance is optional but recommended)
+
+To view Vale results in CI: open your PR's Checks tab → select "Docs / Vale" → expand the step that runs Vale to see the log output.
 
 Running the linters locally before opening a pull request is optional but recommended. When you run the linters locally as described in the sections below, you'll see all violation levels including **suggestions**, which provide additional guidance that isn't shown in CI. This gives you the opportunity to improve your documentation beyond the minimum requirements before submitting for review.
 

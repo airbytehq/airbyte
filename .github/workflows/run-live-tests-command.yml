@@ -1,4 +1,4 @@
-name: Connector CI - Run Live Validation Tests
+name: On-Demand Live Connector Validation Tests
 
 concurrency:
   # This is the name of the concurrency group. It is used to prevent concurrent runs of the same workflow.
@@ -14,17 +14,44 @@ concurrency:
 on:
   workflow_dispatch:
     inputs:
-      connector_name:
-        description: Connector name (e.g. source-faker)
-        required: true
+      # Global static-arg inputs for slash commands
+      repo:
+        description: "The repository name. Optional. Defaults to 'airbytehq/airbyte'."
+        required: false
+        default: "airbytehq/airbyte"
+        type: string
+      gitref:
+        description: "The git reference (branch or tag). Optional. Defaults to the default branch."
+        required: false
+        type: string
+      comment-id:
+        description: "The ID of the comment triggering the workflow. Optional."
+        required: false
+        type: number
+      pr:
+        description: "The pull request number, if applicable. Optional."
+        required: false
+        type: number
+
+      # Workflow-specific inputs
+      connector_filter:
+        description: >
+          Connector filter. Will be passed to the `airbyte-ci connectors` command.
+          To select all modified connectors, use '--modified'. To select specific connectors,
+          pass one or or more `--name` args, e.g. '--name=source-faker --name=source-hardcoded-records'.
+        default: "--modified"
       connection_id:
-        description: ID of the connection to test; use "auto" to let the connection retriever choose a connection
-        required: true
-      pr_url:
-        description: URL of the PR containing the code change
-        required: true
+        description: >
+          Connection ID. ID of the connection to test; use "auto" to let the
+          connection retriever choose a connection.
+        default: "auto"
       streams:
-        description: Streams to include in tests
+        description: >
+          (Optional) Streams. Which streams to include in tests.
+          If not set, these will be chosen automatically.
+        required: false
+        default: ""
+        type: string
       should_read_with_state:
         description: Whether to run tests against the read command with state
         default: "true"
@@ -37,13 +64,16 @@ on:
         description: Disable proxy for requests
         default: "false"
         type: boolean
-      connection_subset:
-        description: The subset of connections to select from.
-        required: true
-        type: choice
-        options:
-          - sandboxes
-          - all
+
+      # Workaround: GitHub currently supports a max of 10 inputs for workflow_dispatch events.
+      # We need to consolidate some inputs to stay within this limit.
+      # connection_subset:
+      #   description: The subset of connections to select from.
+      #   default: "sandboxes"
+      #   type: choice
+      #   options:
+      #     - sandboxes
+      #     - all
 
 jobs:
   live_tests:
@@ -119,7 +149,10 @@ jobs:
       - name: Setup Connection Subset Option
         if: github.event_name == 'workflow_dispatch'
         run: |
-          echo "CONNECTION_SUBSET=--connector_live_tests.connection-subset=${{ github.event.inputs.connection_subset }}" >> $GITHUB_ENV
+          echo "CONNECTION_SUBSET=--connector_live_tests.connection-subset=sandboxes" >> $GITHUB_ENV
+        # TODO: re-enable when we have resolved the more-than-10-inputs issue in workflow_dispatch.
+        # run: |
+        #   echo "CONNECTION_SUBSET=--connector_live_tests.connection-subset=${{ github.event.inputs.connection_subset }}" >> $GITHUB_ENV
 
       # NOTE: We still use a PAT here (rather than a GitHub App) because the workflow needs
       # permissions to add commits to our main repo as well as forks. This will only work on
@@ -141,4 +174,4 @@ jobs:
           github_token: ${{ secrets.GH_PAT_MAINTENANCE_OSS }}
           s3_build_cache_access_key_id: ${{ secrets.SELF_RUNNER_AWS_ACCESS_KEY_ID }}
           s3_build_cache_secret_key: ${{ secrets.SELF_RUNNER_AWS_SECRET_ACCESS_KEY }}
-          subcommand: connectors ${{ env.USE_LOCAL_CDK_FLAG }} --name ${{ github.event.inputs.connector_name }} test --only-step connector_live_tests --connector_live_tests.test-suite=live --connector_live_tests.connection-id=${{ github.event.inputs.connection_id }} --connector_live_tests.pr-url=${{ github.event.inputs.pr_url }} ${{ env.READ_WITH_STATE_FLAG }} ${{ env.DISABLE_PROXY_FLAG }} ${{ env.STREAM_PARAMS }} ${{ env.CONNECTION_SUBSET }}
+          subcommand: connectors ${{ env.USE_LOCAL_CDK_FLAG }} ${{ inputs.connector_filter }} test --only-step connector_live_tests --connector_live_tests.test-suite=live --connector_live_tests.connection-id=${{ github.event.inputs.connection_id }} --connector_live_tests.pr-url="https://github.com/airbytehq/airbyte/pull/${{ github.event.inputs.pr }}" ${{ env.READ_WITH_STATE_FLAG }} ${{ env.DISABLE_PROXY_FLAG }} ${{ env.STREAM_PARAMS }} ${{ env.CONNECTION_SUBSET }}

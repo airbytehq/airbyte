@@ -840,7 +840,10 @@ class CustomGAQuerySchemaLoader(SchemaLoader):
         """
         query_upper = self.query.upper()
         select_index = query_upper.find("SELECT")
-        from_index = query_upper.find("FROM")
+        match = re.search(r"\bFROM\b", query_upper)
+        if not match:
+            raise ValueError("Could not find a valid FROM clause in query")
+        from_index = match.start()
 
         fields_portion = self.query[select_index + 6 : from_index].strip()
 
