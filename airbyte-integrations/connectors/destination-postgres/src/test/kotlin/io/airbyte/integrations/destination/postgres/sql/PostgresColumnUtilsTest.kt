@@ -216,9 +216,14 @@ internal class PostgresColumnUtilsTest {
     fun testGetPrimaryKeysColumnNamesInRawMode() {
         every { config.legacyRawTablesOnly } returns true
 
-        val stream = mockk<DestinationStream> {
-            every { importType } returns io.airbyte.cdk.load.command.Dedupe(primaryKey = listOf(listOf("id")), cursor = emptyList())
-        }
+        val stream =
+            mockk<DestinationStream> {
+                every { importType } returns
+                    io.airbyte.cdk.load.command.Dedupe(
+                        primaryKey = listOf(listOf("id")),
+                        cursor = emptyList()
+                    )
+            }
         val columnNameMapping = ColumnNameMapping(mapOf("id" to "targetId"))
 
         val pkColumns = columnUtils.getPrimaryKeysColumnNames(stream, columnNameMapping)
@@ -229,9 +234,14 @@ internal class PostgresColumnUtilsTest {
     fun testGetCursorColumnNameInRawMode() {
         every { config.legacyRawTablesOnly } returns true
 
-        val stream = mockk<DestinationStream> {
-            every { importType } returns io.airbyte.cdk.load.command.Dedupe(cursor = listOf("cursor"), primaryKey = emptyList())
-        }
+        val stream =
+            mockk<DestinationStream> {
+                every { importType } returns
+                    io.airbyte.cdk.load.command.Dedupe(
+                        cursor = listOf("cursor"),
+                        primaryKey = emptyList()
+                    )
+            }
         val columnNameMapping = ColumnNameMapping(mapOf("cursor" to "targetCursor"))
 
         val cursorColumn = columnUtils.getCursorColumnName(stream, columnNameMapping)
