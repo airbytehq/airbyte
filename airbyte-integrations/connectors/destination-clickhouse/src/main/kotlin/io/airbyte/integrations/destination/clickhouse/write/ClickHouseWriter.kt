@@ -41,7 +41,7 @@ class ClickHouseWriter(
         val realTableName = stream.tableSchema.tableNames.finalTableName!!
         val tempTableName = stream.tableSchema.tableNames.tempTableName!!
         val columnNameMapping =
-            ColumnNameMapping(stream.tableSchema.columnSchema.rawToFinalColumnNames)
+            ColumnNameMapping(stream.tableSchema.columnSchema.inputToFinalColumnNames)
         return when (stream.minimumGenerationId) {
             0L ->
                 DirectLoadTableAppendStreamLoader(
