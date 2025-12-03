@@ -1,0 +1,736 @@
+version: 7.0.4
+
+type: DeclarativeSource
+
+description: |-
+  Go1 LMS
+  usign V2 API as it retrives all top-level enrollments.
+
+check:
+  type: CheckStream
+  stream_names:
+    - learning_objects
+
+streams:
+  - type: DeclarativeStream
+    name: learning_objects
+    retriever:
+      type: SimpleRetriever
+      requester:
+        type: HttpRequester
+        url: https://api.go1.com/v2/learning-objects
+        http_method: GET
+        authenticator:
+          type: OAuthAuthenticator
+          scopes:
+            - enrollment.read
+          client_id: "{{ config['client_id'] }}"
+          grant_type: client_credentials
+          client_secret: "{{ config['client_secret'] }}"
+          client_id_name: client_id
+          grant_type_name: grant_type
+          access_token_name: access_token
+          client_secret_name: client_secret
+          refresh_token_name: ""
+          token_refresh_endpoint: https://auth.go1.com/oauth/token
+          expires_in_name: ""
+          token_expiry_date: ""
+          token_expiry_date_format: ""
+        request_headers:
+          content-type: application/json
+          limit: "50"
+          api-version: "2022-07-01"
+      record_selector:
+        type: RecordSelector
+        extractor:
+          type: DpathExtractor
+          field_path:
+            - hits
+      paginator:
+        type: DefaultPaginator
+        pagination_strategy:
+          type: PageIncrement
+          start_from_page: 0
+          inject_on_first_request: false
+          page_size: 50
+        page_token_option:
+          type: RequestOption
+          inject_into: request_parameter
+          field_name: offset
+    schema_loader:
+      type: InlineSchemaLoader
+      schema:
+        type: object
+        $schema: http://json-schema.org/schema#
+        properties:
+          type:
+            type:
+              - string
+              - "null"
+          description:
+            type:
+              - string
+              - "null"
+          id:
+            type: number
+          title:
+            type:
+              - string
+              - "null"
+          published:
+            type:
+              - boolean
+              - "null"
+          image:
+            type:
+              - string
+              - "null"
+          created_time:
+            type:
+              - string
+              - "null"
+          updated_time:
+            type:
+              - string
+              - "null"
+          language:
+            type:
+              - string
+              - "null"
+          tags:
+            type:
+              - array
+              - "null"
+            items:
+              type:
+                - string
+                - "null"
+          delivery:
+            type:
+              - object
+              - "null"
+            properties:
+              duration:
+                type:
+                  - number
+                  - "null"
+              mode:
+                type:
+                  - string
+                  - "null"
+          pricing:
+            type:
+              - object
+              - "null"
+            properties:
+              currency:
+                type:
+                  - string
+                  - "null"
+              price:
+                type:
+                  - number
+                  - "null"
+              tax:
+                type:
+                  - number
+                  - "null"
+              tax_included:
+                type:
+                  - boolean
+                  - "null"
+          provider:
+            type:
+              - object
+              - "null"
+            properties:
+              id:
+                type:
+                  - number
+                  - "null"
+              logo:
+                type:
+                  - string
+                  - "null"
+              name:
+                type:
+                  - string
+                  - "null"
+          subscription:
+            type:
+              - object
+              - "null"
+            properties:
+              licenses:
+                type:
+                  - number
+                  - "null"
+              package:
+                type:
+                  - string
+                  - "null"
+          items:
+            type:
+              - array
+              - "null"
+          items_count:
+            type:
+              - number
+              - "null"
+          assessable:
+            type:
+              - boolean
+              - "null"
+          collections:
+            type:
+              - array
+              - "null"
+            items:
+              type:
+                - string
+                - "null"
+          portal_collection:
+            type:
+              - boolean
+              - "null"
+          attributes:
+            type:
+              - object
+              - "null"
+            properties:
+              mobile_optimised:
+                type:
+                  - string
+                  - "null"
+              assessable:
+                type:
+                  - string
+                  - "null"
+              wcag:
+                type:
+                  - string
+                  - "null"
+              region_relevance:
+                type:
+                  - array
+                  - "null"
+                items:
+                  type:
+                    - object
+                    - "null"
+                  properties:
+                    value:
+                      type:
+                        - string
+                        - "null"
+                    key:
+                      type:
+                        - number
+                        - "null"
+              region_restrictions:
+                type:
+                  - array
+                  - "null"
+                items:
+                  type:
+                    - object
+                    - "null"
+                  properties:
+                    value:
+                      type:
+                        - string
+                        - "null"
+                    key:
+                      type:
+                        - number
+                        - "null"
+              topics:
+                type:
+                  - array
+                  - "null"
+                items:
+                  type:
+                    - object
+                    - "null"
+                  properties:
+                    value:
+                      type:
+                        - string
+                        - "null"
+                    key:
+                      type:
+                        - number
+                        - "null"
+              locale:
+                type:
+                  - array
+                  - "null"
+                items:
+                  type:
+                    - object
+                    - "null"
+                  properties:
+                    value:
+                      type:
+                        - string
+                        - "null"
+                    key:
+                      type:
+                        - number
+                        - "null"
+              learning_outcomes:
+                type:
+                  - array
+                  - "null"
+                items:
+                  type:
+                    - string
+                    - "null"
+              entry_level:
+                type:
+                  - object
+                  - "null"
+                properties:
+                  value:
+                    type:
+                      - string
+                      - "null"
+                  key:
+                    type:
+                      - number
+                      - "null"
+              launch_behavior:
+                type:
+                  - string
+                  - "null"
+          summary:
+            type:
+              - string
+              - "null"
+          previewable:
+            type:
+              - boolean
+              - "null"
+          authors:
+            type:
+              - array
+              - "null"
+            items:
+              type:
+                - object
+                - "null"
+              properties:
+                id:
+                  type:
+                    - number
+                    - "null"
+                email:
+                  type:
+                    - string
+                    - "null"
+                guid:
+                  type:
+                    - string
+                    - "null"
+                first_name:
+                  type:
+                    - string
+                    - "null"
+                last_name:
+                  type:
+                    - string
+                    - "null"
+                name:
+                  type:
+                    - string
+                    - "null"
+          skills:
+            type:
+              - array
+              - "null"
+            items:
+              type:
+                - object
+                - "null"
+              properties:
+                confidence:
+                  type:
+                    - number
+                    - "null"
+                name:
+                  type:
+                    - string
+                    - "null"
+          ratings:
+            type:
+              - object
+              - "null"
+            properties:
+              ratings_count:
+                type:
+                  - number
+                  - "null"
+              five_star_rating:
+                type:
+                  - number
+                  - "null"
+        required:
+          - id
+        additionalProperties: true
+    primary_key: id
+  - type: DeclarativeStream
+    retriever:
+      type: SimpleRetriever
+      record_selector:
+        type: RecordSelector
+        extractor:
+          type: DpathExtractor
+          field_path:
+            - hits
+      requester:
+        type: HttpRequester
+        http_method: GET
+        url: https://gateway.go1.com/user-accounts
+        authenticator:
+          type: OAuthAuthenticator
+          scopes:
+            - enrollment.read
+          client_id: "{{ config['client_id'] }}"
+          grant_type: client_credentials
+          client_secret: "{{ config['client_secret'] }}"
+          client_id_name: client_id
+          grant_type_name: grant_type
+          access_token_name: access_token
+          client_secret_name: client_secret
+          refresh_token_name: ""
+          token_refresh_endpoint: https://auth.go1.com/oauth/token
+          expires_in_name: ""
+          token_expiry_date: ""
+          token_expiry_date_format: ""
+        request_headers:
+          content-type: application/json
+          limit: "50"
+          api-version: "2022-07-01"
+      paginator:
+        type: DefaultPaginator
+        pagination_strategy:
+          type: PageIncrement
+          start_from_page: 0
+          inject_on_first_request: false
+          page_size: 50
+        page_token_option:
+          type: RequestOption
+          inject_into: request_parameter
+          field_name: offset
+    name: users
+    schema_loader:
+      type: InlineSchemaLoader
+      schema:
+        type: object
+        $schema: http://json-schema.org/schema#
+        properties:
+          total:
+            type:
+              - number
+              - "null"
+          hits:
+            type:
+              - array
+              - "null"
+            items:
+              type:
+                - object
+                - "null"
+              properties:
+                id:
+                  type:
+                    - string
+                    - "null"
+                account_guid:
+                  type:
+                    - string
+                    - "null"
+                portal_id:
+                  type:
+                    - string
+                    - "null"
+                group_ids:
+                  type:
+                    - array
+                    - "null"
+                  items:
+                    type:
+                      - number
+                      - "null"
+                managers:
+                  type:
+                    - array
+                    - "null"
+                  items:
+                    type:
+                      - object
+                      - "null"
+                    properties:
+                      account_guid:
+                        type:
+                          - string
+                          - "null"
+                      given_name:
+                        type:
+                          - string
+                          - "null"
+                      family_name:
+                        type:
+                          - string
+                          - "null"
+                      email:
+                        type:
+                          - string
+                          - "null"
+                roles:
+                  type:
+                    - array
+                    - "null"
+                  items:
+                    type:
+                      - object
+                      - "null"
+                    properties:
+                      guid:
+                        type:
+                          - string
+                          - "null"
+                      role:
+                        type:
+                          - string
+                          - "null"
+                status:
+                  type:
+                    - boolean
+                    - "null"
+                locale:
+                  type:
+                    - string
+                    - "null"
+                created_time:
+                  type:
+                    - string
+                    - "null"
+                updated_time:
+                  type:
+                    - string
+                    - "null"
+                logged_in_time:
+                  type:
+                    - string
+                    - "null"
+                user:
+                  type:
+                    - object
+                    - "null"
+                  properties:
+                    id:
+                      type:
+                        - string
+                        - "null"
+                    family_name:
+                      type:
+                        - string
+                        - "null"
+                    given_name:
+                      type:
+                        - string
+                        - "null"
+                    username:
+                      type:
+                        - string
+                        - "null"
+                    email:
+                      type:
+                        - string
+                        - "null"
+                    status:
+                      type:
+                        - boolean
+                        - "null"
+                    created_time:
+                      type:
+                        - string
+                        - "null"
+                    updated_time:
+                      type:
+                        - string
+                        - "null"
+                    user_guid:
+                      type:
+                        - string
+                        - "null"
+                migrated:
+                  type:
+                    - boolean
+                    - "null"
+        additionalProperties: true
+    primary_key: id
+  - type: DeclarativeStream
+    retriever:
+      type: SimpleRetriever
+      record_selector:
+        type: RecordSelector
+        extractor:
+          type: DpathExtractor
+          field_path:
+            - hits
+      requester:
+        type: HttpRequester
+        http_method: GET
+        url: https://api.go1.com/v2/enrollments
+        authenticator:
+          type: OAuthAuthenticator
+          scopes:
+            - enrollment.read
+          client_id: "{{ config['client_id'] }}"
+          grant_type: client_credentials
+          client_secret: "{{ config['client_secret'] }}"
+          client_id_name: client_id
+          grant_type_name: grant_type
+          access_token_name: access_token
+          client_secret_name: client_secret
+          refresh_token_name: ""
+          token_refresh_endpoint: https://auth.go1.com/oauth/token
+          expires_in_name: ""
+          token_expiry_date: ""
+          token_expiry_date_format: ""
+        request_headers:
+          content-type: application/json
+          limit: "50"
+          api-version: "2022-07-01"
+        request_parameters:
+          exclude_child_enrollments: "false"
+      paginator:
+        type: DefaultPaginator
+        pagination_strategy:
+          type: PageIncrement
+          start_from_page: 0
+          inject_on_first_request: false
+          page_size: 50
+        page_token_option:
+          type: RequestOption
+          inject_into: request_parameter
+          field_name: offset
+    name: enrollments
+    schema_loader:
+      type: InlineSchemaLoader
+      schema:
+        type: object
+        $schema: http://json-schema.org/schema#
+        properties:
+          type:
+            type:
+              - string
+              - "null"
+          id:
+            type: number
+          created_time:
+            type:
+              - string
+              - "null"
+          updated_time:
+            type:
+              - string
+              - "null"
+          lo_id:
+            type:
+              - number
+              - "null"
+          parent_enrollment_id:
+            type:
+              - number
+              - "null"
+          parent_lo_id:
+            type:
+              - number
+              - "null"
+          pass:
+            type:
+              - boolean
+              - "null"
+          status:
+            type:
+              - string
+              - "null"
+          user_id:
+            type:
+              - number
+              - "null"
+          end_date:
+            type:
+              - string
+              - "null"
+          due_date:
+            type:
+              - string
+              - "null"
+        required:
+          - id
+        additionalProperties: true
+    primary_key: id
+
+spec:
+  type: Spec
+  connection_specification:
+    type: object
+    $schema: http://json-schema.org/draft-07/schema#
+    required:
+      - client_id
+      - client_secret
+    properties:
+      client_id:
+        type: string
+        order: 0
+        title: Client ID
+        airbyte_secret: true
+      client_secret:
+        type: string
+        description: ""
+        title: Client Secret
+        airbyte_secret: true
+        order: 1
+    additionalProperties: true
+
+metadata:
+  testedStreams:
+    stream_0:
+      streamHash: ad11f9fa446b445a056b0f48d54e74059e0bc977
+    learning_objects:
+      isStale: false
+      hasRecords: true
+      streamHash: 455c46d419cf12c257b93c83dce72e155c336806
+      hasResponse: true
+      primaryKeysAreUnique: true
+      primaryKeysArePresent: true
+      responsesAreSuccessful: true
+    users:
+      streamHash: 58d0a2f15e10a68c8681f0ae2978921f90855bda
+      isStale: false
+      hasResponse: true
+      responsesAreSuccessful: true
+      hasRecords: true
+      primaryKeysArePresent: true
+      primaryKeysAreUnique: true
+    enrollments:
+      streamHash: 057bb5171f445df38dd109f12096986b3311fe20
+      isStale: false
+      hasResponse: true
+      responsesAreSuccessful: true
+      hasRecords: true
+      primaryKeysArePresent: true
+      primaryKeysAreUnique: true
+  autoImportSchema:
+    learning_objects: true
+    users: true
+    enrollments: true
+
+concurrency_level:
+  type: ConcurrencyLevel
+  default_concurrency: 1
+  max_concurrency: null
