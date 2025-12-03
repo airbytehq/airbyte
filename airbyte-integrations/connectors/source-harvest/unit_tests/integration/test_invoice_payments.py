@@ -34,9 +34,16 @@ class TestInvoicePaymentsStream(TestCase):
         """
         config = ConfigBuilder().with_account_id(_ACCOUNT_ID).with_api_token(_API_TOKEN).build()
 
-        # Mock the parent invoices stream first
+        # Mock the parent invoices stream with 2 invoices
         with open(get_resource_path("http/response/invoices.json")) as f:
             invoices_data = json.load(f)
+
+        # Add a second invoice to test multi-parent retrieval
+        invoice_2 = invoices_data["invoices"][0].copy()
+        invoice_2["id"] = 2
+        invoice_2["number"] = "INV-002"
+        invoices_data["invoices"].append(invoice_2)
+        invoices_data["total_entries"] = 2
 
         http_mocker.get(
             HarvestRequestBuilder.invoices_endpoint(_ACCOUNT_ID, _API_TOKEN)
@@ -46,29 +53,51 @@ class TestInvoicePaymentsStream(TestCase):
             HttpResponse(body=json.dumps(invoices_data), status_code=200),
         )
 
-        # Mock the invoice_payments substream for the invoice
+        # Mock the invoice_payments substream for first invoice
         with open(get_resource_path("http/response/invoice_payments.json")) as f:
-            response_data = json.load(f)
+            response_data_1 = json.load(f)
 
         # The path will be /invoices/{invoice_id}/payments
         from airbyte_cdk.test.mock_http import HttpRequest
 
-        invoice_id = invoices_data["invoices"][0]["id"]
+        invoice_id_1 = invoices_data["invoices"][0]["id"]
         http_mocker.get(
             HttpRequest(
-                url=f"https://api.harvestapp.com/v2/invoices/{invoice_id}/payments",
+                url=f"https://api.harvestapp.com/v2/invoices/{invoice_id_1}/payments",
                 query_params={"per_page": "50", "updated_since": "2021-01-01T00:00:00Z"},
                 headers={"Harvest-Account-Id": _ACCOUNT_ID, "Authorization": f"Bearer {_API_TOKEN}"},
             ),
-            HttpResponse(body=json.dumps(response_data), status_code=200),
+            HttpResponse(body=json.dumps(response_data_1), status_code=200),
+        )
+
+        # Mock the invoice_payments substream for second invoice
+        response_data_2 = response_data_1.copy()
+        if "invoice_payments" in response_data_2 and len(response_data_2["invoice_payments"]) > 0:
+            payment_2 = response_data_2["invoice_payments"][0].copy()
+            payment_2["id"] = payment_2.get("id", 0) + 1000
+            response_data_2["invoice_payments"] = [payment_2]
+
+        invoice_id_2 = invoices_data["invoices"][1]["id"]
+        http_mocker.get(
+            HttpRequest(
+                url=f"https://api.harvestapp.com/v2/invoices/{invoice_id_2}/payments",
+                query_params={"per_page": "50", "updated_since": "2021-01-01T00:00:00Z"},
+                headers={"Harvest-Account-Id": _ACCOUNT_ID, "Authorization": f"Bearer {_API_TOKEN}"},
+            ),
+            HttpResponse(body=json.dumps(response_data_2), status_code=200),
         )
 
         source = get_source(config=config)
         catalog = CatalogBuilder().with_stream(_STREAM_NAME, SyncMode.full_refresh).build()
         output = read(source, config=config, catalog=catalog)
 
-        assert len(output.records) >= 1
+        # ASSERT: Should retrieve payments from both invoices
+        assert len(output.records) >= 2
         assert output.records[0].record.stream == _STREAM_NAME
+
+        # ASSERT: Transformation should add parent_id field to records
+        for record in output.records:
+            assert "parent_id" in record.record.data, "Transformation should add 'parent_id' field to record"
 
 
 

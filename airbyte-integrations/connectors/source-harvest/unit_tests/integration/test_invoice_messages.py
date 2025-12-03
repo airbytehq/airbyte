@@ -119,6 +119,10 @@ class TestInvoiceMessagesStream(TestCase):
         assert output.records[1].record.data["id"] == 223
         assert all(record.record.stream == _STREAM_NAME for record in output.records)
 
+        # ASSERT: Transformation should add parent_id field to records
+        for record in output.records:
+            assert "parent_id" in record.record.data, "Transformation should add 'parent_id' field to record"
+
 
     @HttpMocker()
     def test_empty_results(self, http_mocker: HttpMocker) -> None:

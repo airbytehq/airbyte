@@ -70,6 +70,10 @@ class TestProjectAssignmentsStream(TestCase):
         assert len(output.records) >= 1
         assert output.records[0].record.stream == _STREAM_NAME
 
+        # ASSERT: Transformation should add parent_id field to records
+        for record in output.records:
+            assert "parent_id" in record.record.data, "Transformation should add 'parent_id' field to record"
+
 
 
     @HttpMocker()

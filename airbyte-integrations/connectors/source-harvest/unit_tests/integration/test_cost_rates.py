@@ -115,6 +115,10 @@ class TestCostRatesStream(TestCase):
         # ASSERT: All records should belong to the correct stream
         assert all(record.record.stream == _STREAM_NAME for record in output.records)
 
+        # ASSERT: Transformation should add parent_id field to records
+        for record in output.records:
+            assert "parent_id" in record.record.data, "Transformation should add 'parent_id' field to record"
+
         # ASSERT: Should have expected cost rate data structure for both records
         cost_rate_1 = output.records[0].record.data
         assert cost_rate_1["amount"] == 75.0
