@@ -8,7 +8,7 @@ When it is not possible to make changes in a non-breaking manner, additional **b
 2. A [`breakingChanges` entry](https://docs.airbyte.com/connector-development/connector-metadata-file/) in the `releases` section of the `metadata.yaml` file
 3. A migration guide which details steps that users should take to resolve the change
 4. CI will enforce that breaking changes have an entry in the associated `{connector-name}-migrations.md` file
-5. Breaking changes require approval from the `@airbytehq/breaking-change-reviewers` GitHub team, which is automatically requested for review on migration guide changes. PRs with breaking changes must also be labeled with `breaking-change`
+5. Breaking changes require approval from the `@airbytehq/breaking-change-reviewers` GitHub team, which is automatically requested for review on migration guide changes (see [CODEOWNERS](https://github.com/airbytehq/airbyte/blob/master/CODEOWNERS)). PRs with breaking changes must also be labeled with `breaking-change`
 6. PR titles for breaking changes must include a "!" to signify the PR contains breaking changes (e.g., `🚨 Source Example: fix!: schema change`)
 7. An Airbyte Engineer to complete the [Connector Breaking Change Release Playbook](https://docs.google.com/document/u/0/d/1VYQggHbL_PN0dDDu7rCyzBLGRtX-R3cpwXaY8QxEgzw/edit) (internal link) before merging the PR
 
