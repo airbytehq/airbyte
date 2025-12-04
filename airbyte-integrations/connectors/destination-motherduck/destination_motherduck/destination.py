@@ -275,25 +275,33 @@ class DestinationMotherDuck(Destination):
                     logger.debug(f"Stream {stream_name} was not present in configured streams, skipping")
                     continue
 
+                # The data here has the original column names from the source, but _get_sql_column_definitions() below
+                # returns the normalized schema. So to match the right fields in data with the normalized schema, we 
+                # need to map the normalized keys back to the keys in the data dictionary here.
                 normalized_keys = {normalizer.normalize(key): key  for key in data.keys()}
 
-                if len(normalized_keys) != len(data):
+                if len(normalized_keys) < len(data):
+                    # Because we find the key in the data dictionary through the normalized_key mapping,
+                    # only the values in the normalized_keys dict will get pulled from the data.
+                    # So all the keys in the data that are NOT in the values of the normalized_keys would get skipped,
+                    # hence we log those fields.
                     logger.warning(
                         "Data contained duplicate keys after normalization: keys %s were dropped. Make sure "
                         "the column names in the source data stay unique after applying these operations: \n"
-                        "- Converts ASCII letters to lowercase\n"
-                        "- Replaces whitespace with underscores\n"
-                        "- Preserves Unicode letters and numbers\n"
-                        "- Adds underscore prefix if name starts with ASCII digit\n"
-                        "- Replaces other special characters with underscores\n"
+                        "  - Converts ASCII letters to lowercase\n"
+                        "  - Replaces whitespace with underscores\n"
+                        "  - Preserves Unicode letters and numbers\n"
+                        "  - Adds underscore prefix if name starts with ASCII digit\n"
+                        "  - Replaces other special characters with underscores\n"
                         "skipping",
-                    set(data) - set(normalized_keys))
+                    set(data) - set(normalized_keys.values()))
                     continue
 
                 # add to buffer
                 record_meta: dict[str, str] = {}
                 for column_name in processor._get_sql_column_definitions(stream_name):
                     if column_name in normalized_keys.keys():
+                        # Find the key in the data dictionary through the mapping for this (normalized) column name.
                         buffer[stream_name][column_name].append(data[normalized_keys[column_name]])
                     elif column_name not in AB_INTERNAL_COLUMNS:
                         buffer[stream_name][column_name].append(None)
