@@ -82,12 +82,16 @@ class TestProjectBudgetStream(TestCase):
     @HttpMocker()
     def test_forbidden_error_handling(self, http_mocker: HttpMocker) -> None:
         """Test that connector ignores 403 errors per manifest config."""
-        config = ConfigBuilder().with_account_id(_ACCOUNT_ID).with_api_token(_API_TOKEN).with_replication_start_date(datetime(2024, 1, 1)).build()
+        config = (
+            ConfigBuilder()
+            .with_account_id(_ACCOUNT_ID)
+            .with_api_token(_API_TOKEN)
+            .with_replication_start_date(datetime(2024, 1, 1))
+            .build()
+        )
 
         http_mocker.get(
-            HarvestRequestBuilder.project_budget_endpoint(_ACCOUNT_ID, _API_TOKEN)
-            .with_per_page(50)
-            .build(),
+            HarvestRequestBuilder.project_budget_endpoint(_ACCOUNT_ID, _API_TOKEN).with_per_page(50).build(),
             HttpResponse(body=json.dumps({"error": "forbidden"}), status_code=403),
         )
 
@@ -102,12 +106,16 @@ class TestProjectBudgetStream(TestCase):
     @HttpMocker()
     def test_not_found_error_handling(self, http_mocker: HttpMocker) -> None:
         """Test that connector ignores 404 errors per manifest config."""
-        config = ConfigBuilder().with_account_id(_ACCOUNT_ID).with_api_token(_API_TOKEN).with_replication_start_date(datetime(2024, 1, 1)).build()
+        config = (
+            ConfigBuilder()
+            .with_account_id(_ACCOUNT_ID)
+            .with_api_token(_API_TOKEN)
+            .with_replication_start_date(datetime(2024, 1, 1))
+            .build()
+        )
 
         http_mocker.get(
-            HarvestRequestBuilder.project_budget_endpoint(_ACCOUNT_ID, _API_TOKEN)
-            .with_per_page(50)
-            .build(),
+            HarvestRequestBuilder.project_budget_endpoint(_ACCOUNT_ID, _API_TOKEN).with_per_page(50).build(),
             HttpResponse(body=json.dumps({"error": "not_found"}), status_code=404),
         )
 
