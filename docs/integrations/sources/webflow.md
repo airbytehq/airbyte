@@ -10,7 +10,7 @@ Webflow uses [Collections](https://developers.webflow.com/#collections) to store
 
 This connector dynamically figures out which collections are available, creates the schema for each collection based on data extracted from Webflow, and creates an [Airbyte Stream](https://docs.airbyte.com/connector-development/cdk-python/full-refresh-stream/) for each collection.
 
-# Webflow credentials
+## Webflow credentials
 
 You should be able to create a Webflow `API key` (aka `API token`) as described in [Intro to the Webflow API](https://university.webflow.com/lesson/intro-to-the-webflow-api). The Webflow connector uses the Webflow API v1 and therefore will require a legacy v1 API key.
 
@@ -30,7 +30,7 @@ Which should respond with something similar to:
 
 You will need to provide the `Site ID` and `API key` to the Webflow connector in order for it to pull data from your Webflow site.
 
-# Related tutorial
+## Related tutorial
 
 If you are interested in learning more about the Webflow API and implementation details of this connector, you may wish to consult the [tutorial about how to build a connector to extract data from the Webflow API](https://airbyte.com/tutorials/extract-data-from-the-webflow-api).
 
