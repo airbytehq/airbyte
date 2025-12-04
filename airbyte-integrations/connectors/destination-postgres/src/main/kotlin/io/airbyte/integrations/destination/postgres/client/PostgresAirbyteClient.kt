@@ -13,8 +13,8 @@ import io.airbyte.cdk.load.component.TableColumns
 import io.airbyte.cdk.load.component.TableOperationsClient
 import io.airbyte.cdk.load.component.TableSchema
 import io.airbyte.cdk.load.component.TableSchemaEvolutionClient
-import io.airbyte.cdk.load.message.Meta.Companion.COLUMN_NAME_AB_GENERATION_ID
 import io.airbyte.cdk.load.message.Meta.Companion.COLUMN_NAMES
+import io.airbyte.cdk.load.message.Meta.Companion.COLUMN_NAME_AB_GENERATION_ID
 import io.airbyte.cdk.load.schema.model.TableName
 import io.airbyte.cdk.load.table.ColumnNameMapping
 import io.airbyte.integrations.destination.postgres.sql.COUNT_TOTAL_ALIAS
@@ -192,7 +192,9 @@ class PostgresAirbyteClient(
         // Filter out Airbyte internal columns
         val schemaWithoutAirbyteColumns = columns.filterNot { it.key in COLUMN_NAMES }
 
-        log.info { "Found PostgreSQL columns (excluding Airbyte columns): $schemaWithoutAirbyteColumns" }
+        log.info {
+            "Found PostgreSQL columns (excluding Airbyte columns): $schemaWithoutAirbyteColumns"
+        }
 
         return TableSchema(schemaWithoutAirbyteColumns)
     }
@@ -204,9 +206,7 @@ class PostgresAirbyteClient(
         val importType = stream.importType
         val primaryKeys =
             if (importType is Dedupe) {
-                postgresColumnUtils
-                    .getPrimaryKeysColumnNames(importType, columnNameMapping)
-                    .toSet()
+                postgresColumnUtils.getPrimaryKeysColumnNames(importType, columnNameMapping).toSet()
             } else {
                 emptySet()
             }
@@ -252,19 +252,21 @@ class PostgresAirbyteClient(
 
         // Convert ColumnChangeset to the Column format used by matchSchemas
         val columnsToAdd =
-            columnChangeset.columnsToAdd.map { (name, type) ->
-                Column(name, type.type, type.nullable)
-            }.toSet()
+            columnChangeset.columnsToAdd
+                .map { (name, type) -> Column(name, type.type, type.nullable) }
+                .toSet()
 
         val columnsToRemove =
-            columnChangeset.columnsToDrop.map { (name, type) ->
-                Column(name, type.type, type.nullable)
-            }.toSet()
+            columnChangeset.columnsToDrop
+                .map { (name, type) -> Column(name, type.type, type.nullable) }
+                .toSet()
 
         val columnsToModify =
-            columnChangeset.columnsToChange.map { (name, change) ->
-                Column(name, change.newType.type, change.newType.nullable)
-            }.toSet()
+            columnChangeset.columnsToChange
+                .map { (name, change) ->
+                    Column(name, change.newType.type, change.newType.nullable)
+                }
+                .toSet()
 
         // Track nullability changes separately for ALTER COLUMN SET/DROP NOT NULL
         val nullabilityChanges =
@@ -296,8 +298,7 @@ class PostgresAirbyteClient(
         // Apply nullability changes (SET/DROP NOT NULL)
         if (nullabilityChanges.isNotEmpty()) {
             log.info { "Applying nullability changes: $nullabilityChanges" }
-            val fullyQualifiedTableName =
-                "\"${tableName.namespace}\".\"${tableName.name}\""
+            val fullyQualifiedTableName = "\"${tableName.namespace}\".\"${tableName.name}\""
             nullabilityChanges.forEach { (columnName, change) ->
                 val nullabilityClause =
                     if (change.newType.nullable) "DROP NOT NULL" else "SET NOT NULL"
@@ -473,11 +474,8 @@ class PostgresAirbyteClient(
                     SELECT 1 FROM information_schema.schemata
                     WHERE schema_name = '$namespace'
                 )
-                """
-                    .trimIndent()
-            ) { rs ->
-                rs.next() && rs.getBoolean(1)
-            }
+                """.trimIndent()
+            ) { rs -> rs.next() && rs.getBoolean(1) }
         } catch (e: Exception) {
             log.error(e) { "Failed to check if namespace $namespace exists" }
             false
@@ -492,11 +490,8 @@ class PostgresAirbyteClient(
                     WHERE table_schema = '${table.namespace}'
                     AND table_name = '${table.name}'
                 )
-                """
-                    .trimIndent()
-            ) { rs ->
-                rs.next() && rs.getBoolean(1)
-            }
+                """.trimIndent()
+            ) { rs -> rs.next() && rs.getBoolean(1) }
         } catch (e: Exception) {
             log.error(e) { "Failed to check if table $table exists" }
             false

@@ -44,8 +44,7 @@ class PostgresTestTableOperationsClient(
                     null::"${table.namespace}"."${table.name}",
                     ?::json
                 )
-                """
-                    .trimIndent()
+                """.trimIndent()
 
             connection.prepareStatement(sql).use { stmt ->
                 stmt.setString(1, records.serializeToString())

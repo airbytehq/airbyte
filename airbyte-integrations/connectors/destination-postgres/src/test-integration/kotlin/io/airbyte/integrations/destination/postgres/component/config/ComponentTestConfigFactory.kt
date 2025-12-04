@@ -34,8 +34,7 @@ class ComponentTestConfigFactory {
                 "username": "${PostgresContainerHelper.getUsername()}",
                 "password": "${PostgresContainerHelper.getPassword()}"
             }
-            """
-                .trimIndent()
+            """.trimIndent()
 
         val spec = Jsons.readValue(configJson, PostgresSpecificationOss::class.java)
         return PostgresConfigurationFactory().makeWithoutExceptionHandling(spec)
