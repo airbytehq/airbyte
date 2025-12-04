@@ -6,6 +6,16 @@ package io.airbyte.integrations.destination.snowflake.component
 
 import io.airbyte.cdk.load.component.DataCoercionIntegerFixtures
 import io.airbyte.cdk.load.component.DataCoercionNumberFixtures
+import io.airbyte.cdk.load.component.DataCoercionNumberFixtures.LARGEST_NEGATIVE_FLOAT32
+import io.airbyte.cdk.load.component.DataCoercionNumberFixtures.LARGEST_NEGATIVE_FLOAT64
+import io.airbyte.cdk.load.component.DataCoercionNumberFixtures.LARGEST_POSITIVE_FLOAT32
+import io.airbyte.cdk.load.component.DataCoercionNumberFixtures.LARGEST_POSITIVE_FLOAT64
+import io.airbyte.cdk.load.component.DataCoercionNumberFixtures.NEGATIVE_HIGH_PRECISION_FLOAT
+import io.airbyte.cdk.load.component.DataCoercionNumberFixtures.POSITIVE_HIGH_PRECISION_FLOAT
+import io.airbyte.cdk.load.component.DataCoercionNumberFixtures.SMALLEST_NEGATIVE_FLOAT32
+import io.airbyte.cdk.load.component.DataCoercionNumberFixtures.SMALLEST_NEGATIVE_FLOAT64
+import io.airbyte.cdk.load.component.DataCoercionNumberFixtures.SMALLEST_POSITIVE_FLOAT32
+import io.airbyte.cdk.load.component.DataCoercionNumberFixtures.SMALLEST_POSITIVE_FLOAT64
 import io.airbyte.cdk.load.component.DataCoercionSuite
 import io.airbyte.cdk.load.component.TableOperationsClient
 import io.airbyte.cdk.load.component.TestTableOperationsClient
@@ -97,12 +107,12 @@ class SnowflakeDataCoercionTest(
                         // Note that snowflake's value is rounded up, so it isn't actually
                         // representable as a java double (BigDecimal(it).toDouble() => Infinity)
                         // so we have to convert to bigdecimal.
-                        "largest positive float64" ->
+                        LARGEST_POSITIVE_FLOAT64 ->
                             it.copy(
                                 outputValue = BigDecimal("1.79769313486232e308"),
                                 changeReason = null
                             )
-                        "largest negative float64" ->
+                        LARGEST_NEGATIVE_FLOAT64 ->
                             it.copy(
                                 outputValue = BigDecimal("-1.79769313486232e308"),
                                 changeReason = null
@@ -111,28 +121,28 @@ class SnowflakeDataCoercionTest(
                         // this one preserves the DESTINATION_FIELD_SIZE_LIMITATION reason,
                         // because the coercer correctly detects that the input value has too much
                         // precision for a java double
-                        "positive high-precision float" ->
+                        POSITIVE_HIGH_PRECISION_FLOAT ->
                             it.copy(outputValue = BigDecimal("1234567890.12346"))
-                        "negative high-precision float" ->
+                        NEGATIVE_HIGH_PRECISION_FLOAT ->
                             it.copy(outputValue = BigDecimal("-1234567890.12346"))
                         // 1.401298464324817E-45 -> 1.401298464E-45
-                        "smallest positive float32" ->
+                        SMALLEST_POSITIVE_FLOAT32 ->
                             it.copy(
                                 outputValue = BigDecimal("1.401298464E-45"),
                                 changeReason = null
                             )
-                        "smallest negative float32" ->
+                        SMALLEST_NEGATIVE_FLOAT32 ->
                             it.copy(
                                 outputValue = BigDecimal("-1.401298464E-45"),
                                 changeReason = null
                             )
                         // 3.4028234663852886E+38 -> 3.40282346638529E+38
-                        "largest positive float32" ->
+                        LARGEST_POSITIVE_FLOAT32 ->
                             it.copy(
                                 outputValue = BigDecimal("3.40282346638529E+38"),
                                 changeReason = null
                             )
-                        "largest negative float32" ->
+                        LARGEST_NEGATIVE_FLOAT32 ->
                             it.copy(
                                 outputValue = BigDecimal("-3.40282346638529E+38"),
                                 changeReason = null
@@ -141,12 +151,12 @@ class SnowflakeDataCoercionTest(
                         // (this looks like snowflake is basically doing BigDecimal(4.9e-324) rather
                         // than BigDecimal.valueOf(), but that doesn't really explain the other
                         // rounding behaviors)
-                        "smallest positive float64" ->
+                        SMALLEST_POSITIVE_FLOAT64 ->
                             it.copy(
                                 outputValue = BigDecimal("4.940656458E-324"),
                                 changeReason = null
                             )
-                        "smallest negative float64" ->
+                        SMALLEST_NEGATIVE_FLOAT64 ->
                             it.copy(
                                 outputValue = BigDecimal("-4.940656458E-324"),
                                 changeReason = null
