@@ -76,7 +76,7 @@ To create a user with the required permissions, run the following SQL commands i
 -- Create the user (replace 'your_password' with a secure password)
 CREATE USER airbyte_user IDENTIFIED BY 'your_password';
 
---Disable async_insert for the Airbyte user to ensure connection checks and data syncs work correctly. This fixes the "Error: Failed to insert expected rows into check table. Actual written: 0" error.
+-- If async_insert is enabled in ClickHouse, disable it for the Airbyte user to ensure connection checks and data syncs work correctly. This fixes the "Error: Failed to insert expected rows into check table. Actual written: 0" error.
 ALTER USER airbyte_user SETTINGS async_insert = 0;
 
 -- Grant permissions on the default database
