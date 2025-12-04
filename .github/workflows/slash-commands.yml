@@ -42,6 +42,7 @@ jobs:
             connector-performance
             format-fix
             poe
+            publish-connectors-prerelease
             publish-java-cdk
             run-cat-tests
             run-connector-tests

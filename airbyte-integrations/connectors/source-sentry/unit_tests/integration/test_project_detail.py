@@ -12,7 +12,11 @@ from airbyte_cdk.test.mock_http import HttpMocker
 from integration.config import ConfigBuilder
 from integration.request_builder import SentryRequestBuilder
 from integration.response_builder import create_response
-from unit_tests.conftest import get_source
+
+import sys
+from pathlib import Path
+sys.path.insert(0, str(Path(__file__).parent.parent))
+from conftest import get_source
 
 _NOW = datetime.now(timezone.utc)
 _STREAM_NAME = "project_detail"
