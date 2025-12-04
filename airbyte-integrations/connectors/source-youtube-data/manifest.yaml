@@ -240,19 +240,19 @@ definitions:
           $ref: "#/schemas/channel_comments"
   api_key_authenticator:
     type: ApiKeyAuthenticator
-    api_token: "{{ config[\"credentials\"][\"api_key\"] }}"
+    api_token: '{{ config["credentials"]["api_key"] }}'
     inject_into:
       type: RequestOption
       field_name: key
       inject_into: request_parameter
   oauth2_authenticator:
     type: OAuthAuthenticator
-    client_id: "{{ config[\"credentials\"][\"client_id\"] }}"
-    client_secret: "{{ config[\"credentials\"][\"client_secret\"] }}"
+    client_id: '{{ config["credentials"]["client_id"] }}'
+    client_secret: '{{ config["credentials"]["client_secret"] }}'
     token_refresh_endpoint: https://oauth2.googleapis.com/token
     scopes:
       - https://www.googleapis.com/auth/youtube.readonly
-    refresh_token: "{{ config[\"credentials\"][\"refresh_token\"] }}"
+    refresh_token: '{{ config["credentials"]["refresh_token"] }}'
     refresh_request_body: {}
   base_requester:
     type: HttpRequester
@@ -282,8 +282,9 @@ spec:
     properties:
       credentials:
         type: object
-        title: Credentials
+        title: Authentication method
         description: Authentication method
+        order: 0
         oneOf:
           - type: object
             title: API Key
@@ -308,6 +309,9 @@ spec:
               auth_method:
                 type: string
                 const: oauth2.0
+                default: oauth2.0
+                enum:
+                  - oauth2.0
               client_id:
                 type: string
                 order: 0
@@ -326,71 +330,72 @@ spec:
       channel_ids:
         type: array
         title: Channel IDs
+        order: 1
     additionalProperties: true
-    advanced_auth:
-      auth_flow_type: oauth2.0
-      predicate_key:
-        - credentials
-        - auth_method
-      predicate_value: oauth2.0
-      oauth_config_specification:
-        oauth_connector_input_specification:
-          consent_url: https://accounts.google.com/o/oauth2/v2/auth?{{client_id_param}}&{{redirect_uri_param}}&response_type=code&{{scope_param}}&access_type=offline&{{state_param}}&include_granted_scopes=true&prompt=consent
-          access_token_url: https://oauth2.googleapis.com/token
-        complete_oauth_output_specification:
-          type: object
-          additionalProperties: true
-          properties:
-            refresh_token:
-              type: string
-              path_in_connector_config:
-                - credentials
-                - refresh_token
-        complete_oauth_server_input_specification:
-          type: object
-          additionalProperties: true
-          properties:
-            client_id:
-              type: string
-            client_secret:
-              type: string
-        complete_oauth_server_output_specification:
-          type: object
-          additionalProperties: true
-          properties:
-            client_id:
-              type: string
-              path_in_connector_config:
-                - credentials
-                - client_id
-            client_secret:
-              type: string
-              path_in_connector_config:
-                - credentials
-                - client_secret
-          
-
-    config_normalization_rules:
-      type: ConfigNormalizationRules
-      config_migrations:
-        - type: ConfigMigration
-          description: |
-            Remaps the existing config authentication format to a new format
-            OLD: {"api_key": ...}
-            NEW: {"credentials": {"api_key": ..., "auth_method": "api_key"}}
-          transformations:
-            - type: ConfigAddFields
-              fields:
-                - type: AddedFieldDefinition
-                  path: ["credentials", "api_key"]
-                  value: "{{ config['api_key'] }}"
-              condition: "{{ config.get('api_key', False) }}"
-            - type: ConfigAddFields
-              fields:
-                - type: AddedFieldDefinition
-                  path: ["credentials", "auth_method"]
-                  value: "api_key"
-              condition: "{{ config.get('api_key', False) }}"
+  advanced_auth:
+    auth_flow_type: oauth2.0
+    predicate_key:
+      - credentials
+      - auth_method
+    predicate_value: oauth2.0
+    oauth_config_specification:
+      oauth_connector_input_specification:
+        scope: https://www.googleapis.com/auth/youtube.readonly
+        consent_url: https://accounts.google.com/o/oauth2/v2/auth?{{client_id_param}}&{{redirect_uri_param}}&response_type=code&{{scope_param}}&access_type=offline&{{state_param}}&include_granted_scopes=true&prompt=consent
+        access_token_url: https://oauth2.googleapis.com/token?{{client_id_param}}&{{client_secret_param}}&{{auth_code_param}}&grant_type=authorization_code&{{redirect_uri_param}}
+        extract_output: ["refresh_token"]
+      complete_oauth_output_specification:
+        type: object
+        additionalProperties: true
+        properties:
+          refresh_token:
+            type: string
+            path_in_connector_config:
+              - credentials
+              - refresh_token
+      complete_oauth_server_input_specification:
+        type: object
+        additionalProperties: true
+        properties:
+          client_id:
+            type: string
+          client_secret:
+            type: string
+      complete_oauth_server_output_specification:
+        type: object
+        additionalProperties: true
+        properties:
+          client_id:
+            type: string
+            path_in_connector_config:
+              - credentials
+              - client_id
+          client_secret:
+            type: string
+            path_in_connector_config:
+              - credentials
+              - client_secret
+  config_normalization_rules:
+    type: ConfigNormalizationRules
+    config_migrations:
+      - type: ConfigMigration
+        description: |
+          Remaps the existing config authentication format to a new format
+          OLD: {"api_key": ...}
+          NEW: {"credentials": {"api_key": ..., "auth_method": "api_key"}}
+        transformations:
+          - type: ConfigAddFields
+            fields:
+              - type: AddedFieldDefinition
+                path: ["credentials", "api_key"]
+                value: "{{ config['api_key'] }}"
+            condition: "{{ config.get('api_key', False) }}"
+          - type: ConfigAddFields
+            fields:
+              - type: AddedFieldDefinition
+                path: ["credentials", "auth_method"]
+                value: "api_key"
+            condition: "{{ config.get('api_key', False) }}"
 
 metadata:
   autoImportSchema:
