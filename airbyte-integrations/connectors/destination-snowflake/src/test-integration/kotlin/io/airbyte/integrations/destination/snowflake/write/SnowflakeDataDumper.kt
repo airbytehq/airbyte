@@ -127,7 +127,7 @@ class SnowflakeDataDumper(
         throw UnsupportedOperationException("Snowflake does not support file transfer.")
     }
 
-    private fun unformatJsonValue(columnType: String, value: Any): Any {
+    private fun unformatJsonValue(columnType: String, value: Any): Any? {
         /*
          * Snowflake automatically pretty-prints JSON results for variant, object and array
          * when selecting them via a SQL query.  You can get around this by using the `TO_JSON`
@@ -140,12 +140,20 @@ class SnowflakeDataDumper(
         return when (columnType.lowercase()) {
             "variant",
             "array",
-            "object" -> deserializeExact(value.toString()).toPrettyString()
+            "object" -> {
+                val jsonNode = deserializeExact(value.toString())
+                if (jsonNode.isNull) {
+                    // Don't convert null into a string "null"
+                    null
+                } else {
+                    jsonNode.toPrettyString()
+                }
+            }
             else -> value
         }
     }
 
-    private fun convertValue(value: Any): Any =
+    private fun convertValue(value: Any?): Any? =
         when (value) {
             is BigDecimal -> value.toBigInteger()
             is java.sql.Date -> value.toLocalDate()
