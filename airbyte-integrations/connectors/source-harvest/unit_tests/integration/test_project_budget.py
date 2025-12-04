@@ -78,3 +78,43 @@ class TestProjectBudgetStream(TestCase):
         assert len(output.records) == 0
         log_messages = [log.log.message for log in output.logs]
         assert any("Please ensure your credentials are valid" in msg for msg in log_messages)
+
+    @HttpMocker()
+    def test_forbidden_error_handling(self, http_mocker: HttpMocker) -> None:
+        """Test that connector ignores 403 errors per manifest config."""
+        config = ConfigBuilder().with_account_id(_ACCOUNT_ID).with_api_token(_API_TOKEN).with_replication_start_date(datetime(2024, 1, 1)).build()
+
+        http_mocker.get(
+            HarvestRequestBuilder.project_budget_endpoint(_ACCOUNT_ID, _API_TOKEN)
+            .with_per_page(50)
+            .build(),
+            HttpResponse(body=json.dumps({"error": "forbidden"}), status_code=403),
+        )
+
+        source = get_source(config=config)
+        catalog = CatalogBuilder().with_stream(_STREAM_NAME, SyncMode.full_refresh).build()
+        output = read(source, config=config, catalog=catalog, expecting_exception=False)
+
+        assert len(output.records) == 0
+        log_messages = [log.log.message for log in output.logs]
+        assert any("This is most likely due to insufficient permissions" in msg for msg in log_messages)
+
+    @HttpMocker()
+    def test_not_found_error_handling(self, http_mocker: HttpMocker) -> None:
+        """Test that connector ignores 404 errors per manifest config."""
+        config = ConfigBuilder().with_account_id(_ACCOUNT_ID).with_api_token(_API_TOKEN).with_replication_start_date(datetime(2024, 1, 1)).build()
+
+        http_mocker.get(
+            HarvestRequestBuilder.project_budget_endpoint(_ACCOUNT_ID, _API_TOKEN)
+            .with_per_page(50)
+            .build(),
+            HttpResponse(body=json.dumps({"error": "not_found"}), status_code=404),
+        )
+
+        source = get_source(config=config)
+        catalog = CatalogBuilder().with_stream(_STREAM_NAME, SyncMode.full_refresh).build()
+        output = read(source, config=config, catalog=catalog, expecting_exception=False)
+
+        assert len(output.records) == 0
+        log_messages = [log.log.message for log in output.logs]
+        assert any("Please ensure that your account ID is properly set" in msg for msg in log_messages)
