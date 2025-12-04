@@ -8,6 +8,7 @@ import io.airbyte.cdk.load.data.AirbyteValue
 import io.airbyte.cdk.load.data.IntegerValue
 import io.airbyte.cdk.load.data.NumberValue
 import io.airbyte.cdk.load.data.TimestampWithTimezoneValue
+import io.airbyte.cdk.load.data.TimestampWithoutTimezoneValue
 import io.airbyte.cdk.load.dataflow.transform.ValueCoercer
 import io.airbyte.protocol.models.v0.AirbyteRecordMessageMetaChange.Reason
 import java.math.BigDecimal
@@ -437,14 +438,14 @@ object DataCoercionNumberFixtures {
     @JvmStatic fun numeric38_9() = numeric38_9.toArgs()
 }
 
-object DataCoercionTimestampTzFixtures {
-    const val SIMPLE_TIMESTAMP = "simple timestamp"
-    const val UNIX_EPOCH = "unix epoch"
-    const val MINIMUM_TIMESTAMP = "minimum timestamp"
-    const val MAXIMUM_TIMESTAMP = "maximum timestamp"
-    const val OUT_OF_RANGE_TIMESTAMP = "out of range timestamp"
-    const val HIGH_PRECISION_TIMESTAMP = "high-precision timestamp"
+const val SIMPLE_TIMESTAMP = "simple timestamp"
+const val UNIX_EPOCH = "unix epoch"
+const val MINIMUM_TIMESTAMP = "minimum timestamp"
+const val MAXIMUM_TIMESTAMP = "maximum timestamp"
+const val OUT_OF_RANGE_TIMESTAMP = "out of range timestamp"
+const val HIGH_PRECISION_TIMESTAMP = "high-precision timestamp"
 
+object DataCoercionTimestampTzFixtures {
     /**
      * Many warehouses support timestamps between years 0001 - 9999.
      *
@@ -501,6 +502,46 @@ object DataCoercionTimestampTzFixtures {
                 HIGH_PRECISION_TIMESTAMP,
                 TimestampWithTimezoneValue("2025-01-23T01:01:00.123456789Z"),
                 "2025-01-23T01:01:00.123456789Z",
+            ),
+        )
+
+    @JvmStatic fun commonWarehouse() = commonWarehouse.toArgs()
+}
+
+object DataCoercionTimestampNtzFixtures {
+    /** See [DataCoercionTimestampTzFixtures.commonWarehouse] for explanation */
+    val commonWarehouse =
+        listOf(
+            case(
+                SIMPLE_TIMESTAMP,
+                TimestampWithoutTimezoneValue("2025-01-23T12:34:56.789"),
+                "2025-01-23T12:34:56.789",
+            ),
+            case(
+                UNIX_EPOCH,
+                TimestampWithoutTimezoneValue("1970-01-01T00:00:00"),
+                "1970-01-01T00:00:00",
+            ),
+            case(
+                MINIMUM_TIMESTAMP,
+                TimestampWithoutTimezoneValue("0001-01-01T00:00:00"),
+                "0001-01-01T00:00:00",
+            ),
+            case(
+                MAXIMUM_TIMESTAMP,
+                TimestampWithoutTimezoneValue("9999-12-31T23:59:59.999999999"),
+                "9999-12-31T23:59:59.999999999",
+            ),
+            case(
+                OUT_OF_RANGE_TIMESTAMP,
+                TimestampWithoutTimezoneValue(ldt("10000-01-01T00:00")),
+                null,
+                Reason.DESTINATION_FIELD_SIZE_LIMITATION,
+            ),
+            case(
+                HIGH_PRECISION_TIMESTAMP,
+                TimestampWithoutTimezoneValue("2025-01-23T01:01:00.123456789"),
+                "2025-01-23T01:01:00.123456789",
             ),
         )
 
