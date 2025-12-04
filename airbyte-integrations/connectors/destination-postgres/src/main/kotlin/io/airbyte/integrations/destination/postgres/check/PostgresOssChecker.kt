@@ -77,7 +77,8 @@ class PostgresOssChecker(
                         columnSchema =
                             ColumnSchema(
                                 inputSchema = checkSchema.properties,
-                                inputToFinalColumnNames = mapOf(CHECK_COLUMN_NAME to CHECK_COLUMN_NAME),
+                                inputToFinalColumnNames =
+                                    mapOf(CHECK_COLUMN_NAME to CHECK_COLUMN_NAME),
                                 finalSchema = emptyMap(),
                             ),
                         importType = Append,
