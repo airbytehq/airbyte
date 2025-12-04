@@ -7,7 +7,6 @@ package io.airbyte.integrations.destination.clickhouse.client
 import com.clickhouse.client.api.Client as ClickHouseClientRaw
 import com.clickhouse.client.api.command.CommandResponse
 import com.clickhouse.client.api.data_formats.ClickHouseBinaryFormatReader
-import com.clickhouse.client.api.metadata.TableSchema
 import com.clickhouse.client.api.query.QueryResponse
 import com.clickhouse.data.ClickHouseColumn
 import com.clickhouse.data.ClickHouseDataType
@@ -19,6 +18,7 @@ import io.airbyte.cdk.load.component.ColumnChangeset
 import io.airbyte.cdk.load.component.ColumnType
 import io.airbyte.cdk.load.component.TableColumns
 import io.airbyte.cdk.load.component.TableOperationsClient
+import io.airbyte.cdk.load.component.TableSchema
 import io.airbyte.cdk.load.component.TableSchemaEvolutionClient
 import io.airbyte.cdk.load.message.Meta.Companion.COLUMN_NAMES
 import io.airbyte.cdk.load.schema.model.TableName
@@ -29,6 +29,7 @@ import io.airbyte.integrations.destination.clickhouse.client.ClickhouseSqlGenera
 import io.airbyte.integrations.destination.clickhouse.spec.ClickhouseConfiguration
 import io.github.oshai.kotlinlogging.KotlinLogging
 import jakarta.inject.Singleton
+import kotlin.collections.flatten
 import kotlinx.coroutines.future.await
 
 val log = KotlinLogging.logger {}
@@ -42,7 +43,6 @@ class ClickhouseAirbyteClient(
     private val client: ClickHouseClientRaw,
     private val sqlGenerator: ClickhouseSqlGenerator,
     private val tempTableNameGenerator: TempTableNameGenerator,
-    private val clickhouseConfiguration: ClickhouseConfiguration,
 ) : TableOperationsClient, TableSchemaEvolutionClient {
 
     override suspend fun createNamespace(namespace: String) {
@@ -61,7 +61,6 @@ class ClickhouseAirbyteClient(
             sqlGenerator.createTable(
                 stream,
                 tableName,
-                columnNameMapping,
                 replace,
             ),
         )
@@ -131,42 +130,12 @@ class ClickhouseAirbyteClient(
     override fun computeSchema(
         stream: DestinationStream,
         columnNameMapping: ColumnNameMapping
-    ): io.airbyte.cdk.load.component.TableSchema {
-        val importType = stream.importType
-        val primaryKey =
-            if (importType is Dedupe) {
-                sqlGenerator.extractPks(importType.primaryKey, columnNameMapping).toSet()
-            } else {
-                emptySet()
-            }
-        val cursor =
-            if (importType is Dedupe) {
-                if (importType.cursor.size > 1) {
-                    throw ConfigErrorException(
-                        "Only top-level cursors are supported. Got ${importType.cursor}"
-                    )
-                }
-                importType.cursor.map { columnNameMapping[it] }.toSet()
-            } else {
-                emptySet()
-            }
-        return io.airbyte.cdk.load.component.TableSchema(
-            stream.schema
-                .asColumns()
-                .map { (fieldName, fieldType) ->
-                    val clickhouseCompatibleName = columnNameMapping[fieldName]!!
-                    val nullable =
-                        !primaryKey.contains(clickhouseCompatibleName) &&
-                            !cursor.contains(clickhouseCompatibleName)
-                    val type = fieldType.type.toDialectType(clickhouseConfiguration.enableJson)
-                    clickhouseCompatibleName to
-                        ColumnType(
-                            type = type,
-                            nullable = nullable,
-                        )
-                }
-                .toMap(),
-        )
+    ): TableSchema {
+        // do something here
+        val primaryKey = stream.tableSchema.getPrimaryKey().flatten().toSet()
+        val cursor =  stream.tableSchema.getCursor().toSet()
+
+        return TableSchema(stream.tableSchema.columnSchema.finalSchema)
     }
 
     override suspend fun applyChangeset(
@@ -214,7 +183,6 @@ class ClickhouseAirbyteClient(
             sqlGenerator.createTable(
                 stream,
                 tempTableName,
-                columnNameMapping,
                 true,
             ),
         )

@@ -125,6 +125,16 @@ class ClickhouseAirbyteClientTest {
                         every { asColumns() } returns LinkedHashMap.newLinkedHashMap(0)
                     }
                 every { importType } returns Append
+                every { tableSchema } returns
+                    mockk(relaxed = true) {
+                        every { columnSchema } returns
+                            mockk(relaxed = true) {
+                                every { inputSchema } returns LinkedHashMap.newLinkedHashMap(0)
+                                every { inputToFinalColumnNames } returns emptyMap()
+                            }
+                        every { getPrimaryKey() } returns emptyList()
+                        every { getCursor() } returns emptyList()
+                    }
             }
         clickhouseAirbyteClient.applyChangeset(
             stream,
@@ -182,6 +192,16 @@ class ClickhouseAirbyteClientTest {
                         every { asColumns() } returns LinkedHashMap.newLinkedHashMap(0)
                     }
                 every { importType } returns Append
+                every { tableSchema } returns
+                    mockk(relaxed = true) {
+                        every { columnSchema } returns
+                            mockk(relaxed = true) {
+                                every { inputSchema } returns LinkedHashMap.newLinkedHashMap(0)
+                                every { inputToFinalColumnNames } returns emptyMap()
+                            }
+                        every { getPrimaryKey() } returns emptyList()
+                        every { getCursor() } returns emptyList()
+                    }
             }
         clickhouseAirbyteClient.applyChangeset(
             stream,
@@ -195,7 +215,7 @@ class ClickhouseAirbyteClientTest {
 
         coVerifyOrder {
             clickhouseSqlGenerator.createNamespace(tempTableName.namespace)
-            clickhouseSqlGenerator.createTable(stream, tempTableName, columnMapping, true)
+            clickhouseSqlGenerator.createTable(stream, tempTableName, true)
             clickhouseSqlGenerator.copyTable(columnMapping, finalTableName, tempTableName)
             clickhouseSqlGenerator.exchangeTable(tempTableName, finalTableName)
             clickhouseSqlGenerator.dropTable(tempTableName)
@@ -266,6 +286,16 @@ class ClickhouseAirbyteClientTest {
                         every { asColumns() } returns columns
                     }
                 every { importType } returns Append
+                every { tableSchema } returns
+                    mockk(relaxed = true) {
+                        every { columnSchema } returns
+                            mockk(relaxed = true) {
+                                every { inputSchema } returns columns
+                                every { inputToFinalColumnNames } returns mapOf("field 1" to "field_1")
+                            }
+                        every { getPrimaryKey() } returns emptyList()
+                        every { getCursor() } returns emptyList()
+                    }
             }
 
         val columnMapping = ColumnNameMapping(mapOf("field 1" to "field_1"))
