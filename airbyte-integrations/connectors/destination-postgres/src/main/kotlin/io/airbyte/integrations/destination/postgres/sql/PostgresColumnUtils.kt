@@ -173,6 +173,9 @@ class PostgresColumnUtils(private val postgresConfiguration: PostgresConfigurati
         importType: Dedupe,
         columnNameMapping: ColumnNameMapping
     ): List<String> {
+        if (postgresConfiguration.legacyRawTablesOnly == true) {
+            return emptyList()
+        }
         return importType.primaryKey
             .map { fieldPath ->
                 val primaryKeyColumnName = fieldPath.first() // only at the root level for Postgres
@@ -196,6 +199,9 @@ class PostgresColumnUtils(private val postgresConfiguration: PostgresConfigurati
         cursor: List<String>,
         columnNameMapping: ColumnNameMapping
     ): String? {
+        if (postgresConfiguration.legacyRawTablesOnly == true) {
+            return null
+        }
         return cursor.firstOrNull()?.let { columnName ->
             getTargetColumnName(columnName, columnNameMapping)
         }
