@@ -65,30 +65,25 @@ class ClickhouseSqlGenerator(
     fun createTable(
         stream: DestinationStream,
         tableName: TableName,
-        columnNameMapping: ColumnNameMapping,
         replace: Boolean,
     ): String {
-        val pks: List<String> =
-            when (stream.importType) {
-                is Dedupe -> extractPks((stream.importType as Dedupe).primaryKey, columnNameMapping)
-                else -> listOf()
-            }
+        val pks: List<String> = stream.tableSchema.getPrimaryKey().flatten()
 
         // For ReplacingMergeTree, we need to make the cursor column non-nullable if it's used as
         // version column. We'll also determine here if we need to fall back to extracted_at.
         var useCursorAsVersionColumn = false
+        val cursorColumns = stream.tableSchema.getCursor()
         val nonNullableColumns =
             mutableSetOf<String>().apply {
                 addAll(pks) // Primary keys are always non-nullable
-                if (stream.importType is Dedupe) {
-                    val dedupeType = stream.importType as Dedupe
-                    if (dedupeType.cursor.isNotEmpty()) {
-                        val cursorFieldName = dedupeType.cursor.first()
-                        val cursorColumnName = columnNameMapping[cursorFieldName] ?: cursorFieldName
-
+                if (stream.importType is Dedupe && cursorColumns.isNotEmpty()) {
+                    val cursorFieldName = (stream.importType as Dedupe).cursor.firstOrNull()
+                    val cursorColumnName = cursorColumns.firstOrNull()
+                    
+                    if (cursorFieldName != null && cursorColumnName != null) {
                         // Check if the cursor column type is valid for ClickHouse
                         // ReplacingMergeTree
-                        val cursorColumnType = stream.schema.asColumns()[cursorFieldName]?.type
+                        val cursorColumnType = stream.tableSchema.columnSchema.inputSchema[cursorFieldName]?.type
                         if (
                             cursorColumnType != null && isValidVersionColumnType(cursorColumnType)
                         ) {
@@ -112,7 +107,7 @@ class ClickhouseSqlGenerator(
             }
 
         val columnDeclarations =
-            columnsAndTypes(stream, columnNameMapping, nonNullableColumns.toList())
+            columnsAndTypes(stream, nonNullableColumns.toList())
 
         val forceCreateTable = if (replace) "OR REPLACE" else ""
 
@@ -125,15 +120,11 @@ class ClickhouseSqlGenerator(
         val engine =
             when (stream.importType) {
                 is Dedupe -> {
-                    val dedupeType = stream.importType as Dedupe
                     // Use cursor column as version column for ReplacingMergeTree if available and
                     // valid
                     val versionColumn =
-                        if (dedupeType.cursor.isNotEmpty() && useCursorAsVersionColumn) {
-                            val cursorFieldName = dedupeType.cursor.first()
-                            val cursorColumnName =
-                                columnNameMapping[cursorFieldName] ?: cursorFieldName
-                            "`$cursorColumnName`"
+                        if (cursorColumns.isNotEmpty() && useCursorAsVersionColumn) {
+                            "`${cursorColumns.first()}`"
                         } else {
                             // Fallback to _airbyte_extracted_at if no cursor is specified or cursor
                             // is invalid
@@ -161,22 +152,6 @@ class ClickhouseSqlGenerator(
             """
             .trimIndent()
             .andLog()
-    }
-
-    internal fun extractPks(
-        primaryKey: List<List<String>>,
-        columnNameMapping: ColumnNameMapping
-    ): List<String> {
-        return primaryKey.map { fieldPath ->
-            if (fieldPath.size != 1) {
-                throw UnsupportedOperationException(
-                    "Only top-level primary keys are supported, got $fieldPath",
-                )
-            }
-            val fieldName = fieldPath.first()
-            val columnName = columnNameMapping[fieldName] ?: fieldName
-            columnName
-        }
     }
 
     fun dropTable(tableName: TableName): String =
@@ -218,65 +193,6 @@ class ClickhouseSqlGenerator(
             .andLog()
     }
 
-    /**
-     * A SQL SELECT statement that extracts records from the table and dedupes the records (since we
-     * only need the most-recent record to upsert).
-     */
-    private fun selectDedupedRecords(
-        stream: DestinationStream,
-        sourceTableName: TableName,
-        columnNameMapping: ColumnNameMapping,
-    ): String {
-        val columnList: String =
-            stream.schema.asColumns().keys.joinToString("\n") { fieldName ->
-                val columnName = columnNameMapping[fieldName]!!
-                "`$columnName`,"
-            }
-
-        val importType = stream.importType as Dedupe
-
-        // We need to dedupe the records. Note the row_number() invocation in
-        // the SQL statement. We only take the most-recent raw record for each PK.
-        val pkList =
-            importType.primaryKey.joinToString(",") { fieldName ->
-                val columnName = columnNameMapping[fieldName.first()]!!
-                "`$columnName`"
-            }
-        val cursorOrderClause =
-            if (importType.cursor.isEmpty()) {
-                ""
-            } else if (importType.cursor.size == 1) {
-                val columnName = columnNameMapping[importType.cursor.first()]!!
-                "`$columnName` DESC NULLS LAST,"
-            } else {
-                throw UnsupportedOperationException(
-                    "Only top-level cursors are supported, got ${importType.cursor}",
-                )
-            }
-
-        return """
-               WITH records AS (
-                 SELECT
-                   $columnList
-                   $COLUMN_NAME_AB_META,
-                   $COLUMN_NAME_AB_RAW_ID,
-                   $COLUMN_NAME_AB_EXTRACTED_AT,
-                   $COLUMN_NAME_AB_GENERATION_ID
-                 FROM `${sourceTableName.namespace}`.`${sourceTableName.name}`
-               ), numbered_rows AS (
-                 SELECT *, row_number() OVER (
-                   PARTITION BY $pkList ORDER BY $cursorOrderClause `$COLUMN_NAME_AB_EXTRACTED_AT` DESC
-                 ) AS row_number
-                 FROM records
-               )
-               SELECT $columnList $COLUMN_NAME_AB_META, $COLUMN_NAME_AB_RAW_ID, $COLUMN_NAME_AB_EXTRACTED_AT, $COLUMN_NAME_AB_GENERATION_ID
-               FROM numbered_rows
-               WHERE row_number = 1
-               """
-            .trimIndent()
-            .andLog()
-    }
-
     fun countTable(
         tableName: TableName,
         alias: String = "",
@@ -299,13 +215,11 @@ class ClickhouseSqlGenerator(
 
     private fun columnsAndTypes(
         stream: DestinationStream,
-        columnNameMapping: ColumnNameMapping,
         nonNullableColumns: List<String>,
     ): String {
-        return stream.schema
-            .asColumns()
+        return stream.tableSchema.columnSchema.inputSchema
             .map { (fieldName, type) ->
-                val columnName = columnNameMapping[fieldName]!!
+                val columnName = stream.tableSchema.columnSchema.inputToFinalColumnNames[fieldName]!!
                 val typeName = type.type.toDialectType(clickhouseConfiguration.enableJson)
                 "`$columnName` ${typeDecl(typeName, !nonNullableColumns.contains(columnName))}"
             }
