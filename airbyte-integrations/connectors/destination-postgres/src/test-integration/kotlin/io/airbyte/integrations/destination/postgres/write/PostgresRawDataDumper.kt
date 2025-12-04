@@ -340,7 +340,8 @@ class PostgresRawDataDumper(
                             if (parsedValue is ObjectValue) {
                                 val mappedProperties = linkedMapOf<String, AirbyteValue>()
                                 for ((key, value) in parsedValue.values) {
-                                    // Map final column name back to input column name if mapping exists
+                                    // Map final column name back to input column name if mapping
+                                    // exists
                                     val originalKey = finalToInputColumnNames[key] ?: key
                                     mappedProperties[originalKey] = value
                                 }
@@ -367,7 +368,8 @@ class PostgresRawDataDumper(
                                 for ((fieldName, fieldType) in objectSchema.properties) {
                                     try {
                                         // Map input field name to the transformed final column name
-                                        // First check the inputToFinalColumnNames mapping, then fall
+                                        // First check the inputToFinalColumnNames mapping, then
+                                        // fall
                                         // back to applying postgres transformation directly
                                         val transformedColumnName =
                                             inputToFinalColumnNames[fieldName]
