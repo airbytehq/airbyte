@@ -229,6 +229,7 @@ class DestinationMotherDuck(Destination):
             db_path=path,
             motherduck_token=motherduck_api_key,
         )
+        normalizer = self.normalizer()
 
         for configured_stream in configured_catalog.streams:
             processor.prepare_stream_table(stream_name=configured_stream.stream.name, sync_mode=configured_stream.destination_sync_mode)
@@ -273,11 +274,27 @@ class DestinationMotherDuck(Destination):
                 if stream_name not in streams:
                     logger.debug(f"Stream {stream_name} was not present in configured streams, skipping")
                     continue
+
+                normalized_keys = {normalizer.normalize(key): key  for key in data.keys()}
+
+                if len(normalized_keys) != len(data):
+                    logger.warning(
+                        "Data contained duplicate keys after normalization: keys %s were dropped. Make sure "
+                        "the column names in the source data stay unique after applying these operations: \n"
+                        "- Converts ASCII letters to lowercase\n"
+                        "- Replaces whitespace with underscores\n"
+                        "- Preserves Unicode letters and numbers\n"
+                        "- Adds underscore prefix if name starts with ASCII digit\n"
+                        "- Replaces other special characters with underscores\n"
+                        "skipping",
+                    set(data) - set(normalized_keys))
+                    continue
+
                 # add to buffer
                 record_meta: dict[str, str] = {}
                 for column_name in processor._get_sql_column_definitions(stream_name):
-                    if column_name in data:
-                        buffer[stream_name][column_name].append(data[column_name])
+                    if column_name in normalized_keys.keys():
+                        buffer[stream_name][column_name].append(data[normalized_keys[column_name]])
                     elif column_name not in AB_INTERNAL_COLUMNS:
                         buffer[stream_name][column_name].append(None)
 
@@ -334,6 +351,7 @@ class DestinationMotherDuck(Destination):
                 processor = self._get_sql_processor(
                     configured_catalog=configured_catalog, schema_name=schema_name, db_path=db_path, motherduck_token=motherduck_api_key
                 )
+
                 processor.write_stream_data_from_buffer(buffer, configured_stream.stream.name, configured_stream.destination_sync_mode)
 
     def check(self, logger: logging.Logger, config: Mapping[str, Any]) -> AirbyteConnectionStatus:
