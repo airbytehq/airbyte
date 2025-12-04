@@ -14,13 +14,29 @@ import io.airbyte.cdk.load.test.util.DestinationDataDumper
 import io.airbyte.cdk.load.test.util.OutputRecord
 import io.airbyte.integrations.destination.postgres.config.PostgresBeanFactory
 import io.airbyte.integrations.destination.postgres.db.PostgresFinalTableNameGenerator
-import io.airbyte.integrations.destination.postgres.db.toPostgresCompatibleName
 import io.airbyte.integrations.destination.postgres.spec.PostgresConfiguration
 import org.postgresql.util.PGobject
 
 class PostgresDataDumper(
     private val configProvider: (ConfigurationSpecification) -> PostgresConfiguration
 ) : DestinationDataDumper {
+    private fun sanitizeColumnName(name: String): String {
+        // Replicate the sanitization logic used by TableCatalog
+        // First normalize Unicode characters (e.g., é -> e)
+        var sanitized =
+            java.text.Normalizer.normalize(name, java.text.Normalizer.Form.NFD)
+                .replace(Regex("\\p{M}"), "") // Remove diacritical marks
+
+        // Replace all non-alphanumeric characters (except underscore) with underscore
+        sanitized = sanitized.replace(Regex("[^a-zA-Z0-9_]"), "_")
+
+        // Add underscore prefix if starts with a digit
+        if (sanitized.isNotEmpty() && sanitized[0].isDigit()) {
+            sanitized = "_$sanitized"
+        }
+
+        return sanitized
+    }
 
     override fun dumpRecords(
         spec: ConfigurationSpecification,
@@ -40,7 +56,7 @@ class PostgresDataDumper(
         val reverseMapping = mutableMapOf<String, String>()
         (stream.schema as? io.airbyte.cdk.load.data.ObjectType)?.properties?.keys?.forEach {
             originalName ->
-            val sanitizedName = originalName.toPostgresCompatibleName()
+            val sanitizedName = sanitizeColumnName(originalName)
             reverseMapping[sanitizedName] = originalName
         }
 
@@ -52,7 +68,7 @@ class PostgresDataDumper(
 
                 // Use the FinalTableNameGenerator to get the correct table name
                 val tableName = tableNameGenerator.getTableName(stream.mappedDescriptor)
-                val quotedTableName = """"${tableName.namespace}"."${tableName.name}""""
+                val quotedTableName = "\"${tableName.namespace}\".\"${tableName.name}\""
 
                 // First check if the table exists
                 val tableExistsQuery =
