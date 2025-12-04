@@ -54,7 +54,8 @@ async def run_connector_test_pipeline(context: ConnectorTestContext, semaphore: 
 
     all_steps_to_run += get_test_steps(context)
 
-    if not context.code_tests_only:
+    # Skip static analysis steps when only test files are modified
+    if not context.code_tests_only and not context.test_only_change:
         static_analysis_steps_to_run = [
             [
                 StepToRun(id=CONNECTOR_TEST_STEP_ID.VERSION_INC_CHECK, step=VersionIncrementCheck(context)),
