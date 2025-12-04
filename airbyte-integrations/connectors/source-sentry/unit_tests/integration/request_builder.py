@@ -6,13 +6,14 @@ from airbyte_cdk.test.mock_http.request import ANY_QUERY_PARAMS
 
 class SentryRequestBuilder:
     """Builder for creating Sentry API requests"""
-    
+
     def __init__(self, resource: str, organization: str, project: str, auth_token: str):
         self._resource = resource
         self._organization = organization
         self._project = project
         self._auth_token = auth_token
         self._hostname = "sentry.io"
+        self._query_params = ANY_QUERY_PARAMS  # Default to any params
     
     @classmethod
     def events_endpoint(cls, organization: str, project: str, auth_token: str):
@@ -33,7 +34,12 @@ class SentryRequestBuilder:
     @classmethod
     def releases_endpoint(cls, organization: str, project: str, auth_token: str):
         return cls("releases", organization, project, auth_token)
-    
+
+    def with_query_params(self, query_params):
+        """Set specific query parameters to validate"""
+        self._query_params = query_params
+        return self
+
     def build(self) -> HttpRequest:
         # Build URL based on resource type
         if self._resource == "projects":
@@ -51,6 +57,6 @@ class SentryRequestBuilder:
 
         return HttpRequest(
             url=url,
-            query_params=ANY_QUERY_PARAMS,
+            query_params=self._query_params,
             headers={"Authorization": f"Bearer {self._auth_token}"}
         )
