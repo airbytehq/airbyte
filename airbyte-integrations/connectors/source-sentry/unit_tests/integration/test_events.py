@@ -2,19 +2,19 @@
 
 from datetime import datetime, timezone
 from unittest import TestCase
+
 import freezegun
+from unit_tests.conftest import get_source
 
 from airbyte_cdk.models import SyncMode
 from airbyte_cdk.test.catalog_builder import CatalogBuilder
 from airbyte_cdk.test.entrypoint_wrapper import read
 from airbyte_cdk.test.mock_http import HttpMocker
 from airbyte_cdk.test.state_builder import StateBuilder
-
 from integration.config import ConfigBuilder
 from integration.request_builder import SentryRequestBuilder
 from integration.response_builder import create_response
 
-from unit_tests.conftest import get_source
 
 # Test constants
 _NOW = datetime.now(timezone.utc)
@@ -47,13 +47,15 @@ class TestEventsStream(TestCase):
         # Validate query params including full=true (from manifest) and start/end (from sync logic)
         http_mocker.get(
             SentryRequestBuilder.events_endpoint(_ORGANIZATION, _PROJECT, _AUTH_TOKEN)
-                .with_query_params({
+            .with_query_params(
+                {
                     "full": "true",  # From manifest request_parameters
                     "start": "1900-01-01T00:00:00.000000Z",  # Default start for full_refresh
-                    "end": _NOW.strftime("%Y-%m-%dT%H:%M:%S.%fZ")  # Current time (frozen)
-                })
-                .build(),
-            create_response("events", has_next=False)
+                    "end": _NOW.strftime("%Y-%m-%dT%H:%M:%S.%fZ"),  # Current time (frozen)
+                }
+            )
+            .build(),
+            create_response("events", has_next=False),
         )
 
         # ACT
@@ -77,26 +79,24 @@ class TestEventsStream(TestCase):
         # ARRANGE: Mock page 1 (no cursor)
         http_mocker.get(
             SentryRequestBuilder.events_endpoint(_ORGANIZATION, _PROJECT, _AUTH_TOKEN)
-                .with_query_params({
-                    "full": "true",
-                    "start": "1900-01-01T00:00:00.000000Z",
-                    "end": _NOW.strftime("%Y-%m-%dT%H:%M:%S.%fZ")
-                })
-                .build(),
-            create_response("events", has_next=True, cursor="page2")
+            .with_query_params({"full": "true", "start": "1900-01-01T00:00:00.000000Z", "end": _NOW.strftime("%Y-%m-%dT%H:%M:%S.%fZ")})
+            .build(),
+            create_response("events", has_next=True, cursor="page2"),
         )
 
         # ARRANGE: Mock page 2 (with cursor)
         http_mocker.get(
             SentryRequestBuilder.events_endpoint(_ORGANIZATION, _PROJECT, _AUTH_TOKEN)
-                .with_query_params({
+            .with_query_params(
+                {
                     "full": "true",
                     "cursor": "page2",  # Second request includes cursor!
                     "start": "1900-01-01T00:00:00.000000Z",
-                    "end": _NOW.strftime("%Y-%m-%dT%H:%M:%S.%fZ")
-                })
-                .build(),
-            create_response("events", has_next=False, cursor="page2")
+                    "end": _NOW.strftime("%Y-%m-%dT%H:%M:%S.%fZ"),
+                }
+            )
+            .build(),
+            create_response("events", has_next=False, cursor="page2"),
         )
 
         # ACT
@@ -127,13 +127,15 @@ class TestEventsStream(TestCase):
         # ARRANGE
         http_mocker.get(
             SentryRequestBuilder.events_endpoint(_ORGANIZATION, _PROJECT, _AUTH_TOKEN)
-                .with_query_params({
+            .with_query_params(
+                {
                     "full": "true",
                     "start": "1900-01-01T00:00:00.000000Z",  # Default start for first incremental sync
-                    "end": _NOW.strftime("%Y-%m-%dT%H:%M:%S.%fZ")
-                })
-                .build(),
-            create_response("events", has_next=False)
+                    "end": _NOW.strftime("%Y-%m-%dT%H:%M:%S.%fZ"),
+                }
+            )
+            .build(),
+            create_response("events", has_next=False),
         )
 
         # ACT
@@ -181,14 +183,16 @@ class TestEventsStream(TestCase):
         # This proves Events stream does API-side filtering by passing state as start param
         http_mocker.get(
             SentryRequestBuilder.events_endpoint(_ORGANIZATION, _PROJECT, _AUTH_TOKEN)
-                .with_query_params({
+            .with_query_params(
+                {
                     "full": "true",
                     "start": previous_state_date,  # ← VERIFY state is used as start param!
-                    "end": _NOW.strftime("%Y-%m-%dT%H:%M:%S.%fZ")
-                })
-                .build(),
+                    "end": _NOW.strftime("%Y-%m-%dT%H:%M:%S.%fZ"),
+                }
+            )
+            .build(),
             # Return only 1 record (01-16 event, which is after state date 01-15)
-            create_response("events_incremental", has_next=False)
+            create_response("events_incremental", has_next=False),
         )
 
         # ACT - Pass state to get_source() for proper state management
@@ -209,4 +213,6 @@ class TestEventsStream(TestCase):
         assert len(output.state_messages) > 0, "Expected state messages to be emitted"
         new_state = output.most_recent_state.stream_state.__dict__
         # New state should be 01-16 (advanced from input state 01-15)
-        assert new_state["dateCreated"].startswith("2024-01-16T12:30:00"), f"Expected state to advance to latest record date, got {new_state}"
+        assert new_state["dateCreated"].startswith(
+            "2024-01-16T12:30:00"
+        ), f"Expected state to advance to latest record date, got {new_state}"

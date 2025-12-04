@@ -1,22 +1,24 @@
 # Copyright (c) 2024 Airbyte, Inc., all rights reserved.
 
+import sys
 from datetime import datetime, timezone
+from pathlib import Path
 from unittest import TestCase
+
 import freezegun
 
 from airbyte_cdk.models import SyncMode
 from airbyte_cdk.test.catalog_builder import CatalogBuilder
 from airbyte_cdk.test.entrypoint_wrapper import read
 from airbyte_cdk.test.mock_http import HttpMocker
-
 from integration.config import ConfigBuilder
 from integration.request_builder import SentryRequestBuilder
 from integration.response_builder import create_response
 
-import sys
-from pathlib import Path
+
 sys.path.insert(0, str(Path(__file__).parent.parent))
 from conftest import get_source
+
 
 _NOW = datetime.now(timezone.utc)
 _STREAM_NAME = "project_detail"
@@ -37,7 +39,7 @@ class TestProjectDetailStream(TestCase):
         """Test full refresh for project_detail stream"""
         http_mocker.get(
             SentryRequestBuilder.project_detail_endpoint(_ORGANIZATION, _PROJECT, _AUTH_TOKEN).build(),
-            create_response("project_detail", has_next=False)
+            create_response("project_detail", has_next=False),
         )
 
         source = get_source(config=self._config())

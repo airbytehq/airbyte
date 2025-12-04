@@ -2,18 +2,19 @@
 
 from datetime import datetime, timezone
 from unittest import TestCase
+
 import freezegun
+from unit_tests.conftest import get_source
 
 from airbyte_cdk.models import SyncMode
 from airbyte_cdk.test.catalog_builder import CatalogBuilder
 from airbyte_cdk.test.entrypoint_wrapper import read
 from airbyte_cdk.test.mock_http import HttpMocker
 from airbyte_cdk.test.state_builder import StateBuilder
-
 from integration.config import ConfigBuilder
 from integration.request_builder import SentryRequestBuilder
 from integration.response_builder import create_response
-from unit_tests.conftest import get_source
+
 
 _NOW = datetime.now(timezone.utc)
 _STREAM_NAME = "releases"
@@ -34,7 +35,7 @@ class TestReleasesStream(TestCase):
         """Test full refresh for releases stream"""
         http_mocker.get(
             SentryRequestBuilder.releases_endpoint(_ORGANIZATION, _PROJECT, _AUTH_TOKEN).build(),
-            create_response("releases", has_next=False)
+            create_response("releases", has_next=False),
         )
 
         source = get_source(config=self._config())
@@ -49,10 +50,7 @@ class TestReleasesStream(TestCase):
         """Test pagination for releases"""
         http_mocker.get(
             SentryRequestBuilder.releases_endpoint(_ORGANIZATION, _PROJECT, _AUTH_TOKEN).build(),
-            [
-                create_response("releases", has_next=True, cursor="next"),
-                create_response("releases", has_next=False)
-            ]
+            [create_response("releases", has_next=True, cursor="next"), create_response("releases", has_next=False)],
         )
 
         source = get_source(config=self._config())
@@ -90,7 +88,7 @@ class TestReleasesStream(TestCase):
         # Releases stream lacks record_filter, so all records are emitted
         http_mocker.get(
             SentryRequestBuilder.releases_endpoint(_ORGANIZATION, _PROJECT, _AUTH_TOKEN).build(),
-            create_response("releases", has_next=False)
+            create_response("releases", has_next=False),
         )
 
         # ACT - Pass state to get_source() for proper state management
@@ -126,7 +124,7 @@ class TestReleasesStream(TestCase):
         # ARRANGE - Mock API returns releases (no state, so uses default behavior)
         http_mocker.get(
             SentryRequestBuilder.releases_endpoint(_ORGANIZATION, _PROJECT, _AUTH_TOKEN).build(),
-            create_response("releases", has_next=False)
+            create_response("releases", has_next=False),
         )
 
         # ACT - First incremental sync (no state parameter)
@@ -148,7 +146,9 @@ class TestReleasesStream(TestCase):
         state = output.most_recent_state.stream_state.__dict__
         # State should be set to the latest record's dateCreated
         assert state["dateCreated"] is not None, "Expected state to have dateCreated cursor"
-        assert state["dateCreated"].startswith("2024-01-10T08:00:00"), f"Expected state cursor to be latest record's dateCreated, got {state}"
+        assert state["dateCreated"].startswith(
+            "2024-01-10T08:00:00"
+        ), f"Expected state cursor to be latest record's dateCreated, got {state}"
 
     @HttpMocker()
     def test_incremental_pagination_with_smart_stopping(self, http_mocker: HttpMocker):
@@ -182,7 +182,7 @@ class TestReleasesStream(TestCase):
         http_mocker.get(
             SentryRequestBuilder.releases_endpoint(_ORGANIZATION, _PROJECT, _AUTH_TOKEN).build(),
             # Page 1: 3 records, has_next=True but pagination stops here!
-            create_response("releases_mixed_dates", has_next=True, cursor="cursor123")
+            create_response("releases_mixed_dates", has_next=True, cursor="cursor123"),
         )
 
         # ACT

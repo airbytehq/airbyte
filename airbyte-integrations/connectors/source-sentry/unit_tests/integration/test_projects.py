@@ -2,18 +2,19 @@
 
 from datetime import datetime, timezone
 from unittest import TestCase
+
 import freezegun
+from unit_tests.conftest import get_source
 
 from airbyte_cdk.models import SyncMode
 from airbyte_cdk.test.catalog_builder import CatalogBuilder
 from airbyte_cdk.test.entrypoint_wrapper import read
 from airbyte_cdk.test.mock_http import HttpMocker
 from airbyte_cdk.test.state_builder import StateBuilder
-
 from integration.config import ConfigBuilder
 from integration.request_builder import SentryRequestBuilder
 from integration.response_builder import create_response
-from unit_tests.conftest import get_source
+
 
 _NOW = datetime.now(timezone.utc)
 _STREAM_NAME = "projects"
@@ -32,8 +33,7 @@ class TestProjectsStream(TestCase):
     def test_full_refresh(self, http_mocker: HttpMocker):
         """Test full refresh for projects stream"""
         http_mocker.get(
-            SentryRequestBuilder.projects_endpoint(_ORGANIZATION, _AUTH_TOKEN).build(),
-            create_response("projects", has_next=False)
+            SentryRequestBuilder.projects_endpoint(_ORGANIZATION, _AUTH_TOKEN).build(), create_response("projects", has_next=False)
         )
 
         source = get_source(config=self._config())
@@ -48,10 +48,7 @@ class TestProjectsStream(TestCase):
         """Test pagination for projects stream"""
         http_mocker.get(
             SentryRequestBuilder.projects_endpoint(_ORGANIZATION, _AUTH_TOKEN).build(),
-            [
-                create_response("projects", has_next=True, cursor="next"),
-                create_response("projects", has_next=False)
-            ]
+            [create_response("projects", has_next=True, cursor="next"), create_response("projects", has_next=False)],
         )
 
         source = get_source(config=self._config())
@@ -94,7 +91,7 @@ class TestProjectsStream(TestCase):
         #   - proj456: dateCreated = 2024-01-20 (AFTER state, should be kept)
         http_mocker.get(
             SentryRequestBuilder.projects_endpoint(_ORGANIZATION, _AUTH_TOKEN).build(),
-            create_response("projects_mixed_dates", has_next=False)
+            create_response("projects_mixed_dates", has_next=False),
         )
 
         # ACT - Run the sync with state
@@ -117,31 +114,24 @@ class TestProjectsStream(TestCase):
 
         # ASSERT - Verify it's the correct record (the only one after state date)
         record = output.records[0].record.data
-        assert record["id"] == "proj456", (
-            f"Expected proj456 (the only project after state date), got {record['id']}"
-        )
+        assert record["id"] == "proj456", f"Expected proj456 (the only project after state date), got {record['id']}"
         assert record["slug"] == "new-project", f"Expected new-project, got {record['slug']}"
         assert record["dateCreated"] == "2024-01-20T10:00:00Z", (
-            f"Expected proj456 with date 2024-01-20 (after state 2024-01-15), "
-            f"got {record['dateCreated']}"
+            f"Expected proj456 with date 2024-01-20 (after state 2024-01-15), " f"got {record['dateCreated']}"
         )
 
         # ASSERT - Verify old records were NOT emitted
         record_ids = [r.record.data["id"] for r in output.records]
-        assert "proj001" not in record_ids, (
-            "proj001 should have been filtered out (dateCreated 2024-01-10 < state 2024-01-15)"
-        )
-        assert "proj002" not in record_ids, (
-            "proj002 should have been filtered out (dateCreated 2024-01-12 < state 2024-01-15)"
-        )
+        assert "proj001" not in record_ids, "proj001 should have been filtered out (dateCreated 2024-01-10 < state 2024-01-15)"
+        assert "proj002" not in record_ids, "proj002 should have been filtered out (dateCreated 2024-01-12 < state 2024-01-15)"
 
         # ASSERT - State message with latest dateCreated
         assert len(output.state_messages) > 0, "Expected state messages to be emitted"
         new_state = output.most_recent_state.stream_state.__dict__
         # State should be updated to the latest record (01-20)
-        assert new_state["dateCreated"].startswith("2024-01-20T10:00:00"), (
-            f"Expected state to advance to latest record (2024-01-20), got {new_state}"
-        )
+        assert new_state["dateCreated"].startswith(
+            "2024-01-20T10:00:00"
+        ), f"Expected state to advance to latest record (2024-01-20), got {new_state}"
 
     @HttpMocker()
     def test_incremental_sync_first_sync_emits_state(self, http_mocker: HttpMocker):
@@ -155,8 +145,7 @@ class TestProjectsStream(TestCase):
         """
         # ARRANGE - Mock API returns projects (no state, so uses default behavior)
         http_mocker.get(
-            SentryRequestBuilder.projects_endpoint(_ORGANIZATION, _AUTH_TOKEN).build(),
-            create_response("projects", has_next=False)
+            SentryRequestBuilder.projects_endpoint(_ORGANIZATION, _AUTH_TOKEN).build(), create_response("projects", has_next=False)
         )
 
         # ACT - First incremental sync (no state parameter)
@@ -178,4 +167,6 @@ class TestProjectsStream(TestCase):
         state = output.most_recent_state.stream_state.__dict__
         # State should be set to the latest record's dateCreated
         assert state["dateCreated"] is not None, "Expected state to have dateCreated cursor"
-        assert state["dateCreated"].startswith("2023-01-01T00:00:00"), f"Expected state cursor to be latest record's dateCreated, got {state}"
+        assert state["dateCreated"].startswith(
+            "2023-01-01T00:00:00"
+        ), f"Expected state cursor to be latest record's dateCreated, got {state}"
