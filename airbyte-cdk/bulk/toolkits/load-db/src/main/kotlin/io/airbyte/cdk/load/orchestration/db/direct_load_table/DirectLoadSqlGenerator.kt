@@ -6,8 +6,8 @@ package io.airbyte.cdk.load.orchestration.db.direct_load_table
 
 import io.airbyte.cdk.load.command.DestinationStream
 import io.airbyte.cdk.load.orchestration.db.Sql
+import io.airbyte.cdk.load.schema.model.TableName
 import io.airbyte.cdk.load.table.ColumnNameMapping
-import io.airbyte.cdk.load.table.TableName
 
 interface DirectLoadSqlGenerator {
     fun createTable(

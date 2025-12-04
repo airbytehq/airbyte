@@ -7,6 +7,7 @@ package io.airbyte.cdk.load.component
 import io.airbyte.cdk.load.command.Append
 import io.airbyte.cdk.load.command.Dedupe
 import io.airbyte.cdk.load.command.DestinationStream
+import io.airbyte.cdk.load.command.ImportType
 import io.airbyte.cdk.load.command.NamespaceMapper
 import io.airbyte.cdk.load.data.AirbyteValue
 import io.airbyte.cdk.load.data.ArrayType
@@ -30,10 +31,14 @@ import io.airbyte.cdk.load.message.Meta.Companion.COLUMN_NAME_AB_EXTRACTED_AT
 import io.airbyte.cdk.load.message.Meta.Companion.COLUMN_NAME_AB_GENERATION_ID
 import io.airbyte.cdk.load.message.Meta.Companion.COLUMN_NAME_AB_META
 import io.airbyte.cdk.load.message.Meta.Companion.COLUMN_NAME_AB_RAW_ID
+import io.airbyte.cdk.load.schema.model.ColumnSchema
+import io.airbyte.cdk.load.schema.model.StreamTableSchema
+import io.airbyte.cdk.load.schema.model.TableName
+import io.airbyte.cdk.load.schema.model.TableNames
 import io.airbyte.cdk.load.table.CDC_DELETED_AT_COLUMN
 import io.airbyte.cdk.load.table.ColumnNameMapping
-import io.airbyte.cdk.load.table.TableName
 import io.airbyte.cdk.load.util.Jsons
+import io.airbyte.cdk.util.invert
 import java.util.UUID
 import org.junit.jupiter.api.Assertions
 
@@ -690,6 +695,17 @@ object TableOperationsFixtures {
             syncId = syncId,
             schema = schema,
             namespaceMapper = NamespaceMapper(),
+            tableSchema =
+                StreamTableSchema(
+                    tableNames = TableNames(finalTableName = TableName(namespace, name)),
+                    columnSchema =
+                        ColumnSchema(
+                            inputSchema = schema.properties,
+                            inputToFinalColumnNames = schema.properties.keys.associateWith { it },
+                            finalSchema = mapOf(),
+                        ),
+                    importType = Append,
+                )
         )
 
     fun createDedupeStream(
@@ -715,6 +731,52 @@ object TableOperationsFixtures {
             syncId = syncId,
             schema = schema,
             namespaceMapper = NamespaceMapper(),
+            tableSchema =
+                StreamTableSchema(
+                    tableNames = TableNames(finalTableName = TableName(namespace, name)),
+                    columnSchema =
+                        ColumnSchema(
+                            inputSchema = schema.properties,
+                            inputToFinalColumnNames = schema.properties.keys.associateWith { it },
+                            finalSchema = mapOf(),
+                        ),
+                    importType =
+                        Dedupe(
+                            primaryKey = primaryKey,
+                            cursor = cursor,
+                        ),
+                )
+        )
+
+    fun createStream(
+        namespace: String,
+        name: String,
+        schema: ObjectType,
+        importType: ImportType,
+        generationId: Long = 1,
+        minimumGenerationId: Long = 0,
+        syncId: Long = 1,
+    ) =
+        DestinationStream(
+            unmappedNamespace = namespace,
+            unmappedName = name,
+            importType = importType,
+            generationId = generationId,
+            minimumGenerationId = minimumGenerationId,
+            syncId = syncId,
+            schema = schema,
+            namespaceMapper = NamespaceMapper(),
+            tableSchema =
+                StreamTableSchema(
+                    tableNames = TableNames(finalTableName = TableName("namespace", "test")),
+                    columnSchema =
+                        ColumnSchema(
+                            inputSchema = schema.properties,
+                            inputToFinalColumnNames = mapOf(),
+                            finalSchema = mapOf(),
+                        ),
+                    importType = importType,
+                )
         )
 
     fun <V> List<Map<String, V>>.sortBy(key: String) =
@@ -722,6 +784,9 @@ object TableOperationsFixtures {
         // that the sort key is always comparable.
         // In practice, it's generally some sort of ID column (int/string/etc.).
         @Suppress("UNCHECKED_CAST") this.sortedBy { it[key] as Comparable<Any> }
+
+    fun <V> Map<String, V>.prettyString() =
+        "{" + this.entries.sortedBy { it.key }.joinToString(", ") + "}"
 
     fun <V> List<Map<String, V>>.applyColumnNameMapping(mapping: ColumnNameMapping) =
         map { record ->
@@ -732,7 +797,7 @@ object TableOperationsFixtures {
         airbyteMetaColumnMapping: Map<String, String>
     ): List<Map<String, V>> {
         val totalMapping = ColumnNameMapping(columnNameMapping + airbyteMetaColumnMapping)
-        return map { record -> record.mapKeys { (k, _) -> totalMapping.originalName(k) ?: k } }
+        return map { record -> record.mapKeys { (k, _) -> totalMapping.invert()[k] ?: k } }
     }
 
     fun <V> List<Map<String, V>>.removeNulls() =
@@ -765,6 +830,15 @@ object TableOperationsFixtures {
             *pairs,
         )
 
+    fun inputRecord(vararg pairs: Pair<String, AirbyteValue>) =
+        inputRecord(
+            rawId = UUID.randomUUID().toString(),
+            extractedAt = "2025-01-23T00:00:00Z",
+            meta = linkedMapOf(),
+            generationId = 1,
+            pairs = pairs,
+        )
+
     fun outputRecord(
         rawId: String,
         extractedAt: String,
@@ -781,14 +855,14 @@ object TableOperationsFixtures {
         )
 
     fun assertEquals(
-        expectedRecords: List<Map<String, Any>>,
-        actualRecords: List<Map<String, Any>>,
+        expectedRecords: List<Map<String, Any?>>,
+        actualRecords: List<Map<String, Any?>>,
         sortKey: String,
         message: String,
     ) =
         Assertions.assertEquals(
-            expectedRecords.sortBy(sortKey).joinToString("\n"),
-            actualRecords.sortBy(sortKey).joinToString("\n"),
+            expectedRecords.sortBy(sortKey).joinToString("\n") { it.prettyString() },
+            actualRecords.sortBy(sortKey).joinToString("\n") { it.prettyString() },
             message,
         )
 }

@@ -1,26 +1,142 @@
 plugins {
-    id 'airbyte-java-connector'
-    id "io.airbyte.gradle.docker"
-    id 'airbyte-connector-docker-convention'
+    id('application')
+    id('airbyte-bulk-connector')
+    id("io.airbyte.gradle.docker")
+    id('airbyte-connector-docker-convention')
 }
 
-airbyteJavaConnector {
-    cdkVersionRequired = '0.48.9'
-    features = ['db-destinations', 'datastore-postgres', 'typing-deduping']
-    useLocalCdk = false
+airbyteBulkConnector {
+    core = "load"
+    toolkits = ["load-db"]
 }
 
-compileKotlin {
-    compilerOptions {
-        allWarningsAsErrors = false
+sourceSets {
+    integrationTestLegacy {
+        java {
+            srcDir 'src/integrationTestLegacy/java'
+            srcDir 'src/integrationTestLegacy/kotlin'  // Also include Java files from kotlin directory
+        }
+        kotlin {
+            srcDir 'src/integrationTestLegacy/kotlin'
+        }
+        resources {
+            srcDir 'src/integrationTestLegacy/resources'
+        }
+    }
+}
+
+tasks.withType(JavaCompile).configureEach {
+    options.compilerArgs.add("-Xlint:-this-escape")
+}
+
+afterEvaluate {
+    tasks.named('processIntegrationTestLegacyResources') {
+        duplicatesStrategy = DuplicatesStrategy.EXCLUDE
+    }
+}
+
+// Skip KSP for testFixtures since they only contain Java files
+// KSP has issues processing Java files with Micronaut annotations
+// Also skip KSP for integrationTestLegacy since it uses old CDK without Micronaut
+afterEvaluate {
+    tasks.matching { it.name == 'kspTestFixturesKotlin' || it.name == 'kspIntegrationTestLegacyKotlin' }.configureEach {
+        enabled = false
     }
 }
 
 application {
-    mainClass = 'io.airbyte.integrations.destination.postgres.PostgresDestination'
-    applicationDefaultJvmArgs = ['-XX:+ExitOnOutOfMemoryError', '-XX:MaxRAMPercentage=75.0']
+    mainClass = 'io.airbyte.integrations.destination.postgres.PostgresDestinationV2Kt'
+    applicationDefaultJvmArgs = [
+            '-XX:+ExitOnOutOfMemoryError',
+            '-XX:MaxRAMPercentage=75.0'
+    ]
+}
+
+def hikariCpVersion = "7.0.2"
+def junitVersion = "5.13.4"
+def junitPlatformVersion = "1.13.4"
+def postgresqlVersion = "42.7.2"
+def testContainersVersion = "1.20.5"
+
+configurations {
+    integrationTestLegacyCompileClasspath {
+        resolutionStrategy {
+            force 'io.airbyte.airbyte-protocol:protocol-models:0.11.0'
+        }
+    }
+    integrationTestLegacyRuntimeClasspath {
+        resolutionStrategy {
+            force 'io.airbyte.airbyte-protocol:protocol-models:0.11.0'
+        }
+    }
 }
 
 dependencies {
-    testFixturesApi 'org.testcontainers:postgresql:1.20.1'
+    implementation("org.postgresql:postgresql:$postgresqlVersion")
+    implementation("com.zaxxer:HikariCP:$hikariCpVersion")
+    implementation(project(":airbyte-cdk:java:airbyte-cdk:airbyte-cdk-dependencies"))
+    implementation(project(":airbyte-cdk:java:airbyte-cdk:airbyte-cdk-core"))
+    implementation(project(":airbyte-cdk:java:airbyte-cdk:airbyte-cdk-db-destinations"))
+    implementation(project(":airbyte-cdk:java:airbyte-cdk:airbyte-cdk-typing-deduping"))
+    implementation(project(":airbyte-cdk:java:airbyte-cdk:airbyte-cdk-datastore-postgres"))
+
+    testImplementation("io.mockk:mockk:1.14.5")
+    testImplementation("org.junit.jupiter:junit-jupiter-api:$junitVersion")
+    testImplementation("org.junit.jupiter:junit-jupiter:$junitVersion")
+    testRuntimeOnly("org.junit.platform:junit-platform-engine:$junitPlatformVersion")
+    testRuntimeOnly("org.junit.platform:junit-platform-launcher:$junitPlatformVersion")
+    testRuntimeOnly("org.junit.jupiter:junit-jupiter-engine:$junitVersion")
+
+    integrationTestImplementation("com.zaxxer:HikariCP:$hikariCpVersion")
+    integrationTestImplementation("org.postgresql:postgresql:$postgresqlVersion")
+    integrationTestImplementation("org.testcontainers:postgresql:$testContainersVersion")
+    integrationTestImplementation(project(":airbyte-cdk:java:airbyte-cdk:airbyte-cdk-dependencies"))
+
+    integrationTestLegacyImplementation('io.airbyte.airbyte-protocol:protocol-models:0.11.0')
+    integrationTestLegacyImplementation('io.airbyte.cdk:airbyte-cdk-core:0.46.0') {
+        exclude group: 'io.airbyte.airbyte-protocol', module: 'protocol-models'
+    }
+    integrationTestLegacyImplementation('io.airbyte.cdk:airbyte-cdk-datastore-bigquery:0.46.0') {
+        exclude group: 'io.airbyte.airbyte-protocol', module: 'protocol-models'
+    }
+    integrationTestLegacyImplementation('io.airbyte.cdk:airbyte-cdk-db-destinations:0.46.0') {
+        exclude group: 'io.airbyte.airbyte-protocol', module: 'protocol-models'
+    }
+    integrationTestLegacyImplementation('io.airbyte.cdk:airbyte-cdk-dependencies:0.46.0') {
+        exclude group: 'io.airbyte.airbyte-protocol', module: 'protocol-models'
+    }
+    integrationTestLegacyImplementation('io.airbyte.cdk:airbyte-cdk-gcs-destinations:0.46.0') {
+        exclude group: 'io.airbyte.airbyte-protocol', module: 'protocol-models'
+    }
+    integrationTestLegacyImplementation('io.airbyte.cdk:airbyte-cdk-typing-deduping:0.46.0') {
+        exclude group: 'io.airbyte.airbyte-protocol', module: 'protocol-models'
+    }
+    integrationTestLegacyImplementation(testFixtures('io.airbyte.cdk:airbyte-cdk-core:0.46.0')) {
+        exclude group: 'io.airbyte.airbyte-protocol', module: 'protocol-models'
+    }
+    integrationTestLegacyImplementation(testFixtures('io.airbyte.cdk:airbyte-cdk-datastore-bigquery:0.46.0')) {
+        exclude group: 'io.airbyte.airbyte-protocol', module: 'protocol-models'
+    }
+    integrationTestLegacyImplementation(testFixtures('io.airbyte.cdk:airbyte-cdk-db-destinations:0.46.0')) {
+        exclude group: 'io.airbyte.airbyte-protocol', module: 'protocol-models'
+    }
+    integrationTestLegacyImplementation(testFixtures('io.airbyte.cdk:airbyte-cdk-dependencies:0.46.0')) {
+        exclude group: 'io.airbyte.airbyte-protocol', module: 'protocol-models'
+    }
+    integrationTestLegacyImplementation(testFixtures('io.airbyte.cdk:airbyte-cdk-gcs-destinations:0.46.0')) {
+        exclude group: 'io.airbyte.airbyte-protocol', module: 'protocol-models'
+    }
+    integrationTestLegacyImplementation(testFixtures('io.airbyte.cdk:airbyte-cdk-typing-deduping:0.46.0')) {
+        exclude group: 'io.airbyte.airbyte-protocol', module: 'protocol-models'
+    }
+
+    // Add local project for integration legacy tests
+    integrationTestLegacyImplementation(project) {
+        exclude group: 'io.airbyte.airbyte-protocol', module: 'protocol-models'
+    }
+
+    integrationTestLegacyImplementation 'org.mockito:mockito-junit-jupiter:5.11.0'
+    integrationTestLegacyImplementation 'org.assertj:assertj-core:3.25.3'
+    integrationTestLegacyImplementation("com.github.spotbugs:spotbugs-annotations:4.9.0")
+    integrationTestLegacyImplementation("org.testcontainers:postgresql:$testContainersVersion")
 }

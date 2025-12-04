@@ -5,7 +5,7 @@
 package io.airbyte.cdk.load.component
 
 import io.airbyte.cdk.load.data.AirbyteValue
-import io.airbyte.cdk.load.table.TableName
+import io.airbyte.cdk.load.schema.model.TableName
 
 interface TestTableOperationsClient {
     /** Tests database connectivity. */
