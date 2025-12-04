@@ -7,10 +7,10 @@ When it is not possible to make changes in a non-breaking manner, additional **b
 1. A **Major Version** increase (or minor in the case of a pre-1.0.0 connector in accordance with Semantic Versioning rules)
 2. A [`breakingChanges` entry](https://docs.airbyte.com/connector-development/connector-metadata-file/) in the `releases` section of the `metadata.yaml` file
 3. A migration guide which details steps that users should take to resolve the change
-4. CI will enforce that breaking changes have an entry in the associated `{connector-name}-migrations.md` file
-5. Breaking changes require approval from the `@airbytehq/breaking-change-reviewers` GitHub team, which is automatically requested for review on migration guide changes (see [CODEOWNERS](https://github.com/airbytehq/airbyte/blob/master/CODEOWNERS)). PRs with breaking changes must also be labeled with `breaking-change`
-6. PR titles for breaking changes must include a "!" to signify the PR contains breaking changes (e.g., `🚨 Source Example: fix!: schema change`)
-7. An Airbyte Engineer to complete the [Connector Breaking Change Release Playbook](https://docs.google.com/document/u/0/d/1VYQggHbL_PN0dDDu7rCyzBLGRtX-R3cpwXaY8QxEgzw/edit) (internal link) before merging the PR
+4. CI will enforce that breaking changes have an entry in the associated `{connector-name}-migrations.md` file.
+5. Breaking changes require approval from the `@airbytehq/breaking-change-reviewers` GitHub team, which is automatically requested for review on migration guide changes (see [CODEOWNERS](https://github.com/airbytehq/airbyte/blob/master/CODEOWNERS)). PRs with breaking changes must also be labeled with `breaking-change`.
+6. PR titles for breaking changes must include a "!" to signify the PR contains breaking changes (e.g., `🚨 Source Example: fix!: schema change`).
+7. An Airbyte Engineer to complete the [Connector Breaking Change Release Playbook](https://docs.google.com/document/u/0/d/1VYQggHbL_PN0dDDu7rCyzBLGRtX-R3cpwXaY8QxEgzw/edit) (internal link) before merging the PR.
 
 ## Types of Breaking Changes
 
@@ -30,9 +30,9 @@ The addition of new config options, new streams, or new stream properties should
 
 **High-Volume Streams**: Adding a new high-volume stream (one that produces 2x or more the volume of other streams) can break existing pipelines by overwhelming destination capacity or significantly increasing sync times. When adding high-volume streams to existing connectors:
 
-1. Default the new stream to _not_ be included in the `suggestedStreams` metadata
-2. If the connector does not yet have a `suggestedStreams` set, add one that excludes the new high-volume stream
-3. Document the stream's volume characteristics in the connector documentation
+1. Default the new stream to _not_ be included in the `suggestedStreams` metadata.
+2. If the connector does not yet have a `suggestedStreams` set, add one that excludes the new high-volume stream.
+3. Document the stream's volume characteristics in the connector documentation.
 
 ### Avoiding Breaking Changes with Migrations
 
@@ -152,16 +152,16 @@ The `upgradeDeadline` field specifies the date by which users should upgrade (fo
 
 Significant breaking changes such as those required by a lift-and-shift or full connector rewrite should use a "-gen2" suffix and establish a new canonical connector ID. This approach provides several benefits:
 
-1. **Incremental Adoption**: Users can adopt the new connector without it requiring full parity with the original
-2. **Side-by-Side Testing**: Users can run both the original and Gen 2 connectors in parallel
-3. **Extended Migration Window**: Users have the option to use one or both connectors for an extended period of time
-4. **Self-Service Migration**: Users can safely test the old and new versions without direct support from the Airbyte team
+1. **Incremental Adoption**: Users can adopt the new connector without it requiring full parity with the original.
+2. **Side-by-Side Testing**: Users can run both the original and Gen 2 connectors in parallel.
+3. **Extended Migration Window**: Users have the option to use one or both connectors for an extended period of time.
+4. **Self-Service Migration**: Users can safely test the old and new versions without direct support from the Airbyte team.
 
 This pattern is particularly appropriate when:
 
-- The connector is being completely rewritten with a new architecture
-- Schema changes are so significant they would break all downstream SQL transformations and BI dashboards
-- The migration path is complex enough that users need extended time to adapt their pipelines
+- The connector is being completely rewritten with a new architecture.
+- Schema changes are so significant they would break all downstream SQL transformations and BI dashboards.
+- The migration path is complex enough that users need extended time to adapt their pipelines.
 
 Example: Migration from legacy JSON-only "raw" tables to normalized typed columns in destination tables. These historic changes were so significant that they would break all downstream SQL transformations and BI dashboards. A "gen-2" approach in these cases gives users the ability to run both "Gen 1" and "Gen 2" in parallel, migrating only after they have had a chance to adapt their code to the new data models.
 
@@ -169,9 +169,9 @@ Example: Migration from legacy JSON-only "raw" tables to normalized typed column
 
 The following improvements to breaking change management are under consideration for future implementation:
 
-- **AI-Assisted Review**: A new AI review process for any connectors which are marked as breaking, to help identify potential issues and ensure proper documentation
-- **Static Analysis**: A new CI workflow which performs static analysis to confirm that connector changes are marked as breaking if they include any breaking changes
-- **Regression Testing**: Automated regression testing to detect unintended breaking changes before they are merged
+- **AI-Assisted Review**: A new AI review process for any connectors which are marked as breaking, to help identify potential issues and ensure proper documentation.
+- **Static Analysis**: A new CI workflow which performs static analysis to confirm that connector changes are marked as breaking if they include any breaking changes.
+- **Regression Testing**: Automated regression testing to detect unintended breaking changes before they are merged.
 
 ## Related Topics
 
