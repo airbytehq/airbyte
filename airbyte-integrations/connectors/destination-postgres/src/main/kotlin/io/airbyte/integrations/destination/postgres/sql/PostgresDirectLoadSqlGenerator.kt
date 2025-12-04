@@ -575,7 +575,7 @@ class PostgresDirectLoadSqlGenerator(
         """
 
     private fun dropIndex(indexName: String, schema: String): String =
-        "DROP INDEX IF EXISTS $schema.$indexName;"
+        "DROP INDEX IF EXISTS $schema.$indexName$dropTableSuffix;"
 
     fun copyFromCsv(tableName: TableName): String =
         """

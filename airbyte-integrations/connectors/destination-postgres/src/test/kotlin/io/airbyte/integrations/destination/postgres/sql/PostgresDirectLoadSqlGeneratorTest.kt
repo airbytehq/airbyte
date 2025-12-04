@@ -1182,4 +1182,53 @@ internal class PostgresDirectLoadSqlGeneratorTest {
             )
         )
     }
+
+    @Test
+    fun testMatchSchemasDropIndexWithCascade() {
+        val cascadeConfig =
+            mockk<PostgresConfiguration> {
+                every { legacyRawTablesOnly } returns false
+                every { dropCascade } returns true
+            }
+        val cascadeColumnUtils = PostgresColumnUtils(cascadeConfig)
+        val cascadeSqlGenerator = PostgresDirectLoadSqlGenerator(cascadeColumnUtils, cascadeConfig)
+
+        val tableName = TableName(namespace = "test_schema", name = "test_table")
+        val columnsToAdd = emptySet<Column>()
+        val columnsToRemove = emptySet<Column>()
+        val columnsToModify = emptySet<Column>()
+        val columnsInDb = emptySet<Column>()
+        val primaryKeyColumnNames = listOf("id")
+        val cursorColumnName = "updated_at"
+
+        val sql =
+            cascadeSqlGenerator.matchSchemas(
+                tableName,
+                columnsToAdd,
+                columnsToRemove,
+                columnsToModify,
+                columnsInDb,
+                recreatePrimaryKeyIndex = true,
+                primaryKeyColumnNames = primaryKeyColumnNames,
+                recreateCursorIndex = true,
+                cursorColumnName = cursorColumnName
+            )
+
+        // Verify DROP INDEX statements include CASCADE
+        assert(sql.contains("DROP INDEX IF EXISTS \"test_schema\".\"idx_pk_test_table\" CASCADE"))
+        assert(
+            sql.contains("DROP INDEX IF EXISTS \"test_schema\".\"idx_cursor_test_table\" CASCADE")
+        )
+        // Verify CREATE INDEX statements are still present
+        assert(
+            sql.contains(
+                "CREATE INDEX IF NOT EXISTS \"idx_pk_test_table\" ON \"test_schema\".\"test_table\" (\"id\")"
+            )
+        )
+        assert(
+            sql.contains(
+                "CREATE INDEX IF NOT EXISTS \"idx_cursor_test_table\" ON \"test_schema\".\"test_table\" (\"updated_at\")"
+            )
+        )
+    }
 }
