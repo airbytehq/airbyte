@@ -241,7 +241,8 @@ internal class PostgresDirectLoadSqlGeneratorTest {
                 replace = true
             )
 
-        // In raw mode, table should only have default columns (no user columns like id, name, updatedAt)
+        // In raw mode, table should only have default columns (no user columns like id, name,
+        // updatedAt)
         val expectedTableSql =
             """
             BEGIN TRANSACTION;

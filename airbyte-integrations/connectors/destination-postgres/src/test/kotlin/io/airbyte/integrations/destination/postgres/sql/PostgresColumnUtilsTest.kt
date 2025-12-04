@@ -211,5 +211,4 @@ internal class PostgresColumnUtilsTest {
             UnionType(options = setOf(StringType, IntegerType), isLegacyUnion = true)
         assertEquals("jsonb", columnUtils.toDialectType(unionWithBasicTypes))
     }
-
 }

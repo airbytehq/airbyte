@@ -75,8 +75,8 @@ class PostgresDirectLoadSqlGenerator(
      * - Cursor index (if dedupe stream with cursor field, not in raw tables mode)
      * - Extracted_at index (always created for all streams)
      *
-     * In legacyRawTablesOnly mode, primary key and cursor indexes are skipped because
-     * user-defined columns don't exist at the table level (they're stored in _airbyte_data JSONB).
+     * In legacyRawTablesOnly mode, primary key and cursor indexes are skipped because user-defined
+     * columns don't exist at the table level (they're stored in _airbyte_data JSONB).
      */
     private fun createIndexes(
         stream: DestinationStream,
