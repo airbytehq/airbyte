@@ -145,7 +145,7 @@ class ValidateBreakingChangesDeadlines(MetadataCheck):
     """
 
     name = "Breaking change deadline should be a week in the future"
-    description = "If the connector version has a breaking change, the deadline field must be set to at least a week in the future."
+    description = "If the connector version has a breaking change, the deadline field must be set to at least a week in the future. See the Breaking Changes Policy for full requirements: https://docs.airbyte.com/platform/connector-development/connector-breaking-changes"
     runs_on_released_connectors = False
     minimum_days_until_deadline = 7
 
