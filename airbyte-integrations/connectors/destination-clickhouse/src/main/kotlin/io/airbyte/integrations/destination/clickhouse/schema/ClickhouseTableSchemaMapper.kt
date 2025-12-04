@@ -79,14 +79,6 @@ class ClickhouseTableSchemaMapper(
                 }
             }
 
-        // Apply nullability
-        val finalType =
-            if (fieldType.nullable) {
-                "Nullable($clickhouseType)"
-            } else {
-                clickhouseType
-            }
-
-        return ColumnType(finalType, fieldType.nullable)
+        return ColumnType(clickhouseType, fieldType.nullable)
     }
 }
