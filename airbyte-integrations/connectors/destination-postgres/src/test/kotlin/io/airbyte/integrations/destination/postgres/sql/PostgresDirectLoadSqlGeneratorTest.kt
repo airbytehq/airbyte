@@ -206,6 +206,68 @@ internal class PostgresDirectLoadSqlGeneratorTest {
     }
 
     @Test
+    fun testCreateTableWithPrimaryKeysAndCursorInRawMode() {
+        // Setup config with legacyRawTablesOnly = true
+        val rawModeConfig =
+            mockk<PostgresConfiguration> {
+                every { legacyRawTablesOnly } returns true
+                every { dropCascade } returns false
+            }
+        val rawModeColumnUtils = PostgresColumnUtils(rawModeConfig)
+        val rawModeSqlGenerator = PostgresDirectLoadSqlGenerator(rawModeColumnUtils, rawModeConfig)
+
+        val stream =
+            mockk<DestinationStream> {
+                every { schema } returns
+                    ObjectType(
+                        properties =
+                            linkedMapOf(
+                                "id" to FieldType(IntegerType, nullable = true),
+                                "name" to FieldType(StringType, nullable = true),
+                                "updatedAt" to FieldType(TimestampTypeWithTimezone, nullable = true)
+                            )
+                    )
+                every { importType } returns
+                    Dedupe(primaryKey = listOf(listOf("id")), cursor = listOf("updatedAt"))
+            }
+        val columnNameMapping = ColumnNameMapping(emptyMap())
+        val tableName = TableName(namespace = "test_schema", name = "test_table")
+
+        val (createTableSql, createIndexesSql) =
+            rawModeSqlGenerator.createTable(
+                stream = stream,
+                tableName = tableName,
+                columnNameMapping = columnNameMapping,
+                replace = true
+            )
+
+        // In raw mode, table should only have default columns (no user columns like id, name, updatedAt)
+        val expectedTableSql =
+            """
+            BEGIN TRANSACTION;
+            DROP TABLE IF EXISTS "test_schema"."test_table";
+            CREATE TABLE IF NOT EXISTS "test_schema"."test_table" (
+            "_airbyte_raw_id" varchar NOT NULL,
+            "_airbyte_extracted_at" timestamp with time zone NOT NULL,
+            "_airbyte_meta" jsonb NOT NULL,
+            "_airbyte_generation_id" bigint NOT NULL,
+            "_airbyte_loaded_at" timestamp with time zone,
+            "_airbyte_data" jsonb NOT NULL
+            );
+            COMMIT;
+            """
+
+        // In raw mode, only extracted_at index should be created (no pk or cursor indexes)
+        val expectedIndexesSql =
+            """
+            CREATE INDEX IF NOT EXISTS "idx_extracted_at_test_table" ON "test_schema"."test_table" ("_airbyte_extracted_at");
+            """
+
+        assertEqualsIgnoreWhitespace(expectedTableSql, createTableSql)
+        assertEqualsIgnoreWhitespace(expectedIndexesSql, createIndexesSql)
+    }
+
+    @Test
     fun testOverwriteTable() {
         val sourceTableName = TableName(namespace = "namespace", name = "source")
         val targetTableName = TableName(namespace = "namespace", name = "target")

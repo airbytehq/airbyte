@@ -71,20 +71,33 @@ class PostgresDirectLoadSqlGenerator(
      * Generates index creation statements for a table based on the stream's configuration.
      *
      * Creates up to three indexes:
-     * - Primary key index (if dedupe stream with primary keys)
-     * - Cursor index (if dedupe stream with cursor field)
+     * - Primary key index (if dedupe stream with primary keys, not in raw tables mode)
+     * - Cursor index (if dedupe stream with cursor field, not in raw tables mode)
      * - Extracted_at index (always created for all streams)
+     *
+     * In legacyRawTablesOnly mode, primary key and cursor indexes are skipped because
+     * user-defined columns don't exist at the table level (they're stored in _airbyte_data JSONB).
      */
     private fun createIndexes(
         stream: DestinationStream,
         tableName: TableName,
         columnNameMapping: ColumnNameMapping
     ): String {
-        val primaryKeyColumnNames = getPrimaryKeysColumnNames(stream, columnNameMapping)
+        // In raw tables mode, skip primary key and cursor indexes since those columns don't exist
         val primaryKeyIndexStatement =
-            createPrimaryKeyIndexStatement(primaryKeyColumnNames, tableName)
-        val cursorColumnName = getCursorColumnName(stream, columnNameMapping)
-        val cursorIndexStatement = createCursorIndexStatement(cursorColumnName, tableName)
+            if (postgresConfiguration.legacyRawTablesOnly) {
+                ""
+            } else {
+                val primaryKeyColumnNames = getPrimaryKeysColumnNames(stream, columnNameMapping)
+                createPrimaryKeyIndexStatement(primaryKeyColumnNames, tableName)
+            }
+        val cursorIndexStatement =
+            if (postgresConfiguration.legacyRawTablesOnly) {
+                ""
+            } else {
+                val cursorColumnName = getCursorColumnName(stream, columnNameMapping)
+                createCursorIndexStatement(cursorColumnName, tableName)
+            }
         val extractedAtIndexStatement =
             "CREATE INDEX IF NOT EXISTS ${getExtractedAtIndexName(tableName)} ON ${getFullyQualifiedName(tableName)} ($EXTRACTED_AT_COLUMN_NAME);"
 
