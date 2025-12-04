@@ -273,6 +273,10 @@ class TestClientsStream(TestCase):
         # ASSERT: No records but no errors
         assert len(output.records) == 0
 
+        # ASSERT: Should have log messages indicating successful sync completion
+        log_messages = [log.log.message for log in output.logs]
+        assert any("Finished syncing" in msg for msg in log_messages)
+
     @HttpMocker()
     def test_unauthorized_error_handling(self, http_mocker: HttpMocker):
         """

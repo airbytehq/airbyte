@@ -67,7 +67,12 @@ class TestTimeClientsStream(TestCase):
         source = get_source(config=config)
         catalog = CatalogBuilder().with_stream(_STREAM_NAME, SyncMode.full_refresh).build()
         output = read(source, config=config, catalog=catalog)
+        # ASSERT: No records but no errors
         assert len(output.records) == 0
+
+        # ASSERT: Should have log messages indicating successful sync completion
+        log_messages = [log.log.message for log in output.logs]
+        assert any("Finished syncing" in msg for msg in log_messages)
 
     @freeze_time("2024-12-30")
     @HttpMocker()

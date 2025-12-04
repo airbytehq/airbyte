@@ -82,8 +82,12 @@ class TestExpenseCategoriesStream(TestCase):
         catalog = CatalogBuilder().with_stream(_STREAM_NAME, SyncMode.full_refresh).build()
         output = read(source, config=config, catalog=catalog)
 
-        # ASSERT: Should handle empty results gracefully with no records
+        # ASSERT: No records but no errors
         assert len(output.records) == 0
+
+        # ASSERT: Should have log messages indicating successful sync completion
+        log_messages = [log.log.message for log in output.logs]
+        assert any("Finished syncing" in msg for msg in log_messages)
 
     @HttpMocker()
     def test_incremental_sync_with_state(self, http_mocker: HttpMocker) -> None:
