@@ -24,6 +24,7 @@ source-amazon-seller-partner = "source_amazon_seller_partner.run:run"
 
 [tool.poetry.group.dev.dependencies]
 pytest = "^8.0.0"
+pytest-mock = "^3.12.0"
 
 [tool.poe]
 include = [
