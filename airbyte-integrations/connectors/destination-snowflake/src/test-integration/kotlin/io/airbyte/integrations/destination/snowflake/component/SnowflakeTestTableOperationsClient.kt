@@ -92,6 +92,11 @@ class SnowflakeTestTableOperationsClient(
                                                 DateTimeFormatter.ISO_DATE_TIME.format(odt)
                                         }
                                     }
+                                    "TIMESTAMPNTZ" -> {
+                                        resultSet.getTimestamp(i)?.let {
+                                            row[columnName] = it.toLocalDateTime()
+                                        }
+                                    }
                                     "VARIANT",
                                     "OBJECT",
                                     "ARRAY" -> {
