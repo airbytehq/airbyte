@@ -5,6 +5,12 @@
 package io.airbyte.integrations.destination.clickhouse.component
 
 import io.airbyte.cdk.load.component.DataCoercionNumberFixtures
+import io.airbyte.cdk.load.component.DataCoercionNumberFixtures.NEGATIVE_HIGH_PRECISION_FLOAT
+import io.airbyte.cdk.load.component.DataCoercionNumberFixtures.POSITIVE_HIGH_PRECISION_FLOAT
+import io.airbyte.cdk.load.component.DataCoercionNumberFixtures.SMALLEST_NEGATIVE_FLOAT32
+import io.airbyte.cdk.load.component.DataCoercionNumberFixtures.SMALLEST_NEGATIVE_FLOAT64
+import io.airbyte.cdk.load.component.DataCoercionNumberFixtures.SMALLEST_POSITIVE_FLOAT32
+import io.airbyte.cdk.load.component.DataCoercionNumberFixtures.SMALLEST_POSITIVE_FLOAT64
 import io.airbyte.cdk.load.component.DataCoercionSuite
 import io.airbyte.cdk.load.component.TableOperationsClient
 import io.airbyte.cdk.load.component.TestTableOperationsClient
@@ -54,13 +60,14 @@ class ClickhouseDataCoercionTest(
         fun numbers() =
             DataCoercionNumberFixtures.numeric38_9
                 .map {
-                    if (it.outputValue == null) {
-                        // retain the change if we're nulling
-                        it
-                    } else {
-                        // otherwise, either we're Valid or Truncating.
-                        // in both cases, set the change to null.
-                        it.copy(changeReason = null)
+                    when (it.name) {
+                        POSITIVE_HIGH_PRECISION_FLOAT,
+                        NEGATIVE_HIGH_PRECISION_FLOAT,
+                        SMALLEST_POSITIVE_FLOAT32,
+                        SMALLEST_NEGATIVE_FLOAT32,
+                        SMALLEST_POSITIVE_FLOAT64,
+                        SMALLEST_NEGATIVE_FLOAT64 -> it.copy(changeReason = null)
+                        else -> it
                     }
                 }
                 .toArgs()
