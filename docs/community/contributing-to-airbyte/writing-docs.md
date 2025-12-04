@@ -226,6 +226,7 @@ To enable badges, include `products` in the Markdown metadata. The following val
 - `oss-community`: Core only
 - `oss-enterprise`: Self-Managed Enterprise only
 - `cloud`: Standard and Plus (also enables Pro and Enterprise Flex due to Cloud tier inheritance)
+- `cloud-plus`: Plus only (also enables Pro and Enterprise Flex due to Cloud tier inheritance)
 - `cloud-teams`: Pro only (also enables Enterprise Flex due to Cloud tier inheritance)
 - `enterprise-flex`: Enterprise Flex only
 - `embedded`: Embedded only (hidden if not specified - there is no off state for the Embedded badge)
@@ -233,6 +234,7 @@ To enable badges, include `products` in the Markdown metadata. The following val
 **Cloud tier inheritance:** higher Cloud plans automatically inherit availability from lower tiers:
 
 - If you specify `cloud`: Standard, Plus, Pro, and Enterprise Flex badges all become enabled
+- If you specify `cloud-plus`: Plus, Pro, and Enterprise Flex badges become enabled - Standard turns off
 - If you specify `cloud-teams`: Pro and Enterprise Flex badges become enabled - Standard and Plus turn off
 - If you specify `enterprise-flex`: Only Enterprise Flex badge becomes enabled
 

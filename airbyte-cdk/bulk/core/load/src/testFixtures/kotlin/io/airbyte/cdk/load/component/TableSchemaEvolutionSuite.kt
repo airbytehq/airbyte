@@ -4,31 +4,31 @@
 
 package io.airbyte.cdk.load.component
 
+import io.airbyte.cdk.load.command.Append
+import io.airbyte.cdk.load.command.Dedupe
+import io.airbyte.cdk.load.command.DestinationStream
+import io.airbyte.cdk.load.command.ImportType
 import io.airbyte.cdk.load.component.TableOperationsFixtures as Fixtures
 import io.airbyte.cdk.load.component.TableOperationsFixtures.ID_FIELD
 import io.airbyte.cdk.load.component.TableOperationsFixtures.TEST_FIELD
+import io.airbyte.cdk.load.component.TableOperationsFixtures.assertEquals
+import io.airbyte.cdk.load.component.TableOperationsFixtures.inputRecord
 import io.airbyte.cdk.load.component.TableOperationsFixtures.insertRecords
 import io.airbyte.cdk.load.component.TableOperationsFixtures.removeNulls
 import io.airbyte.cdk.load.component.TableOperationsFixtures.reverseColumnNameMapping
+import io.airbyte.cdk.load.data.AirbyteValue
 import io.airbyte.cdk.load.data.FieldType
 import io.airbyte.cdk.load.data.IntegerType
 import io.airbyte.cdk.load.data.IntegerValue
 import io.airbyte.cdk.load.data.ObjectType
-import io.airbyte.cdk.load.data.ObjectValue
 import io.airbyte.cdk.load.data.StringType
 import io.airbyte.cdk.load.data.StringValue
-import io.airbyte.cdk.load.data.TimestampWithTimezoneValue
 import io.airbyte.cdk.load.message.Meta
-import io.airbyte.cdk.load.message.Meta.Companion.COLUMN_NAME_AB_EXTRACTED_AT
-import io.airbyte.cdk.load.message.Meta.Companion.COLUMN_NAME_AB_GENERATION_ID
-import io.airbyte.cdk.load.message.Meta.Companion.COLUMN_NAME_AB_META
-import io.airbyte.cdk.load.message.Meta.Companion.COLUMN_NAME_AB_RAW_ID
+import io.airbyte.cdk.load.schema.model.TableName
 import io.airbyte.cdk.load.table.ColumnNameMapping
-import io.airbyte.cdk.load.table.TableName
 import io.micronaut.test.extensions.junit5.annotation.MicronautTest
 import kotlin.test.assertEquals
 import kotlinx.coroutines.test.runTest
-import org.junit.jupiter.api.Assertions
 import org.junit.jupiter.api.Assertions.assertTrue
 import org.junit.jupiter.api.assertAll
 
@@ -309,58 +309,94 @@ interface TableSchemaEvolutionSuite {
         )
     }
 
-    fun `basic apply changeset`() {
-        `basic apply changeset`(
-            initialColumnNameMapping =
-                ColumnNameMapping(
-                    mapOf(
-                        "to_retain" to "to_retain",
-                        "to_change" to "to_change",
-                        "to_drop" to "to_drop",
-                    )
-                ),
-            modifiedColumnNameMapping =
-                ColumnNameMapping(
-                    mapOf(
-                        "to_retain" to "to_retain",
-                        "to_change" to "to_change",
-                        "to_add" to "to_add",
-                    )
-                ),
+    fun `apply changeset - handle sync mode append`() {
+        `apply changeset`(Append, Append)
+    }
+
+    fun `apply changeset - handle changing sync mode from append to dedup`() {
+        `apply changeset`(Append, Dedupe(primaryKey = listOf(listOf("id")), cursor = emptyList()))
+    }
+
+    fun `apply changeset - handle changing sync mode from dedup to append`() {
+        `apply changeset`(Dedupe(primaryKey = listOf(listOf("id")), cursor = emptyList()), Append)
+    }
+
+    fun `apply changeset - handle sync mode dedup`() {
+        `apply changeset`(
+            Dedupe(primaryKey = listOf(listOf("id")), cursor = emptyList()),
+            Dedupe(primaryKey = listOf(listOf("id")), cursor = emptyList())
         )
     }
 
     /**
-     * Execute a basic set of schema changes. We're not changing the sync mode, the types are just
+     * Execute a basic set of schema changes, across a variety of sync modes. The types are just
      * string/int (i.e. no JSON), and there's no funky characters anywhere.
+     *
+     * You should not directly annotate this function with `@Test`. Instead:
+     * 1. If you need to modify any of the parameters, override this function (if the defaults
+     * ```
+     *    work correctly, you can skip this step)
+     * ```
+     * 2. Annotate `@Test` onto [`apply changeset - append-append`], [`apply changeset -
+     * append-dedup`], etc.
      */
-    fun `basic apply changeset`(
+    fun `apply changeset`(
+        initialStreamImportType: ImportType,
+        modifiedStreamImportType: ImportType,
+    ) {
+        `apply changeset`(
+            TableSchemaEvolutionFixtures.APPLY_CHANGESET_INITIAL_COLUMN_MAPPING,
+            TableSchemaEvolutionFixtures.APPLY_CHANGESET_MODIFIED_COLUMN_MAPPING,
+            // If your destination reads back timestamps in a nonstandard format, you can override
+            // this value to match that format.
+            TableSchemaEvolutionFixtures.APPLY_CHANGESET_EXPECTED_EXTRACTED_AT,
+            initialStreamImportType,
+            modifiedStreamImportType,
+        )
+    }
+
+    fun `apply changeset`(
         initialColumnNameMapping: ColumnNameMapping,
-        modifiedColumnNameMapping: ColumnNameMapping
+        modifiedColumnNameMapping: ColumnNameMapping,
+        expectedExtractedAt: String,
+        initialStreamImportType: ImportType,
+        modifiedStreamImportType: ImportType,
     ) = runTest {
         val testNamespace = Fixtures.generateTestNamespace("namespace-test")
         val testTable = Fixtures.generateTestTableName("table-test-table", testNamespace)
         val initialSchema =
             ObjectType(
                 linkedMapOf(
+                    "id" to FieldType(IntegerType, true),
+                    "updated_at" to FieldType(IntegerType, true),
                     "to_retain" to FieldType(StringType, true),
                     "to_change" to FieldType(IntegerType, true),
                     "to_drop" to FieldType(StringType, true),
                 ),
             )
+        val initialStream =
+            Fixtures.createStream(
+                testTable.namespace,
+                testTable.name,
+                initialSchema,
+                initialStreamImportType,
+            )
         val modifiedSchema =
             ObjectType(
                 linkedMapOf(
+                    "id" to FieldType(IntegerType, true),
+                    "updated_at" to FieldType(IntegerType, true),
                     "to_retain" to FieldType(StringType, true),
                     "to_change" to FieldType(StringType, true),
                     "to_add" to FieldType(StringType, true),
                 ),
             )
         val modifiedStream =
-            Fixtures.createAppendStream(
-                namespace = testTable.namespace,
-                name = testTable.name,
-                schema = modifiedSchema,
+            Fixtures.createStream(
+                testTable.namespace,
+                testTable.name,
+                modifiedSchema,
+                modifiedStreamImportType,
             )
 
         // Create the table and compute the schema changeset
@@ -371,16 +407,20 @@ interface TableSchemaEvolutionSuite {
                 initialColumnNameMapping,
                 modifiedSchema,
                 modifiedColumnNameMapping,
+                initialStream,
+                modifiedStream,
             )
         // Insert a record before applying the changeset
         testClient.insertRecords(
             testTable,
             initialColumnNameMapping,
-            mapOf(
-                COLUMN_NAME_AB_RAW_ID to StringValue("fcc784dd-bf06-468e-ad59-666d5aaceae8"),
-                COLUMN_NAME_AB_EXTRACTED_AT to TimestampWithTimezoneValue("2025-01-22T00:00:00Z"),
-                COLUMN_NAME_AB_META to ObjectValue(linkedMapOf()),
-                COLUMN_NAME_AB_GENERATION_ID to IntegerValue(1),
+            inputRecord(
+                "fcc784dd-bf06-468e-ad59-666d5aaceae8",
+                "2025-01-22T00:00:00Z",
+                linkedMapOf(),
+                1,
+                "id" to IntegerValue(1234),
+                "updated_at" to IntegerValue(5678),
                 "to_retain" to StringValue("to_retain original value"),
                 "to_change" to IntegerValue(42),
                 "to_drop" to StringValue("to_drop original value"),
@@ -395,22 +435,33 @@ interface TableSchemaEvolutionSuite {
             changeset,
         )
 
-        val postAlterationRecords = harness.readTableWithoutMetaColumns(testTable)
-        Assertions.assertEquals(
+        // Many destinations fully recreate the table when changing the sync mode,
+        // so don't use harness.readTableWithoutMetaColumns.
+        // We need to assert that the meta columns were preserved.
+        val postAlterationRecords =
+            testClient
+                .readTable(testTable)
+                .removeNulls()
+                .reverseColumnNameMapping(modifiedColumnNameMapping, airbyteMetaColumnMapping)
+        assertEquals(
             listOf(
                 mapOf(
+                    "_airbyte_raw_id" to "fcc784dd-bf06-468e-ad59-666d5aaceae8",
+                    "_airbyte_extracted_at" to expectedExtractedAt,
+                    "_airbyte_meta" to linkedMapOf<String, Any?>(),
+                    "_airbyte_generation_id" to 1L,
+                    "id" to 1234L,
+                    "updated_at" to 5678L,
                     "to_retain" to "to_retain original value",
                     // changed from int to string
                     "to_change" to "42",
                     // note the lack of `to_add` - new columns should be initialized to null
                     )
             ),
-            postAlterationRecords
-                .removeNulls()
-                .reverseColumnNameMapping(modifiedColumnNameMapping, airbyteMetaColumnMapping),
-        ) {
+            postAlterationRecords,
+            "id",
             "Expected records were not in the overwritten table."
-        }
+        )
 
         val postAlterationDiscoveredSchema = client.discoverSchema(testTable)
         val postAlterationChangeset =
@@ -420,6 +471,68 @@ interface TableSchemaEvolutionSuite {
             "After applying the changeset, we should be a noop against the expected schema"
         )
     }
+
+    /**
+     * Test that we can alter a column from StringType to UnknownType. In many destinations, this
+     * poses some challenges (e.g. naively casting VARCHAR to JSON may not work as expected).
+     *
+     * See also [`change from unknown type to string type`].
+     */
+    fun `change from string type to unknown type`() {
+        `change from string type to unknown type`(
+            Fixtures.ID_AND_TEST_MAPPING,
+            Fixtures.ID_AND_TEST_MAPPING,
+            TableSchemaEvolutionFixtures.STRING_TO_UNKNOWN_TYPE_INPUT_RECORDS,
+            TableSchemaEvolutionFixtures.STRING_TO_UNKNOWN_TYPE_EXPECTED_RECORDS,
+        )
+    }
+
+    fun `change from string type to unknown type`(
+        initialColumnNameMapping: ColumnNameMapping,
+        modifiedColumnNameMapping: ColumnNameMapping,
+        inputRecords: List<Map<String, AirbyteValue>>,
+        expectedRecords: List<Map<String, Any?>>,
+    ) =
+        executeAndVerifySchemaEvolution(
+            TableSchemaEvolutionFixtures.ID_AND_STRING_SCHEMA,
+            initialColumnNameMapping,
+            TableSchemaEvolutionFixtures.ID_AND_UNKNOWN_SCHEMA,
+            modifiedColumnNameMapping,
+            inputRecords,
+            expectedRecords,
+        )
+
+    /**
+     * Test that we can alter a column from UnknownType to StringType. In many destinations, this
+     * poses some challenges (e.g. naively casting JSON to VARCHAR may not work as expected).
+     *
+     * See also [`change from string type to unknown type`].
+     */
+    fun `change from unknown type to string type`() {
+        `change from string type to unknown type`(
+            Fixtures.ID_AND_TEST_MAPPING,
+            Fixtures.ID_AND_TEST_MAPPING,
+            TableSchemaEvolutionFixtures.UNKNOWN_TO_STRING_TYPE_INPUT_RECORDS,
+            TableSchemaEvolutionFixtures.UNKNOWN_TO_STRING_TYPE_EXPECTED_RECORDS,
+        )
+    }
+
+    fun `change from unknown type to string type`(
+        initialColumnNameMapping: ColumnNameMapping,
+        modifiedColumnNameMapping: ColumnNameMapping,
+        inputRecords: List<Map<String, AirbyteValue>>,
+        expectedRecords: List<Map<String, Any?>>,
+    ) =
+        executeAndVerifySchemaEvolution(
+            TableSchemaEvolutionFixtures.ID_AND_UNKNOWN_SCHEMA,
+            initialColumnNameMapping,
+            TableSchemaEvolutionFixtures.ID_AND_STRING_SCHEMA,
+            modifiedColumnNameMapping,
+            inputRecords,
+            expectedRecords,
+        )
+
+    // TODO add tests for funky chars (add/drop/change type; funky chars in PK/cursor)
 
     /**
      * Utility method for a typical schema evolution test. Creates a table with [initialSchema]
@@ -434,20 +547,19 @@ interface TableSchemaEvolutionSuite {
         initialColumnNameMapping: ColumnNameMapping,
         modifiedSchema: ObjectType,
         modifiedColumnNameMapping: ColumnNameMapping,
-    ): SchemaEvolutionComputation {
-        val initialStream =
+        initialStream: DestinationStream =
             Fixtures.createAppendStream(
                 namespace = testTable.namespace,
                 name = testTable.name,
                 schema = initialSchema,
-            )
-        val modifiedStream =
+            ),
+        modifiedStream: DestinationStream =
             Fixtures.createAppendStream(
                 namespace = testTable.namespace,
                 name = testTable.name,
                 schema = modifiedSchema,
-            )
-
+            ),
+    ): SchemaEvolutionComputation {
         opsClient.createNamespace(testTable.namespace)
         opsClient.createTable(
             tableName = testTable,
@@ -463,6 +575,57 @@ interface TableSchemaEvolutionSuite {
             actualSchema,
             expectedSchema,
             columnChangeset,
+            modifiedStream,
+        )
+    }
+
+    /**
+     * Create a table using [initialSchema]; insert [inputRecords] to the table; execute a schema
+     * evolution to [modifiedSchema]; read back the table and verify that it contains
+     * [expectedRecords].
+     *
+     * By convention: the schemas should use the column name `id` to identify records.
+     */
+    private fun executeAndVerifySchemaEvolution(
+        initialSchema: ObjectType,
+        initialColumnNameMapping: ColumnNameMapping,
+        modifiedSchema: ObjectType,
+        modifiedColumnNameMapping: ColumnNameMapping,
+        inputRecords: List<Map<String, AirbyteValue>>,
+        expectedRecords: List<Map<String, Any?>>,
+    ) = runTest {
+        val testNamespace = Fixtures.generateTestNamespace("namespace-test")
+        val testTable = Fixtures.generateTestTableName("table-test-table", testNamespace)
+
+        // Create the table and compute the schema changeset
+        val (_, expectedSchema, changeset, modifiedStream) =
+            computeSchemaEvolution(
+                testTable,
+                initialSchema,
+                initialColumnNameMapping,
+                modifiedSchema,
+                modifiedColumnNameMapping,
+            )
+
+        testClient.insertRecords(testTable, inputRecords, initialColumnNameMapping)
+
+        client.applyChangeset(
+            modifiedStream,
+            modifiedColumnNameMapping,
+            testTable,
+            expectedSchema.columns,
+            changeset,
+        )
+
+        val postAlterationRecords =
+            harness
+                .readTableWithoutMetaColumns(testTable)
+                .reverseColumnNameMapping(modifiedColumnNameMapping, airbyteMetaColumnMapping)
+        assertEquals(
+            expectedRecords,
+            postAlterationRecords,
+            "id",
+            "",
         )
     }
 
@@ -470,5 +633,6 @@ interface TableSchemaEvolutionSuite {
         val discoveredSchema: TableSchema,
         val computedSchema: TableSchema,
         val columnChangeset: ColumnChangeset,
+        val modifiedStream: DestinationStream,
     )
 }
