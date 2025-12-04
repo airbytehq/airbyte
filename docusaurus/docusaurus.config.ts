@@ -3,6 +3,10 @@ import type { Config } from "@docusaurus/types";
 import { themes as prismThemes } from "prism-react-renderer";
 import type { Options as ClassicPresetOptions } from "@docusaurus/preset-classic";
 import { PluginOptions as LLmPluginOptions } from "@signalwire/docusaurus-plugin-llms-txt";
+import {
+  loadSonarApiSidebar,
+  replaceApiReferenceCategory,
+} from "./src/scripts/embedded-api/sidebar-generator";
 
 // Import remark plugins - lazy load to prevent webpack from bundling Node.js code
 const getRemarkPlugins = () => ({
@@ -17,6 +21,12 @@ const getRemarkPlugins = () => ({
 });
 
 const plugins = getRemarkPlugins();
+
+// Import constants for embedded API sidebar generation
+const {
+  SPEC_CACHE_PATH,
+  API_SIDEBAR_PATH,
+} = require("./src/scripts/embedded-api/constants");
 
 const lightCodeTheme = prismThemes.github;
 const darkCodeTheme = prismThemes.dracula;
@@ -157,9 +167,17 @@ const config: Config = {
         id: "ai-agents",
         path: "../docs/ai-agents",
         routeBasePath: "/ai-agents",
-        sidebarPath: "./sidebar-ai-agents.js",
         editUrl: "https://github.com/airbytehq/airbyte/blob/master/docs",
         docItemComponent: "@theme/ApiItem", // Required for OpenAPI docs rendering
+        async sidebarItemsGenerator({ defaultSidebarItemsGenerator, ...args }) {
+          const sidebarItems = await defaultSidebarItemsGenerator(args);
+
+          // Load and filter the Sonar API sidebar based on allowed tags
+          const sonarApiItems = loadSonarApiSidebar();
+
+          // Replace the "api-reference" category with the filtered API items
+          return replaceApiReferenceCategory(sidebarItems, sonarApiItems);
+        },
         remarkPlugins: [
           plugins.docsHeaderDecoration,
           plugins.enterpriseDocsHeaderInformation,
@@ -395,10 +413,10 @@ const config: Config = {
           label: "Release notes",
         },
         {
-          type: "docSidebar",
+          type: "doc",
           position: "left",
           docsPluginId: "ai-agents",
-          sidebarId: "ai-agents",
+          docId: "README",
           label: "AI agents",
         },
         {
