@@ -66,6 +66,33 @@ class TestCompanyStream(TestCase):
         assert any("Finished syncing" in msg for msg in log_messages)
 
     @HttpMocker()
+    def test_empty_results(self, http_mocker: HttpMocker) -> None:
+        """
+        Test that connector handles empty company response gracefully.
+        """
+        config = ConfigBuilder().with_account_id(_ACCOUNT_ID).with_api_token(_API_TOKEN).build()
+
+        # Mock empty response (company returns empty object or null)
+        http_mocker.get(
+            HttpRequest(
+                url="https://api.harvestapp.com/v2/company",
+                headers={"Harvest-Account-Id": _ACCOUNT_ID, "Authorization": f"Bearer {_API_TOKEN}"},
+            ),
+            HttpResponse(body=json.dumps({}), status_code=200),
+        )
+
+        source = get_source(config=config)
+        catalog = CatalogBuilder().with_stream(_STREAM_NAME, SyncMode.full_refresh).build()
+        output = read(source, config=config, catalog=catalog)
+
+        # ASSERT: No records but no errors
+        assert len(output.records) == 0
+
+        # ASSERT: Should have log messages indicating successful sync completion
+        log_messages = [log.log.message for log in output.logs]
+        assert any("Finished syncing" in msg for msg in log_messages)
+
+    @HttpMocker()
     def test_unauthorized_error(self, http_mocker: HttpMocker):
         """
         Test that connector handles 401 Unauthorized errors gracefully.

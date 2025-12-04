@@ -100,6 +100,51 @@ class TestInvoicePaymentsStream(TestCase):
             assert "parent_id" in record.record.data, "Transformation should add 'parent_id' field to record"
 
     @HttpMocker()
+    def test_empty_results(self, http_mocker: HttpMocker) -> None:
+        """
+        Test handling of empty results when an invoice has no payments.
+        """
+        config = ConfigBuilder().with_account_id(_ACCOUNT_ID).with_api_token(_API_TOKEN).build()
+
+        # Mock the parent invoices stream
+        parent_invoice = {"id": 1, "client_id": 123, "number": "INV-001", "created_at": "2024-01-01T00:00:00Z", "updated_at": "2024-01-01T00:00:00Z"}
+        http_mocker.get(
+            HarvestRequestBuilder.invoices_endpoint(_ACCOUNT_ID, _API_TOKEN)
+            .with_per_page(50)
+            .with_updated_since("2021-01-01T00:00:00Z")
+            .build(),
+            HttpResponse(
+                body=json.dumps({"invoices": [parent_invoice], "per_page": 50, "total_pages": 1, "total_entries": 1, "page": 1, "links": {}}),
+                status_code=200
+            )
+        )
+
+        # Mock empty invoice_payments substream response
+        from airbyte_cdk.test.mock_http import HttpRequest
+        http_mocker.get(
+            HttpRequest(
+                url="https://api.harvestapp.com/v2/invoices/1/payments",
+                query_params={"per_page": "50", "updated_since": "2021-01-01T00:00:00Z"},
+                headers={"Harvest-Account-Id": _ACCOUNT_ID, "Authorization": f"Bearer {_API_TOKEN}"},
+            ),
+            HttpResponse(
+                body=json.dumps({"invoice_payments": [], "per_page": 50, "total_pages": 0, "total_entries": 0, "page": 1, "links": {}}),
+                status_code=200
+            ),
+        )
+
+        source = get_source(config=config)
+        catalog = CatalogBuilder().with_stream(_STREAM_NAME, SyncMode.full_refresh).build()
+        output = read(source, config=config, catalog=catalog)
+
+        # ASSERT: No records but no errors
+        assert len(output.records) == 0
+
+        # ASSERT: Should have log messages indicating successful sync completion
+        log_messages = [log.log.message for log in output.logs]
+        assert any("Finished syncing" in msg for msg in log_messages)
+
+    @HttpMocker()
     def test_unauthorized_error_handling(self, http_mocker: HttpMocker) -> None:
         """Test that connector ignores 401 errors per manifest config."""
         config = ConfigBuilder().with_account_id(_ACCOUNT_ID).with_api_token("invalid_token").build()

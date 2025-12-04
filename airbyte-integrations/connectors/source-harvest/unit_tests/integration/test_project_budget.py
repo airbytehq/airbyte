@@ -23,6 +23,35 @@ _API_TOKEN = "test_token_abc123"
 class TestProjectBudgetStream(TestCase):
     @freeze_time("2024-12-30")
     @HttpMocker()
+    def test_empty_results(self, http_mocker: HttpMocker) -> None:
+        """
+        Test that connector handles empty results gracefully.
+        """
+        config = ConfigBuilder().with_account_id(_ACCOUNT_ID).with_api_token(_API_TOKEN).with_replication_start_date(datetime(2024, 1, 1)).build()
+
+        # Mock empty response
+        http_mocker.get(
+            HarvestRequestBuilder.project_budget_endpoint(_ACCOUNT_ID, _API_TOKEN)
+            .with_per_page(50)
+            .build(),
+            HttpResponse(
+                body=json.dumps({"results": [], "per_page": 50, "total_pages": 0, "total_entries": 0, "page": 1, "links": {}}),
+                status_code=200
+            ),
+        )
+
+        source = get_source(config=config)
+        catalog = CatalogBuilder().with_stream(_STREAM_NAME, SyncMode.full_refresh).build()
+        output = read(source, config=config, catalog=catalog)
+
+        # ASSERT: No records but no errors
+        assert len(output.records) == 0
+
+        # ASSERT: Should have log messages indicating successful sync completion
+        log_messages = [log.log.message for log in output.logs]
+        assert any("Finished syncing" in msg for msg in log_messages)
+
+    @HttpMocker()
     def test_unauthorized_error_handling(self, http_mocker: HttpMocker) -> None:
         """Test that connector ignores 401 errors per manifest config."""
         config = (
