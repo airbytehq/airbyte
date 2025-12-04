@@ -88,9 +88,6 @@ data:
     - title: Release notes
       url: https://cloud.google.com/bigquery/docs/release-notes
       type: api_release_history
-    - title: Standard SQL reference
-      url: https://cloud.google.com/bigquery/docs/reference/standard-sql
-      type: sql_reference
     - title: Service account authentication
       url: https://cloud.google.com/iam/docs/service-accounts
       type: authentication_guide
@@ -100,6 +97,9 @@ data:
     - title: Quotas and limits
       url: https://cloud.google.com/bigquery/quotas
       type: rate_limits
+    - title: Standard SQL reference
+      url: https://cloud.google.com/bigquery/docs/reference/standard-sql
+      type: sql_reference
     - title: Google Cloud Status
       url: https://status.cloud.google.com/
       type: status_page

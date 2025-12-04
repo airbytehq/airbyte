@@ -18,6 +18,8 @@ As needed or by request, Airbyte Maintainers can execute the following slash com
 - `/bump-version` - Bumps connector versions.
 - `/run-connector-tests` - Runs connector tests.
 - `/run-cat-tests` - Runs CAT tests.
+- `/run-live-tests` - Runs live tests for the modified connector(s).
+- `/run-regression-tests` - Runs regression tests for the modified connector(s).
 - `/build-connector-images` - Builds and publishes a pre-release docker image for the modified connector(s).
 
 If you have any questions, feel free to ask in the PR comments or join our [Slack community](https://airbytehq.slack.com/).
