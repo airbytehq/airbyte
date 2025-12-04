@@ -64,7 +64,7 @@ class TestUsersStream(TestCase):
             .build(),
             HttpResponse(
                 body=json.dumps({"users": [], "per_page": 50, "total_pages": 0, "total_entries": 0, "page": 1, "links": {}}),
-                status_code=200
+                status_code=200,
             ),
         )
 

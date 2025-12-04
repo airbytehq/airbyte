@@ -107,20 +107,29 @@ class TestInvoicePaymentsStream(TestCase):
         config = ConfigBuilder().with_account_id(_ACCOUNT_ID).with_api_token(_API_TOKEN).build()
 
         # Mock the parent invoices stream
-        parent_invoice = {"id": 1, "client_id": 123, "number": "INV-001", "created_at": "2024-01-01T00:00:00Z", "updated_at": "2024-01-01T00:00:00Z"}
+        parent_invoice = {
+            "id": 1,
+            "client_id": 123,
+            "number": "INV-001",
+            "created_at": "2024-01-01T00:00:00Z",
+            "updated_at": "2024-01-01T00:00:00Z",
+        }
         http_mocker.get(
             HarvestRequestBuilder.invoices_endpoint(_ACCOUNT_ID, _API_TOKEN)
             .with_per_page(50)
             .with_updated_since("2021-01-01T00:00:00Z")
             .build(),
             HttpResponse(
-                body=json.dumps({"invoices": [parent_invoice], "per_page": 50, "total_pages": 1, "total_entries": 1, "page": 1, "links": {}}),
-                status_code=200
-            )
+                body=json.dumps(
+                    {"invoices": [parent_invoice], "per_page": 50, "total_pages": 1, "total_entries": 1, "page": 1, "links": {}}
+                ),
+                status_code=200,
+            ),
         )
 
         # Mock empty invoice_payments substream response
         from airbyte_cdk.test.mock_http import HttpRequest
+
         http_mocker.get(
             HttpRequest(
                 url="https://api.harvestapp.com/v2/invoices/1/payments",
@@ -129,7 +138,7 @@ class TestInvoicePaymentsStream(TestCase):
             ),
             HttpResponse(
                 body=json.dumps({"invoice_payments": [], "per_page": 50, "total_pages": 0, "total_entries": 0, "page": 1, "links": {}}),
-                status_code=200
+                status_code=200,
             ),
         )
 

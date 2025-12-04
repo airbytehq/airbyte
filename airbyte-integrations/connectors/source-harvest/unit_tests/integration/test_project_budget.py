@@ -27,16 +27,20 @@ class TestProjectBudgetStream(TestCase):
         """
         Test that connector handles empty results gracefully.
         """
-        config = ConfigBuilder().with_account_id(_ACCOUNT_ID).with_api_token(_API_TOKEN).with_replication_start_date(datetime(2024, 1, 1)).build()
+        config = (
+            ConfigBuilder()
+            .with_account_id(_ACCOUNT_ID)
+            .with_api_token(_API_TOKEN)
+            .with_replication_start_date(datetime(2024, 1, 1))
+            .build()
+        )
 
         # Mock empty response
         http_mocker.get(
-            HarvestRequestBuilder.project_budget_endpoint(_ACCOUNT_ID, _API_TOKEN)
-            .with_per_page(50)
-            .build(),
+            HarvestRequestBuilder.project_budget_endpoint(_ACCOUNT_ID, _API_TOKEN).with_per_page(50).build(),
             HttpResponse(
                 body=json.dumps({"results": [], "per_page": 50, "total_pages": 0, "total_entries": 0, "page": 1, "links": {}}),
-                status_code=200
+                status_code=200,
             ),
         )
 

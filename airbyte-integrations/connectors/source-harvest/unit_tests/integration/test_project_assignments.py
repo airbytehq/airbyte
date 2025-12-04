@@ -11,7 +11,7 @@ from unit_tests.conftest import get_resource_path, get_source
 from airbyte_cdk.models import SyncMode
 from airbyte_cdk.test.catalog_builder import CatalogBuilder
 from airbyte_cdk.test.entrypoint_wrapper import read
-from airbyte_cdk.test.mock_http import HttpMocker, HttpResponse, HttpRequest
+from airbyte_cdk.test.mock_http import HttpMocker, HttpRequest, HttpResponse
 from airbyte_cdk.test.state_builder import StateBuilder
 from integration.config import ConfigBuilder
 from integration.request_builder import HarvestRequestBuilder
@@ -32,7 +32,7 @@ def _create_parent_user(user_id: int = 1) -> Dict[str, Any]:
         "email": "john@example.com",
         "is_active": True,
         "created_at": "2024-01-01T00:00:00Z",
-        "updated_at": "2024-01-01T00:00:00Z"
+        "updated_at": "2024-01-01T00:00:00Z",
     }
 
 
@@ -62,16 +62,11 @@ class TestProjectAssignmentsStream(TestCase):
             .with_updated_since("2021-01-01T00:00:00Z")
             .build(),
             HttpResponse(
-                body=json.dumps({
-                    "users": [parent_user_1, parent_user_2],
-                    "per_page": 50,
-                    "total_pages": 1,
-                    "total_entries": 2,
-                    "page": 1,
-                    "links": {}
-                }),
-                status_code=200
-            )
+                body=json.dumps(
+                    {"users": [parent_user_1, parent_user_2], "per_page": 50, "total_pages": 1, "total_entries": 2, "page": 1, "links": {}}
+                ),
+                status_code=200,
+            ),
         )
 
         # Mock project_assignments substream for user_id=1
@@ -89,20 +84,22 @@ class TestProjectAssignmentsStream(TestCase):
 
         # Mock project_assignments substream for user_id=2
         response_data_user2 = {
-            "project_assignments": [{
-                "id": 54321,
-                "is_project_manager": False,
-                "is_active": True,
-                "budget": None,
-                "created_at": "2024-02-01T00:00:00Z",
-                "updated_at": "2024-02-01T00:00:00Z",
-                "hourly_rate": 100.0
-            }],
+            "project_assignments": [
+                {
+                    "id": 54321,
+                    "is_project_manager": False,
+                    "is_active": True,
+                    "budget": None,
+                    "created_at": "2024-02-01T00:00:00Z",
+                    "updated_at": "2024-02-01T00:00:00Z",
+                    "hourly_rate": 100.0,
+                }
+            ],
             "per_page": 50,
             "total_pages": 1,
             "total_entries": 1,
             "page": 1,
-            "links": {}
+            "links": {},
         }
 
         http_mocker.get(
@@ -159,7 +156,7 @@ class TestProjectAssignmentsStream(TestCase):
             ),
             HttpResponse(
                 body=json.dumps({"project_assignments": [], "per_page": 50, "total_pages": 0, "total_entries": 0, "page": 1, "links": {}}),
-                status_code=200
+                status_code=200,
             ),
         )
 
