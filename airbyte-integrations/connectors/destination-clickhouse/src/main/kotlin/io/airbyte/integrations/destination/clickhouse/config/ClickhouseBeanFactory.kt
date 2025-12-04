@@ -8,8 +8,8 @@ import com.clickhouse.client.api.Client
 import com.clickhouse.client.api.internal.ServerSettings
 import io.airbyte.cdk.command.ConfigurationSpecificationSupplier
 import io.airbyte.cdk.load.dataflow.config.AggregatePublishingConfig
-import io.airbyte.cdk.load.orchestration.db.DefaultTempTableNameGenerator
-import io.airbyte.cdk.load.orchestration.db.TempTableNameGenerator
+import io.airbyte.cdk.load.table.DefaultTempTableNameGenerator
+import io.airbyte.cdk.load.table.TempTableNameGenerator
 import io.airbyte.cdk.ssh.SshConnectionOptions
 import io.airbyte.cdk.ssh.SshKeyAuthTunnelMethod
 import io.airbyte.cdk.ssh.SshNoTunnelMethod

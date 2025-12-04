@@ -17,9 +17,9 @@ import io.airbyte.cdk.load.component.TableSchema
 import io.airbyte.cdk.load.data.FieldType
 import io.airbyte.cdk.load.data.StringType
 import io.airbyte.cdk.load.message.Meta
-import io.airbyte.cdk.load.orchestration.db.TempTableNameGenerator
+import io.airbyte.cdk.load.schema.model.TableName
 import io.airbyte.cdk.load.table.ColumnNameMapping
-import io.airbyte.cdk.load.table.TableName
+import io.airbyte.cdk.load.table.TempTableNameGenerator
 import io.airbyte.integrations.destination.clickhouse.config.ClickhouseFinalTableNameGenerator
 import io.airbyte.integrations.destination.clickhouse.spec.ClickhouseConfiguration
 import io.mockk.coEvery

@@ -6,9 +6,9 @@ package io.airbyte.integrations.destination.clickhouse.config
 
 import io.airbyte.cdk.load.command.DestinationStream
 import io.airbyte.cdk.load.data.Transformations.Companion.toAlphanumericAndUnderscore
-import io.airbyte.cdk.load.orchestration.db.ColumnNameGenerator
-import io.airbyte.cdk.load.orchestration.db.FinalTableNameGenerator
-import io.airbyte.cdk.load.table.TableName
+import io.airbyte.cdk.load.schema.model.TableName
+import io.airbyte.cdk.load.table.ColumnNameGenerator
+import io.airbyte.cdk.load.table.FinalTableNameGenerator
 import io.airbyte.integrations.destination.clickhouse.spec.ClickhouseConfiguration
 import jakarta.inject.Singleton
 import java.util.Locale
