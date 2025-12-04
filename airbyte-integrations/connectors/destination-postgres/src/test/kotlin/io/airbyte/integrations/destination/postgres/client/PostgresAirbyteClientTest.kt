@@ -48,7 +48,12 @@ internal class PostgresAirbyteClientTest {
         postgresConfiguration = mockk()
         every { postgresConfiguration.legacyRawTablesOnly } returns false
         client =
-            PostgresAirbyteClient(dataSource, sqlGenerator, postgresColumnUtils, postgresConfiguration)
+            PostgresAirbyteClient(
+                dataSource,
+                sqlGenerator,
+                postgresColumnUtils,
+                postgresConfiguration
+            )
     }
 
     @Test
