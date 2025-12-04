@@ -4,7 +4,8 @@ import json
 from datetime import datetime, timezone
 from unittest import TestCase
 
-from unit_tests.conftest import get_source, get_resource_path
+from unit_tests.conftest import get_resource_path, get_source
+
 from airbyte_cdk.models import SyncMode
 from airbyte_cdk.test.catalog_builder import CatalogBuilder
 from airbyte_cdk.test.entrypoint_wrapper import read
@@ -12,6 +13,7 @@ from airbyte_cdk.test.mock_http import HttpMocker, HttpResponse
 from airbyte_cdk.test.state_builder import StateBuilder
 from integration.config import ConfigBuilder
 from integration.request_builder import HarvestRequestBuilder
+
 
 _STREAM_NAME = "estimate_item_categories"
 _ACCOUNT_ID = "123456"
@@ -34,7 +36,7 @@ class TestEstimateItemCategoriesStream(TestCase):
             .with_per_page(50)
             .with_updated_since("2021-01-01T00:00:00Z")
             .build(),
-            HttpResponse(body=json.dumps(response_data), status_code=200)
+            HttpResponse(body=json.dumps(response_data), status_code=200),
         )
 
         source = get_source(config=config)
@@ -65,16 +67,11 @@ class TestEstimateItemCategoriesStream(TestCase):
             .with_updated_since("2021-01-01T00:00:00Z")
             .build(),
             HttpResponse(
-                body=json.dumps({
-                    "estimate_item_categories": [],
-                    "per_page": 50,
-                    "total_pages": 0,
-                    "total_entries": 0,
-                    "page": 1,
-                    "links": {}
-                }),
-                status_code=200
-            )
+                body=json.dumps(
+                    {"estimate_item_categories": [], "per_page": 50, "total_pages": 0, "total_entries": 0, "page": 1, "links": {}}
+                ),
+                status_code=200,
+            ),
         )
 
         source = get_source(config=config)
@@ -91,7 +88,13 @@ class TestEstimateItemCategoriesStream(TestCase):
     @HttpMocker()
     def test_incremental_sync_with_state(self, http_mocker: HttpMocker) -> None:
         """Test incremental sync with state."""
-        config = ConfigBuilder().with_account_id(_ACCOUNT_ID).with_api_token(_API_TOKEN).with_replication_start_date(datetime(2024, 1, 1, tzinfo=timezone.utc)).build()
+        config = (
+            ConfigBuilder()
+            .with_account_id(_ACCOUNT_ID)
+            .with_api_token(_API_TOKEN)
+            .with_replication_start_date(datetime(2024, 1, 1, tzinfo=timezone.utc))
+            .build()
+        )
         state = StateBuilder().with_stream_state(_STREAM_NAME, {"updated_at": "2024-01-01T00:00:00Z"}).build()
 
         http_mocker.get(
@@ -100,14 +103,18 @@ class TestEstimateItemCategoriesStream(TestCase):
             .with_updated_since("2024-01-01T00:00:00Z")
             .build(),
             HttpResponse(
-                body=json.dumps({
-                    "estimate_item_categories": [{"id": 9001, "created_at": "2024-01-02T10:00:00Z", "updated_at": "2024-01-02T10:00:00Z"}],
-                    "per_page": 50,
-                    "total_pages": 1,
-                    "page": 1,
-                    "links": {}
-                }),
-                status_code=200
+                body=json.dumps(
+                    {
+                        "estimate_item_categories": [
+                            {"id": 9001, "created_at": "2024-01-02T10:00:00Z", "updated_at": "2024-01-02T10:00:00Z"}
+                        ],
+                        "per_page": 50,
+                        "total_pages": 1,
+                        "page": 1,
+                        "links": {},
+                    }
+                ),
+                status_code=200,
             ),
         )
 

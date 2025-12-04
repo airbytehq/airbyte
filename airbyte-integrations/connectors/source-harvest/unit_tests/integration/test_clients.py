@@ -124,24 +124,26 @@ class TestClientsStream(TestCase):
             .with_updated_since("2021-01-01T00:00:00Z")
             .build(),
             HarvestPaginatedResponseBuilder("clients")
-            .with_records([
-                {
-                    "id": 101,
-                    "name": "Client 1",
-                    "is_active": True,
-                    "currency": "USD",
-                    "created_at": "2023-01-01T00:00:00Z",
-                    "updated_at": "2023-01-01T00:00:00Z",
-                },
-                {
-                    "id": 102,
-                    "name": "Client 2",
-                    "is_active": True,
-                    "currency": "EUR",
-                    "created_at": "2023-01-02T00:00:00Z",
-                    "updated_at": "2023-01-02T00:00:00Z",
-                },
-            ])
+            .with_records(
+                [
+                    {
+                        "id": 101,
+                        "name": "Client 1",
+                        "is_active": True,
+                        "currency": "USD",
+                        "created_at": "2023-01-01T00:00:00Z",
+                        "updated_at": "2023-01-01T00:00:00Z",
+                    },
+                    {
+                        "id": 102,
+                        "name": "Client 2",
+                        "is_active": True,
+                        "currency": "EUR",
+                        "created_at": "2023-01-02T00:00:00Z",
+                        "updated_at": "2023-01-02T00:00:00Z",
+                    },
+                ]
+            )
             .with_page(1, total_pages=2)
             .with_next_page()
             .build(),
@@ -155,16 +157,18 @@ class TestClientsStream(TestCase):
             .with_updated_since("2021-01-01T00:00:00Z")
             .build(),
             HarvestPaginatedResponseBuilder("clients")
-            .with_records([
-                {
-                    "id": 103,
-                    "name": "Client 3",
-                    "is_active": False,
-                    "currency": "GBP",
-                    "created_at": "2023-01-03T00:00:00Z",
-                    "updated_at": "2023-01-03T00:00:00Z",
-                }
-            ])
+            .with_records(
+                [
+                    {
+                        "id": 103,
+                        "name": "Client 3",
+                        "is_active": False,
+                        "currency": "GBP",
+                        "created_at": "2023-01-03T00:00:00Z",
+                        "updated_at": "2023-01-03T00:00:00Z",
+                    }
+                ]
+            )
             .with_page(2, total_pages=2)
             .with_previous_page()
             .build(),

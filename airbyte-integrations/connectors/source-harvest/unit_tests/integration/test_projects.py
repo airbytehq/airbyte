@@ -404,7 +404,6 @@ class TestProjectsStream(TestCase):
         log_messages = [log.log.message for log in output.logs]
         assert any("Finished syncing" in msg for msg in log_messages)
 
-
     @HttpMocker()
     def test_unauthorized_error_handling(self, http_mocker: HttpMocker) -> None:
         """Test that connector ignores 401 errors per manifest config."""

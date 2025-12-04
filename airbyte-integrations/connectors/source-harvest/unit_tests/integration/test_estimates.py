@@ -50,8 +50,6 @@ class TestEstimatesStream(TestCase):
         assert output.records[0].record.data["number"] == "1001"
         assert output.records[0].record.data["state"] == "draft"
 
-
-
     @HttpMocker()
     def test_unauthorized_error_handling(self, http_mocker: HttpMocker) -> None:
         """Test that connector ignores 401 errors per manifest config."""
@@ -76,7 +74,13 @@ class TestEstimatesStream(TestCase):
     @HttpMocker()
     def test_incremental_sync_with_state(self, http_mocker: HttpMocker) -> None:
         """Test incremental sync with state."""
-        config = ConfigBuilder().with_account_id(_ACCOUNT_ID).with_api_token(_API_TOKEN).with_replication_start_date(datetime(2024, 1, 1, tzinfo=timezone.utc)).build()
+        config = (
+            ConfigBuilder()
+            .with_account_id(_ACCOUNT_ID)
+            .with_api_token(_API_TOKEN)
+            .with_replication_start_date(datetime(2024, 1, 1, tzinfo=timezone.utc))
+            .build()
+        )
         state = StateBuilder().with_stream_state(_STREAM_NAME, {"updated_at": "2024-01-01T00:00:00Z"}).build()
 
         http_mocker.get(
@@ -85,14 +89,16 @@ class TestEstimatesStream(TestCase):
             .with_updated_since("2024-01-01T00:00:00Z")
             .build(),
             HttpResponse(
-                body=json.dumps({
-                    "estimates": [{"id": 9001, "created_at": "2024-01-02T10:00:00Z", "updated_at": "2024-01-02T10:00:00Z"}],
-                    "per_page": 50,
-                    "total_pages": 1,
-                    "page": 1,
-                    "links": {}
-                }),
-                status_code=200
+                body=json.dumps(
+                    {
+                        "estimates": [{"id": 9001, "created_at": "2024-01-02T10:00:00Z", "updated_at": "2024-01-02T10:00:00Z"}],
+                        "per_page": 50,
+                        "total_pages": 1,
+                        "page": 1,
+                        "links": {},
+                    }
+                ),
+                status_code=200,
             ),
         )
 

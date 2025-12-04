@@ -1,11 +1,12 @@
 # Copyright (c) 2024 Airbyte, Inc., all rights reserved.
 
 import json
-from typing import Any, Dict
 from datetime import datetime, timezone
+from typing import Any, Dict
 from unittest import TestCase
 
-from unit_tests.conftest import get_source, get_resource_path
+from unit_tests.conftest import get_resource_path, get_source
+
 from airbyte_cdk.models import SyncMode
 from airbyte_cdk.test.catalog_builder import CatalogBuilder
 from airbyte_cdk.test.entrypoint_wrapper import read
@@ -13,6 +14,7 @@ from airbyte_cdk.test.mock_http import HttpMocker, HttpResponse
 from airbyte_cdk.test.state_builder import StateBuilder
 from integration.config import ConfigBuilder
 from integration.request_builder import HarvestRequestBuilder
+
 
 _STREAM_NAME = "invoice_messages"
 _ACCOUNT_ID = "123456"
@@ -28,7 +30,7 @@ def _create_parent_invoice(invoice_id: int = 1) -> Dict[str, Any]:
         "amount": 10000.0,
         "state": "paid",
         "created_at": "2024-01-01T00:00:00Z",
-        "updated_at": "2024-01-01T00:00:00Z"
+        "updated_at": "2024-01-01T00:00:00Z",
     }
 
 
@@ -53,16 +55,18 @@ class TestInvoiceMessagesStream(TestCase):
             .with_updated_since("2021-01-01T00:00:00Z")
             .build(),
             HttpResponse(
-                body=json.dumps({
-                    "invoices": [parent_invoice_1, parent_invoice_2],
-                    "per_page": 50,
-                    "total_pages": 1,
-                    "total_entries": 2,
-                    "page": 1,
-                    "links": {}
-                }),
-                status_code=200
-            )
+                body=json.dumps(
+                    {
+                        "invoices": [parent_invoice_1, parent_invoice_2],
+                        "per_page": 50,
+                        "total_pages": 1,
+                        "total_entries": 2,
+                        "page": 1,
+                        "links": {},
+                    }
+                ),
+                status_code=200,
+            ),
         )
 
         # Mock invoice_messages substream for invoice_id=1
@@ -74,31 +78,33 @@ class TestInvoiceMessagesStream(TestCase):
             .with_per_page(50)
             .with_query_param("updated_since", "2021-01-01T00:00:00Z")
             .build(),
-            HttpResponse(body=json.dumps(response_data_invoice1), status_code=200)
+            HttpResponse(body=json.dumps(response_data_invoice1), status_code=200),
         )
 
         # Mock invoice_messages substream for invoice_id=2
         response_data_invoice2 = {
-            "invoice_messages": [{
-                "id": 223,
-                "sent_by": "Jane Doe",
-                "sent_by_email": "jane@example.com",
-                "sent_from": "John Manager",
-                "sent_from_email": "john@example.com",
-                "recipients": [{"name": "Client B", "email": "clientb@example.com"}],
-                "subject": "Invoice INV-002",
-                "body": "Please find attached invoice INV-002",
-                "include_link_to_client_invoice": True,
-                "send_me_a_copy": True,
-                "event_type": "send",
-                "created_at": "2024-01-02T00:00:00Z",
-                "updated_at": "2024-01-02T00:00:00Z"
-            }],
+            "invoice_messages": [
+                {
+                    "id": 223,
+                    "sent_by": "Jane Doe",
+                    "sent_by_email": "jane@example.com",
+                    "sent_from": "John Manager",
+                    "sent_from_email": "john@example.com",
+                    "recipients": [{"name": "Client B", "email": "clientb@example.com"}],
+                    "subject": "Invoice INV-002",
+                    "body": "Please find attached invoice INV-002",
+                    "include_link_to_client_invoice": True,
+                    "send_me_a_copy": True,
+                    "event_type": "send",
+                    "created_at": "2024-01-02T00:00:00Z",
+                    "updated_at": "2024-01-02T00:00:00Z",
+                }
+            ],
             "per_page": 50,
             "total_pages": 1,
             "total_entries": 1,
             "page": 1,
-            "links": {}
+            "links": {},
         }
 
         http_mocker.get(
@@ -106,7 +112,7 @@ class TestInvoiceMessagesStream(TestCase):
             .with_per_page(50)
             .with_query_param("updated_since", "2021-01-01T00:00:00Z")
             .build(),
-            HttpResponse(body=json.dumps(response_data_invoice2), status_code=200)
+            HttpResponse(body=json.dumps(response_data_invoice2), status_code=200),
         )
 
         source = get_source(config=config)
@@ -123,7 +129,6 @@ class TestInvoiceMessagesStream(TestCase):
         for record in output.records:
             assert "parent_id" in record.record.data, "Transformation should add 'parent_id' field to record"
 
-
     @HttpMocker()
     def test_empty_results(self, http_mocker: HttpMocker) -> None:
         """
@@ -139,16 +144,11 @@ class TestInvoiceMessagesStream(TestCase):
             .with_updated_since("2021-01-01T00:00:00Z")
             .build(),
             HttpResponse(
-                body=json.dumps({
-                    "invoices": [parent_invoice],
-                    "per_page": 50,
-                    "total_pages": 1,
-                    "total_entries": 1,
-                    "page": 1,
-                    "links": {}
-                }),
-                status_code=200
-            )
+                body=json.dumps(
+                    {"invoices": [parent_invoice], "per_page": 50, "total_pages": 1, "total_entries": 1, "page": 1, "links": {}}
+                ),
+                status_code=200,
+            ),
         )
 
         # Mock empty invoice_messages response
@@ -158,16 +158,9 @@ class TestInvoiceMessagesStream(TestCase):
             .with_query_param("updated_since", "2021-01-01T00:00:00Z")
             .build(),
             HttpResponse(
-                body=json.dumps({
-                    "invoice_messages": [],
-                    "per_page": 50,
-                    "total_pages": 0,
-                    "total_entries": 0,
-                    "page": 1,
-                    "links": {}
-                }),
-                status_code=200
-            )
+                body=json.dumps({"invoice_messages": [], "per_page": 50, "total_pages": 0, "total_entries": 0, "page": 1, "links": {}}),
+                status_code=200,
+            ),
         )
 
         source = get_source(config=config)
@@ -184,24 +177,41 @@ class TestInvoiceMessagesStream(TestCase):
     @HttpMocker()
     def test_incremental_sync_with_state(self, http_mocker: HttpMocker) -> None:
         """Test incremental sync with state."""
-        config = ConfigBuilder().with_account_id(_ACCOUNT_ID).with_api_token(_API_TOKEN).with_replication_start_date(datetime(2024, 1, 1, tzinfo=timezone.utc)).build()
+        config = (
+            ConfigBuilder()
+            .with_account_id(_ACCOUNT_ID)
+            .with_api_token(_API_TOKEN)
+            .with_replication_start_date(datetime(2024, 1, 1, tzinfo=timezone.utc))
+            .build()
+        )
         state = StateBuilder().with_stream_state(_STREAM_NAME, {"updated_at": "2024-01-01T00:00:00Z"}).build()
 
         # Mock parent invoices stream
-        parent_invoice = {"id": 1, "client_id": 1, "number": "INV-001", "amount": 10000.0, "state": "open", "created_at": "2024-01-01T00:00:00Z", "updated_at": "2024-01-01T00:00:00Z"}
+        parent_invoice = {
+            "id": 1,
+            "client_id": 1,
+            "number": "INV-001",
+            "amount": 10000.0,
+            "state": "open",
+            "created_at": "2024-01-01T00:00:00Z",
+            "updated_at": "2024-01-01T00:00:00Z",
+        }
         http_mocker.get(
             HarvestRequestBuilder.invoices_endpoint(_ACCOUNT_ID, _API_TOKEN)
             .with_per_page(50)
             .with_updated_since("2024-01-01T00:00:00Z")
             .build(),
             HttpResponse(
-                body=json.dumps({"invoices": [parent_invoice], "per_page": 50, "total_pages": 1, "total_entries": 1, "page": 1, "links": {}}),
-                status_code=200
-            )
+                body=json.dumps(
+                    {"invoices": [parent_invoice], "per_page": 50, "total_pages": 1, "total_entries": 1, "page": 1, "links": {}}
+                ),
+                status_code=200,
+            ),
         )
 
         # Mock invoice_messages substream
         from airbyte_cdk.test.mock_http import HttpRequest
+
         http_mocker.get(
             HttpRequest(
                 url="https://api.harvestapp.com/v2/invoices/1/messages",
@@ -209,8 +219,16 @@ class TestInvoiceMessagesStream(TestCase):
                 headers={"Harvest-Account-Id": _ACCOUNT_ID, "Authorization": f"Bearer {_API_TOKEN}"},
             ),
             HttpResponse(
-                body=json.dumps({"invoice_messages": [{"id": 9001, "created_at": "2024-01-02T10:00:00Z", "updated_at": "2024-01-02T10:00:00Z"}], "per_page": 50, "total_pages": 1, "page": 1, "links": {}}),
-                status_code=200
+                body=json.dumps(
+                    {
+                        "invoice_messages": [{"id": 9001, "created_at": "2024-01-02T10:00:00Z", "updated_at": "2024-01-02T10:00:00Z"}],
+                        "per_page": 50,
+                        "total_pages": 1,
+                        "page": 1,
+                        "links": {},
+                    }
+                ),
+                status_code=200,
             ),
         )
 

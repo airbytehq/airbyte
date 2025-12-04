@@ -75,8 +75,6 @@ class TestBillableRatesStream(TestCase):
         for record in output.records:
             assert "parent_id" in record.record.data, "Transformation should add 'parent_id' field to record"
 
-
-
     @HttpMocker()
     def test_unauthorized_error_handling(self, http_mocker: HttpMocker) -> None:
         """Test that connector ignores 401 errors per manifest config."""

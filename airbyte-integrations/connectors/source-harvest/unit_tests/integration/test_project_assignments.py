@@ -74,8 +74,6 @@ class TestProjectAssignmentsStream(TestCase):
         for record in output.records:
             assert "parent_id" in record.record.data, "Transformation should add 'parent_id' field to record"
 
-
-
     @HttpMocker()
     def test_unauthorized_error_handling(self, http_mocker: HttpMocker) -> None:
         """Test that connector ignores 401 errors per manifest config."""
@@ -101,11 +99,25 @@ class TestProjectAssignmentsStream(TestCase):
     @HttpMocker()
     def test_incremental_sync_with_state(self, http_mocker: HttpMocker) -> None:
         """Test incremental sync with state."""
-        config = ConfigBuilder().with_account_id(_ACCOUNT_ID).with_api_token(_API_TOKEN).with_replication_start_date(datetime(2024, 1, 1, tzinfo=timezone.utc)).build()
+        config = (
+            ConfigBuilder()
+            .with_account_id(_ACCOUNT_ID)
+            .with_api_token(_API_TOKEN)
+            .with_replication_start_date(datetime(2024, 1, 1, tzinfo=timezone.utc))
+            .build()
+        )
         state = StateBuilder().with_stream_state(_STREAM_NAME, {"updated_at": "2024-01-01T00:00:00Z"}).build()
 
         # Mock parent users stream
-        parent_user = {"id": 1, "first_name": "John", "last_name": "Doe", "email": "john@example.com", "is_active": True, "created_at": "2024-01-01T00:00:00Z", "updated_at": "2024-01-01T00:00:00Z"}
+        parent_user = {
+            "id": 1,
+            "first_name": "John",
+            "last_name": "Doe",
+            "email": "john@example.com",
+            "is_active": True,
+            "created_at": "2024-01-01T00:00:00Z",
+            "updated_at": "2024-01-01T00:00:00Z",
+        }
         http_mocker.get(
             HarvestRequestBuilder.users_endpoint(_ACCOUNT_ID, _API_TOKEN)
             .with_per_page(50)
@@ -113,12 +125,13 @@ class TestProjectAssignmentsStream(TestCase):
             .build(),
             HttpResponse(
                 body=json.dumps({"users": [parent_user], "per_page": 50, "total_pages": 1, "total_entries": 1, "page": 1, "links": {}}),
-                status_code=200
-            )
+                status_code=200,
+            ),
         )
 
         # Mock project_assignments substream
         from airbyte_cdk.test.mock_http import HttpRequest
+
         http_mocker.get(
             HttpRequest(
                 url=f"https://api.harvestapp.com/v2/users/1/project_assignments",
@@ -126,8 +139,16 @@ class TestProjectAssignmentsStream(TestCase):
                 headers={"Harvest-Account-Id": _ACCOUNT_ID, "Authorization": f"Bearer {_API_TOKEN}"},
             ),
             HttpResponse(
-                body=json.dumps({"project_assignments": [{"id": 9001, "created_at": "2024-01-02T10:00:00Z", "updated_at": "2024-01-02T10:00:00Z"}], "per_page": 50, "total_pages": 1, "page": 1, "links": {}}),
-                status_code=200
+                body=json.dumps(
+                    {
+                        "project_assignments": [{"id": 9001, "created_at": "2024-01-02T10:00:00Z", "updated_at": "2024-01-02T10:00:00Z"}],
+                        "per_page": 50,
+                        "total_pages": 1,
+                        "page": 1,
+                        "links": {},
+                    }
+                ),
+                status_code=200,
             ),
         )
 

@@ -4,7 +4,8 @@ import json
 from typing import Any, Dict
 from unittest import TestCase
 
-from unit_tests.conftest import get_source, get_resource_path
+from unit_tests.conftest import get_resource_path, get_source
+
 from airbyte_cdk.models import SyncMode
 from airbyte_cdk.test.catalog_builder import CatalogBuilder
 from airbyte_cdk.test.entrypoint_wrapper import read
@@ -12,6 +13,7 @@ from airbyte_cdk.test.mock_http import HttpMocker, HttpResponse
 from airbyte_cdk.test.state_builder import StateBuilder
 from integration.config import ConfigBuilder
 from integration.request_builder import HarvestRequestBuilder
+
 
 _STREAM_NAME = "cost_rates"
 _PARENT_STREAM_NAME = "users"
@@ -28,7 +30,7 @@ def _create_parent_user(user_id: int = 1) -> Dict[str, Any]:
         "email": "john@example.com",
         "is_active": True,
         "created_at": "2024-01-01T00:00:00Z",
-        "updated_at": "2024-01-01T00:00:00Z"
+        "updated_at": "2024-01-01T00:00:00Z",
     }
 
 
@@ -56,16 +58,11 @@ class TestCostRatesStream(TestCase):
             .with_updated_since("2021-01-01T00:00:00Z")
             .build(),
             HttpResponse(
-                body=json.dumps({
-                    "users": [parent_user_1, parent_user_2],
-                    "per_page": 50,
-                    "total_pages": 1,
-                    "total_entries": 2,
-                    "page": 1,
-                    "links": {}
-                }),
-                status_code=200
-            )
+                body=json.dumps(
+                    {"users": [parent_user_1, parent_user_2], "per_page": 50, "total_pages": 1, "total_entries": 2, "page": 1, "links": {}}
+                ),
+                status_code=200,
+            ),
         )
 
         # Mock cost_rates substream for user_id=1
@@ -73,34 +70,32 @@ class TestCostRatesStream(TestCase):
             response_data_user1 = json.load(f)
 
         http_mocker.get(
-            HarvestRequestBuilder.cost_rates_endpoint(_ACCOUNT_ID, _API_TOKEN, user_id=1)
-            .with_per_page(50)
-            .build(),
-            HttpResponse(body=json.dumps(response_data_user1), status_code=200)
+            HarvestRequestBuilder.cost_rates_endpoint(_ACCOUNT_ID, _API_TOKEN, user_id=1).with_per_page(50).build(),
+            HttpResponse(body=json.dumps(response_data_user1), status_code=200),
         )
 
         # Mock cost_rates substream for user_id=2
         response_data_user2 = {
-            "cost_rates": [{
-                "id": 12346,
-                "amount": 85.0,
-                "start_date": "2024-02-01",
-                "end_date": None,
-                "created_at": "2024-02-01T00:00:00Z",
-                "updated_at": "2024-02-01T00:00:00Z"
-            }],
+            "cost_rates": [
+                {
+                    "id": 12346,
+                    "amount": 85.0,
+                    "start_date": "2024-02-01",
+                    "end_date": None,
+                    "created_at": "2024-02-01T00:00:00Z",
+                    "updated_at": "2024-02-01T00:00:00Z",
+                }
+            ],
             "per_page": 50,
             "total_pages": 1,
             "total_entries": 1,
             "page": 1,
-            "links": {}
+            "links": {},
         }
 
         http_mocker.get(
-            HarvestRequestBuilder.cost_rates_endpoint(_ACCOUNT_ID, _API_TOKEN, user_id=2)
-            .with_per_page(50)
-            .build(),
-            HttpResponse(body=json.dumps(response_data_user2), status_code=200)
+            HarvestRequestBuilder.cost_rates_endpoint(_ACCOUNT_ID, _API_TOKEN, user_id=2).with_per_page(50).build(),
+            HttpResponse(body=json.dumps(response_data_user2), status_code=200),
         )
 
         source = get_source(config=config)
@@ -145,16 +140,9 @@ class TestCostRatesStream(TestCase):
             .with_updated_since("2021-01-01T00:00:00Z")
             .build(),
             HttpResponse(
-                body=json.dumps({
-                    "users": [parent_user],
-                    "per_page": 50,
-                    "total_pages": 1,
-                    "total_entries": 1,
-                    "page": 1,
-                    "links": {}
-                }),
-                status_code=200
-            )
+                body=json.dumps({"users": [parent_user], "per_page": 50, "total_pages": 1, "total_entries": 1, "page": 1, "links": {}}),
+                status_code=200,
+            ),
         )
 
         # Mock cost_rates with incremental sync
@@ -162,10 +150,8 @@ class TestCostRatesStream(TestCase):
             response_data = json.load(f)
 
         http_mocker.get(
-            HarvestRequestBuilder.cost_rates_endpoint(_ACCOUNT_ID, _API_TOKEN, user_id=1)
-            .with_per_page(50)
-            .build(),
-            HttpResponse(body=json.dumps(response_data), status_code=200)
+            HarvestRequestBuilder.cost_rates_endpoint(_ACCOUNT_ID, _API_TOKEN, user_id=1).with_per_page(50).build(),
+            HttpResponse(body=json.dumps(response_data), status_code=200),
         )
 
         source = get_source(config=config)
@@ -198,34 +184,18 @@ class TestCostRatesStream(TestCase):
             .with_updated_since("2021-01-01T00:00:00Z")
             .build(),
             HttpResponse(
-                body=json.dumps({
-                    "users": [parent_user],
-                    "per_page": 50,
-                    "total_pages": 1,
-                    "total_entries": 1,
-                    "page": 1,
-                    "links": {}
-                }),
-                status_code=200
-            )
+                body=json.dumps({"users": [parent_user], "per_page": 50, "total_pages": 1, "total_entries": 1, "page": 1, "links": {}}),
+                status_code=200,
+            ),
         )
 
         # Mock empty cost_rates response
         http_mocker.get(
-            HarvestRequestBuilder.cost_rates_endpoint(_ACCOUNT_ID, _API_TOKEN, user_id=1)
-            .with_per_page(50)
-            .build(),
+            HarvestRequestBuilder.cost_rates_endpoint(_ACCOUNT_ID, _API_TOKEN, user_id=1).with_per_page(50).build(),
             HttpResponse(
-                body=json.dumps({
-                    "cost_rates": [],
-                    "per_page": 50,
-                    "total_pages": 0,
-                    "total_entries": 0,
-                    "page": 1,
-                    "links": {}
-                }),
-                status_code=200
-            )
+                body=json.dumps({"cost_rates": [], "per_page": 50, "total_pages": 0, "total_entries": 0, "page": 1, "links": {}}),
+                status_code=200,
+            ),
         )
 
         source = get_source(config=config)

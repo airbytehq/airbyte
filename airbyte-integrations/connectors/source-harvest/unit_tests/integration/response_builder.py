@@ -194,12 +194,7 @@ class HarvestPaginatedResponseBuilder:
         Returns:
             HttpResponse for a single page with no pagination links
         """
-        return (
-            cls(resource_name)
-            .with_records(records)
-            .with_page(1, total_pages=1, per_page=per_page)
-            .build()
-        )
+        return cls(resource_name).with_records(records).with_page(1, total_pages=1, per_page=per_page).build()
 
     @classmethod
     def empty_page(cls, resource_name: str, per_page: int = 50) -> HttpResponse:
@@ -213,10 +208,4 @@ class HarvestPaginatedResponseBuilder:
         Returns:
             HttpResponse for an empty result set
         """
-        return (
-            cls(resource_name)
-            .with_records([])
-            .with_page(1, total_pages=0, per_page=per_page)
-            .with_total_entries(0)
-            .build()
-        )
+        return cls(resource_name).with_records([]).with_page(1, total_pages=0, per_page=per_page).with_total_entries(0).build()
