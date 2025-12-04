@@ -3,7 +3,7 @@
 #
 
 import logging
-from typing import Any, Mapping, Tuple
+from typing import Any, Mapping
 
 from airbyte_cdk.models import AirbyteConnectionStatus, Status
 from airbyte_cdk.sources.declarative.yaml_declarative_source import YamlDeclarativeSource
