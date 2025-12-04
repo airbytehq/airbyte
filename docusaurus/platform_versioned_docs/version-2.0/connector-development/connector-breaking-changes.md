@@ -21,7 +21,7 @@ A breaking change is any change that requires users to take action before they c
 - **Stream or Property Removal** - Data that was previously being synced is no longer going to be synced.
 - **Destination Format / Normalization Change** - The way the destination writes the final data or how normalization cleans that data is changing in a way that requires a full-refresh.
 - **State Changes** - The format of the source’s state has changed, and the full dataset will need to be re-synced
-- **Non-Reversible Upgrades** - Connector upgrades which cannot be safely rolled back should be considered a subset of breaking changes and must be similarly flagged.
+- **Non-Reversible Upgrades** - Connector upgrades which cannot be safely rolled back should be considered a subset of breaking changes and must be similarly flagged and approved.
 - **Full Downstream Rewrite** - Very rarely, a change is so significant that it requires a full rewrite of downstream SQL transformations or BI dashboards. In these cases, consider forking the connector as a "Gen 2" version instead of making a breaking change that would fully break users' downstream pipelines. See [Major Rewrites and Gen 2 Connectors](#major-rewrites-and-gen-2-connectors) below.
 
 ### What is NOT a Breaking Change
