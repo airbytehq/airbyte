@@ -21,6 +21,8 @@ import io.airbyte.integrations.destination.snowflake.db.toSnowflakeCompatibleNam
 import io.airbyte.integrations.destination.snowflake.write.transform.SnowflakeValueCoercer
 import io.airbyte.protocol.models.v0.AirbyteRecordMessageMetaChange
 import io.airbyte.protocol.models.v0.AirbyteRecordMessageMetaChange.Change
+import io.mockk.every
+import io.mockk.mockk
 
 object SnowflakeExpectedRecordMapper : ExpectedRecordMapper {
 
@@ -43,7 +45,7 @@ object SnowflakeExpectedRecordMapper : ExpectedRecordMapper {
 
     private fun mapAirbyteValue(value: AirbyteValue): AirbyteValue {
         val validationResult =
-            SnowflakeValueCoercer()
+            SnowflakeValueCoercer(mockk { every { legacyRawTablesOnly } returns false })
                 .validate(
                     EnrichedAirbyteValue(
                         value,
