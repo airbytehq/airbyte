@@ -60,7 +60,24 @@ When in doubt, treat type changes as breaking unless you can verify that all dow
 
 Some legitimate breaking changes may not impact all users of the connector. For example, a change to the schema of a specific stream only impacts users who are syncing that stream.
 
-The breaking change metadata allows you to specify narrowed scopes, and specifically _which streams_ are specifically affected by a breaking change. See the [`breakingChanges` entry](https://docs.airbyte.com/connector-development/connector-metadata-file/) documentation for supported scopes. If a user is not using the affected streams and therefor are not affected by a breaking change, they will not see any in-app messaging or emails about the change.
+The breaking change metadata allows you to specify narrowed scopes, and specifically _which streams_ are affected by a breaking change. If a user is not using the affected streams and therefore are not affected by a breaking change, they will not see any in-app messaging or emails about the change.
+
+To scope a breaking change to specific streams, add the `scopedImpact` property to your `metadata.yaml` entry:
+
+```yaml
+releases:
+  breakingChanges:
+    2.0.0:
+      message: "This version changes the cursor for the `users` stream. After upgrading, please reset the stream."
+      upgradeDeadline: "2024-03-01"
+      scopedImpact:
+        - scopeType: stream
+          impactedScopes: ["users"]
+```
+
+In this example, only users syncing the `users` stream are affected. Users syncing other streams can safely ignore this breaking change.
+
+For the full schema and additional scope types, see the [`scopedImpact` documentation](/platform/connector-development/connector-metadata-file#scopedimpact).
 
 ## Migration Guide Documentation Requirements
 
