@@ -46,18 +46,44 @@ jobs:
       pr-number: ${{ steps.job-vars.outputs.pr-number }}
       comment-id: ${{ steps.append-start-comment.outputs.comment-id }}
       short-sha: ${{ steps.get-sha.outputs.short-sha }}
+      connectors-arg: ${{ steps.get-modified-connectors.outputs.connectors-arg }}
+      has-connectors: ${{ steps.get-modified-connectors.outputs.has-connectors }}
     steps:
-      - name: Checkout to get commit SHA
+      - name: Checkout to get commit SHA and modified connectors
         uses: actions/checkout@v4
         with:
           repository: ${{ inputs.repo || github.repository }}
           ref: ${{ inputs.gitref || '' }}
+          # Use fetch-depth: 0 to ensure we can access the full commit history for diff
+          fetch-depth: 0
 
       - name: Get short SHA
         id: get-sha
         run: |
           SHORT_SHA=$(git rev-parse --short=10 HEAD)
           echo "short-sha=$SHORT_SHA" >> $GITHUB_OUTPUT
+
+      - name: Get modified connectors
+        id: get-modified-connectors
+        run: |
+          # Get the list of modified connectors (newline-separated)
+          CONNECTORS=$(./poe-tasks/get-modified-connectors.sh 2>/dev/null || echo "")
+
+          if [ -z "$CONNECTORS" ]; then
+            echo "No modified connectors found"
+            echo "has-connectors=false" >> $GITHUB_OUTPUT
+            echo "connectors-arg=" >> $GITHUB_OUTPUT
+          else
+            echo "Modified connectors found:"
+            echo "$CONNECTORS"
+
+            # Convert newline-separated list to --name=connector format
+            # e.g., "source-faker\ndestination-postgres" -> "--name=source-faker --name=destination-postgres"
+            CONNECTORS_ARG=$(echo "$CONNECTORS" | sed 's/^/--name=/' | tr '\n' ' ' | sed 's/ $//')
+
+            echo "has-connectors=true" >> $GITHUB_OUTPUT
+            echo "connectors-arg=$CONNECTORS_ARG" >> $GITHUB_OUTPUT
+          fi
 
       - name: Get job variables
         id: job-vars
@@ -78,6 +104,7 @@ jobs:
             >
             > Publishing pre-release builds for all modified connectors in this PR.
             > Branch: `${{ inputs.gitref }}`
+            > Connectors: `${{ steps.get-modified-connectors.outputs.connectors-arg || 'None detected' }}`
             >
             > Pre-release versions will be tagged as `{version}-dev.${{ steps.get-sha.outputs.short-sha }}`
             > and are available for version pinning via the scoped_configuration API.
@@ -87,17 +114,37 @@ jobs:
   publish:
     name: Publish Pre-release
     needs: [init]
+    if: needs.init.outputs.has-connectors == 'true'
     uses: ./.github/workflows/publish_connectors.yml
     with:
-      connectors: "--modified"
+      # Pass the auto-generated --name=connector args to publish_connectors.yml
+      # This is constructed from get-modified-connectors.sh output
+      connectors: ${{ needs.init.outputs.connectors-arg }}
       release-type: pre-release
     secrets: inherit
+
+  no-connectors:
+    name: No Connectors to Publish
+    needs: [init]
+    if: needs.init.outputs.has-connectors != 'true' && inputs.comment-id != ''
+    runs-on: ubuntu-24.04
+    steps:
+      - name: Post no-connectors comment
+        uses: peter-evans/create-or-update-comment@71345be0265236311c031f5c7866368bd1eff043 # v4.0.0
+        with:
+          comment-id: ${{ needs.init.outputs.comment-id }}
+          issue-number: ${{ needs.init.outputs.pr-number }}
+          body: |
+            > **No Modified Connectors Found** :warning:
+            >
+            > No connector changes were detected in this PR. Nothing to publish.
 
   post-completion:
     name: Post Completion Status
     needs: [init, publish]
     runs-on: ubuntu-24.04
-    if: always() && inputs.comment-id != ''
+    # Only run if publish job ran (not skipped) and we have a comment to update
+    if: always() && needs.publish.result != 'skipped' && inputs.comment-id != ''
     steps:
       - name: Determine publish status
         id: status
