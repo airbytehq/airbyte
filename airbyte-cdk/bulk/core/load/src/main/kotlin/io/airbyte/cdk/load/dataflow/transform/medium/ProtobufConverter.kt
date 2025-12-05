@@ -219,10 +219,8 @@ class ProtobufConverter(
         val decodedValue = decoder.decode(protobufValue)
 
         // For complex types (arrays, objects, unions), handle separately
-        return when (accessor.type) {
-            is UnionType,
-            is ArrayType,
-            is ObjectType -> {
+        return when {
+            accessor.type.isArray || accessor.type.isObject || accessor.type is UnionType -> {
                 if (decodedValue is String) {
                     // If decoder returned a JSON string, parse it
                     val jsonNode = Jsons.readTree(decodedValue.toByteArray())
@@ -231,7 +229,7 @@ class ProtobufConverter(
                     decodedValue
                 }
             }
-            is UnknownType -> null
+            accessor.type is UnknownType -> null
             else -> decodedValue
         }
     }
