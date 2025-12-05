@@ -15,6 +15,8 @@ FOLDER_ID = "test_folder_456"
 CALL_ID = "test_call_789"
 TRACKER_ID = "test_tracker_012"
 USER_ID = "test_user_345"
+SCORECARD_ID = "test_scorecard_678"
+ANSWERED_SCORECARD_ID = "test_answered_scorecard_901"
 
 START_DATE = "2024-01-01T00:00:00Z"
 

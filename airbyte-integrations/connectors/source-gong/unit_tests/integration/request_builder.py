@@ -57,6 +57,18 @@ class RequestBuilder:
     def calls_endpoint(cls) -> "RequestBuilder":
         return cls(resource="calls")
 
+    @classmethod
+    def extensive_calls_endpoint(cls) -> "RequestBuilder":
+        return cls(resource="calls/extensive", http_method="POST")
+
+    @classmethod
+    def scorecards_endpoint(cls) -> "RequestBuilder":
+        return cls(resource="settings/scorecards")
+
+    @classmethod
+    def answered_scorecards_endpoint(cls) -> "RequestBuilder":
+        return cls(resource="stats/activity/scorecards", http_method="POST")
+
     def __init__(self, resource: str = "", http_method: str = "GET") -> None:
         self._resource = resource
         self._http_method = http_method
