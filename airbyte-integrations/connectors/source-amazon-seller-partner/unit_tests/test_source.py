@@ -141,7 +141,7 @@ def test_streams(connector_config_without_start_date):
 
 def test_streams_count(connector_config_without_start_date, monkeypatch):
     streams = get_source(connector_config_without_start_date).streams(connector_config_without_start_date)
-    assert len(streams) == 45
+    assert len(streams) == 43
 
 
 # TODO: Renable this test once this type of validation is supported
