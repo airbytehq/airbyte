@@ -280,8 +280,9 @@ class CdcPartitionReader<T : Comparable<T>>(
 
             val event = DebeziumEvent(changeEvent)
             val eventType: EventType = emitRecord(event)
-            // Update counters.
-            updateCounters(event, eventType)
+            if (!engineShuttingDown.get()) {
+                updateCounters(event, eventType)
+            }
             // Look for reasons to close down the engine.
             val closeReason: CloseReason = findCloseReason(event, eventType) ?: return
             // At this point, if we haven't returned already, we want to close down the engine.
@@ -341,6 +342,7 @@ class CdcPartitionReader<T : Comparable<T>>(
                 true ->
                     runBlocking(Dispatchers.IO) {
                         recordAcceptor.invoke(deserializedRecord.data, deserializedRecord.changes)
+                        updateCounters(event, EventType.RECORD_EMITTED)
                     }
                 // While the engine is running normally, we can emit records synchronously for
                 // better performance.
