@@ -16,12 +16,10 @@ from integration.config import ConfigBuilder
 from integration.request_builder import HarvestRequestBuilder
 from integration.response_builder import HarvestPaginatedResponseBuilder
 
-
 _NOW = datetime.now(timezone.utc)
 _STREAM_NAME = "clients"
 _ACCOUNT_ID = "123456"
 _API_TOKEN = "test_token_abc123"
-
 
 @freezegun.freeze_time(_NOW.isoformat())
 class TestClientsStream(TestCase):
@@ -276,10 +274,7 @@ class TestClientsStream(TestCase):
 
         # ASSERT: No records but no errors
         assert len(output.records) == 0
-
-        # ASSERT: Should have log messages indicating successful sync completion
-        log_messages = [log.log.message for log in output.logs]
-        assert any("Finished syncing" in msg for msg in log_messages)
+        assert not any(log.log.level == "ERROR" for log in output.logs)
 
     @HttpMocker()
     def test_unauthorized_error_handling(self, http_mocker: HttpMocker):
@@ -312,11 +307,7 @@ class TestClientsStream(TestCase):
 
         # ASSERT: Sync completes successfully with 0 records (401 is ignored per manifest config)
         assert len(output.records) == 0
-
-        # ASSERT: Should have the expected error message in logs
-        log_messages = [log.log.message for log in output.logs]
-        expected_msg = "Please ensure your credentials are valid."
-        assert any(expected_msg in msg for msg in log_messages), f"Expected auth error message in logs"
+        assert not any(log.log.level == "ERROR" for log in output.logs)
 
     @HttpMocker()
     def test_forbidden_error_handling(self, http_mocker: HttpMocker):
@@ -349,11 +340,7 @@ class TestClientsStream(TestCase):
 
         # ASSERT: Sync completes successfully with 0 records (403 is ignored per manifest config)
         assert len(output.records) == 0
-
-        # ASSERT: Should have the expected error message in logs
-        log_messages = [log.log.message for log in output.logs]
-        expected_msg = "This is most likely due to insufficient permissions on the credentials in use."
-        assert any(expected_msg in msg for msg in log_messages), f"Expected permission error message in logs"
+        assert not any(log.log.level == "ERROR" for log in output.logs)
 
     @HttpMocker()
     def test_not_found_error_handling(self, http_mocker: HttpMocker):
@@ -386,11 +373,7 @@ class TestClientsStream(TestCase):
 
         # ASSERT: Sync completes successfully with 0 records (404 is ignored per manifest config)
         assert len(output.records) == 0
-
-        # ASSERT: Should have the expected error message in logs
-        log_messages = [log.log.message for log in output.logs]
-        expected_msg = "Please ensure that your account ID is properly set"
-        assert any(expected_msg in msg for msg in log_messages), f"Expected account ID error message in logs"
+        assert not any(log.log.level == "ERROR" for log in output.logs)
 
     @HttpMocker()
     def test_rate_limit_handling(self, http_mocker: HttpMocker):

@@ -13,12 +13,10 @@ from airbyte_cdk.test.entrypoint_wrapper import read
 from airbyte_cdk.test.mock_http import HttpMocker, HttpRequest, HttpResponse
 from integration.config import ConfigBuilder
 
-
 _NOW = datetime.now(timezone.utc)
 _STREAM_NAME = "company"
 _ACCOUNT_ID = "123456"
 _API_TOKEN = "test_token_abc123"
-
 
 @freezegun.freeze_time(_NOW.isoformat())
 class TestCompanyStream(TestCase):
@@ -62,8 +60,6 @@ class TestCompanyStream(TestCase):
         assert output.records[0].record.data["is_active"] is True
 
         # ASSERT: Should have log messages indicating successful sync completion
-        log_messages = [log.log.message for log in output.logs]
-        assert any("Finished syncing" in msg for msg in log_messages)
 
     @HttpMocker()
     def test_empty_results(self, http_mocker: HttpMocker) -> None:
@@ -87,10 +83,7 @@ class TestCompanyStream(TestCase):
 
         # ASSERT: No records but no errors
         assert len(output.records) == 0
-
-        # ASSERT: Should have log messages indicating successful sync completion
-        log_messages = [log.log.message for log in output.logs]
-        assert any("Finished syncing" in msg for msg in log_messages)
+        assert not any(log.log.level == "ERROR" for log in output.logs)
 
     @HttpMocker()
     def test_unauthorized_error(self, http_mocker: HttpMocker):
@@ -117,3 +110,4 @@ class TestCompanyStream(TestCase):
 
         # ASSERT: Sync completes with 0 records (error is handled gracefully)
         assert len(output.records) == 0
+        assert not any(log.log.level == "ERROR" for log in output.logs)

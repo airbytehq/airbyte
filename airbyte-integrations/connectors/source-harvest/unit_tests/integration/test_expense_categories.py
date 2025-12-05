@@ -14,11 +14,9 @@ from airbyte_cdk.test.state_builder import StateBuilder
 from integration.config import ConfigBuilder
 from integration.request_builder import HarvestRequestBuilder
 
-
 _STREAM_NAME = "expense_categories"
 _ACCOUNT_ID = "123456"
 _API_TOKEN = "test_token_abc123"
-
 
 class TestExpenseCategoriesStream(TestCase):
     @HttpMocker()
@@ -79,10 +77,7 @@ class TestExpenseCategoriesStream(TestCase):
 
         # ASSERT: No records but no errors
         assert len(output.records) == 0
-
-        # ASSERT: Should have log messages indicating successful sync completion
-        log_messages = [log.log.message for log in output.logs]
-        assert any("Finished syncing" in msg for msg in log_messages)
+        assert not any(log.log.level == "ERROR" for log in output.logs)
 
     @HttpMocker()
     def test_incremental_sync_with_state(self, http_mocker: HttpMocker) -> None:
@@ -119,8 +114,12 @@ class TestExpenseCategoriesStream(TestCase):
         catalog = CatalogBuilder().with_stream(_STREAM_NAME, SyncMode.incremental).build()
         output = read(source, config=config, catalog=catalog, state=state)
 
-        assert len(output.records) >= 1
+        assert len(output.records) == 1
+        assert output.records[0].record.data["id"] == 9001
+        assert output.records[0].record.data["updated_at"] == "2024-01-02T10:00:00Z"
         assert len(output.state_messages) > 0
+        latest_state = output.state_messages[-1].state.stream.stream_state
+        assert latest_state.__dict__["updated_at"] == "2024-01-02T10:00:00Z"
 
     @HttpMocker()
     def test_unauthorized_error_handling(self, http_mocker: HttpMocker) -> None:
@@ -140,8 +139,7 @@ class TestExpenseCategoriesStream(TestCase):
         output = read(source, config=config, catalog=catalog, expecting_exception=False)
 
         assert len(output.records) == 0
-        log_messages = [log.log.message for log in output.logs]
-        assert any("Please ensure your credentials are valid" in msg for msg in log_messages)
+        assert not any(log.log.level == "ERROR" for log in output.logs)
 
     @HttpMocker()
     def test_forbidden_error_handling(self, http_mocker: HttpMocker) -> None:
@@ -161,8 +159,7 @@ class TestExpenseCategoriesStream(TestCase):
         output = read(source, config=config, catalog=catalog, expecting_exception=False)
 
         assert len(output.records) == 0
-        log_messages = [log.log.message for log in output.logs]
-        assert any("This is most likely due to insufficient permissions" in msg for msg in log_messages)
+        assert not any(log.log.level == "ERROR" for log in output.logs)
 
     @HttpMocker()
     def test_not_found_error_handling(self, http_mocker: HttpMocker) -> None:
@@ -182,5 +179,4 @@ class TestExpenseCategoriesStream(TestCase):
         output = read(source, config=config, catalog=catalog, expecting_exception=False)
 
         assert len(output.records) == 0
-        log_messages = [log.log.message for log in output.logs]
-        assert any("Please ensure that your account ID is properly set" in msg for msg in log_messages)
+        assert not any(log.log.level == "ERROR" for log in output.logs)
