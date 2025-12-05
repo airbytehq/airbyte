@@ -30,7 +30,6 @@ import io.airbyte.integrations.destination.snowflake.spec.SnowflakeSpecification
 import io.airbyte.protocol.models.v0.AirbyteRecordMessageMetaChange
 import java.nio.file.Files
 import java.nio.file.Path
-import org.junit.jupiter.api.Disabled
 import org.junit.jupiter.api.Test
 
 internal val CONFIG_PATH = getConfigPath(CONFIG_WITH_AUTH_STAGING)
@@ -187,9 +186,7 @@ abstract class SnowflakeAcceptanceTest(
         nameMapper = nameMapper,
         coercesLegacyUnions = coercesLegacyUnions,
         useDataFlowPipeline = true,
-    ) {
-    @Disabled override fun testAppendJsonSchemaEvolution() {}
-}
+    )
 
 fun stringToMeta(metaAsString: String?): OutputRecord.Meta? {
     if (metaAsString.isNullOrEmpty()) {
