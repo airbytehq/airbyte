@@ -293,14 +293,14 @@ class PostgresSourceJdbcPartitionFactory(
                                     xminUpperBound = streamState.cursorUpperBound,
                                 )
                             }
-                                ?: /*PostgresSourceJdbcUnsplittableXminIncrementalPartition(
-                                    selectQueryGenerator,
-                                    streamState,
-                                    cursor,
-                                    cursorLowerBound = cursorCheckpoint,
-                                    isLowerBoundIncluded = true,
-                                    explicitCursorUpperBound = streamState.cursorUpperBound,
-                                )*/ null
+                            /*?: PostgresSourceJdbcUnsplittableXminIncrementalPartition(
+                                selectQueryGenerator,
+                                streamState,
+                                cursor,
+                                cursorLowerBound = cursorCheckpoint,
+                                isLowerBoundIncluded = true,
+                                explicitCursorUpperBound = streamState.cursorUpperBound,
+                            )*/ null
                         }
                     }
                 }
