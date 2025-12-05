@@ -13,6 +13,7 @@ import io.airbyte.cdk.load.component.TableSchemaEvolutionClient
 import io.airbyte.cdk.load.message.Meta.Companion.COLUMN_NAME_AB_GENERATION_ID
 import io.airbyte.cdk.load.table.ColumnNameMapping
 import io.airbyte.cdk.load.table.TableName
+import io.airbyte.integrations.destination.postgres.spec.PostgresConfiguration
 import io.airbyte.integrations.destination.postgres.sql.COUNT_TOTAL_ALIAS
 import io.airbyte.integrations.destination.postgres.sql.Column
 import io.airbyte.integrations.destination.postgres.sql.PostgresColumnUtils
@@ -28,7 +29,8 @@ private val log = KotlinLogging.logger {}
 class PostgresAirbyteClient(
     private val dataSource: DataSource,
     private val sqlGenerator: PostgresDirectLoadSqlGenerator,
-    private val postgresColumnUtils: PostgresColumnUtils
+    private val postgresColumnUtils: PostgresColumnUtils,
+    private val postgresConfiguration: PostgresConfiguration
 ) : TableSchemaEvolutionClient, TableOperationsClient {
 
     companion object {
@@ -144,6 +146,9 @@ class PostgresAirbyteClient(
         log.info { "Deleted columns: $deletedColumns" }
         log.info { "Modified columns: $modifiedColumns" }
 
+        // In raw tables mode, skip primary key and cursor indexes since those columns don't exist
+        // (they're stored in _airbyte_data JSONB)
+        val isRawTablesMode = postgresConfiguration.legacyRawTablesOnly
         execute(
             sqlGenerator.matchSchemas(
                 tableName = tableName,
@@ -152,11 +157,13 @@ class PostgresAirbyteClient(
                 columnsToModify = modifiedColumns,
                 columnsInDb = columnsInDb,
                 recreatePrimaryKeyIndex =
-                    shouldRecreatePrimaryKeyIndex(stream, tableName, columnNameMapping),
+                    !isRawTablesMode &&
+                        shouldRecreatePrimaryKeyIndex(stream, tableName, columnNameMapping),
                 primaryKeyColumnNames =
                     postgresColumnUtils.getPrimaryKeysColumnNames(stream, columnNameMapping),
                 recreateCursorIndex =
-                    shouldRecreateCursorIndex(stream, tableName, columnNameMapping),
+                    !isRawTablesMode &&
+                        shouldRecreateCursorIndex(stream, tableName, columnNameMapping),
                 cursorColumnName =
                     postgresColumnUtils.getCursorColumnName(stream, columnNameMapping),
             )
