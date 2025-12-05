@@ -189,8 +189,6 @@ abstract class SnowflakeAcceptanceTest(
         useDataFlowPipeline = true,
     ) {
     @Disabled override fun testAppendJsonSchemaEvolution() {}
-
-    @Disabled override fun testContainerTypes() {}
 }
 
 fun stringToMeta(metaAsString: String?): OutputRecord.Meta? {
