@@ -252,6 +252,7 @@ definitions:
     token_refresh_endpoint: https://oauth2.googleapis.com/token
     scopes:
       - https://www.googleapis.com/auth/youtube.readonly
+      - https://www.googleapis.com/auth/youtube.force-ssl
     refresh_token: "{{ config[\"credentials\"][\"refresh_token\"] }}"
     refresh_request_body: {}
   base_requester:
