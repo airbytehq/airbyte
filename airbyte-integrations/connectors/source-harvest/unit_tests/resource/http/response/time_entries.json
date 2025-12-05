@@ -1,0 +1,69 @@
+{
+  "time_entries": [
+    {
+      "id": 636709355,
+      "spent_date": "2024-01-15",
+      "hours": 3.5,
+      "rounded_hours": 3.5,
+      "notes": "Worked on API integration",
+      "is_locked": false,
+      "locked_reason": null,
+      "is_closed": false,
+      "is_billed": false,
+      "timer_started_at": null,
+      "started_time": "9:00am",
+      "ended_time": "12:30pm",
+      "is_running": false,
+      "billable": true,
+      "budgeted": true,
+      "billable_rate": 100.0,
+      "cost_rate": 50.0,
+      "created_at": "2024-01-15T12:30:00Z",
+      "updated_at": "2024-01-15T12:30:00Z",
+      "user": {
+        "id": 1782884,
+        "name": "John Doe"
+      },
+      "client": {
+        "id": 5735776,
+        "name": "ABC Corp",
+        "currency": "USD"
+      },
+      "project": {
+        "id": 14307913,
+        "name": "Online Store - Phase 1",
+        "code": "OS1"
+      },
+      "task": {
+        "id": 8083365,
+        "name": "Development"
+      },
+      "user_assignment": {
+        "id": 130403296,
+        "is_project_manager": false,
+        "is_active": true,
+        "budget": null,
+        "hourly_rate": 100.0
+      },
+      "task_assignment": {
+        "id": 155505014,
+        "billable": true,
+        "is_active": true,
+        "budget": null,
+        "hourly_rate": 100.0
+      },
+      "invoice": null,
+      "external_reference": null
+    }
+  ],
+  "per_page": 50,
+  "total_pages": 1,
+  "total_entries": 1,
+  "page": 1,
+  "links": {
+    "first": "https://api.harvestapp.com/v2/time_entries?page=1&per_page=50",
+    "last": "https://api.harvestapp.com/v2/time_entries?page=1&per_page=50",
+    "previous": null,
+    "next": null
+  }
+}
