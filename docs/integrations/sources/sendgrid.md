@@ -96,7 +96,6 @@ If you encounter 403 errors, check the following:
 
 3. **Account type limitations**: Some SendGrid account types may not have access to all API endpoints. Verify that your SendGrid plan includes access to the features you're trying to sync.
 
-
 </details>
 
 ## Changelog
