@@ -64,7 +64,6 @@ internal class SnowflakeSchemaRecordFormatterTest {
             createExpected(
                 record = record,
                 columns = columns,
-                airbyteColumns = AIRBYTE_COLUMN_TYPES_MAP.keys.toList(),
             )
         assertEquals(expectedValue, formattedValue)
     }
@@ -88,7 +87,6 @@ internal class SnowflakeSchemaRecordFormatterTest {
             createExpected(
                 record = record,
                 columns = columns,
-                airbyteColumns = AIRBYTE_COLUMN_TYPES_MAP.keys.toList(),
             )
         assertEquals(expectedValue, formattedValue)
     }
@@ -114,7 +112,6 @@ internal class SnowflakeSchemaRecordFormatterTest {
             createExpected(
                 record = record,
                 columns = columns,
-                airbyteColumns = AIRBYTE_COLUMN_TYPES_MAP.keys.toList(),
                 filterMissing = false,
             )
         assertEquals(expectedValue, formattedValue)
@@ -132,7 +129,6 @@ internal class SnowflakeSchemaRecordFormatterTest {
     private fun createExpected(
         record: Map<String, AirbyteValue>,
         columns: Map<String, String>,
-        airbyteColumns: List<String>,
         filterMissing: Boolean = true,
     ) =
         record.entries
