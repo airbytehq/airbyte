@@ -300,7 +300,7 @@ class PostgresSourceJdbcPartitionFactory(
                                 cursorLowerBound = cursorCheckpoint,
                                 isLowerBoundIncluded = true,
                                 explicitCursorUpperBound = streamState.cursorUpperBound,
-                            )*/ null
+                            )*/
                         }
                     }
                 }
