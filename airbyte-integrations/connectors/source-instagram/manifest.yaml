@@ -597,8 +597,6 @@ definitions:
           datetime: "{{ now_utc().strftime('%Y-%m-%dT%H:%M:%SZ') }}"
           datetime_format: "%Y-%m-%dT%H:%M:%SZ"
         datetime_format: "%Y-%m-%dT%H:%M:%S+00:00"
-        cursor_datetime_formats:
-          - "%Y-%m-%dT%H:%M:%S+00:00"
         step: P1D
         cursor_granularity: PT0S
         start_time_option:
