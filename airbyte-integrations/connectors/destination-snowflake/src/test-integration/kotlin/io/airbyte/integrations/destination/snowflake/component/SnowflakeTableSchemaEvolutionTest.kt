@@ -7,7 +7,6 @@ package io.airbyte.integrations.destination.snowflake.component
 import io.airbyte.cdk.load.command.ImportType
 import io.airbyte.cdk.load.component.TableSchemaEvolutionFixtures
 import io.airbyte.cdk.load.component.TableSchemaEvolutionSuite
-import io.airbyte.cdk.load.message.Meta
 import io.airbyte.cdk.load.table.ColumnNameMapping
 import io.airbyte.integrations.destination.snowflake.client.SnowflakeAirbyteClient
 import io.airbyte.integrations.destination.snowflake.component.SnowflakeComponentTestFixtures.allTypesColumnNameMapping
@@ -26,7 +25,7 @@ class SnowflakeTableSchemaEvolutionTest(
     override val opsClient: SnowflakeAirbyteClient,
     override val testClient: SnowflakeTestTableOperationsClient,
 ) : TableSchemaEvolutionSuite {
-    override val airbyteMetaColumnMapping = Meta.COLUMN_NAMES.associateWith { it.uppercase() }
+    override val airbyteMetaColumnMapping = SnowflakeComponentTestFixtures.airbyteMetaColumnMapping
 
     @Test
     fun `discover recognizes all data types`() {
