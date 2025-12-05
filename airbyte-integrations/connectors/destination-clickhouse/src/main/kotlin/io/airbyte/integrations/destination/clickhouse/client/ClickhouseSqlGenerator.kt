@@ -5,15 +5,14 @@
 package io.airbyte.integrations.destination.clickhouse.client
 
 import io.airbyte.cdk.load.command.Dedupe
-import io.airbyte.cdk.load.command.DestinationStream
 import io.airbyte.cdk.load.component.ColumnChangeset
 import io.airbyte.cdk.load.component.ColumnType
 import io.airbyte.cdk.load.message.Meta.Companion.COLUMN_NAME_AB_EXTRACTED_AT
 import io.airbyte.cdk.load.message.Meta.Companion.COLUMN_NAME_AB_GENERATION_ID
 import io.airbyte.cdk.load.message.Meta.Companion.COLUMN_NAME_AB_META
 import io.airbyte.cdk.load.message.Meta.Companion.COLUMN_NAME_AB_RAW_ID
+import io.airbyte.cdk.load.schema.model.StreamTableSchema
 import io.airbyte.cdk.load.schema.model.TableName
-import io.airbyte.cdk.load.table.ColumnNameMapping
 import io.github.oshai.kotlinlogging.KotlinLogging
 import jakarta.inject.Singleton
 
@@ -26,22 +25,22 @@ class ClickhouseSqlGenerator {
     }
 
     fun createTable(
-        stream: DestinationStream,
         tableName: TableName,
+        tableSchema: StreamTableSchema,
         replace: Boolean,
     ): String {
         val forceCreateTable = if (replace) "OR REPLACE" else ""
 
         val columnDeclarations =
-            stream.tableSchema.columnSchema.finalSchema
+            tableSchema.columnSchema.finalSchema
                 .map { (columnName, columnType) -> "`$columnName` ${columnType.typeDecl()}" }
                 .joinToString(",\n")
 
         val orderBy =
-            if (stream.tableSchema.importType !is Dedupe) {
+            if (tableSchema.importType !is Dedupe) {
                 COLUMN_NAME_AB_RAW_ID
             } else {
-                val pks = flattenPks(stream.tableSchema.getPrimaryKey())
+                val pks = flattenPks(tableSchema.getPrimaryKey())
                 pks.joinToString(",") {
                     // Escape the columns
                     "`$it`"
@@ -49,9 +48,9 @@ class ClickhouseSqlGenerator {
             }
 
         val engine =
-            when (stream.importType) {
+            when (tableSchema.importType) {
                 is Dedupe -> {
-                    val cursor = stream.tableSchema.getCursor().firstOrNull()
+                    val cursor = tableSchema.getCursor().firstOrNull()
 
                     val versionColumn =
                         if (cursor != null && cursor.isValidVersionColumnType()) {
@@ -93,11 +92,11 @@ class ClickhouseSqlGenerator {
             .andLog()
 
     fun copyTable(
-        columnNameMapping: ColumnNameMapping,
+        columnNames: Set<String>,
         sourceTableName: TableName,
         targetTableName: TableName,
     ): String {
-        val columnNames = columnNameMapping.map { (_, actualName) -> actualName }.joinToString(",")
+        val columnNames = columnNames.joinToString(",")
         // TODO can we use CDK builtin stuff instead of hardcoding the airbyte meta columns?
         return """
             INSERT INTO `${targetTableName.namespace}`.`${targetTableName.name}`
