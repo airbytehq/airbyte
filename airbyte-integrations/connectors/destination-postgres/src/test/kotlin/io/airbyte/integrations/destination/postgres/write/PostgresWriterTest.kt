@@ -49,14 +49,15 @@ class PostgresWriterTest {
         tempTableNameGenerator = mockk()
         postgresConfiguration = mockk()
 
-        writer = PostgresWriter(
-            names,
-            stateGatherer,
-            streamStateStore,
-            postgresClient,
-            tempTableNameGenerator,
-            postgresConfiguration
-        )
+        writer =
+            PostgresWriter(
+                names,
+                stateGatherer,
+                streamStateStore,
+                postgresClient,
+                tempTableNameGenerator,
+                postgresConfiguration
+            )
     }
 
     @Test
@@ -66,28 +67,29 @@ class PostgresWriterTest {
         val stream = mockk<DestinationStream>()
         val finalTableName = TableName("ns", "name")
         val mapping = mockk<ColumnNameMapping>(relaxed = true)
-        
+
         val tableNameInfo = mockk<TableNameInfo>(relaxed = true)
         every { tableNameInfo.tableNames.finalTableName } returns finalTableName
         every { tableNameInfo.columnNameMapping } returns mapping
         every { tableNameInfo.component1() } answers { tableNameInfo.tableNames }
         every { tableNameInfo.component2() } answers { tableNameInfo.columnNameMapping }
-        
+
         every { stream.importType } returns Dedupe(primaryKey = emptyList(), cursor = emptyList())
         every { stream.minimumGenerationId } returns 0L
         every { stream.generationId } returns 1L
-        
+
         // Mock names map behavior
         val namesMap = mapOf(stream to tableNameInfo)
         every { names.values } returns namesMap.values
         every { names[stream] } returns tableNameInfo
 
         coEvery { postgresClient.createNamespace(any()) } just Runs
-        
+
         val initialStatus = mockk<DirectLoadInitialStatus>()
         coEvery { stateGatherer.gatherInitialStatus(names) } returns mapOf(stream to initialStatus)
 
-        every { tempTableNameGenerator.generate(finalTableName) } returns TableName("ns", "temp_name")
+        every { tempTableNameGenerator.generate(finalTableName) } returns
+            TableName("ns", "temp_name")
 
         writer.setup()
         val loader = writer.createStreamLoader(stream)
@@ -123,12 +125,16 @@ class PostgresWriterTest {
         val initialStatus = mockk<DirectLoadInitialStatus>()
         coEvery { stateGatherer.gatherInitialStatus(names) } returns mapOf(stream to initialStatus)
 
-        every { tempTableNameGenerator.generate(finalTableName) } returns TableName("ns", "temp_name")
+        every { tempTableNameGenerator.generate(finalTableName) } returns
+            TableName("ns", "temp_name")
 
         writer.setup()
         val loader = writer.createStreamLoader(stream)
 
-        assertTrue(loader is DirectLoadTableAppendStreamLoader, "Should use Append loader in raw mode even if importType is Dedupe")
+        assertTrue(
+            loader is DirectLoadTableAppendStreamLoader,
+            "Should use Append loader in raw mode even if importType is Dedupe"
+        )
     }
 
     @Test
@@ -161,7 +167,8 @@ class PostgresWriterTest {
         val initialStatus = mockk<DirectLoadInitialStatus>()
         coEvery { stateGatherer.gatherInitialStatus(names) } returns mapOf(stream to initialStatus)
 
-        every { tempTableNameGenerator.generate(finalTableName) } returns TableName("ns", "temp_name")
+        every { tempTableNameGenerator.generate(finalTableName) } returns
+            TableName("ns", "temp_name")
 
         writer.setup()
         val loader = writer.createStreamLoader(stream)
