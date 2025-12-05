@@ -291,7 +291,8 @@ class ClickhouseAirbyteClientTest {
                         every { columnSchema } returns
                             mockk(relaxed = true) {
                                 every { inputSchema } returns columns
-                                every { inputToFinalColumnNames } returns mapOf("field 1" to "field_1")
+                                every { inputToFinalColumnNames } returns
+                                    mapOf("field 1" to "field_1")
                             }
                         every { getPrimaryKey() } returns emptyList()
                         every { getCursor() } returns emptyList()

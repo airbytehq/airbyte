@@ -6,7 +6,6 @@ package io.airbyte.integrations.destination.clickhouse.schema
 
 import io.airbyte.cdk.load.command.Dedupe
 import io.airbyte.cdk.load.command.DestinationStream
-import io.airbyte.cdk.load.command.ImportType
 import io.airbyte.cdk.load.component.ColumnType
 import io.airbyte.cdk.load.data.ArrayType
 import io.airbyte.cdk.load.data.ArrayTypeWithoutSchema
@@ -26,11 +25,10 @@ import io.airbyte.cdk.load.data.TimestampTypeWithoutTimezone
 import io.airbyte.cdk.load.data.UnionType
 import io.airbyte.cdk.load.data.UnknownType
 import io.airbyte.cdk.load.schema.TableSchemaMapper
+import io.airbyte.cdk.load.schema.model.StreamTableSchema
 import io.airbyte.cdk.load.schema.model.TableName
 import io.airbyte.cdk.load.table.TempTableNameGenerator
-import io.airbyte.integrations.destination.clickhouse.client.DATETIME_WITH_PRECISION
-import io.airbyte.integrations.destination.clickhouse.client.DECIMAL_WITH_PRECISION_AND_SCALE
-import io.airbyte.integrations.destination.clickhouse.client.VALID_VERSION_COLUMN_TYPES
+import io.airbyte.integrations.destination.clickhouse.client.ClickhouseSqlTypes
 import io.airbyte.integrations.destination.clickhouse.client.isValidVersionColumnType
 import io.airbyte.integrations.destination.clickhouse.config.toClickHouseCompatibleName
 import io.airbyte.integrations.destination.clickhouse.spec.ClickhouseConfiguration
@@ -59,28 +57,26 @@ class ClickhouseTableSchemaMapper(
         // Map Airbyte field types to ClickHouse column types
         val clickhouseType =
             when (fieldType.type) {
-                BooleanType -> "Bool"
-                DateType -> "Date32"
-                IntegerType -> "Int64"
-                NumberType -> DECIMAL_WITH_PRECISION_AND_SCALE
-                StringType -> "String"
-                TimeTypeWithTimezone -> "String"
-                TimeTypeWithoutTimezone -> "String"
+                BooleanType -> ClickhouseSqlTypes.BOOL
+                DateType -> ClickhouseSqlTypes.DATE32
+                IntegerType -> ClickhouseSqlTypes.INT64
+                NumberType -> ClickhouseSqlTypes.DECIMAL_WITH_PRECISION_AND_SCALE
+                StringType -> ClickhouseSqlTypes.STRING
+                TimeTypeWithTimezone -> ClickhouseSqlTypes.STRING
+                TimeTypeWithoutTimezone -> ClickhouseSqlTypes.STRING
                 TimestampTypeWithTimezone,
-                TimestampTypeWithoutTimezone -> DATETIME_WITH_PRECISION
-
+                TimestampTypeWithoutTimezone -> ClickhouseSqlTypes.DATETIME_WITH_PRECISION
                 is ArrayType,
                 ArrayTypeWithoutSchema,
                 is UnionType,
-                is UnknownType -> "String"
-
+                is UnknownType -> ClickhouseSqlTypes.STRING
                 ObjectTypeWithEmptySchema,
                 ObjectTypeWithoutSchema,
                 is ObjectType -> {
                     if (config.enableJson) {
-                        "JSON"
+                        ClickhouseSqlTypes.JSON
                     } else {
-                        "String"
+                        ClickhouseSqlTypes.STRING
                     }
                 }
             }
@@ -88,41 +84,39 @@ class ClickhouseTableSchemaMapper(
         return ColumnType(clickhouseType, fieldType.nullable)
     }
 
-    override fun toFinalSchema(
-        inputToFinalColumnNames: Map<String, String>,
-        inputSchema: Map<String, FieldType>,
-        importType: ImportType,
-    ): Map<String, ColumnType> {
-        val directlyMappedSchema = super.toFinalSchema(inputToFinalColumnNames, inputSchema, importType)
-
-        if (importType !is Dedupe) {
-            return directlyMappedSchema
+    override fun toFinalSchema(tableSchema: StreamTableSchema): StreamTableSchema {
+        if (tableSchema.importType !is Dedupe) {
+            return tableSchema
         }
+
         // For dedupe mode we do extra logic to ensure certain columns are non-null:
         //     1) the primary key columns
-        //     2) the version column used by the dedupe engine
-        val pks = importType.primaryKey.flatten()
-        val cursor = importType.cursor
+        //     2) the version column used by the dedupe engine (in practice the cursor)
+        val pks = tableSchema.getPrimaryKey().flatten()
+        val cursor = tableSchema.getCursor().firstOrNull()
 
-        // For ReplacingMergeTree, we need to make the cursor column non-nullable if it's used as
-        // version column. We'll also determine here if we need to fall back to extracted_at.
-        var useCursorAsVersionColumn = false
-        val nonNullableColumns =
-            mutableSetOf<String>().apply {
-                addAll(pks) // Primary keys are always non-nullable
-                if (cursor.isNotEmpty()) {
-                    val cursorFieldName = cursor.first()
-                    // Check if the cursor column type is valid for ClickHouse
-                    // ReplacingMergeTree
-                    val cursorColumnType = inputSchema[cursorFieldName]!!.type
-
-                    if (isValidVersionColumnType(cursorColumnType)) {
-                        // Cursor column is valid, use it as version column
-                        add(cursorFieldName) // Make cursor column non-nullable too
-                    }
+        val nonNullCols = buildSet {
+            addAll(pks) // Primary keys are always non-nullable
+            if (cursor != null) {
+                // Check if the cursor column type is valid for ClickHouse ReplacingMergeTree
+                val cursorColumnType = tableSchema.columnSchema.finalSchema[cursor]!!.type
+                if (cursorColumnType.isValidVersionColumnType()) {
+                    // Cursor column is valid, use it as version column
+                    add(cursor) // Make cursor column non-nullable too
                 }
             }
+        }
 
-        return
+        val finalSchema =
+            tableSchema.columnSchema.finalSchema
+                .map {
+                    it.key to
+                        it.value.copy(nullable = it.value.nullable && !nonNullCols.contains(it.key))
+                }
+                .toMap()
+
+        return tableSchema.copy(
+            columnSchema = tableSchema.columnSchema.copy(finalSchema = finalSchema)
+        )
     }
 }
