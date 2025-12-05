@@ -59,6 +59,8 @@ Required permissions for your OAuth App to sync data using the Facebook Pages so
 - `pages_show_list`
 - `read_insights`
 
+If you encounter permission errors for specific Page fields, refer to [Meta's Permissions Reference](https://developers.facebook.com/docs/permissions/reference) for additional permissions your use case may require.
+
 ## Supported sync modes
 
 The Facebook Pages source connector supports the following [sync modes](https://docs.airbyte.com/cloud/core-concepts#connection-sync-modes):
