@@ -90,6 +90,7 @@ data class PostgresSourceConfiguration(
 sealed interface IncrementalConfiguration
 
 data object UserDefinedCursorIncrementalConfiguration : IncrementalConfiguration
+data object XminIncrementalConfiguration : IncrementalConfiguration
 
 data class CdcIncrementalConfiguration(
     val initialLoadTimeout: Duration,
@@ -225,6 +226,7 @@ constructor(
         when (incrementalSpec) {
             StandardReplicationMethodConfigurationSpecification ->
                 UserDefinedCursorIncrementalConfiguration
+            XminReplicationMethodConfigurationSpecification -> XminIncrementalConfiguration
             is CdcReplicationMethodConfigurationSpecification -> {
                 val initialLoadTimeout: Duration =
                     Duration.ofHours(incrementalSpec.initialLoadTimeoutHours!!.toLong())
