@@ -15,9 +15,11 @@ from airbyte_cdk.test.state_builder import StateBuilder
 from integration.config import ConfigBuilder
 from integration.request_builder import HarvestRequestBuilder
 
+
 _STREAM_NAME = "estimate_messages"
 _ACCOUNT_ID = "123456"
 _API_TOKEN = "test_token_abc123"
+
 
 def _create_parent_estimate(estimate_id: int = 1) -> Dict[str, Any]:
     """Helper function to create a parent estimate record."""
@@ -30,6 +32,7 @@ def _create_parent_estimate(estimate_id: int = 1) -> Dict[str, Any]:
         "created_at": "2024-01-01T00:00:00Z",
         "updated_at": "2024-01-01T00:00:00Z",
     }
+
 
 class TestEstimateMessagesStream(TestCase):
     @HttpMocker()

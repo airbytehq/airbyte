@@ -16,10 +16,12 @@ from airbyte_cdk.test.state_builder import StateBuilder
 from integration.config import ConfigBuilder
 from integration.request_builder import HarvestRequestBuilder
 
+
 _NOW = datetime.now(timezone.utc)
 _STREAM_NAME = "project_assignments"
 _ACCOUNT_ID = "123456"
 _API_TOKEN = "test_token_abc123"
+
 
 def _create_parent_user(user_id: int = 1) -> Dict[str, Any]:
     """Helper function to create a parent user record."""
@@ -32,6 +34,7 @@ def _create_parent_user(user_id: int = 1) -> Dict[str, Any]:
         "created_at": "2024-01-01T00:00:00Z",
         "updated_at": "2024-01-01T00:00:00Z",
     }
+
 
 @freezegun.freeze_time(_NOW.isoformat())
 class TestProjectAssignmentsStream(TestCase):
@@ -294,4 +297,3 @@ class TestProjectAssignmentsStream(TestCase):
         assert len(output.state_messages) > 0
         latest_state = output.state_messages[-1].state.stream.stream_state
         assert latest_state.__dict__["state"]["updated_at"] == "2024-01-02T10:00:00Z"
-

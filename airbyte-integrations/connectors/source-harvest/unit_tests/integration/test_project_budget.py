@@ -14,9 +14,11 @@ from airbyte_cdk.test.mock_http import HttpMocker, HttpResponse
 from integration.config import ConfigBuilder
 from integration.request_builder import HarvestRequestBuilder
 
+
 _STREAM_NAME = "project_budget"
 _ACCOUNT_ID = "123456"
 _API_TOKEN = "test_token_abc123"
+
 
 class TestProjectBudgetStream(TestCase):
     @freeze_time("2024-12-30")

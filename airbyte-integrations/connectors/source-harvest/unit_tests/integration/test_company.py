@@ -13,10 +13,12 @@ from airbyte_cdk.test.entrypoint_wrapper import read
 from airbyte_cdk.test.mock_http import HttpMocker, HttpRequest, HttpResponse
 from integration.config import ConfigBuilder
 
+
 _NOW = datetime.now(timezone.utc)
 _STREAM_NAME = "company"
 _ACCOUNT_ID = "123456"
 _API_TOKEN = "test_token_abc123"
+
 
 @freezegun.freeze_time(_NOW.isoformat())
 class TestCompanyStream(TestCase):

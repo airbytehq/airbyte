@@ -16,10 +16,12 @@ from integration.config import ConfigBuilder
 from integration.request_builder import HarvestRequestBuilder
 from integration.response_builder import HarvestPaginatedResponseBuilder
 
+
 _NOW = datetime.now(timezone.utc)
 _STREAM_NAME = "clients"
 _ACCOUNT_ID = "123456"
 _API_TOKEN = "test_token_abc123"
+
 
 @freezegun.freeze_time(_NOW.isoformat())
 class TestClientsStream(TestCase):

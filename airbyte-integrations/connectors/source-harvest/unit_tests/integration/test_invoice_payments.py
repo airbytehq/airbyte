@@ -15,10 +15,12 @@ from airbyte_cdk.test.state_builder import StateBuilder
 from integration.config import ConfigBuilder
 from integration.request_builder import HarvestRequestBuilder
 
+
 _NOW = datetime.now(timezone.utc)
 _STREAM_NAME = "invoice_payments"
 _ACCOUNT_ID = "123456"
 _API_TOKEN = "test_token_abc123"
+
 
 @freezegun.freeze_time(_NOW.isoformat())
 class TestInvoicePaymentsStream(TestCase):
@@ -279,4 +281,3 @@ class TestInvoicePaymentsStream(TestCase):
         assert len(output.state_messages) > 0
         latest_state = output.state_messages[-1].state.stream.stream_state
         assert latest_state.__dict__["state"]["updated_at"] == "2024-01-02T10:00:00Z"
-

@@ -15,10 +15,12 @@ from airbyte_cdk.test.state_builder import StateBuilder
 from integration.config import ConfigBuilder
 from integration.request_builder import HarvestRequestBuilder
 
+
 _NOW = datetime.now(timezone.utc)
 _STREAM_NAME = "projects"
 _ACCOUNT_ID = "123456"
 _API_TOKEN = "test_token_abc123"
+
 
 @freezegun.freeze_time(_NOW.isoformat())
 class TestProjectsStream(TestCase):

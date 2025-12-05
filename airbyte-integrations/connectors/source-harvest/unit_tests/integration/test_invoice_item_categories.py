@@ -14,9 +14,11 @@ from airbyte_cdk.test.state_builder import StateBuilder
 from integration.config import ConfigBuilder
 from integration.request_builder import HarvestRequestBuilder
 
+
 _STREAM_NAME = "invoice_item_categories"
 _ACCOUNT_ID = "123456"
 _API_TOKEN = "test_token_abc123"
+
 
 class TestInvoiceItemCategoriesStream(TestCase):
     @HttpMocker()

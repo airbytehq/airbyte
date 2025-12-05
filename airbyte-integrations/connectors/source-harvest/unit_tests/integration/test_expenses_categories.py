@@ -15,9 +15,11 @@ from airbyte_cdk.test.state_builder import StateBuilder
 from integration.config import ConfigBuilder
 from integration.request_builder import HarvestRequestBuilder
 
+
 _STREAM_NAME = "expenses_categories"
 _ACCOUNT_ID = "123456"
 _API_TOKEN = "test_token_abc123"
+
 
 class TestExpensesCategoriesStream(TestCase):
     @freeze_time("2024-12-30")
