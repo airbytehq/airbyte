@@ -761,6 +761,17 @@ class CustomGAQueryHttpRequester(HttpRequester):
         return self.query[from_index + 4 :].strip()
 
 
+class CustomGAQueryClickViewHttpRequester(CustomGAQueryHttpRequester):
+    @staticmethod
+    def _insert_segments_date_expr(query: GAQL, start_date: str, end_date: str) -> GAQL:
+        if "segments.date" not in query.fields:
+            query = query.append_field("segments.date")
+        condition = f"segments.date ='{start_date}'"
+        if query.where:
+            return query.set_where(query.where + " AND " + condition)
+        return query.set_where(condition)
+
+
 @dataclass()
 class CustomGAQuerySchemaLoader(SchemaLoader):
     """
