@@ -2,8 +2,11 @@ import "dotenv/config.js";
 import type { Config } from "@docusaurus/types";
 import { themes as prismThemes } from "prism-react-renderer";
 import type { Options as ClassicPresetOptions } from "@docusaurus/preset-classic";
-import fs from "fs";
 import { PluginOptions as LLmPluginOptions } from "@signalwire/docusaurus-plugin-llms-txt";
+import {
+  loadSonarApiSidebar,
+  replaceApiReferenceCategory,
+} from "./src/scripts/embedded-api/sidebar-generator";
 
 // Import remark plugins - lazy load to prevent webpack from bundling Node.js code
 const getRemarkPlugins = () => ({
@@ -19,7 +22,7 @@ const getRemarkPlugins = () => ({
 
 const plugins = getRemarkPlugins();
 
-// Import constants
+// Import constants for embedded API sidebar generation
 const {
   SPEC_CACHE_PATH,
   API_SIDEBAR_PATH,
@@ -164,8 +167,17 @@ const config: Config = {
         id: "ai-agents",
         path: "../docs/ai-agents",
         routeBasePath: "/ai-agents",
-        sidebarPath: "./sidebar-ai-agents.js",
         editUrl: "https://github.com/airbytehq/airbyte/blob/master/docs",
+        docItemComponent: "@theme/ApiItem", // Required for OpenAPI docs rendering
+        async sidebarItemsGenerator({ defaultSidebarItemsGenerator, ...args }) {
+          const sidebarItems = await defaultSidebarItemsGenerator(args);
+
+          // Load and filter the Sonar API sidebar based on allowed tags
+          const sonarApiItems = loadSonarApiSidebar();
+
+          // Replace the "api-reference" category with the filtered API items
+          return replaceApiReferenceCategory(sidebarItems, sonarApiItems);
+        },
         remarkPlugins: [
           plugins.docsHeaderDecoration,
           plugins.enterpriseDocsHeaderInformation,
@@ -250,89 +262,14 @@ const config: Config = {
       },
     ],
     [
-      "@docusaurus/plugin-content-docs",
-      {
-        id: "embedded-api",
-        path: "api-docs/embedded-api",
-        routeBasePath: "/embedded-api/",
-        docItemComponent: "@theme/ApiItem",
-        async sidebarItemsGenerator() {
-          // We only want to include visible endpoints on the sidebar. We need to filter out endpoints with tags
-          // that are not included in the spec. Even if we didn't need to filter out elements the OpenAPI plugin generates a sidebar.ts
-          // file that exports a nested object, but Docusaurus expects just the array of sidebar items, so we need to extracts the actual sidebar
-          // items from the generated file structure.
-
-          try {
-            const specPath = SPEC_CACHE_PATH;
-
-            if (!fs.existsSync(specPath)) {
-              console.warn(
-                "Embedded API spec file not found, using empty sidebar",
-              );
-              return [];
-            }
-
-            const data = JSON.parse(fs.readFileSync(specPath, "utf8"));
-            console.log("Loaded embedded API spec from cache");
-
-            // Load the freshly generated sidebar (not the cached one from module load)
-            const sidebarPath = API_SIDEBAR_PATH;
-            let freshSidebar: any[] = [];
-
-            if (fs.existsSync(sidebarPath)) {
-              try {
-                const sidebarModule = require("./api-docs/embedded-api/sidebar.ts");
-                freshSidebar = sidebarModule.default || sidebarModule;
-                console.log("Loaded fresh sidebar from generated files");
-              } catch (sidebarError: any) {
-                console.warn(
-                  "Could not load fresh sidebar, using empty array:",
-                  sidebarError.message,
-                );
-                freshSidebar = [];
-              }
-            } else {
-              console.warn(
-                "Generated sidebar file not found, using empty array",
-              );
-              freshSidebar = [];
-            }
-
-            const allowedTags = data.tags?.map((tag: any) => tag["name"]) || [];
-
-            // Use freshly loaded sidebar items from the generated file
-            const sidebarItems = Array.isArray(freshSidebar)
-              ? freshSidebar
-              : [];
-
-            const filteredItems = sidebarItems.filter((item: any) => {
-              if (item.type !== "category") {
-                return true;
-              }
-
-              return allowedTags.includes(item.label);
-            });
-
-            return filteredItems;
-          } catch (error: any) {
-            console.warn(
-              "Error loading embedded API spec from cache:",
-              error.message,
-            );
-            return [];
-          }
-        },
-      },
-    ],
-    [
       "docusaurus-plugin-openapi-docs",
       {
         id: "embedded-api",
-        docsPluginId: "embedded-api",
+        docsPluginId: "ai-agents",
         config: {
           embedded: {
             specPath: "src/data/embedded_api_spec.json",
-            outputDir: "api-docs/embedded-api",
+            outputDir: "../docs/ai-agents/embedded/api-reference",
             sidebarOptions: {
               groupPathsBy: "tag",
               categoryLinkSource: "tag",
@@ -476,10 +413,10 @@ const config: Config = {
           label: "Release notes",
         },
         {
-          type: "docSidebar",
+          type: "doc",
           position: "left",
           docsPluginId: "ai-agents",
-          sidebarId: "ai-agents",
+          docId: "README",
           label: "AI agents",
         },
         {
