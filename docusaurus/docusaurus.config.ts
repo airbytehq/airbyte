@@ -459,7 +459,7 @@ const config: Config = {
           position: "left",
           docsPluginId: "platform",
           sidebarId: "platform",
-          label: "Platform",
+          label: "Data replication",
         },
         {
           type: "docSidebar",
