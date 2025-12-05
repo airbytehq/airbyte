@@ -298,7 +298,7 @@ jobs:
       - name: Run Integration Tests ${{ needs.generate-matrix.outputs.creds-available == 'false' && '[Non-Blocking (Unprivileged) Test From Fork, pls run `/run-connector-tests`]' || '' }}
         if: matrix.connector
         working-directory: airbyte-integrations/connectors/${{ matrix.connector }}
-        run: poe test-integration-tests
+        run: poe ${{ needs.generate-matrix.outputs.creds-available == 'false' && 'test-integration-tests-no-creds' || 'test-integration-tests' }}
 
       - name: Container Tests
         if: matrix.connector
