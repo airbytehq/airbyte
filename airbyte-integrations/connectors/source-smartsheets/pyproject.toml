@@ -18,7 +18,7 @@ include = "source_smartsheets"
 [tool.poetry.dependencies]
 python = "^3.9,<3.12"
 smartsheet-python-sdk = "==2.177.1"
-urllib3 = "==1.26.18"
+urllib3 = "==2.6.0"
 airbyte-cdk = "0.80.0"
 
 [tool.poetry.scripts]
