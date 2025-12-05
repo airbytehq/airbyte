@@ -50,7 +50,7 @@ After all the steps, it should look something like this:
 
 ### Creating your own OAuth App
 
-Please, follow this [Facebook documentation](https://developers.facebook.com/docs/development/create-an-app/) to create an OAuth App.
+Follow this [Facebook documentation](https://developers.facebook.com/docs/development/create-an-app/) to create an OAuth App.
 
 Required permissions for your OAuth App to sync data using the Facebook Pages source connector:
 
@@ -59,7 +59,7 @@ Required permissions for your OAuth App to sync data using the Facebook Pages so
 - `pages_show_list`
 - `read_insights`
 
-If you encounter permission errors for specific Page fields, refer to [Meta's Permissions Reference](https://developers.facebook.com/docs/permissions/reference) for additional permissions your use case may require.
+If you encounter permission errors for specific Page fields, see [Meta's Permissions Reference](https://developers.facebook.com/docs/permissions) for additional permissions you might need. As a rule it's best to request the lowest number of permissions you can to function normally.
 
 ## Supported sync modes
 
