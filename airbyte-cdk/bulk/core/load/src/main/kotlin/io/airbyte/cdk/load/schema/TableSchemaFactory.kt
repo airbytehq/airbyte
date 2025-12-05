@@ -30,10 +30,7 @@ class TableSchemaFactory(
             )
 
         val inputToFinalColumnNames = colNameResolver.getColumnNameMapping(inputSchema.keys)
-        val finalSchema =
-            inputSchema
-                .map { inputToFinalColumnNames[it.key]!! to mapper.toColumnType(it.value) }
-                .toMap()
+        val finalSchema = mapper.toFinalSchema(inputToFinalColumnNames, inputSchema, importType)
 
         val columnSchema =
             ColumnSchema(
