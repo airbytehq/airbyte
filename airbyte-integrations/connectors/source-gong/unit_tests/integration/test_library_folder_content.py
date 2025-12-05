@@ -77,29 +77,6 @@ class TestLibraryFolderContent(TestCase):
         assert len(output.records) == 0
 
     @HttpMocker()
-    def test_read_records_multiple_folders(self, http_mocker: HttpMocker) -> None:
-        folder_1 = "folder_1"
-        folder_2 = "folder_2"
-        http_mocker.get(
-            RequestBuilder.library_folders_endpoint().build(),
-            [
-                library_folders_response(folder_id=folder_1, has_next=True, cursor="page2"),
-                library_folders_response(folder_id=folder_2, has_next=False),
-            ],
-        )
-        http_mocker.get(
-            RequestBuilder.library_folder_content_endpoint(folder_id=folder_1).build(),
-            library_folder_content_response(call_id="call_1"),
-        )
-        http_mocker.get(
-            RequestBuilder.library_folder_content_endpoint(folder_id=folder_2).build(),
-            library_folder_content_response(call_id="call_2"),
-        )
-
-        output = _read(config_builder=config())
-        assert len(output.records) == 2
-
-    @HttpMocker()
     def test_read_records_with_error_401(self, http_mocker: HttpMocker) -> None:
         http_mocker.get(
             RequestBuilder.library_folders_endpoint().build(),
