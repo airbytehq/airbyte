@@ -10,7 +10,6 @@ import io.airbyte.cdk.load.data.StringValue
 import io.airbyte.cdk.load.data.csv.toCsvValue
 import io.airbyte.cdk.load.message.Meta
 import io.airbyte.cdk.load.util.Jsons
-import io.airbyte.cdk.load.util.serializeToString
 import io.airbyte.integrations.destination.snowflake.db.toSnowflakeCompatibleName
 import io.airbyte.integrations.destination.snowflake.sql.SnowflakeColumnUtils
 
@@ -27,7 +26,7 @@ class SnowflakeSchemaRecordFormatter(
         snowflakeColumnUtils.getFormattedDefaultColumnNames(false).toSet()
 
     override fun format(record: Map<String, AirbyteValue>): List<Any> =
-        columns.map { (columnName, columnType) ->
+        columns.map { (columnName, _) ->
             /*
              * Meta columns are forced to uppercase for backwards compatibility with previous
              * versions of the destination.  Therefore, convert the column to lowercase so
@@ -44,18 +43,7 @@ class SnowflakeSchemaRecordFormatter(
                     // been escaped by the CDK before arriving at the aggregate, so no need
                     // to escape again here.
                     .find { it == columnName.toSnowflakeCompatibleName() }
-                    ?.let {
-                        if ("VARIANT" == columnType) {
-                            // When writing to a variant column, we need to explicitly
-                            // json-serialize.
-                            record[it].serializeToString()
-                        } else {
-                            // Otherwise, use the normal toCsvValue (e.g., if the value is a string,
-                            // just put it directly into the CSV).
-                            // Under the hood, objects/arrays are still json-serialized here.
-                            record[it].toCsvValue()
-                        }
-                    }
+                    ?.let { record[it].toCsvValue() }
                     ?: ""
             }
         }
