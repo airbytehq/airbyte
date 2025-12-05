@@ -37,6 +37,8 @@ import io.airbyte.cdk.read.WhereClauseLeafNode
 import io.airbyte.cdk.read.WhereClauseNode
 import io.airbyte.cdk.read.WhereNode
 import io.airbyte.cdk.util.Jsons
+import io.airbyte.integrations.source.postgres.ctidField
+import io.airbyte.integrations.source.postgres.xminField
 import io.micronaut.context.annotation.Primary
 import jakarta.inject.Singleton
 
@@ -113,27 +115,46 @@ class PostgresSourceSelectQueryGenerator : SelectQueryGenerator {
             is Or -> disj.joinToString(") OR (", "(", ")") { it.sql() }
             is Equal ->
                 when (column) {
-                    is NonEmittedField -> "${column.sql()} = ?::tid"
+                    is NonEmittedField -> when (column.id) {
+                        ctidField.id -> "${column.sql()} = ?::tid"
+                        else -> "${column.sql()} = ?"
+                    }
                     else -> "${column.sql()} = ?"
                 }
             is GreaterOrEqual ->
                 when (column) {
-                    is NonEmittedField -> "${column.sql()} >= ?::tid"
+                    is NonEmittedField -> when (column.id) {
+                        ctidField.id -> "${column.sql()} >= ?::tid"
+                        xminField.id -> "${column.sql()}::text::bigint >= ?"
+                        else -> "${column.sql()} >= ?"
+                    }
                     else -> "${column.sql()} >= ?"
                 }
             is Greater ->
                 when (column) {
-                    is NonEmittedField -> "${column.sql()} > ?::tid"
+                    is NonEmittedField -> when (column.id) {
+                        ctidField.id -> "${column.sql()} > ?::tid"
+                        xminField.id -> "${column.sql()}::text::bigint > ?"
+                        else -> "${column.sql()} > ?"
+                    }
                     else -> "${column.sql()} > ?"
                 }
             is LesserOrEqual ->
                 when (column) {
-                    is NonEmittedField -> "${column.sql()} <= ?::tid"
+                    is NonEmittedField -> when (column.id) {
+                        ctidField.id -> "${column.sql()} <= ?::tid"
+                        xminField.id -> "${column.sql()}::text::bigint <= ?"
+                        else -> "${column.sql()} <= ?"
+                    }
                     else -> "${column.sql()} <= ?"
                 }
             is Lesser ->
                 when (column) {
-                    is NonEmittedField -> "${column.sql()} < ?::tid"
+                    is NonEmittedField -> when (column.id) {
+                        ctidField.id -> "${column.sql()} < ?::tid"
+                        xminField.id -> "${column.sql()}::text::bigint < ?"
+                        else -> "${column.sql()} < ?"
+                    }
                     else -> "${column.sql()} < ?"
                 }
         }

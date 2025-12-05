@@ -18,6 +18,7 @@ data class PostgresSourceJdbcStreamStateValue(
     @JsonProperty("ctid") val ctid: String? = null,
     @JsonProperty("cursors") val cursors: Map<String, JsonNode> = mapOf(),
     @JsonProperty("relation_filenode") val filenode: Filenode? = null,
+    @JsonProperty("xmin") val xmin: JsonNode? = null,
 ) {
     companion object {
         val snapshotCompleted: OpaqueStateValue
@@ -54,6 +55,20 @@ data class PostgresSourceJdbcStreamStateValue(
                     )
             }
 
+        fun xminIncrementalCheckpoint(
+            xminCheckpoint: JsonNode,
+        ): OpaqueStateValue =
+            when (xminCheckpoint.isNull) {
+                true -> Jsons.nullNode()
+                false ->
+                    Jsons.valueToTree(
+                        PostgresSourceJdbcStreamStateValue(
+                            stateType = StateType.XMIN_BASED.serialized,
+                            xmin = xminCheckpoint
+                        )
+                    )
+            }
+
         fun snapshotWithCursorCheckpoint(
             ctidCheckpoint: JsonNode,
             cursor: DataField,
@@ -68,12 +83,27 @@ data class PostgresSourceJdbcStreamStateValue(
                     stateType = StateType.CTID_BASED.serialized,
                 )
             )
+
+        fun snapshotWithXminCheckpoint(
+            ctidCheckpoint: JsonNode,
+            xminCheckpoint: JsonNode,
+            filenode: Filenode?,
+        ): OpaqueStateValue =
+            Jsons.valueToTree(
+                PostgresSourceJdbcStreamStateValue(
+                    ctid = ctidCheckpoint.asText(),
+                    xmin = xminCheckpoint,
+                    filenode = filenode,
+                    stateType = StateType.XMIN_BASED.serialized,
+                )
+            )
     }
 }
 
 enum class StateType {
     CTID_BASED,
     CURSOR_BASED,
+    XMIN_BASED,
     ;
 
     val serialized: String = name.lowercase()

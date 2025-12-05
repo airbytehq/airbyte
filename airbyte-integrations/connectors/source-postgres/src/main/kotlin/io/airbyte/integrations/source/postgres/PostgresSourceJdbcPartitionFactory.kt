@@ -31,6 +31,8 @@ import io.airbyte.integrations.source.postgres.PostgresSourceJdbcPartitionFactor
 import io.airbyte.integrations.source.postgres.PostgresSourceJdbcPartitionFactory.FilenodeChangeType.FILENODE_NO_CHANGE
 import io.airbyte.integrations.source.postgres.PostgresSourceJdbcPartitionFactory.FilenodeChangeType.NO_FILENODE
 import io.airbyte.integrations.source.postgres.config.PostgresSourceConfiguration
+import io.airbyte.integrations.source.postgres.config.UserDefinedCursorIncrementalConfiguration
+import io.airbyte.integrations.source.postgres.config.XminIncrementalConfiguration
 import io.airbyte.integrations.source.postgres.ctid.Ctid
 import io.airbyte.integrations.source.postgres.operations.PostgresSourceSelectQueryGenerator
 import io.github.oshai.kotlinlogging.KotlinLogging
@@ -81,24 +83,44 @@ class PostgresSourceJdbcPartitionFactory(
                     streamState
                 )
         }
-        val cursorChosenFromCatalog: DataField =
-            stream.configuredCursor as? DataField ?: throw ConfigErrorException("no cursor")
-        return filenode?.let {
-            PostgresSourceJdbcSplittableSnapshotWithCursorPartition(
-                selectQueryGenerator,
-                streamState,
-                lowerBound = null,
-                upperBound = null,
-                cursorChosenFromCatalog,
-                cursorUpperBound = null,
-                filenode,
-            )
+        when (config.incrementalConfiguration) {
+            is XminIncrementalConfiguration -> {
+                return filenode?.let {
+                    PostgresSourceJdbcSplittableSnapshotWithXminPartition(
+                        selectQueryGenerator,
+                        streamState,
+                        null,
+                        null,
+                        null,
+                        filenode)
+                } ?: PostgresSourceJdbcUnsplittableSnapshotPartition( // TEMP
+                    selectQueryGenerator,
+                    streamState,
+                )
+            }
+            is UserDefinedCursorIncrementalConfiguration -> {
+                val cursorChosenFromCatalog: DataField =
+                    stream.configuredCursor as? DataField ?: throw ConfigErrorException("no cursor")
+                return filenode?.let {
+                    PostgresSourceJdbcSplittableSnapshotWithCursorPartition(
+                        selectQueryGenerator,
+                        streamState,
+                        lowerBound = null,
+                        upperBound = null,
+                        cursorChosenFromCatalog,
+                        cursorUpperBound = null,
+                        filenode,
+                    )
+                }
+                    ?: PostgresSourceJdbcUnsplittableSnapshotWithCursorPartition(
+                        selectQueryGenerator,
+                        streamState,
+                        cursorChosenFromCatalog,
+                    )
+
+            }
+            else -> TODO("CDC Incremental is not supported yet")
         }
-            ?: PostgresSourceJdbcUnsplittableSnapshotWithCursorPartition(
-                selectQueryGenerator,
-                streamState,
-                cursorChosenFromCatalog,
-            )
     }
 
     val tidRangeScanCapableDBServer: Boolean by
@@ -110,6 +132,8 @@ class PostgresSourceJdbcPartitionFactory(
         val stream: Stream = streamFeedBootstrap.feed
         val streamState: PostgresSourceJdbcStreamState = streamState(streamFeedBootstrap)
         val opaqueStateValue: OpaqueStateValue? = streamFeedBootstrap.currentState
+        val isCursorBasedIncremental: Boolean =
+            stream.configuredSyncMode == ConfiguredSyncMode.INCREMENTAL && !config.global
 
         // An empty table stream state will be marked as a nullNode. This prevents repeated attempt
         // to read it
@@ -129,95 +153,161 @@ class PostgresSourceJdbcPartitionFactory(
         }
 
         val sv: PostgresSourceJdbcStreamStateValue = streamState.stateValue!!
+        when (config.incrementalConfiguration) {
+            is UserDefinedCursorIncrementalConfiguration -> {
+                val cursorPair: Pair<DataField, JsonNode>? =
+                    if (sv.cursors.isEmpty()) {
+                        null
+                    } else {
+                        sv.cursorPair(stream)
+                            ?: run {
+                                handler.accept(ResetStream(stream.id))
+                                streamState.reset()
+                                return coldStart(streamState, filenode)
+                            }
+                    }
 
-        val cursorPair: Pair<DataField, JsonNode>? =
-            if (sv.cursors.isEmpty()) {
-                null
-            } else {
-                sv.cursorPair(stream)
-                    ?: run {
+                return if (cursorPair == null) {
+                    if (isCursorBasedIncremental) {
                         handler.accept(ResetStream(stream.id))
                         streamState.reset()
-                        return coldStart(streamState, filenode)
+                        coldStart(streamState, filenode)
+                    } else if (streamState.maybeCtid == null) {
+                        // Snapshot complete
+                        null
+                    } else {
+                        // Snapshot ongoing
+                        if (fileNodeChange != FILENODE_NO_CHANGE) { // TODO: need other values? new stream
+                            handler.accept(InvalidPrimaryKey(stream.id, listOf(ctidField.id)))
+                            streamState.reset()
+                            coldStart(streamState, filenode)
+                        } else {
+                            PostgresSourceJdbcSplittableSnapshotPartition(
+                                selectQueryGenerator,
+                                streamState,
+                                lowerBound = Jsons.textNode(streamState.maybeCtid!!.toString()),
+                                upperBound = null,
+                                filenode,
+                            )
+                        }
                     }
-            }
-
-        val isCursorBasedIncremental: Boolean =
-            stream.configuredSyncMode == ConfiguredSyncMode.INCREMENTAL && !config.global
-
-        return if (cursorPair == null) {
-            if (isCursorBasedIncremental) {
-                handler.accept(ResetStream(stream.id))
-                streamState.reset()
-                coldStart(streamState, filenode)
-            } else if (streamState.maybeCtid == null) {
-                // Snapshot complete
-                null
-            } else {
-                // Snapshot ongoing
-                if (fileNodeChange != FILENODE_NO_CHANGE) { // TODO: need other values? new stream
-                    handler.accept(InvalidPrimaryKey(stream.id, listOf(ctidField.id)))
-                    streamState.reset()
-                    coldStart(streamState, filenode)
                 } else {
-                    PostgresSourceJdbcSplittableSnapshotPartition(
-                        selectQueryGenerator,
-                        streamState,
-                        lowerBound = Jsons.textNode(streamState.maybeCtid!!.toString()),
-                        upperBound = null,
-                        filenode,
-                    )
-                }
-            }
-        } else {
-            val (cursor: DataField, cursorCheckpoint: JsonNode) = cursorPair
-            if (
-                !isCursorBasedIncremental ||
-                    fileNodeChange !in
+                    val (cursor: DataField, cursorCheckpoint: JsonNode) = cursorPair
+                    if (
+                        !isCursorBasedIncremental ||
+                        fileNodeChange !in
                         listOf(
                             FILENODE_NO_CHANGE,
                             NO_FILENODE,
                             FILENODE_NEW_STREAM,
                         )
-            ) {
-                handler.accept(ResetStream(stream.id))
-                streamState.reset()
-                coldStart(streamState, filenode)
-            } else if (streamState.maybeCtid != null) {
-                // Snapshot ongoing
-                PostgresSourceJdbcSplittableSnapshotWithCursorPartition(
-                    selectQueryGenerator,
-                    streamState,
-                    lowerBound = Jsons.textNode(streamState.maybeCtid.toString()),
-                    upperBound = null,
-                    cursor,
-                    cursorCheckpoint,
-                    filenode,
-                )
-            } else if (cursorCheckpoint == streamState.cursorUpperBound) {
-                // Incremental complete
-                null
-            } else {
-                filenode?.let { // Incremental ongoing
-                    PostgresSourceJdbcCursorIncrementalPartition(
-                        selectQueryGenerator,
-                        streamState,
-                        cursor,
-                        cursorLowerBound = cursorCheckpoint,
-                        isLowerBoundIncluded = true,
-                        cursorUpperBound = streamState.cursorUpperBound,
-                    )
+                    ) {
+                        handler.accept(ResetStream(stream.id))
+                        streamState.reset()
+                        coldStart(streamState, filenode)
+                    } else if (streamState.maybeCtid != null) {
+                        // Snapshot ongoing
+                        PostgresSourceJdbcSplittableSnapshotWithCursorPartition(
+                            selectQueryGenerator,
+                            streamState,
+                            lowerBound = Jsons.textNode(streamState.maybeCtid.toString()),
+                            upperBound = null,
+                            cursor,
+                            cursorCheckpoint,
+                            filenode,
+                        )
+                    } else if (cursorCheckpoint == streamState.cursorUpperBound) {
+                        // Incremental complete
+                        null
+                    } else {
+                        filenode?.let { // Incremental ongoing
+                            PostgresSourceJdbcCursorIncrementalPartition(
+                                selectQueryGenerator,
+                                streamState,
+                                cursor,
+                                cursorLowerBound = cursorCheckpoint,
+                                isLowerBoundIncluded = true,
+                                cursorUpperBound = streamState.cursorUpperBound,
+                            )
+                        }
+                            ?: PostgresSourceJdbcUnsplittableCursorIncrementalPartition(
+                                selectQueryGenerator,
+                                streamState,
+                                cursor,
+                                cursorLowerBound = cursorCheckpoint,
+                                isLowerBoundIncluded = true,
+                                explicitCursorUpperBound = streamState.cursorUpperBound,
+                            )
+                    }
                 }
-                    ?: PostgresSourceJdbcUnsplittableCursorIncrementalPartition(
-                        selectQueryGenerator,
-                        streamState,
-                        cursor,
-                        cursorLowerBound = cursorCheckpoint,
-                        isLowerBoundIncluded = true,
-                        explicitCursorUpperBound = streamState.cursorUpperBound,
-                    )
             }
+            is XminIncrementalConfiguration -> {
+                //Is table FR or incremental
+                return when (stream.configuredSyncMode) {
+                    ConfiguredSyncMode.FULL_REFRESH -> {
+                        if (fileNodeChange in listOf(FILENODE_CHANGED)) {
+                            handler.accept(ResetStream(stream.id))
+                            streamState.reset()
+                            coldStart(streamState, filenode)
+                        }
+                        if (streamState.maybeCtid == null) {
+                            // snapshot done
+                            null
+                        } else {
+                            // snapshot ongoing
+                            PostgresSourceJdbcSplittableSnapshotPartition(
+                                selectQueryGenerator,
+                                streamState,
+                                lowerBound = Jsons.textNode(streamState.maybeCtid.toString()),
+                                upperBound = null,
+                                filenode,
+                            )
+                        }
+
+                    }
+                    ConfiguredSyncMode.INCREMENTAL -> {
+                        if (fileNodeChange in listOf(FILENODE_CHANGED)) {
+                            handler.accept(ResetStream(stream.id))
+                            streamState.reset()
+                            coldStart(streamState, filenode)
+                        }
+                        if (streamState.maybeCtid != null) {
+                            // snapshot ongoing
+                            PostgresSourceJdbcSplittableSnapshotPartition(
+                                selectQueryGenerator,
+                                streamState,
+                                lowerBound = Jsons.textNode(streamState.maybeCtid.toString()),
+                                upperBound = null,
+                                filenode,
+                            )
+                        } else if (sv.xmin == streamState.cursorUpperBound) {
+                            // Incremental done
+                            null
+                        } else {
+                            filenode?.let { // Incremental ongoing
+                                PostgresSourceJdbcXminIncrementalPartition(
+                                    selectQueryGenerator,
+                                    streamState,
+                                    xminLowerBound = sv.xmin,
+                                    isLowerBoundIncluded = true,
+                                    xminUpperBound = streamState.cursorUpperBound,
+                                )
+                            }
+                                ?: /*PostgresSourceJdbcUnsplittableXminIncrementalPartition(
+                                    selectQueryGenerator,
+                                    streamState,
+                                    cursor,
+                                    cursorLowerBound = cursorCheckpoint,
+                                    isLowerBoundIncluded = true,
+                                    explicitCursorUpperBound = streamState.cursorUpperBound,
+                                )*/ null
+                        }
+                    }
+                }
+            }
+            else -> TODO("Not implemented yet")
         }
+
     }
 
     enum class FilenodeChangeType {
@@ -327,8 +417,40 @@ class PostgresSourceJdbcPartitionFactory(
                 unsplitPartition.split(splitPartitionBoundaries)
             is PostgresSourceJdbcSplittableSnapshotWithCursorPartition ->
                 unsplitPartition.split(splitPartitionBoundaries)
+            is PostgresSourceJdbcSplittableSnapshotWithXminPartition ->
+                unsplitPartition.split(splitPartitionBoundaries)
             // TODO: implement split for cursor incremental partition
             else -> listOf(unsplitPartition)
+        }
+    }
+
+    private fun PostgresSourceJdbcSplittableSnapshotWithXminPartition.split(
+        splitPointValues: List<PostgresSourceJdbcStreamStateValue>
+    ): List<PostgresSourceJdbcSplittableSnapshotWithXminPartition> {
+        val inners: List<Ctid> = splitPointValues.map { Ctid.of(it.ctid!!) }
+        val lbCtid: Ctid? =
+            lowerBound?.let {
+                if (it.isNull.not() && it.isEmpty.not()) {
+                    Ctid.of(it[0].asText())
+                } else null
+            }
+        val ubCtid: Ctid? =
+            upperBound?.let {
+                if (it.isNull.not() && it.isEmpty.not()) {
+                    Ctid.of(it[0].asText())
+                } else null
+            }
+        val lbs: List<Ctid?> = listOf(lbCtid) + inners
+        val ubs: List<Ctid?> = inners + listOf(ubCtid)
+        return lbs.zip(ubs).map { (lowerBound, upperBound) ->
+            PostgresSourceJdbcSplittableSnapshotWithXminPartition(
+                selectQueryGenerator,
+                streamState,
+                lowerBound?.let { Jsons.textNode(it.toString()) },
+                upperBound?.let { Jsons.textNode(it.toString()) },
+                cursorUpperBound,
+                splitPointValues.first().filenode,
+            )
         }
     }
 
