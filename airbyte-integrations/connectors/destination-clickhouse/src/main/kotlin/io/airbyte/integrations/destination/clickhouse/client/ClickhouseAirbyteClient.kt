@@ -12,7 +12,6 @@ import com.clickhouse.data.ClickHouseColumn
 import com.clickhouse.data.ClickHouseDataType
 import edu.umd.cs.findbugs.annotations.SuppressFBWarnings
 import io.airbyte.cdk.ConfigErrorException
-import io.airbyte.cdk.load.command.Dedupe
 import io.airbyte.cdk.load.command.DestinationStream
 import io.airbyte.cdk.load.component.ColumnChangeset
 import io.airbyte.cdk.load.component.ColumnType
@@ -24,11 +23,10 @@ import io.airbyte.cdk.load.message.Meta.Companion.COLUMN_NAMES
 import io.airbyte.cdk.load.schema.model.TableName
 import io.airbyte.cdk.load.table.ColumnNameMapping
 import io.airbyte.cdk.load.table.TempTableNameGenerator
-import io.airbyte.integrations.destination.clickhouse.client.ClickhouseSqlGenerator.Companion.DATETIME_WITH_PRECISION
-import io.airbyte.integrations.destination.clickhouse.client.ClickhouseSqlGenerator.Companion.DECIMAL_WITH_PRECISION_AND_SCALE
+import io.airbyte.integrations.destination.clickhouse.client.ClickhouseSqlTypes.DATETIME_WITH_PRECISION
+import io.airbyte.integrations.destination.clickhouse.client.ClickhouseSqlTypes.DECIMAL_WITH_PRECISION_AND_SCALE
 import io.github.oshai.kotlinlogging.KotlinLogging
 import jakarta.inject.Singleton
-import kotlin.collections.flatten
 import kotlinx.coroutines.future.await
 
 val log = KotlinLogging.logger {}
@@ -97,9 +95,7 @@ class ClickhouseAirbyteClient(
         throw NotImplementedError("We rely on Clickhouse's table engine for deduping")
     }
 
-    override suspend fun discoverSchema(
-        tableName: TableName
-    ): TableSchema {
+    override suspend fun discoverSchema(tableName: TableName): TableSchema {
         val tableSchema = client.getTableSchema(tableName.name, tableName.namespace)
 
         log.info { "Fetch the clickhouse table schema: $tableSchema" }
@@ -130,15 +126,7 @@ class ClickhouseAirbyteClient(
         stream: DestinationStream,
         columnNameMapping: ColumnNameMapping
     ): TableSchema {
-        // todo: move this into mapper
-        val primaryKey = stream.tableSchema.getPrimaryKey().flatten().toSet()
-        val cursor =  stream.tableSchema.getCursor().toSet()
-        val adjustedForNullability = stream.tableSchema.columnSchema.finalSchema.map {
-            val partOfPkOrCursor = primaryKey.contains(it.key) || cursor.contains(it.key)
-            it.key to it.value.copy(nullable = it.value.nullable && !partOfPkOrCursor)
-        }.toMap()
-
-        return TableSchema(adjustedForNullability)
+        return TableSchema(stream.tableSchema.columnSchema.finalSchema)
     }
 
     override suspend fun applyChangeset(
@@ -251,12 +239,16 @@ class ClickhouseAirbyteClient(
     }
 
     private fun ClickHouseDataType.getDataTypeAsString(): String {
-        return if (this.name == "DateTime64") {
-            DATETIME_WITH_PRECISION
-        } else if (this.name == "Decimal") {
-            DECIMAL_WITH_PRECISION_AND_SCALE
-        } else {
-            this.name
+        return when (this.name) {
+            "DateTime64" -> {
+                DATETIME_WITH_PRECISION
+            }
+            "Decimal" -> {
+                DECIMAL_WITH_PRECISION_AND_SCALE
+            }
+            else -> {
+                this.name
+            }
         }
     }
 

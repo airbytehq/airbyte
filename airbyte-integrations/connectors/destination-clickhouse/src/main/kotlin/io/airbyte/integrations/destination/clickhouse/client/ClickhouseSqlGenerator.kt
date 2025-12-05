@@ -4,54 +4,22 @@
 
 package io.airbyte.integrations.destination.clickhouse.client
 
-import com.clickhouse.data.ClickHouseDataType
 import io.airbyte.cdk.load.command.Dedupe
 import io.airbyte.cdk.load.command.DestinationStream
 import io.airbyte.cdk.load.component.ColumnChangeset
 import io.airbyte.cdk.load.component.ColumnType
-import io.airbyte.cdk.load.data.AirbyteType
-import io.airbyte.cdk.load.data.ArrayType
-import io.airbyte.cdk.load.data.ArrayTypeWithoutSchema
-import io.airbyte.cdk.load.data.BooleanType
-import io.airbyte.cdk.load.data.DateType
-import io.airbyte.cdk.load.data.IntegerType
-import io.airbyte.cdk.load.data.NumberType
-import io.airbyte.cdk.load.data.ObjectType
-import io.airbyte.cdk.load.data.ObjectTypeWithEmptySchema
-import io.airbyte.cdk.load.data.ObjectTypeWithoutSchema
-import io.airbyte.cdk.load.data.StringType
-import io.airbyte.cdk.load.data.TimeTypeWithTimezone
-import io.airbyte.cdk.load.data.TimeTypeWithoutTimezone
-import io.airbyte.cdk.load.data.TimestampTypeWithTimezone
-import io.airbyte.cdk.load.data.TimestampTypeWithoutTimezone
-import io.airbyte.cdk.load.data.UnionType
-import io.airbyte.cdk.load.data.UnknownType
 import io.airbyte.cdk.load.message.Meta.Companion.COLUMN_NAME_AB_EXTRACTED_AT
 import io.airbyte.cdk.load.message.Meta.Companion.COLUMN_NAME_AB_GENERATION_ID
 import io.airbyte.cdk.load.message.Meta.Companion.COLUMN_NAME_AB_META
 import io.airbyte.cdk.load.message.Meta.Companion.COLUMN_NAME_AB_RAW_ID
 import io.airbyte.cdk.load.schema.model.TableName
 import io.airbyte.cdk.load.table.ColumnNameMapping
-import io.airbyte.integrations.destination.clickhouse.client.ClickhouseSqlGenerator.Companion.DATETIME_WITH_PRECISION
-import io.airbyte.integrations.destination.clickhouse.client.ClickhouseSqlGenerator.Companion.DECIMAL_WITH_PRECISION_AND_SCALE
-import io.airbyte.integrations.destination.clickhouse.spec.ClickhouseConfiguration
 import io.github.oshai.kotlinlogging.KotlinLogging
 import jakarta.inject.Singleton
 
 @Singleton
-class ClickhouseSqlGenerator(
-    val clickhouseConfiguration: ClickhouseConfiguration,
-) {
+class ClickhouseSqlGenerator {
     private val log = KotlinLogging.logger {}
-
-    /**
-     * This extension is here to avoid writing `.also { log.info { it }}` for every returned string
-     * we want to log
-     */
-    private fun String.andLog(): String {
-        log.info { this }
-        return this
-    }
 
     fun createNamespace(namespace: String): String {
         return "CREATE DATABASE IF NOT EXISTS `$namespace`;".andLog()
@@ -62,64 +30,32 @@ class ClickhouseSqlGenerator(
         tableName: TableName,
         replace: Boolean,
     ): String {
-        val pks: List<String> = stream.tableSchema.getPrimaryKey().flatten()
-
-        // For ReplacingMergeTree, we need to make the cursor column non-nullable if it's used as
-        // version column. We'll also determine here if we need to fall back to extracted_at.
-        var useCursorAsVersionColumn = false
-        val cursorColumns = stream.tableSchema.getCursor()
-        val nonNullableColumns =
-            mutableSetOf<String>().apply {
-                addAll(pks) // Primary keys are always non-nullable
-                if (stream.importType is Dedupe && cursorColumns.isNotEmpty()) {
-                    val cursorFieldName = (stream.importType as Dedupe).cursor.firstOrNull()
-                    val cursorColumnName = cursorColumns.firstOrNull()
-                    
-                    if (cursorFieldName != null && cursorColumnName != null) {
-                        // Check if the cursor column type is valid for ClickHouse
-                        // ReplacingMergeTree
-                        val cursorColumnType = stream.tableSchema.columnSchema.inputSchema[cursorFieldName]?.type
-                        if (
-                            cursorColumnType != null && isValidVersionColumnType(cursorColumnType)
-                        ) {
-                            // Cursor column is valid, use it as version column
-                            add(cursorColumnName) // Make cursor column non-nullable too
-                            useCursorAsVersionColumn = true
-                        } else {
-                            // Cursor column is invalid, we'll fall back to _airbyte_extracted_at
-                            log.warn {
-                                "Cursor column '$cursorFieldName' for stream '${stream.mappedDescriptor}' has type '${cursorColumnType?.let { it::class.simpleName }}' which is not valid for use as a version column in ClickHouse ReplacingMergeTree. " +
-                                    "Falling back to using _airbyte_extracted_at as version column. Valid types are: Integer, Date, Timestamp."
-                            }
-                            useCursorAsVersionColumn = false
-                        }
-                    }
-                    // If no cursor is specified or cursor is invalid, we'll use
-                    // _airbyte_extracted_at
-                    // as version column, which is already non-nullable by default (defined in
-                    // CREATE TABLE statement)
-                }
-            }
-
-        val columnDeclarations =
-            columnsAndTypes(stream, nonNullableColumns.toList())
-
         val forceCreateTable = if (replace) "OR REPLACE" else ""
 
-        val pksAsString =
-            pks.joinToString(",") {
-                // Escape the columns
-                "`$it`"
+        val columnDeclarations =
+            stream.tableSchema.columnSchema.finalSchema
+                .map { (columnName, columnType) -> "`$columnName` ${columnType.typeDecl()}" }
+                .joinToString(",\n")
+
+        val orderBy =
+            if (stream.tableSchema.importType !is Dedupe) {
+                COLUMN_NAME_AB_RAW_ID
+            } else {
+                val pks = flattenPks(stream.tableSchema.getPrimaryKey())
+                pks.joinToString(",") {
+                    // Escape the columns
+                    "`$it`"
+                }
             }
 
         val engine =
             when (stream.importType) {
                 is Dedupe -> {
-                    // Use cursor column as version column for ReplacingMergeTree if available and
-                    // valid
+                    val cursor = stream.tableSchema.getCursor().firstOrNull()
+
                     val versionColumn =
-                        if (cursorColumns.isNotEmpty() && useCursorAsVersionColumn) {
-                            "`${cursorColumns.first()}`"
+                        if (cursor != null && cursor.isValidVersionColumnType()) {
+                            "`${cursor}`"
                         } else {
                             // Fallback to _airbyte_extracted_at if no cursor is specified or cursor
                             // is invalid
@@ -139,11 +75,7 @@ class ClickhouseSqlGenerator(
               $columnDeclarations
             )
             ENGINE = $engine
-            ORDER BY (${if (pks.isEmpty()) {
-            COLUMN_NAME_AB_RAW_ID
-        } else {
-            pksAsString
-        }})
+            ORDER BY ($orderBy)
             """
             .trimIndent()
             .andLog()
@@ -208,19 +140,6 @@ class ClickhouseSqlGenerator(
             .trimIndent()
             .andLog()
 
-    private fun columnsAndTypes(
-        stream: DestinationStream,
-        nonNullableColumns: List<String>,
-    ): String {
-        return stream.tableSchema.columnSchema.inputSchema
-            .map { (fieldName, type) ->
-                val columnName = stream.tableSchema.columnSchema.inputToFinalColumnNames[fieldName]!!
-                val typeName = type.type.toDialectType(clickhouseConfiguration.enableJson)
-                "`$columnName` ${typeDecl(typeName, !nonNullableColumns.contains(columnName))}"
-            }
-            .joinToString(",\n")
-    }
-
     fun alterTable(alterationSummary: ColumnChangeset, tableName: TableName): String {
         val builder =
             StringBuilder()
@@ -238,15 +157,37 @@ class ClickhouseSqlGenerator(
 
         return builder.dropLast(1).toString().andLog()
     }
-}
 
-fun String.sqlNullable(): String = "Nullable($this)"
+    fun ColumnType.typeDecl() =
+        if (nullable) {
+            "Nullable($type)"
+        } else {
+            type
+        }
 
-fun typeDecl(type: String, nullable: Boolean) =
-    if (nullable) {
-        type.sqlNullable()
-    } else {
-        type
+    /**
+     * TODO: this is really a schema validation function and should probably run on startup long
+     * before we go to create a table.
+     */
+    internal fun flattenPks(
+        primaryKey: List<List<String>>,
+    ): List<String> {
+        return primaryKey.map { fieldPath ->
+            if (fieldPath.size != 1) {
+                throw UnsupportedOperationException(
+                    "Only top-level primary keys are supported, got $fieldPath",
+                )
+            }
+            fieldPath.first()
+        }
     }
 
-fun ColumnType.typeDecl() = typeDecl(this.type, this.nullable)
+    /**
+     * This extension is here to avoid writing `.also { log.info { it }}` for every returned string
+     * we want to log
+     */
+    private fun String.andLog(): String {
+        log.info { this }
+        return this
+    }
+}
