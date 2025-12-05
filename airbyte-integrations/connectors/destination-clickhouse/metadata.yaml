@@ -2,7 +2,7 @@ data:
   connectorSubtype: database
   connectorType: destination
   definitionId: ce0d828e-1dc4-496c-b122-2da42e637e48
-  dockerImageTag: 2.1.14
+  dockerImageTag: 2.1.16-rc.1
   dockerRepository: airbyte/destination-clickhouse
   githubIssueLabel: destination-clickhouse
   icon: clickhouse.svg
@@ -27,7 +27,7 @@ data:
   releaseStage: generally_available
   releases:
     rolloutConfiguration:
-      enableProgressiveRollout: false
+      enableProgressiveRollout: true
     breakingChanges:
       2.0.0:
         message: "This connector has been re-written from scratch. Data will now be typed and stored in final (non-raw) tables. The connector may require changes to its configuration to function properly and downstream pipelines may be affected. Warning: SSH tunneling is in Beta."
