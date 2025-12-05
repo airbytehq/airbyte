@@ -56,8 +56,8 @@ class ClickhouseAirbyteClient(
     ) {
         execute(
             sqlGenerator.createTable(
-                stream,
                 tableName,
+                stream.tableSchema,
                 replace,
             ),
         )
@@ -77,9 +77,10 @@ class ClickhouseAirbyteClient(
         sourceTableName: TableName,
         targetTableName: TableName
     ) {
+        val columnNames = columnNameMapping.values.toSet()
         execute(
             sqlGenerator.copyTable(
-                columnNameMapping,
+                columnNames,
                 sourceTableName,
                 targetTableName,
             ),
@@ -154,7 +155,6 @@ class ClickhouseAirbyteClient(
             applyDeduplicationChanges(
                 stream,
                 tableName,
-                columnNameMapping,
                 columnChangeset,
             )
         } else if (!columnChangeset.isNoop()) {
@@ -165,41 +165,28 @@ class ClickhouseAirbyteClient(
     private suspend fun applyDeduplicationChanges(
         stream: DestinationStream,
         properTableName: TableName,
-        columnNameMapping: ColumnNameMapping,
         columnChangeset: ColumnChangeset,
     ) {
         val tempTableName = tempTableNameGenerator.generate(properTableName)
         execute(sqlGenerator.createNamespace(tempTableName.namespace))
         execute(
             sqlGenerator.createTable(
-                stream,
                 tempTableName,
+                stream.tableSchema,
                 true,
             ),
         )
-        copyIntersectionColumn(
-            columnChangeset.columnsToChange.keys + columnChangeset.columnsToRetain.keys,
-            columnNameMapping,
-            properTableName,
-            tempTableName
-        )
-        execute(sqlGenerator.exchangeTable(tempTableName, properTableName))
-        execute(sqlGenerator.dropTable(tempTableName))
-    }
-
-    internal suspend fun copyIntersectionColumn(
-        columnsToCopy: Set<String>,
-        columnNameMapping: ColumnNameMapping,
-        properTableName: TableName,
-        tempTableName: TableName
-    ) {
+        val columnNames =
+            columnChangeset.columnsToChange.keys + columnChangeset.columnsToRetain.keys
         execute(
             sqlGenerator.copyTable(
-                ColumnNameMapping(columnNameMapping.filter { columnsToCopy.contains(it.value) }),
+                columnNames,
                 properTableName,
                 tempTableName,
             ),
         )
+        execute(sqlGenerator.exchangeTable(tempTableName, properTableName))
+        execute(sqlGenerator.dropTable(tempTableName))
     }
 
     override suspend fun countTable(tableName: TableName): Long? {
