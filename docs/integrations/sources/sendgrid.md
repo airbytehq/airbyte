@@ -8,16 +8,25 @@ This page contains the setup guide and reference information for the [Sendgrid](
 
 ## Prerequisites
 
-- [Sendgrid API Key](https://docs.sendgrid.com/ui/account-and-settings/api-keys#creating-an-api-key)
+- A SendGrid account
+- A [SendGrid API Key](https://docs.sendgrid.com/ui/account-and-settings/api-keys#creating-an-api-key) with the required permissions
 
 ## Setup guide
 
-### Step 1: Set up Sendgrid
+### Step 1: Set up SendGrid
 
-- Sendgrid Account
-- [Create Sendgrid API Key](https://docs.sendgrid.com/ui/account-and-settings/api-keys#creating-an-api-key) with the following permissions:
-- Read-only access to all resources
-- Full access to marketing resources
+Create a SendGrid API Key with the permissions required for the streams you want to sync. The connector uses the [SendGrid v3 API](https://docs.sendgrid.com/api-reference/how-to-use-the-sendgrid-v3-api/authentication).
+
+The following API key scopes are required depending on which streams you enable:
+
+| Streams | Required Scopes |
+|---------|-----------------|
+| Bounces, Blocks, Spam Reports, Invalid Emails, Global Suppressions | `suppression.read` or the specific `suppression.{type}.read` scopes |
+| Suppression Groups, Suppression Group Members | `asm.groups.read` |
+| Templates | `templates.read` |
+| Contacts, Lists, Segments, Single Sends, Single Send Stats, Stats Automations, Campaigns | `marketing.read` |
+
+For simplicity, you can create an API key with **Full Access** to ensure all streams work correctly. If you prefer more granular permissions, enable only the scopes listed above for the streams you need.
 
 ### Step 2: Set up the Sendgrid connector in Airbyte
 
@@ -40,27 +49,27 @@ The Sendgrid source connector supports the following [sync modes](https://docs.a
 
 ## Supported Streams
 
-- [Campaigns](https://docs.sendgrid.com/api-reference/campaigns-api/retrieve-all-campaigns)
-- [Lists](https://docs.sendgrid.com/api-reference/lists/get-all-lists)
-- [Contacts](https://docs.sendgrid.com/api-reference/contacts/export-contacts)
-- [Stats automations](https://docs.sendgrid.com/api-reference/marketing-campaign-stats/get-all-automation-stats)
-- [Segments](https://docs.sendgrid.com/api-reference/segmenting-contacts/get-list-of-segments)
-- [Single Sends](https://docs.sendgrid.com/api-reference/marketing-campaign-stats/get-all-single-sends-stats)
-- [Templates](https://docs.sendgrid.com/api-reference/transactional-templates/retrieve-paged-transactional-templates)
-- [Global suppression](https://docs.sendgrid.com/api-reference/suppressions-global-suppressions/retrieve-all-global-suppressions) \(Incremental\)
-- [Suppression groups](https://docs.sendgrid.com/api-reference/suppressions-unsubscribe-groups/retrieve-all-suppression-groups-associated-with-the-user)
-- [Suppression group members](https://docs.sendgrid.com/api-reference/suppressions-suppressions/retrieve-all-suppressions) \(Incremental\)
 - [Blocks](https://docs.sendgrid.com/api-reference/blocks-api/retrieve-all-blocks) \(Incremental\)
 - [Bounces](https://docs.sendgrid.com/api-reference/bounces-api/retrieve-all-bounces) \(Incremental\)
-- [Invalid emails](https://docs.sendgrid.com/api-reference/invalid-e-mails-api/retrieve-all-invalid-emails) \(Incremental\)
-- [Spam reports](https://docs.sendgrid.com/api-reference/spam-reports-api/retrieve-all-spam-reports)
-- [Unsubscribe Groups](https://docs.sendgrid.com/api-reference/suppressions-unsubscribe-groups/retrieve-all-suppression-groups-associated-with-the-user)
+- [Campaigns](https://docs.sendgrid.com/api-reference/campaigns-api/retrieve-all-campaigns)
+- [Contacts](https://docs.sendgrid.com/api-reference/contacts/export-contacts)
+- [Global Suppressions](https://docs.sendgrid.com/api-reference/suppressions-global-suppressions/retrieve-all-global-suppressions) \(Incremental\)
+- [Invalid Emails](https://docs.sendgrid.com/api-reference/invalid-e-mails-api/retrieve-all-invalid-emails) \(Incremental\)
+- [Lists](https://docs.sendgrid.com/api-reference/lists/get-all-lists)
+- [Segments](https://docs.sendgrid.com/api-reference/segmenting-contacts/get-list-of-segments)
+- [Single Sends](https://docs.sendgrid.com/api-reference/single-sends/get-all-single-sends)
+- [Single Send Stats](https://docs.sendgrid.com/api-reference/marketing-campaign-stats/get-all-single-sends-stats)
+- [Spam Reports](https://docs.sendgrid.com/api-reference/spam-reports-api/retrieve-all-spam-reports) \(Incremental\)
+- [Stats Automations](https://docs.sendgrid.com/api-reference/marketing-campaign-stats/get-all-automation-stats)
+- [Suppression Groups](https://docs.sendgrid.com/api-reference/suppressions-unsubscribe-groups/retrieve-all-suppression-groups-associated-with-the-user)
+- [Suppression Group Members](https://docs.sendgrid.com/api-reference/suppressions-suppressions/retrieve-all-suppressions) \(Incremental\)
+- [Templates](https://docs.sendgrid.com/api-reference/transactional-templates/retrieve-paged-transactional-templates)
 
 ## Create a read-only API key (Optional)
 
-While you can set up the Sendgrid connector using any Salesforce user with read permission, we recommend creating a dedicated read-only user for Airbyte. This allows you to granularly control the which resources Airbyte can read.
+While you can set up the SendGrid connector using any API key with read permission, we recommend creating a dedicated read-only API key for Airbyte. This allows you to granularly control which resources Airbyte can read.
 
-The API key should be read-only on all resources except Marketing, where it needs Full Access.
+The API key should have read-only access to the resources you want to sync. For marketing streams (Contacts, Lists, Segments, Single Sends, Campaigns), the API key needs the `marketing.read` scope.
 
 ## Limitations & Troubleshooting
 
@@ -77,8 +86,15 @@ The connector is restricted by normal Sendgrid [requests limitation](https://doc
 
 ### Troubleshooting
 
-- **Legacy marketing campaigns are not supported by this source connector**. Sendgrid provides two different kinds of marketing campaigns, "legacy marketing campaigns" and "new marketing campaigns". If you are seeing a `403 FORBIDDEN error message for https://api.sendgrid.com/v3/marketing/campaigns`, it might be because your SendGrid account uses legacy marketing campaigns.
-- Check out common troubleshooting issues for the Sendgrid source connector on our [Airbyte Forum](https://github.com/airbytehq/airbyte/discussions).
+#### 403 Forbidden errors
+
+If you encounter 403 errors, check the following:
+
+1. **Verify API key permissions**: Ensure your API key has the required scopes for the streams you're trying to sync. See the [Setup guide](#step-1-set-up-sendgrid) for the specific scopes needed for each stream.
+
+2. **Legacy vs. New Marketing Campaigns**: This connector uses the New Marketing Campaigns API (`/v3/marketing/*`), which requires the `marketing.read` scope. If your SendGrid account uses Legacy Marketing Campaigns, you will receive 403 errors when syncing marketing streams. Legacy Marketing Campaigns use different API endpoints and permission scopes (`marketing_campaigns.read`) that are not compatible with this connector.
+
+3. **Account type limitations**: Some SendGrid account types may not have access to all API endpoints. Verify that your SendGrid plan includes access to the features you're trying to sync.
 
 </details>
 
