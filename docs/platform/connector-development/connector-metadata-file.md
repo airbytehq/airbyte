@@ -241,3 +241,43 @@ They are language agnostic and are configured via the `acceptance-test-config.ym
 **Default secret paths**
 The listed secrets in `testSecrets` with a file name will be mounted to the connector's `secrets` directory. The `fileName` should be relative to this directory.
 E.G.: `fileName: config.json` will be mounted to `<connector-directory>/secrets/config.json`
+
+## The `externalDocumentationUrls` Section
+
+The `externalDocumentationUrls` field is an optional array that provides links to official vendor documentation for the connector. These URLs help users quickly access important external resources like API changelogs, authentication guides, rate limits, and status pages.
+
+### Structure
+
+Each entry in the `externalDocumentationUrls` array contains:
+- `title` (required): Display title for the documentation link
+- `url` (required): URL to the external documentation
+- `type` (optional): Category of documentation (e.g., `api_release_history`, `api_reference`, `authentication_guide`, `permissions_scopes`, `rate_limits`, `status_page`, etc.)
+- `requiresLogin` (optional, default: false): Whether the URL requires authentication to access
+
+### Example
+
+```yaml
+externalDocumentationUrls:
+  - title: Release notes
+    url: https://cloud.google.com/bigquery/docs/release-notes
+    type: api_release_history
+  - title: Standard SQL reference
+    url: https://cloud.google.com/bigquery/docs/reference/standard-sql
+    type: sql_reference
+  - title: Service account authentication
+    url: https://cloud.google.com/iam/docs/service-accounts
+    type: authentication_guide
+  - title: Access control and permissions
+    url: https://cloud.google.com/bigquery/docs/access-control
+    type: permissions_scopes
+  - title: Quotas and limits
+    url: https://cloud.google.com/bigquery/quotas
+    type: rate_limits
+  - title: Google Cloud Status
+    url: https://status.cloud.google.com/
+    type: status_page
+```
+
+### Comprehensive Guide
+
+For detailed guidance on identifying, scraping, and maintaining external documentation URLs, including best practices for avoiding unnecessary YAML formatting changes, see the [External Documentation URLs Guide](https://github.com/airbytehq/airbyte/blob/master/airbyte-ci/connectors/metadata_service/docs/external_documentation_urls.md).
