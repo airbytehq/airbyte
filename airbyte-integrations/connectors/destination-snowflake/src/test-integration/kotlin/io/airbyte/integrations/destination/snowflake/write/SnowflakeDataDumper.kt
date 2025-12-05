@@ -9,11 +9,12 @@ import io.airbyte.cdk.load.command.DestinationStream
 import io.airbyte.cdk.load.data.AirbyteValue
 import io.airbyte.cdk.load.data.NullValue
 import io.airbyte.cdk.load.data.ObjectValue
+import io.airbyte.cdk.load.data.json.toAirbyteValue
 import io.airbyte.cdk.load.message.Meta
 import io.airbyte.cdk.load.table.CDC_DELETED_AT_COLUMN
 import io.airbyte.cdk.load.test.util.DestinationDataDumper
 import io.airbyte.cdk.load.test.util.OutputRecord
-import io.airbyte.commons.json.Jsons.deserializeExact
+import io.airbyte.cdk.load.util.deserializeToNode
 import io.airbyte.integrations.destination.snowflake.SnowflakeBeanFactory
 import io.airbyte.integrations.destination.snowflake.db.SnowflakeFinalTableNameGenerator
 import io.airbyte.integrations.destination.snowflake.db.toSnowflakeCompatibleName
@@ -127,28 +128,14 @@ class SnowflakeDataDumper(
         throw UnsupportedOperationException("Snowflake does not support file transfer.")
     }
 
-    private fun unformatJsonValue(columnType: String, value: Any): Any? {
-        /*
-         * Snowflake automatically pretty-prints JSON results for variant, object and array
-         * when selecting them via a SQL query.  You can get around this by using the `TO_JSON`
-         * function on the column when running the query.  However, we do not have access to the
-         * catalog in the dumper to know which columns need to be un-prettied/modified to match
-         * the toPrettyString() method of the Jackson JsonNode.  To compensate for this, we will
-         * read the JSON string into a JsonNode and then re-pretty-ify it into a string so that
-         * it can match what the expected record mapper is doing.
-         */
+    private fun unformatJsonValue(columnType: String, value: Any): Any {
         return when (columnType.lowercase()) {
             "variant",
             "array",
-            "object" -> {
-                val jsonNode = deserializeExact(value.toString())
-                if (jsonNode.isNull) {
-                    // Don't convert null into a string "null"
-                    null
-                } else {
-                    jsonNode.toPrettyString()
-                }
-            }
+            "object" ->
+                // blind cast to string is safe - snowflake JDBC driver getObject returns String
+                // for variant/array/object
+                (value as String).deserializeToNode().toAirbyteValue()
             else -> value
         }
     }

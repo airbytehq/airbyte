@@ -6,13 +6,11 @@ package io.airbyte.integrations.destination.snowflake.write
 
 import io.airbyte.cdk.load.data.AirbyteType
 import io.airbyte.cdk.load.data.AirbyteValue
-import io.airbyte.cdk.load.data.ArrayValue
 import io.airbyte.cdk.load.data.EnrichedAirbyteValue
 import io.airbyte.cdk.load.data.NullValue
 import io.airbyte.cdk.load.data.ObjectValue
 import io.airbyte.cdk.load.data.StringValue
 import io.airbyte.cdk.load.data.TimeWithTimezoneValue
-import io.airbyte.cdk.load.data.json.toJson
 import io.airbyte.cdk.load.dataflow.transform.ValidationResult
 import io.airbyte.cdk.load.message.Meta
 import io.airbyte.cdk.load.test.util.ExpectedRecordMapper
@@ -60,8 +58,6 @@ object SnowflakeExpectedRecordMapper : ExpectedRecordMapper {
             ValidationResult.Valid ->
                 when (value) {
                     is TimeWithTimezoneValue -> StringValue(value.value.toString())
-                    is ArrayValue,
-                    is ObjectValue -> StringValue(value.toJson().toPrettyString())
                     else -> value
                 }
         }

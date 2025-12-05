@@ -46,7 +46,7 @@ class SnowflakeInsertAcceptanceTest :
             },
         recordMapper = SnowflakeExpectedRecordMapper,
         nameMapper = SnowflakeNameMapper(),
-        unknownTypesBehavior = UnknownTypesBehavior.SERIALIZE,
+        unknownTypesBehavior = UnknownTypesBehavior.PASS_THROUGH,
     ) {
     @Test
     override fun testAppendSchemaEvolution() {
@@ -63,7 +63,7 @@ class SnowflakeInsertIgnoreCasingAcceptanceTest :
             },
         recordMapper = SnowflakeExpectedRecordMapper,
         nameMapper = SnowflakeNameMapper(),
-        unknownTypesBehavior = UnknownTypesBehavior.SERIALIZE,
+        unknownTypesBehavior = UnknownTypesBehavior.PASS_THROUGH,
     ) {
     @Test
     override fun testBasicWrite() {
@@ -159,7 +159,7 @@ abstract class SnowflakeAcceptanceTest(
         isStreamSchemaRetroactiveForUnknownTypeToString =
             isStreamSchemaRetroactiveForUnknownTypeToString,
         dedupBehavior = dedupBehavior,
-        stringifySchemalessObjects = true,
+        stringifySchemalessObjects = false,
         schematizedObjectBehavior = SchematizedNestedValueBehavior.PASS_THROUGH,
         schematizedArrayBehavior = SchematizedNestedValueBehavior.PASS_THROUGH,
         unionBehavior = UnionBehavior.PASS_THROUGH,
@@ -188,9 +188,6 @@ abstract class SnowflakeAcceptanceTest(
         coercesLegacyUnions = coercesLegacyUnions,
         useDataFlowPipeline = true,
     ) {
-
-    @Disabled override fun testUnions() {}
-
     @Disabled override fun testAppendJsonSchemaEvolution() {}
 
     @Disabled override fun testContainerTypes() {}
