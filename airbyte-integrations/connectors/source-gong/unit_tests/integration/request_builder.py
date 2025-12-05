@@ -89,9 +89,7 @@ class RequestBuilder:
         return self
 
     def build(self) -> HttpRequest:
-        query_params = (
-            ANY_QUERY_PARAMS if self._any_query_params else (self._query_params if self._query_params else None)
-        )
+        query_params = ANY_QUERY_PARAMS if self._any_query_params else (self._query_params if self._query_params else None)
         return HttpRequest(
             url=f"{GONG_API_URL}/{self._resource}",
             query_params=query_params,

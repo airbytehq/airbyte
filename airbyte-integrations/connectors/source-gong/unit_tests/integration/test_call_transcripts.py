@@ -10,12 +10,12 @@ from airbyte_cdk.test.entrypoint_wrapper import EntrypointOutput
 from airbyte_cdk.test.mock_http import HttpMocker
 from airbyte_cdk.test.mock_http.request import HttpRequest
 
-from .config import ConfigBuilder, CALL_ID
-from .request_builder import RequestBuilder, GONG_API_URL
+from .config import CALL_ID, ConfigBuilder
+from .request_builder import GONG_API_URL, RequestBuilder
 from .response_builder import (
-    error_response,
     call_transcripts_response,
     empty_response,
+    error_response,
 )
 from .utils import config, read_output
 

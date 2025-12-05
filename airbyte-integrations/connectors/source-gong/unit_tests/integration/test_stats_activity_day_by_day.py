@@ -9,12 +9,12 @@ from airbyte_cdk.models import SyncMode
 from airbyte_cdk.test.entrypoint_wrapper import EntrypointOutput
 from airbyte_cdk.test.mock_http import HttpMocker
 
-from .config import ConfigBuilder, USER_ID
+from .config import USER_ID, ConfigBuilder
 from .request_builder import RequestBuilder
 from .response_builder import (
+    empty_response,
     error_response,
     stats_activity_day_by_day_response,
-    empty_response,
 )
 from .utils import config, read_output
 
