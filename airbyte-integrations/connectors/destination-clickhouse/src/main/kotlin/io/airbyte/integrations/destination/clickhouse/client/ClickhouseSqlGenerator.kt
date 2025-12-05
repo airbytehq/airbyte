@@ -53,11 +53,6 @@ class ClickhouseSqlGenerator(
         return this
     }
 
-    private fun isValidVersionColumnType(airbyteType: AirbyteType): Boolean {
-        // Must be of an integer type or of type Date/DateTime/DateTime64
-        return VALID_VERSION_COLUMN_TYPES.any { it.isInstance(airbyteType) }
-    }
-
     fun createNamespace(namespace: String): String {
         return "CREATE DATABASE IF NOT EXISTS `$namespace`;".andLog()
     }
@@ -143,9 +138,9 @@ class ClickhouseSqlGenerator(
               $COLUMN_NAME_AB_GENERATION_ID UInt32 NOT NULL,
               $columnDeclarations
             )
-            ENGINE = ${engine}
+            ENGINE = $engine
             ORDER BY (${if (pks.isEmpty()) {
-            "$COLUMN_NAME_AB_RAW_ID"
+            COLUMN_NAME_AB_RAW_ID
         } else {
             pksAsString
         }})
@@ -243,48 +238,9 @@ class ClickhouseSqlGenerator(
 
         return builder.dropLast(1).toString().andLog()
     }
-
-    companion object {
-        const val DATETIME_WITH_PRECISION = "DateTime64(3)"
-        const val DECIMAL_WITH_PRECISION_AND_SCALE = "Decimal(38, 9)"
-
-        private val VALID_VERSION_COLUMN_TYPES =
-            setOf(
-                IntegerType::class,
-                DateType::class,
-                TimestampTypeWithTimezone::class,
-                TimestampTypeWithoutTimezone::class,
-            )
-    }
 }
 
 fun String.sqlNullable(): String = "Nullable($this)"
-
-fun AirbyteType.toDialectType(enableJson: Boolean): String =
-    when (this) {
-        BooleanType -> ClickHouseDataType.Bool.name
-        DateType -> ClickHouseDataType.Date32.name
-        IntegerType -> ClickHouseDataType.Int64.name
-        NumberType -> DECIMAL_WITH_PRECISION_AND_SCALE
-        StringType -> ClickHouseDataType.String.name
-        TimeTypeWithTimezone -> ClickHouseDataType.String.name
-        TimeTypeWithoutTimezone -> ClickHouseDataType.String.name
-        TimestampTypeWithTimezone,
-        TimestampTypeWithoutTimezone -> DATETIME_WITH_PRECISION
-        is ArrayType,
-        ArrayTypeWithoutSchema,
-        is UnionType,
-        is UnknownType -> ClickHouseDataType.String.name
-        ObjectTypeWithEmptySchema,
-        ObjectTypeWithoutSchema,
-        is ObjectType -> {
-            if (enableJson) {
-                ClickHouseDataType.JSON.name
-            } else {
-                ClickHouseDataType.String.name
-            }
-        }
-    }
 
 fun typeDecl(type: String, nullable: Boolean) =
     if (nullable) {

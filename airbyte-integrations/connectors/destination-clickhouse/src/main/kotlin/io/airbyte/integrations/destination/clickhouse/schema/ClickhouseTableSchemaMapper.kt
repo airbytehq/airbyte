@@ -4,7 +4,9 @@
 
 package io.airbyte.integrations.destination.clickhouse.schema
 
+import io.airbyte.cdk.load.command.Dedupe
 import io.airbyte.cdk.load.command.DestinationStream
+import io.airbyte.cdk.load.command.ImportType
 import io.airbyte.cdk.load.component.ColumnType
 import io.airbyte.cdk.load.data.ArrayType
 import io.airbyte.cdk.load.data.ArrayTypeWithoutSchema
@@ -26,8 +28,10 @@ import io.airbyte.cdk.load.data.UnknownType
 import io.airbyte.cdk.load.schema.TableSchemaMapper
 import io.airbyte.cdk.load.schema.model.TableName
 import io.airbyte.cdk.load.table.TempTableNameGenerator
-import io.airbyte.integrations.destination.clickhouse.client.ClickhouseSqlGenerator.Companion.DATETIME_WITH_PRECISION
-import io.airbyte.integrations.destination.clickhouse.client.ClickhouseSqlGenerator.Companion.DECIMAL_WITH_PRECISION_AND_SCALE
+import io.airbyte.integrations.destination.clickhouse.client.DATETIME_WITH_PRECISION
+import io.airbyte.integrations.destination.clickhouse.client.DECIMAL_WITH_PRECISION_AND_SCALE
+import io.airbyte.integrations.destination.clickhouse.client.VALID_VERSION_COLUMN_TYPES
+import io.airbyte.integrations.destination.clickhouse.client.isValidVersionColumnType
 import io.airbyte.integrations.destination.clickhouse.config.toClickHouseCompatibleName
 import io.airbyte.integrations.destination.clickhouse.spec.ClickhouseConfiguration
 import jakarta.inject.Singleton
@@ -64,10 +68,12 @@ class ClickhouseTableSchemaMapper(
                 TimeTypeWithoutTimezone -> "String"
                 TimestampTypeWithTimezone,
                 TimestampTypeWithoutTimezone -> DATETIME_WITH_PRECISION
+
                 is ArrayType,
                 ArrayTypeWithoutSchema,
                 is UnionType,
                 is UnknownType -> "String"
+
                 ObjectTypeWithEmptySchema,
                 ObjectTypeWithoutSchema,
                 is ObjectType -> {
@@ -80,5 +86,43 @@ class ClickhouseTableSchemaMapper(
             }
 
         return ColumnType(clickhouseType, fieldType.nullable)
+    }
+
+    override fun toFinalSchema(
+        inputToFinalColumnNames: Map<String, String>,
+        inputSchema: Map<String, FieldType>,
+        importType: ImportType,
+    ): Map<String, ColumnType> {
+        val directlyMappedSchema = super.toFinalSchema(inputToFinalColumnNames, inputSchema, importType)
+
+        if (importType !is Dedupe) {
+            return directlyMappedSchema
+        }
+        // For dedupe mode we do extra logic to ensure certain columns are non-null:
+        //     1) the primary key columns
+        //     2) the version column used by the dedupe engine
+        val pks = importType.primaryKey.flatten()
+        val cursor = importType.cursor
+
+        // For ReplacingMergeTree, we need to make the cursor column non-nullable if it's used as
+        // version column. We'll also determine here if we need to fall back to extracted_at.
+        var useCursorAsVersionColumn = false
+        val nonNullableColumns =
+            mutableSetOf<String>().apply {
+                addAll(pks) // Primary keys are always non-nullable
+                if (cursor.isNotEmpty()) {
+                    val cursorFieldName = cursor.first()
+                    // Check if the cursor column type is valid for ClickHouse
+                    // ReplacingMergeTree
+                    val cursorColumnType = inputSchema[cursorFieldName]!!.type
+
+                    if (isValidVersionColumnType(cursorColumnType)) {
+                        // Cursor column is valid, use it as version column
+                        add(cursorFieldName) // Make cursor column non-nullable too
+                    }
+                }
+            }
+
+        return
     }
 }

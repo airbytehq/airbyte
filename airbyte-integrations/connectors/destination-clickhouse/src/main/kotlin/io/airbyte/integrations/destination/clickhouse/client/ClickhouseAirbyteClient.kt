@@ -26,7 +26,6 @@ import io.airbyte.cdk.load.table.ColumnNameMapping
 import io.airbyte.cdk.load.table.TempTableNameGenerator
 import io.airbyte.integrations.destination.clickhouse.client.ClickhouseSqlGenerator.Companion.DATETIME_WITH_PRECISION
 import io.airbyte.integrations.destination.clickhouse.client.ClickhouseSqlGenerator.Companion.DECIMAL_WITH_PRECISION_AND_SCALE
-import io.airbyte.integrations.destination.clickhouse.spec.ClickhouseConfiguration
 import io.github.oshai.kotlinlogging.KotlinLogging
 import jakarta.inject.Singleton
 import kotlin.collections.flatten
@@ -100,8 +99,8 @@ class ClickhouseAirbyteClient(
 
     override suspend fun discoverSchema(
         tableName: TableName
-    ): io.airbyte.cdk.load.component.TableSchema {
-        val tableSchema: TableSchema = client.getTableSchema(tableName.name, tableName.namespace)
+    ): TableSchema {
+        val tableSchema = client.getTableSchema(tableName.name, tableName.namespace)
 
         log.info { "Fetch the clickhouse table schema: $tableSchema" }
 
@@ -120,7 +119,7 @@ class ClickhouseAirbyteClient(
 
         log.info { "Found Clickhouse columns: $tableSchemaWithoutAirbyteColumns" }
 
-        return io.airbyte.cdk.load.component.TableSchema(
+        return TableSchema(
             tableSchemaWithoutAirbyteColumns.associate {
                 it.columnName to ColumnType(it.dataType.getDataTypeAsString(), it.isNullable)
             },
@@ -131,11 +130,15 @@ class ClickhouseAirbyteClient(
         stream: DestinationStream,
         columnNameMapping: ColumnNameMapping
     ): TableSchema {
-        // do something here
+        // todo: move this into mapper
         val primaryKey = stream.tableSchema.getPrimaryKey().flatten().toSet()
         val cursor =  stream.tableSchema.getCursor().toSet()
+        val adjustedForNullability = stream.tableSchema.columnSchema.finalSchema.map {
+            val partOfPkOrCursor = primaryKey.contains(it.key) || cursor.contains(it.key)
+            it.key to it.value.copy(nullable = it.value.nullable && !partOfPkOrCursor)
+        }.toMap()
 
-        return TableSchema(stream.tableSchema.columnSchema.finalSchema)
+        return TableSchema(adjustedForNullability)
     }
 
     override suspend fun applyChangeset(
@@ -219,7 +222,7 @@ class ClickhouseAirbyteClient(
             reader.next()
             val count = reader.getLong("cnt")
             return count
-        } catch (e: Exception) {
+        } catch (_: Exception) {
             return null
         }
     }
