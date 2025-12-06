@@ -97,6 +97,18 @@ class SnowflakeTestTableOperationsClient(
                                             row[columnName] = it.toLocalDateTime()
                                         }
                                     }
+                                    "TIME" -> {
+                                        // resultSet.getObject (and .getTime) returns a
+                                        // java.sql.Time object, which only stores milliseconds
+                                        // precision.
+                                        // Snowflake supports up to nanoseconds precision, so we
+                                        // need retrieve the object as a timestamp, and convert that
+                                        // back to LocalTime.
+                                        resultSet.getTimestamp(i)?.let {
+                                            row[columnName] =
+                                                it.toLocalDateTime().toLocalTime().toString()
+                                        }
+                                    }
                                     "VARIANT",
                                     "OBJECT",
                                     "ARRAY" -> {
