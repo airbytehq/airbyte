@@ -15,28 +15,31 @@ import io.airbyte.cdk.load.orchestration.db.legacy_typing_deduping.TableCatalog
 import io.airbyte.cdk.load.orchestration.db.legacy_typing_deduping.TypingDedupingDatabaseInitialStatus
 import io.airbyte.cdk.load.table.TableName
 import io.airbyte.cdk.load.table.TableSuffixes.TMP_TABLE_SUFFIX
+import io.airbyte.integrations.destination.bigquery.bigQueryCall
 
 class BigqueryTypingDedupingDatabaseInitialStatusGatherer(private val bq: BigQuery) :
     DatabaseInitialStatusGatherer<TypingDedupingDatabaseInitialStatus> {
-    private fun getInitialRawTableState(
+    private suspend fun getInitialRawTableState(
         rawTableName: TableName,
         suffix: String
     ): RawTableInitialStatus? {
-        bq.getTable(TableId.of(rawTableName.namespace, rawTableName.name + suffix))
         // Table doesn't exist. There are no unprocessed records, and no timestamp.
-        ?: return null
+        bigQueryCall { bq.getTable(TableId.of(rawTableName.namespace, rawTableName.name + suffix)) }
+            ?: return null
 
         val rawTableIdQuoted = """`${rawTableName.namespace}`.`${rawTableName.name}$suffix`"""
         val unloadedRecordTimestamp =
-            bq.query(
-                    QueryJobConfiguration.of(
-                        """
+            bigQueryCall {
+                    bq.query(
+                        QueryJobConfiguration.of(
+                            """
                             SELECT TIMESTAMP_SUB(MIN(_airbyte_extracted_at), INTERVAL 1 MICROSECOND)
                             FROM $rawTableIdQuoted
                             WHERE _airbyte_loaded_at IS NULL
                             """.trimIndent()
+                        )
                     )
-                )
+                }
                 .iterateAll()
                 .iterator()
                 .next()
@@ -52,14 +55,16 @@ class BigqueryTypingDedupingDatabaseInitialStatusGatherer(private val bq: BigQue
         }
 
         val loadedRecordTimestamp =
-            bq.query(
-                    QueryJobConfiguration.of(
-                        """
+            bigQueryCall {
+                    bq.query(
+                        QueryJobConfiguration.of(
+                            """
                     SELECT MAX(_airbyte_extracted_at)
                     FROM $rawTableIdQuoted
                     """.trimIndent()
+                        )
                     )
-                )
+                }
                 .iterateAll()
                 .iterator()
                 .next()
