@@ -32,6 +32,10 @@ on:
         description: "The pull request number, if applicable"
         required: false
         type: number
+      connector:
+        description: "Single connector name to publish (e.g., destination-pinecone). If not provided, publishes all modified connectors."
+        required: false
+        type: string
 
 concurrency:
   group: ${{ github.workflow }}-${{ github.event.inputs.pr || github.run_id }}
@@ -89,7 +93,7 @@ jobs:
     needs: [init]
     uses: ./.github/workflows/publish_connectors.yml
     with:
-      connectors: "--modified"
+      connectors: ${{ inputs.connector != '' && format('--name={0}', inputs.connector) || '--modified' }}
       release-type: pre-release
     secrets: inherit
 
