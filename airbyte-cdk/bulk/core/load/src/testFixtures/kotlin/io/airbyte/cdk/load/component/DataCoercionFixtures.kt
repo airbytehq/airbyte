@@ -5,12 +5,24 @@
 package io.airbyte.cdk.load.component
 
 import io.airbyte.cdk.load.data.AirbyteValue
+import io.airbyte.cdk.load.data.DateValue
 import io.airbyte.cdk.load.data.IntegerValue
 import io.airbyte.cdk.load.data.NumberValue
+import io.airbyte.cdk.load.data.TimeWithTimezoneValue
+import io.airbyte.cdk.load.data.TimeWithoutTimezoneValue
+import io.airbyte.cdk.load.data.TimestampWithTimezoneValue
+import io.airbyte.cdk.load.data.TimestampWithoutTimezoneValue
 import io.airbyte.cdk.load.dataflow.transform.ValueCoercer
 import io.airbyte.protocol.models.v0.AirbyteRecordMessageMetaChange.Reason
 import java.math.BigDecimal
 import java.math.BigInteger
+import java.time.LocalDate
+import java.time.LocalDateTime
+import java.time.OffsetDateTime
+import java.time.format.DateTimeFormatter
+import java.time.format.DateTimeFormatterBuilder
+import java.time.format.SignStyle
+import java.time.temporal.ChronoField
 import org.junit.jupiter.params.provider.Arguments
 
 /*
@@ -429,6 +441,176 @@ object DataCoercionNumberFixtures {
     @JvmStatic fun numeric38_9() = numeric38_9.toArgs()
 }
 
+const val SIMPLE_TIMESTAMP = "simple timestamp"
+const val UNIX_EPOCH = "unix epoch"
+const val MINIMUM_TIMESTAMP = "minimum timestamp"
+const val MAXIMUM_TIMESTAMP = "maximum timestamp"
+const val OUT_OF_RANGE_TIMESTAMP = "out of range timestamp"
+const val HIGH_PRECISION_TIMESTAMP = "high-precision timestamp"
+
+object DataCoercionTimestampTzFixtures {
+    /**
+     * Many warehouses support timestamps between years 0001 - 9999.
+     *
+     * Depending on the exact warehouse, you may need to tweak the precision on some values. For
+     * example, Snowflake supports nanoseconds-precision timestamps (9 decimal points), but Bigquery
+     * only supports microseconds-precision (6 decimal points). Bigquery would probably do something
+     * like:
+     * ```kotlin
+     * DataCoercionNumberFixtures.traditionalWarehouse
+     *   .map {
+     *     when (it.name) {
+     *       "maximum AD timestamp" -> it.copy(
+     *         inputValue = TimestampWithTimezoneValue("9999-12-31T23:59:59.999999Z"),
+     *         outputValue = OffsetDateTime.parse("9999-12-31T23:59:59.999999Z"),
+     *         changeReason = Reason.DESTINATION_FIELD_SIZE_LIMITATION,
+     *       )
+     *       "high-precision timestamp" -> it.copy(
+     *         outputValue = OffsetDateTime.parse("2025-01-23T01:01:00.123456Z"),
+     *         changeReason = Reason.DESTINATION_FIELD_SIZE_LIMITATION,
+     *       )
+     *     }
+     *   }
+     * ```
+     */
+    val commonWarehouse =
+        listOf(
+            test(
+                SIMPLE_TIMESTAMP,
+                TimestampWithTimezoneValue("2025-01-23T12:34:56.789Z"),
+                "2025-01-23T12:34:56.789Z",
+            ),
+            test(
+                UNIX_EPOCH,
+                TimestampWithTimezoneValue("1970-01-01T00:00:00Z"),
+                "1970-01-01T00:00:00Z",
+            ),
+            test(
+                MINIMUM_TIMESTAMP,
+                TimestampWithTimezoneValue("0001-01-01T00:00:00Z"),
+                "0001-01-01T00:00:00Z",
+            ),
+            test(
+                MAXIMUM_TIMESTAMP,
+                TimestampWithTimezoneValue("9999-12-31T23:59:59.999999999Z"),
+                "9999-12-31T23:59:59.999999999Z",
+            ),
+            test(
+                OUT_OF_RANGE_TIMESTAMP,
+                TimestampWithTimezoneValue(odt("10000-01-01T00:00Z")),
+                null,
+                Reason.DESTINATION_FIELD_SIZE_LIMITATION,
+            ),
+            test(
+                HIGH_PRECISION_TIMESTAMP,
+                TimestampWithTimezoneValue("2025-01-23T01:01:00.123456789Z"),
+                "2025-01-23T01:01:00.123456789Z",
+            ),
+        )
+
+    @JvmStatic fun commonWarehouse() = commonWarehouse.toArgs()
+}
+
+object DataCoercionTimestampNtzFixtures {
+    /** See [DataCoercionTimestampTzFixtures.commonWarehouse] for explanation */
+    val commonWarehouse =
+        listOf(
+            test(
+                SIMPLE_TIMESTAMP,
+                TimestampWithoutTimezoneValue("2025-01-23T12:34:56.789"),
+                "2025-01-23T12:34:56.789",
+            ),
+            test(
+                UNIX_EPOCH,
+                TimestampWithoutTimezoneValue("1970-01-01T00:00:00"),
+                "1970-01-01T00:00:00",
+            ),
+            test(
+                MINIMUM_TIMESTAMP,
+                TimestampWithoutTimezoneValue("0001-01-01T00:00:00"),
+                "0001-01-01T00:00:00",
+            ),
+            test(
+                MAXIMUM_TIMESTAMP,
+                TimestampWithoutTimezoneValue("9999-12-31T23:59:59.999999999"),
+                "9999-12-31T23:59:59.999999999",
+            ),
+            test(
+                OUT_OF_RANGE_TIMESTAMP,
+                TimestampWithoutTimezoneValue(ldt("10000-01-01T00:00")),
+                null,
+                Reason.DESTINATION_FIELD_SIZE_LIMITATION,
+            ),
+            test(
+                HIGH_PRECISION_TIMESTAMP,
+                TimestampWithoutTimezoneValue("2025-01-23T01:01:00.123456789"),
+                "2025-01-23T01:01:00.123456789",
+            ),
+        )
+
+    @JvmStatic fun commonWarehouse() = commonWarehouse.toArgs()
+}
+
+const val MIDNIGHT = "midnight"
+const val MAX_TIME = "max time"
+const val HIGH_NOON = "high noon"
+
+object DataCoercionTimeTzFixtures {
+    val timetz =
+        listOf(
+            test(MIDNIGHT, TimeWithTimezoneValue("00:00Z"), "00:00Z"),
+            test(MAX_TIME, TimeWithTimezoneValue("23:59:59.999999999Z"), "23:59:59.999999999Z"),
+            test(HIGH_NOON, TimeWithTimezoneValue("12:00Z"), "12:00Z"),
+        )
+
+    @JvmStatic fun timetz() = timetz.toArgs()
+}
+
+object DataCoercionTimeNtzFixtures {
+    val timentz =
+        listOf(
+            test(MIDNIGHT, TimeWithoutTimezoneValue("00:00"), "00:00"),
+            test(MAX_TIME, TimeWithoutTimezoneValue("23:59:59.999999999"), "23:59:59.999999999"),
+            test(HIGH_NOON, TimeWithoutTimezoneValue("12:00"), "12:00"),
+        )
+
+    @JvmStatic fun timentz() = timentz.toArgs()
+}
+
+object DataCoercionDateFixtures {
+    val commonWarehouse =
+        listOf(
+            test(
+                SIMPLE_TIMESTAMP,
+                DateValue("2025-01-23"),
+                "2025-01-23",
+            ),
+            test(
+                UNIX_EPOCH,
+                DateValue("1970-01-01"),
+                "1970-01-01",
+            ),
+            test(
+                MINIMUM_TIMESTAMP,
+                DateValue("0001-01-01"),
+                "0001-01-01",
+            ),
+            test(
+                MAXIMUM_TIMESTAMP,
+                DateValue("9999-12-31"),
+                "9999-12-31",
+            ),
+            test(
+                OUT_OF_RANGE_TIMESTAMP,
+                DateValue(date("10000-01-01")),
+                null,
+                Reason.DESTINATION_FIELD_SIZE_LIMITATION,
+            ),
+        )
+
+    @JvmStatic fun commonWarehouse() = commonWarehouse.toArgs()
+}
+
 fun List<DataCoercionFixture>.toArgs(): List<Arguments> =
     this.map { Arguments.argumentSet(it.name, it.inputValue, it.outputValue, it.changeReason) }
         .toList()
@@ -447,6 +629,33 @@ fun bigdec(str: String): BigDecimal = BigDecimal(str)
 fun bigdec(double: Double): BigDecimal = BigDecimal.valueOf(double)
 
 fun bigdec(int: Int): BigDecimal = BigDecimal.valueOf(int.toDouble())
+
+fun odt(str: String): OffsetDateTime = OffsetDateTime.parse(str, dateTimeFormatter)
+
+fun ldt(str: String): LocalDateTime = LocalDateTime.parse(str, dateTimeFormatter)
+
+fun date(str: String): LocalDate = LocalDate.parse(str, dateFormatter)
+
+// The default java.time.*.parse() behavior only accepts up to 4-digit years.
+// Build a custom formatter to handle larger years.
+val dateFormatter =
+    DateTimeFormatterBuilder()
+        // java.time.* supports up to 9-digit years
+        .appendValue(ChronoField.YEAR, 1, 9, SignStyle.NORMAL)
+        .appendLiteral('-')
+        .appendValue(ChronoField.MONTH_OF_YEAR)
+        .appendLiteral('-')
+        .appendValue(ChronoField.DAY_OF_MONTH)
+        .toFormatter()
+
+val dateTimeFormatter =
+    DateTimeFormatterBuilder()
+        .append(dateFormatter)
+        .appendLiteral('T')
+        // Accepts strings with/without an offset, so we can use this formatter
+        // for both timestamp with and without timezone
+        .append(DateTimeFormatter.ISO_TIME)
+        .toFormatter()
 
 /**
  * Represents a single data coercion test case. You probably want to use [test] as a shorthand
