@@ -1,0 +1,11 @@
+{
+  "list": [
+    {
+      "event": {
+        "id": "ev_002",
+        "event_type": "subscription_updated",
+        "occurred_at": 1705312800
+      }
+    }
+  ]
+}

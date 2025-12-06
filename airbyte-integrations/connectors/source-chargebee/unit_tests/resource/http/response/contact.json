@@ -1,0 +1,12 @@
+{
+  "list": [
+    {
+      "contact": {
+        "id": "contact_001",
+        "first_name": "Contact",
+        "last_name": "Person",
+        "email": "contact@example.com"
+      }
+    }
+  ]
+}
