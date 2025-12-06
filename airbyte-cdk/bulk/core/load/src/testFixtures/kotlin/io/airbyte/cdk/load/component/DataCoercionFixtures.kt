@@ -7,6 +7,8 @@ package io.airbyte.cdk.load.component
 import io.airbyte.cdk.load.data.AirbyteValue
 import io.airbyte.cdk.load.data.IntegerValue
 import io.airbyte.cdk.load.data.NumberValue
+import io.airbyte.cdk.load.data.TimeWithTimezoneValue
+import io.airbyte.cdk.load.data.TimeWithoutTimezoneValue
 import io.airbyte.cdk.load.data.TimestampWithTimezoneValue
 import io.airbyte.cdk.load.data.TimestampWithoutTimezoneValue
 import io.airbyte.cdk.load.dataflow.transform.ValueCoercer
@@ -546,6 +548,32 @@ object DataCoercionTimestampNtzFixtures {
         )
 
     @JvmStatic fun commonWarehouse() = commonWarehouse.toArgs()
+}
+
+const val MIDNIGHT = "midnight"
+const val MAX_TIME = "max time"
+const val HIGH_NOON = "high noon"
+
+object DataCoercionTimeTzFixtures {
+    val timetz =
+        listOf(
+            case(MIDNIGHT, TimeWithTimezoneValue("00:00Z"), "00:00Z"),
+            case(MAX_TIME, TimeWithTimezoneValue("23:59:59.999999999Z"), "23:59:59.999999999Z"),
+            case(HIGH_NOON, TimeWithTimezoneValue("12:00Z"), "12:00Z"),
+        )
+
+    @JvmStatic fun timetz() = timetz.toArgs()
+}
+
+object DataCoercionTimeNtzFixtures {
+    val timentz =
+        listOf(
+            case(MIDNIGHT, TimeWithoutTimezoneValue("00:00"), "00:00"),
+            case(MAX_TIME, TimeWithoutTimezoneValue("23:59:59.999999999"), "23:59:59.999999999"),
+            case(HIGH_NOON, TimeWithoutTimezoneValue("12:00"), "12:00"),
+        )
+
+    @JvmStatic fun timentz() = timentz.toArgs()
 }
 
 fun List<DataCoercionTestCase>.toArgs(): List<Arguments> =
