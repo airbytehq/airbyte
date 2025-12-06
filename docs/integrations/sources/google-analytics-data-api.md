@@ -31,6 +31,14 @@ This connector works with Google Analytics 4 (GA4) and [Google Analytics 360](ht
 7. Select your new service account from the list, and open the **Keys** tab. Click **Add Key** > **Create New Key**.
 8. Select **JSON** as the Key type. This will generate and download the JSON key file that you'll use for authentication. Click **Continue**.
 
+:::note
+When authenticating with a **service account** (Airbyte Open Source), you must also grant that service account access to the **GA4 property** in **Google Analytics**. Creating a service account and downloading the JSON key does not automatically give it permission to read Analytics data.
+
+1. In Google Analytics, go to **Admin** → under **Property**, click **Property access management**.
+2. Click **+** → **Add users**, then add the service account email (for example, `...@...iam.gserviceaccount.com`).
+3. Grant at least the **Viewer** role (read-only) for the target property.
+:::
+
 #### Enable the Google Analytics APIs
 
 Before you can use the service account to access Google Analytics data, you need to enable the required APIs:
