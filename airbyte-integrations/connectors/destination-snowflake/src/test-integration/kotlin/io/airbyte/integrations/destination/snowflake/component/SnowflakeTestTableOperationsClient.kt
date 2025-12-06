@@ -109,6 +109,17 @@ class SnowflakeTestTableOperationsClient(
                                                 it.toLocalDateTime().toLocalTime().toString()
                                         }
                                     }
+                                    "DATE" -> {
+                                        // resultSet.getObject returns a java.sql.Date object,
+                                        // but its underlying `cdate` value is offset by someone's
+                                        // local timezone (unclear whether that's our snowflake user
+                                        // timezone, or the TZ of the computer running the test),
+                                        // and that breaks equality comparison.
+                                        // So just convert to String.
+                                        resultSet.getDate(i)?.let {
+                                            row[columnName] = it.toString()
+                                        }
+                                    }
                                     "VARIANT",
                                     "OBJECT",
                                     "ARRAY" -> {
