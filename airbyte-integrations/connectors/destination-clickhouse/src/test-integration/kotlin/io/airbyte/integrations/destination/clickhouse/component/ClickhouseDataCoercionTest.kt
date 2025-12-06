@@ -81,6 +81,26 @@ class ClickhouseDataCoercionTest(
         super.`handle timestampntz values`(inputValue, expectedValue, expectedChangeReason)
     }
 
+    @ParameterizedTest
+    @MethodSource("io.airbyte.cdk.load.component.DataCoercionTimeTzFixtures#timetz")
+    override fun `handle timetz values`(
+        inputValue: AirbyteValue,
+        expectedValue: Any?,
+        expectedChangeReason: Reason?
+    ) {
+        super.`handle timetz values`(inputValue, expectedValue, expectedChangeReason)
+    }
+
+    @ParameterizedTest
+    @MethodSource("io.airbyte.cdk.load.component.DataCoercionTimeNtzFixtures#timentz")
+    override fun `handle timentz values`(
+        inputValue: AirbyteValue,
+        expectedValue: Any?,
+        expectedChangeReason: Reason?
+    ) {
+        super.`handle timentz values`(inputValue, expectedValue, expectedChangeReason)
+    }
+
     companion object {
         /**
          * destination-clickhouse doesn't set a change reason when truncating high-precision numbers
