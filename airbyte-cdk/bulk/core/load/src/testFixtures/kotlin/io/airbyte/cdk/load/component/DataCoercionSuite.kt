@@ -5,6 +5,7 @@
 package io.airbyte.cdk.load.component
 
 import io.airbyte.cdk.load.data.AirbyteValue
+import io.airbyte.cdk.load.data.DateType
 import io.airbyte.cdk.load.data.FieldType
 import io.airbyte.cdk.load.data.IntegerType
 import io.airbyte.cdk.load.data.NumberType
@@ -143,6 +144,22 @@ interface DataCoercionSuite {
             coercer,
             columnNameMapping,
             FieldType(TimeTypeWithoutTimezone, nullable = true),
+            inputValue,
+            expectedValue,
+            expectedChangeReason,
+        )
+    }
+
+    /** Fixtures are defined in [DataCoercionDateFixtures]. */
+    fun `handle date values`(
+        inputValue: AirbyteValue,
+        expectedValue: Any?,
+        expectedChangeReason: Reason?
+    ) = runTest {
+        harness.testValueCoercion(
+            coercer,
+            columnNameMapping,
+            FieldType(DateType, nullable = true),
             inputValue,
             expectedValue,
             expectedChangeReason,

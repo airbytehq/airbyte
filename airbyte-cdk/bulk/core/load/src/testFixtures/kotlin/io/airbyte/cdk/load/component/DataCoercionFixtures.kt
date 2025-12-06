@@ -5,6 +5,7 @@
 package io.airbyte.cdk.load.component
 
 import io.airbyte.cdk.load.data.AirbyteValue
+import io.airbyte.cdk.load.data.DateValue
 import io.airbyte.cdk.load.data.IntegerValue
 import io.airbyte.cdk.load.data.NumberValue
 import io.airbyte.cdk.load.data.TimeWithTimezoneValue
@@ -576,6 +577,40 @@ object DataCoercionTimeNtzFixtures {
     @JvmStatic fun timentz() = timentz.toArgs()
 }
 
+object DataCoercionDateFixtures {
+    val commonWarehouse =
+        listOf(
+            case(
+                SIMPLE_TIMESTAMP,
+                DateValue("2025-01-23"),
+                "2025-01-23",
+            ),
+            case(
+                UNIX_EPOCH,
+                DateValue("1970-01-01"),
+                "1970-01-01",
+            ),
+            case(
+                MINIMUM_TIMESTAMP,
+                DateValue("0001-01-01"),
+                "0001-01-01",
+            ),
+            case(
+                MAXIMUM_TIMESTAMP,
+                DateValue("9999-12-31"),
+                "9999-12-31",
+            ),
+            case(
+                OUT_OF_RANGE_TIMESTAMP,
+                DateValue(date("10000-01-01")),
+                null,
+                Reason.DESTINATION_FIELD_SIZE_LIMITATION,
+            ),
+        )
+
+    @JvmStatic fun commonWarehouse() = commonWarehouse.toArgs()
+}
+
 fun List<DataCoercionTestCase>.toArgs(): List<Arguments> =
     this.map { Arguments.argumentSet(it.name, it.inputValue, it.outputValue, it.changeReason) }
         .toList()
@@ -599,11 +634,11 @@ fun odt(str: String): OffsetDateTime = OffsetDateTime.parse(str, dateTimeFormatt
 
 fun ldt(str: String): LocalDateTime = LocalDateTime.parse(str, dateTimeFormatter)
 
-fun date(str: String): LocalDate = LocalDate.parse(str, dateTimeFormatter)
+fun date(str: String): LocalDate = LocalDate.parse(str, dateFormatter)
 
 // The default java.time.*.parse() behavior only accepts up to 4-digit years.
 // Build a custom formatter to handle larger years.
-val dateFormat =
+val dateFormatter =
     DateTimeFormatterBuilder()
         // java.time.* supports up to 9-digit years
         .appendValue(ChronoField.YEAR, 1, 9, SignStyle.NORMAL)
@@ -615,7 +650,7 @@ val dateFormat =
 
 val dateTimeFormatter =
     DateTimeFormatterBuilder()
-        .append(dateFormat)
+        .append(dateFormatter)
         .appendLiteral('T')
         // Accepts strings with/without an offset, so we can use this formatter
         // for both timestamp with and without timezone
