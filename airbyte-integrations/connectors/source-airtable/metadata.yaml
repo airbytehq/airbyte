@@ -11,7 +11,7 @@ data:
   connectorSubtype: api
   connectorType: source
   definitionId: 14c6e7ea-97ed-4f5e-a7b5-25e9a80b8212
-  dockerImageTag: 4.6.14
+  dockerImageTag: 4.6.15
   dockerRepository: airbyte/source-airtable
   documentationUrl: https://docs.airbyte.com/integrations/sources/airtable
   externalDocumentationUrls:
@@ -24,10 +24,14 @@ data:
       url: https://airtable.com/developers/web/api/oauth-reference#authorization-request
   resourceRequirements:
     jobSpecific:
+      - jobType: check_connection
+        resourceRequirements:
+          memory_limit: 1536Mi
+          memory_request: 1536Mi
       - jobType: discover_schema
         resourceRequirements:
-          memory_limit: 2560Mi
-          memory_request: 2560Mi
+          memory_limit: 3072Mi
+          memory_request: 3072Mi
   githubIssueLabel: source-airtable
   icon: airtable.svg
   license: ELv2

@@ -1,3 +1,21 @@
+## Version 0.1.85
+
+**Extract CDK**
+
+* Fix CDC partition reader race condition when draining records after debezium shutdown.
+
+## Version 0.1.84
+
+load cdk: Move most DB packages into core. Refactor table schema interface into TableSchemaMapper.
+
+## Version 0.1.83
+
+load cdk: more tests to help guide dependency injection dependency implementations
+
+## Version 0.1.82
+
+load cdk: components tests: more schema evolution testcases
+
 ## Version 0.1.81
 
 load cdk: components tests: more coverage on upsert
