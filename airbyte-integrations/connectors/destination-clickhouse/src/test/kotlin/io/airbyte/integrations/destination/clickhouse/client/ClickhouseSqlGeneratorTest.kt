@@ -91,51 +91,34 @@ class ClickhouseSqlGeneratorTest {
     }
 
     @Test
-    fun `test extractPks with single primary key`() {
-        val primaryKey = listOf(listOf("id"))
-        val columnNameMapping = ColumnNameMapping(mapOf("id" to "id_column"))
-        val expected = listOf("id_column")
-        val actual = clickhouseSqlGenerator.extractPks(primaryKey, columnNameMapping)
-        Assertions.assertEquals(expected, actual)
-    }
-
-    @Test
     fun `test extractPks with multiple primary keys`() {
         val primaryKey = listOf(listOf("id"), listOf("name"))
-        val columnNameMapping =
-            ColumnNameMapping(mapOf("id" to "id_column", "name" to "name_column"))
         val expected = listOf("id_column", "name_column")
-        val actual = clickhouseSqlGenerator.extractPks(primaryKey, columnNameMapping)
+        val actual = clickhouseSqlGenerator.flattenPks(primaryKey)
         Assertions.assertEquals(expected, actual)
     }
 
     @Test
-    fun `test extractPks with empty primary key list`() {
+    fun `test flattenPks with empty primary key list`() {
         val primaryKey = emptyList<List<String>>()
-        val columnNameMapping = ColumnNameMapping(emptyMap<String, String>())
         val expected = listOf<String>()
-        val actual = clickhouseSqlGenerator.extractPks(primaryKey, columnNameMapping)
+        val actual = clickhouseSqlGenerator.flattenPks(primaryKey)
         Assertions.assertEquals(expected, actual)
     }
 
     @Test
-    fun `test extractPks without column mapping`() {
+    fun `test extractPks with single primary key`() {
         val primaryKey = listOf(listOf("id"))
-        val columnNameMapping = ColumnNameMapping(mapOf())
         val expected = listOf("id")
-        val actual = clickhouseSqlGenerator.extractPks(primaryKey, columnNameMapping)
+        val actual = clickhouseSqlGenerator.flattenPks(primaryKey)
         Assertions.assertEquals(expected, actual)
     }
 
     @Test
-    fun `test extractPks with nested primary key`() {
+    fun `test flattenPks with nested primary key`() {
         val primaryKey = listOf(listOf("user", "id"))
-        val columnNameMapping =
-            ColumnNameMapping(
-                mapOf("user.id" to "user_id_column")
-            ) // This mapping is not used but here for completeness.
         assertThrows<UnsupportedOperationException> {
-            clickhouseSqlGenerator.extractPks(primaryKey, columnNameMapping)
+            clickhouseSqlGenerator.flattenPks(primaryKey)
         }
     }
 
