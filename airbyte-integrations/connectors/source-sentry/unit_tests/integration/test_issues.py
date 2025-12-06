@@ -145,9 +145,9 @@ class TestIssuesStream(TestCase):
         assert state["lastSeen"].startswith("2024-01-20T15:00:00"), f"Expected state cursor to be latest record's lastSeen, got {state}"
 
     @HttpMocker()
-    def test_incremental_pagination_with_smart_stopping(self, http_mocker: HttpMocker):
+    def test_incremental_pagination_with_data_feed(self, http_mocker: HttpMocker):
         """
-        Test smart stopping: When Page 1 has old records, don't fetch Page 2.
+        Test is_data_feed: When Page 1 has old records, don't fetch Page 2.
 
         Scenario for is_data_feed: true with data sorted newest→oldest:
         - State: Jan 16 (last sync ended here)
@@ -161,20 +161,20 @@ class TestIssuesStream(TestCase):
         4. STOP: Don't fetch Page 2 (would be all older than Jan 15)
         5. Result: 3 records, 1 API call (saves fetching Page 2) ✅
 
-        This is the smart stopping optimization for data feeds.
+        This tests the is_data_feed pagination optimization.
         """
         # ARRANGE - State from previous sync (2024-01-16)
         previous_state_date = "2024-01-16T09:00:00.000000Z"
         state = StateBuilder().with_stream_state(_STREAM_NAME, {"lastSeen": previous_state_date}).build()
 
-        # Mock API - Only Page 1 (smart stopping prevents Page 2 fetch)
+        # Mock API - Only Page 1 (is_data_feed prevents Page 2 fetch)
         # Page 1: Mixed dates [Jan 18, Jan 16, Jan 15]
         # The oldest record (Jan 15) is <= state (Jan 16) → boundary reached!
         #
         # NOTE: We set has_next=True (API says Page 2 exists)
-        # But smart stopping detects boundary and doesn't fetch Page 2!
+        # But is_data_feed detects boundary and doesn't fetch Page 2!
         # If we mocked 2 pages, HttpMocker would error: "Expected 2 calls, got 1"
-        # That error would PROVE smart stopping works (Page 2 not fetched)
+        # That error would PROVE is_data_feed works (Page 2 not fetched)
         http_mocker.get(
             SentryRequestBuilder.issues_endpoint(_ORGANIZATION, _PROJECT, _AUTH_TOKEN).build(),
             # Page 1: 3 records, has_next=True but pagination stops here!
@@ -186,8 +186,8 @@ class TestIssuesStream(TestCase):
         catalog = CatalogBuilder().with_stream(_STREAM_NAME, SyncMode.incremental).build()
         output = read(source, config=self._config(), catalog=catalog, state=state)
 
-        # ASSERT - Smart stopping: Only Page 1 fetched despite has_next=True
-        # Page 1 has 3 records, Page 2 was NOT fetched (smart stopping worked!)
+        # ASSERT - is_data_feed: Only Page 1 fetched despite has_next=True
+        # Page 1 has 3 records, Page 2 was NOT fetched (is_data_feed worked!)
         assert len(output.records) == 3, f"Expected 3 records from Page 1 only, got {len(output.records)}"
 
         # Verify all 3 records from Page 1 (no filtering - emit all)
@@ -200,13 +200,13 @@ class TestIssuesStream(TestCase):
         assert output.records[2].record.data["id"] == "issue001"
         assert output.records[2].record.data["lastSeen"] == "2024-01-15T12:00:00Z"  # Old (boundary!)
 
-        # KEY PROOF OF SMART STOPPING:
+        # KEY PROOF OF is_data_feed:
         # - We set has_next=True (API says Page 2 exists)
         # - Page 1 has Jan 15 <= state Jan 16 (boundary reached!)
         # - Connector made ONLY 1 API call (fetched Page 1 only)
-        # - Page 2 was NOT fetched (smart stopping worked!)
+        # - Page 2 was NOT fetched (is_data_feed worked!)
         #
-        # If smart stopping didn't work:
+        # If is_data_feed didn't work:
         # - Connector would fetch Page 2 (because has_next=True)
         # - We'd need to mock 2 pages
         # - Would get 5 records (3 from Page 1 + 2 from Page 2)
@@ -220,9 +220,9 @@ class TestIssuesStream(TestCase):
         assert new_state["lastSeen"].startswith("2024-01-18T12:00:00"), f"Expected state updated to latest, got {new_state}"
 
     @HttpMocker()
-    def test_incremental_pagination_smart_stopping_after_page2(self, http_mocker: HttpMocker):
+    def test_incremental_pagination_data_feed_stops_after_multiple_pages(self, http_mocker: HttpMocker):
         """
-        Test smart stopping: Page 1 all new, Page 2 has old records, stop before Page 3.
+        Test is_data_feed: Page 1 all new, Page 2 has old records, stop before Page 3.
 
         Scenario for is_data_feed: true with data sorted newest→oldest:
         - State: Jan 16 (last sync ended here)
@@ -236,7 +236,7 @@ class TestIssuesStream(TestCase):
         3. STOP: Don't fetch Page 3 (would be all older than Jan 14)
         4. Result: 6 records from Pages 1 + 2, 2 API calls (NOT 3) ✅
 
-        This proves smart stopping works even when first page doesn't trigger it.
+        This proves is_data_feed works even when first page doesn't trigger it.
         """
         # ARRANGE - State from previous sync (2024-01-16)
         previous_state_date = "2024-01-16T09:00:00.000000Z"
@@ -244,9 +244,9 @@ class TestIssuesStream(TestCase):
 
         # Mock API - Return array of responses (HttpMocker returns them in order)
         # Page 1: All new records (has_next=True)
-        # Page 2: Mixed records (has_next=True but stops here due to smart stopping!)
+        # Page 2: Mixed records (has_next=True but stops here due to is_data_feed!)
         # NOTE: We set has_next=True on Page 2 (API says Page 3 exists)
-        # But smart stopping detects boundary on Page 2 and doesn't fetch Page 3!
+        # But is_data_feed detects boundary on Page 2 and doesn't fetch Page 3!
         http_mocker.get(
             SentryRequestBuilder.issues_endpoint(_ORGANIZATION, _PROJECT, _AUTH_TOKEN).build(),
             [
@@ -283,13 +283,13 @@ class TestIssuesStream(TestCase):
         assert output.records[5].record.data["id"] == "issue009"
         assert output.records[5].record.data["lastSeen"] == "2024-01-14T15:00:00Z"  # Old (boundary!)
 
-        # KEY PROOF OF SMART STOPPING:
+        # KEY PROOF OF is_data_feed:
         # - Page 1: All records > state (Jan 20, 19, 18 > Jan 16) → Continue
         # - Page 2: Has record < state (Jan 14 < Jan 16) → Boundary reached!
         # - Page 3: API says has_next=True (exists) but NOT fetched!
         # - Connector made ONLY 2 API calls (Page 1 + Page 2, stopped before Page 3)
         #
-        # If smart stopping didn't work:
+        # If is_data_feed didn't work:
         # - Would fetch Page 3 (because has_next=True on Page 2)
         # - Would get more records (e.g., 9 total from 3 pages)
         # - This test proves pagination stops at the right time!

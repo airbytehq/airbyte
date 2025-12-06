@@ -151,9 +151,9 @@ class TestReleasesStream(TestCase):
         ), f"Expected state cursor to be latest record's dateCreated, got {state}"
 
     @HttpMocker()
-    def test_incremental_pagination_with_smart_stopping(self, http_mocker: HttpMocker):
+    def test_incremental_pagination_with_data_feed(self, http_mocker: HttpMocker):
         """
-        Test smart stopping: When Page 1 has old records, don't fetch Page 2.
+        Test is_data_feed: When Page 1 has old records, don't fetch Page 2.
 
         Scenario for is_data_feed: true with data sorted newest→oldest:
         - State: Jan 16 (last sync ended here)
@@ -167,18 +167,18 @@ class TestReleasesStream(TestCase):
         4. STOP: Don't fetch Page 2 (would be all older than Jan 15)
         5. Result: 3 records, 1 API call (saves fetching Page 2) ✅
 
-        This is the smart stopping optimization for data feeds.
+        This tests the is_data_feed pagination optimization.
         """
         # ARRANGE - State from previous sync (2024-01-16)
         previous_state_date = "2024-01-16T09:00:00.000000Z"
         state = StateBuilder().with_stream_state(_STREAM_NAME, {"dateCreated": previous_state_date}).build()
 
-        # Mock API - Only Page 1 (smart stopping prevents Page 2 fetch)
+        # Mock API - Only Page 1 (is_data_feed prevents Page 2 fetch)
         # Page 1: Mixed dates [Jan 18, Jan 16, Jan 15]
         # The oldest record (Jan 15) is <= state (Jan 16) → boundary reached!
         #
         # NOTE: We set has_next=True (API says Page 2 exists)
-        # But smart stopping detects boundary and doesn't fetch Page 2!
+        # But is_data_feed detects boundary and doesn't fetch Page 2!
         http_mocker.get(
             SentryRequestBuilder.releases_endpoint(_ORGANIZATION, _PROJECT, _AUTH_TOKEN).build(),
             # Page 1: 3 records, has_next=True but pagination stops here!
@@ -190,7 +190,7 @@ class TestReleasesStream(TestCase):
         catalog = CatalogBuilder().with_stream(_STREAM_NAME, SyncMode.incremental).build()
         output = read(source, config=self._config(), catalog=catalog, state=state)
 
-        # ASSERT - Smart stopping: Only Page 1 fetched despite has_next=True
+        # ASSERT - is_data_feed: Only Page 1 fetched despite has_next=True
         assert len(output.records) == 3, f"Expected 3 records from Page 1 only, got {len(output.records)}"
 
         # Verify all 3 records from Page 1 (no filtering - emit all)
@@ -203,11 +203,11 @@ class TestReleasesStream(TestCase):
         assert output.records[2].record.data["id"] == "release123"
         assert output.records[2].record.data["dateCreated"] == "2024-01-15T14:00:00Z"  # Old (boundary!)
 
-        # KEY PROOF OF SMART STOPPING:
+        # KEY PROOF OF is_data_feed:
         # - We set has_next=True (API says Page 2 exists)
         # - Page 1 has Jan 15 <= state Jan 16 (boundary reached!)
         # - Connector made ONLY 1 API call (fetched Page 1 only)
-        # - Page 2 was NOT fetched (smart stopping worked!)
+        # - Page 2 was NOT fetched (is_data_feed worked!)
         #
         # This test proves: When Page 1 contains records older than state,
         # pagination stops even though API says more pages exist! ✅
