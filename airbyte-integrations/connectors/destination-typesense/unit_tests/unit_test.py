@@ -4,11 +4,15 @@
 
 from unittest.mock import MagicMock, patch
 
+from destination_typesense.destination import DestinationTypesense
+from destination_typesense.writer import TypesenseWriter
+
 from airbyte_cdk.models import (
     AirbyteMessage,
     AirbyteRecordMessage,
     AirbyteStateMessage,
     AirbyteStateType,
+    AirbyteStream,
     AirbyteStreamState,
     ConfiguredAirbyteCatalog,
     ConfiguredAirbyteStream,
@@ -17,9 +21,6 @@ from airbyte_cdk.models import (
     SyncMode,
     Type,
 )
-from airbyte_cdk.models import AirbyteStream
-from destination_typesense.destination import DestinationTypesense
-from destination_typesense.writer import TypesenseWriter
 
 
 @patch("typesense.Client")
