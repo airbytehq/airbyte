@@ -38,6 +38,7 @@ The connector has a rate limit of 5 requests per second per account.
 
 | Version | Date       | Pull Request                                             | Subject        |
 | :------ | :--------- | :------------------------------------------------------- | :------------- |
+| 0.2.15 | 2025-12-02 | [61091](https://github.com/airbytehq/airbyte/pull/61091) | Update dependencies |
 | 0.2.14 | 2025-05-17 | [60626](https://github.com/airbytehq/airbyte/pull/60626) | Update dependencies |
 | 0.2.13 | 2025-05-10 | [59872](https://github.com/airbytehq/airbyte/pull/59872) | Update dependencies |
 | 0.2.12 | 2025-05-03 | [59306](https://github.com/airbytehq/airbyte/pull/59306) | Update dependencies |
