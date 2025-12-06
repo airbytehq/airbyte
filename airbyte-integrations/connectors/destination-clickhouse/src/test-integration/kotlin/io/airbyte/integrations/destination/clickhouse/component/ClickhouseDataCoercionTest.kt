@@ -4,6 +4,7 @@
 
 package io.airbyte.integrations.destination.clickhouse.component
 
+import io.airbyte.cdk.load.component.DataCoercionDateFixtures
 import io.airbyte.cdk.load.component.DataCoercionNumberFixtures
 import io.airbyte.cdk.load.component.DataCoercionSuite
 import io.airbyte.cdk.load.component.DataCoercionTimestampNtzFixtures
@@ -16,11 +17,13 @@ import io.airbyte.cdk.load.component.TableOperationsClient
 import io.airbyte.cdk.load.component.TestTableOperationsClient
 import io.airbyte.cdk.load.component.toArgs
 import io.airbyte.cdk.load.data.AirbyteValue
+import io.airbyte.cdk.load.data.DateValue
 import io.airbyte.cdk.load.data.TimestampWithTimezoneValue
 import io.airbyte.cdk.load.data.TimestampWithoutTimezoneValue
 import io.airbyte.cdk.load.dataflow.transform.ValueCoercer
 import io.airbyte.protocol.models.v0.AirbyteRecordMessageMetaChange.Reason
 import io.micronaut.test.extensions.junit5.annotation.MicronautTest
+import java.time.LocalDate
 import java.time.LocalDateTime
 import java.time.OffsetDateTime
 import java.time.ZoneId
@@ -99,6 +102,18 @@ class ClickhouseDataCoercionTest(
         expectedChangeReason: Reason?
     ) {
         super.`handle timentz values`(inputValue, expectedValue, expectedChangeReason)
+    }
+
+    @ParameterizedTest
+    @MethodSource(
+        "io.airbyte.integrations.destination.clickhouse.component.ClickhouseDataCoercionTest#date"
+    )
+    override fun `handle date values`(
+        inputValue: AirbyteValue,
+        expectedValue: Any?,
+        expectedChangeReason: Reason?
+    ) {
+        super.`handle date values`(inputValue, expectedValue, expectedChangeReason)
     }
 
     companion object {
@@ -201,6 +216,41 @@ class ClickhouseDataCoercionTest(
                         outputValue =
                             fixture.outputValue?.let {
                                 LocalDateTime.parse(it as String)
+                                    .atOffset(ZoneOffset.UTC)
+                                    .atZoneSameInstant(ZoneId.of("UTC"))
+                            }
+                    )
+                }
+                .toArgs()
+
+        // We use DateTime64 for date rather than the Date type.
+        // Apply basically the same changes here.
+        @JvmStatic
+        fun date() =
+            DataCoercionDateFixtures.commonWarehouse
+                .map { fixture ->
+                    when (fixture.name) {
+                        // Clickhouse timestamps can range from year 1900 <= it < 2300
+                        MINIMUM_TIMESTAMP ->
+                            fixture.copy(
+                                inputValue = DateValue("1900-01-01"),
+                                outputValue = "1900-01-01"
+                            )
+                        MAXIMUM_TIMESTAMP ->
+                            fixture.copy(
+                                inputValue = DateValue("2299-12-31"),
+                                outputValue = "2299-12-31"
+                            )
+                        OUT_OF_RANGE_TIMESTAMP -> fixture.copy(inputValue = DateValue("2300-01-01"))
+                        else -> fixture
+                    }
+                }
+                .map { fixture ->
+                    fixture.copy(
+                        outputValue =
+                            fixture.outputValue?.let {
+                                LocalDate.parse(it as String)
+                                    .atTime(0, 0)
                                     .atOffset(ZoneOffset.UTC)
                                     .atZoneSameInstant(ZoneId.of("UTC"))
                             }

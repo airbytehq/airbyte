@@ -4,6 +4,7 @@
 
 package io.airbyte.integrations.destination.snowflake.component
 
+import io.airbyte.cdk.load.component.DataCoercionDateFixtures
 import io.airbyte.cdk.load.component.DataCoercionIntegerFixtures
 import io.airbyte.cdk.load.component.DataCoercionNumberFixtures
 import io.airbyte.cdk.load.component.DataCoercionSuite
@@ -101,6 +102,18 @@ class SnowflakeDataCoercionTest(
         expectedChangeReason: Reason?
     ) {
         super.`handle timentz values`(inputValue, expectedValue, expectedChangeReason)
+    }
+
+    @ParameterizedTest
+    @MethodSource(
+        "io.airbyte.integrations.destination.snowflake.component.SnowflakeDataCoercionTest#date"
+    )
+    override fun `handle date values`(
+        inputValue: AirbyteValue,
+        expectedValue: Any?,
+        expectedChangeReason: Reason?
+    ) {
+        super.`handle date values`(inputValue, expectedValue, expectedChangeReason)
     }
 
     companion object {
@@ -231,6 +244,17 @@ class SnowflakeDataCoercionTest(
                         outputValue = fixture.outputValue?.let { LocalDateTime.parse(it as String) }
                     )
                 }
+                .toArgs()
+
+        @JvmStatic
+        fun date() =
+            DataCoercionDateFixtures.commonWarehouse
+                // Snowflake doesn't actually document limits on the range of dates it supports.
+                // Empirically, 275760-09-13 seems to be the max valid date in a
+                // `select cast('<str>' as date)` query,
+                // but we're somehow able to programmatically insert dates beyond that value.
+                // So let's just not test this.
+                .filter { it.name != OUT_OF_RANGE_TIMESTAMP }
                 .toArgs()
     }
 }
