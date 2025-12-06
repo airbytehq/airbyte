@@ -4,9 +4,13 @@
 
 package io.airbyte.integrations.destination.snowflake.component
 
+import io.airbyte.cdk.load.component.DataCoercionDateFixtures
 import io.airbyte.cdk.load.component.DataCoercionIntegerFixtures
 import io.airbyte.cdk.load.component.DataCoercionNumberFixtures
 import io.airbyte.cdk.load.component.DataCoercionSuite
+import io.airbyte.cdk.load.component.DataCoercionTimestampNtzFixtures
+import io.airbyte.cdk.load.component.DataCoercionTimestampTzFixtures
+import io.airbyte.cdk.load.component.OUT_OF_RANGE_TIMESTAMP
 import io.airbyte.cdk.load.component.TableOperationsClient
 import io.airbyte.cdk.load.component.TestTableOperationsClient
 import io.airbyte.cdk.load.component.toArgs
@@ -16,6 +20,7 @@ import io.airbyte.protocol.models.v0.AirbyteRecordMessageMetaChange.Reason
 import io.micronaut.test.extensions.junit5.annotation.MicronautTest
 import java.math.BigDecimal
 import java.math.BigInteger
+import java.time.LocalDateTime
 import org.junit.jupiter.api.parallel.Execution
 import org.junit.jupiter.api.parallel.ExecutionMode
 import org.junit.jupiter.params.ParameterizedTest
@@ -53,6 +58,62 @@ class SnowflakeDataCoercionTest(
         expectedChangeReason: Reason?
     ) {
         super.`handle number values`(inputValue, expectedValue, expectedChangeReason)
+    }
+
+    @ParameterizedTest
+    @MethodSource(
+        "io.airbyte.integrations.destination.snowflake.component.SnowflakeDataCoercionTest#timestampTz"
+    )
+    override fun `handle timestamptz values`(
+        inputValue: AirbyteValue,
+        expectedValue: Any?,
+        expectedChangeReason: Reason?
+    ) {
+        super.`handle timestamptz values`(inputValue, expectedValue, expectedChangeReason)
+    }
+
+    @ParameterizedTest
+    @MethodSource(
+        "io.airbyte.integrations.destination.snowflake.component.SnowflakeDataCoercionTest#timestampNtz"
+    )
+    override fun `handle timestampntz values`(
+        inputValue: AirbyteValue,
+        expectedValue: Any?,
+        expectedChangeReason: Reason?
+    ) {
+        super.`handle timestampntz values`(inputValue, expectedValue, expectedChangeReason)
+    }
+
+    @ParameterizedTest
+    @MethodSource("io.airbyte.cdk.load.component.DataCoercionTimeTzFixtures#timetz")
+    override fun `handle timetz values`(
+        inputValue: AirbyteValue,
+        expectedValue: Any?,
+        expectedChangeReason: Reason?
+    ) {
+        super.`handle timetz values`(inputValue, expectedValue, expectedChangeReason)
+    }
+
+    @ParameterizedTest
+    @MethodSource("io.airbyte.cdk.load.component.DataCoercionTimeNtzFixtures#timentz")
+    override fun `handle timentz values`(
+        inputValue: AirbyteValue,
+        expectedValue: Any?,
+        expectedChangeReason: Reason?
+    ) {
+        super.`handle timentz values`(inputValue, expectedValue, expectedChangeReason)
+    }
+
+    @ParameterizedTest
+    @MethodSource(
+        "io.airbyte.integrations.destination.snowflake.component.SnowflakeDataCoercionTest#date"
+    )
+    override fun `handle date values`(
+        inputValue: AirbyteValue,
+        expectedValue: Any?,
+        expectedChangeReason: Reason?
+    ) {
+        super.`handle date values`(inputValue, expectedValue, expectedChangeReason)
     }
 
     companion object {
@@ -162,6 +223,38 @@ class SnowflakeDataCoercionTest(
                             )
                     }
                 }
+                .toArgs()
+
+        @JvmStatic
+        fun timestampTz() =
+            DataCoercionTimestampTzFixtures.commonWarehouse
+                // our ValueCoercer doesn't actually validate timestamps being in-bounds yet
+                // (https://github.com/airbytehq/airbyte-internal-issues/issues/15484)
+                .filter { it.name != OUT_OF_RANGE_TIMESTAMP }
+                .toArgs()
+
+        @JvmStatic
+        fun timestampNtz() =
+            DataCoercionTimestampNtzFixtures.commonWarehouse
+                // our ValueCoercer doesn't actually validate timestamps being in-bounds yet
+                // (https://github.com/airbytehq/airbyte-internal-issues/issues/15484)
+                .filter { it.name != OUT_OF_RANGE_TIMESTAMP }
+                .map { fixture ->
+                    fixture.copy(
+                        outputValue = fixture.outputValue?.let { LocalDateTime.parse(it as String) }
+                    )
+                }
+                .toArgs()
+
+        @JvmStatic
+        fun date() =
+            DataCoercionDateFixtures.commonWarehouse
+                // Snowflake doesn't actually document limits on the range of dates it supports.
+                // Empirically, 275760-09-13 seems to be the max valid date in a
+                // `select cast('<str>' as date)` query,
+                // but we're somehow able to programmatically insert dates beyond that value.
+                // So let's just not test this.
+                .filter { it.name != OUT_OF_RANGE_TIMESTAMP }
                 .toArgs()
     }
 }
