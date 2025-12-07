@@ -106,17 +106,17 @@ jobs:
 
           # If local-cdk-changed is true, get Java connectors with useLocalCdk = true
           # Otherwise, get modified Java connectors
-          # NOTE: --local-cdk is not yet supported in airbyte-ops CLI, falling back to --language java
+          # NOTE: --local-cdk is not yet supported in airbyte-ops CLI, falling back to --language=java
           echo -n "jvm_connectors_matrix=" >> $GITHUB_OUTPUT
           if [[ "${{ steps.cdk-changes.outputs.java-cdk == 'true' }}" == "true" ]]; then
             # TODO: Replace with --local-cdk once supported in airbyte-ops CLI
-            get_connectors --language java | tee -a $GITHUB_OUTPUT
+            get_connectors --language=java | tee -a $GITHUB_OUTPUT
           else
-            get_connectors --language java | tee -a $GITHUB_OUTPUT
+            get_connectors --language=java | tee -a $GITHUB_OUTPUT
           fi
 
           echo -n "non_jvm_connectors_matrix=" >> $GITHUB_OUTPUT
-          get_connectors --exclude-language java | tee -a $GITHUB_OUTPUT
+          get_connectors --exclude-language=java | tee -a $GITHUB_OUTPUT
 
       - name: Set JVM Runner Type
         id: set-jvm-runner-type

@@ -147,7 +147,6 @@ jobs:
 
           uvx --from=airbyte-internal-ops airbyte-ops repo connector bump-version \
             --name="${{ matrix.connector }}" \
-            --repo-path=. \
             --bump-type="${{ github.event.inputs.type }}" \
             --changelog-message="$CHANGELOG_MSG" \
             --pr-number=${{ github.event.inputs.pr }}
