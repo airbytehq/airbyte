@@ -72,16 +72,10 @@ jobs:
         id: generate-matrix
         run: |
           # Get the list of modified connectors using airbyte-ops CLI
-          MATRIX_JSON=$(uvx --from airbyte-internal-ops airbyte-ops repo connector list . \
+          # Output is already in GitHub Actions matrix format: {"include": [...]}
+          echo "connectors_matrix=$(uvx --from airbyte-internal-ops airbyte-ops repo connector list . \
             --modified-only \
-            --output-format json-gh-matrix)
-
-          # Transform from {"include": [...]} to {"connector": [...]} format for compatibility
-          if [ "$(echo "$MATRIX_JSON" | jq '.include | length')" -eq 0 ]; then
-            echo "connectors_matrix={\"connector\": [\"\"]}" | tee -a $GITHUB_OUTPUT
-          else
-            echo "connectors_matrix=$(echo "$MATRIX_JSON" | jq '{connector: [.include[].connector]}')" | tee -a $GITHUB_OUTPUT
-          fi
+            --output-format json-gh-matrix)" | tee -a $GITHUB_OUTPUT
 
     outputs:
       connectors-matrix: ${{ steps.generate-matrix.outputs.connectors_matrix }}
