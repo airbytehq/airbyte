@@ -8,9 +8,9 @@ import ContainerProviders from '@site/static/_docker_image_registries.md';
 
 # Implementation Guide
 
-Once you [have a license key](https://airbyte.com/company/talk-to-sales), you can deploy [Self-Managed Enterprise](./README.md) using the following instructions.
+Once you have a license key, deploy Self-Managed Enterprise using the following instructions.
 
-Airbyte Self-Managed Enterprise must be deployed using Kubernetes. This is to enable Airbyte's best performance and scale. The core Airbyte components (`server`, `workload-launcher`) run as deployments. The `workload-launcher` is responsible for managing connector-related pods (`check`, `discover`, `read`, `write`, `orchestrator`).
+Airbyte Self-Managed Enterprise must be deployed using Kubernetes. The core Airbyte components (`server`, `workload-launcher`) run as deployments. The `workload-launcher` is responsible for managing connector-related pods (`check`, `discover`, `read`, `write`, `orchestrator`).
 
 :::note
 Airbyte has begun rolling out a new Helm chart called Helm chart V2. The instructions on this page describe both V1 and V2 requirements. Airbyte recommends using Helm chart V2 from the start. The new chart will become mandatory in the future and you can avoid having to upgrade later.

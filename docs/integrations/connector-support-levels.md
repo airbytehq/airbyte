@@ -2,55 +2,56 @@
 products: all
 ---
 
+import { FontAwesomeIcon } from "@fortawesome/react-fontawesome";
+import { faCircleXmark } from "@fortawesome/free-solid-svg-icons";
+import { faCircleCheck } from "@fortawesome/free-solid-svg-icons";
+import { faSlack } from "@fortawesome/free-brands-svg-icons";
+
 # Connector support levels
 
-The following table describes the support levels of Airbyte connectors.
+This page describes the different types of connectors in Airbyte, how they're supported and maintained, and who can use them.
 
-|                                      | Airbyte     | Enterprise             | Marketplace                                                                                                                | Custom         |
-| ------------------------------------ | ----------- | ---------------------- | -------------------------------------------------------------------------------------------------------------------------- | -------------- |
-| **Who maintains them?**              | Airbyte     | Airbyte                | The community, using the [Connector Builder](https://docs.airbyte.com/connector-development/connector-builder-ui/overview) | You            |
-| **Production readiness**             | Guaranteed  | Guaranteed             | No SLAs, docs show their popularity and success rate data                                                                  | Not guaranteed |
-| **Support: Cloud**                   | Supported\* | Supported\*            | No Support                                                                                                                 | Supported\*\*  |
-| **Support: Powered by Airbyte**      | Supported\* | Supported\*            | No Support                                                                                                                 | Supported\*\*  |
-| **Support: Self-Managed Enterprise** | Supported\* | Supported\*            | No Support                                                                                                                 | Supported\*\*  |
-| **Support: Core**  | Slack only  | N/A                    | No Support                                                                                                                 | Slack only     |
-| **Who can use them**                 | Everyone    | Extra license required | Everyone                                                                                                                   | You            |
+## Support by Airbyte plan
 
-\*For Airbyte Connectors, Official Support SLAs are only available to customers with Premium
-Support included in their contract. Otherwise, please use our support portal and we will address
-your issues as soon as possible.
+Your service level depends on your support plan and contract. If you need stricter SLAs, let the sales team know.
 
-\*\*For Custom connectors, Official Support SLAs are only available to customers with Premium
-Support included in their contract. This support is provided with best efforts, and
-maintenance/upgrades are owned by the customer.
+| Support level   | Core                                                | Cloud                                                                    | Self-Managed Enterprise                                                  | Notes                                  |
+| --------------- | --------------------------------------------------- | ------------------------------------------------------------------------ | ------------------------------------------------------------------------ | -------------------------------------- |
+| **Airbyte**     | <FontAwesomeIcon icon={faSlack} /> Slack            | <FontAwesomeIcon icon={faCircleCheck} className="good-icon" /> Supported | <FontAwesomeIcon icon={faCircleCheck} className="good-icon" /> Supported |                                        |
+| **Enterprise**  | <FontAwesomeIcon icon={faCircleXmark} /> N/A        | <FontAwesomeIcon icon={faCircleCheck} className="good-icon" /> Supported | <FontAwesomeIcon icon={faCircleCheck} className="good-icon" /> Supported |                                        |
+| **Marketplace** | <FontAwesomeIcon icon={faCircleXmark} /> No support | <FontAwesomeIcon icon={faCircleXmark} /> No support                      | <FontAwesomeIcon icon={faCircleXmark} /> No support                      |                                        |
+| **Custom**      | <FontAwesomeIcon icon={faSlack} /> Slack            | <FontAwesomeIcon icon={faCircleCheck} className="good-icon" /> Supported | <FontAwesomeIcon icon={faCircleCheck} className="good-icon" /> Supported | Airbyte makes its best effort to help. |
+
+Read the rest of this article to understand each support level in more detail.
 
 ## Airbyte connectors
 
 **Airbyte** connectors are maintained and supported by Airbyte to a high quality standard. These connectors:
 
-- Are tested, vetted, and production ready.
-- Are officially supported by Airbyte and are available to all users.
-- Experience few breaking changes. In the event an upgrade is needed, you receive an adequate upgrade window.
+- Are tested, vetted, and production ready for everyone.
+- Are officially supported and maintained by Airbyte.
+- Experience few breaking changes. In the event you need to upgrade, you receive an adequate upgrade window.
 
 ## Enterprise connectors
 
-**Enterprise** Connectors are premium connectors available exclusively for Self-Managed Enterprise and Pro customers at **an additional cost**. These connectors:
+**Enterprise** Connectors are premium connectors available exclusively for enterprise customers. These connectors:
 
-- Are built and maintained by the Airbyte team.
+- Are tested, vetted, and production ready for enterprise customers only, at **an additional cost**.
+- Are officially supported and maintained by Airbyte.
+- Experience few breaking changes. In the event you need to upgrade, you receive an adequate upgrade window.
 - Provide enhanced capabilities and support for critical enterprise systems.
-- Are not available to Open Source or standard Cloud customers.
-- Support for larger data sets, parallelism for faster data transfers, and are covered under Airbyte's support SLAs.
+- Support larger data sets and parallelism for faster data transfers
 
 ## Marketplace connectors
 
 **Marketplace** connectors are maintained by Airbyte's community members. These connectors:
 
-- Are not maintained by Airbyte.
-- Do not have support SLAs.
+- Are maintained by [by people like you](/community/contributing-to-airbyte/) for everyone to use.
+- Aren't officially supported by Airbyte.
 - Should be used with caution in production.
-- Might not be feature complete and may experience backward-incompatible, breaking changes with no notice.
-- Are available to everyone.
-- Can [be improved by people like you](/community/contributing-to-airbyte/).
+- Might not be feature complete and might experience backward-incompatible, breaking changes with no notice.
+
+Connector documentation shows the usage and success rate to help you decide on each connector's reliability.
 
 ## Custom connectors
 

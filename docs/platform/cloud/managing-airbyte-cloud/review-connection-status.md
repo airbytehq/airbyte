@@ -31,7 +31,7 @@ Each connection you've set up in your Workspace has a **Status** page that displ
 ![Connection Status](./assets/cloud-status-page.png)
 
 :::note
-The Streams status and Records loaded graphs are only available in Airbyte Cloud and Airbyte Self-Managed Enterprise.
+The Streams status and Records loaded graphs are only available in Airbyte Cloud and Self-Managed Enterprise.
 :::
 
 To view the connection status:
