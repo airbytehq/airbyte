@@ -189,8 +189,8 @@ jobs:
           echo "docker_image=airbyte/$CONNECTOR_NAME" >> $GITHUB_OUTPUT
           echo "docker_tag=$DOCKER_TAG" >> $GITHUB_OUTPUT
           echo "dockerhub_url=https://hub.docker.com/layers/airbyte/$CONNECTOR_NAME/$DOCKER_TAG" >> $GITHUB_OUTPUT
-          echo "oss_registry_url=https://connectors.airbyte.com/files/registries/v0/oss_registry.json" >> $GITHUB_OUTPUT
-          echo "cloud_registry_url=https://connectors.airbyte.com/files/registries/v0/cloud_registry.json" >> $GITHUB_OUTPUT
+          echo "oss_registry_url=https://connectors.airbyte.com/files/metadata/airbyte/$CONNECTOR_NAME/$DOCKER_TAG/oss.json" >> $GITHUB_OUTPUT
+          echo "cloud_registry_url=https://connectors.airbyte.com/files/metadata/airbyte/$CONNECTOR_NAME/$DOCKER_TAG/cloud.json" >> $GITHUB_OUTPUT
 
       - name: Append completion comment
         uses: peter-evans/create-or-update-comment@71345be0265236311c031f5c7866368bd1eff043 # v4.0.0
