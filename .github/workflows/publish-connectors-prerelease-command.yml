@@ -50,6 +50,7 @@ jobs:
       pr-number: ${{ steps.job-vars.outputs.pr-number }}
       comment-id: ${{ steps.append-start-comment.outputs.comment-id }}
       short-sha: ${{ steps.get-sha.outputs.short-sha }}
+      connector-version: ${{ steps.connector-version.outputs.connector-version }}
     steps:
       - name: Checkout to get commit SHA
         uses: actions/checkout@v4
@@ -68,6 +69,21 @@ jobs:
         run: |
           echo "run-url=https://github.com/${{ github.repository }}/actions/runs/$GITHUB_RUN_ID" >> $GITHUB_OUTPUT
           echo "pr-number=${{ inputs.pr }}" >> $GITHUB_OUTPUT
+
+      - name: Determine connector version
+        id: connector-version
+        if: inputs.connector != ''
+        run: |
+          set -euo pipefail
+          CONNECTOR_DIR="airbyte-integrations/connectors/${{ inputs.connector }}"
+          VERSION=""
+          if [[ -f "$CONNECTOR_DIR/manifest.yaml" ]]; then
+            VERSION=$(grep -E '^\s*version:' "$CONNECTOR_DIR/manifest.yaml" | head -n1 | awk '{print $2}' | tr -d '"')
+          fi
+          if [[ -z "$VERSION" ]] && [[ -f "$CONNECTOR_DIR/metadata.yaml" ]]; then
+            VERSION=$(grep -E '^\s*dockerImageTag:' "$CONNECTOR_DIR/metadata.yaml" | head -n1 | awk '{print $2}' | tr -d '"')
+          fi
+          echo "connector-version=$VERSION" >> "$GITHUB_OUTPUT"
 
       - name: Append start comment
         id: append-start-comment
@@ -125,9 +141,17 @@ jobs:
         run: |
           CONNECTOR_NAME="${{ inputs.connector || 'CONNECTOR_NAME' }}"
           SHORT_SHA="${{ needs.init.outputs.short-sha }}"
+          VERSION="${{ needs.init.outputs.connector-version }}"
+
+          if [[ -n "$VERSION" ]]; then
+            DOCKER_TAG="${VERSION}-dev.${SHORT_SHA}"
+          else
+            DOCKER_TAG="{version}-dev.${SHORT_SHA}"
+          fi
+
           echo "connector_name=$CONNECTOR_NAME" >> $GITHUB_OUTPUT
           echo "docker_image=airbyte/$CONNECTOR_NAME" >> $GITHUB_OUTPUT
-          echo "docker_tag={version}-dev.$SHORT_SHA" >> $GITHUB_OUTPUT
+          echo "docker_tag=$DOCKER_TAG" >> $GITHUB_OUTPUT
           echo "dockerhub_url=https://hub.docker.com/r/airbyte/$CONNECTOR_NAME/tags" >> $GITHUB_OUTPUT
           echo "oss_registry_url=https://connectors.airbyte.com/files/registries/v0/oss_registry.json" >> $GITHUB_OUTPUT
           echo "cloud_registry_url=https://connectors.airbyte.com/files/registries/v0/cloud_registry.json" >> $GITHUB_OUTPUT
