@@ -86,21 +86,44 @@ jobs:
               - 'airbyte-cdk/java/**/**/src/main/**/*'
               - 'airbyte-cdk/bulk/**/**/src/main/**/*'
 
+      - name: Install uv
+        uses: astral-sh/setup-uv@d0cc045d04ccac9d8b7881df0226f9e82c39688e # v6.8.0
+
       - name: Generate Connector Matrix from Changes
         id: generate-matrix
         run: |
-          # Get the list of modified connectors
-          echo "connectors_matrix=$(./poe-tasks/get-modified-connectors.sh --json)" | tee -a $GITHUB_OUTPUT
+          # Helper function to get connectors and format for matrix
+          get_connectors() {
+            local extra_args="$1"
+            local result
+            result=$(uvx --from airbyte-internal-ops airbyte-ops repo connector list . \
+              --modified-only \
+              --output-format json-gh-matrix \
+              $extra_args)
+
+            # Transform from {"include": [...]} to {"connector": [...]} format for compatibility
+            # Handle empty matrix case
+            if [ "$(echo "$result" | jq '.include | length')" -eq 0 ]; then
+              echo '{"connector": [""]}'
+            else
+              echo "$result" | jq '{connector: [.include[].connector]}'
+            fi
+          }
+
+          # Get the list of all modified connectors
+          echo "connectors_matrix=$(get_connectors "")" | tee -a $GITHUB_OUTPUT
 
           # If local-cdk-changed is true, get Java connectors with useLocalCdk = true
           # Otherwise, get modified Java connectors
+          # NOTE: --local-cdk is not yet supported in airbyte-ops CLI, falling back to --language java
           if [[ "${{ steps.cdk-changes.outputs.java-cdk == 'true' }}" == "true" ]]; then
-            echo "jvm_connectors_matrix=$(./poe-tasks/get-modified-connectors.sh --json --local-cdk)" | tee -a $GITHUB_OUTPUT
+            # TODO: Replace with --local-cdk once supported in airbyte-ops CLI
+            echo "jvm_connectors_matrix=$(get_connectors "--language java")" | tee -a $GITHUB_OUTPUT
           else
-            echo "jvm_connectors_matrix=$(./poe-tasks/get-modified-connectors.sh --json --java)" | tee -a $GITHUB_OUTPUT
+            echo "jvm_connectors_matrix=$(get_connectors "--language java")" | tee -a $GITHUB_OUTPUT
           fi
 
-          echo "non_jvm_connectors_matrix=$(./poe-tasks/get-modified-connectors.sh --json --no-java)" | tee -a $GITHUB_OUTPUT
+          echo "non_jvm_connectors_matrix=$(get_connectors "--exclude-language java")" | tee -a $GITHUB_OUTPUT
 
       - name: Set JVM Runner Type
         id: set-jvm-runner-type

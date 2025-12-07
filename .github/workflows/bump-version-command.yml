@@ -39,9 +39,16 @@ concurrency:
   cancel-in-progress: true
 
 jobs:
-  bump-version:
-    name: "Bump version of connectors in this PR"
+  generate-matrix:
+    name: "Generate connector matrix"
     runs-on: ubuntu-24.04
+    outputs:
+      connectors-matrix: ${{ steps.generate-matrix.outputs.connectors_matrix }}
+      repo: ${{ steps.job-vars.outputs.repo }}
+      branch: ${{ steps.job-vars.outputs.branch }}
+      pr_title: ${{ steps.job-vars.outputs.pr_title }}
+      run-url: ${{ steps.job-vars.outputs.run-url }}
+      comment-id: ${{ steps.first-comment-action.outputs.comment-id }}
     steps:
       - name: Get job variables
         id: job-vars
@@ -64,7 +71,7 @@ jobs:
         with:
           repository: ${{ steps.job-vars.outputs.repo }}
           ref: ${{ steps.job-vars.outputs.branch }}
-          fetch-depth: 1
+          fetch-depth: 0
           # Important that token is a PAT so that CI checks are triggered again.
           # Without this we would be forever waiting on required checks to pass.
           token: ${{ secrets.GH_PAT_APPROVINGTON_OCTAVIA }}
@@ -83,35 +90,76 @@ jobs:
 
             [1]: ${{ steps.job-vars.outputs.run-url }}
 
+      - name: Install uv
+        uses: astral-sh/setup-uv@d0cc045d04ccac9d8b7881df0226f9e82c39688e # v6.8.0
+
+      - name: Generate connector matrix
+        id: generate-matrix
+        run: |
+          # Get modified connectors using airbyte-ops CLI
+          MATRIX_JSON=$(uvx --from airbyte-internal-ops airbyte-ops repo connector list . \
+            --modified-only \
+            --pr ${{ github.event.inputs.pr }} \
+            --output-format json-gh-matrix)
+
+          # Handle empty matrix case - add empty connector for no-op run
+          if [ "$(echo "$MATRIX_JSON" | jq '.include | length')" -eq 0 ]; then
+            MATRIX_JSON='{"include": [{"connector": ""}]}'
+          fi
+
+          echo "connectors_matrix=$MATRIX_JSON" >> $GITHUB_OUTPUT
+          echo "Matrix: $MATRIX_JSON"
+
+  bump-version:
+    name: "Bump ${{ matrix.connector }}${{ matrix.connector == '' && ' (no connectors modified)' || '' }}"
+    needs: [generate-matrix]
+    runs-on: ubuntu-24.04
+    strategy:
+      matrix: ${{ fromJson(needs.generate-matrix.outputs.connectors-matrix) }}
+      fail-fast: false
+    steps:
+      - name: Checkout Airbyte
+        if: matrix.connector != ''
+        uses: actions/checkout@08eba0b27e820071cde6df949e0beb9ba4906955 # v4.3.0
+        with:
+          repository: ${{ needs.generate-matrix.outputs.repo }}
+          ref: ${{ needs.generate-matrix.outputs.branch }}
+          fetch-depth: 1
+          token: ${{ secrets.GH_PAT_APPROVINGTON_OCTAVIA }}
+
+      - name: Install uv
+        if: matrix.connector != ''
+        uses: astral-sh/setup-uv@d0cc045d04ccac9d8b7881df0226f9e82c39688e # v6.8.0
+
       - name: Log changelog source
+        if: matrix.connector != ''
         run: |
           if [ -n "${{ github.event.inputs.changelog }}" ]; then
             echo "Using user-provided changelog: ${{ github.event.inputs.changelog }}"
           else
-            echo "Using PR title as changelog: ${{ steps.job-vars.outputs.pr_title }}"
+            echo "Using PR title as changelog: ${{ needs.generate-matrix.outputs.pr_title }}"
           fi
 
-      - name: Run airbyte-ci connectors --modified bump-version
-        uses: ./.github/actions/run-airbyte-ci
-        continue-on-error: true
-        with:
-          context: "manual"
-          gcs_credentials: ${{ secrets.METADATA_SERVICE_PROD_GCS_CREDENTIALS }}
-          sentry_dsn: ${{ secrets.SENTRY_AIRBYTE_CI_DSN }}
-          github_token: ${{ steps.get-app-token.outputs.token }}
-          git_repo_url: https://github.com/${{ steps.job-vars.outputs.repo }}.git
-          subcommand: |
-            connectors --modified bump-version \
-              ${{ github.event.inputs.type }} \
-              "${{ github.event.inputs.changelog != '' && github.event.inputs.changelog || steps.job-vars.outputs.pr_title }}" \
-              --pr-number ${{ github.event.inputs.pr }}
+      - name: Bump version for ${{ matrix.connector }}
+        if: matrix.connector != ''
+        run: |
+          CHANGELOG_MSG="${{ github.event.inputs.changelog != '' && github.event.inputs.changelog || needs.generate-matrix.outputs.pr_title }}"
+
+          uvx --from airbyte-internal-ops airbyte-ops repo connector bump-version \
+            --name "${{ matrix.connector }}" \
+            --repo-path . \
+            --bump-type "${{ github.event.inputs.type }}" \
+            --changelog-message "$CHANGELOG_MSG" \
+            --pr-number ${{ github.event.inputs.pr }}
 
       # This is helpful in the case that we change a previously committed generated file to be ignored by git.
       - name: Remove any files that have been gitignored
+        if: matrix.connector != ''
         run: git ls-files -i -c --exclude-from=.gitignore | xargs -r git rm --cached
 
       # Check for changes in git
       - name: Check for changes
+        if: matrix.connector != ''
         id: git-diff
         run: |
           git diff --quiet && echo "No changes to commit" || echo "changes=true" >> $GITHUB_OUTPUT
@@ -120,43 +168,49 @@ jobs:
       # Commit changes (if any)
       - name: Commit changes
         id: commit-step
-        if: steps.git-diff.outputs.changes == 'true'
+        if: matrix.connector != '' && steps.git-diff.outputs.changes == 'true'
         run: |
           git config --global user.name "Octavia Squidington III"
           git config --global user.email "octavia-squidington-iii@users.noreply.github.com"
           git add .
-          git commit -m "chore: bump-version ${{ github.event.inputs.bump-type }}"
+          git commit -m "chore: bump-version ${{ matrix.connector }} ${{ github.event.inputs.type }}"
           echo "sha=$(git rev-parse HEAD)" >> $GITHUB_OUTPUT
 
-      - name: Push changes to '(${{ steps.job-vars.outputs.repo }})'
-        if: steps.git-diff.outputs.changes == 'true'
+      - name: Push changes
+        if: matrix.connector != '' && steps.git-diff.outputs.changes == 'true'
         run: |
-          git remote add contributor https://github.com/${{ steps.job-vars.outputs.repo }}.git
-          git push contributor HEAD:'${{ steps.job-vars.outputs.branch }}'
+          git remote add contributor https://github.com/${{ needs.generate-matrix.outputs.repo }}.git || true
+          git push contributor HEAD:'${{ needs.generate-matrix.outputs.branch }}'
 
+  report-status:
+    name: "Report status"
+    needs: [generate-matrix, bump-version]
+    runs-on: ubuntu-24.04
+    if: always()
+    steps:
       - name: Append success comment
         uses: peter-evans/create-or-update-comment@71345be0265236311c031f5c7866368bd1eff043 # v4.0.0
-        if: steps.git-diff.outputs.changes == 'true'
+        if: needs.bump-version.result == 'success'
         with:
-          comment-id: ${{ steps.first-comment-action.outputs.comment-id }}
+          comment-id: ${{ needs.generate-matrix.outputs.comment-id }}
           reactions: hooray
           body: |
-            > ✅ Changes applied successfully. (${{ steps.commit-step.outputs.sha }})
-
-      - name: Append success comment (no-op)
-        uses: peter-evans/create-or-update-comment@71345be0265236311c031f5c7866368bd1eff043 # v4.0.0
-        if: steps.git-diff.outputs.changes != 'true'
-        with:
-          comment-id: ${{ steps.first-comment-action.outputs.comment-id }}
-          reactions: "-1"
-          body: |
-            > 🔴 Job completed successfully (no changes, this is sus).
+            > ✅ Bump version completed successfully.
 
       - name: Append failure comment
         uses: peter-evans/create-or-update-comment@71345be0265236311c031f5c7866368bd1eff043 # v4.0.0
-        if: failure()
+        if: needs.bump-version.result == 'failure'
         with:
-          comment-id: ${{ steps.first-comment-action.outputs.comment-id }}
+          comment-id: ${{ needs.generate-matrix.outputs.comment-id }}
           reactions: confused
           body: |
-            > 🔴 Job failed.
+            > 🔴 Bump version job failed.
+
+      - name: Append skipped comment
+        uses: peter-evans/create-or-update-comment@71345be0265236311c031f5c7866368bd1eff043 # v4.0.0
+        if: needs.bump-version.result == 'skipped'
+        with:
+          comment-id: ${{ needs.generate-matrix.outputs.comment-id }}
+          reactions: "-1"
+          body: |
+            > 🔴 No connectors found to bump.
