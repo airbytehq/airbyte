@@ -90,9 +90,9 @@ jobs:
 
           echo "No connector provided, detecting modified connectors..."
           # Use airbyte-ops CLI to get modified connectors
-          MODIFIED_JSON=$(uvx --from airbyte-internal-ops airbyte-ops repo connector list . \
+          MODIFIED_JSON=$(uvx --from=airbyte-internal-ops airbyte-ops repo connector list \
             --modified-only \
-            --output-format json-gh-matrix)
+            --output-format=json-gh-matrix)
           echo "Modified connectors JSON: $MODIFIED_JSON"
 
           # Extract connector names from the include array

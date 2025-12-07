@@ -97,10 +97,10 @@ jobs:
         id: generate-matrix
         run: |
           # Get modified connectors using airbyte-ops CLI
-          MATRIX_JSON=$(uvx --from airbyte-internal-ops airbyte-ops repo connector list . \
+          MATRIX_JSON=$(uvx --from=airbyte-internal-ops airbyte-ops repo connector list \
             --modified-only \
-            --pr ${{ github.event.inputs.pr }} \
-            --output-format json-gh-matrix)
+            --pr=${{ github.event.inputs.pr }} \
+            --output-format=json-gh-matrix)
 
           # Handle empty matrix case - add empty connector for no-op run
           if [ "$(echo "$MATRIX_JSON" | jq '.include | length')" -eq 0 ]; then
@@ -145,12 +145,12 @@ jobs:
         run: |
           CHANGELOG_MSG="${{ github.event.inputs.changelog != '' && github.event.inputs.changelog || needs.generate-matrix.outputs.pr_title }}"
 
-          uvx --from airbyte-internal-ops airbyte-ops repo connector bump-version \
-            --name "${{ matrix.connector }}" \
-            --repo-path . \
-            --bump-type "${{ github.event.inputs.type }}" \
-            --changelog-message "$CHANGELOG_MSG" \
-            --pr-number ${{ github.event.inputs.pr }}
+          uvx --from=airbyte-internal-ops airbyte-ops repo connector bump-version \
+            --name="${{ matrix.connector }}" \
+            --repo-path=. \
+            --bump-type="${{ github.event.inputs.type }}" \
+            --changelog-message="$CHANGELOG_MSG" \
+            --pr-number=${{ github.event.inputs.pr }}
 
       # This is helpful in the case that we change a previously committed generated file to be ignored by git.
       - name: Remove any files that have been gitignored

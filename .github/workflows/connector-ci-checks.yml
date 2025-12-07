@@ -94,26 +94,29 @@ jobs:
         run: |
           # Helper function to get connectors - output is already in GitHub Actions matrix format
           get_connectors() {
-            uvx --from airbyte-internal-ops airbyte-ops repo connector list . \
+            uvx --from=airbyte-internal-ops airbyte-ops repo connector list \
               --modified-only \
-              --output-format json-gh-matrix \
-              $@
+              --output-format=json-gh-matrix \
+              "$@"
           }
 
           # Get the list of all modified connectors
-          echo "connectors_matrix=$(get_connectors)" | tee -a $GITHUB_OUTPUT
+          echo -n "connectors_matrix=" >> $GITHUB_OUTPUT
+          get_connectors | tee -a $GITHUB_OUTPUT
 
           # If local-cdk-changed is true, get Java connectors with useLocalCdk = true
           # Otherwise, get modified Java connectors
           # NOTE: --local-cdk is not yet supported in airbyte-ops CLI, falling back to --language java
+          echo -n "jvm_connectors_matrix=" >> $GITHUB_OUTPUT
           if [[ "${{ steps.cdk-changes.outputs.java-cdk == 'true' }}" == "true" ]]; then
             # TODO: Replace with --local-cdk once supported in airbyte-ops CLI
-            echo "jvm_connectors_matrix=$(get_connectors --language java)" | tee -a $GITHUB_OUTPUT
+            get_connectors --language java | tee -a $GITHUB_OUTPUT
           else
-            echo "jvm_connectors_matrix=$(get_connectors --language java)" | tee -a $GITHUB_OUTPUT
+            get_connectors --language java | tee -a $GITHUB_OUTPUT
           fi
 
-          echo "non_jvm_connectors_matrix=$(get_connectors --exclude-language java)" | tee -a $GITHUB_OUTPUT
+          echo -n "non_jvm_connectors_matrix=" >> $GITHUB_OUTPUT
+          get_connectors --exclude-language java | tee -a $GITHUB_OUTPUT
 
       - name: Set JVM Runner Type
         id: set-jvm-runner-type
