@@ -133,7 +133,7 @@
     "docusaurus-theme-openapi-docs": "^4.5.1",
     "dotenv": "^16.4.5",
     "html-loader": "^4.2.0",
-    "js-yaml": "^4.1.0",
+    "js-yaml": "^4.1.1",
     "json-schema-faker": "^0.5.8",
     "lodash": "^4.17.21",
     "node-fetch": "^3.3.2",
