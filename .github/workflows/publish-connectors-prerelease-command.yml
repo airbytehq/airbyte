@@ -120,6 +120,18 @@ jobs:
             echo "status_text=UNKNOWN" >> $GITHUB_OUTPUT
           fi
 
+      - name: Prepare message variables
+        id: message-vars
+        run: |
+          CONNECTOR_NAME="${{ inputs.connector || 'CONNECTOR_NAME' }}"
+          SHORT_SHA="${{ needs.init.outputs.short-sha }}"
+          echo "connector_name=$CONNECTOR_NAME" >> $GITHUB_OUTPUT
+          echo "docker_image=airbyte/$CONNECTOR_NAME" >> $GITHUB_OUTPUT
+          echo "docker_tag={version}-dev.$SHORT_SHA" >> $GITHUB_OUTPUT
+          echo "dockerhub_url=https://hub.docker.com/r/airbyte/$CONNECTOR_NAME/tags" >> $GITHUB_OUTPUT
+          echo "oss_registry_url=https://connectors.airbyte.com/files/registries/v0/oss_registry.json" >> $GITHUB_OUTPUT
+          echo "cloud_registry_url=https://connectors.airbyte.com/files/registries/v0/cloud_registry.json" >> $GITHUB_OUTPUT
+
       - name: Append completion comment
         uses: peter-evans/create-or-update-comment@71345be0265236311c031f5c7866368bd1eff043 # v4.0.0
         with:
@@ -128,4 +140,11 @@ jobs:
           body: |
             > **Pre-release Publish: ${{ steps.status.outputs.status_text }}** ${{ steps.status.outputs.status_emoji }}
             >
-            > See workflow run for details and published image tags.
+            > **Docker image (pre-release):**
+            > `${{ steps.message-vars.outputs.docker_image }}:${{ steps.message-vars.outputs.docker_tag }}`
+            >
+            > **Docker Hub:** ${{ steps.message-vars.outputs.dockerhub_url }}
+            >
+            > **Registry JSON:**
+            > - [OSS Registry](${{ steps.message-vars.outputs.oss_registry_url }})
+            > - [Cloud Registry](${{ steps.message-vars.outputs.cloud_registry_url }})
