@@ -66,6 +66,38 @@ class WooCommerceRequestBuilder:
     def tax_classes_endpoint(cls, shop: str = SHOP) -> WooCommerceRequestBuilder:
         return cls(resource="taxes/classes", shop=shop)
 
+    @classmethod
+    def tax_rates_endpoint(cls, shop: str = SHOP) -> WooCommerceRequestBuilder:
+        return cls(resource="taxes", shop=shop)
+
+    @classmethod
+    def product_shipping_classes_endpoint(cls, shop: str = SHOP) -> WooCommerceRequestBuilder:
+        return cls(resource="products/shipping_classes", shop=shop)
+
+    @classmethod
+    def shipping_methods_endpoint(cls, shop: str = SHOP) -> WooCommerceRequestBuilder:
+        return cls(resource="shipping_methods", shop=shop)
+
+    @classmethod
+    def system_status_tools_endpoint(cls, shop: str = SHOP) -> WooCommerceRequestBuilder:
+        return cls(resource="system_status/tools", shop=shop)
+
+    @classmethod
+    def refunds_endpoint(cls, order_id: int, shop: str = SHOP) -> WooCommerceRequestBuilder:
+        return cls(resource=f"orders/{order_id}/refunds", shop=shop)
+
+    @classmethod
+    def product_attribute_terms_endpoint(cls, attribute_id: int, shop: str = SHOP) -> WooCommerceRequestBuilder:
+        return cls(resource=f"products/attributes/{attribute_id}/terms", shop=shop)
+
+    @classmethod
+    def shipping_zone_locations_endpoint(cls, zone_id: int, shop: str = SHOP) -> WooCommerceRequestBuilder:
+        return cls(resource=f"shipping/zones/{zone_id}/locations", shop=shop)
+
+    @classmethod
+    def shipping_zone_methods_endpoint(cls, zone_id: int, shop: str = SHOP) -> WooCommerceRequestBuilder:
+        return cls(resource=f"shipping/zones/{zone_id}/methods", shop=shop)
+
     def __init__(self, resource: str, shop: str = SHOP) -> None:
         self._resource = resource
         self._shop = shop
