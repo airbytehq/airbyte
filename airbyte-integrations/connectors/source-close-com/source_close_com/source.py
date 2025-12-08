@@ -6,7 +6,6 @@
 from datetime import datetime, timedelta
 import logging
 from abc import ABC
-from base64 import b64encode
 from typing import Any, Iterable, List, Mapping, MutableMapping, Optional, Tuple
 from urllib.parse import parse_qsl, urlparse
 
@@ -14,8 +13,10 @@ import requests
 from airbyte_cdk.sources import AbstractSource
 from airbyte_cdk.sources.streams import Stream
 from airbyte_cdk.sources.streams.http import HttpStream
-from airbyte_cdk.sources.streams.http.requests_native_auth import TokenAuthenticator
 from airbyte_cdk.sources.utils.transform import TransformConfig, TypeTransformer
+from source_close_com.utils import get_data_type
+from source_close_com.custom_objects import generate_custom_objects
+from source_close_com.authenticator import Base64HttpAuthenticator
 
 logger = logging.getLogger("airbyte")
 
@@ -91,26 +92,6 @@ class CloseComStream(HttpStream, ABC):
         if error:
             backoff_time = error.get("rate_reset", backoff_time)
         return backoff_time
-
-
-def get_data_type(data: Mapping[str, Any]) -> Mapping[str, Any]:
-    # Full list of data types here: https://developer.close.com/resources/custom-fields/
-    data_type = data.get("type")
-    match data_type:
-        case "text" | "choices" | "textarea":
-            return {"type": ["null", "string"]}
-        case "number":
-            return {"type": ["null", "number"]}
-        case "date":
-            return {"type": ["null", "string"], "format": "date"}
-        case "datetime":
-            return {"type": ["null", "string"], "format": "date-time"}
-        case "user" | "custom_object":
-            return {"type": ["null", "string", "number"]}
-        case "hidden":
-            return {"type": ["null", "string", "number", "boolean"]}
-        case _:
-            return {"type": ["string"]}
 
 
 class CloseComStreamCustomFields(CloseComStream):
@@ -710,18 +691,6 @@ class CustomActivities(CloseComStream):
         return "custom_activity"
 
 
-class Base64HttpAuthenticator(TokenAuthenticator):
-    """
-    :auth - tuple with (api_key as username, password string). Password should be empty.
-    https://developer.close.com/#authentication
-    """
-
-    def __init__(self, auth: Tuple[str, str], auth_method: str = "Basic"):
-        auth_string = f"{auth[0]}:{auth[1]}".encode("latin1")
-        b64_encoded = b64encode(auth_string).decode("ascii")
-        super().__init__(token=b64_encoded, auth_method=auth_method)
-
-
 class SourceCloseCom(AbstractSource):
     def check_connection(self, logger: logging.Logger, config: Mapping[str, Any]) -> Tuple[bool, Any]:
         try:
@@ -739,6 +708,7 @@ class SourceCloseCom(AbstractSource):
             "authenticator": authenticator,
             "start_date": config.get("start_date", (datetime.now() - timedelta(days=365)).strftime("%Y-%m-%d")),
         }
+        custom_objects = generate_custom_objects(authenticator, args)
         return [
             CreatedActivities(**args),
             OpportunityStatusChangeActivities(**args),
@@ -786,4 +756,5 @@ class SourceCloseCom(AbstractSource):
             EditBulkActions(**args),
             IntegrationLinks(**args),
             CustomActivities(**args),
+            *custom_objects,
         ]
