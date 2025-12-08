@@ -7,7 +7,9 @@ package io.airbyte.cdk.load.component
 import io.airbyte.cdk.load.data.AirbyteValue
 import io.airbyte.cdk.load.data.DateValue
 import io.airbyte.cdk.load.data.IntegerValue
+import io.airbyte.cdk.load.data.NullValue
 import io.airbyte.cdk.load.data.NumberValue
+import io.airbyte.cdk.load.data.StringValue
 import io.airbyte.cdk.load.data.TimeWithTimezoneValue
 import io.airbyte.cdk.load.data.TimeWithoutTimezoneValue
 import io.airbyte.cdk.load.data.TimestampWithTimezoneValue
@@ -569,6 +571,35 @@ object DataCoercionDateFixtures {
     @JvmStatic fun commonWarehouse() = commonWarehouse.toArgs()
 }
 
+object DataCoercionStringFixtures {
+    const val EMPTY_STRING = "empty string"
+    const val SHORT_STRING = "short string"
+    const val LONG_STRING = "long string"
+    const val SPECIAL_CHARS_STRING = "special chars string"
+
+    val strings =
+        listOf(
+            test(NULL, NullValue, null),
+            test(EMPTY_STRING, StringValue(""), ""),
+            test(SHORT_STRING, StringValue("foo"), "foo"),
+            // Implementers may override this to test their destination-specific limits.
+            // The default value is 8MB + 1 byte (slightly longer than snowflake's varchar limit).
+            test(
+                LONG_STRING,
+                StringValue("a".repeat(16777216 + 1)),
+                null,
+                Reason.DESTINATION_FIELD_SIZE_LIMITATION
+            ),
+            test(
+                SPECIAL_CHARS_STRING,
+                StringValue("`~!@#$%^&*()-=_+[]\\{}|o'O\",./<>?)Δ⅀↑∀"),
+                "`~!@#$%^&*()-=_+[]\\{}|o'O\",./<>?)Δ⅀↑∀"
+            ),
+        )
+
+    @JvmStatic fun strings() = strings.toArgs()
+}
+
 fun List<DataCoercionFixture>.toArgs(): List<Arguments> =
     this.map { Arguments.argumentSet(it.name, it.inputValue, it.outputValue, it.changeReason) }
         .toList()
@@ -640,3 +671,5 @@ fun test(
     outputValue: Any?,
     changeReason: Reason? = null,
 ) = DataCoercionFixture(name, inputValue, outputValue, changeReason)
+
+const val NULL = "null"

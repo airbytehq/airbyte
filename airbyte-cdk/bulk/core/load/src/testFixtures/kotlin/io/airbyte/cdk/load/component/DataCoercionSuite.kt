@@ -11,6 +11,7 @@ import io.airbyte.cdk.load.data.DateType
 import io.airbyte.cdk.load.data.FieldType
 import io.airbyte.cdk.load.data.IntegerType
 import io.airbyte.cdk.load.data.NumberType
+import io.airbyte.cdk.load.data.StringType
 import io.airbyte.cdk.load.data.TimeTypeWithTimezone
 import io.airbyte.cdk.load.data.TimeTypeWithoutTimezone
 import io.airbyte.cdk.load.data.TimestampTypeWithTimezone
@@ -171,6 +172,22 @@ interface DataCoercionSuite {
             expectedValue,
             // If your destination is nulling/truncating booleans... that's almost definitely a bug
             expectedChangeReason = null,
+        )
+    }
+
+    /** Fixtures are defined in [DataCoercionStringFixtures]. */
+    fun `handle string values`(
+        inputValue: AirbyteValue,
+        expectedValue: Any?,
+        expectedChangeReason: Reason?
+    ) = runTest {
+        harness.testValueCoercion(
+            coercer,
+            columnNameMapping,
+            FieldType(StringType, nullable = true),
+            inputValue,
+            expectedValue,
+            expectedChangeReason,
         )
     }
 }
