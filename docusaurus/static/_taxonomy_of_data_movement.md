@@ -1,6 +1,6 @@
-People think about different types of data movement with a lot of nuance. At a high level, Airbyte thinks about them like the table below. Airbyte's data replication platform targets the first row in the table. Airbyte's [agentic data platform](/ai-agents) targets the second row.
+People think about different types of data movement with a lot of nuance. At a high level, Airbyte thinks about them like the table below. Airbyte's data replication platform targets the first row in the table. Airbyte's agentic data platform targets the second row.
 
-While the agentic data platform exists primarily to support AI use cases, it's incorrect to say data replication doesn't support AI. For example, data replication is a core ingredient in Retrieval-Augmented Generation (RAG). Think about your approach to data movement in terms of getting your data into the right shape at the right time. Don't think about the choice as binary. It's safe to assume AI is a stakeholder of some kind in virtually every data movement operation.
+While the agentic data platform exists to support AI use cases, it's incorrect to say data replication doesn't support AI. For example, data replication is a core ingredient in Retrieval-Augmented Generation (RAG). Think about your approach to data movement in terms of getting your data into the right shape at the right time. Don't think about the choice as binary. It's safe to assume AI is a stakeholder of some kind in virtually every data movement operation.
 
 <table>
   <tr>
