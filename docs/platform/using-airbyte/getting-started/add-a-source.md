@@ -40,7 +40,7 @@ After you set up a source connector, you can modify it.
 
 ## Delete a source connector
 
-You can delete a source you no longer need. 
+You can delete a source you no longer need.
 
 :::danger
 Deleting a source connector also deletes any connections that rely on it. Data that's already in your destination isn't affected. However, reestablishing this connection later requires a full re-sync.
@@ -54,21 +54,25 @@ Deleting a source connector also deletes any connections that rely on it. Data t
 
 4. In the dialog, type the name of the connector, then click **Delete**.
 
-## Set up source connectors with AI {#ai-agent}
+## Set up source connectors with AI (BETA) {#ai-agent}
 
-You can set up some connectors with help from an AI agent.
+You can set up some connectors with help from an AI agent, the Connector Setup Assistant. This feature is in currently in beta. It's not enabled for all connectors and may experience minor issues.
 
 ![The Connector Setup Assistant AI Agent](assets/connector-setup-agent.png)
 
 ### Which connectors can use the AI agent
 
-You can use the Connector Setup Assistant with any connector that doesn't support OAuth.
+You can use the Connector Setup Assistant while setting up any source connector that doesn't support OAuth.
 
 ### Handle secrets securely
 
-Occasionally the Connector Setup Assistant asks you to provide a secret, like a password or API key. In these situations, the chat enters a special mode that stores your secret without exposing it to the agent.
+Occasionally the Connector Setup Assistant asks you to provide a secret, like a password or API key. In these situations, the chat enters secret mode and stores your response without exposing it to the agent. You know you're in this mode because the text box turns blue.
 
-### Switching between agent and form modes
+In this mode, don't type anything other than your secret. If you need to ask the AI a question, click **Cancel** to exit secret mode, then continue your conversation in normal mode.
+
+Never provide a secret when secret mode is off. If you accidentally expose a secret to the agent this way, rotate that secret immediately.
+
+### Switch between agent and form modes
 
 To switch between agent and form mode, click **Agent** or **Form** in the top right corner of the screen.
 
@@ -78,13 +82,13 @@ If you're partway through a conversation with the agent and switch to form mode,
 
 The Connector Setup Assistant guides you through configuration by asking questions and explaining what each setting does. Here are some tips for working with it effectively.
 
-When the agent asks for information, respond in natural language. You don't need to format your answers in any special way. For example, if the agent asks for your S3 bucket name, you can simply type the bucket name and press Enter.
+- When the agent asks for information, respond in natural language. You don't need to format your answers in any special way. For example, if the agent asks for your S3 bucket name, you can simply type the bucket name and press Enter.
 
-Be specific and direct when answering questions. If you don't know a value the agent is asking for, say so rather than guessing. The agent can often help you find the information you need or explain where to locate it in your source system.
+- Be specific and direct when answering questions. If you don't know a value the agent is asking for, say so rather than guessing. The agent can often help you find the information you need or explain where to locate it in your source system.
 
-If the agent asks a question you don't understand, ask for clarification. The agent can explain what each configuration option does and why it's needed.
+- If the agent asks a question you don't understand, ask for clarification. The agent can explain what each configuration option does and why it's needed.
 
-For connectors with many configuration options, the agent typically asks about required fields first. It may ask about optional fields later, or you can configure them after setup by modifying the source connector.
+- For connectors with many configuration options, the agent typically asks about required fields first.
 
 ### Completing the setup
 
@@ -102,9 +106,9 @@ The Connector Setup Assistant is currently in beta. Keep these limitations in mi
 
 ### Troubleshooting
 
-If the agent doesn't understand your response, try rephrasing it or providing more context. You can also switch to form mode at any time to see your current progress and complete the configuration manually.
+- If the agent doesn't understand your response, try rephrasing it or providing more context. You can also switch to form mode at any time to see your current progress and complete the configuration manually.
 
-If you're unsure where to find a credential or configuration value the agent is asking for, check the connector's documentation. You can access it by switching to form mode, where the documentation panel appears on the right side of the screen.
+- If you're unsure where to find a credential or configuration value the agent is asking for, ask the agent clarifying questions. The agent can often help you find the information you need or explain where to locate it in your source system.
 
 ## Reuse source connectors
 
