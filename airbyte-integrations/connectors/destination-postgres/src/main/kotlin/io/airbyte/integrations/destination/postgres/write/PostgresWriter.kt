@@ -21,7 +21,11 @@ import io.airbyte.cdk.load.write.DestinationWriter
 import io.airbyte.cdk.load.write.StreamLoader
 import io.airbyte.cdk.load.write.StreamStateStore
 import io.airbyte.integrations.destination.postgres.client.PostgresAirbyteClient
+import io.airbyte.integrations.destination.postgres.spec.PostgresConfiguration
+import io.github.oshai.kotlinlogging.KotlinLogging
 import jakarta.inject.Singleton
+
+private val log = KotlinLogging.logger {}
 
 @Singleton
 class PostgresWriter(
@@ -30,6 +34,7 @@ class PostgresWriter(
     private val streamStateStore: StreamStateStore<DirectLoadTableExecutionConfig>,
     private val postgresClient: PostgresAirbyteClient,
     private val tempTableNameGenerator: TempTableNameGenerator,
+    private val postgresConfiguration: PostgresConfiguration,
 ) : DestinationWriter {
     private lateinit var initialStatuses: Map<DestinationStream, DirectLoadInitialStatus>
 
@@ -44,13 +49,20 @@ class PostgresWriter(
     override fun createStreamLoader(stream: DestinationStream): StreamLoader {
         val initialStatus = initialStatuses[stream]!!
         val realTableName = stream.tableSchema.tableNames.finalTableName!!
-        val tempTableName = stream.tableSchema.tableNames.tempTableName!!
+        val tempTableName = tempTableNameGenerator.generate(realTableName)
         val columnNameMapping =
             ColumnNameMapping(stream.tableSchema.columnSchema.inputToFinalColumnNames)
+
+        val isRawTablesMode = postgresConfiguration.legacyRawTablesOnly == true
+        if (isRawTablesMode && stream.importType is Dedupe) {
+            log.warn { "Dedupe mode is not supported in raw tables mode. Falling back to Append." }
+        }
+        val useDedupe = !isRawTablesMode && stream.importType is Dedupe
+
         return when (stream.minimumGenerationId) {
             0L ->
-                when (stream.importType) {
-                    is Dedupe ->
+                when {
+                    useDedupe ->
                         DirectLoadTableDedupStreamLoader(
                             stream,
                             initialStatus,
@@ -74,8 +86,8 @@ class PostgresWriter(
                         )
                 }
             stream.generationId ->
-                when (stream.importType) {
-                    is Dedupe ->
+                when {
+                    useDedupe ->
                         DirectLoadTableDedupTruncateStreamLoader(
                             stream,
                             initialStatus,
