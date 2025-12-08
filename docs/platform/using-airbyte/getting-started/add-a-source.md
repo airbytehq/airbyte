@@ -14,11 +14,15 @@ Add a new source connector to Airbyte.
 
 2. Click **New Source**.
 
-3. Find the source you want to add. If you're not sure yet, click the **Marketplace** tab, then click **Sample Data (Faker)**. Faker is a popular test source that generates random data.
+3. Find the source you want to add. If you're not sure yet, click the **Marketplace** tab, then click **Sample Data**. Sample Data is a popular test source that generates random data.
 
-4. Configure your connector using the form on the left side of your screen. Every connector has different options and settings, but you normally enter things like authentication information and the location where you store your data. Use the documentation panel on the right side of your screen for help populating the form.
+4. Configure your connector. Every connector has different options and settings, but you normally enter things like authentication information and the location where you store your data. Two setup interfaces are possible.
 
-5. Click **Set up source**. Airbyte tests the source to ensure it can make a connection. Once the test completes, Airbyte takes you to the New Connection page, where you can set up a new destination connector, or choose one you previously created.
+    - If you use Airbyte Cloud, you can set up some connectors with help from the Connector Setup Assistant. In this case, the AI asks you questions and gives you context, and you provide the setup information. For help interacting with the AI, see [Set up source connectors with AI](#ai-agent).
+
+    - If you use a self-managed version of Airbyte, or if the AI doesn't yet support this connector, you see a setup form and documentation. In this case, fill out the form to setup your connector, then click **Set up source**. Airbyte tests the source to ensure it can make a connection.
+    
+    Once the test completes, Airbyte takes you to the New Connection page, where you can set up a new destination connector, or choose one you previously created.
 
 <Navattic id="cmhfh6qf4000004kz0e7sa8a5" />
 
@@ -50,7 +54,31 @@ Deleting a source connector also deletes any connections that rely on it. Data t
 
 4. In the dialog, type the name of the connector, then click **Delete**.
 
-## Reusing source connectors
+## Set up source connectors with AI {#ai-agent}
+
+You can set up some connectors with help from an AI agent.
+
+![The Connector Setup Assistant AI Agent](assets/connector-setup-agent.png)
+
+### Which connectors can use the AI agent
+
+You can use the Connector Setup Assistant with any connector that doesn't support OAuth.
+
+### Handle secrets securely
+
+Occasionally the Connector Setup Assistant asks you to provide a secret, like a password or API key. In these situations, the chat enters a special mode that stores your secret without exposing it to the agent.
+
+### Switching between agent and form modes
+
+To switch between agent and form mode, click **Agent** or **Form** in the top right corner of the screen.
+
+If you're partway through a conversation with the agent and switch to form mode, the form reflects the agent's progress. It's safe to switch back and forth between modes. However, the agent doesn't have access to your secrets. If you provide a secret to the agent, then revise that a secret in form mode, and then return to the agent, the agent continues to use its previously stored secret because it's unaware that the secret has changed.
+
+### Tips for conversing with the AI agent
+
+
+
+## Reuse source connectors
 
 Connectors are reusable. In most cases, you only need to set up the connector once, and you can use it in as many connections as you need to.
 
