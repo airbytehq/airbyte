@@ -13,7 +13,6 @@ import io.airbyte.cdk.load.message.Meta.Companion.COLUMN_NAME_AB_EXTRACTED_AT
 import io.airbyte.cdk.load.message.Meta.Companion.COLUMN_NAME_AB_GENERATION_ID
 import io.airbyte.cdk.load.message.Meta.Companion.COLUMN_NAME_AB_META
 import io.airbyte.cdk.load.message.Meta.Companion.COLUMN_NAME_AB_RAW_ID
-import io.airbyte.cdk.load.util.serializeToString
 import io.airbyte.integrations.destination.snowflake.db.toSnowflakeCompatibleName
 import io.airbyte.integrations.destination.snowflake.sql.SnowflakeColumnUtils
 import io.mockk.every
@@ -65,7 +64,6 @@ internal class SnowflakeSchemaRecordFormatterTest {
             createExpected(
                 record = record,
                 columns = columns,
-                airbyteColumns = AIRBYTE_COLUMN_TYPES_MAP.keys.toList(),
             )
         assertEquals(expectedValue, formattedValue)
     }
@@ -89,7 +87,6 @@ internal class SnowflakeSchemaRecordFormatterTest {
             createExpected(
                 record = record,
                 columns = columns,
-                airbyteColumns = AIRBYTE_COLUMN_TYPES_MAP.keys.toList(),
             )
         assertEquals(expectedValue, formattedValue)
     }
@@ -115,7 +112,6 @@ internal class SnowflakeSchemaRecordFormatterTest {
             createExpected(
                 record = record,
                 columns = columns,
-                airbyteColumns = AIRBYTE_COLUMN_TYPES_MAP.keys.toList(),
                 filterMissing = false,
             )
         assertEquals(expectedValue, formattedValue)
@@ -133,19 +129,11 @@ internal class SnowflakeSchemaRecordFormatterTest {
     private fun createExpected(
         record: Map<String, AirbyteValue>,
         columns: Map<String, String>,
-        airbyteColumns: List<String>,
         filterMissing: Boolean = true,
     ) =
         record.entries
             .associate { entry -> entry.key.toSnowflakeCompatibleName() to entry.value }
-            .map { entry ->
-                val columnName = entry.key.toSnowflakeCompatibleName()
-                if (!airbyteColumns.contains(columnName) && columns[columnName] == "VARIANT") {
-                    AbstractMap.SimpleEntry(entry.key, entry.value.serializeToString())
-                } else {
-                    AbstractMap.SimpleEntry(entry.key, entry.value.toCsvValue())
-                }
-            }
+            .map { entry -> AbstractMap.SimpleEntry(entry.key, entry.value.toCsvValue()) }
             .sortedBy { entry ->
                 if (columns.keys.indexOf(entry.key) > -1) columns.keys.indexOf(entry.key)
                 else Int.MAX_VALUE
