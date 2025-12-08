@@ -30,7 +30,6 @@ import io.airbyte.protocol.protobuf.AirbyteMessage.AirbyteMessageProtobuf
 import io.airbyte.protocol.protobuf.AirbyteRecordMessage.AirbyteRecordMessageProtobuf
 import io.airbyte.protocol.protobuf.AirbyteRecordMessage.AirbyteValueProtobuf
 import io.airbyte.protocol.protobuf.AirbyteRecordMessageMetaOuterClass
-import io.github.oshai.kotlinlogging.KotlinLogging
 import java.time.Clock
 import java.time.ZoneOffset
 
@@ -114,6 +113,7 @@ sealed class FeedBootstrap<T : Feed>(
         override fun close() {
             outputDataChannel.close()
         }
+
         override fun accept(
             recordData: NativeRecordPayload,
             changes: Map<EmittedField, FieldValueChange>?
