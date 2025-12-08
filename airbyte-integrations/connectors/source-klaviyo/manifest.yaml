@@ -22,8 +22,8 @@ definitions:
           http_method: GET
           request_parameters:
             additional-fields[profile]: >-
-              {{ 'predictive_analytics' if not
-              config['disable_fetching_predictive_analytics'] else '' }}
+              {{ 'subscriptions,predictive_analytics' if not
+              config['disable_fetching_predictive_analytics'] else 'subscriptions' }}
             filter: >-
               greater-than(updated,{{
               stream_interval.start_time }})
