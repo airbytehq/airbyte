@@ -181,7 +181,6 @@ const config: Config = {
         remarkPlugins: [
           plugins.docsHeaderDecoration,
           plugins.enterpriseDocsHeaderInformation,
-          plugins.productInformation,
           plugins.docMetaTags,
           plugins.addButtonToTitle,
           [plugins.npm2yarn, { sync: true }],
