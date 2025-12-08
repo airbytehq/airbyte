@@ -7058,3 +7058,135 @@ streams:
             path:
               - account_id
             value: '{{ record["relationships"]["account"]["data"]["id"] or "None"}}'
+  - type: DeclarativeStream
+    name: task_profitability
+    primary_key:
+      - task_id
+    incremental_sync:
+      type: DatetimeBasedCursor
+      cursor_field: updated
+      start_datetime:
+        type: MinMaxDatetime
+        datetime: "2000-01-01T00:00:00.000000Z"
+      datetime_format: "%Y-%m-%dT%H:%M:%S.%f%z"
+      start_time_option:
+        type: RequestOption
+        field_name: updatedsince
+        inject_into: request_parameter
+      cursor_datetime_formats:
+        - "%Y-%m-%dT%H:%M:%S.%f%z"
+    retriever:
+      type: SimpleRetriever
+      requester:
+        type: HttpRequester
+        url: '{{ config["base_url"] }}/api/v2/intelligencereports/profitability_by_task/'
+        http_method: GET
+        authenticator:
+          $ref: "#/definitions/linked/HttpRequester/authenticator"
+        error_handler:
+          $ref: "#/definitions/linked/HttpRequester/error_handler"
+        request_headers:
+          $ref: "#/definitions/linked/HttpRequester/request_headers"
+        request_parameters: {}
+      paginator:
+        type: DefaultPaginator
+        page_token_option:
+          type: RequestPath
+        pagination_strategy:
+          type: CursorPagination
+          cursor_value: "{{ response.links.next }}"
+          stop_condition: "{{ not response.links.next }}"
+      record_selector:
+        type: RecordSelector
+        extractor:
+          type: DpathExtractor
+          field_path:
+            - results
+        schema_normalization: Default
+    schema_loader:
+      type: InlineSchemaLoader
+      schema:
+        type: object
+        $schema: http://json-schema.org/schema#
+        additionalProperties: true
+        properties:
+          task_id:
+            type:
+              - string
+          updated:
+            type:
+              - string
+            format: date-time
+            airbyte_type: timestamp_with_timezone
+          quoted_cost:
+            type:
+              - string
+          estimated_cost:
+            type:
+              - string
+          committed_cost:
+            type:
+              - string
+          incurred_cost:
+            type:
+              - string
+          paid_cost:
+            type:
+              - string
+          quoted_sell:
+            type:
+              - string
+          estimated_sell:
+            type:
+              - string
+          billable:
+            type:
+              - string
+          invoiced:
+            type:
+              - string
+          received:
+            type:
+              - string
+          invoiced_credit:
+            type:
+              - string
+          left_to_be_incurred:
+            type:
+              - string
+          actual_cost:
+            type:
+              - string
+          revised_cost:
+            type:
+              - string
+          uninvoiced:
+            type:
+              - string
+          net_invoiced:
+            type:
+              - string
+          revised_sell:
+            type:
+              - string
+          cash_position:
+            type:
+              - string
+          quoted_profit:
+            type:
+              - string
+          actual_profit:
+            type:
+              - string
+          revised_profit:
+            type:
+              - string
+          quoted_margin:
+            type:
+              - string
+          actual_margin:
+            type:
+              - string
+          revised_margin:
+            type:
+              - string

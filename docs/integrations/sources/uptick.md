@@ -125,6 +125,7 @@ The Uptick connector syncs data from the following streams, organized by functio
 | servicequotedoandchargelineitems | id | DefaultPaginator | ✅ | ❌ (no soft delete) |
 | servicequoteproductlineitems | id | DefaultPaginator | ✅ | ❌ (no soft delete) |
 | remarkevents | id | DefaultPaginator | ✅ | ❌ (no soft delete) |
+| task_profitability | task_id | DefaultPaginator | ✅ | ✅ |
 
 ## Changelog
 
@@ -134,7 +135,7 @@ The Uptick connector syncs data from the following streams, organized by functio
 | Version          | Date              | Pull Request | Subject        |
 |------------------|-------------------|--------------|----------------|
 | 0.4.0 | 2025-11-23 | [68194](https://github.com/airbytehq/airbyte/pull/68194) | Remove expensive
-calculation fields from tasksessions, add more streams |
+calculation fields from tasksessions, add more streams, including task profitability |
 | 0.3.9 | 2025-11-25 | [70176](https://github.com/airbytehq/airbyte/pull/70176) | Update dependencies |
 | 0.3.8 | 2025-11-18 | [69684](https://github.com/airbytehq/airbyte/pull/69684) | Update dependencies |
 | 0.3.7 | 2025-10-29 | [68880](https://github.com/airbytehq/airbyte/pull/68880) | Update dependencies |
