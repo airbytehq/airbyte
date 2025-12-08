@@ -21,6 +21,7 @@ import io.micronaut.test.extensions.junit5.annotation.MicronautTest
 import java.math.BigDecimal
 import java.math.BigInteger
 import java.time.LocalDateTime
+import org.junit.jupiter.api.Test
 import org.junit.jupiter.api.parallel.Execution
 import org.junit.jupiter.api.parallel.ExecutionMode
 import org.junit.jupiter.params.ParameterizedTest
@@ -114,6 +115,11 @@ class SnowflakeDataCoercionTest(
         expectedChangeReason: Reason?
     ) {
         super.`handle date values`(inputValue, expectedValue, expectedChangeReason)
+    }
+
+    @Test
+    fun `handle boolean values`() {
+        super.`handle bool values`(expectedValue = true)
     }
 
     companion object {
