@@ -451,10 +451,15 @@ def test_writing_to_schema_with_duplicate_column_names_after_normalization_doesn
     )
 
     assert len(list(generator)) == 0
-    assert len(sql_processor._execute_sql(
-        "SELECT key1, keyuppercase, _airbyte_raw_id, _airbyte_extracted_at, _airbyte_meta "
-        f"FROM {test_schema_name}.{test_table_name} ORDER BY key1"
-    )) == 0
+    assert (
+        len(
+            sql_processor._execute_sql(
+                "SELECT key1, keyuppercase, _airbyte_raw_id, _airbyte_extracted_at, _airbyte_meta "
+                f"FROM {test_schema_name}.{test_table_name} ORDER BY key1"
+            )
+        )
+        == 0
+    )
 
 
 def _airbyte_messages(n: int, batch_size: int, table_name: str) -> Generator[AirbyteMessage, None, None]:

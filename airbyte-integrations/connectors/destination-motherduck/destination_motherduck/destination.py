@@ -276,9 +276,9 @@ class DestinationMotherDuck(Destination):
                     continue
 
                 # The data here has the original column names from the source, but _get_sql_column_definitions() below
-                # returns the normalized schema. So to match the right fields in data with the normalized schema, we 
+                # returns the normalized schema. So to match the right fields in data with the normalized schema, we
                 # need to map the normalized keys back to the keys in the data dictionary here.
-                normalized_keys = {normalizer.normalize(key): key  for key in data.keys()}
+                normalized_keys = {normalizer.normalize(key): key for key in data.keys()}
 
                 if len(normalized_keys) < len(data):
                     # Because we find the key in the data dictionary through the normalized_key mapping,
@@ -294,7 +294,8 @@ class DestinationMotherDuck(Destination):
                         "  - Adds underscore prefix if name starts with ASCII digit\n"
                         "  - Replaces other special characters with underscores\n"
                         "skipping",
-                    set(data) - set(normalized_keys.values()))
+                        set(data) - set(normalized_keys.values()),
+                    )
                     continue
 
                 # add to buffer
