@@ -158,11 +158,11 @@ class DestinationMotherDuck(Destination):
         catalog_provider = CatalogProvider(configured_catalog)
 
         if self._is_motherduck(db_path):
-            deployment_mode = os.getenv("DEPLOYMENT_MODE")
-            custom_user_agent = f"airbyte-{deployment_mode}" if deployment_mode else "airbyte"
-
             airbyte_version = os.getenv("AIRBYTE_VERSION")
-            custom_user_agent = f"{custom_user_agent}/{airbyte_version}" if airbyte_version else custom_user_agent
+            custom_user_agent = f"airbyte/{airbyte_version}" if airbyte_version else "airbyte"
+
+            edition = os.getenv("AIRBYTE_EDITION")
+            custom_user_agent = f"{custom_user_agent}({edition})" if edition else custom_user_agent
 
             return MotherDuckSqlProcessor(
                 sql_config=MotherDuckConfig(
