@@ -10,9 +10,6 @@ import io.airbyte.cdk.load.component.ColumnChangeset
 import io.airbyte.cdk.load.component.ColumnType
 import io.airbyte.cdk.load.component.ColumnTypeChange
 import io.airbyte.cdk.load.schema.model.TableName
-import io.airbyte.cdk.load.table.ColumnNameMapping
-import io.airbyte.integrations.destination.clickhouse.spec.ClickhouseConfiguration
-import io.mockk.mockk
 import kotlin.test.assertTrue
 import org.junit.jupiter.api.Assertions
 import org.junit.jupiter.api.Test
@@ -23,9 +20,7 @@ import org.junit.jupiter.params.provider.Arguments
 import org.junit.jupiter.params.provider.MethodSource
 
 class ClickhouseSqlGeneratorTest {
-    private val clickhouseConfiguration: ClickhouseConfiguration = mockk(relaxed = true)
-
-    private val clickhouseSqlGenerator = ClickhouseSqlGenerator(clickhouseConfiguration)
+    private val clickhouseSqlGenerator = ClickhouseSqlGenerator()
 
     @Test
     fun testCreateNamespace() {
@@ -93,7 +88,7 @@ class ClickhouseSqlGeneratorTest {
     @Test
     fun `test extractPks with multiple primary keys`() {
         val primaryKey = listOf(listOf("id"), listOf("name"))
-        val expected = listOf("id_column", "name_column")
+        val expected = listOf("id", "name")
         val actual = clickhouseSqlGenerator.flattenPks(primaryKey)
         Assertions.assertEquals(expected, actual)
     }
@@ -140,8 +135,7 @@ class ClickhouseSqlGeneratorTest {
     fun `test copyTable`() {
         val sourceTable = TableName("source_namespace", "source_table")
         val targetTable = TableName("target_namespace", "target_table")
-        val columnNameMapping =
-            ColumnNameMapping(mapOf("source_col1" to "target_col1", "source_col2" to "target_col2"))
+        val columnNames = setOf("target_col1", "target_col2")
 
         val expectedSql =
             """
@@ -162,8 +156,7 @@ class ClickhouseSqlGeneratorTest {
             FROM `source_namespace`.`source_table`
         """.trimIndent()
 
-        val actualSql =
-            clickhouseSqlGenerator.copyTable(columnNameMapping, sourceTable, targetTable)
+        val actualSql = clickhouseSqlGenerator.copyTable(columnNames, sourceTable, targetTable)
         Assertions.assertEquals(expectedSql, actualSql)
     }
 
