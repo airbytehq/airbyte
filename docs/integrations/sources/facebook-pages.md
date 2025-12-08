@@ -14,16 +14,16 @@ The Facebook Pages source connector is currently only compatible with v24 of the
 
 ### Step 1: Set up Facebook Pages
 
-1. Create Facebook Developer Account. Follow [instruction](https://developers.facebook.com/async/registration/) to create one.
-2. Create [Facebook App](https://developers.facebook.com/apps/). Choose "Company" as the purpose of the app. Fill out the remaining fields to create your app, then follow along the "Connect a User Page" section.
-3. Connect a User [Page](https://developers.facebook.com/tools/explorer/). Choose your app at `Meta App` field. Choose your Page at `User or Page` field. Add next permission:
+1. Create a Facebook Developer Account. Follow [these instructions](https://developers.facebook.com/async/registration/) to create one.
+2. Create a [Facebook App](https://developers.facebook.com/apps/). Choose "Company" as the purpose of the app. Fill out the remaining fields to create your app, then follow along the "Connect a User Page" section.
+3. Connect a User [Page](https://developers.facebook.com/tools/explorer/) using the Graph API Explorer. Choose your app in the `Meta App` field. Choose your Page in the `User or Page` field. Add the following permissions:
    - pages_read_engagement
    - pages_read_user_content
    - pages_show_list
    - read_insights
 4. Click Generate Access Token and follow instructions.
 
-After all the steps, it should look something like this
+After all the steps, it should look something like this:
 
 ![](/.gitbook/assets/facebook-pages-1.png)
 
@@ -38,28 +38,28 @@ After all the steps, it should look something like this
 2. In the left navigation bar, click **Sources**. In the top-right corner, click **+ New source**.
 3. On the Set up the source page, enter the name for the Facebook Pages connector and select **Facebook Pages** from the Source type dropdown.
 4. Fill in Page Access Token with Long-Lived Page Token
-5. Fill in Page ID (if you have a page URL such as `https://www.facebook.com/Test-1111111111`, the ID would be`Test-1111111111`)
+5. Fill in Page ID (if you have a page URL such as `https://www.facebook.com/Test-1111111111`, the ID would be `Test-1111111111`)
 
-### For Airbyte OSS:
+### For Airbyte OSS
 
 1. Navigate to the Airbyte Open Source dashboard.
 2. Set the name for your source.
 3. On the Set up the source page, enter the name for the Facebook Pages connector and select **Facebook Pages** from the Source type dropdown.
 4. Fill in Page Access Token with Long-Lived Page Token
-5. Fill in Page ID (if you have a page URL such as `https://www.facebook.com/Test-1111111111`, the ID would be`Test-1111111111`)
+5. Fill in Page ID (if you have a page URL such as `https://www.facebook.com/Test-1111111111`, the ID would be `Test-1111111111`)
 
 ### Creating your own OAuth App
 
-Please, follow this [Facebook documentation](https://developers.facebook.com/docs/development/create-an-app/) to create an OAuth App.
+Follow this [Facebook documentation](https://developers.facebook.com/docs/development/create-an-app/) to create an OAuth App.
 
-Required Permissions/Features which your OAuth App should have to sync data using The Facebook Pages source connector:
+Required permissions for your OAuth App to sync data using the Facebook Pages source connector:
 
-- `pages_manage_ads`
-- `pages_manage_metadata`
 - `pages_read_engagement`
 - `pages_read_user_content`
 - `pages_show_list`
-- `catalog_management`
+- `read_insights`
+
+If you encounter permission errors for specific Page fields, see [Meta's Permissions Reference](https://developers.facebook.com/docs/permissions) for additional permissions you might need. As a rule it's best to request the lowest number of permissions you can to function normally.
 
 ## Supported sync modes
 
@@ -86,7 +86,7 @@ The Facebook Pages source connector supports the following [sync modes](https://
 
 ## Performance considerations
 
-Facebook heavily throttles API tokens generated from Facebook Apps by default, making it infeasible to use such a token for syncs with Airbyte. To be able to use this connector without your syncs taking days due to rate limiting follow the instructions in the Setup Guide below to access better rate limits.
+Facebook heavily throttles API tokens generated from Facebook Apps by default, making it infeasible to use such a token for syncs with Airbyte. To be able to use this connector without your syncs taking days due to rate limiting, follow the instructions in the Setup Guide above to generate a Long-Lived Page Token.
 
 See Facebook's [documentation on rate limiting](https://developers.facebook.com/docs/graph-api/overview/rate-limiting) for more information on requesting a quota upgrade.
 
