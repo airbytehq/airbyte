@@ -76,7 +76,35 @@ If you're partway through a conversation with the agent and switch to form mode,
 
 ### Tips for conversing with the AI agent
 
+The Connector Setup Assistant guides you through configuration by asking questions and explaining what each setting does. Here are some tips for working with it effectively.
 
+When the agent asks for information, respond in natural language. You don't need to format your answers in any special way. For example, if the agent asks for your S3 bucket name, you can simply type the bucket name and press Enter.
+
+Be specific and direct when answering questions. If you don't know a value the agent is asking for, say so rather than guessing. The agent can often help you find the information you need or explain where to locate it in your source system.
+
+If the agent asks a question you don't understand, ask for clarification. The agent can explain what each configuration option does and why it's needed.
+
+For connectors with many configuration options, the agent typically asks about required fields first. It may ask about optional fields later, or you can configure them after setup by modifying the source connector.
+
+### Completing the setup
+
+After you provide all the required configuration, the agent signals that setup is complete and Airbyte runs a connection test. If the test succeeds, Airbyte takes you to the New Connection page where you can configure your destination and start syncing data.
+
+If the connection test fails, the agent explains the error and suggests how to fix it. You can update your configuration through the conversation or switch to form mode to make changes directly.
+
+### Limitations
+
+The Connector Setup Assistant is currently in beta. Keep these limitations in mind:
+
+- OAuth-based connectors are not supported. For these connectors, use the standard form-based setup.
+- The agent may not have information about very recent changes to a source's API or configuration options.
+- For complex edge cases, you may need to switch to form mode to complete the configuration.
+
+### Troubleshooting
+
+If the agent doesn't understand your response, try rephrasing it or providing more context. You can also switch to form mode at any time to see your current progress and complete the configuration manually.
+
+If you're unsure where to find a credential or configuration value the agent is asking for, check the connector's documentation. You can access it by switching to form mode, where the documentation panel appears on the right side of the screen.
 
 ## Reuse source connectors
 
