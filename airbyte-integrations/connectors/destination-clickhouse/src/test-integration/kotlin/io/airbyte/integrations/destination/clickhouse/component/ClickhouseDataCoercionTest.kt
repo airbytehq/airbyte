@@ -34,6 +34,7 @@ import java.time.LocalDateTime
 import java.time.OffsetDateTime
 import java.time.ZoneId
 import java.time.ZoneOffset
+import org.junit.jupiter.api.Test
 import org.junit.jupiter.params.ParameterizedTest
 import org.junit.jupiter.params.provider.MethodSource
 
@@ -120,6 +121,11 @@ class ClickhouseDataCoercionTest(
         expectedChangeReason: Reason?
     ) {
         super.`handle date values`(inputValue, expectedValue, expectedChangeReason)
+    }
+
+    @Test
+    fun `handle boolean values`() {
+        super.`handle bool values`(expectedValue = true)
     }
 
     companion object {
