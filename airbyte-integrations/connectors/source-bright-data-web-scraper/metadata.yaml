@@ -1,0 +1,34 @@
+metadataSpecVersion: "1.0"
+data:
+  allowedHosts:
+    hosts:
+  registryOverrides:
+    oss:
+      enabled: true
+    cloud:
+      enabled: true
+  remoteRegistries:
+    pypi:
+      enabled: false
+      packageName: airbyte-source-bright-data-web-scraper
+  connectorBuildOptions:
+    baseImage: docker.io/airbyte/source-declarative-manifest:7.6.0@sha256:9c0ea900af7e20d119da0446fc1679ca4015c5c5f7a3b022d321071570a78749
+  connectorSubtype: api
+  connectorType: source
+  definitionId: 1a780e5c-c66e-4a40-8958-d0220aaaf05c
+  dockerImageTag: 0.0.1
+  dockerRepository: airbyte/source-bright-data-web-scraper
+  githubIssueLabel: source-bright-data-web-scraper
+  icon: icon.svg
+  license: ELv2
+  name: Bright Data Web Scraper
+  releaseDate: 2025-12-08
+  releaseStage: alpha
+  supportLevel: community
+  documentationUrl: https://docs.airbyte.com/integrations/sources/bright-data-web-scraper
+  tags:
+    - language:manifest-only
+    - cdk:low-code
+  ab_internal:
+    ql: 100
+    sl: 100
