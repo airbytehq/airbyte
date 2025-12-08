@@ -17,6 +17,8 @@ import io.airbyte.cdk.load.component.DataCoercionNumberFixtures.SMALLEST_NEGATIV
 import io.airbyte.cdk.load.component.DataCoercionNumberFixtures.SMALLEST_NEGATIVE_FLOAT64
 import io.airbyte.cdk.load.component.DataCoercionNumberFixtures.SMALLEST_POSITIVE_FLOAT32
 import io.airbyte.cdk.load.component.DataCoercionNumberFixtures.SMALLEST_POSITIVE_FLOAT64
+import io.airbyte.cdk.load.component.DataCoercionStringFixtures
+import io.airbyte.cdk.load.component.DataCoercionStringFixtures.EMPTY_STRING
 import io.airbyte.cdk.load.component.DataCoercionSuite
 import io.airbyte.cdk.load.component.DataCoercionTimestampNtzFixtures
 import io.airbyte.cdk.load.component.DataCoercionTimestampTzFixtures
@@ -132,6 +134,18 @@ class SnowflakeDataCoercionTest(
     @Test
     fun `handle boolean values`() {
         super.`handle bool values`(expectedValue = true)
+    }
+
+    @ParameterizedTest
+    @MethodSource(
+        "io.airbyte.integrations.destination.snowflake.component.SnowflakeDataCoercionTest#string"
+    )
+    override fun `handle string values`(
+        inputValue: AirbyteValue,
+        expectedValue: Any?,
+        expectedChangeReason: Reason?
+    ) {
+        super.`handle string values`(inputValue, expectedValue, expectedChangeReason)
     }
 
     companion object {
@@ -273,6 +287,13 @@ class SnowflakeDataCoercionTest(
                 // but we're somehow able to programmatically insert dates beyond that value.
                 // So let's just not test this.
                 .filter { it.name != OUT_OF_RANGE_TIMESTAMP }
+                .toArgs()
+
+        @JvmStatic
+        fun string() =
+            DataCoercionStringFixtures.strings
+                // https://github.com/airbytehq/airbyte-internal-issues/issues/15484
+                .filter { it.name != EMPTY_STRING }
                 .toArgs()
     }
 }
