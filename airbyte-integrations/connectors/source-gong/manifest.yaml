@@ -294,6 +294,205 @@ definitions:
         type: InlineSchemaLoader
         schema:
           $ref: "#/schemas/answeredScorecards"
+    workspaces:
+      type: DeclarativeStream
+      name: workspaces
+      primary_key:
+        - id
+      retriever:
+        type: SimpleRetriever
+        requester:
+          $ref: "#/definitions/base_requester"
+          path: /workspaces
+          http_method: GET
+        record_selector:
+          type: RecordSelector
+          extractor:
+            type: DpathExtractor
+            field_path:
+              - workspaces
+      schema_loader:
+        type: InlineSchemaLoader
+        schema:
+          $ref: "#/schemas/workspaces"
+    callTranscripts:
+      type: DeclarativeStream
+      name: callTranscripts
+      primary_key:
+        - callId
+      retriever:
+        type: SimpleRetriever
+        requester:
+          $ref: "#/definitions/base_requester"
+          path: /calls/transcript
+          http_method: POST
+          request_body_json:
+            filter:
+              fromDateTime: "{{ config['start_date'] }}"
+        record_selector:
+          type: RecordSelector
+          extractor:
+            type: DpathExtractor
+            field_path:
+              - callTranscripts
+        paginator:
+          type: DefaultPaginator
+          page_token_option:
+            type: RequestOption
+            inject_into: body_json
+            field_name: cursor
+          pagination_strategy:
+            type: CursorPagination
+            cursor_value: "{{ response.records.cursor }}"
+            stop_condition: "{{ 'records' not in response }}"
+      schema_loader:
+        type: InlineSchemaLoader
+        schema:
+          $ref: "#/schemas/callTranscripts"
+    trackers:
+      type: DeclarativeStream
+      name: trackers
+      primary_key:
+        - trackerId
+      retriever:
+        type: SimpleRetriever
+        requester:
+          $ref: "#/definitions/base_requester"
+          path: /settings/trackers
+          http_method: GET
+        record_selector:
+          type: RecordSelector
+          extractor:
+            type: DpathExtractor
+            field_path:
+              - trackers
+      schema_loader:
+        type: InlineSchemaLoader
+        schema:
+          $ref: "#/schemas/trackers"
+    libraryFolders:
+      type: DeclarativeStream
+      name: libraryFolders
+      primary_key:
+        - id
+      retriever:
+        type: SimpleRetriever
+        requester:
+          $ref: "#/definitions/base_requester"
+          path: /library/folders
+          http_method: GET
+        record_selector:
+          type: RecordSelector
+          extractor:
+            type: DpathExtractor
+            field_path:
+              - folders
+      schema_loader:
+        type: InlineSchemaLoader
+        schema:
+          $ref: "#/schemas/libraryFolders"
+    statsActivityAggregate:
+      type: DeclarativeStream
+      name: statsActivityAggregate
+      primary_key:
+        - odUserId
+      retriever:
+        type: SimpleRetriever
+        requester:
+          $ref: "#/definitions/base_requester"
+          path: /stats/activity/aggregate
+          http_method: POST
+          request_body_json:
+            filter:
+              fromDate: "{{ config['start_date'][:10] }}"
+        record_selector:
+          type: RecordSelector
+          extractor:
+            type: DpathExtractor
+            field_path:
+              - usersAggregateActivityStats
+        paginator:
+          type: DefaultPaginator
+          page_token_option:
+            type: RequestOption
+            inject_into: body_json
+            field_name: cursor
+          pagination_strategy:
+            type: CursorPagination
+            cursor_value: "{{ response.records.cursor }}"
+            stop_condition: "{{ 'records' not in response }}"
+      schema_loader:
+        type: InlineSchemaLoader
+        schema:
+          $ref: "#/schemas/statsActivityAggregate"
+    statsActivityDayByDay:
+      type: DeclarativeStream
+      name: statsActivityDayByDay
+      primary_key:
+        - odUserId
+      retriever:
+        type: SimpleRetriever
+        requester:
+          $ref: "#/definitions/base_requester"
+          path: /stats/activity/day-by-day
+          http_method: POST
+          request_body_json:
+            filter:
+              fromDate: "{{ config['start_date'][:10] }}"
+        record_selector:
+          type: RecordSelector
+          extractor:
+            type: DpathExtractor
+            field_path:
+              - usersDetailedActivities
+        paginator:
+          type: DefaultPaginator
+          page_token_option:
+            type: RequestOption
+            inject_into: body_json
+            field_name: cursor
+          pagination_strategy:
+            type: CursorPagination
+            cursor_value: "{{ response.records.cursor }}"
+            stop_condition: "{{ 'records' not in response }}"
+      schema_loader:
+        type: InlineSchemaLoader
+        schema:
+          $ref: "#/schemas/statsActivityDayByDay"
+    statsInteraction:
+      type: DeclarativeStream
+      name: statsInteraction
+      primary_key:
+        - odUserId
+      retriever:
+        type: SimpleRetriever
+        requester:
+          $ref: "#/definitions/base_requester"
+          path: /stats/interaction
+          http_method: POST
+          request_body_json:
+            filter:
+              fromDate: "{{ config['start_date'][:10] }}"
+        record_selector:
+          type: RecordSelector
+          extractor:
+            type: DpathExtractor
+            field_path:
+              - peopleInteractionStats
+        paginator:
+          type: DefaultPaginator
+          page_token_option:
+            type: RequestOption
+            inject_into: body_json
+            field_name: cursor
+          pagination_strategy:
+            type: CursorPagination
+            cursor_value: "{{ response.records.cursor }}"
+            stop_condition: "{{ 'records' not in response }}"
+      schema_loader:
+        type: InlineSchemaLoader
+        schema:
+          $ref: "#/schemas/statsInteraction"
   base_requester:
     type: HttpRequester
     url_base: https://api.gong.io/v2/
@@ -308,6 +507,13 @@ streams:
   - $ref: "#/definitions/streams/extensiveCalls"
   - $ref: "#/definitions/streams/scorecards"
   - $ref: "#/definitions/streams/answeredScorecards"
+  - $ref: "#/definitions/streams/workspaces"
+  - $ref: "#/definitions/streams/callTranscripts"
+  - $ref: "#/definitions/streams/trackers"
+  - $ref: "#/definitions/streams/libraryFolders"
+  - $ref: "#/definitions/streams/statsActivityAggregate"
+  - $ref: "#/definitions/streams/statsActivityDayByDay"
+  - $ref: "#/definitions/streams/statsInteraction"
 
 spec:
   type: Spec
@@ -1352,3 +1558,205 @@ schemas:
           - string
         description: Type indicating the visibility permissions for the answered
           scorecard.
+  workspaces:
+    type: object
+    $schema: http://json-schema.org/draft-07/schema#
+    additionalProperties: true
+    properties:
+      id:
+        type:
+          - "null"
+          - string
+        description: Unique identifier for the workspace
+      name:
+        type:
+          - "null"
+          - string
+        description: Name of the workspace
+      description:
+        type:
+          - "null"
+          - string
+        description: Description of the workspace
+  callTranscripts:
+    type: object
+    $schema: http://json-schema.org/draft-07/schema#
+    additionalProperties: true
+    properties:
+      callId:
+        type:
+          - "null"
+          - string
+        description: Unique identifier for the call
+      transcript:
+        type:
+          - "null"
+          - array
+        description: Array of transcript segments
+        items:
+          type: object
+          properties:
+            speakerId:
+              type:
+                - "null"
+                - string
+            topic:
+              type:
+                - "null"
+                - string
+            sentences:
+              type:
+                - "null"
+                - array
+              items:
+                type: object
+                properties:
+                  start:
+                    type:
+                      - "null"
+                      - number
+                  end:
+                    type:
+                      - "null"
+                      - number
+                  text:
+                    type:
+                      - "null"
+                      - string
+  trackers:
+    type: object
+    $schema: http://json-schema.org/draft-07/schema#
+    additionalProperties: true
+    properties:
+      trackerId:
+        type:
+          - "null"
+          - string
+        description: Unique identifier for the tracker
+      trackerName:
+        type:
+          - "null"
+          - string
+        description: Name of the tracker
+      keywords:
+        type:
+          - "null"
+          - array
+        description: Keywords associated with the tracker
+        items:
+          type: string
+      enabled:
+        type:
+          - "null"
+          - boolean
+        description: Whether the tracker is enabled
+  libraryFolders:
+    type: object
+    $schema: http://json-schema.org/draft-07/schema#
+    additionalProperties: true
+    properties:
+      id:
+        type:
+          - "null"
+          - string
+        description: Unique identifier for the folder
+      name:
+        type:
+          - "null"
+          - string
+        description: Name of the folder
+      parentId:
+        type:
+          - "null"
+          - string
+        description: ID of the parent folder
+  statsActivityAggregate:
+    type: object
+    $schema: http://json-schema.org/draft-07/schema#
+    additionalProperties: true
+    properties:
+      odUserId:
+        type:
+          - "null"
+          - string
+        description: Unique identifier for the user
+      callsAsHost:
+        type:
+          - "null"
+          - integer
+        description: Number of calls as host
+      callsAsAttendee:
+        type:
+          - "null"
+          - integer
+        description: Number of calls as attendee
+      callsGaveCoaching:
+        type:
+          - "null"
+          - integer
+        description: Number of calls where user gave coaching
+      callsReceivedCoaching:
+        type:
+          - "null"
+          - integer
+        description: Number of calls where user received coaching
+  statsActivityDayByDay:
+    type: object
+    $schema: http://json-schema.org/draft-07/schema#
+    additionalProperties: true
+    properties:
+      odUserId:
+        type:
+          - "null"
+          - string
+        description: Unique identifier for the user
+      dailyActivities:
+        type:
+          - "null"
+          - array
+        description: Array of daily activity records
+        items:
+          type: object
+          properties:
+            date:
+              type:
+                - "null"
+                - string
+            callsAsHost:
+              type:
+                - "null"
+                - integer
+            callsAsAttendee:
+              type:
+                - "null"
+                - integer
+  statsInteraction:
+    type: object
+    $schema: http://json-schema.org/draft-07/schema#
+    additionalProperties: true
+    properties:
+      odUserId:
+        type:
+          - "null"
+          - string
+        description: Unique identifier for the user
+      personInteractionStats:
+        type:
+          - "null"
+          - array
+        description: Array of interaction statistics
+        items:
+          type: object
+          properties:
+            odUserId:
+              type:
+                - "null"
+                - string
+            talkRatio:
+              type:
+                - "null"
+                - number
+            interactivity:
+              type:
+                - "null"
+                - number
