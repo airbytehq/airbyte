@@ -31,8 +31,9 @@ class ClickhouseSqlGenerator {
     ): String {
         val forceCreateTable = if (replace) "OR REPLACE" else ""
 
+        val finalSchema = tableSchema.columnSchema.finalSchema
         val columnDeclarations =
-            tableSchema.columnSchema.finalSchema
+            finalSchema
                 .map { (columnName, columnType) -> "`$columnName` ${columnType.typeDecl()}" }
                 .joinToString(",\n")
 
@@ -50,11 +51,12 @@ class ClickhouseSqlGenerator {
         val engine =
             when (tableSchema.importType) {
                 is Dedupe -> {
+                    // Check if cursor column type is valid for ClickHouse ReplacingMergeTree
                     val cursor = tableSchema.getCursor().firstOrNull()
-
+                    val cursorType = cursor?.let { finalSchema[it]?.type }
                     val versionColumn =
-                        if (cursor != null && cursor.isValidVersionColumnType()) {
-                            "`${cursor}`"
+                        if (cursorType?.isValidVersionColumnType() ?: false) {
+                            "`$cursor`"
                         } else {
                             // Fallback to _airbyte_extracted_at if no cursor is specified or cursor
                             // is invalid
