@@ -5,6 +5,8 @@
 package io.airbyte.cdk.load.component
 
 import io.airbyte.cdk.load.data.AirbyteValue
+import io.airbyte.cdk.load.data.BooleanType
+import io.airbyte.cdk.load.data.BooleanValue
 import io.airbyte.cdk.load.data.DateType
 import io.airbyte.cdk.load.data.FieldType
 import io.airbyte.cdk.load.data.IntegerType
@@ -155,6 +157,20 @@ interface DataCoercionSuite {
             inputValue,
             expectedValue,
             expectedChangeReason,
+        )
+    }
+
+    /** No fixtures, hardcoded to just write `true` */
+    fun `handle bool values`(expectedValue: Any?) = runTest {
+        harness.testValueCoercion(
+            coercer,
+            columnNameMapping,
+            FieldType(BooleanType, nullable = true),
+            // Just test on `true` and assume `false` also works
+            BooleanValue(true),
+            expectedValue,
+            // If your destination is nulling/truncating booleans... that's almost definitely a bug
+            expectedChangeReason = null,
         )
     }
 }
