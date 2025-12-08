@@ -351,6 +351,7 @@ class SnowflakeDirectLoadSqlGenerator(
                 REPLACE_INVALID_CHARACTERS = TRUE
                 ESCAPE = NONE
                 ESCAPE_UNENCLOSED_FIELD = NONE
+                EMPTY_FIELD_AS_NULL = FALSE
             )
             ON_ERROR = 'ABORT_STATEMENT'
             PURGE = TRUE
