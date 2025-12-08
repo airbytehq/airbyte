@@ -256,6 +256,7 @@ definitions:
       incremental_sync:
         type: DatetimeBasedCursor
         cursor_field: updatedAt
+        step: P1M
         cursor_datetime_formats:
           - "%Y-%m-%dT%H:%M:%S%z"
           - "%Y-%m-%dT%H:%M:%SZ"
@@ -674,6 +675,7 @@ definitions:
       incremental_sync:
         type: DatetimeBasedCursor
         cursor_field: updatedAt
+        step: P1M
         cursor_datetime_formats:
           - "%Y-%m-%dT%H:%M:%S%z"
           - "%Y-%m-%dT%H:%M:%SZ"
@@ -762,6 +764,7 @@ definitions:
       incremental_sync:
         type: DatetimeBasedCursor
         cursor_field: updatedAt
+        step: P1M
         cursor_datetime_formats:
           - "%Y-%m-%dT%H:%M:%S%z"
           - "%Y-%m-%dT%H:%M:%SZ"
@@ -847,6 +850,7 @@ definitions:
       incremental_sync:
         type: DatetimeBasedCursor
         cursor_field: updatedAt
+        step: P1M
         cursor_datetime_formats:
           - "%Y-%m-%dT%H:%M:%S%z"
           - "%Y-%m-%dT%H:%M:%SZ"
@@ -2334,6 +2338,7 @@ definitions:
       incremental_sync:
         type: DatetimeBasedCursor
         cursor_field: createdAt
+        step: P1M
         cursor_datetime_formats:
           - "%Y-%m-%dT%H:%M:%S%z"
           - "%Y-%m-%dT%H:%M:%SZ"
