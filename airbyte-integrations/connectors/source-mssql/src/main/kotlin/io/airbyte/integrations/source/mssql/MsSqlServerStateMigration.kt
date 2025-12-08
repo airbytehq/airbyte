@@ -96,15 +96,27 @@ object MsSqlServerStateMigration {
             "Migrating OrderedColumnLoadStatus state: ordered_col=${legacy.orderedCol}, ordered_col_val=${legacy.orderedColVal}"
         }
 
-        // Extract incremental state if present
-        val incrementalState = legacy.incrementalState?.let { migrateCursorBasedStatusFromJson(it) }
+        // Extract incremental state if present and not null
+        val incrementalState =
+            legacy.incrementalState
+                ?.takeIf { !it.isNull }
+                ?.let { migrateCursorBasedStatusFromJson(it) }
+
+        // Convert String to JsonNode, handling null and "null" string
+        val pkValueNode: JsonNode? =
+            legacy.orderedColVal?.let { value ->
+                when {
+                    value.isEmpty() || value == "null" -> null
+                    else -> Jsons.valueToTree<JsonNode>(value)
+                }
+            }
 
         return MsSqlServerJdbcStreamStateValue(
             version = MsSqlServerJdbcStreamStateValue.CURRENT_VERSION,
             stateType =
                 StateType.PRIMARY_KEY.stateType, // Convert "ordered_column" to "primary_key"
             pkName = legacy.orderedCol,
-            pkValue = legacy.orderedColVal,
+            pkValue = pkValueNode,
             // If there's incremental state, embed it for transition after initial sync completes
             incrementalState = incrementalState?.let { Jsons.valueToTree(it) }
         )
@@ -120,11 +132,20 @@ object MsSqlServerStateMigration {
             "Migrating CursorBasedStatus state: stream=${legacy.streamName}, cursor_field=${legacy.cursorField}, cursor=${legacy.cursor}"
         }
 
+        // Convert String to JsonNode, handling null and "null" string
+        val cursorNode: JsonNode? =
+            legacy.cursor?.let { value ->
+                when {
+                    value.isEmpty() || value == "null" -> null
+                    else -> Jsons.valueToTree<JsonNode>(value)
+                }
+            }
+
         return MsSqlServerJdbcStreamStateValue(
             version = MsSqlServerJdbcStreamStateValue.CURRENT_VERSION,
             stateType = StateType.CURSOR_BASED.stateType,
             cursorField = legacy.cursorField ?: emptyList(),
-            cursor = legacy.cursor ?: "",
+            cursor = cursorNode,
             cursorRecordCount = legacy.cursorRecordCount?.toInt() ?: 0
         )
     }

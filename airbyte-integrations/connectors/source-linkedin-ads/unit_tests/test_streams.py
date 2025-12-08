@@ -2,11 +2,11 @@
 # Copyright (c) 2024 Airbyte, Inc., all rights reserved.
 #
 
-from conftest import find_stream, load_json_file
 from freezegun import freeze_time
 
-from airbyte_cdk.models import SyncMode
 from airbyte_cdk.sources.streams.http.requests_native_auth import TokenAuthenticator
+
+from .conftest import find_stream, load_json_file
 
 
 # Test input arguments for the `make_analytics_slices`
@@ -31,7 +31,7 @@ TEST_CONFIG: dict = {
 
 @freeze_time("2021-03-01")
 def test_analytics_stream_slices(requests_mock):
-    expected_slices = [
+    expected_partitions = [
         {
             "campaign_id": 123,
             "start_time": "2021-01-01",
@@ -49,7 +49,7 @@ def test_analytics_stream_slices(requests_mock):
     stream = find_stream("ad_member_country_analytics", TEST_CONFIG)
     requests_mock.get("https://api.linkedin.com/rest/adAccounts", json={"elements": [{"id": 1}]})
     requests_mock.get("https://api.linkedin.com/rest/adAccounts/1/adCampaigns", json={"elements": [{"id": 123}]})
-    assert [dict(i) for i in list(stream.retriever.stream_slicer.stream_slices())] == expected_slices
+    assert [partition.to_slice() for partition in list(stream.generate_partitions())] == expected_partitions
 
 
 def test_read_records(requests_mock):
@@ -68,6 +68,8 @@ def test_read_records(requests_mock):
         ],
     )
 
-    stream_slice = next(stream.stream_slices(sync_mode=SyncMode.incremental))
-    records = list(stream.read_records(sync_mode=SyncMode.incremental, stream_slice=stream_slice, stream_state=None))
+    partitions = iter(stream.generate_partitions())
+    partition_1 = next(partitions)
+    records = list(partition_1.read())
+
     assert len(records) == 2

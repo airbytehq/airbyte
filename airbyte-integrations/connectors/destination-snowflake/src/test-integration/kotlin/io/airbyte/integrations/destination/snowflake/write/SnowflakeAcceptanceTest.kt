@@ -46,11 +46,11 @@ class SnowflakeInsertAcceptanceTest :
             },
         recordMapper = SnowflakeExpectedRecordMapper,
         nameMapper = SnowflakeNameMapper(),
-        unknownTypesBehavior = UnknownTypesBehavior.SERIALIZE,
+        unknownTypesBehavior = UnknownTypesBehavior.PASS_THROUGH,
     ) {
     @Test
-    override fun testFunkyCharactersDedup() {
-        super.testFunkyCharactersDedup()
+    override fun testAppendSchemaEvolution() {
+        super.testAppendSchemaEvolution()
     }
 }
 
@@ -63,7 +63,7 @@ class SnowflakeInsertIgnoreCasingAcceptanceTest :
             },
         recordMapper = SnowflakeExpectedRecordMapper,
         nameMapper = SnowflakeNameMapper(),
-        unknownTypesBehavior = UnknownTypesBehavior.SERIALIZE,
+        unknownTypesBehavior = UnknownTypesBehavior.PASS_THROUGH,
     ) {
     @Test
     override fun testBasicWrite() {
@@ -134,6 +134,12 @@ class SnowflakeRawInsertProtoAcceptanceTest :
     override fun testBasicWrite() {
         super.testBasicWrite()
     }
+
+    @Disabled("https://github.com/airbytehq/airbyte-internal-issues/issues/15495")
+    @Test
+    override fun testContainerTypes() {
+        super.testContainerTypes()
+    }
 }
 
 abstract class SnowflakeAcceptanceTest(
@@ -159,7 +165,7 @@ abstract class SnowflakeAcceptanceTest(
         isStreamSchemaRetroactiveForUnknownTypeToString =
             isStreamSchemaRetroactiveForUnknownTypeToString,
         dedupBehavior = dedupBehavior,
-        stringifySchemalessObjects = true,
+        stringifySchemalessObjects = false,
         schematizedObjectBehavior = SchematizedNestedValueBehavior.PASS_THROUGH,
         schematizedArrayBehavior = SchematizedNestedValueBehavior.PASS_THROUGH,
         unionBehavior = UnionBehavior.PASS_THROUGH,
@@ -186,14 +192,8 @@ abstract class SnowflakeAcceptanceTest(
         recordMangler = recordMapper,
         nameMapper = nameMapper,
         coercesLegacyUnions = coercesLegacyUnions,
-    ) {
-
-    @Disabled override fun testUnions() {}
-
-    @Disabled override fun testAppendJsonSchemaEvolution() {}
-
-    @Disabled override fun testContainerTypes() {}
-}
+        useDataFlowPipeline = true,
+    )
 
 fun stringToMeta(metaAsString: String?): OutputRecord.Meta? {
     if (metaAsString.isNullOrEmpty()) {

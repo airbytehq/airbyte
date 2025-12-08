@@ -2,6 +2,14 @@
 
 This page guides you through the process of setting up the Postgres destination connector.
 
+:::info Direct Load
+
+Starting with version 3.0.0, the Postgres destination uses **Direct Load** architecture. This means data is written directly to final tables without using intermediate raw tables, providing improved performance and reduced storage costs.
+
+For migration details and backward compatibility options, see the [Postgres Migration Guide](postgres-migrations.md#upgrading-to-300).
+
+:::
+
 ## Warning
 
 :::warning
@@ -94,10 +102,9 @@ From
 
 :::info
 
-Airbyte Postgres destination will create raw tables and schemas using the Unquoted identifiers by
-replacing any special characters with an underscore. All final tables and their corresponding
-columns are created using Quoted identifiers preserving the case sensitivity. Special characters in final
-tables are replaced with underscores.
+Airbyte Postgres destination creates final tables and their corresponding columns using Quoted identifiers, preserving the case sensitivity. Special characters in table and column names are replaced with underscores.
+
+When using the legacy "Raw tables only" mode, raw tables and schemas are created using Unquoted identifiers by replacing any special characters with an underscore.
 
 :::
 
@@ -185,7 +192,29 @@ following[ sync modes](https://docs.airbyte.com/cloud/core-concepts#connection-s
 
 ## Schema map
 
-### Output Schema (Raw Tables)
+### Output Schema (Direct Load)
+
+The Postgres destination uses Direct Load architecture. Each stream is written directly to a final table in your configured schema. The table includes your data columns plus the following Airbyte metadata columns:
+
+- `_airbyte_raw_id`: a uuid assigned by Airbyte to each event that is processed. The column type in
+  Postgres is `VARCHAR`.
+- `_airbyte_extracted_at`: a timestamp representing when the event was pulled from the data source.
+  The column type in Postgres is `TIMESTAMP WITH TIME ZONE`.
+- `_airbyte_meta`: a jsonb column containing metadata about the record, including sync information
+  and any schema changes. The column type in Postgres is `JSONB`.
+- `_airbyte_generation_id`: an identifier for the generation of the sync. The column type in
+  Postgres is `BIGINT`.
+
+### Output Schema (Raw Tables) - Deprecated
+
+:::warning Deprecated
+
+Raw tables are deprecated starting with version 3.0.0. The connector now uses Direct Load to write directly to final tables. For backward compatibility options and migration guidance, see the [Postgres Migration Guide](postgres-migrations.md#upgrading-to-300).
+
+:::
+
+<details>
+<summary>Legacy Raw Tables Documentation</summary>
 
 Each stream will be mapped to a separate raw table in Postgres. The default schema in which the raw
 tables are created is `airbyte_internal`. This can be overridden in the configuration. Each table
@@ -199,6 +228,8 @@ will contain 3 columns:
   column type in Postgres is `TIMESTAMP WITH TIME ZONE`.
 - `_airbyte_data`: a json blob representing with the event data. The column type in Postgres is
   `JSONB`.
+
+</details>
 
 ### Final Tables Data type mapping
 
@@ -267,6 +298,11 @@ _where_ it is deployed.
 
 | Version | Date       | Pull Request                                               | Subject                                                                                                                                                                                |
 |:--------|:-----------|:-----------------------------------------------------------|:---------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------|
+| 3.0.4   | 2025-12-05 | [70355](https://github.com/airbytehq/airbyte/pull/70355)   | Fix: Force Append mode when "Raw tables only" mode is enabled, bypassing Dedupe mode to avoid errors.                                                                                  |
+| 3.0.3   | 2025-12-04 | [70347](https://github.com/airbytehq/airbyte/pull/70347)   | Fix index recreation on non-existent columns in raw tables mode.                                                                                                                       |
+| 3.0.2   | 2025-12-04 | [70337](https://github.com/airbytehq/airbyte/pull/70337)   | Refactor: Move raw tables mode check to index creation for better code clarity.                                                                                                        |
+| 3.0.1   | 2025-12-03 | [70326](https://github.com/airbytehq/airbyte/pull/70326)   | Fix `PSQLException` when running in legacy "Raw tables only" mode.                                                                                                                     |
+| 3.0.0   | 2025-12-02 | [69846](https://github.com/airbytehq/airbyte/pull/69846)   | **Breaking Change**: Introduces Direct Load architecture. Data is now written directly to final tables without using intermediate raw tables, providing improved performance and reduced storage costs. Raw tables are deprecated; use "Raw tables only" option if needed for backward compatibility. |
 | 2.4.7 | 2025-08-29 | [65620](https://github.com/airbytehq/airbyte/pull/65620) | Noop release.                                                                                                                         |
 | 2.4.7-rc.1 | 2025-08-29 | [65617](https://github.com/airbytehq/airbyte/pull/65617) | Testing RC publishing.                                                                                                                         |
 | 2.4.6   | 2025-08-21 | [63769](https://github.com/airbytehq/airbyte/pull/63769) | Fix numeric columns synced as NULL value in incremential sync.                                                                                                                         |

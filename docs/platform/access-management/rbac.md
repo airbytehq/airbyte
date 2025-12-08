@@ -40,8 +40,6 @@ In a workspace role, Airbyte scopes permissions to that specific workspace. You 
 
 ## Setting roles
 
-<Arcade id="pYZ3aHWlV4kJatJG2dJN" title="Organization Permissions" paddingBottom="calc(61.37931034482759% + 41px)" />
-
 1. In the navigation bar, click **Workspace settings** or **Organization settings** > **Members**.
 
 2. In the table, under **Workspace role**, click the current role and then select a new role.

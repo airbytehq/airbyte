@@ -9,7 +9,7 @@ import com.clickhouse.client.api.data_formats.ClickHouseBinaryFormatReader
 import com.clickhouse.data.ClickHouseFormat
 import io.airbyte.cdk.load.component.TestTableOperationsClient
 import io.airbyte.cdk.load.data.AirbyteValue
-import io.airbyte.cdk.load.table.TableName
+import io.airbyte.cdk.load.schema.model.TableName
 import io.airbyte.cdk.load.util.serializeToString
 import io.micronaut.context.annotation.Requires
 import jakarta.inject.Singleton

@@ -96,6 +96,36 @@ class MsSqlServerSourceConfigurationSpecificationTest {
         Assertions.assertTrue(replicationMethod is Cdc, replicationMethod::class.toString())
     }
 
+    /**
+     * Verifies that empty schemas array defaults to empty set, which will trigger discovery of all
+     * schemas (legacy connector behavior).
+     */
+    @Test
+    @Property(name = "airbyte.connector.config.json", value = CONFIG_JSON_EMPTY_SCHEMAS)
+    fun testEmptySchemasArrayDefaultsToEmptySet() {
+        val pojo: MsSqlServerSourceConfigurationSpecification = supplier.get()
+        val factory = MsSqlServerSourceConfigurationFactory()
+        val config = factory.make(pojo)
+
+        // Empty schemas array should default to empty set (discover all schemas)
+        Assertions.assertEquals(emptySet<String>(), config.namespaces)
+    }
+
+    /**
+     * Verifies that null schemas defaults to empty set, which will trigger discovery of all schemas
+     * (legacy connector behavior).
+     */
+    @Test
+    @Property(name = "airbyte.connector.config.json", value = CONFIG_JSON_NULL_SCHEMAS)
+    fun testNullSchemasDefaultsToEmptySet() {
+        val pojo: MsSqlServerSourceConfigurationSpecification = supplier.get()
+        val factory = MsSqlServerSourceConfigurationFactory()
+        val config = factory.make(pojo)
+
+        // Null schemas should default to empty set (discover all schemas)
+        Assertions.assertEquals(emptySet<String>(), config.namespaces)
+    }
+
     companion object {
 
         const val CONFIG_JSON: String =
@@ -179,6 +209,41 @@ class MsSqlServerSourceConfigurationSpecificationTest {
   "password": "Password123!",
   "database": "master",
   "schemas": ["dbo"],
+  "ssl_mode": {
+    "mode": "encrypted_trust_server_certificate"
+  },
+  "replication_method": {
+    "method": "CDC"
+  }
+}
+"""
+
+        const val CONFIG_JSON_EMPTY_SCHEMAS: String =
+            """
+{
+  "host": "localhost",
+  "port": 1433,
+  "username": "sa",
+  "password": "Password123!",
+  "database": "master",
+  "schemas": [],
+  "ssl_mode": {
+    "mode": "encrypted_trust_server_certificate"
+  },
+  "replication_method": {
+    "method": "CDC"
+  }
+}
+"""
+
+        const val CONFIG_JSON_NULL_SCHEMAS: String =
+            """
+{
+  "host": "localhost",
+  "port": 1433,
+  "username": "sa",
+  "password": "Password123!",
+  "database": "master",
   "ssl_mode": {
     "mode": "encrypted_trust_server_certificate"
   },
