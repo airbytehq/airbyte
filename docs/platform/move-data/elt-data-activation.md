@@ -28,7 +28,7 @@ The terms "data activation" and "reverse ETL" are sometimes used interchangeably
 
 - **Broad application**: data activation supports a range of business functions, including go-to-market operations, customer success, finance, and support.
 
-## Why data activation is useful in Airbyte
+## Why data activation is useful
 
 Data Activation complements Airbyte’s existing data movement capabilities by enabling outbound syncs from your warehouse into operational tools. It expands the value of centralized data by delivering insights to where the action is.
 
@@ -42,23 +42,13 @@ Data Activation complements Airbyte’s existing data movement capabilities by e
 
 This process turns your data warehouse into a central intelligence hub and ensures insights reach the systems—and people—who need them.
 
-## How data activation works in Airbyte
-
-Data activation works like any other sync, by moving data from a source to a destination. The process typically involves three stages:
-
-1. **Ingestion**: Sync data from your sources to your data warehouse destination using Airbyte's connectors.
-
-2. **Transformation**: Model and prepare your data using tools like dbt or SQL.
-
-3. **Activation**: Sync that modeled data to operational tools using Airbyte's connectors and declarative mappings.
-
-## Use Cases
+### Use cases
 
 Data Activation aligns with the shift toward operational analytics in modern data architectures. As organizations consolidate their data into warehouses, there is increasing demand for that data to inform business decisions beyond dashboards and reports.
 
 Teams in sales, marketing, support, and finance often rely on operational systems that are disconnected from your data warehouse. Data activation bridges this gap, replacing manual exports, ad hoc pipelines, or no data at all with automated, governed workflows.
 
-### Example: Revenue operations
+#### Example use case: revenue operations
 
 - **User**: Revenue Operations Manager.
 
@@ -70,7 +60,7 @@ Teams in sales, marketing, support, and finance often rely on operational system
 
 - **Result**: Reps can view up-to-date engagement scores directly in their CRM and prioritize outreach accordingly.
 
-### Additional use cases
+#### Additional use cases
 
 | Use Case               | Description                                                       |
 | ---------------------- | ----------------------------------------------------------------- |
@@ -79,13 +69,31 @@ Teams in sales, marketing, support, and finance often rely on operational system
 | Support Triage         | Deliver customer health scores to Zendesk for prioritization      |
 | Finance Reconciliation | Notify finance teams via Slack when you detect billing anomalies   |
 
+## How data activation works
+
+Data activation works like any other sync, by moving data from a source to a destination. The process typically involves three stages:
+
+1. **Ingestion**: sync data from your sources to your data warehouse destination using Airbyte's connectors.
+
+2. **Transformation**: model and prepare your data using tools like dbt or SQL.
+
+3. **Activation**: sync that modeled data to operational tools using Airbyte's connectors and declarative mappings.
+
+### Which connectors support data activation
+
+You can sync to the following data activation destinations, currently.
+
+- [Salesforce](/integrations/enterprise-connectors/destination-salesforce)
+- [HubSpot](/integrations/destinations/hubspot)
+- [Customer.io](/integrations/destinations/customer-io)
+
 ## Get started
 
 To start activating your data with Airbyte, see the following topics.
 
-- [Set up a source](../using-airbyte/getting-started/add-a-source): The data warehouse or other source you're syncing data from.
-- [Set up a destination](../using-airbyte/getting-started/add-a-destination): The CRM, marketing platform, or support system you're syncing data to.
-- [Set up a connection](add-connection): Learn how to create a connection to a data activation destination and map fields from your source to your destination.
+- [Set up a source](../using-airbyte/getting-started/add-a-source): the data warehouse or other source you're syncing data from.
+- [Set up a destination](../using-airbyte/getting-started/add-a-destination): the CRM, marketing platform, or support system you're syncing data to.
+- [Set up a connection](add-connection): learn how to create a connection to a data activation destination and map fields from your source to your destination.
 
 More resources:
 
