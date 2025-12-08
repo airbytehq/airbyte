@@ -6,6 +6,8 @@ package io.airbyte.integrations.destination.clickhouse.component
 
 import io.airbyte.cdk.load.component.DataCoercionDateFixtures
 import io.airbyte.cdk.load.component.DataCoercionNumberFixtures
+import io.airbyte.cdk.load.component.DataCoercionStringFixtures
+import io.airbyte.cdk.load.component.DataCoercionStringFixtures.LONG_STRING
 import io.airbyte.cdk.load.component.DataCoercionSuite
 import io.airbyte.cdk.load.component.DataCoercionTimestampNtzFixtures
 import io.airbyte.cdk.load.component.DataCoercionTimestampTzFixtures
@@ -18,6 +20,7 @@ import io.airbyte.cdk.load.component.TestTableOperationsClient
 import io.airbyte.cdk.load.component.toArgs
 import io.airbyte.cdk.load.data.AirbyteValue
 import io.airbyte.cdk.load.data.DateValue
+import io.airbyte.cdk.load.data.StringValue
 import io.airbyte.cdk.load.data.TimestampWithTimezoneValue
 import io.airbyte.cdk.load.data.TimestampWithoutTimezoneValue
 import io.airbyte.cdk.load.dataflow.transform.ValueCoercer
@@ -120,6 +123,18 @@ class ClickhouseDataCoercionTest(
     @Test
     fun `handle boolean values`() {
         super.`handle bool values`(expectedValue = true)
+    }
+
+    @ParameterizedTest
+    @MethodSource(
+        "io.airbyte.integrations.destination.clickhouse.component.ClickhouseDataCoercionTest#string"
+    )
+    override fun `handle string values`(
+        inputValue: AirbyteValue,
+        expectedValue: Any?,
+        expectedChangeReason: Reason?
+    ) {
+        super.`handle string values`(inputValue, expectedValue, expectedChangeReason)
     }
 
     companion object {
@@ -261,6 +276,23 @@ class ClickhouseDataCoercionTest(
                                     .atZoneSameInstant(ZoneId.of("UTC"))
                             }
                     )
+                }
+                .toArgs()
+
+        @JvmStatic
+        fun string() =
+            DataCoercionStringFixtures.strings
+                .map { fixture ->
+                    when (fixture.name) {
+                        // Clickhouse doesn't seem to have limits on string length?
+                        // At the very least, we can happily write >16MB of string.
+                        LONG_STRING ->
+                            fixture.copy(
+                                outputValue = (fixture.inputValue as StringValue).value,
+                                changeReason = null,
+                            )
+                        else -> fixture
+                    }
                 }
                 .toArgs()
     }
