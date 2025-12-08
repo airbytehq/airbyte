@@ -454,6 +454,7 @@ WHERE actor_definition_id ='b5ea17b1-f170-46dc-bc31-cc744ca984c1' AND (configura
 
 | Version     | Date       | Pull Request                                                                                                      | Subject                                                                                                                                         |
 |:------------|:-----------|:------------------------------------------------------------------------------------------------------------------|:------------------------------------------------------------------------------------------------------------------------------------------------|
+| 4.3.0 | 2025-12-08 | [70443](https://github.com/airbytehq/airbyte/pull/70443) | Promoting release candidate 4.3.0-rc.10 to a main version. |
 | 4.3.0-rc.10 | 2025-12-05 | [70306](https://github.com/airbytehq/airbyte/pull/70306) | Update CDK version to include fix for Debezium closing record race condition                                                                    |
 | 4.3.0-rc.9  | 2025-12-01 | [70280](https://github.com/airbytehq/airbyte/pull/70280) | Fix connector concurrency default value                                                                                                         |
 | 4.3.0-rc.8  | 2025-11-14 | [69754](https://github.com/airbytehq/airbyte/pull/69754) | Update to latest CDK version                                                                                                                    |
