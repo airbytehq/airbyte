@@ -123,6 +123,10 @@ This connector can sync multiple files by using glob-style patterns, rather than
 
 You must provide a path pattern. You can also provide many patterns split with \| for more complex directory layouts.
 
+:::tip
+When your folder contains multiple file types, use glob patterns to select only the files that match your configured format. For example, if your folder contains both CSV files and PDFs, and you've configured the connector to parse CSV files, use a pattern like `**/*.csv` to ensure only CSV files are processed. Without this filtering, the connector will attempt to parse all matched files as the configured format, which can cause parsing errors for incompatible file types.
+:::
+
 Each path pattern is a reference from the _root_ of the folder, so don't include the root folder name itself in the pattern\(s\).
 
 Some example patterns:
