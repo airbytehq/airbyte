@@ -36,6 +36,8 @@ class ClickhouseTableSchemaEvolutionTest(
                 // yes, these three are different
                 "array" to ColumnType("String", true),
                 "object" to ColumnType("JSON", true),
+                "union" to ColumnType("String", true),
+                "legacy_union" to ColumnType("String", true),
                 "unknown" to ColumnType("String", true),
             )
         )
