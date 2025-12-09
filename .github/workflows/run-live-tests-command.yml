@@ -79,8 +79,8 @@ jobs:
       - name: Build inputs JSON
         id: build-inputs
         run: |
-          # Build the inputs JSON, only including non-empty values
-          INPUTS_JSON=$(jq -n \
+          # Build the inputs JSON as compact single-line output for GITHUB_OUTPUT
+          INPUTS_JSON=$(jq -c -n \
             --arg connector_image "${{ inputs.connector_image }}" \
             --arg command "${{ inputs.command || 'check' }}" \
             --arg connection_id "${{ inputs.connection_id }}" \
