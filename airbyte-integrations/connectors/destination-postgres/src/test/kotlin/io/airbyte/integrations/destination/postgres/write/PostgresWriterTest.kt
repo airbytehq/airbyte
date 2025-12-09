@@ -69,11 +69,12 @@ class PostgresWriterTest {
         val finalTableName = TableName("ns", "name")
 
         val tableNames = TableNames(finalTableName = finalTableName)
-        val columnSchema = ColumnSchema(
-            inputSchema = emptyMap(),
-            inputToFinalColumnNames = emptyMap(),
-            finalSchema = emptyMap()
-        )
+        val columnSchema =
+            ColumnSchema(
+                inputSchema = emptyMap(),
+                inputToFinalColumnNames = emptyMap(),
+                finalSchema = emptyMap()
+            )
         val importType = Dedupe(primaryKey = emptyList(), cursor = emptyList())
         val tableSchema = StreamTableSchema(tableNames, columnSchema, importType)
 
@@ -106,11 +107,12 @@ class PostgresWriterTest {
         val finalTableName = TableName("ns", "name")
 
         val tableNames = TableNames(finalTableName = finalTableName)
-        val columnSchema = ColumnSchema(
-            inputSchema = emptyMap(),
-            inputToFinalColumnNames = emptyMap(),
-            finalSchema = emptyMap()
-        )
+        val columnSchema =
+            ColumnSchema(
+                inputSchema = emptyMap(),
+                inputToFinalColumnNames = emptyMap(),
+                finalSchema = emptyMap()
+            )
         val importType = Dedupe(primaryKey = emptyList(), cursor = emptyList())
         val tableSchema = StreamTableSchema(tableNames, columnSchema, importType)
 
@@ -146,11 +148,12 @@ class PostgresWriterTest {
         val finalTableName = TableName("ns", "name")
 
         val tableNames = TableNames(finalTableName = finalTableName)
-        val columnSchema = ColumnSchema(
-            inputSchema = emptyMap(),
-            inputToFinalColumnNames = emptyMap(),
-            finalSchema = emptyMap()
-        )
+        val columnSchema =
+            ColumnSchema(
+                inputSchema = emptyMap(),
+                inputToFinalColumnNames = emptyMap(),
+                finalSchema = emptyMap()
+            )
         // Use a mock for ImportType that is NOT Dedupe
         val appendImportType = mockk<ImportType>()
         val tableSchema = StreamTableSchema(tableNames, columnSchema, appendImportType)
