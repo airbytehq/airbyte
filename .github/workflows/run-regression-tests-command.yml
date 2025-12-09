@@ -126,18 +126,18 @@ jobs:
             const targetImage = '${{ inputs.target_image }}';
             const controlImage = '${{ inputs.control_image }}';
             const command = '${{ inputs.command || 'check' }}';
-            
+
             const statusEmoji = conclusion === 'success' ? ':white_check_mark:' : conclusion === 'failure' ? ':x:' : ':warning:';
-            
+
             const body = `## Regression Test Results ${statusEmoji}
-            
+
             **Target:** \`${targetImage}\`
             **Control:** \`${controlImage}\`
             **Command:** \`${command}\`
             **Result:** \`${conclusion}\`
-            
+
             [View full test logs](${workflowUrl}) (requires access to airbyte-ops-mcp)`;
-            
+
             await github.rest.issues.createComment({
               owner: 'airbytehq',
               repo: 'airbyte',
