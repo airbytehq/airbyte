@@ -96,15 +96,50 @@ jobs:
           echo "inputs_json=$INPUTS_JSON" >> "$GITHUB_OUTPUT"
 
       - name: Trigger live test workflow in airbyte-ops-mcp
-        uses: benc-uk/workflow-dispatch@v1
+        id: trigger-workflow
+        uses: the-actions-org/workflow-dispatch@v4
         with:
           workflow: connector-live-test.yml
           repo: airbytehq/airbyte-ops-mcp
           ref: main
           token: ${{ steps.get-app-token.outputs.token }}
           inputs: ${{ steps.build-inputs.outputs.inputs_json }}
+          wait-for-completion: true
+          wait-for-completion-timeout: 30m
+          wait-for-completion-interval: 30s
+          display-workflow-run-url: true
 
-      - name: Output workflow link
+      - name: Post result to PR comment
+        if: always() && inputs.pr
+        uses: actions/github-script@v7
+        with:
+          github-token: ${{ steps.get-app-token.outputs.token }}
+          script: |
+            const conclusion = '${{ steps.trigger-workflow.outputs.workflow-conclusion }}' || 'unknown';
+            const workflowUrl = '${{ steps.trigger-workflow.outputs.workflow-url }}' || 'https://github.com/airbytehq/airbyte-ops-mcp/actions/workflows/connector-live-test.yml';
+            const connector = '${{ inputs.connector_image }}';
+            const command = '${{ inputs.command || 'check' }}';
+            
+            const statusEmoji = conclusion === 'success' ? ':white_check_mark:' : conclusion === 'failure' ? ':x:' : ':warning:';
+            
+            const body = `## Live Test Results ${statusEmoji}
+            
+            **Connector:** \`${connector}\`
+            **Command:** \`${command}\`
+            **Result:** \`${conclusion}\`
+            
+            [View full test logs](${workflowUrl}) (requires access to airbyte-ops-mcp)`;
+            
+            await github.rest.issues.createComment({
+              owner: 'airbytehq',
+              repo: 'airbyte',
+              issue_number: ${{ inputs.pr || 0 }},
+              body: body
+            });
+
+      - name: Output workflow result
+        if: always()
         run: |
-          echo "Live test workflow triggered in airbyte-ops-mcp."
-          echo "View the workflow runs at: https://github.com/airbytehq/airbyte-ops-mcp/actions/workflows/connector-live-test.yml"
+          echo "Live test workflow completed."
+          echo "Conclusion: ${{ steps.trigger-workflow.outputs.workflow-conclusion }}"
+          echo "Workflow URL: ${{ steps.trigger-workflow.outputs.workflow-url }}"
