@@ -10,7 +10,7 @@ description: >-
 check:
   type: CheckStream
   stream_names:
-    - channels
+    - video
 
 definitions:
   streams:
@@ -251,7 +251,6 @@ definitions:
     client_secret: "{{ config[\"credentials\"][\"client_secret\"] }}"
     token_refresh_endpoint: https://oauth2.googleapis.com/token
     scopes:
-      - https://www.googleapis.com/auth/youtube.readonly
       - https://www.googleapis.com/auth/youtube.force-ssl
     refresh_token: "{{ config[\"credentials\"][\"refresh_token\"] }}"
     refresh_request_body: {}
@@ -339,7 +338,7 @@ spec:
     predicate_value: oauth2.0
     oauth_config_specification:
       oauth_connector_input_specification:
-        scope: https://www.googleapis.com/auth/youtube.readonly https://www.googleapis.com/auth/youtube.force-ssl
+        scope: https://www.googleapis.com/auth/youtube.force-ssl
         consent_url: https://accounts.google.com/o/oauth2/v2/auth?{{client_id_param}}&{{redirect_uri_param}}&response_type=code&{{scope_param}}&access_type=offline&{{state_param}}&include_granted_scopes=true&prompt=consent
         access_token_url: https://oauth2.googleapis.com/token?{{client_id_param}}&{{client_secret_param}}&{{auth_code_param}}&grant_type=authorization_code&{{redirect_uri_param}}
         extract_output: ["refresh_token"]
