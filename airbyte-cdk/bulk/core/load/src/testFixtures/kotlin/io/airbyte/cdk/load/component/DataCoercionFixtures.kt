@@ -4,7 +4,6 @@
 
 package io.airbyte.cdk.load.component
 
-import io.airbyte.cdk.load.component.DataCoercionObjectFixtures.objects
 import io.airbyte.cdk.load.data.AirbyteValue
 import io.airbyte.cdk.load.data.ArrayValue
 import io.airbyte.cdk.load.data.DateValue
@@ -655,7 +654,6 @@ const val UNION_OBJ_VALUE = "object value"
 const val UNION_STR_VALUE = "string value"
 
 object DataCoercionUnionFixtures {
-
     val unions =
         listOf(
             test(NULL, NullValue, null),
@@ -704,6 +702,35 @@ object DataCoercionLegacyUnionFixtures {
     @JvmStatic fun unions() = unions.toArgs()
 
     @JvmStatic fun stringifiedUnions() = DataCoercionUnionFixtures.stringifiedUnions.toArgs()
+}
+
+// This is pretty much identical to UnionFixtures, but separating them in case we need to add
+// different test cases for either of them.
+object DataCoercionUnknownFixtures {
+    const val INT_VALUE = "integer value"
+    const val STR_VALUE = "string value"
+    const val OBJ_VALUE = "object value"
+
+    val unknowns =
+        listOf(
+            test(NULL, NullValue, null),
+            test(INT_VALUE, IntegerValue(42), 42L),
+            test(STR_VALUE, StringValue("foo"), "foo"),
+            test(
+                OBJ_VALUE,
+                ObjectValue(linkedMapOf("foo" to StringValue("bar"))),
+                mapOf("foo" to "bar")
+            ),
+        )
+
+    val stringifiedUnknowns =
+        unknowns.map { fixture ->
+            fixture.copy(outputValue = fixture.outputValue?.serializeToString())
+        }
+
+    @JvmStatic fun unknowns() = unknowns.toArgs()
+
+    @JvmStatic fun stringifiedUnknowns() = stringifiedUnknowns.toArgs()
 }
 
 fun List<DataCoercionFixture>.toArgs(): List<Arguments> =
