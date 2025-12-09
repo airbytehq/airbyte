@@ -188,9 +188,9 @@ constructor(
     }
 
     /**
-     * Returns full information about all tables from a specific Dataset in a specific Project.
-     * This method supports multi-project configurations where tables need to be listed from
-     * projects other than the default/billing project.
+     * Returns full information about all tables from a specific Dataset in a specific Project. This
+     * method supports multi-project configurations where tables need to be listed from projects
+     * other than the default/billing project.
      *
      * @param projectId BigQuery project id
      * @param datasetId BigQuery dataset id
