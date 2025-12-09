@@ -1,9 +1,7 @@
 name: On-Demand Live Connector Validation Tests
-# This workflow uses the airbyte-ops-mcp implementation for live tests.
+# This workflow triggers the live test workflow in airbyte-ops-mcp.
+# Logs and artifacts are kept in the private airbyte-ops-mcp repo.
 # See: https://github.com/airbytehq/airbyte-ops-mcp
-
-permissions:
-  contents: read
 
 concurrency:
   # This is the name of the concurrency group. It is used to prevent concurrent runs of the same workflow.
@@ -63,46 +61,47 @@ on:
         type: string
 
 jobs:
-  live_tests:
-    name: Live Tests
-    runs-on: ubuntu-latest
-    timeout-minutes: 60
+  trigger_live_tests:
+    name: Trigger Live Tests in airbyte-ops-mcp
+    runs-on: ubuntu-24.04
     steps:
-      - name: Checkout code
-        uses: actions/checkout@v4
-
-      - name: Install uv
-        uses: astral-sh/setup-uv@v7
+      - name: Authenticate as GitHub App
+        uses: actions/create-github-app-token@v2
+        id: get-app-token
         with:
-          version: "latest"
+          owner: airbytehq
+          repositories: |
+            airbyte
+            airbyte-ops-mcp
+          app-id: ${{ secrets.OCTAVIA_BOT_APP_ID }}
+          private-key: ${{ secrets.OCTAVIA_BOT_PRIVATE_KEY }}
 
-      - name: Set up Python
-        uses: actions/setup-python@v5
-        with:
-          python-version: "3.11"
-
-      - name: Run Live Test
-        id: live-test
+      - name: Trigger live test workflow in airbyte-ops-mcp
         env:
-          AIRBYTE_CLOUD_CLIENT_ID: ${{ secrets.AIRBYTE_CLOUD_CLIENT_ID }}
-          AIRBYTE_CLOUD_CLIENT_SECRET: ${{ secrets.AIRBYTE_CLOUD_CLIENT_SECRET }}
+          GH_TOKEN: ${{ steps.get-app-token.outputs.token }}
         run: |
-          ARGS=(--connector-image "${{ inputs.connector_image }}" --command "${{ inputs.command }}")
+          # Build the inputs JSON, only including non-empty values
+          INPUTS_JSON=$(jq -n \
+            --arg connector_image "${{ inputs.connector_image }}" \
+            --arg command "${{ inputs.command || 'check' }}" \
+            --arg connection_id "${{ inputs.connection_id }}" \
+            --arg state_path "${{ inputs.state_path }}" \
+            '{
+              connector_image: $connector_image,
+              command: $command
+            } + (if $connection_id != "" then {connection_id: $connection_id} else {} end)
+              + (if $state_path != "" then {state_path: $state_path} else {} end)')
 
-          if [ -n "${{ inputs.connection_id }}" ]; then
-            ARGS+=(--connection-id "${{ inputs.connection_id }}")
-          fi
+          echo "Triggering live test workflow with inputs:"
+          echo "$INPUTS_JSON" | jq .
 
-          if [ -n "${{ inputs.state_path }}" ]; then
-            ARGS+=(--state-path "${{ inputs.state_path }}")
-          fi
+          curl -X POST \
+            -H "Authorization: Bearer $GH_TOKEN" \
+            -H "Accept: application/vnd.github+json" \
+            -H "X-GitHub-Api-Version: 2022-11-28" \
+            https://api.github.com/repos/airbytehq/airbyte-ops-mcp/actions/workflows/connector-live-test.yml/dispatches \
+            -d "$(jq -n --argjson inputs "$INPUTS_JSON" '{ref: "main", inputs: $inputs}')"
 
-          uvx --from=airbyte-internal-ops airbyte-ops cloud connector live-test "${ARGS[@]}"
-
-      - name: Upload Test Artifacts
-        if: always()
-        uses: actions/upload-artifact@v4
-        with:
-          name: live-test-artifacts-${{ github.run_id }}
-          path: /tmp/live_test_artifacts/
-          retention-days: 7
+          echo ""
+          echo "Live test workflow triggered in airbyte-ops-mcp."
+          echo "View the workflow runs at: https://github.com/airbytehq/airbyte-ops-mcp/actions/workflows/connector-live-test.yml"
