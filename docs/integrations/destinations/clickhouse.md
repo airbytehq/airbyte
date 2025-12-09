@@ -158,7 +158,7 @@ The connector converts arrays and unions to strings for compatibility. If you ne
 
 | Version    | Date       | Pull Request                                               | Subject                                                                        |
 |:-----------|:-----------|:-----------------------------------------------------------|:-------------------------------------------------------------------------------|
-| 2.1.17-rc.1| 2025-12-04 | [70358](https://github.com/airbytehq/airbyte/pull/70358)   | Internal refactor: Use TableSchemaMapper for schema operations cont.           |
+| 2.1.16-rc.2| 2025-12-09 | [70358](https://github.com/airbytehq/airbyte/pull/70358)   | Internal refactor: Use TableSchemaMapper for schema operations cont.           |
 | 2.1.16-rc.1| 2025-12-04 | [70279](https://github.com/airbytehq/airbyte/pull/70279)   | Internal refactor: Use TableSchemaMapper for schema operations                 |
 | 2.1.15     | 2025-12-03 | [69829](https://github.com/airbytehq/airbyte/pull/69829)   | Bump ClickHouse client to 0.9.4                                                |
 | 2.1.14     | 2025-11-13 | [69245](https://github.com/airbytehq/airbyte/pull/69245)   | Upgrade to CDK 0.1.78                                                          |
