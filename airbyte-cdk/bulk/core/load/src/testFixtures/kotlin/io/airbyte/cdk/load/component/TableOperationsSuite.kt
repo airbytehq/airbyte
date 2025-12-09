@@ -4,7 +4,10 @@
 
 package io.airbyte.cdk.load.component
 
+import io.airbyte.cdk.load.command.Append
+import io.airbyte.cdk.load.command.Dedupe
 import io.airbyte.cdk.load.component.TableOperationsFixtures as Fixtures
+import io.airbyte.cdk.load.component.TableOperationsFixtures.TEST_FIELD
 import io.airbyte.cdk.load.component.TableOperationsFixtures.assertEquals
 import io.airbyte.cdk.load.component.TableOperationsFixtures.insertRecords
 import io.airbyte.cdk.load.component.TableOperationsFixtures.reverseColumnNameMapping
@@ -18,6 +21,7 @@ import io.airbyte.cdk.load.message.Meta.Companion.COLUMN_NAME_AB_EXTRACTED_AT
 import io.airbyte.cdk.load.message.Meta.Companion.COLUMN_NAME_AB_GENERATION_ID
 import io.airbyte.cdk.load.message.Meta.Companion.COLUMN_NAME_AB_META
 import io.airbyte.cdk.load.message.Meta.Companion.COLUMN_NAME_AB_RAW_ID
+import io.airbyte.cdk.load.schema.TableSchemaFactory
 import io.airbyte.cdk.load.table.ColumnNameMapping
 import io.micronaut.test.extensions.junit5.annotation.MicronautTest
 import kotlinx.coroutines.test.runTest
@@ -48,6 +52,8 @@ interface TableOperationsSuite {
     /** The database client instance to test. Must be properly configured and connected. */
     val client: TableOperationsClient
     val testClient: TestTableOperationsClient
+    val schemaFactory: TableSchemaFactory
+
     // since ColumnNameMapping doesn't include the airbyte columns...
     val airbyteMetaColumnMapping: Map<String, String>
         get() = Meta.COLUMN_NAMES.associateWith { it }
@@ -84,6 +90,9 @@ interface TableOperationsSuite {
         val testTable = Fixtures.generateTestTableName("table-test-table", testNamespace)
         harness.assertTableDoesNotExist(testTable)
 
+        val tableSchema =
+            schemaFactory.make(testTable, Fixtures.TEST_INTEGER_SCHEMA.properties, Append)
+
         try {
 
             client.createTable(
@@ -93,7 +102,8 @@ interface TableOperationsSuite {
                     Fixtures.createAppendStream(
                         namespace = testTable.namespace,
                         name = testTable.name,
-                        schema = Fixtures.TEST_INTEGER_SCHEMA,
+                        inputSchema = Fixtures.TEST_INTEGER_SCHEMA,
+                        tableSchema = tableSchema,
                     ),
                 replace = false,
             )
@@ -129,11 +139,21 @@ interface TableOperationsSuite {
         val testTable = Fixtures.generateTestTableName("insert-test-table", testNamespace)
         harness.assertTableDoesNotExist(testTable)
 
+        val tableSchema =
+            schemaFactory.make(testTable, Fixtures.TEST_INTEGER_SCHEMA.properties, Append)
+        val stream =
+            Fixtures.createAppendStream(
+                namespace = testTable.namespace,
+                name = testTable.name,
+                inputSchema = Fixtures.TEST_INTEGER_SCHEMA,
+                tableSchema = tableSchema,
+            )
+
         try {
             harness.createTestTableAndVerifyExists(
                 tableName = testTable,
-                schema = Fixtures.TEST_INTEGER_SCHEMA,
                 columnNameMapping = columnNameMapping,
+                stream = stream,
             )
 
             testClient.insertRecords(testTable, inputRecords, columnNameMapping)
@@ -142,7 +162,7 @@ interface TableOperationsSuite {
 
             assertEquals(
                 expectedRecords,
-                resultRecords.reverseColumnNameMapping(columnNameMapping, airbyteMetaColumnMapping)
+                resultRecords.reverseColumnNameMapping(columnNameMapping, airbyteMetaColumnMapping),
             )
         } finally {
             harness.cleanupTable(testTable)
@@ -174,11 +194,21 @@ interface TableOperationsSuite {
         val testTable = Fixtures.generateTestTableName("count-test-table", testNamespace)
         harness.assertTableDoesNotExist(testTable)
 
+        val tableSchema =
+            schemaFactory.make(testTable, Fixtures.TEST_INTEGER_SCHEMA.properties, Append)
+        val stream =
+            Fixtures.createAppendStream(
+                namespace = testTable.namespace,
+                name = testTable.name,
+                inputSchema = Fixtures.TEST_INTEGER_SCHEMA,
+                tableSchema = tableSchema,
+            )
+
         try {
             harness.createTestTableAndVerifyExists(
                 tableName = testTable,
-                schema = Fixtures.TEST_INTEGER_SCHEMA,
                 columnNameMapping = columnNameMapping,
+                stream = stream,
             )
 
             val records1 =
@@ -322,11 +352,21 @@ interface TableOperationsSuite {
         val testTable = Fixtures.generateTestTableName("gen-id-test-table", testNamespace)
         harness.assertTableDoesNotExist(testTable)
 
+        val tableSchema =
+            schemaFactory.make(testTable, Fixtures.TEST_INTEGER_SCHEMA.properties, Append)
+        val stream =
+            Fixtures.createAppendStream(
+                namespace = testTable.namespace,
+                name = testTable.name,
+                inputSchema = Fixtures.TEST_INTEGER_SCHEMA,
+                tableSchema = tableSchema,
+            )
+
         try {
             harness.createTestTableAndVerifyExists(
                 tableName = testTable,
-                schema = Fixtures.TEST_INTEGER_SCHEMA,
                 columnNameMapping = columnNameMapping,
+                stream = stream,
             )
 
             val genId = 17L
@@ -382,18 +422,38 @@ interface TableOperationsSuite {
         harness.assertTableDoesNotExist(sourceTable)
         harness.assertTableDoesNotExist(targetTable)
 
+        val sourceTableSchema =
+            schemaFactory.make(sourceTable, Fixtures.TEST_INTEGER_SCHEMA.properties, Append)
+        val sourceStream =
+            Fixtures.createAppendStream(
+                namespace = sourceTable.namespace,
+                name = sourceTable.name,
+                inputSchema = Fixtures.TEST_INTEGER_SCHEMA,
+                tableSchema = sourceTableSchema,
+            )
+
+        val targetTableSchema =
+            schemaFactory.make(targetTable, Fixtures.TEST_INTEGER_SCHEMA.properties, Append)
+        val targetStream =
+            Fixtures.createAppendStream(
+                namespace = targetTable.namespace,
+                name = targetTable.name,
+                inputSchema = Fixtures.TEST_INTEGER_SCHEMA,
+                tableSchema = targetTableSchema,
+            )
+
         try {
             harness.createTestTableAndVerifyExists(
-                sourceTable,
-                Fixtures.TEST_INTEGER_SCHEMA,
-                columnNameMapping,
+                tableName = sourceTable,
+                columnNameMapping = columnNameMapping,
+                stream = sourceStream,
             )
             harness.insertAndVerifyRecordCount(sourceTable, sourceInputRecords, columnNameMapping)
 
             harness.createTestTableAndVerifyExists(
-                targetTable,
-                Fixtures.TEST_INTEGER_SCHEMA,
-                columnNameMapping,
+                tableName = targetTable,
+                columnNameMapping = columnNameMapping,
+                stream = targetStream,
             )
             harness.insertAndVerifyRecordCount(targetTable, targetInputRecords, columnNameMapping)
 
@@ -405,7 +465,7 @@ interface TableOperationsSuite {
                 expectedRecords,
                 overwrittenTableRecords.reverseColumnNameMapping(
                     columnNameMapping,
-                    airbyteMetaColumnMapping
+                    airbyteMetaColumnMapping,
                 ),
                 "test",
                 "Expected records were not in the overwritten table.",
@@ -454,18 +514,38 @@ interface TableOperationsSuite {
         harness.assertTableDoesNotExist(sourceTable)
         harness.assertTableDoesNotExist(targetTable)
 
+        val sourceTableSchema =
+            schemaFactory.make(sourceTable, Fixtures.TEST_INTEGER_SCHEMA.properties, Append)
+        val sourceStream =
+            Fixtures.createAppendStream(
+                namespace = sourceTable.namespace,
+                name = sourceTable.name,
+                inputSchema = Fixtures.TEST_INTEGER_SCHEMA,
+                tableSchema = sourceTableSchema,
+            )
+
+        val targetTableSchema =
+            schemaFactory.make(targetTable, Fixtures.TEST_INTEGER_SCHEMA.properties, Append)
+        val targetStream =
+            Fixtures.createAppendStream(
+                namespace = targetTable.namespace,
+                name = targetTable.name,
+                inputSchema = Fixtures.TEST_INTEGER_SCHEMA,
+                tableSchema = targetTableSchema,
+            )
+
         try {
             harness.createTestTableAndVerifyExists(
-                sourceTable,
-                Fixtures.TEST_INTEGER_SCHEMA,
-                columnNameMapping,
+                tableName = sourceTable,
+                columnNameMapping = columnNameMapping,
+                stream = sourceStream,
             )
             harness.insertAndVerifyRecordCount(sourceTable, sourceInputRecords, columnNameMapping)
 
             harness.createTestTableAndVerifyExists(
-                targetTable,
-                Fixtures.TEST_INTEGER_SCHEMA,
-                columnNameMapping,
+                tableName = targetTable,
+                columnNameMapping = columnNameMapping,
+                stream = targetStream,
             )
             harness.insertAndVerifyRecordCount(targetTable, targetInputRecords, columnNameMapping)
 
@@ -477,10 +557,10 @@ interface TableOperationsSuite {
                 expectedRecords,
                 copyTableRecords.reverseColumnNameMapping(
                     columnNameMapping,
-                    airbyteMetaColumnMapping
+                    airbyteMetaColumnMapping,
                 ),
                 "test",
-                "Expected source records were not copied to the target table."
+                "Expected source records were not copied to the target table.",
             )
         } finally {
             harness.cleanupTable(sourceTable)
@@ -520,31 +600,42 @@ interface TableOperationsSuite {
 
         harness.assertTableDoesNotExist(sourceTable)
 
+        val sourceTableSchema =
+            schemaFactory.make(sourceTable, Fixtures.ID_TEST_WITH_CDC_SCHEMA.properties, Append)
         val sourceStream =
             Fixtures.createAppendStream(
                 namespace = sourceTable.namespace,
                 name = sourceTable.name,
-                schema = Fixtures.ID_TEST_WITH_CDC_SCHEMA,
+                inputSchema = Fixtures.ID_TEST_WITH_CDC_SCHEMA,
+                tableSchema = sourceTableSchema,
             )
 
         val targetTable = Fixtures.generateTestTableName("upsert-test-target-table", testNamespace)
-
         harness.assertTableDoesNotExist(targetTable)
 
+        val primaryKey = listOf(listOf(Fixtures.ID_FIELD))
+        val cursor = listOf(Fixtures.TEST_FIELD)
+
+        val targetTableSchema =
+            schemaFactory.make(
+                targetTable,
+                Fixtures.TEST_INTEGER_SCHEMA.properties,
+                Dedupe(primaryKey, cursor),
+            )
         val targetStream =
             Fixtures.createDedupeStream(
                 namespace = targetTable.namespace,
                 name = targetTable.name,
-                schema = Fixtures.ID_TEST_WITH_CDC_SCHEMA,
-                primaryKey = listOf(listOf(Fixtures.ID_FIELD)),
-                cursor = listOf(Fixtures.TEST_FIELD),
+                inputSchema = Fixtures.TEST_INTEGER_SCHEMA,
+                primaryKey = primaryKey,
+                cursor = cursor,
+                tableSchema = targetTableSchema,
             )
 
         try {
             harness.createTestTableAndVerifyExists(
                 tableName = sourceTable,
                 columnNameMapping = columnNameMapping,
-                schema = Fixtures.ID_AND_TEST_SCHEMA,
                 stream = sourceStream,
             )
             harness.insertAndVerifyRecordCount(sourceTable, sourceInputRecords, columnNameMapping)
@@ -552,7 +643,6 @@ interface TableOperationsSuite {
             harness.createTestTableAndVerifyExists(
                 tableName = targetTable,
                 columnNameMapping = columnNameMapping,
-                schema = Fixtures.ID_TEST_WITH_CDC_SCHEMA,
                 stream = targetStream,
             )
             harness.insertAndVerifyRecordCount(targetTable, targetInputRecords, columnNameMapping)
@@ -565,10 +655,10 @@ interface TableOperationsSuite {
                 expectedRecords,
                 upsertTableRecords.reverseColumnNameMapping(
                     columnNameMapping,
-                    airbyteMetaColumnMapping
+                    airbyteMetaColumnMapping,
                 ),
                 "id",
-                "Upserted table did not contain expected records."
+                "Upserted table did not contain expected records.",
             )
         } finally {
             harness.cleanupTable(sourceTable)
