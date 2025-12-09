@@ -79,6 +79,7 @@ class TestOrdersFullRefresh(TestCase):
         output = self._read(config_=config().with_start_date("2024-01-01"))
         assert len(output.records) == 0
 
+
 class TestOrdersIncremental(TestCase):
     """
     Tests for the orders stream in incremental mode.
@@ -211,12 +212,8 @@ class TestOrdersIncremental(TestCase):
         """
         page_size = 100
 
-        first_page_response = (
-            ResponseBuilder.from_template("orders").with_record_count(page_size, id_start=1).build()
-        )
-        second_page_response = (
-            ResponseBuilder.from_template("orders").with_record_count(50, id_start=101).build()
-        )
+        first_page_response = ResponseBuilder.from_template("orders").with_record_count(page_size, id_start=1).build()
+        second_page_response = ResponseBuilder.from_template("orders").with_record_count(50, id_start=101).build()
 
         http_mocker.get(
             WooCommerceRequestBuilder.orders_endpoint()

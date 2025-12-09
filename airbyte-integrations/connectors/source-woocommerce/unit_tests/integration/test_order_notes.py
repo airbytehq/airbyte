@@ -97,8 +97,26 @@ class TestOrderNotesFullRefresh(TestCase):
             {**orders_template, "id": 728},
         ]
 
-        notes_for_727 = [{"id": 1, "note": "Note for order 727", "date_created": "2024-03-15T10:30:00", "date_created_gmt": "2024-03-15T10:30:00", "author": "system", "customer_note": False}]
-        notes_for_728 = [{"id": 2, "note": "Note for order 728", "date_created": "2024-03-15T11:00:00", "date_created_gmt": "2024-03-15T11:00:00", "author": "system", "customer_note": False}]
+        notes_for_727 = [
+            {
+                "id": 1,
+                "note": "Note for order 727",
+                "date_created": "2024-03-15T10:30:00",
+                "date_created_gmt": "2024-03-15T10:30:00",
+                "author": "system",
+                "customer_note": False,
+            }
+        ]
+        notes_for_728 = [
+            {
+                "id": 2,
+                "note": "Note for order 728",
+                "date_created": "2024-03-15T11:00:00",
+                "date_created_gmt": "2024-03-15T11:00:00",
+                "author": "system",
+                "customer_note": False,
+            }
+        ]
 
         http_mocker.get(
             WooCommerceRequestBuilder.orders_endpoint()
@@ -173,7 +191,14 @@ class TestOrderNotesFullRefresh(TestCase):
         orders_response = _get_orders_response_template()
         order_id = orders_response[0]["id"]
 
-        notes_template = {"id": 1, "note": "Test note", "date_created": "2024-03-15T10:30:00", "date_created_gmt": "2024-03-15T10:30:00", "author": "system", "customer_note": False}
+        notes_template = {
+            "id": 1,
+            "note": "Test note",
+            "date_created": "2024-03-15T10:30:00",
+            "date_created_gmt": "2024-03-15T10:30:00",
+            "author": "system",
+            "customer_note": False,
+        }
 
         page1_notes = []
         for i in range(100):

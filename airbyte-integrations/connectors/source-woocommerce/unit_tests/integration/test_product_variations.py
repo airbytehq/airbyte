@@ -91,8 +91,24 @@ class TestProductVariationsFullRefresh(TestCase):
             {**products_template, "id": 100},
         ]
 
-        variations_for_99 = [{"id": 101, "sku": "PROD-99-VAR-1", "price": "49.99", "date_created_gmt": "2024-01-10T08:00:00", "date_modified_gmt": "2024-01-10T08:00:00"}]
-        variations_for_100 = [{"id": 102, "sku": "PROD-100-VAR-1", "price": "59.99", "date_created_gmt": "2024-01-10T08:00:00", "date_modified_gmt": "2024-01-10T08:00:00"}]
+        variations_for_99 = [
+            {
+                "id": 101,
+                "sku": "PROD-99-VAR-1",
+                "price": "49.99",
+                "date_created_gmt": "2024-01-10T08:00:00",
+                "date_modified_gmt": "2024-01-10T08:00:00",
+            }
+        ]
+        variations_for_100 = [
+            {
+                "id": 102,
+                "sku": "PROD-100-VAR-1",
+                "price": "59.99",
+                "date_created_gmt": "2024-01-10T08:00:00",
+                "date_modified_gmt": "2024-01-10T08:00:00",
+            }
+        ]
 
         http_mocker.get(
             WooCommerceRequestBuilder.products_endpoint()
@@ -167,7 +183,13 @@ class TestProductVariationsFullRefresh(TestCase):
         products_response = _get_products_response_template()
         product_id = products_response[0]["id"]
 
-        variations_template = {"id": 1, "sku": "VAR", "price": "49.99", "date_created_gmt": "2024-01-10T08:00:00", "date_modified_gmt": "2024-01-10T08:00:00"}
+        variations_template = {
+            "id": 1,
+            "sku": "VAR",
+            "price": "49.99",
+            "date_created_gmt": "2024-01-10T08:00:00",
+            "date_modified_gmt": "2024-01-10T08:00:00",
+        }
 
         page1_variations = []
         for i in range(100):

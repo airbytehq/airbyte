@@ -212,12 +212,8 @@ class TestProductsIncremental(TestCase):
         """
         page_size = 100
 
-        first_page_response = (
-            ResponseBuilder.from_template("products").with_record_count(page_size, id_start=1).build()
-        )
-        second_page_response = (
-            ResponseBuilder.from_template("products").with_record_count(50, id_start=101).build()
-        )
+        first_page_response = ResponseBuilder.from_template("products").with_record_count(page_size, id_start=1).build()
+        second_page_response = ResponseBuilder.from_template("products").with_record_count(50, id_start=101).build()
 
         http_mocker.get(
             WooCommerceRequestBuilder.products_endpoint()
