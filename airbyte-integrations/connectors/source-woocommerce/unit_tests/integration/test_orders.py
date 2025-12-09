@@ -21,6 +21,7 @@ from airbyte_cdk.test.state_builder import StateBuilder
 
 from .config import ConfigBuilder
 from .request_builder import WooCommerceRequestBuilder
+from .response_builder import ResponseBuilder
 from .utils import config, read_output
 
 
@@ -67,7 +68,6 @@ class TestOrdersFullRefresh(TestCase):
 
         output = self._read(config_=config())
         assert len(output.records) == 0
-
 
 class TestOrdersIncremental(TestCase):
     """
@@ -177,3 +177,49 @@ class TestOrdersIncremental(TestCase):
         assert (
             latest_state.__dict__["date_modified_gmt"] == "2024-03-15T14:45:00"
         ), "State should be updated to the date_modified_gmt timestamp of the latest record"
+
+    @HttpMocker()
+    @freezegun.freeze_time("2024-01-15T12:00:00Z")
+    def test_read_records_with_pagination(self, http_mocker: HttpMocker) -> None:
+        """
+        Test reading orders with pagination using OffsetIncrement.
+
+        The connector uses OffsetIncrement pagination with page_size=100.
+        When the first page returns exactly 100 records, the connector
+        fetches the next page with offset=100. Pagination stops when
+        a page returns fewer than 100 records.
+        """
+        page_size = 100
+
+        first_page_response = (
+            ResponseBuilder.from_template("orders").with_record_count(page_size, id_start=1).build()
+        )
+        second_page_response = (
+            ResponseBuilder.from_template("orders").with_record_count(50, id_start=101).build()
+        )
+
+        http_mocker.get(
+            WooCommerceRequestBuilder.orders_endpoint()
+            .with_default_params()
+            .with_modified_after("2024-01-01T00:00:00")
+            .with_modified_before("2024-01-15T12:00:00")
+            .build(),
+            HttpResponse(body=json.dumps(first_page_response), status_code=200),
+        )
+        http_mocker.get(
+            WooCommerceRequestBuilder.orders_endpoint()
+            .with_default_params()
+            .with_modified_after("2024-01-01T00:00:00")
+            .with_modified_before("2024-01-15T12:00:00")
+            .with_offset(100)
+            .build(),
+            HttpResponse(body=json.dumps(second_page_response), status_code=200),
+        )
+
+        output = self._read(config_=config().with_start_date("2024-01-01"))
+
+        assert len(output.records) == 150
+        assert output.records[0].record.data["id"] == 1
+        assert output.records[99].record.data["id"] == 100
+        assert output.records[100].record.data["id"] == 101
+        assert output.records[149].record.data["id"] == 150
