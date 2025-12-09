@@ -24,6 +24,7 @@ import io.airbyte.cdk.load.data.ObjectType
 import io.airbyte.cdk.load.data.StringType
 import io.airbyte.cdk.load.data.StringValue
 import io.airbyte.cdk.load.message.Meta
+import io.airbyte.cdk.load.schema.TableSchemaFactory
 import io.airbyte.cdk.load.schema.model.TableName
 import io.airbyte.cdk.load.table.ColumnNameMapping
 import io.micronaut.test.extensions.junit5.annotation.MicronautTest
@@ -40,6 +41,7 @@ interface TableSchemaEvolutionSuite {
 
     val opsClient: TableOperationsClient
     val testClient: TestTableOperationsClient
+    val schemaFactory: TableSchemaFactory
 
     private val harness: TableOperationsTestHarness
         get() = TableOperationsTestHarness(opsClient, testClient, airbyteMetaColumnMapping)
@@ -61,11 +63,13 @@ interface TableSchemaEvolutionSuite {
     ) = runTest {
         val testNamespace = Fixtures.generateTestNamespace("namespace-test")
         val testTable = Fixtures.generateTestTableName("table-test-table", testNamespace)
+        val tableSchema =
+            schemaFactory.make(testTable, Fixtures.ALL_TYPES_SCHEMA.properties, Append)
         val stream =
-            Fixtures.createAppendStream(
+            Fixtures.createStream(
                 namespace = testTable.namespace,
                 name = testTable.name,
-                schema = Fixtures.ALL_TYPES_SCHEMA,
+                tableSchema = tableSchema,
             )
 
         opsClient.createNamespace(testNamespace)
@@ -97,11 +101,13 @@ interface TableSchemaEvolutionSuite {
     ) {
         val testNamespace = Fixtures.generateTestNamespace("namespace-test")
         val testTable = Fixtures.generateTestTableName("table-test-table", testNamespace)
+        val tableSchema =
+            schemaFactory.make(testTable, Fixtures.ALL_TYPES_SCHEMA.properties, Append)
         val stream =
-            Fixtures.createAppendStream(
+            Fixtures.createStream(
                 namespace = testTable.namespace,
                 name = testTable.name,
-                schema = Fixtures.ALL_TYPES_SCHEMA,
+                tableSchema = tableSchema,
             )
         val computedSchema = client.computeSchema(stream, columnNameMapping)
         assertEquals(expectedComputedSchema, computedSchema)
@@ -374,12 +380,13 @@ interface TableSchemaEvolutionSuite {
                     "to_drop" to FieldType(StringType, true),
                 ),
             )
+        val initialTableSchema =
+            schemaFactory.make(testTable, initialSchema.properties, initialStreamImportType)
         val initialStream =
             Fixtures.createStream(
                 testTable.namespace,
                 testTable.name,
-                initialSchema,
-                initialStreamImportType,
+                initialTableSchema,
             )
         val modifiedSchema =
             ObjectType(
@@ -391,12 +398,13 @@ interface TableSchemaEvolutionSuite {
                     "to_add" to FieldType(StringType, true),
                 ),
             )
+        val modifiedTableSchema =
+            schemaFactory.make(testTable, modifiedSchema.properties, modifiedStreamImportType)
         val modifiedStream =
             Fixtures.createStream(
                 testTable.namespace,
                 testTable.name,
-                modifiedSchema,
-                modifiedStreamImportType,
+                modifiedTableSchema,
             )
 
         // Create the table and compute the schema changeset
@@ -548,16 +556,16 @@ interface TableSchemaEvolutionSuite {
         modifiedSchema: ObjectType,
         modifiedColumnNameMapping: ColumnNameMapping,
         initialStream: DestinationStream =
-            Fixtures.createAppendStream(
+            Fixtures.createStream(
                 namespace = testTable.namespace,
                 name = testTable.name,
-                schema = initialSchema,
+                tableSchema = schemaFactory.make(testTable, initialSchema.properties, Append),
             ),
         modifiedStream: DestinationStream =
-            Fixtures.createAppendStream(
+            Fixtures.createStream(
                 namespace = testTable.namespace,
                 name = testTable.name,
-                schema = modifiedSchema,
+                tableSchema = schemaFactory.make(testTable, modifiedSchema.properties, Append),
             ),
     ): SchemaEvolutionComputation {
         opsClient.createNamespace(testTable.namespace)
