@@ -17,6 +17,18 @@ The deepset destination connector supports the following sync modes:
 * [Incremental sync - append](https://docs.airbyte.com/understanding-airbyte/connections/incremental-append/)
 * [Incremental sync - append + deduped ](https://docs.airbyte.com/understanding-airbyte/connections/incremental-append-deduped)
 
+### Expected Input Schema
+
+The deepset destination connector expects records with a specific schema designed for document/file data. This connector is intended for use with file-based sources that extract text content from documents (PDFs, Word documents, etc.).
+
+#### Required Fields
+
+| Field          | Type   | Description                                                                                      |
+| :------------- | :----- | :----------------------------------------------------------------------------------------------- |
+| `content`      | string | The text content of the document, typically extracted from the source file. |
+| `document_key` | string | A unique identifier for the document. Used to generate the filename in deepset.                  |
+
+
 ## Syncing Data to deepset AI Platform
 
 To use the deepset destination in Airbyte:

@@ -13,6 +13,7 @@ from pydantic import BaseModel, ConfigDict, Field
 from airbyte_cdk.models import AirbyteRecordMessage
 from destination_deepset import util
 
+
 logger = logging.getLogger("airbyte")
 
 
@@ -96,7 +97,9 @@ class DeepsetCloudFile(BaseModel):
     @classmethod
     def from_record(cls, record: AirbyteRecordMessage) -> DeepsetCloudFile:
         logger.info(f"[DEEPSET] Parsing record from stream: {record.stream}")
-        logger.debug(f"[DEEPSET] Record data keys: {list(record.data.keys()) if isinstance(record.data, dict) else 'not a dict'}")
+        logger.debug(
+            f"[DEEPSET] Record data keys: {list(record.data.keys()) if isinstance(record.data, dict) else 'not a dict'}"
+        )
 
         try:
             data = FileData.model_validate(record.data)
@@ -109,8 +112,12 @@ class DeepsetCloudFile(BaseModel):
 
         name = Path(util.generate_name(data.document_key, record.stream, namespace=record.namespace))
 
+        # Preserve the original file extension, default to .txt if none
+        extension = name.suffix if name.suffix else ".txt"
+        filename = f"{name.stem}{extension}"
+
         return cls(
-            name=f"{name.stem}.md",
+            name=filename,
             content=data.content,
             meta={
                 "airbyte": {
@@ -119,7 +126,7 @@ class DeepsetCloudFile(BaseModel):
                     **({"namespace": record.namespace} if record.namespace else {}),
                     **({"file_parse_error": data.file_parse_error} if data.file_parse_error else {}),
                 },
-                **({"source_file_extension": name.suffix} if name.suffix else {}),
+                **({"source_file_extension": extension} if extension else {}),
                 **data.model_dump(exclude={"content", "file_parse_error"}, exclude_none=True),
             },
         )
