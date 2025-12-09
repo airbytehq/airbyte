@@ -505,6 +505,15 @@ spec:
           This option will only work if "Convert Column Names to SQL-Compliant Format (names_conversion)" is enabled.
         default: false
         order: 7
+      read_empty_header_columns:
+        type: boolean
+        title: Read Empty Header Columns
+        description: >-
+          When enabled, the connector will continue reading columns after empty header cells
+          and will include data from those columns using generated column names (e.g., "column_C").
+          By default, the connector stops reading columns when it encounters an empty header cell.
+        default: false
+        order: 8
       credentials:
         type: object
         title: Authentication
@@ -592,7 +601,7 @@ spec:
               title: Custom Stream Name
               description: The name you want this stream to appear as in Airbyte and your destination.
               order: 1
-          order: 8
+          order: 9
   advanced_auth:
     auth_flow_type: oauth2.0
     predicate_key:
