@@ -198,6 +198,20 @@ class SnowflakeDataCoercionTest(
         super.`handle schemaless array values`(inputValue, expectedValue, expectedChangeReason)
     }
 
+    /**
+     * We don't have special handling for legacy unions, so don't bother implementing [`handle
+     * legacy union values`].
+     */
+    @ParameterizedTest
+    @MethodSource("io.airbyte.cdk.load.component.DataCoercionUnionFixtures#unions")
+    override fun `handle union values`(
+        inputValue: AirbyteValue,
+        expectedValue: Any?,
+        expectedChangeReason: Reason?
+    ) {
+        super.`handle union values`(inputValue, expectedValue, expectedChangeReason)
+    }
+
     companion object {
         /**
          * Snowflake does two interesting things when querying a `NUMERIC(38, 0)` column:
