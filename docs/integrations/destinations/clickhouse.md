@@ -76,6 +76,9 @@ To create a user with the required permissions, run the following SQL commands i
 -- Create the user (replace 'your_password' with a secure password)
 CREATE USER airbyte_user IDENTIFIED BY 'your_password';
 
+-- If async_insert is enabled in ClickHouse, disable it for the Airbyte user to ensure connection checks and data syncs work correctly. This fixes the "Error: Failed to insert expected rows into check table. Actual written: 0" error.
+ALTER USER airbyte_user SETTINGS async_insert = 0;
+
 -- Grant permissions on the default database
 GRANT CREATE ON * TO airbyte_user;
 GRANT CREATE ON {database}.* TO airbyte_user;
@@ -155,8 +158,10 @@ The connector converts arrays and unions to strings for compatibility. If you ne
 
 | Version    | Date       | Pull Request                                               | Subject                                                                        |
 |:-----------|:-----------|:-----------------------------------------------------------|:-------------------------------------------------------------------------------|
-| 2.1.14     | 2025-11-13 | [69245](https://github.com/airbytehq/airbyte/pull/69245)   | Upgrade to CDK 0.1.78 |
-| 2.1.13     | 2025-11-11 | [69116](https://github.com/airbytehq/airbyte/pull/69116)   | Upgrade to CDK 0.1.74 (internal refactor for schema evolution) |
+| 2.1.16-rc.1| 2025-12-04 | [TBD](https://github.com/airbytehq/airbyte/pull/TBD)       | Internal refactor: Use TableSchemaMapper for schema operations                 |
+| 2.1.15     | 2025-12-03 | [TBD](https://github.com/airbytehq/airbyte/pull/TBD)       | Bump ClickHouse client to 0.9.4                                                |
+| 2.1.14     | 2025-11-13 | [69245](https://github.com/airbytehq/airbyte/pull/69245)   | Upgrade to CDK 0.1.78                                                          |
+| 2.1.13     | 2025-11-11 | [69116](https://github.com/airbytehq/airbyte/pull/69116)   | Upgrade to CDK 0.1.74 (internal refactor for schema evolution)                 |
 | 2.1.12     | 2025-11-06 | [69226](https://github.com/airbytehq/airbyte/pull/69226)   | Improved additional statistics handling                                        |
 | 2.1.11     | 2025-11-05 | [69200](https://github.com/airbytehq/airbyte/pull/69200/)  | Add support for observability metrics                                          |
 | 2.1.10     | 2025-11-03 | [69154](https://github.com/airbytehq/airbyte/pull/69154)   | Fix decimal validation                                                         |

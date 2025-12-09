@@ -41,4 +41,14 @@ data:
             alias: airbyte-connector-testing-secret-store
   connectorBuildOptions:
     baseImage: docker.io/airbyte/python-connector-base:4.0.2@sha256:9fdb1888c4264cf6fee473649ecb593f56f58e5d0096a87ee0b231777e2e3e73
+  externalDocumentationUrls:
+    - title: Convex HTTP API
+      url: https://docs.convex.dev/http-api/
+      type: api_reference
+    - title: Convex authentication
+      url: https://docs.convex.dev/auth
+      type: authentication_guide
+    - title: Convex Status
+      url: https://status.convex.dev/
+      type: status_page
 metadataSpecVersion: "1.0"
