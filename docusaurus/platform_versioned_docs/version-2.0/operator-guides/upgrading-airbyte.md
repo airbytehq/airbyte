@@ -70,7 +70,7 @@ Occasionally, you need to update `abctl` to the latest version. This is separate
 
 Run `brew upgrade abctl`. 
 
-## Linux 
+#### Linux 
 
 Run `curl -LsfS https://get.airbyte.com | bash -`.
 
