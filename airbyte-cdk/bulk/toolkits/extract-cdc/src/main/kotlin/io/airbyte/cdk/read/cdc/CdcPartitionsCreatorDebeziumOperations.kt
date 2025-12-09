@@ -12,7 +12,7 @@ import io.airbyte.cdk.read.Stream
 //  the criteria for stopping a sync do not result in a well-ordering of all offsets. As a result,
 //  the implementation of compareTo(other: T) breaks the contract of compareTo(). To fix this,
 //  we should define and use a weaker interface than Comparable with a method like:
-//  fun hasReached(t: T): Boolean.
+//  fun hasReached(target: T): Boolean.
 interface CdcPartitionsCreatorDebeziumOperations<T : Comparable<T>> {
 
     /** Extracts the WAL position from a [DebeziumOffset]. */

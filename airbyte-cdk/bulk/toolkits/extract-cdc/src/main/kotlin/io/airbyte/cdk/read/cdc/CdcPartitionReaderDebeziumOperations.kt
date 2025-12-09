@@ -13,7 +13,7 @@ import org.apache.kafka.connect.source.SourceRecord
 //  the criteria for stopping a sync do not result in a well-ordering of all offsets. As a result,
 //  its implementation of compareTo(other: T) breaks the contract of compareTo(). To fix this,
 //  we should define and use a weaker interface than Comparable with a method like:
-//  fun hasReached(t: T): Boolean.
+//  fun hasReached(target: T): Boolean.
 interface CdcPartitionReaderDebeziumOperations<T : Comparable<T>> {
 
     /**
