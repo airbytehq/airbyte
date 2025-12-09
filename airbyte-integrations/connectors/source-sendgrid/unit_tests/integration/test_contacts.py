@@ -41,12 +41,7 @@ class TestContactsStream(TestCase):
                 url="https://api.sendgrid.com/v3/marketing/contacts/exports",
             ),
             HttpResponse(
-                body=json.dumps({
-                    "id": "export_job_123",
-                    "status": "pending",
-                    "urls": [],
-                    "message": "Export job created"
-                }),
+                body=json.dumps({"id": "export_job_123", "status": "pending", "urls": [], "message": "Export job created"}),
                 status_code=202,
             ),
         )
@@ -57,12 +52,14 @@ class TestContactsStream(TestCase):
                 url="https://api.sendgrid.com/v3/marketing/contacts/exports/export_job_123",
             ),
             HttpResponse(
-                body=json.dumps({
-                    "id": "export_job_123",
-                    "status": "ready",
-                    "urls": ["https://sendgrid-export.s3.amazonaws.com/contacts_export.csv.gz"],
-                    "message": "Export ready for download"
-                }),
+                body=json.dumps(
+                    {
+                        "id": "export_job_123",
+                        "status": "ready",
+                        "urls": ["https://sendgrid-export.s3.amazonaws.com/contacts_export.csv.gz"],
+                        "message": "Export ready for download",
+                    }
+                ),
                 status_code=200,
             ),
         )
