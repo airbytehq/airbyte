@@ -202,21 +202,19 @@ def test_state_message_serialization_preserves_platform_id():
     Without the cdk_patches fix, this test would fail because the standard
     AirbyteStateMessage dataclass drops unknown fields during deserialization.
     """
+    import json
+
     from airbyte_cdk.models.airbyte_protocol_serializers import (
         AirbyteMessageSerializer,
         AirbyteStateMessageSerializer,
     )
-    import json
 
     # Simulate JSON input from platform with injected 'id' field
     platform_state_json = {
         "type": "STREAM",
         "id": 12345,  # Platform-injected tracking ID
-        "stream": {
-            "stream_descriptor": {"name": "test_stream"},
-            "stream_state": {"cursor": "abc123"}
-        },
-        "platform_metadata": "should_also_be_preserved"  # Any extra field
+        "stream": {"stream_descriptor": {"name": "test_stream"}, "stream_state": {"cursor": "abc123"}},
+        "platform_metadata": "should_also_be_preserved",  # Any extra field
     }
 
     # Deserialize (simulate receiving from platform)
@@ -227,15 +225,12 @@ def test_state_message_serialization_preserves_platform_id():
 
     # The 'id' field MUST be preserved - this is what the platform checks
     assert "id" in output_json, (
-        "Platform 'id' field was lost during serialization! "
-        "This will cause 'State message does not contain id' error in Airbyte 1.7+"
+        "Platform 'id' field was lost during serialization! This will cause 'State message does not contain id' error in Airbyte 1.7+"
     )
     assert output_json["id"] == 12345, "Platform 'id' value was corrupted"
 
     # Other extra fields should also be preserved
-    assert output_json.get("platform_metadata") == "should_also_be_preserved", (
-        "Additional properties were not preserved"
-    )
+    assert output_json.get("platform_metadata") == "should_also_be_preserved", "Additional properties were not preserved"
 
 
 def test_airbyte_message_with_state_preserves_platform_id():
@@ -252,11 +247,8 @@ def test_airbyte_message_with_state_preserves_platform_id():
         "state": {
             "type": "STREAM",
             "id": 67890,  # Platform tracking ID
-            "stream": {
-                "stream_descriptor": {"name": "users"},
-                "stream_state": {"updated_at": "2024-01-01"}
-            }
-        }
+            "stream": {"stream_descriptor": {"name": "users"}, "stream_state": {"updated_at": "2024-01-01"}},
+        },
     }
 
     # Round-trip through serializer
@@ -265,7 +257,5 @@ def test_airbyte_message_with_state_preserves_platform_id():
 
     # Verify state.id is preserved
     assert "state" in output_json
-    assert "id" in output_json["state"], (
-        "state.id was lost! Platform will fail with 'State message does not contain id'"
-    )
+    assert "id" in output_json["state"], "state.id was lost! Platform will fail with 'State message does not contain id'"
     assert output_json["state"]["id"] == 67890

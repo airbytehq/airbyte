@@ -7,6 +7,7 @@ The platform attaches an 'id' field to state messages, but the Python CDK's data
 doesn't preserve it. This patch adds the same dynamic attribute handling used for
 AirbyteStateBlob to AirbyteStateMessage.
 """
+
 from dataclasses import InitVar, dataclass
 from typing import Annotated, Any, Dict, Mapping, Optional
 
@@ -36,6 +37,7 @@ def apply_patches():
         State message that preserves additional properties (like 'id' from platform).
         Uses same pattern as AirbyteStateBlob for extra field preservation.
         """
+
         kwargs: InitVar[Mapping[str, Any]]
 
         type: Optional[AirbyteStateType] = None
@@ -47,12 +49,12 @@ def apply_patches():
 
         def __init__(self, *args: Any, **kwargs: Any) -> None:
             # Known fields that should be set as attributes
-            self.type = kwargs.pop('type', None)
-            self.stream = kwargs.pop('stream', None)
-            self.global_ = kwargs.pop('global_', None) or kwargs.pop('global', None)
-            self.data = kwargs.pop('data', None)
-            self.sourceStats = kwargs.pop('sourceStats', None)
-            self.destinationStats = kwargs.pop('destinationStats', None)
+            self.type = kwargs.pop("type", None)
+            self.stream = kwargs.pop("stream", None)
+            self.global_ = kwargs.pop("global_", None) or kwargs.pop("global", None)
+            self.data = kwargs.pop("data", None)
+            self.sourceStats = kwargs.pop("sourceStats", None)
+            self.destinationStats = kwargs.pop("destinationStats", None)
             # Store any additional properties (like 'id' from platform)
             self._additional_properties = kwargs
 
@@ -60,13 +62,13 @@ def apply_patches():
             if not isinstance(other, PatchedAirbyteStateMessage):
                 return False
             return (
-                self.type == other.type and
-                self.stream == other.stream and
-                self.global_ == other.global_ and
-                self.data == other.data and
-                self.sourceStats == other.sourceStats and
-                self.destinationStats == other.destinationStats and
-                getattr(self, '_additional_properties', {}) == getattr(other, '_additional_properties', {})
+                self.type == other.type
+                and self.stream == other.stream
+                and self.global_ == other.global_
+                and self.data == other.data
+                and self.sourceStats == other.sourceStats
+                and self.destinationStats == other.destinationStats
+                and getattr(self, "_additional_properties", {}) == getattr(other, "_additional_properties", {})
             )
 
     # Replace in protocol module
@@ -91,34 +93,36 @@ def apply_patches():
         def serialize(self, value: PatchedAirbyteStateMessage) -> Dict[str, Any]:
             result: Dict[str, Any] = {}
             if value.type is not None:
-                result['type'] = value.type.value if hasattr(value.type, 'value') else value.type
+                result["type"] = value.type.value if hasattr(value.type, "value") else value.type
             if value.stream is not None:
-                result['stream'] = AirbyteStreamStateSerializer.dump(value.stream)
+                result["stream"] = AirbyteStreamStateSerializer.dump(value.stream)
             if value.global_ is not None:
-                result['global'] = AirbyteGlobalStateSerializer.dump(value.global_)
+                result["global"] = AirbyteGlobalStateSerializer.dump(value.global_)
             if value.data is not None:
-                result['data'] = value.data
+                result["data"] = value.data
             if value.sourceStats is not None:
-                result['sourceStats'] = value.sourceStats.__dict__ if hasattr(value.sourceStats, '__dict__') else value.sourceStats
+                result["sourceStats"] = value.sourceStats.__dict__ if hasattr(value.sourceStats, "__dict__") else value.sourceStats
             if value.destinationStats is not None:
-                result['destinationStats'] = value.destinationStats.__dict__ if hasattr(value.destinationStats, '__dict__') else value.destinationStats
+                result["destinationStats"] = (
+                    value.destinationStats.__dict__ if hasattr(value.destinationStats, "__dict__") else value.destinationStats
+                )
             # Include additional properties (like 'id' from platform)
-            if hasattr(value, '_additional_properties'):
+            if hasattr(value, "_additional_properties"):
                 result.update(value._additional_properties)
             return result
 
         def deserialize(self, value: Dict[str, Any]) -> PatchedAirbyteStateMessage:
             # Need to properly deserialize nested objects
             deserialized = dict(value)  # Copy to avoid mutating input
-            if 'stream' in deserialized and isinstance(deserialized['stream'], dict):
-                deserialized['stream'] = AirbyteStreamStateSerializer.load(deserialized['stream'])
-            if 'global' in deserialized and isinstance(deserialized['global'], dict):
-                deserialized['global_'] = AirbyteGlobalStateSerializer.load(deserialized.pop('global'))
-            if 'global_' in deserialized and isinstance(deserialized['global_'], dict):
-                deserialized['global_'] = AirbyteGlobalStateSerializer.load(deserialized['global_'])
+            if "stream" in deserialized and isinstance(deserialized["stream"], dict):
+                deserialized["stream"] = AirbyteStreamStateSerializer.load(deserialized["stream"])
+            if "global" in deserialized and isinstance(deserialized["global"], dict):
+                deserialized["global_"] = AirbyteGlobalStateSerializer.load(deserialized.pop("global"))
+            if "global_" in deserialized and isinstance(deserialized["global_"], dict):
+                deserialized["global_"] = AirbyteGlobalStateSerializer.load(deserialized["global_"])
             # Convert type string to enum if needed
-            if 'type' in deserialized and isinstance(deserialized['type'], str):
-                deserialized['type'] = AirbyteStateType(deserialized['type'])
+            if "type" in deserialized and isinstance(deserialized["type"], str):
+                deserialized["type"] = AirbyteStateType(deserialized["type"])
             return PatchedAirbyteStateMessage(**deserialized)
 
         def get_json_schema(self) -> Dict[str, Any]:
@@ -156,18 +160,21 @@ def apply_patches():
     # These modules imported the serializer at module load time, so they have stale references
     try:
         import airbyte_cdk.destinations.destination as dest_module
+
         dest_module.AirbyteMessageSerializer = serializers_module.AirbyteMessageSerializer
     except ImportError:
         pass
 
     try:
         import airbyte_cdk.entrypoint as entrypoint_module
+
         entrypoint_module.AirbyteMessageSerializer = serializers_module.AirbyteMessageSerializer
     except ImportError:
         pass
 
     try:
         import airbyte_cdk.models as models_module
+
         models_module.AirbyteMessageSerializer = serializers_module.AirbyteMessageSerializer
         models_module.AirbyteStateMessageSerializer = serializers_module.AirbyteStateMessageSerializer
     except ImportError:
