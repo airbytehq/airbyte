@@ -31,6 +31,43 @@ def _get_response_template() -> list:
     return json.loads(template_path.read_text())
 
 
+class TestOrdersFullRefresh(TestCase):
+    """Tests for the orders stream in full refresh mode."""
+
+    @staticmethod
+    def _read(config_: ConfigBuilder, expecting_exception: bool = False) -> EntrypointOutput:
+        return read_output(
+            config_builder=config_,
+            stream_name=_STREAM_NAME,
+            sync_mode=SyncMode.full_refresh,
+            expecting_exception=expecting_exception,
+        )
+
+    @HttpMocker()
+    def test_read_records(self, http_mocker: HttpMocker) -> None:
+        """Test reading orders in full refresh mode."""
+        http_mocker.get(
+            WooCommerceRequestBuilder.orders_endpoint().with_default_params().build(),
+            HttpResponse(body=json.dumps(_get_response_template()), status_code=200),
+        )
+
+        output = self._read(config_=config())
+        assert len(output.records) == 1
+        assert output.records[0].record.data["id"] == 727
+        assert output.records[0].record.data["status"] == "processing"
+
+    @HttpMocker()
+    def test_read_records_empty_response(self, http_mocker: HttpMocker) -> None:
+        """Test reading when there are no orders."""
+        http_mocker.get(
+            WooCommerceRequestBuilder.orders_endpoint().with_default_params().build(),
+            HttpResponse(body=json.dumps([]), status_code=200),
+        )
+
+        output = self._read(config_=config())
+        assert len(output.records) == 0
+
+
 class TestOrdersIncremental(TestCase):
     """
     Tests for the orders stream in incremental mode.

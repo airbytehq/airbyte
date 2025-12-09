@@ -30,6 +30,43 @@ def _get_response_template() -> list:
     return json.loads(template_path.read_text())
 
 
+class TestCouponsFullRefresh(TestCase):
+    """Tests for the coupons stream in full refresh mode."""
+
+    @staticmethod
+    def _read(config_: ConfigBuilder, expecting_exception: bool = False) -> EntrypointOutput:
+        return read_output(
+            config_builder=config_,
+            stream_name=_STREAM_NAME,
+            sync_mode=SyncMode.full_refresh,
+            expecting_exception=expecting_exception,
+        )
+
+    @HttpMocker()
+    def test_read_records(self, http_mocker: HttpMocker) -> None:
+        """Test reading coupons in full refresh mode."""
+        http_mocker.get(
+            WooCommerceRequestBuilder.coupons_endpoint().with_default_params().build(),
+            HttpResponse(body=json.dumps(_get_response_template()), status_code=200),
+        )
+
+        output = self._read(config_=config())
+        assert len(output.records) == 1
+        assert output.records[0].record.data["id"] == 720
+        assert output.records[0].record.data["code"] == "summer2024"
+
+    @HttpMocker()
+    def test_read_records_empty_response(self, http_mocker: HttpMocker) -> None:
+        """Test reading when there are no coupons."""
+        http_mocker.get(
+            WooCommerceRequestBuilder.coupons_endpoint().with_default_params().build(),
+            HttpResponse(body=json.dumps([]), status_code=200),
+        )
+
+        output = self._read(config_=config())
+        assert len(output.records) == 0
+
+
 class TestCouponsIncremental(TestCase):
     """Tests for the coupons stream in incremental mode."""
 
