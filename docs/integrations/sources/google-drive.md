@@ -134,10 +134,10 @@ Some example patterns:
 - `**` : match everything. (Warning: see the tip above regarding using this glob with folders containing multiple file types.)
 - `**/*.csv` : match all files with specific extension.
 - `myFolder/**/*.csv` : match all csv files anywhere under myFolder.
-- `*/**` : match everything at least one folder deep.
-- `*/*/*/**` : match everything at least three folders deep.
+- `*/**` : match everything at least one folder deep. (Warning: see the tip above regarding using this glob with folders containing multiple file types.)
+- `*/*/*/**` : match everything at least three folders deep. (Warning: see the tip above regarding using this glob with folders containing multiple file types.)
 - `**/file.*|**/file` : match every file called "file" with any extension \(or no extension\).
-- `x/*/y/*` : match all files that sit in sub-folder x -&gt; any folder -&gt; folder y.
+- `x/*/y/*` : match all files that sit in sub-folder x -&gt; any folder -&gt; folder y. (Warning: see the tip above regarding using this glob with folders containing multiple file types.)
 - `**/prefix*.csv` : match all csv files with specific prefix.
 - `**/prefix*.parquet` : match all parquet files with specific prefix.
 
