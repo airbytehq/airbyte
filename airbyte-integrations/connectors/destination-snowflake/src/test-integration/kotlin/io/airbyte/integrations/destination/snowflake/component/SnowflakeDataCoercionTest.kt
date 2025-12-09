@@ -136,6 +136,56 @@ class SnowflakeDataCoercionTest(
         super.`handle string values`(inputValue, expectedValue, expectedChangeReason)
     }
 
+    @ParameterizedTest
+    @MethodSource("io.airbyte.cdk.load.component.DataCoercionObjectFixtures#objects")
+    override fun `handle object values`(
+        inputValue: AirbyteValue,
+        expectedValue: Any?,
+        expectedChangeReason: Reason?
+    ) {
+        super.`handle object values`(inputValue, expectedValue, expectedChangeReason)
+    }
+
+    @ParameterizedTest
+    @MethodSource("io.airbyte.cdk.load.component.DataCoercionObjectFixtures#objects")
+    override fun `handle empty object values`(
+        inputValue: AirbyteValue,
+        expectedValue: Any?,
+        expectedChangeReason: Reason?
+    ) {
+        super.`handle empty object values`(inputValue, expectedValue, expectedChangeReason)
+    }
+
+    @ParameterizedTest
+    @MethodSource("io.airbyte.cdk.load.component.DataCoercionObjectFixtures#objects")
+    override fun `handle schemaless object values`(
+        inputValue: AirbyteValue,
+        expectedValue: Any?,
+        expectedChangeReason: Reason?
+    ) {
+        super.`handle schemaless object values`(inputValue, expectedValue, expectedChangeReason)
+    }
+
+    @ParameterizedTest
+    @MethodSource("io.airbyte.cdk.load.component.DataCoercionArrayFixtures#arrays")
+    override fun `handle array values`(
+        inputValue: AirbyteValue,
+        expectedValue: Any?,
+        expectedChangeReason: Reason?
+    ) {
+        super.`handle array values`(inputValue, expectedValue, expectedChangeReason)
+    }
+
+    @ParameterizedTest
+    @MethodSource("io.airbyte.cdk.load.component.DataCoercionArrayFixtures#arrays")
+    override fun `handle schemaless array values`(
+        inputValue: AirbyteValue,
+        expectedValue: Any?,
+        expectedChangeReason: Reason?
+    ) {
+        super.`handle schemaless array values`(inputValue, expectedValue, expectedChangeReason)
+    }
+
     companion object {
         /**
          * Snowflake does two interesting things when querying a `NUMERIC(38, 0)` column:

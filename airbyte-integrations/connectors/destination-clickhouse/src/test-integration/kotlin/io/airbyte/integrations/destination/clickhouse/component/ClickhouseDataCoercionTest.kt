@@ -137,6 +137,61 @@ class ClickhouseDataCoercionTest(
         super.`handle string values`(inputValue, expectedValue, expectedChangeReason)
     }
 
+    @ParameterizedTest
+    // Clickhouse client reads JSON columns as String, so use stringifiedObjects
+    @MethodSource("io.airbyte.cdk.load.component.DataCoercionObjectFixtures#stringifiedObjects")
+    override fun `handle object values`(
+        inputValue: AirbyteValue,
+        expectedValue: Any?,
+        expectedChangeReason: Reason?
+    ) {
+        super.`handle object values`(inputValue, expectedValue, expectedChangeReason)
+    }
+
+    @ParameterizedTest
+    // Clickhouse client reads JSON columns as String, so use stringifiedObjects
+    @MethodSource("io.airbyte.cdk.load.component.DataCoercionObjectFixtures#stringifiedObjects")
+    override fun `handle empty object values`(
+        inputValue: AirbyteValue,
+        expectedValue: Any?,
+        expectedChangeReason: Reason?
+    ) {
+        super.`handle empty object values`(inputValue, expectedValue, expectedChangeReason)
+    }
+
+    @ParameterizedTest
+    // Clickhouse client reads JSON columns as String, so use stringifiedObjects
+    @MethodSource("io.airbyte.cdk.load.component.DataCoercionObjectFixtures#stringifiedObjects")
+    override fun `handle schemaless object values`(
+        inputValue: AirbyteValue,
+        expectedValue: Any?,
+        expectedChangeReason: Reason?
+    ) {
+        super.`handle schemaless object values`(inputValue, expectedValue, expectedChangeReason)
+    }
+
+    @ParameterizedTest
+    // We write arrays to String columns for historical reasons, so use stringifiedArrays
+    @MethodSource("io.airbyte.cdk.load.component.DataCoercionArrayFixtures#stringifiedArrays")
+    override fun `handle array values`(
+        inputValue: AirbyteValue,
+        expectedValue: Any?,
+        expectedChangeReason: Reason?
+    ) {
+        super.`handle array values`(inputValue, expectedValue, expectedChangeReason)
+    }
+
+    @ParameterizedTest
+    // We write arrays to String columns for historical reasons, so use stringifiedArrays
+    @MethodSource("io.airbyte.cdk.load.component.DataCoercionArrayFixtures#stringifiedArrays")
+    override fun `handle schemaless array values`(
+        inputValue: AirbyteValue,
+        expectedValue: Any?,
+        expectedChangeReason: Reason?
+    ) {
+        super.`handle schemaless array values`(inputValue, expectedValue, expectedChangeReason)
+    }
+
     companion object {
         /**
          * destination-clickhouse doesn't set a change reason when truncating high-precision numbers
