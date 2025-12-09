@@ -16,6 +16,7 @@ from .request_builder import OAuthRequestBuilder, RequestBuilder
 from .response_builder import (
     adaccounts_response,
     ads_response,
+    create_multiple_records_response,
     error_response,
     oauth_response,
     organizations_response,
@@ -57,6 +58,26 @@ def _setup_parent_mocks(http_mocker: HttpMocker) -> None:
     http_mocker.get(
         RequestBuilder.ads_endpoint(AD_ACCOUNT_ID).build(),
         ads_response(ad_id=AD_ID, ad_account_id=AD_ACCOUNT_ID, adsquad_id=ADSQUAD_ID),
+    )
+
+
+def _setup_parent_mocks_multiple_ads(http_mocker: HttpMocker, ad_ids: List[str]) -> None:
+    """Setup parent mocks with multiple ads for testing substreams."""
+    http_mocker.post(
+        OAuthRequestBuilder.oauth_endpoint().build(),
+        oauth_response(),
+    )
+    http_mocker.get(
+        RequestBuilder.organizations_endpoint("me").build(),
+        organizations_response(organization_id=ORGANIZATION_ID),
+    )
+    http_mocker.get(
+        RequestBuilder.adaccounts_endpoint(ORGANIZATION_ID).build(),
+        adaccounts_response(ad_account_id=AD_ACCOUNT_ID, organization_id=ORGANIZATION_ID),
+    )
+    http_mocker.get(
+        RequestBuilder.ads_endpoint(AD_ACCOUNT_ID).build(),
+        create_multiple_records_response("ads", ad_ids),
     )
 
 
@@ -122,11 +143,91 @@ class TestAdsStatsLifetime(TestCase):
         assert len(output.records) == 1
 
 
+class TestAdsStatsTransformations(TestCase):
+    @HttpMocker()
+    def test_transformations_add_fields(self, http_mocker: HttpMocker) -> None:
+        """Test that AddFields transformations are applied correctly.
+
+        The manifest defines these transformations for ads_stats_hourly:
+        - AddFields: id (from stream_slice['id'])
+        - AddFields: type = AD
+        - AddFields: granularity = HOUR
+        - AddFields: spend (from record.get('stats', {}).get('spend'))
+        - RemoveFields: stats
+        """
+        _setup_parent_mocks(http_mocker)
+        http_mocker.get(
+            RequestBuilder.ads_stats_endpoint(AD_ID).with_any_query_params().build(),
+            stats_timeseries_response(entity_id=AD_ID, granularity="HOUR"),
+        )
+
+        output = _read(config_builder=config(), stream_name="ads_stats_hourly")
+        assert len(output.records) >= 1
+
+        record = output.records[0].record.data
+        # Verify AddFields transformations
+        assert record.get("id") == AD_ID
+        assert record.get("type") == "AD"
+        assert record.get("granularity") == "HOUR"
+        # Verify spend field is extracted from stats
+        assert "spend" in record
+        # Verify RemoveFields transformation - stats should be removed
+        assert "stats" not in record
+
+
+class TestAdsStatsSubstreamMultipleParents(TestCase):
+    @HttpMocker()
+    def test_substream_with_two_parent_records(self, http_mocker: HttpMocker) -> None:
+        """Test that substream correctly processes multiple parent records.
+
+        The ads_stats streams use SubstreamPartitionRouter with ads as parent.
+        This test verifies that stats are fetched for each parent ad.
+        """
+        ad_1 = "ad_001"
+        ad_2 = "ad_002"
+
+        _setup_parent_mocks_multiple_ads(http_mocker, [ad_1, ad_2])
+
+        # Mock stats endpoint for each parent ad
+        http_mocker.get(
+            RequestBuilder.ads_stats_endpoint(ad_1).with_any_query_params().build(),
+            stats_timeseries_response(entity_id=ad_1, granularity="HOUR"),
+        )
+        http_mocker.get(
+            RequestBuilder.ads_stats_endpoint(ad_2).with_any_query_params().build(),
+            stats_timeseries_response(entity_id=ad_2, granularity="HOUR"),
+        )
+
+        output = _read(config_builder=config(), stream_name="ads_stats_hourly")
+
+        # Verify records from both parent ads are returned
+        assert len(output.records) >= 2
+        record_ids = [r.record.data.get("id") for r in output.records]
+        assert ad_1 in record_ids
+        assert ad_2 in record_ids
+
+
 class TestAdsStatsIncremental(TestCase):
+    @HttpMocker()
+    def test_incremental_first_sync_emits_state(self, http_mocker: HttpMocker) -> None:
+        """Test that first sync (no state) emits state message with cursor value."""
+        _setup_parent_mocks(http_mocker)
+        http_mocker.get(
+            RequestBuilder.ads_stats_endpoint(AD_ID).with_any_query_params().build(),
+            stats_timeseries_response(entity_id=AD_ID, granularity="HOUR"),
+        )
+
+        output = _read(config_builder=config(), stream_name="ads_stats_hourly", sync_mode=SyncMode.incremental)
+        assert len(output.records) >= 1
+        # Verify state message is emitted
+        assert len(output.state_messages) >= 1
+
+    @HttpMocker()
+    def test_incremental_sync_with_state(self, http_mocker: HttpMocker) -> None:
     @HttpMocker()
     def test_incremental_sync_with_state(self, http_mocker: HttpMocker) -> None:
         """Test incremental sync with previous state for stats streams."""
-        previous_state_date = "2024-01-15T00:00:00Z"
+        previous_state_date = "2024-01-15T00:00:00.000000Z"
         state = StateBuilder().with_stream_state(
             "ads_stats_hourly",
             {"start_time": previous_state_date}

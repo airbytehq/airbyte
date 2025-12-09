@@ -130,7 +130,7 @@ class TestAdaccountsIncremental(TestCase):
         - Records are returned
         - State advances to latest record's cursor value
         """
-        previous_state_date = "2024-01-15T00:00:00Z"
+        previous_state_date = "2024-01-15T00:00:00.000000Z"
         state = StateBuilder().with_stream_state(
             _STREAM_NAME,
             {"updated_at": previous_state_date}

@@ -217,7 +217,7 @@ class TestAdaccountsStatsIncremental(TestCase):
         """Test incremental sync with previous state for stats streams."""
         from airbyte_cdk.test.state_builder import StateBuilder
 
-        previous_state_date = "2024-01-15T00:00:00Z"
+        previous_state_date = "2024-01-15T00:00:00.000000Z"
         state = StateBuilder().with_stream_state(
             "adaccounts_stats_hourly",
             {"start_time": previous_state_date}
