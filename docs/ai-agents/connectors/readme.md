@@ -4,9 +4,9 @@ import DocCardList from '@theme/DocCardList';
 
 Airbyte's direct connectors are Python packages that equip AI agents to call third-party APIs through strongly typed, well-documented tools. Each connector is ready to use directly in your Python app, in an agent framework, or exposed through an MCP.
 
-## How direct connectors are different from data replication connectors
+## How direct connectors differ from data replication connectors
 
-Traditional Airbyte connectors are built for data replication: they move large volumes of data from a source into a destination such as a warehouse or data lake on a schedule. Direct connectors, by contrast, are lightweight, type-safe Python clients that let AI agents call third-party APIs directly in real time.
+Traditional Airbyte connectors are built for data replication. They move large volumes of data from a source into a destination such as a warehouse or data lake on a schedule. Direct connectors are lightweight, type-safe Python clients that let AI agents call third-party APIs directly in real time.
 
 The key differences are:
 

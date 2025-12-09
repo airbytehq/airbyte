@@ -1,9 +1,15 @@
+---
+sidebar_label: "Connector MCP tutorial"
+---
+
 import Tabs from '@theme/Tabs';
 import TabItem from '@theme/TabItem';
 
 # Get started with direct connectors: Connector MCP
 
-In this tutorial, you'll install and run Airbyte's connector MCP server locally, connect the MCP server to Claude Code or your preferred agent, and learn to use natural language to explore your Stripe data in your third-party service.
+In this tutorial, you'll install and run Airbyte's connector MCP server locally, connect the MCP server to Claude Code or your preferred agent, and learn to use natural language to explore your data from Stripe.
+
+The MCP server is quick and easy to set up, but it affords less control over how you use direct connectors. Data goes directly from the API to your AI agent.
 
 ## Overview
 
@@ -36,7 +42,7 @@ cd sonar/connector-mcp
 
 ## Part 2: Configure the connector you want to use
 
-### Create `configured_connectors.yaml`
+### Create a connector configuration file
 
 The `configured_connectors.yaml` file defines which direct connectors you are making available through the MCP and which secrets you need for authentication.
 
@@ -54,38 +60,6 @@ The `configured_connectors.yaml` file defines which direct connectors you are ma
           api_key: STRIPE_API_KEY
     ```
 
-### Advanced: Use a local connector definition
-
-If you are developing a custom connector or working from a local `connector.yaml` file, use the `path` property instead of `connector_name` to point directly to your connector definition.
-
-```yaml
-connectors:
-  - id: my_api
-    type: local
-    path: ./connectors/my-api/connector.yaml
-    description: "My custom API connector"
-    secrets:
-      token: MY_API_KEY
-```
-
-You can also configure multiple connectors in the same file.
-
-```yaml
-connectors:
-  - id: stripe
-    type: local
-    connector_name: stripe
-    description: "Stripe connector from registry"
-    secrets:
-      api_key: STRIPE_API_KEY
-  - id: github
-    type: local
-    connector_name: github
-    description: "GitHub connector from registry"
-    secrets:
-      token: GITHUB_TOKEN
-```
-
 ### Define secrets in `.env`
 
 1. Create a new file called `.env`.
@@ -96,7 +70,7 @@ connectors:
     STRIPE_API_KEY=your_stripe_api_key
     ```
 
-## Part 3: Run the connector MCP
+## Part 3: Run the Connector MCP
 
 Use your package manager to run the Connector MCP.
 
@@ -112,7 +86,7 @@ Use your package manager to run the Connector MCP.
     python -m connector_mcp path/to/configured_connectors.yaml path/to/.env
     ```
 
-## Part 4: Use the MCP with your agent
+## Part 4: Use the Connector MCP with your agent
 
 <Tabs>
 <TabItem value="Claude" label="Claude" default>
@@ -164,7 +138,7 @@ Once your agent is connected to the Connector MCP, you can use natural language 
 
 Start by confirming your connector is properly configured. Ask your agent something like:
 
-> "List all configured connectors and tell me which entities and actions are available for the stripe connector."
+"List all configured connectors and tell me which entities and actions are available for the stripe connector."
 
 Your agent will discover the available connectors and describe the Stripe connector's capabilities, showing you entities like `customers` and the actions you can perform on them (such as `list` and `get`).
 
@@ -207,4 +181,23 @@ In this tutorial, you learned how to:
 ## Next steps
 
 - Continue adding new connectors to the MCP server by repeating Parts 2, 3, and 4 of this tutorial.
+
+    You can configure multiple connectors in the same file. Here's an example:
+
+    ```yaml
+    connectors:
+    - id: stripe
+        type: local
+        connector_name: stripe
+        description: "Stripe connector from Airbyte registry"
+        secrets:
+        api_key: STRIPE_API_KEY
+    - id: github
+        type: local
+        connector_name: github
+        description: "GitHub connector from Airbyte registry"
+        secrets:
+        token: GITHUB_TOKEN
+    ```
+
 - If you need to run more complex processing and trigger effects based on your data, try the [Python](tutorial-python) tutorial to start using direct connectors with the Python SDK.
