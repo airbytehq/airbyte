@@ -8,13 +8,7 @@ import io.airbyte.cdk.command.OpaqueStateValue
 import io.airbyte.cdk.read.Stream
 import org.apache.kafka.connect.source.SourceRecord
 
-// TODO: The T: Comparable<T> type here is used to determine when the target offset has been
-//  reached. This doesn't actually require a well defined ordering on all offsets. In Postgres,
-//  the criteria for stopping a sync do not result in a well-ordering of all offsets. As a result,
-//  its implementation of compareTo(other: T) breaks the contract of compareTo(). To fix this,
-//  we should define and use a weaker interface than Comparable with a method like:
-//  fun hasReached(target: T): Boolean.
-interface CdcPartitionReaderDebeziumOperations<T : Comparable<T>> {
+interface CdcPartitionReaderDebeziumOperations<T : PartiallyOrdered<T>> {
 
     /**
      * Transforms a [DebeziumRecordKey] and a [DebeziumRecordValue] into a [DeserializedRecord].
