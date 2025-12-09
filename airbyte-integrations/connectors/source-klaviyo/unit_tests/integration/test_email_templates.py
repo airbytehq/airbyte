@@ -234,7 +234,8 @@ class TestEmailTemplatesStream(TestCase):
 
         assert len(output.state_messages) > 0
         latest_state = output.most_recent_state.stream_state.__dict__
-        assert latest_state["updated"] == "2024-03-15T10:00:00+00:00"
+        # Note: The connector returns datetime with +0000 format (without colon)
+        assert latest_state["updated"] == "2024-03-15T10:00:00+0000"
 
     @HttpMocker()
     def test_transformation_adds_updated_field(self, http_mocker: HttpMocker):
