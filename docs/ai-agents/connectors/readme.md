@@ -6,17 +6,23 @@ Airbyte's direct connectors are Python packages that equip AI agents to call thi
 
 ## How direct connectors are different from data replication connectors
 
-<!-- 
+Traditional Airbyte connectors are built for data replication: they move large volumes of data from a source into a destination such as a warehouse or data lake on a schedule. Direct connectors, by contrast, are lightweight, type-safe Python clients that let AI agents call third-party APIs directly in real time.
 
-- Not source-destination relationship
-- Separate connectors, AI optimized
-- Intended for operational AI use cases, not data replication
+The key differences are:
 
- -->
+- **Topology**: Data replication connectors are always used in a source-to-destination pairing managed by the Airbyte platform. Direct connectors are standalone library packages that you import into your app or agent and call directly, with no source/destination pairing or sync pipeline.
+
+- **Use cases**: Data replication connectors are for batch ELT/ETL and analytics, building a full, historical dataset in a warehouse. Direct connectors are for operational AI use cases: answering a question, fetching a slice of fresh data, or performing an action in a SaaS tool while an agent is reasoning.
+
+- **Execution model**: Data replication connectors run as jobs orchestrated by the Airbyte platform with schedules and state tracking. Direct connectors run inside your Python app or AI agent loop, returning results to that process immediately.
+
+- **Data flow**: Data replication connectors write data into destinations and maintain state for incremental sync. Direct connectors stream typed responses back to the caller without creating a replicated copy of the data.
+
+Direct connectors don't replace your existing source and destination connectors. They complement them by providing agentic, real-time access to the same systems. Unlike data replication connectors, you don't need to run the Airbyte platform to use direct connectors—they are regular Python packages you add to your application or agent.
 
 ### Connector structure
 
-Each connector is a standalone Python package.
+Each connector is a standalone Python package in the [Airbyte AI Connectors repository](https://github.com/airbytehq/airbyte-ai-connectors).
 
 ```text
 connectors/
@@ -33,7 +39,7 @@ connectors/
 Inside each connector folder, you can find the following.
 
 - The generated Python client
-- A connector-specific README with supported operations
+- A connector-specific README with supported operations and authentication requirements
 - Typed methods generated from Airbyte's connector definitions
 - Validation + error handling
 
