@@ -66,10 +66,9 @@ interface TableSchemaEvolutionSuite {
         val tableSchema =
             schemaFactory.make(testTable, Fixtures.ALL_TYPES_SCHEMA.properties, Append)
         val stream =
-            Fixtures.createAppendStream(
+            Fixtures.createStream(
                 namespace = testTable.namespace,
                 name = testTable.name,
-                inputSchema = Fixtures.ALL_TYPES_SCHEMA,
                 tableSchema = tableSchema,
             )
 
@@ -105,10 +104,9 @@ interface TableSchemaEvolutionSuite {
         val tableSchema =
             schemaFactory.make(testTable, Fixtures.ALL_TYPES_SCHEMA.properties, Append)
         val stream =
-            Fixtures.createAppendStream(
+            Fixtures.createStream(
                 namespace = testTable.namespace,
                 name = testTable.name,
-                inputSchema = Fixtures.ALL_TYPES_SCHEMA,
                 tableSchema = tableSchema,
             )
         val computedSchema = client.computeSchema(stream, columnNameMapping)
@@ -388,8 +386,6 @@ interface TableSchemaEvolutionSuite {
             Fixtures.createStream(
                 testTable.namespace,
                 testTable.name,
-                initialSchema,
-                initialStreamImportType,
                 initialTableSchema,
             )
         val modifiedSchema =
@@ -408,8 +404,6 @@ interface TableSchemaEvolutionSuite {
             Fixtures.createStream(
                 testTable.namespace,
                 testTable.name,
-                modifiedSchema,
-                modifiedStreamImportType,
                 modifiedTableSchema,
             )
 
@@ -562,17 +556,15 @@ interface TableSchemaEvolutionSuite {
         modifiedSchema: ObjectType,
         modifiedColumnNameMapping: ColumnNameMapping,
         initialStream: DestinationStream =
-            Fixtures.createAppendStream(
+            Fixtures.createStream(
                 namespace = testTable.namespace,
                 name = testTable.name,
-                inputSchema = initialSchema,
                 tableSchema = schemaFactory.make(testTable, initialSchema.properties, Append),
             ),
         modifiedStream: DestinationStream =
-            Fixtures.createAppendStream(
+            Fixtures.createStream(
                 namespace = testTable.namespace,
                 name = testTable.name,
-                inputSchema = modifiedSchema,
                 tableSchema = schemaFactory.make(testTable, modifiedSchema.properties, Append),
             ),
     ): SchemaEvolutionComputation {

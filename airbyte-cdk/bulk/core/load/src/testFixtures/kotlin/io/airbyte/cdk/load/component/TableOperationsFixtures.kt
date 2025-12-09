@@ -4,10 +4,7 @@
 
 package io.airbyte.cdk.load.component
 
-import io.airbyte.cdk.load.command.Append
-import io.airbyte.cdk.load.command.Dedupe
 import io.airbyte.cdk.load.command.DestinationStream
-import io.airbyte.cdk.load.command.ImportType
 import io.airbyte.cdk.load.command.NamespaceMapper
 import io.airbyte.cdk.load.data.AirbyteValue
 import io.airbyte.cdk.load.data.ArrayType
@@ -676,72 +673,22 @@ object TableOperationsFixtures {
     }
 
     // Create common destination stream configurations
-    fun createAppendStream(
-        namespace: String,
-        name: String,
-        inputSchema: ObjectType,
-        tableSchema: StreamTableSchema,
-        generationId: Long = 1,
-        minimumGenerationId: Long = 0,
-        syncId: Long = 1,
-    ): DestinationStream =
-        DestinationStream(
-            unmappedNamespace = namespace,
-            unmappedName = name,
-            importType = Append,
-            generationId = generationId,
-            minimumGenerationId = minimumGenerationId,
-            syncId = syncId,
-            schema = inputSchema,
-            namespaceMapper = NamespaceMapper(),
-            tableSchema = tableSchema,
-        )
-
-    fun createDedupeStream(
-        namespace: String,
-        name: String,
-        inputSchema: ObjectType,
-        cursor: List<String>,
-        primaryKey: List<List<String>>,
-        tableSchema: StreamTableSchema,
-        generationId: Long = 1,
-        minimumGenerationId: Long = 0,
-        syncId: Long = 1,
-    ): DestinationStream =
-        DestinationStream(
-            unmappedNamespace = namespace,
-            unmappedName = name,
-            importType =
-                Dedupe(
-                    primaryKey = primaryKey,
-                    cursor = cursor,
-                ),
-            generationId = generationId,
-            minimumGenerationId = minimumGenerationId,
-            syncId = syncId,
-            schema = inputSchema,
-            namespaceMapper = NamespaceMapper(),
-            tableSchema = tableSchema,
-        )
-
     fun createStream(
         namespace: String,
         name: String,
-        schema: ObjectType,
-        importType: ImportType,
         tableSchema: StreamTableSchema,
         generationId: Long = 1,
         minimumGenerationId: Long = 0,
         syncId: Long = 1,
-    ) =
+    ): DestinationStream =
         DestinationStream(
             unmappedNamespace = namespace,
             unmappedName = name,
-            importType = importType,
+            importType = tableSchema.importType,
             generationId = generationId,
             minimumGenerationId = minimumGenerationId,
             syncId = syncId,
-            schema = schema,
+            schema = ObjectType(LinkedHashMap(tableSchema.columnSchema.inputSchema)),
             namespaceMapper = NamespaceMapper(),
             tableSchema = tableSchema,
         )

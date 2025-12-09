@@ -7,7 +7,6 @@ package io.airbyte.cdk.load.component
 import io.airbyte.cdk.load.command.Append
 import io.airbyte.cdk.load.command.Dedupe
 import io.airbyte.cdk.load.component.TableOperationsFixtures as Fixtures
-import io.airbyte.cdk.load.component.TableOperationsFixtures.TEST_FIELD
 import io.airbyte.cdk.load.component.TableOperationsFixtures.assertEquals
 import io.airbyte.cdk.load.component.TableOperationsFixtures.insertRecords
 import io.airbyte.cdk.load.component.TableOperationsFixtures.reverseColumnNameMapping
@@ -99,10 +98,9 @@ interface TableOperationsSuite {
                 tableName = testTable,
                 columnNameMapping = Fixtures.TEST_MAPPING,
                 stream =
-                    Fixtures.createAppendStream(
+                    Fixtures.createStream(
                         namespace = testTable.namespace,
                         name = testTable.name,
-                        inputSchema = Fixtures.TEST_INTEGER_SCHEMA,
                         tableSchema = tableSchema,
                     ),
                 replace = false,
@@ -142,10 +140,9 @@ interface TableOperationsSuite {
         val tableSchema =
             schemaFactory.make(testTable, Fixtures.TEST_INTEGER_SCHEMA.properties, Append)
         val stream =
-            Fixtures.createAppendStream(
+            Fixtures.createStream(
                 namespace = testTable.namespace,
                 name = testTable.name,
-                inputSchema = Fixtures.TEST_INTEGER_SCHEMA,
                 tableSchema = tableSchema,
             )
 
@@ -197,10 +194,9 @@ interface TableOperationsSuite {
         val tableSchema =
             schemaFactory.make(testTable, Fixtures.TEST_INTEGER_SCHEMA.properties, Append)
         val stream =
-            Fixtures.createAppendStream(
+            Fixtures.createStream(
                 namespace = testTable.namespace,
                 name = testTable.name,
-                inputSchema = Fixtures.TEST_INTEGER_SCHEMA,
                 tableSchema = tableSchema,
             )
 
@@ -355,10 +351,9 @@ interface TableOperationsSuite {
         val tableSchema =
             schemaFactory.make(testTable, Fixtures.TEST_INTEGER_SCHEMA.properties, Append)
         val stream =
-            Fixtures.createAppendStream(
+            Fixtures.createStream(
                 namespace = testTable.namespace,
                 name = testTable.name,
-                inputSchema = Fixtures.TEST_INTEGER_SCHEMA,
                 tableSchema = tableSchema,
             )
 
@@ -425,20 +420,18 @@ interface TableOperationsSuite {
         val sourceTableSchema =
             schemaFactory.make(sourceTable, Fixtures.TEST_INTEGER_SCHEMA.properties, Append)
         val sourceStream =
-            Fixtures.createAppendStream(
+            Fixtures.createStream(
                 namespace = sourceTable.namespace,
                 name = sourceTable.name,
-                inputSchema = Fixtures.TEST_INTEGER_SCHEMA,
                 tableSchema = sourceTableSchema,
             )
 
         val targetTableSchema =
             schemaFactory.make(targetTable, Fixtures.TEST_INTEGER_SCHEMA.properties, Append)
         val targetStream =
-            Fixtures.createAppendStream(
+            Fixtures.createStream(
                 namespace = targetTable.namespace,
                 name = targetTable.name,
-                inputSchema = Fixtures.TEST_INTEGER_SCHEMA,
                 tableSchema = targetTableSchema,
             )
 
@@ -517,20 +510,18 @@ interface TableOperationsSuite {
         val sourceTableSchema =
             schemaFactory.make(sourceTable, Fixtures.TEST_INTEGER_SCHEMA.properties, Append)
         val sourceStream =
-            Fixtures.createAppendStream(
+            Fixtures.createStream(
                 namespace = sourceTable.namespace,
                 name = sourceTable.name,
-                inputSchema = Fixtures.TEST_INTEGER_SCHEMA,
                 tableSchema = sourceTableSchema,
             )
 
         val targetTableSchema =
             schemaFactory.make(targetTable, Fixtures.TEST_INTEGER_SCHEMA.properties, Append)
         val targetStream =
-            Fixtures.createAppendStream(
+            Fixtures.createStream(
                 namespace = targetTable.namespace,
                 name = targetTable.name,
-                inputSchema = Fixtures.TEST_INTEGER_SCHEMA,
                 tableSchema = targetTableSchema,
             )
 
@@ -603,32 +594,28 @@ interface TableOperationsSuite {
         val sourceTableSchema =
             schemaFactory.make(sourceTable, Fixtures.ID_TEST_WITH_CDC_SCHEMA.properties, Append)
         val sourceStream =
-            Fixtures.createAppendStream(
+            Fixtures.createStream(
                 namespace = sourceTable.namespace,
                 name = sourceTable.name,
-                inputSchema = Fixtures.ID_TEST_WITH_CDC_SCHEMA,
                 tableSchema = sourceTableSchema,
             )
 
         val targetTable = Fixtures.generateTestTableName("upsert-test-target-table", testNamespace)
         harness.assertTableDoesNotExist(targetTable)
 
-        val primaryKey = listOf(listOf(Fixtures.ID_FIELD))
-        val cursor = listOf(Fixtures.TEST_FIELD)
-
         val targetTableSchema =
             schemaFactory.make(
                 targetTable,
                 Fixtures.TEST_INTEGER_SCHEMA.properties,
-                Dedupe(primaryKey, cursor),
+                Dedupe(
+                    primaryKey = listOf(listOf(Fixtures.ID_FIELD)),
+                    cursor = listOf(Fixtures.TEST_FIELD),
+                ),
             )
         val targetStream =
-            Fixtures.createDedupeStream(
+            Fixtures.createStream(
                 namespace = targetTable.namespace,
                 name = targetTable.name,
-                inputSchema = Fixtures.TEST_INTEGER_SCHEMA,
-                primaryKey = primaryKey,
-                cursor = cursor,
                 tableSchema = targetTableSchema,
             )
 
