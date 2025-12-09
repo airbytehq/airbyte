@@ -21,6 +21,8 @@ import io.airbyte.cdk.load.data.StringValue
 import io.airbyte.cdk.load.data.UnionType
 import io.airbyte.cdk.load.dataflow.transform.ValidationResult
 import io.airbyte.protocol.models.v0.AirbyteRecordMessageMetaChange
+import io.mockk.every
+import io.mockk.mockk
 import java.math.BigDecimal
 import java.math.BigInteger
 import org.junit.jupiter.api.Assertions.assertEquals
@@ -33,7 +35,7 @@ internal class SnowflakeValueCoercerTest {
 
     @BeforeEach
     fun setUp() {
-        coercer = SnowflakeValueCoercer()
+        coercer = SnowflakeValueCoercer(mockk { every { legacyRawTablesOnly } returns false })
     }
 
     @Test

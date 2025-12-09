@@ -64,35 +64,35 @@ object DataCoercionIntegerFixtures {
      */
     val int64 =
         listOf(
-            test(ZERO, IntegerValue(0), 0L),
-            test(ONE, IntegerValue(1), 1L),
-            test(NEGATIVE_ONE, IntegerValue(-1), -1L),
-            test(FORTY_TWO, IntegerValue(42), 42L),
-            test(NEGATIVE_FORTY_TWO, IntegerValue(-42), -42L),
+            case(ZERO, IntegerValue(0), 0L),
+            case(ONE, IntegerValue(1), 1L),
+            case(NEGATIVE_ONE, IntegerValue(-1), -1L),
+            case(FORTY_TWO, IntegerValue(42), 42L),
+            case(NEGATIVE_FORTY_TWO, IntegerValue(-42), -42L),
             // int32 bounds, and slightly out of bounds
-            test(INT32_MAX, IntegerValue(Integer.MAX_VALUE.toLong()), Integer.MAX_VALUE.toLong()),
-            test(INT32_MIN, IntegerValue(Integer.MIN_VALUE.toLong()), Integer.MIN_VALUE.toLong()),
-            test(
+            case(INT32_MAX, IntegerValue(Integer.MAX_VALUE.toLong()), Integer.MAX_VALUE.toLong()),
+            case(INT32_MIN, IntegerValue(Integer.MIN_VALUE.toLong()), Integer.MIN_VALUE.toLong()),
+            case(
                 INT32_MAX_PLUS_ONE,
                 IntegerValue(Integer.MAX_VALUE.toLong() + 1),
                 Integer.MAX_VALUE.toLong() + 1
             ),
-            test(
+            case(
                 INT32_MIN_MINUS_ONE,
                 IntegerValue(Integer.MIN_VALUE.toLong() - 1),
                 Integer.MIN_VALUE.toLong() - 1
             ),
             // int64 bounds, and slightly out of bounds
-            test(INT64_MAX, IntegerValue(Long.MAX_VALUE), Long.MAX_VALUE),
-            test(INT64_MIN, IntegerValue(Long.MIN_VALUE), Long.MIN_VALUE),
+            case(INT64_MAX, IntegerValue(Long.MAX_VALUE), Long.MAX_VALUE),
+            case(INT64_MIN, IntegerValue(Long.MIN_VALUE), Long.MIN_VALUE),
             // values out of int64 bounds are nulled
-            test(
+            case(
                 INT64_MAX_PLUS_ONE,
                 IntegerValue(bigint(Long.MAX_VALUE) + BigInteger.ONE),
                 null,
                 Reason.DESTINATION_FIELD_SIZE_LIMITATION
             ),
-            test(
+            case(
                 INT64_MIN_MINUS_1,
                 IntegerValue(bigint(Long.MIN_VALUE) - BigInteger.ONE),
                 null,
@@ -100,25 +100,25 @@ object DataCoercionIntegerFixtures {
             ),
             // NUMERIC(38, 9) bounds, and slightly out of bounds
             // (these are all out of bounds for an int64 value, so they all get nulled)
-            test(
+            case(
                 NUMERIC_38_0_MAX,
                 IntegerValue(numeric38_0Max),
                 null,
                 Reason.DESTINATION_FIELD_SIZE_LIMITATION
             ),
-            test(
+            case(
                 NUMERIC_38_0_MIN,
                 IntegerValue(numeric38_0Min),
                 null,
                 Reason.DESTINATION_FIELD_SIZE_LIMITATION
             ),
-            test(
+            case(
                 NUMERIC_38_0_MAX_PLUS_ONE,
                 IntegerValue(numeric38_0Max + BigInteger.ONE),
                 null,
                 Reason.DESTINATION_FIELD_SIZE_LIMITATION
             ),
-            test(
+            case(
                 NUMERIC_38_0_MIN_MINUS_ONE,
                 IntegerValue(numeric38_0Min - BigInteger.ONE),
                 null,
@@ -133,56 +133,56 @@ object DataCoercionIntegerFixtures {
      */
     val numeric38_0 =
         listOf(
-            test(ZERO, IntegerValue(0), bigint(0L)),
-            test(ONE, IntegerValue(1), bigint(1L)),
-            test(NEGATIVE_ONE, IntegerValue(-1), bigint(-1L)),
-            test(FORTY_TWO, IntegerValue(42), bigint(42L)),
-            test(NEGATIVE_FORTY_TWO, IntegerValue(-42), bigint(-42L)),
+            case(ZERO, IntegerValue(0), bigint(0L)),
+            case(ONE, IntegerValue(1), bigint(1L)),
+            case(NEGATIVE_ONE, IntegerValue(-1), bigint(-1L)),
+            case(FORTY_TWO, IntegerValue(42), bigint(42L)),
+            case(NEGATIVE_FORTY_TWO, IntegerValue(-42), bigint(-42L)),
             // int32 bounds, and slightly out of bounds
-            test(
+            case(
                 INT32_MAX,
                 IntegerValue(Integer.MAX_VALUE.toLong()),
                 bigint(Integer.MAX_VALUE.toLong())
             ),
-            test(
+            case(
                 INT32_MIN,
                 IntegerValue(Integer.MIN_VALUE.toLong()),
                 bigint(Integer.MIN_VALUE.toLong())
             ),
-            test(
+            case(
                 INT32_MAX_PLUS_ONE,
                 IntegerValue(Integer.MAX_VALUE.toLong() + 1),
                 bigint(Integer.MAX_VALUE.toLong() + 1)
             ),
-            test(
+            case(
                 INT32_MIN_MINUS_ONE,
                 IntegerValue(Integer.MIN_VALUE.toLong() - 1),
                 bigint(Integer.MIN_VALUE.toLong() - 1)
             ),
             // int64 bounds, and slightly out of bounds
-            test(INT64_MAX, IntegerValue(Long.MAX_VALUE), bigint(Long.MAX_VALUE)),
-            test(INT64_MIN, IntegerValue(Long.MIN_VALUE), bigint(Long.MIN_VALUE)),
-            test(
+            case(INT64_MAX, IntegerValue(Long.MAX_VALUE), bigint(Long.MAX_VALUE)),
+            case(INT64_MIN, IntegerValue(Long.MIN_VALUE), bigint(Long.MIN_VALUE)),
+            case(
                 INT64_MAX_PLUS_ONE,
                 IntegerValue(bigint(Long.MAX_VALUE) + BigInteger.ONE),
                 bigint(Long.MAX_VALUE) + BigInteger.ONE
             ),
-            test(
+            case(
                 INT64_MIN_MINUS_1,
                 IntegerValue(bigint(Long.MIN_VALUE) - BigInteger.ONE),
                 bigint(Long.MIN_VALUE) - BigInteger.ONE
             ),
             // NUMERIC(38, 9) bounds, and slightly out of bounds
-            test(NUMERIC_38_0_MAX, IntegerValue(numeric38_0Max), numeric38_0Max),
-            test(NUMERIC_38_0_MIN, IntegerValue(numeric38_0Min), numeric38_0Min),
+            case(NUMERIC_38_0_MAX, IntegerValue(numeric38_0Max), numeric38_0Max),
+            case(NUMERIC_38_0_MIN, IntegerValue(numeric38_0Min), numeric38_0Min),
             // These values exceed the 38-digit range, so they get nulled out
-            test(
+            case(
                 NUMERIC_38_0_MAX_PLUS_ONE,
                 IntegerValue(numeric38_0Max + BigInteger.ONE),
                 null,
                 Reason.DESTINATION_FIELD_SIZE_LIMITATION
             ),
-            test(
+            case(
                 NUMERIC_38_0_MIN_MINUS_ONE,
                 IntegerValue(numeric38_0Min - BigInteger.ONE),
                 null,
@@ -237,38 +237,38 @@ object DataCoercionNumberFixtures {
 
     val float64 =
         listOf(
-            test(ZERO, NumberValue(bigdec(0)), 0.0),
-            test(ONE, NumberValue(bigdec(1)), 1.0),
-            test(NEGATIVE_ONE, NumberValue(bigdec(-1)), -1.0),
+            case(ZERO, NumberValue(bigdec(0)), 0.0),
+            case(ONE, NumberValue(bigdec(1)), 1.0),
+            case(NEGATIVE_ONE, NumberValue(bigdec(-1)), -1.0),
             // This value isn't exactly representable as a float64
             // (the exact value is `123.400000000000005684341886080801486968994140625`)
             // but we should preserve the canonical representation
-            test(ONE_HUNDRED_TWENTY_THREE_POINT_FOUR, NumberValue(bigdec("123.4")), 123.4),
-            test(
+            case(ONE_HUNDRED_TWENTY_THREE_POINT_FOUR, NumberValue(bigdec("123.4")), 123.4),
+            case(
                 NEGATIVE_ONE_HUNDRED_TWENTY_THREE_POINT_FOUR,
                 NumberValue(bigdec("-123.4")),
                 -123.4
             ),
             // These values have too much precision for a float64, so we round them
-            test(
+            case(
                 POSITIVE_HIGH_PRECISION_FLOAT,
                 NumberValue(bigdec("1234567890.1234567890123456789")),
                 1234567890.1234567,
                 Reason.DESTINATION_FIELD_SIZE_LIMITATION
             ),
-            test(
+            case(
                 NEGATIVE_HIGH_PRECISION_FLOAT,
                 NumberValue(bigdec("-1234567890.1234567890123456789")),
                 -1234567890.1234567,
                 Reason.DESTINATION_FIELD_SIZE_LIMITATION
             ),
-            test(
+            case(
                 NUMERIC_38_9_MAX,
                 NumberValue(numeric38_9Max),
                 1.0E29,
                 Reason.DESTINATION_FIELD_SIZE_LIMITATION
             ),
-            test(
+            case(
                 NUMERIC_38_9_MIN,
                 NumberValue(numeric38_9Min),
                 -1.0E29,
@@ -276,50 +276,50 @@ object DataCoercionNumberFixtures {
             ),
             // min/max_value are all positive values, so we need to manually test their negative
             // version
-            test(
+            case(
                 SMALLEST_POSITIVE_FLOAT32,
                 NumberValue(bigdec(Float.MIN_VALUE.toDouble())),
                 Float.MIN_VALUE.toDouble()
             ),
-            test(
+            case(
                 SMALLEST_NEGATIVE_FLOAT32,
                 NumberValue(bigdec(-Float.MIN_VALUE.toDouble())),
                 -Float.MIN_VALUE.toDouble()
             ),
-            test(
+            case(
                 LARGEST_POSITIVE_FLOAT32,
                 NumberValue(bigdec(Float.MAX_VALUE.toDouble())),
                 Float.MAX_VALUE.toDouble()
             ),
-            test(
+            case(
                 LARGEST_NEGATIVE_FLOAT32,
                 NumberValue(bigdec(-Float.MAX_VALUE.toDouble())),
                 -Float.MAX_VALUE.toDouble()
             ),
-            test(
+            case(
                 SMALLEST_POSITIVE_FLOAT64,
                 NumberValue(bigdec(Double.MIN_VALUE)),
                 Double.MIN_VALUE
             ),
-            test(
+            case(
                 SMALLEST_NEGATIVE_FLOAT64,
                 NumberValue(bigdec(-Double.MIN_VALUE)),
                 -Double.MIN_VALUE
             ),
-            test(LARGEST_POSITIVE_FLOAT64, NumberValue(bigdec(Double.MAX_VALUE)), Double.MAX_VALUE),
-            test(
+            case(LARGEST_POSITIVE_FLOAT64, NumberValue(bigdec(Double.MAX_VALUE)), Double.MAX_VALUE),
+            case(
                 LARGEST_NEGATIVE_FLOAT64,
                 NumberValue(bigdec(-Double.MAX_VALUE)),
                 -Double.MAX_VALUE
             ),
             // These values are out of bounds, so we null them
-            test(
+            case(
                 SLIGHTLY_ABOVE_LARGEST_POSITIVE_FLOAT64,
                 NumberValue(bigdec(Double.MAX_VALUE) + bigdec(Double.MIN_VALUE)),
                 null,
                 Reason.DESTINATION_FIELD_SIZE_LIMITATION
             ),
-            test(
+            case(
                 SLIGHTLY_BELOW_LARGEST_NEGATIVE_FLOAT64,
                 NumberValue(bigdec(-Double.MAX_VALUE) - bigdec(Double.MIN_VALUE)),
                 null,
@@ -329,94 +329,94 @@ object DataCoercionNumberFixtures {
 
     val numeric38_9 =
         listOf(
-                test(ZERO, NumberValue(bigdec(0)), bigdec(0.0)),
-                test(ONE, NumberValue(bigdec(1)), bigdec(1.0)),
-                test(NEGATIVE_ONE, NumberValue(bigdec(-1)), bigdec(-1.0)),
+                case(ZERO, NumberValue(bigdec(0)), bigdec(0.0)),
+                case(ONE, NumberValue(bigdec(1)), bigdec(1.0)),
+                case(NEGATIVE_ONE, NumberValue(bigdec(-1)), bigdec(-1.0)),
                 // This value isn't exactly representable as a float64
                 // (the exact value is `123.400000000000005684341886080801486968994140625`)
                 // but it's perfectly fine as a numeric(38, 9)
-                test(
+                case(
                     ONE_HUNDRED_TWENTY_THREE_POINT_FOUR,
                     NumberValue(bigdec("123.4")),
                     bigdec("123.4")
                 ),
-                test(
+                case(
                     NEGATIVE_ONE_HUNDRED_TWENTY_THREE_POINT_FOUR,
                     NumberValue(bigdec("-123.4")),
                     bigdec("-123.4")
                 ),
                 // These values have too much precision for a numeric(38, 9), so we round them
-                test(
+                case(
                     POSITIVE_HIGH_PRECISION_FLOAT,
                     NumberValue(bigdec("1234567890.1234567890123456789")),
                     bigdec("1234567890.123456789"),
                     Reason.DESTINATION_FIELD_SIZE_LIMITATION
                 ),
-                test(
+                case(
                     NEGATIVE_HIGH_PRECISION_FLOAT,
                     NumberValue(bigdec("-1234567890.1234567890123456789")),
                     bigdec("-1234567890.123456789"),
                     Reason.DESTINATION_FIELD_SIZE_LIMITATION
                 ),
-                test(
+                case(
                     SMALLEST_POSITIVE_FLOAT32,
                     NumberValue(bigdec(Float.MIN_VALUE.toDouble())),
                     bigdec(0),
                     Reason.DESTINATION_FIELD_SIZE_LIMITATION
                 ),
-                test(
+                case(
                     SMALLEST_NEGATIVE_FLOAT32,
                     NumberValue(bigdec(-Float.MIN_VALUE.toDouble())),
                     bigdec(0),
                     Reason.DESTINATION_FIELD_SIZE_LIMITATION
                 ),
-                test(
+                case(
                     SMALLEST_POSITIVE_FLOAT64,
                     NumberValue(bigdec(Double.MIN_VALUE)),
                     bigdec(0),
                     Reason.DESTINATION_FIELD_SIZE_LIMITATION
                 ),
-                test(
+                case(
                     SMALLEST_NEGATIVE_FLOAT64,
                     NumberValue(bigdec(-Double.MIN_VALUE)),
                     bigdec(0),
                     Reason.DESTINATION_FIELD_SIZE_LIMITATION
                 ),
                 // numeric bounds are perfectly fine
-                test(NUMERIC_38_9_MAX, NumberValue(numeric38_9Max), numeric38_9Max),
-                test(NUMERIC_38_9_MIN, NumberValue(numeric38_9Min), numeric38_9Min),
+                case(NUMERIC_38_9_MAX, NumberValue(numeric38_9Max), numeric38_9Max),
+                case(NUMERIC_38_9_MIN, NumberValue(numeric38_9Min), numeric38_9Min),
                 // These values are out of bounds, so we null them
-                test(
+                case(
                     LARGEST_POSITIVE_FLOAT32,
                     NumberValue(bigdec(Float.MAX_VALUE.toDouble())),
                     null,
                     Reason.DESTINATION_FIELD_SIZE_LIMITATION
                 ),
-                test(
+                case(
                     LARGEST_NEGATIVE_FLOAT32,
                     NumberValue(bigdec(-Float.MAX_VALUE.toDouble())),
                     null,
                     Reason.DESTINATION_FIELD_SIZE_LIMITATION
                 ),
-                test(
+                case(
                     LARGEST_POSITIVE_FLOAT64,
                     NumberValue(bigdec(Double.MAX_VALUE)),
                     null,
                     Reason.DESTINATION_FIELD_SIZE_LIMITATION
                 ),
-                test(
+                case(
                     LARGEST_NEGATIVE_FLOAT64,
                     NumberValue(bigdec(-Double.MAX_VALUE)),
                     null,
                     Reason.DESTINATION_FIELD_SIZE_LIMITATION
                 ),
-                test(
+                case(
                     SLIGHTLY_ABOVE_LARGEST_POSITIVE_FLOAT64,
                     NumberValue(bigdec(Double.MAX_VALUE) + bigdec(Double.MIN_VALUE)),
                     null,
                     Reason.DESTINATION_FIELD_SIZE_LIMITATION
                 ),
-                test(
+                case(
                     SLIGHTLY_BELOW_LARGEST_NEGATIVE_FLOAT64,
                     NumberValue(bigdec(-Double.MAX_VALUE) - bigdec(Double.MIN_VALUE)),
                     null,
@@ -429,7 +429,7 @@ object DataCoercionNumberFixtures {
     @JvmStatic fun numeric38_9() = numeric38_9.toArgs()
 }
 
-fun List<DataCoercionFixture>.toArgs(): List<Arguments> =
+fun List<DataCoercionTestCase>.toArgs(): List<Arguments> =
     this.map { Arguments.argumentSet(it.name, it.inputValue, it.outputValue, it.changeReason) }
         .toList()
 
@@ -449,7 +449,7 @@ fun bigdec(double: Double): BigDecimal = BigDecimal.valueOf(double)
 fun bigdec(int: Int): BigDecimal = BigDecimal.valueOf(int.toDouble())
 
 /**
- * Represents a single data coercion test case. You probably want to use [test] as a shorthand
+ * Represents a single data coercion test case. You probably want to use [case] as a shorthand
  * constructor.
  *
  * @param name A short human-readable name for the test. Primarily useful for tests where
@@ -460,16 +460,16 @@ fun bigdec(int: Int): BigDecimal = BigDecimal.valueOf(int.toDouble())
  * @param changeReason If `validate` returns Truncate/Nullify, the reason for that
  * truncation/nullification. If `validate` returns Valid, this should be null.
  */
-data class DataCoercionFixture(
+data class DataCoercionTestCase(
     val name: String,
     val inputValue: AirbyteValue,
     val outputValue: Any?,
     val changeReason: Reason? = null,
 )
 
-fun test(
+fun case(
     name: String,
     inputValue: AirbyteValue,
     outputValue: Any?,
     changeReason: Reason? = null,
-) = DataCoercionFixture(name, inputValue, outputValue, changeReason)
+) = DataCoercionTestCase(name, inputValue, outputValue, changeReason)

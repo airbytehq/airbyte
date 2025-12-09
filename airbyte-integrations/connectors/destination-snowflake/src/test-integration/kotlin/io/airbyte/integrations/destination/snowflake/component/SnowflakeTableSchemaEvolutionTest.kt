@@ -7,7 +7,10 @@ package io.airbyte.integrations.destination.snowflake.component
 import io.airbyte.cdk.load.command.ImportType
 import io.airbyte.cdk.load.component.TableSchemaEvolutionFixtures
 import io.airbyte.cdk.load.component.TableSchemaEvolutionSuite
+import io.airbyte.cdk.load.data.StringValue
+import io.airbyte.cdk.load.schema.TableSchemaFactory
 import io.airbyte.cdk.load.table.ColumnNameMapping
+import io.airbyte.cdk.load.util.serializeToString
 import io.airbyte.integrations.destination.snowflake.client.SnowflakeAirbyteClient
 import io.airbyte.integrations.destination.snowflake.component.SnowflakeComponentTestFixtures.allTypesColumnNameMapping
 import io.airbyte.integrations.destination.snowflake.component.SnowflakeComponentTestFixtures.allTypesTableSchema
@@ -24,6 +27,7 @@ class SnowflakeTableSchemaEvolutionTest(
     override val client: SnowflakeAirbyteClient,
     override val opsClient: SnowflakeAirbyteClient,
     override val testClient: SnowflakeTestTableOperationsClient,
+    override val schemaFactory: TableSchemaFactory,
 ) : TableSchemaEvolutionSuite {
     override val airbyteMetaColumnMapping = SnowflakeComponentTestFixtures.airbyteMetaColumnMapping
 
@@ -123,8 +127,20 @@ class SnowflakeTableSchemaEvolutionTest(
         super.`change from unknown type to string type`(
             idAndTestMapping,
             idAndTestMapping,
-            TableSchemaEvolutionFixtures.UNKNOWN_TO_STRING_TYPE_INPUT_RECORDS,
+            UNKNOWN_TO_STRING_TYPE_INPUT_RECORDS,
             TableSchemaEvolutionFixtures.UNKNOWN_TO_STRING_TYPE_EXPECTED_RECORDS,
         )
     }
+
+    /**
+     * [io.airbyte.integrations.destination.snowflake.write.transform.SnowflakeValueCoercer.map]
+     * serializes union/unknownType values into strings, so that Snowflake understands how to parse
+     * them from the CSV file. Emulate that behavior here.
+     */
+    private val UNKNOWN_TO_STRING_TYPE_INPUT_RECORDS =
+        TableSchemaEvolutionFixtures.UNKNOWN_TO_STRING_TYPE_INPUT_RECORDS.map { record ->
+            val mutableRecord = record.toMutableMap()
+            mutableRecord["test"] = StringValue(record["test"].serializeToString())
+            mutableRecord
+        }
 }

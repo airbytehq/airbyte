@@ -17,6 +17,7 @@ import io.airbyte.cdk.load.component.TestTableOperationsClient
 import io.airbyte.cdk.load.component.toArgs
 import io.airbyte.cdk.load.data.AirbyteValue
 import io.airbyte.cdk.load.dataflow.transform.ValueCoercer
+import io.airbyte.cdk.load.schema.TableSchemaFactory
 import io.airbyte.protocol.models.v0.AirbyteRecordMessageMetaChange.Reason
 import io.micronaut.test.extensions.junit5.annotation.MicronautTest
 import org.junit.jupiter.params.ParameterizedTest
@@ -26,7 +27,8 @@ import org.junit.jupiter.params.provider.MethodSource
 class ClickhouseDataCoercionTest(
     override val coercer: ValueCoercer,
     override val opsClient: TableOperationsClient,
-    override val testClient: TestTableOperationsClient
+    override val testClient: TestTableOperationsClient,
+    override val schemaFactory: TableSchemaFactory,
 ) : DataCoercionSuite {
     @ParameterizedTest
     // We use clickhouse's Int64 type for integers

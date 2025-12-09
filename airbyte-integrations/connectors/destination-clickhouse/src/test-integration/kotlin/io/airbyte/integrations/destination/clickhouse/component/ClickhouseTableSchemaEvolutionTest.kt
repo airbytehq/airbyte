@@ -12,6 +12,7 @@ import io.airbyte.cdk.load.component.TableSchemaEvolutionClient
 import io.airbyte.cdk.load.component.TableSchemaEvolutionFixtures
 import io.airbyte.cdk.load.component.TableSchemaEvolutionSuite
 import io.airbyte.cdk.load.component.TestTableOperationsClient
+import io.airbyte.cdk.load.schema.TableSchemaFactory
 import io.micronaut.test.extensions.junit5.annotation.MicronautTest
 import org.junit.jupiter.api.Test
 
@@ -19,7 +20,8 @@ import org.junit.jupiter.api.Test
 class ClickhouseTableSchemaEvolutionTest(
     override val client: TableSchemaEvolutionClient,
     override val opsClient: TableOperationsClient,
-    override val testClient: TestTableOperationsClient
+    override val testClient: TestTableOperationsClient,
+    override val schemaFactory: TableSchemaFactory,
 ) : TableSchemaEvolutionSuite {
     private val allTypesTableSchema =
         TableSchema(
