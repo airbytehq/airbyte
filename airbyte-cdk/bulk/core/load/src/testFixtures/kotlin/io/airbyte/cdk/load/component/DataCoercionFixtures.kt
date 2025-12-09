@@ -4,17 +4,21 @@
 
 package io.airbyte.cdk.load.component
 
+import io.airbyte.cdk.load.component.DataCoercionObjectFixtures.objects
 import io.airbyte.cdk.load.data.AirbyteValue
+import io.airbyte.cdk.load.data.ArrayValue
 import io.airbyte.cdk.load.data.DateValue
 import io.airbyte.cdk.load.data.IntegerValue
 import io.airbyte.cdk.load.data.NullValue
 import io.airbyte.cdk.load.data.NumberValue
+import io.airbyte.cdk.load.data.ObjectValue
 import io.airbyte.cdk.load.data.StringValue
 import io.airbyte.cdk.load.data.TimeWithTimezoneValue
 import io.airbyte.cdk.load.data.TimeWithoutTimezoneValue
 import io.airbyte.cdk.load.data.TimestampWithTimezoneValue
 import io.airbyte.cdk.load.data.TimestampWithoutTimezoneValue
 import io.airbyte.cdk.load.dataflow.transform.ValueCoercer
+import io.airbyte.cdk.load.util.serializeToString
 import io.airbyte.protocol.models.v0.AirbyteRecordMessageMetaChange.Reason
 import java.math.BigDecimal
 import java.math.BigInteger
@@ -640,6 +644,52 @@ object DataCoercionStringFixtures {
         )
 
     @JvmStatic fun strings() = strings.toArgs()
+}
+
+object DataCoercionObjectFixtures {
+    const val EMPTY_OBJECT = "empty object"
+    const val NORMAL_OBJECT = "normal object"
+
+    val objects =
+        listOf(
+            case(NULL, NullValue, null),
+            case(EMPTY_OBJECT, ObjectValue(linkedMapOf()), emptyMap<String, Any?>()),
+            case(
+                NORMAL_OBJECT,
+                ObjectValue(linkedMapOf("foo" to StringValue("bar"))),
+                mapOf("foo" to "bar")
+            ),
+        )
+
+    val stringifiedObjects =
+        objects.map { fixture ->
+            fixture.copy(outputValue = fixture.outputValue?.serializeToString())
+        }
+
+    @JvmStatic fun objects() = objects.toArgs()
+
+    @JvmStatic fun stringifiedObjects() = stringifiedObjects.toArgs()
+}
+
+object DataCoercionArrayFixtures {
+    const val EMPTY_ARRAY = "empty array"
+    const val NORMAL_ARRAY = "normal array"
+
+    val arrays =
+        listOf(
+            case(NULL, NullValue, null),
+            case(EMPTY_ARRAY, ArrayValue(emptyList()), emptyList<Any?>()),
+            case(NORMAL_ARRAY, ArrayValue(listOf(StringValue("foo"))), listOf("foo")),
+        )
+
+    val stringifiedArrays =
+        arrays.map { fixture ->
+            fixture.copy(outputValue = fixture.outputValue?.serializeToString())
+        }
+
+    @JvmStatic fun arrays() = arrays.toArgs()
+
+    @JvmStatic fun stringifiedArrays() = stringifiedArrays.toArgs()
 }
 
 fun List<DataCoercionTestCase>.toArgs(): List<Arguments> =

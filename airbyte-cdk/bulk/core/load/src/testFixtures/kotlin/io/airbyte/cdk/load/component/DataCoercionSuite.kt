@@ -5,12 +5,17 @@
 package io.airbyte.cdk.load.component
 
 import io.airbyte.cdk.load.data.AirbyteValue
+import io.airbyte.cdk.load.data.ArrayType
+import io.airbyte.cdk.load.data.ArrayTypeWithoutSchema
 import io.airbyte.cdk.load.data.BooleanType
 import io.airbyte.cdk.load.data.BooleanValue
 import io.airbyte.cdk.load.data.DateType
 import io.airbyte.cdk.load.data.FieldType
 import io.airbyte.cdk.load.data.IntegerType
 import io.airbyte.cdk.load.data.NumberType
+import io.airbyte.cdk.load.data.ObjectType
+import io.airbyte.cdk.load.data.ObjectTypeWithEmptySchema
+import io.airbyte.cdk.load.data.ObjectTypeWithoutSchema
 import io.airbyte.cdk.load.data.StringType
 import io.airbyte.cdk.load.data.TimeTypeWithTimezone
 import io.airbyte.cdk.load.data.TimeTypeWithoutTimezone
@@ -193,6 +198,89 @@ interface DataCoercionSuite {
             coercer,
             columnNameMapping,
             FieldType(StringType, nullable = true),
+            inputValue,
+            expectedValue,
+            expectedChangeReason,
+        )
+    }
+
+    /** Fixtures are defined in [DataCoercionObjectFixtures]. */
+    fun `handle object values`(
+        inputValue: AirbyteValue,
+        expectedValue: Any?,
+        expectedChangeReason: Reason?
+    ) = runTest {
+        harness.testValueCoercion(
+            coercer,
+            columnNameMapping,
+            FieldType(
+                ObjectType(linkedMapOf("foo" to FieldType(StringType, true))),
+                nullable = true
+            ),
+            inputValue,
+            expectedValue,
+            expectedChangeReason,
+        )
+    }
+
+    /** Fixtures are defined in [DataCoercionObjectFixtures]. */
+    fun `handle empty object values`(
+        inputValue: AirbyteValue,
+        expectedValue: Any?,
+        expectedChangeReason: Reason?
+    ) = runTest {
+        harness.testValueCoercion(
+            coercer,
+            columnNameMapping,
+            FieldType(ObjectTypeWithEmptySchema, nullable = true),
+            inputValue,
+            expectedValue,
+            expectedChangeReason,
+        )
+    }
+
+    /** Fixtures are defined in [DataCoercionObjectFixtures]. */
+    fun `handle schemaless object values`(
+        inputValue: AirbyteValue,
+        expectedValue: Any?,
+        expectedChangeReason: Reason?
+    ) = runTest {
+        harness.testValueCoercion(
+            coercer,
+            columnNameMapping,
+            FieldType(ObjectTypeWithoutSchema, nullable = true),
+            inputValue,
+            expectedValue,
+            expectedChangeReason,
+        )
+    }
+
+    /** Fixtures are defined in [DataCoercionArrayFixtures]. */
+    fun `handle array values`(
+        inputValue: AirbyteValue,
+        expectedValue: Any?,
+        expectedChangeReason: Reason?
+    ) = runTest {
+        harness.testValueCoercion(
+            coercer,
+            columnNameMapping,
+            FieldType(ArrayType(FieldType(StringType, true)), nullable = true),
+            inputValue,
+            expectedValue,
+            expectedChangeReason,
+        )
+    }
+
+    /** Fixtures are defined in [DataCoercionArrayFixtures]. */
+    fun `handle schemaless array values`(
+        inputValue: AirbyteValue,
+        expectedValue: Any?,
+        expectedChangeReason: Reason?
+    ) = runTest {
+        harness.testValueCoercion(
+            coercer,
+            columnNameMapping,
+            FieldType(ArrayTypeWithoutSchema, nullable = true),
             inputValue,
             expectedValue,
             expectedChangeReason,
