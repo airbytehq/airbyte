@@ -114,8 +114,7 @@ For more information on this topic, please refer to [this Google article](https:
 9. (Optional) For **Custom Reports**, you may optionally provide an array of JSON objects representing any custom reports you wish to query the API with. Refer to the [Custom reports](#custom-reports) section below for more information on formulating these reports.
 10. (Optional) For **Data Freshness**, you may choose whether to include "fresh" data that has not been finalized by Google, and may be subject to change. Please note that if you are using Incremental sync mode, we highly recommend leaving this option to its default value of `final`. Refer to the [Data Freshness](#data-freshness) section below for more information on this parameter.
 11. (Optional) For **Search Analytics API Requests Per Minute**, you may configure the maximum number of requests per minute for Search Analytics API calls. The default value (1200) matches Google's documented maximum quota. If you are experiencing rate limit errors, you may need to lower this value. Most new Google Cloud projects start with a quota of 60 requests per minute. Check your Google Cloud Console quotas to see your actual limit. Refer to the [Rate Limiting](#rate-limiting) section below for more information.
-12. (Optional) For **Sites/Sitemaps API Requests Per Minute**, you may configure the maximum number of requests per minute for Sites and Sitemaps API calls. The default value (200) matches Google's documented maximum quota for "all other resources". If you are experiencing rate limit errors on these streams, you may need to lower this value.
-13. Click **Set up source** and wait for the tests to complete.
+12. Click **Set up source** and wait for the tests to complete.
 
 <HideInUI>
 
@@ -243,7 +242,7 @@ Google Search Console only retains data for websites from the last 16 months. An
 
 | Version     | Date       | Pull Request                                             | Subject                                                                                                                                                                |
 |:------------|:-----------|:---------------------------------------------------------|:-----------------------------------------------------------------------------------------------------------------------------------------------------------------------|
-| 1.10.18 | 2025-12-09 | [70444](https://github.com/airbytehq/airbyte/pull/70444) | Add user-configurable API rate limit options for Search Analytics and Sites/Sitemaps streams |
+| 1.10.18 | 2025-12-09 | [70444](https://github.com/airbytehq/airbyte/pull/70444) | Add user-configurable API rate limit option for Search Analytics streams |
 | 1.10.17 | 2025-11-25 | [70059](https://github.com/airbytehq/airbyte/pull/70059) | Update dependencies |
 | 1.10.16 | 2025-11-18 | [69392](https://github.com/airbytehq/airbyte/pull/69392) | Update dependencies |
 | 1.10.15 | 2025-10-29 | [68771](https://github.com/airbytehq/airbyte/pull/68771) | Update dependencies |

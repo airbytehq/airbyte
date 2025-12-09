@@ -218,21 +218,6 @@ spec:
           Most new Google Cloud projects start with a quota of 60 requests per minute.
           Check your Google Cloud Console quotas to see your actual limit.
         order: 9
-      other_resources_requests_per_minute:
-        type: integer
-        title: Sites/Sitemaps API Requests Per Minute
-        minimum: 1
-        maximum: 200
-        default: 200
-        examples:
-        - 50
-        - 100
-        - 200
-        description: The maximum number of requests per minute for Sites and Sitemaps
-          API calls. The default (200) matches Google's documented maximum quota for
-          "all other resources". If you are experiencing rate limit errors on these
-          streams, you may need to lower this value.
-        order: 10
   advanced_auth:
     auth_flow_type: oauth2.0
     predicate_key:
@@ -1408,11 +1393,11 @@ api_budget:
         - limit: "{{ config.get('requests_per_minute', 1200) }}"
           interval: PT1M
       matchers: []
-    # Sites and sitemaps streams have different rate limits (configurable)
+    # Sites and sitemaps streams have different rate limits (hardcoded)
     # https://developers.google.com/webmaster-tools/limits#all-other-resources
     - type: MovingWindowCallRatePolicy
       rates:
-        - limit: "{{ config.get('other_resources_requests_per_minute', 200) }}"
+        - limit: 200
           interval: PT1M
       matchers:
         - type: StreamMatcher
