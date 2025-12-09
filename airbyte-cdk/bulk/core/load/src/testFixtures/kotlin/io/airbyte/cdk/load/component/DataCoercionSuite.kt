@@ -22,10 +22,12 @@ import io.airbyte.cdk.load.data.TimeTypeWithoutTimezone
 import io.airbyte.cdk.load.data.TimestampTypeWithTimezone
 import io.airbyte.cdk.load.data.TimestampTypeWithoutTimezone
 import io.airbyte.cdk.load.data.UnionType
+import io.airbyte.cdk.load.data.UnknownType
 import io.airbyte.cdk.load.dataflow.transform.ValueCoercer
 import io.airbyte.cdk.load.message.Meta
 import io.airbyte.cdk.load.schema.TableSchemaFactory
 import io.airbyte.cdk.load.table.ColumnNameMapping
+import io.airbyte.cdk.load.util.Jsons
 import io.airbyte.protocol.models.v0.AirbyteRecordMessageMetaChange.Reason
 import io.micronaut.test.extensions.junit5.annotation.MicronautTest
 import kotlinx.coroutines.test.runTest
@@ -344,6 +346,21 @@ interface DataCoercionSuite {
                 ),
                 nullable = true
             ),
+            inputValue,
+            expectedValue,
+            expectedChangeReason,
+        )
+    }
+
+    fun `handle unknown values`(
+        inputValue: AirbyteValue,
+        expectedValue: Any?,
+        expectedChangeReason: Reason?
+    ) = runTest {
+        harness.testValueCoercion(
+            coercer,
+            columnNameMapping,
+            FieldType(UnknownType(Jsons.readTree(("""{"type": "potato"}"""))), nullable = true),
             inputValue,
             expectedValue,
             expectedChangeReason,
