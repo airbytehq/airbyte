@@ -1393,17 +1393,6 @@ api_budget:
         - limit: "{{ config.get('requests_per_minute', 1200) }}"
           interval: PT1M
       matchers: []
-    # Sites and sitemaps streams have different rate limits (hardcoded)
-    # https://developers.google.com/webmaster-tools/limits#all-other-resources
-    - type: MovingWindowCallRatePolicy
-      rates:
-        - limit: 200
-          interval: PT1M
-      matchers:
-        - type: StreamMatcher
-          stream_names:
-            - sites
-            - sitemaps
 
 concurrency_level:
   type: ConcurrencyLevel
