@@ -54,19 +54,24 @@ The Asana source connector supports the following [sync modes](https://docs.airb
 
 ## Supported Streams
 
-- [Attachments](https://developers.asana.com/docs/attachments)
-- [Custom fields](https://developers.asana.com/docs/custom-fields)
-- [Projects](https://developers.asana.com/docs/projects)
-- [Portfolios](https://developers.asana.com/docs/portfolios)
-- [PortfolioMemberships](https://developers.asana.com/reference/portfolio-memberships)
-- [Sections](https://developers.asana.com/docs/sections)
-- [Stories](https://developers.asana.com/docs/stories)
-- [Tags](https://developers.asana.com/docs/tags)
-- [Tasks](https://developers.asana.com/docs/tasks)
-- [Teams](https://developers.asana.com/docs/teams)
-- [Team Memberships](https://developers.asana.com/docs/team-memberships)
-- [Users](https://developers.asana.com/docs/users)
-- [Workspaces](https://developers.asana.com/docs/workspaces)
+- [Attachments](https://developers.asana.com/reference/attachments)
+- [Custom fields](https://developers.asana.com/reference/custom-fields)
+- [Events](https://developers.asana.com/reference/events)
+- [Organization Exports](https://developers.asana.com/reference/organization-exports)
+- [Portfolio Items](https://developers.asana.com/reference/getitemsforportfolio)
+- [Portfolio Memberships](https://developers.asana.com/reference/portfolio-memberships)
+- [Portfolios](https://developers.asana.com/reference/portfolios)
+- [Projects](https://developers.asana.com/reference/projects)
+- [Sections](https://developers.asana.com/reference/sections)
+- [Sections Compact](https://developers.asana.com/reference/sections)
+- [Stories](https://developers.asana.com/reference/stories)
+- [Stories Compact](https://developers.asana.com/reference/stories)
+- [Tags](https://developers.asana.com/reference/tags)
+- [Tasks](https://developers.asana.com/reference/tasks)
+- [Team Memberships](https://developers.asana.com/reference/team-memberships)
+- [Teams](https://developers.asana.com/reference/teams)
+- [Users](https://developers.asana.com/reference/users)
+- [Workspaces](https://developers.asana.com/reference/workspaces)
 
 ## Data type map
 
