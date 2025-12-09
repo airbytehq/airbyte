@@ -18,7 +18,7 @@ from .config import ConfigBuilder
 from .response_builder.streams import EmptyResponseBuilder
 
 
-_STREAM_NAME = "blocks"
+_STREAM_NAME = "global_suppressions"
 _BASE_URL = "https://api.sendgrid.com"
 
 
@@ -32,10 +32,10 @@ def _create_catalog(sync_mode: SyncMode = SyncMode.full_refresh):
 
 
 @freezegun.freeze_time("2024-01-15T00:00:00Z")
-class TestBlocksStream:
+class TestGlobalSuppressionsStream:
     """
-    Tests for the blocks stream with offset pagination and incremental sync.
-    This stream uses the same paginator as bounces, spam_reports, global_suppressions, and invalid_emails.
+    Tests for the global_suppressions stream with offset pagination and incremental sync.
+    This stream uses the same paginator as bounces, blocks, spam_reports, and invalid_emails.
     """
 
     def test_read_full_refresh_single_page(self):
@@ -45,7 +45,7 @@ class TestBlocksStream:
         with HttpMocker() as http_mocker:
             http_mocker.get(
                 HttpRequest(
-                    url=f"{_BASE_URL}/v3/suppression/blocks",
+                    url=f"{_BASE_URL}/v3/suppression/unsubscribes",
                     query_params={
                         "limit": "500",
                         "offset": "0",
@@ -53,26 +53,24 @@ class TestBlocksStream:
                         "end_time": "1705276800",
                     },
                 ),
-                HttpResponse(body=_get_response("blocks.json"), status_code=200),
+                HttpResponse(body=_get_response("global_suppressions.json"), status_code=200),
             )
 
             source = get_source(config)
             actual_messages = read(source, config=config, catalog=_create_catalog())
 
             assert len(actual_messages.records) == 1
-            assert actual_messages.records[0].record.data["email"] == "blocked@example.com"
-            assert "created" in actual_messages.records[0].record.data
+            assert actual_messages.records[0].record.data["email"] == "unsubscribed@example.com"
 
     def test_read_full_refresh_with_pagination(self):
         """Test full refresh sync with multiple pages using offset pagination."""
         config = ConfigBuilder().build()
 
         with HttpMocker() as http_mocker:
-            # First page - return 500 records to trigger pagination
-            first_page_records = json.loads(_get_response("blocks.json")) * 500
+            first_page_records = json.loads(_get_response("global_suppressions.json")) * 500
             http_mocker.get(
                 HttpRequest(
-                    url=f"{_BASE_URL}/v3/suppression/blocks",
+                    url=f"{_BASE_URL}/v3/suppression/unsubscribes",
                     query_params={
                         "limit": "500",
                         "offset": "0",
@@ -83,10 +81,9 @@ class TestBlocksStream:
                 HttpResponse(body=json.dumps(first_page_records), status_code=200),
             )
 
-            # Second page - return fewer records to stop pagination
             http_mocker.get(
                 HttpRequest(
-                    url=f"{_BASE_URL}/v3/suppression/blocks",
+                    url=f"{_BASE_URL}/v3/suppression/unsubscribes",
                     query_params={
                         "limit": "500",
                         "offset": "500",
@@ -94,7 +91,7 @@ class TestBlocksStream:
                         "end_time": "1705276800",
                     },
                 ),
-                HttpResponse(body=_get_response("blocks.json"), status_code=200),
+                HttpResponse(body=_get_response("global_suppressions.json"), status_code=200),
             )
 
             source = get_source(config)
@@ -109,7 +106,7 @@ class TestBlocksStream:
         with HttpMocker() as http_mocker:
             http_mocker.get(
                 HttpRequest(
-                    url=f"{_BASE_URL}/v3/suppression/blocks",
+                    url=f"{_BASE_URL}/v3/suppression/unsubscribes",
                     query_params={
                         "limit": "500",
                         "offset": "0",
@@ -117,7 +114,7 @@ class TestBlocksStream:
                         "end_time": "1705276800",
                     },
                 ),
-                HttpResponse(body=_get_response("blocks.json"), status_code=200),
+                HttpResponse(body=_get_response("global_suppressions.json"), status_code=200),
             )
 
             source = get_source(config)
@@ -140,7 +137,7 @@ class TestBlocksStream:
         with HttpMocker() as http_mocker:
             http_mocker.get(
                 HttpRequest(
-                    url=f"{_BASE_URL}/v3/suppression/blocks",
+                    url=f"{_BASE_URL}/v3/suppression/unsubscribes",
                     query_params={
                         "limit": "500",
                         "offset": "0",
@@ -148,7 +145,7 @@ class TestBlocksStream:
                         "end_time": "1705276800",
                     },
                 ),
-                HttpResponse(body=_get_response("blocks.json"), status_code=200),
+                HttpResponse(body=_get_response("global_suppressions.json"), status_code=200),
             )
 
             source = get_source(config, state=state)
@@ -168,7 +165,7 @@ class TestBlocksStream:
         with HttpMocker() as http_mocker:
             http_mocker.get(
                 HttpRequest(
-                    url=f"{_BASE_URL}/v3/suppression/blocks",
+                    url=f"{_BASE_URL}/v3/suppression/unsubscribes",
                     query_params={
                         "limit": "500",
                         "offset": "0",

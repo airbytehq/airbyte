@@ -6,7 +6,6 @@ import json
 from pathlib import Path
 
 import freezegun
-import pytest
 
 from airbyte_cdk.models import SyncMode
 from airbyte_cdk.test.catalog_builder import CatalogBuilder
@@ -16,6 +15,7 @@ from airbyte_cdk.test.state_builder import StateBuilder
 from unit_tests.conftest import get_source
 
 from .config import ConfigBuilder
+from .response_builder.streams import EmptyResponseBuilder
 
 
 _STREAM_NAME = "bounces"
@@ -23,7 +23,6 @@ _BASE_URL = "https://api.sendgrid.com"
 
 
 def _get_response(filename: str) -> str:
-    """Load a JSON response template from the resource directory."""
     response_path = Path(__file__).parent.parent / "resource" / "http" / "response" / filename
     return response_path.read_text()
 
@@ -34,7 +33,11 @@ def _create_catalog(sync_mode: SyncMode = SyncMode.full_refresh):
 
 @freezegun.freeze_time("2024-01-15T00:00:00Z")
 class TestBouncesStream:
-    """Tests for the bounces stream with offset pagination and incremental sync."""
+    """
+    Tests for the bounces stream with offset pagination and incremental sync.
+    This stream uses the same paginator as blocks, spam_reports, global_suppressions, and invalid_emails.
+    Pagination tests here also validate the same behavior for those streams.
+    """
 
     def test_read_full_refresh_single_page(self):
         """Test basic full refresh sync with a single page of results."""
@@ -59,6 +62,8 @@ class TestBouncesStream:
 
             assert len(actual_messages.records) == 1
             assert actual_messages.records[0].record.data["email"] == "bounce@example.com"
+            assert actual_messages.records[0].record.data["created"] == 1704067200
+            assert actual_messages.records[0].record.data["status"] == "5.1.1"
 
     def test_read_full_refresh_with_pagination(self):
         """Test full refresh sync with multiple pages using offset pagination."""
@@ -99,8 +104,8 @@ class TestBouncesStream:
 
             assert len(actual_messages.records) == 501
 
-    def test_read_incremental_emits_state(self):
-        """Test incremental sync emits correct stream state message."""
+    def test_read_incremental_first_sync_emits_state(self):
+        """Test incremental sync on first sync (no prior state) emits state message."""
         config = ConfigBuilder().build()
 
         with HttpMocker() as http_mocker:
@@ -126,11 +131,12 @@ class TestBouncesStream:
 
             assert len(actual_messages.records) == 1
             assert len(actual_messages.state_messages) > 0
+            state_data = actual_messages.state_messages[-1].state.stream.stream_state
+            assert "created" in state_data
 
-    def test_read_incremental_with_state(self):
-        """Test incremental sync with existing state."""
+    def test_read_incremental_with_prior_state(self):
+        """Test incremental sync with existing state uses state for start_time."""
         config = ConfigBuilder().build()
-        # State with cursor at 2024-01-10
         state = StateBuilder().with_stream_state(_STREAM_NAME, {"created": 1704844800}).build()
 
         with HttpMocker() as http_mocker:
@@ -156,3 +162,29 @@ class TestBouncesStream:
             )
 
             assert len(actual_messages.records) == 1
+
+    def test_read_empty_results_no_errors(self):
+        """Test that empty results don't produce errors in logs."""
+        config = ConfigBuilder().build()
+
+        with HttpMocker() as http_mocker:
+            http_mocker.get(
+                HttpRequest(
+                    url=f"{_BASE_URL}/v3/suppression/bounces",
+                    query_params={
+                        "limit": "500",
+                        "offset": "0",
+                        "start_time": "1704067200",
+                        "end_time": "1705276800",
+                    },
+                ),
+                EmptyResponseBuilder(is_array=True).build(),
+            )
+
+            source = get_source(config)
+            actual_messages = read(source, config=config, catalog=_create_catalog())
+
+            assert len(actual_messages.records) == 0
+            assert len(actual_messages.errors) == 0
+            for log in actual_messages.logs:
+                assert "error" not in log.log.message.lower()

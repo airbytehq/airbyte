@@ -14,6 +14,7 @@ from airbyte_cdk.test.mock_http import HttpMocker, HttpRequest, HttpResponse
 from unit_tests.conftest import get_source
 
 from .config import ConfigBuilder
+from .response_builder.streams import EmptyResponseBuilder
 
 
 _STREAM_NAME = "templates"
@@ -21,7 +22,6 @@ _BASE_URL = "https://api.sendgrid.com"
 
 
 def _get_response(filename: str) -> str:
-    """Load a JSON response template from the resource directory."""
     response_path = Path(__file__).parent.parent / "resource" / "http" / "response" / filename
     return response_path.read_text()
 
@@ -121,3 +121,27 @@ class TestTemplatesStream:
             assert "id" in record_data
             assert "name" in record_data
             assert "generation" in record_data
+
+    def test_read_empty_results_no_errors(self):
+        """Test that empty results don't produce errors in logs."""
+        config = ConfigBuilder().build()
+
+        with HttpMocker() as http_mocker:
+            http_mocker.get(
+                HttpRequest(
+                    url=f"{_BASE_URL}/v3/templates",
+                    query_params={
+                        "generations": "legacy,dynamic",
+                        "page_size": "200",
+                    },
+                ),
+                EmptyResponseBuilder(is_array=False, records_path="result").build(),
+            )
+
+            source = get_source(config)
+            actual_messages = read(source, config=config, catalog=_create_catalog())
+
+            assert len(actual_messages.records) == 0
+            assert len(actual_messages.errors) == 0
+            for log in actual_messages.logs:
+                assert "error" not in log.log.message.lower()
