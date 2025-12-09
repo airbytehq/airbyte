@@ -24,6 +24,13 @@ data:
     pypi:
       enabled: false
       packageName: airbyte-source-gong
+  suggestedStreams:
+    streams:
+      - answeredScorecards
+      - calls
+      - extensiveCalls
+      - scorecards
+      - users
   supportLevel: community
   tags:
     - cdk:low-code
