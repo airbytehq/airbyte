@@ -36,6 +36,8 @@ object SnowflakeComponentTestFixtures {
                 "TIME_NTZ" to ColumnType("TIME", true),
                 "ARRAY" to ColumnType("ARRAY", true),
                 "OBJECT" to ColumnType("OBJECT", true),
+                "UNION" to ColumnType("VARIANT", true),
+                "LEGACY_UNION" to ColumnType("VARIANT", true),
                 "UNKNOWN" to ColumnType("VARIANT", true),
             )
         )
