@@ -10,8 +10,15 @@ data class PostgresSourceCdcPosition(
     val lsn: Lsn?, // For decorating records with _ab_cdc_lsn.
     val lsnCommit: Lsn?, // For determining when target LSN is reached.
 ) : Comparable<PostgresSourceCdcPosition> {
-    // See https://github.com/airbytehq/airbyte/pull/35939.
-    override fun compareTo(other: PostgresSourceCdcPosition): Int =
-        if (lsnCommit == null || other.lsnCommit == null) 1
-        else lsnCommit.compareTo(other.lsnCommit)
+    override fun compareTo(other: PostgresSourceCdcPosition): Int {
+        if (this == other) return 0
+        // This breaks the contract of compareTo because it does not provide a consistent ordering:
+        // For a and b such that a.lsnCommit == null, b.lsnCommit == null, and a.lsn != b.lsn,
+        // a.compareTo(b) = 1 and b.compareTo(a) = 1.
+        // The intent here is to duplicate the logic in the previous version of the connector, where
+        // we do not terminate a sync based on a comparison of offsets without a lsn_commit.
+        // See https://github.com/airbytehq/airbyte/pull/35939.
+        if (lsnCommit == null || other.lsnCommit == null) return 1
+        return lsnCommit.compareTo(other.lsnCommit)
+    }
 }
