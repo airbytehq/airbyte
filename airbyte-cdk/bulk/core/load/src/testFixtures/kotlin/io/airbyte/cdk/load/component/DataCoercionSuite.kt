@@ -21,6 +21,7 @@ import io.airbyte.cdk.load.data.TimeTypeWithTimezone
 import io.airbyte.cdk.load.data.TimeTypeWithoutTimezone
 import io.airbyte.cdk.load.data.TimestampTypeWithTimezone
 import io.airbyte.cdk.load.data.TimestampTypeWithoutTimezone
+import io.airbyte.cdk.load.data.UnionType
 import io.airbyte.cdk.load.dataflow.transform.ValueCoercer
 import io.airbyte.cdk.load.message.Meta
 import io.airbyte.cdk.load.table.ColumnNameMapping
@@ -273,6 +274,68 @@ interface DataCoercionSuite {
             coercer,
             columnNameMapping,
             FieldType(ArrayTypeWithoutSchema, nullable = true),
+            inputValue,
+            expectedValue,
+            expectedChangeReason,
+        )
+    }
+
+    /**
+     * All destinations should implement this, even if your destination is supporting legacy unions.
+     *
+     * Fixtures are defined in [DataCoercionUnionFixtures].
+     */
+    fun `handle union values`(
+        inputValue: AirbyteValue,
+        expectedValue: Any?,
+        expectedChangeReason: Reason?
+    ) = runTest {
+        harness.testValueCoercion(
+            coercer,
+            columnNameMapping,
+            FieldType(
+                UnionType(
+                    setOf(
+                        ObjectType(linkedMapOf("foo" to FieldType(StringType, true))),
+                        IntegerType,
+                        StringType,
+                    ),
+                    isLegacyUnion = false
+                ),
+                nullable = true
+            ),
+            inputValue,
+            expectedValue,
+            expectedChangeReason,
+        )
+    }
+
+    /**
+     * Only legacy destinations that are maintaining "legacy" union behavior should implement this
+     * test. If you're not sure, check whether your `application-connector.yaml` includes a
+     * `airbyte.destination.core.types.unions: LEGACY` property.
+     *
+     * Fixtures are defined in [DataCoercionLegacyUnionFixtures].
+     */
+    fun `handle legacy union values`(
+        inputValue: AirbyteValue,
+        expectedValue: Any?,
+        expectedChangeReason: Reason?
+    ) = runTest {
+        harness.testValueCoercion(
+            coercer,
+            columnNameMapping,
+            FieldType(
+                UnionType(
+                    setOf(
+                        ObjectType(linkedMapOf("foo" to FieldType(StringType, true))),
+                        IntegerType,
+                        StringType,
+                    ),
+                    isLegacyUnion = true
+                ),
+                nullable = true
+            ),
             inputValue,
             expectedValue,
             expectedChangeReason,

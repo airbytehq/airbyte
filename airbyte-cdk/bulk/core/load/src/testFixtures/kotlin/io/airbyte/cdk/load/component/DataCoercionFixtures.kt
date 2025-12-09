@@ -650,6 +650,62 @@ object DataCoercionArrayFixtures {
     @JvmStatic fun stringifiedArrays() = stringifiedArrays.toArgs()
 }
 
+const val UNION_INT_VALUE = "int value"
+const val UNION_OBJ_VALUE = "object value"
+const val UNION_STR_VALUE = "string value"
+
+object DataCoercionUnionFixtures {
+
+    val unions =
+        listOf(
+            test(NULL, NullValue, null),
+            test(UNION_INT_VALUE, IntegerValue(42), 42L),
+            test(UNION_STR_VALUE, StringValue("foo"), "foo"),
+            test(
+                UNION_OBJ_VALUE,
+                ObjectValue(linkedMapOf("foo" to StringValue("bar"))),
+                mapOf("foo" to "bar")
+            ),
+        )
+
+    val stringifiedUnions =
+        unions.map { fixture ->
+            fixture.copy(outputValue = fixture.outputValue?.serializeToString())
+        }
+
+    @JvmStatic fun unions() = unions.toArgs()
+
+    @JvmStatic fun stringifiedUnions() = stringifiedUnions.toArgs()
+}
+
+object DataCoercionLegacyUnionFixtures {
+    val unions =
+        listOf(
+            test(NULL, NullValue, null),
+            // Legacy union of int x object will select object, and you can't write an int to an
+            // object column.
+            // So we should null it out.
+            test(UNION_INT_VALUE, IntegerValue(42), null, Reason.DESTINATION_TYPECAST_ERROR),
+            // Similarly, we should null out strings.
+            test(UNION_STR_VALUE, StringValue("foo"), "foo"),
+            // But objects can be written as objects, so retain this value.
+            test(
+                UNION_OBJ_VALUE,
+                ObjectValue(linkedMapOf("foo" to StringValue("bar"))),
+                mapOf("foo" to "bar")
+            ),
+        )
+
+    val stringifiedUnions =
+        DataCoercionUnionFixtures.unions.map { fixture ->
+            fixture.copy(outputValue = fixture.outputValue?.serializeToString())
+        }
+
+    @JvmStatic fun unions() = unions.toArgs()
+
+    @JvmStatic fun stringifiedUnions() = DataCoercionUnionFixtures.stringifiedUnions.toArgs()
+}
+
 fun List<DataCoercionFixture>.toArgs(): List<Arguments> =
     this.map { Arguments.argumentSet(it.name, it.inputValue, it.outputValue, it.changeReason) }
         .toList()
