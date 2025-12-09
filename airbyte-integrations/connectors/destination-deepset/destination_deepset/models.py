@@ -3,6 +3,7 @@
 from __future__ import annotations
 
 import json
+import logging
 from enum import StrEnum, unique
 from pathlib import Path
 from typing import Any
@@ -11,6 +12,8 @@ from pydantic import BaseModel, ConfigDict, Field
 
 from airbyte_cdk.models import AirbyteRecordMessage
 from destination_deepset import util
+
+logger = logging.getLogger("airbyte")
 
 
 __all__ = [
@@ -92,7 +95,18 @@ class DeepsetCloudFile(BaseModel):
 
     @classmethod
     def from_record(cls, record: AirbyteRecordMessage) -> DeepsetCloudFile:
-        data = FileData.model_validate(record.data)
+        logger.info(f"[DEEPSET] Parsing record from stream: {record.stream}")
+        logger.debug(f"[DEEPSET] Record data keys: {list(record.data.keys()) if isinstance(record.data, dict) else 'not a dict'}")
+
+        try:
+            data = FileData.model_validate(record.data)
+            logger.info(f"[DEEPSET] Successfully parsed record: document_key={data.document_key}")
+        except Exception as e:
+            logger.error(f"[DEEPSET] Failed to parse record: {e}")
+            logger.error(f"[DEEPSET] Expected fields: content, document_key")
+            logger.debug(f"[DEEPSET] Received data: {record.data}")
+            raise ValueError(f"Failed to parse record data: {e}") from e
+
         name = Path(util.generate_name(data.document_key, record.stream, namespace=record.namespace))
 
         return cls(
