@@ -143,6 +143,17 @@ claude mcp add --transport stdio connector-mcp -- \
 ```
 
 </TabItem>
+<TabItem value="Other" label="Other">
+
+Connector MCP runs as a standard MCP server over stdio. Any MCP-compatible client that supports custom stdio servers can use it by running the same command shown in the Claude tab. Refer to your client's documentation for how to add a custom MCP server.
+
+The key configuration elements are:
+
+- **Transport**: stdio
+- **Command**: `uv`
+- **Arguments**: `--directory /path/to/connector-mcp run connector_mcp`
+
+</TabItem>
 </Tabs>
 
 ## Part 5: Work with your data
