@@ -7,6 +7,7 @@ package io.airbyte.integrations.source.postgres
 import com.fasterxml.jackson.databind.JsonNode
 import io.airbyte.cdk.ConfigErrorException
 import io.airbyte.cdk.StreamIdentifier
+import io.airbyte.cdk.command.JdbcSourceConfiguration
 import io.airbyte.cdk.command.OpaqueStateValue
 import io.airbyte.cdk.discover.DataField
 import io.airbyte.cdk.discover.DataOrMetaField
@@ -38,6 +39,8 @@ import io.micronaut.context.annotation.Primary
 import jakarta.inject.Singleton
 import java.sql.PreparedStatement
 import java.util.concurrent.ConcurrentHashMap
+import java.util.concurrent.atomic.AtomicLong
+
 
 @Primary
 @Singleton
@@ -272,6 +275,30 @@ open class PostgresSourceJdbcPartitionFactory(
                 }
             }
         }
+
+        var blockSize: AtomicLong? = null
+
+        @Synchronized
+        fun blockSize(config: JdbcSourceConfiguration): Long {
+            if (blockSize == null) {
+                val jdbcConnectionFactory = JdbcConnectionFactory(config)
+                log.info { "Querying server block size setting." }
+                jdbcConnectionFactory.get().use { connection ->
+                    val sql = "SELECT current_setting('block_size')::int"
+                    val stmt = connection.prepareStatement(sql)
+                    val rs = stmt.executeQuery()
+
+                    if (rs.next()) {
+                        blockSize = AtomicLong(rs.getLong(1))
+                        log.warn { "Server block size is $blockSize." }
+                    } else {
+                        error("Could not get server block size")
+                    }
+                }
+            }
+            return blockSize?.get()!!
+        }
+
     }
 
     private fun detectStreamFilenodeChange(
@@ -314,23 +341,6 @@ open class PostgresSourceJdbcPartitionFactory(
             return null
         }
         return cursor to cursors[cursorLabel]!!
-    }
-
-    open val blockSize: Long by lazy(mode = LazyThreadSafetyMode.SYNCHRONIZED) {
-        val jdbcConnectionFactory = JdbcConnectionFactory(config)
-        log.info { "Querying server block size setting." }
-        jdbcConnectionFactory.get().use { connection ->
-            val sql = "SELECT current_setting('block_size')::int"
-            val stmt = connection.prepareStatement(sql)
-            val rs = stmt.executeQuery()
-
-            if (rs.next()) {
-                val blockSize = rs.getLong(1)
-                log.warn { "Server block size is $blockSize." }
-                return@lazy blockSize
-            }
-            error("Could not get server block size")
-        }
     }
 
     private fun relationSize(stream: Stream): Long {
@@ -385,7 +395,7 @@ open class PostgresSourceJdbcPartitionFactory(
         numPartitions: Int,
         relationSize: Long,
     ): List<Pair<Ctid?, Ctid?>> {
-        val theoreticalLastPage: Long = relationSize / blockSize
+        val theoreticalLastPage: Long = relationSize / blockSize(config)
         log.info { "Theoretical last page: $theoreticalLastPage" }
         val lowerBoundCtid: Ctid = lowerBound?.let {
             if (it.isNull.not() && it.asText().isEmpty().not()) {
