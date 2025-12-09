@@ -132,7 +132,7 @@ streams:
               backoff_strategies:
                 - type: ExponentialBackoffStrategy
                   factor: 5
-              max_retries: null
+              max_retries: 3
         request_headers:
           Content-Type: application/json
         request_parameters: {}
