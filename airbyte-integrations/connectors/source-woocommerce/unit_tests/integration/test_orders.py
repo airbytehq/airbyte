@@ -110,9 +110,18 @@ class TestOrdersIncremental(TestCase):
         # 1 record, it won't try to fetch the second page.
 
         output = self._read(config_=config().with_start_date("2024-01-01"))
+
+        # Assert on record content
         assert len(output.records) == 1
         assert output.records[0].record.data["id"] == 727
         assert output.records[0].record.data["status"] == "processing"
+
+        # Assert on state - should be updated with the timestamp of the latest record
+        assert len(output.state_messages) > 0
+        latest_state = output.state_messages[-1].state.stream.stream_state
+        assert (
+            latest_state.__dict__["date_modified_gmt"] == "2024-03-15T14:45:00"
+        ), "State should be updated to the date_modified_gmt timestamp of the latest record"
 
     @HttpMocker()
     @freezegun.freeze_time("2024-01-15T12:00:00Z")

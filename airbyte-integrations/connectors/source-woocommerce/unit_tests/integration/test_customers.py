@@ -105,11 +105,20 @@ class TestCustomersIncremental(TestCase):
         )
 
         output = self._read(config_=config().with_start_date("2024-01-01"))
+
+        # Assert on record content
         assert len(output.records) == 1
         assert output.records[0].record.data["id"] == 1
         assert output.records[0].record.data["email"] == "john.doe@example.com"
         assert output.records[0].record.data["first_name"] == "John"
         assert output.records[0].record.data["last_name"] == "Doe"
+
+        # Assert on state - should be updated with the timestamp of the latest record
+        assert len(output.state_messages) > 0
+        latest_state = output.state_messages[-1].state.stream.stream_state
+        assert (
+            latest_state.__dict__["date_modified_gmt"] == "2024-03-01T15:20:00"
+        ), "State should be updated to the date_modified_gmt timestamp of the latest record"
 
     @HttpMocker()
     def test_read_records_empty_response(self, http_mocker: HttpMocker) -> None:
