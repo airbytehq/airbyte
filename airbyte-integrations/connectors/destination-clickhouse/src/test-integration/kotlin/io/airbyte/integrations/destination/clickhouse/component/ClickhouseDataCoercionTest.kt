@@ -18,6 +18,8 @@ import io.airbyte.cdk.load.component.DataCoercionSuite
 import io.airbyte.cdk.load.component.DataCoercionTimestampNtzFixtures
 import io.airbyte.cdk.load.component.DataCoercionTimestampTzFixtures
 import io.airbyte.cdk.load.component.DataCoercionUnionFixtures
+import io.airbyte.cdk.load.component.DataCoercionUnknownFixtures
+import io.airbyte.cdk.load.component.DataCoercionUnknownFixtures.STR_VALUE
 import io.airbyte.cdk.load.component.HIGH_PRECISION_TIMESTAMP
 import io.airbyte.cdk.load.component.MAXIMUM_TIMESTAMP
 import io.airbyte.cdk.load.component.MINIMUM_TIMESTAMP
@@ -216,6 +218,18 @@ class ClickhouseDataCoercionTest(
         super.`handle union values`(inputValue, expectedValue, expectedChangeReason)
     }
 
+    @ParameterizedTest
+    @MethodSource(
+        "io.airbyte.integrations.destination.clickhouse.component.ClickhouseDataCoercionTest#unknown"
+    )
+    override fun `handle unknown values`(
+        inputValue: AirbyteValue,
+        expectedValue: Any?,
+        expectedChangeReason: Reason?
+    ) {
+        super.`handle unknown values`(inputValue, expectedValue, expectedChangeReason)
+    }
+
     companion object {
         /**
          * destination-clickhouse doesn't set a change reason when truncating high-precision numbers
@@ -385,6 +399,18 @@ class ClickhouseDataCoercionTest(
                         // rather than json-serializing it.
                         // that's... probably justifiable?
                         UNION_STR_VALUE -> fixture.copy(outputValue = "foo")
+                        else -> fixture
+                    }
+                }
+                .toArgs()
+
+        /** Similar to [union]. */
+        @JvmStatic
+        fun unknown() =
+            DataCoercionUnknownFixtures.stringifiedUnknowns
+                .map { fixture ->
+                    when (fixture.name) {
+                        STR_VALUE -> fixture.copy(outputValue = "foo")
                         else -> fixture
                     }
                 }
