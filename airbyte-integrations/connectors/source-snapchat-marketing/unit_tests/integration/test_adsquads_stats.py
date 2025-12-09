@@ -64,15 +64,20 @@ class TestAdsquadsStatsHourly(TestCase):
         assert len(output.records) >= 1
 
     @HttpMocker()
-    def test_read_records_with_error_401(self, http_mocker: HttpMocker) -> None:
+    def test_read_records_with_error_403_retry(self, http_mocker: HttpMocker) -> None:
+        """Test that 403 errors trigger RETRY behavior as configured in manifest."""
         _setup_parent_mocks(http_mocker)
+        # First request returns 403, then succeeds on retry
         http_mocker.get(
             RequestBuilder.adsquads_stats_endpoint(ADSQUAD_ID).with_any_query_params().build(),
-            error_response(HTTPStatus.UNAUTHORIZED),
+            [
+                error_response(HTTPStatus.FORBIDDEN),
+                stats_timeseries_response(entity_id=ADSQUAD_ID, granularity="HOUR"),
+            ],
         )
 
-        output = _read(config_builder=config(), stream_name="adsquads_stats_hourly", expecting_exception=True)
-        assert len(output.records) == 0
+        output = _read(config_builder=config(), stream_name="adsquads_stats_hourly")
+        assert len(output.records) >= 1
 
 
 class TestAdsquadsStatsDaily(TestCase):

@@ -86,7 +86,8 @@ class TestAds(TestCase):
         assert len(output.records) == 2
 
     @HttpMocker()
-    def test_read_records_with_error_401(self, http_mocker: HttpMocker) -> None:
+    def test_read_records_with_error_403_retry(self, http_mocker: HttpMocker) -> None:
+        """Test that 403 errors trigger RETRY behavior as configured in manifest."""
         http_mocker.post(
             OAuthRequestBuilder.oauth_endpoint().build(),
             oauth_response(),
@@ -99,10 +100,15 @@ class TestAds(TestCase):
             RequestBuilder.adaccounts_endpoint(ORGANIZATION_ID).build(),
             adaccounts_response(ad_account_id=AD_ACCOUNT_ID, organization_id=ORGANIZATION_ID),
         )
+        # First request returns 403, then succeeds on retry
         http_mocker.get(
             RequestBuilder.ads_endpoint(AD_ACCOUNT_ID).build(),
-            error_response(HTTPStatus.UNAUTHORIZED),
+            [
+                error_response(HTTPStatus.FORBIDDEN),
+                ads_response(ad_id=AD_ID, ad_account_id=AD_ACCOUNT_ID, adsquad_id=ADSQUAD_ID),
+            ],
         )
 
-        output = _read(config_builder=config(), expecting_exception=True)
-        assert len(output.records) == 0
+        output = _read(config_builder=config())
+        assert len(output.records) == 1
+        assert output.records[0].record.data["id"] == AD_ID

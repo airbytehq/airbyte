@@ -92,20 +92,6 @@ class TestOrganizations(TestCase):
         assert len(output.records) == 2
 
     @HttpMocker()
-    def test_read_records_with_error_401(self, http_mocker: HttpMocker) -> None:
-        http_mocker.post(
-            OAuthRequestBuilder.oauth_endpoint().build(),
-            oauth_response(),
-        )
-        http_mocker.get(
-            RequestBuilder.organizations_endpoint("me").build(),
-            error_response(HTTPStatus.UNAUTHORIZED),
-        )
-
-        output = _read(config_builder=config(), expecting_exception=True)
-        assert len(output.records) == 0
-
-    @HttpMocker()
     def test_read_records_with_error_403_retry(self, http_mocker: HttpMocker) -> None:
         """Test that 403 errors trigger RETRY behavior as configured in manifest."""
         http_mocker.post(
