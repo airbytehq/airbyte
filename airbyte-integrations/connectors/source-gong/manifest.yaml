@@ -370,27 +370,6 @@ definitions:
         type: InlineSchemaLoader
         schema:
           $ref: "#/schemas/trackers"
-    libraryFolders:
-      type: DeclarativeStream
-      name: libraryFolders
-      primary_key:
-        - id
-      retriever:
-        type: SimpleRetriever
-        requester:
-          $ref: "#/definitions/base_requester"
-          path: /library/folders
-          http_method: GET
-        record_selector:
-          type: RecordSelector
-          extractor:
-            type: DpathExtractor
-            field_path:
-              - folders
-      schema_loader:
-        type: InlineSchemaLoader
-        schema:
-          $ref: "#/schemas/libraryFolders"
     statsActivityAggregate:
       type: DeclarativeStream
       name: statsActivityAggregate
@@ -405,6 +384,7 @@ definitions:
           request_body_json:
             filter:
               fromDate: "{{ config['start_date'][:10] }}"
+              toDate: "{{ today_utc().strftime('%Y-%m-%d') }}"
         record_selector:
           type: RecordSelector
           extractor:
@@ -439,6 +419,7 @@ definitions:
           request_body_json:
             filter:
               fromDate: "{{ config['start_date'][:10] }}"
+              toDate: "{{ today_utc().strftime('%Y-%m-%d') }}"
         record_selector:
           type: RecordSelector
           extractor:
@@ -473,6 +454,7 @@ definitions:
           request_body_json:
             filter:
               fromDate: "{{ config['start_date'][:10] }}"
+              toDate: "{{ today_utc().strftime('%Y-%m-%d') }}"
         record_selector:
           type: RecordSelector
           extractor:
@@ -510,7 +492,6 @@ streams:
   - $ref: "#/definitions/streams/workspaces"
   - $ref: "#/definitions/streams/callTranscripts"
   - $ref: "#/definitions/streams/trackers"
-  - $ref: "#/definitions/streams/libraryFolders"
   - $ref: "#/definitions/streams/statsActivityAggregate"
   - $ref: "#/definitions/streams/statsActivityDayByDay"
   - $ref: "#/definitions/streams/statsInteraction"
@@ -1650,26 +1631,6 @@ schemas:
           - "null"
           - boolean
         description: Whether the tracker is enabled
-  libraryFolders:
-    type: object
-    $schema: http://json-schema.org/draft-07/schema#
-    additionalProperties: true
-    properties:
-      id:
-        type:
-          - "null"
-          - string
-        description: Unique identifier for the folder
-      name:
-        type:
-          - "null"
-          - string
-        description: Name of the folder
-      parentId:
-        type:
-          - "null"
-          - string
-        description: ID of the parent folder
   statsActivityAggregate:
     type: object
     $schema: http://json-schema.org/draft-07/schema#
