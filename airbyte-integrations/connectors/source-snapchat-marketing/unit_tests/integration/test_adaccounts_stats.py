@@ -85,7 +85,7 @@ class TestAdaccountsStatsHourly(TestCase):
 
     @HttpMocker()
     def test_read_records_with_error_403_retry(self, http_mocker: HttpMocker) -> None:
-        """Test that 403 errors trigger RETRY behavior as configured in manifest."""
+        """Test that 403 errors trigger RETRY behavior with custom error message from manifest."""
         _setup_parent_mocks(http_mocker)
         # First request returns 403, then succeeds on retry
         http_mocker.get(
@@ -98,6 +98,13 @@ class TestAdaccountsStatsHourly(TestCase):
 
         output = _read(config_builder=config(), stream_name="adaccounts_stats_hourly")
         assert len(output.records) >= 1
+
+        # Verify custom error message from manifest is logged
+        log_messages = [log.log.message for log in output.logs]
+        expected_error_prefix = "Got permission error when accessing URL. Skipping"
+        assert any(expected_error_prefix in msg for msg in log_messages), (
+            f"Expected custom 403 error message '{expected_error_prefix}' in logs"
+        )
 
 
 class TestAdaccountsStatsDaily(TestCase):
@@ -204,3 +211,29 @@ class TestAdaccountsStatsIncremental(TestCase):
         assert len(output.records) >= 1
         # Verify state message is emitted
         assert len(output.state_messages) >= 1
+
+    @HttpMocker()
+    def test_incremental_sync_with_state(self, http_mocker: HttpMocker) -> None:
+        """Test incremental sync with previous state for stats streams."""
+        from airbyte_cdk.test.state_builder import StateBuilder
+
+        previous_state_date = "2024-01-15T00:00:00Z"
+        state = StateBuilder().with_stream_state(
+            "adaccounts_stats_hourly",
+            {"start_time": previous_state_date}
+        ).build()
+
+        _setup_parent_mocks(http_mocker)
+        http_mocker.get(
+            RequestBuilder.adaccounts_stats_endpoint(AD_ACCOUNT_ID).with_any_query_params().build(),
+            stats_timeseries_response(entity_id=AD_ACCOUNT_ID, granularity="HOUR"),
+        )
+
+        output = _read(config_builder=config(), stream_name="adaccounts_stats_hourly", sync_mode=SyncMode.incremental, state=state)
+
+        assert len(output.records) >= 1, f"Expected at least 1 record, got {len(output.records)}"
+        assert len(output.state_messages) > 0, "Expected state messages to be emitted"
+
+        new_state = output.most_recent_state.stream_state.__dict__
+        cursor_value = new_state.get("start_time") or new_state.get("state", {}).get("start_time")
+        assert cursor_value is not None, "Expected cursor value in state"

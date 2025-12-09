@@ -29,4 +29,6 @@ def read_output(
 ) -> EntrypointOutput:
     _catalog = catalog(stream_name, sync_mode)
     _config = config_builder.build()
-    return read(get_source(config=_config), _config, _catalog, state, expecting_exception)
+    # Pass state to BOTH get_source() and read() for proper incremental sync behavior
+    source = get_source(config=_config, state=state)
+    return read(source, _config, _catalog, state, expecting_exception)

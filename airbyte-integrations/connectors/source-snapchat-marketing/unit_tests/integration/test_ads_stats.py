@@ -3,11 +3,13 @@
 #
 
 from http import HTTPStatus
+from typing import List, Optional
 from unittest import TestCase
 
-from airbyte_cdk.models import SyncMode
+from airbyte_cdk.models import AirbyteStateMessage, SyncMode
 from airbyte_cdk.test.entrypoint_wrapper import EntrypointOutput
 from airbyte_cdk.test.mock_http import HttpMocker
+from airbyte_cdk.test.state_builder import StateBuilder
 
 from .config import AD_ACCOUNT_ID, AD_ID, ADSQUAD_ID, ORGANIZATION_ID, ConfigBuilder
 from .request_builder import OAuthRequestBuilder, RequestBuilder
@@ -23,11 +25,18 @@ from .response_builder import (
 from .utils import config, read_output
 
 
-def _read(config_builder: ConfigBuilder, stream_name: str, expecting_exception: bool = False) -> EntrypointOutput:
+def _read(
+    config_builder: ConfigBuilder,
+    stream_name: str,
+    sync_mode: SyncMode = SyncMode.full_refresh,
+    state: Optional[List[AirbyteStateMessage]] = None,
+    expecting_exception: bool = False,
+) -> EntrypointOutput:
     return read_output(
         config_builder=config_builder,
         stream_name=stream_name,
-        sync_mode=SyncMode.full_refresh,
+        sync_mode=sync_mode,
+        state=state,
         expecting_exception=expecting_exception,
     )
 
@@ -65,7 +74,7 @@ class TestAdsStatsHourly(TestCase):
 
     @HttpMocker()
     def test_read_records_with_error_403_retry(self, http_mocker: HttpMocker) -> None:
-        """Test that 403 errors trigger RETRY behavior as configured in manifest."""
+        """Test that 403 errors trigger RETRY behavior with custom error message from manifest."""
         _setup_parent_mocks(http_mocker)
         # First request returns 403, then succeeds on retry
         http_mocker.get(
@@ -78,6 +87,13 @@ class TestAdsStatsHourly(TestCase):
 
         output = _read(config_builder=config(), stream_name="ads_stats_hourly")
         assert len(output.records) >= 1
+
+        # Verify custom error message from manifest is logged
+        log_messages = [log.log.message for log in output.logs]
+        expected_error_prefix = "Got permission error when accessing URL. Skipping"
+        assert any(expected_error_prefix in msg for msg in log_messages), (
+            f"Expected custom 403 error message '{expected_error_prefix}' in logs"
+        )
 
 
 class TestAdsStatsDaily(TestCase):
@@ -104,3 +120,29 @@ class TestAdsStatsLifetime(TestCase):
 
         output = _read(config_builder=config(), stream_name="ads_stats_lifetime")
         assert len(output.records) == 1
+
+
+class TestAdsStatsIncremental(TestCase):
+    @HttpMocker()
+    def test_incremental_sync_with_state(self, http_mocker: HttpMocker) -> None:
+        """Test incremental sync with previous state for stats streams."""
+        previous_state_date = "2024-01-15T00:00:00Z"
+        state = StateBuilder().with_stream_state(
+            "ads_stats_hourly",
+            {"start_time": previous_state_date}
+        ).build()
+
+        _setup_parent_mocks(http_mocker)
+        http_mocker.get(
+            RequestBuilder.ads_stats_endpoint(AD_ID).with_any_query_params().build(),
+            stats_timeseries_response(entity_id=AD_ID, granularity="HOUR"),
+        )
+
+        output = _read(config_builder=config(), stream_name="ads_stats_hourly", sync_mode=SyncMode.incremental, state=state)
+
+        assert len(output.records) >= 1, f"Expected at least 1 record, got {len(output.records)}"
+        assert len(output.state_messages) > 0, "Expected state messages to be emitted"
+
+        new_state = output.most_recent_state.stream_state.__dict__
+        cursor_value = new_state.get("start_time") or new_state.get("state", {}).get("start_time")
+        assert cursor_value is not None, "Expected cursor value in state"
