@@ -135,8 +135,11 @@ public class BigQuerySource extends AbstractDbSource<StandardSQLTypeName, BigQue
       if (isDatasetConfigured(database)) {
         final String datasetId = getConfigDatasetId(database);
         if (multiProject) {
-          // For multi-project with dataset filter, use the new CDK method
-          tables = database.getDatasetTables(projectId, datasetId);
+          // For multi-project with dataset filter, get all tables and filter by dataset
+          // Note: CDK has getDatasetTables(projectId, datasetId) but connector uses pinned CDK version
+          tables = database.getProjectTables(projectId).stream()
+              .filter(t -> datasetId.equals(t.getTableId().getDataset()))
+              .collect(Collectors.toList());
         } else {
           // Backward-compatible path: old behavior uses default project
           tables = database.getDatasetTables(datasetId);
