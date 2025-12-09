@@ -42,13 +42,10 @@ class TableSchemaFactory(
                 finalSchema = finalSchema,
             )
 
-        val tableSchema =
-            StreamTableSchema(
-                tableNames,
-                columnSchema,
-                importType,
-            )
-
-        return mapper.toFinalSchema(tableSchema)
+        return StreamTableSchema(
+            tableNames,
+            columnSchema,
+            importType,
+        )
     }
 }

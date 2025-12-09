@@ -4,7 +4,10 @@
 
 package io.airbyte.cdk.load.component
 
+import io.airbyte.cdk.load.command.Append
+import io.airbyte.cdk.load.command.Dedupe
 import io.airbyte.cdk.load.command.DestinationStream
+import io.airbyte.cdk.load.command.ImportType
 import io.airbyte.cdk.load.command.NamespaceMapper
 import io.airbyte.cdk.load.data.AirbyteValue
 import io.airbyte.cdk.load.data.ArrayType
@@ -28,8 +31,10 @@ import io.airbyte.cdk.load.message.Meta.Companion.COLUMN_NAME_AB_EXTRACTED_AT
 import io.airbyte.cdk.load.message.Meta.Companion.COLUMN_NAME_AB_GENERATION_ID
 import io.airbyte.cdk.load.message.Meta.Companion.COLUMN_NAME_AB_META
 import io.airbyte.cdk.load.message.Meta.Companion.COLUMN_NAME_AB_RAW_ID
+import io.airbyte.cdk.load.schema.model.ColumnSchema
 import io.airbyte.cdk.load.schema.model.StreamTableSchema
 import io.airbyte.cdk.load.schema.model.TableName
+import io.airbyte.cdk.load.schema.model.TableNames
 import io.airbyte.cdk.load.table.CDC_DELETED_AT_COLUMN
 import io.airbyte.cdk.load.table.ColumnNameMapping
 import io.airbyte.cdk.load.util.Jsons
@@ -673,10 +678,10 @@ object TableOperationsFixtures {
     }
 
     // Create common destination stream configurations
-    fun createStream(
+    fun createAppendStream(
         namespace: String,
         name: String,
-        tableSchema: StreamTableSchema,
+        schema: ObjectType,
         generationId: Long = 1,
         minimumGenerationId: Long = 0,
         syncId: Long = 1,
@@ -684,13 +689,94 @@ object TableOperationsFixtures {
         DestinationStream(
             unmappedNamespace = namespace,
             unmappedName = name,
-            importType = tableSchema.importType,
+            importType = Append,
             generationId = generationId,
             minimumGenerationId = minimumGenerationId,
             syncId = syncId,
-            schema = ObjectType(LinkedHashMap(tableSchema.columnSchema.inputSchema)),
+            schema = schema,
             namespaceMapper = NamespaceMapper(),
-            tableSchema = tableSchema,
+            tableSchema =
+                StreamTableSchema(
+                    tableNames = TableNames(finalTableName = TableName(namespace, name)),
+                    columnSchema =
+                        ColumnSchema(
+                            inputSchema = schema.properties,
+                            inputToFinalColumnNames = schema.properties.keys.associateWith { it },
+                            finalSchema = mapOf(),
+                        ),
+                    importType = Append,
+                )
+        )
+
+    fun createDedupeStream(
+        namespace: String,
+        name: String,
+        schema: ObjectType,
+        primaryKey: List<List<String>>,
+        cursor: List<String>,
+        generationId: Long = 1,
+        minimumGenerationId: Long = 0,
+        syncId: Long = 1,
+    ): DestinationStream =
+        DestinationStream(
+            unmappedNamespace = namespace,
+            unmappedName = name,
+            importType =
+                Dedupe(
+                    primaryKey = primaryKey,
+                    cursor = cursor,
+                ),
+            generationId = generationId,
+            minimumGenerationId = minimumGenerationId,
+            syncId = syncId,
+            schema = schema,
+            namespaceMapper = NamespaceMapper(),
+            tableSchema =
+                StreamTableSchema(
+                    tableNames = TableNames(finalTableName = TableName(namespace, name)),
+                    columnSchema =
+                        ColumnSchema(
+                            inputSchema = schema.properties,
+                            inputToFinalColumnNames = schema.properties.keys.associateWith { it },
+                            finalSchema = mapOf(),
+                        ),
+                    importType =
+                        Dedupe(
+                            primaryKey = primaryKey,
+                            cursor = cursor,
+                        ),
+                )
+        )
+
+    fun createStream(
+        namespace: String,
+        name: String,
+        schema: ObjectType,
+        importType: ImportType,
+        generationId: Long = 1,
+        minimumGenerationId: Long = 0,
+        syncId: Long = 1,
+    ) =
+        DestinationStream(
+            unmappedNamespace = namespace,
+            unmappedName = name,
+            importType = importType,
+            generationId = generationId,
+            minimumGenerationId = minimumGenerationId,
+            syncId = syncId,
+            schema = schema,
+            namespaceMapper = NamespaceMapper(),
+            tableSchema =
+                StreamTableSchema(
+                    tableNames = TableNames(finalTableName = TableName("namespace", "test")),
+                    columnSchema =
+                        ColumnSchema(
+                            inputSchema = schema.properties,
+                            inputToFinalColumnNames = mapOf(),
+                            finalSchema = mapOf(),
+                        ),
+                    importType = importType,
+                )
         )
 
     fun <V> List<Map<String, V>>.sortBy(key: String) =

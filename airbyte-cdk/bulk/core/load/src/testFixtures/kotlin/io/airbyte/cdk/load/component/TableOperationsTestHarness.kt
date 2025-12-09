@@ -5,8 +5,10 @@
 package io.airbyte.cdk.load.component
 
 import io.airbyte.cdk.load.command.DestinationStream
+import io.airbyte.cdk.load.component.TableOperationsFixtures.createAppendStream
 import io.airbyte.cdk.load.component.TableOperationsFixtures.insertRecords
 import io.airbyte.cdk.load.data.AirbyteValue
+import io.airbyte.cdk.load.data.ObjectType
 import io.airbyte.cdk.load.schema.model.TableName
 import io.airbyte.cdk.load.table.ColumnNameMapping
 import io.github.oshai.kotlinlogging.KotlinLogging
@@ -27,8 +29,14 @@ class TableOperationsTestHarness(
     /** Creates a test table with the given configuration and verifies it was created. */
     suspend fun createTestTableAndVerifyExists(
         tableName: TableName,
+        schema: ObjectType,
         columnNameMapping: ColumnNameMapping,
-        stream: DestinationStream
+        stream: DestinationStream =
+            createAppendStream(
+                namespace = tableName.namespace,
+                name = tableName.name,
+                schema = schema,
+            )
     ) {
         client.createTable(
             stream = stream,
