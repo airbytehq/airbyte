@@ -140,6 +140,24 @@ jobs:
       - name: Output workflow result
         if: always()
         run: |
+          conclusion="${{ steps.trigger-workflow.outputs.workflow-conclusion }}"
+          conclusion="${conclusion:-unknown}"
+          workflow_url="${{ steps.trigger-workflow.outputs.workflow-url }}"
+          workflow_url="${workflow_url:-https://github.com/airbytehq/airbyte-ops-mcp/actions/workflows/connector-live-test.yml}"
+          connector="${{ inputs.connector_image }}"
+          command="${{ inputs.command }}"
+          command="${command:-check}"
+
           echo "Live test workflow completed."
-          echo "Conclusion: ${{ steps.trigger-workflow.outputs.workflow-conclusion }}"
-          echo "Workflow URL: ${{ steps.trigger-workflow.outputs.workflow-url }}"
+          echo "Conclusion: $conclusion"
+          echo "Workflow URL: $workflow_url"
+
+          {
+            echo "## Live Test Results"
+            echo ""
+            echo "**Connector:** \`$connector\`"
+            echo "**Command:** \`$command\`"
+            echo "**Conclusion:** \`$conclusion\`"
+            echo ""
+            echo "[View full test logs in airbyte-ops-mcp]($workflow_url)"
+          } >> "$GITHUB_STEP_SUMMARY"
