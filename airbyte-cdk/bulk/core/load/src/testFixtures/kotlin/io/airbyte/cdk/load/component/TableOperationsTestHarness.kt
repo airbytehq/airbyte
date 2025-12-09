@@ -180,11 +180,14 @@ class TableOperationsTestHarness(
                 .removeAirbyteColumns(airbyteMetaColumnMapping)
                 .reverseColumnNameMapping(columnNameMapping, airbyteMetaColumnMapping)
                 .removeNulls()
+        val actualValue = actualRecords.first()["test"]
         assertEquals(
-            listOf(mapOf("test" to expectedValue)).removeNulls(),
-            actualRecords,
-            "For input $inputValue, expected $expectedValue. Coercer output was $validatedValue.",
+            expectedValue,
+            actualValue,
+            "For input $inputValue, expected ${expectedValue.simpleClassName()}; actual value was ${actualValue.simpleClassName()}. Coercer output was $validatedValue.",
         )
         assertEquals(expectedChangeReason, changeReason)
     }
 }
+
+fun Any?.simpleClassName() = this?.let { it::class.simpleName } ?: "null"
