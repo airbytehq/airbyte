@@ -130,7 +130,7 @@ class TestBlocksStream:
             assert len(actual_messages.records) == 1
             assert len(actual_messages.state_messages) > 0
             state_data = actual_messages.state_messages[-1].state.stream.stream_state
-            assert "created" in state_data
+            assert hasattr(state_data, "created") or "created" in state_data.__dict__
 
     def test_read_incremental_with_prior_state(self):
         """Test incremental sync with existing state uses state for start_time."""
