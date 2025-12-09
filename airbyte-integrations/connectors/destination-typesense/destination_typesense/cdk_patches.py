@@ -152,6 +152,27 @@ def apply_patches():
     # Also update the imports in serializers_module
     serializers_module.AirbyteStateMessage = PatchedAirbyteStateMessage
 
+    # CRITICAL: Also patch modules that have already imported AirbyteMessageSerializer
+    # These modules imported the serializer at module load time, so they have stale references
+    try:
+        import airbyte_cdk.destinations.destination as dest_module
+        dest_module.AirbyteMessageSerializer = serializers_module.AirbyteMessageSerializer
+    except ImportError:
+        pass
+
+    try:
+        import airbyte_cdk.entrypoint as entrypoint_module
+        entrypoint_module.AirbyteMessageSerializer = serializers_module.AirbyteMessageSerializer
+    except ImportError:
+        pass
+
+    try:
+        import airbyte_cdk.models as models_module
+        models_module.AirbyteMessageSerializer = serializers_module.AirbyteMessageSerializer
+        models_module.AirbyteStateMessageSerializer = serializers_module.AirbyteStateMessageSerializer
+    except ImportError:
+        pass
+
     print("[cdk_patches] Applied AirbyteStateMessage patch for state-id preservation")
 
 
