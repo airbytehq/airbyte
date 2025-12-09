@@ -11,10 +11,11 @@ import freezegun
 
 from airbyte_cdk.models import SyncMode
 from airbyte_cdk.test.catalog_builder import CatalogBuilder
+from airbyte_cdk.test.entrypoint_wrapper import read
 from airbyte_cdk.test.mock_http import HttpMocker, HttpRequest, HttpResponse
+from unit_tests.conftest import get_source
 
 from .config import ConfigBuilder
-from .conftest import get_source
 
 
 def _create_catalog(sync_mode: SyncMode = SyncMode.full_refresh):
@@ -85,7 +86,7 @@ contact_456,another@example.com,Jane,Smith,2024-01-11T11:00:00Z,2024-01-13T16:45
 
         source = get_source(config)
         with patch("time.sleep", return_value=None):
-            actual_messages = source.read(config=config, catalog=_create_catalog())
+            actual_messages = read(source, config=config, catalog=_create_catalog())
 
         # Verify records were returned
         assert len(actual_messages.records) == 2
@@ -165,7 +166,7 @@ contact_456,another@example.com,Jane,Smith,2024-01-11T11:00:00Z,2024-01-13T16:45
 
         source = get_source(config)
         with patch("time.sleep", return_value=None):
-            actual_messages = source.read(config=config, catalog=_create_catalog())
+            actual_messages = read(source, config=config, catalog=_create_catalog())
 
         # Verify no records were returned
         assert len(actual_messages.records) == 0
