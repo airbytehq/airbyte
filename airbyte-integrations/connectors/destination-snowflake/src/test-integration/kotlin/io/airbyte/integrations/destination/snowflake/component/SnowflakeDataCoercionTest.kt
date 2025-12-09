@@ -200,6 +200,16 @@ class SnowflakeDataCoercionTest(
         super.`handle union values`(inputValue, expectedValue, expectedChangeReason)
     }
 
+    @ParameterizedTest
+    @MethodSource("io.airbyte.cdk.load.component.DataCoercionUnknownFixtures#unknowns")
+    override fun `handle unknown values`(
+        inputValue: AirbyteValue,
+        expectedValue: Any?,
+        expectedChangeReason: Reason?
+    ) {
+        super.`handle unknown values`(inputValue, expectedValue, expectedChangeReason)
+    }
+
     companion object {
         /**
          * Snowflake does two interesting things when querying a `NUMERIC(38, 0)` column:
