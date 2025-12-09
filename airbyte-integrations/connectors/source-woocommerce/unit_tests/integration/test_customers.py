@@ -1,5 +1,13 @@
 # Copyright (c) 2024 Airbyte, Inc., all rights reserved.
 
+"""
+Tests for the customers stream.
+
+This stream uses client-side incremental sync (is_client_side_incremental: true).
+The API returns all records and the connector filters them client-side based on
+the cursor field (date_modified_gmt).
+"""
+
 import json
 from pathlib import Path
 from unittest import TestCase
@@ -60,4 +68,56 @@ class TestCustomersFullRefresh(TestCase):
         )
 
         output = self._read(config_=config())
+        assert len(output.records) == 0
+
+
+class TestCustomersIncremental(TestCase):
+    """
+    Tests for the customers stream in incremental mode.
+
+    The customers stream uses client-side incremental sync (is_client_side_incremental: true),
+    so the API returns all records and the connector filters them client-side based on
+    the cursor field (date_modified_gmt). Unlike orders/products, no date parameters
+    are sent to the API.
+    """
+
+    @staticmethod
+    def _read(config_: ConfigBuilder, expecting_exception: bool = False) -> EntrypointOutput:
+        return read_output(
+            config_builder=config_,
+            stream_name=_STREAM_NAME,
+            sync_mode=SyncMode.incremental,
+            expecting_exception=expecting_exception,
+        )
+
+    @HttpMocker()
+    def test_read_records_single_slice(self, http_mocker: HttpMocker) -> None:
+        """
+        Test reading customers in incremental mode.
+
+        Unlike orders/products which use server-side incremental with date parameters,
+        customers uses client-side incremental. The API returns all records and the
+        connector filters them locally based on the cursor field.
+        """
+        http_mocker.get(
+            WooCommerceRequestBuilder.customers_endpoint().with_default_params().build(),
+            HttpResponse(body=json.dumps(_get_response_template()), status_code=200),
+        )
+
+        output = self._read(config_=config().with_start_date("2024-01-01"))
+        assert len(output.records) == 1
+        assert output.records[0].record.data["id"] == 1
+        assert output.records[0].record.data["email"] == "john.doe@example.com"
+        assert output.records[0].record.data["first_name"] == "John"
+        assert output.records[0].record.data["last_name"] == "Doe"
+
+    @HttpMocker()
+    def test_read_records_empty_response(self, http_mocker: HttpMocker) -> None:
+        """Test reading when there are no customers."""
+        http_mocker.get(
+            WooCommerceRequestBuilder.customers_endpoint().with_default_params().build(),
+            HttpResponse(body=json.dumps([]), status_code=200),
+        )
+
+        output = self._read(config_=config().with_start_date("2024-01-01"))
         assert len(output.records) == 0
