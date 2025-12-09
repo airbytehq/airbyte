@@ -4,17 +4,17 @@
 
 package io.airbyte.integrations.destination.postgres.config
 
+import io.airbyte.cdk.load.command.DestinationCatalog
 import io.airbyte.cdk.load.component.TableOperationsClient
-import io.airbyte.cdk.load.orchestration.db.BaseDirectLoadInitialStatusGatherer
-import io.airbyte.cdk.load.orchestration.db.TempTableNameGenerator
+import io.airbyte.cdk.load.table.BaseDirectLoadInitialStatusGatherer
 import jakarta.inject.Singleton
 
 @Singleton
 class PostgresDirectLoadDatabaseInitialStatusGatherer(
     airbyteClient: TableOperationsClient,
-    tempTableNameGenerator: TempTableNameGenerator,
+    catalog: DestinationCatalog,
 ) :
     BaseDirectLoadInitialStatusGatherer(
         airbyteClient,
-        tempTableNameGenerator,
+        catalog,
     )
