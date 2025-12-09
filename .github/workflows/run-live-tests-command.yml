@@ -76,9 +76,8 @@ jobs:
           app-id: ${{ secrets.OCTAVIA_BOT_APP_ID }}
           private-key: ${{ secrets.OCTAVIA_BOT_PRIVATE_KEY }}
 
-      - name: Trigger live test workflow in airbyte-ops-mcp
-        env:
-          GH_TOKEN: ${{ steps.get-app-token.outputs.token }}
+      - name: Build inputs JSON
+        id: build-inputs
         run: |
           # Build the inputs JSON, only including non-empty values
           INPUTS_JSON=$(jq -n \
@@ -94,14 +93,18 @@ jobs:
 
           echo "Triggering live test workflow with inputs:"
           echo "$INPUTS_JSON" | jq .
+          echo "inputs_json=$INPUTS_JSON" >> "$GITHUB_OUTPUT"
 
-          curl -X POST \
-            -H "Authorization: Bearer $GH_TOKEN" \
-            -H "Accept: application/vnd.github+json" \
-            -H "X-GitHub-Api-Version: 2022-11-28" \
-            https://api.github.com/repos/airbytehq/airbyte-ops-mcp/actions/workflows/connector-live-test.yml/dispatches \
-            -d "$(jq -n --argjson inputs "$INPUTS_JSON" '{ref: "main", inputs: $inputs}')"
+      - name: Trigger live test workflow in airbyte-ops-mcp
+        uses: benc-uk/workflow-dispatch@v1
+        with:
+          workflow: connector-live-test.yml
+          repo: airbytehq/airbyte-ops-mcp
+          ref: main
+          token: ${{ steps.get-app-token.outputs.token }}
+          inputs: ${{ steps.build-inputs.outputs.inputs_json }}
 
-          echo ""
+      - name: Output workflow link
+        run: |
           echo "Live test workflow triggered in airbyte-ops-mcp."
           echo "View the workflow runs at: https://github.com/airbytehq/airbyte-ops-mcp/actions/workflows/connector-live-test.yml"
