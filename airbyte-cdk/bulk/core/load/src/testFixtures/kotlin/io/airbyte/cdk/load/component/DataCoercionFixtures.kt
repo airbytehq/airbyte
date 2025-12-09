@@ -81,6 +81,7 @@ object DataCoercionIntegerFixtures {
      */
     val int64 =
         listOf(
+            case(NULL, NullValue, null),
             case(ZERO, IntegerValue(0), 0L),
             case(ONE, IntegerValue(1), 1L),
             case(NEGATIVE_ONE, IntegerValue(-1), -1L),
@@ -150,6 +151,7 @@ object DataCoercionIntegerFixtures {
      */
     val numeric38_0 =
         listOf(
+            case(NULL, NullValue, null),
             case(ZERO, IntegerValue(0), bigint(0L)),
             case(ONE, IntegerValue(1), bigint(1L)),
             case(NEGATIVE_ONE, IntegerValue(-1), bigint(-1L)),
@@ -254,6 +256,7 @@ object DataCoercionNumberFixtures {
 
     val float64 =
         listOf(
+            case(NULL, NullValue, null),
             case(ZERO, NumberValue(bigdec(0)), 0.0),
             case(ONE, NumberValue(bigdec(1)), 1.0),
             case(NEGATIVE_ONE, NumberValue(bigdec(-1)), -1.0),
@@ -346,6 +349,7 @@ object DataCoercionNumberFixtures {
 
     val numeric38_9 =
         listOf(
+                case(NULL, NullValue, null),
                 case(ZERO, NumberValue(bigdec(0)), bigdec(0.0)),
                 case(ONE, NumberValue(bigdec(1)), bigdec(1.0)),
                 case(NEGATIVE_ONE, NumberValue(bigdec(-1)), bigdec(-1.0)),
@@ -480,6 +484,7 @@ object DataCoercionTimestampTzFixtures {
      */
     val commonWarehouse =
         listOf(
+            case(NULL, NullValue, null),
             case(
                 SIMPLE_TIMESTAMP,
                 TimestampWithTimezoneValue("2025-01-23T12:34:56.789Z"),
@@ -520,6 +525,7 @@ object DataCoercionTimestampNtzFixtures {
     /** See [DataCoercionTimestampTzFixtures.commonWarehouse] for explanation */
     val commonWarehouse =
         listOf(
+            case(NULL, NullValue, null),
             case(
                 SIMPLE_TIMESTAMP,
                 TimestampWithoutTimezoneValue("2025-01-23T12:34:56.789"),
@@ -563,6 +569,7 @@ const val HIGH_NOON = "high noon"
 object DataCoercionTimeTzFixtures {
     val timetz =
         listOf(
+            case(NULL, NullValue, null),
             case(MIDNIGHT, TimeWithTimezoneValue("00:00Z"), "00:00Z"),
             case(MAX_TIME, TimeWithTimezoneValue("23:59:59.999999999Z"), "23:59:59.999999999Z"),
             case(HIGH_NOON, TimeWithTimezoneValue("12:00Z"), "12:00Z"),
@@ -574,6 +581,7 @@ object DataCoercionTimeTzFixtures {
 object DataCoercionTimeNtzFixtures {
     val timentz =
         listOf(
+            case(NULL, NullValue, null),
             case(MIDNIGHT, TimeWithoutTimezoneValue("00:00"), "00:00"),
             case(MAX_TIME, TimeWithoutTimezoneValue("23:59:59.999999999"), "23:59:59.999999999"),
             case(HIGH_NOON, TimeWithoutTimezoneValue("12:00"), "12:00"),
@@ -585,6 +593,7 @@ object DataCoercionTimeNtzFixtures {
 object DataCoercionDateFixtures {
     val commonWarehouse =
         listOf(
+            case(NULL, NullValue, null),
             case(
                 SIMPLE_TIMESTAMP,
                 DateValue("2025-01-23"),
