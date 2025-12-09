@@ -2,20 +2,47 @@
 # Copyright (c) 2024 Airbyte, Inc., all rights reserved.
 #
 
+import abc
 import copy
 import json
 from pathlib import Path
 from typing import Any, Dict, List, Optional
 
 from airbyte_cdk.test.mock_http import HttpResponse
+from airbyte_cdk.test.mock_http.response_builder import PaginationStrategy
 
-from . import AbstractResponseBuilder
-from .pagination import SendGridCursorPaginationStrategy, SendGridOffsetPaginationStrategy
+
+class AbstractResponseBuilder(abc.ABC):
+    @abc.abstractmethod
+    def build(self) -> HttpResponse:
+        pass
+
+
+class SendGridOffsetPaginationStrategy(PaginationStrategy):
+    """Pagination strategy for SendGrid offset-based pagination (bounces, blocks, etc.)."""
+
+    def __init__(self, page_size: int = 500):
+        self._page_size = page_size
+
+    def update(self, response: Dict[str, Any]) -> None:
+        pass
+
+
+class SendGridCursorPaginationStrategy(PaginationStrategy):
+    """Pagination strategy for SendGrid cursor-based pagination (lists, singlesends, etc.)."""
+
+    NEXT_PAGE_URL = "https://api.sendgrid.com/v3/marketing/lists?page_token=next_token&page_size=1000"
+
+    def __init__(self, next_url: str = None):
+        self._next_url = next_url or self.NEXT_PAGE_URL
+
+    def update(self, response: Dict[str, Any]) -> None:
+        response["_metadata"] = {"next": self._next_url}
 
 
 def _load_template(stream_name: str) -> Dict[str, Any]:
     """Load a JSON response template from the resource directory."""
-    response_path = Path(__file__).parent.parent.parent / "resource" / "http" / "response" / f"{stream_name}.json"
+    response_path = Path(__file__).parent.parent / "resource" / "http" / "response" / f"{stream_name}.json"
     return json.loads(response_path.read_text())
 
 

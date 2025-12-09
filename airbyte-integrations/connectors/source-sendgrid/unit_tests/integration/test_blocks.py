@@ -15,7 +15,7 @@ from airbyte_cdk.test.state_builder import StateBuilder
 from unit_tests.conftest import get_source
 
 from .config import ConfigBuilder
-from .response_builder.streams import EmptyResponseBuilder
+from .response_builder import EmptyResponseBuilder
 
 
 _STREAM_NAME = "blocks"

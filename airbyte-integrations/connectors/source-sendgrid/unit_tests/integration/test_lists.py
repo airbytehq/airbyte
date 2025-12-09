@@ -14,7 +14,7 @@ from airbyte_cdk.test.mock_http import HttpMocker, HttpRequest, HttpResponse
 from unit_tests.conftest import get_source
 
 from .config import ConfigBuilder
-from .response_builder.streams import EmptyResponseBuilder
+from .response_builder import EmptyResponseBuilder
 
 
 _STREAM_NAME = "lists"
