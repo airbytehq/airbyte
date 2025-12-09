@@ -6,8 +6,8 @@ package io.airbyte.integrations.destination.postgres.client
 
 import io.airbyte.cdk.load.command.DestinationStream
 import io.airbyte.cdk.load.message.Meta.Companion.COLUMN_NAME_AB_GENERATION_ID
+import io.airbyte.cdk.load.schema.model.TableName
 import io.airbyte.cdk.load.table.ColumnNameMapping
-import io.airbyte.cdk.load.table.TableName
 import io.airbyte.integrations.destination.postgres.spec.PostgresConfiguration
 import io.airbyte.integrations.destination.postgres.sql.COUNT_TOTAL_ALIAS
 import io.airbyte.integrations.destination.postgres.sql.Column
@@ -46,7 +46,14 @@ internal class PostgresAirbyteClientTest {
         sqlGenerator = mockk()
         postgresColumnUtils = mockk()
         postgresConfiguration = mockk()
-        client = PostgresAirbyteClient(dataSource, sqlGenerator, postgresColumnUtils)
+        every { postgresConfiguration.legacyRawTablesOnly } returns false
+        client =
+            PostgresAirbyteClient(
+                dataSource,
+                sqlGenerator,
+                postgresColumnUtils,
+                postgresConfiguration
+            )
     }
 
     @Test
@@ -806,6 +813,129 @@ internal class PostgresAirbyteClientTest {
                     primaryKeyColumnNames = emptyList(),
                     recreateCursorIndex = true,
                     cursorColumnName = "new_cursor"
+                )
+            }
+        }
+    }
+
+    @Test
+    fun testEnsureSchemaMatchesInRawTablesModeSkipsIndexRecreation() {
+        // In raw tables mode, primary key and cursor indexes should NOT be recreated
+        // because user-defined columns don't exist (they're stored in _airbyte_data JSONB)
+        every { postgresConfiguration.legacyRawTablesOnly } returns true
+
+        val stream = mockk<DestinationStream>()
+        val tableName = TableName(namespace = "test_ns", name = "test_table")
+        val columnNameMapping = mockk<ColumnNameMapping>(relaxed = true)
+
+        // Mock getColumnsFromDb - returns empty since raw tables mode doesn't have user columns
+        val resultSet = mockk<ResultSet>()
+        every { resultSet.next() } returns false
+        every { resultSet.close() } just Runs
+
+        val statement =
+            mockk<Statement> {
+                every { executeQuery(any()) } returns resultSet
+                every { execute(any()) } returns true
+                every { close() } just Runs
+            }
+
+        val connection = mockk<Connection>()
+        every { connection.createStatement() } returns statement
+        every { connection.close() } just Runs
+
+        every { dataSource.connection } returns connection
+        every { sqlGenerator.getTableSchema(tableName) } returns MOCK_SQL_QUERY
+        every {
+            sqlGenerator.matchSchemas(any(), any(), any(), any(), any(), any(), any(), any(), any())
+        } returns MOCK_SQL_QUERY
+
+        every { postgresColumnUtils.defaultColumns() } returns emptyList()
+        every { postgresColumnUtils.getTargetColumns(stream, columnNameMapping) } returns
+            emptyList()
+
+        // Even though the stream has primary keys and cursor defined, they should be ignored
+        // in raw tables mode
+        every { postgresColumnUtils.getPrimaryKeysColumnNames(stream, columnNameMapping) } returns
+            listOf("ad_group_id")
+        every { postgresColumnUtils.getCursorColumnName(stream, columnNameMapping) } returns
+            "updated_at"
+
+        runBlocking {
+            client.ensureSchemaMatches(stream, tableName, columnNameMapping)
+            // Verify that recreatePrimaryKeyIndex and recreateCursorIndex are both false
+            // even though primary keys and cursor are defined in the stream
+            verify(exactly = 1) {
+                sqlGenerator.matchSchemas(
+                    tableName = tableName,
+                    columnsToAdd = emptySet(),
+                    columnsToRemove = emptySet(),
+                    columnsToModify = emptySet(),
+                    columnsInDb = any(),
+                    recreatePrimaryKeyIndex = false, // Should be false in raw tables mode
+                    primaryKeyColumnNames = listOf("ad_group_id"),
+                    recreateCursorIndex = false, // Should be false in raw tables mode
+                    cursorColumnName = "updated_at"
+                )
+            }
+        }
+    }
+
+    @Test
+    fun testEnsureSchemaMatchesInRawTablesModeWithPrimaryKeyChanges() {
+        // Even when primary keys have changed, raw tables mode should skip index recreation
+        every { postgresConfiguration.legacyRawTablesOnly } returns true
+
+        val stream = mockk<DestinationStream>()
+        val tableName = TableName(namespace = "test_ns", name = "test_table")
+        val columnNameMapping = mockk<ColumnNameMapping>(relaxed = true)
+
+        // Mock getColumnsFromDb
+        val resultSet = mockk<ResultSet>()
+        every { resultSet.next() } returns false
+        every { resultSet.close() } just Runs
+
+        val statement =
+            mockk<Statement> {
+                every { executeQuery(any()) } returns resultSet
+                every { execute(any()) } returns true
+                every { close() } just Runs
+            }
+
+        val connection = mockk<Connection>()
+        every { connection.createStatement() } returns statement
+        every { connection.close() } just Runs
+
+        every { dataSource.connection } returns connection
+        every { sqlGenerator.getTableSchema(tableName) } returns MOCK_SQL_QUERY
+        every {
+            sqlGenerator.matchSchemas(any(), any(), any(), any(), any(), any(), any(), any(), any())
+        } returns MOCK_SQL_QUERY
+
+        every { postgresColumnUtils.defaultColumns() } returns emptyList()
+        every { postgresColumnUtils.getTargetColumns(stream, columnNameMapping) } returns
+            emptyList()
+
+        // Primary keys are defined - would normally trigger index recreation
+        every { postgresColumnUtils.getPrimaryKeysColumnNames(stream, columnNameMapping) } returns
+            listOf("new_pk_column")
+        every { postgresColumnUtils.getCursorColumnName(stream, columnNameMapping) } returns null
+
+        runBlocking {
+            client.ensureSchemaMatches(stream, tableName, columnNameMapping)
+            // recreatePrimaryKeyIndex should be false because we're in raw tables mode,
+            // even though primary keys are defined
+            verify(exactly = 1) {
+                sqlGenerator.matchSchemas(
+                    tableName = tableName,
+                    columnsToAdd = emptySet(),
+                    columnsToRemove = emptySet(),
+                    columnsToModify = emptySet(),
+                    columnsInDb = any(),
+                    recreatePrimaryKeyIndex = false,
+                    primaryKeyColumnNames = listOf("new_pk_column"),
+                    recreateCursorIndex = false,
+                    cursorColumnName = null
                 )
             }
         }

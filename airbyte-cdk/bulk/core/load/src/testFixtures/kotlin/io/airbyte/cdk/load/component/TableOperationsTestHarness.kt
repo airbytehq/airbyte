@@ -39,14 +39,8 @@ class TableOperationsTestHarness(
     /** Creates a test table with the given configuration and verifies it was created. */
     suspend fun createTestTableAndVerifyExists(
         tableName: TableName,
-        schema: ObjectType,
         columnNameMapping: ColumnNameMapping,
-        stream: DestinationStream =
-            createAppendStream(
-                namespace = tableName.namespace,
-                name = tableName.name,
-                schema = schema,
-            )
+        stream: DestinationStream
     ) {
         client.createTable(
             stream = stream,
