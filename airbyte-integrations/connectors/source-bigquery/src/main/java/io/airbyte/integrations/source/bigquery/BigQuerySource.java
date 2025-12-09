@@ -52,6 +52,7 @@ public class BigQuerySource extends AbstractDbSource<StandardSQLTypeName, BigQue
 
   public static final String CONFIG_DATASET_ID = "dataset_id";
   public static final String CONFIG_PROJECT_ID = "project_id";
+  public static final String CONFIG_PROJECT_IDS = "project_ids";
   public static final String CONFIG_CREDS = "credentials_json";
 
   private JsonNode dbConfig;
@@ -126,18 +127,28 @@ public class BigQuerySource extends AbstractDbSource<StandardSQLTypeName, BigQue
   protected List<TableInfo<CommonField<StandardSQLTypeName>>> discoverInternal(final BigQueryDatabase database, final String schema) {
     final List<String> projectIds = getProjectIds(dbConfig);
     final List<TableInfo<CommonField<StandardSQLTypeName>>> result = new ArrayList<>();
+    final boolean multiProject = projectIds.size() > 1;
 
     for (final String projectId : projectIds) {
       LOGGER.info("Discovering tables for project: {}", projectId);
       final List<Table> tables;
       if (isDatasetConfigured(database)) {
-        tables = database.getDatasetTables(getConfigDatasetId(database));
+        final String datasetId = getConfigDatasetId(database);
+        if (multiProject) {
+          // For multi-project with dataset filter, use the new CDK method
+          tables = database.getDatasetTables(projectId, datasetId);
+        } else {
+          // Backward-compatible path: old behavior uses default project
+          tables = database.getDatasetTables(datasetId);
+        }
       } else {
         tables = database.getProjectTables(projectId);
       }
 
       tables.stream().map(table -> TableInfo.<CommonField<StandardSQLTypeName>>builder()
-          .nameSpace(buildNamespace(projectId, table.getTableId().getDataset()))
+          .nameSpace(multiProject
+              ? buildNamespace(projectId, table.getTableId().getDataset())
+              : table.getTableId().getDataset())
           .name(table.getTableId().getTable())
           .fields(Objects.requireNonNull(table.getDefinition().getSchema()).getFields().stream()
               .map(f -> {
@@ -174,7 +185,11 @@ public class BigQuerySource extends AbstractDbSource<StandardSQLTypeName, BigQue
                                                                final String tableName,
                                                                final CursorInfo cursorInfo,
                                                                final StandardSQLTypeName cursorFieldType) {
-    final String projectId = extractProjectIdFromNamespace(schemaName);
+    final String projectIdFromNamespace = extractProjectIdFromNamespace(schemaName);
+    // For single-project configs, namespace is just dataset_id, so fall back to first project
+    final String projectId = projectIdFromNamespace != null
+        ? projectIdFromNamespace
+        : getFirstProjectId(dbConfig);
     final String datasetId = extractDatasetIdFromNamespace(schemaName);
     final String fullyQualifiedTableName = buildFullyQualifiedTableName(projectId, datasetId, tableName);
     return queryTableWithParams(database, String.format("SELECT %s FROM %s WHERE %s > ?",
@@ -194,7 +209,11 @@ public class BigQuerySource extends AbstractDbSource<StandardSQLTypeName, BigQue
                                                                   final SyncMode syncMode,
                                                                   final Optional<String> cursorField) {
     LOGGER.info("Queueing query for table: {}", tableName);
-    final String projectId = extractProjectIdFromNamespace(schemaName);
+    final String projectIdFromNamespace = extractProjectIdFromNamespace(schemaName);
+    // For single-project configs, namespace is just dataset_id, so fall back to first project
+    final String projectId = projectIdFromNamespace != null
+        ? projectIdFromNamespace
+        : getFirstProjectId(dbConfig);
     final String datasetId = extractDatasetIdFromNamespace(schemaName);
     final String fullyQualifiedTableName = buildFullyQualifiedTableName(projectId, datasetId, tableName);
     return queryTable(database, String.format("SELECT %s FROM %s",
@@ -234,6 +253,23 @@ public class BigQuerySource extends AbstractDbSource<StandardSQLTypeName, BigQue
   }
 
   private List<String> getProjectIds(final JsonNode config) {
+    // First check for project_ids array (Option B - preferred for multi-project)
+    if (config.hasNonNull(CONFIG_PROJECT_IDS) && config.get(CONFIG_PROJECT_IDS).isArray()) {
+      final JsonNode projectIdsNode = config.get(CONFIG_PROJECT_IDS);
+      if (projectIdsNode.size() > 0) {
+        final List<String> projectIds = new ArrayList<>();
+        projectIdsNode.forEach(node -> {
+          final String projectId = node.asText().trim();
+          if (!projectId.isEmpty()) {
+            projectIds.add(projectId);
+          }
+        });
+        if (!projectIds.isEmpty()) {
+          return projectIds;
+        }
+      }
+    }
+    // Fall back to project_id field (single project or comma-separated for backward compatibility)
     final String projectIdConfig = config.get(CONFIG_PROJECT_ID).asText();
     return Arrays.stream(projectIdConfig.split(","))
         .map(String::trim)
