@@ -175,104 +175,6 @@
         }
       }
     },
-    "/api/v1/agents/chat/cache": {
-      "post": {
-        "summary": "Post chat message",
-        "description": "Post a new message to a thread",
-        "operationId": "create_agents_chat_cache",
-        "security": [
-          {
-            "HTTPBearer": []
-          }
-        ],
-        "parameters": [
-          {
-            "name": "backend",
-            "in": "query",
-            "required": true,
-            "schema": {
-              "$ref": "#/components/schemas/CacheType",
-              "description": "The cache backend to query (starburst or clickhouse)"
-            },
-            "description": "The cache backend to query (starburst or clickhouse)"
-          },
-          {
-            "name": "x-organization-id",
-            "in": "header",
-            "required": false,
-            "schema": {
-              "type": "string",
-              "format": "uuid",
-              "description": "The organization ID to target for this request",
-              "title": "X-Organization-Id"
-            },
-            "description": "The organization ID to target for this request"
-          }
-        ],
-        "requestBody": {
-          "required": true,
-          "content": {
-            "application/json": {
-              "schema": {
-                "$ref": "#/components/schemas/ChatPostRequest"
-              }
-            }
-          }
-        },
-        "responses": {
-          "200": {
-            "description": "Successful Response",
-            "content": {
-              "text/event-stream": {
-                "schema": {
-                  "$ref": "#/components/schemas/ChatMessageEvent"
-                }
-              }
-            }
-          },
-          "400": {
-            "description": "Bad request",
-            "content": {
-              "application/json": {
-                "schema": {
-                  "$ref": "#/components/schemas/ApiErrorResponse"
-                }
-              }
-            }
-          },
-          "403": {
-            "description": "Forbidden",
-            "content": {
-              "application/json": {
-                "schema": {
-                  "$ref": "#/components/schemas/ApiErrorResponse"
-                }
-              }
-            }
-          },
-          "422": {
-            "description": "Unprocessable entity",
-            "content": {
-              "application/json": {
-                "schema": {
-                  "$ref": "#/components/schemas/ApiErrorResponse"
-                }
-              }
-            }
-          },
-          "500": {
-            "description": "Internal server error",
-            "content": {
-              "application/json": {
-                "schema": {
-                  "$ref": "#/components/schemas/ApiErrorResponse"
-                }
-              }
-            }
-          }
-        }
-      }
-    },
     "/api/v1/agents/chat/history/{thread_id}": {
       "get": {
         "tags": ["Agents - Chat History"],
@@ -904,6 +806,117 @@
               "application/json": {
                 "schema": {
                   "$ref": "#/components/schemas/SchemaChatAgentState"
+                }
+              }
+            }
+          },
+          "400": {
+            "description": "Bad request",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ApiErrorResponse"
+                }
+              }
+            }
+          },
+          "403": {
+            "description": "Forbidden",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ApiErrorResponse"
+                }
+              }
+            }
+          },
+          "422": {
+            "description": "Unprocessable entity",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ApiErrorResponse"
+                }
+              }
+            }
+          },
+          "500": {
+            "description": "Internal server error",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ApiErrorResponse"
+                }
+              }
+            }
+          }
+        }
+      }
+    },
+    "/api/v1/agents/chat/search": {
+      "post": {
+        "summary": "Search chat message",
+        "description": "Post a new message to search and explore source data",
+        "operationId": "create_agents_chat_search",
+        "security": [
+          {
+            "HTTPBearer": []
+          }
+        ],
+        "parameters": [
+          {
+            "name": "source_id",
+            "in": "query",
+            "required": true,
+            "schema": {
+              "type": "string",
+              "format": "uuid",
+              "description": "The source ID to search within",
+              "title": "Source Id"
+            },
+            "description": "The source ID to search within"
+          },
+          {
+            "name": "stream_name",
+            "in": "query",
+            "required": true,
+            "schema": {
+              "type": "string",
+              "description": "The stream/table name to search",
+              "title": "Stream Name"
+            },
+            "description": "The stream/table name to search"
+          },
+          {
+            "name": "x-organization-id",
+            "in": "header",
+            "required": false,
+            "schema": {
+              "type": "string",
+              "format": "uuid",
+              "description": "The organization ID to target for this request",
+              "title": "X-Organization-Id"
+            },
+            "description": "The organization ID to target for this request"
+          }
+        ],
+        "requestBody": {
+          "required": true,
+          "content": {
+            "application/json": {
+              "schema": {
+                "$ref": "#/components/schemas/ChatPostRequest"
+              }
+            }
+          }
+        },
+        "responses": {
+          "200": {
+            "description": "Successful Response",
+            "content": {
+              "text/event-stream": {
+                "schema": {
+                  "$ref": "#/components/schemas/ChatMessageEvent"
                 }
               }
             }
@@ -5262,7 +5275,22 @@
             "content": {
               "application/json": {
                 "schema": {
-                  "$ref": "#/components/schemas/ConnectionTemplateCreateResponse"
+                  "oneOf": [
+                    {
+                      "$ref": "#/components/schemas/UserHostedConnectionTemplate"
+                    },
+                    {
+                      "$ref": "#/components/schemas/AirbyteHostedConnectionTemplate"
+                    }
+                  ],
+                  "discriminator": {
+                    "propertyName": "data_hosting_type",
+                    "mapping": {
+                      "user_hosted": "#/components/schemas/UserHostedConnectionTemplate",
+                      "airbyte_hosted": "#/components/schemas/AirbyteHostedConnectionTemplate"
+                    }
+                  },
+                  "title": "Response Create Integrations Templates Connections"
                 }
               }
             }
@@ -5440,7 +5468,22 @@
             "content": {
               "application/json": {
                 "schema": {
-                  "$ref": "#/components/schemas/ConnectionTemplateGetResponse"
+                  "oneOf": [
+                    {
+                      "$ref": "#/components/schemas/UserHostedConnectionTemplate"
+                    },
+                    {
+                      "$ref": "#/components/schemas/AirbyteHostedConnectionTemplate"
+                    }
+                  ],
+                  "discriminator": {
+                    "propertyName": "data_hosting_type",
+                    "mapping": {
+                      "user_hosted": "#/components/schemas/UserHostedConnectionTemplate",
+                      "airbyte_hosted": "#/components/schemas/AirbyteHostedConnectionTemplate"
+                    }
+                  },
+                  "title": "Response Get Integrations Templates Connections Id"
                 }
               }
             }
@@ -5624,7 +5667,22 @@
             "content": {
               "application/json": {
                 "schema": {
-                  "$ref": "#/components/schemas/ConnectionTemplateCreateResponse"
+                  "oneOf": [
+                    {
+                      "$ref": "#/components/schemas/UserHostedConnectionTemplate"
+                    },
+                    {
+                      "$ref": "#/components/schemas/AirbyteHostedConnectionTemplate"
+                    }
+                  ],
+                  "discriminator": {
+                    "propertyName": "data_hosting_type",
+                    "mapping": {
+                      "user_hosted": "#/components/schemas/UserHostedConnectionTemplate",
+                      "airbyte_hosted": "#/components/schemas/AirbyteHostedConnectionTemplate"
+                    }
+                  },
+                  "title": "Response Update Integrations Templates Connections Id"
                 }
               }
             }
@@ -5723,7 +5781,22 @@
             "content": {
               "application/json": {
                 "schema": {
-                  "$ref": "#/components/schemas/ConnectionTemplateTagResponse"
+                  "oneOf": [
+                    {
+                      "$ref": "#/components/schemas/UserHostedConnectionTemplate"
+                    },
+                    {
+                      "$ref": "#/components/schemas/AirbyteHostedConnectionTemplate"
+                    }
+                  ],
+                  "discriminator": {
+                    "propertyName": "data_hosting_type",
+                    "mapping": {
+                      "user_hosted": "#/components/schemas/UserHostedConnectionTemplate",
+                      "airbyte_hosted": "#/components/schemas/AirbyteHostedConnectionTemplate"
+                    }
+                  },
+                  "title": "Response Create Integrations Templates Connections Id Tags"
                 }
               }
             }
@@ -9393,466 +9466,6 @@
         }
       }
     },
-    "/api/v1/internal/cache/connection": {
-      "post": {
-        "tags": ["Cache"],
-        "summary": "Create Cache Connection",
-        "description": "Set up a source to be queryable by the cache. Admin-only for now, in production this will be done by an AsyncJob.",
-        "operationId": "create_internal_cache_connection",
-        "security": [
-          {
-            "HTTPBearer": []
-          }
-        ],
-        "parameters": [
-          {
-            "name": "x-organization-id",
-            "in": "header",
-            "required": false,
-            "schema": {
-              "type": "string",
-              "format": "uuid",
-              "description": "The organization ID to target for this request",
-              "title": "X-Organization-Id"
-            },
-            "description": "The organization ID to target for this request"
-          }
-        ],
-        "requestBody": {
-          "required": true,
-          "content": {
-            "application/json": {
-              "schema": {
-                "$ref": "#/components/schemas/CacheConnectionRequest"
-              }
-            }
-          }
-        },
-        "responses": {
-          "200": {
-            "description": "Successful Response",
-            "content": {
-              "application/json": {
-                "schema": {
-                  "$ref": "#/components/schemas/CacheConnectionResponse"
-                }
-              }
-            }
-          },
-          "400": {
-            "description": "Bad request",
-            "content": {
-              "application/json": {
-                "schema": {
-                  "$ref": "#/components/schemas/ApiErrorResponse"
-                }
-              }
-            }
-          },
-          "403": {
-            "description": "Forbidden",
-            "content": {
-              "application/json": {
-                "schema": {
-                  "$ref": "#/components/schemas/ApiErrorResponse"
-                }
-              }
-            }
-          },
-          "422": {
-            "description": "Unprocessable entity",
-            "content": {
-              "application/json": {
-                "schema": {
-                  "$ref": "#/components/schemas/ApiErrorResponse"
-                }
-              }
-            }
-          },
-          "500": {
-            "description": "Internal server error",
-            "content": {
-              "application/json": {
-                "schema": {
-                  "$ref": "#/components/schemas/ApiErrorResponse"
-                }
-              }
-            }
-          }
-        }
-      }
-    },
-    "/api/v1/internal/cache/connection/{source_id}": {
-      "delete": {
-        "tags": ["Cache"],
-        "summary": "Delete Cache Connection",
-        "description": "Delete all cache tables associated with a source",
-        "operationId": "delete_internal_cache_connection_source_id",
-        "security": [
-          {
-            "HTTPBearer": []
-          }
-        ],
-        "parameters": [
-          {
-            "name": "source_id",
-            "in": "path",
-            "required": true,
-            "schema": {
-              "type": "string",
-              "title": "Source Id"
-            }
-          },
-          {
-            "name": "x-organization-id",
-            "in": "header",
-            "required": false,
-            "schema": {
-              "type": "string",
-              "format": "uuid",
-              "description": "The organization ID to target for this request",
-              "title": "X-Organization-Id"
-            },
-            "description": "The organization ID to target for this request"
-          }
-        ],
-        "responses": {
-          "200": {
-            "description": "Successful Response",
-            "content": {
-              "application/json": {
-                "schema": {
-                  "$ref": "#/components/schemas/CacheConnectionDeleteResponse"
-                }
-              }
-            }
-          },
-          "400": {
-            "description": "Bad request",
-            "content": {
-              "application/json": {
-                "schema": {
-                  "$ref": "#/components/schemas/ApiErrorResponse"
-                }
-              }
-            }
-          },
-          "403": {
-            "description": "Forbidden",
-            "content": {
-              "application/json": {
-                "schema": {
-                  "$ref": "#/components/schemas/ApiErrorResponse"
-                }
-              }
-            }
-          },
-          "422": {
-            "description": "Unprocessable entity",
-            "content": {
-              "application/json": {
-                "schema": {
-                  "$ref": "#/components/schemas/ApiErrorResponse"
-                }
-              }
-            }
-          },
-          "500": {
-            "description": "Internal server error",
-            "content": {
-              "application/json": {
-                "schema": {
-                  "$ref": "#/components/schemas/ApiErrorResponse"
-                }
-              }
-            }
-          }
-        }
-      }
-    },
-    "/api/v1/internal/cache/merge": {
-      "post": {
-        "tags": ["Cache"],
-        "summary": "Merge Synced Data",
-        "description": "Merge recently synced data into the primary table, making it available for queries. Admin-only.",
-        "operationId": "create_internal_cache_merge",
-        "security": [
-          {
-            "HTTPBearer": []
-          }
-        ],
-        "parameters": [
-          {
-            "name": "x-organization-id",
-            "in": "header",
-            "required": false,
-            "schema": {
-              "type": "string",
-              "format": "uuid",
-              "description": "The organization ID to target for this request",
-              "title": "X-Organization-Id"
-            },
-            "description": "The organization ID to target for this request"
-          }
-        ],
-        "requestBody": {
-          "required": true,
-          "content": {
-            "application/json": {
-              "schema": {
-                "$ref": "#/components/schemas/CacheMergeRequest"
-              }
-            }
-          }
-        },
-        "responses": {
-          "200": {
-            "description": "Successful Response",
-            "content": {
-              "application/json": {
-                "schema": {
-                  "$ref": "#/components/schemas/CacheMergeResponse"
-                }
-              }
-            }
-          },
-          "400": {
-            "description": "Bad request",
-            "content": {
-              "application/json": {
-                "schema": {
-                  "$ref": "#/components/schemas/ApiErrorResponse"
-                }
-              }
-            }
-          },
-          "403": {
-            "description": "Forbidden",
-            "content": {
-              "application/json": {
-                "schema": {
-                  "$ref": "#/components/schemas/ApiErrorResponse"
-                }
-              }
-            }
-          },
-          "422": {
-            "description": "Unprocessable entity",
-            "content": {
-              "application/json": {
-                "schema": {
-                  "$ref": "#/components/schemas/ApiErrorResponse"
-                }
-              }
-            }
-          },
-          "500": {
-            "description": "Internal server error",
-            "content": {
-              "application/json": {
-                "schema": {
-                  "$ref": "#/components/schemas/ApiErrorResponse"
-                }
-              }
-            }
-          }
-        }
-      }
-    },
-    "/api/v1/internal/cache/metadata": {
-      "get": {
-        "tags": ["Cache"],
-        "summary": "Get Metadata",
-        "description": "Retrieve metadata for the cache backend (catalogs/schemas/tables for Starburst or databases/tables/columns for ClickHouse)",
-        "operationId": "get_internal_cache_metadata",
-        "security": [
-          {
-            "HTTPBearer": []
-          }
-        ],
-        "parameters": [
-          {
-            "name": "backend",
-            "in": "query",
-            "required": false,
-            "schema": {
-              "$ref": "#/components/schemas/CacheType",
-              "description": "Cache backend to inspect",
-              "default": "starburst"
-            },
-            "description": "Cache backend to inspect"
-          },
-          {
-            "name": "x-organization-id",
-            "in": "header",
-            "required": false,
-            "schema": {
-              "type": "string",
-              "format": "uuid",
-              "description": "The organization ID to target for this request",
-              "title": "X-Organization-Id"
-            },
-            "description": "The organization ID to target for this request"
-          }
-        ],
-        "responses": {
-          "200": {
-            "description": "Successful Response",
-            "content": {
-              "application/json": {
-                "schema": {
-                  "oneOf": [
-                    {
-                      "$ref": "#/components/schemas/StarburstCacheMetadataResponse"
-                    },
-                    {
-                      "$ref": "#/components/schemas/ClickHouseCacheMetadataResponse"
-                    }
-                  ],
-                  "discriminator": {
-                    "propertyName": "backend",
-                    "mapping": {
-                      "starburst": "#/components/schemas/StarburstCacheMetadataResponse",
-                      "clickhouse": "#/components/schemas/ClickHouseCacheMetadataResponse"
-                    }
-                  },
-                  "title": "Response Get Internal Cache Metadata"
-                }
-              }
-            }
-          },
-          "400": {
-            "description": "Bad request",
-            "content": {
-              "application/json": {
-                "schema": {
-                  "$ref": "#/components/schemas/ApiErrorResponse"
-                }
-              }
-            }
-          },
-          "403": {
-            "description": "Forbidden",
-            "content": {
-              "application/json": {
-                "schema": {
-                  "$ref": "#/components/schemas/ApiErrorResponse"
-                }
-              }
-            }
-          },
-          "422": {
-            "description": "Unprocessable entity",
-            "content": {
-              "application/json": {
-                "schema": {
-                  "$ref": "#/components/schemas/ApiErrorResponse"
-                }
-              }
-            }
-          },
-          "500": {
-            "description": "Internal server error",
-            "content": {
-              "application/json": {
-                "schema": {
-                  "$ref": "#/components/schemas/ApiErrorResponse"
-                }
-              }
-            }
-          }
-        }
-      }
-    },
-    "/api/v1/internal/cache/query": {
-      "post": {
-        "tags": ["Cache"],
-        "summary": "Query Cache",
-        "description": "Execute a query against the cache backend (Starburst or ClickHouse)",
-        "operationId": "create_internal_cache_query",
-        "security": [
-          {
-            "HTTPBearer": []
-          }
-        ],
-        "parameters": [
-          {
-            "name": "x-organization-id",
-            "in": "header",
-            "required": false,
-            "schema": {
-              "type": "string",
-              "format": "uuid",
-              "description": "The organization ID to target for this request",
-              "title": "X-Organization-Id"
-            },
-            "description": "The organization ID to target for this request"
-          }
-        ],
-        "requestBody": {
-          "required": true,
-          "content": {
-            "application/json": {
-              "schema": {
-                "$ref": "#/components/schemas/CacheQueryRequest"
-              }
-            }
-          }
-        },
-        "responses": {
-          "200": {
-            "description": "Successful Response",
-            "content": {
-              "application/json": {
-                "schema": {
-                  "$ref": "#/components/schemas/CacheQueryResponse"
-                }
-              }
-            }
-          },
-          "400": {
-            "description": "Bad request",
-            "content": {
-              "application/json": {
-                "schema": {
-                  "$ref": "#/components/schemas/ApiErrorResponse"
-                }
-              }
-            }
-          },
-          "403": {
-            "description": "Forbidden",
-            "content": {
-              "application/json": {
-                "schema": {
-                  "$ref": "#/components/schemas/ApiErrorResponse"
-                }
-              }
-            }
-          },
-          "422": {
-            "description": "Unprocessable entity",
-            "content": {
-              "application/json": {
-                "schema": {
-                  "$ref": "#/components/schemas/ApiErrorResponse"
-                }
-              }
-            }
-          },
-          "500": {
-            "description": "Internal server error",
-            "content": {
-              "application/json": {
-                "schema": {
-                  "$ref": "#/components/schemas/ApiErrorResponse"
-                }
-              }
-            }
-          }
-        }
-      }
-    },
     "/api/v1/internal/health/check": {
       "get": {
         "tags": ["Health"],
@@ -10049,270 +9662,6 @@
               "application/json": {
                 "schema": {
                   "$ref": "#/components/schemas/DestinationDefinitionResponse"
-                }
-              }
-            }
-          },
-          "400": {
-            "description": "Bad request",
-            "content": {
-              "application/json": {
-                "schema": {
-                  "$ref": "#/components/schemas/ApiErrorResponse"
-                }
-              }
-            }
-          },
-          "403": {
-            "description": "Forbidden",
-            "content": {
-              "application/json": {
-                "schema": {
-                  "$ref": "#/components/schemas/ApiErrorResponse"
-                }
-              }
-            }
-          },
-          "422": {
-            "description": "Unprocessable entity",
-            "content": {
-              "application/json": {
-                "schema": {
-                  "$ref": "#/components/schemas/ApiErrorResponse"
-                }
-              }
-            }
-          },
-          "500": {
-            "description": "Internal server error",
-            "content": {
-              "application/json": {
-                "schema": {
-                  "$ref": "#/components/schemas/ApiErrorResponse"
-                }
-              }
-            }
-          }
-        }
-      }
-    },
-    "/api/v1/internal/oauth/mcp/code": {
-      "post": {
-        "tags": ["OAuth"],
-        "summary": "Oauth Code",
-        "operationId": "create_internal_oauth_mcp_code",
-        "security": [
-          {
-            "HTTPBearer": []
-          }
-        ],
-        "parameters": [
-          {
-            "name": "x-organization-id",
-            "in": "header",
-            "required": false,
-            "schema": {
-              "type": "string",
-              "format": "uuid",
-              "description": "The organization ID to target for this request",
-              "title": "X-Organization-Id"
-            },
-            "description": "The organization ID to target for this request"
-          }
-        ],
-        "requestBody": {
-          "required": true,
-          "content": {
-            "application/json": {
-              "schema": {
-                "$ref": "#/components/schemas/OauthCodeRequest"
-              }
-            }
-          }
-        },
-        "responses": {
-          "200": {
-            "description": "Successful Response",
-            "content": {
-              "application/json": {
-                "schema": {
-                  "$ref": "#/components/schemas/OauthCodeResponse"
-                }
-              }
-            }
-          },
-          "400": {
-            "description": "Bad request",
-            "content": {
-              "application/json": {
-                "schema": {
-                  "$ref": "#/components/schemas/ApiErrorResponse"
-                }
-              }
-            }
-          },
-          "403": {
-            "description": "Forbidden",
-            "content": {
-              "application/json": {
-                "schema": {
-                  "$ref": "#/components/schemas/ApiErrorResponse"
-                }
-              }
-            }
-          },
-          "422": {
-            "description": "Unprocessable entity",
-            "content": {
-              "application/json": {
-                "schema": {
-                  "$ref": "#/components/schemas/ApiErrorResponse"
-                }
-              }
-            }
-          },
-          "500": {
-            "description": "Internal server error",
-            "content": {
-              "application/json": {
-                "schema": {
-                  "$ref": "#/components/schemas/ApiErrorResponse"
-                }
-              }
-            }
-          }
-        }
-      }
-    },
-    "/api/v1/internal/oauth/mcp/registration": {
-      "post": {
-        "tags": ["OAuth"],
-        "summary": "Oauth Registration",
-        "operationId": "create_internal_oauth_mcp_registration",
-        "security": [
-          {
-            "HTTPBearer": []
-          }
-        ],
-        "parameters": [
-          {
-            "name": "x-organization-id",
-            "in": "header",
-            "required": false,
-            "schema": {
-              "type": "string",
-              "format": "uuid",
-              "description": "The organization ID to target for this request",
-              "title": "X-Organization-Id"
-            },
-            "description": "The organization ID to target for this request"
-          }
-        ],
-        "requestBody": {
-          "required": true,
-          "content": {
-            "application/json": {
-              "schema": {
-                "$ref": "#/components/schemas/OauthRegistrationRequest"
-              }
-            }
-          }
-        },
-        "responses": {
-          "200": {
-            "description": "Successful Response",
-            "content": {
-              "application/json": {
-                "schema": {
-                  "$ref": "#/components/schemas/OauthRegistrationResponse"
-                }
-              }
-            }
-          },
-          "400": {
-            "description": "Bad request",
-            "content": {
-              "application/json": {
-                "schema": {
-                  "$ref": "#/components/schemas/ApiErrorResponse"
-                }
-              }
-            }
-          },
-          "403": {
-            "description": "Forbidden",
-            "content": {
-              "application/json": {
-                "schema": {
-                  "$ref": "#/components/schemas/ApiErrorResponse"
-                }
-              }
-            }
-          },
-          "422": {
-            "description": "Unprocessable entity",
-            "content": {
-              "application/json": {
-                "schema": {
-                  "$ref": "#/components/schemas/ApiErrorResponse"
-                }
-              }
-            }
-          },
-          "500": {
-            "description": "Internal server error",
-            "content": {
-              "application/json": {
-                "schema": {
-                  "$ref": "#/components/schemas/ApiErrorResponse"
-                }
-              }
-            }
-          }
-        }
-      }
-    },
-    "/api/v1/internal/oauth/mcp/token": {
-      "post": {
-        "tags": ["OAuth"],
-        "summary": "Oauth Token",
-        "operationId": "create_internal_oauth_mcp_token",
-        "security": [
-          {
-            "HTTPBearer": []
-          }
-        ],
-        "parameters": [
-          {
-            "name": "x-organization-id",
-            "in": "header",
-            "required": false,
-            "schema": {
-              "type": "string",
-              "format": "uuid",
-              "description": "The organization ID to target for this request",
-              "title": "X-Organization-Id"
-            },
-            "description": "The organization ID to target for this request"
-          }
-        ],
-        "requestBody": {
-          "required": true,
-          "content": {
-            "application/json": {
-              "schema": {
-                "$ref": "#/components/schemas/OauthTokenRequest"
-              }
-            }
-          }
-        },
-        "responses": {
-          "200": {
-            "description": "Successful Response",
-            "content": {
-              "application/json": {
-                "schema": {
-                  "$ref": "#/components/schemas/OauthTokenResponse"
                 }
               }
             }
@@ -12718,14 +12067,91 @@
           "patch_source_template_catalog_stream",
           "get_selected_streams",
           "set_selected_streams",
-          "select_streams",
-          "query_starburst_cache",
-          "get_starburst_cache_metadata",
-          "query_clickhouse_cache",
-          "get_clickhouse_cache_metadata"
+          "select_streams"
         ],
         "title": "AgentToolName",
         "description": "Enum of tool names available to agents.\nThis enum is automatically synced to the frontend via OpenAPI generation,\nensuring type safety when handling tool calls and responses.\nWhen adding a new tool to an agent (e.g., in app/agents/chat_agent.py),\nadd the corresponding tool name here to expose it to the frontend."
+      },
+      "AirbyteHostedConnectionTemplate": {
+        "properties": {
+          "id": {
+            "type": "string",
+            "format": "uuid",
+            "title": "Id"
+          },
+          "organization_id": {
+            "type": "string",
+            "format": "uuid",
+            "title": "Organization Id"
+          },
+          "destination_name": {
+            "type": "string",
+            "title": "Destination Name"
+          },
+          "icon": {
+            "anyOf": [
+              {
+                "type": "string"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "Icon"
+          },
+          "cron_expression": {
+            "anyOf": [
+              {
+                "type": "string"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "Cron Expression"
+          },
+          "data_hosting_type": {
+            "type": "string",
+            "const": "airbyte_hosted",
+            "title": "Data Hosting Type",
+            "default": "airbyte_hosted"
+          },
+          "tags": {
+            "items": {
+              "type": "string"
+            },
+            "type": "array",
+            "title": "Tags"
+          },
+          "created_at": {
+            "anyOf": [
+              {
+                "type": "string",
+                "format": "date-time"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "Created At"
+          },
+          "updated_at": {
+            "anyOf": [
+              {
+                "type": "string",
+                "format": "date-time"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "Updated At"
+          }
+        },
+        "type": "object",
+        "required": ["id", "organization_id", "destination_name"],
+        "title": "AirbyteHostedConnectionTemplate",
+        "description": "Connection template where destination configuration is managed by Airbyte."
       },
       "AirbyteHostedConnectionTemplateCreateRequest": {
         "properties": {
@@ -13068,223 +12494,6 @@
         "title": "BillingStateUpdateResponse",
         "description": "Response after updating billing state."
       },
-      "CacheCatalogMetadata": {
-        "properties": {
-          "name": {
-            "type": "string",
-            "title": "Name",
-            "description": "Catalog name"
-          },
-          "schemas": {
-            "items": {
-              "$ref": "#/components/schemas/CacheSchemaMetadata"
-            },
-            "type": "array",
-            "title": "Schemas",
-            "description": "Schemas in this catalog"
-          }
-        },
-        "type": "object",
-        "required": ["name", "schemas"],
-        "title": "CacheCatalogMetadata"
-      },
-      "CacheColumnMetadata": {
-        "properties": {
-          "name": {
-            "type": "string",
-            "title": "Name",
-            "description": "Column name"
-          },
-          "type": {
-            "type": "string",
-            "title": "Type",
-            "description": "Column type"
-          }
-        },
-        "type": "object",
-        "required": ["name", "type"],
-        "title": "CacheColumnMetadata"
-      },
-      "CacheConnectionDeleteResponse": {
-        "properties": {
-          "deleted_tables": {
-            "items": {
-              "type": "string"
-            },
-            "type": "array",
-            "title": "Deleted Tables",
-            "description": "List of table names that were deleted"
-          }
-        },
-        "type": "object",
-        "title": "CacheConnectionDeleteResponse"
-      },
-      "CacheConnectionRequest": {
-        "properties": {
-          "source_id": {
-            "type": "string",
-            "format": "uuid",
-            "title": "Source Id",
-            "description": "The source ID to make queryable by the cache backend"
-          }
-        },
-        "type": "object",
-        "required": ["source_id"],
-        "title": "CacheConnectionRequest"
-      },
-      "CacheConnectionResponse": {
-        "properties": {
-          "source_id": {
-            "type": "string",
-            "format": "uuid",
-            "title": "Source Id",
-            "description": "The source ID that was connected to the cache"
-          },
-          "schema_name": {
-            "type": "string",
-            "title": "Schema Name",
-            "description": "The schema name created in the cache backend"
-          },
-          "table_names": {
-            "items": {
-              "type": "string"
-            },
-            "type": "array",
-            "title": "Table Names",
-            "description": "List of table names created in the cache backend"
-          }
-        },
-        "type": "object",
-        "required": ["source_id", "schema_name"],
-        "title": "CacheConnectionResponse"
-      },
-      "CacheMergeRequest": {
-        "properties": {
-          "source_id": {
-            "type": "string",
-            "format": "uuid",
-            "title": "Source Id",
-            "description": "The source ID whose cache data should be merged"
-          },
-          "since": {
-            "anyOf": [
-              {
-                "type": "string"
-              },
-              {
-                "type": "null"
-              }
-            ],
-            "title": "Since",
-            "description": "Lexigraphically sortable last highwater mark (default: merge everything)"
-          }
-        },
-        "type": "object",
-        "required": ["source_id"],
-        "title": "CacheMergeRequest"
-      },
-      "CacheMergeResponse": {
-        "properties": {},
-        "type": "object",
-        "title": "CacheMergeResponse"
-      },
-      "CacheQueryRequest": {
-        "properties": {
-          "backend": {
-            "$ref": "#/components/schemas/CacheType",
-            "description": "The cache backend to query (starburst or clickhouse)"
-          },
-          "query": {
-            "type": "string",
-            "title": "Query",
-            "description": "The SQL query to execute"
-          }
-        },
-        "type": "object",
-        "required": ["backend", "query"],
-        "title": "CacheQueryRequest"
-      },
-      "CacheQueryResponse": {
-        "properties": {
-          "columns": {
-            "items": {
-              "type": "string"
-            },
-            "type": "array",
-            "title": "Columns",
-            "description": "Column names from the query result"
-          },
-          "rows": {
-            "items": {
-              "items": {},
-              "type": "array"
-            },
-            "type": "array",
-            "title": "Rows",
-            "description": "Query result rows"
-          },
-          "row_count": {
-            "type": "integer",
-            "title": "Row Count",
-            "description": "Number of rows returned"
-          }
-        },
-        "type": "object",
-        "required": ["columns", "rows", "row_count"],
-        "title": "CacheQueryResponse"
-      },
-      "CacheSchemaMetadata": {
-        "properties": {
-          "name": {
-            "type": "string",
-            "title": "Name",
-            "description": "Schema name"
-          },
-          "tables": {
-            "items": {
-              "$ref": "#/components/schemas/CacheTableMetadata"
-            },
-            "type": "array",
-            "title": "Tables",
-            "description": "Tables in this schema"
-          }
-        },
-        "type": "object",
-        "required": ["name", "tables"],
-        "title": "CacheSchemaMetadata"
-      },
-      "CacheTableMetadata": {
-        "properties": {
-          "name": {
-            "type": "string",
-            "title": "Name",
-            "description": "Table name"
-          },
-          "columns": {
-            "anyOf": [
-              {
-                "items": {
-                  "$ref": "#/components/schemas/CacheColumnMetadata"
-                },
-                "type": "array"
-              },
-              {
-                "type": "null"
-              }
-            ],
-            "title": "Columns",
-            "description": "Optional column definitions"
-          }
-        },
-        "type": "object",
-        "required": ["name"],
-        "title": "CacheTableMetadata"
-      },
-      "CacheType": {
-        "type": "string",
-        "enum": ["starburst", "clickhouse"],
-        "title": "CacheType"
-      },
       "CatalogQaReport": {
         "properties": {
           "source_definition_id": {
@@ -13515,48 +12724,6 @@
         "enum": ["pending", "running", "cancelled", "failed", "succeeded"],
         "title": "CheckStatus"
       },
-      "ClickHouseCacheMetadataResponse": {
-        "properties": {
-          "backend": {
-            "type": "string",
-            "const": "clickhouse",
-            "title": "Backend",
-            "description": "Cache backend type",
-            "default": "clickhouse"
-          },
-          "databases": {
-            "items": {
-              "$ref": "#/components/schemas/ClickHouseDatabaseMetadata"
-            },
-            "type": "array",
-            "title": "Databases",
-            "description": "Available databases with their tables and columns"
-          }
-        },
-        "type": "object",
-        "required": ["databases"],
-        "title": "ClickHouseCacheMetadataResponse"
-      },
-      "ClickHouseDatabaseMetadata": {
-        "properties": {
-          "name": {
-            "type": "string",
-            "title": "Name",
-            "description": "Database name"
-          },
-          "tables": {
-            "items": {
-              "$ref": "#/components/schemas/CacheTableMetadata"
-            },
-            "type": "array",
-            "title": "Tables",
-            "description": "Tables in this database"
-          }
-        },
-        "type": "object",
-        "required": ["name", "tables"],
-        "title": "ClickHouseDatabaseMetadata"
-      },
       "CompleteSourceOauthRequest": {
         "properties": {
           "workspace_id": {
@@ -13705,212 +12872,6 @@
         "required": ["type"],
         "title": "ConnectionSpecification"
       },
-      "ConnectionTemplate": {
-        "properties": {
-          "id": {
-            "type": "string",
-            "format": "uuid",
-            "title": "Id"
-          },
-          "organization_id": {
-            "type": "string",
-            "format": "uuid",
-            "title": "Organization Id"
-          },
-          "destination_name": {
-            "type": "string",
-            "title": "Destination Name"
-          },
-          "destination_definition_id": {
-            "type": "string",
-            "format": "uuid",
-            "title": "Destination Definition Id"
-          },
-          "destination_config": {
-            "additionalProperties": true,
-            "type": "object",
-            "title": "Destination Config"
-          },
-          "icon": {
-            "anyOf": [
-              {
-                "type": "string"
-              },
-              {
-                "type": "null"
-              }
-            ],
-            "title": "Icon"
-          },
-          "cron_expression": {
-            "anyOf": [
-              {
-                "type": "string"
-              },
-              {
-                "type": "null"
-              }
-            ],
-            "title": "Cron Expression"
-          },
-          "non_breaking_changes_preference": {
-            "$ref": "#/components/schemas/NonBreakingChangesPreference",
-            "default": "ignore"
-          },
-          "sync_on_create": {
-            "type": "boolean",
-            "title": "Sync On Create",
-            "default": true
-          },
-          "data_hosting_type": {
-            "$ref": "#/components/schemas/DataHostingType",
-            "default": "user_hosted"
-          },
-          "tags": {
-            "items": {
-              "type": "string"
-            },
-            "type": "array",
-            "title": "Tags"
-          },
-          "created_at": {
-            "anyOf": [
-              {
-                "type": "string",
-                "format": "date-time"
-              },
-              {
-                "type": "null"
-              }
-            ],
-            "title": "Created At"
-          },
-          "updated_at": {
-            "anyOf": [
-              {
-                "type": "string",
-                "format": "date-time"
-              },
-              {
-                "type": "null"
-              }
-            ],
-            "title": "Updated At"
-          }
-        },
-        "type": "object",
-        "required": [
-          "id",
-          "organization_id",
-          "destination_name",
-          "destination_definition_id",
-          "destination_config"
-        ],
-        "title": "ConnectionTemplate"
-      },
-      "ConnectionTemplateCreateResponse": {
-        "properties": {
-          "id": {
-            "type": "string",
-            "format": "uuid",
-            "title": "Id"
-          },
-          "organization_id": {
-            "type": "string",
-            "format": "uuid",
-            "title": "Organization Id"
-          },
-          "destination_name": {
-            "type": "string",
-            "title": "Destination Name"
-          },
-          "destination_definition_id": {
-            "type": "string",
-            "format": "uuid",
-            "title": "Destination Definition Id"
-          },
-          "destination_config": {
-            "additionalProperties": true,
-            "type": "object",
-            "title": "Destination Config"
-          },
-          "icon": {
-            "anyOf": [
-              {
-                "type": "string"
-              },
-              {
-                "type": "null"
-              }
-            ],
-            "title": "Icon"
-          },
-          "cron_expression": {
-            "anyOf": [
-              {
-                "type": "string"
-              },
-              {
-                "type": "null"
-              }
-            ],
-            "title": "Cron Expression"
-          },
-          "non_breaking_changes_preference": {
-            "$ref": "#/components/schemas/NonBreakingChangesPreference",
-            "default": "ignore"
-          },
-          "sync_on_create": {
-            "type": "boolean",
-            "title": "Sync On Create",
-            "default": true
-          },
-          "data_hosting_type": {
-            "$ref": "#/components/schemas/DataHostingType",
-            "default": "user_hosted"
-          },
-          "tags": {
-            "items": {
-              "type": "string"
-            },
-            "type": "array",
-            "title": "Tags"
-          },
-          "created_at": {
-            "anyOf": [
-              {
-                "type": "string",
-                "format": "date-time"
-              },
-              {
-                "type": "null"
-              }
-            ],
-            "title": "Created At"
-          },
-          "updated_at": {
-            "anyOf": [
-              {
-                "type": "string",
-                "format": "date-time"
-              },
-              {
-                "type": "null"
-              }
-            ],
-            "title": "Updated At"
-          }
-        },
-        "type": "object",
-        "required": [
-          "id",
-          "organization_id",
-          "destination_name",
-          "destination_definition_id",
-          "destination_config"
-        ],
-        "title": "ConnectionTemplateCreateResponse"
-      },
       "ConnectionTemplateDeleteResponse": {
         "properties": {
           "id": {
@@ -13928,114 +12889,18 @@
         "required": ["id", "deleted_at"],
         "title": "ConnectionTemplateDeleteResponse"
       },
-      "ConnectionTemplateGetResponse": {
-        "properties": {
-          "id": {
-            "type": "string",
-            "format": "uuid",
-            "title": "Id"
-          },
-          "organization_id": {
-            "type": "string",
-            "format": "uuid",
-            "title": "Organization Id"
-          },
-          "destination_name": {
-            "type": "string",
-            "title": "Destination Name"
-          },
-          "destination_definition_id": {
-            "type": "string",
-            "format": "uuid",
-            "title": "Destination Definition Id"
-          },
-          "destination_config": {
-            "additionalProperties": true,
-            "type": "object",
-            "title": "Destination Config"
-          },
-          "icon": {
-            "anyOf": [
-              {
-                "type": "string"
-              },
-              {
-                "type": "null"
-              }
-            ],
-            "title": "Icon"
-          },
-          "cron_expression": {
-            "anyOf": [
-              {
-                "type": "string"
-              },
-              {
-                "type": "null"
-              }
-            ],
-            "title": "Cron Expression"
-          },
-          "non_breaking_changes_preference": {
-            "$ref": "#/components/schemas/NonBreakingChangesPreference",
-            "default": "ignore"
-          },
-          "sync_on_create": {
-            "type": "boolean",
-            "title": "Sync On Create",
-            "default": true
-          },
-          "data_hosting_type": {
-            "$ref": "#/components/schemas/DataHostingType",
-            "default": "user_hosted"
-          },
-          "tags": {
-            "items": {
-              "type": "string"
-            },
-            "type": "array",
-            "title": "Tags"
-          },
-          "created_at": {
-            "anyOf": [
-              {
-                "type": "string",
-                "format": "date-time"
-              },
-              {
-                "type": "null"
-              }
-            ],
-            "title": "Created At"
-          },
-          "updated_at": {
-            "anyOf": [
-              {
-                "type": "string",
-                "format": "date-time"
-              },
-              {
-                "type": "null"
-              }
-            ],
-            "title": "Updated At"
-          }
-        },
-        "type": "object",
-        "required": [
-          "id",
-          "organization_id",
-          "destination_name",
-          "destination_definition_id",
-          "destination_config"
-        ],
-        "title": "ConnectionTemplateGetResponse"
-      },
       "ConnectionTemplateListResponse": {
         "properties": {
           "data": {
             "items": {
-              "$ref": "#/components/schemas/ConnectionTemplate"
+              "anyOf": [
+                {
+                  "$ref": "#/components/schemas/UserHostedConnectionTemplate"
+                },
+                {
+                  "$ref": "#/components/schemas/AirbyteHostedConnectionTemplate"
+                }
+              ]
             },
             "type": "array",
             "title": "Data"
@@ -14116,109 +12981,6 @@
         "type": "object",
         "required": ["tag"],
         "title": "ConnectionTemplateTagRequest"
-      },
-      "ConnectionTemplateTagResponse": {
-        "properties": {
-          "id": {
-            "type": "string",
-            "format": "uuid",
-            "title": "Id"
-          },
-          "organization_id": {
-            "type": "string",
-            "format": "uuid",
-            "title": "Organization Id"
-          },
-          "destination_name": {
-            "type": "string",
-            "title": "Destination Name"
-          },
-          "destination_definition_id": {
-            "type": "string",
-            "format": "uuid",
-            "title": "Destination Definition Id"
-          },
-          "destination_config": {
-            "additionalProperties": true,
-            "type": "object",
-            "title": "Destination Config"
-          },
-          "icon": {
-            "anyOf": [
-              {
-                "type": "string"
-              },
-              {
-                "type": "null"
-              }
-            ],
-            "title": "Icon"
-          },
-          "cron_expression": {
-            "anyOf": [
-              {
-                "type": "string"
-              },
-              {
-                "type": "null"
-              }
-            ],
-            "title": "Cron Expression"
-          },
-          "non_breaking_changes_preference": {
-            "$ref": "#/components/schemas/NonBreakingChangesPreference",
-            "default": "ignore"
-          },
-          "sync_on_create": {
-            "type": "boolean",
-            "title": "Sync On Create",
-            "default": true
-          },
-          "data_hosting_type": {
-            "$ref": "#/components/schemas/DataHostingType",
-            "default": "user_hosted"
-          },
-          "tags": {
-            "items": {
-              "type": "string"
-            },
-            "type": "array",
-            "title": "Tags"
-          },
-          "created_at": {
-            "anyOf": [
-              {
-                "type": "string",
-                "format": "date-time"
-              },
-              {
-                "type": "null"
-              }
-            ],
-            "title": "Created At"
-          },
-          "updated_at": {
-            "anyOf": [
-              {
-                "type": "string",
-                "format": "date-time"
-              },
-              {
-                "type": "null"
-              }
-            ],
-            "title": "Updated At"
-          }
-        },
-        "type": "object",
-        "required": [
-          "id",
-          "organization_id",
-          "destination_name",
-          "destination_definition_id",
-          "destination_config"
-        ],
-        "title": "ConnectionTemplateTagResponse"
       },
       "ConnectionTemplateUntagResponse": {
         "properties": {
@@ -14960,11 +13722,6 @@
           "legacy"
         ],
         "title": "DataCategory"
-      },
-      "DataHostingType": {
-        "type": "string",
-        "enum": ["user_hosted", "airbyte_hosted"],
-        "title": "DataHostingType"
       },
       "DeferredToolRequestEvent": {
         "properties": {
@@ -16405,251 +15162,6 @@
         "type": "object",
         "title": "OAuthConfigSpecification"
       },
-      "OauthCodeRequest": {
-        "properties": {
-          "client_id": {
-            "type": "string",
-            "title": "Client Id"
-          },
-          "airbyte_client_id": {
-            "type": "string",
-            "title": "Airbyte Client Id"
-          },
-          "airbyte_client_secret": {
-            "type": "string",
-            "title": "Airbyte Client Secret"
-          },
-          "redirect_uri": {
-            "type": "string",
-            "title": "Redirect Uri"
-          },
-          "scope": {
-            "type": "string",
-            "title": "Scope"
-          },
-          "state": {
-            "type": "string",
-            "title": "State"
-          }
-        },
-        "type": "object",
-        "required": [
-          "client_id",
-          "airbyte_client_id",
-          "airbyte_client_secret",
-          "redirect_uri",
-          "scope",
-          "state"
-        ],
-        "title": "OauthCodeRequest"
-      },
-      "OauthCodeResponse": {
-        "properties": {
-          "redirect_uri": {
-            "type": "string",
-            "title": "Redirect Uri"
-          }
-        },
-        "type": "object",
-        "required": ["redirect_uri"],
-        "title": "OauthCodeResponse"
-      },
-      "OauthRegistrationRequest": {
-        "properties": {
-          "redirect_uris": {
-            "items": {
-              "type": "string"
-            },
-            "type": "array",
-            "title": "Redirect Uris"
-          },
-          "client_name": {
-            "anyOf": [
-              {
-                "type": "string"
-              },
-              {
-                "type": "null"
-              }
-            ],
-            "title": "Client Name"
-          },
-          "grant_types": {
-            "items": {
-              "type": "string"
-            },
-            "type": "array",
-            "title": "Grant Types"
-          },
-          "response_types": {
-            "items": {
-              "type": "string"
-            },
-            "type": "array",
-            "title": "Response Types"
-          },
-          "token_endpoint_auth_method": {
-            "anyOf": [
-              {
-                "type": "string"
-              },
-              {
-                "type": "null"
-              }
-            ],
-            "title": "Token Endpoint Auth Method"
-          },
-          "scope": {
-            "anyOf": [
-              {
-                "type": "string"
-              },
-              {
-                "type": "null"
-              }
-            ],
-            "title": "Scope"
-          }
-        },
-        "type": "object",
-        "required": ["redirect_uris", "grant_types", "response_types"],
-        "title": "OauthRegistrationRequest"
-      },
-      "OauthRegistrationResponse": {
-        "properties": {
-          "client_id": {
-            "type": "string",
-            "title": "Client Id"
-          },
-          "client_secret": {
-            "type": "string",
-            "title": "Client Secret"
-          },
-          "redirect_uris": {
-            "items": {
-              "type": "string"
-            },
-            "type": "array",
-            "title": "Redirect Uris"
-          },
-          "grant_types": {
-            "items": {
-              "type": "string"
-            },
-            "type": "array",
-            "title": "Grant Types"
-          },
-          "response_types": {
-            "items": {
-              "type": "string"
-            },
-            "type": "array",
-            "title": "Response Types"
-          },
-          "scope": {
-            "anyOf": [
-              {
-                "type": "string"
-              },
-              {
-                "type": "null"
-              }
-            ],
-            "title": "Scope"
-          }
-        },
-        "type": "object",
-        "required": [
-          "client_id",
-          "client_secret",
-          "redirect_uris",
-          "grant_types",
-          "response_types"
-        ],
-        "title": "OauthRegistrationResponse"
-      },
-      "OauthTokenRequest": {
-        "properties": {
-          "grant_type": {
-            "type": "string",
-            "title": "Grant Type"
-          },
-          "code": {
-            "anyOf": [
-              {
-                "type": "string"
-              },
-              {
-                "type": "null"
-              }
-            ],
-            "title": "Code"
-          },
-          "refresh_token": {
-            "anyOf": [
-              {
-                "type": "string"
-              },
-              {
-                "type": "null"
-              }
-            ],
-            "title": "Refresh Token"
-          },
-          "client_id": {
-            "type": "string",
-            "title": "Client Id"
-          },
-          "client_secret": {
-            "type": "string",
-            "title": "Client Secret"
-          },
-          "redirect_uri": {
-            "anyOf": [
-              {
-                "type": "string"
-              },
-              {
-                "type": "null"
-              }
-            ],
-            "title": "Redirect Uri"
-          }
-        },
-        "type": "object",
-        "required": ["grant_type", "client_id", "client_secret"],
-        "title": "OauthTokenRequest"
-      },
-      "OauthTokenResponse": {
-        "properties": {
-          "access_token": {
-            "type": "string",
-            "title": "Access Token"
-          },
-          "token_type": {
-            "type": "string",
-            "title": "Token Type"
-          },
-          "expires_in": {
-            "type": "integer",
-            "title": "Expires In"
-          },
-          "refresh_token": {
-            "anyOf": [
-              {
-                "type": "string"
-              },
-              {
-                "type": "null"
-              }
-            ],
-            "title": "Refresh Token"
-          }
-        },
-        "type": "object",
-        "required": ["access_token", "token_type", "expires_in"],
-        "title": "OauthTokenResponse"
-      },
       "OnboardingProgressUpdateRequest": {
         "properties": {
           "onboarding_status": {
@@ -17547,13 +16059,35 @@
               },
               {
                 "$ref": "#/components/schemas/OrCondition"
+              },
+              {
+                "type": "null"
               }
             ],
-            "title": "Where"
+            "title": "Where",
+            "description": "Optional filter condition. If omitted, returns all documents."
+          },
+          "order": {
+            "anyOf": [
+              {
+                "items": {
+                  "additionalProperties": {
+                    "type": "string",
+                    "enum": ["asc", "desc"]
+                  },
+                  "type": "object"
+                },
+                "type": "array"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "Order",
+            "description": "Optional sort fields. Example: [{'created_at': 'desc'}, {'name': 'asc'}]"
           }
         },
         "type": "object",
-        "required": ["where"],
         "title": "Query",
         "description": "Query wrapper for conditions."
       },
@@ -18011,6 +16545,24 @@
         "properties": {
           "query": {
             "$ref": "#/components/schemas/Query"
+          },
+          "limit": {
+            "type": "integer",
+            "title": "Limit",
+            "description": "Maximum number of results to return",
+            "default": 1000
+          },
+          "cursor": {
+            "anyOf": [
+              {
+                "type": "string"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "Cursor",
+            "description": "Pagination cursor"
           }
         },
         "type": "object",
@@ -18031,6 +16583,17 @@
           "total": {
             "type": "integer",
             "title": "Total"
+          },
+          "next_cursor": {
+            "anyOf": [
+              {
+                "type": "string"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "Next Cursor"
           },
           "took_ms": {
             "anyOf": [
@@ -19927,28 +18490,6 @@
         "required": ["id", "name", "source_template", "source_config"],
         "title": "SourceUpdateResponse"
       },
-      "StarburstCacheMetadataResponse": {
-        "properties": {
-          "backend": {
-            "type": "string",
-            "const": "starburst",
-            "title": "Backend",
-            "description": "Cache backend type",
-            "default": "starburst"
-          },
-          "catalogs": {
-            "items": {
-              "$ref": "#/components/schemas/CacheCatalogMetadata"
-            },
-            "type": "array",
-            "title": "Catalogs",
-            "description": "Available catalogs with their schemas and tables"
-          }
-        },
-        "type": "object",
-        "required": ["catalogs"],
-        "title": "StarburstCacheMetadataResponse"
-      },
       "StreamCustomization": {
         "properties": {
           "primary_key_fields": {
@@ -20512,6 +19053,112 @@
         "required": ["tool_name", "response"],
         "title": "ToolResponseEvent",
         "description": "Format of tool response events sent to the browser."
+      },
+      "UserHostedConnectionTemplate": {
+        "properties": {
+          "id": {
+            "type": "string",
+            "format": "uuid",
+            "title": "Id"
+          },
+          "organization_id": {
+            "type": "string",
+            "format": "uuid",
+            "title": "Organization Id"
+          },
+          "destination_name": {
+            "type": "string",
+            "title": "Destination Name"
+          },
+          "icon": {
+            "anyOf": [
+              {
+                "type": "string"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "Icon"
+          },
+          "cron_expression": {
+            "anyOf": [
+              {
+                "type": "string"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "Cron Expression"
+          },
+          "data_hosting_type": {
+            "type": "string",
+            "const": "user_hosted",
+            "title": "Data Hosting Type",
+            "default": "user_hosted"
+          },
+          "tags": {
+            "items": {
+              "type": "string"
+            },
+            "type": "array",
+            "title": "Tags"
+          },
+          "created_at": {
+            "anyOf": [
+              {
+                "type": "string",
+                "format": "date-time"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "Created At"
+          },
+          "updated_at": {
+            "anyOf": [
+              {
+                "type": "string",
+                "format": "date-time"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "Updated At"
+          },
+          "destination_definition_id": {
+            "type": "string",
+            "format": "uuid",
+            "title": "Destination Definition Id"
+          },
+          "destination_config": {
+            "additionalProperties": true,
+            "type": "object",
+            "title": "Destination Config"
+          },
+          "non_breaking_changes_preference": {
+            "$ref": "#/components/schemas/NonBreakingChangesPreference",
+            "default": "ignore"
+          },
+          "sync_on_create": {
+            "type": "boolean",
+            "title": "Sync On Create",
+            "default": true
+          }
+        },
+        "type": "object",
+        "required": [
+          "id",
+          "organization_id",
+          "destination_name",
+          "destination_definition_id",
+          "destination_config"
+        ],
+        "title": "UserHostedConnectionTemplate",
+        "description": "Connection template where user provides destination configuration."
       },
       "UserHostedConnectionTemplateCreateRequest": {
         "properties": {

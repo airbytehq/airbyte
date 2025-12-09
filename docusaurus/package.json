@@ -11,8 +11,10 @@
   },
   "scripts": {
     "prepare-registry-cache": "node src/scripts/prepare-registry-cache.js",
-    "gen-embedded-api-docs": "pnpm exec docusaurus clean-api-docs all && pnpm exec docusaurus gen-api-docs all",
+    "gen-embedded-api-docs": "pnpm exec docusaurus clean-api-docs embedded --plugin-id embedded-api && pnpm exec docusaurus gen-api-docs embedded --plugin-id embedded-api",
+    "gen-airbyte-api-docs": "pnpm exec docusaurus clean-api-docs airbyte-api-docs --plugin-id airbyte-api && pnpm exec docusaurus gen-api-docs airbyte-api-docs --plugin-id airbyte-api",
     "prepare-embedded-api": "pnpm run gen-embedded-api-docs && node src/scripts/embedded-api/prepare-embedded-api-spec.js && pnpm prettier --write src/data/embedded_api_spec.json",
+    "prepare-airbyte-api": "pnpm run gen-airbyte-api-docs && node src/scripts/embedded-api/prepare-embedded-api-spec.js && pnpm prettier --write src/data/embedded_api_spec.json",
     "cleanup-cache": "node src/scripts/cleanup-cache.js",
     "prebuild": "pnpm run prepare-registry-cache && pnpm run prepare-embedded-api",
     "postbuild": "pnpm run cleanup-cache",

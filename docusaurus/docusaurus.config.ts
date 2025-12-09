@@ -235,6 +235,7 @@ const config: Config = {
         path: "../docs/developers",
         routeBasePath: "/developers",
         sidebarPath: "./sidebar-developers.js",
+        docItemComponent: "@theme/ApiItem", // Required for OpenAPI docs rendering
         editUrl: "https://github.com/airbytehq/airbyte/blob/master/docs",
         remarkPlugins: [
           plugins.productInformation,
@@ -270,6 +271,26 @@ const config: Config = {
           embedded: {
             specPath: "src/data/embedded_api_spec.json",
             outputDir: "../docs/ai-agents/embedded/api-reference",
+            sidebarOptions: {
+              groupPathsBy: "tag",
+              categoryLinkSource: "tag",
+              sidebarCollapsed: false,
+              sidebarCollapsible: false,
+            },
+          },
+        },
+      },
+    ],
+    [
+      "docusaurus-plugin-openapi-docs",
+      {
+        id: "airbyte-api",
+        docsPluginId: "developers",
+        config: {
+          "airbyte-api-docs": {
+            specPath:
+              "hhttps://raw.githubusercontent.com/airbytehq/airbyte-platform/refs/heads/main/airbyte-api/server-api/src/main/openapi/public_api.yaml",
+            outputDir: "../docs/developers/api-reference",
             sidebarOptions: {
               groupPathsBy: "tag",
               categoryLinkSource: "tag",
