@@ -480,6 +480,43 @@ definitions:
         type: InlineSchemaLoader
         schema:
           $ref: "#/schemas/statsInteraction"
+    libraryFolders:
+      type: DeclarativeStream
+      name: libraryFolders
+      primary_key:
+        - folderId
+      retriever:
+        type: SimpleRetriever
+        requester:
+          $ref: "#/definitions/base_requester"
+          path: /library/folders
+          http_method: GET
+          request_parameters:
+            workspaceId: "{{ stream_partition.id }}"
+        record_selector:
+          type: RecordSelector
+          extractor:
+            type: DpathExtractor
+            field_path:
+              - folders
+        partition_router:
+          type: SubstreamPartitionRouter
+          parent_stream_configs:
+            - type: ParentStreamConfig
+              parent_key: id
+              partition_field: id
+              stream:
+                $ref: "#/definitions/streams/workspaces"
+      transformations:
+        - type: AddFields
+          fields:
+            - path:
+                - workspaceId
+              value: "{{ stream_partition.id }}"
+      schema_loader:
+        type: InlineSchemaLoader
+        schema:
+          $ref: "#/schemas/libraryFolders"
   base_requester:
     type: HttpRequester
     url_base: https://api.gong.io/v2/
@@ -500,6 +537,7 @@ streams:
   - $ref: "#/definitions/streams/statsActivityAggregate"
   - $ref: "#/definitions/streams/statsActivityDayByDay"
   - $ref: "#/definitions/streams/statsInteraction"
+  - $ref: "#/definitions/streams/libraryFolders"
 
 spec:
   type: Spec
@@ -1726,3 +1764,39 @@ schemas:
               type:
                 - "null"
                 - number
+  libraryFolders:
+    type: object
+    $schema: http://json-schema.org/draft-07/schema#
+    additionalProperties: true
+    properties:
+      folderId:
+        type:
+          - "null"
+          - string
+        description: Unique identifier for the library folder
+      name:
+        type:
+          - "null"
+          - string
+        description: Name of the library folder
+      workspaceId:
+        type:
+          - "null"
+          - string
+        description: Workspace ID this folder belongs to
+      creatorUserId:
+        type:
+          - "null"
+          - string
+        description: User ID of the folder creator
+      creationTime:
+        type:
+          - "null"
+          - string
+        description: Timestamp when the folder was created
+        format: date-time
+      callsCount:
+        type:
+          - "null"
+          - integer
+        description: Number of calls in the folder
