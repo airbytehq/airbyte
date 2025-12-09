@@ -277,7 +277,10 @@ class TestMetricsStream(TestCase):
                                 },
                             }
                         ],
-                        "links": {"self": "https://a.klaviyo.com/api/metrics", "next": "https://a.klaviyo.com/api/metrics?page[cursor]=abc123"},
+                        "links": {
+                            "self": "https://a.klaviyo.com/api/metrics",
+                            "next": "https://a.klaviyo.com/api/metrics?page[cursor]=abc123",
+                        },
                     }
                 ),
                 status_code=200,

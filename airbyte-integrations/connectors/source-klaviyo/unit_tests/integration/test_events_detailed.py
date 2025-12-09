@@ -128,7 +128,10 @@ class TestEventsDetailedStream(TestCase):
                             }
                         ],
                         "included": [{"type": "metric", "id": "m1", "attributes": {"name": "Metric 1"}}],
-                        "links": {"self": "https://a.klaviyo.com/api/events", "next": "https://a.klaviyo.com/api/events?page[cursor]=abc123"},
+                        "links": {
+                            "self": "https://a.klaviyo.com/api/events",
+                            "next": "https://a.klaviyo.com/api/events?page[cursor]=abc123",
+                        },
                     }
                 ),
                 status_code=200,

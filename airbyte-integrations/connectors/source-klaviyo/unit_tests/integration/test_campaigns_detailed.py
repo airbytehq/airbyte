@@ -127,7 +127,10 @@ class TestCampaignsDetailedStream(TestCase):
                             }
                         ],
                         "included": [],
-                        "links": {"self": "https://a.klaviyo.com/api/campaigns", "next": "https://a.klaviyo.com/api/campaigns?page[cursor]=abc123"},
+                        "links": {
+                            "self": "https://a.klaviyo.com/api/campaigns",
+                            "next": "https://a.klaviyo.com/api/campaigns?page[cursor]=abc123",
+                        },
                     }
                 ),
                 status_code=200,

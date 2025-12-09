@@ -302,7 +302,9 @@ class TestGlobalExclusionsStream(TestCase):
                             "email": "user1@example.com",
                             "updated": "2024-01-10T10:00:00+00:00",
                             "subscriptions": {
-                                "email": {"marketing": {"suppression": [{"reason": "USER_SUPPRESSED", "timestamp": "2024-01-05T10:00:00+00:00"}]}},
+                                "email": {
+                                    "marketing": {"suppression": [{"reason": "USER_SUPPRESSED", "timestamp": "2024-01-05T10:00:00+00:00"}]}
+                                },
                                 "sms": {"marketing": {}},
                             },
                         },
@@ -325,7 +327,9 @@ class TestGlobalExclusionsStream(TestCase):
                             "email": "user2@example.com",
                             "updated": "2024-01-11T10:00:00+00:00",
                             "subscriptions": {
-                                "email": {"marketing": {"suppression": [{"reason": "HARD_BOUNCE", "timestamp": "2024-01-06T10:00:00+00:00"}]}},
+                                "email": {
+                                    "marketing": {"suppression": [{"reason": "HARD_BOUNCE", "timestamp": "2024-01-06T10:00:00+00:00"}]}
+                                },
                                 "sms": {"marketing": {}},
                             },
                         },
@@ -373,7 +377,11 @@ class TestGlobalExclusionsStream(TestCase):
                                         "email": "retry@example.com",
                                         "updated": "2024-01-20T10:00:00+00:00",
                                         "subscriptions": {
-                                            "email": {"marketing": {"suppression": [{"reason": "USER_SUPPRESSED", "timestamp": "2024-01-15T10:00:00+00:00"}]}},
+                                            "email": {
+                                                "marketing": {
+                                                    "suppression": [{"reason": "USER_SUPPRESSED", "timestamp": "2024-01-15T10:00:00+00:00"}]
+                                                }
+                                            },
                                             "sms": {"marketing": {}},
                                         },
                                     },
@@ -446,7 +454,9 @@ class TestGlobalExclusionsStream(TestCase):
                                     "email": "active@example.com",
                                     "updated": "2024-01-15T12:30:00+00:00",
                                     "subscriptions": {
-                                        "email": {"marketing": {"can_receive_email_marketing": True, "consent": "SUBSCRIBED", "suppression": []}},
+                                        "email": {
+                                            "marketing": {"can_receive_email_marketing": True, "consent": "SUBSCRIBED", "suppression": []}
+                                        },
                                         "sms": {"marketing": {"can_receive_sms_marketing": True}},
                                     },
                                 },

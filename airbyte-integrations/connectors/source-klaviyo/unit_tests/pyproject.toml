@@ -12,6 +12,10 @@ authors = ["Airbyte <contact@airbyte.io>"]
 python = "^3.10,<3.13"
 airbyte-cdk = "^6"
 pytest = "^8"
+freezegun = "^1.4.0"
+pytest-mock = "^3.6.1"
+requests-mock = "^1.12.1"
+mock = "^5.1.0"
 
 [tool.pytest.ini_options]
 filterwarnings = [
