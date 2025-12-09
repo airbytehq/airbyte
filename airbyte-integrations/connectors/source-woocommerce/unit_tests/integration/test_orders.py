@@ -188,6 +188,11 @@ class TestOrdersIncremental(TestCase):
         When the first page returns exactly 100 records, the connector
         fetches the next page with offset=100. Pagination stops when
         a page returns fewer than 100 records.
+
+        Note: This test validates the pagination behavior for all streams in this connector,
+        as they all use the same default paginator (OffsetIncrement with page_size=100).
+        Testing pagination here and in test_products.py is sufficient to verify the
+        pagination configuration works correctly across the entire connector.
         """
         page_size = 100
 
