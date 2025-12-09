@@ -66,7 +66,7 @@ Run `abctl local install` to upgrade to the latest version of Airbyte. If you'd 
 
 Occasionally, you need to update `abctl` to the latest version. This is separate from upgrading Airbyte. It only upgrades the command line tool.
 
-## Mac OS
+#### macOS
 
 Run `brew upgrade abctl`. 
 
