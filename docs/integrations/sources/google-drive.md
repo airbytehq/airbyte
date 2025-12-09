@@ -131,12 +131,7 @@ Each path pattern is a reference from the _root_ of the folder, so don't include
 
 Some example patterns:
 
-- `**` : match everything.
-
-  :::warning
-  Using `**` in folders with mixed file types (e.g., CSVs and PDFs) will cause parsing errors. Use a more specific pattern like `**/*.csv` to match only your desired file type.
-  :::
-
+- `**` : match everything. (Warning: see the tip above regarding using this glob with folders containing multiple file types.)
 - `**/*.csv` : match all files with specific extension.
 - `myFolder/**/*.csv` : match all csv files anywhere under myFolder.
 - `*/**` : match everything at least one folder deep.
