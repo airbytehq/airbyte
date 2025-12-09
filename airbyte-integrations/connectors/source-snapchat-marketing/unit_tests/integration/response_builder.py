@@ -2,11 +2,13 @@
 # Copyright (c) 2024 Airbyte, Inc., all rights reserved.
 #
 
+import copy
 import json
 from http import HTTPStatus
-from typing import Any, Dict, List, Mapping, Optional, Union
+from typing import Any, List, Optional
 
 from airbyte_cdk.test.mock_http import HttpResponse
+from airbyte_cdk.test.mock_http.response_builder import find_template
 
 from .config import (
     AD_ACCOUNT_ID,
@@ -17,24 +19,152 @@ from .config import (
 )
 
 
-def build_response(
-    body: Union[Mapping[str, Any], List[Mapping[str, Any]]],
-    status_code: HTTPStatus = HTTPStatus.OK,
-    headers: Optional[Mapping[str, str]] = None,
+def _set_nested_value(obj: Any, key: str, value: Any) -> bool:
+    """Recursively set a value in a nested structure."""
+    if isinstance(obj, dict):
+        if key in obj:
+            obj[key] = value
+            return True
+        for v in obj.values():
+            if _set_nested_value(v, key, value):
+                return True
+    elif isinstance(obj, list):
+        for item in obj:
+            if _set_nested_value(item, key, value):
+                return True
+    return False
+
+
+def create_response(
+    resource_name: str,
+    status_code: int = 200,
+    has_next: bool = False,
+    next_link: Optional[str] = None,
 ) -> HttpResponse:
-    headers = headers or {}
-    return HttpResponse(body=json.dumps(body), status_code=status_code.value, headers=headers)
+    """Create an HttpResponse from a JSON template file.
+
+    Args:
+        resource_name: Name of the JSON template file (without .json extension)
+        status_code: HTTP status code for the response
+        has_next: Whether to include pagination next_link
+        next_link: The URL for the next page
+
+    Returns:
+        HttpResponse with the template body
+    """
+    body = copy.deepcopy(find_template(resource_name, __file__))
+
+    if has_next and next_link:
+        body["paging"] = {"next_link": next_link}
+
+    return HttpResponse(body=json.dumps(body), status_code=status_code)
+
+
+def create_response_with_id(
+    resource_name: str,
+    record_id: str,
+    status_code: int = 200,
+    has_next: bool = False,
+    next_link: Optional[str] = None,
+) -> HttpResponse:
+    """Create an HttpResponse from a JSON template with a specific record ID."""
+    body = copy.deepcopy(find_template(resource_name, __file__))
+    _set_nested_value(body, "id", record_id)
+
+    if has_next and next_link:
+        body["paging"] = {"next_link": next_link}
+
+    return HttpResponse(body=json.dumps(body), status_code=status_code)
+
+
+def create_empty_response(resource_name: str) -> HttpResponse:
+    """Create an empty response for a given resource."""
+    body = copy.deepcopy(find_template(resource_name, __file__))
+
+    for key in body:
+        if isinstance(body[key], list) and key not in ["request_status", "request_id"]:
+            body[key] = []
+            break
+
+    return HttpResponse(body=json.dumps(body), status_code=200)
+
+
+def create_error_response(status_code: HTTPStatus = HTTPStatus.UNAUTHORIZED) -> HttpResponse:
+    """Create an error response from a JSON template."""
+    error_template_map = {
+        HTTPStatus.UNAUTHORIZED: "error_401",
+        HTTPStatus.TOO_MANY_REQUESTS: "error_429",
+    }
+
+    template_name = error_template_map.get(status_code)
+    if template_name:
+        body = copy.deepcopy(find_template(template_name, __file__))
+    else:
+        body = {"request_status": "ERROR", "request_id": "test_request_id", "msg": f"Error {status_code.value}"}
+
+    return HttpResponse(body=json.dumps(body), status_code=status_code.value)
+
+
+def create_oauth_response() -> HttpResponse:
+    """Create an OAuth token response from JSON template."""
+    body = copy.deepcopy(find_template("oauth_token", __file__))
+    return HttpResponse(body=json.dumps(body), status_code=200)
+
+
+def create_stats_response(
+    resource_name: str,
+    entity_id: str,
+    granularity: str = "HOUR",
+    status_code: int = 200,
+    has_next: bool = False,
+    next_link: Optional[str] = None,
+) -> HttpResponse:
+    """Create a stats response with specific entity ID and granularity."""
+    body = copy.deepcopy(find_template(resource_name, __file__))
+    _set_nested_value(body, "id", entity_id)
+    _set_nested_value(body, "granularity", granularity)
+
+    if has_next and next_link:
+        body["paging"] = {"next_link": next_link}
+
+    return HttpResponse(body=json.dumps(body), status_code=status_code)
+
+
+def create_multiple_records_response(
+    resource_name: str,
+    record_ids: List[str],
+    status_code: int = 200,
+) -> HttpResponse:
+    """Create a response with multiple records for testing substreams with multiple parents."""
+    template = find_template(resource_name, __file__)
+    body = copy.deepcopy(template)
+
+    data_key = None
+    record_template = None
+    for key in body:
+        if isinstance(body[key], list) and key not in ["request_status", "request_id"]:
+            data_key = key
+            if body[key]:
+                record_template = copy.deepcopy(body[key][0])
+            break
+
+    if data_key and record_template:
+        body[data_key] = []
+        for record_id in record_ids:
+            record = copy.deepcopy(record_template)
+            _set_nested_value(record, "id", record_id)
+            body[data_key].append(record)
+
+    return HttpResponse(body=json.dumps(body), status_code=status_code)
+
+
+# Legacy helper functions that wrap the new template-based functions
+# These maintain backward compatibility with existing tests
 
 
 def oauth_response() -> HttpResponse:
-    body = {
-        "access_token": "test_access_token",
-        "token_type": "Bearer",
-        "expires_in": 1800,
-        "refresh_token": "test_refresh_token",
-        "scope": "snapchat-marketing-api",
-    }
-    return build_response(body=body, status_code=HTTPStatus.OK)
+    """Create an OAuth token response."""
+    return create_oauth_response()
 
 
 def organizations_response(
@@ -42,37 +172,8 @@ def organizations_response(
     has_next: bool = False,
     next_link: Optional[str] = None,
 ) -> HttpResponse:
-    body = {
-        "request_status": "SUCCESS",
-        "request_id": "test_request_id",
-        "organizations": [
-            {
-                "sub_request_status": "SUCCESS",
-                "organization": {
-                    "id": organization_id,
-                    "updated_at": "2024-01-15T10:00:00.000Z",
-                    "created_at": "2023-01-01T00:00:00.000Z",
-                    "name": "Test Organization",
-                    "address_line_1": "123 Test St",
-                    "locality": "Test City",
-                    "administrative_district_level_1": "CA",
-                    "country": "US",
-                    "postal_code": "12345",
-                    "type": "ENTERPRISE",
-                    "state": "ACTIVE",
-                    "configuration_settings": {},
-                    "accepted_term_version": "1",
-                    "contact_name": "Test Contact",
-                    "contact_email": "test@example.com",
-                    "contact_phone": "+1234567890",
-                    "roles": ["ADMIN"],
-                },
-            }
-        ],
-    }
-    if has_next and next_link:
-        body["paging"] = {"next_link": next_link}
-    return build_response(body=body, status_code=HTTPStatus.OK)
+    """Create an organizations response using JSON template."""
+    return create_response_with_id("organizations", organization_id, has_next=has_next, next_link=next_link)
 
 
 def adaccounts_response(
@@ -81,36 +182,16 @@ def adaccounts_response(
     has_next: bool = False,
     next_link: Optional[str] = None,
 ) -> HttpResponse:
-    body = {
-        "request_status": "SUCCESS",
-        "request_id": "test_request_id",
-        "adaccounts": [
-            {
-                "sub_request_status": "SUCCESS",
-                "adaccount": {
-                    "id": ad_account_id,
-                    "updated_at": "2024-01-15T10:00:00.000Z",
-                    "created_at": "2023-01-01T00:00:00.000Z",
-                    "name": "Test Ad Account",
-                    "type": "PARTNER",
-                    "status": "ACTIVE",
-                    "organization_id": organization_id,
-                    "currency": "USD",
-                    "timezone": "America/Los_Angeles",
-                    "advertiser_organization_id": organization_id,
-                    "advertiser": "Test Advertiser",
-                    "billing_type": "IO",
-                    "billing_center_id": "test_billing_center",
-                    "lifetime_spend_cap_micro": 0,
-                    "agency_representing_client": False,
-                    "client_paying_invoices": False,
-                },
-            }
-        ],
-    }
+    """Create an adaccounts response using JSON template."""
+    body = copy.deepcopy(find_template("adaccounts", __file__))
+    _set_nested_value(body, "id", ad_account_id)
+    _set_nested_value(body, "organization_id", organization_id)
+    _set_nested_value(body, "advertiser_organization_id", organization_id)
+
     if has_next and next_link:
         body["paging"] = {"next_link": next_link}
-    return build_response(body=body, status_code=HTTPStatus.OK)
+
+    return HttpResponse(body=json.dumps(body), status_code=200)
 
 
 def adaccounts_response_multiple(
@@ -118,37 +199,7 @@ def adaccounts_response_multiple(
     organization_id: str = ORGANIZATION_ID,
 ) -> HttpResponse:
     """Create response with multiple ad accounts for testing substreams with multiple parents."""
-    adaccounts = []
-    for ad_account_id in ad_account_ids:
-        adaccounts.append(
-            {
-                "sub_request_status": "SUCCESS",
-                "adaccount": {
-                    "id": ad_account_id,
-                    "updated_at": "2024-01-15T10:00:00.000Z",
-                    "created_at": "2023-01-01T00:00:00.000Z",
-                    "name": f"Test Ad Account {ad_account_id}",
-                    "type": "PARTNER",
-                    "status": "ACTIVE",
-                    "organization_id": organization_id,
-                    "currency": "USD",
-                    "timezone": "America/Los_Angeles",
-                    "advertiser_organization_id": organization_id,
-                    "advertiser": "Test Advertiser",
-                    "billing_type": "IO",
-                    "billing_center_id": "test_billing_center",
-                    "lifetime_spend_cap_micro": 0,
-                    "agency_representing_client": False,
-                    "client_paying_invoices": False,
-                },
-            }
-        )
-    body = {
-        "request_status": "SUCCESS",
-        "request_id": "test_request_id",
-        "adaccounts": adaccounts,
-    }
-    return build_response(body=body, status_code=HTTPStatus.OK)
+    return create_multiple_records_response("adaccounts", ad_account_ids)
 
 
 def creatives_response(
@@ -157,34 +208,15 @@ def creatives_response(
     has_next: bool = False,
     next_link: Optional[str] = None,
 ) -> HttpResponse:
-    body = {
-        "request_status": "SUCCESS",
-        "request_id": "test_request_id",
-        "creatives": [
-            {
-                "sub_request_status": "SUCCESS",
-                "creative": {
-                    "id": creative_id,
-                    "updated_at": "2024-01-15T10:00:00.000Z",
-                    "created_at": "2023-01-01T00:00:00.000Z",
-                    "name": "Test Creative",
-                    "ad_account_id": ad_account_id,
-                    "type": "SNAP_AD",
-                    "packaging_status": "SUCCESS",
-                    "review_status": "APPROVED",
-                    "shareable": True,
-                    "headline": "Test Headline",
-                    "brand_name": "Test Brand",
-                    "call_to_action": "INSTALL_NOW",
-                    "top_snap_media_id": "test_media_id",
-                    "top_snap_crop_position": "MIDDLE",
-                },
-            }
-        ],
-    }
+    """Create a creatives response using JSON template."""
+    body = copy.deepcopy(find_template("creatives", __file__))
+    _set_nested_value(body, "id", creative_id)
+    _set_nested_value(body, "ad_account_id", ad_account_id)
+
     if has_next and next_link:
         body["paging"] = {"next_link": next_link}
-    return build_response(body=body, status_code=HTTPStatus.OK)
+
+    return HttpResponse(body=json.dumps(body), status_code=200)
 
 
 def ads_response(
@@ -194,31 +226,15 @@ def ads_response(
     has_next: bool = False,
     next_link: Optional[str] = None,
 ) -> HttpResponse:
-    body = {
-        "request_status": "SUCCESS",
-        "request_id": "test_request_id",
-        "ads": [
-            {
-                "sub_request_status": "SUCCESS",
-                "ad": {
-                    "id": ad_id,
-                    "updated_at": "2024-01-15T10:00:00.000Z",
-                    "created_at": "2023-01-01T00:00:00.000Z",
-                    "name": "Test Ad",
-                    "ad_squad_id": adsquad_id,
-                    "creative_id": "test_creative_123",
-                    "status": "ACTIVE",
-                    "type": "SNAP_AD",
-                    "render_type": "STATIC",
-                    "review_status": "APPROVED",
-                    "review_status_reasons": [],
-                },
-            }
-        ],
-    }
+    """Create an ads response using JSON template."""
+    body = copy.deepcopy(find_template("ads", __file__))
+    _set_nested_value(body, "id", ad_id)
+    _set_nested_value(body, "ad_squad_id", adsquad_id)
+
     if has_next and next_link:
         body["paging"] = {"next_link": next_link}
-    return build_response(body=body, status_code=HTTPStatus.OK)
+
+    return HttpResponse(body=json.dumps(body), status_code=200)
 
 
 def adsquads_response(
@@ -228,36 +244,15 @@ def adsquads_response(
     has_next: bool = False,
     next_link: Optional[str] = None,
 ) -> HttpResponse:
-    body = {
-        "request_status": "SUCCESS",
-        "request_id": "test_request_id",
-        "adsquads": [
-            {
-                "sub_request_status": "SUCCESS",
-                "adsquad": {
-                    "id": adsquad_id,
-                    "updated_at": "2024-01-15T10:00:00.000Z",
-                    "created_at": "2023-01-01T00:00:00.000Z",
-                    "name": "Test Ad Squad",
-                    "status": "ACTIVE",
-                    "campaign_id": campaign_id,
-                    "type": "SNAP_ADS",
-                    "targeting": {},
-                    "targeting_reach_status": "VALID",
-                    "placement": "SNAP_ADS",
-                    "billing_event": "IMPRESSION",
-                    "auto_bid": True,
-                    "bid_strategy": "AUTO_BID",
-                    "daily_budget_micro": 50000000,
-                    "start_time": "2024-01-01T00:00:00.000Z",
-                    "optimization_goal": "IMPRESSIONS",
-                },
-            }
-        ],
-    }
+    """Create an adsquads response using JSON template."""
+    body = copy.deepcopy(find_template("adsquads", __file__))
+    _set_nested_value(body, "id", adsquad_id)
+    _set_nested_value(body, "campaign_id", campaign_id)
+
     if has_next and next_link:
         body["paging"] = {"next_link": next_link}
-    return build_response(body=body, status_code=HTTPStatus.OK)
+
+    return HttpResponse(body=json.dumps(body), status_code=200)
 
 
 def segments_response(
@@ -266,34 +261,15 @@ def segments_response(
     has_next: bool = False,
     next_link: Optional[str] = None,
 ) -> HttpResponse:
-    body = {
-        "request_status": "SUCCESS",
-        "request_id": "test_request_id",
-        "segments": [
-            {
-                "sub_request_status": "SUCCESS",
-                "segment": {
-                    "id": segment_id,
-                    "updated_at": "2024-01-15T10:00:00.000Z",
-                    "created_at": "2023-01-01T00:00:00.000Z",
-                    "name": "Test Segment",
-                    "ad_account_id": ad_account_id,
-                    "description": "Test segment description",
-                    "status": "ACTIVE",
-                    "source_type": "FIRST_PARTY",
-                    "retention_in_days": 180,
-                    "approximate_number_users": 1000,
-                    "upload_status": "COMPLETE",
-                    "targetable_status": "READY",
-                    "organization_id": ORGANIZATION_ID,
-                    "visible_to": ["ALL_ACCOUNTS"],
-                },
-            }
-        ],
-    }
+    """Create a segments response using JSON template."""
+    body = copy.deepcopy(find_template("segments", __file__))
+    _set_nested_value(body, "id", segment_id)
+    _set_nested_value(body, "ad_account_id", ad_account_id)
+
     if has_next and next_link:
         body["paging"] = {"next_link": next_link}
-    return build_response(body=body, status_code=HTTPStatus.OK)
+
+    return HttpResponse(body=json.dumps(body), status_code=200)
 
 
 def media_response(
@@ -302,30 +278,15 @@ def media_response(
     has_next: bool = False,
     next_link: Optional[str] = None,
 ) -> HttpResponse:
-    body = {
-        "request_status": "SUCCESS",
-        "request_id": "test_request_id",
-        "media": [
-            {
-                "sub_request_status": "SUCCESS",
-                "media": {
-                    "id": media_id,
-                    "updated_at": "2024-01-15T10:00:00.000Z",
-                    "created_at": "2023-01-01T00:00:00.000Z",
-                    "name": "Test Media",
-                    "ad_account_id": ad_account_id,
-                    "type": "VIDEO",
-                    "media_status": "READY",
-                    "file_name": "test_video.mp4",
-                    "download_link": "https://example.com/test_video.mp4",
-                    "duration_secs": 10.5,
-                },
-            }
-        ],
-    }
+    """Create a media response using JSON template."""
+    body = copy.deepcopy(find_template("media", __file__))
+    _set_nested_value(body, "id", media_id)
+    _set_nested_value(body, "ad_account_id", ad_account_id)
+
     if has_next and next_link:
         body["paging"] = {"next_link": next_link}
-    return build_response(body=body, status_code=HTTPStatus.OK)
+
+    return HttpResponse(body=json.dumps(body), status_code=200)
 
 
 def campaigns_response(
@@ -334,33 +295,15 @@ def campaigns_response(
     has_next: bool = False,
     next_link: Optional[str] = None,
 ) -> HttpResponse:
-    body = {
-        "request_status": "SUCCESS",
-        "request_id": "test_request_id",
-        "campaigns": [
-            {
-                "sub_request_status": "SUCCESS",
-                "campaign": {
-                    "id": campaign_id,
-                    "updated_at": "2024-01-15T10:00:00.000Z",
-                    "created_at": "2023-01-01T00:00:00.000Z",
-                    "name": "Test Campaign",
-                    "ad_account_id": ad_account_id,
-                    "status": "ACTIVE",
-                    "objective": "AWARENESS",
-                    "start_time": "2024-01-01T00:00:00.000Z",
-                    "end_time": "2024-12-31T23:59:59.000Z",
-                    "daily_budget_micro": 100000000,
-                    "lifetime_spend_cap_micro": 0,
-                    "buy_model": "AUCTION",
-                    "regulations": {},
-                },
-            }
-        ],
-    }
+    """Create a campaigns response using JSON template."""
+    body = copy.deepcopy(find_template("campaigns", __file__))
+    _set_nested_value(body, "id", campaign_id)
+    _set_nested_value(body, "ad_account_id", ad_account_id)
+
     if has_next and next_link:
         body["paging"] = {"next_link": next_link}
-    return build_response(body=body, status_code=HTTPStatus.OK)
+
+    return HttpResponse(body=json.dumps(body), status_code=200)
 
 
 def stats_timeseries_response(
@@ -369,40 +312,8 @@ def stats_timeseries_response(
     has_next: bool = False,
     next_link: Optional[str] = None,
 ) -> HttpResponse:
-    body = {
-        "request_status": "SUCCESS",
-        "request_id": "test_request_id",
-        "timeseries_stats": [
-            {
-                "sub_request_status": "SUCCESS",
-                "timeseries_stat": {
-                    "id": entity_id,
-                    "type": "AD_ACCOUNT",
-                    "granularity": granularity,
-                    "start_time": "2024-01-15T00:00:00.000-0800",
-                    "end_time": "2024-01-15T01:00:00.000-0800",
-                    "timeseries": [
-                        {
-                            "start_time": "2024-01-15T00:00:00.000-0800",
-                            "end_time": "2024-01-15T01:00:00.000-0800",
-                            "stats": {
-                                "impressions": 1000,
-                                "swipes": 50,
-                                "spend": 5000000,
-                                "video_views": 800,
-                                "android_installs": 10,
-                                "ios_installs": 15,
-                                "total_installs": 25,
-                            },
-                        }
-                    ],
-                },
-            }
-        ],
-    }
-    if has_next and next_link:
-        body["paging"] = {"next_link": next_link}
-    return build_response(body=body, status_code=HTTPStatus.OK)
+    """Create a stats timeseries response using JSON template."""
+    return create_stats_response("stats_timeseries", entity_id, granularity, has_next=has_next, next_link=next_link)
 
 
 def stats_lifetime_response(
@@ -410,49 +321,15 @@ def stats_lifetime_response(
     has_next: bool = False,
     next_link: Optional[str] = None,
 ) -> HttpResponse:
-    body = {
-        "request_status": "SUCCESS",
-        "request_id": "test_request_id",
-        "lifetime_stats": [
-            {
-                "sub_request_status": "SUCCESS",
-                "lifetime_stat": {
-                    "id": entity_id,
-                    "type": "AD_ACCOUNT",
-                    "granularity": "LIFETIME",
-                    "stats": {
-                        "impressions": 100000,
-                        "swipes": 5000,
-                        "spend": 500000000,
-                        "video_views": 80000,
-                        "android_installs": 1000,
-                        "ios_installs": 1500,
-                        "total_installs": 2500,
-                    },
-                },
-            }
-        ],
-    }
-    if has_next and next_link:
-        body["paging"] = {"next_link": next_link}
-    return build_response(body=body, status_code=HTTPStatus.OK)
+    """Create a stats lifetime response using JSON template."""
+    return create_stats_response("stats_lifetime", entity_id, "LIFETIME", has_next=has_next, next_link=next_link)
 
 
 def error_response(status_code: HTTPStatus = HTTPStatus.UNAUTHORIZED) -> HttpResponse:
-    error_messages = {
-        HTTPStatus.UNAUTHORIZED: {"request_status": "ERROR", "request_id": "test_request_id", "msg": "Unauthorized"},
-        HTTPStatus.FORBIDDEN: {"request_status": "ERROR", "request_id": "test_request_id", "msg": "Forbidden"},
-        HTTPStatus.TOO_MANY_REQUESTS: {"request_status": "ERROR", "request_id": "test_request_id", "msg": "Rate limit exceeded"},
-        HTTPStatus.INTERNAL_SERVER_ERROR: {"request_status": "ERROR", "request_id": "test_request_id", "msg": "Internal server error"},
-    }
-    body = error_messages.get(status_code, {"request_status": "ERROR", "msg": "Unknown error"})
-    return build_response(body=body, status_code=status_code)
+    """Create an error response using JSON template."""
+    return create_error_response(status_code)
 
 
 def empty_response(stream_key: str = "organizations") -> HttpResponse:
-    body = {
-        "request_status": "SUCCESS",
-        "request_id": "test_request_id",
-        stream_key: [],
-    }
-    return build_response(body=body, status_code=HTTPStatus.OK)
+    """Create an empty response for a given stream using JSON template."""
+    return create_empty_response(stream_key)
