@@ -7,7 +7,6 @@ package io.airbyte.cdk.load.component
 import io.airbyte.cdk.load.command.Append
 import io.airbyte.cdk.load.command.Dedupe
 import io.airbyte.cdk.load.component.TableOperationsFixtures as Fixtures
-import io.airbyte.cdk.load.component.TableOperationsFixtures.TEST_FIELD
 import io.airbyte.cdk.load.component.TableOperationsFixtures.assertEquals
 import io.airbyte.cdk.load.component.TableOperationsFixtures.insertRecords
 import io.airbyte.cdk.load.component.TableOperationsFixtures.reverseColumnNameMapping
