@@ -248,8 +248,9 @@ definitions:
           $ref: "#/definitions/base_requester"
           path: /stats/activity/scorecards
           http_method: POST
-          request_parameters:
-            fromDateTime: "{{ config['start_date'] }}"
+          request_body_json:
+            filter:
+              reviewFromDate: "{{ stream_slice['start_time'] }}"
         record_selector:
           type: RecordSelector
           extractor:
@@ -272,9 +273,7 @@ definitions:
             cursor_value: "{{ response.records.cursor }}"
             stop_condition: "{{ 'records' not in response }}"
       incremental_sync:
-        type: CustomIncrementalSync
-        class_name: >-
-          source_declarative_manifest.components.IncrementalSingleBodyFilterCursor
+        type: DatetimeBasedCursor
         cursor_field: reviewTime
         cursor_datetime_formats:
           - "%Y-%m-%dT%H:%M:%S.%f%z"
@@ -286,10 +285,6 @@ definitions:
             {{ config.start_date or (now_utc() -
             duration('P90DT23H')).strftime('%Y-%m-%dT%H:%M:%SZ') }}
           datetime_format: "%Y-%m-%dT%H:%M:%SZ"
-        start_time_option:
-          type: RequestOption
-          inject_into: body_json
-          field_name: filter, reviewFromDate
       schema_loader:
         type: InlineSchemaLoader
         schema:
