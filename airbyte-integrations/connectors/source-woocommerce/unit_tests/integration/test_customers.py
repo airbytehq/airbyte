@@ -15,6 +15,7 @@ from unittest import TestCase
 from airbyte_cdk.models import SyncMode
 from airbyte_cdk.test.entrypoint_wrapper import EntrypointOutput
 from airbyte_cdk.test.mock_http import HttpMocker, HttpResponse
+from airbyte_cdk.test.state_builder import StateBuilder
 
 from .config import ConfigBuilder
 from .request_builder import WooCommerceRequestBuilder
@@ -82,11 +83,12 @@ class TestCustomersIncremental(TestCase):
     """
 
     @staticmethod
-    def _read(config_: ConfigBuilder, expecting_exception: bool = False) -> EntrypointOutput:
+    def _read(config_: ConfigBuilder, state=None, expecting_exception: bool = False) -> EntrypointOutput:
         return read_output(
             config_builder=config_,
             stream_name=_STREAM_NAME,
             sync_mode=SyncMode.incremental,
+            state=state,
             expecting_exception=expecting_exception,
         )
 
@@ -130,3 +132,48 @@ class TestCustomersIncremental(TestCase):
 
         output = self._read(config_=config().with_start_date("2024-01-01"))
         assert len(output.records) == 0
+
+    @HttpMocker()
+    def test_incremental_sync_with_state(self, http_mocker: HttpMocker) -> None:
+        """
+        Test incremental sync with previous state for customers stream.
+
+        Customers is a client-side incremental stream (is_client_side_incremental: true).
+        This test validates:
+        - Connector accepts state from previous sync
+        - Records from API are emitted (client-side filtering based on cursor)
+        - State is updated to latest record's date_modified_gmt
+
+        NOTE: Unlike server-side incremental streams (orders, products), customers
+        does NOT have date parameters in the API request. All records are returned
+        and filtering happens client-side.
+        """
+        # ARRANGE - Previous state from last sync (earlier than record's date_modified_gmt)
+        previous_state_date = "2024-01-01T00:00:00"
+        state = StateBuilder().with_stream_state(_STREAM_NAME, {"date_modified_gmt": previous_state_date}).build()
+
+        # Mock returns customer (date_modified_gmt = 2024-03-01, after state 01-01)
+        # No date params in request since this is client-side incremental
+        http_mocker.get(
+            WooCommerceRequestBuilder.customers_endpoint().with_default_params().build(),
+            HttpResponse(body=json.dumps(_get_response_template()), status_code=200),
+        )
+
+        # ACT - Pass state to read
+        output = self._read(config_=config().with_start_date("2024-01-01"), state=state)
+
+        # ASSERT - Records returned (customer's date_modified_gmt is after state)
+        assert len(output.records) >= 1, f"Expected at least 1 record, got {len(output.records)}"
+
+        # ASSERT - Verify record content
+        record = output.records[0].record.data
+        assert record["id"] == 1, f"Expected id 1, got {record['id']}"
+        assert record["email"] == "john.doe@example.com"
+        assert record["date_modified_gmt"] == "2024-03-01T15:20:00"
+
+        # ASSERT - State message with latest date_modified_gmt
+        assert len(output.state_messages) > 0, "Expected state messages to be emitted"
+        latest_state = output.state_messages[-1].state.stream.stream_state
+        assert (
+            latest_state.__dict__["date_modified_gmt"] == "2024-03-01T15:20:00"
+        ), f"Expected state to advance to latest record, got {latest_state.__dict__}"
