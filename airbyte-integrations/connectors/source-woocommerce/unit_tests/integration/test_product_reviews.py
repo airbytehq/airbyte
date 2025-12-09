@@ -10,6 +10,7 @@ The cursor field is date_created_gmt.
 
 import json
 from pathlib import Path
+from typing import Optional
 from unittest import TestCase
 
 import freezegun
@@ -35,7 +36,10 @@ class TestProductReviewsIncremental(TestCase):
     """Tests for the product_reviews stream in incremental mode."""
 
     @staticmethod
-    def _read(config_: ConfigBuilder, expecting_exception: bool = False) -> EntrypointOutput:
+    def _read(
+        config_: ConfigBuilder,
+        expecting_exception: bool = False,
+    ) -> EntrypointOutput:
         return read_output(
             config_builder=config_,
             stream_name=_STREAM_NAME,
@@ -76,3 +80,25 @@ class TestProductReviewsIncremental(TestCase):
 
         output = self._read(config_=config().with_start_date("2024-01-01"))
         assert len(output.records) == 0
+
+    @HttpMocker()
+    @freezegun.freeze_time("2024-01-15T12:00:00Z")
+    def test_read_records_first_sync_emits_state(self, http_mocker: HttpMocker) -> None:
+        """
+        Test first sync (no state) emits state message.
+
+        When no state is passed, the connector should use the start_date from config
+        and emit a state message after reading records.
+        """
+        http_mocker.get(
+            WooCommerceRequestBuilder.product_reviews_endpoint()
+            .with_default_params()
+            .with_after("2024-01-01T00:00:00")
+            .with_before("2024-01-15T12:00:00")
+            .build(),
+            HttpResponse(body=json.dumps(_get_response_template()), status_code=200),
+        )
+
+        output = self._read(config_=config().with_start_date("2024-01-01"))
+        assert len(output.records) == 1
+        assert len(output.state_messages) > 0

@@ -1,7 +1,16 @@
 # Copyright (c) 2024 Airbyte, Inc., all rights reserved.
 
+"""
+Tests for the customers stream.
+
+This stream uses client-side incremental sync (is_client_side_incremental: true).
+The API returns all records and the connector filters them client-side based on
+the cursor field (date_modified_gmt).
+"""
+
 import json
 from pathlib import Path
+from typing import Optional
 from unittest import TestCase
 
 from airbyte_cdk.models import SyncMode
@@ -61,3 +70,42 @@ class TestCustomersFullRefresh(TestCase):
 
         output = self._read(config_=config())
         assert len(output.records) == 0
+
+
+class TestCustomersIncremental(TestCase):
+    """
+    Tests for the customers stream in incremental mode.
+
+    The customers stream uses is_client_side_incremental: true, which means
+    the API returns all records and the connector filters them client-side
+    based on the cursor field (date_modified_gmt).
+    """
+
+    @staticmethod
+    def _read(
+        config_: ConfigBuilder,
+        expecting_exception: bool = False,
+    ) -> EntrypointOutput:
+        return read_output(
+            config_builder=config_,
+            stream_name=_STREAM_NAME,
+            sync_mode=SyncMode.incremental,
+            expecting_exception=expecting_exception,
+        )
+
+    @HttpMocker()
+    def test_read_records_first_sync_emits_state(self, http_mocker: HttpMocker) -> None:
+        """
+        Test first incremental sync (no state) emits state message.
+
+        When no state is passed, the connector should fetch all records
+        and emit a state message after reading.
+        """
+        http_mocker.get(
+            WooCommerceRequestBuilder.customers_endpoint().with_default_params().build(),
+            HttpResponse(body=json.dumps(_get_response_template()), status_code=200),
+        )
+
+        output = self._read(config_=config())
+        assert len(output.records) == 1
+        assert len(output.state_messages) > 0
