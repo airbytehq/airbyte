@@ -4,8 +4,8 @@
 
 package io.airbyte.cdk.load.component
 
+import io.airbyte.cdk.load.command.Append
 import io.airbyte.cdk.load.command.DestinationStream
-import io.airbyte.cdk.load.component.TableOperationsFixtures.createAppendStream
 import io.airbyte.cdk.load.component.TableOperationsFixtures.inputRecord
 import io.airbyte.cdk.load.component.TableOperationsFixtures.insertRecords
 import io.airbyte.cdk.load.component.TableOperationsFixtures.removeAirbyteColumns
@@ -18,6 +18,7 @@ import io.airbyte.cdk.load.data.NullValue
 import io.airbyte.cdk.load.data.ObjectType
 import io.airbyte.cdk.load.dataflow.transform.ValidationResult
 import io.airbyte.cdk.load.dataflow.transform.ValueCoercer
+import io.airbyte.cdk.load.schema.TableSchemaFactory
 import io.airbyte.cdk.load.schema.model.TableName
 import io.airbyte.cdk.load.table.ColumnNameMapping
 import io.airbyte.protocol.models.v0.AirbyteRecordMessageMetaChange.Reason
@@ -33,6 +34,7 @@ private val log = KotlinLogging.logger {}
 class TableOperationsTestHarness(
     private val client: TableOperationsClient,
     private val testClient: TestTableOperationsClient,
+    private val schemaFactory: TableSchemaFactory,
     private val airbyteMetaColumnMapping: Map<String, String>,
 ) {
 
@@ -128,11 +130,12 @@ class TableOperationsTestHarness(
         val tableName =
             TableOperationsFixtures.generateTestTableName("table-test-table", testNamespace)
         val schema = ObjectType(linkedMapOf("test" to fieldType))
+        val tableSchema = schemaFactory.make(tableName, schema.properties, Append)
         val stream =
-            createAppendStream(
-                tableName.namespace,
-                tableName.name,
-                schema,
+            TableOperationsFixtures.createStream(
+                namespace = tableName.namespace,
+                name = tableName.name,
+                tableSchema = tableSchema,
             )
 
         val inputValueAsEnrichedAirbyteValue =

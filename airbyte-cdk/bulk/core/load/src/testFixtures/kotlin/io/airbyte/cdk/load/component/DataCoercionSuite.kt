@@ -10,6 +10,7 @@ import io.airbyte.cdk.load.data.IntegerType
 import io.airbyte.cdk.load.data.NumberType
 import io.airbyte.cdk.load.dataflow.transform.ValueCoercer
 import io.airbyte.cdk.load.message.Meta
+import io.airbyte.cdk.load.schema.TableSchemaFactory
 import io.airbyte.cdk.load.table.ColumnNameMapping
 import io.airbyte.protocol.models.v0.AirbyteRecordMessageMetaChange.Reason
 import io.micronaut.test.extensions.junit5.annotation.MicronautTest
@@ -37,9 +38,16 @@ interface DataCoercionSuite {
 
     val opsClient: TableOperationsClient
     val testClient: TestTableOperationsClient
+    val schemaFactory: TableSchemaFactory
 
     val harness: TableOperationsTestHarness
-        get() = TableOperationsTestHarness(opsClient, testClient, airbyteMetaColumnMapping)
+        get() =
+            TableOperationsTestHarness(
+                opsClient,
+                testClient,
+                schemaFactory,
+                airbyteMetaColumnMapping
+            )
 
     /** Fixtures are defined in [DataCoercionIntegerFixtures]. */
     fun `handle integer values`(

@@ -58,7 +58,8 @@ interface TableOperationsSuite {
         get() = Meta.COLUMN_NAMES.associateWith { it }
 
     private val harness: TableOperationsTestHarness
-        get() = TableOperationsTestHarness(client, testClient, airbyteMetaColumnMapping)
+        get() =
+            TableOperationsTestHarness(client, testClient, schemaFactory, airbyteMetaColumnMapping)
 
     /** Tests basic database connectivity by pinging the database. */
     fun `connect to database`() = runTest { assertDoesNotThrow { testClient.ping() } }
