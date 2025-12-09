@@ -19,12 +19,10 @@ This tutorial is for AI engineers and other technical users who work with data a
 Before you begin this tutorial, ensure you have installed the following software.
 
 - Claude Code or the agent of your choice
-- Python version XXX or later <!-- what is the minimum version of Python supported? -->
+- Python version 3.13.7 or later
 - A Python package manager like [uv](https://github.com/astral-sh/uv)
 
 ## Part 1: Clone the Connector MCP repository
-
-<!-- Right now it's in the Sonar repo / connector-mcp folder. This is going to be broken out into its own public repo shortly, but for now this is how it works. -->
 
 ```bash
 git clone https://github.com/airbytehq/sonar/
@@ -40,26 +38,53 @@ cd sonar/connector-mcp
 
 ### Create `configured_connectors.yaml`
 
-The `configured_connectors.yaml` file defines which direct connectors you are making available through the MCP and which secrets you need to authentication.
+The `configured_connectors.yaml` file defines which direct connectors you are making available through the MCP and which secrets you need for authentication.
 
-1. Create a filed called `configured_connectors.yaml`. It's easiest to add this file to the root, but if you want to add it somewhere else, you can instruct the MCP where to find it later.
+1. Create a file called `configured_connectors.yaml`. It's easiest to add this file to the root, but if you want to add it somewhere else, you can instruct the MCP where to find it later.
 
-2. Add your connector definition to this file.
+2. Add your connector definition to this file. The `connector_name` field specifies which connector to load from the [Airbyte AI Connectors registry](https://github.com/airbytehq/airbyte-ai-connectors). The keys under `secrets` are logical names that must match environment variables in your `.env` file.
 
     ```yaml
-    # Connector definitions
     connectors:
-    - id: stripe
+      - id: stripe
         type: local
         connector_name: stripe
         description: "My Stripe API connector"
         secrets:
-            api_key: STRIPE_API_KEY
+          api_key: STRIPE_API_KEY
     ```
 
-    <!-- Is it worth explaining the use of the path property instead of just the connector_name property? Can someone use this to run a local connector today? -->
+### Advanced: Use a local connector definition
 
-    For a more complete example using multiple connectors, see [configured_connectors.yaml.example](https://github.com/airbytehq/sonar/blob/main/connector-mcp/configured_connectors.yaml.example). <!-- This link will change once the connector MCP is its own repo. It's not publicly accessible right now -->
+If you are developing a custom connector or working from a local `connector.yaml` file, use the `path` property instead of `connector_name` to point directly to your connector definition.
+
+```yaml
+connectors:
+  - id: my_api
+    type: local
+    path: ./connectors/my-api/connector.yaml
+    description: "My custom API connector"
+    secrets:
+      token: MY_API_KEY
+```
+
+You can also configure multiple connectors in the same file.
+
+```yaml
+connectors:
+  - id: stripe
+    type: local
+    connector_name: stripe
+    description: "Stripe connector from registry"
+    secrets:
+      api_key: STRIPE_API_KEY
+  - id: github
+    type: local
+    connector_name: github
+    description: "GitHub connector from registry"
+    secrets:
+      token: GITHUB_TOKEN
+```
 
 ### Define secrets in `.env`
 
@@ -122,7 +147,43 @@ claude mcp add --transport stdio connector-mcp -- \
 
 ## Part 5: Work with your data
 
-<!-- Instructions, tips, and sample queries to help people make the most of this connector. -->
+Once your agent is connected to the Connector MCP, you can use natural language to explore and interact with your data. The MCP server exposes three tools to your agent: one to list configured connectors, one to describe what a connector can do, and one to execute operations against your data sources.
+
+### Verify your setup
+
+Start by confirming your connector is properly configured. Ask your agent something like:
+
+> "List all configured connectors and tell me which entities and actions are available for the stripe connector."
+
+Your agent will discover the available connectors and describe the Stripe connector's capabilities, showing you entities like `customers` and the actions you can perform on them (such as `list` and `get`).
+
+### Explore your data
+
+Once you've verified your setup, you can start exploring your data with natural language queries. Here are some examples using Stripe:
+
+- "List the 10 most recent Stripe customers and show me their email, name, and account balance."
+- "Get the details for customer cus_ABC123 and show me all available fields."
+- "How many customers do I have in Stripe? List them grouped by their creation month."
+
+Your agent translates these requests into the appropriate API calls, fetches the data, and presents it in a readable format.
+
+### Ask analytical questions
+
+You can also ask your agent to analyze and summarize data across multiple records:
+
+- "Find any Stripe customers who have a negative balance and list them with their balance amounts."
+- "Summarize my Stripe customers by showing me the total count and the date range of when they were created."
+
+The agent can combine multiple API calls and reason over the results to answer more complex questions.
+
+### Tips for effective queries
+
+When working with your data through the MCP, keep these tips in mind:
+
+- Be specific about which connector you want to use if you have multiple configured (for example, "Using the stripe connector, list customers").
+- Start with broad queries to understand what data is available, then drill down into specific records.
+- If you're unsure what fields are available, ask your agent to describe the connector's entities first.
+- For large datasets, specify limits in your queries to avoid overwhelming responses (for example, "Show me the first 20 customers").
 
 ## Summary
 
