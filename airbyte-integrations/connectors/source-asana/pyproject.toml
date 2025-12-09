@@ -12,7 +12,8 @@ readme = "README.md"
 documentation = "https://docs.airbyte.com/integrations/sources/asana"
 homepage = "https://airbyte.com"
 repository = "https://github.com/airbytehq/airbyte"
-packages = [ { include = "source_asana" }, {include = "main.py" } ]
+[[tool.poetry.packages]]
+include = "source_asana"
 
 [tool.poetry.dependencies]
 python = "^3.10,<3.12"
