@@ -450,6 +450,16 @@ definitions:
             filter:
               fromDate: "{{ config['start_date'][:10] }}"
               toDate: "{{ today_utc().strftime('%Y-%m-%d') }}"
+          error_handler:
+            type: DefaultErrorHandler
+            response_filters:
+              - type: HttpResponseFilter
+                action: IGNORE
+                http_codes:
+                  - 404
+                error_message: >-
+                  No users found corresponding to the provided filters. This is
+                  expected when the account has no interaction data.
         record_selector:
           type: RecordSelector
           extractor:
