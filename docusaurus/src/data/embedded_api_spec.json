@@ -1135,84 +1135,6 @@
         }
       }
     },
-    "/api/v1/connectors/definitions": {
-      "get": {
-        "summary": "List Connector Definitions",
-        "description": "List all available connector definitions with their auth config specs.\n\nThis endpoint returns a list of all connectors including:\n- Connector name\n- Definition ID (UUID)\n\nThe information is extracted from the generated definitions.py file.\n\nReturns:\n    ConnectorDefinitionsListResponse with list of connector summaries",
-        "operationId": "list_connectors_definitions",
-        "security": [
-          {
-            "HTTPBearer": []
-          }
-        ],
-        "parameters": [
-          {
-            "name": "x-organization-id",
-            "in": "header",
-            "required": false,
-            "schema": {
-              "type": "string",
-              "format": "uuid",
-              "description": "The organization ID to target for this request",
-              "title": "X-Organization-Id"
-            },
-            "description": "The organization ID to target for this request"
-          }
-        ],
-        "responses": {
-          "200": {
-            "description": "Successful Response",
-            "content": {
-              "application/json": {
-                "schema": {
-                  "$ref": "#/components/schemas/ConnectorDefinitionsListResponse"
-                }
-              }
-            }
-          },
-          "400": {
-            "description": "Bad request",
-            "content": {
-              "application/json": {
-                "schema": {
-                  "$ref": "#/components/schemas/ApiErrorResponse"
-                }
-              }
-            }
-          },
-          "403": {
-            "description": "Forbidden",
-            "content": {
-              "application/json": {
-                "schema": {
-                  "$ref": "#/components/schemas/ApiErrorResponse"
-                }
-              }
-            }
-          },
-          "422": {
-            "description": "Unprocessable entity",
-            "content": {
-              "application/json": {
-                "schema": {
-                  "$ref": "#/components/schemas/ApiErrorResponse"
-                }
-              }
-            }
-          },
-          "500": {
-            "description": "Internal server error",
-            "content": {
-              "application/json": {
-                "schema": {
-                  "$ref": "#/components/schemas/ApiErrorResponse"
-                }
-              }
-            }
-          }
-        }
-      }
-    },
     "/api/v1/connectors/instances": {
       "post": {
         "summary": "Create Connector Instance",
@@ -9709,6 +9631,108 @@
         }
       }
     },
+    "/api/v1/internal/jobs": {
+      "get": {
+        "tags": ["Jobs"],
+        "summary": "List Jobs",
+        "description": "List all jobs from all job tables in a unified format.\n\nThis endpoint aggregates jobs from:\n- AsyncJob (modern job system)\n- CreateConnectionJob (legacy)\n- PatchDestinationAndConnectionsJob (legacy)\n- PatchPartialUserConfigJob (legacy)\n\nLegacy jobs are transformed to match the AsyncJob format:\n- job_type: The class name of the legacy job\n- input: JSON blob containing data set when the job was created\n- output: JSON blob containing data set during/after job execution",
+        "operationId": "list_internal_jobs",
+        "security": [
+          {
+            "HTTPBearer": []
+          }
+        ],
+        "parameters": [
+          {
+            "name": "limit",
+            "in": "query",
+            "required": false,
+            "schema": {
+              "type": "integer",
+              "maximum": 1000,
+              "minimum": 1,
+              "default": 100,
+              "title": "Limit"
+            }
+          },
+          {
+            "name": "offset",
+            "in": "query",
+            "required": false,
+            "schema": {
+              "type": "integer",
+              "minimum": 0,
+              "default": 0,
+              "title": "Offset"
+            }
+          },
+          {
+            "name": "x-organization-id",
+            "in": "header",
+            "required": false,
+            "schema": {
+              "type": "string",
+              "format": "uuid",
+              "description": "The organization ID to target for this request",
+              "title": "X-Organization-Id"
+            },
+            "description": "The organization ID to target for this request"
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "Successful Response",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ListJobsResponse"
+                }
+              }
+            }
+          },
+          "400": {
+            "description": "Bad request",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ApiErrorResponse"
+                }
+              }
+            }
+          },
+          "403": {
+            "description": "Forbidden",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ApiErrorResponse"
+                }
+              }
+            }
+          },
+          "422": {
+            "description": "Unprocessable entity",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ApiErrorResponse"
+                }
+              }
+            }
+          },
+          "500": {
+            "description": "Internal server error",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ApiErrorResponse"
+                }
+              }
+            }
+          }
+        }
+      }
+    },
     "/api/v1/internal/oauth/sources/complete": {
       "post": {
         "tags": ["OAuth - Sources"],
@@ -12222,6 +12246,12 @@
                 },
                 {
                   "$ref": "#/components/schemas/OrCondition"
+                },
+                {
+                  "$ref": "#/components/schemas/AnyCondition"
+                },
+                {
+                  "$ref": "#/components/schemas/ContainsCondition"
                 }
               ]
             },
@@ -12234,6 +12264,68 @@
         "required": ["and"],
         "title": "AndCondition",
         "description": "True if all nested conditions are true."
+      },
+      "AnyCondition": {
+        "properties": {
+          "any": {
+            "additionalProperties": {
+              "anyOf": [
+                {
+                  "$ref": "#/components/schemas/EqCondition"
+                },
+                {
+                  "$ref": "#/components/schemas/NeqCondition"
+                },
+                {
+                  "$ref": "#/components/schemas/GtCondition"
+                },
+                {
+                  "$ref": "#/components/schemas/GteCondition"
+                },
+                {
+                  "$ref": "#/components/schemas/LtCondition"
+                },
+                {
+                  "$ref": "#/components/schemas/LteCondition"
+                },
+                {
+                  "$ref": "#/components/schemas/InCondition"
+                },
+                {
+                  "$ref": "#/components/schemas/LikeCondition"
+                },
+                {
+                  "$ref": "#/components/schemas/FuzzyCondition"
+                },
+                {
+                  "$ref": "#/components/schemas/SemanticCondition"
+                },
+                {
+                  "$ref": "#/components/schemas/NotCondition"
+                },
+                {
+                  "$ref": "#/components/schemas/AndCondition"
+                },
+                {
+                  "$ref": "#/components/schemas/OrCondition"
+                },
+                {
+                  "$ref": "#/components/schemas/AnyCondition"
+                },
+                {
+                  "$ref": "#/components/schemas/ContainsCondition"
+                }
+              ]
+            },
+            "type": "object",
+            "title": "Any",
+            "description": "Array field condition: {array_field_name: <condition>}"
+          }
+        },
+        "type": "object",
+        "required": ["any"],
+        "title": "AnyCondition",
+        "description": "Match if ANY element in array field matches the nested condition.\n\nExample: {\"any\": {\"addresses\": {\"eq\": {\"state\": \"CA\"}}}}\nReturns documents where any address has state = \"CA\""
       },
       "ApiError": {
         "properties": {
@@ -13127,37 +13219,6 @@
         "required": ["name"],
         "title": "ConnectorDefinitionSummarized"
       },
-      "ConnectorDefinitionSummary": {
-        "properties": {
-          "name": {
-            "type": "string",
-            "title": "Name"
-          },
-          "id": {
-            "type": "string",
-            "title": "Id"
-          }
-        },
-        "type": "object",
-        "required": ["name", "id"],
-        "title": "ConnectorDefinitionSummary",
-        "description": "Summary information for a connector definition."
-      },
-      "ConnectorDefinitionsListResponse": {
-        "properties": {
-          "connectors": {
-            "items": {
-              "$ref": "#/components/schemas/ConnectorDefinitionSummary"
-            },
-            "type": "array",
-            "title": "Connectors"
-          }
-        },
-        "type": "object",
-        "required": ["connectors"],
-        "title": "ConnectorDefinitionsListResponse",
-        "description": "Response model for listing all connector definitions."
-      },
       "ConnectorExecuteRequest": {
         "properties": {
           "entity": {
@@ -13335,6 +13396,20 @@
         "type": "object",
         "required": ["connectionSpecification"],
         "title": "ConnectorSpecification"
+      },
+      "ContainsCondition": {
+        "properties": {
+          "contains": {
+            "additionalProperties": true,
+            "type": "object",
+            "title": "Contains",
+            "description": "Contains: {array_field_name: value}"
+          }
+        },
+        "type": "object",
+        "required": ["contains"],
+        "title": "ContainsCondition",
+        "description": "Check if value exists in array field.\n\nExample: {\"contains\": {\"tags\": \"premium\"}}\nReturns documents where \"premium\" is in the tags array"
       },
       "CoralDestinationCreateRequest": {
         "properties": {
@@ -14986,6 +15061,64 @@
         "required": ["invoices", "hasMore"],
         "title": "InvoicesResponse"
       },
+      "JobErrorData": {
+        "properties": {
+          "job_class": {
+            "type": "string",
+            "title": "Job Class"
+          },
+          "job_id": {
+            "type": "string",
+            "format": "uuid",
+            "title": "Job Id"
+          },
+          "error_at": {
+            "type": "string",
+            "format": "date-time",
+            "title": "Error At"
+          },
+          "error_type": {
+            "type": "string",
+            "enum": ["transient", "system", "config"],
+            "title": "Error Type"
+          },
+          "user_message": {
+            "type": "string",
+            "title": "User Message"
+          },
+          "exception": {
+            "$ref": "#/components/schemas/JobErrorException"
+          }
+        },
+        "type": "object",
+        "required": [
+          "job_class",
+          "job_id",
+          "error_at",
+          "error_type",
+          "user_message",
+          "exception"
+        ],
+        "title": "JobErrorData"
+      },
+      "JobErrorException": {
+        "properties": {
+          "message": {
+            "type": "string",
+            "title": "Message"
+          },
+          "traceback": {
+            "items": {
+              "type": "string"
+            },
+            "type": "array",
+            "title": "Traceback"
+          }
+        },
+        "type": "object",
+        "required": ["message", "traceback"],
+        "title": "JobErrorException"
+      },
       "LikeCondition": {
         "properties": {
           "like": {
@@ -15001,6 +15134,25 @@
         "required": ["like"],
         "title": "LikeCondition",
         "description": "Partial string match (supports % wildcards)."
+      },
+      "ListJobsResponse": {
+        "properties": {
+          "jobs": {
+            "items": {
+              "$ref": "#/components/schemas/UnifiedJob"
+            },
+            "type": "array",
+            "title": "Jobs"
+          },
+          "total": {
+            "type": "integer",
+            "title": "Total"
+          }
+        },
+        "type": "object",
+        "required": ["jobs", "total"],
+        "title": "ListJobsResponse",
+        "description": "Response for listing all jobs."
       },
       "LtCondition": {
         "properties": {
@@ -15103,6 +15255,12 @@
               },
               {
                 "$ref": "#/components/schemas/OrCondition"
+              },
+              {
+                "$ref": "#/components/schemas/AnyCondition"
+              },
+              {
+                "$ref": "#/components/schemas/ContainsCondition"
               }
             ],
             "title": "Not",
@@ -15192,6 +15350,7 @@
         "enum": [
           "NOT_STARTED",
           "DESTINATION_SETUP_COMPLETE",
+          "SOURCE_TEMPLATES_CONFIGURED",
           "EMBED_CODE_COPIED",
           "PAYMENT_COMPLETE",
           "COMPLETED"
@@ -15241,6 +15400,12 @@
                 },
                 {
                   "$ref": "#/components/schemas/OrCondition"
+                },
+                {
+                  "$ref": "#/components/schemas/AnyCondition"
+                },
+                {
+                  "$ref": "#/components/schemas/ContainsCondition"
                 }
               ]
             },
@@ -16019,7 +16184,7 @@
       },
       "Query": {
         "properties": {
-          "where": {
+          "filter": {
             "anyOf": [
               {
                 "$ref": "#/components/schemas/EqCondition"
@@ -16061,13 +16226,19 @@
                 "$ref": "#/components/schemas/OrCondition"
               },
               {
+                "$ref": "#/components/schemas/AnyCondition"
+              },
+              {
+                "$ref": "#/components/schemas/ContainsCondition"
+              },
+              {
                 "type": "null"
               }
             ],
-            "title": "Where",
+            "title": "Filter",
             "description": "Optional filter condition. If omitted, returns all documents."
           },
-          "order": {
+          "sort": {
             "anyOf": [
               {
                 "items": {
@@ -16083,7 +16254,7 @@
                 "type": "null"
               }
             ],
-            "title": "Order",
+            "title": "Sort",
             "description": "Optional sort fields. Example: [{'created_at': 'desc'}, {'name': 'asc'}]"
           }
         },
@@ -16563,6 +16734,21 @@
             ],
             "title": "Cursor",
             "description": "Pagination cursor"
+          },
+          "fields": {
+            "anyOf": [
+              {
+                "items": {
+                  "type": "string"
+                },
+                "type": "array"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "Fields",
+            "description": "Fields to include in results. If omitted, returns all fields."
           }
         },
         "type": "object",
@@ -19053,6 +19239,109 @@
         "required": ["tool_name", "response"],
         "title": "ToolResponseEvent",
         "description": "Format of tool response events sent to the browser."
+      },
+      "UnifiedJob": {
+        "properties": {
+          "id": {
+            "type": "string",
+            "format": "uuid",
+            "title": "Id"
+          },
+          "created_at": {
+            "anyOf": [
+              {
+                "type": "string",
+                "format": "date-time"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "Created At"
+          },
+          "updated_at": {
+            "anyOf": [
+              {
+                "type": "string",
+                "format": "date-time"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "Updated At"
+          },
+          "state": {
+            "type": "string",
+            "title": "State"
+          },
+          "retry_count": {
+            "type": "integer",
+            "title": "Retry Count"
+          },
+          "max_retries": {
+            "type": "integer",
+            "title": "Max Retries"
+          },
+          "error_data": {
+            "anyOf": [
+              {
+                "$ref": "#/components/schemas/JobErrorData"
+              },
+              {
+                "type": "null"
+              }
+            ]
+          },
+          "result_id": {
+            "anyOf": [
+              {
+                "type": "string"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "Result Id"
+          },
+          "job_type": {
+            "type": "string",
+            "title": "Job Type"
+          },
+          "input": {
+            "additionalProperties": true,
+            "type": "object",
+            "title": "Input"
+          },
+          "output": {
+            "anyOf": [
+              {
+                "additionalProperties": true,
+                "type": "object"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "Output"
+          }
+        },
+        "type": "object",
+        "required": [
+          "id",
+          "created_at",
+          "updated_at",
+          "state",
+          "retry_count",
+          "max_retries",
+          "error_data",
+          "result_id",
+          "job_type",
+          "input",
+          "output"
+        ],
+        "title": "UnifiedJob",
+        "description": "Unified job representation that normalizes both AsyncJob and legacy job types."
       },
       "UserHostedConnectionTemplate": {
         "properties": {

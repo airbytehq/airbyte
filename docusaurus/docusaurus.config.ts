@@ -7,6 +7,7 @@ import {
   loadSonarApiSidebar,
   replaceApiReferenceCategory,
 } from "./src/scripts/embedded-api/sidebar-generator";
+import { generateDevelopersSidebar } from "./src/scripts/public-api/sidebar-generator";
 
 // Import remark plugins - lazy load to prevent webpack from bundling Node.js code
 const getRemarkPlugins = () => ({
@@ -234,9 +235,11 @@ const config: Config = {
         id: "developers",
         path: "../docs/developers",
         routeBasePath: "/developers",
-        sidebarPath: "./sidebar-developers.js",
         docItemComponent: "@theme/ApiItem", // Required for OpenAPI docs rendering
         editUrl: "https://github.com/airbytehq/airbyte/blob/master/docs",
+        async sidebarItemsGenerator(args) {
+          return generateDevelopersSidebar(args);
+        },
         remarkPlugins: [
           plugins.productInformation,
           plugins.docMetaTags,
@@ -268,7 +271,7 @@ const config: Config = {
         id: "embedded-api",
         docsPluginId: "ai-agents",
         config: {
-          embedded: {
+          "embedded-api": {
             specPath: "src/data/embedded_api_spec.json",
             outputDir: "../docs/ai-agents/embedded/api-reference",
             sidebarOptions: {
@@ -284,18 +287,17 @@ const config: Config = {
     [
       "docusaurus-plugin-openapi-docs",
       {
-        id: "airbyte-api",
+        id: "public-api",
         docsPluginId: "developers",
         config: {
-          "airbyte-api-docs": {
-            specPath:
-              "hhttps://raw.githubusercontent.com/airbytehq/airbyte-platform/refs/heads/main/airbyte-api/server-api/src/main/openapi/public_api.yaml",
+          "public-api": {
+            specPath: "src/data/public_api_spec.json",
             outputDir: "../docs/developers/api-reference",
             sidebarOptions: {
               groupPathsBy: "tag",
               categoryLinkSource: "tag",
               sidebarCollapsed: false,
-              sidebarCollapsible: false,
+              sidebarCollapsible: true,
             },
           },
         },
@@ -441,10 +443,12 @@ const config: Config = {
           label: "AI agents",
         },
         {
-          type: "docSidebar",
+          // type: "docSidebar",
+          type: "doc",
           position: "left",
           docsPluginId: "developers",
-          sidebarId: "developers",
+          docId: "README",
+          // sidebarId: "developers",
           label: "Developers",
         },
         {

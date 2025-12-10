@@ -1,0 +1,1397 @@
+{
+  "openapi": "3.0.0",
+  "info": {
+    "description": "Airbyte Public API\n[https://airbyte.io](https://airbyte.io).\n\nThe Public API is a subset of the Airbyte Configuration API that is designed for public consumption.\nThis API contains only the endpoints that are tagged as 'public' in the full Configuration API.\n\nThis API is a collection of HTTP methods. While it is not a REST API, those familiar with REST should find the conventions of this API recognizable.\n\nHere are some conventions that this API follows:\n* All endpoints accept data via `application/json` request bodies. The API does not accept any data via query params.\n* For all `update` methods, the whole object must be passed in, even the fields that did not change.\n",
+    "version": "1.0.0",
+    "title": "Airbyte Public API",
+    "contact": {
+      "email": "contact@airbyte.io"
+    },
+    "license": {
+      "name": "MIT",
+      "url": "https://opensource.org/licenses/MIT"
+    }
+  },
+  "externalDocs": {
+    "description": "Find out more about Airbyte",
+    "url": "https://airbyte.io"
+  },
+  "servers": [
+    {
+      "url": "https://cloud.airbyte.com/api",
+      "description": "Airbyte Cloud"
+    },
+    {
+      "url": "http://localhost:8000/api",
+      "description": "Local Development"
+    }
+  ],
+  "paths": {
+    "/public": {
+      "get": {
+        "tags": ["public_root", "public"],
+        "responses": {
+          "200": {
+            "content": {
+              "text/html": {}
+            },
+            "description": "Redirects to documentation"
+          }
+        },
+        "operationId": "getDocumentation",
+        "x-sdk-alias": "getDocumentation",
+        "summary": "Root path, currently returns a redirect to the documentation",
+        "security": []
+      }
+    },
+    "/public/v1/health": {
+      "get": {
+        "tags": ["public_health", "public"],
+        "responses": {
+          "200": {
+            "description": "Successful operation"
+          }
+        },
+        "operationId": "publicGetHealthCheck",
+        "summary": "Health Check",
+        "security": [],
+        "x-sdk-alias": "getHealthCheck",
+        "x-sdk-group": "Health"
+      }
+    },
+    "/public/v1/applications": {
+      "get": {
+        "tags": ["public_applications", "public", "Applications"],
+        "responses": {
+          "200": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ApplicationReadList"
+                },
+                "examples": {
+                  "Application List Response Example": {
+                    "value": {
+                      "applications": [
+                        {
+                          "id": "780d5bd9-a8a0-43cf-8b35-cc2061ad8319",
+                          "name": "test application",
+                          "clientId": "b6b159ce-07f4-4699-94b3-3e85b318852e",
+                          "clientSecret": "TG9yZW0gaXBzdW0gZG9sb3Igc2l0IGFtZXQsIGNvbnNlY3RldHVyIGFkaXBpc2NpbmcgZWxpdC4gU2VkIGNvbmRpbWVudHVtIG5lYyBsaWJlcm8gc2VkIGxvYm9ydGlzLg==",
+                          "createdAt": "2024-06-09T21:50:30.000Z"
+                        }
+                      ]
+                    }
+                  }
+                }
+              }
+            },
+            "description": "List all Applications a User has permission to view."
+          },
+          "403": {
+            "description": "Not allowed"
+          }
+        },
+        "operationId": "publicListApplications",
+        "summary": "List Applications",
+        "x-sdk-alias": "listApplications"
+      }
+    },
+    "/public/v1/applications/{applicationId}": {
+      "get": {
+        "tags": ["public_applications", "public", "Applications"],
+        "responses": {
+          "200": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ApplicationRead"
+                },
+                "examples": {
+                  "Application Get Response Example": {
+                    "value": {
+                      "id": "780d5bd9-a8a0-43cf-8b35-cc2061ad8319",
+                      "name": "test application",
+                      "clientId": "b6b159ce-07f4-4699-94b3-3e85b318852e",
+                      "clientSecret": "TG9yZW0gaXBzdW0gZG9sb3Igc2l0IGFtZXQsIGNvbnNlY3RldHVyIGFkaXBpc2NpbmcgZWxpdC4gU2VkIGNvbmRpbWVudHVtIG5lYyBsaWJlcm8gc2VkIGxvYm9ydGlzLg==",
+                      "createdAt": "2024-06-09T21:50:30.000Z"
+                    }
+                  }
+                }
+              }
+            },
+            "description": "Get an Application by the id in the path."
+          },
+          "403": {
+            "description": "Not allowed"
+          },
+          "404": {
+            "description": "Not found"
+          }
+        },
+        "operationId": "publicGetApplication",
+        "x-sdk-alias": "getApplication",
+        "x-sdk-group": "Applications",
+        "summary": "Get an Application detail"
+      }
+    },
+    "/public/v1/jobs": {
+      "get": {
+        "tags": ["public_jobs", "public", "Jobs"],
+        "parameters": [
+          {
+            "name": "connectionId",
+            "description": "Filter the Jobs by connectionId.",
+            "schema": {
+              "format": "UUID",
+              "type": "string"
+            },
+            "in": "query",
+            "required": false
+          },
+          {
+            "name": "limit",
+            "description": "Set the limit on the number of Jobs returned. The default is 20 Jobs.",
+            "schema": {
+              "format": "int32",
+              "default": 20,
+              "maximum": 100,
+              "minimum": 1,
+              "type": "integer"
+            },
+            "in": "query"
+          },
+          {
+            "name": "offset",
+            "description": "Set the offset to start at when returning Jobs. The default is 0.",
+            "schema": {
+              "format": "int32",
+              "default": 0,
+              "minimum": 0,
+              "type": "integer"
+            },
+            "in": "query"
+          }
+        ],
+        "responses": {
+          "200": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/JobResponse"
+                }
+              }
+            },
+            "description": "List Jobs."
+          },
+          "403": {
+            "description": "Not allowed"
+          }
+        },
+        "operationId": "listJobs",
+        "x-sdk-alias": "listJobs",
+        "x-sdk-group": "Jobs",
+        "summary": "List Jobs"
+      }
+    },
+    "/public/v1/jobs/{jobId}": {
+      "get": {
+        "tags": ["public_jobs", "public", "Jobs"],
+        "responses": {
+          "200": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/JobResponse"
+                },
+                "examples": {
+                  "Job Get Response Example": {
+                    "value": {
+                      "id": "18dccc91-0ab1-4f72-9ed7-0b8fc27c5826",
+                      "status": "running",
+                      "jobType": "sync"
+                    }
+                  }
+                }
+              }
+            },
+            "description": "Get a Job by the id in the path."
+          },
+          "403": {
+            "description": "Not allowed"
+          },
+          "404": {
+            "description": "Not found"
+          }
+        },
+        "operationId": "getJob",
+        "x-sdk-alias": "getJob",
+        "x-sdk-group": "Jobs",
+        "summary": "Get Job status and details"
+      }
+    },
+    "/public/v1/connector_definitions": {
+      "get": {
+        "tags": [
+          "public_connector_definitions",
+          "public",
+          "ConnectorDefinitions"
+        ],
+        "responses": {
+          "200": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ConnectorDefinitionsResponse"
+                }
+              }
+            },
+            "description": "Successful operation"
+          },
+          "403": {
+            "description": "Not allowed"
+          },
+          "404": {
+            "description": "Not found"
+          }
+        },
+        "operationId": "listConnectorDefinitions",
+        "x-sdk-alias": "listConnectorDefinitions",
+        "x-sdk-group": "ConnectorDefinitions",
+        "summary": "List connector definitions",
+        "parameters": [
+          {
+            "name": "type",
+            "description": "The type of connector definition to list",
+            "schema": {
+              "$ref": "#/components/schemas/ConnectorType"
+            },
+            "in": "query",
+            "required": true
+          },
+          {
+            "name": "workspaceId",
+            "description": "The UUID of the workspace you wish to list connector definitions for. One of this or organizationId must be populated.",
+            "schema": {
+              "format": "uuid",
+              "type": "string"
+            },
+            "in": "query",
+            "required": false
+          }
+        ]
+      }
+    },
+    "/public/v1/sources": {
+      "get": {
+        "tags": ["public_sources", "public", "Sources"],
+        "responses": {
+          "200": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/SourcesResponse"
+                }
+              }
+            },
+            "description": "Successful operation"
+          },
+          "403": {
+            "description": "Not allowed"
+          },
+          "404": {
+            "description": "Not found"
+          }
+        },
+        "operationId": "listSources",
+        "x-sdk-alias": "listSources",
+        "x-sdk-group": "Sources",
+        "summary": "List sources",
+        "parameters": [
+          {
+            "name": "workspaceIds",
+            "description": "The UUIDs of the workspaces you wish to list sources for. Empty list will retrieve all allowed workspaces.",
+            "schema": {
+              "type": "array",
+              "items": {
+                "format": "uuid",
+                "type": "string"
+              }
+            },
+            "example": "df08f6b0-b364-4cc1-9b3f-96f5d2fccfb2,b0796797-de23-4fc7-a5e2-7e131314718c",
+            "in": "query"
+          }
+        ]
+      }
+    },
+    "/public/v1/sources/{sourceId}": {
+      "get": {
+        "tags": ["public_sources", "public", "Sources"],
+        "responses": {
+          "200": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/SourceResponse"
+                },
+                "examples": {
+                  "Source Get Response Example": {
+                    "value": {
+                      "sourceId": "18dccc91-0ab1-4f72-9ed7-0b8fc27c5826",
+                      "name": "running",
+                      "sourceType": "postgres",
+                      "workspaceId": "744cc0ed-7f05-4949-9e60-2a814f90c035"
+                    }
+                  }
+                }
+              }
+            },
+            "description": "Get a Source by the id in the path."
+          },
+          "403": {
+            "description": "Not allowed"
+          },
+          "404": {
+            "description": "Not found"
+          }
+        },
+        "operationId": "publicGetSource",
+        "x-sdk-alias": "getSource",
+        "x-sdk-group": "Sources",
+        "summary": "Get Source details",
+        "parameters": [
+          {
+            "in": "query",
+            "name": "includeSecretCoordinates",
+            "schema": {
+              "type": "boolean"
+            },
+            "required": false,
+            "description": "Rather than return *** for secret properties include the secret coordinate information"
+          }
+        ]
+      }
+    },
+    "/public/v1/destinations": {
+      "get": {
+        "tags": ["public_destinations", "public", "Destinations"],
+        "responses": {
+          "200": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/DestinationsResponse"
+                }
+              }
+            },
+            "description": "Successful operation"
+          },
+          "403": {
+            "description": "Not allowed"
+          },
+          "404": {
+            "description": "Not found"
+          }
+        },
+        "operationId": "listDestinations",
+        "x-sdk-alias": "listDestinations",
+        "x-sdk-group": "Destinations",
+        "summary": "List destinations",
+        "parameters": [
+          {
+            "name": "workspaceIds",
+            "description": "The UUIDs of the workspaces you wish to list destinations for. Empty list will retrieve all allowed workspaces.",
+            "schema": {
+              "type": "array",
+              "items": {
+                "format": "uuid",
+                "type": "string"
+              }
+            },
+            "in": "query",
+            "required": false
+          }
+        ]
+      }
+    },
+    "/public/v1/destinations/{destinationId}": {
+      "get": {
+        "tags": ["public_destinations", "public", "Destinations"],
+        "responses": {
+          "200": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/DestinationResponse"
+                },
+                "examples": {
+                  "Destination Get Response Example": {
+                    "value": {
+                      "destinationId": "18dccc91-0ab1-4f72-9ed7-0b8fc27c5826",
+                      "name": "My Destination",
+                      "sourceType": "postgres",
+                      "workspaceId": "744cc0ed-7f05-4949-9e60-2a814f90c035",
+                      "configuration": {
+                        "conversion_window_days": 14,
+                        "customer_id": "1234567890",
+                        "start_date": "2023-01-01T00:00:00.000Z",
+                        "end_date": "2024-01-01T00:00:00.000Z"
+                      }
+                    }
+                  }
+                }
+              }
+            },
+            "description": "Get a Destination by the id in the path."
+          },
+          "403": {
+            "description": "Not allowed"
+          },
+          "404": {
+            "description": "Not found"
+          }
+        },
+        "operationId": "publicGetDestination",
+        "x-sdk-alias": "getDestination",
+        "x-sdk-group": "Destinations",
+        "summary": "Get Destination details",
+        "parameters": [
+          {
+            "in": "query",
+            "name": "includeSecretCoordinates",
+            "schema": {
+              "type": "boolean"
+            },
+            "required": false,
+            "description": "Rather than return *** for secret properties include the secret coordinate information"
+          }
+        ]
+      }
+    },
+    "/public/v1/oauth/callback": {
+      "get": {
+        "tags": ["public_oauth", "public", "OAuth"],
+        "parameters": [
+          {
+            "name": "queryParams",
+            "description": "Query parameters. Should contain state and code.",
+            "required": false,
+            "schema": {
+              "type": "object",
+              "additionalProperties": {
+                "type": "string"
+              }
+            },
+            "in": "query"
+          }
+        ],
+        "responses": {
+          "302": {
+            "description": "Redirect to the URL requested in the initiate call with the created secret ID."
+          }
+        },
+        "operationId": "oauthCallback",
+        "x-sdk-alias": "oauthCallback",
+        "x-sdk-group": "OAuth",
+        "summary": "Receive OAuth callbacks",
+        "description": "Redirected to by identity providers after authentication.",
+        "security": []
+      }
+    },
+    "/public/v1/connections/{connectionId}": {
+      "get": {
+        "tags": ["public_connections", "public", "Connections"],
+        "responses": {
+          "200": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ConnectionResponse"
+                },
+                "examples": {
+                  "Connection Get Response Example": {
+                    "value": {
+                      "workspaceId": "18dccc91-0ab1-4f72-9ed7-0b8fc27c5826",
+                      "name": "Postgres To Snowflake",
+                      "sourceId": "9924bcd0-99be-453d-ba47-c2c9766f7da5",
+                      "destinationId": "744cc0ed-7f05-4949-9e60-2a814f90c035"
+                    }
+                  }
+                }
+              }
+            },
+            "description": "Get a Connection by the id in the path."
+          },
+          "403": {
+            "description": "Not allowed"
+          },
+          "404": {
+            "description": "Not found"
+          }
+        },
+        "operationId": "publicGetConnection",
+        "x-sdk-alias": "getConnection",
+        "x-sdk-group": "Connections",
+        "summary": "Get Connection details",
+        "x-sdk-entity-operation": "Connection#read"
+      }
+    },
+    "/public/v1/streams": {
+      "get": {
+        "tags": ["public_streams", "public", "Streams"],
+        "responses": {
+          "200": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/StreamPropertiesResponse"
+                }
+              }
+            },
+            "description": "Get the available streams properties for a source/destination pair."
+          },
+          "400": {
+            "description": "Required parameters are missing"
+          },
+          "403": {
+            "description": "Not allowed"
+          },
+          "404": {
+            "description": "Not found"
+          }
+        },
+        "operationId": "getStreamProperties",
+        "x-sdk-alias": "getStreamProperties",
+        "x-sdk-group": "Streams",
+        "summary": "Get stream properties",
+        "parameters": [
+          {
+            "name": "sourceId",
+            "description": "ID of the source",
+            "schema": {
+              "format": "UUID",
+              "type": "string"
+            },
+            "in": "query",
+            "required": true
+          }
+        ]
+      }
+    },
+    "/public/v1/workspaces": {
+      "get": {
+        "tags": ["public_workspaces", "public", "Workspaces"],
+        "responses": {
+          "200": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/WorkspacesResponse"
+                }
+              }
+            },
+            "description": "Successful operation"
+          },
+          "403": {
+            "description": "Not allowed"
+          },
+          "404": {
+            "description": "Not found"
+          }
+        },
+        "operationId": "publicListWorkspaces",
+        "x-sdk-alias": "listWorkspaces",
+        "x-sdk-group": "Workspaces",
+        "summary": "List workspaces",
+        "x-sdk-entity-operation": "Workspace#list",
+        "parameters": [
+          {
+            "name": "workspaceIds",
+            "description": "The UUIDs of the workspaces you wish to fetch. Empty list will retrieve all allowed workspaces.",
+            "schema": {
+              "type": "array",
+              "items": {
+                "format": "uuid",
+                "type": "string"
+              }
+            },
+            "in": "query"
+          }
+        ]
+      }
+    },
+    "/public/v1/permissions": {
+      "get": {
+        "tags": ["public_permissions", "public", "Permissions"],
+        "parameters": [
+          {
+            "name": "userId",
+            "description": "User Id in permission.",
+            "schema": {
+              "format": "UUID",
+              "type": "string"
+            },
+            "in": "query",
+            "required": false
+          },
+          {
+            "name": "organizationId",
+            "description": "This is required if you want to read someone else's permissions, and you should have organization admin or a higher role.",
+            "schema": {
+              "format": "UUID",
+              "type": "string"
+            },
+            "in": "query",
+            "required": false
+          }
+        ],
+        "responses": {
+          "200": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/PermissionsResponse"
+                }
+              }
+            },
+            "description": "List Permissions."
+          },
+          "403": {
+            "description": "Not allowed"
+          },
+          "404": {
+            "description": "Not found"
+          }
+        },
+        "operationId": "publicListPermissions",
+        "x-sdk-alias": "listPermissions",
+        "x-sdk-group": "Permissions",
+        "summary": "List permissions"
+      }
+    },
+    "/public/v1/organizations": {
+      "get": {
+        "tags": ["public_organizations", "public", "Organizations"],
+        "summary": "List all organizations for a user",
+        "description": "Lists users organizations.",
+        "responses": {
+          "200": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/OrganizationsResponse"
+                }
+              }
+            },
+            "description": "List user's organizations."
+          },
+          "403": {
+            "description": "Not allowed"
+          },
+          "404": {
+            "description": "Not found"
+          }
+        },
+        "operationId": "publicListOrganizationsForUser",
+        "x-sdk-alias": "listOrganizationsForUser",
+        "x-sdk-group": "Organizations"
+      }
+    },
+    "/public/v1/users": {
+      "get": {
+        "tags": ["public_users", "public", "Users"],
+        "summary": "List all users within an organization",
+        "description": "Organization Admin user can list all users within the same organization. Also provide filtering on a list of user IDs or/and a list of user emails.",
+        "parameters": [
+          {
+            "in": "query",
+            "name": "organizationId",
+            "schema": {
+              "type": "string",
+              "format": "UUID"
+            },
+            "required": true
+          },
+          {
+            "in": "query",
+            "name": "ids",
+            "schema": {
+              "type": "array",
+              "items": {
+                "type": "string",
+                "format": "UUID"
+              }
+            },
+            "description": "List of user IDs to filter by"
+          },
+          {
+            "in": "query",
+            "name": "emails",
+            "schema": {
+              "type": "array",
+              "items": {
+                "type": "string",
+                "format": "email"
+              }
+            },
+            "description": "List of user emails to filter by"
+          }
+        ],
+        "responses": {
+          "200": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/UsersResponse"
+                }
+              }
+            },
+            "description": "List users."
+          },
+          "403": {
+            "description": "Not allowed"
+          },
+          "404": {
+            "description": "Not found"
+          }
+        },
+        "operationId": "publicListUsers",
+        "x-sdk-alias": "listUsers",
+        "x-sdk-group": "Users"
+      }
+    },
+    "/public/v1/tags": {
+      "get": {
+        "tags": ["public_tags", "public", "Tags"],
+        "summary": "List all tags",
+        "description": "Lists all tags",
+        "parameters": [
+          {
+            "name": "workspaceIds",
+            "in": "query",
+            "schema": {
+              "type": "array",
+              "items": {
+                "format": "uuid",
+                "type": "string"
+              }
+            },
+            "required": false
+          }
+        ],
+        "responses": {
+          "200": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/TagsResponse"
+                }
+              }
+            },
+            "description": "List Tags."
+          },
+          "403": {
+            "description": "Not allowed"
+          },
+          "404": {
+            "description": "Not found"
+          }
+        },
+        "operationId": "publicListTags",
+        "x-sdk-alias": "listTags",
+        "x-sdk-group": "Tags"
+      }
+    }
+  },
+  "components": {
+    "schemas": {
+      "ApplicationRead": {
+        "type": "object",
+        "required": ["id", "name", "clientId", "clientSecret", "createdAt"],
+        "properties": {
+          "id": {
+            "type": "string",
+            "format": "uuid",
+            "description": "The ID of the application."
+          },
+          "name": {
+            "type": "string",
+            "description": "The name of the application."
+          },
+          "clientId": {
+            "type": "string",
+            "format": "uuid",
+            "description": "The client ID of the application."
+          },
+          "clientSecret": {
+            "type": "string",
+            "description": "The client secret of the application."
+          },
+          "createdAt": {
+            "type": "string",
+            "format": "date-time",
+            "description": "The time the application was created."
+          }
+        }
+      },
+      "ApplicationReadList": {
+        "type": "object",
+        "required": ["applications"],
+        "properties": {
+          "applications": {
+            "type": "array",
+            "items": {
+              "$ref": "#/components/schemas/ApplicationRead"
+            }
+          }
+        }
+      },
+      "ConnectionResponse": {
+        "type": "object",
+        "required": ["workspaceId", "name", "sourceId", "destinationId"],
+        "properties": {
+          "workspaceId": {
+            "type": "string",
+            "format": "uuid",
+            "description": "The ID of the workspace."
+          },
+          "name": {
+            "type": "string",
+            "description": "The name of the connection."
+          },
+          "sourceId": {
+            "type": "string",
+            "format": "uuid",
+            "description": "The ID of the source."
+          },
+          "destinationId": {
+            "type": "string",
+            "format": "uuid",
+            "description": "The ID of the destination."
+          }
+        }
+      },
+      "ConnectorDefinitionsResponse": {
+        "type": "object",
+        "required": ["connectorDefinitions"],
+        "properties": {
+          "connectorDefinitions": {
+            "type": "array",
+            "items": {
+              "type": "object",
+              "required": [
+                "id",
+                "name",
+                "dockerRepository",
+                "dockerImageTag",
+                "documentationUrl",
+                "icon"
+              ],
+              "properties": {
+                "id": {
+                  "type": "string",
+                  "format": "uuid",
+                  "description": "The ID of the connector definition."
+                },
+                "name": {
+                  "type": "string",
+                  "description": "The name of the connector definition."
+                },
+                "dockerRepository": {
+                  "type": "string",
+                  "description": "The docker repository of the connector definition."
+                },
+                "dockerImageTag": {
+                  "type": "string",
+                  "description": "The docker image tag of the connector definition."
+                },
+                "documentationUrl": {
+                  "type": "string",
+                  "description": "The documentation URL of the connector definition."
+                },
+                "icon": {
+                  "type": "string",
+                  "description": "The icon of the connector definition."
+                }
+              }
+            }
+          }
+        }
+      },
+      "ConnectorType": {
+        "type": "string",
+        "enum": ["source", "destination"]
+      },
+      "DestinationResponse": {
+        "type": "object",
+        "required": ["destinationId", "name", "destinationType", "workspaceId"],
+        "properties": {
+          "destinationId": {
+            "type": "string",
+            "format": "uuid",
+            "description": "The ID of the destination."
+          },
+          "name": {
+            "type": "string",
+            "description": "The name of the destination."
+          },
+          "destinationType": {
+            "type": "string",
+            "description": "The type of the destination."
+          },
+          "workspaceId": {
+            "type": "string",
+            "format": "uuid",
+            "description": "The ID of the workspace."
+          },
+          "configuration": {
+            "type": "object",
+            "additionalProperties": true,
+            "description": "The configuration of the destination."
+          }
+        }
+      },
+      "DestinationsResponse": {
+        "type": "object",
+        "required": ["destinations"],
+        "properties": {
+          "destinations": {
+            "type": "array",
+            "items": {
+              "$ref": "#/components/schemas/DestinationResponse"
+            }
+          }
+        }
+      },
+      "JobResponse": {
+        "type": "object",
+        "required": ["id", "status", "jobType"],
+        "properties": {
+          "id": {
+            "type": "string",
+            "format": "uuid",
+            "description": "The ID of the job."
+          },
+          "status": {
+            "type": "string",
+            "enum": ["pending", "running", "succeeded", "failed", "cancelled"],
+            "description": "The status of the job."
+          },
+          "jobType": {
+            "type": "string",
+            "enum": ["sync", "reset", "check_connection"],
+            "description": "The type of the job."
+          }
+        }
+      },
+      "OrganizationsResponse": {
+        "type": "object",
+        "required": ["organizations"],
+        "properties": {
+          "organizations": {
+            "type": "array",
+            "items": {
+              "type": "object",
+              "required": ["organizationId", "name"],
+              "properties": {
+                "organizationId": {
+                  "type": "string",
+                  "format": "uuid",
+                  "description": "The ID of the organization."
+                },
+                "name": {
+                  "type": "string",
+                  "description": "The name of the organization."
+                }
+              }
+            }
+          }
+        }
+      },
+      "PermissionsResponse": {
+        "type": "object",
+        "required": ["permissions"],
+        "properties": {
+          "permissions": {
+            "type": "array",
+            "items": {
+              "type": "object",
+              "required": ["permissionId", "userId", "permissionType"],
+              "properties": {
+                "permissionId": {
+                  "type": "string",
+                  "format": "uuid",
+                  "description": "The ID of the permission."
+                },
+                "userId": {
+                  "type": "string",
+                  "format": "uuid",
+                  "description": "The ID of the user."
+                },
+                "permissionType": {
+                  "type": "string",
+                  "enum": [
+                    "instance_admin",
+                    "organization_admin",
+                    "organization_editor",
+                    "organization_reader",
+                    "workspace_admin",
+                    "workspace_editor",
+                    "workspace_reader"
+                  ],
+                  "description": "The type of the permission."
+                }
+              }
+            }
+          }
+        }
+      },
+      "SourceResponse": {
+        "type": "object",
+        "required": ["sourceId", "name", "sourceType", "workspaceId"],
+        "properties": {
+          "sourceId": {
+            "type": "string",
+            "format": "uuid",
+            "description": "The ID of the source."
+          },
+          "name": {
+            "type": "string",
+            "description": "The name of the source."
+          },
+          "sourceType": {
+            "type": "string",
+            "description": "The type of the source."
+          },
+          "workspaceId": {
+            "type": "string",
+            "format": "uuid",
+            "description": "The ID of the workspace."
+          },
+          "configuration": {
+            "type": "object",
+            "additionalProperties": true,
+            "description": "The configuration of the source."
+          }
+        }
+      },
+      "SourcesResponse": {
+        "type": "object",
+        "required": ["sources"],
+        "properties": {
+          "sources": {
+            "type": "array",
+            "items": {
+              "$ref": "#/components/schemas/SourceResponse"
+            }
+          }
+        }
+      },
+      "StreamPropertiesResponse": {
+        "type": "object",
+        "required": ["streams"],
+        "properties": {
+          "streams": {
+            "type": "array",
+            "items": {
+              "type": "object",
+              "required": ["name", "namespace", "jsonSchema"],
+              "properties": {
+                "name": {
+                  "type": "string",
+                  "description": "The name of the stream."
+                },
+                "namespace": {
+                  "type": "string",
+                  "description": "The namespace of the stream."
+                },
+                "jsonSchema": {
+                  "type": "object",
+                  "additionalProperties": true,
+                  "description": "The JSON schema of the stream."
+                }
+              }
+            }
+          }
+        }
+      },
+      "TagsResponse": {
+        "type": "object",
+        "required": ["tags"],
+        "properties": {
+          "tags": {
+            "type": "array",
+            "items": {
+              "type": "object",
+              "required": ["tagId", "name", "workspaceId"],
+              "properties": {
+                "tagId": {
+                  "type": "string",
+                  "format": "uuid",
+                  "description": "The ID of the tag."
+                },
+                "name": {
+                  "type": "string",
+                  "description": "The name of the tag."
+                },
+                "workspaceId": {
+                  "type": "string",
+                  "format": "uuid",
+                  "description": "The ID of the workspace."
+                }
+              }
+            }
+          }
+        }
+      },
+      "UsersResponse": {
+        "type": "object",
+        "required": ["users"],
+        "properties": {
+          "users": {
+            "type": "array",
+            "items": {
+              "type": "object",
+              "required": ["userId", "email", "name"],
+              "properties": {
+                "userId": {
+                  "type": "string",
+                  "format": "uuid",
+                  "description": "The ID of the user."
+                },
+                "email": {
+                  "type": "string",
+                  "format": "email",
+                  "description": "The email of the user."
+                },
+                "name": {
+                  "type": "string",
+                  "description": "The name of the user."
+                }
+              }
+            }
+          }
+        }
+      },
+      "WorkspacesResponse": {
+        "type": "object",
+        "required": ["workspaces"],
+        "properties": {
+          "workspaces": {
+            "type": "array",
+            "items": {
+              "type": "object",
+              "required": ["workspaceId", "name"],
+              "properties": {
+                "workspaceId": {
+                  "type": "string",
+                  "format": "uuid",
+                  "description": "The ID of the workspace."
+                },
+                "name": {
+                  "type": "string",
+                  "description": "The name of the workspace."
+                }
+              }
+            }
+          }
+        }
+      },
+      "NotFoundKnownExceptionInfo": {
+        "type": "object",
+        "required": ["message", "exceptionClassName"],
+        "properties": {
+          "message": {
+            "type": "string",
+            "description": "The error message."
+          },
+          "exceptionClassName": {
+            "type": "string",
+            "description": "The class name of the exception."
+          }
+        }
+      },
+      "InvalidInputExceptionInfo": {
+        "type": "object",
+        "required": ["message", "exceptionClassName"],
+        "properties": {
+          "message": {
+            "type": "string",
+            "description": "The error message."
+          },
+          "exceptionClassName": {
+            "type": "string",
+            "description": "The class name of the exception."
+          }
+        }
+      },
+      "KnownExceptionInfo": {
+        "type": "object",
+        "required": ["message", "exceptionClassName"],
+        "properties": {
+          "message": {
+            "type": "string",
+            "description": "The error message."
+          },
+          "exceptionClassName": {
+            "type": "string",
+            "description": "The class name of the exception."
+          }
+        }
+      }
+    },
+    "responses": {
+      "NotFoundResponse": {
+        "description": "Object with given id was not found.",
+        "content": {
+          "application/json": {
+            "schema": {
+              "$ref": "#/components/schemas/NotFoundKnownExceptionInfo"
+            }
+          }
+        }
+      },
+      "InvalidInputResponse": {
+        "description": "Input failed validation",
+        "content": {
+          "application/json": {
+            "schema": {
+              "$ref": "#/components/schemas/InvalidInputExceptionInfo"
+            }
+          }
+        }
+      },
+      "ForbiddenResponse": {
+        "description": "Operation forbidden",
+        "content": {
+          "application/json": {
+            "schema": {
+              "$ref": "#/components/schemas/KnownExceptionInfo"
+            }
+          }
+        }
+      },
+      "ExceptionResponse": {
+        "description": "Exception occurred; see message for details."
+      }
+    }
+  },
+  "tags": [
+    {
+      "name": "public",
+      "description": "Public resources that are considered stable and are intended to be consumed as API by end users."
+    },
+    {
+      "name": "public_health",
+      "description": "Public health check endpoints."
+    },
+    {
+      "name": "public_jobs",
+      "description": "Public job-related endpoints."
+    },
+    {
+      "name": "Jobs",
+      "description": "Job management endpoints."
+    },
+    {
+      "name": "public_root",
+      "description": "public_root operations"
+    },
+    {
+      "name": "public_applications",
+      "description": "public_applications operations"
+    },
+    {
+      "name": "Applications",
+      "description": "Applications operations"
+    },
+    {
+      "name": "public_connector_definitions",
+      "description": "public_connector_definitions operations"
+    },
+    {
+      "name": "ConnectorDefinitions",
+      "description": "ConnectorDefinitions operations"
+    },
+    {
+      "name": "public_sources",
+      "description": "public_sources operations"
+    },
+    {
+      "name": "Sources",
+      "description": "Sources operations"
+    },
+    {
+      "name": "public_destinations",
+      "description": "public_destinations operations"
+    },
+    {
+      "name": "Destinations",
+      "description": "Destinations operations"
+    },
+    {
+      "name": "public_oauth",
+      "description": "public_oauth operations"
+    },
+    {
+      "name": "OAuth",
+      "description": "OAuth operations"
+    },
+    {
+      "name": "public_connections",
+      "description": "public_connections operations"
+    },
+    {
+      "name": "Connections",
+      "description": "Connections operations"
+    },
+    {
+      "name": "public_streams",
+      "description": "public_streams operations"
+    },
+    {
+      "name": "Streams",
+      "description": "Streams operations"
+    },
+    {
+      "name": "public_workspaces",
+      "description": "public_workspaces operations"
+    },
+    {
+      "name": "Workspaces",
+      "description": "Workspaces operations"
+    },
+    {
+      "name": "public_permissions",
+      "description": "public_permissions operations"
+    },
+    {
+      "name": "Permissions",
+      "description": "Permissions operations"
+    },
+    {
+      "name": "public_organizations",
+      "description": "public_organizations operations"
+    },
+    {
+      "name": "Organizations",
+      "description": "Organizations operations"
+    },
+    {
+      "name": "public_users",
+      "description": "public_users operations"
+    },
+    {
+      "name": "Users",
+      "description": "Users operations"
+    },
+    {
+      "name": "public_tags",
+      "description": "public_tags operations"
+    },
+    {
+      "name": "Tags",
+      "description": "Tags operations"
+    }
+  ]
+}
