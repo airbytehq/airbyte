@@ -1,0 +1,27 @@
+name: Label Community PRs
+
+# This workflow automatically adds the "community" label to PRs from forks.
+# This enables automatic tracking on the Community PRs project board.
+
+on:
+  pull_request_target:
+    types:
+      - opened
+      - reopened
+
+jobs:
+  label-community-pr:
+    name: Add "Community" Label to PR
+    # Only run for PRs from forks
+    if: github.event.pull_request.head.repo.fork == true
+    runs-on: ubuntu-24.04
+    permissions:
+      issues: write
+      pull-requests: write
+    steps:
+      - name: Add community label
+        # This action uses GitHub's addLabels API, which is idempotent.
+        # If the label already exists, the API call succeeds without error.
+        uses: actions-ecosystem/action-add-labels@bd52874380e3909a1ac983768df6976535ece7f8 # v1.1.3
+        with:
+          labels: community
