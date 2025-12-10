@@ -19,6 +19,7 @@ from .response_builder import (
     error_response,
     oauth_response,
     organizations_response,
+    organizations_response_multiple,
 )
 from .utils import config, read_output
 
@@ -117,6 +118,44 @@ class TestAdaccounts(TestCase):
         assert any(_STREAM_NAME in msg for msg in log_messages), (
             f"Expected stream name '{_STREAM_NAME}' in log messages"
         )
+
+
+class TestAdaccountsSubstreamMultipleParents(TestCase):
+    @HttpMocker()
+    def test_substream_with_two_parent_records(self, http_mocker: HttpMocker) -> None:
+        """Test that substream correctly processes multiple parent records.
+
+        The adaccounts stream uses SubstreamPartitionRouter with organizations as parent.
+        This test verifies that adaccounts are fetched for each parent organization.
+        """
+        org_1 = "org_001"
+        org_2 = "org_002"
+
+        http_mocker.post(
+            OAuthRequestBuilder.oauth_endpoint().build(),
+            oauth_response(),
+        )
+        http_mocker.get(
+            RequestBuilder.organizations_endpoint("me").build(),
+            organizations_response_multiple([org_1, org_2]),
+        )
+        # Mock adaccounts endpoint for each parent organization
+        http_mocker.get(
+            RequestBuilder.adaccounts_endpoint(org_1).build(),
+            adaccounts_response(ad_account_id="adaccount_from_org_1", organization_id=org_1),
+        )
+        http_mocker.get(
+            RequestBuilder.adaccounts_endpoint(org_2).build(),
+            adaccounts_response(ad_account_id="adaccount_from_org_2", organization_id=org_2),
+        )
+
+        output = _read(config_builder=config())
+
+        # Verify records from both parent organizations are returned
+        assert len(output.records) >= 2
+        record_ids = [r.record.data.get("id") for r in output.records]
+        assert "adaccount_from_org_1" in record_ids
+        assert "adaccount_from_org_2" in record_ids
 
 
 class TestAdaccountsIncremental(TestCase):

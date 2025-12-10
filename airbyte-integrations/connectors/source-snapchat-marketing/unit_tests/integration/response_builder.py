@@ -202,6 +202,20 @@ def adaccounts_response_multiple(
     return create_multiple_records_response("adaccounts", ad_account_ids)
 
 
+def organizations_response_multiple(
+    organization_ids: List[str],
+) -> HttpResponse:
+    """Create response with multiple organizations for testing substreams with multiple parents."""
+    return create_multiple_records_response("organizations", organization_ids)
+
+
+def adsquads_response_multiple(
+    adsquad_ids: List[str],
+) -> HttpResponse:
+    """Create response with multiple adsquads for testing substreams with multiple parents."""
+    return create_multiple_records_response("adsquads", adsquad_ids)
+
+
 def creatives_response(
     creative_id: str = "test_creative_123",
     ad_account_id: str = AD_ACCOUNT_ID,

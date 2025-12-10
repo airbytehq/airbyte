@@ -16,6 +16,7 @@ from .config import AD_ACCOUNT_ID, ADSQUAD_ID, CAMPAIGN_ID, ORGANIZATION_ID, Con
 from .request_builder import OAuthRequestBuilder, RequestBuilder
 from .response_builder import (
     adaccounts_response,
+    adaccounts_response_multiple,
     adsquads_response,
     error_response,
     oauth_response,
@@ -130,6 +131,48 @@ class TestAdsquads(TestCase):
         assert any(_STREAM_NAME in msg for msg in log_messages), (
             f"Expected stream name '{_STREAM_NAME}' in log messages"
         )
+
+
+class TestAdsquadsSubstreamMultipleParents(TestCase):
+    @HttpMocker()
+    def test_substream_with_two_parent_records(self, http_mocker: HttpMocker) -> None:
+        """Test that substream correctly processes multiple parent records.
+
+        The adsquads stream uses SubstreamPartitionRouter with adaccounts as parent.
+        This test verifies that adsquads are fetched for each parent adaccount.
+        """
+        adaccount_1 = "adaccount_001"
+        adaccount_2 = "adaccount_002"
+
+        http_mocker.post(
+            OAuthRequestBuilder.oauth_endpoint().build(),
+            oauth_response(),
+        )
+        http_mocker.get(
+            RequestBuilder.organizations_endpoint("me").build(),
+            organizations_response(organization_id=ORGANIZATION_ID),
+        )
+        http_mocker.get(
+            RequestBuilder.adaccounts_endpoint(ORGANIZATION_ID).build(),
+            adaccounts_response_multiple([adaccount_1, adaccount_2]),
+        )
+        # Mock adsquads endpoint for each parent adaccount
+        http_mocker.get(
+            RequestBuilder.adsquads_endpoint(adaccount_1).build(),
+            adsquads_response(adsquad_id="adsquad_from_adaccount_1", ad_account_id=adaccount_1),
+        )
+        http_mocker.get(
+            RequestBuilder.adsquads_endpoint(adaccount_2).build(),
+            adsquads_response(adsquad_id="adsquad_from_adaccount_2", ad_account_id=adaccount_2),
+        )
+
+        output = _read(config_builder=config())
+
+        # Verify records from both parent adaccounts are returned
+        assert len(output.records) >= 2
+        record_ids = [r.record.data.get("id") for r in output.records]
+        assert "adsquad_from_adaccount_1" in record_ids
+        assert "adsquad_from_adaccount_2" in record_ids
 
 
 class TestAdsquadsIncremental(TestCase):
