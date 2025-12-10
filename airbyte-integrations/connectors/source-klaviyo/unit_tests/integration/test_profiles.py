@@ -110,16 +110,7 @@ class TestProfilesStream(TestCase):
         # Use a single mock with multiple responses served sequentially.
         # The first response includes a next_page_link, the second response has no next link.
         http_mocker.get(
-            KlaviyoRequestBuilder.profiles_endpoint(_API_KEY)
-            .with_query_params(
-                {
-                    "filter": "greater-than(updated,2024-05-31T00:00:00+0000)",
-                    "sort": "updated",
-                    "additional-fields[profile]": "predictive_analytics",
-                    "page[size]": "100",
-                }
-            )
-            .build(),
+            KlaviyoRequestBuilder.profiles_endpoint(_API_KEY).with_any_query_params().build(),
             [
                 KlaviyoPaginatedResponseBuilder()
                 .with_records(

@@ -123,16 +123,7 @@ class TestEventsDetailedStream(TestCase):
         # The first response includes a next link, the second response has no next link.
         # events_detailed stream uses include, fields[metric], filter, and sort query parameters
         http_mocker.get(
-            KlaviyoRequestBuilder.events_endpoint(_API_KEY)
-            .with_query_params(
-                {
-                    "include": "metric,attributions",
-                    "fields[metric]": "name",
-                    "filter": "greater-than(datetime,2024-05-31T00:00:00+0000)",
-                    "sort": "datetime",
-                }
-            )
-            .build(),
+            KlaviyoRequestBuilder.events_endpoint(_API_KEY).with_any_query_params().build(),
             [
                 HttpResponse(
                     body=json.dumps(

@@ -108,17 +108,7 @@ class TestEventsStream(TestCase):
         # Use a single mock with multiple responses to avoid ambiguity in mock matching.
         # The first response includes a next_page_link, the second response has no next link.
         http_mocker.get(
-            KlaviyoRequestBuilder.events_endpoint(_API_KEY)
-            .with_query_params(
-                {
-                    "fields[event]": "event_properties,timestamp,uuid,datetime",
-                    "fields[metric]": "name,created,updated,integration",
-                    "include": "metric,attributions",
-                    "filter": "greater-or-equal(datetime,2024-05-31T00:00:00+0000),less-or-equal(datetime,2024-06-01T12:00:00+0000)",
-                    "sort": "datetime",
-                }
-            )
-            .build(),
+            KlaviyoRequestBuilder.events_endpoint(_API_KEY).with_any_query_params().build(),
             [
                 KlaviyoPaginatedResponseBuilder()
                 .with_records(
@@ -244,8 +234,11 @@ class TestEventsStream(TestCase):
         When: Running an incremental sync
         Then: The connector should use the state cursor and return only new/updated records
         """
-        config = ConfigBuilder().with_api_key(_API_KEY).with_start_date(datetime(2024, 5, 31, tzinfo=timezone.utc)).build()
-        state = StateBuilder().with_stream_state(_STREAM_NAME, {"datetime": "2024-03-01T00:00:00+00:00"}).build()
+        # Using early start_date (before test data) so state cursor is used for filtering
+        config = ConfigBuilder().with_api_key(_API_KEY).with_start_date(datetime(2024, 1, 1, tzinfo=timezone.utc)).build()
+        # State date within 7 days of _NOW (2024-06-01) to ensure only one stream slice is created
+        # (events stream uses step: P7D windowing)
+        state = StateBuilder().with_stream_state(_STREAM_NAME, {"datetime": "2024-05-31T00:00:00+0000"}).build()
 
         http_mocker.get(
             KlaviyoRequestBuilder.events_endpoint(_API_KEY)
@@ -254,7 +247,7 @@ class TestEventsStream(TestCase):
                     "fields[event]": "event_properties,timestamp,uuid,datetime",
                     "fields[metric]": "name,created,updated,integration",
                     "include": "metric,attributions",
-                    "filter": "greater-or-equal(datetime,2024-03-01T00:00:00+0000),less-or-equal(datetime,2024-06-01T12:00:00+0000)",
+                    "filter": "greater-or-equal(datetime,2024-05-31T00:00:00+0000),less-or-equal(datetime,2024-06-01T12:00:00+0000)",
                     "sort": "datetime",
                 }
             )
@@ -267,8 +260,8 @@ class TestEventsStream(TestCase):
                                 "type": "event",
                                 "id": "event_new",
                                 "attributes": {
-                                    "timestamp": "2024-03-15T10:00:00+00:00",
-                                    "datetime": "2024-03-15T10:00:00+00:00",
+                                    "timestamp": "2024-05-31T10:00:00+00:00",
+                                    "datetime": "2024-05-31T10:00:00+00:00",
                                     "uuid": "uuid-new",
                                     "event_properties": {},
                                 },

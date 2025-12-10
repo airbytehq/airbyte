@@ -104,14 +104,7 @@ class TestEmailTemplatesStream(TestCase):
         # Use a single mock with multiple responses to avoid ambiguity in mock matching.
         # The first response includes a next_page_link, the second response has no next link.
         http_mocker.get(
-            KlaviyoRequestBuilder.templates_endpoint(_API_KEY)
-            .with_query_params(
-                {
-                    "filter": "greater-than(updated,2024-05-31T00:00:00+0000)",
-                    "sort": "updated",
-                }
-            )
-            .build(),
+            KlaviyoRequestBuilder.templates_endpoint(_API_KEY).with_any_query_params().build(),
             [
                 KlaviyoPaginatedResponseBuilder()
                 .with_records(

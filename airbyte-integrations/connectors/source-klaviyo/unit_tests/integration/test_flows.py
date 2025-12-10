@@ -286,16 +286,19 @@ class TestFlowsStream(TestCase):
         When: Running an incremental sync
         Then: The connector should use the state cursor and return only new/updated records
         """
-        config = ConfigBuilder().with_api_key(_API_KEY).with_start_date(datetime(2024, 5, 31, tzinfo=timezone.utc)).build()
-        state = StateBuilder().with_stream_state(_STREAM_NAME, {"updated": "2024-03-01T00:00:00+00:00"}).build()
+        # Using early start_date (before test data) so state cursor is used for filtering
+        config = ConfigBuilder().with_api_key(_API_KEY).with_start_date(datetime(2024, 1, 1, tzinfo=timezone.utc)).build()
+        # State date within 60 days of _NOW (2024-06-01) to ensure only one stream slice is created
+        # (flows stream uses step: P60D windowing)
+        state = StateBuilder().with_stream_state(_STREAM_NAME, {"updated": "2024-05-31T00:00:00+0000"}).build()
 
-        # Mock both partitions with state-based filter (using state cursor value)
+        # Mock both partitions (archived: true/false) with specific query params
         for archived in ["true", "false"]:
             http_mocker.get(
                 KlaviyoRequestBuilder.flows_endpoint(_API_KEY)
                 .with_query_params(
                     {
-                        "filter": f"and(greater-or-equal(updated,2024-03-01T00:00:00+0000),less-or-equal(updated,2024-06-01T12:00:00+0000),equals(archived,{archived}))",
+                        "filter": f"and(greater-or-equal(updated,2024-05-31T00:00:00+0000),less-or-equal(updated,2024-06-01T12:00:00+0000),equals(archived,{archived}))",
                         "sort": "updated",
                     }
                 )
@@ -311,8 +314,8 @@ class TestFlowsStream(TestCase):
                                         "name": "New Flow",
                                         "status": "live",
                                         "archived": False,
-                                        "created": "2024-03-10T10:00:00+00:00",
-                                        "updated": "2024-03-15T10:00:00+00:00",
+                                        "created": "2024-05-31T10:00:00+00:00",
+                                        "updated": "2024-05-31T10:00:00+00:00",
                                         "trigger_type": "Segment",
                                     },
                                 }
