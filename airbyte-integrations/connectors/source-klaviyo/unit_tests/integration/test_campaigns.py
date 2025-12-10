@@ -144,45 +144,45 @@ class TestCampaignsStream(TestCase):
         """
         config = ConfigBuilder().with_api_key(_API_KEY).with_start_date(datetime(2024, 5, 31, tzinfo=timezone.utc)).build()
 
+        # Use a single mock with multiple responses to avoid ambiguity in mock matching.
+        # The first response includes a next_page_link, the second response has no next link.
         http_mocker.get(
             KlaviyoRequestBuilder.campaigns_endpoint(_API_KEY).with_any_query_params().build(),
-            KlaviyoPaginatedResponseBuilder()
-            .with_records(
-                [
-                    {
-                        "type": "campaign",
-                        "id": "campaign_001",
-                        "attributes": {
-                            "name": "Campaign 1",
-                            "status": "sent",
-                            "created_at": "2024-01-01T10:00:00+00:00",
-                            "updated_at": "2024-01-10T10:00:00+00:00",
-                        },
-                    }
-                ]
-            )
-            .with_next_page_link("https://a.klaviyo.com/api/campaigns?page[cursor]=abc123")
-            .build(),
-        )
-
-        http_mocker.get(
-            KlaviyoRequestBuilder.from_url("https://a.klaviyo.com/api/campaigns?page[cursor]=abc123", _API_KEY).build(),
-            KlaviyoPaginatedResponseBuilder()
-            .with_records(
-                [
-                    {
-                        "type": "campaign",
-                        "id": "campaign_002",
-                        "attributes": {
-                            "name": "Campaign 2",
-                            "status": "sent",
-                            "created_at": "2024-01-02T10:00:00+00:00",
-                            "updated_at": "2024-01-11T10:00:00+00:00",
-                        },
-                    }
-                ]
-            )
-            .build(),
+            [
+                KlaviyoPaginatedResponseBuilder()
+                .with_records(
+                    [
+                        {
+                            "type": "campaign",
+                            "id": "campaign_001",
+                            "attributes": {
+                                "name": "Campaign 1",
+                                "status": "sent",
+                                "created_at": "2024-05-31T10:00:00+00:00",
+                                "updated_at": "2024-05-31T10:00:00+00:00",
+                            },
+                        }
+                    ]
+                )
+                .with_next_page_link("https://a.klaviyo.com/api/campaigns?page[cursor]=abc123")
+                .build(),
+                KlaviyoPaginatedResponseBuilder()
+                .with_records(
+                    [
+                        {
+                            "type": "campaign",
+                            "id": "campaign_002",
+                            "attributes": {
+                                "name": "Campaign 2",
+                                "status": "sent",
+                                "created_at": "2024-05-31T11:00:00+00:00",
+                                "updated_at": "2024-05-31T11:00:00+00:00",
+                            },
+                        }
+                    ]
+                )
+                .build(),
+            ],
         )
 
         source = get_source(config=config)

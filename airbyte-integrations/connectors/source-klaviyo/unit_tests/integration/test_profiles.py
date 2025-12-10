@@ -99,55 +99,55 @@ class TestProfilesStream(TestCase):
         """
         config = ConfigBuilder().with_api_key(_API_KEY).with_start_date(datetime(2024, 5, 31, tzinfo=timezone.utc)).build()
 
+        # Use a single mock with multiple responses to avoid ambiguity in mock matching.
+        # The first response includes a next_page_link, the second response has no next link.
         http_mocker.get(
             KlaviyoRequestBuilder.profiles_endpoint(_API_KEY).with_any_query_params().build(),
-            KlaviyoPaginatedResponseBuilder()
-            .with_records(
-                [
-                    {
-                        "type": "profile",
-                        "id": "profile_001",
-                        "attributes": {
-                            "email": "user1@example.com",
-                            "first_name": "User",
-                            "last_name": "One",
-                            "updated": "2024-01-10T10:00:00+00:00",
+            [
+                KlaviyoPaginatedResponseBuilder()
+                .with_records(
+                    [
+                        {
+                            "type": "profile",
+                            "id": "profile_001",
+                            "attributes": {
+                                "email": "user1@example.com",
+                                "first_name": "User",
+                                "last_name": "One",
+                                "updated": "2024-05-31T10:00:00+00:00",
+                            },
                         },
-                    },
-                    {
-                        "type": "profile",
-                        "id": "profile_002",
-                        "attributes": {
-                            "email": "user2@example.com",
-                            "first_name": "User",
-                            "last_name": "Two",
-                            "updated": "2024-01-11T10:00:00+00:00",
+                        {
+                            "type": "profile",
+                            "id": "profile_002",
+                            "attributes": {
+                                "email": "user2@example.com",
+                                "first_name": "User",
+                                "last_name": "Two",
+                                "updated": "2024-05-31T11:00:00+00:00",
+                            },
                         },
-                    },
-                ]
-            )
-            .with_next_page_link("https://a.klaviyo.com/api/profiles?page[cursor]=abc123")
-            .build(),
-        )
-
-        http_mocker.get(
-            KlaviyoRequestBuilder.from_url("https://a.klaviyo.com/api/profiles?page[cursor]=abc123", _API_KEY).build(),
-            KlaviyoPaginatedResponseBuilder()
-            .with_records(
-                [
-                    {
-                        "type": "profile",
-                        "id": "profile_003",
-                        "attributes": {
-                            "email": "user3@example.com",
-                            "first_name": "User",
-                            "last_name": "Three",
-                            "updated": "2024-01-12T10:00:00+00:00",
-                        },
-                    }
-                ]
-            )
-            .build(),
+                    ]
+                )
+                .with_next_page_link("https://a.klaviyo.com/api/profiles?page[cursor]=abc123")
+                .build(),
+                KlaviyoPaginatedResponseBuilder()
+                .with_records(
+                    [
+                        {
+                            "type": "profile",
+                            "id": "profile_003",
+                            "attributes": {
+                                "email": "user3@example.com",
+                                "first_name": "User",
+                                "last_name": "Three",
+                                "updated": "2024-05-31T12:00:00+00:00",
+                            },
+                        }
+                    ]
+                )
+                .build(),
+            ],
         )
 
         source = get_source(config=config)
@@ -214,7 +214,7 @@ class TestProfilesStream(TestCase):
         Then: The connector should use the state cursor and return only new/updated records
         """
         config = ConfigBuilder().with_api_key(_API_KEY).with_start_date(datetime(2024, 5, 31, tzinfo=timezone.utc)).build()
-        state = StateBuilder().with_stream_state(_STREAM_NAME, {"updated": "2024-03-01T00:00:00+00:00"}).build()
+        state = StateBuilder().with_stream_state(_STREAM_NAME, {"updated": "2024-05-31T00:00:00+00:00"}).build()
 
         http_mocker.get(
             KlaviyoRequestBuilder.profiles_endpoint(_API_KEY).with_any_query_params().build(),
@@ -227,7 +227,7 @@ class TestProfilesStream(TestCase):
                                 "id": "profile_new",
                                 "attributes": {
                                     "email": "new@example.com",
-                                    "updated": "2024-03-15T10:00:00+00:00",
+                                    "updated": "2024-05-31T10:00:00+00:00",
                                 },
                             }
                         ],
@@ -248,7 +248,7 @@ class TestProfilesStream(TestCase):
         assert len(output.state_messages) > 0
         latest_state = output.most_recent_state.stream_state.__dict__
         # Note: The connector returns datetime with +0000 format (without colon)
-        assert latest_state["updated"] == "2024-03-15T10:00:00+0000"
+        assert latest_state["updated"] == "2024-05-31T10:00:00+0000"
 
     @HttpMocker()
     def test_transformation_adds_updated_field(self, http_mocker: HttpMocker):

@@ -291,53 +291,53 @@ class TestGlobalExclusionsStream(TestCase):
         """
         config = ConfigBuilder().with_api_key(_API_KEY).with_start_date(datetime(2024, 5, 31, tzinfo=timezone.utc)).build()
 
+        # Use a single mock with multiple responses to avoid ambiguity in mock matching.
+        # The first response includes a next_page_link, the second response has no next link.
         http_mocker.get(
             KlaviyoRequestBuilder.profiles_endpoint(_API_KEY).with_any_query_params().build(),
-            KlaviyoPaginatedResponseBuilder()
-            .with_records(
-                [
-                    {
-                        "type": "profile",
-                        "id": "profile_001",
-                        "attributes": {
-                            "email": "user1@example.com",
-                            "updated": "2024-01-10T10:00:00+00:00",
-                            "subscriptions": {
-                                "email": {
-                                    "marketing": {"suppression": [{"reason": "USER_SUPPRESSED", "timestamp": "2024-01-05T10:00:00+00:00"}]}
+            [
+                KlaviyoPaginatedResponseBuilder()
+                .with_records(
+                    [
+                        {
+                            "type": "profile",
+                            "id": "profile_001",
+                            "attributes": {
+                                "email": "user1@example.com",
+                                "updated": "2024-05-31T10:00:00+00:00",
+                                "subscriptions": {
+                                    "email": {
+                                        "marketing": {"suppression": [{"reason": "USER_SUPPRESSED", "timestamp": "2024-05-31T09:00:00+00:00"}]}
+                                    },
+                                    "sms": {"marketing": {}},
                                 },
-                                "sms": {"marketing": {}},
                             },
-                        },
-                    }
-                ]
-            )
-            .with_next_page_link("https://a.klaviyo.com/api/profiles?page[cursor]=abc123")
-            .build(),
-        )
-
-        http_mocker.get(
-            KlaviyoRequestBuilder.from_url("https://a.klaviyo.com/api/profiles?page[cursor]=abc123", _API_KEY).build(),
-            KlaviyoPaginatedResponseBuilder()
-            .with_records(
-                [
-                    {
-                        "type": "profile",
-                        "id": "profile_002",
-                        "attributes": {
-                            "email": "user2@example.com",
-                            "updated": "2024-01-11T10:00:00+00:00",
-                            "subscriptions": {
-                                "email": {
-                                    "marketing": {"suppression": [{"reason": "HARD_BOUNCE", "timestamp": "2024-01-06T10:00:00+00:00"}]}
+                        }
+                    ]
+                )
+                .with_next_page_link("https://a.klaviyo.com/api/profiles?page[cursor]=abc123")
+                .build(),
+                KlaviyoPaginatedResponseBuilder()
+                .with_records(
+                    [
+                        {
+                            "type": "profile",
+                            "id": "profile_002",
+                            "attributes": {
+                                "email": "user2@example.com",
+                                "updated": "2024-05-31T11:00:00+00:00",
+                                "subscriptions": {
+                                    "email": {
+                                        "marketing": {"suppression": [{"reason": "HARD_BOUNCE", "timestamp": "2024-05-31T10:00:00+00:00"}]}
+                                    },
+                                    "sms": {"marketing": {}},
                                 },
-                                "sms": {"marketing": {}},
                             },
-                        },
-                    }
-                ]
-            )
-            .build(),
+                        }
+                    ]
+                )
+                .build(),
+            ],
         )
 
         source = get_source(config=config)

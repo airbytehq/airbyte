@@ -109,59 +109,59 @@ class TestEventsDetailedStream(TestCase):
         """
         config = ConfigBuilder().with_api_key(_API_KEY).with_start_date(datetime(2024, 5, 31, tzinfo=timezone.utc)).build()
 
+        # Use a single mock with multiple responses to avoid ambiguity in mock matching.
+        # The first response includes a next link, the second response has no next link.
         http_mocker.get(
             KlaviyoRequestBuilder.events_endpoint(_API_KEY).with_any_query_params().build(),
-            HttpResponse(
-                body=json.dumps(
-                    {
-                        "data": [
-                            {
-                                "type": "event",
-                                "id": "event_001",
-                                "attributes": {
-                                    "timestamp": "2024-01-10T10:00:00+00:00",
-                                    "datetime": "2024-01-10T10:00:00+00:00",
-                                    "uuid": "uuid-001",
-                                    "event_properties": {},
-                                },
-                                "relationships": {"metric": {"data": {"type": "metric", "id": "m1"}}, "attributions": {"data": []}},
-                            }
-                        ],
-                        "included": [{"type": "metric", "id": "m1", "attributes": {"name": "Metric 1"}}],
-                        "links": {
-                            "self": "https://a.klaviyo.com/api/events",
-                            "next": "https://a.klaviyo.com/api/events?page[cursor]=abc123",
-                        },
-                    }
+            [
+                HttpResponse(
+                    body=json.dumps(
+                        {
+                            "data": [
+                                {
+                                    "type": "event",
+                                    "id": "event_001",
+                                    "attributes": {
+                                        "timestamp": "2024-05-31T10:00:00+00:00",
+                                        "datetime": "2024-05-31T10:00:00+00:00",
+                                        "uuid": "uuid-001",
+                                        "event_properties": {},
+                                    },
+                                    "relationships": {"metric": {"data": {"type": "metric", "id": "m1"}}, "attributions": {"data": []}},
+                                }
+                            ],
+                            "included": [{"type": "metric", "id": "m1", "attributes": {"name": "Metric 1"}}],
+                            "links": {
+                                "self": "https://a.klaviyo.com/api/events",
+                                "next": "https://a.klaviyo.com/api/events?page[cursor]=abc123",
+                            },
+                        }
+                    ),
+                    status_code=200,
                 ),
-                status_code=200,
-            ),
-        )
-
-        http_mocker.get(
-            KlaviyoRequestBuilder.from_url("https://a.klaviyo.com/api/events?page[cursor]=abc123", _API_KEY).build(),
-            HttpResponse(
-                body=json.dumps(
-                    {
-                        "data": [
-                            {
-                                "type": "event",
-                                "id": "event_002",
-                                "attributes": {
-                                    "timestamp": "2024-01-11T10:00:00+00:00",
-                                    "datetime": "2024-01-11T10:00:00+00:00",
-                                    "uuid": "uuid-002",
-                                    "event_properties": {},
-                                },
-                                "relationships": {"metric": {"data": {"type": "metric", "id": "m2"}}, "attributions": {"data": []}},
-                            }
-                        ],
-                        "included": [{"type": "metric", "id": "m2", "attributes": {"name": "Metric 2"}}],
-                        "links": {"self": "https://a.klaviyo.com/api/events?page[cursor]=abc123", "next": None},
-                    }
+                HttpResponse(
+                    body=json.dumps(
+                        {
+                            "data": [
+                                {
+                                    "type": "event",
+                                    "id": "event_002",
+                                    "attributes": {
+                                        "timestamp": "2024-05-31T11:00:00+00:00",
+                                        "datetime": "2024-05-31T11:00:00+00:00",
+                                        "uuid": "uuid-002",
+                                        "event_properties": {},
+                                    },
+                                    "relationships": {"metric": {"data": {"type": "metric", "id": "m2"}}, "attributions": {"data": []}},
+                                }
+                            ],
+                            "included": [{"type": "metric", "id": "m2", "attributes": {"name": "Metric 2"}}],
+                            "links": {"self": "https://a.klaviyo.com/api/events?page[cursor]=abc123", "next": None},
+                        }
+                    ),
+                    status_code=200,
                 ),
-                status_code=200,
-            ),
+            ],
         )
 
         source = get_source(config=config)

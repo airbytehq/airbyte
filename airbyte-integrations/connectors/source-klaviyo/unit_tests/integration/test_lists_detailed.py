@@ -114,47 +114,47 @@ class TestListsDetailedStream(TestCase):
         """
         config = ConfigBuilder().with_api_key(_API_KEY).with_start_date(datetime(2024, 5, 31, tzinfo=timezone.utc)).build()
 
+        # Use a single mock with multiple responses to avoid ambiguity in mock matching.
+        # The first response includes a next_page_link, the second response has no next link.
         http_mocker.get(
             KlaviyoRequestBuilder.lists_endpoint(_API_KEY).with_any_query_params().build(),
-            KlaviyoPaginatedResponseBuilder()
-            .with_records(
-                [
-                    {
-                        "type": "list",
-                        "id": "list_001",
-                        "attributes": {
-                            "name": "List 1",
-                            "created": "2024-01-01T10:00:00+00:00",
-                            "updated": "2024-01-10T10:00:00+00:00",
-                            "opt_in_process": "single_opt_in",
-                            "profile_count": 100,
-                        },
-                    }
-                ]
-            )
-            .with_next_page_link("https://a.klaviyo.com/api/lists?page[cursor]=abc123")
-            .build(),
-        )
-
-        http_mocker.get(
-            KlaviyoRequestBuilder.from_url("https://a.klaviyo.com/api/lists?page[cursor]=abc123", _API_KEY).build(),
-            KlaviyoPaginatedResponseBuilder()
-            .with_records(
-                [
-                    {
-                        "type": "list",
-                        "id": "list_002",
-                        "attributes": {
-                            "name": "List 2",
-                            "created": "2024-01-02T10:00:00+00:00",
-                            "updated": "2024-01-11T10:00:00+00:00",
-                            "opt_in_process": "double_opt_in",
-                            "profile_count": 200,
-                        },
-                    }
-                ]
-            )
-            .build(),
+            [
+                KlaviyoPaginatedResponseBuilder()
+                .with_records(
+                    [
+                        {
+                            "type": "list",
+                            "id": "list_001",
+                            "attributes": {
+                                "name": "List 1",
+                                "created": "2024-05-31T10:00:00+00:00",
+                                "updated": "2024-05-31T10:00:00+00:00",
+                                "opt_in_process": "single_opt_in",
+                                "profile_count": 100,
+                            },
+                        }
+                    ]
+                )
+                .with_next_page_link("https://a.klaviyo.com/api/lists?page[cursor]=abc123")
+                .build(),
+                KlaviyoPaginatedResponseBuilder()
+                .with_records(
+                    [
+                        {
+                            "type": "list",
+                            "id": "list_002",
+                            "attributes": {
+                                "name": "List 2",
+                                "created": "2024-05-31T11:00:00+00:00",
+                                "updated": "2024-05-31T11:00:00+00:00",
+                                "opt_in_process": "double_opt_in",
+                                "profile_count": 200,
+                            },
+                        }
+                    ]
+                )
+                .build(),
+            ],
         )
 
         source = get_source(config=config)
