@@ -23,6 +23,7 @@ import io.airbyte.cdk.read.Sample
 import io.airbyte.cdk.read.SelectQuerier
 import io.airbyte.cdk.read.SelectQuery
 import io.airbyte.cdk.read.Stream
+import io.airbyte.cdk.read.querySingleValue
 import io.github.oshai.kotlinlogging.KotlinLogging
 import io.micronaut.context.annotation.Primary
 import io.micronaut.context.annotation.Requires
@@ -147,23 +148,11 @@ class PostgresSourceJdbcConcurrentPartitionsCreator<
      * Get total relation size in bytes for a given table - this icludes toast data.
      */
     private fun totalRelationSize(stream: Stream): Long {
-        val jdbcConnectionFactory = JdbcConnectionFactory(sharedState.configuration)
-        log.info { "Querying total table relation size." }
-        jdbcConnectionFactory.get().use { connection ->
-            val sql = "SELECT pg_total_relation_size('${
-                if (stream.namespace == null) "\"${stream.name}\"" else "\"${stream.namespace}\".\"${stream.name}\""
-            }')"
-            val stmt = connection.prepareStatement(sql)
-            val rs = stmt.executeQuery()
-
-            if (rs.next()) {
-                val relationSize = rs.getLong(1)
-                log.info { "Found total table relation size $relationSize for ${stream.name}." }
-                return relationSize
-            }
-            error("Could not get relation size for stream ${stream.id}")
-
-        }
+        val sql = "SELECT pg_total_relation_size('${
+            if (stream.namespace == null) "\"${stream.name}\"" else "\"${stream.namespace}\".\"${stream.name}\""
+        }')"
+        return querySingleValue(JdbcConnectionFactory(sharedState.configuration), sql,
+            { rs -> return@querySingleValue rs.getLong(1) })
     }
 
     private fun relationSize(stream: Stream): Long {

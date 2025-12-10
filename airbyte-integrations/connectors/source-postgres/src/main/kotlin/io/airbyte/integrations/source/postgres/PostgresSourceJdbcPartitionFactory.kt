@@ -328,26 +328,6 @@ open class PostgresSourceJdbcPartitionFactory(
         return cursor to cursors[cursorLabel]!!
     }
 
-/*    private fun relationSize(stream: Stream): Long {
-        val jdbcConnectionFactory = JdbcConnectionFactory(sharedState.configuration)
-        log.info { "Querying table relation size." }
-        jdbcConnectionFactory.get().use { connection ->
-            val sql = "SELECT pg_relation_size('${
-                if (stream.namespace == null) "\"${stream.name}\"" else "\"${stream.namespace}\".\"${stream.name}\""
-            }')"
-            val stmt = connection.prepareStatement(sql)
-            val rs = stmt.executeQuery()
-
-            if (rs.next()) {
-                val relationSize = rs.getLong(1)
-                log.info { "Found table relation size $relationSize for ${stream.name}." }
-                return relationSize
-            }
-            error("Could not get relation size for stream ${stream.id}")
-
-        }
-    }*/
-
     private fun relationSize(stream: Stream): Long {
         val sql = "SELECT pg_relation_size('${
             if (stream.namespace == null) "\"${stream.name}\"" else "\"${stream.namespace}\".\"${stream.name}\""
