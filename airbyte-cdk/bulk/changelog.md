@@ -1,3 +1,9 @@
+## Version 0.1.87
+
+**Load CDK**
+
+* Properly call NamespaceMapper before calculating final table names.
+
 ## Version 0.1.86
 
 **Load CDK**
