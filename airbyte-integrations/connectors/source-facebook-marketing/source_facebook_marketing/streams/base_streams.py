@@ -3,6 +3,7 @@
 #
 
 import logging
+import re
 from abc import ABC, abstractmethod
 from datetime import datetime
 from functools import cache
@@ -90,8 +91,6 @@ class FBMarketingStream(Stream, ABC):
         - "T" delimiter between date and time
         - Timezone as "Z" for UTC or "±HH:MM" with colon
         """
-        import re
-
         date_time_fields = (
             "created_time",
             "creation_time",
