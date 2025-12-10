@@ -86,7 +86,7 @@ class TestAdsStatsHourly(TestCase):
     def test_read_records(self, http_mocker: HttpMocker) -> None:
         _setup_parent_mocks(http_mocker)
         http_mocker.get(
-            RequestBuilder.ads_stats_endpoint(AD_ID).with_granularity("HOUR").build(),
+            RequestBuilder.ads_stats_endpoint(AD_ID).with_any_query_params().build(),
             stats_timeseries_response(entity_id=AD_ID, granularity="HOUR"),
         )
 
@@ -126,7 +126,7 @@ class TestAdsStatsDaily(TestCase):
     def test_read_records(self, http_mocker: HttpMocker) -> None:
         _setup_parent_mocks(http_mocker)
         http_mocker.get(
-            RequestBuilder.ads_stats_endpoint(AD_ID).with_granularity("DAY").build(),
+            RequestBuilder.ads_stats_endpoint(AD_ID).with_any_query_params().build(),
             stats_timeseries_response(entity_id=AD_ID, granularity="DAY"),
         )
 
@@ -143,7 +143,7 @@ class TestAdsStatsLifetime(TestCase):
     def test_read_records(self, http_mocker: HttpMocker) -> None:
         _setup_parent_mocks(http_mocker)
         http_mocker.get(
-            RequestBuilder.ads_stats_endpoint(AD_ID).with_granularity("LIFETIME").build(),
+            RequestBuilder.ads_stats_endpoint(AD_ID).with_any_query_params().build(),
             stats_lifetime_response(entity_id=AD_ID),
         )
 
