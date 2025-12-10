@@ -166,12 +166,17 @@ class AdsInsights(FBMarketingIncrementalStream):
         for breakdown in self.breakdowns:
             if breakdown in self.object_breakdowns.keys():
                 record[self.object_breakdowns[breakdown]] = record[breakdown]["id"]
+        return record
 
-        # Normalize 'results' -> 'objective_results' for custom insights
-        # Facebook API returns 'results' when 'objective_results' is requested
+    def _transform_objective_results(self, record: Mapping[str, Any]) -> Mapping[str, Any]:
+        """
+        Transform 'results' field to 'objective_results' in API responses.
+
+        Facebook API returns 'results' field when 'objective_results' is requested.
+        This method renames the field when appropriate conditions are met.
+        """
         if self._should_rename_results_to_objective_results and "results" in record and "objective_results" not in record:
             record["objective_results"] = record.pop("results")
-
         return record
 
     def list_objects(self, params: Mapping[str, Any]) -> Iterable:
@@ -197,7 +202,9 @@ class AdsInsights(FBMarketingIncrementalStream):
                 data = obj.export_all_data()
                 if self._response_data_is_valid(data):
                     self._add_account_id(data, account_id)
-                    yield self._transform_breakdown(data)
+                    data = self._transform_breakdown(data)
+                    data = self._transform_objective_results(data)
+                    yield data
         except FacebookBadObjectError as e:
             raise AirbyteTracedException(
                 message=f"API error occurs on Facebook side during job: {job}, wrong (empty) response received with errors: {e} "

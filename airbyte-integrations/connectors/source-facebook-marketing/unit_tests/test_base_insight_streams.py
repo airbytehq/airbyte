@@ -608,7 +608,7 @@ class TestBaseInsightsStream:
         )
 
         assert stream._should_rename_results_to_objective_results == should_rename
-        transformed = stream._transform_breakdown(record.copy())
+        transformed = stream._transform_objective_results(record.copy())
         assert transformed == expected_record
 
     def test_level_custom(self, api, some_config):
