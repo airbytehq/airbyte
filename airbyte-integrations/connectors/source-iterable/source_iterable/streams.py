@@ -430,6 +430,19 @@ class CampaignsMetrics(IterableStream):
         return result
 
 
+class Users(IterableExportStreamAdjustableRange):
+    """
+    Users export stream with adaptive slicing to handle ChunkedEncodingError.
+
+    This stream uses the same adjustable range logic as email streams to automatically
+    reduce the date range and retry when the Iterable API terminates long-running
+    chunked responses.
+    """
+
+    data_field = "user"
+    cursor_field = "profileUpdatedAt"
+
+
 class EmailBounce(IterableExportStreamAdjustableRange):
     data_field = "emailBounce"
 
