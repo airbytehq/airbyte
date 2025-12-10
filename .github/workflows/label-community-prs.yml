@@ -1,0 +1,47 @@
+name: Label Community PRs
+
+# This workflow automatically adds the "community" label to PRs from forks.
+# This enables automatic tracking on the Community PRs project board.
+
+on:
+  pull_request_target:
+    types:
+      - opened
+      - reopened
+
+jobs:
+  label-community-pr:
+    name: Add Community Label
+    # Only run for PRs from forks
+    if: github.event.pull_request.head.repo.fork == true
+    runs-on: ubuntu-24.04
+    permissions:
+      pull-requests: write
+    steps:
+      - name: Add community label
+        uses: actions/github-script@60a0d83039c74a4aee543508d2ffcb1c3799cdea # v7.0.1
+        with:
+          script: |
+            const { owner, repo } = context.repo;
+            const issue_number = context.payload.pull_request.number;
+            
+            // Check if the PR already has the "community" label
+            const { data: labels } = await github.rest.issues.listLabelsOnIssue({
+              owner,
+              repo,
+              issue_number,
+            });
+            
+            const hasCommunityLabel = labels.some(label => label.name === 'community');
+            
+            if (!hasCommunityLabel) {
+              await github.rest.issues.addLabels({
+                owner,
+                repo,
+                issue_number,
+                labels: ['community'],
+              });
+              console.log('Added "community" label to PR #' + issue_number);
+            } else {
+              console.log('PR #' + issue_number + ' already has the "community" label');
+            }
