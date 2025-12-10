@@ -6,16 +6,17 @@ package io.airbyte.integrations.destination.postgres.write
 
 import io.airbyte.cdk.SystemErrorException
 import io.airbyte.cdk.load.command.Dedupe
+import io.airbyte.cdk.load.command.DestinationCatalog
 import io.airbyte.cdk.load.command.DestinationStream
-import io.airbyte.cdk.load.orchestration.db.DatabaseInitialStatusGatherer
-import io.airbyte.cdk.load.orchestration.db.TempTableNameGenerator
-import io.airbyte.cdk.load.orchestration.db.direct_load_table.DirectLoadInitialStatus
-import io.airbyte.cdk.load.orchestration.db.direct_load_table.DirectLoadTableAppendStreamLoader
-import io.airbyte.cdk.load.orchestration.db.direct_load_table.DirectLoadTableAppendTruncateStreamLoader
-import io.airbyte.cdk.load.orchestration.db.direct_load_table.DirectLoadTableDedupStreamLoader
-import io.airbyte.cdk.load.orchestration.db.direct_load_table.DirectLoadTableDedupTruncateStreamLoader
-import io.airbyte.cdk.load.orchestration.db.direct_load_table.DirectLoadTableExecutionConfig
-import io.airbyte.cdk.load.orchestration.db.legacy_typing_deduping.TableCatalog
+import io.airbyte.cdk.load.table.ColumnNameMapping
+import io.airbyte.cdk.load.table.DatabaseInitialStatusGatherer
+import io.airbyte.cdk.load.table.TempTableNameGenerator
+import io.airbyte.cdk.load.table.directload.DirectLoadInitialStatus
+import io.airbyte.cdk.load.table.directload.DirectLoadTableAppendStreamLoader
+import io.airbyte.cdk.load.table.directload.DirectLoadTableAppendTruncateStreamLoader
+import io.airbyte.cdk.load.table.directload.DirectLoadTableDedupStreamLoader
+import io.airbyte.cdk.load.table.directload.DirectLoadTableDedupTruncateStreamLoader
+import io.airbyte.cdk.load.table.directload.DirectLoadTableExecutionConfig
 import io.airbyte.cdk.load.write.DestinationWriter
 import io.airbyte.cdk.load.write.StreamLoader
 import io.airbyte.cdk.load.write.StreamStateStore
@@ -28,7 +29,7 @@ private val log = KotlinLogging.logger {}
 
 @Singleton
 class PostgresWriter(
-    private val names: TableCatalog,
+    private val catalog: DestinationCatalog,
     private val stateGatherer: DatabaseInitialStatusGatherer<DirectLoadInitialStatus>,
     private val streamStateStore: StreamStateStore<DirectLoadTableExecutionConfig>,
     private val postgresClient: PostgresAirbyteClient,
@@ -38,19 +39,19 @@ class PostgresWriter(
     private lateinit var initialStatuses: Map<DestinationStream, DirectLoadInitialStatus>
 
     override suspend fun setup() {
-        names.values
-            .map { (tableNames, _) -> tableNames.finalTableName!!.namespace }
+        catalog.streams
+            .map { it.tableSchema.tableNames.finalTableName!!.namespace }
             .forEach { postgresClient.createNamespace(it) }
 
-        initialStatuses = stateGatherer.gatherInitialStatus(names)
+        initialStatuses = stateGatherer.gatherInitialStatus()
     }
 
     override fun createStreamLoader(stream: DestinationStream): StreamLoader {
         val initialStatus = initialStatuses[stream]!!
-        val tableNameInfo = names[stream]!!
-        val realTableName = tableNameInfo.tableNames.finalTableName!!
+        val realTableName = stream.tableSchema.tableNames.finalTableName!!
         val tempTableName = tempTableNameGenerator.generate(realTableName)
-        val columnNameMapping = tableNameInfo.columnNameMapping
+        val columnNameMapping =
+            ColumnNameMapping(stream.tableSchema.columnSchema.inputToFinalColumnNames)
 
         val isRawTablesMode = postgresConfiguration.legacyRawTablesOnly == true
         if (isRawTablesMode && stream.importType is Dedupe) {

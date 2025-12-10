@@ -1,3 +1,16 @@
+## Version 0.1.87
+
+**Load CDK**
+
+* Properly call NamespaceMapper before calculating final table names.
+
+## Version 0.1.86
+
+**Load CDK**
+
+* Adds toFinalSchema "escape hatch" for final table schema munging
+* Refactored Component test fixtures to require explicit StreamTableSchema creation using TableSchemaFactory
+
 ## Version 0.1.85
 
 **Extract CDK**
