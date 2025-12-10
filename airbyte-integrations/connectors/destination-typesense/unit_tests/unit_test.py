@@ -224,9 +224,9 @@ def test_state_message_serialization_preserves_platform_id():
     output_json = AirbyteStateMessageSerializer.dump(state_msg)
 
     # The 'id' field MUST be preserved - this is what the platform checks
-    assert "id" in output_json, (
-        "Platform 'id' field was lost during serialization! This will cause 'State message does not contain id' error in Airbyte 1.7+"
-    )
+    assert (
+        "id" in output_json
+    ), "Platform 'id' field was lost during serialization! This will cause 'State message does not contain id' error in Airbyte 1.7+"
     assert output_json["id"] == 12345, "Platform 'id' value was corrupted"
 
     # Other extra fields should also be preserved
