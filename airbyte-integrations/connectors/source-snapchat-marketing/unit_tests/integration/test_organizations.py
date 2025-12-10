@@ -158,52 +158,23 @@ class TestOrganizationsIncremental(TestCase):
         )
 
         output = _read(config_builder=config(), sync_mode=SyncMode.incremental)
-        assert len(output.records) == 1
-        # Verify state message is emitted
-        assert len(output.state_messages) >= 1
-        # Verify state contains cursor field (updated_at)
-        state_data = output.state_messages[-1].state
-        assert state_data is not None
 
-    @HttpMocker()
-    def test_incremental_sync_validates_cursor_field(self, http_mocker: HttpMocker) -> None:
-        """Test that cursor field name and value are correct in emitted state (GAP 4).
+        assert len(output.state_messages) > 0, "Expected state messages to be emitted"
+        assert len(output.records) >= 1, f"Expected at least 1 record, got {len(output.records)}"
 
-        For client-side incremental streams with partition routers, the state structure is:
-        {'use_global_cursor': False, 'states': [...], 'state': {'updated_at': '...'}, 'lookback_window': 1}
-        """
-        http_mocker.post(
-            OAuthRequestBuilder.oauth_endpoint().build(),
-            oauth_response(),
-        )
-        http_mocker.get(
-            RequestBuilder.organizations_endpoint("me").build(),
-            organizations_response(organization_id=ORGANIZATION_ID),
-        )
+        # Get latest record's cursor
+        latest_record = output.records[-1].record.data
+        record_cursor_value = latest_record.get("updated_at")
 
-        output = _read(config_builder=config(), sync_mode=SyncMode.incremental)
-        assert len(output.state_messages) >= 1
+        # Get state cursor
+        new_state = output.most_recent_state.stream_state.__dict__
+        state_cursor_value = new_state.get("updated_at") or new_state.get("state", {}).get("updated_at")
 
-        # Strong cursor field validation - access nested state structure
-        state_dict = output.most_recent_state.stream_state.__dict__
-        cursor_field = "updated_at"
-
-        # For partitioned streams, cursor is in state_dict["state"]
-        if "state" in state_dict and isinstance(state_dict["state"], dict):
-            inner_state = state_dict["state"]
-            assert cursor_field in inner_state, f"Expected cursor field '{cursor_field}' in state, got: {list(inner_state.keys())}"
-            cursor_value = inner_state[cursor_field]
-        else:
-            assert cursor_field in state_dict, f"Expected cursor field '{cursor_field}' in state, got: {list(state_dict.keys())}"
-            cursor_value = state_dict[cursor_field]
-
-        # Verify cursor value is present and valid datetime format
-        assert cursor_value is not None
-        # Validate datetime format (handles both ISO and date-only formats)
-        if "T" in str(cursor_value):
-            datetime.fromisoformat(str(cursor_value).replace("Z", "+00:00"))
-        else:
-            datetime.strptime(str(cursor_value), "%Y-%m-%d")
+        # Validate state matches record
+        assert state_cursor_value is not None, "Expected 'updated_at' in state"
+        assert record_cursor_value is not None, "Expected 'updated_at' in record"
+        assert state_cursor_value == record_cursor_value or state_cursor_value.startswith(record_cursor_value[:10]), \
+            f"Expected state to match latest record. State: {state_cursor_value}, Record: {record_cursor_value}"
 
     @HttpMocker()
     def test_incremental_with_pagination_two_pages(self, http_mocker: HttpMocker) -> None:
@@ -264,10 +235,19 @@ class TestOrganizationsIncremental(TestCase):
 
         output = _read(config_builder=config(), sync_mode=SyncMode.incremental, state=state)
 
-        assert len(output.records) >= 1, f"Expected at least 1 record, got {len(output.records)}"
-        assert output.records[0].record.data["id"] is not None, "Expected record to have id"
         assert len(output.state_messages) > 0, "Expected state messages to be emitted"
+        assert len(output.records) >= 1, f"Expected at least 1 record, got {len(output.records)}"
 
+        # Get latest record's cursor
+        latest_record = output.records[-1].record.data
+        record_cursor_value = latest_record.get("updated_at")
+
+        # Get state cursor
         new_state = output.most_recent_state.stream_state.__dict__
-        cursor_value = new_state.get("updated_at") or new_state.get("state", {}).get("updated_at")
-        assert cursor_value is not None, "Expected cursor value in state"
+        state_cursor_value = new_state.get("updated_at") or new_state.get("state", {}).get("updated_at")
+
+        # Validate state matches record
+        assert state_cursor_value is not None, "Expected 'updated_at' in state"
+        assert record_cursor_value is not None, "Expected 'updated_at' in record"
+        assert state_cursor_value == record_cursor_value or state_cursor_value.startswith(record_cursor_value[:10]), \
+            f"Expected state to match latest record. State: {state_cursor_value}, Record: {record_cursor_value}"

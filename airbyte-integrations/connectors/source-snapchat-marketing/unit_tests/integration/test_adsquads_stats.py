@@ -218,9 +218,23 @@ class TestAdsquadsStatsIncremental(TestCase):
         )
 
         output = _read(config_builder=config(), stream_name="adsquads_stats_hourly", sync_mode=SyncMode.incremental)
-        assert len(output.records) >= 1
-        # Verify state message is emitted
-        assert len(output.state_messages) >= 1
+
+        assert len(output.state_messages) > 0, "Expected state messages to be emitted"
+        assert len(output.records) >= 1, f"Expected at least 1 record, got {len(output.records)}"
+
+        # Get latest record's cursor
+        latest_record = output.records[-1].record.data
+        record_cursor_value = latest_record.get("start_time")
+
+        # Get state cursor
+        new_state = output.most_recent_state.stream_state.__dict__
+        state_cursor_value = new_state.get("start_time") or new_state.get("state", {}).get("start_time")
+
+        # Validate state matches record
+        assert state_cursor_value is not None, "Expected 'start_time' in state"
+        assert record_cursor_value is not None, "Expected 'start_time' in record"
+        assert state_cursor_value == record_cursor_value or state_cursor_value.startswith(record_cursor_value[:10]), \
+            f"Expected state to match latest record. State: {state_cursor_value}, Record: {record_cursor_value}"
 
     @HttpMocker()
     def test_incremental_sync_with_state(self, http_mocker: HttpMocker) -> None:
@@ -239,9 +253,19 @@ class TestAdsquadsStatsIncremental(TestCase):
 
         output = _read(config_builder=config(), stream_name="adsquads_stats_hourly", sync_mode=SyncMode.incremental, state=state)
 
-        assert len(output.records) >= 1, f"Expected at least 1 record, got {len(output.records)}"
         assert len(output.state_messages) > 0, "Expected state messages to be emitted"
+        assert len(output.records) >= 1, f"Expected at least 1 record, got {len(output.records)}"
 
+        # Get latest record's cursor
+        latest_record = output.records[-1].record.data
+        record_cursor_value = latest_record.get("start_time")
+
+        # Get state cursor
         new_state = output.most_recent_state.stream_state.__dict__
-        cursor_value = new_state.get("start_time") or new_state.get("state", {}).get("start_time")
-        assert cursor_value is not None, "Expected cursor value in state"
+        state_cursor_value = new_state.get("start_time") or new_state.get("state", {}).get("start_time")
+
+        # Validate state matches record
+        assert state_cursor_value is not None, "Expected 'start_time' in state"
+        assert record_cursor_value is not None, "Expected 'start_time' in record"
+        assert state_cursor_value == record_cursor_value or state_cursor_value.startswith(record_cursor_value[:10]), \
+            f"Expected state to match latest record. State: {state_cursor_value}, Record: {record_cursor_value}"
