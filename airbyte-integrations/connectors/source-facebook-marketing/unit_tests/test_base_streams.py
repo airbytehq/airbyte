@@ -71,32 +71,32 @@ class TestDateTimeValue:
         FBMarketingStream.fix_date_time(record)
         assert {
             "bla": "2023-01-19t20:38:59 0000",
-            "created_time": "2023-01-19T20:38:59+0000",
-            "creation_time": "2023-01-19T20:38:59+0000",
-            "updated_time": "2023-01-19T20:38:59+0000",
-            "event_time": "2023-01-19T20:38:59+0000",
-            "first_fired_time": "2023-01-19T20:38:59+0000",
-            "last_fired_time": "2023-01-19T20:38:59+0000",
+            "created_time": "2023-01-19T20:38:59Z",
+            "creation_time": "2023-01-19T20:38:59Z",
+            "updated_time": "2023-01-19T20:38:59Z",
+            "event_time": "2023-01-19T20:38:59Z",
+            "first_fired_time": "2023-01-19T20:38:59Z",
+            "last_fired_time": "2023-01-19T20:38:59Z",
             "sub_list": [
                 {
                     "bla": "2023-01-19t20:38:59 0000",
-                    "created_time": "2023-01-19T20:38:59+0000",
-                    "creation_time": "2023-01-19T20:38:59+0000",
-                    "updated_time": "2023-01-19T20:38:59+0000",
-                    "event_time": "2023-01-19T20:38:59+0000",
-                    "first_fired_time": "2023-01-19T20:38:59+0000",
-                    "last_fired_time": "2023-01-19T20:38:59+0000",
+                    "created_time": "2023-01-19T20:38:59Z",
+                    "creation_time": "2023-01-19T20:38:59Z",
+                    "updated_time": "2023-01-19T20:38:59Z",
+                    "event_time": "2023-01-19T20:38:59Z",
+                    "first_fired_time": "2023-01-19T20:38:59Z",
+                    "last_fired_time": "2023-01-19T20:38:59Z",
                 }
             ],
             "sub_entries1": {
                 "sub_entries2": {
                     "bla": "2023-01-19t20:38:59 0000",
-                    "created_time": "2023-01-19T20:38:59+0000",
-                    "creation_time": "2023-01-19T20:38:59+0000",
-                    "updated_time": "2023-01-19T20:38:59+0000",
-                    "event_time": "2023-01-19T20:38:59+0000",
-                    "first_fired_time": "2023-01-19T20:38:59+0000",
-                    "last_fired_time": "2023-01-19T20:38:59+0000",
+                    "created_time": "2023-01-19T20:38:59Z",
+                    "creation_time": "2023-01-19T20:38:59Z",
+                    "updated_time": "2023-01-19T20:38:59Z",
+                    "event_time": "2023-01-19T20:38:59Z",
+                    "first_fired_time": "2023-01-19T20:38:59Z",
+                    "last_fired_time": "2023-01-19T20:38:59Z",
                 }
             },
         } == record
