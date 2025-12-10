@@ -139,29 +139,6 @@ class AdsInsights(FBMarketingIncrementalStream):
     def insights_job_timeout(self):
         return timedelta(minutes=self._insights_job_timeout)
 
-    @cached_property
-    def _should_rename_results_to_objective_results(self) -> bool:
-        """
-        Determine if we should rename 'results' field to 'objective_results' in API responses.
-
-        Facebook API returns 'results' field when 'objective_results' is requested.
-        This property checks if the transformation should be applied based on:
-        1. Custom fields are configured (custom insights stream)
-        2. 'objective_results' is in the schema
-        3. 'objective_results' is in custom fields but 'results' is not
-        """
-        if not self._custom_fields:
-            return False
-
-        schema = self.get_json_schema()
-        properties = schema.get("properties", {})
-
-        has_objective_results_in_schema = "objective_results" in properties
-        has_objective_results_in_fields = "objective_results" in self._custom_fields
-        has_results_in_fields = "results" in self._custom_fields
-
-        return has_objective_results_in_schema and has_objective_results_in_fields and not has_results_in_fields
-
     def _transform_breakdown(self, record: Mapping[str, Any]) -> Mapping[str, Any]:
         for breakdown in self.breakdowns:
             if breakdown in self.object_breakdowns.keys():
@@ -173,12 +150,29 @@ class AdsInsights(FBMarketingIncrementalStream):
         Transform 'results' field to 'objective_results' in API responses.
 
         Facebook API returns 'results' field when 'objective_results' is requested.
-        This method renames the field when appropriate conditions are met.
+        This method renames the field when conditions are met:
+        1. Custom fields are configured (custom insights stream)
+        2. 'objective_results' is in the schema
+        3. 'objective_results' is in custom fields but 'results' is not
+        4. Record contains 'results' but not 'objective_results'
 
         See: https://github.com/airbytehq/oncall/issues/10126
         """
-        if self._should_rename_results_to_objective_results and "results" in record and "objective_results" not in record:
+        if not self._custom_fields:
+            return record
+
+        schema = self.get_json_schema()
+        properties = schema.get("properties", {})
+
+        has_objective_results_in_schema = "objective_results" in properties
+        has_objective_results_in_fields = "objective_results" in self._custom_fields
+        has_results_in_fields = "results" in self._custom_fields
+
+        should_rename = has_objective_results_in_schema and has_objective_results_in_fields and not has_results_in_fields
+
+        if should_rename and "results" in record and "objective_results" not in record:
             record["objective_results"] = record.pop("results")
+
         return record
 
     def list_objects(self, params: Mapping[str, Any]) -> Iterable:
