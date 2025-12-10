@@ -31,6 +31,10 @@ import io.airbyte.cdk.load.pipline.object_storage.file.FileChunkTask.Companion.e
 import io.airbyte.cdk.load.pipline.object_storage.file.FileHandle
 import io.airbyte.cdk.load.pipline.object_storage.file.FileHandleFactory
 import io.airbyte.cdk.load.pipline.object_storage.file.UploadIdGenerator
+import io.airbyte.cdk.load.schema.model.ColumnSchema
+import io.airbyte.cdk.load.schema.model.StreamTableSchema
+import io.airbyte.cdk.load.schema.model.TableName
+import io.airbyte.cdk.load.schema.model.TableNames
 import io.airbyte.cdk.load.state.CheckpointId
 import io.airbyte.cdk.load.state.CheckpointValue
 import io.airbyte.cdk.load.write.object_storage.ObjectLoader
@@ -265,7 +269,18 @@ class FileChunkTaskTest<T> {
                 syncId = 3,
                 schema = schema,
                 includeFiles = true,
-                namespaceMapper = NamespaceMapper()
+                namespaceMapper = NamespaceMapper(),
+                tableSchema =
+                    StreamTableSchema(
+                        columnSchema =
+                            ColumnSchema(
+                                inputSchema = mapOf(),
+                                inputToFinalColumnNames = mapOf(),
+                                finalSchema = mapOf(),
+                            ),
+                        importType = Append,
+                        tableNames = TableNames(finalTableName = TableName("namespace", "test")),
+                    ),
             )
 
         fun record(
