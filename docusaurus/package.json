@@ -16,7 +16,7 @@
     "cleanup-cache": "node src/scripts/cleanup-cache.js",
     "prebuild": "pnpm run prepare-registry-cache && pnpm run prepare-embedded-api",
     "postbuild": "pnpm run cleanup-cache",
-    "prestart": "pnpm run prepare-registry-cache",
+    "prestart": "pnpm run prepare-registry-cache && pnpm run prepare-embedded-api",
     "docusaurus": "docusaurus",
     "start": "node src/scripts/fetchSchema.js && docusaurus start --port 3005",
     "build": "node src/scripts/fetchSchema.js && docusaurus build",
