@@ -67,6 +67,11 @@ class KlaviyoRequestBuilder:
         return cls(f"lists/{list_id}", api_key)
 
     @classmethod
+    def campaign_recipient_estimations_endpoint(cls, api_key: str, campaign_id: str) -> "KlaviyoRequestBuilder":
+        """Create a request builder for the /campaign-recipient-estimations/{campaign_id} endpoint."""
+        return cls(f"campaign-recipient-estimations/{campaign_id}", api_key)
+
+    @classmethod
     def from_url(cls, url: str, api_key: str) -> "KlaviyoRequestBuilder":
         """
         Create a request builder from a full URL (used for pagination links).
