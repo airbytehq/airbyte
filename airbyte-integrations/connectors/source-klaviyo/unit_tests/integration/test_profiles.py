@@ -396,8 +396,16 @@ class TestProfilesStream(TestCase):
         assert output.records[0].record.data["id"] == "profile_after_retry"
 
         log_messages = [log.log.message for log in output.logs]
-        backoff_logs = [msg for msg in log_messages if "429" in msg or "Backing off" in msg.lower() or "rate" in msg.lower()]
-        assert len(backoff_logs) > 0, "Expected log messages indicating rate limit handling"
+        # Check for backoff log message pattern
+        assert any(
+            "Backing off" in msg and "UserDefinedBackoffException" in msg and "429" in msg
+            for msg in log_messages
+        ), "Expected backoff log message for 429 rate limit"
+        # Check for retry/sleeping log message pattern
+        assert any(
+            "Sleeping for" in msg and "seconds" in msg
+            for msg in log_messages
+        ), "Expected retry sleeping log message for 429 rate limit"
 
     @HttpMocker()
     def test_unauthorized_401_error_fails(self, http_mocker: HttpMocker):
@@ -438,9 +446,11 @@ class TestProfilesStream(TestCase):
         output = read(source, config=config, catalog=catalog, expecting_exception=True)
 
         assert len(output.records) == 0
+        expected_error_message = "Please provide a valid API key and make sure it has permissions to read specified streams."
         log_messages = [log.log.message for log in output.logs]
-        error_logs = [msg for msg in log_messages if "401" in msg or "api key" in msg.lower() or "permission" in msg.lower()]
-        assert len(error_logs) > 0, "Expected error log messages for 401 authentication failure"
+        assert any(expected_error_message in msg for msg in log_messages), (
+            f"Expected error message '{expected_error_message}' in logs for 401 authentication failure"
+        )
 
     @HttpMocker()
     def test_forbidden_403_error_fails(self, http_mocker: HttpMocker):
@@ -476,9 +486,11 @@ class TestProfilesStream(TestCase):
         output = read(source, config=config, catalog=catalog, expecting_exception=True)
 
         assert len(output.records) == 0
+        expected_error_message = "Please provide a valid API key and make sure it has permissions to read specified streams."
         log_messages = [log.log.message for log in output.logs]
-        error_logs = [msg for msg in log_messages if "403" in msg or "permission" in msg.lower() or "forbidden" in msg.lower()]
-        assert len(error_logs) > 0, "Expected error log messages for 403 permission failure"
+        assert any(expected_error_message in msg for msg in log_messages), (
+            f"Expected error message '{expected_error_message}' in logs for 403 permission failure"
+        )
 
     @HttpMocker()
     def test_empty_results(self, http_mocker: HttpMocker):
