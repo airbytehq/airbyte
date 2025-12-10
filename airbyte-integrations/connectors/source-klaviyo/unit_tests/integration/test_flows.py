@@ -83,7 +83,7 @@ class TestFlowsStream(TestCase):
         catalog = CatalogBuilder().with_stream(_STREAM_NAME, SyncMode.full_refresh).build()
         output = read(source, config=config, catalog=catalog)
 
-        assert len(output.records) >= 1
+        assert len(output.records) == 2
         record = output.records[0].record.data
         assert record["id"] == "flow_001"
         assert record["attributes"]["name"] == "Welcome Series"
@@ -142,7 +142,7 @@ class TestFlowsStream(TestCase):
         catalog = CatalogBuilder().with_stream(_STREAM_NAME, SyncMode.full_refresh).build()
         output = read(source, config=config, catalog=catalog)
 
-        assert len(output.records) >= 1
+        assert len(output.records) == 2
         record_ids = [r.record.data["id"] for r in output.records]
         assert "flow_001" in record_ids
 
@@ -211,7 +211,7 @@ class TestFlowsStream(TestCase):
         catalog = CatalogBuilder().with_stream(_STREAM_NAME, SyncMode.full_refresh).build()
         output = read(source, config=config, catalog=catalog)
 
-        assert len(output.records) >= 2
+        assert len(output.records) == 4
         record_ids = [r.record.data["id"] for r in output.records]
         assert "flow_001" in record_ids
         assert "flow_002" in record_ids
@@ -264,7 +264,7 @@ class TestFlowsStream(TestCase):
         catalog = CatalogBuilder().with_stream(_STREAM_NAME, SyncMode.incremental).build()
         output = read(source, config=config, catalog=catalog)
 
-        assert len(output.records) >= 1
+        assert len(output.records) == 2
         record_ids = [r.record.data["id"] for r in output.records]
         assert "flow_001" in record_ids
         assert len(output.state_messages) > 0
@@ -318,7 +318,7 @@ class TestFlowsStream(TestCase):
         catalog = CatalogBuilder().with_stream(_STREAM_NAME, SyncMode.incremental).build()
         output = read(source, config=config, catalog=catalog, state=state)
 
-        assert len(output.records) >= 1
+        assert len(output.records) == 2
         record_ids = [r.record.data["id"] for r in output.records]
         assert "flow_new" in record_ids
         assert len(output.state_messages) > 0
@@ -371,7 +371,7 @@ class TestFlowsStream(TestCase):
         catalog = CatalogBuilder().with_stream(_STREAM_NAME, SyncMode.full_refresh).build()
         output = read(source, config=config, catalog=catalog)
 
-        assert len(output.records) >= 1
+        assert len(output.records) == 2
         record_ids = [r.record.data["id"] for r in output.records]
         assert "flow_transform_test" in record_ids
         record = output.records[0].record.data
@@ -433,7 +433,7 @@ class TestFlowsStream(TestCase):
         catalog = CatalogBuilder().with_stream(_STREAM_NAME, SyncMode.full_refresh).build()
         output = read(source, config=config, catalog=catalog)
 
-        assert len(output.records) >= 1
+        assert len(output.records) == 2
         record_ids = [r.record.data["id"] for r in output.records]
         assert "flow_after_retry" in record_ids
 

@@ -97,7 +97,7 @@ class TestCampaignsDetailedStream(TestCase):
         catalog = CatalogBuilder().with_stream(_STREAM_NAME, SyncMode.full_refresh).build()
         output = read(source, config=config, catalog=catalog)
 
-        assert len(output.records) >= 1
+        assert len(output.records) == 4
         record = output.records[0].record.data
         assert record["id"] == "campaign_001"
         assert record["attributes"]["name"] == "Test Campaign"
@@ -176,7 +176,7 @@ class TestCampaignsDetailedStream(TestCase):
         catalog = CatalogBuilder().with_stream(_STREAM_NAME, SyncMode.full_refresh).build()
         output = read(source, config=config, catalog=catalog)
 
-        assert len(output.records) >= 2
+        assert len(output.records) == 8
 
     @HttpMocker()
     def test_incremental_sync_first_sync_no_state(self, http_mocker: HttpMocker):
@@ -223,7 +223,7 @@ class TestCampaignsDetailedStream(TestCase):
         catalog = CatalogBuilder().with_stream(_STREAM_NAME, SyncMode.incremental).build()
         output = read(source, config=config, catalog=catalog)
 
-        assert len(output.records) >= 1
+        assert len(output.records) == 4
         assert len(output.state_messages) > 0
 
     @HttpMocker()
@@ -272,7 +272,7 @@ class TestCampaignsDetailedStream(TestCase):
         catalog = CatalogBuilder().with_stream(_STREAM_NAME, SyncMode.incremental).build()
         output = read(source, config=config, catalog=catalog, state=state)
 
-        assert len(output.records) >= 1
+        assert len(output.records) == 4
         assert len(output.state_messages) > 0
 
     @HttpMocker()
@@ -320,7 +320,7 @@ class TestCampaignsDetailedStream(TestCase):
         catalog = CatalogBuilder().with_stream(_STREAM_NAME, SyncMode.full_refresh).build()
         output = read(source, config=config, catalog=catalog)
 
-        assert len(output.records) >= 1
+        assert len(output.records) == 4
         record = output.records[0].record.data
         assert "updated_at" in record
         assert record["updated_at"] == "2024-05-31T14:45:00+00:00"
@@ -377,7 +377,7 @@ class TestCampaignsDetailedStream(TestCase):
         catalog = CatalogBuilder().with_stream(_STREAM_NAME, SyncMode.full_refresh).build()
         output = read(source, config=config, catalog=catalog)
 
-        assert len(output.records) >= 1
+        assert len(output.records) == 4
 
     @HttpMocker()
     def test_unauthorized_401_error_fails(self, http_mocker: HttpMocker):
