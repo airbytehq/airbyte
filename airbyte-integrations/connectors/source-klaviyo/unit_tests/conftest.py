@@ -26,7 +26,8 @@ def _get_manifest_path() -> Path:
     ci_path = Path("/airbyte/integration_code/source_declarative_manifest")
     if ci_path.exists():
         return ci_path
-    return Path(__file__).parent.parent
+    # Use .resolve() to ensure we get an absolute path, as __file__ may be relative in CI
+    return Path(__file__).resolve().parent.parent
 
 
 _SOURCE_FOLDER_PATH = _get_manifest_path()
