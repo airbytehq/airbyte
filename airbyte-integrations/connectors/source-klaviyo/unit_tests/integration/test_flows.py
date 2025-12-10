@@ -46,31 +46,38 @@ class TestFlowsStream(TestCase):
         """
         config = ConfigBuilder().with_api_key(_API_KEY).with_start_date(datetime(2024, 5, 31, tzinfo=timezone.utc)).build()
 
-        http_mocker.get(
-            KlaviyoRequestBuilder.flows_endpoint(_API_KEY).with_any_query_params().build(),
-            HttpResponse(
-                body=json.dumps(
-                    {
-                        "data": [
-                            {
-                                "type": "flow",
-                                "id": "flow_001",
-                                "attributes": {
-                                    "name": "Welcome Series",
-                                    "status": "live",
-                                    "archived": False,
-                                    "created": "2024-01-01T10:00:00+00:00",
-                                    "updated": "2024-01-15T12:30:00+00:00",
-                                    "trigger_type": "List",
-                                },
-                            }
-                        ],
-                        "links": {"self": "https://a.klaviyo.com/api/flows", "next": None},
-                    }
+        # Mock both partitions (archived: true/false)
+        for archived in ["true", "false"]:
+            http_mocker.get(
+                KlaviyoRequestBuilder.flows_endpoint(_API_KEY)
+                .with_query_params({
+                    "filter": f"and(greater-or-equal(updated,2024-05-31T00:00:00+00:00),less-or-equal(updated,2024-06-01T12:00:00+00:00),equals(archived,{archived}))",
+                    "sort": "updated",
+                })
+                .build(),
+                HttpResponse(
+                    body=json.dumps(
+                        {
+                            "data": [
+                                {
+                                    "type": "flow",
+                                    "id": "flow_001",
+                                    "attributes": {
+                                        "name": "Welcome Series",
+                                        "status": "live",
+                                        "archived": False,
+                                        "created": "2024-05-31T10:00:00+00:00",
+                                        "updated": "2024-05-31T12:30:00+00:00",
+                                        "trigger_type": "List",
+                                    },
+                                }
+                            ],
+                            "links": {"self": "https://a.klaviyo.com/api/flows", "next": None},
+                        }
+                    ),
+                    status_code=200,
                 ),
-                status_code=200,
-            ),
-        )
+            )
 
         source = get_source(config=config)
         catalog = CatalogBuilder().with_stream(_STREAM_NAME, SyncMode.full_refresh).build()
@@ -98,31 +105,38 @@ class TestFlowsStream(TestCase):
         """
         config = ConfigBuilder().with_api_key(_API_KEY).with_start_date(datetime(2024, 5, 31, tzinfo=timezone.utc)).build()
 
-        http_mocker.get(
-            KlaviyoRequestBuilder.flows_endpoint(_API_KEY).with_any_query_params().build(),
-            HttpResponse(
-                body=json.dumps(
-                    {
-                        "data": [
-                            {
-                                "type": "flow",
-                                "id": "flow_001",
-                                "attributes": {
-                                    "name": "Test Flow",
-                                    "status": "live",
-                                    "archived": False,
-                                    "created": "2024-01-01T10:00:00+00:00",
-                                    "updated": "2024-01-15T12:30:00+00:00",
-                                    "trigger_type": "Segment",
-                                },
-                            }
-                        ],
-                        "links": {"self": "https://a.klaviyo.com/api/flows", "next": None},
-                    }
+        # Mock both partitions (archived: true/false)
+        for archived in ["true", "false"]:
+            http_mocker.get(
+                KlaviyoRequestBuilder.flows_endpoint(_API_KEY)
+                .with_query_params({
+                    "filter": f"and(greater-or-equal(updated,2024-05-31T00:00:00+00:00),less-or-equal(updated,2024-06-01T12:00:00+00:00),equals(archived,{archived}))",
+                    "sort": "updated",
+                })
+                .build(),
+                HttpResponse(
+                    body=json.dumps(
+                        {
+                            "data": [
+                                {
+                                    "type": "flow",
+                                    "id": "flow_001",
+                                    "attributes": {
+                                        "name": "Test Flow",
+                                        "status": "live",
+                                        "archived": False,
+                                        "created": "2024-05-31T10:00:00+00:00",
+                                        "updated": "2024-05-31T12:30:00+00:00",
+                                        "trigger_type": "Segment",
+                                    },
+                                }
+                            ],
+                            "links": {"self": "https://a.klaviyo.com/api/flows", "next": None},
+                        }
+                    ),
+                    status_code=200,
                 ),
-                status_code=200,
-            ),
-        )
+            )
 
         source = get_source(config=config)
         catalog = CatalogBuilder().with_stream(_STREAM_NAME, SyncMode.full_refresh).build()
@@ -143,50 +157,55 @@ class TestFlowsStream(TestCase):
         """
         config = ConfigBuilder().with_api_key(_API_KEY).with_start_date(datetime(2024, 5, 31, tzinfo=timezone.utc)).build()
 
-        # Use a single mock with multiple responses to avoid ambiguity in mock matching.
-        # The first response includes a next_page_link, the second response has no next link.
-        http_mocker.get(
-            KlaviyoRequestBuilder.flows_endpoint(_API_KEY).with_any_query_params().build(),
-            [
-                KlaviyoPaginatedResponseBuilder()
-                .with_records(
-                    [
-                        {
-                            "type": "flow",
-                            "id": "flow_001",
-                            "attributes": {
-                                "name": "Flow 1",
-                                "status": "live",
-                                "archived": False,
-                                "created": "2024-05-31T10:00:00+00:00",
-                                "updated": "2024-05-31T10:00:00+00:00",
-                                "trigger_type": "List",
-                            },
-                        }
-                    ]
-                )
-                .with_next_page_link("https://a.klaviyo.com/api/flows?page[cursor]=abc123")
+        # Mock both partitions (archived: true/false) with pagination
+        for archived in ["true", "false"]:
+            http_mocker.get(
+                KlaviyoRequestBuilder.flows_endpoint(_API_KEY)
+                .with_query_params({
+                    "filter": f"and(greater-or-equal(updated,2024-05-31T00:00:00+00:00),less-or-equal(updated,2024-06-01T12:00:00+00:00),equals(archived,{archived}))",
+                    "sort": "updated",
+                })
                 .build(),
-                KlaviyoPaginatedResponseBuilder()
-                .with_records(
-                    [
-                        {
-                            "type": "flow",
-                            "id": "flow_002",
-                            "attributes": {
-                                "name": "Flow 2",
-                                "status": "live",
-                                "archived": False,
-                                "created": "2024-05-31T11:00:00+00:00",
-                                "updated": "2024-05-31T11:00:00+00:00",
-                                "trigger_type": "Segment",
-                            },
-                        }
-                    ]
-                )
-                .build(),
-            ],
-        )
+                [
+                    KlaviyoPaginatedResponseBuilder()
+                    .with_records(
+                        [
+                            {
+                                "type": "flow",
+                                "id": "flow_001",
+                                "attributes": {
+                                    "name": "Flow 1",
+                                    "status": "live",
+                                    "archived": False,
+                                    "created": "2024-05-31T10:00:00+00:00",
+                                    "updated": "2024-05-31T10:00:00+00:00",
+                                    "trigger_type": "List",
+                                },
+                            }
+                        ]
+                    )
+                    .with_next_page_link("https://a.klaviyo.com/api/flows?page[cursor]=abc123")
+                    .build(),
+                    KlaviyoPaginatedResponseBuilder()
+                    .with_records(
+                        [
+                            {
+                                "type": "flow",
+                                "id": "flow_002",
+                                "attributes": {
+                                    "name": "Flow 2",
+                                    "status": "live",
+                                    "archived": False,
+                                    "created": "2024-05-31T11:00:00+00:00",
+                                    "updated": "2024-05-31T11:00:00+00:00",
+                                    "trigger_type": "Segment",
+                                },
+                            }
+                        ]
+                    )
+                    .build(),
+                ],
+            )
 
         source = get_source(config=config)
         catalog = CatalogBuilder().with_stream(_STREAM_NAME, SyncMode.full_refresh).build()
@@ -208,31 +227,38 @@ class TestFlowsStream(TestCase):
         """
         config = ConfigBuilder().with_api_key(_API_KEY).with_start_date(datetime(2024, 5, 31, tzinfo=timezone.utc)).build()
 
-        http_mocker.get(
-            KlaviyoRequestBuilder.flows_endpoint(_API_KEY).with_any_query_params().build(),
-            HttpResponse(
-                body=json.dumps(
-                    {
-                        "data": [
-                            {
-                                "type": "flow",
-                                "id": "flow_001",
-                                "attributes": {
-                                    "name": "Test Flow",
-                                    "status": "live",
-                                    "archived": False,
-                                    "created": "2024-01-01T10:00:00+00:00",
-                                    "updated": "2024-01-15T12:30:00+00:00",
-                                    "trigger_type": "List",
-                                },
-                            }
-                        ],
-                        "links": {"self": "https://a.klaviyo.com/api/flows", "next": None},
-                    }
+        # Mock both partitions (archived: true/false)
+        for archived in ["true", "false"]:
+            http_mocker.get(
+                KlaviyoRequestBuilder.flows_endpoint(_API_KEY)
+                .with_query_params({
+                    "filter": f"and(greater-or-equal(updated,2024-05-31T00:00:00+00:00),less-or-equal(updated,2024-06-01T12:00:00+00:00),equals(archived,{archived}))",
+                    "sort": "updated",
+                })
+                .build(),
+                HttpResponse(
+                    body=json.dumps(
+                        {
+                            "data": [
+                                {
+                                    "type": "flow",
+                                    "id": "flow_001",
+                                    "attributes": {
+                                        "name": "Test Flow",
+                                        "status": "live",
+                                        "archived": False,
+                                        "created": "2024-05-31T10:00:00+00:00",
+                                        "updated": "2024-05-31T12:30:00+00:00",
+                                        "trigger_type": "List",
+                                    },
+                                }
+                            ],
+                            "links": {"self": "https://a.klaviyo.com/api/flows", "next": None},
+                        }
+                    ),
+                    status_code=200,
                 ),
-                status_code=200,
-            ),
-        )
+            )
 
         source = get_source(config=config)
         catalog = CatalogBuilder().with_stream(_STREAM_NAME, SyncMode.incremental).build()
@@ -255,31 +281,38 @@ class TestFlowsStream(TestCase):
         config = ConfigBuilder().with_api_key(_API_KEY).with_start_date(datetime(2024, 5, 31, tzinfo=timezone.utc)).build()
         state = StateBuilder().with_stream_state(_STREAM_NAME, {"updated": "2024-03-01T00:00:00+00:00"}).build()
 
-        http_mocker.get(
-            KlaviyoRequestBuilder.flows_endpoint(_API_KEY).with_any_query_params().build(),
-            HttpResponse(
-                body=json.dumps(
-                    {
-                        "data": [
-                            {
-                                "type": "flow",
-                                "id": "flow_new",
-                                "attributes": {
-                                    "name": "New Flow",
-                                    "status": "live",
-                                    "archived": False,
-                                    "created": "2024-03-10T10:00:00+00:00",
-                                    "updated": "2024-03-15T10:00:00+00:00",
-                                    "trigger_type": "Segment",
-                                },
-                            }
-                        ],
-                        "links": {"self": "https://a.klaviyo.com/api/flows", "next": None},
-                    }
+        # Mock both partitions with state-based filter (using state cursor value)
+        for archived in ["true", "false"]:
+            http_mocker.get(
+                KlaviyoRequestBuilder.flows_endpoint(_API_KEY)
+                .with_query_params({
+                    "filter": f"and(greater-or-equal(updated,2024-03-01T00:00:00+00:00),less-or-equal(updated,2024-06-01T12:00:00+00:00),equals(archived,{archived}))",
+                    "sort": "updated",
+                })
+                .build(),
+                HttpResponse(
+                    body=json.dumps(
+                        {
+                            "data": [
+                                {
+                                    "type": "flow",
+                                    "id": "flow_new",
+                                    "attributes": {
+                                        "name": "New Flow",
+                                        "status": "live",
+                                        "archived": False,
+                                        "created": "2024-03-10T10:00:00+00:00",
+                                        "updated": "2024-03-15T10:00:00+00:00",
+                                        "trigger_type": "Segment",
+                                    },
+                                }
+                            ],
+                            "links": {"self": "https://a.klaviyo.com/api/flows", "next": None},
+                        }
+                    ),
+                    status_code=200,
                 ),
-                status_code=200,
-            ),
-        )
+            )
 
         source = get_source(config=config, state=state)
         catalog = CatalogBuilder().with_stream(_STREAM_NAME, SyncMode.incremental).build()
@@ -301,31 +334,38 @@ class TestFlowsStream(TestCase):
         """
         config = ConfigBuilder().with_api_key(_API_KEY).with_start_date(datetime(2024, 5, 31, tzinfo=timezone.utc)).build()
 
-        http_mocker.get(
-            KlaviyoRequestBuilder.flows_endpoint(_API_KEY).with_any_query_params().build(),
-            HttpResponse(
-                body=json.dumps(
-                    {
-                        "data": [
-                            {
-                                "type": "flow",
-                                "id": "flow_transform_test",
-                                "attributes": {
-                                    "name": "Transform Test",
-                                    "status": "live",
-                                    "archived": False,
-                                    "created": "2024-01-01T10:00:00+00:00",
-                                    "updated": "2024-02-20T14:45:00+00:00",
-                                    "trigger_type": "List",
-                                },
-                            }
-                        ],
-                        "links": {"self": "https://a.klaviyo.com/api/flows", "next": None},
-                    }
+        # Mock both partitions (archived: true/false)
+        for archived in ["true", "false"]:
+            http_mocker.get(
+                KlaviyoRequestBuilder.flows_endpoint(_API_KEY)
+                .with_query_params({
+                    "filter": f"and(greater-or-equal(updated,2024-05-31T00:00:00+00:00),less-or-equal(updated,2024-06-01T12:00:00+00:00),equals(archived,{archived}))",
+                    "sort": "updated",
+                })
+                .build(),
+                HttpResponse(
+                    body=json.dumps(
+                        {
+                            "data": [
+                                {
+                                    "type": "flow",
+                                    "id": "flow_transform_test",
+                                    "attributes": {
+                                        "name": "Transform Test",
+                                        "status": "live",
+                                        "archived": False,
+                                        "created": "2024-05-31T10:00:00+00:00",
+                                        "updated": "2024-05-31T14:45:00+00:00",
+                                        "trigger_type": "List",
+                                    },
+                                }
+                            ],
+                            "links": {"self": "https://a.klaviyo.com/api/flows", "next": None},
+                        }
+                    ),
+                    status_code=200,
                 ),
-                status_code=200,
-            ),
-        )
+            )
 
         source = get_source(config=config)
         catalog = CatalogBuilder().with_stream(_STREAM_NAME, SyncMode.full_refresh).build()
@@ -336,7 +376,7 @@ class TestFlowsStream(TestCase):
         assert "flow_transform_test" in record_ids
         record = output.records[0].record.data
         assert "updated" in record
-        assert record["updated"] == "2024-02-20T14:45:00+00:00"
+        assert record["updated"] == "2024-05-31T14:45:00+00:00"
 
     @HttpMocker()
     def test_rate_limit_429_handling(self, http_mocker: HttpMocker):
@@ -349,38 +389,45 @@ class TestFlowsStream(TestCase):
         """
         config = ConfigBuilder().with_api_key(_API_KEY).with_start_date(datetime(2024, 5, 31, tzinfo=timezone.utc)).build()
 
-        http_mocker.get(
-            KlaviyoRequestBuilder.flows_endpoint(_API_KEY).with_any_query_params().build(),
-            [
-                HttpResponse(
-                    body=json.dumps({"errors": [{"detail": "Rate limit exceeded"}]}),
-                    status_code=429,
-                    headers={"Retry-After": "1"},
-                ),
-                HttpResponse(
-                    body=json.dumps(
-                        {
-                            "data": [
-                                {
-                                    "type": "flow",
-                                    "id": "flow_after_retry",
-                                    "attributes": {
-                                        "name": "After Retry",
-                                        "status": "live",
-                                        "archived": False,
-                                        "created": "2024-01-01T10:00:00+00:00",
-                                        "updated": "2024-01-20T10:00:00+00:00",
-                                        "trigger_type": "List",
-                                    },
-                                }
-                            ],
-                            "links": {"self": "https://a.klaviyo.com/api/flows", "next": None},
-                        }
+        # Mock both partitions with rate limit handling
+        for archived in ["true", "false"]:
+            http_mocker.get(
+                KlaviyoRequestBuilder.flows_endpoint(_API_KEY)
+                .with_query_params({
+                    "filter": f"and(greater-or-equal(updated,2024-05-31T00:00:00+00:00),less-or-equal(updated,2024-06-01T12:00:00+00:00),equals(archived,{archived}))",
+                    "sort": "updated",
+                })
+                .build(),
+                [
+                    HttpResponse(
+                        body=json.dumps({"errors": [{"detail": "Rate limit exceeded"}]}),
+                        status_code=429,
+                        headers={"Retry-After": "1"},
                     ),
-                    status_code=200,
-                ),
-            ],
-        )
+                    HttpResponse(
+                        body=json.dumps(
+                            {
+                                "data": [
+                                    {
+                                        "type": "flow",
+                                        "id": "flow_after_retry",
+                                        "attributes": {
+                                            "name": "After Retry",
+                                            "status": "live",
+                                            "archived": False,
+                                            "created": "2024-05-31T10:00:00+00:00",
+                                            "updated": "2024-05-31T10:00:00+00:00",
+                                            "trigger_type": "List",
+                                        },
+                                    }
+                                ],
+                                "links": {"self": "https://a.klaviyo.com/api/flows", "next": None},
+                            }
+                        ),
+                        status_code=200,
+                    ),
+                ],
+            )
 
         source = get_source(config=config)
         catalog = CatalogBuilder().with_stream(_STREAM_NAME, SyncMode.full_refresh).build()
@@ -401,13 +448,20 @@ class TestFlowsStream(TestCase):
         """
         config = ConfigBuilder().with_api_key("invalid_key").with_start_date(datetime(2024, 5, 31, tzinfo=timezone.utc)).build()
 
-        http_mocker.get(
-            KlaviyoRequestBuilder.flows_endpoint("invalid_key").with_any_query_params().build(),
-            HttpResponse(
-                body=json.dumps({"errors": [{"detail": "Invalid API key"}]}),
-                status_code=401,
-            ),
-        )
+        # Mock both partitions with 401 error
+        for archived in ["true", "false"]:
+            http_mocker.get(
+                KlaviyoRequestBuilder.flows_endpoint("invalid_key")
+                .with_query_params({
+                    "filter": f"and(greater-or-equal(updated,2024-05-31T00:00:00+00:00),less-or-equal(updated,2024-06-01T12:00:00+00:00),equals(archived,{archived}))",
+                    "sort": "updated",
+                })
+                .build(),
+                HttpResponse(
+                    body=json.dumps({"errors": [{"detail": "Invalid API key"}]}),
+                    status_code=401,
+                ),
+            )
 
         source = get_source(config=config)
         catalog = CatalogBuilder().with_stream(_STREAM_NAME, SyncMode.full_refresh).build()
@@ -429,13 +483,20 @@ class TestFlowsStream(TestCase):
         """
         config = ConfigBuilder().with_api_key(_API_KEY).with_start_date(datetime(2024, 5, 31, tzinfo=timezone.utc)).build()
 
-        http_mocker.get(
-            KlaviyoRequestBuilder.flows_endpoint(_API_KEY).with_any_query_params().build(),
-            HttpResponse(
-                body=json.dumps({"data": [], "links": {"self": "https://a.klaviyo.com/api/flows", "next": None}}),
-                status_code=200,
-            ),
-        )
+        # Mock both partitions with empty results
+        for archived in ["true", "false"]:
+            http_mocker.get(
+                KlaviyoRequestBuilder.flows_endpoint(_API_KEY)
+                .with_query_params({
+                    "filter": f"and(greater-or-equal(updated,2024-05-31T00:00:00+00:00),less-or-equal(updated,2024-06-01T12:00:00+00:00),equals(archived,{archived}))",
+                    "sort": "updated",
+                })
+                .build(),
+                HttpResponse(
+                    body=json.dumps({"data": [], "links": {"self": "https://a.klaviyo.com/api/flows", "next": None}}),
+                    status_code=200,
+                ),
+            )
 
         source = get_source(config=config)
         catalog = CatalogBuilder().with_stream(_STREAM_NAME, SyncMode.full_refresh).build()

@@ -47,8 +47,9 @@ class TestMetricsStream(TestCase):
         """
         config = ConfigBuilder().with_api_key(_API_KEY).with_start_date(datetime(2024, 5, 31, tzinfo=timezone.utc)).build()
 
+        # Metrics stream has no query parameters (no request_parameters in manifest)
         http_mocker.get(
-            KlaviyoRequestBuilder.metrics_endpoint(_API_KEY).with_any_query_params().build(),
+            KlaviyoRequestBuilder.metrics_endpoint(_API_KEY).build(),
             HttpResponse(
                 body=json.dumps(
                     {
@@ -58,8 +59,8 @@ class TestMetricsStream(TestCase):
                                 "id": "metric_001",
                                 "attributes": {
                                     "name": "Placed Order",
-                                    "created": "2024-01-01T10:00:00+00:00",
-                                    "updated": "2024-01-15T12:30:00+00:00",
+                                    "created": "2024-05-31T10:00:00+00:00",
+                                    "updated": "2024-05-31T12:30:00+00:00",
                                     "integration": {"id": "integration_001", "name": "Shopify"},
                                 },
                             }
@@ -93,8 +94,9 @@ class TestMetricsStream(TestCase):
 
         # Use a single mock with multiple responses to avoid ambiguity in mock matching.
         # The first response includes a next_page_link, the second response has no next link.
+        # Metrics stream has no query parameters (no request_parameters in manifest)
         http_mocker.get(
-            KlaviyoRequestBuilder.metrics_endpoint(_API_KEY).with_any_query_params().build(),
+            KlaviyoRequestBuilder.metrics_endpoint(_API_KEY).build(),
             [
                 KlaviyoPaginatedResponseBuilder()
                 .with_records(
@@ -151,8 +153,9 @@ class TestMetricsStream(TestCase):
         """
         config = ConfigBuilder().with_api_key(_API_KEY).with_start_date(datetime(2024, 5, 31, tzinfo=timezone.utc)).build()
 
+        # Metrics stream has no query parameters (no request_parameters in manifest)
         http_mocker.get(
-            KlaviyoRequestBuilder.metrics_endpoint(_API_KEY).with_any_query_params().build(),
+            KlaviyoRequestBuilder.metrics_endpoint(_API_KEY).build(),
             HttpResponse(
                 body=json.dumps(
                     {
@@ -162,8 +165,8 @@ class TestMetricsStream(TestCase):
                                 "id": "metric_001",
                                 "attributes": {
                                     "name": "Test Metric",
-                                    "created": "2024-01-01T10:00:00+00:00",
-                                    "updated": "2024-01-15T12:30:00+00:00",
+                                    "created": "2024-05-31T10:00:00+00:00",
+                                    "updated": "2024-05-31T12:30:00+00:00",
                                     "integration": {"id": "int_001", "name": "Shopify"},
                                 },
                             }
@@ -201,8 +204,9 @@ class TestMetricsStream(TestCase):
         config = ConfigBuilder().with_api_key(_API_KEY).with_start_date(datetime(2024, 5, 31, tzinfo=timezone.utc)).build()
         state = StateBuilder().with_stream_state(_STREAM_NAME, {"updated": "2024-03-01T00:00:00+00:00"}).build()
 
+        # Metrics stream has no query parameters (no request_parameters in manifest)
         http_mocker.get(
-            KlaviyoRequestBuilder.metrics_endpoint(_API_KEY).with_any_query_params().build(),
+            KlaviyoRequestBuilder.metrics_endpoint(_API_KEY).build(),
             HttpResponse(
                 body=json.dumps(
                     {
@@ -261,8 +265,9 @@ class TestMetricsStream(TestCase):
         config = ConfigBuilder().with_api_key(_API_KEY).with_start_date(datetime(2024, 5, 31, tzinfo=timezone.utc)).build()
         state = StateBuilder().with_stream_state(_STREAM_NAME, {"updated": "2024-03-01T00:00:00+00:00"}).build()
 
+        # Metrics stream has no query parameters (no request_parameters in manifest)
         http_mocker.get(
-            KlaviyoRequestBuilder.metrics_endpoint(_API_KEY).with_any_query_params().build(),
+            KlaviyoRequestBuilder.metrics_endpoint(_API_KEY).build(),
             HttpResponse(
                 body=json.dumps(
                     {
@@ -305,8 +310,9 @@ class TestMetricsStream(TestCase):
         """
         config = ConfigBuilder().with_api_key(_API_KEY).with_start_date(datetime(2024, 5, 31, tzinfo=timezone.utc)).build()
 
+        # Metrics stream has no query parameters (no request_parameters in manifest)
         http_mocker.get(
-            KlaviyoRequestBuilder.metrics_endpoint(_API_KEY).with_any_query_params().build(),
+            KlaviyoRequestBuilder.metrics_endpoint(_API_KEY).build(),
             HttpResponse(
                 body=json.dumps(
                     {
@@ -316,8 +322,8 @@ class TestMetricsStream(TestCase):
                                 "id": "metric_transform_test",
                                 "attributes": {
                                     "name": "Transform Test",
-                                    "created": "2024-01-01T10:00:00+00:00",
-                                    "updated": "2024-02-20T14:45:00+00:00",
+                                    "created": "2024-05-31T10:00:00+00:00",
+                                    "updated": "2024-05-31T14:45:00+00:00",
                                     "integration": {"id": "int_001", "name": "Shopify"},
                                 },
                             }
@@ -336,7 +342,7 @@ class TestMetricsStream(TestCase):
         assert len(output.records) == 1
         record = output.records[0].record.data
         assert "updated" in record
-        assert record["updated"] == "2024-02-20T14:45:00+00:00"
+        assert record["updated"] == "2024-05-31T14:45:00+00:00"
 
     @HttpMocker()
     def test_rate_limit_429_handling(self, http_mocker: HttpMocker):
@@ -349,8 +355,9 @@ class TestMetricsStream(TestCase):
         """
         config = ConfigBuilder().with_api_key(_API_KEY).with_start_date(datetime(2024, 5, 31, tzinfo=timezone.utc)).build()
 
+        # Metrics stream has no query parameters (no request_parameters in manifest)
         http_mocker.get(
-            KlaviyoRequestBuilder.metrics_endpoint(_API_KEY).with_any_query_params().build(),
+            KlaviyoRequestBuilder.metrics_endpoint(_API_KEY).build(),
             [
                 HttpResponse(
                     body=json.dumps({"errors": [{"detail": "Rate limit exceeded"}]}),
@@ -366,8 +373,8 @@ class TestMetricsStream(TestCase):
                                     "id": "metric_after_retry",
                                     "attributes": {
                                         "name": "After Retry",
-                                        "created": "2024-01-01T10:00:00+00:00",
-                                        "updated": "2024-01-20T10:00:00+00:00",
+                                        "created": "2024-05-31T10:00:00+00:00",
+                                        "updated": "2024-05-31T10:00:00+00:00",
                                         "integration": {"id": "int_001", "name": "Shopify"},
                                     },
                                 }
@@ -398,8 +405,9 @@ class TestMetricsStream(TestCase):
         """
         config = ConfigBuilder().with_api_key("invalid_key").with_start_date(datetime(2024, 5, 31, tzinfo=timezone.utc)).build()
 
+        # Metrics stream has no query parameters (no request_parameters in manifest)
         http_mocker.get(
-            KlaviyoRequestBuilder.metrics_endpoint("invalid_key").with_any_query_params().build(),
+            KlaviyoRequestBuilder.metrics_endpoint("invalid_key").build(),
             HttpResponse(
                 body=json.dumps({"errors": [{"detail": "Invalid API key"}]}),
                 status_code=401,
@@ -426,8 +434,9 @@ class TestMetricsStream(TestCase):
         """
         config = ConfigBuilder().with_api_key(_API_KEY).with_start_date(datetime(2024, 5, 31, tzinfo=timezone.utc)).build()
 
+        # Metrics stream has no query parameters (no request_parameters in manifest)
         http_mocker.get(
-            KlaviyoRequestBuilder.metrics_endpoint(_API_KEY).with_any_query_params().build(),
+            KlaviyoRequestBuilder.metrics_endpoint(_API_KEY).build(),
             HttpResponse(
                 body=json.dumps({"data": [], "links": {"self": "https://a.klaviyo.com/api/metrics", "next": None}}),
                 status_code=200,

@@ -49,44 +49,49 @@ class TestCampaignsDetailedStream(TestCase):
         """
         config = ConfigBuilder().with_api_key(_API_KEY).with_start_date(datetime(2024, 5, 31, tzinfo=timezone.utc)).build()
 
-        http_mocker.get(
-            KlaviyoRequestBuilder.campaigns_endpoint(_API_KEY).with_any_query_params().build(),
-            HttpResponse(
-                body=json.dumps(
-                    {
-                        "data": [
+        # campaigns_detailed uses ListPartitionRouter with 4 partitions (campaign_type: sms/email × archived: true/false)
+        # Mock all 4 partition combinations with explicit query params
+        for campaign_type in ["sms", "email"]:
+            for archived in ["true", "false"]:
+                filter_value = f"and(greater-or-equal(updated_at,2024-05-31T00:00:00+00:00),less-or-equal(updated_at,2024-06-01T12:00:00+00:00),equals(messages.channel,'{campaign_type}'),equals(archived,{archived}))"
+                http_mocker.get(
+                    KlaviyoRequestBuilder.campaigns_endpoint(_API_KEY).with_query_params({"filter": filter_value, "sort": "updated_at"}).build(),
+                    HttpResponse(
+                        body=json.dumps(
                             {
-                                "type": "campaign",
-                                "id": "campaign_001",
-                                "attributes": {
-                                    "name": "Test Campaign",
-                                    "status": "sent",
-                                    "created_at": "2024-01-01T10:00:00+00:00",
-                                    "updated_at": "2024-01-15T12:30:00+00:00",
-                                    "send_time": "2024-01-20T10:00:00+00:00",
-                                },
-                                "relationships": {
-                                    "campaign-messages": {"data": [{"type": "campaign-message", "id": "msg_001"}]},
-                                },
+                                "data": [
+                                    {
+                                        "type": "campaign",
+                                        "id": "campaign_001",
+                                        "attributes": {
+                                            "name": "Test Campaign",
+                                            "status": "sent",
+                                            "created_at": "2024-05-31T10:00:00+00:00",
+                                            "updated_at": "2024-05-31T12:30:00+00:00",
+                                            "send_time": "2024-05-31T10:00:00+00:00",
+                                        },
+                                        "relationships": {
+                                            "campaign-messages": {"data": [{"type": "campaign-message", "id": "msg_001"}]},
+                                        },
+                                    }
+                                ],
+                                "included": [
+                                    {
+                                        "type": "campaign-message",
+                                        "id": "msg_001",
+                                        "attributes": {
+                                            "label": "Email Message",
+                                            "channel": "email",
+                                            "content": {"subject": "Welcome!", "preview_text": "Thanks for joining"},
+                                        },
+                                    }
+                                ],
+                                "links": {"self": "https://a.klaviyo.com/api/campaigns", "next": None},
                             }
-                        ],
-                        "included": [
-                            {
-                                "type": "campaign-message",
-                                "id": "msg_001",
-                                "attributes": {
-                                    "label": "Email Message",
-                                    "channel": "email",
-                                    "content": {"subject": "Welcome!", "preview_text": "Thanks for joining"},
-                                },
-                            }
-                        ],
-                        "links": {"self": "https://a.klaviyo.com/api/campaigns", "next": None},
-                    }
-                ),
-                status_code=200,
-            ),
-        )
+                        ),
+                        status_code=200,
+                    ),
+                )
 
         source = get_source(config=config)
         catalog = CatalogBuilder().with_stream(_STREAM_NAME, SyncMode.full_refresh).build()
@@ -110,58 +115,62 @@ class TestCampaignsDetailedStream(TestCase):
 
         # Use a single mock with multiple responses to avoid ambiguity in mock matching.
         # The first response includes a next link, the second response has no next link.
-        http_mocker.get(
-            KlaviyoRequestBuilder.campaigns_endpoint(_API_KEY).with_any_query_params().build(),
-            [
-                HttpResponse(
-                    body=json.dumps(
-                        {
-                            "data": [
+        # campaigns_detailed uses ListPartitionRouter with 4 partitions (campaign_type: sms/email × archived: true/false)
+        for campaign_type in ["sms", "email"]:
+            for archived in ["true", "false"]:
+                filter_value = f"and(greater-or-equal(updated_at,2024-05-31T00:00:00+00:00),less-or-equal(updated_at,2024-06-01T12:00:00+00:00),equals(messages.channel,'{campaign_type}'),equals(archived,{archived}))"
+                http_mocker.get(
+                    KlaviyoRequestBuilder.campaigns_endpoint(_API_KEY).with_query_params({"filter": filter_value, "sort": "updated_at"}).build(),
+                    [
+                        HttpResponse(
+                            body=json.dumps(
                                 {
-                                    "type": "campaign",
-                                    "id": "campaign_001",
-                                    "attributes": {
-                                        "name": "Campaign 1",
-                                        "status": "sent",
-                                        "created_at": "2024-05-31T10:00:00+00:00",
-                                        "updated_at": "2024-05-31T10:00:00+00:00",
+                                    "data": [
+                                        {
+                                            "type": "campaign",
+                                            "id": "campaign_001",
+                                            "attributes": {
+                                                "name": "Campaign 1",
+                                                "status": "sent",
+                                                "created_at": "2024-05-31T10:00:00+00:00",
+                                                "updated_at": "2024-05-31T10:00:00+00:00",
+                                            },
+                                            "relationships": {"campaign-messages": {"data": []}},
+                                        }
+                                    ],
+                                    "included": [],
+                                    "links": {
+                                        "self": "https://a.klaviyo.com/api/campaigns",
+                                        "next": "https://a.klaviyo.com/api/campaigns?page[cursor]=abc123",
                                     },
-                                    "relationships": {"campaign-messages": {"data": []}},
                                 }
-                            ],
-                            "included": [],
-                            "links": {
-                                "self": "https://a.klaviyo.com/api/campaigns",
-                                "next": "https://a.klaviyo.com/api/campaigns?page[cursor]=abc123",
-                            },
-                        }
-                    ),
-                    status_code=200,
-                ),
-                HttpResponse(
-                    body=json.dumps(
-                        {
-                            "data": [
+                            ),
+                            status_code=200,
+                        ),
+                        HttpResponse(
+                            body=json.dumps(
                                 {
-                                    "type": "campaign",
-                                    "id": "campaign_002",
-                                    "attributes": {
-                                        "name": "Campaign 2",
-                                        "status": "sent",
-                                        "created_at": "2024-05-31T11:00:00+00:00",
-                                        "updated_at": "2024-05-31T11:00:00+00:00",
-                                    },
-                                    "relationships": {"campaign-messages": {"data": []}},
+                                    "data": [
+                                        {
+                                            "type": "campaign",
+                                            "id": "campaign_002",
+                                            "attributes": {
+                                                "name": "Campaign 2",
+                                                "status": "sent",
+                                                "created_at": "2024-05-31T11:00:00+00:00",
+                                                "updated_at": "2024-05-31T11:00:00+00:00",
+                                            },
+                                            "relationships": {"campaign-messages": {"data": []}},
+                                        }
+                                    ],
+                                    "included": [],
+                                    "links": {"self": "https://a.klaviyo.com/api/campaigns?page[cursor]=abc123", "next": None},
                                 }
-                            ],
-                            "included": [],
-                            "links": {"self": "https://a.klaviyo.com/api/campaigns?page[cursor]=abc123", "next": None},
-                        }
-                    ),
-                    status_code=200,
-                ),
-            ],
-        )
+                            ),
+                            status_code=200,
+                        ),
+                    ],
+                )
 
         source = get_source(config=config)
         catalog = CatalogBuilder().with_stream(_STREAM_NAME, SyncMode.full_refresh).build()
@@ -180,31 +189,35 @@ class TestCampaignsDetailedStream(TestCase):
         """
         config = ConfigBuilder().with_api_key(_API_KEY).with_start_date(datetime(2024, 5, 31, tzinfo=timezone.utc)).build()
 
-        http_mocker.get(
-            KlaviyoRequestBuilder.campaigns_endpoint(_API_KEY).with_any_query_params().build(),
-            HttpResponse(
-                body=json.dumps(
-                    {
-                        "data": [
+        # campaigns_detailed uses ListPartitionRouter with 4 partitions (campaign_type: sms/email × archived: true/false)
+        for campaign_type in ["sms", "email"]:
+            for archived in ["true", "false"]:
+                filter_value = f"and(greater-or-equal(updated_at,2024-05-31T00:00:00+00:00),less-or-equal(updated_at,2024-06-01T12:00:00+00:00),equals(messages.channel,'{campaign_type}'),equals(archived,{archived}))"
+                http_mocker.get(
+                    KlaviyoRequestBuilder.campaigns_endpoint(_API_KEY).with_query_params({"filter": filter_value, "sort": "updated_at"}).build(),
+                    HttpResponse(
+                        body=json.dumps(
                             {
-                                "type": "campaign",
-                                "id": "campaign_001",
-                                "attributes": {
-                                    "name": "Test Campaign",
-                                    "status": "sent",
-                                    "created_at": "2024-01-01T10:00:00+00:00",
-                                    "updated_at": "2024-01-15T12:30:00+00:00",
-                                },
-                                "relationships": {"campaign-messages": {"data": []}},
+                                "data": [
+                                    {
+                                        "type": "campaign",
+                                        "id": "campaign_001",
+                                        "attributes": {
+                                            "name": "Test Campaign",
+                                            "status": "sent",
+                                            "created_at": "2024-05-31T10:00:00+00:00",
+                                            "updated_at": "2024-05-31T12:30:00+00:00",
+                                        },
+                                        "relationships": {"campaign-messages": {"data": []}},
+                                    }
+                                ],
+                                "included": [],
+                                "links": {"self": "https://a.klaviyo.com/api/campaigns", "next": None},
                             }
-                        ],
-                        "included": [],
-                        "links": {"self": "https://a.klaviyo.com/api/campaigns", "next": None},
-                    }
-                ),
-                status_code=200,
-            ),
-        )
+                        ),
+                        status_code=200,
+                    ),
+                )
 
         source = get_source(config=config)
         catalog = CatalogBuilder().with_stream(_STREAM_NAME, SyncMode.incremental).build()
@@ -225,31 +238,35 @@ class TestCampaignsDetailedStream(TestCase):
         config = ConfigBuilder().with_api_key(_API_KEY).with_start_date(datetime(2024, 5, 31, tzinfo=timezone.utc)).build()
         state = StateBuilder().with_stream_state(_STREAM_NAME, {"updated_at": "2024-03-01T00:00:00+00:00"}).build()
 
-        http_mocker.get(
-            KlaviyoRequestBuilder.campaigns_endpoint(_API_KEY).with_any_query_params().build(),
-            HttpResponse(
-                body=json.dumps(
-                    {
-                        "data": [
+        # campaigns_detailed uses ListPartitionRouter with 4 partitions (campaign_type: sms/email × archived: true/false)
+        for campaign_type in ["sms", "email"]:
+            for archived in ["true", "false"]:
+                filter_value = f"and(greater-or-equal(updated_at,2024-05-31T00:00:00+00:00),less-or-equal(updated_at,2024-06-01T12:00:00+00:00),equals(messages.channel,'{campaign_type}'),equals(archived,{archived}))"
+                http_mocker.get(
+                    KlaviyoRequestBuilder.campaigns_endpoint(_API_KEY).with_query_params({"filter": filter_value, "sort": "updated_at"}).build(),
+                    HttpResponse(
+                        body=json.dumps(
                             {
-                                "type": "campaign",
-                                "id": "campaign_new",
-                                "attributes": {
-                                    "name": "New Campaign",
-                                    "status": "sent",
-                                    "created_at": "2024-03-10T10:00:00+00:00",
-                                    "updated_at": "2024-03-15T10:00:00+00:00",
-                                },
-                                "relationships": {"campaign-messages": {"data": []}},
+                                "data": [
+                                    {
+                                        "type": "campaign",
+                                        "id": "campaign_new",
+                                        "attributes": {
+                                            "name": "New Campaign",
+                                            "status": "sent",
+                                            "created_at": "2024-05-31T10:00:00+00:00",
+                                            "updated_at": "2024-05-31T10:00:00+00:00",
+                                        },
+                                        "relationships": {"campaign-messages": {"data": []}},
+                                    }
+                                ],
+                                "included": [],
+                                "links": {"self": "https://a.klaviyo.com/api/campaigns", "next": None},
                             }
-                        ],
-                        "included": [],
-                        "links": {"self": "https://a.klaviyo.com/api/campaigns", "next": None},
-                    }
-                ),
-                status_code=200,
-            ),
-        )
+                        ),
+                        status_code=200,
+                    ),
+                )
 
         source = get_source(config=config, state=state)
         catalog = CatalogBuilder().with_stream(_STREAM_NAME, SyncMode.incremental).build()
@@ -269,31 +286,35 @@ class TestCampaignsDetailedStream(TestCase):
         """
         config = ConfigBuilder().with_api_key(_API_KEY).with_start_date(datetime(2024, 5, 31, tzinfo=timezone.utc)).build()
 
-        http_mocker.get(
-            KlaviyoRequestBuilder.campaigns_endpoint(_API_KEY).with_any_query_params().build(),
-            HttpResponse(
-                body=json.dumps(
-                    {
-                        "data": [
+        # campaigns_detailed uses ListPartitionRouter with 4 partitions (campaign_type: sms/email × archived: true/false)
+        for campaign_type in ["sms", "email"]:
+            for archived in ["true", "false"]:
+                filter_value = f"and(greater-or-equal(updated_at,2024-05-31T00:00:00+00:00),less-or-equal(updated_at,2024-06-01T12:00:00+00:00),equals(messages.channel,'{campaign_type}'),equals(archived,{archived}))"
+                http_mocker.get(
+                    KlaviyoRequestBuilder.campaigns_endpoint(_API_KEY).with_query_params({"filter": filter_value, "sort": "updated_at"}).build(),
+                    HttpResponse(
+                        body=json.dumps(
                             {
-                                "type": "campaign",
-                                "id": "campaign_transform_test",
-                                "attributes": {
-                                    "name": "Transform Test",
-                                    "status": "sent",
-                                    "created_at": "2024-01-01T10:00:00+00:00",
-                                    "updated_at": "2024-02-20T14:45:00+00:00",
-                                },
-                                "relationships": {"campaign-messages": {"data": []}},
+                                "data": [
+                                    {
+                                        "type": "campaign",
+                                        "id": "campaign_transform_test",
+                                        "attributes": {
+                                            "name": "Transform Test",
+                                            "status": "sent",
+                                            "created_at": "2024-05-31T10:00:00+00:00",
+                                            "updated_at": "2024-05-31T14:45:00+00:00",
+                                        },
+                                        "relationships": {"campaign-messages": {"data": []}},
+                                    }
+                                ],
+                                "included": [],
+                                "links": {"self": "https://a.klaviyo.com/api/campaigns", "next": None},
                             }
-                        ],
-                        "included": [],
-                        "links": {"self": "https://a.klaviyo.com/api/campaigns", "next": None},
-                    }
-                ),
-                status_code=200,
-            ),
-        )
+                        ),
+                        status_code=200,
+                    ),
+                )
 
         source = get_source(config=config)
         catalog = CatalogBuilder().with_stream(_STREAM_NAME, SyncMode.full_refresh).build()
@@ -302,7 +323,7 @@ class TestCampaignsDetailedStream(TestCase):
         assert len(output.records) >= 1
         record = output.records[0].record.data
         assert "updated_at" in record
-        assert record["updated_at"] == "2024-02-20T14:45:00+00:00"
+        assert record["updated_at"] == "2024-05-31T14:45:00+00:00"
 
     @HttpMocker()
     def test_rate_limit_429_handling(self, http_mocker: HttpMocker):
@@ -315,38 +336,42 @@ class TestCampaignsDetailedStream(TestCase):
         """
         config = ConfigBuilder().with_api_key(_API_KEY).with_start_date(datetime(2024, 5, 31, tzinfo=timezone.utc)).build()
 
-        http_mocker.get(
-            KlaviyoRequestBuilder.campaigns_endpoint(_API_KEY).with_any_query_params().build(),
-            [
-                HttpResponse(
-                    body=json.dumps({"errors": [{"detail": "Rate limit exceeded"}]}),
-                    status_code=429,
-                    headers={"Retry-After": "1"},
-                ),
-                HttpResponse(
-                    body=json.dumps(
-                        {
-                            "data": [
+        # campaigns_detailed uses ListPartitionRouter with 4 partitions (campaign_type: sms/email × archived: true/false)
+        for campaign_type in ["sms", "email"]:
+            for archived in ["true", "false"]:
+                filter_value = f"and(greater-or-equal(updated_at,2024-05-31T00:00:00+00:00),less-or-equal(updated_at,2024-06-01T12:00:00+00:00),equals(messages.channel,'{campaign_type}'),equals(archived,{archived}))"
+                http_mocker.get(
+                    KlaviyoRequestBuilder.campaigns_endpoint(_API_KEY).with_query_params({"filter": filter_value, "sort": "updated_at"}).build(),
+                    [
+                        HttpResponse(
+                            body=json.dumps({"errors": [{"detail": "Rate limit exceeded"}]}),
+                            status_code=429,
+                            headers={"Retry-After": "1"},
+                        ),
+                        HttpResponse(
+                            body=json.dumps(
                                 {
-                                    "type": "campaign",
-                                    "id": "campaign_after_retry",
-                                    "attributes": {
-                                        "name": "After Retry",
-                                        "status": "sent",
-                                        "created_at": "2024-01-01T10:00:00+00:00",
-                                        "updated_at": "2024-01-20T10:00:00+00:00",
-                                    },
-                                    "relationships": {"campaign-messages": {"data": []}},
+                                    "data": [
+                                        {
+                                            "type": "campaign",
+                                            "id": "campaign_after_retry",
+                                            "attributes": {
+                                                "name": "After Retry",
+                                                "status": "sent",
+                                                "created_at": "2024-05-31T10:00:00+00:00",
+                                                "updated_at": "2024-05-31T10:00:00+00:00",
+                                            },
+                                            "relationships": {"campaign-messages": {"data": []}},
+                                        }
+                                    ],
+                                    "included": [],
+                                    "links": {"self": "https://a.klaviyo.com/api/campaigns", "next": None},
                                 }
-                            ],
-                            "included": [],
-                            "links": {"self": "https://a.klaviyo.com/api/campaigns", "next": None},
-                        }
-                    ),
-                    status_code=200,
-                ),
-            ],
-        )
+                            ),
+                            status_code=200,
+                        ),
+                    ],
+                )
 
         source = get_source(config=config)
         catalog = CatalogBuilder().with_stream(_STREAM_NAME, SyncMode.full_refresh).build()
@@ -365,13 +390,17 @@ class TestCampaignsDetailedStream(TestCase):
         """
         config = ConfigBuilder().with_api_key("invalid_key").with_start_date(datetime(2024, 5, 31, tzinfo=timezone.utc)).build()
 
-        http_mocker.get(
-            KlaviyoRequestBuilder.campaigns_endpoint("invalid_key").with_any_query_params().build(),
-            HttpResponse(
-                body=json.dumps({"errors": [{"detail": "Invalid API key"}]}),
-                status_code=401,
-            ),
-        )
+        # campaigns_detailed uses ListPartitionRouter with 4 partitions (campaign_type: sms/email × archived: true/false)
+        for campaign_type in ["sms", "email"]:
+            for archived in ["true", "false"]:
+                filter_value = f"and(greater-or-equal(updated_at,2024-05-31T00:00:00+00:00),less-or-equal(updated_at,2024-06-01T12:00:00+00:00),equals(messages.channel,'{campaign_type}'),equals(archived,{archived}))"
+                http_mocker.get(
+                    KlaviyoRequestBuilder.campaigns_endpoint("invalid_key").with_query_params({"filter": filter_value, "sort": "updated_at"}).build(),
+                    HttpResponse(
+                        body=json.dumps({"errors": [{"detail": "Invalid API key"}]}),
+                        status_code=401,
+                    ),
+                )
 
         source = get_source(config=config)
         catalog = CatalogBuilder().with_stream(_STREAM_NAME, SyncMode.full_refresh).build()
@@ -393,13 +422,17 @@ class TestCampaignsDetailedStream(TestCase):
         """
         config = ConfigBuilder().with_api_key(_API_KEY).with_start_date(datetime(2024, 5, 31, tzinfo=timezone.utc)).build()
 
-        http_mocker.get(
-            KlaviyoRequestBuilder.campaigns_endpoint(_API_KEY).with_any_query_params().build(),
-            HttpResponse(
-                body=json.dumps({"data": [], "included": [], "links": {"self": "https://a.klaviyo.com/api/campaigns", "next": None}}),
-                status_code=200,
-            ),
-        )
+        # campaigns_detailed uses ListPartitionRouter with 4 partitions (campaign_type: sms/email × archived: true/false)
+        for campaign_type in ["sms", "email"]:
+            for archived in ["true", "false"]:
+                filter_value = f"and(greater-or-equal(updated_at,2024-05-31T00:00:00+00:00),less-or-equal(updated_at,2024-06-01T12:00:00+00:00),equals(messages.channel,'{campaign_type}'),equals(archived,{archived}))"
+                http_mocker.get(
+                    KlaviyoRequestBuilder.campaigns_endpoint(_API_KEY).with_query_params({"filter": filter_value, "sort": "updated_at"}).build(),
+                    HttpResponse(
+                        body=json.dumps({"data": [], "included": [], "links": {"self": "https://a.klaviyo.com/api/campaigns", "next": None}}),
+                        status_code=200,
+                    ),
+                )
 
         source = get_source(config=config)
         catalog = CatalogBuilder().with_stream(_STREAM_NAME, SyncMode.full_refresh).build()

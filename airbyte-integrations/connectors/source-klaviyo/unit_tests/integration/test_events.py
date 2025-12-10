@@ -48,7 +48,15 @@ class TestEventsStream(TestCase):
         config = ConfigBuilder().with_api_key(_API_KEY).with_start_date(datetime(2024, 5, 31, tzinfo=timezone.utc)).build()
 
         http_mocker.get(
-            KlaviyoRequestBuilder.events_endpoint(_API_KEY).with_any_query_params().build(),
+            KlaviyoRequestBuilder.events_endpoint(_API_KEY)
+            .with_query_params({
+                "fields[event]": "event_properties,timestamp,uuid,datetime",
+                "fields[metric]": "name,created,updated,integration",
+                "include": "metric,attributions",
+                "filter": "greater-or-equal(datetime,2024-05-31T00:00:00+00:00),less-or-equal(datetime,2024-06-01T12:00:00+00:00)",
+                "sort": "datetime",
+            })
+            .build(),
             HttpResponse(
                 body=json.dumps(
                     {
@@ -57,8 +65,8 @@ class TestEventsStream(TestCase):
                                 "type": "event",
                                 "id": "event_001",
                                 "attributes": {
-                                    "timestamp": "2024-01-15T10:30:00+00:00",
-                                    "datetime": "2024-01-15T10:30:00+00:00",
+                                    "timestamp": "2024-05-31T10:30:00+00:00",
+                                    "datetime": "2024-05-31T10:30:00+00:00",
                                     "uuid": "550e8400-e29b-41d4-a716-446655440000",
                                     "event_properties": {"value": 99.99, "currency": "USD"},
                                 },
@@ -98,7 +106,15 @@ class TestEventsStream(TestCase):
         # Use a single mock with multiple responses to avoid ambiguity in mock matching.
         # The first response includes a next_page_link, the second response has no next link.
         http_mocker.get(
-            KlaviyoRequestBuilder.events_endpoint(_API_KEY).with_any_query_params().build(),
+            KlaviyoRequestBuilder.events_endpoint(_API_KEY)
+            .with_query_params({
+                "fields[event]": "event_properties,timestamp,uuid,datetime",
+                "fields[metric]": "name,created,updated,integration",
+                "include": "metric,attributions",
+                "filter": "greater-or-equal(datetime,2024-05-31T00:00:00+00:00),less-or-equal(datetime,2024-06-01T12:00:00+00:00)",
+                "sort": "datetime",
+            })
+            .build(),
             [
                 KlaviyoPaginatedResponseBuilder()
                 .with_records(
@@ -170,7 +186,15 @@ class TestEventsStream(TestCase):
         config = ConfigBuilder().with_api_key(_API_KEY).with_start_date(datetime(2024, 5, 31, tzinfo=timezone.utc)).build()
 
         http_mocker.get(
-            KlaviyoRequestBuilder.events_endpoint(_API_KEY).with_any_query_params().build(),
+            KlaviyoRequestBuilder.events_endpoint(_API_KEY)
+            .with_query_params({
+                "fields[event]": "event_properties,timestamp,uuid,datetime",
+                "fields[metric]": "name,created,updated,integration",
+                "include": "metric,attributions",
+                "filter": "greater-or-equal(datetime,2024-05-31T00:00:00+00:00),less-or-equal(datetime,2024-06-01T12:00:00+00:00)",
+                "sort": "datetime",
+            })
+            .build(),
             HttpResponse(
                 body=json.dumps(
                     {
@@ -179,8 +203,8 @@ class TestEventsStream(TestCase):
                                 "type": "event",
                                 "id": "event_001",
                                 "attributes": {
-                                    "timestamp": "2024-01-15T10:30:00+00:00",
-                                    "datetime": "2024-01-15T10:30:00+00:00",
+                                    "timestamp": "2024-05-31T10:30:00+00:00",
+                                    "datetime": "2024-05-31T10:30:00+00:00",
                                     "uuid": "uuid-001",
                                     "event_properties": {},
                                 },
@@ -218,7 +242,15 @@ class TestEventsStream(TestCase):
         state = StateBuilder().with_stream_state(_STREAM_NAME, {"datetime": "2024-03-01T00:00:00+00:00"}).build()
 
         http_mocker.get(
-            KlaviyoRequestBuilder.events_endpoint(_API_KEY).with_any_query_params().build(),
+            KlaviyoRequestBuilder.events_endpoint(_API_KEY)
+            .with_query_params({
+                "fields[event]": "event_properties,timestamp,uuid,datetime",
+                "fields[metric]": "name,created,updated,integration",
+                "include": "metric,attributions",
+                "filter": "greater-or-equal(datetime,2024-03-01T00:00:00+00:00),less-or-equal(datetime,2024-06-01T12:00:00+00:00)",
+                "sort": "datetime",
+            })
+            .build(),
             HttpResponse(
                 body=json.dumps(
                     {
@@ -270,7 +302,15 @@ class TestEventsStream(TestCase):
         config = ConfigBuilder().with_api_key(_API_KEY).with_start_date(datetime(2024, 5, 31, tzinfo=timezone.utc)).build()
 
         http_mocker.get(
-            KlaviyoRequestBuilder.events_endpoint(_API_KEY).with_any_query_params().build(),
+            KlaviyoRequestBuilder.events_endpoint(_API_KEY)
+            .with_query_params({
+                "fields[event]": "event_properties,timestamp,uuid,datetime",
+                "fields[metric]": "name,created,updated,integration",
+                "include": "metric,attributions",
+                "filter": "greater-or-equal(datetime,2024-05-31T00:00:00+00:00),less-or-equal(datetime,2024-06-01T12:00:00+00:00)",
+                "sort": "datetime",
+            })
+            .build(),
             HttpResponse(
                 body=json.dumps(
                     {
@@ -279,8 +319,8 @@ class TestEventsStream(TestCase):
                                 "type": "event",
                                 "id": "event_transform_test",
                                 "attributes": {
-                                    "timestamp": "2024-02-20T14:45:00+00:00",
-                                    "datetime": "2024-02-20T14:45:00+00:00",
+                                    "timestamp": "2024-05-31T14:45:00+00:00",
+                                    "datetime": "2024-05-31T14:45:00+00:00",
                                     "uuid": "uuid-transform",
                                     "event_properties": {"test": "value"},
                                 },
@@ -301,8 +341,8 @@ class TestEventsStream(TestCase):
         assert len(output.records) == 1
         record = output.records[0].record.data
         assert "datetime" in record
-        assert record["datetime"] == "2024-02-20T14:45:00+00:00"
-        assert record["attributes"]["datetime"] == "2024-02-20T14:45:00+00:00"
+        assert record["datetime"] == "2024-05-31T14:45:00+00:00"
+        assert record["attributes"]["datetime"] == "2024-05-31T14:45:00+00:00"
 
     @HttpMocker()
     def test_rate_limit_429_handling(self, http_mocker: HttpMocker):
@@ -316,7 +356,15 @@ class TestEventsStream(TestCase):
         config = ConfigBuilder().with_api_key(_API_KEY).with_start_date(datetime(2024, 5, 31, tzinfo=timezone.utc)).build()
 
         http_mocker.get(
-            KlaviyoRequestBuilder.events_endpoint(_API_KEY).with_any_query_params().build(),
+            KlaviyoRequestBuilder.events_endpoint(_API_KEY)
+            .with_query_params({
+                "fields[event]": "event_properties,timestamp,uuid,datetime",
+                "fields[metric]": "name,created,updated,integration",
+                "include": "metric,attributions",
+                "filter": "greater-or-equal(datetime,2024-05-31T00:00:00+00:00),less-or-equal(datetime,2024-06-01T12:00:00+00:00)",
+                "sort": "datetime",
+            })
+            .build(),
             [
                 HttpResponse(
                     body=json.dumps({"errors": [{"detail": "Rate limit exceeded"}]}),
@@ -331,8 +379,8 @@ class TestEventsStream(TestCase):
                                     "type": "event",
                                     "id": "event_after_retry",
                                     "attributes": {
-                                        "timestamp": "2024-01-20T10:00:00+00:00",
-                                        "datetime": "2024-01-20T10:00:00+00:00",
+                                        "timestamp": "2024-05-31T10:00:00+00:00",
+                                        "datetime": "2024-05-31T10:00:00+00:00",
                                         "uuid": "uuid-retry",
                                         "event_properties": {},
                                     },
@@ -366,7 +414,15 @@ class TestEventsStream(TestCase):
         config = ConfigBuilder().with_api_key("invalid_key").with_start_date(datetime(2024, 5, 31, tzinfo=timezone.utc)).build()
 
         http_mocker.get(
-            KlaviyoRequestBuilder.events_endpoint("invalid_key").with_any_query_params().build(),
+            KlaviyoRequestBuilder.events_endpoint("invalid_key")
+            .with_query_params({
+                "fields[event]": "event_properties,timestamp,uuid,datetime",
+                "fields[metric]": "name,created,updated,integration",
+                "include": "metric,attributions",
+                "filter": "greater-or-equal(datetime,2024-05-31T00:00:00+00:00),less-or-equal(datetime,2024-06-01T12:00:00+00:00)",
+                "sort": "datetime",
+            })
+            .build(),
             HttpResponse(
                 body=json.dumps({"errors": [{"detail": "Invalid API key"}]}),
                 status_code=401,
@@ -394,7 +450,15 @@ class TestEventsStream(TestCase):
         config = ConfigBuilder().with_api_key(_API_KEY).with_start_date(datetime(2024, 5, 31, tzinfo=timezone.utc)).build()
 
         http_mocker.get(
-            KlaviyoRequestBuilder.events_endpoint(_API_KEY).with_any_query_params().build(),
+            KlaviyoRequestBuilder.events_endpoint(_API_KEY)
+            .with_query_params({
+                "fields[event]": "event_properties,timestamp,uuid,datetime",
+                "fields[metric]": "name,created,updated,integration",
+                "include": "metric,attributions",
+                "filter": "greater-or-equal(datetime,2024-05-31T00:00:00+00:00),less-or-equal(datetime,2024-06-01T12:00:00+00:00)",
+                "sort": "datetime",
+            })
+            .build(),
             HttpResponse(
                 body=json.dumps({"data": [], "links": {"self": "https://a.klaviyo.com/api/events", "next": None}}),
                 status_code=200,

@@ -54,8 +54,9 @@ class TestGlobalExclusionsStream(TestCase):
         """
         config = ConfigBuilder().with_api_key(_API_KEY).with_start_date(datetime(2024, 5, 31, tzinfo=timezone.utc)).build()
 
+        # Global exclusions stream uses profiles endpoint with additional-fields[profile]: subscriptions
         http_mocker.get(
-            KlaviyoRequestBuilder.profiles_endpoint(_API_KEY).with_any_query_params().build(),
+            KlaviyoRequestBuilder.profiles_endpoint(_API_KEY).with_query_params({"additional-fields[profile]": "subscriptions"}).build(),
             HttpResponse(
                 body=json.dumps(
                     {
@@ -65,13 +66,13 @@ class TestGlobalExclusionsStream(TestCase):
                                 "id": "profile_suppressed",
                                 "attributes": {
                                     "email": "suppressed@example.com",
-                                    "updated": "2024-01-15T12:30:00+00:00",
+                                    "updated": "2024-05-31T12:30:00+00:00",
                                     "subscriptions": {
                                         "email": {
                                             "marketing": {
                                                 "can_receive_email_marketing": False,
                                                 "consent": "UNSUBSCRIBED",
-                                                "suppression": [{"reason": "USER_SUPPRESSED", "timestamp": "2024-01-10T10:00:00+00:00"}],
+                                                "suppression": [{"reason": "USER_SUPPRESSED", "timestamp": "2024-05-31T10:00:00+00:00"}],
                                             }
                                         },
                                         "sms": {"marketing": {"can_receive_sms_marketing": False}},
@@ -83,7 +84,7 @@ class TestGlobalExclusionsStream(TestCase):
                                 "id": "profile_not_suppressed",
                                 "attributes": {
                                     "email": "active@example.com",
-                                    "updated": "2024-01-16T12:30:00+00:00",
+                                    "updated": "2024-05-31T12:30:00+00:00",
                                     "subscriptions": {
                                         "email": {
                                             "marketing": {
@@ -129,8 +130,9 @@ class TestGlobalExclusionsStream(TestCase):
         """
         config = ConfigBuilder().with_api_key(_API_KEY).with_start_date(datetime(2024, 5, 31, tzinfo=timezone.utc)).build()
 
+        # Global exclusions stream uses profiles endpoint with additional-fields[profile]: subscriptions
         http_mocker.get(
-            KlaviyoRequestBuilder.profiles_endpoint(_API_KEY).with_any_query_params().build(),
+            KlaviyoRequestBuilder.profiles_endpoint(_API_KEY).with_query_params({"additional-fields[profile]": "subscriptions"}).build(),
             HttpResponse(
                 body=json.dumps(
                     {
@@ -140,13 +142,13 @@ class TestGlobalExclusionsStream(TestCase):
                                 "id": "profile_transform_test",
                                 "attributes": {
                                     "email": "transform@example.com",
-                                    "updated": "2024-02-20T14:45:00+00:00",
+                                    "updated": "2024-05-31T14:45:00+00:00",
                                     "subscriptions": {
                                         "email": {
                                             "marketing": {
                                                 "can_receive_email_marketing": False,
                                                 "consent": "UNSUBSCRIBED",
-                                                "suppression": [{"reason": "HARD_BOUNCE", "timestamp": "2024-02-15T10:00:00+00:00"}],
+                                                "suppression": [{"reason": "HARD_BOUNCE", "timestamp": "2024-05-31T10:00:00+00:00"}],
                                             }
                                         },
                                         "sms": {"marketing": {"can_receive_sms_marketing": False}},
@@ -169,7 +171,7 @@ class TestGlobalExclusionsStream(TestCase):
         record = output.records[0].record.data
 
         assert "updated" in record
-        assert record["updated"] == "2024-02-20T14:45:00+00:00"
+        assert record["updated"] == "2024-05-31T14:45:00+00:00"
 
         marketing = record["attributes"]["subscriptions"]["email"]["marketing"]
         assert "suppressions" in marketing
@@ -187,8 +189,9 @@ class TestGlobalExclusionsStream(TestCase):
         """
         config = ConfigBuilder().with_api_key(_API_KEY).with_start_date(datetime(2024, 5, 31, tzinfo=timezone.utc)).build()
 
+        # Global exclusions stream uses profiles endpoint with additional-fields[profile]: subscriptions
         http_mocker.get(
-            KlaviyoRequestBuilder.profiles_endpoint(_API_KEY).with_any_query_params().build(),
+            KlaviyoRequestBuilder.profiles_endpoint(_API_KEY).with_query_params({"additional-fields[profile]": "subscriptions"}).build(),
             HttpResponse(
                 body=json.dumps(
                     {
@@ -198,11 +201,11 @@ class TestGlobalExclusionsStream(TestCase):
                                 "id": "profile_001",
                                 "attributes": {
                                     "email": "test@example.com",
-                                    "updated": "2024-01-15T12:30:00+00:00",
+                                    "updated": "2024-05-31T12:30:00+00:00",
                                     "subscriptions": {
                                         "email": {
                                             "marketing": {
-                                                "suppression": [{"reason": "USER_SUPPRESSED", "timestamp": "2024-01-10T10:00:00+00:00"}]
+                                                "suppression": [{"reason": "USER_SUPPRESSED", "timestamp": "2024-05-31T10:00:00+00:00"}]
                                             }
                                         },
                                         "sms": {"marketing": {}},
@@ -238,8 +241,9 @@ class TestGlobalExclusionsStream(TestCase):
         config = ConfigBuilder().with_api_key(_API_KEY).with_start_date(datetime(2024, 5, 31, tzinfo=timezone.utc)).build()
         state = StateBuilder().with_stream_state(_STREAM_NAME, {"updated": "2024-03-01T00:00:00+00:00"}).build()
 
+        # Global exclusions stream uses profiles endpoint with additional-fields[profile]: subscriptions
         http_mocker.get(
-            KlaviyoRequestBuilder.profiles_endpoint(_API_KEY).with_any_query_params().build(),
+            KlaviyoRequestBuilder.profiles_endpoint(_API_KEY).with_query_params({"additional-fields[profile]": "subscriptions"}).build(),
             HttpResponse(
                 body=json.dumps(
                     {
@@ -293,8 +297,9 @@ class TestGlobalExclusionsStream(TestCase):
 
         # Use a single mock with multiple responses to avoid ambiguity in mock matching.
         # The first response includes a next_page_link, the second response has no next link.
+        # Global exclusions stream uses profiles endpoint with additional-fields[profile]: subscriptions
         http_mocker.get(
-            KlaviyoRequestBuilder.profiles_endpoint(_API_KEY).with_any_query_params().build(),
+            KlaviyoRequestBuilder.profiles_endpoint(_API_KEY).with_query_params({"additional-fields[profile]": "subscriptions"}).build(),
             [
                 KlaviyoPaginatedResponseBuilder()
                 .with_records(
@@ -359,8 +364,9 @@ class TestGlobalExclusionsStream(TestCase):
         """
         config = ConfigBuilder().with_api_key(_API_KEY).with_start_date(datetime(2024, 5, 31, tzinfo=timezone.utc)).build()
 
+        # Global exclusions stream uses profiles endpoint with additional-fields[profile]: subscriptions
         http_mocker.get(
-            KlaviyoRequestBuilder.profiles_endpoint(_API_KEY).with_any_query_params().build(),
+            KlaviyoRequestBuilder.profiles_endpoint(_API_KEY).with_query_params({"additional-fields[profile]": "subscriptions"}).build(),
             [
                 HttpResponse(
                     body=json.dumps({"errors": [{"detail": "Rate limit exceeded"}]}),
@@ -376,11 +382,11 @@ class TestGlobalExclusionsStream(TestCase):
                                     "id": "profile_after_retry",
                                     "attributes": {
                                         "email": "retry@example.com",
-                                        "updated": "2024-01-20T10:00:00+00:00",
+                                        "updated": "2024-05-31T10:00:00+00:00",
                                         "subscriptions": {
                                             "email": {
                                                 "marketing": {
-                                                    "suppression": [{"reason": "USER_SUPPRESSED", "timestamp": "2024-01-15T10:00:00+00:00"}]
+                                                    "suppression": [{"reason": "USER_SUPPRESSED", "timestamp": "2024-05-31T09:00:00+00:00"}]
                                                 }
                                             },
                                             "sms": {"marketing": {}},
@@ -414,8 +420,9 @@ class TestGlobalExclusionsStream(TestCase):
         """
         config = ConfigBuilder().with_api_key("invalid_key").with_start_date(datetime(2024, 5, 31, tzinfo=timezone.utc)).build()
 
+        # Global exclusions stream uses profiles endpoint with additional-fields[profile]: subscriptions
         http_mocker.get(
-            KlaviyoRequestBuilder.profiles_endpoint("invalid_key").with_any_query_params().build(),
+            KlaviyoRequestBuilder.profiles_endpoint("invalid_key").with_query_params({"additional-fields[profile]": "subscriptions"}).build(),
             HttpResponse(
                 body=json.dumps({"errors": [{"detail": "Invalid API key"}]}),
                 status_code=401,
@@ -442,8 +449,9 @@ class TestGlobalExclusionsStream(TestCase):
         """
         config = ConfigBuilder().with_api_key(_API_KEY).with_start_date(datetime(2024, 5, 31, tzinfo=timezone.utc)).build()
 
+        # Global exclusions stream uses profiles endpoint with additional-fields[profile]: subscriptions
         http_mocker.get(
-            KlaviyoRequestBuilder.profiles_endpoint(_API_KEY).with_any_query_params().build(),
+            KlaviyoRequestBuilder.profiles_endpoint(_API_KEY).with_query_params({"additional-fields[profile]": "subscriptions"}).build(),
             HttpResponse(
                 body=json.dumps(
                     {
@@ -453,7 +461,7 @@ class TestGlobalExclusionsStream(TestCase):
                                 "id": "profile_active",
                                 "attributes": {
                                     "email": "active@example.com",
-                                    "updated": "2024-01-15T12:30:00+00:00",
+                                    "updated": "2024-05-31T12:30:00+00:00",
                                     "subscriptions": {
                                         "email": {
                                             "marketing": {"can_receive_email_marketing": True, "consent": "SUBSCRIBED", "suppression": []}

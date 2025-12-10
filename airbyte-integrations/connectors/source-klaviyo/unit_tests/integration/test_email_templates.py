@@ -46,7 +46,12 @@ class TestEmailTemplatesStream(TestCase):
         config = ConfigBuilder().with_api_key(_API_KEY).with_start_date(datetime(2024, 5, 31, tzinfo=timezone.utc)).build()
 
         http_mocker.get(
-            KlaviyoRequestBuilder.templates_endpoint(_API_KEY).with_any_query_params().build(),
+            KlaviyoRequestBuilder.templates_endpoint(_API_KEY)
+            .with_query_params({
+                "filter": "greater-than(updated,2024-05-31T00:00:00+00:00)",
+                "sort": "updated",
+            })
+            .build(),
             HttpResponse(
                 body=json.dumps(
                     {
@@ -59,8 +64,8 @@ class TestEmailTemplatesStream(TestCase):
                                     "editor_type": "CODE",
                                     "html": "<html><body>Welcome!</body></html>",
                                     "text": "Welcome!",
-                                    "created": "2024-01-01T10:00:00+00:00",
-                                    "updated": "2024-01-15T12:30:00+00:00",
+                                    "created": "2024-05-31T10:00:00+00:00",
+                                    "updated": "2024-05-31T12:30:00+00:00",
                                 },
                             }
                         ],
@@ -97,7 +102,12 @@ class TestEmailTemplatesStream(TestCase):
         # Use a single mock with multiple responses to avoid ambiguity in mock matching.
         # The first response includes a next_page_link, the second response has no next link.
         http_mocker.get(
-            KlaviyoRequestBuilder.templates_endpoint(_API_KEY).with_any_query_params().build(),
+            KlaviyoRequestBuilder.templates_endpoint(_API_KEY)
+            .with_query_params({
+                "filter": "greater-than(updated,2024-05-31T00:00:00+00:00)",
+                "sort": "updated",
+            })
+            .build(),
             [
                 KlaviyoPaginatedResponseBuilder()
                 .with_records(
@@ -155,7 +165,12 @@ class TestEmailTemplatesStream(TestCase):
         config = ConfigBuilder().with_api_key(_API_KEY).with_start_date(datetime(2024, 5, 31, tzinfo=timezone.utc)).build()
 
         http_mocker.get(
-            KlaviyoRequestBuilder.templates_endpoint(_API_KEY).with_any_query_params().build(),
+            KlaviyoRequestBuilder.templates_endpoint(_API_KEY)
+            .with_query_params({
+                "filter": "greater-than(updated,2024-05-31T00:00:00+00:00)",
+                "sort": "updated",
+            })
+            .build(),
             HttpResponse(
                 body=json.dumps(
                     {
@@ -166,8 +181,8 @@ class TestEmailTemplatesStream(TestCase):
                                 "attributes": {
                                     "name": "Welcome Email",
                                     "editor_type": "CODE",
-                                    "created": "2024-01-01T10:00:00+00:00",
-                                    "updated": "2024-01-15T12:30:00+00:00",
+                                    "created": "2024-05-31T10:00:00+00:00",
+                                    "updated": "2024-05-31T12:30:00+00:00",
                                 },
                             }
                         ],
@@ -202,7 +217,12 @@ class TestEmailTemplatesStream(TestCase):
         state = StateBuilder().with_stream_state(_STREAM_NAME, {"updated": "2024-05-31T00:00:00+00:00"}).build()
 
         http_mocker.get(
-            KlaviyoRequestBuilder.templates_endpoint(_API_KEY).with_any_query_params().build(),
+            KlaviyoRequestBuilder.templates_endpoint(_API_KEY)
+            .with_query_params({
+                "filter": "greater-than(updated,2024-05-31T00:00:00+00:00)",
+                "sort": "updated",
+            })
+            .build(),
             HttpResponse(
                 body=json.dumps(
                     {
@@ -249,7 +269,12 @@ class TestEmailTemplatesStream(TestCase):
         config = ConfigBuilder().with_api_key(_API_KEY).with_start_date(datetime(2024, 5, 31, tzinfo=timezone.utc)).build()
 
         http_mocker.get(
-            KlaviyoRequestBuilder.templates_endpoint(_API_KEY).with_any_query_params().build(),
+            KlaviyoRequestBuilder.templates_endpoint(_API_KEY)
+            .with_query_params({
+                "filter": "greater-than(updated,2024-05-31T00:00:00+00:00)",
+                "sort": "updated",
+            })
+            .build(),
             HttpResponse(
                 body=json.dumps(
                     {
@@ -260,8 +285,8 @@ class TestEmailTemplatesStream(TestCase):
                                 "attributes": {
                                     "name": "Transform Test",
                                     "editor_type": "CODE",
-                                    "created": "2024-01-01T10:00:00+00:00",
-                                    "updated": "2024-02-20T14:45:00+00:00",
+                                    "created": "2024-05-31T10:00:00+00:00",
+                                    "updated": "2024-05-31T14:45:00+00:00",
                                 },
                             }
                         ],
@@ -279,7 +304,7 @@ class TestEmailTemplatesStream(TestCase):
         assert len(output.records) == 1
         record = output.records[0].record.data
         assert "updated" in record
-        assert record["updated"] == "2024-02-20T14:45:00+00:00"
+        assert record["updated"] == "2024-05-31T14:45:00+00:00"
 
     @HttpMocker()
     def test_rate_limit_429_handling(self, http_mocker: HttpMocker):
@@ -293,7 +318,12 @@ class TestEmailTemplatesStream(TestCase):
         config = ConfigBuilder().with_api_key(_API_KEY).with_start_date(datetime(2024, 5, 31, tzinfo=timezone.utc)).build()
 
         http_mocker.get(
-            KlaviyoRequestBuilder.templates_endpoint(_API_KEY).with_any_query_params().build(),
+            KlaviyoRequestBuilder.templates_endpoint(_API_KEY)
+            .with_query_params({
+                "filter": "greater-than(updated,2024-05-31T00:00:00+00:00)",
+                "sort": "updated",
+            })
+            .build(),
             [
                 HttpResponse(
                     body=json.dumps({"errors": [{"detail": "Rate limit exceeded"}]}),
@@ -310,8 +340,8 @@ class TestEmailTemplatesStream(TestCase):
                                     "attributes": {
                                         "name": "After Retry",
                                         "editor_type": "CODE",
-                                        "created": "2024-01-01T10:00:00+00:00",
-                                        "updated": "2024-01-20T10:00:00+00:00",
+                                        "created": "2024-05-31T10:00:00+00:00",
+                                        "updated": "2024-05-31T10:00:00+00:00",
                                     },
                                 }
                             ],
@@ -342,7 +372,12 @@ class TestEmailTemplatesStream(TestCase):
         config = ConfigBuilder().with_api_key("invalid_key").with_start_date(datetime(2024, 5, 31, tzinfo=timezone.utc)).build()
 
         http_mocker.get(
-            KlaviyoRequestBuilder.templates_endpoint("invalid_key").with_any_query_params().build(),
+            KlaviyoRequestBuilder.templates_endpoint("invalid_key")
+            .with_query_params({
+                "filter": "greater-than(updated,2024-05-31T00:00:00+00:00)",
+                "sort": "updated",
+            })
+            .build(),
             HttpResponse(
                 body=json.dumps({"errors": [{"detail": "Invalid API key"}]}),
                 status_code=401,
@@ -370,7 +405,12 @@ class TestEmailTemplatesStream(TestCase):
         config = ConfigBuilder().with_api_key(_API_KEY).with_start_date(datetime(2024, 5, 31, tzinfo=timezone.utc)).build()
 
         http_mocker.get(
-            KlaviyoRequestBuilder.templates_endpoint(_API_KEY).with_any_query_params().build(),
+            KlaviyoRequestBuilder.templates_endpoint(_API_KEY)
+            .with_query_params({
+                "filter": "greater-than(updated,2024-05-31T00:00:00+00:00)",
+                "sort": "updated",
+            })
+            .build(),
             HttpResponse(
                 body=json.dumps({"data": [], "links": {"self": "https://a.klaviyo.com/api/templates", "next": None}}),
                 status_code=200,

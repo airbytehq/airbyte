@@ -45,10 +45,16 @@ class TestProfilesStream(TestCase):
         """
         config = ConfigBuilder().with_api_key(_API_KEY).with_start_date(datetime(2024, 5, 31, tzinfo=timezone.utc)).build()
 
-        # Use with_any_query_params() to match any query parameters since the exact
-        # datetime format may vary (e.g., +00:00 vs +0000 timezone offset)
+        # Validate that the connector sends the correct query parameters
         http_mocker.get(
-            KlaviyoRequestBuilder.profiles_endpoint(_API_KEY).with_any_query_params().build(),
+            KlaviyoRequestBuilder.profiles_endpoint(_API_KEY)
+            .with_query_params({
+                "filter": "greater-than(updated,2024-05-31T00:00:00+00:00)",
+                "sort": "updated",
+                "additional-fields[profile]": "predictive_analytics",
+                "page[size]": "100",
+            })
+            .build(),
             HttpResponse(
                 body=json.dumps(
                     {
@@ -99,10 +105,17 @@ class TestProfilesStream(TestCase):
         """
         config = ConfigBuilder().with_api_key(_API_KEY).with_start_date(datetime(2024, 5, 31, tzinfo=timezone.utc)).build()
 
-        # Use a single mock with multiple responses to avoid ambiguity in mock matching.
+        # Use a single mock with multiple responses served sequentially.
         # The first response includes a next_page_link, the second response has no next link.
         http_mocker.get(
-            KlaviyoRequestBuilder.profiles_endpoint(_API_KEY).with_any_query_params().build(),
+            KlaviyoRequestBuilder.profiles_endpoint(_API_KEY)
+            .with_query_params({
+                "filter": "greater-than(updated,2024-05-31T00:00:00+00:00)",
+                "sort": "updated",
+                "additional-fields[profile]": "predictive_analytics",
+                "page[size]": "100",
+            })
+            .build(),
             [
                 KlaviyoPaginatedResponseBuilder()
                 .with_records(
@@ -172,7 +185,14 @@ class TestProfilesStream(TestCase):
         config = ConfigBuilder().with_api_key(_API_KEY).with_start_date(datetime(2024, 5, 31, tzinfo=timezone.utc)).build()
 
         http_mocker.get(
-            KlaviyoRequestBuilder.profiles_endpoint(_API_KEY).with_any_query_params().build(),
+            KlaviyoRequestBuilder.profiles_endpoint(_API_KEY)
+            .with_query_params({
+                "filter": "greater-than(updated,2024-05-31T00:00:00+00:00)",
+                "sort": "updated",
+                "additional-fields[profile]": "predictive_analytics",
+                "page[size]": "100",
+            })
+            .build(),
             HttpResponse(
                 body=json.dumps(
                     {
@@ -182,7 +202,7 @@ class TestProfilesStream(TestCase):
                                 "id": "profile_001",
                                 "attributes": {
                                     "email": "test@example.com",
-                                    "updated": "2024-01-15T12:30:00+00:00",
+                                    "updated": "2024-05-31T12:30:00+00:00",
                                 },
                             }
                         ],
@@ -216,8 +236,16 @@ class TestProfilesStream(TestCase):
         config = ConfigBuilder().with_api_key(_API_KEY).with_start_date(datetime(2024, 5, 31, tzinfo=timezone.utc)).build()
         state = StateBuilder().with_stream_state(_STREAM_NAME, {"updated": "2024-05-31T00:00:00+00:00"}).build()
 
+        # When state is provided, the filter uses the state cursor value
         http_mocker.get(
-            KlaviyoRequestBuilder.profiles_endpoint(_API_KEY).with_any_query_params().build(),
+            KlaviyoRequestBuilder.profiles_endpoint(_API_KEY)
+            .with_query_params({
+                "filter": "greater-than(updated,2024-05-31T00:00:00+00:00)",
+                "sort": "updated",
+                "additional-fields[profile]": "predictive_analytics",
+                "page[size]": "100",
+            })
+            .build(),
             HttpResponse(
                 body=json.dumps(
                     {
@@ -269,7 +297,14 @@ class TestProfilesStream(TestCase):
         config = ConfigBuilder().with_api_key(_API_KEY).with_start_date(datetime(2024, 5, 31, tzinfo=timezone.utc)).build()
 
         http_mocker.get(
-            KlaviyoRequestBuilder.profiles_endpoint(_API_KEY).with_any_query_params().build(),
+            KlaviyoRequestBuilder.profiles_endpoint(_API_KEY)
+            .with_query_params({
+                "filter": "greater-than(updated,2024-05-31T00:00:00+00:00)",
+                "sort": "updated",
+                "additional-fields[profile]": "predictive_analytics",
+                "page[size]": "100",
+            })
+            .build(),
             HttpResponse(
                 body=json.dumps(
                     {
@@ -279,7 +314,7 @@ class TestProfilesStream(TestCase):
                                 "id": "profile_transform_test",
                                 "attributes": {
                                     "email": "transform@example.com",
-                                    "updated": "2024-02-20T14:45:00+00:00",
+                                    "updated": "2024-05-31T14:45:00+00:00",
                                 },
                             }
                         ],
@@ -297,8 +332,8 @@ class TestProfilesStream(TestCase):
         assert len(output.records) == 1
         record = output.records[0].record.data
         assert "updated" in record
-        assert record["updated"] == "2024-02-20T14:45:00+00:00"
-        assert record["attributes"]["updated"] == "2024-02-20T14:45:00+00:00"
+        assert record["updated"] == "2024-05-31T14:45:00+00:00"
+        assert record["attributes"]["updated"] == "2024-05-31T14:45:00+00:00"
 
     @HttpMocker()
     def test_rate_limit_429_handling(self, http_mocker: HttpMocker):
@@ -318,7 +353,14 @@ class TestProfilesStream(TestCase):
         config = ConfigBuilder().with_api_key(_API_KEY).with_start_date(datetime(2024, 5, 31, tzinfo=timezone.utc)).build()
 
         http_mocker.get(
-            KlaviyoRequestBuilder.profiles_endpoint(_API_KEY).with_any_query_params().build(),
+            KlaviyoRequestBuilder.profiles_endpoint(_API_KEY)
+            .with_query_params({
+                "filter": "greater-than(updated,2024-05-31T00:00:00+00:00)",
+                "sort": "updated",
+                "additional-fields[profile]": "predictive_analytics",
+                "page[size]": "100",
+            })
+            .build(),
             [
                 HttpResponse(
                     body=json.dumps({"errors": [{"detail": "Rate limit exceeded"}]}),
@@ -334,7 +376,7 @@ class TestProfilesStream(TestCase):
                                     "id": "profile_after_retry",
                                     "attributes": {
                                         "email": "retry@example.com",
-                                        "updated": "2024-01-20T10:00:00+00:00",
+                                        "updated": "2024-05-31T10:00:00+00:00",
                                     },
                                 }
                             ],
@@ -377,7 +419,14 @@ class TestProfilesStream(TestCase):
         config = ConfigBuilder().with_api_key("invalid_key").with_start_date(datetime(2024, 5, 31, tzinfo=timezone.utc)).build()
 
         http_mocker.get(
-            KlaviyoRequestBuilder.profiles_endpoint("invalid_key").with_any_query_params().build(),
+            KlaviyoRequestBuilder.profiles_endpoint("invalid_key")
+            .with_query_params({
+                "filter": "greater-than(updated,2024-05-31T00:00:00+00:00)",
+                "sort": "updated",
+                "additional-fields[profile]": "predictive_analytics",
+                "page[size]": "100",
+            })
+            .build(),
             HttpResponse(
                 body=json.dumps({"errors": [{"detail": "Invalid API key"}]}),
                 status_code=401,
@@ -408,7 +457,14 @@ class TestProfilesStream(TestCase):
         config = ConfigBuilder().with_api_key(_API_KEY).with_start_date(datetime(2024, 5, 31, tzinfo=timezone.utc)).build()
 
         http_mocker.get(
-            KlaviyoRequestBuilder.profiles_endpoint(_API_KEY).with_any_query_params().build(),
+            KlaviyoRequestBuilder.profiles_endpoint(_API_KEY)
+            .with_query_params({
+                "filter": "greater-than(updated,2024-05-31T00:00:00+00:00)",
+                "sort": "updated",
+                "additional-fields[profile]": "predictive_analytics",
+                "page[size]": "100",
+            })
+            .build(),
             HttpResponse(
                 body=json.dumps({"errors": [{"detail": "Forbidden - insufficient permissions"}]}),
                 status_code=403,
@@ -436,7 +492,14 @@ class TestProfilesStream(TestCase):
         config = ConfigBuilder().with_api_key(_API_KEY).with_start_date(datetime(2024, 5, 31, tzinfo=timezone.utc)).build()
 
         http_mocker.get(
-            KlaviyoRequestBuilder.profiles_endpoint(_API_KEY).with_any_query_params().build(),
+            KlaviyoRequestBuilder.profiles_endpoint(_API_KEY)
+            .with_query_params({
+                "filter": "greater-than(updated,2024-05-31T00:00:00+00:00)",
+                "sort": "updated",
+                "additional-fields[profile]": "predictive_analytics",
+                "page[size]": "100",
+            })
+            .build(),
             HttpResponse(
                 body=json.dumps({"data": [], "links": {"self": "https://a.klaviyo.com/api/profiles", "next": None}}),
                 status_code=200,
@@ -472,9 +535,16 @@ class TestProfilesStream(TestCase):
             .build()
         )
 
-        # Use with_any_query_params() to match any query parameters
+        # When predictive_analytics is disabled, additional-fields[profile] should be empty string
         http_mocker.get(
-            KlaviyoRequestBuilder.profiles_endpoint(_API_KEY).with_any_query_params().build(),
+            KlaviyoRequestBuilder.profiles_endpoint(_API_KEY)
+            .with_query_params({
+                "filter": "greater-than(updated,2024-05-31T00:00:00+00:00)",
+                "sort": "updated",
+                "additional-fields[profile]": "",
+                "page[size]": "100",
+            })
+            .build(),
             HttpResponse(
                 body=json.dumps(
                     {
@@ -484,7 +554,7 @@ class TestProfilesStream(TestCase):
                                 "id": "profile_no_analytics",
                                 "attributes": {
                                     "email": "noanalytics@example.com",
-                                    "updated": "2024-01-15T12:30:00+00:00",
+                                    "updated": "2024-05-31T12:30:00+00:00",
                                 },
                             }
                         ],
