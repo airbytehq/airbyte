@@ -45,7 +45,7 @@ class TestListsStream(TestCase):
         When: Running a full refresh sync for the lists stream
         Then: The connector should make the correct API request and return all records
         """
-        config = ConfigBuilder().with_api_key(_API_KEY).with_start_date(datetime(2024, 1, 1, tzinfo=timezone.utc)).build()
+        config = ConfigBuilder().with_api_key(_API_KEY).with_start_date(datetime(2024, 5, 31, tzinfo=timezone.utc)).build()
 
         http_mocker.get(
             KlaviyoRequestBuilder.lists_endpoint(_API_KEY).with_any_query_params().build(),
@@ -89,7 +89,7 @@ class TestListsStream(TestCase):
         When: Running a full refresh sync
         Then: The connector should follow pagination links and return all records
         """
-        config = ConfigBuilder().with_api_key(_API_KEY).with_start_date(datetime(2024, 1, 1, tzinfo=timezone.utc)).build()
+        config = ConfigBuilder().with_api_key(_API_KEY).with_start_date(datetime(2024, 5, 31, tzinfo=timezone.utc)).build()
 
         http_mocker.get(
             KlaviyoRequestBuilder.lists_endpoint(_API_KEY).with_any_query_params().build(),
@@ -149,7 +149,7 @@ class TestListsStream(TestCase):
         When: Running an incremental sync
         Then: The connector should fetch all records and emit state message
         """
-        config = ConfigBuilder().with_api_key(_API_KEY).with_start_date(datetime(2024, 1, 1, tzinfo=timezone.utc)).build()
+        config = ConfigBuilder().with_api_key(_API_KEY).with_start_date(datetime(2024, 5, 31, tzinfo=timezone.utc)).build()
 
         http_mocker.get(
             KlaviyoRequestBuilder.lists_endpoint(_API_KEY).with_any_query_params().build(),
@@ -198,7 +198,7 @@ class TestListsStream(TestCase):
         When: Running an incremental sync
         Then: The connector should filter records client-side and only return new/updated records
         """
-        config = ConfigBuilder().with_api_key(_API_KEY).with_start_date(datetime(2024, 1, 1, tzinfo=timezone.utc)).build()
+        config = ConfigBuilder().with_api_key(_API_KEY).with_start_date(datetime(2024, 5, 31, tzinfo=timezone.utc)).build()
         state = StateBuilder().with_stream_state(_STREAM_NAME, {"updated": "2024-03-01T00:00:00+00:00"}).build()
 
         http_mocker.get(
@@ -258,7 +258,7 @@ class TestListsStream(TestCase):
         When: Running an incremental sync
         Then: The connector should stop pagination when old records are detected
         """
-        config = ConfigBuilder().with_api_key(_API_KEY).with_start_date(datetime(2024, 1, 1, tzinfo=timezone.utc)).build()
+        config = ConfigBuilder().with_api_key(_API_KEY).with_start_date(datetime(2024, 5, 31, tzinfo=timezone.utc)).build()
         state = StateBuilder().with_stream_state(_STREAM_NAME, {"updated": "2024-03-01T00:00:00+00:00"}).build()
 
         http_mocker.get(
@@ -300,7 +300,7 @@ class TestListsStream(TestCase):
         When: Running a sync
         Then: The 'updated' field should be added at the root level of the record
         """
-        config = ConfigBuilder().with_api_key(_API_KEY).with_start_date(datetime(2024, 1, 1, tzinfo=timezone.utc)).build()
+        config = ConfigBuilder().with_api_key(_API_KEY).with_start_date(datetime(2024, 5, 31, tzinfo=timezone.utc)).build()
 
         http_mocker.get(
             KlaviyoRequestBuilder.lists_endpoint(_API_KEY).with_any_query_params().build(),
@@ -344,7 +344,7 @@ class TestListsStream(TestCase):
         When: Making an API request
         Then: The connector should respect the Retry-After header and retry
         """
-        config = ConfigBuilder().with_api_key(_API_KEY).with_start_date(datetime(2024, 1, 1, tzinfo=timezone.utc)).build()
+        config = ConfigBuilder().with_api_key(_API_KEY).with_start_date(datetime(2024, 5, 31, tzinfo=timezone.utc)).build()
 
         http_mocker.get(
             KlaviyoRequestBuilder.lists_endpoint(_API_KEY).with_any_query_params().build(),
@@ -393,7 +393,7 @@ class TestListsStream(TestCase):
         When: Making an API request that returns 401
         Then: The connector should fail with a config error
         """
-        config = ConfigBuilder().with_api_key("invalid_key").with_start_date(datetime(2024, 1, 1, tzinfo=timezone.utc)).build()
+        config = ConfigBuilder().with_api_key("invalid_key").with_start_date(datetime(2024, 5, 31, tzinfo=timezone.utc)).build()
 
         http_mocker.get(
             KlaviyoRequestBuilder.lists_endpoint("invalid_key").with_any_query_params().build(),
@@ -421,7 +421,7 @@ class TestListsStream(TestCase):
         When: Running a full refresh sync
         Then: The connector should return zero records without errors
         """
-        config = ConfigBuilder().with_api_key(_API_KEY).with_start_date(datetime(2024, 1, 1, tzinfo=timezone.utc)).build()
+        config = ConfigBuilder().with_api_key(_API_KEY).with_start_date(datetime(2024, 5, 31, tzinfo=timezone.utc)).build()
 
         http_mocker.get(
             KlaviyoRequestBuilder.lists_endpoint(_API_KEY).with_any_query_params().build(),
