@@ -39,7 +39,6 @@ import io.github.oshai.kotlinlogging.KotlinLogging
 import io.micronaut.context.annotation.Primary
 import jakarta.inject.Singleton
 import java.sql.PreparedStatement
-import java.sql.ResultSet
 import java.util.concurrent.ConcurrentHashMap
 import java.util.concurrent.atomic.AtomicLong
 
@@ -248,21 +247,14 @@ open class PostgresSourceJdbcPartitionFactory(
             jdbcConnectionFactory: JdbcConnectionFactory
         ): Filenode? {
             log.info { "Querying filenode for stream ${streamState.stream.id}" }
-            jdbcConnectionFactory.get().use { connection ->
-                val sql =
-                    """SELECT pg_relation_filenode('"${streamState.stream.namespace}"."${streamState.stream.name}"')"""
-                val stmt: PreparedStatement = connection.prepareStatement(sql)
-                val rs = stmt.executeQuery()
-                if (rs.next()) {
-                    val jdbcFieldType: JdbcFieldType<*> = LongFieldType
-                    val filenode: Any? = jdbcFieldType.jdbcGetter.get(rs, 1)
-                    log.info { "Found filenode: $filenode" }
-                    return filenode as? Filenode
-                } else {
-                    log.info { "filenode not found" }
-                }
-                return null
-            }
+            val sql =
+                """SELECT pg_relation_filenode('"${streamState.stream.namespace}"."${streamState.stream.name}"')"""
+            val jdbcFieldType: JdbcFieldType<*> = LongFieldType
+            val filenode: Any? = querySingleValue(jdbcConnectionFactory, sql, {
+                rs -> jdbcFieldType.jdbcGetter.get(rs, 1)
+            })
+            log.info { "Filenode for stream ${streamState.stream.id}: ${filenode ?: "not found"}" }
+            return filenode as? Filenode
         }
 
         const val POSTGRESQL_VERSION_TID_RANGE_SCAN_CAPABLE: Int = 14
