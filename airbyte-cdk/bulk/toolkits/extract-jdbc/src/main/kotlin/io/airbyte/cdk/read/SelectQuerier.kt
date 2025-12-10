@@ -203,3 +203,26 @@ class JdbcSelectQuerier(
         }
     }
 }
+
+
+/**
+ * Convenience function for executing a query that is expected to return exactly one row
+ * and extracting a single value from that row.
+ *
+ * @param jdbcConnectionFactory Factory for creating JDBC connections
+ * @param query SQL query string to execute (should return exactly one row)
+ * @param withRS Lambda function to process the ResultSet and extract the desired value
+ * @return The value extracted from the single result row using the withRS function
+ * @throws IllegalStateException if the query returns no rows
+ */
+fun <T> querySingleValue(jdbcConnectionFactory: JdbcConnectionFactory, query: String, withRS: (ResultSet) -> T): T {
+    jdbcConnectionFactory.get().use { connection ->
+        val stmt = connection.prepareStatement(query)
+
+        val rs = stmt.executeQuery()
+        if (rs.next()) {
+            return withRS(rs)
+        } else
+            error("Could not query single value using [$query]")
+    }
+}

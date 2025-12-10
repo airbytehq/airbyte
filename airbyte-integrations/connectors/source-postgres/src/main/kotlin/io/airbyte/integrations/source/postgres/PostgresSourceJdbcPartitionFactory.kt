@@ -25,6 +25,7 @@ import io.airbyte.cdk.read.JdbcPartitionFactory
 import io.airbyte.cdk.read.JdbcStreamState
 import io.airbyte.cdk.read.Stream
 import io.airbyte.cdk.read.StreamFeedBootstrap
+import io.airbyte.cdk.read.querySingleValue
 import io.airbyte.cdk.util.Jsons
 import io.airbyte.integrations.source.postgres.PostgresSourceJdbcPartitionFactory.FilenodeChangeType.FILENODE_CHANGED
 import io.airbyte.integrations.source.postgres.PostgresSourceJdbcPartitionFactory.FilenodeChangeType.FILENODE_NEW_STREAM
@@ -38,6 +39,7 @@ import io.github.oshai.kotlinlogging.KotlinLogging
 import io.micronaut.context.annotation.Primary
 import jakarta.inject.Singleton
 import java.sql.PreparedStatement
+import java.sql.ResultSet
 import java.util.concurrent.ConcurrentHashMap
 import java.util.concurrent.atomic.AtomicLong
 
@@ -281,24 +283,15 @@ open class PostgresSourceJdbcPartitionFactory(
         @Synchronized
         fun blockSize(config: JdbcSourceConfiguration): Long {
             if (blockSize == null) {
-                val jdbcConnectionFactory = JdbcConnectionFactory(config)
                 log.info { "Querying server block size setting." }
-                jdbcConnectionFactory.get().use { connection ->
-                    val sql = "SELECT current_setting('block_size')::int"
-                    val stmt = connection.prepareStatement(sql)
-                    val rs = stmt.executeQuery()
-
-                    if (rs.next()) {
-                        blockSize = AtomicLong(rs.getLong(1))
-                        log.warn { "Server block size is $blockSize." }
-                    } else {
-                        error("Could not get server block size")
-                    }
-                }
+                blockSize = AtomicLong(querySingleValue(JdbcConnectionFactory(config),
+                    "SELECT current_setting('block_size')::int",
+                    { rs -> rs.getLong(1)
+                }))
+                log.info { "Server block size is $blockSize." }
             }
             return blockSize?.get()!!
         }
-
     }
 
     private fun detectStreamFilenodeChange(
@@ -343,7 +336,7 @@ open class PostgresSourceJdbcPartitionFactory(
         return cursor to cursors[cursorLabel]!!
     }
 
-    private fun relationSize(stream: Stream): Long {
+/*    private fun relationSize(stream: Stream): Long {
         val jdbcConnectionFactory = JdbcConnectionFactory(sharedState.configuration)
         log.info { "Querying table relation size." }
         jdbcConnectionFactory.get().use { connection ->
@@ -361,6 +354,14 @@ open class PostgresSourceJdbcPartitionFactory(
             error("Could not get relation size for stream ${stream.id}")
 
         }
+    }*/
+
+    private fun relationSize(stream: Stream): Long {
+        val sql = "SELECT pg_relation_size('${
+            if (stream.namespace == null) "\"${stream.name}\"" else "\"${stream.namespace}\".\"${stream.name}\""
+        }')"
+        return querySingleValue(JdbcConnectionFactory(sharedState.configuration), sql,
+            { rs -> return@querySingleValue rs.getLong(1) })
     }
 
     override fun split(
