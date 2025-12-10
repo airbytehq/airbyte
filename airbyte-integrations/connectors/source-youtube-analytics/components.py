@@ -71,7 +71,7 @@ class JobRequester(HttpRequester):
                 ),
                 request_kwargs={"stream": self.stream_response},
                 headers=self._request_headers(stream_state, stream_slice, next_page_token, request_headers),
-                json={"name": self.JOB_NAME, "reportTypeId": self._parameters["report_id"]},
+                json={"name": self.JOB_NAME, "reportTypeId": self._parameters["report_type_id"]},
                 dedupe_query_params=True,
                 log_formatter=log_formatter,
                 exit_on_rate_limit=self._exit_on_rate_limit,
