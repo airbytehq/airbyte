@@ -174,6 +174,8 @@ class AdsInsights(FBMarketingIncrementalStream):
 
         Facebook API returns 'results' field when 'objective_results' is requested.
         This method renames the field when appropriate conditions are met.
+
+        See: https://github.com/airbytehq/oncall/issues/10126
         """
         if self._should_rename_results_to_objective_results and "results" in record and "objective_results" not in record:
             record["objective_results"] = record.pop("results")
