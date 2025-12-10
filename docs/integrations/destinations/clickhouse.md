@@ -34,6 +34,21 @@ For optimal deduplication in Incremental - Append + Deduped sync mode, use a cur
 
 If you use a different cursor column type, like `string`, the connector falls back to using the `_airbyte_extracted_at` timestamp for deduplication ordering. This fallback may not accurately reflect the natural ordering of your source data, and you'll see a warning in the sync logs.
 
+:::warning
+
+Airbyte's ClickHouse connector leveragese the [ReplacingMergeTree](https://clickhouse.com/docs/engines/table-engines/mergetree-family/replacingmergetree#query-time-de-duplication--final) table engine to handle deduplication.
+To guarantee deduplicated results at query time, you can add the `FINAL` operator to your query string. For example:
+
+```sql
+SELECT * FROM your_table FINAL
+```
+
+Without this, you may see duplicated or deleted results when querying your data.
+
+:::
+
+Alternatively, you may also be able to [tune your merge settings](https://clickhouse.com/docs/guides/replacing-merge-tree#tuning-merges-for-better-query-performance) to better match your query patterns.
+
 ## Requirements
 
 To use the ClickHouse destination connector, you need:
