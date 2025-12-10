@@ -354,9 +354,7 @@ class IterableExportStreamAdjustableRange(IterableExportStream, ABC):
         start_dt, end_dt = self._extract_date_range(stream_slice)
         for _ in range(self.CHUNKED_ENCODING_ERROR_RETRIES):
             try:
-                self.logger.info(
-                    f"Processing slice of {(end_dt - start_dt).total_days()} days for stream {self.name}"
-                )
+                self.logger.info(f"Processing slice of {(end_dt - start_dt).total_days()} days for stream {self.name}")
                 for record in super().read_records(
                     sync_mode=sync_mode,
                     cursor_field=cursor_field,
