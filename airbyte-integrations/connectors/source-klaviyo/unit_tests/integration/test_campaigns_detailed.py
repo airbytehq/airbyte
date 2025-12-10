@@ -55,7 +55,9 @@ class TestCampaignsDetailedStream(TestCase):
             for archived in ["true", "false"]:
                 filter_value = f"and(greater-or-equal(updated_at,2024-05-31T00:00:00+00:00),less-or-equal(updated_at,2024-06-01T12:00:00+00:00),equals(messages.channel,'{campaign_type}'),equals(archived,{archived}))"
                 http_mocker.get(
-                    KlaviyoRequestBuilder.campaigns_endpoint(_API_KEY).with_query_params({"filter": filter_value, "sort": "updated_at"}).build(),
+                    KlaviyoRequestBuilder.campaigns_endpoint(_API_KEY)
+                    .with_query_params({"filter": filter_value, "sort": "updated_at"})
+                    .build(),
                     HttpResponse(
                         body=json.dumps(
                             {
@@ -120,7 +122,9 @@ class TestCampaignsDetailedStream(TestCase):
             for archived in ["true", "false"]:
                 filter_value = f"and(greater-or-equal(updated_at,2024-05-31T00:00:00+00:00),less-or-equal(updated_at,2024-06-01T12:00:00+00:00),equals(messages.channel,'{campaign_type}'),equals(archived,{archived}))"
                 http_mocker.get(
-                    KlaviyoRequestBuilder.campaigns_endpoint(_API_KEY).with_query_params({"filter": filter_value, "sort": "updated_at"}).build(),
+                    KlaviyoRequestBuilder.campaigns_endpoint(_API_KEY)
+                    .with_query_params({"filter": filter_value, "sort": "updated_at"})
+                    .build(),
                     [
                         HttpResponse(
                             body=json.dumps(
@@ -194,7 +198,9 @@ class TestCampaignsDetailedStream(TestCase):
             for archived in ["true", "false"]:
                 filter_value = f"and(greater-or-equal(updated_at,2024-05-31T00:00:00+00:00),less-or-equal(updated_at,2024-06-01T12:00:00+00:00),equals(messages.channel,'{campaign_type}'),equals(archived,{archived}))"
                 http_mocker.get(
-                    KlaviyoRequestBuilder.campaigns_endpoint(_API_KEY).with_query_params({"filter": filter_value, "sort": "updated_at"}).build(),
+                    KlaviyoRequestBuilder.campaigns_endpoint(_API_KEY)
+                    .with_query_params({"filter": filter_value, "sort": "updated_at"})
+                    .build(),
                     HttpResponse(
                         body=json.dumps(
                             {
@@ -243,7 +249,9 @@ class TestCampaignsDetailedStream(TestCase):
             for archived in ["true", "false"]:
                 filter_value = f"and(greater-or-equal(updated_at,2024-05-31T00:00:00+00:00),less-or-equal(updated_at,2024-06-01T12:00:00+00:00),equals(messages.channel,'{campaign_type}'),equals(archived,{archived}))"
                 http_mocker.get(
-                    KlaviyoRequestBuilder.campaigns_endpoint(_API_KEY).with_query_params({"filter": filter_value, "sort": "updated_at"}).build(),
+                    KlaviyoRequestBuilder.campaigns_endpoint(_API_KEY)
+                    .with_query_params({"filter": filter_value, "sort": "updated_at"})
+                    .build(),
                     HttpResponse(
                         body=json.dumps(
                             {
@@ -291,7 +299,9 @@ class TestCampaignsDetailedStream(TestCase):
             for archived in ["true", "false"]:
                 filter_value = f"and(greater-or-equal(updated_at,2024-05-31T00:00:00+00:00),less-or-equal(updated_at,2024-06-01T12:00:00+00:00),equals(messages.channel,'{campaign_type}'),equals(archived,{archived}))"
                 http_mocker.get(
-                    KlaviyoRequestBuilder.campaigns_endpoint(_API_KEY).with_query_params({"filter": filter_value, "sort": "updated_at"}).build(),
+                    KlaviyoRequestBuilder.campaigns_endpoint(_API_KEY)
+                    .with_query_params({"filter": filter_value, "sort": "updated_at"})
+                    .build(),
                     HttpResponse(
                         body=json.dumps(
                             {
@@ -341,7 +351,9 @@ class TestCampaignsDetailedStream(TestCase):
             for archived in ["true", "false"]:
                 filter_value = f"and(greater-or-equal(updated_at,2024-05-31T00:00:00+00:00),less-or-equal(updated_at,2024-06-01T12:00:00+00:00),equals(messages.channel,'{campaign_type}'),equals(archived,{archived}))"
                 http_mocker.get(
-                    KlaviyoRequestBuilder.campaigns_endpoint(_API_KEY).with_query_params({"filter": filter_value, "sort": "updated_at"}).build(),
+                    KlaviyoRequestBuilder.campaigns_endpoint(_API_KEY)
+                    .with_query_params({"filter": filter_value, "sort": "updated_at"})
+                    .build(),
                     [
                         HttpResponse(
                             body=json.dumps({"errors": [{"detail": "Rate limit exceeded"}]}),
@@ -382,13 +394,11 @@ class TestCampaignsDetailedStream(TestCase):
         log_messages = [log.log.message for log in output.logs]
         # Check for backoff log message pattern
         assert any(
-            "Backing off" in msg and "UserDefinedBackoffException" in msg and "429" in msg
-            for msg in log_messages
+            "Backing off" in msg and "UserDefinedBackoffException" in msg and "429" in msg for msg in log_messages
         ), "Expected backoff log message for 429 rate limit"
         # Check for retry/sleeping log message pattern
         assert any(
-            "Sleeping for" in msg and "seconds" in msg
-            for msg in log_messages
+            "Sleeping for" in msg and "seconds" in msg for msg in log_messages
         ), "Expected retry sleeping log message for 429 rate limit"
 
     @HttpMocker()
@@ -407,7 +417,9 @@ class TestCampaignsDetailedStream(TestCase):
             for archived in ["true", "false"]:
                 filter_value = f"and(greater-or-equal(updated_at,2024-05-31T00:00:00+00:00),less-or-equal(updated_at,2024-06-01T12:00:00+00:00),equals(messages.channel,'{campaign_type}'),equals(archived,{archived}))"
                 http_mocker.get(
-                    KlaviyoRequestBuilder.campaigns_endpoint("invalid_key").with_query_params({"filter": filter_value, "sort": "updated_at"}).build(),
+                    KlaviyoRequestBuilder.campaigns_endpoint("invalid_key")
+                    .with_query_params({"filter": filter_value, "sort": "updated_at"})
+                    .build(),
                     HttpResponse(
                         body=json.dumps({"errors": [{"detail": "Invalid API key"}]}),
                         status_code=401,
@@ -421,9 +433,9 @@ class TestCampaignsDetailedStream(TestCase):
         assert len(output.records) == 0
         expected_error_message = "Please provide a valid API key and make sure it has permissions to read specified streams."
         log_messages = [log.log.message for log in output.logs]
-        assert any(expected_error_message in msg for msg in log_messages), (
-            f"Expected error message '{expected_error_message}' in logs for 401 authentication failure"
-        )
+        assert any(
+            expected_error_message in msg for msg in log_messages
+        ), f"Expected error message '{expected_error_message}' in logs for 401 authentication failure"
 
     @HttpMocker()
     def test_forbidden_403_error_fails(self, http_mocker: HttpMocker):
@@ -444,7 +456,9 @@ class TestCampaignsDetailedStream(TestCase):
             for archived in ["true", "false"]:
                 filter_value = f"and(greater-or-equal(updated_at,2024-05-31T00:00:00+00:00),less-or-equal(updated_at,2024-06-01T12:00:00+00:00),equals(messages.channel,'{campaign_type}'),equals(archived,{archived}))"
                 http_mocker.get(
-                    KlaviyoRequestBuilder.campaigns_endpoint(_API_KEY).with_query_params({"filter": filter_value, "sort": "updated_at"}).build(),
+                    KlaviyoRequestBuilder.campaigns_endpoint(_API_KEY)
+                    .with_query_params({"filter": filter_value, "sort": "updated_at"})
+                    .build(),
                     HttpResponse(
                         body=json.dumps({"errors": [{"detail": "Forbidden - insufficient permissions"}]}),
                         status_code=403,
@@ -458,9 +472,9 @@ class TestCampaignsDetailedStream(TestCase):
         assert len(output.records) == 0
         expected_error_message = "Please provide a valid API key and make sure it has permissions to read specified streams."
         log_messages = [log.log.message for log in output.logs]
-        assert any(expected_error_message in msg for msg in log_messages), (
-            f"Expected error message '{expected_error_message}' in logs for 403 permission failure"
-        )
+        assert any(
+            expected_error_message in msg for msg in log_messages
+        ), f"Expected error message '{expected_error_message}' in logs for 403 permission failure"
 
     @HttpMocker()
     def test_empty_results(self, http_mocker: HttpMocker):
@@ -478,9 +492,13 @@ class TestCampaignsDetailedStream(TestCase):
             for archived in ["true", "false"]:
                 filter_value = f"and(greater-or-equal(updated_at,2024-05-31T00:00:00+00:00),less-or-equal(updated_at,2024-06-01T12:00:00+00:00),equals(messages.channel,'{campaign_type}'),equals(archived,{archived}))"
                 http_mocker.get(
-                    KlaviyoRequestBuilder.campaigns_endpoint(_API_KEY).with_query_params({"filter": filter_value, "sort": "updated_at"}).build(),
+                    KlaviyoRequestBuilder.campaigns_endpoint(_API_KEY)
+                    .with_query_params({"filter": filter_value, "sort": "updated_at"})
+                    .build(),
                     HttpResponse(
-                        body=json.dumps({"data": [], "included": [], "links": {"self": "https://a.klaviyo.com/api/campaigns", "next": None}}),
+                        body=json.dumps(
+                            {"data": [], "included": [], "links": {"self": "https://a.klaviyo.com/api/campaigns", "next": None}}
+                        ),
                         status_code=200,
                     ),
                 )
