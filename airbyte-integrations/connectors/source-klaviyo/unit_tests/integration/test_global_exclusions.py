@@ -56,7 +56,9 @@ class TestGlobalExclusionsStream(TestCase):
 
         # Global exclusions stream uses profiles endpoint with additional-fields[profile]: subscriptions
         http_mocker.get(
-            KlaviyoRequestBuilder.profiles_endpoint(_API_KEY).with_query_params({"additional-fields[profile]": "subscriptions", "page[size]": "100"}).build(),
+            KlaviyoRequestBuilder.profiles_endpoint(_API_KEY)
+            .with_query_params({"additional-fields[profile]": "subscriptions", "page[size]": "100"})
+            .build(),
             HttpResponse(
                 body=json.dumps(
                     {
@@ -132,7 +134,9 @@ class TestGlobalExclusionsStream(TestCase):
 
         # Global exclusions stream uses profiles endpoint with additional-fields[profile]: subscriptions
         http_mocker.get(
-            KlaviyoRequestBuilder.profiles_endpoint(_API_KEY).with_query_params({"additional-fields[profile]": "subscriptions", "page[size]": "100"}).build(),
+            KlaviyoRequestBuilder.profiles_endpoint(_API_KEY)
+            .with_query_params({"additional-fields[profile]": "subscriptions", "page[size]": "100"})
+            .build(),
             HttpResponse(
                 body=json.dumps(
                     {
@@ -191,7 +195,9 @@ class TestGlobalExclusionsStream(TestCase):
 
         # Global exclusions stream uses profiles endpoint with additional-fields[profile]: subscriptions
         http_mocker.get(
-            KlaviyoRequestBuilder.profiles_endpoint(_API_KEY).with_query_params({"additional-fields[profile]": "subscriptions", "page[size]": "100"}).build(),
+            KlaviyoRequestBuilder.profiles_endpoint(_API_KEY)
+            .with_query_params({"additional-fields[profile]": "subscriptions", "page[size]": "100"})
+            .build(),
             HttpResponse(
                 body=json.dumps(
                     {
@@ -243,7 +249,9 @@ class TestGlobalExclusionsStream(TestCase):
 
         # Global exclusions stream uses profiles endpoint with additional-fields[profile]: subscriptions
         http_mocker.get(
-            KlaviyoRequestBuilder.profiles_endpoint(_API_KEY).with_query_params({"additional-fields[profile]": "subscriptions", "page[size]": "100"}).build(),
+            KlaviyoRequestBuilder.profiles_endpoint(_API_KEY)
+            .with_query_params({"additional-fields[profile]": "subscriptions", "page[size]": "100"})
+            .build(),
             HttpResponse(
                 body=json.dumps(
                     {
@@ -369,7 +377,9 @@ class TestGlobalExclusionsStream(TestCase):
 
         # Global exclusions stream uses profiles endpoint with additional-fields[profile]: subscriptions
         http_mocker.get(
-            KlaviyoRequestBuilder.profiles_endpoint(_API_KEY).with_query_params({"additional-fields[profile]": "subscriptions", "page[size]": "100"}).build(),
+            KlaviyoRequestBuilder.profiles_endpoint(_API_KEY)
+            .with_query_params({"additional-fields[profile]": "subscriptions", "page[size]": "100"})
+            .build(),
             [
                 HttpResponse(
                     body=json.dumps({"errors": [{"detail": "Rate limit exceeded"}]}),
@@ -471,7 +481,9 @@ class TestGlobalExclusionsStream(TestCase):
 
         # Global exclusions stream uses profiles endpoint with additional-fields[profile]: subscriptions
         http_mocker.get(
-            KlaviyoRequestBuilder.profiles_endpoint(_API_KEY).with_query_params({"additional-fields[profile]": "subscriptions", "page[size]": "100"}).build(),
+            KlaviyoRequestBuilder.profiles_endpoint(_API_KEY)
+            .with_query_params({"additional-fields[profile]": "subscriptions", "page[size]": "100"})
+            .build(),
             HttpResponse(
                 body=json.dumps({"errors": [{"detail": "Forbidden - insufficient permissions"}]}),
                 status_code=403,
@@ -502,7 +514,9 @@ class TestGlobalExclusionsStream(TestCase):
 
         # Global exclusions stream uses profiles endpoint with additional-fields[profile]: subscriptions
         http_mocker.get(
-            KlaviyoRequestBuilder.profiles_endpoint(_API_KEY).with_query_params({"additional-fields[profile]": "subscriptions", "page[size]": "100"}).build(),
+            KlaviyoRequestBuilder.profiles_endpoint(_API_KEY)
+            .with_query_params({"additional-fields[profile]": "subscriptions", "page[size]": "100"})
+            .build(),
             HttpResponse(
                 body=json.dumps(
                     {
