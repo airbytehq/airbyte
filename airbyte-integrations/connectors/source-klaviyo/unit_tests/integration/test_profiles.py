@@ -100,8 +100,7 @@ class TestProfilesStream(TestCase):
         config = ConfigBuilder().with_api_key(_API_KEY).with_start_date(datetime(2024, 1, 1, tzinfo=timezone.utc)).build()
 
         http_mocker.get(
-            KlaviyoRequestBuilder.profiles_endpoint(_API_KEY)
-            .with_any_query_params().build(),
+            KlaviyoRequestBuilder.profiles_endpoint(_API_KEY).with_any_query_params().build(),
             KlaviyoPaginatedResponseBuilder()
             .with_records(
                 [
@@ -173,8 +172,7 @@ class TestProfilesStream(TestCase):
         config = ConfigBuilder().with_api_key(_API_KEY).with_start_date(datetime(2024, 1, 1, tzinfo=timezone.utc)).build()
 
         http_mocker.get(
-            KlaviyoRequestBuilder.profiles_endpoint(_API_KEY)
-            .with_any_query_params().build(),
+            KlaviyoRequestBuilder.profiles_endpoint(_API_KEY).with_any_query_params().build(),
             HttpResponse(
                 body=json.dumps(
                     {
@@ -219,8 +217,7 @@ class TestProfilesStream(TestCase):
         state = StateBuilder().with_stream_state(_STREAM_NAME, {"updated": "2024-03-01T00:00:00+00:00"}).build()
 
         http_mocker.get(
-            KlaviyoRequestBuilder.profiles_endpoint(_API_KEY)
-            .with_any_query_params().build(),
+            KlaviyoRequestBuilder.profiles_endpoint(_API_KEY).with_any_query_params().build(),
             HttpResponse(
                 body=json.dumps(
                     {
@@ -272,8 +269,7 @@ class TestProfilesStream(TestCase):
         config = ConfigBuilder().with_api_key(_API_KEY).with_start_date(datetime(2024, 1, 1, tzinfo=timezone.utc)).build()
 
         http_mocker.get(
-            KlaviyoRequestBuilder.profiles_endpoint(_API_KEY)
-            .with_any_query_params().build(),
+            KlaviyoRequestBuilder.profiles_endpoint(_API_KEY).with_any_query_params().build(),
             HttpResponse(
                 body=json.dumps(
                     {
@@ -322,8 +318,7 @@ class TestProfilesStream(TestCase):
         config = ConfigBuilder().with_api_key(_API_KEY).with_start_date(datetime(2024, 1, 1, tzinfo=timezone.utc)).build()
 
         http_mocker.get(
-            KlaviyoRequestBuilder.profiles_endpoint(_API_KEY)
-            .with_any_query_params().build(),
+            KlaviyoRequestBuilder.profiles_endpoint(_API_KEY).with_any_query_params().build(),
             [
                 HttpResponse(
                     body=json.dumps({"errors": [{"detail": "Rate limit exceeded"}]}),
@@ -382,8 +377,7 @@ class TestProfilesStream(TestCase):
         config = ConfigBuilder().with_api_key("invalid_key").with_start_date(datetime(2024, 1, 1, tzinfo=timezone.utc)).build()
 
         http_mocker.get(
-            KlaviyoRequestBuilder.profiles_endpoint("invalid_key")
-            .with_any_query_params().build(),
+            KlaviyoRequestBuilder.profiles_endpoint("invalid_key").with_any_query_params().build(),
             HttpResponse(
                 body=json.dumps({"errors": [{"detail": "Invalid API key"}]}),
                 status_code=401,
@@ -414,8 +408,7 @@ class TestProfilesStream(TestCase):
         config = ConfigBuilder().with_api_key(_API_KEY).with_start_date(datetime(2024, 1, 1, tzinfo=timezone.utc)).build()
 
         http_mocker.get(
-            KlaviyoRequestBuilder.profiles_endpoint(_API_KEY)
-            .with_any_query_params().build(),
+            KlaviyoRequestBuilder.profiles_endpoint(_API_KEY).with_any_query_params().build(),
             HttpResponse(
                 body=json.dumps({"errors": [{"detail": "Forbidden - insufficient permissions"}]}),
                 status_code=403,
@@ -443,8 +436,7 @@ class TestProfilesStream(TestCase):
         config = ConfigBuilder().with_api_key(_API_KEY).with_start_date(datetime(2024, 1, 1, tzinfo=timezone.utc)).build()
 
         http_mocker.get(
-            KlaviyoRequestBuilder.profiles_endpoint(_API_KEY)
-            .with_any_query_params().build(),
+            KlaviyoRequestBuilder.profiles_endpoint(_API_KEY).with_any_query_params().build(),
             HttpResponse(
                 body=json.dumps({"data": [], "links": {"self": "https://a.klaviyo.com/api/profiles", "next": None}}),
                 status_code=200,
