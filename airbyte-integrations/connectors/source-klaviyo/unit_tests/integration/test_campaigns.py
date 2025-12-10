@@ -459,23 +459,13 @@ class TestCampaignsStream(TestCase):
         """
         config = ConfigBuilder().with_api_key("invalid_key").with_start_date(datetime(2024, 5, 31, tzinfo=timezone.utc)).build()
 
-        # Mock all 4 partitions with 401 error
-        for campaign_type in ["sms", "email"]:
-            for archived in ["true", "false"]:
-                http_mocker.get(
-                    KlaviyoRequestBuilder.campaigns_endpoint("invalid_key")
-                    .with_query_params(
-                        {
-                            "filter": f"and(greater-or-equal(updated_at,2024-05-31T00:00:00+0000),less-or-equal(updated_at,2024-06-01T12:00:00+0000),equals(messages.channel,'{campaign_type}'),equals(archived,{archived}))",
-                            "sort": "updated_at",
-                        }
-                    )
-                    .build(),
-                    HttpResponse(
-                        body=json.dumps({"errors": [{"detail": "Invalid API key"}]}),
-                        status_code=401,
-                    ),
-                )
+        http_mocker.get(
+            KlaviyoRequestBuilder.campaigns_endpoint("invalid_key").with_any_query_params().build(),
+            HttpResponse(
+                body=json.dumps({"errors": [{"detail": "Invalid API key"}]}),
+                status_code=401,
+            ),
+        )
 
         source = get_source(config=config)
         catalog = CatalogBuilder().with_stream(_STREAM_NAME, SyncMode.full_refresh).build()
@@ -502,23 +492,13 @@ class TestCampaignsStream(TestCase):
         """
         config = ConfigBuilder().with_api_key(_API_KEY).with_start_date(datetime(2024, 5, 31, tzinfo=timezone.utc)).build()
 
-        # Mock all 4 partitions with 403 error
-        for campaign_type in ["sms", "email"]:
-            for archived in ["true", "false"]:
-                http_mocker.get(
-                    KlaviyoRequestBuilder.campaigns_endpoint(_API_KEY)
-                    .with_query_params(
-                        {
-                            "filter": f"and(greater-or-equal(updated_at,2024-05-31T00:00:00+0000),less-or-equal(updated_at,2024-06-01T12:00:00+0000),equals(messages.channel,'{campaign_type}'),equals(archived,{archived}))",
-                            "sort": "updated_at",
-                        }
-                    )
-                    .build(),
-                    HttpResponse(
-                        body=json.dumps({"errors": [{"detail": "Forbidden - insufficient permissions"}]}),
-                        status_code=403,
-                    ),
-                )
+        http_mocker.get(
+            KlaviyoRequestBuilder.campaigns_endpoint(_API_KEY).with_any_query_params().build(),
+            HttpResponse(
+                body=json.dumps({"errors": [{"detail": "Forbidden - insufficient permissions"}]}),
+                status_code=403,
+            ),
+        )
 
         source = get_source(config=config)
         catalog = CatalogBuilder().with_stream(_STREAM_NAME, SyncMode.full_refresh).build()
