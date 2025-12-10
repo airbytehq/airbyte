@@ -108,9 +108,7 @@ class DefaultDestinationCatalogFactory {
     ): DestinationCatalog {
         // we resolve the table names with the properly mapped descriptors
         val mappedDescriptors =
-            catalog.streams
-                .map { namespaceMapper.map(it.stream.namespace, it.stream.name) }
-                .toSet()
+            catalog.streams.map { namespaceMapper.map(it.stream.namespace, it.stream.name) }.toSet()
         val names = tableNameResolver.getTableNameMapping(mappedDescriptors)
 
         return DestinationCatalog(
