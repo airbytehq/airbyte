@@ -42,27 +42,35 @@ class MsSqlSourceMetadataQuerier(
     private fun checkSqlServerAgentRunning() {
         try {
             // First check EngineEdition to determine if this is Azure SQL
-            // EngineEdition values: https://learn.microsoft.com/en-us/sql/t-sql/functions/serverproperty-transact-sql
+            // EngineEdition values:
+            // https://learn.microsoft.com/en-us/sql/t-sql/functions/serverproperty-transact-sql
             // 5 = Azure SQL Database
             // 8 = Azure SQL Managed Instance (SQL Server Agent is always running)
-            val engineEdition: Int? = base.conn.createStatement().use { stmt: Statement ->
-                stmt.executeQuery("SELECT ServerProperty('EngineEdition') AS EngineEdition")
-                    .use { rs: ResultSet ->
-                        if (rs.next()) rs.getInt("EngineEdition") else null
-                    }
-            }
+            val engineEdition: Int? =
+                base.conn.createStatement().use { stmt: Statement ->
+                    stmt
+                        .executeQuery("SELECT ServerProperty('EngineEdition') AS EngineEdition")
+                        .use { rs: ResultSet ->
+                            if (rs.next()) rs.getInt("EngineEdition") else null
+                        }
+                }
 
             when (engineEdition) {
                 5 -> {
                     // Azure SQL Database - SQL Server Agent is not applicable
-                    // CDC in Azure SQL Database works differently and doesn't require SQL Server Agent
-                    log.info { "Azure SQL Database detected (EngineEdition=$engineEdition). Skipping SQL Server Agent check." }
+                    // CDC in Azure SQL Database works differently and doesn't require SQL Server
+                    // Agent
+                    log.info {
+                        "Azure SQL Database detected (EngineEdition=$engineEdition). Skipping SQL Server Agent check."
+                    }
                     return
                 }
                 8 -> {
                     // Azure SQL Managed Instance - SQL Server Agent is always running
                     // https://learn.microsoft.com/en-us/azure/azure-sql/managed-instance/transact-sql-tsql-differences-sql-server#sql-server-agent
-                    log.info { "Azure SQL Managed Instance detected (EngineEdition=$engineEdition). SQL Server Agent is assumed to be running." }
+                    log.info {
+                        "Azure SQL Managed Instance detected (EngineEdition=$engineEdition). SQL Server Agent is assumed to be running."
+                    }
                     return
                 }
             }
