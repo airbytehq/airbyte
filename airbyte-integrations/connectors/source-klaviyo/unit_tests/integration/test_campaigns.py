@@ -59,7 +59,7 @@ class TestCampaignsStream(TestCase):
                     KlaviyoRequestBuilder.campaigns_endpoint(_API_KEY)
                     .with_query_params(
                         {
-                            "filter": f"and(greater-or-equal(updated_at,2024-05-31T00:00:00+00:00),less-or-equal(updated_at,2024-06-01T12:00:00+00:00),equals(messages.channel,'{campaign_type}'),equals(archived,{archived}))",
+                            "filter": f"and(greater-or-equal(updated_at,2024-05-31T00:00:00+0000),less-or-equal(updated_at,2024-06-01T12:00:00+0000),equals(messages.channel,'{campaign_type}'),equals(archived,{archived}))",
                             "sort": "updated_at",
                         }
                     )
@@ -118,7 +118,7 @@ class TestCampaignsStream(TestCase):
                     KlaviyoRequestBuilder.campaigns_endpoint(_API_KEY)
                     .with_query_params(
                         {
-                            "filter": f"and(greater-or-equal(updated_at,2024-05-31T00:00:00+00:00),less-or-equal(updated_at,2024-06-01T12:00:00+00:00),equals(messages.channel,'{campaign_type}'),equals(archived,{archived}))",
+                            "filter": f"and(greater-or-equal(updated_at,2024-05-31T00:00:00+0000),less-or-equal(updated_at,2024-06-01T12:00:00+0000),equals(messages.channel,'{campaign_type}'),equals(archived,{archived}))",
                             "sort": "updated_at",
                         }
                     )
@@ -171,7 +171,7 @@ class TestCampaignsStream(TestCase):
                     KlaviyoRequestBuilder.campaigns_endpoint(_API_KEY)
                     .with_query_params(
                         {
-                            "filter": f"and(greater-or-equal(updated_at,2024-05-31T00:00:00+00:00),less-or-equal(updated_at,2024-06-01T12:00:00+00:00),equals(messages.channel,'{campaign_type}'),equals(archived,{archived}))",
+                            "filter": f"and(greater-or-equal(updated_at,2024-05-31T00:00:00+0000),less-or-equal(updated_at,2024-06-01T12:00:00+0000),equals(messages.channel,'{campaign_type}'),equals(archived,{archived}))",
                             "sort": "updated_at",
                         }
                     )
@@ -240,7 +240,7 @@ class TestCampaignsStream(TestCase):
                     KlaviyoRequestBuilder.campaigns_endpoint(_API_KEY)
                     .with_query_params(
                         {
-                            "filter": f"and(greater-or-equal(updated_at,2024-05-31T00:00:00+00:00),less-or-equal(updated_at,2024-06-01T12:00:00+00:00),equals(messages.channel,'{campaign_type}'),equals(archived,{archived}))",
+                            "filter": f"and(greater-or-equal(updated_at,2024-05-31T00:00:00+0000),less-or-equal(updated_at,2024-06-01T12:00:00+0000),equals(messages.channel,'{campaign_type}'),equals(archived,{archived}))",
                             "sort": "updated_at",
                         }
                     )
@@ -295,7 +295,7 @@ class TestCampaignsStream(TestCase):
                     KlaviyoRequestBuilder.campaigns_endpoint(_API_KEY)
                     .with_query_params(
                         {
-                            "filter": f"and(greater-or-equal(updated_at,2024-03-01T00:00:00+00:00),less-or-equal(updated_at,2024-06-01T12:00:00+00:00),equals(messages.channel,'{campaign_type}'),equals(archived,{archived}))",
+                            "filter": f"and(greater-or-equal(updated_at,2024-03-01T00:00:00+0000),less-or-equal(updated_at,2024-06-01T12:00:00+0000),equals(messages.channel,'{campaign_type}'),equals(archived,{archived}))",
                             "sort": "updated_at",
                         }
                     )
@@ -349,7 +349,7 @@ class TestCampaignsStream(TestCase):
                     KlaviyoRequestBuilder.campaigns_endpoint(_API_KEY)
                     .with_query_params(
                         {
-                            "filter": f"and(greater-or-equal(updated_at,2024-05-31T00:00:00+00:00),less-or-equal(updated_at,2024-06-01T12:00:00+00:00),equals(messages.channel,'{campaign_type}'),equals(archived,{archived}))",
+                            "filter": f"and(greater-or-equal(updated_at,2024-05-31T00:00:00+0000),less-or-equal(updated_at,2024-06-01T12:00:00+0000),equals(messages.channel,'{campaign_type}'),equals(archived,{archived}))",
                             "sort": "updated_at",
                         }
                     )
@@ -405,7 +405,7 @@ class TestCampaignsStream(TestCase):
                     KlaviyoRequestBuilder.campaigns_endpoint(_API_KEY)
                     .with_query_params(
                         {
-                            "filter": f"and(greater-or-equal(updated_at,2024-05-31T00:00:00+00:00),less-or-equal(updated_at,2024-06-01T12:00:00+00:00),equals(messages.channel,'{campaign_type}'),equals(archived,{archived}))",
+                            "filter": f"and(greater-or-equal(updated_at,2024-05-31T00:00:00+0000),less-or-equal(updated_at,2024-06-01T12:00:00+0000),equals(messages.channel,'{campaign_type}'),equals(archived,{archived}))",
                             "sort": "updated_at",
                         }
                     )
@@ -475,7 +475,7 @@ class TestCampaignsStream(TestCase):
                     KlaviyoRequestBuilder.campaigns_endpoint("invalid_key")
                     .with_query_params(
                         {
-                            "filter": f"and(greater-or-equal(updated_at,2024-05-31T00:00:00+00:00),less-or-equal(updated_at,2024-06-01T12:00:00+00:00),equals(messages.channel,'{campaign_type}'),equals(archived,{archived}))",
+                            "filter": f"and(greater-or-equal(updated_at,2024-05-31T00:00:00+0000),less-or-equal(updated_at,2024-06-01T12:00:00+0000),equals(messages.channel,'{campaign_type}'),equals(archived,{archived}))",
                             "sort": "updated_at",
                         }
                     )
@@ -518,7 +518,7 @@ class TestCampaignsStream(TestCase):
                     KlaviyoRequestBuilder.campaigns_endpoint(_API_KEY)
                     .with_query_params(
                         {
-                            "filter": f"and(greater-or-equal(updated_at,2024-05-31T00:00:00+00:00),less-or-equal(updated_at,2024-06-01T12:00:00+00:00),equals(messages.channel,'{campaign_type}'),equals(archived,{archived}))",
+                            "filter": f"and(greater-or-equal(updated_at,2024-05-31T00:00:00+0000),less-or-equal(updated_at,2024-06-01T12:00:00+0000),equals(messages.channel,'{campaign_type}'),equals(archived,{archived}))",
                             "sort": "updated_at",
                         }
                     )
@@ -558,7 +558,7 @@ class TestCampaignsStream(TestCase):
                     KlaviyoRequestBuilder.campaigns_endpoint(_API_KEY)
                     .with_query_params(
                         {
-                            "filter": f"and(greater-or-equal(updated_at,2024-05-31T00:00:00+00:00),less-or-equal(updated_at,2024-06-01T12:00:00+00:00),equals(messages.channel,'{campaign_type}'),equals(archived,{archived}))",
+                            "filter": f"and(greater-or-equal(updated_at,2024-05-31T00:00:00+0000),less-or-equal(updated_at,2024-06-01T12:00:00+0000),equals(messages.channel,'{campaign_type}'),equals(archived,{archived}))",
                             "sort": "updated_at",
                         }
                     )

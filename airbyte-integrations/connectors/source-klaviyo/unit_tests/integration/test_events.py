@@ -54,7 +54,7 @@ class TestEventsStream(TestCase):
                     "fields[event]": "event_properties,timestamp,uuid,datetime",
                     "fields[metric]": "name,created,updated,integration",
                     "include": "metric,attributions",
-                    "filter": "greater-or-equal(datetime,2024-05-31T00:00:00+00:00),less-or-equal(datetime,2024-06-01T12:00:00+00:00)",
+                    "filter": "greater-or-equal(datetime,2024-05-31T00:00:00+0000),less-or-equal(datetime,2024-06-01T12:00:00+0000)",
                     "sort": "datetime",
                 }
             )
@@ -114,7 +114,7 @@ class TestEventsStream(TestCase):
                     "fields[event]": "event_properties,timestamp,uuid,datetime",
                     "fields[metric]": "name,created,updated,integration",
                     "include": "metric,attributions",
-                    "filter": "greater-or-equal(datetime,2024-05-31T00:00:00+00:00),less-or-equal(datetime,2024-06-01T12:00:00+00:00)",
+                    "filter": "greater-or-equal(datetime,2024-05-31T00:00:00+0000),less-or-equal(datetime,2024-06-01T12:00:00+0000)",
                     "sort": "datetime",
                 }
             )
@@ -196,7 +196,7 @@ class TestEventsStream(TestCase):
                     "fields[event]": "event_properties,timestamp,uuid,datetime",
                     "fields[metric]": "name,created,updated,integration",
                     "include": "metric,attributions",
-                    "filter": "greater-or-equal(datetime,2024-05-31T00:00:00+00:00),less-or-equal(datetime,2024-06-01T12:00:00+00:00)",
+                    "filter": "greater-or-equal(datetime,2024-05-31T00:00:00+0000),less-or-equal(datetime,2024-06-01T12:00:00+0000)",
                     "sort": "datetime",
                 }
             )
@@ -254,7 +254,7 @@ class TestEventsStream(TestCase):
                     "fields[event]": "event_properties,timestamp,uuid,datetime",
                     "fields[metric]": "name,created,updated,integration",
                     "include": "metric,attributions",
-                    "filter": "greater-or-equal(datetime,2024-03-01T00:00:00+00:00),less-or-equal(datetime,2024-06-01T12:00:00+00:00)",
+                    "filter": "greater-or-equal(datetime,2024-03-01T00:00:00+0000),less-or-equal(datetime,2024-06-01T12:00:00+0000)",
                     "sort": "datetime",
                 }
             )
@@ -316,7 +316,7 @@ class TestEventsStream(TestCase):
                     "fields[event]": "event_properties,timestamp,uuid,datetime",
                     "fields[metric]": "name,created,updated,integration",
                     "include": "metric,attributions",
-                    "filter": "greater-or-equal(datetime,2024-05-31T00:00:00+00:00),less-or-equal(datetime,2024-06-01T12:00:00+00:00)",
+                    "filter": "greater-or-equal(datetime,2024-05-31T00:00:00+0000),less-or-equal(datetime,2024-06-01T12:00:00+0000)",
                     "sort": "datetime",
                 }
             )
@@ -372,7 +372,7 @@ class TestEventsStream(TestCase):
                     "fields[event]": "event_properties,timestamp,uuid,datetime",
                     "fields[metric]": "name,created,updated,integration",
                     "include": "metric,attributions",
-                    "filter": "greater-or-equal(datetime,2024-05-31T00:00:00+00:00),less-or-equal(datetime,2024-06-01T12:00:00+00:00)",
+                    "filter": "greater-or-equal(datetime,2024-05-31T00:00:00+0000),less-or-equal(datetime,2024-06-01T12:00:00+0000)",
                     "sort": "datetime",
                 }
             )
@@ -442,7 +442,7 @@ class TestEventsStream(TestCase):
                     "fields[event]": "event_properties,timestamp,uuid,datetime",
                     "fields[metric]": "name,created,updated,integration",
                     "include": "metric,attributions",
-                    "filter": "greater-or-equal(datetime,2024-05-31T00:00:00+00:00),less-or-equal(datetime,2024-06-01T12:00:00+00:00)",
+                    "filter": "greater-or-equal(datetime,2024-05-31T00:00:00+0000),less-or-equal(datetime,2024-06-01T12:00:00+0000)",
                     "sort": "datetime",
                 }
             )
@@ -485,7 +485,7 @@ class TestEventsStream(TestCase):
                     "fields[event]": "event_properties,timestamp,uuid,datetime",
                     "fields[metric]": "name,created,updated,integration",
                     "include": "metric,attributions",
-                    "filter": "greater-or-equal(datetime,2024-05-31T00:00:00+00:00),less-or-equal(datetime,2024-06-01T12:00:00+00:00)",
+                    "filter": "greater-or-equal(datetime,2024-05-31T00:00:00+0000),less-or-equal(datetime,2024-06-01T12:00:00+0000)",
                     "sort": "datetime",
                 }
             )
@@ -525,7 +525,7 @@ class TestEventsStream(TestCase):
                     "fields[event]": "event_properties,timestamp,uuid,datetime",
                     "fields[metric]": "name,created,updated,integration",
                     "include": "metric,attributions",
-                    "filter": "greater-or-equal(datetime,2024-05-31T00:00:00+00:00),less-or-equal(datetime,2024-06-01T12:00:00+00:00)",
+                    "filter": "greater-or-equal(datetime,2024-05-31T00:00:00+0000),less-or-equal(datetime,2024-06-01T12:00:00+0000)",
                     "sort": "datetime",
                 }
             )

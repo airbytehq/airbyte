@@ -56,7 +56,7 @@ class TestEventsDetailedStream(TestCase):
                 {
                     "include": "metric,attributions",
                     "fields[metric]": "name",
-                    "filter": "greater-than(datetime,2024-05-31T00:00:00+00:00)",
+                    "filter": "greater-than(datetime,2024-05-31T00:00:00+0000)",
                     "sort": "datetime",
                 }
             )
@@ -128,7 +128,7 @@ class TestEventsDetailedStream(TestCase):
                 {
                     "include": "metric,attributions",
                     "fields[metric]": "name",
-                    "filter": "greater-than(datetime,2024-05-31T00:00:00+00:00)",
+                    "filter": "greater-than(datetime,2024-05-31T00:00:00+0000)",
                     "sort": "datetime",
                 }
             )
@@ -210,7 +210,7 @@ class TestEventsDetailedStream(TestCase):
                 {
                     "include": "metric,attributions",
                     "fields[metric]": "name",
-                    "filter": "greater-than(datetime,2024-05-31T00:00:00+00:00)",
+                    "filter": "greater-than(datetime,2024-05-31T00:00:00+0000)",
                     "sort": "datetime",
                 }
             )
@@ -269,7 +269,7 @@ class TestEventsDetailedStream(TestCase):
                 {
                     "include": "metric,attributions",
                     "fields[metric]": "name",
-                    "filter": "greater-than(datetime,2024-05-31T00:00:00+00:00)",
+                    "filter": "greater-than(datetime,2024-05-31T00:00:00+0000)",
                     "sort": "datetime",
                 }
             )
@@ -325,7 +325,7 @@ class TestEventsDetailedStream(TestCase):
                 {
                     "include": "metric,attributions",
                     "fields[metric]": "name",
-                    "filter": "greater-than(datetime,2024-05-31T00:00:00+00:00)",
+                    "filter": "greater-than(datetime,2024-05-31T00:00:00+0000)",
                     "sort": "datetime",
                 }
             )
@@ -381,7 +381,7 @@ class TestEventsDetailedStream(TestCase):
                 {
                     "include": "metric,attributions",
                     "fields[metric]": "name",
-                    "filter": "greater-than(datetime,2024-05-31T00:00:00+00:00)",
+                    "filter": "greater-than(datetime,2024-05-31T00:00:00+0000)",
                     "sort": "datetime",
                 }
             )
@@ -452,7 +452,7 @@ class TestEventsDetailedStream(TestCase):
                 {
                     "include": "metric,attributions",
                     "fields[metric]": "name",
-                    "filter": "greater-than(datetime,2024-05-31T00:00:00+00:00)",
+                    "filter": "greater-than(datetime,2024-05-31T00:00:00+0000)",
                     "sort": "datetime",
                 }
             )
@@ -495,7 +495,7 @@ class TestEventsDetailedStream(TestCase):
                 {
                     "include": "metric,attributions",
                     "fields[metric]": "name",
-                    "filter": "greater-than(datetime,2024-05-31T00:00:00+00:00)",
+                    "filter": "greater-than(datetime,2024-05-31T00:00:00+0000)",
                     "sort": "datetime",
                 }
             )
@@ -535,7 +535,7 @@ class TestEventsDetailedStream(TestCase):
                 {
                     "include": "metric,attributions",
                     "fields[metric]": "name",
-                    "filter": "greater-than(datetime,2024-05-31T00:00:00+00:00)",
+                    "filter": "greater-than(datetime,2024-05-31T00:00:00+0000)",
                     "sort": "datetime",
                 }
             )

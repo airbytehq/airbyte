@@ -49,7 +49,7 @@ class TestEmailTemplatesStream(TestCase):
             KlaviyoRequestBuilder.templates_endpoint(_API_KEY)
             .with_query_params(
                 {
-                    "filter": "greater-than(updated,2024-05-31T00:00:00+00:00)",
+                    "filter": "greater-than(updated,2024-05-31T00:00:00+0000)",
                     "sort": "updated",
                 }
             )
@@ -107,7 +107,7 @@ class TestEmailTemplatesStream(TestCase):
             KlaviyoRequestBuilder.templates_endpoint(_API_KEY)
             .with_query_params(
                 {
-                    "filter": "greater-than(updated,2024-05-31T00:00:00+00:00)",
+                    "filter": "greater-than(updated,2024-05-31T00:00:00+0000)",
                     "sort": "updated",
                 }
             )
@@ -172,7 +172,7 @@ class TestEmailTemplatesStream(TestCase):
             KlaviyoRequestBuilder.templates_endpoint(_API_KEY)
             .with_query_params(
                 {
-                    "filter": "greater-than(updated,2024-05-31T00:00:00+00:00)",
+                    "filter": "greater-than(updated,2024-05-31T00:00:00+0000)",
                     "sort": "updated",
                 }
             )
@@ -226,7 +226,7 @@ class TestEmailTemplatesStream(TestCase):
             KlaviyoRequestBuilder.templates_endpoint(_API_KEY)
             .with_query_params(
                 {
-                    "filter": "greater-than(updated,2024-05-31T00:00:00+00:00)",
+                    "filter": "greater-than(updated,2024-05-31T00:00:00+0000)",
                     "sort": "updated",
                 }
             )
@@ -280,7 +280,7 @@ class TestEmailTemplatesStream(TestCase):
             KlaviyoRequestBuilder.templates_endpoint(_API_KEY)
             .with_query_params(
                 {
-                    "filter": "greater-than(updated,2024-05-31T00:00:00+00:00)",
+                    "filter": "greater-than(updated,2024-05-31T00:00:00+0000)",
                     "sort": "updated",
                 }
             )
@@ -331,7 +331,7 @@ class TestEmailTemplatesStream(TestCase):
             KlaviyoRequestBuilder.templates_endpoint(_API_KEY)
             .with_query_params(
                 {
-                    "filter": "greater-than(updated,2024-05-31T00:00:00+00:00)",
+                    "filter": "greater-than(updated,2024-05-31T00:00:00+0000)",
                     "sort": "updated",
                 }
             )
@@ -397,7 +397,7 @@ class TestEmailTemplatesStream(TestCase):
             KlaviyoRequestBuilder.templates_endpoint("invalid_key")
             .with_query_params(
                 {
-                    "filter": "greater-than(updated,2024-05-31T00:00:00+00:00)",
+                    "filter": "greater-than(updated,2024-05-31T00:00:00+0000)",
                     "sort": "updated",
                 }
             )
@@ -437,7 +437,7 @@ class TestEmailTemplatesStream(TestCase):
             KlaviyoRequestBuilder.templates_endpoint(_API_KEY)
             .with_query_params(
                 {
-                    "filter": "greater-than(updated,2024-05-31T00:00:00+00:00)",
+                    "filter": "greater-than(updated,2024-05-31T00:00:00+0000)",
                     "sort": "updated",
                 }
             )
@@ -474,7 +474,7 @@ class TestEmailTemplatesStream(TestCase):
             KlaviyoRequestBuilder.templates_endpoint(_API_KEY)
             .with_query_params(
                 {
-                    "filter": "greater-than(updated,2024-05-31T00:00:00+00:00)",
+                    "filter": "greater-than(updated,2024-05-31T00:00:00+0000)",
                     "sort": "updated",
                 }
             )

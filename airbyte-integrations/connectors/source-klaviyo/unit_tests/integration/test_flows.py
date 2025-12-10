@@ -52,7 +52,7 @@ class TestFlowsStream(TestCase):
                 KlaviyoRequestBuilder.flows_endpoint(_API_KEY)
                 .with_query_params(
                     {
-                        "filter": f"and(greater-or-equal(updated,2024-05-31T00:00:00+00:00),less-or-equal(updated,2024-06-01T12:00:00+00:00),equals(archived,{archived}))",
+                        "filter": f"and(greater-or-equal(updated,2024-05-31T00:00:00+0000),less-or-equal(updated,2024-06-01T12:00:00+0000),equals(archived,{archived}))",
                         "sort": "updated",
                     }
                 )
@@ -113,7 +113,7 @@ class TestFlowsStream(TestCase):
                 KlaviyoRequestBuilder.flows_endpoint(_API_KEY)
                 .with_query_params(
                     {
-                        "filter": f"and(greater-or-equal(updated,2024-05-31T00:00:00+00:00),less-or-equal(updated,2024-06-01T12:00:00+00:00),equals(archived,{archived}))",
+                        "filter": f"and(greater-or-equal(updated,2024-05-31T00:00:00+0000),less-or-equal(updated,2024-06-01T12:00:00+0000),equals(archived,{archived}))",
                         "sort": "updated",
                     }
                 )
@@ -167,7 +167,7 @@ class TestFlowsStream(TestCase):
                 KlaviyoRequestBuilder.flows_endpoint(_API_KEY)
                 .with_query_params(
                     {
-                        "filter": f"and(greater-or-equal(updated,2024-05-31T00:00:00+00:00),less-or-equal(updated,2024-06-01T12:00:00+00:00),equals(archived,{archived}))",
+                        "filter": f"and(greater-or-equal(updated,2024-05-31T00:00:00+0000),less-or-equal(updated,2024-06-01T12:00:00+0000),equals(archived,{archived}))",
                         "sort": "updated",
                     }
                 )
@@ -239,7 +239,7 @@ class TestFlowsStream(TestCase):
                 KlaviyoRequestBuilder.flows_endpoint(_API_KEY)
                 .with_query_params(
                     {
-                        "filter": f"and(greater-or-equal(updated,2024-05-31T00:00:00+00:00),less-or-equal(updated,2024-06-01T12:00:00+00:00),equals(archived,{archived}))",
+                        "filter": f"and(greater-or-equal(updated,2024-05-31T00:00:00+0000),less-or-equal(updated,2024-06-01T12:00:00+0000),equals(archived,{archived}))",
                         "sort": "updated",
                     }
                 )
@@ -295,7 +295,7 @@ class TestFlowsStream(TestCase):
                 KlaviyoRequestBuilder.flows_endpoint(_API_KEY)
                 .with_query_params(
                     {
-                        "filter": f"and(greater-or-equal(updated,2024-03-01T00:00:00+00:00),less-or-equal(updated,2024-06-01T12:00:00+00:00),equals(archived,{archived}))",
+                        "filter": f"and(greater-or-equal(updated,2024-03-01T00:00:00+0000),less-or-equal(updated,2024-06-01T12:00:00+0000),equals(archived,{archived}))",
                         "sort": "updated",
                     }
                 )
@@ -350,7 +350,7 @@ class TestFlowsStream(TestCase):
                 KlaviyoRequestBuilder.flows_endpoint(_API_KEY)
                 .with_query_params(
                     {
-                        "filter": f"and(greater-or-equal(updated,2024-05-31T00:00:00+00:00),less-or-equal(updated,2024-06-01T12:00:00+00:00),equals(archived,{archived}))",
+                        "filter": f"and(greater-or-equal(updated,2024-05-31T00:00:00+0000),less-or-equal(updated,2024-06-01T12:00:00+0000),equals(archived,{archived}))",
                         "sort": "updated",
                     }
                 )
@@ -407,7 +407,7 @@ class TestFlowsStream(TestCase):
                 KlaviyoRequestBuilder.flows_endpoint(_API_KEY)
                 .with_query_params(
                     {
-                        "filter": f"and(greater-or-equal(updated,2024-05-31T00:00:00+00:00),less-or-equal(updated,2024-06-01T12:00:00+00:00),equals(archived,{archived}))",
+                        "filter": f"and(greater-or-equal(updated,2024-05-31T00:00:00+0000),less-or-equal(updated,2024-06-01T12:00:00+0000),equals(archived,{archived}))",
                         "sort": "updated",
                     }
                 )
@@ -478,7 +478,7 @@ class TestFlowsStream(TestCase):
                 KlaviyoRequestBuilder.flows_endpoint("invalid_key")
                 .with_query_params(
                     {
-                        "filter": f"and(greater-or-equal(updated,2024-05-31T00:00:00+00:00),less-or-equal(updated,2024-06-01T12:00:00+00:00),equals(archived,{archived}))",
+                        "filter": f"and(greater-or-equal(updated,2024-05-31T00:00:00+0000),less-or-equal(updated,2024-06-01T12:00:00+0000),equals(archived,{archived}))",
                         "sort": "updated",
                     }
                 )
@@ -520,7 +520,7 @@ class TestFlowsStream(TestCase):
                 KlaviyoRequestBuilder.flows_endpoint(_API_KEY)
                 .with_query_params(
                     {
-                        "filter": f"and(greater-or-equal(updated,2024-05-31T00:00:00+00:00),less-or-equal(updated,2024-06-01T12:00:00+00:00),equals(archived,{archived}))",
+                        "filter": f"and(greater-or-equal(updated,2024-05-31T00:00:00+0000),less-or-equal(updated,2024-06-01T12:00:00+0000),equals(archived,{archived}))",
                         "sort": "updated",
                     }
                 )
@@ -559,7 +559,7 @@ class TestFlowsStream(TestCase):
                 KlaviyoRequestBuilder.flows_endpoint(_API_KEY)
                 .with_query_params(
                     {
-                        "filter": f"and(greater-or-equal(updated,2024-05-31T00:00:00+00:00),less-or-equal(updated,2024-06-01T12:00:00+00:00),equals(archived,{archived}))",
+                        "filter": f"and(greater-or-equal(updated,2024-05-31T00:00:00+0000),less-or-equal(updated,2024-06-01T12:00:00+0000),equals(archived,{archived}))",
                         "sort": "updated",
                     }
                 )
