@@ -24,4 +24,5 @@ jobs:
         # If the label already exists, the API call succeeds without error.
         uses: actions-ecosystem/action-add-labels@bd52874380e3909a1ac983768df6976535ece7f8 # v1.1.3
         with:
+          github_token: ${{ secrets.GITHUB_TOKEN }}
           labels: community
