@@ -172,9 +172,4 @@ class PostgresSourceJdbcConcurrentPartitionsCreator<
 
         }
     }
-
-    /*companion object {
-        val streamSizes: ConcurrentHashMap<Stream, Long> = ConcurrentHashMap()
-        val rowSizes: ConcurrentHashMap<Stream, Long> = ConcurrentHashMap()
-    }*/
 }
