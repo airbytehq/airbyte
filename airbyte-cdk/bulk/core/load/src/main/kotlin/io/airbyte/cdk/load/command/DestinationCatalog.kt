@@ -104,17 +104,19 @@ class DefaultDestinationCatalogFactory {
         catalog: ConfiguredAirbyteCatalog,
         streamFactory: DestinationStreamFactory,
         tableNameResolver: TableNameResolver,
+        namespaceMapper: NamespaceMapper,
     ): DestinationCatalog {
-        val descriptors =
+        // we resolve the table names with the properly mapped descriptors
+        val mappedDescriptors =
             catalog.streams
-                .map { DestinationStream.Descriptor(it.stream.namespace, it.stream.name) }
+                .map { namespaceMapper.map(it.stream.namespace, it.stream.name) }
                 .toSet()
-        val names = tableNameResolver.getTableNameMapping(descriptors)
+        val names = tableNameResolver.getTableNameMapping(mappedDescriptors)
 
         return DestinationCatalog(
             streams =
                 catalog.streams.map {
-                    val key = DestinationStream.Descriptor(it.stream.namespace, it.stream.name)
+                    val key = namespaceMapper.map(it.stream.namespace, it.stream.name)
                     streamFactory.make(it, names[key]!!)
                 }
         )
