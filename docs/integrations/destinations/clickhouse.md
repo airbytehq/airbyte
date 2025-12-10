@@ -36,16 +36,18 @@ If you use a different cursor column type, like `string`, the connector falls ba
 
 :::warning
 
-Airbyte's ClickHouse connector uses a [ReplacingMergeTree](https://clickhouse.com/docs/engines/table-engines/mergetree-family/replacingmergetree#query-time-de-duplication--final) to implement deduplication.
-You should query tables using the `FINAL` modifier to guarantee deduplication. For example:
+Airbyte's ClickHouse connector leveragese the [ReplacingMergeTree](https://clickhouse.com/docs/engines/table-engines/mergetree-family/replacingmergetree#query-time-de-duplication--final) table engine to handle deduplication.
+To guarantee deduplicated results at query time, you can add the `FINAL` operator to your query string. For example:
+
 ```sql
 SELECT * FROM your_table FINAL
 ```
-Without this, you may see unexpected results when querying your data.
+
+Without this, you may see duplicated or deleted results when querying your data.
 
 :::
 
-You may also want to [tune the merge settings](https://clickhouse.com/docs/guides/replacing-merge-tree#tuning-merges-for-better-query-performance).
+Alternatively, you may also be able to [tune your merge settings](https://clickhouse.com/docs/guides/replacing-merge-tree#tuning-merges-for-better-query-performance) to better match your query patterns.
 
 ## Requirements
 
