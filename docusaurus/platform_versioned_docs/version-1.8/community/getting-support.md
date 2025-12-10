@@ -46,20 +46,6 @@ Before opening a support ticket, we recommend consulting [our documentation](htt
 
 **Connector support is based on certification status of the connector.** Please see our [Connector Support Levels](https://docs.airbyte.com/project-overview/product-support-levels) if you have any questions on support provided for one of your connectors.
 
-Submitting a Pull Request for review?
-
-- Be sure to follow our [contribution guidelines](https://docs.airbyte.com/contributing-to-airbyte/) laid out here on our doc. Highlights include:
-  - PRs should be limited to a single change-set
-- Submit the PR as a PR Request through the Help Center Open Source Enterprise Support Request form
-- If you are submitting a Platform PR we accept Platform PRs in the areas below:
-  - Helm
-  - Environment variable configurations
-  - Bug Fixes
-  - Security version bumps
-  - **If outside these areas, please open up an issue to help the team understand the need and if we are able to consider a PR**
-
-Submitting a PR does not guarantee its merge. The Airbyte support team will conduct an initial review, and if the PR aligns with Airbyte's roadmap, it will be prioritized based on team capacities and priorities.
-
 Although we strive to offer our utmost assistance, there are certain requests that we are unable to support. Currently, we do not provide assistance for these particular items:
 
 - Question/troubleshooting assistance with forked versions of Airbyte
