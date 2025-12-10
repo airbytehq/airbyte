@@ -160,6 +160,31 @@ class TestAdaccountsSubstreamMultipleParents(TestCase):
 
 class TestAdaccountsIncremental(TestCase):
     @HttpMocker()
+    def test_incremental_first_sync_emits_state(self, http_mocker: HttpMocker) -> None:
+        """Test that first sync (no state) emits state message with cursor value."""
+        http_mocker.post(
+            OAuthRequestBuilder.oauth_endpoint().build(),
+            oauth_response(),
+        )
+        http_mocker.get(
+            RequestBuilder.organizations_endpoint("me").build(),
+            organizations_response(organization_id=ORGANIZATION_ID),
+        )
+        http_mocker.get(
+            RequestBuilder.adaccounts_endpoint(ORGANIZATION_ID).build(),
+            adaccounts_response(ad_account_id=AD_ACCOUNT_ID, organization_id=ORGANIZATION_ID),
+        )
+
+        output = _read(config_builder=config(), sync_mode=SyncMode.incremental)
+
+        assert len(output.records) >= 1, f"Expected at least 1 record, got {len(output.records)}"
+        assert len(output.state_messages) >= 1, "Expected state messages to be emitted"
+
+        new_state = output.most_recent_state.stream_state.__dict__
+        cursor_value = new_state.get("updated_at") or new_state.get("state", {}).get("updated_at")
+        assert cursor_value is not None, "Expected cursor value in state"
+
+    @HttpMocker()
     def test_incremental_sync_with_state(self, http_mocker: HttpMocker) -> None:
         """Test incremental sync with previous state.
 
