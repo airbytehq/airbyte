@@ -426,6 +426,43 @@ class TestCampaignsDetailedStream(TestCase):
         )
 
     @HttpMocker()
+    def test_forbidden_403_error_fails(self, http_mocker: HttpMocker):
+        """
+        Test that connector fails on 403 Forbidden errors with FAIL action.
+
+        The manifest configures 403 errors with action: FAIL, which means the connector
+        should fail the sync when permission errors occur.
+
+        Given: API credentials with insufficient permissions
+        When: Making an API request that returns 403
+        Then: The connector should fail with a config error
+        """
+        config = ConfigBuilder().with_api_key(_API_KEY).with_start_date(datetime(2024, 5, 31, tzinfo=timezone.utc)).build()
+
+        # campaigns_detailed uses ListPartitionRouter with 4 partitions (campaign_type: sms/email × archived: true/false)
+        for campaign_type in ["sms", "email"]:
+            for archived in ["true", "false"]:
+                filter_value = f"and(greater-or-equal(updated_at,2024-05-31T00:00:00+00:00),less-or-equal(updated_at,2024-06-01T12:00:00+00:00),equals(messages.channel,'{campaign_type}'),equals(archived,{archived}))"
+                http_mocker.get(
+                    KlaviyoRequestBuilder.campaigns_endpoint(_API_KEY).with_query_params({"filter": filter_value, "sort": "updated_at"}).build(),
+                    HttpResponse(
+                        body=json.dumps({"errors": [{"detail": "Forbidden - insufficient permissions"}]}),
+                        status_code=403,
+                    ),
+                )
+
+        source = get_source(config=config)
+        catalog = CatalogBuilder().with_stream(_STREAM_NAME, SyncMode.full_refresh).build()
+        output = read(source, config=config, catalog=catalog, expecting_exception=True)
+
+        assert len(output.records) == 0
+        expected_error_message = "Please provide a valid API key and make sure it has permissions to read specified streams."
+        log_messages = [log.log.message for log in output.logs]
+        assert any(expected_error_message in msg for msg in log_messages), (
+            f"Expected error message '{expected_error_message}' in logs for 403 permission failure"
+        )
+
+    @HttpMocker()
     def test_empty_results(self, http_mocker: HttpMocker):
         """
         Test that connector handles empty results gracefully.
