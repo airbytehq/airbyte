@@ -21,6 +21,9 @@ Airbyte Maintainers (that's you!) can execute the following slash commands on yo
 - `/bump-version` - Bumps connector versions.
   - You can specify a custom changelog by passing `changelog`. Example: `/bump-version changelog="My cool update"`
   - Leaving the changelog arg blank will auto-populate the changelog from the PR title.
+- `/bump-progressive-rollout-version` - Bumps connector version with an RC suffix for progressive rollouts.
+  - Creates a release candidate version (e.g., `2.16.10-rc.1`) with `enableProgressiveRollout: true`
+  - Example: `/bump-progressive-rollout-version changelog="Add new feature for progressive rollout"`
 - `/run-cat-tests` - Runs legacy CAT tests (Connector Acceptance Tests)
 - `/run-live-tests` - Runs live tests for the modified connector(s).
 - `/run-regression-tests` - Runs regression tests for the modified connector(s).
