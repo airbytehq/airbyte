@@ -82,7 +82,7 @@ class TestCampaignsStream(TestCase):
 
         assert len(output.records) >= 1
         record_ids = [r.record.data["id"] for r in output.records]
-        assert any("campaign_" in rid for rid in record_ids)
+        assert "campaign_001" in record_ids
 
     @HttpMocker()
     def test_partition_router_multiple_statuses(self, http_mocker: HttpMocker):
@@ -130,6 +130,8 @@ class TestCampaignsStream(TestCase):
         output = read(source, config=config, catalog=catalog)
 
         assert len(output.records) >= 1
+        record_ids = [r.record.data["id"] for r in output.records]
+        assert "campaign_001" in record_ids
 
     @HttpMocker()
     def test_pagination_multiple_pages(self, http_mocker: HttpMocker):
@@ -188,6 +190,9 @@ class TestCampaignsStream(TestCase):
         output = read(source, config=config, catalog=catalog)
 
         assert len(output.records) >= 2
+        record_ids = [r.record.data["id"] for r in output.records]
+        assert "campaign_001" in record_ids
+        assert "campaign_002" in record_ids
 
     @HttpMocker()
     def test_incremental_sync_first_sync_no_state(self, http_mocker: HttpMocker):
@@ -229,6 +234,8 @@ class TestCampaignsStream(TestCase):
         output = read(source, config=config, catalog=catalog)
 
         assert len(output.records) >= 1
+        record_ids = [r.record.data["id"] for r in output.records]
+        assert "campaign_001" in record_ids
         assert len(output.state_messages) > 0
 
     @HttpMocker()
@@ -272,6 +279,8 @@ class TestCampaignsStream(TestCase):
         output = read(source, config=config, catalog=catalog, state=state)
 
         assert len(output.records) >= 1
+        record_ids = [r.record.data["id"] for r in output.records]
+        assert "campaign_new" in record_ids
         assert len(output.state_messages) > 0
 
     @HttpMocker()
@@ -314,6 +323,8 @@ class TestCampaignsStream(TestCase):
         output = read(source, config=config, catalog=catalog)
 
         assert len(output.records) >= 1
+        record_ids = [r.record.data["id"] for r in output.records]
+        assert "campaign_transform_test" in record_ids
         record = output.records[0].record.data
         assert "updated_at" in record
         assert record["updated_at"] == "2024-02-20T14:45:00+00:00"
@@ -365,6 +376,8 @@ class TestCampaignsStream(TestCase):
         output = read(source, config=config, catalog=catalog)
 
         assert len(output.records) >= 1
+        record_ids = [r.record.data["id"] for r in output.records]
+        assert "campaign_after_retry" in record_ids
 
     @HttpMocker()
     def test_unauthorized_401_error_fails(self, http_mocker: HttpMocker):
