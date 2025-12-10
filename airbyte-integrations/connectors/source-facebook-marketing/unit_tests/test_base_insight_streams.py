@@ -556,6 +556,61 @@ class TestBaseInsightsStream:
         assert "account_id" in schema["properties"]
         assert "ad_id" in schema["properties"]
 
+    @pytest.mark.parametrize(
+        "custom_fields, record, expected_record, should_rename",
+        [
+            pytest.param(
+                ["objective_results"],
+                {"results": [{"value": 123}]},
+                {"objective_results": [{"value": 123}]},
+                True,
+                id="rename_results_to_objective_results",
+            ),
+            pytest.param(
+                ["objective_results", "results"],
+                {"results": [{"value": 123}]},
+                {"results": [{"value": 123}]},
+                False,
+                id="no_rename_when_both_fields_requested",
+            ),
+            pytest.param(
+                ["objective_results"],
+                {"objective_results": [{"value": 456}]},
+                {"objective_results": [{"value": 456}]},
+                True,
+                id="no_rename_when_objective_results_already_present",
+            ),
+            pytest.param(
+                ["objective_results"],
+                {"results": [{"value": 123}], "objective_results": [{"value": 456}]},
+                {"results": [{"value": 123}], "objective_results": [{"value": 456}]},
+                True,
+                id="no_rename_when_both_fields_in_record",
+            ),
+            pytest.param(
+                None,
+                {"results": [{"value": 123}]},
+                {"results": [{"value": 123}]},
+                False,
+                id="no_rename_when_no_custom_fields",
+            ),
+        ],
+    )
+    def test_objective_results_renamed_from_results(self, api, some_config, custom_fields, record, expected_record, should_rename):
+        """Test that 'results' field is renamed to 'objective_results' when appropriate"""
+        stream = AdsInsights(
+            api=api,
+            account_ids=some_config["account_ids"],
+            start_date=datetime(2010, 1, 1),
+            end_date=datetime(2011, 1, 1),
+            fields=custom_fields,
+            insights_lookback_window=28,
+        )
+
+        assert stream._should_rename_results_to_objective_results == should_rename
+        transformed = stream._transform_breakdown(record.copy())
+        assert transformed == expected_record
+
     def test_level_custom(self, api, some_config):
         stream = AdsInsights(
             api=api,
