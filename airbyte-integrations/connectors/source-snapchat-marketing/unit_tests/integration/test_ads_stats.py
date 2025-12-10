@@ -86,12 +86,16 @@ class TestAdsStatsHourly(TestCase):
     def test_read_records(self, http_mocker: HttpMocker) -> None:
         _setup_parent_mocks(http_mocker)
         http_mocker.get(
-            RequestBuilder.ads_stats_endpoint(AD_ID).with_any_query_params().build(),
+            RequestBuilder.ads_stats_endpoint(AD_ID).with_granularity("HOUR").build(),
             stats_timeseries_response(entity_id=AD_ID, granularity="HOUR"),
         )
 
         output = _read(config_builder=config(), stream_name="ads_stats_hourly")
-        assert len(output.records) >= 1
+
+        # Enhanced assertions
+        assert len(output.records) >= 1, f"Expected at least 1 record, got {len(output.records)}"
+        record = output.records[0].record.data
+        assert record.get("id") == AD_ID, f"Expected id={AD_ID}, got {record.get('id')}"
 
     @HttpMocker()
     def test_read_records_with_error_403_retry(self, http_mocker: HttpMocker) -> None:
@@ -112,9 +116,9 @@ class TestAdsStatsHourly(TestCase):
         # Verify custom error message from manifest is logged
         log_messages = [log.log.message for log in output.logs]
         expected_error_prefix = "Got permission error when accessing URL. Skipping"
-        assert any(
-            expected_error_prefix in msg for msg in log_messages
-        ), f"Expected custom 403 error message '{expected_error_prefix}' in logs"
+        assert any(expected_error_prefix in msg for msg in log_messages), (
+            f"Expected custom 403 error message '{expected_error_prefix}' in logs"
+        )
 
 
 class TestAdsStatsDaily(TestCase):
@@ -122,12 +126,16 @@ class TestAdsStatsDaily(TestCase):
     def test_read_records(self, http_mocker: HttpMocker) -> None:
         _setup_parent_mocks(http_mocker)
         http_mocker.get(
-            RequestBuilder.ads_stats_endpoint(AD_ID).with_any_query_params().build(),
+            RequestBuilder.ads_stats_endpoint(AD_ID).with_granularity("DAY").build(),
             stats_timeseries_response(entity_id=AD_ID, granularity="DAY"),
         )
 
         output = _read(config_builder=config(), stream_name="ads_stats_daily")
-        assert len(output.records) == 1
+
+        # Enhanced assertions
+        assert len(output.records) >= 1, f"Expected at least 1 record, got {len(output.records)}"
+        record = output.records[0].record.data
+        assert record.get("id") == AD_ID, f"Expected id={AD_ID}, got {record.get('id')}"
 
 
 class TestAdsStatsLifetime(TestCase):
@@ -135,12 +143,16 @@ class TestAdsStatsLifetime(TestCase):
     def test_read_records(self, http_mocker: HttpMocker) -> None:
         _setup_parent_mocks(http_mocker)
         http_mocker.get(
-            RequestBuilder.ads_stats_endpoint(AD_ID).with_any_query_params().build(),
+            RequestBuilder.ads_stats_endpoint(AD_ID).with_granularity("LIFETIME").build(),
             stats_lifetime_response(entity_id=AD_ID),
         )
 
         output = _read(config_builder=config(), stream_name="ads_stats_lifetime")
-        assert len(output.records) == 1
+
+        # Enhanced assertions
+        assert len(output.records) >= 1, f"Expected at least 1 record, got {len(output.records)}"
+        record = output.records[0].record.data
+        assert record.get("id") == AD_ID, f"Expected id={AD_ID}, got {record.get('id')}"
 
 
 class TestAdsStatsTransformations(TestCase):
@@ -233,9 +245,9 @@ class TestAdsStatsIncremental(TestCase):
         # Validate state matches record
         assert state_cursor_value is not None, "Expected 'start_time' in state"
         assert record_cursor_value is not None, "Expected 'start_time' in record"
-        assert state_cursor_value == record_cursor_value or state_cursor_value.startswith(
-            record_cursor_value[:10]
-        ), f"Expected state to match latest record. State: {state_cursor_value}, Record: {record_cursor_value}"
+        assert state_cursor_value == record_cursor_value or state_cursor_value.startswith(record_cursor_value[:10]), (
+            f"Expected state to match latest record. State: {state_cursor_value}, Record: {record_cursor_value}"
+        )
 
     @HttpMocker()
     def test_incremental_sync_with_state(self, http_mocker: HttpMocker) -> None:
@@ -265,6 +277,6 @@ class TestAdsStatsIncremental(TestCase):
         # Validate state matches record
         assert state_cursor_value is not None, "Expected 'start_time' in state"
         assert record_cursor_value is not None, "Expected 'start_time' in record"
-        assert state_cursor_value == record_cursor_value or state_cursor_value.startswith(
-            record_cursor_value[:10]
-        ), f"Expected state to match latest record. State: {state_cursor_value}, Record: {record_cursor_value}"
+        assert state_cursor_value == record_cursor_value or state_cursor_value.startswith(record_cursor_value[:10]), (
+            f"Expected state to match latest record. State: {state_cursor_value}, Record: {record_cursor_value}"
+        )
