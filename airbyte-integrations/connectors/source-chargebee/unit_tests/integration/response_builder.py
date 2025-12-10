@@ -146,3 +146,88 @@ def error_response(status_code: HTTPStatus = HTTPStatus.UNAUTHORIZED) -> HttpRes
 def configuration_incompatible_response() -> HttpResponse:
     """Response for configuration_incompatible error (IGNORE action)."""
     return json_response("error_configuration_incompatible.json", HTTPStatus.BAD_REQUEST)
+
+
+def order_response() -> HttpResponse:
+    """Order stream response."""
+    return json_response("order.json")
+
+
+def hosted_page_response() -> HttpResponse:
+    """Hosted page stream response."""
+    return json_response("hosted_page.json")
+
+
+def item_price_response() -> HttpResponse:
+    """Item price stream response."""
+    return json_response("item_price.json")
+
+
+def payment_source_response() -> HttpResponse:
+    """Payment source stream response."""
+    return json_response("payment_source.json")
+
+
+def promotional_credit_response() -> HttpResponse:
+    """Promotional credit stream response."""
+    return json_response("promotional_credit.json")
+
+
+def subscription_response_multiple() -> HttpResponse:
+    """Subscription stream response with multiple records."""
+    return json_response("subscription_multiple.json")
+
+
+def subscription_with_scheduled_changes_response() -> HttpResponse:
+    """Subscription with scheduled changes stream response."""
+    return json_response("subscription_with_scheduled_changes.json")
+
+
+def unbilled_charge_response() -> HttpResponse:
+    """Unbilled charge stream response."""
+    return json_response("unbilled_charge.json")
+
+
+def virtual_bank_account_response() -> HttpResponse:
+    """Virtual bank account stream response."""
+    return json_response("virtual_bank_account.json")
+
+
+def quote_response() -> HttpResponse:
+    """Quote stream response."""
+    return json_response("quote.json")
+
+
+def quote_response_multiple() -> HttpResponse:
+    """Quote stream response with multiple records."""
+    return json_response("quote_multiple.json")
+
+
+def quote_line_group_response() -> HttpResponse:
+    """Quote line group stream response."""
+    return json_response("quote_line_group.json")
+
+
+def site_migration_detail_response() -> HttpResponse:
+    """Site migration detail stream response."""
+    return json_response("site_migration_detail.json")
+
+
+def comment_response() -> HttpResponse:
+    """Comment stream response."""
+    return json_response("comment.json")
+
+
+def item_family_response() -> HttpResponse:
+    """Item family stream response."""
+    return json_response("item_family.json")
+
+
+def differential_price_response() -> HttpResponse:
+    """Differential price stream response."""
+    return json_response("differential_price.json")
+
+
+def error_no_scheduled_changes_response() -> HttpResponse:
+    """Response for 'No changes are scheduled for this subscription' error (IGNORE action)."""
+    return json_response("error_no_scheduled_changes.json", HTTPStatus.BAD_REQUEST)

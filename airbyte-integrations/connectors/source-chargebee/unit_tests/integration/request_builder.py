@@ -72,6 +72,62 @@ class RequestBuilder:
     def credit_notes_endpoint(cls) -> "RequestBuilder":
         return cls(resource="credit_notes")
 
+    @classmethod
+    def orders_endpoint(cls) -> "RequestBuilder":
+        return cls(resource="orders")
+
+    @classmethod
+    def hosted_pages_endpoint(cls) -> "RequestBuilder":
+        return cls(resource="hosted_pages")
+
+    @classmethod
+    def item_prices_endpoint(cls) -> "RequestBuilder":
+        return cls(resource="item_prices")
+
+    @classmethod
+    def payment_sources_endpoint(cls) -> "RequestBuilder":
+        return cls(resource="payment_sources")
+
+    @classmethod
+    def promotional_credits_endpoint(cls) -> "RequestBuilder":
+        return cls(resource="promotional_credits")
+
+    @classmethod
+    def subscription_scheduled_changes_endpoint(cls, subscription_id: str) -> "RequestBuilder":
+        return cls(resource=f"subscriptions/{subscription_id}/retrieve_with_scheduled_changes")
+
+    @classmethod
+    def unbilled_charges_endpoint(cls) -> "RequestBuilder":
+        return cls(resource="unbilled_charges")
+
+    @classmethod
+    def virtual_bank_accounts_endpoint(cls) -> "RequestBuilder":
+        return cls(resource="virtual_bank_accounts")
+
+    @classmethod
+    def quotes_endpoint(cls) -> "RequestBuilder":
+        return cls(resource="quotes")
+
+    @classmethod
+    def quote_line_groups_endpoint(cls, quote_id: str) -> "RequestBuilder":
+        return cls(resource=f"quotes/{quote_id}/quote_line_groups")
+
+    @classmethod
+    def site_migration_details_endpoint(cls) -> "RequestBuilder":
+        return cls(resource="site_migration_details")
+
+    @classmethod
+    def comments_endpoint(cls) -> "RequestBuilder":
+        return cls(resource="comments")
+
+    @classmethod
+    def item_families_endpoint(cls) -> "RequestBuilder":
+        return cls(resource="item_families")
+
+    @classmethod
+    def differential_prices_endpoint(cls) -> "RequestBuilder":
+        return cls(resource="differential_prices")
+
     def __init__(self, resource: str = "") -> None:
         self._resource = resource
         self._query_params: Dict[str, Any] = {}
