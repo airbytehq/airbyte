@@ -10,7 +10,7 @@ import io.airbyte.cdk.load.dataflow.aggregate.Aggregate
 import io.airbyte.cdk.load.dataflow.aggregate.AggregateFactory
 import io.airbyte.cdk.load.dataflow.aggregate.StoreKey
 import io.airbyte.cdk.load.dataflow.transform.RecordDTO
-import io.airbyte.cdk.load.orchestration.db.direct_load_table.DirectLoadTableExecutionConfig
+import io.airbyte.cdk.load.table.directload.DirectLoadTableExecutionConfig
 import io.airbyte.cdk.load.write.StreamStateStore
 import io.airbyte.integrations.destination.clickhouse.write.load.BinaryRowInsertBuffer
 import io.micronaut.context.annotation.Factory

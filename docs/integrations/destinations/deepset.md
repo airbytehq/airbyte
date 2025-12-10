@@ -37,8 +37,7 @@ To use the deepset destination in Airbyte:
 
 After you connect a source and the first stream synchronization succeeds, your records are available in deepset AI Platform on the Files page as Markdown files.
 
-# Changelog
-
+## Changelog
 
 <details>
   <summary>Expand to review</summary>

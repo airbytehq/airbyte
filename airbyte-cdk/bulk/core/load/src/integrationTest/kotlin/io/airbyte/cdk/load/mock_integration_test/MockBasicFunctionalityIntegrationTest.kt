@@ -165,6 +165,7 @@ abstract class BaseMockBasicFunctionalityIntegrationTest(
                 minimumGenerationId = 0,
                 syncId = 42,
                 namespaceMapper = namespaceMapperForMedium(),
+                tableSchema = emptyTableSchema,
             )
         val e =
             assertThrows<DestinationUncleanExitException> {
@@ -202,6 +203,7 @@ abstract class BaseMockBasicFunctionalityIntegrationTest(
                 minimumGenerationId = 0,
                 syncId = 42,
                 namespaceMapper = namespaceMapperForMedium(),
+                tableSchema = emptyTableSchema,
             )
 
         val returnedMessages =
@@ -324,7 +326,8 @@ abstract class BaseMockBasicFunctionalityIntegrationTest(
                         namespaceDefinitionType = namespaceMappingConfig.namespaceDefinitionType,
                         streamPrefix = namespaceMappingConfig.streamPrefix,
                         namespaceFormat = namespaceMappingConfig.namespaceFormat
-                    )
+                    ),
+                tableSchema = emptyTableSchema,
             )
         namespaceValidator(
             stream.unmappedNamespace,
