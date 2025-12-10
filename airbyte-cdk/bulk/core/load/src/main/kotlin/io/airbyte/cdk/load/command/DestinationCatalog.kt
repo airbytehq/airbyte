@@ -111,6 +111,11 @@ class DefaultDestinationCatalogFactory {
             catalog.streams.map { namespaceMapper.map(it.stream.namespace, it.stream.name) }.toSet()
         val names = tableNameResolver.getTableNameMapping(mappedDescriptors)
 
+        require(
+            names.size == catalog.streams.size,
+            { "Invariant violation: An incomplete table name mapping was generated." }
+        )
+
         return DestinationCatalog(
             streams =
                 catalog.streams.map {
