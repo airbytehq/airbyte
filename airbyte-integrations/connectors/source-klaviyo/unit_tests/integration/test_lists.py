@@ -201,8 +201,10 @@ class TestListsStream(TestCase):
         When: Running an incremental sync
         Then: The connector should filter records client-side and only return new/updated records
         """
-        config = ConfigBuilder().with_api_key(_API_KEY).with_start_date(datetime(2024, 5, 31, tzinfo=timezone.utc)).build()
-        state = StateBuilder().with_stream_state(_STREAM_NAME, {"updated": "2024-03-01T00:00:00+00:00"}).build()
+        # Using early start_date (before test data) so state cursor is used for filtering
+        config = ConfigBuilder().with_api_key(_API_KEY).with_start_date(datetime(2024, 1, 1, tzinfo=timezone.utc)).build()
+        # Using +0000 format (without colon) to match connector's timezone format
+        state = StateBuilder().with_stream_state(_STREAM_NAME, {"updated": "2024-03-01T00:00:00+0000"}).build()
 
         # Lists stream has no query parameters (no request_parameters in manifest)
         http_mocker.get(
@@ -262,8 +264,10 @@ class TestListsStream(TestCase):
         When: Running an incremental sync
         Then: The connector should stop pagination when old records are detected
         """
-        config = ConfigBuilder().with_api_key(_API_KEY).with_start_date(datetime(2024, 5, 31, tzinfo=timezone.utc)).build()
-        state = StateBuilder().with_stream_state(_STREAM_NAME, {"updated": "2024-03-01T00:00:00+00:00"}).build()
+        # Using early start_date (before test data) so state cursor is used for filtering
+        config = ConfigBuilder().with_api_key(_API_KEY).with_start_date(datetime(2024, 1, 1, tzinfo=timezone.utc)).build()
+        # Using +0000 format (without colon) to match connector's timezone format
+        state = StateBuilder().with_stream_state(_STREAM_NAME, {"updated": "2024-03-01T00:00:00+0000"}).build()
 
         # Lists stream has no query parameters (no request_parameters in manifest)
         http_mocker.get(
