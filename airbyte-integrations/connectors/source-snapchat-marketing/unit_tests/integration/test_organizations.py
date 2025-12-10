@@ -115,12 +115,10 @@ class TestOrganizations(TestCase):
         # Verify custom error message from manifest is logged
         log_messages = [log.log.message for log in output.logs]
         expected_error_prefix = "Got permission error when accessing URL. Skipping"
-        assert any(expected_error_prefix in msg for msg in log_messages), (
-            f"Expected custom 403 error message '{expected_error_prefix}' in logs"
-        )
-        assert any(_STREAM_NAME in msg for msg in log_messages), (
-            f"Expected stream name '{_STREAM_NAME}' in log messages"
-        )
+        assert any(
+            expected_error_prefix in msg for msg in log_messages
+        ), f"Expected custom 403 error message '{expected_error_prefix}' in logs"
+        assert any(_STREAM_NAME in msg for msg in log_messages), f"Expected stream name '{_STREAM_NAME}' in log messages"
 
 
 class TestOrganizationsEmptyResults(TestCase):
@@ -173,8 +171,9 @@ class TestOrganizationsIncremental(TestCase):
         # Validate state matches record
         assert state_cursor_value is not None, "Expected 'updated_at' in state"
         assert record_cursor_value is not None, "Expected 'updated_at' in record"
-        assert state_cursor_value == record_cursor_value or state_cursor_value.startswith(record_cursor_value[:10]), \
-            f"Expected state to match latest record. State: {state_cursor_value}, Record: {record_cursor_value}"
+        assert state_cursor_value == record_cursor_value or state_cursor_value.startswith(
+            record_cursor_value[:10]
+        ), f"Expected state to match latest record. State: {state_cursor_value}, Record: {record_cursor_value}"
 
     @HttpMocker()
     def test_incremental_with_pagination_two_pages(self, http_mocker: HttpMocker) -> None:
@@ -219,10 +218,7 @@ class TestOrganizationsIncremental(TestCase):
         - State advances to latest record's cursor value
         """
         previous_state_date = "2024-01-15T00:00:00.000000Z"
-        state = StateBuilder().with_stream_state(
-            _STREAM_NAME,
-            {"updated_at": previous_state_date}
-        ).build()
+        state = StateBuilder().with_stream_state(_STREAM_NAME, {"updated_at": previous_state_date}).build()
 
         http_mocker.post(
             OAuthRequestBuilder.oauth_endpoint().build(),
@@ -249,5 +245,6 @@ class TestOrganizationsIncremental(TestCase):
         # Validate state matches record
         assert state_cursor_value is not None, "Expected 'updated_at' in state"
         assert record_cursor_value is not None, "Expected 'updated_at' in record"
-        assert state_cursor_value == record_cursor_value or state_cursor_value.startswith(record_cursor_value[:10]), \
-            f"Expected state to match latest record. State: {state_cursor_value}, Record: {record_cursor_value}"
+        assert state_cursor_value == record_cursor_value or state_cursor_value.startswith(
+            record_cursor_value[:10]
+        ), f"Expected state to match latest record. State: {state_cursor_value}, Record: {record_cursor_value}"

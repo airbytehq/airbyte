@@ -102,9 +102,9 @@ class TestAdaccountsStatsHourly(TestCase):
         # Verify custom error message from manifest is logged
         log_messages = [log.log.message for log in output.logs]
         expected_error_prefix = "Got permission error when accessing URL. Skipping"
-        assert any(expected_error_prefix in msg for msg in log_messages), (
-            f"Expected custom 403 error message '{expected_error_prefix}' in logs"
-        )
+        assert any(
+            expected_error_prefix in msg for msg in log_messages
+        ), f"Expected custom 403 error message '{expected_error_prefix}' in logs"
 
 
 class TestAdaccountsStatsDaily(TestCase):
@@ -223,8 +223,9 @@ class TestAdaccountsStatsIncremental(TestCase):
         # Validate state matches record
         assert state_cursor_value is not None, "Expected 'start_time' in state"
         assert record_cursor_value is not None, "Expected 'start_time' in record"
-        assert state_cursor_value == record_cursor_value or state_cursor_value.startswith(record_cursor_value[:10]), \
-            f"Expected state to match latest record. State: {state_cursor_value}, Record: {record_cursor_value}"
+        assert state_cursor_value == record_cursor_value or state_cursor_value.startswith(
+            record_cursor_value[:10]
+        ), f"Expected state to match latest record. State: {state_cursor_value}, Record: {record_cursor_value}"
 
     @HttpMocker()
     def test_incremental_sync_with_state(self, http_mocker: HttpMocker) -> None:
@@ -232,10 +233,7 @@ class TestAdaccountsStatsIncremental(TestCase):
         from airbyte_cdk.test.state_builder import StateBuilder
 
         previous_state_date = "2024-01-15T00:00:00.000000Z"
-        state = StateBuilder().with_stream_state(
-            "adaccounts_stats_hourly",
-            {"start_time": previous_state_date}
-        ).build()
+        state = StateBuilder().with_stream_state("adaccounts_stats_hourly", {"start_time": previous_state_date}).build()
 
         _setup_parent_mocks(http_mocker)
         http_mocker.get(
@@ -259,5 +257,6 @@ class TestAdaccountsStatsIncremental(TestCase):
         # Validate state matches record
         assert state_cursor_value is not None, "Expected 'start_time' in state"
         assert record_cursor_value is not None, "Expected 'start_time' in record"
-        assert state_cursor_value == record_cursor_value or state_cursor_value.startswith(record_cursor_value[:10]), \
-            f"Expected state to match latest record. State: {state_cursor_value}, Record: {record_cursor_value}"
+        assert state_cursor_value == record_cursor_value or state_cursor_value.startswith(
+            record_cursor_value[:10]
+        ), f"Expected state to match latest record. State: {state_cursor_value}, Record: {record_cursor_value}"
