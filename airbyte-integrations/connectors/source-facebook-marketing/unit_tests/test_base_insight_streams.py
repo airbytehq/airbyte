@@ -589,6 +589,36 @@ class TestBaseInsightsStream:
                 {"results": [{"value": 123}]},
                 id="no_rename_when_no_custom_fields",
             ),
+            pytest.param(
+                ["objective_results"],
+                {"results": [{"action_type": "purchase", "value": 10}], "impressions": 1000},
+                {"objective_results": [{"action_type": "purchase", "value": 10}], "impressions": 1000},
+                id="rename_preserves_other_fields",
+            ),
+            pytest.param(
+                ["objective_results"],
+                {"results": []},
+                {"objective_results": []},
+                id="rename_empty_results_array",
+            ),
+            pytest.param(
+                ["objective_results"],
+                {"impressions": 1000, "clicks": 50},
+                {"impressions": 1000, "clicks": 50},
+                id="no_rename_when_results_not_in_record",
+            ),
+            pytest.param(
+                ["impressions", "clicks"],
+                {"results": [{"value": 123}]},
+                {"results": [{"value": 123}]},
+                id="no_rename_when_objective_results_not_in_custom_fields",
+            ),
+            pytest.param(
+                ["objective_results"],
+                {"results": [{"action_type": "link_click", "value": 5}, {"action_type": "purchase", "value": 2}]},
+                {"objective_results": [{"action_type": "link_click", "value": 5}, {"action_type": "purchase", "value": 2}]},
+                id="rename_multiple_results_items",
+            ),
         ],
     )
     def test_objective_results_renamed_from_results(self, api, some_config, custom_fields, record, expected_record):
