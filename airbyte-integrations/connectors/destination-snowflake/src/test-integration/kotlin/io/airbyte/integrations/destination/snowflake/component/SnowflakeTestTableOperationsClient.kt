@@ -100,15 +100,6 @@ class SnowflakeTestTableOperationsClient(
                                             row[columnName] = actualValue
                                         }
                                     }
-                                    // We need to return as bigdecimal instead of double, so use
-                                    // getBigDecimal instead of getObject.
-                                    // Snowflake returns values that aren't actually representable
-                                    // as a Java double. E.g.
-                                    // 1.7976931348623157e308 (Double.MAX_VALUE)
-                                    // 1.79769313486232e308 (actual Snowflake value)
-                                    // Note that the snowflake value is rounded _upward_, and
-                                    // therefore exceeds Double.MAX_VALUE.
-                                    "DOUBLE" -> row[columnName] = resultSet.getBigDecimal(i)
                                     else -> {
                                         val value = resultSet.getObject(i)
                                         if (value != null) {
