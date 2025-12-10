@@ -141,6 +141,10 @@ The 'Reports' stream(s) by default will have `timeUnit` set to `SUMMARY`. If you
 
 Information about expected report generation waiting time can be found [here](https://advertising.amazon.com/API/docs/en-us/get-started/developer-notes).
 
+### Rate Limits
+
+Amazon Ads API uses dynamic rate limiting that varies by region and system load. Rate limits are not publicly documented with specific numbers and can change based on overall system utilization. When rate limits are exceeded, the API returns a 429 status code with a `Retry-After` header indicating when to retry. For more details, see the [Amazon Ads API Rate Limiting documentation](https://advertising.amazon.com/API/docs/en-us/reference/concepts/rate-limiting).
+
 ### Data type map
 
 | Integration Type         | Airbyte Type |
