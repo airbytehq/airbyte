@@ -7,13 +7,7 @@ package io.airbyte.cdk.read.cdc
 import io.airbyte.cdk.command.OpaqueStateValue
 import io.airbyte.cdk.read.Stream
 
-// TODO: The T: Comparable<T> type here is used to determine when the target offset has been
-//  reached. This doesn't actually require a well defined ordering on all offsets. In Postgres,
-//  the criteria for stopping a sync do not result in a well-ordering of all offsets. As a result,
-//  the implementation of compareTo(other: T) breaks the contract of compareTo(). To fix this,
-//  we should define and use a weaker interface than Comparable with a method like:
-//  fun hasReached(target: T): Boolean.
-interface CdcPartitionsCreatorDebeziumOperations<T : Comparable<T>> {
+interface CdcPartitionsCreatorDebeziumOperations<T : PartiallyOrdered<T>> {
 
     /** Extracts the WAL position from a [DebeziumOffset]. */
     fun position(offset: DebeziumOffset): T
