@@ -269,7 +269,7 @@
     },
     "objective_results": {
       "description": "Results for the objective",
-      "$ref": "ads_action_stats.json"
+      "$ref": "ads_insights_result.json"
     },
     "optimization_goal": {
       "description": "Goal for optimization",
