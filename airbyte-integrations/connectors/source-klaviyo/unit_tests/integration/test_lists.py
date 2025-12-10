@@ -283,7 +283,7 @@ class TestListsStream(TestCase):
                                 },
                             }
                         ],
-                        "links": {"self": "https://a.klaviyo.com/api/lists", "next": "https://a.klaviyo.com/api/lists?page[cursor]=abc123"},
+                        "links": {"self": "https://a.klaviyo.com/api/lists", "next": None},
                     }
                 ),
                 status_code=200,
