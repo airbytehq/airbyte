@@ -69,18 +69,19 @@ class TestCouponStream(TestCase):
 
         This test validates:
         1. State from previous sync is accepted
-        2. Correct request parameters are sent (sort_by, include_deleted, updated_at[between])
+        2. Correct request parameters are sent (only updated_at[between] - NO sort_by or include_deleted)
         3. State advances to latest record's cursor value
+
+        Note: coupon stream uses updated_at cursor but has NO sort_by or include_deleted parameters.
         """
         # ARRANGE: Previous state from last sync
         previous_state_timestamp = 1704067200  # 2024-01-01T00:00:00
         state = StateBuilder().with_stream_state(_STREAM_NAME, {"updated_at": previous_state_timestamp}).build()
 
         # Mock API response with record AFTER the state timestamp
+        # Note: Coupon stream does NOT use sort_by or include_deleted
         http_mocker.get(
             RequestBuilder.coupons_endpoint()
-            .with_sort_by_asc("updated_at")
-            .with_include_deleted("true")
             .with_updated_at_between(previous_state_timestamp, 1705320000)  # Frozen time: 2024-01-15T12:00:00Z
             .with_limit(100)
             .build(),

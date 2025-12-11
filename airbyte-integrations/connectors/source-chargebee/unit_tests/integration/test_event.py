@@ -95,9 +95,10 @@ class TestEventStream(TestCase):
         state = StateBuilder().with_stream_state(_STREAM_NAME, {"occurred_at": previous_state_timestamp}).build()
 
         # Mock API response with record AFTER the state timestamp
-        # Note: Event stream uses occurred_at[between] and does NOT use sort_by or include_deleted
+        # Note: Event stream uses sort_by[asc]=occurred_at and occurred_at[between], but NO include_deleted
         http_mocker.get(
             RequestBuilder.events_endpoint()
+            .with_sort_by_asc("occurred_at")
             .with_occurred_at_between(previous_state_timestamp, 1705320000)  # Frozen time: 2024-01-15T12:00:00Z
             .with_limit(100)
             .build(),

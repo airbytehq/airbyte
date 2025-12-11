@@ -170,6 +170,11 @@ class RequestBuilder:
         self._query_params["occurred_at[between]"] = f"[{start_time}, {end_time}]"
         return self
 
+    def with_created_at_between(self, start_time: int, end_time: int) -> "RequestBuilder":
+        """Add created_at[between] parameter for comment and promotional_credit streams."""
+        self._query_params["created_at[between]"] = f"[{start_time}, {end_time}]"
+        return self
+
     def build(self) -> HttpRequest:
         query_params = ANY_QUERY_PARAMS if self._any_query_params else (self._query_params if self._query_params else None)
         return HttpRequest(

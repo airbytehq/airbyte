@@ -69,8 +69,10 @@ class TestCreditNoteStream(TestCase):
 
         This test validates:
         1. State from previous sync is accepted
-        2. Correct request parameters are sent (sort_by, include_deleted, updated_at[between])
+        2. Correct request parameters are sent (sort_by[asc]=date, include_deleted, updated_at[between])
         3. State advances to latest record's cursor value
+
+        Note: credit_note stream uses updated_at cursor but sorts by "date" (not "updated_at").
         """
         # ARRANGE: Previous state from last sync
         previous_state_timestamp = 1704067200  # 2024-01-01T00:00:00
@@ -79,7 +81,7 @@ class TestCreditNoteStream(TestCase):
         # Mock API response with record AFTER the state timestamp
         http_mocker.get(
             RequestBuilder.credit_notes_endpoint()
-            .with_sort_by_asc("updated_at")
+            .with_sort_by_asc("date")
             .with_include_deleted("true")
             .with_updated_at_between(previous_state_timestamp, 1705320000)  # Frozen time: 2024-01-15T12:00:00Z
             .with_limit(100)

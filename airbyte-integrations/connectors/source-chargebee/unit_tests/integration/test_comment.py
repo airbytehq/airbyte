@@ -81,19 +81,20 @@ class TestCommentStream(TestCase):
 
         This test validates:
         1. State from previous sync is accepted
-        2. Correct request parameters are sent (sort_by, include_deleted, updated_at[between])
+        2. Correct request parameters are sent (sort_by[asc]=created_at, created_at[between])
         3. State advances to latest record's cursor value
+
+        Note: comment stream uses created_at cursor (not updated_at) and has NO include_deleted.
         """
         # ARRANGE: Previous state from last sync
         previous_state_timestamp = 1704067200  # 2024-01-01T00:00:00
-        state = StateBuilder().with_stream_state(_STREAM_NAME, {"updated_at": previous_state_timestamp}).build()
+        state = StateBuilder().with_stream_state(_STREAM_NAME, {"created_at": previous_state_timestamp}).build()
 
         # Mock API response with record AFTER the state timestamp
         http_mocker.get(
             RequestBuilder.comments_endpoint()
-            .with_sort_by_asc("updated_at")
-            .with_include_deleted("true")
-            .with_updated_at_between(previous_state_timestamp, 1705320000)  # Frozen time: 2024-01-15T12:00:00Z
+            .with_sort_by_asc("created_at")
+            .with_created_at_between(previous_state_timestamp, 1705320000)  # Frozen time: 2024-01-15T12:00:00Z
             .with_limit(100)
             .build(),
             comment_response(),
@@ -114,7 +115,7 @@ class TestCommentStream(TestCase):
 
         # ASSERT: State advances to latest record
         latest_state = output.state_messages[-1].state.stream.stream_state
-        latest_cursor_value = int(latest_state.__dict__["updated_at"])
+        latest_cursor_value = int(latest_state.__dict__["created_at"])
 
         # State should advance beyond previous state
         assert latest_cursor_value > previous_state_timestamp, f"State should advance: {latest_cursor_value} > {previous_state_timestamp}"
