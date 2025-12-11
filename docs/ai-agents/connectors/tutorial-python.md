@@ -253,12 +253,13 @@ If your agent fails to retrieve GitHub data, check the following:
 
 In this tutorial, you learned how to:
 
-- Set up a new Python project
-- Install a Pydantic AI agent and a direct connector
-- Add tools to your agent using your direct connector
-- Run your Python project and use natural language to interact with your data
+- Set up a new Python project with `uv`
+- Install Pydantic AI and the GitHub direct connector
+- Configure environment variables and authentication
+- Add tools to your agent using the GitHub connector
+- Run your project and use natural language to interact with GitHub data
 
 ## Next steps
 
-- Add more tools and direct connectors to your project. The more you add, the more capable your agent becomes while it works for you.
+- - Add more tools and direct connectors to your project. For GitHub, you can wrap additional operations (like search, comments, or commits) as tools. Explore other direct connectors in the [Airbyte AI connectors catalog](https://github.com/airbytehq/airbyte-ai-connectors) to give your agent access to more services.
 - Consider how you might like to expand your agent's capabilities. For example, you might want to trigger effects like sending a Slack message or an email. You aren't limited to the capabilities of Airbyte's direct connectors. You can use other libraries and integrations to build a more robust agent.
