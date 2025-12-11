@@ -167,6 +167,8 @@ public class PostgresSourceOperations extends AbstractJdbcCompatibleSourceOperat
         case "path" -> putObject(json, columnName, resultSet, colIndex, PGpath.class);
         case "point" -> putObject(json, columnName, resultSet, colIndex, PGpoint.class);
         case "polygon" -> putObject(json, columnName, resultSet, colIndex, PGpolygon.class);
+        case "geometry" -> putGeometry(json, columnName, resultSet, colIndex);
+        case "geography" -> putGeography(json, columnName, resultSet, colIndex);
         case "_varchar", "_char", "_bpchar", "_text", "_name" -> putArray(json, columnName, resultSet, colIndex);
         case "_int2", "_int4", "_int8", "_oid" -> putLongArray(json, columnName, resultSet, colIndex);
         case "_numeric", "_decimal" -> {
@@ -501,6 +503,8 @@ public class PostgresSourceOperations extends AbstractJdbcCompatibleSourceOperat
         }
         case TIMESTAMPTZ -> PostgresType.TIMESTAMP_WITH_TIMEZONE;
         case TIMETZ -> PostgresType.TIME_WITH_TIMEZONE;
+        case "geometry" -> PostgresType.GEOMETRY;
+        case "geography" -> PostgresType.GEOGRAPHY;
         default -> PostgresType.valueOf(field.get(INTERNAL_COLUMN_TYPE).asInt(), POSTGRES_TYPE_DICT);
       };
     } catch (final IllegalArgumentException ex) {
@@ -603,6 +607,7 @@ public class PostgresSourceOperations extends AbstractJdbcCompatibleSourceOperat
       case TIME_WITH_TIMEZONE -> JsonSchemaType.STRING_TIME_WITH_TIMEZONE;
       case TIMESTAMP -> JsonSchemaType.STRING_TIMESTAMP_WITHOUT_TIMEZONE;
       case TIMESTAMP_WITH_TIMEZONE -> JsonSchemaType.STRING_TIMESTAMP_WITH_TIMEZONE;
+      case GEOMETRY, GEOGRAPHY -> JsonSchemaType.GEOMETRY_V1;
       default -> JsonSchemaType.STRING;
     };
   }
@@ -620,6 +625,38 @@ public class PostgresSourceOperations extends AbstractJdbcCompatibleSourceOperat
       throws SQLException {
     final T object = getObject(resultSet, index, clazz);
     node.put(columnName, object.getValue());
+  }
+
+  protected void putGeometry(final ObjectNode node, final String columnName, final ResultSet resultSet, final int index) throws SQLException {
+    putPostGISGeometry(node, columnName, resultSet, index);
+  }
+
+  protected void putGeography(final ObjectNode node, final String columnName, final ResultSet resultSet, final int index) throws SQLException {
+    putPostGISGeometry(node, columnName, resultSet, index);
+  }
+
+  private void putPostGISGeometry(final ObjectNode node, final String columnName, final ResultSet resultSet, final int index) throws SQLException {
+    final Object geometryObject = resultSet.getObject(index);
+    if (geometryObject != null) {
+      try {
+        // PostGIS geometry objects should have a method to get GeoJSON representation
+        // The exact method depends on the PostGIS JDBC driver version
+        final String geoJsonString = geometryObject.toString(); // This may need to be adjusted based on PostGIS driver
+        final JsonNode geoJsonFeature = OBJECT_MAPPER.readTree(geoJsonString);
+        
+        // Wrap in FeatureCollection format as expected by our protocol
+        final ObjectNode featureCollection = OBJECT_MAPPER.createObjectNode();
+        featureCollection.put("type", "FeatureCollection");
+        featureCollection.putArray("features").add(geoJsonFeature);
+        
+        node.set(columnName, featureCollection);
+      } catch (final Exception e) {
+        LOGGER.warn("Failed to convert PostGIS geometry to GeoJSON, storing as string: " + e.getMessage());
+        node.put(columnName, geometryObject.toString());
+      }
+    } else {
+      node.putNull(columnName);
+    }
   }
 
   @Override
