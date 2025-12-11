@@ -11,13 +11,13 @@
 
 ---
 
-## Phase 0: Scaffolding
+## Setup Phase 1: Scaffolding
 
 **Goal:** Empty project structure that builds
 
 **Checkpoint:** Project compiles
 
-### Step 0.1: Create Directory Structure
+### Setup Step 1: Create Directory Structure
 
 ```bash
 cd airbyte-integrations/connectors
@@ -34,7 +34,7 @@ mkdir check client config dataflow spec write
 mkdir write/load write/transform
 ```
 
-### Step 0.2: Create gradle.properties with CDK Version Pin
+### Setup Step 2: Create gradle.properties with CDK Version Pin
 
 **File:** `destination-{db}/gradle.properties`
 
@@ -56,7 +56,7 @@ cdkVersion=0.1.76
 ./gradlew destination-{db}:upgradeCdk --cdkVersion=0.1.76
 ```
 
-### Step 0.3: Create build.gradle.kts
+### Setup Step 3: Create build.gradle.kts
 
 **File:** `destination-{db}/build.gradle.kts`
 
@@ -88,7 +88,7 @@ dependencies {
 
 **No need to manually declare CDK dependencies** - the plugin handles it
 
-### Step 0.4: Create metadata.yaml
+### Setup Step 4: Create metadata.yaml
 
 **File:** `destination-{db}/metadata.yaml`
 
@@ -145,7 +145,7 @@ metadataSpecVersion: "1.0"
 grep "baseImage:" airbyte-integrations/connectors/destination-*/metadata.yaml | sort | uniq -c | sort -rn | head -3
 ```
 
-### Step 0.5: Configure Docker Build in build.gradle.kts
+### Setup Step 5: Configure Docker Build in build.gradle.kts
 
 **File:** Update `destination-{db}/build.gradle.kts`
 
@@ -181,7 +181,7 @@ dependencies {
 - `io.airbyte.gradle.docker`: Provides Docker build tasks
 - `airbyte-connector-docker-convention`: Reads metadata.yaml, generates build args
 
-### Step 0.6: Create Main Entry Point
+### Setup Step 6: Create Main Entry Point
 
 **File:** `destination-{db}/src/main/kotlin/.../​{DB}Destination.kt`
 
@@ -197,7 +197,7 @@ fun main(args: Array<String>) {
 
 **That's it!** The framework handles everything else.
 
-### Step 0.7: Verify Build
+### Setup Step 7: Verify Build
 
 ```bash
 $ ./gradlew :destination-{db}:build
@@ -211,7 +211,7 @@ $ ./gradlew :destination-{db}:build
 - Micronaut scanning issues? Ensure `@Singleton` annotations present
 - metadata.yaml syntax errors? Validate YAML format
 
-### Step 0.8: Create application-connector.yml
+### Setup Step 8: Create application-connector.yml
 
 **File:** `src/main/resources/application-connector.yml`
 
@@ -257,7 +257,7 @@ Failed to inject value for parameter [fileTransferEnabled]
 - ✅ `mappers.namespace-mapping-config-path`: Namespace mapping file path (empty for identity)
 - ✅ `file-transfer.enabled`: Whether connector transfers files (false for databases)
 
-### Step 0.9: Build Docker Image
+### Setup Step 9: Build Docker Image
 
 ```bash
 $ ./gradlew :destination-{db}:assemble
@@ -291,13 +291,13 @@ airbyte/destination-{db}    0.1.0    abc123def456    2 minutes ago    500MB
 
 ---
 
-## Phase 1: Spec Operation
+## Setup Phase 2: Spec Operation
 
 **Goal:** Implement --spec operation (returns connector configuration schema)
 
 **Checkpoint:** Spec test passes
 
-### Step 1.1: Understand Configuration Classes
+### Setup Step 1: Understand Configuration Classes
 
 **Two classes work together for configuration:**
 
@@ -317,7 +317,7 @@ ConfigurationFactory parses JSON → Configuration object
 Your code uses Configuration object
 ```
 
-### Step 1.2: Create Specification Class
+### Setup Step 2: Create Specification Class
 
 **Purpose:** Defines the configuration form users fill in Airbyte UI
 
@@ -361,7 +361,7 @@ open class {DB}Specification : ConfigurationSpecification() {
 - `@JsonSchemaTitle("Title")` - Label in UI (optional, defaults to property name)
 - `@JsonSchemaInject(json = """{"airbyte_secret": true}""")` - Mark as secret (passwords, API keys)
 
-### Step 1.3: Create Configuration and Factory
+### Setup Step 3: Create Configuration and Factory
 
 **Purpose:** Runtime configuration object your code actually uses
 
@@ -411,7 +411,7 @@ class {DB}ConfigurationFactory :
 - Specification = What users configure
 - Configuration = What your code uses
 
-### Step 1.4: Create Specification Extension
+### Setup Step 4: Create Specification Extension
 
 **Purpose:** Declares what sync modes your connector supports
 
@@ -443,7 +443,7 @@ class {DB}SpecificationExtension : DestinationSpecificationExtension {
 }
 ```
 
-### Step 1.5: Configure Documentation URL
+### Setup Step 5: Configure Documentation URL
 
 **File:** `src/main/resources/application.yml`
 
@@ -472,7 +472,7 @@ airbyteBulkConnector {
 
 **Default:** If not specified, uses placeholder URL
 
-### Step 1.6: Create Expected Spec Test File
+### Setup Step 6: Create Expected Spec Test File
 
 **File:** `src/test-integration/resources/expected-spec-oss.json`
 
@@ -539,7 +539,7 @@ airbyteBulkConnector {
 2. Copying output to this file
 3. Using it for regression testing
 
-### Step 1.7: Create Spec Test
+### Setup Step 7: Create Spec Test
 
 **File:** `src/test-integration/kotlin/.../spec/{DB}SpecTest.kt`
 
@@ -557,7 +557,7 @@ class {DB}SpecTest : SpecTest()
 - Matches expected-spec-oss.json (snapshot test)
 - If Cloud-specific: Matches expected-spec-cloud.json
 
-### Step 1.8: Generate and Validate Spec
+### Setup Step 8: Generate and Validate Spec
 
 **Run spec operation to generate the JSON schema:**
 
@@ -590,7 +590,7 @@ mkdir -p src/test-integration/resources
 
 **Tip:** Use `jq` to format: `./gradlew :destination-{db}:run --args='--spec' | jq .spec > expected-spec-oss.json`
 
-### Step 1.9: Run Spec Test
+### Setup Step 9: Run Spec Test
 
 ```bash
 $ ./gradlew :destination-{db}:integrationTestSpecOss

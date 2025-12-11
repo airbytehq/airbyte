@@ -12,7 +12,10 @@ import io.airbyte.cdk.load.dataflow.aggregate.AggregateFactory
 import io.airbyte.cdk.load.dataflow.aggregate.StoreKey
 import io.airbyte.cdk.load.dataflow.state.PartitionKey
 import io.airbyte.cdk.load.dataflow.transform.RecordDTO
-import io.airbyte.cdk.load.table.TableName
+import io.airbyte.cdk.load.schema.model.ColumnSchema
+import io.airbyte.cdk.load.schema.model.StreamTableSchema
+import io.airbyte.cdk.load.schema.model.TableName
+import io.airbyte.cdk.load.schema.model.TableNames
 import io.airbyte.cdk.load.write.DestinationWriter
 import java.util.UUID
 import kotlinx.coroutines.runBlocking
@@ -199,6 +202,17 @@ interface ConnectorWiringSuite {
             minimumGenerationId = 0,
             syncId = 42,
             namespaceMapper = NamespaceMapper(), // Default identity mapper
+            tableSchema =
+                StreamTableSchema(
+                    columnSchema =
+                        ColumnSchema(
+                            inputSchema = mapOf(),
+                            inputToFinalColumnNames = mapOf(),
+                            finalSchema = mapOf(),
+                        ),
+                    importType = Append,
+                    tableNames = TableNames(finalTableName = TableName("namespace", "test")),
+                ),
         )
     }
 
