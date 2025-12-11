@@ -2692,7 +2692,7 @@ api_budget:
           interval: PT15M
       matchers:
         - method: GET
-          url_path_pattern: "^/reports/"
+          url_path_pattern: "/reports/"
     # General API: 100 requests per 15 seconds
     - type: MovingWindowCallRatePolicy
       rates:
@@ -2702,8 +2702,8 @@ api_budget:
 
 concurrency_level:
   type: ConcurrencyLevel
-  default_concurrency: 5
-  max_concurrency: 10
+  default_concurrency: "{{ config.get('num_workers', 10) }}"
+  max_concurrency: 30
 
 spec:
   type: Spec
@@ -2745,6 +2745,18 @@ spec:
         examples:
           - "2017-01-25T00:00:00Z"
         airbyte_hidden: true
+      num_workers:
+        type: integer
+        title: Number of concurrent workers
+        description: The number of worker threads to use for the sync. More workers can improve sync speed but may increase API rate limit usage.
+        minimum: 1
+        maximum: 30
+        default: 10
+        order: 3
+        examples:
+          - 5
+          - 10
+          - 20
       credentials:
         type: object
         description: Choose how to authenticate to Harvest.
