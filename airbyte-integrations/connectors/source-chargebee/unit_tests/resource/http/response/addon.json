@@ -7,7 +7,9 @@
         "price": 500,
         "type": "on_off",
         "status": "active",
-        "updated_at": 1705312800
+        "updated_at": 1705312800,
+        "cf_product_category": "Premium",
+        "cf_item_tier": "Gold"
       }
     }
   ]

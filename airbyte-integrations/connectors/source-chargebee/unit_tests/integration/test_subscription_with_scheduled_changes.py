@@ -72,3 +72,43 @@ class TestSubscriptionWithScheduledChangesStream(TestCase):
 
         output = read_output(config_builder=config(), stream_name=_STREAM_NAME)
         assert len(output.records) == 0
+
+    @HttpMocker()
+    def test_both_transformations(self, http_mocker: HttpMocker) -> None:
+        """
+        Test that BOTH transformations work together:
+        1. AddFields adds subscription_id from parent stream slice
+        2. CustomFieldTransformation converts cf_* fields to custom_fields array
+        """
+        # Mock parent subscription stream
+        http_mocker.get(
+            RequestBuilder.subscriptions_endpoint().with_any_query_params().build(),
+            subscription_response(),
+        )
+
+        # Mock subscription_with_scheduled_changes substream (with cf_ fields)
+        http_mocker.get(
+            RequestBuilder.subscription_scheduled_changes_endpoint("sub_001").with_any_query_params().build(),
+            subscription_with_scheduled_changes_response(),
+        )
+
+        output = read_output(config_builder=config(), stream_name=_STREAM_NAME)
+
+        assert len(output.records) >= 1
+        record_data = output.records[0].record.data
+
+        # ========== Test Transformation #1: AddFields ==========
+        assert "subscription_id" in record_data, \
+            "AddFields transformation should add subscription_id field"
+        assert record_data["subscription_id"] == "sub_001", \
+            "subscription_id should match parent stream's id"
+
+        # ========== Test Transformation #2: CustomFieldTransformation ==========
+        assert not any(key.startswith("cf_") for key in record_data.keys()), \
+            "cf_ fields should be removed from top level"
+        assert "custom_fields" in record_data
+        assert isinstance(record_data["custom_fields"], list)
+        assert len(record_data["custom_fields"]) == 2
+
+        custom_fields = {cf["name"]: cf["value"] for cf in record_data["custom_fields"]}
+        assert len(custom_fields) == 2

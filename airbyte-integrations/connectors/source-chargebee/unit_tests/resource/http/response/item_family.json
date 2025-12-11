@@ -8,7 +8,9 @@
         "status": "active",
         "created_at": 1705312800,
         "updated_at": 1705312800,
-        "object": "item_family"
+        "object": "item_family",
+        "cf_business_unit": "SaaS",
+        "cf_revenue_category": "Recurring"
       }
     }
   ]

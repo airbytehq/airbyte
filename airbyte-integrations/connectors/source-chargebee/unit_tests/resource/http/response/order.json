@@ -11,7 +11,9 @@
         "order_type": "manual",
         "created_at": 1705312800,
         "updated_at": 1705312800,
-        "object": "order"
+        "object": "order",
+        "cf_shipping_method": "Express",
+        "cf_fulfillment_center": "US-WEST"
       }
     }
   ]

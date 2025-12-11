@@ -8,7 +8,9 @@
         "period": 1,
         "period_unit": "month",
         "status": "active",
-        "updated_at": 1705312800
+        "updated_at": 1705312800,
+        "cf_plan_category": "Professional",
+        "cf_feature_set": "Advanced"
       }
     }
   ]

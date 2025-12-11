@@ -9,7 +9,9 @@
         "currency_code": "USD",
         "description": "Promotional credit",
         "created_at": 1705312800,
-        "object": "promotional_credit"
+        "object": "promotional_credit",
+        "cf_promo_source": "Referral",
+        "cf_campaign_name": "Summer2024"
       }
     }
   ]

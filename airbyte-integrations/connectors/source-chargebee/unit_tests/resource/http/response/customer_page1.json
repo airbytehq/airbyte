@@ -7,7 +7,9 @@
         "last_name": "Customer",
         "email": "test@example.com",
         "updated_at": 1705312800,
-        "created_at": 1704067200
+        "created_at": 1704067200,
+        "cf_loyalty_tier": "Platinum",
+        "cf_account_manager": "John Smith"
       }
     }
   ],

@@ -8,7 +8,9 @@
         "type": "payment",
         "status": "success",
         "updated_at": 1705312800,
-        "date": 1705312800
+        "date": 1705312800,
+        "cf_payment_method": "Credit Card",
+        "cf_processor_response": "Approved"
       }
     }
   ]

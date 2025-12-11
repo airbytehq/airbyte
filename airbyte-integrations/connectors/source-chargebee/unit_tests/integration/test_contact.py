@@ -56,3 +56,43 @@ class TestContactStream(TestCase):
 
         output = read_output(config_builder=config(), stream_name=_STREAM_NAME)
         assert len(output.records) >= 2
+
+    @HttpMocker()
+    def test_both_transformations(self, http_mocker: HttpMocker) -> None:
+        """
+        Test that BOTH transformations work together:
+        1. AddFields adds customer_id from parent stream slice
+        2. CustomFieldTransformation converts cf_* fields to custom_fields array
+        """
+        # Mock parent customer stream
+        http_mocker.get(
+            RequestBuilder.customers_endpoint().with_any_query_params().build(),
+            customer_response(),
+        )
+
+        # Mock contact substream (with cf_ fields)
+        http_mocker.get(
+            RequestBuilder.customer_contacts_endpoint("cust_001").with_any_query_params().build(),
+            contact_response(),
+        )
+
+        output = read_output(config_builder=config(), stream_name=_STREAM_NAME)
+
+        assert len(output.records) >= 1
+        record_data = output.records[0].record.data
+
+        # ========== Test Transformation #1: AddFields ==========
+        assert "customer_id" in record_data, \
+            "AddFields transformation should add customer_id field"
+        assert record_data["customer_id"] == "cust_001", \
+            "customer_id should match parent stream's id"
+
+        # ========== Test Transformation #2: CustomFieldTransformation ==========
+        assert not any(key.startswith("cf_") for key in record_data.keys()), \
+            "cf_ fields should be removed from top level"
+        assert "custom_fields" in record_data
+        assert isinstance(record_data["custom_fields"], list)
+        assert len(record_data["custom_fields"]) == 2
+
+        custom_fields = {cf["name"]: cf["value"] for cf in record_data["custom_fields"]}
+        assert len(custom_fields) == 2

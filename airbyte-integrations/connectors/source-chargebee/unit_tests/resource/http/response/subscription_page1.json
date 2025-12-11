@@ -7,7 +7,9 @@
         "plan_id": "plan_123",
         "status": "active",
         "updated_at": 1705312800,
-        "created_at": 1704067200
+        "created_at": 1704067200,
+        "cf_contract_type": "Annual",
+        "cf_sales_channel": "Direct"
       }
     }
   ],

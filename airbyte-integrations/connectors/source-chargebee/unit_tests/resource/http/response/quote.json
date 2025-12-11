@@ -14,7 +14,9 @@
         "currency_code": "USD",
         "created_at": 1705312800,
         "updated_at": 1705312800,
-        "object": "quote"
+        "object": "quote",
+        "cf_sales_rep": "Jane Doe",
+        "cf_deal_stage": "Negotiation"
       }
     }
   ]

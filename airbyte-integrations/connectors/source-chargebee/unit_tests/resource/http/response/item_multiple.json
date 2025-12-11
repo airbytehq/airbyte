@@ -6,7 +6,9 @@
         "name": "Test Item item_001",
         "type": "plan",
         "status": "active",
-        "updated_at": 1705312800
+        "updated_at": 1705312800,
+        "cf_product_line": "Enterprise",
+        "cf_sku_code": "ENT-001"
       }
     },
     {
@@ -15,7 +17,9 @@
         "name": "Test Item item_002",
         "type": "plan",
         "status": "active",
-        "updated_at": 1705312800
+        "updated_at": 1705312800,
+        "cf_product_line": "Enterprise",
+        "cf_sku_code": "ENT-002"
       }
     }
   ]

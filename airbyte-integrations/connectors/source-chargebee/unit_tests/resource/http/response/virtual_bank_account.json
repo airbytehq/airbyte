@@ -11,7 +11,9 @@
         "routing_number": "****5678",
         "created_at": 1705312800,
         "updated_at": 1705312800,
-        "object": "virtual_bank_account"
+        "object": "virtual_bank_account",
+        "cf_account_purpose": "Receivables",
+        "cf_verification_level": "Full"
       }
     }
   ]

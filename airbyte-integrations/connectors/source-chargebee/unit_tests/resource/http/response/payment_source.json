@@ -9,7 +9,9 @@
         "gateway": "stripe",
         "created_at": 1705312800,
         "updated_at": 1705312800,
-        "object": "payment_source"
+        "object": "payment_source",
+        "cf_payment_preference": "Primary",
+        "cf_verification_status": "Verified"
       }
     }
   ]

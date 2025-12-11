@@ -7,7 +7,9 @@
         "total": 5000,
         "status": "refunded",
         "updated_at": 1705312800,
-        "date": 1705312800
+        "date": 1705312800,
+        "cf_refund_reason": "Customer Request",
+        "cf_approval_status": "Approved"
       }
     }
   ]

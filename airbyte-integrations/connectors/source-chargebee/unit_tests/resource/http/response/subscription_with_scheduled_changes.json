@@ -9,6 +9,8 @@
     "created_at": 1705312800,
     "updated_at": 1705312800,
     "has_scheduled_changes": true,
-    "object": "subscription"
+    "object": "subscription",
+    "cf_change_reason": "Upgrade",
+    "cf_scheduled_by": "Admin"
   }
 }

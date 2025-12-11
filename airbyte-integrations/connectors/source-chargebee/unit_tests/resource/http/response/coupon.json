@@ -7,7 +7,9 @@
         "discount_type": "percentage",
         "discount_percentage": 10.0,
         "status": "active",
-        "updated_at": 1705312800
+        "updated_at": 1705312800,
+        "cf_department": "Marketing",
+        "cf_campaign_id": "SUMMER2024"
       }
     }
   ]

@@ -13,7 +13,9 @@
         "period_unit": "month",
         "created_at": 1705312800,
         "updated_at": 1705312800,
-        "object": "item_price"
+        "object": "item_price",
+        "cf_pricing_model": "Tiered",
+        "cf_discount_eligible": "Yes"
       }
     }
   ]
