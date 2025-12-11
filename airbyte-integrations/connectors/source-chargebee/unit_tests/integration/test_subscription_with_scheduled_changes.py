@@ -98,14 +98,11 @@ class TestSubscriptionWithScheduledChangesStream(TestCase):
         record_data = output.records[0].record.data
 
         # ========== Test Transformation #1: AddFields ==========
-        assert "subscription_id" in record_data, \
-            "AddFields transformation should add subscription_id field"
-        assert record_data["subscription_id"] == "sub_001", \
-            "subscription_id should match parent stream's id"
+        assert "subscription_id" in record_data, "AddFields transformation should add subscription_id field"
+        assert record_data["subscription_id"] == "sub_001", "subscription_id should match parent stream's id"
 
         # ========== Test Transformation #2: CustomFieldTransformation ==========
-        assert not any(key.startswith("cf_") for key in record_data.keys()), \
-            "cf_ fields should be removed from top level"
+        assert not any(key.startswith("cf_") for key in record_data.keys()), "cf_ fields should be removed from top level"
         assert "custom_fields" in record_data
         assert isinstance(record_data["custom_fields"], list)
         assert len(record_data["custom_fields"]) == 2

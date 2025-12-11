@@ -102,14 +102,11 @@ class TestQuoteLineGroupStream(TestCase):
         record_data = output.records[0].record.data
 
         # ========== Test Transformation #1: AddFields ==========
-        assert "quote_id" in record_data, \
-            "AddFields transformation should add quote_id field"
-        assert record_data["quote_id"] == "quote_001", \
-            "quote_id should match parent stream's id"
+        assert "quote_id" in record_data, "AddFields transformation should add quote_id field"
+        assert record_data["quote_id"] == "quote_001", "quote_id should match parent stream's id"
 
         # ========== Test Transformation #2: CustomFieldTransformation ==========
-        assert not any(key.startswith("cf_") for key in record_data.keys()), \
-            "cf_ fields should be removed from top level"
+        assert not any(key.startswith("cf_") for key in record_data.keys()), "cf_ fields should be removed from top level"
         assert "custom_fields" in record_data
         assert isinstance(record_data["custom_fields"], list)
         assert len(record_data["custom_fields"]) == 2

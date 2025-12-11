@@ -45,19 +45,17 @@ class TestTransactionStream(TestCase):
         record_data = output.records[0].record.data
 
         # Assert cf_ fields are REMOVED from top level
-        assert not any(key.startswith("cf_") for key in record_data.keys()), \
-            "cf_ fields should be removed from record and moved to custom_fields array"
+        assert not any(
+            key.startswith("cf_") for key in record_data.keys()
+        ), "cf_ fields should be removed from record and moved to custom_fields array"
 
         # Assert custom_fields array EXISTS
-        assert "custom_fields" in record_data, \
-            "custom_fields array should be created by CustomFieldTransformation"
+        assert "custom_fields" in record_data, "custom_fields array should be created by CustomFieldTransformation"
         assert isinstance(record_data["custom_fields"], list)
 
         # Assert custom_fields array contains the transformed fields
-        assert len(record_data["custom_fields"]) == 2, \
-            "custom_fields array should contain 2 transformed fields"
+        assert len(record_data["custom_fields"]) == 2, "custom_fields array should contain 2 transformed fields"
 
         # Verify structure and values of custom_fields items
         custom_fields = {cf["name"]: cf["value"] for cf in record_data["custom_fields"]}
-        assert len(custom_fields) == 2, \
-            "Should have exactly 2 custom fields"
+        assert len(custom_fields) == 2, "Should have exactly 2 custom fields"
