@@ -15,9 +15,8 @@ This page contains the setup guide and reference information for the [SharePoint
 
 - Application \(client\) ID
 - Directory \(tenant\) ID
-- Drive name
-- Folder Path
-- Client secrets
+- Client secret
+- For Service Key Authentication: User Principal Name
 
 ## Setup guide
 
@@ -61,7 +60,7 @@ This source requires **Application permissions**. Follow these [instructions](ht
 6. Record the client_id and tenant_id which will be used by the tap for authentication and API integration.
 7. Select **Certificates & secrets**
 8. Provide **Description and Expires**
-   1. Description: tap-microsoft-teams client secret
+   1. Description: SharePoint Enterprise client secret
    2. Expires: 1-year
    3. Add
 9. Copy the client secret value, this will be the client_secret
@@ -70,10 +69,14 @@ This source requires **Application permissions**. Follow these [instructions](ht
 11. Select **Microsoft Graph**
 12. Select **Application permissions**
 13. Select the following permissions:
-    1. Files
-       - Files.Read.All
+    - Files.Read.All
+    - Sites.Read.All
 14. Click **Add permissions**
 15. Click **Grant admin consent**
+
+:::note
+If you plan to use the Replicate Permissions ACL feature, you must also add these permissions: User.Read.All, Group.Read.All, Application.Read.All, and Device.Read.All.
+:::
 
 ### Step 2: Set up the Microsoft SharePoint connector in Airbyte
 
@@ -84,7 +87,7 @@ This source requires **Application permissions**. Follow these [instructions](ht
 5. Select **Search Scope**. Specifies the location(s) to search for files. Valid options are 'ACCESSIBLE_DRIVES' for all SharePoint drives the user can access, 'SHARED_ITEMS' for shared items the user has access to, and 'ALL' to search both. Default value is 'ALL'.
 6. Enter **Folder Path**. Leave empty to search all folders of the drives. This does not apply to shared items.
 7. Switch to **Service Key Authentication**
-8. For **User Practical Name**, enter the [UPN](https://learn.microsoft.com/en-us/sharepoint/list-onedrive-urls) for your user.
+8. For **User Principal Name**, enter the [UPN](https://learn.microsoft.com/en-us/sharepoint/list-onedrive-urls) for your user. Special characters such as a period, comma, space, and the at sign (@) are converted to underscores (_).
 9. Enter **Tenant ID**, **Client ID** and **Client secret**.
 10. For **Start Date**, enter the date in YYYY-MM-DD format. The data added on and after this date will be replicated.
 11. Add a stream:
@@ -270,10 +273,15 @@ When setting up this permissions for this connector, ensure that the following p
 
 If enabled, sends subdirectory folder structure along with source file names to the destination. Otherwise, files will be synced by their names only. This option is ignored when file-based replication is not enabled.
 
-### Multi-Site Support
+### Site URL
 
-By providing a url to the site URL field, the connector will be able to access the files in the specific sharepoint site. 
-The site url should be in the format `https://<tenan_name>.sharepoint.com/sites/<site>`. If no field is provided, the connector will access the files in the main site.
+Enter the URL of a SharePoint site to search for files. Leave empty to search in the main site.
+
+The site URL should be in the format `https://<tenant_name>.sharepoint.com/sites/<site_name>`. To iterate over all sites in your tenant, use `https://<tenant_name>.sharepoint.com/sites/`.
+
+### File Properties Contains Query
+
+If your SharePoint account has many files and folders, you can use this optional field to speed up file discovery. Enter query text that will be used to search for files whose properties contain the specified text. You can provide multiple query texts, which will be applied sequentially during the search.
 
 ### Supported sync modes
 
@@ -287,7 +295,7 @@ The SharePoint Enterprise source connector supports the following [sync modes](h
 
 ### Supported Streams
 
-There is no predefined streams. The streams are based on content of files were added on the Set up page.
+There are no predefined streams. Streams are dynamically created based on the files you configure on the setup page.
 
 ### Performance considerations
 
@@ -309,6 +317,7 @@ The connector is restricted by normal Microsoft Graph [requests limitation](http
 
 | Version | Date       | Pull Request                                           | Subject                                                                   |
 |:--------|:-----------|:-------------------------------------------------------|:--------------------------------------------------------------------------|
+| 0.3.0 | 2025-05-21 | [161](https://github.com/airbytehq/airbyte-enterprise/pull/161) | Add permissions sync support |
 | 0.2.0 | 2025-04-30 | [144](https://github.com/airbytehq/airbyte-enterprise/pull/144) | Adapt file-transfer records to latest protocol, requires platform >= 1.7.0, destination-s3 >= 1.8.0 |
 | 0.1.0 | 2025-04-10 | [134](https://github.com/airbytehq/airbyte-enterprise/pull/134) | New source |
 
