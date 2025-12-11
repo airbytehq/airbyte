@@ -176,8 +176,6 @@ The `system_prompt` parameter tells the LLM what role it should play and how to 
 You can use a different model by changing the model string. For example, use `"openai:gpt-4o-mini"` for lower cost, or see the [Pydantic AI models documentation](https://ai.pydantic.dev/models/) for other providers like Anthropic or Google.
 :::
 
-
-
 ## Verify connector credentials
 
 <!-- Debugging checkpoint before adding tools -->
