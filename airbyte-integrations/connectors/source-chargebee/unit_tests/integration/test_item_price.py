@@ -41,8 +41,19 @@ class TestItemPriceStream(TestCase):
         )
 
         output = read_output(config_builder=config(), stream_name=_STREAM_NAME, sync_mode=SyncMode.incremental)
-        assert len(output.records) >= 1
-        assert len(output.state_messages) >= 1
+
+        # Verify exactly 1 record returned
+        assert len(output.records) == 1
+
+        # Verify state message was emitted
+        assert len(output.state_messages) > 0
+
+        # Verify state contains correct cursor value
+        latest_state = output.state_messages[-1].state.stream.stream_state
+        latest_cursor_value = int(latest_state.__dict__["updated_at"])
+
+        # Check response file for the actual timestamp value!
+        assert latest_cursor_value == 1705312800  # From item_price.json
 
     @HttpMocker()
     def test_transformation_custom_fields(self, http_mocker: HttpMocker) -> None:

@@ -33,6 +33,29 @@ class TestPlanStream(TestCase):
         assert output.records[0].record.data["id"] == "plan_001"
 
     @HttpMocker()
+    def test_incremental_emits_state(self, http_mocker: HttpMocker) -> None:
+        """Test that incremental sync emits state message."""
+        http_mocker.get(
+            RequestBuilder.plans_endpoint().with_any_query_params().build(),
+            plan_response(),
+        )
+
+        output = read_output(config_builder=config(), stream_name=_STREAM_NAME, sync_mode=SyncMode.incremental)
+
+        # Verify exactly 1 record returned
+        assert len(output.records) == 1
+
+        # Verify state message was emitted
+        assert len(output.state_messages) > 0
+
+        # Verify state contains correct cursor value
+        latest_state = output.state_messages[-1].state.stream.stream_state
+        latest_cursor_value = int(latest_state.__dict__["updated_at"])
+
+        # Check response file for the actual timestamp value!
+        assert latest_cursor_value == 1705312800  # From plan.json
+
+    @HttpMocker()
     def test_transformation_custom_fields(self, http_mocker: HttpMocker) -> None:
         """Test that CustomFieldTransformation converts cf_* fields to custom_fields array."""
         http_mocker.get(

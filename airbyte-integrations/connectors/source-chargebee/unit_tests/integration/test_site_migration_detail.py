@@ -34,15 +34,26 @@ class TestSiteMigrationDetailStream(TestCase):
 
     @HttpMocker()
     def test_incremental_emits_state(self, http_mocker: HttpMocker) -> None:
-        """Test that incremental sync emits state message (client-side incremental with migrated_at cursor)."""
+        """Test that incremental sync emits state message."""
         http_mocker.get(
             RequestBuilder.site_migration_details_endpoint().with_any_query_params().build(),
             site_migration_detail_response(),
         )
 
         output = read_output(config_builder=config(), stream_name=_STREAM_NAME, sync_mode=SyncMode.incremental)
-        assert len(output.records) >= 1
-        assert len(output.state_messages) >= 1
+
+        # Verify exactly 1 record returned
+        assert len(output.records) == 1
+
+        # Verify state message was emitted
+        assert len(output.state_messages) > 0
+
+        # Verify state contains correct cursor value (site_migration_detail uses migrated_at)
+        latest_state = output.state_messages[-1].state.stream.stream_state
+        latest_cursor_value = int(latest_state.__dict__["migrated_at"])
+
+        # Check response file for the actual timestamp value!
+        assert latest_cursor_value == 1705312800  # From site_migration_detail.json
 
     @HttpMocker()
     def test_transformation_custom_fields(self, http_mocker: HttpMocker) -> None:
