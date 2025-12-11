@@ -1,3 +1,15 @@
+## Version 0.1.88
+
+**Load CDK**
+
+* Add CDC_CURSOR_COLUMN_NAME constant.
+
+## Version 0.1.87
+
+**Load CDK**
+
+* Properly call NamespaceMapper before calculating final table names.
+
 ## Version 0.1.86
 
 **Load CDK**
