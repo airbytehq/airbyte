@@ -91,14 +91,30 @@ The GitHub connector also includes `python-dotenv`, which you'll use to load env
 If you want a smaller installation with only OpenAI support, you can use `pydantic-ai-slim[openai]` instead of `pydantic-ai`. See the [Pydantic AI installation docs](https://ai.pydantic.dev/install/) for more options.
 :::
 
-## Import a Pydantic agent and GitHub direct connector
+## Import Pydantic AI and the GitHub direct connector
 
-```python title=""
+Add the following imports to `agent.py`:
+
+```python title="agent.py"
 import os
+
+from dotenv import load_dotenv
 from pydantic_ai import Agent
 from airbyte_ai_github import GithubConnector
 from airbyte_ai_github.models import GithubAuthConfig
 ```
+
+These imports provide:
+
+- `os`: Access environment variables for your GitHub token and LLM API key.
+- `load_dotenv`: Load environment variables from your `.env` file.
+- `Agent`: The Pydantic AI agent class that orchestrates LLM interactions and tool calls.
+- `GithubConnector`: The Airbyte direct connector that provides type-safe access to GitHub's API.
+- `GithubAuthConfig`: The authentication configuration for the GitHub connector.
+
+:::note
+You'll add more code to `agent.py` in the following sections. The `main.py` file will be updated in the [Run your project](#run-your-project) section.
+:::
 
 ## Add a .env file with your secret values
 
