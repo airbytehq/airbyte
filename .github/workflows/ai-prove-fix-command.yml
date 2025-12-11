@@ -63,9 +63,9 @@ jobs:
         with:
           comment-id: ${{ inputs.comment-id }}
           issue-number: ${{ inputs.pr }}
-          playbook-macro: '!prove_fix'
+          playbook-macro: "!prove_fix"
           devin-token: ${{ secrets.DEVIN_AI_API_KEY }}
           github-token: ${{ steps.get-app-token.outputs.token }}
-          start-message: '🔍 **AI Prove Fix session starting...** Running readiness checks and testing against customer connections. [View playbook](https://github.com/airbytehq/oncall/blob/main/prompts/playbooks/prove_fix.md)'
+          start-message: "🔍 **AI Prove Fix session starting...** Running readiness checks and testing against customer connections. [View playbook](https://github.com/airbytehq/oncall/blob/main/prompts/playbooks/prove_fix.md)"
           tags: |
             ai-oncall
