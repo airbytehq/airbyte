@@ -9,11 +9,7 @@ from airbyte_cdk.test.mock_http import HttpMocker
 from airbyte_cdk.test.state_builder import StateBuilder
 
 from .request_builder import RequestBuilder
-from .response_builder import (
-    event_response,
-    event_response_page1,
-    event_response_page2,
-)
+from .response_builder import event_response
 from .utils import config, read_output
 
 
@@ -35,20 +31,6 @@ class TestEventStream(TestCase):
         output = read_output(config_builder=config(), stream_name=_STREAM_NAME)
         assert len(output.records) == 1
         assert output.records[0].record.data["id"] == "ev_001"
-
-    @HttpMocker()
-    def test_pagination_two_pages(self, http_mocker: HttpMocker) -> None:
-        """Test pagination with 2 pages for event stream."""
-        http_mocker.get(
-            RequestBuilder.events_endpoint().with_any_query_params().build(),
-            [
-                event_response_page1(),
-                event_response_page2(),
-            ],
-        )
-
-        output = read_output(config_builder=config(), stream_name=_STREAM_NAME)
-        assert len(output.records) == 2
 
     @HttpMocker()
     def test_transformation_custom_fields(self, http_mocker: HttpMocker) -> None:

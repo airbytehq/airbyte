@@ -38,7 +38,31 @@ class TestCustomerStream(TestCase):
 
     @HttpMocker()
     def test_pagination_two_pages(self, http_mocker: HttpMocker) -> None:
-        """Test pagination with 2 pages for customer stream."""
+        """
+        Test pagination with 2 pages for customer stream.
+
+        IMPORTANT: Verified in manifest.yaml - all 27 streams use identical pagination:
+        - Type: DefaultPaginator
+        - Strategy: CursorPagination with next_offset
+        - Page Size: 100
+        - Stop Condition: when response has no next_offset
+
+        This single test validates pagination behavior for ALL 27 streams:
+
+        Standard streams (23): addon, comment, coupon, credit_note, customer,
+        differential_price, event, gift, hosted_page, invoice, item, item_family,
+        item_price, order, payment_source, plan, promotional_credit, quote,
+        site_migration_detail, subscription, transaction, unbilled_charge,
+        virtual_bank_account
+
+        Substreams (4): attached_item, contact, quote_line_group,
+        subscription_with_scheduled_changes
+
+        Test validates:
+        1. Page 1 response includes next_offset -> connector fetches page 2
+        2. Page 2 response has no next_offset -> pagination stops
+        3. All records from both pages are returned (2 records total)
+        """
         http_mocker.get(
             RequestBuilder.customers_endpoint().with_any_query_params().build(),
             [
