@@ -23,7 +23,7 @@ This tutorial is for AI engineers and other technical users who work with data a
 
 Before you begin this tutorial, ensure you have installed the following software.
 
-- [Python](https://www.python.org/downloads/) version 3.13.7 or later
+- [Python](https://www.python.org/downloads/) version 3.10 or later
 - [uv](https://github.com/astral-sh/uv)
 - A GitHub personal access token
 - An API key for the LLM you want to use
@@ -32,7 +32,45 @@ Before you begin this tutorial, ensure you have installed the following software
 
 For simplicity, in this tutorial you scaffold a basic Python project to work in. However, if you have an existing project you want to work with, feel free to use that instead.
 
-<!-- Some uv command to scaffold a new project -->
+1. Create a new project using uv:
+
+   ```bash
+   uv init my-ai-agent --app
+   cd my-ai-agent
+   ```
+
+   This creates a project with the following structure:
+
+   ```text
+   my-ai-agent/
+   ├── .gitignore
+   ├── .python-version
+   ├── README.md
+   ├── main.py
+   └── pyproject.toml
+   ```
+
+2. Create an `agent.py` file for your agent definition:
+
+   ```bash
+   touch agent.py
+   ```
+
+By the end of this tutorial, your project will have the following structure:
+
+```text
+my-ai-agent/
+├── .env
+├── .gitignore
+├── .python-version
+├── README.md
+├── agent.py
+├── main.py
+├── pyproject.toml
+└── uv.lock
+```
+
+The `.env` file and `uv.lock` file are created in later steps.
 
 ## Install dependencies
 
