@@ -3542,11 +3542,11 @@ spec:
 # depending on the time.
 # https://advertising.amazon.com/API/docs/en-us/reference/concepts/rate-limiting
 #
-# We've set the default to 20 so we can leverage some concurrency, but this can be tuned as we
+# We've set the default to 10 so we can leverage some concurrency, but this can be tuned as we
 # continue to observe.
 concurrency_level:
   type: ConcurrencyLevel
-  default_concurrency: "{{ config.get('num_workers', 20) }}"
+  default_concurrency: "{{ config.get('num_workers', 10) }}"
   max_concurrency: 20
 
 schemas:
