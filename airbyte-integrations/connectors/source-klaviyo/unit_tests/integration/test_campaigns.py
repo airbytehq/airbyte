@@ -213,8 +213,8 @@ class TestCampaignsStream(TestCase):
         catalog = CatalogBuilder().with_stream(_STREAM_NAME, SyncMode.full_refresh).build()
         output = read(source, config=config, catalog=catalog)
 
-        # With any_query_params, we get responses for all 4 partitions (2 pages each = 8 total)
-        # but since we only have 2 responses, the mock will cycle through them
+        # Using >= because with_any_query_params() matches all 4 ListPartitionRouter partitions,
+        # and the mock response sequence is shared across partitions, making exact count non-deterministic.
         assert len(output.records) >= 2
         record_ids = [r.record.data["id"] for r in output.records]
         assert "campaign_001" in record_ids or "campaign_002" in record_ids
@@ -317,6 +317,8 @@ class TestCampaignsStream(TestCase):
         catalog = CatalogBuilder().with_stream(_STREAM_NAME, SyncMode.incremental).build()
         output = read(source, config=config, catalog=catalog, state=state)
 
+        # Using >= because with_any_query_params() matches all 4 ListPartitionRouter partitions,
+        # and the mock response is shared across partitions, making exact count non-deterministic.
         assert len(output.records) >= 1
         record_ids = [r.record.data["id"] for r in output.records]
         assert "campaign_new" in record_ids
