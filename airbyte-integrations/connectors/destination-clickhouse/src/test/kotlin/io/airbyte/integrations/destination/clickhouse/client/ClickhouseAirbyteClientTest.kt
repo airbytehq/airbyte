@@ -17,11 +17,11 @@ import io.airbyte.cdk.load.component.TableSchema
 import io.airbyte.cdk.load.data.FieldType
 import io.airbyte.cdk.load.data.StringType
 import io.airbyte.cdk.load.message.Meta
+import io.airbyte.cdk.load.schema.model.StreamTableSchema
 import io.airbyte.cdk.load.schema.model.TableName
 import io.airbyte.cdk.load.table.ColumnNameMapping
 import io.airbyte.cdk.load.table.TempTableNameGenerator
 import io.airbyte.integrations.destination.clickhouse.config.ClickhouseFinalTableNameGenerator
-import io.airbyte.integrations.destination.clickhouse.spec.ClickhouseConfiguration
 import io.mockk.coEvery
 import io.mockk.coVerify
 import io.mockk.coVerifyOrder
@@ -42,7 +42,6 @@ class ClickhouseAirbyteClientTest {
     private val clickhouseFinalTableNameGenerator: ClickhouseFinalTableNameGenerator =
         mockk(relaxed = true)
     private val tempTableNameGenerator: TempTableNameGenerator = mockk(relaxed = true)
-    private val clickhouseConfiguration: ClickhouseConfiguration = mockk(relaxed = true)
 
     // Client
     private val clickhouseAirbyteClient =
@@ -51,7 +50,6 @@ class ClickhouseAirbyteClientTest {
                 client,
                 clickhouseSqlGenerator,
                 tempTableNameGenerator,
-                clickhouseConfiguration
             )
         )
 
@@ -125,6 +123,16 @@ class ClickhouseAirbyteClientTest {
                         every { asColumns() } returns LinkedHashMap.newLinkedHashMap(0)
                     }
                 every { importType } returns Append
+                every { tableSchema } returns
+                    mockk(relaxed = true) {
+                        every { columnSchema } returns
+                            mockk(relaxed = true) {
+                                every { inputSchema } returns LinkedHashMap.newLinkedHashMap(0)
+                                every { inputToFinalColumnNames } returns emptyMap()
+                            }
+                        every { getPrimaryKey() } returns emptyList()
+                        every { getCursor() } returns emptyList()
+                    }
             }
         clickhouseAirbyteClient.applyChangeset(
             stream,
@@ -169,6 +177,16 @@ class ClickhouseAirbyteClientTest {
         mockCHSchemaWithAirbyteColumns()
 
         val columnMapping = ColumnNameMapping(mapOf())
+        val tableSchema1: StreamTableSchema =
+            mockk(relaxed = true) {
+                every { columnSchema } returns
+                    mockk(relaxed = true) {
+                        every { inputSchema } returns LinkedHashMap.newLinkedHashMap(0)
+                        every { inputToFinalColumnNames } returns emptyMap()
+                    }
+                every { getPrimaryKey() } returns emptyList()
+                every { getCursor() } returns emptyList()
+            }
         val stream =
             mockk<DestinationStream> {
                 every { mappedDescriptor } returns
@@ -182,6 +200,7 @@ class ClickhouseAirbyteClientTest {
                         every { asColumns() } returns LinkedHashMap.newLinkedHashMap(0)
                     }
                 every { importType } returns Append
+                every { tableSchema } returns tableSchema1
             }
         clickhouseAirbyteClient.applyChangeset(
             stream,
@@ -195,8 +214,8 @@ class ClickhouseAirbyteClientTest {
 
         coVerifyOrder {
             clickhouseSqlGenerator.createNamespace(tempTableName.namespace)
-            clickhouseSqlGenerator.createTable(stream, tempTableName, columnMapping, true)
-            clickhouseSqlGenerator.copyTable(columnMapping, finalTableName, tempTableName)
+            clickhouseSqlGenerator.createTable(tempTableName, tableSchema1, true)
+            clickhouseSqlGenerator.copyTable(setOf("something"), finalTableName, tempTableName)
             clickhouseSqlGenerator.exchangeTable(tempTableName, finalTableName)
             clickhouseSqlGenerator.dropTable(tempTableName)
         }
@@ -266,6 +285,19 @@ class ClickhouseAirbyteClientTest {
                         every { asColumns() } returns columns
                     }
                 every { importType } returns Append
+                every { tableSchema } returns
+                    mockk(relaxed = true) {
+                        every { columnSchema } returns
+                            mockk(relaxed = true) {
+                                every { inputSchema } returns columns
+                                every { inputToFinalColumnNames } returns
+                                    mapOf("field 1" to "field_1")
+                                every { finalSchema } returns
+                                    mapOf("field_1" to ColumnType("String", true))
+                            }
+                        every { getPrimaryKey() } returns emptyList()
+                        every { getCursor() } returns emptyList()
+                    }
             }
 
         val columnMapping = ColumnNameMapping(mapOf("field 1" to "field_1"))
@@ -278,35 +310,6 @@ class ClickhouseAirbyteClientTest {
             )
         val actual = clickhouseAirbyteClient.computeSchema(stream, columnMapping)
         Assertions.assertEquals(expected, actual)
-    }
-
-    @Test
-    fun `test copyIntersectionColumn`() = runTest {
-        val columnsToCopy =
-            setOf(
-                "column1",
-                "column2",
-            )
-        val columnNameMapping = ColumnNameMapping(mapOf("2" to "column2", "3" to "column3"))
-        val properTableName = TableName("table", "name")
-        val tempTableName = TableName("table", "tmp")
-
-        coEvery { clickhouseAirbyteClient.execute(any()) } returns mockk()
-
-        clickhouseAirbyteClient.copyIntersectionColumn(
-            columnsToCopy,
-            columnNameMapping,
-            properTableName,
-            tempTableName,
-        )
-
-        verify {
-            clickhouseSqlGenerator.copyTable(
-                ColumnNameMapping(mapOf("2" to "column2")),
-                properTableName,
-                tempTableName,
-            )
-        }
     }
 
     companion object {
