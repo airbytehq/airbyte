@@ -21,12 +21,12 @@ This tutorial is for AI engineers and other technical users who work with data a
 
 ## Before you start
 
-Before you begin this tutorial, ensure you have installed the following software.
+Before you begin this tutorial, ensure you have the following.
 
 - [Python](https://www.python.org/downloads/) version 3.10 or later
 - [uv](https://github.com/astral-sh/uv)
-- A GitHub personal access token
-- An API key for the LLM you want to use
+- A [GitHub personal access token](https://github.com/settings/tokens). For this tutorial, a classic token with `repo` scope is sufficient.
+- An [OpenAI API key](https://platform.openai.com/api-keys). This tutorial uses OpenAI, but Pydantic AI supports other LLM providers.
 
 ## Create a new Python project
 
@@ -118,13 +118,26 @@ You'll add more code to `agent.py` in the following sections. The `main.py` file
 
 ## Add a .env file with your secret values
 
-<!-- Use a personal access token, not OAuth in the example -->
-<!-- Add LLM API key -->
-<!-- Anything else? -->
+Create a `.env` file in your project root to store your API keys:
 
-```text
-access_token=x
+```text title=".env"
+GITHUB_ACCESS_TOKEN=your-github-personal-access-token
+OPENAI_API_KEY=your-openai-api-key
 ```
+
+Replace the placeholder values with your actual credentials.
+
+:::warning
+Never commit your `.env` file to version control. The `.gitignore` file created by `uv init` already excludes `.env` files.
+:::
+
+Next, add the following line to `agent.py` after your imports to load the environment variables:
+
+```python title="agent.py"
+load_dotenv()
+```
+
+This makes your secrets available via `os.environ`. Pydantic AI automatically reads `OPENAI_API_KEY` from the environment, and you'll use `os.environ["GITHUB_ACCESS_TOKEN"]` to configure the connector in the next section.
 
 ## Define your connector
 
