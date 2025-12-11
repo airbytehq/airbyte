@@ -214,19 +214,15 @@ from agent import agent
 
 
 async def main():
-    # Example prompts to try with your agent
-    prompts = [
-        "List the open issues in airbytehq/airbyte",
-        "What pull requests are open in airbytehq/airbyte?",
-        "Are there any open issues in airbytehq/airbyte that might be fixed by a pending PR?",
-    ]
+    print("GitHub Agent Ready! Ask questions about GitHub repositories.")
+    print("Type 'quit' to exit.\n")
 
-    for prompt in prompts:
-        print(f"\n{'='*60}")
-        print(f"Prompt: {prompt}")
-        print('='*60)
+    while True:
+        prompt = input("You: ")
+        if prompt.lower() in ('quit', 'exit', 'q'):
+            break
         result = await agent.run(prompt)
-        print(result.data)
+        print(f"\nAgent: {result.data}\n")
 
 
 if __name__ == "__main__":
@@ -239,7 +235,11 @@ Run your project with:
 uv run main.py
 ```
 
-The agent processes each prompt, decides which tools to call, fetches the data from GitHub, and returns a natural language response. You can modify the prompts to ask about any public repository, or your own private repositories if your token has access.
+The agent waits for your input, then decides which tools to call based on your question, fetches the data from GitHub, and returns a natural language response. Try prompts like:
+
+- "List the open issues in airbytehq/airbyte"
+- "What pull requests are open in airbytehq/airbyte?"
+- "Are there any open issues that might be fixed by a pending PR?"
 
 ### Troubleshooting
 
