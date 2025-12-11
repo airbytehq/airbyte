@@ -139,17 +139,42 @@ load_dotenv()
 
 This makes your secrets available via `os.environ`. Pydantic AI automatically reads `OPENAI_API_KEY` from the environment, and you'll use `os.environ["GITHUB_ACCESS_TOKEN"]` to configure the connector in the next section.
 
-## Define your connector
+## Configure your GitHub connector and agent
 
-<!-- Use a personal access token, not OAuth in the example -->
+Now that your environment is set up, add the following code to `agent.py` to create the GitHub connector and Pydantic AI agent.
 
-```python title=""
-connector = GithubConnector(auth_config=GithubAuthConfig(access_token="...", refresh_token="...", client_id="...", client_secret="..."))
+### Define the connector
+
+The GitHub connector authenticates using your personal access token:
+
+```python title="agent.py"
+connector = GithubConnector(
+    auth_config=GithubAuthConfig(
+        access_token=os.environ["GITHUB_ACCESS_TOKEN"]
+    )
+)
 ```
 
-## Create your Pydantic AI agent
+### Create the agent
 
+Create a Pydantic AI agent with a system prompt that describes its purpose:
 
+```python title="agent.py"
+agent = Agent(
+    "openai:gpt-4o",
+    system_prompt=(
+        "You are a helpful assistant that can access GitHub repositories, issues, "
+        "and pull requests. Use the available tools to answer questions about "
+        "GitHub data. Be concise and accurate in your responses."
+    ),
+)
+```
+
+The `system_prompt` parameter tells the LLM what role it should play and how to behave. The `"openai:gpt-4o"` string specifies the model to use.
+
+:::note
+You can use a different model by changing the model string. For example, use `"openai:gpt-4o-mini"` for lower cost, or see the [Pydantic AI models documentation](https://ai.pydantic.dev/models/) for other providers like Anthropic or Google.
+:::
 
 ## Verify connector credentials
 
