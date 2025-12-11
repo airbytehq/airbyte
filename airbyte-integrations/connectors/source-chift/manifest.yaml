@@ -29,6 +29,8 @@ definitions:
           extractor:
             type: DpathExtractor
             field_path: []
+      primary_key:
+        - syncid
       schema_loader:
         type: InlineSchemaLoader
         schema:
@@ -105,9 +107,9 @@ definitions:
           type: NoAuth
         request_headers: {}
         request_body_json:
-          clientId: "\"{{ config['client_id'] }}\""
-          accountId: "\"{{ config['account_id'] }}\""
-          clientSecret: "\"{{ config['client_secret'] }}\""
+          clientId: "{{ config['client_id'] }}"
+          accountId: "{{ config['account_id'] }}"
+          clientSecret: "{{ config['client_secret'] }}"
         request_parameters: {}
       session_token_path:
         - access_token
