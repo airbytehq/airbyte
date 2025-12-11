@@ -6,6 +6,7 @@ import freezegun
 
 from airbyte_cdk.models import SyncMode
 from airbyte_cdk.test.mock_http import HttpMocker
+from airbyte_cdk.test.state_builder import StateBuilder
 
 from .request_builder import RequestBuilder
 from .response_builder import site_migration_detail_response
@@ -72,3 +73,48 @@ class TestSiteMigrationDetailStream(TestCase):
         # Verify structure and values of custom_fields items
         custom_fields = {cf["name"]: cf["value"] for cf in record_data["custom_fields"]}
         assert len(custom_fields) == 2, "Should have exactly 2 custom fields"
+
+    @HttpMocker()
+    def test_incremental_sync_with_state_and_params(self, http_mocker: HttpMocker) -> None:
+        """
+        Test incremental sync with prior state.
+
+        This test validates:
+        1. State from previous sync is accepted (uses migrated_at cursor)
+        2. State advances to latest record's cursor value
+
+        Note: Per manifest, this stream has NO sort_by, include_deleted, or [between] parameters.
+        Only limit is used.
+        """
+        # ARRANGE: Previous state from last sync
+        previous_state_timestamp = 1704067200  # 2024-01-01T00:00:00
+        state = StateBuilder().with_stream_state(_STREAM_NAME, {"migrated_at": previous_state_timestamp}).build()
+
+        # Mock API response - NO query parameters except limit (per manifest)
+        http_mocker.get(
+            RequestBuilder.site_migration_details_endpoint()
+            .with_limit(100)
+            .build(),
+            site_migration_detail_response(),
+        )
+
+        # ACT: Run incremental sync with state
+        output = read_output(config_builder=config(), stream_name=_STREAM_NAME, sync_mode=SyncMode.incremental, state=state)
+
+        # ASSERT: Records returned
+        assert len(output.records) == 1, "Should return exactly 1 record"
+        record = output.records[0].record.data
+
+        # ASSERT: Record data is correct
+        assert record["entity_id"]
+        assert record["migrated_at"] >= previous_state_timestamp, "Record should be from after the state timestamp"
+
+        # ASSERT: State message emitted
+        assert len(output.state_messages) > 0, "Should emit state messages"
+
+        # ASSERT: State advances to latest record
+        latest_state = output.state_messages[-1].state.stream.stream_state
+        latest_cursor_value = int(latest_state.__dict__["migrated_at"])
+
+        # State should advance beyond previous state
+        assert latest_cursor_value > previous_state_timestamp, f"State should advance: {latest_cursor_value} > {previous_state_timestamp}"
