@@ -3487,7 +3487,7 @@ spec:
         type: integer
         title: Number of concurrent workers
         minimum: 2
-        maximum: 10
+        maximum: 20
         default: 10
         examples:
           - 2
