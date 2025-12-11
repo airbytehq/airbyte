@@ -83,7 +83,7 @@ class PostgresSourceSelectQueryGenerator : SelectQueryGenerator {
         when (this) {
             NoFrom -> "FROM DUAL"
             is From ->
-                if (this.namespace == null) "FROM \"$name\"" else "FROM \"$namespace\".\"$name\""
+                "FROM ${toQualifyingTableName(namespace, name)}"
             // Simply return the first sample_size of rows from the table since we only used the sample to gauge row size
             is FromSample -> From(name, namespace).sql()
         }
@@ -163,4 +163,9 @@ class PostgresSourceSelectQueryGenerator : SelectQueryGenerator {
             is From -> listOf()
             is FromSample -> this.where?.let { it.bindings() } ?: listOf()
         }
+
+    companion object {
+        fun toQualifyingTableName(namespace: String?, name: String): String =
+            if (namespace.isNullOrBlank()) "\"$name\"" else "\"$namespace\".\"$name\""
+    }
 }

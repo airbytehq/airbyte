@@ -35,6 +35,7 @@ import io.airbyte.integrations.source.postgres.PostgresSourceJdbcPartitionFactor
 import io.airbyte.integrations.source.postgres.config.PostgresSourceConfiguration
 import io.airbyte.integrations.source.postgres.ctid.Ctid
 import io.airbyte.integrations.source.postgres.operations.PostgresSourceSelectQueryGenerator
+import io.airbyte.integrations.source.postgres.operations.PostgresSourceSelectQueryGenerator.Companion.toQualifyingTableName
 import io.github.oshai.kotlinlogging.KotlinLogging
 import io.micronaut.context.annotation.Primary
 import jakarta.inject.Singleton
@@ -328,9 +329,7 @@ open class PostgresSourceJdbcPartitionFactory(
     }
 
     private fun relationSize(stream: Stream): Long {
-        val sql = "SELECT pg_relation_size('${
-            if (stream.namespace == null) "\"${stream.name}\"" else "\"${stream.namespace}\".\"${stream.name}\""
-        }')"
+        val sql = "SELECT pg_relation_size('${ toQualifyingTableName(stream.namespace, stream.name) }')"
         return querySingleValue(JdbcConnectionFactory(sharedState.configuration), sql,
             { rs -> return@querySingleValue rs.getLong(1) })
     }
