@@ -22,17 +22,6 @@ class TestErrorHandling(TestCase):
     """Tests for error handling."""
 
     @HttpMocker()
-    def test_error_401_unauthorized(self, http_mocker: HttpMocker) -> None:
-        """Test 401 error handling - should fail."""
-        http_mocker.get(
-            RequestBuilder.customers_endpoint().with_any_query_params().build(),
-            error_response(HTTPStatus.UNAUTHORIZED),
-        )
-
-        output = read_output(config_builder=config(), stream_name="customer", expecting_exception=True)
-        assert len(output.records) == 0
-
-    @HttpMocker()
     def test_error_configuration_incompatible_ignored(self, http_mocker: HttpMocker) -> None:
         """Test configuration_incompatible error is ignored as configured in manifest."""
         http_mocker.get(

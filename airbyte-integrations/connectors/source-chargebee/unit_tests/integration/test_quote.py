@@ -9,7 +9,7 @@ from airbyte_cdk.test.mock_http import HttpMocker
 from airbyte_cdk.test.state_builder import StateBuilder
 
 from .request_builder import RequestBuilder
-from .response_builder import quote_response
+from .response_builder import configuration_incompatible_response, quote_response
 from .utils import config, read_output
 
 
@@ -124,3 +124,18 @@ class TestQuoteStream(TestCase):
 
         # State should match the latest record's cursor value
         assert latest_cursor_value == 1705312800, f"State should be latest record's cursor value: expected 1705312800, got {latest_cursor_value}"
+
+    @HttpMocker()
+    def test_error_configuration_incompatible_ignored(self, http_mocker: HttpMocker) -> None:
+        """Test configuration_incompatible error is ignored for quote stream as configured in manifest."""
+        http_mocker.get(
+            RequestBuilder.quotes_endpoint().with_any_query_params().build(),
+            configuration_incompatible_response(),
+        )
+        output = read_output(config_builder=config(), stream_name=_STREAM_NAME)
+
+        # Verify no records returned (error was ignored)
+        assert len(output.records) == 0
+
+        # Verify error message from manifest is logged
+        assert output.is_in_logs("Stream is available only for Product Catalog 1.0")
