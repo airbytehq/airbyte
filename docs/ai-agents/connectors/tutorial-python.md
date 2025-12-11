@@ -222,7 +222,7 @@ async def main():
         if prompt.lower() in ('quit', 'exit', 'q'):
             break
         result = await agent.run(prompt)
-        print(f"\nAgent: {result.data}\n")
+        print(f"\nAgent: {result.output}\n")
 
 
 if __name__ == "__main__":
