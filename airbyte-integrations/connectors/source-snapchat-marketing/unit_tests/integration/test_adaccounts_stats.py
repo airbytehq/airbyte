@@ -83,7 +83,7 @@ class TestAdaccountsStatsHourly(TestCase):
         output = _read(config_builder=config(), stream_name="adaccounts_stats_hourly")
 
         # Enhanced assertions
-        assert len(output.records) >= 1, f"Expected at least 1 record, got {len(output.records)}"
+        assert len(output.records) == 1
         record = output.records[0].record.data
         assert record.get("id") == AD_ACCOUNT_ID, f"Expected id={AD_ACCOUNT_ID}, got {record.get('id')}"
 
@@ -101,14 +101,14 @@ class TestAdaccountsStatsHourly(TestCase):
         )
 
         output = _read(config_builder=config(), stream_name="adaccounts_stats_hourly")
-        assert len(output.records) >= 1
+        assert len(output.records) == 1
 
         # Verify custom error message from manifest is logged
         log_messages = [log.log.message for log in output.logs]
         expected_error_prefix = "Got permission error when accessing URL. Skipping"
-        assert any(
-            expected_error_prefix in msg for msg in log_messages
-        ), f"Expected custom 403 error message '{expected_error_prefix}' in logs"
+        assert any(expected_error_prefix in msg for msg in log_messages), (
+            f"Expected custom 403 error message '{expected_error_prefix}' in logs"
+        )
 
 
 class TestAdaccountsStatsDaily(TestCase):
@@ -122,8 +122,7 @@ class TestAdaccountsStatsDaily(TestCase):
 
         output = _read(config_builder=config(), stream_name="adaccounts_stats_daily")
 
-        # Enhanced assertions
-        assert len(output.records) >= 1, f"Expected at least 1 record, got {len(output.records)}"
+        assert len(output.records) == 1
         record = output.records[0].record.data
         assert record.get("id") == AD_ACCOUNT_ID, f"Expected id={AD_ACCOUNT_ID}, got {record.get('id')}"
 
@@ -139,8 +138,7 @@ class TestAdaccountsStatsLifetime(TestCase):
 
         output = _read(config_builder=config(), stream_name="adaccounts_stats_lifetime")
 
-        # Enhanced assertions
-        assert len(output.records) >= 1, f"Expected at least 1 record, got {len(output.records)}"
+        assert len(output.records) == 1
         record = output.records[0].record.data
         assert record.get("id") == AD_ACCOUNT_ID, f"Expected id={AD_ACCOUNT_ID}, got {record.get('id')}"
 
@@ -164,7 +162,7 @@ class TestAdaccountsStatsTransformations(TestCase):
         )
 
         output = _read(config_builder=config(), stream_name="adaccounts_stats_hourly")
-        assert len(output.records) >= 1
+        assert len(output.records) == 1
 
         record = output.records[0].record.data
         # Verify AddFields transformations
@@ -203,7 +201,7 @@ class TestAdaccountsStatsSubstreamMultipleParents(TestCase):
         output = _read(config_builder=config(), stream_name="adaccounts_stats_hourly")
 
         # Verify records from both parent ad accounts are returned
-        assert len(output.records) >= 2
+        assert len(output.records) == 2
         record_ids = [r.record.data.get("id") for r in output.records]
         assert ad_account_1 in record_ids
         assert ad_account_2 in record_ids
@@ -222,7 +220,7 @@ class TestAdaccountsStatsIncremental(TestCase):
         output = _read(config_builder=config(), stream_name="adaccounts_stats_hourly", sync_mode=SyncMode.incremental)
 
         assert len(output.state_messages) > 0, "Expected state messages to be emitted"
-        assert len(output.records) >= 1, f"Expected at least 1 record, got {len(output.records)}"
+        assert len(output.records) == 1
 
         # Get latest record's cursor
         latest_record = output.records[-1].record.data
@@ -235,9 +233,9 @@ class TestAdaccountsStatsIncremental(TestCase):
         # Validate state matches record
         assert state_cursor_value is not None, "Expected 'start_time' in state"
         assert record_cursor_value is not None, "Expected 'start_time' in record"
-        assert state_cursor_value == record_cursor_value or state_cursor_value.startswith(
-            record_cursor_value[:10]
-        ), f"Expected state to match latest record. State: {state_cursor_value}, Record: {record_cursor_value}"
+        assert state_cursor_value == record_cursor_value or state_cursor_value.startswith(record_cursor_value[:10]), (
+            f"Expected state to match latest record. State: {state_cursor_value}, Record: {record_cursor_value}"
+        )
 
     @HttpMocker()
     def test_incremental_sync_with_state(self, http_mocker: HttpMocker) -> None:
@@ -256,7 +254,7 @@ class TestAdaccountsStatsIncremental(TestCase):
         output = _read(config_builder=config(), stream_name="adaccounts_stats_hourly", sync_mode=SyncMode.incremental, state=state)
 
         assert len(output.state_messages) > 0, "Expected state messages to be emitted"
-        assert len(output.records) >= 1, f"Expected at least 1 record, got {len(output.records)}"
+        assert len(output.records) == 1
 
         # Get latest record's cursor
         latest_record = output.records[-1].record.data
@@ -269,6 +267,6 @@ class TestAdaccountsStatsIncremental(TestCase):
         # Validate state matches record
         assert state_cursor_value is not None, "Expected 'start_time' in state"
         assert record_cursor_value is not None, "Expected 'start_time' in record"
-        assert state_cursor_value == record_cursor_value or state_cursor_value.startswith(
-            record_cursor_value[:10]
-        ), f"Expected state to match latest record. State: {state_cursor_value}, Record: {record_cursor_value}"
+        assert state_cursor_value == record_cursor_value or state_cursor_value.startswith(record_cursor_value[:10]), (
+            f"Expected state to match latest record. State: {state_cursor_value}, Record: {record_cursor_value}"
+        )
