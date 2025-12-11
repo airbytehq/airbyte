@@ -1314,7 +1314,7 @@
     "/api/v1/connectors/instances/{instance_id}/execute": {
       "post": {
         "summary": "Execute Connector",
-        "description": "Execute a connector operation.\n\n- **instance_id**: UUID of the connector instance to execute\n- **entity**: Entity name (e.g., \"customers\", \"invoices\")\n- **action**: Operation (e.g., \"list\", \"get\", \"create\")\n- **params**: Operation-specific parameters\n\nReturns a standardized response envelope with execution results.",
+        "description": "Execute a connector operation.\n\n- **instance_id**: UUID of the connector instance to execute\n- **entity**: Entity name (e.g., \"customers\", \"invoices\")\n- **action**: Operation (e.g., \"list\", \"get\", \"create\", \"download\")\n- **params**: Operation-specific parameters\n\nReturns:\n    - For download actions: StreamingResponse with file data\n    - For other actions: Standardized JSON response envelope with execution results",
         "operationId": "create_connectors_instances_instance_id_execute",
         "security": [
           {

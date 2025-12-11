@@ -18,6 +18,22 @@
  * @returns The validated spec with additional metadata
  */
 async function validateOpenAPISpec(spec) {
+  // For large specs with many schemas (>500), skip expensive schema validation
+  // and use basic validation instead to avoid performance issues
+  const schemaCount = spec.components?.schemas
+    ? Object.keys(spec.components.schemas).length
+    : 0;
+
+  if (schemaCount > 500) {
+    console.log(
+      `⏭️  Skipping expensive schema validation (${schemaCount} schemas found)`
+    );
+    console.log(
+      "💡 Using basic validation for performance (full validation would take too long)"
+    );
+    return performBasicValidation(spec);
+  }
+
   console.log(
     "🔍 Validating OpenAPI spec with @seriousme/openapi-schema-validator..."
   );
@@ -31,8 +47,16 @@ async function validateOpenAPISpec(spec) {
     // Create validator instance
     const validator = new Validator();
 
-    // Validate the spec
-    const result = await validator.validate(spec);
+    // Validate the spec with a timeout
+    const validationPromise = validator.validate(spec);
+    const timeoutPromise = new Promise((_, reject) =>
+      setTimeout(
+        () => reject(new Error("Validation timeout (>30 seconds)")),
+        30000
+      )
+    );
+
+    const result = await Promise.race([validationPromise, timeoutPromise]);
 
     if (!result.valid) {
       let errorMessages = "Unknown validation errors";

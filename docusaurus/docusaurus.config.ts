@@ -291,7 +291,7 @@ const config: Config = {
         docsPluginId: "developers",
         config: {
           "public-api": {
-            specPath: "src/data/public_api_spec.json",
+            specPath: "src/data/public_api_spec.yaml",
             outputDir: "../docs/developers/api-reference",
             sidebarOptions: {
               groupPathsBy: "tag",
