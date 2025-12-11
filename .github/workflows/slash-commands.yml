@@ -54,7 +54,6 @@ jobs:
             run-regression-tests
             test-performance
             update-connector-cdk-version
-            yank-version
 
           # Notes regarding static-args:
           # - Slash commands can be invoked from both issues and comments.
