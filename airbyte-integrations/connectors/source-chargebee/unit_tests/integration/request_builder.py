@@ -150,6 +150,26 @@ class RequestBuilder:
         self._any_query_params = True
         return self
 
+    def with_sort_by_asc(self, field: str) -> "RequestBuilder":
+        """Add sort_by[asc] parameter."""
+        self._query_params["sort_by[asc]"] = field
+        return self
+
+    def with_include_deleted(self, value: str = "true") -> "RequestBuilder":
+        """Add include_deleted parameter."""
+        self._query_params["include_deleted"] = value
+        return self
+
+    def with_updated_at_between(self, start_time: int, end_time: int) -> "RequestBuilder":
+        """Add updated_at[between] parameter for incremental streams."""
+        self._query_params["updated_at[between]"] = f"[{start_time}, {end_time}]"
+        return self
+
+    def with_occurred_at_between(self, start_time: int, end_time: int) -> "RequestBuilder":
+        """Add occurred_at[between] parameter for event stream."""
+        self._query_params["occurred_at[between]"] = f"[{start_time}, {end_time}]"
+        return self
+
     def build(self) -> HttpRequest:
         query_params = ANY_QUERY_PARAMS if self._any_query_params else (self._query_params if self._query_params else None)
         return HttpRequest(
