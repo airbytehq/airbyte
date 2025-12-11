@@ -44,7 +44,13 @@ interface TableSchemaEvolutionSuite {
     val schemaFactory: TableSchemaFactory
 
     private val harness: TableOperationsTestHarness
-        get() = TableOperationsTestHarness(opsClient, testClient, airbyteMetaColumnMapping)
+        get() =
+            TableOperationsTestHarness(
+                opsClient,
+                testClient,
+                schemaFactory,
+                airbyteMetaColumnMapping
+            )
 
     /**
      * Test that the connector can correctly discover all of its own data types. This test creates a
