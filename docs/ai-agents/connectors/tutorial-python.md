@@ -178,39 +178,30 @@ You can use a different model by changing the model string. For example, use `"o
 
 ## Add tools to your agent
 
-### Expose GitHub operations as Pydantic AI tools
+Tools let your agent fetch real data from GitHub. Without tools, the agent can only respond based on its training data. By registering connector operations as tools, the agent can decide when to call them based on natural language questions.
 
-<!-- It looks something like this (generic example, not github-specific)
+Add the following code to `agent.py`:
 
-```python title=""
+```python title="agent.py"
+# Tool to list issues in a repository
 @agent.tool_plain
-async def list_users(limit: int = 10):
-    return await connector.users.list(limit=limit)
+async def list_issues(owner: str, repo: str, limit: int = 10) -> str:
+    """List open issues in a GitHub repository."""
+    result = await connector.issues.list(owner=owner, repo=repo, states=["OPEN"], per_page=limit)
+    return str(result.data)
 
+
+# Tool to list pull requests in a repository
 @agent.tool_plain
-async def get_user(user_id: str):
-    return await connector.users.get(id=user_id)
-``` -->
+async def list_pull_requests(owner: str, repo: str, limit: int = 10) -> str:
+    """List open pull requests in a GitHub repository."""
+    result = await connector.pull_requests.list(owner=owner, repo=repo, states=["OPEN"], per_page=limit)
+    return str(result.data)
+```
 
-### Add issue management tools
+The `@agent.tool_plain` decorator registers each function as a tool the agent can call. The docstring becomes the tool's description, which helps the LLM understand when to use it. The function parameters become the tool's input schema, so the LLM knows what arguments to provide.
 
-<!-- we use the connector's operations
-Options:
-issues__list() - Returns a list of issues for the specified repository using GraphQL
-issues__get() - Gets information about a specific issue using GraphQL
-issues__search() - Search for issues using GitHub's search syntax
-
- -->
-
-### Add pull request management tools
-
-<!-- 
-we use the connector's operations
-pull_requests__list() - Returns a list of pull requests for the specified repository using GraphQL
-pull_requests__get() - Gets information about a specific pull request using GraphQL
-pull_requests__search() - Search for pull requests using GitHub's search syntax
-
- -->
+With these two tools, your agent can answer questions about issues, pull requests, or both. For example, it can compare open issues against pending PRs to identify which issues might be resolved soon.
 
 ## Run your project
 
