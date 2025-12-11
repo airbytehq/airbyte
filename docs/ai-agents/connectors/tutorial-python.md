@@ -2,92 +2,127 @@
 sidebar_label: "Python SDK tutorial"
 ---
 
+import Tabs from '@theme/Tabs';
+import TabItem from '@theme/TabItem';
+
 # Get started with direct connectors: Python SDK
+
+In this tutorial, you'll create a new Python project, install and run a Pydantic AI agent with one of Airbyte's direct connectors, and learn to use natural language to explore your data. This tutorial uses GitHub, but if you don't have a GitHub account, you can use one of Airbyte's other direct connectors and perform different operations.
 
 Using the Python SDK is more time-consuming than the Connector MCP server, but affords you the most control over how you use direct connectors.
 
-<!-- # Title
-
-> If you need more information about how to fill in this template, read the accompanying [guide](./guide_tutorial.md).
->
-> This template includes writing instructions and boilerplate text that you can customize, use as-is, or completely replace with your own text. This text is indicated in {curly brackets}. Make sure you replace the placeholders with your own text.
-
 ## Overview
 
-In this tutorial, you'll learn how to {insert brief description of the main tutorial task}. This tutorial is intended for {audience}. It assumes you have basic knowledge of:
+This tutorial is for AI engineers and other technical users who work with data and AIs. It assumes you have basic knowledge of the following.
 
-* Concept 1
-* Concept 2
-* Concept 3...
-
-By the end of this tutorial, you'll be able to:
-
-* Learning objective 1
-* Learning objective 2
-* Learning objective 3...
-
-## Background
-
-{This section is optional. Feel free to use some of the text below to help you get started.}
-
-* {product} is a {product type} that you can use to {common use case}...
-* {product} provides many of the same features as {competitors}, but with {feature}, you can...
-* Using {feature} enables you to {pain point}...
+- Python
+- Pydantic AI
+- GitHub, or a different third-party service you want to connect to
 
 ## Before you start
 
-{Use this section to tell users about any prerequisites needed before they start the tutorial, such as:
+Before you begin this tutorial, ensure you have installed the following software.
 
-* Expected prior knowledge.
-* Software or hardware to obtain.
-* Environments to set up and configure.
-* Access codes to obtain.
-}
+- [Python](https://www.python.org/downloads/) version 3.13.7 or later
+- [uv](https://github.com/astral-sh/uv)
+- An account with GitHub, or a different third-party [supported by direct connectors](https://github.com/airbytehq/airbyte-ai-connectors/tree/main/connectors).
 
-Before you start the tutorial, you should:
+## Create a new Python project
 
-* Prerequisite 1
-* Prerequisite 2
-* Prerequisite 3...
+For simplicity, in this tutorial you scaffold a basic Python project to work in. However, if you have an existing project you want to work with, feel free to use that instead.
 
-## {Task name}
+## Install the connector
 
-To get started, {the first thing your user should do}.
+```bash
+uv pip install airbyte-ai-github
+```
 
-1. {Write the step here. Use a verb to start.}
+## Import a Pydantic agent and GitHub direct connector
 
-    {Explanatory text}
+```python title=""
+import os
+from pydantic_ai import Agent
+from airbyte_ai_github import GithubConnector
+from airbyte_ai_github.models import GithubAuthConfig
+```
 
-    {Optional: Code sample or screenshot that helps your users complete this step}
+## Define your connector
 
-    {Optional: Result}
+```python title=""
+connector = GithubConnector(auth_config=GithubAuthConfig(access_token="...", refresh_token="...", client_id="...", client_secret="..."))
+```
 
-2. {Write the step here. Use a verb to start.}
-  
-   a. {Substep 1}
+## Add a .env file with your secret values for your connector
 
-   b. {Substep 1}
+```text
+access_token=x
+refresh_token=x
+client_id=x
+cleint_secret=x
+```
+
+## Use the connector
+
+<!-- It looks something like this (generic example, not github-specific)
+
+```python title=""
+@agent.tool_plain
+async def list_users(limit: int = 10):
+    return await connector.users.list(limit=limit)
+
+@agent.tool_plain
+async def get_user(user_id: str):
+    return await connector.users.get(id=user_id)
+``` -->
+
+### GitHub list open issues
+
+<!-- 
+Options:
+issues__list() - Returns a list of issues for the specified repository using GraphQL
+issues__get() - Gets information about a specific issue using GraphQL
+issues__search() - Search for issues using GitHub's search syntax
+
+ -->
+
+### Github list unmerged PRs
+
+<!-- 
+
+pull_requests__list() - Returns a list of pull requests for the specified repository using GraphQL
+pull_requests__get() - Gets information about a specific pull request using GraphQL
+pull_requests__search() - Search for pull requests using GitHub's search syntax
+
+ -->
+
+### Post a message to a Slack channel
+
+<!-- 
+
+Maybe an alert to let a team know that x number of issues can be resolved
+
+-->
+
+## Run your project
+
+### Identify open issues that are likely to be resolved by pending PRs based on the issue and PR descriptions
+
+<!-- 
+
+ -->
+
+### Tell it to post a message to Slack
 
 ## Summary
 
-{Use this section to summarize what the user learned in the tutorial.}
-
 In this tutorial, you learned how to:
 
-* Summary point 1
-* Summary point 2
-* Summary point 3..
+- Set up a new Python project
+- Install Pydantic AI and a direct connector
+- Run your Python project and use natural language to interact with your data
 
 ## Next steps
 
-{Use this section to share links to related tutorials, videos, or other documentation}.
-
-Consider completing some other common tasks using {feature}:
-
-* Task 1
-* Task 2
-* Task 3...
-
----
-
-> Explore other templates from [The Good Docs Project](https://thegooddocsproject.dev/). Use our [feedback form](https://thegooddocsproject.dev/feedback/?template=Tutorial%20guide) to give feedback on this template. -->
+- Continue adding more connectors to your project.
+- ???
+- Profit
