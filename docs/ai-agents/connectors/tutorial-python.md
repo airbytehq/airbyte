@@ -176,10 +176,6 @@ The `system_prompt` parameter tells the LLM what role it should play and how to 
 You can use a different model by changing the model string. For example, use `"openai:gpt-4o-mini"` for lower cost, or see the [Pydantic AI models documentation](https://ai.pydantic.dev/models/) for other providers like Anthropic or Google.
 :::
 
-## Verify connector credentials
-
-<!-- Debugging checkpoint before adding tools -->
-
 ## Add tools to your agent
 
 ### Expose GitHub operations as Pydantic AI tools
@@ -219,6 +215,14 @@ pull_requests__search() - Search for pull requests using GitHub's search syntax
 ## Run your project
 
 <!-- Define how to invoke the agent and what to expect -->
+
+### Troubleshooting
+
+If your agent fails to retrieve GitHub data, check the following:
+
+- **HTTP 401 errors**: Your `GITHUB_ACCESS_TOKEN` is invalid or expired. Generate a new token and update your `.env` file.
+- **HTTP 403 errors**: Your token doesn't have the required scopes. Ensure your token has `repo` scope for accessing repository data.
+- **OpenAI errors**: Verify your `OPENAI_API_KEY` is valid and has available credits.
 
 ### Identify open issues that are likely to be resolved by pending PRs based on the issue and PR descriptions
 
