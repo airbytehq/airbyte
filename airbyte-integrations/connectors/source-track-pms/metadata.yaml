@@ -49,3 +49,7 @@ data:
   ab_internal:
     ql: 100
     sl: 100
+  externalDocumentationUrls:
+    - title: Track PMS API
+      url: https://www.trackhs.com/api
+      type: api_reference
