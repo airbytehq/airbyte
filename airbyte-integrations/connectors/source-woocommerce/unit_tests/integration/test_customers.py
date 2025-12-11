@@ -163,7 +163,7 @@ class TestCustomersIncremental(TestCase):
         output = self._read(config_=config().with_start_date("2024-01-01"), state=state)
 
         # ASSERT - Records returned (customer's date_modified_gmt is after state)
-        assert len(output.records) >= 1, f"Expected at least 1 record, got {len(output.records)}"
+        assert len(output.records) == 1, f"Expected 1 record, got {len(output.records)}"
 
         # ASSERT - Verify record content
         record = output.records[0].record.data
