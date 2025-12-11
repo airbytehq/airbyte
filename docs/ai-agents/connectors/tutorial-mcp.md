@@ -7,16 +7,15 @@ import TabItem from '@theme/TabItem';
 
 # Get started with direct connectors: Connector MCP
 
-In this tutorial, you'll install and run Airbyte's connector MCP server locally, connect the MCP server to Claude Code or your preferred agent, and learn to use natural language to explore your data from Stripe.
+In this tutorial, you'll install and run Airbyte's connector MCP server locally, connect the MCP server to Claude Code or your preferred agent, and learn to use natural language to explore your data. This tutorial uses Stripe, but if you don't have a Stripe account, you can use one of Airbyte's other direct connectors.
 
-The MCP server is quick and easy to set up, but it affords less control over how you use direct connectors. Data goes directly from the API to your AI agent.
+The MCP server is quick and easy to set up, but it affords less control over how you use direct connectors compared to the Python SDK. Data goes directly from the API to your AI agent.
 
 ## Overview
 
 This tutorial is for AI engineers and other technical users who work with data and AIs. It assumes you have basic knowledge of the following.
 
-- Claude Code or the agent of your choice
-- AI agents
+- Claude Code or the AI agent of your choice
 - MCP servers
 - Stripe, or a different third-party service you want to connect to
 
@@ -24,20 +23,23 @@ This tutorial is for AI engineers and other technical users who work with data a
 
 Before you begin this tutorial, ensure you have installed the following software.
 
-- Claude Code or the agent of your choice
-- Python version 3.13.7 or later
-- A Python package manager like [uv](https://github.com/astral-sh/uv)
+- Claude Code or the agent of your choice, and the plan necessary to run it locally
+- [Python](https://www.python.org/downloads/) version 3.13.7 or later
+- [uv](https://github.com/astral-sh/uv)
+- An account with Stripe, or a different third-party [supported by direct connectors](https://github.com/airbytehq/airbyte-ai-connectors/tree/main/connectors).
 
 ## Part 1: Clone the Connector MCP repository
 
+Clone the Connector MCP repository.
+
 ```bash
-git clone https://github.com/airbytehq/sonar/
+git clone https://github.com/airbytehq/connector-mcp/
 ```
 
 Once git finishes cloning, change directory into your repo.
 
 ```bash
-cd sonar/connector-mcp
+cd connector-mcp
 ```
 
 ## Part 2: Configure the connector you want to use
@@ -50,7 +52,7 @@ The `configured_connectors.yaml` file defines which direct connectors you are ma
 
 2. Add your connector definition to this file. The `connector_name` field specifies which connector to load from the [Airbyte AI Connectors registry](https://github.com/airbytehq/airbyte-ai-connectors). The keys under `secrets` are logical names that must match environment variables in your `.env` file.
 
-    ```yaml
+    ```yaml title="configured_connectors.yaml"
     connectors:
       - id: stripe
         type: local
@@ -66,7 +68,7 @@ The `configured_connectors.yaml` file defines which direct connectors you are ma
 
 2. Populate that file with your secret definitions. For example, if you defined a `api_key`/`STRIPE_API_KEY` key-value pair in `configured_connectors.yaml`, define `STRIPE_API_KEY` in your `.env` file.
 
-    ```text
+    ```text title=".env"
     STRIPE_API_KEY=your_stripe_api_key
     ```
 
@@ -74,16 +76,16 @@ The `configured_connectors.yaml` file defines which direct connectors you are ma
 
 Use your package manager to run the Connector MCP.
 
-- If your `configured_connectors.yaml` and `.env` files are in your repo root, run:
-
-    ```bash
-    uv run connector_mcp
-    ```
-
-- If your `configured_connectors.yaml` and `.env` files are in another location, specify that location with arguments.
+1. If your `configured_connectors.yaml` and `.env` files are not in the repository root directory, specify their location with arguments before running the MCP.
 
     ```bash
     python -m connector_mcp path/to/configured_connectors.yaml path/to/.env
+    ```
+
+2. Run the MCP.
+
+    ```bash
+    uv run connector_mcp
     ```
 
 ## Part 4: Use the Connector MCP with your agent
@@ -91,30 +93,61 @@ Use your package manager to run the Connector MCP.
 <Tabs>
 <TabItem value="Claude" label="Claude" default>
 
-Open `claude.json` and add the following configuration.
+1. Open `.claude.json` and add the following configuration. Take extra care to get the path to the connector MCP correct. Claude expects the path from the root of your machine, not a relative path.
 
-```json
-"mcpServers": {
-    "connector-mcp": {
-        "type": "stdio",
-        "command": "uv",
-        "args": [
-            "--directory",
-            "/path/to/connector-mcp",
-            "run",
-            "connector_mcp"
-            ],
-        "env": {}
-    }
-},
-```
+    ```json title=".claude.json"
+    "mcpServers": {
+        "connector-mcp": {
+            "type": "stdio",
+            "command": "uv",
+            "args": [
+                "--directory",
+                "/path/to/connector-mcp",
+                "run",
+                "connector_mcp"
+                ],
+            "env": {}
+        }
+    },
+    ```
 
-Alternatively, add the MCP through your command line tool.
+    Alternatively, add the MCP through your command line tool.
 
-```bash
-claude mcp add --transport stdio connector-mcp -- \
-  uv --directory /path/to/connector-mcp run connector_mcp
-```
+    ```bash
+    claude mcp add --transport stdio connector-mcp -- \
+    uv --directory /path/to/connector-mcp run connector_mcp
+    ```
+
+2. Run Claude.
+
+    ```bash
+    claude
+    ```
+
+3. Verify the MCP server is running.
+
+    ```bash
+    /mcp
+    ```
+
+    You should see something like this.
+
+    ```bash
+    Connector-mcp MCP Server
+
+    Status: ✔ connected
+    Command: uv
+    Args: --directory /path/to/connector-mcp run connector_mcp
+    Config location: /path/to/.claude.json [project: /path/to/connector-mcp]
+    Capabilities: tools
+    Tools: 3 tools
+    
+    ❯ 1. View tools
+      2. Reconnect
+      3. Disable                   
+    ```
+
+4. Press <kbd>Esc</kbd> to go back to the main Claude prompt screen. You're now ready to work.
 
 </TabItem>
 <TabItem value="Other" label="Other">
@@ -132,7 +165,7 @@ The key configuration elements are:
 
 ## Part 5: Work with your data
 
-Once your agent is connected to the Connector MCP, you can use natural language to explore and interact with your data. The MCP server exposes three tools to your agent: one to list configured connectors, one to describe what a connector can do, and one to execute operations against your data sources.
+Once your agent connects to the Connector MCP, you can use natural language to explore and interact with your data. The MCP server exposes three tools to your agent: one to list configured connectors, one to describe what a connector can do, and one to execute operations against your data sources.
 
 ### Verify your setup
 
@@ -140,15 +173,17 @@ Start by confirming your connector is properly configured. Ask your agent someth
 
 "List all configured connectors and tell me which entities and actions are available for the stripe connector."
 
-Your agent will discover the available connectors and describe the Stripe connector's capabilities, showing you entities like `customers` and the actions you can perform on them (such as `list` and `get`).
+Your agent discovers the available connectors and describes the Stripe connector's capabilities, showing you entities like `customers` and the actions you can perform on them, like `list` and `get`.
 
 ### Explore your data
 
 Once you've verified your setup, you can start exploring your data with natural language queries. Here are some examples using Stripe:
 
+<!-- vale off -->
 - "List the 10 most recent Stripe customers and show me their email, name, and account balance."
 - "Get the details for customer cus_ABC123 and show me all available fields."
 - "How many customers do I have in Stripe? List them grouped by their creation month."
+<!-- vale off -->
 
 Your agent translates these requests into the appropriate API calls, fetches the data, and presents it in a readable format.
 
@@ -156,8 +191,10 @@ Your agent translates these requests into the appropriate API calls, fetches the
 
 You can also ask your agent to analyze and summarize data across multiple records:
 
+<!-- vale off -->
 - "Find any Stripe customers who have a negative balance and list them with their balance amounts."
 - "Summarize my Stripe customers by showing me the total count and the date range of when they were created."
+<!-- vale off -->
 
 The agent can combine multiple API calls and reason over the results to answer more complex questions.
 
@@ -184,7 +221,7 @@ In this tutorial, you learned how to:
 
     You can configure multiple connectors in the same file. Here's an example:
 
-    ```yaml
+    ```yaml title="configured_connectors.yaml"
     connectors:
     - id: stripe
         type: local

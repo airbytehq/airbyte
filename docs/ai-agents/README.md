@@ -60,25 +60,17 @@ If agentic data isn't what you're looking for, [data replication](/platform) mig
 
 <Taxonomy />
 
----
-
-## Prerequisites
-
-Before using any Airbyte developer tools, ensure you have:
-
-- **Airbyte Cloud account**: Sign up at [cloud.airbyte.com](https://cloud.airbyte.com)
-- **Embedded access**: Contact michel@airbyte.io or teo@airbyte.io to enable Airbyte Embedded on your account
-- **API credentials**: Available in your Airbyte Cloud dashboard under Settings > Applications
-
 ## Airbyte Embedded
 
-[Airbyte Embedded](https://airbyte.com/embedded) equips product and software teams with the tools needed to move customer data and deliver context to AI applications.
+[Airbyte Embedded](embedded) equips product and software teams with the tools needed to move customer data and deliver context to AI applications.
 
-### Embedded Workspaces & Widget
+Airbyte Embedded creates isolated workspaces for each of your customers, allowing them to configure their own data sources while keeping their data separate and secure. The Embedded Widget provides a pre-built UI component that handles the entire user onboarding flow from authentication to source configuration.
 
-Airbyte Embedded creates isolated workspaces for each of your customers, allowing them to configure their own data sources while keeping their data separate and secure. The Embedded Widget provides a pre-built UI component that handles the entire user onboarding flow, from authentication to source configuration.
+Once Airbyte enables your organizaton on Airbyte Embedded, you can begin onboarding customers via the Embedded Widget. You can download the Embedded demo app [from GitHub](https://github.com/airbytehq/embedded-demoapp).
 
-Once your Organization is enabled via Airbyte Embedded, you can begin onboarding customers via the Embedded Widget. You can download the code for the onboarding app [via GitHub](https://github.com/airbytehq/embedded-demoapp).
+## Direct connectors
+
+Airbyte's direct connectors are Python packages that equip AI agents to call third-party APIs through strongly typed, well-documented tools. Each connector is ready to use directly in your Python app, in an agent framework, or exposed through an MCP. [Learn more >](connectors)
 
 ## MCP Servers
 
@@ -88,67 +80,10 @@ Airbyte provides multiple MCP (Model Context Protocol) servers to enable AI-assi
 
 [The PyAirbyte MCP server](./pyairbyte-mcp.md) is a local MCP server that provides a standardized interface for managing Airbyte connectors through MCP-compatible clients. It allows you to list connectors, validate configurations, and run sync operations using the MCP protocol. This is the recommended MCP server for most use cases.
 
+### Connector MCP
+
+Use [direct connectors](connectors) to interact with your data using natural language.
+
 ### Connector Builder MCP
 
 [The Connector Builder MCP server](./connector-builder-mcp.md) (coming soon) will provide AI-assisted capabilities for building and testing Airbyte connectors using the Model Context Protocol.
-
-## Proxy Requests
-
-### API Sources
-
-:::warning
-The Airbyte Proxy feature is in alpha, which means it is still in active development and may include backward-incompatible changes. [Share feedback and requests directly with us](mailto:sonar@airbyte.io).
-:::
-
-Airbyte's Authentication Proxy enables you to submit authenticated requests to external APIs. It can be both to fetch and write data.
-
-Here's an example of how to query an external API with the proxy:
-
-```bash
-curl -X POST -H 'Content-Type: application/json' \
--H 'Authorization: Bearer {AIRBYTE_ACCESS_TOKEN}' \
--d {"method": "GET", "url": "https://api.stripe.com/v1/balance", "headers": {"additional_header_key": "value"}}' \
-'https://api.airbyte.ai/api/v1/sonar/apis/{SOURCE_ID}/request'
-```
-
-Here's an example of a POST:
-
-```bash
-curl -X POST -H 'Content-Type: application/json' \
--H 'Authorization: Bearer {AIRBYTE_ACCESS_TOKEN}' \
--d {"method": "POST", "url": "https://api.stripe.com/v1/balance", "body": {"key": "value"}}' \
-'https://api.airbyte.ai/api/v1/sonar/apis/{SOURCE_ID}/request'
-```
-
-Airbyte's Authentication Proxy can be used to authenticate using a Source configured through the Widget.
-
-The following integrations are currently supported. More will follow shortly:
-
-- Stripe
-
-### File Storage Sources
-
-Airbyte's File Storage Proxy enables you to submit authenticated requests to file storage sources. It can be used to list or fetch files.
-
-Here's an example of how to list files:
-
-```bash
-curl -X GET -H 'Content-Type: application/json' \
--H 'Authorization: Bearer {AIRBYTE_ACCESS_TOKEN}' \
-'https://api.airbyte.ai/api/v1/sonar/files/{SOURCE_ID}/list/path/to/directory/or/file/prefix'
-```
-
-Here's an example of how to fetch a file:
-
-```bash
-curl -X GET -H 'Content-Type: application/octet-stream' \
--H 'Authorization: Bearer {AIRBYTE_ACCESS_TOKEN}' \
--H 'Range: bytes=0-1048575' \
-'https://api.airbyte.ai/api/v1/sonar/files/{SOURCE_ID}/get/path/to/file'
-```
-
-For small files, you may omit the `Range` header.
-
-The following integrations are currently supported. More will follow shortly:
-
-- S3
