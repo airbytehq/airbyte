@@ -57,7 +57,7 @@ class PostgresSourceJdbcConcurrentPartitionsCreator<
         recordMapper: (SelectQuerier.ResultRow) -> T,
     ): Sample<T> {
         val values = mutableListOf<T>()
-            val samplingQuery: SelectQuery = partition.samplingQuery(/*sampleRateInvPow2*/0)
+            val samplingQuery: SelectQuery = partition.samplingQuery(0)
             selectQuerier.executeQuery(samplingQuery).use {
                 for (row in it) {
                     values.add(recordMapper(row))
@@ -153,23 +153,5 @@ class PostgresSourceJdbcConcurrentPartitionsCreator<
         }')"
         return querySingleValue(JdbcConnectionFactory(sharedState.configuration), sql,
             { rs -> return@querySingleValue rs.getLong(1) })
-    }
-
-    private fun relationSize(stream: Stream): Long {
-        val jdbcConnectionFactory = JdbcConnectionFactory(sharedState.configuration)
-        jdbcConnectionFactory.get().use { connection ->
-            val sql = "SELECT pg_total_relation_size('${
-                if (stream.namespace == null) "\"${stream.name}\"" else "\"${stream.namespace}\".\"${stream.name}\""
-            }')"
-            val stmt = connection.prepareStatement(sql)
-            val rs = stmt.executeQuery()
-
-            if (rs.next()) {
-                val relationSize = rs.getLong(1)
-                return relationSize
-            }
-            error("Could not get relation size for stream ${stream.id}")
-
-        }
     }
 }

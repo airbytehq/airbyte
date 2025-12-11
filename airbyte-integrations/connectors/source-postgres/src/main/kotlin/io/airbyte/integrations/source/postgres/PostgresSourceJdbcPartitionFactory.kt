@@ -38,7 +38,6 @@ import io.airbyte.integrations.source.postgres.operations.PostgresSourceSelectQu
 import io.github.oshai.kotlinlogging.KotlinLogging
 import io.micronaut.context.annotation.Primary
 import jakarta.inject.Singleton
-import java.sql.PreparedStatement
 import java.util.concurrent.ConcurrentHashMap
 import java.util.concurrent.atomic.AtomicLong
 
@@ -270,19 +269,19 @@ open class PostgresSourceJdbcPartitionFactory(
             }
         }
 
-        var blockSize: AtomicLong? = null
+        var cachedBlockSize: AtomicLong? = null
 
         @Synchronized
         fun blockSize(config: JdbcSourceConfiguration): Long {
-            if (blockSize == null) {
+            if (cachedBlockSize == null) {
                 log.info { "Querying server block size setting." }
-                blockSize = AtomicLong(querySingleValue(JdbcConnectionFactory(config),
+                cachedBlockSize = AtomicLong(querySingleValue(JdbcConnectionFactory(config),
                     "SELECT current_setting('block_size')::int",
                     { rs -> rs.getLong(1)
                 }))
-                log.info { "Server block size is $blockSize." }
+                log.info { "Server block size is $cachedBlockSize." }
             }
-            return blockSize?.get()!!
+            return cachedBlockSize?.get()!!
         }
     }
 
@@ -367,8 +366,9 @@ open class PostgresSourceJdbcPartitionFactory(
         lowerBound: JsonNode?,
         numPartitions: Int,
         relationSize: Long,
+        blockSize: Long
     ): List<Pair<Ctid?, Ctid?>> {
-        val theoreticalLastPage: Long = relationSize / blockSize(config)
+        val theoreticalLastPage: Long = relationSize / blockSize
         log.info { "Theoretical last page: $theoreticalLastPage" }
         val lowerBoundCtid: Ctid = lowerBound?.let {
             if (it.isNull.not() && it.asText().isEmpty().not()) {
@@ -389,7 +389,7 @@ open class PostgresSourceJdbcPartitionFactory(
         filenode: Filenode?,
         relationSize: Long,
     ): List<PostgresSourceJdbcSplittableSnapshotPartition> {
-        val bounds = computePartitionBounds(lowerBound, numPartitions, relationSize, /*rowSize*/)
+        val bounds = computePartitionBounds(lowerBound, numPartitions, relationSize, blockSize(config))
 
         return bounds.mapIndexed { index, (lowerBound, upperBound) ->
             PostgresSourceJdbcSplittableSnapshotPartition(
@@ -409,7 +409,7 @@ open class PostgresSourceJdbcPartitionFactory(
         filenode: Filenode?,
         relationSize: Long,
     ): List<PostgresSourceJdbcSplittableSnapshotWithCursorPartition> {
-        val bounds = computePartitionBounds(lowerBound, numPartitions, relationSize, /*rowSize*/)
+        val bounds = computePartitionBounds(lowerBound, numPartitions, relationSize, blockSize(config))
 
         return bounds.mapIndexed { index, (lowerBound, upperBound) ->
             PostgresSourceJdbcSplittableSnapshotWithCursorPartition(
