@@ -25,6 +25,10 @@ on:
         description: "Git ref (branch or SHA) to build connectors from. Used by pre-release workflow to build from PR branches."
         required: false
         type: string
+    outputs:
+      docker-image-tag:
+        description: "Docker image tag used when publishing. For single-connector callers only; multi-connector callers should not rely on this output."
+        value: ${{ jobs.publish_connector_registry_entries.outputs.docker-image-tag }}
   workflow_dispatch:
     inputs:
       connectors:
@@ -256,6 +260,8 @@ jobs:
       max-parallel: 5
       # Allow all jobs to run, even if one fails
       fail-fast: false
+    outputs:
+      docker-image-tag: ${{ steps.connector-metadata.outputs.docker-image-tag }}
     steps:
       - name: Checkout Airbyte
         # v4

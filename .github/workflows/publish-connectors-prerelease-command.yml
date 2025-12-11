@@ -177,13 +177,12 @@ jobs:
         id: message-vars
         run: |
           CONNECTOR_NAME="${{ needs.init.outputs.connector-name }}"
-          SHORT_SHA="${{ needs.init.outputs.short-sha }}"
-          VERSION="${{ needs.init.outputs.connector-version }}"
+          # Use the actual docker-image-tag from the publish workflow output
+          DOCKER_TAG="${{ needs.publish.outputs.docker-image-tag }}"
 
-          if [[ -n "$VERSION" ]]; then
-            DOCKER_TAG="${VERSION}-dev.${SHORT_SHA}"
-          else
-            DOCKER_TAG="{version}-dev.${SHORT_SHA}"
+          if [[ -z "$DOCKER_TAG" ]]; then
+            echo "::error::docker-image-tag output is missing from publish workflow. This is unexpected."
+            exit 1
           fi
 
           echo "connector_name=$CONNECTOR_NAME" >> $GITHUB_OUTPUT
