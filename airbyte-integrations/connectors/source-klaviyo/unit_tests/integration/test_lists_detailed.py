@@ -50,37 +50,69 @@ class TestListsDetailedStream(TestCase):
         """
         config = ConfigBuilder().with_api_key(_API_KEY).with_start_date(datetime(2024, 5, 31, tzinfo=timezone.utc)).build()
 
-        # lists_detailed is a substream of lists. The parent lists stream has no query parameters.
+        # Parent stream: lists (returns list IDs that become slices for the substream)
         http_mocker.get(
             KlaviyoRequestBuilder.lists_endpoint(_API_KEY).build(),
             HttpResponse(
                 body=json.dumps(
                     {
                         "data": [
-                            {
-                                "type": "list",
-                                "id": "list_001",
-                                "attributes": {
-                                    "name": "Newsletter Subscribers",
-                                    "created": "2024-05-31T10:00:00+00:00",
-                                    "updated": "2024-05-31T12:30:00+00:00",
-                                    "opt_in_process": "single_opt_in",
-                                    "profile_count": 1500,
-                                },
-                            },
-                            {
-                                "type": "list",
-                                "id": "list_002",
-                                "attributes": {
-                                    "name": "VIP Customers",
-                                    "created": "2024-05-31T10:00:00+00:00",
-                                    "updated": "2024-05-31T12:30:00+00:00",
-                                    "opt_in_process": "double_opt_in",
-                                    "profile_count": 500,
-                                },
-                            },
+                            {"type": "list", "id": "list_001", "attributes": {"name": "List 1", "updated": "2024-05-31T12:30:00+00:00"}},
+                            {"type": "list", "id": "list_002", "attributes": {"name": "List 2", "updated": "2024-05-31T12:30:00+00:00"}},
                         ],
                         "links": {"self": "https://a.klaviyo.com/api/lists", "next": None},
+                    }
+                ),
+                status_code=200,
+            ),
+        )
+
+        # Substream: lists_detailed for list_001 (calls /api/lists/{list_id} with additional-fields[list]=profile_count)
+        http_mocker.get(
+            KlaviyoRequestBuilder.lists_detailed_endpoint(_API_KEY, "list_001")
+            .with_additional_fields_list("profile_count")
+            .build(),
+            HttpResponse(
+                body=json.dumps(
+                    {
+                        "data": {
+                            "type": "list",
+                            "id": "list_001",
+                            "attributes": {
+                                "name": "Newsletter Subscribers",
+                                "created": "2024-05-31T10:00:00+00:00",
+                                "updated": "2024-05-31T12:30:00+00:00",
+                                "opt_in_process": "single_opt_in",
+                                "profile_count": 1500,
+                            },
+                        },
+                        "links": {"self": "https://a.klaviyo.com/api/lists/list_001"},
+                    }
+                ),
+                status_code=200,
+            ),
+        )
+
+        # Substream: lists_detailed for list_002
+        http_mocker.get(
+            KlaviyoRequestBuilder.lists_detailed_endpoint(_API_KEY, "list_002")
+            .with_additional_fields_list("profile_count")
+            .build(),
+            HttpResponse(
+                body=json.dumps(
+                    {
+                        "data": {
+                            "type": "list",
+                            "id": "list_002",
+                            "attributes": {
+                                "name": "VIP Customers",
+                                "created": "2024-05-31T10:00:00+00:00",
+                                "updated": "2024-05-31T12:30:00+00:00",
+                                "opt_in_process": "double_opt_in",
+                                "profile_count": 500,
+                            },
+                        },
+                        "links": {"self": "https://a.klaviyo.com/api/lists/list_002"},
                     }
                 ),
                 status_code=200,
@@ -115,16 +147,33 @@ class TestListsDetailedStream(TestCase):
         """
         config = ConfigBuilder().with_api_key(_API_KEY).with_start_date(datetime(2024, 5, 31, tzinfo=timezone.utc)).build()
 
-        # Use a single mock with multiple responses to avoid ambiguity in mock matching.
-        # The first response includes a next_page_link, the second response has no next link.
-        # lists_detailed is a substream of lists. The parent lists stream has no query parameters.
+        # Parent stream: lists with pagination (returns list IDs across multiple pages)
         http_mocker.get(
             KlaviyoRequestBuilder.lists_endpoint(_API_KEY).build(),
             [
                 KlaviyoPaginatedResponseBuilder()
                 .with_records(
-                    [
-                        {
+                    [{"type": "list", "id": "list_001", "attributes": {"name": "List 1", "updated": "2024-05-31T10:00:00+00:00"}}]
+                )
+                .with_next_page_link("https://a.klaviyo.com/api/lists?page[cursor]=abc123")
+                .build(),
+                KlaviyoPaginatedResponseBuilder()
+                .with_records(
+                    [{"type": "list", "id": "list_002", "attributes": {"name": "List 2", "updated": "2024-05-31T11:00:00+00:00"}}]
+                )
+                .build(),
+            ],
+        )
+
+        # Substream: lists_detailed for list_001
+        http_mocker.get(
+            KlaviyoRequestBuilder.lists_detailed_endpoint(_API_KEY, "list_001")
+            .with_additional_fields_list("profile_count")
+            .build(),
+            HttpResponse(
+                body=json.dumps(
+                    {
+                        "data": {
                             "type": "list",
                             "id": "list_001",
                             "attributes": {
@@ -134,15 +183,23 @@ class TestListsDetailedStream(TestCase):
                                 "opt_in_process": "single_opt_in",
                                 "profile_count": 100,
                             },
-                        }
-                    ]
-                )
-                .with_next_page_link("https://a.klaviyo.com/api/lists?page[cursor]=abc123")
-                .build(),
-                KlaviyoPaginatedResponseBuilder()
-                .with_records(
-                    [
-                        {
+                        },
+                        "links": {"self": "https://a.klaviyo.com/api/lists/list_001"},
+                    }
+                ),
+                status_code=200,
+            ),
+        )
+
+        # Substream: lists_detailed for list_002
+        http_mocker.get(
+            KlaviyoRequestBuilder.lists_detailed_endpoint(_API_KEY, "list_002")
+            .with_additional_fields_list("profile_count")
+            .build(),
+            HttpResponse(
+                body=json.dumps(
+                    {
+                        "data": {
                             "type": "list",
                             "id": "list_002",
                             "attributes": {
@@ -152,11 +209,12 @@ class TestListsDetailedStream(TestCase):
                                 "opt_in_process": "double_opt_in",
                                 "profile_count": 200,
                             },
-                        }
-                    ]
-                )
-                .build(),
-            ],
+                        },
+                        "links": {"self": "https://a.klaviyo.com/api/lists/list_002"},
+                    }
+                ),
+                status_code=200,
+            ),
         )
 
         source = get_source(config=config)
@@ -178,26 +236,40 @@ class TestListsDetailedStream(TestCase):
         """
         config = ConfigBuilder().with_api_key(_API_KEY).with_start_date(datetime(2024, 5, 31, tzinfo=timezone.utc)).build()
 
-        # lists_detailed is a substream of lists. The parent lists stream has no query parameters.
+        # Parent stream: lists
         http_mocker.get(
             KlaviyoRequestBuilder.lists_endpoint(_API_KEY).build(),
             HttpResponse(
                 body=json.dumps(
                     {
-                        "data": [
-                            {
-                                "type": "list",
-                                "id": "list_001",
-                                "attributes": {
-                                    "name": "Test List",
-                                    "created": "2024-05-31T10:00:00+00:00",
-                                    "updated": "2024-05-31T12:30:00+00:00",
-                                    "opt_in_process": "single_opt_in",
-                                    "profile_count": 1000,
-                                },
-                            }
-                        ],
+                        "data": [{"type": "list", "id": "list_001", "attributes": {"name": "Test List", "updated": "2024-05-31T12:30:00+00:00"}}],
                         "links": {"self": "https://a.klaviyo.com/api/lists", "next": None},
+                    }
+                ),
+                status_code=200,
+            ),
+        )
+
+        # Substream: lists_detailed for list_001
+        http_mocker.get(
+            KlaviyoRequestBuilder.lists_detailed_endpoint(_API_KEY, "list_001")
+            .with_additional_fields_list("profile_count")
+            .build(),
+            HttpResponse(
+                body=json.dumps(
+                    {
+                        "data": {
+                            "type": "list",
+                            "id": "list_001",
+                            "attributes": {
+                                "name": "Test List",
+                                "created": "2024-05-31T10:00:00+00:00",
+                                "updated": "2024-05-31T12:30:00+00:00",
+                                "opt_in_process": "single_opt_in",
+                                "profile_count": 1000,
+                            },
+                        },
+                        "links": {"self": "https://a.klaviyo.com/api/lists/list_001"},
                     }
                 ),
                 status_code=200,
@@ -228,37 +300,69 @@ class TestListsDetailedStream(TestCase):
         config = ConfigBuilder().with_api_key(_API_KEY).with_start_date(datetime(2024, 5, 31, tzinfo=timezone.utc)).build()
         state = StateBuilder().with_stream_state(_STREAM_NAME, {"updated": "2024-03-01T00:00:00+00:00"}).build()
 
-        # lists_detailed is a substream of lists. The parent lists stream has no query parameters.
+        # Parent stream: lists (returns both old and new list IDs)
         http_mocker.get(
             KlaviyoRequestBuilder.lists_endpoint(_API_KEY).build(),
             HttpResponse(
                 body=json.dumps(
                     {
                         "data": [
-                            {
-                                "type": "list",
-                                "id": "list_old",
-                                "attributes": {
-                                    "name": "Old List",
-                                    "created": "2024-01-01T10:00:00+00:00",
-                                    "updated": "2024-02-15T10:00:00+00:00",
-                                    "opt_in_process": "single_opt_in",
-                                    "profile_count": 500,
-                                },
-                            },
-                            {
-                                "type": "list",
-                                "id": "list_new",
-                                "attributes": {
-                                    "name": "New List",
-                                    "created": "2024-03-10T10:00:00+00:00",
-                                    "updated": "2024-03-15T10:00:00+00:00",
-                                    "opt_in_process": "double_opt_in",
-                                    "profile_count": 1500,
-                                },
-                            },
+                            {"type": "list", "id": "list_old", "attributes": {"name": "Old List", "updated": "2024-02-15T10:00:00+00:00"}},
+                            {"type": "list", "id": "list_new", "attributes": {"name": "New List", "updated": "2024-03-15T10:00:00+00:00"}},
                         ],
                         "links": {"self": "https://a.klaviyo.com/api/lists", "next": None},
+                    }
+                ),
+                status_code=200,
+            ),
+        )
+
+        # Substream: lists_detailed for list_old (will be filtered out by client-side incremental)
+        http_mocker.get(
+            KlaviyoRequestBuilder.lists_detailed_endpoint(_API_KEY, "list_old")
+            .with_additional_fields_list("profile_count")
+            .build(),
+            HttpResponse(
+                body=json.dumps(
+                    {
+                        "data": {
+                            "type": "list",
+                            "id": "list_old",
+                            "attributes": {
+                                "name": "Old List",
+                                "created": "2024-01-01T10:00:00+00:00",
+                                "updated": "2024-02-15T10:00:00+00:00",
+                                "opt_in_process": "single_opt_in",
+                                "profile_count": 500,
+                            },
+                        },
+                        "links": {"self": "https://a.klaviyo.com/api/lists/list_old"},
+                    }
+                ),
+                status_code=200,
+            ),
+        )
+
+        # Substream: lists_detailed for list_new (will pass client-side incremental filter)
+        http_mocker.get(
+            KlaviyoRequestBuilder.lists_detailed_endpoint(_API_KEY, "list_new")
+            .with_additional_fields_list("profile_count")
+            .build(),
+            HttpResponse(
+                body=json.dumps(
+                    {
+                        "data": {
+                            "type": "list",
+                            "id": "list_new",
+                            "attributes": {
+                                "name": "New List",
+                                "created": "2024-03-10T10:00:00+00:00",
+                                "updated": "2024-03-15T10:00:00+00:00",
+                                "opt_in_process": "double_opt_in",
+                                "profile_count": 1500,
+                            },
+                        },
+                        "links": {"self": "https://a.klaviyo.com/api/lists/list_new"},
                     }
                 ),
                 status_code=200,
@@ -285,26 +389,40 @@ class TestListsDetailedStream(TestCase):
         """
         config = ConfigBuilder().with_api_key(_API_KEY).with_start_date(datetime(2024, 5, 31, tzinfo=timezone.utc)).build()
 
-        # lists_detailed is a substream of lists. The parent lists stream has no query parameters.
+        # Parent stream: lists
         http_mocker.get(
             KlaviyoRequestBuilder.lists_endpoint(_API_KEY).build(),
             HttpResponse(
                 body=json.dumps(
                     {
-                        "data": [
-                            {
-                                "type": "list",
-                                "id": "list_transform_test",
-                                "attributes": {
-                                    "name": "Transform Test",
-                                    "created": "2024-05-31T10:00:00+00:00",
-                                    "updated": "2024-05-31T14:45:00+00:00",
-                                    "opt_in_process": "single_opt_in",
-                                    "profile_count": 750,
-                                },
-                            }
-                        ],
+                        "data": [{"type": "list", "id": "list_transform_test", "attributes": {"name": "Transform Test", "updated": "2024-05-31T14:45:00+00:00"}}],
                         "links": {"self": "https://a.klaviyo.com/api/lists", "next": None},
+                    }
+                ),
+                status_code=200,
+            ),
+        )
+
+        # Substream: lists_detailed for list_transform_test
+        http_mocker.get(
+            KlaviyoRequestBuilder.lists_detailed_endpoint(_API_KEY, "list_transform_test")
+            .with_additional_fields_list("profile_count")
+            .build(),
+            HttpResponse(
+                body=json.dumps(
+                    {
+                        "data": {
+                            "type": "list",
+                            "id": "list_transform_test",
+                            "attributes": {
+                                "name": "Transform Test",
+                                "created": "2024-05-31T10:00:00+00:00",
+                                "updated": "2024-05-31T14:45:00+00:00",
+                                "opt_in_process": "single_opt_in",
+                                "profile_count": 750,
+                            },
+                        },
+                        "links": {"self": "https://a.klaviyo.com/api/lists/list_transform_test"},
                     }
                 ),
                 status_code=200,
@@ -333,26 +451,40 @@ class TestListsDetailedStream(TestCase):
         """
         config = ConfigBuilder().with_api_key(_API_KEY).with_start_date(datetime(2024, 5, 31, tzinfo=timezone.utc)).build()
 
-        # lists_detailed is a substream of lists. The parent lists stream has no query parameters.
+        # Parent stream: lists
         http_mocker.get(
             KlaviyoRequestBuilder.lists_endpoint(_API_KEY).build(),
             HttpResponse(
                 body=json.dumps(
                     {
-                        "data": [
-                            {
-                                "type": "list",
-                                "id": "list_with_count",
-                                "attributes": {
-                                    "name": "List with Profile Count",
-                                    "created": "2024-05-31T10:00:00+00:00",
-                                    "updated": "2024-05-31T12:30:00+00:00",
-                                    "opt_in_process": "single_opt_in",
-                                    "profile_count": 2500,
-                                },
-                            }
-                        ],
+                        "data": [{"type": "list", "id": "list_with_count", "attributes": {"name": "List with Profile Count", "updated": "2024-05-31T12:30:00+00:00"}}],
                         "links": {"self": "https://a.klaviyo.com/api/lists", "next": None},
+                    }
+                ),
+                status_code=200,
+            ),
+        )
+
+        # Substream: lists_detailed for list_with_count (includes profile_count via additional-fields)
+        http_mocker.get(
+            KlaviyoRequestBuilder.lists_detailed_endpoint(_API_KEY, "list_with_count")
+            .with_additional_fields_list("profile_count")
+            .build(),
+            HttpResponse(
+                body=json.dumps(
+                    {
+                        "data": {
+                            "type": "list",
+                            "id": "list_with_count",
+                            "attributes": {
+                                "name": "List with Profile Count",
+                                "created": "2024-05-31T10:00:00+00:00",
+                                "updated": "2024-05-31T12:30:00+00:00",
+                                "opt_in_process": "single_opt_in",
+                                "profile_count": 2500,
+                            },
+                        },
+                        "links": {"self": "https://a.klaviyo.com/api/lists/list_with_count"},
                     }
                 ),
                 status_code=200,
@@ -378,7 +510,7 @@ class TestListsDetailedStream(TestCase):
         """
         config = ConfigBuilder().with_api_key(_API_KEY).with_start_date(datetime(2024, 5, 31, tzinfo=timezone.utc)).build()
 
-        # lists_detailed is a substream of lists. The parent lists stream has no query parameters.
+        # Parent stream: lists (first returns 429, then success after retry)
         http_mocker.get(
             KlaviyoRequestBuilder.lists_endpoint(_API_KEY).build(),
             [
@@ -390,25 +522,39 @@ class TestListsDetailedStream(TestCase):
                 HttpResponse(
                     body=json.dumps(
                         {
-                            "data": [
-                                {
-                                    "type": "list",
-                                    "id": "list_after_retry",
-                                    "attributes": {
-                                        "name": "After Retry",
-                                        "created": "2024-05-31T10:00:00+00:00",
-                                        "updated": "2024-05-31T10:00:00+00:00",
-                                        "opt_in_process": "single_opt_in",
-                                        "profile_count": 100,
-                                    },
-                                }
-                            ],
+                            "data": [{"type": "list", "id": "list_after_retry", "attributes": {"name": "After Retry", "updated": "2024-05-31T10:00:00+00:00"}}],
                             "links": {"self": "https://a.klaviyo.com/api/lists", "next": None},
                         }
                     ),
                     status_code=200,
                 ),
             ],
+        )
+
+        # Substream: lists_detailed for list_after_retry
+        http_mocker.get(
+            KlaviyoRequestBuilder.lists_detailed_endpoint(_API_KEY, "list_after_retry")
+            .with_additional_fields_list("profile_count")
+            .build(),
+            HttpResponse(
+                body=json.dumps(
+                    {
+                        "data": {
+                            "type": "list",
+                            "id": "list_after_retry",
+                            "attributes": {
+                                "name": "After Retry",
+                                "created": "2024-05-31T10:00:00+00:00",
+                                "updated": "2024-05-31T10:00:00+00:00",
+                                "opt_in_process": "single_opt_in",
+                                "profile_count": 100,
+                            },
+                        },
+                        "links": {"self": "https://a.klaviyo.com/api/lists/list_after_retry"},
+                    }
+                ),
+                status_code=200,
+            ),
         )
 
         source = get_source(config=config)
