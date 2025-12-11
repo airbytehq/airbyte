@@ -56,16 +56,6 @@ from airbyte_ai_github import GithubConnector
 from airbyte_ai_github.models import GithubAuthConfig
 ```
 
-## Create your Pydantic AI agent
-
-## Define your connector
-
-<!-- Use a personal access token, not OAuth in the example -->
-
-```python title=""
-connector = GithubConnector(auth_config=GithubAuthConfig(access_token="...", refresh_token="...", client_id="...", client_secret="..."))
-```
-
 ## Add a .env file with your secret values
 
 <!-- Use a personal access token, not OAuth in the example -->
@@ -76,7 +66,23 @@ connector = GithubConnector(auth_config=GithubAuthConfig(access_token="...", ref
 access_token=x
 ```
 
-## Use the connector
+## Define your connector
+
+<!-- Use a personal access token, not OAuth in the example -->
+
+```python title=""
+connector = GithubConnector(auth_config=GithubAuthConfig(access_token="...", refresh_token="...", client_id="...", client_secret="..."))
+```
+
+## Create your Pydantic AI agent
+
+
+
+## Verify connector credentials
+
+<!-- Debugging checkpoint before adding tools -->
+
+## Add tools to your agent
 
 ### Expose GitHub operations as Pydantic AI tools
 
@@ -92,7 +98,7 @@ async def get_user(user_id: str):
     return await connector.users.get(id=user_id)
 ``` -->
 
-### GitHub list open issues
+### Add issue management tools
 
 <!-- we use the connector's operations
 Options:
@@ -102,7 +108,7 @@ issues__search() - Search for issues using GitHub's search syntax
 
  -->
 
-### Github list unmerged PRs
+### Add pull request management tools
 
 <!-- 
 we use the connector's operations
@@ -130,6 +136,7 @@ In this tutorial, you learned how to:
 
 - Set up a new Python project
 - Install Pydantic AI and a direct connector
+- Add tools to your agent using your direct connector
 - Run your Python project and use natural language to interact with your data
 
 ## Next steps
