@@ -97,9 +97,9 @@ class TestAdsquads(TestCase):
         # Verify custom error message from manifest is logged
         log_messages = [log.log.message for log in output.logs]
         expected_error_prefix = "Got permission error when accessing URL. Skipping"
-        assert any(expected_error_prefix in msg for msg in log_messages), (
-            f"Expected custom 403 error message '{expected_error_prefix}' in logs"
-        )
+        assert any(
+            expected_error_prefix in msg for msg in log_messages
+        ), f"Expected custom 403 error message '{expected_error_prefix}' in logs"
         assert any(_STREAM_NAME in msg for msg in log_messages), f"Expected stream name '{_STREAM_NAME}' in log messages"
 
 
@@ -182,9 +182,9 @@ class TestAdsquadsIncremental(TestCase):
         # Validate state matches record
         assert state_cursor_value is not None, "Expected 'updated_at' in state"
         assert record_cursor_value is not None, "Expected 'updated_at' in record"
-        assert state_cursor_value == record_cursor_value or state_cursor_value.startswith(record_cursor_value[:10]), (
-            f"Expected state to match latest record. State: {state_cursor_value}, Record: {record_cursor_value}"
-        )
+        assert state_cursor_value == record_cursor_value or state_cursor_value.startswith(
+            record_cursor_value[:10]
+        ), f"Expected state to match latest record. State: {state_cursor_value}, Record: {record_cursor_value}"
 
     @HttpMocker()
     def test_incremental_sync_with_state(self, http_mocker: HttpMocker) -> None:
@@ -225,6 +225,6 @@ class TestAdsquadsIncremental(TestCase):
         # Validate state matches record
         assert state_cursor_value is not None, "Expected 'updated_at' in state"
         assert record_cursor_value is not None, "Expected 'updated_at' in record"
-        assert state_cursor_value == record_cursor_value or state_cursor_value.startswith(record_cursor_value[:10]), (
-            f"Expected state to match latest record. State: {state_cursor_value}, Record: {record_cursor_value}"
-        )
+        assert state_cursor_value == record_cursor_value or state_cursor_value.startswith(
+            record_cursor_value[:10]
+        ), f"Expected state to match latest record. State: {state_cursor_value}, Record: {record_cursor_value}"
