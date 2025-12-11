@@ -86,15 +86,11 @@ jobs:
               - 'airbyte-cdk/java/**/**/src/main/**/*'
               - 'airbyte-cdk/bulk/**/**/src/main/**/*'
 
+      - name: Install the latest version of uv
+        uses: astral-sh/setup-uv@d0cc045d04ccac9d8b7881df0226f9e82c39688e # v6.8.0
+
       - name: Install airbyte-ops CLI
-        run: |
-          # Install uv if not available
-          if ! command -v uv &> /dev/null; then
-            curl -LsSf https://astral.sh/uv/install.sh | sh
-            export PATH="$HOME/.local/bin:$PATH"
-          fi
-          # Install airbyte-ops CLI tool
-          uv tool install airbyte-internal-ops
+        run: uv tool install airbyte-internal-ops
 
       - name: Generate Connector Matrix from Changes
         id: generate-matrix
