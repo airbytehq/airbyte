@@ -21,12 +21,12 @@ This tutorial is for AI engineers and other technical users who work with data a
 
 ## Before you start
 
-Before you begin this tutorial, ensure you have installed the following software.
+Before you begin this tutorial, ensure you have the following.
 
 - [Python](https://www.python.org/downloads/) version 3.10 or later
 - [uv](https://github.com/astral-sh/uv)
-- A GitHub personal access token
-- An API key for the LLM you want to use
+- A [GitHub personal access token](https://github.com/settings/tokens). For this tutorial, a classic token with `repo` scope is sufficient.
+- An [OpenAI API key](https://platform.openai.com/api-keys). This tutorial uses OpenAI, but Pydantic AI supports other LLM providers.
 
 ## Create a new Python project
 
@@ -125,10 +125,7 @@ GITHUB_ACCESS_TOKEN=your-github-personal-access-token
 OPENAI_API_KEY=your-openai-api-key
 ```
 
-Replace the placeholder values with your actual credentials:
-
-- `GITHUB_ACCESS_TOKEN`: Your [GitHub personal access token](https://github.com/settings/tokens). For this tutorial, a classic token with `repo` scope is sufficient.
-- `OPENAI_API_KEY`: Your [OpenAI API key](https://platform.openai.com/api-keys).
+Replace the placeholder values with your actual credentials.
 
 :::warning
 Never commit your `.env` file to version control. The `.gitignore` file created by `uv init` already excludes `.env` files.
