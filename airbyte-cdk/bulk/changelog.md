@@ -1,3 +1,9 @@
+## Version 0.1.88
+
+**Load CDK**
+
+* Add CDC_CURSOR_COLUMN_NAME constant.
+
 ## Version 0.1.87
 
 **Load CDK**

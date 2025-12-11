@@ -137,6 +137,7 @@ See information about rate limits [here](https://airtable.com/developers/web/api
 
 | Version    | Date       | Pull Request                                             | Subject                                                                                 |
 |:-----------|:-----------|:---------------------------------------------------------|:----------------------------------------------------------------------------------------|
+| 4.6.16-rc.1 | 2025-12-10 | [69778](https://github.com/airbytehq/airbyte/pull/69778) | Add HTTPAPIBudget and concurrency_level for improved sync performance |
 | 4.6.15 | 2025-12-02 | [70296](https://github.com/airbytehq/airbyte/pull/70296) | Bump memory for discover to 3GB and check to 1.5GB |
 | 4.6.14 | 2025-11-25 | [69916](https://github.com/airbytehq/airbyte/pull/69916) | Update dependencies |
 | 4.6.13 | 2025-10-29 | [69029](https://github.com/airbytehq/airbyte/pull/69029) | Update dependencies |
