@@ -283,13 +283,17 @@ class TestListsDetailedStream(TestCase):
         Test client-side incremental sync with a prior state from previous sync.
 
         For client-side incremental streams (is_client_side_incremental: true), the connector
-        skips fetching details for parent records that are older than the state cursor.
+        skips fetching details for parent records that are older than the effective cursor.
+        The effective cursor is max(start_date, state), so we use an early start_date to ensure
+        the state cursor is used for filtering.
 
         Given: A previous sync state with an updated cursor value
         When: Running an incremental sync
         Then: The connector should skip old records and only fetch details for new/updated records
         """
-        config = ConfigBuilder().with_api_key(_API_KEY).with_start_date(datetime(2024, 5, 31, tzinfo=timezone.utc)).build()
+        # Use early start_date so state cursor (2024-03-01) becomes the effective cursor
+        # Effective cursor = max(start_date, state) = max(2024-01-01, 2024-03-01) = 2024-03-01
+        config = ConfigBuilder().with_api_key(_API_KEY).with_start_date(datetime(2024, 1, 1, tzinfo=timezone.utc)).build()
         state = StateBuilder().with_stream_state(_STREAM_NAME, {"updated": "2024-03-01T00:00:00+00:00"}).build()
 
         # Parent stream: lists (returns both old and new list IDs)
