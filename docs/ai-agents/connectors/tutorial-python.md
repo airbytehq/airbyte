@@ -25,16 +25,26 @@ Before you begin this tutorial, ensure you have installed the following software
 
 - [Python](https://www.python.org/downloads/) version 3.13.7 or later
 - [uv](https://github.com/astral-sh/uv)
-- An account with GitHub, or a different third-party [supported by direct connectors](https://github.com/airbytehq/airbyte-ai-connectors/tree/main/connectors).
+- A GitHub personal access token
+- An API key for the LLM you want to use
 
 ## Create a new Python project
 
 For simplicity, in this tutorial you scaffold a basic Python project to work in. However, if you have an existing project you want to work with, feel free to use that instead.
 
-## Install the connector
+<!-- Some uv command to scaffold a new project -->
+
+## Install dependencies
+
+Install Pydantic AI and the GitHub connector.
 
 ```bash
 uv pip install airbyte-ai-github
+```
+
+<!-- uv command to install pydantic -->
+
+```bash
 ```
 
 ## Import a Pydantic agent and GitHub direct connector
@@ -46,22 +56,29 @@ from airbyte_ai_github import GithubConnector
 from airbyte_ai_github.models import GithubAuthConfig
 ```
 
+## Create your Pydantic AI agent
+
 ## Define your connector
+
+<!-- Use a personal access token, not OAuth in the example -->
 
 ```python title=""
 connector = GithubConnector(auth_config=GithubAuthConfig(access_token="...", refresh_token="...", client_id="...", client_secret="..."))
 ```
 
-## Add a .env file with your secret values for your connector
+## Add a .env file with your secret values
+
+<!-- Use a personal access token, not OAuth in the example -->
+<!-- Add LLM API key -->
+<!-- Anything else? -->
 
 ```text
 access_token=x
-refresh_token=x
-client_id=x
-cleint_secret=x
 ```
 
 ## Use the connector
+
+### Expose GitHub operations as Pydantic AI tools
 
 <!-- It looks something like this (generic example, not github-specific)
 
@@ -77,7 +94,7 @@ async def get_user(user_id: str):
 
 ### GitHub list open issues
 
-<!-- 
+<!-- we use the connector's operations
 Options:
 issues__list() - Returns a list of issues for the specified repository using GraphQL
 issues__get() - Gets information about a specific issue using GraphQL
@@ -88,30 +105,24 @@ issues__search() - Search for issues using GitHub's search syntax
 ### Github list unmerged PRs
 
 <!-- 
-
+we use the connector's operations
 pull_requests__list() - Returns a list of pull requests for the specified repository using GraphQL
 pull_requests__get() - Gets information about a specific pull request using GraphQL
 pull_requests__search() - Search for pull requests using GitHub's search syntax
 
  -->
 
-### Post a message to a Slack channel
-
-<!-- 
-
-Maybe an alert to let a team know that x number of issues can be resolved
-
--->
-
 ## Run your project
+
+<!-- Define how to invoke the agent and what to expect -->
 
 ### Identify open issues that are likely to be resolved by pending PRs based on the issue and PR descriptions
 
 <!-- 
 
- -->
+Have a conversation with the LLM
 
-### Tell it to post a message to Slack
+-->
 
 ## Summary
 
