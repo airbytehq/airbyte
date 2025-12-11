@@ -324,10 +324,11 @@ class TestFlowsStream(TestCase):
         When: Running an incremental sync
         Then: The connector should use the state cursor and return only new/updated records
         """
-        # Using early start_date (before test data) so state cursor is used for filtering
-        config = ConfigBuilder().with_api_key(_API_KEY).with_start_date(datetime(2024, 1, 1, tzinfo=timezone.utc)).build()
-        # State date within 60 days of _NOW (2024-06-01) to ensure only one stream slice is created
-        # (flows stream uses step: P30D windowing)
+        # Use start_date close to state cursor to minimize time slices (flows uses step: P30D)
+        # With start_date=2024-05-01 and _NOW=2024-06-01, we get ~1 month = 1 time slice
+        # Combined with 2 partitions (archived=true/false), this creates 2 requests total
+        config = ConfigBuilder().with_api_key(_API_KEY).with_start_date(datetime(2024, 5, 1, tzinfo=timezone.utc)).build()
+        # State date within the time window
         state = StateBuilder().with_stream_state(_STREAM_NAME, {"updated": "2024-05-31T00:00:00+0000"}).build()
 
         # Use with_any_query_params() because the exact filter string depends on state cursor

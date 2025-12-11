@@ -69,9 +69,7 @@ class TestListsDetailedStream(TestCase):
 
         # Substream: lists_detailed for list_001 (calls /api/lists/{list_id} with additional-fields[list]=profile_count)
         http_mocker.get(
-            KlaviyoRequestBuilder.lists_detailed_endpoint(_API_KEY, "list_001")
-            .with_additional_fields_list("profile_count")
-            .build(),
+            KlaviyoRequestBuilder.lists_detailed_endpoint(_API_KEY, "list_001").with_additional_fields_list("profile_count").build(),
             HttpResponse(
                 body=json.dumps(
                     {
@@ -95,9 +93,7 @@ class TestListsDetailedStream(TestCase):
 
         # Substream: lists_detailed for list_002
         http_mocker.get(
-            KlaviyoRequestBuilder.lists_detailed_endpoint(_API_KEY, "list_002")
-            .with_additional_fields_list("profile_count")
-            .build(),
+            KlaviyoRequestBuilder.lists_detailed_endpoint(_API_KEY, "list_002").with_additional_fields_list("profile_count").build(),
             HttpResponse(
                 body=json.dumps(
                     {
@@ -167,9 +163,7 @@ class TestListsDetailedStream(TestCase):
 
         # Substream: lists_detailed for list_001
         http_mocker.get(
-            KlaviyoRequestBuilder.lists_detailed_endpoint(_API_KEY, "list_001")
-            .with_additional_fields_list("profile_count")
-            .build(),
+            KlaviyoRequestBuilder.lists_detailed_endpoint(_API_KEY, "list_001").with_additional_fields_list("profile_count").build(),
             HttpResponse(
                 body=json.dumps(
                     {
@@ -193,9 +187,7 @@ class TestListsDetailedStream(TestCase):
 
         # Substream: lists_detailed for list_002
         http_mocker.get(
-            KlaviyoRequestBuilder.lists_detailed_endpoint(_API_KEY, "list_002")
-            .with_additional_fields_list("profile_count")
-            .build(),
+            KlaviyoRequestBuilder.lists_detailed_endpoint(_API_KEY, "list_002").with_additional_fields_list("profile_count").build(),
             HttpResponse(
                 body=json.dumps(
                     {
@@ -242,7 +234,9 @@ class TestListsDetailedStream(TestCase):
             HttpResponse(
                 body=json.dumps(
                     {
-                        "data": [{"type": "list", "id": "list_001", "attributes": {"name": "Test List", "updated": "2024-05-31T12:30:00+00:00"}}],
+                        "data": [
+                            {"type": "list", "id": "list_001", "attributes": {"name": "Test List", "updated": "2024-05-31T12:30:00+00:00"}}
+                        ],
                         "links": {"self": "https://a.klaviyo.com/api/lists", "next": None},
                     }
                 ),
@@ -252,9 +246,7 @@ class TestListsDetailedStream(TestCase):
 
         # Substream: lists_detailed for list_001
         http_mocker.get(
-            KlaviyoRequestBuilder.lists_detailed_endpoint(_API_KEY, "list_001")
-            .with_additional_fields_list("profile_count")
-            .build(),
+            KlaviyoRequestBuilder.lists_detailed_endpoint(_API_KEY, "list_001").with_additional_fields_list("profile_count").build(),
             HttpResponse(
                 body=json.dumps(
                     {
@@ -318,10 +310,9 @@ class TestListsDetailedStream(TestCase):
         )
 
         # Substream: lists_detailed for list_old (will be filtered out by client-side incremental)
+        # Use with_any_query_params() because the exact query params may vary
         http_mocker.get(
-            KlaviyoRequestBuilder.lists_detailed_endpoint(_API_KEY, "list_old")
-            .with_additional_fields_list("profile_count")
-            .build(),
+            KlaviyoRequestBuilder.lists_detailed_endpoint(_API_KEY, "list_old").with_any_query_params().build(),
             HttpResponse(
                 body=json.dumps(
                     {
@@ -344,10 +335,9 @@ class TestListsDetailedStream(TestCase):
         )
 
         # Substream: lists_detailed for list_new (will pass client-side incremental filter)
+        # Use with_any_query_params() because the exact query params may vary
         http_mocker.get(
-            KlaviyoRequestBuilder.lists_detailed_endpoint(_API_KEY, "list_new")
-            .with_additional_fields_list("profile_count")
-            .build(),
+            KlaviyoRequestBuilder.lists_detailed_endpoint(_API_KEY, "list_new").with_any_query_params().build(),
             HttpResponse(
                 body=json.dumps(
                     {
@@ -395,7 +385,13 @@ class TestListsDetailedStream(TestCase):
             HttpResponse(
                 body=json.dumps(
                     {
-                        "data": [{"type": "list", "id": "list_transform_test", "attributes": {"name": "Transform Test", "updated": "2024-05-31T14:45:00+00:00"}}],
+                        "data": [
+                            {
+                                "type": "list",
+                                "id": "list_transform_test",
+                                "attributes": {"name": "Transform Test", "updated": "2024-05-31T14:45:00+00:00"},
+                            }
+                        ],
                         "links": {"self": "https://a.klaviyo.com/api/lists", "next": None},
                     }
                 ),
@@ -457,7 +453,13 @@ class TestListsDetailedStream(TestCase):
             HttpResponse(
                 body=json.dumps(
                     {
-                        "data": [{"type": "list", "id": "list_with_count", "attributes": {"name": "List with Profile Count", "updated": "2024-05-31T12:30:00+00:00"}}],
+                        "data": [
+                            {
+                                "type": "list",
+                                "id": "list_with_count",
+                                "attributes": {"name": "List with Profile Count", "updated": "2024-05-31T12:30:00+00:00"},
+                            }
+                        ],
                         "links": {"self": "https://a.klaviyo.com/api/lists", "next": None},
                     }
                 ),
@@ -467,9 +469,7 @@ class TestListsDetailedStream(TestCase):
 
         # Substream: lists_detailed for list_with_count (includes profile_count via additional-fields)
         http_mocker.get(
-            KlaviyoRequestBuilder.lists_detailed_endpoint(_API_KEY, "list_with_count")
-            .with_additional_fields_list("profile_count")
-            .build(),
+            KlaviyoRequestBuilder.lists_detailed_endpoint(_API_KEY, "list_with_count").with_additional_fields_list("profile_count").build(),
             HttpResponse(
                 body=json.dumps(
                     {
@@ -522,7 +522,13 @@ class TestListsDetailedStream(TestCase):
                 HttpResponse(
                     body=json.dumps(
                         {
-                            "data": [{"type": "list", "id": "list_after_retry", "attributes": {"name": "After Retry", "updated": "2024-05-31T10:00:00+00:00"}}],
+                            "data": [
+                                {
+                                    "type": "list",
+                                    "id": "list_after_retry",
+                                    "attributes": {"name": "After Retry", "updated": "2024-05-31T10:00:00+00:00"},
+                                }
+                            ],
                             "links": {"self": "https://a.klaviyo.com/api/lists", "next": None},
                         }
                     ),
