@@ -132,7 +132,7 @@ class TestCampaignsStatsDaily(TestCase):
 
         output = _read(config_builder=config(), stream_name="campaigns_stats_daily")
 
-        assert len(output.records) == 5  # 5 weekly time slices (Jan 1-31 with step: P1W)
+        assert len(output.records) == 1  # Daily: step P1M = 1 monthly slice
         record = output.records[0].record.data
         assert record.get("id") == CAMPAIGN_ID, f"Expected id={CAMPAIGN_ID}, got {record.get('id')}"
 
@@ -148,7 +148,7 @@ class TestCampaignsStatsLifetime(TestCase):
 
         output = _read(config_builder=config(), stream_name="campaigns_stats_lifetime")
 
-        assert len(output.records) == 5  # 5 weekly time slices (Jan 1-31 with step: P1W)
+        assert len(output.records) == 1  # Lifetime: no step
         record = output.records[0].record.data
         assert record.get("id") == CAMPAIGN_ID, f"Expected id={CAMPAIGN_ID}, got {record.get('id')}"
 
