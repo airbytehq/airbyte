@@ -129,7 +129,7 @@
     "cssnano-preset-advanced": "6.0.2",
     "dayjs": "^1.11.11",
     "del": "6.1.1",
-    "docusaurus-plugin-openapi-docs": "^4.5.1",
+    "docusaurus-plugin-openapi-docs": "4.5.1",
     "docusaurus-theme-openapi-docs": "^4.5.1",
     "dotenv": "^16.4.5",
     "html-loader": "^4.2.0",
@@ -184,5 +184,10 @@
     "@types/node": "^24.10.2",
     "prettier": "3.5.3"
   },
-  "packageManager": "pnpm@9.4.0+sha1.9217c800d4ab947a7aee520242a7b70d64fc7638"
+  "packageManager": "pnpm@9.4.0+sha1.9217c800d4ab947a7aee520242a7b70d64fc7638",
+  "pnpm": {
+    "patchedDependencies": {
+      "docusaurus-plugin-openapi-docs@4.5.1": "patches/docusaurus-plugin-openapi-docs@4.5.1.patch"
+    }
+  }
 }
