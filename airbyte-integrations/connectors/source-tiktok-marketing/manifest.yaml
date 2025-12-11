@@ -5064,6 +5064,11 @@ definitions:
           type:
             - "null"
             - string
+        dma_id:
+          description: DMA (Designated Market Area) identifier of the target audience
+          type:
+            - "null"
+            - string
         metrics:
           description:
             Defines the metrics or quantitative measurements of the audience
