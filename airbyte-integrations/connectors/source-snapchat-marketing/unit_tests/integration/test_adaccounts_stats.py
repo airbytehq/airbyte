@@ -83,7 +83,7 @@ class TestAdaccountsStatsHourly(TestCase):
         output = _read(config_builder=config(), stream_name="adaccounts_stats_hourly")
 
         # Enhanced assertions
-        assert len(output.records) == 1
+        assert len(output.records) == 5  # 5 weekly time slices (Jan 1-31 with step: P1W)
         record = output.records[0].record.data
         assert record.get("id") == AD_ACCOUNT_ID, f"Expected id={AD_ACCOUNT_ID}, got {record.get('id')}"
 
@@ -101,7 +101,7 @@ class TestAdaccountsStatsHourly(TestCase):
         )
 
         output = _read(config_builder=config(), stream_name="adaccounts_stats_hourly")
-        assert len(output.records) == 1
+        assert len(output.records) == 5  # 5 weekly time slices
 
         # Verify custom error message from manifest is logged
         log_messages = [log.log.message for log in output.logs]
@@ -122,7 +122,7 @@ class TestAdaccountsStatsDaily(TestCase):
 
         output = _read(config_builder=config(), stream_name="adaccounts_stats_daily")
 
-        assert len(output.records) == 1
+        assert len(output.records) == 5  # 5 weekly time slices (Jan 1-31 with step: P1W)
         record = output.records[0].record.data
         assert record.get("id") == AD_ACCOUNT_ID, f"Expected id={AD_ACCOUNT_ID}, got {record.get('id')}"
 
@@ -138,7 +138,7 @@ class TestAdaccountsStatsLifetime(TestCase):
 
         output = _read(config_builder=config(), stream_name="adaccounts_stats_lifetime")
 
-        assert len(output.records) == 1
+        assert len(output.records) == 5  # 5 weekly time slices (Jan 1-31 with step: P1W)
         record = output.records[0].record.data
         assert record.get("id") == AD_ACCOUNT_ID, f"Expected id={AD_ACCOUNT_ID}, got {record.get('id')}"
 
@@ -162,7 +162,7 @@ class TestAdaccountsStatsTransformations(TestCase):
         )
 
         output = _read(config_builder=config(), stream_name="adaccounts_stats_hourly")
-        assert len(output.records) == 1
+        assert len(output.records) == 5  # 5 weekly time slices
 
         record = output.records[0].record.data
         # Verify AddFields transformations
@@ -201,7 +201,7 @@ class TestAdaccountsStatsSubstreamMultipleParents(TestCase):
         output = _read(config_builder=config(), stream_name="adaccounts_stats_hourly")
 
         # Verify records from both parent ad accounts are returned
-        assert len(output.records) == 2
+        assert len(output.records) == 10  # 2 parents × 5 weekly time slices = 10 records
         record_ids = [r.record.data.get("id") for r in output.records]
         assert ad_account_1 in record_ids
         assert ad_account_2 in record_ids
@@ -220,7 +220,7 @@ class TestAdaccountsStatsIncremental(TestCase):
         output = _read(config_builder=config(), stream_name="adaccounts_stats_hourly", sync_mode=SyncMode.incremental)
 
         assert len(output.state_messages) > 0, "Expected state messages to be emitted"
-        assert len(output.records) == 1
+        assert len(output.records) == 5  # 5 weekly time slices
 
         # Get latest record's cursor
         latest_record = output.records[-1].record.data
@@ -254,7 +254,7 @@ class TestAdaccountsStatsIncremental(TestCase):
         output = _read(config_builder=config(), stream_name="adaccounts_stats_hourly", sync_mode=SyncMode.incremental, state=state)
 
         assert len(output.state_messages) > 0, "Expected state messages to be emitted"
-        assert len(output.records) == 1
+        assert len(output.records) == 3  # 3 remaining weekly time slices after state date (Jan 15-31)
 
         # Get latest record's cursor
         latest_record = output.records[-1].record.data
