@@ -110,6 +110,7 @@ The TikTok Marketing source connector supports the following [sync modes](https:
 | AdGroupAudienceReportsByPlatformDaily     | Prod,Sandbox | adgroup_id, stat_time_day, platform        | Yes         |
 | AdsAudienceReportsDaily                   | Prod,Sandbox | ad_id, stat_time_day, gender, age          | Yes         |
 | AdsAudienceReportsByCountryDaily          | Prod,Sandbox | ad_id, stat_time_day, country_code         | Yes         |
+| AdsAudienceReportsByDmaDaily              | Prod,Sandbox | ad_id, stat_time_day, dma_id               | Yes         |
 | AdsAudienceReportsByPlatformDaily         | Prod,Sandbox | ad_id, stat_time_day, platform             | Yes         |
 | AdsAudienceReportsByProvinceDaily         | Prod,Sandbox | ad_id, stat_time_day, province_id          | Yes         |
 | CampaignsAudienceReportsDaily             | Prod,Sandbox | campaign_id, stat_time_day, gender, age    | Yes         |
@@ -147,7 +148,8 @@ The connector is restricted by [requests limitation](https://business-api.tiktok
 
 | Version    | Date       | Pull Request                                              | Subject                                                                                                                                                                |
 |:-----------|:-----------|:----------------------------------------------------------|:-----------------------------------------------------------------------------------------------------------------------------------------------------------------------|
-| 4.8.11-rc.1      | 2025-10-06 | [65623](https://github.com/airbytehq/airbyte/pull/65623) | Fix missing deleted data on some streams |=======>>>>>>> master
+| 4.9.0      | 2025-01-XX | [TBD](https://github.com/airbytehq/airbyte/pull/TBD) | Add `ads_audience_reports_by_dma_daily` stream                                                                                                                         |
+| 4.8.11-rc.1      | 2025-10-06 | [65623](https://github.com/airbytehq/airbyte/pull/65623) | Fix missing deleted data on some streams                                                                                                                               |
 | 4.8.10     | 2025-11-04 | [69170](https://github.com/airbytehq/airbyte/pull/69170) | Revert api budget and concurrency back to a safe number                                                                                                                |
 | 4.8.9      | 2025-10-30 | [69101](https://github.com/airbytehq/airbyte/pull/69101) | Revert aggressive rate limiting                                                                                                                                        |
 | 4.8.8      | 2025-10-29 | [69082](https://github.com/airbytehq/airbyte/pull/69082) | Aggressively fail on rate limiting issues                                                                                                                              |

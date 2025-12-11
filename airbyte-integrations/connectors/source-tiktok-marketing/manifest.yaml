@@ -1223,6 +1223,58 @@ definitions:
       - type: CustomTransformation
         class_name: "source_declarative_manifest.components.TransformEmptyMetrics"
 
+  ads_audience_reports_by_dma_daily_stream:
+    type: DeclarativeStream
+    name: ads_audience_reports_by_dma_daily
+    $parameters:
+      path: "report/integrated/get/"
+      data_level: "AUCTION_AD"
+      report_metrics:
+        [
+          "campaign_name",
+          "campaign_id",
+          "adgroup_name",
+          "placement_type",
+          "tt_app_id",
+          "tt_app_name",
+          "mobile_app_id",
+          "promotion_type",
+          "dpa_target_audience_type",
+          "conversion",
+          "cost_per_conversion",
+          "conversion_rate",
+          "real_time_conversion",
+          "real_time_cost_per_conversion",
+          "real_time_conversion_rate",
+          "result",
+          "cost_per_result",
+          "result_rate",
+          "real_time_result",
+          "real_time_cost_per_result",
+          "real_time_result_rate",
+          "adgroup_id",
+          "ad_name",
+          "ad_text",
+        ]
+      dimensions: ["ad_id", "stat_time_day", "dma_id"]
+    primary_key:
+      - ad_id
+      - stat_time_day
+      - dma_id
+    $ref: "#/definitions/audience_base_report_daily"
+    transformations:
+      - type: AddFields
+        fields:
+          - path: ["stat_time_day"]
+            value: "{{ record.dimensions.stat_time_day }}"
+          - path: ["ad_id"]
+            value: "{{ record.dimensions.ad_id }}"
+          - path: ["dma_id"]
+            value_type: "string"
+            value: "{{ record.dimensions.dma_id }}"
+      - type: CustomTransformation
+        class_name: "source_declarative_manifest.components.TransformEmptyMetrics"
+
   advertisers_audience_reports_by_country_daily_stream:
     type: DeclarativeStream
     name: advertisers_audience_reports_by_country_daily
@@ -5708,6 +5760,7 @@ streams:
   - $ref: "#/definitions/ad_groups_reports_lifetime_stream"
   - $ref: "#/definitions/ads_stream"
   - $ref: "#/definitions/ads_audience_reports_by_country_daily_stream"
+  - $ref: "#/definitions/ads_audience_reports_by_dma_daily_stream"
   - $ref: "#/definitions/ads_audience_reports_by_platform_daily_stream"
   - $ref: "#/definitions/ads_audience_reports_by_province_daily_stream"
   - $ref: "#/definitions/ads_audience_reports_daily_stream"
