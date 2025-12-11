@@ -74,16 +74,22 @@ The `.env` file and `uv.lock` file are created in later steps.
 
 ## Install dependencies
 
-Install Pydantic AI and the GitHub connector.
+Install the GitHub connector and Pydantic AI. This tutorial uses OpenAI as the LLM provider, but Pydantic AI supports many other providers.
 
 ```bash
-uv pip install airbyte-ai-github
+uv add airbyte-ai-github pydantic-ai
 ```
 
-<!-- uv command to install pydantic -->
+This command installs:
 
-```bash
-```
+- `airbyte-ai-github`: The Airbyte direct connector for GitHub, which provides type-safe access to GitHub's API.
+- `pydantic-ai`: The AI agent framework, which includes support for multiple LLM providers including OpenAI, Anthropic, and Google.
+
+The GitHub connector also includes `python-dotenv`, which you'll use to load environment variables from your `.env` file.
+
+:::note
+If you want a smaller installation with only OpenAI support, you can use `pydantic-ai-slim[openai]` instead of `pydantic-ai`. See the [Pydantic AI installation docs](https://ai.pydantic.dev/install/) for more options.
+:::
 
 ## Import a Pydantic agent and GitHub direct connector
 
