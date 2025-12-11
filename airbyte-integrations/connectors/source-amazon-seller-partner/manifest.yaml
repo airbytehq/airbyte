@@ -854,7 +854,6 @@ definitions:
       name: ListFinancialEventGroups
       primary_key:
         - FinancialEventGroupId
-      ignore_stream_slicer_parameters_on_paginated_requests: false
       incremental_sync:
         type: DatetimeBasedCursor
         cursor_field: FinancialEventGroupStart
@@ -881,6 +880,7 @@ definitions:
         cursor_granularity: "PT1S"
       retriever:
         type: SimpleRetriever
+        ignore_stream_slicer_parameters_on_paginated_requests: true
         requester:
           $ref: "#/definitions/base_requester"
           path: "finances/v0/financialEventGroups"
@@ -929,7 +929,6 @@ definitions:
       type: DeclarativeStream
       name: ListFinancialEvents
       primary_key: []
-      ignore_stream_slicer_parameters_on_paginated_requests: false
       incremental_sync:
         type: DatetimeBasedCursor
         cursor_field: PostedBefore
@@ -961,6 +960,7 @@ definitions:
               value: "{{ stream_slice['end_time'] }}"
       retriever:
         type: SimpleRetriever
+        ignore_stream_slicer_parameters_on_paginated_requests: true
         requester:
           $ref: "#/definitions/base_requester"
           path: "finances/v0/financialEvents"
