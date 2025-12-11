@@ -205,7 +205,41 @@ With these two tools, your agent can answer questions about issues, pull request
 
 ## Run your project
 
-<!-- Define how to invoke the agent and what to expect -->
+Now that your agent is configured with tools, update `main.py` to run it:
+
+```python title="main.py"
+import asyncio
+
+from agent import agent
+
+
+async def main():
+    print("GitHub Agent Ready! Ask questions about GitHub repositories.")
+    print("Type 'quit' to exit.\n")
+
+    while True:
+        prompt = input("You: ")
+        if prompt.lower() in ('quit', 'exit', 'q'):
+            break
+        result = await agent.run(prompt)
+        print(f"\nAgent: {result.data}\n")
+
+
+if __name__ == "__main__":
+    asyncio.run(main())
+```
+
+Run your project with:
+
+```bash
+uv run main.py
+```
+
+The agent waits for your input, then decides which tools to call based on your question, fetches the data from GitHub, and returns a natural language response. Try prompts like:
+
+- "List the open issues in airbytehq/airbyte"
+- "What pull requests are open in airbytehq/airbyte?"
+- "Are there any open issues that might be fixed by a pending PR?"
 
 ### Troubleshooting
 
@@ -214,14 +248,6 @@ If your agent fails to retrieve GitHub data, check the following:
 - **HTTP 401 errors**: Your `GITHUB_ACCESS_TOKEN` is invalid or expired. Generate a new token and update your `.env` file.
 - **HTTP 403 errors**: Your token doesn't have the required scopes. Ensure your token has `repo` scope for accessing repository data.
 - **OpenAI errors**: Verify your `OPENAI_API_KEY` is valid and has available credits.
-
-### Identify open issues that are likely to be resolved by pending PRs based on the issue and PR descriptions
-
-<!-- 
-
-Have a conversation with the LLM
-
--->
 
 ## Summary
 
