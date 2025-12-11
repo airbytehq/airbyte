@@ -2682,6 +2682,29 @@ streams:
   - $ref: "#/definitions/streams/billable_rates"
   - $ref: "#/definitions/streams/cost_rates"
 
+api_budget:
+  type: HTTPAPIBudget
+  policies:
+    # Reports API: 100 requests per 15 minutes (more restrictive, check first)
+    - type: MovingWindowCallRatePolicy
+      rates:
+        - limit: 100
+          interval: PT15M
+      matchers:
+        - method: GET
+          url_path_pattern: "^/reports/"
+    # General API: 100 requests per 15 seconds
+    - type: MovingWindowCallRatePolicy
+      rates:
+        - limit: 100
+          interval: PT15S
+      matchers: []
+
+concurrency_level:
+  type: ConcurrencyLevel
+  default_concurrency: 5
+  max_concurrency: 10
+
 spec:
   type: Spec
   connection_specification:
