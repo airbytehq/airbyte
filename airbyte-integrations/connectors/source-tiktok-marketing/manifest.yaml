@@ -5267,6 +5267,11 @@ definitions:
               type:
                 - "null"
                 - string
+            dma_id:
+              description: DMA (Designated Market Area) identifier within dimensions
+              type:
+                - "null"
+                - string
             campaign_id:
               description: Campaign identifier within dimensions
               type:
