@@ -283,16 +283,17 @@ class TestListsDetailedStream(TestCase):
         Test client-side incremental sync with a prior state from previous sync.
 
         For client-side incremental streams (is_client_side_incremental: true), the connector
-        fetches all records from the API but filters them client-side based on the state.
+        skips fetching details for parent records that are older than the state cursor.
 
         Given: A previous sync state with an updated cursor value
         When: Running an incremental sync
-        Then: The connector should filter records client-side and only return new/updated records
+        Then: The connector should skip old records and only fetch details for new/updated records
         """
         config = ConfigBuilder().with_api_key(_API_KEY).with_start_date(datetime(2024, 5, 31, tzinfo=timezone.utc)).build()
         state = StateBuilder().with_stream_state(_STREAM_NAME, {"updated": "2024-03-01T00:00:00+00:00"}).build()
 
         # Parent stream: lists (returns both old and new list IDs)
+        # The connector will check the updated timestamp and skip fetching details for old records
         http_mocker.get(
             KlaviyoRequestBuilder.lists_endpoint(_API_KEY).build(),
             HttpResponse(
@@ -309,32 +310,7 @@ class TestListsDetailedStream(TestCase):
             ),
         )
 
-        # Substream: lists_detailed for list_old (will be filtered out by client-side incremental)
-        # Use with_any_query_params() because the exact query params may vary
-        http_mocker.get(
-            KlaviyoRequestBuilder.lists_detailed_endpoint(_API_KEY, "list_old").with_any_query_params().build(),
-            HttpResponse(
-                body=json.dumps(
-                    {
-                        "data": {
-                            "type": "list",
-                            "id": "list_old",
-                            "attributes": {
-                                "name": "Old List",
-                                "created": "2024-01-01T10:00:00+00:00",
-                                "updated": "2024-02-15T10:00:00+00:00",
-                                "opt_in_process": "single_opt_in",
-                                "profile_count": 500,
-                            },
-                        },
-                        "links": {"self": "https://a.klaviyo.com/api/lists/list_old"},
-                    }
-                ),
-                status_code=200,
-            ),
-        )
-
-        # Substream: lists_detailed for list_new (will pass client-side incremental filter)
+        # Substream: lists_detailed for list_new only (connector skips list_old because it's older than state cursor)
         # Use with_any_query_params() because the exact query params may vary
         http_mocker.get(
             KlaviyoRequestBuilder.lists_detailed_endpoint(_API_KEY, "list_new").with_any_query_params().build(),
