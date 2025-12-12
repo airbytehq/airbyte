@@ -166,3 +166,4 @@ class TestDashboardsStream(TestCase):
         output = read(source, config=config, catalog=catalog, expecting_exception=False)
 
         assert len(output.records) == 0
+        assert not any(log.log.level == "ERROR" for log in output.logs)
