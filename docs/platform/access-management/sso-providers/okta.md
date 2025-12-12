@@ -68,7 +68,7 @@ Before you can enable SSO, you must prove to Airbyte that you or your organizati
 
 1. In Airbyte, click **Organization settings** > **SSO**.
 
-2. Click **Add domain**.
+2. Click **Add Domain**.
 
 3. Enter your domain name (`example.com`, `airbyte.com`, etc.) and click **Add Domain**. The domain is added to the Domain Verification list with a "Pending" status and Airbyte shows you the necessary DNS record.
 
@@ -88,7 +88,7 @@ Before you can enable SSO, you must prove to Airbyte that you or your organizati
 
 ### Part 3: Configure and test SSO in Airbyte
 
-1. In Airbyte, click **Organization settings** > **General**.
+1. In Airbyte, click **Organization settings** > **SSO**.
 
 2. Click **Set up SSO**, then input the following information.
 
@@ -120,7 +120,15 @@ To update SSO for your organization, [contact support](https://support.airbyte.c
 
 ### Domain verification statuses
 
-<!-- Pending, verified, expired, anything else -->
+Airbyte shows one of the following statuses for each domain you add:
+
+**Pending**: Airbyte created the DNS record details and is waiting to find the record in DNS. You see this status after you add a domain. DNS propagation can take time. If the status is still Pending after 24 hours, verify that the record name and value exactly match what Airbyte shows.
+
+**Verified**: Airbyte found a TXT record with the expected value. The domain is verified and can be used with SSO. Users with email addresses on this domain must sign in with SSO.
+
+**Failed**: Airbyte found a TXT record at the expected name, but the value doesn't match. This usually means the TXT record was created with a typo or wrong value. Update the TXT record to match the value shown in Airbyte, then click **Reset** to retry verification.
+
+**Expired**: Airbyte couldn't verify the domain within 14 days, so it marked the verification as expired. After you've fixed your DNS configuration, click **Reset** to move it back to Pending, or delete it and start over.
 
 ### Remove a domain from SSO
 
