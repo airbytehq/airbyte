@@ -22,7 +22,7 @@ AI connectors don't replace your existing source and destination connectors. The
 
 ### Connector structure
 
-Each connector is a standalone Python package in the [Airbyte AI Connectors repository](https://github.com/airbytehq/airbyte-ai-connectors).
+Each connector is a standalone Python package in the [Airbyte AI Connectors repository](https://github.com/airbytehq/airbyte-agent-connectors).
 
 ```text
 connectors/

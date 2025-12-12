@@ -243,5 +243,5 @@ In this tutorial, you learned how to:
 
 ## Next steps
 
-- Add more tools and AI connectors to your project. For GitHub, you can wrap additional operations (like search, comments, or commits) as tools. Explore other AI connectors in the [Airbyte AI connectors catalog](https://github.com/airbytehq/airbyte-ai-connectors) to give your agent access to more services.
+- Add more tools and AI connectors to your project. For GitHub, you can wrap additional operations (like search, comments, or commits) as tools. Explore other AI connectors in the [Airbyte AI connectors catalog](https://github.com/airbytehq/airbyte-agent-connectors) to give your agent access to more services.
 - Consider how you might like to expand your agent's capabilities. For example, you might want to trigger effects like sending a Slack message or an email based on the agent's findings. You aren't limited to the capabilities of Airbyte's AI connectors. You can use other libraries and integrations to build an increasingly robust agent ecosystem.
