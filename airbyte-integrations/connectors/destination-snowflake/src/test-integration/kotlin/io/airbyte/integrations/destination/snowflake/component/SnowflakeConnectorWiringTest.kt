@@ -17,6 +17,7 @@ import io.airbyte.protocol.models.v0.ConfiguredAirbyteCatalog
 import io.airbyte.protocol.models.v0.ConfiguredAirbyteStream
 import io.airbyte.protocol.models.v0.DestinationSyncMode
 import io.airbyte.protocol.models.v0.SyncMode
+import io.micronaut.context.annotation.Property
 import io.micronaut.context.annotation.Primary
 import io.micronaut.context.annotation.Requires
 import io.micronaut.test.extensions.junit5.annotation.MicronautTest
@@ -34,6 +35,8 @@ import org.junit.jupiter.api.Test
  * 5. can write one record - Full write path validation (most important)
  */
 @MicronautTest(environments = ["component"])
+@Property(name = "airbyte.connector.operation", value = "write")
+@Property(name = "micronaut.caches.table-columns.maximum-size", value = "100")
 class SnowflakeConnectorWiringTest(
     override val writer: SnowflakeWriter,
     override val client: SnowflakeAirbyteClient,
