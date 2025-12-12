@@ -13,6 +13,7 @@ import io.airbyte.cdk.load.component.TableSchemaEvolutionFixtures
 import io.airbyte.cdk.load.component.TableSchemaEvolutionSuite
 import io.airbyte.cdk.load.component.TestTableOperationsClient
 import io.airbyte.cdk.load.schema.TableSchemaFactory
+import io.airbyte.integrations.destination.clickhouse.client.ClickhouseSqlTypes
 import io.micronaut.test.extensions.junit5.annotation.MicronautTest
 import org.junit.jupiter.api.Test
 
@@ -26,21 +27,21 @@ class ClickhouseTableSchemaEvolutionTest(
     private val allTypesTableSchema =
         TableSchema(
             mapOf(
-                "string" to ColumnType("String", true),
-                "boolean" to ColumnType("Bool", true),
-                "integer" to ColumnType("Int64", true),
-                "number" to ColumnType("Decimal(38, 9)", true),
-                "date" to ColumnType("Date32", true),
-                "timestamp_tz" to ColumnType("DateTime64(3)", true),
-                "timestamp_ntz" to ColumnType("DateTime64(3)", true),
-                "time_tz" to ColumnType("String", true),
-                "time_ntz" to ColumnType("String", true),
+                "string" to ColumnType(ClickhouseSqlTypes.STRING, true),
+                "boolean" to ColumnType(ClickhouseSqlTypes.BOOL, true),
+                "integer" to ColumnType(ClickhouseSqlTypes.INT64, true),
+                "number" to ColumnType(ClickhouseSqlTypes.DECIMAL_WITH_PRECISION_AND_SCALE, true),
+                "date" to ColumnType(ClickhouseSqlTypes.DATE32, true),
+                "timestamp_tz" to ColumnType(ClickhouseSqlTypes.DATETIME_WITH_PRECISION, true),
+                "timestamp_ntz" to ColumnType(ClickhouseSqlTypes.DATETIME_WITH_PRECISION, true),
+                "time_tz" to ColumnType(ClickhouseSqlTypes.STRING, true),
+                "time_ntz" to ColumnType(ClickhouseSqlTypes.STRING, true),
                 // yes, these three are different
-                "array" to ColumnType("String", true),
-                "object" to ColumnType("JSON", true),
-                "union" to ColumnType("String", true),
-                "legacy_union" to ColumnType("String", true),
-                "unknown" to ColumnType("String", true),
+                "array" to ColumnType(ClickhouseSqlTypes.STRING, true),
+                "object" to ColumnType(ClickhouseSqlTypes.JSON, true),
+                "union" to ColumnType(ClickhouseSqlTypes.STRING, true),
+                "legacy_union" to ColumnType(ClickhouseSqlTypes.STRING, true),
+                "unknown" to ColumnType(ClickhouseSqlTypes.STRING, true),
             )
         )
 
