@@ -8,7 +8,7 @@ The platform is a solution for all types of audiences, from AI engineers who are
 
 - **Agent connectors**: AI-optimized, type-safe connectors, usable with Airbyte's Connector MCP server or your own Python agents. [View the GitHub repo](https://github.com/airbytehq/airbyte-agent-connectors).
 
-- **Airbyte Embedded**: Add hundreds of integrations into your product instantly. Your end-users can authenticate into their data sources and begin syncing data to your product. You no longer need to spend engineering cycles on data movement. Focus on what makes your product great, rather than maintaining ELT pipelines.
+- **Airbyte Embedded**: Add hundreds of integrations into your product instantly. Your end-users can authenticate into their data sources and begin syncing data to your product. You no longer need to spend engineering cycles on data movement. Focus on what makes your product great, rather than maintaining data integrations.
 
 :::info New and growing
 The Agent engine is new and growing. Airbyte is actively seeking feedback, design partners, and community involvement. Expect this library of tools to grow and change rapidly.
@@ -28,7 +28,7 @@ The Agent engine is new and growing. Airbyte is actively seeking feedback, desig
 
 ### The use case for agentic data
 
-The Agent engine is an open source solution built on the Model Context Protocol (MCP). It enables agents to fetch, search, write, and reason with live business data.
+The Agent engine enables agents to fetch, search, and reason with live business data.
 
 Even if you're not a data expert, you still need to interpret vendor data. That means cleaning, normalizing, stitching fields together, and transforming your and your customers' data into entities your agents can actually use.
 

@@ -6,7 +6,7 @@ sidebar_label: "Python SDK tutorial"
 
 In this tutorial, you'll create a new Python project with `uv`, add a Pydantic AI agent, equip it to use one of Airbyte's agent connectors, and use natural language to explore your data. This tutorial uses GitHub, but if you don't have a GitHub account, you can use one of Airbyte's other agent connectors and perform different operations.
 
-Using the Python SDK is more time-consuming than the Connector MCP server, but affords you the most control over how you use agent connectors.
+Using the Python SDK is more time-consuming than the Connector MCP server, but affords you the most control over the context you send to your agent.
 
 ## Overview
 

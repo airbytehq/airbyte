@@ -33,13 +33,13 @@ Before you begin this tutorial, ensure you have installed the following software
 Clone the Connector MCP repository.
 
 ```bash
-git clone https://github.com/airbytehq/connector-mcp/
+git clone https://github.com/airbytehq/airbyte-agent-connectors
 ```
 
 Once git finishes cloning, change directory into your repo.
 
 ```bash
-cd connector-mcp
+cd airbyte-agent-connectors/airbyte-agent-mcp
 ```
 
 ## Part 2: Configure the connector you want to use
@@ -50,7 +50,7 @@ The `configured_connectors.yaml` file defines which agent connectors you are mak
 
 1. Create a file called `configured_connectors.yaml`. It's easiest to add this file to the root, but if you want to add it somewhere else, you can instruct the MCP where to find it later.
 
-2. Add your connector definition to this file. The `connector_name` field specifies which connector to load from the [Airbyte agent Connectors registry](https://github.com/airbytehq/airbyte-agent-connectors). The keys under `secrets` are logical names that must match environment variables in your `.env` file.
+2. Add your connector definition to this file. The `connector_name` field specifies which connector to load from the [Airbyte AI Connectors registry](https://connectors.airbyte.ai/registry.json). The keys under `secrets` are logical names that must match environment variables in your `.env` file.
 
     ```yaml title="configured_connectors.yaml"
     connectors:

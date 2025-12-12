@@ -4,9 +4,9 @@ products: embedded
 
 ---
 
-# Sonar API
+# Agent Engine API
 
-The Sonar API allows you to build a fully integrated Airbyte Embedded Experience.
+The Agent Engine API allows you to build a fully integrated Airbyte Embedded Experience.
 
 ## Implementation Steps
 
@@ -27,4 +27,4 @@ For each user who wants to connect their data:
 
 This approach separates one-time organizational setup from per-user operations, making your integration more scalable.
 
-[Full Sonar API reference](/ai-agents/embedded/api-reference/sonar).
+[Full Agent Engine API reference](/ai-agents/embedded/api-reference/sonar).

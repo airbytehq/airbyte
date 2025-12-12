@@ -39,7 +39,7 @@ connectors/
 
 Inside each connector folder, you can find the following.
 
-- The generated Python client
+- The Python client
 - Connector-specific documentation with supported operations and authentication requirements
 - Typed methods generated from Airbyte's connector definitions
 - Validation + error handling
