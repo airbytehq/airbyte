@@ -344,7 +344,7 @@ open class PostgresSourceJdbcPartitionFactory(
             }
         }
 
-        // pg_relation_size retruns the size of the table on disk, only the data in the main table file
+        // pg_relation_size returns the size of the table on disk, only the data in the main table file
         // not including indexes or toast data
         val relationSize =
             relationSize(unsplitPartition.stream)
