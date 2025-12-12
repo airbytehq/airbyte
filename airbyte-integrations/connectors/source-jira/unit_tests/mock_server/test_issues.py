@@ -21,7 +21,7 @@ from airbyte_cdk.test.mock_http.response_builder import (
     create_response_builder,
 )
 from airbyte_cdk.test.state_builder import StateBuilder
-from integration.config import ConfigBuilder
+from mock_server.config import ConfigBuilder
 
 
 _STREAM_NAME = "issues"
