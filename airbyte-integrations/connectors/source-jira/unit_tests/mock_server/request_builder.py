@@ -280,8 +280,8 @@ class JiraRequestBuilder:
 
     @classmethod
     def users_groups_detailed_endpoint(cls, domain: str) -> "JiraRequestBuilder":
-        """Create a request builder for the /user/groups endpoint."""
-        return cls(domain, "user/groups", api_version="v3")
+        """Create a request builder for the /user endpoint."""
+        return cls(domain, "user", api_version="v3")
 
     @classmethod
     def workflows_endpoint(cls, domain: str) -> "JiraRequestBuilder":
