@@ -151,10 +151,7 @@ class JiraPaginatedResponseBuilder:
             HttpResponse for a single page with isLast=True
         """
         return (
-            cls(records_field)
-            .with_records(records)
-            .with_pagination(start_at=0, max_results=50, total=len(records), is_last=True)
-            .build()
+            cls(records_field).with_records(records).with_pagination(start_at=0, max_results=50, total=len(records), is_last=True).build()
         )
 
     @classmethod
