@@ -1,6 +1,6 @@
 ---
 sidebar_label: Okta
-products: oss-enterprise, cloud-teams
+products: oss-enterprise, cloud
 ---
 
 import Tabs from "@theme/Tabs";
@@ -62,9 +62,33 @@ For security purposes, when a user who owns [applications](/platform/enterprise-
 
 4. Click **Save**.
 
-### Part 2: Configure and test SSO in Airbyte
+### Part 2: Domain verification
 
-1. In Airbyte, click **Organization settings** > **General**.
+Before you can enable SSO, you must prove to Airbyte that you or your organization own the domain on which you want to enable SSO. You can enable as many domains as you need.
+
+1. In Airbyte, click **Organization settings** > **SSO**.
+
+2. Click **Add Domain**.
+
+3. Enter your domain name (`example.com`, `airbyte.com`, etc.) and click **Add Domain**. The domain is added to the Domain Verification list with a "Pending" status and Airbyte shows you the necessary DNS record.
+
+4. Add the DNS record to your domain. You might need help from your IT team to do this. Generally, you follow a process like this:
+
+    1. Sign into the website where you manage your domain.
+
+    2. Look for something like **DNS Records**, **Domain Management**, or **Name Server Management**. Click it to go to your domain's DNS settings.
+
+    3. Find TXT records.
+
+    4. Add a new TXT record using the record type, record name, and record value that Airbyte gave you.
+
+    5. Save the new TXT record.
+
+5. Wait for Airbyte to verify the domain. This process can take up to 24 hours, but typically it happens faster. If nothing has happened after 24 hours, verify that you entered the TXT record correctly.
+
+### Part 3: Configure and test SSO in Airbyte
+
+1. In Airbyte, click **Organization settings** > **SSO**.
 
 2. Click **Set up SSO**, then input the following information.
 
@@ -82,12 +106,7 @@ For security purposes, when a user who owns [applications](/platform/enterprise-
 
     - If the test wasn't successful, either Airbyte or Okta show you an error message, depending on what the problem is. Verify the values you entered and try again.
 
-4. Enter your **Email domain** (for example, `airbyte.io`) and click **Activate SSO**.
-
-    :::note Limitations and restrictions on domains
-    - If you use multiple email domains, only enter one domain here. After activation, [contact support](https://support.airbyte.com) to have them add additional domains for you.
-    - You can't claim an email domain if someone using that domain exists in another organization. For example, if your email domain is `example.com`, but someone with an `example.com` email uses Airbyte for another organization, you can't enable SSO for that domain. This also means SSO is unavailable for common public email domains like `gmail.com`.
-    :::
+4. Click **Activate**.
 
 Once you activate SSO, users with your email domain must sign in using SSO.
 
@@ -98,6 +117,26 @@ If you successfully set up SSO but your users can't log into Airbyte, verify tha
 ### Update SSO credentials
 
 To update SSO for your organization, [contact support](https://support.airbyte.com).
+
+### Domain verification statuses
+
+Airbyte shows one of the following statuses for each domain you add:
+
+**Pending**: Airbyte created the DNS record details and is waiting to find the record in DNS. You see this status after you add a domain. DNS propagation can take time. If the status is still Pending after 24 hours, verify that the record name and value exactly match what Airbyte shows.
+
+**Verified**: Airbyte found a TXT record with the expected value. The domain is verified and can be used with SSO. Users with email addresses on this domain must sign in with SSO.
+
+**Failed**: Airbyte found a TXT record at the expected name, but the value doesn't match. This usually means the TXT record was created with a typo or wrong value. Update the TXT record to match the value shown in Airbyte, then click **Reset** to retry verification.
+
+**Expired**: Airbyte couldn't verify the domain within 14 days, so it marked the verification as expired. After you've fixed your DNS configuration, click **Reset** to move it back to Pending, or delete it and start over.
+
+### Remove a domain from SSO
+
+If you no longer need a domain for SSO purposes, delete its verification.
+
+1. In Airbyte, click **Organization settings** > **SSO**.
+
+2. Next to the domain you want to stop using, click **Delete**.
 
 <!-- Organization admins can log in using your email and password (instead of SSO) to update SSO settings. If your client secret expires or you need to update your SSO configuration, follow these steps.
 
@@ -110,10 +149,6 @@ To update SSO for your organization, [contact support](https://support.airbyte.c
 4. Click **Test your connection** to verify the updated credentials work correctly.
 
 5. Click **Activate SSO**. -->
-
-#### Delete SSO configuration
-
-To remove SSO from your organization, contact Airbyte's [support team](https://support.airbyte.com).
 
 ## Self-Managed Enterprise with Okta OIDC
 
