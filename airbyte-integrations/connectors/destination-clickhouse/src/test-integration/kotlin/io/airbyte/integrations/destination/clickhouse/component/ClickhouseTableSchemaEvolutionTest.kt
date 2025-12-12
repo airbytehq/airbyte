@@ -22,7 +22,7 @@ class ClickhouseTableSchemaEvolutionTest(
     override val client: TableSchemaEvolutionClient,
     override val opsClient: TableOperationsClient,
     override val testClient: TestTableOperationsClient,
-    override val schemaFactory: TableSchemaFactory
+    override val schemaFactory: TableSchemaFactory,
 ) : TableSchemaEvolutionSuite {
     private val allTypesTableSchema =
         TableSchema(
