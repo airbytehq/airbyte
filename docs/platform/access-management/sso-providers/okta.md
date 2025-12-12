@@ -1,6 +1,6 @@
 ---
 sidebar_label: Okta
-products: oss-enterprise, cloud-teams
+products: oss-enterprise, cloud
 ---
 
 import Tabs from "@theme/Tabs";
