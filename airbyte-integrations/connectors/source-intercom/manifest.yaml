@@ -253,6 +253,10 @@ definitions:
             Intercom-Version: "2.11"
           error_handler:
             type: DefaultErrorHandler
+            max_retries: 5
+            backoff_strategies:
+              - type: ConstantBackoffStrategy
+                backoff_time_in_seconds: 60
             response_filters:
               - type: HttpResponseFilter
                 http_codes:
@@ -269,13 +273,12 @@ definitions:
                 failure_type: transient_error
                 error_message: "Ignoring 404 response, no company records found."
               - type: HttpResponseFilter
-                http_codes:
-                  - 400
-                action: FAIL
+                predicate: "{{ response and ('scroll_exists' in response|string or 'scroll already exists for this workspace' in response|string) }}"
+                action: RESET_PAGINATION
                 failure_type: transient_error
                 error_message: >-
                   Scroll already exists for this workspace. Please ensure you do not have multiple syncs running at the same time.
-                  Intercom API does not allow for you to run the Companies or Company Parts streams in parallel.
+                  Intercom API does not allow for you to run the Companies or Company Segments streams in parallel.
               - type: HttpResponseFilter
                 http_codes:
                   - 500
