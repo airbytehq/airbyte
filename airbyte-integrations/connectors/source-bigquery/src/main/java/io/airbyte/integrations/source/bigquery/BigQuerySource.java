@@ -64,19 +64,11 @@ public class BigQuerySource extends AbstractDbSource<StandardSQLTypeName, BigQue
 
   private boolean isMultipleProjectMode(final JsonNode config) {
     return config.hasNonNull(CONFIG_PROJECT_IDS) && config.get(CONFIG_PROJECT_IDS).isArray()
-        && config.get(CONFIG_PROJECT_IDS).size() > 0;
+        && config.get(CONFIG_PROJECT_IDS).size() > 1;
   }
 
   @Override
   public JsonNode toDatabaseConfig(final JsonNode config) {
-
-    final boolean hasProjectId = config.hasNonNull(CONFIG_PROJECT_ID) && !config.get(CONFIG_PROJECT_ID).asText().isEmpty();
-    final boolean hasProjectIds = isMultipleProjectMode(config);
-
-    // Validation: either project_id or project_ids must be provided
-    if (!hasProjectId && !hasProjectIds) {
-      throw new IllegalArgumentException("Either 'project_id' or 'project_ids' must be provided.");
-    }
 
     final var conf = ImmutableMap.<String, Object>builder()
         .put(CONFIG_CREDS, config.get(CONFIG_CREDS).asText());

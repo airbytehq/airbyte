@@ -8,10 +8,7 @@
     "title": "BigQuery Source Spec",
     "type": "object",
     "required": ["credentials_json"],
-    "anyOf": [
-      { "required": ["project_id"] },
-      { "required": ["project_ids"] }
-    ],
+    "anyOf": [{ "required": ["project_id"] }, { "required": ["project_ids"] }],
     "properties": {
       "credentials_json": {
         "type": "string",
