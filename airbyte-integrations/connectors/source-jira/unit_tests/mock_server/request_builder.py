@@ -230,8 +230,8 @@ class JiraRequestBuilder:
 
     @classmethod
     def project_versions_endpoint(cls, domain: str, project_id_or_key: str) -> "JiraRequestBuilder":
-        """Create a request builder for the /project/{projectIdOrKey}/versions endpoint."""
-        return cls(domain, f"project/{project_id_or_key}/versions", api_version="v3")
+        """Create a request builder for the /project/{projectIdOrKey}/version endpoint."""
+        return cls(domain, f"project/{project_id_or_key}/version", api_version="v3")
 
     @classmethod
     def screens_endpoint(cls, domain: str) -> "JiraRequestBuilder":
