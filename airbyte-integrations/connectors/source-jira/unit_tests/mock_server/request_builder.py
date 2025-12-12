@@ -95,8 +95,8 @@ class JiraRequestBuilder:
 
     @classmethod
     def issue_priorities_endpoint(cls, domain: str) -> "JiraRequestBuilder":
-        """Create a request builder for the /priority endpoint."""
-        return cls(domain, "priority", api_version="v3")
+        """Create a request builder for the /priority/search endpoint."""
+        return cls(domain, "priority/search", api_version="v3")
 
     @classmethod
     def issue_resolutions_endpoint(cls, domain: str) -> "JiraRequestBuilder":
