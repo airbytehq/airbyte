@@ -35,8 +35,12 @@ jobs:
           issue-type: both
 
           commands: |
+            ai-canary-prerelease
+            ai-prove-fix
+            ai-release-watch
             approve-regression-tests
             bump-bulk-cdk-version
+            bump-progressive-rollout-version
             bump-version
             build-connector-images
             connector-performance

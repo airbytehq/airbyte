@@ -4,6 +4,7 @@
 
 package io.airbyte.integrations.destination.clickhouse.schema
 
+import io.airbyte.cdk.load.command.Dedupe
 import io.airbyte.cdk.load.command.DestinationStream
 import io.airbyte.cdk.load.component.ColumnType
 import io.airbyte.cdk.load.data.ArrayType
@@ -24,10 +25,11 @@ import io.airbyte.cdk.load.data.TimestampTypeWithoutTimezone
 import io.airbyte.cdk.load.data.UnionType
 import io.airbyte.cdk.load.data.UnknownType
 import io.airbyte.cdk.load.schema.TableSchemaMapper
+import io.airbyte.cdk.load.schema.model.StreamTableSchema
 import io.airbyte.cdk.load.schema.model.TableName
 import io.airbyte.cdk.load.table.TempTableNameGenerator
-import io.airbyte.integrations.destination.clickhouse.client.ClickhouseSqlGenerator.Companion.DATETIME_WITH_PRECISION
-import io.airbyte.integrations.destination.clickhouse.client.ClickhouseSqlGenerator.Companion.DECIMAL_WITH_PRECISION_AND_SCALE
+import io.airbyte.integrations.destination.clickhouse.client.ClickhouseSqlTypes
+import io.airbyte.integrations.destination.clickhouse.client.isValidVersionColumnType
 import io.airbyte.integrations.destination.clickhouse.config.toClickHouseCompatibleName
 import io.airbyte.integrations.destination.clickhouse.spec.ClickhouseConfiguration
 import jakarta.inject.Singleton
@@ -55,30 +57,66 @@ class ClickhouseTableSchemaMapper(
         // Map Airbyte field types to ClickHouse column types
         val clickhouseType =
             when (fieldType.type) {
-                BooleanType -> "Bool"
-                DateType -> "Date32"
-                IntegerType -> "Int64"
-                NumberType -> DECIMAL_WITH_PRECISION_AND_SCALE
-                StringType -> "String"
-                TimeTypeWithTimezone -> "String"
-                TimeTypeWithoutTimezone -> "String"
+                BooleanType -> ClickhouseSqlTypes.BOOL
+                DateType -> ClickhouseSqlTypes.DATE32
+                IntegerType -> ClickhouseSqlTypes.INT64
+                NumberType -> ClickhouseSqlTypes.DECIMAL_WITH_PRECISION_AND_SCALE
+                StringType -> ClickhouseSqlTypes.STRING
+                TimeTypeWithTimezone -> ClickhouseSqlTypes.STRING
+                TimeTypeWithoutTimezone -> ClickhouseSqlTypes.STRING
                 TimestampTypeWithTimezone,
-                TimestampTypeWithoutTimezone -> DATETIME_WITH_PRECISION
+                TimestampTypeWithoutTimezone -> ClickhouseSqlTypes.DATETIME_WITH_PRECISION
                 is ArrayType,
                 ArrayTypeWithoutSchema,
                 is UnionType,
-                is UnknownType -> "String"
+                is UnknownType -> ClickhouseSqlTypes.STRING
                 ObjectTypeWithEmptySchema,
                 ObjectTypeWithoutSchema,
                 is ObjectType -> {
                     if (config.enableJson) {
-                        "JSON"
+                        ClickhouseSqlTypes.JSON
                     } else {
-                        "String"
+                        ClickhouseSqlTypes.STRING
                     }
                 }
             }
 
         return ColumnType(clickhouseType, fieldType.nullable)
+    }
+
+    override fun toFinalSchema(tableSchema: StreamTableSchema): StreamTableSchema {
+        if (tableSchema.importType !is Dedupe) {
+            return tableSchema
+        }
+
+        // For dedupe mode we do extra logic to ensure certain columns are non-null:
+        //     1) the primary key columns
+        //     2) the version column used by the dedupe engine (in practice the cursor)
+        val pks = tableSchema.getPrimaryKey().flatten()
+        val cursor = tableSchema.getCursor().firstOrNull()
+
+        val nonNullCols = buildSet {
+            addAll(pks) // Primary keys are always non-nullable
+            if (cursor != null) {
+                // Check if the cursor column type is valid for ClickHouse ReplacingMergeTree
+                val cursorColumnType = tableSchema.columnSchema.finalSchema[cursor]!!.type
+                if (cursorColumnType.isValidVersionColumnType()) {
+                    // Cursor column is valid, use it as version column
+                    add(cursor) // Make cursor column non-nullable too
+                }
+            }
+        }
+
+        val finalSchema =
+            tableSchema.columnSchema.finalSchema
+                .map {
+                    it.key to
+                        it.value.copy(nullable = it.value.nullable && !nonNullCols.contains(it.key))
+                }
+                .toMap()
+
+        return tableSchema.copy(
+            columnSchema = tableSchema.columnSchema.copy(finalSchema = finalSchema)
+        )
     }
 }
