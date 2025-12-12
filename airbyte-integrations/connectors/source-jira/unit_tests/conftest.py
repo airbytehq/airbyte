@@ -13,6 +13,8 @@ from responses import matchers
 
 from airbyte_cdk.sources.declarative.yaml_declarative_source import YamlDeclarativeSource
 from airbyte_cdk.sources.streams import Stream
+from airbyte_cdk.test.catalog_builder import CatalogBuilder
+from airbyte_cdk.test.state_builder import StateBuilder
 
 
 pytest_plugins = ["airbyte_cdk.test.utils.manifest_only_fixtures"]
@@ -564,6 +566,40 @@ def mock_sprints_response(config, sprints_response):
         f"https://{config['domain']}/rest/agile/1.0/board/3/sprint?maxResults=50",
         json=sprints_response,
     )
+
+
+def get_resource_path(resource_file: str) -> Path:
+    """
+    Get absolute path to a test resource file.
+
+    Works both when tests run from unit_tests/ directory and from connector root.
+
+    Args:
+        resource_file: Relative path like "responses/users.json"
+
+    Returns:
+        Absolute path to the resource file
+    """
+    local_path = Path(resource_file)
+    if local_path.exists():
+        return local_path
+
+    connector_root_path = Path(__file__).parent / resource_file
+    if connector_root_path.exists():
+        return connector_root_path
+
+    return local_path
+
+
+def get_source(config, state=None) -> YamlDeclarativeSource:
+    """
+    Create a YamlDeclarativeSource instance for testing.
+
+    This is the main entry point for running your connector in tests.
+    """
+    catalog = CatalogBuilder().build()
+    state = StateBuilder().build() if not state else state
+    return YamlDeclarativeSource(path_to_yaml=str(_YAML_FILE_PATH), catalog=catalog, config=config, state=state)
 
 
 def find_stream(stream_name, config):
