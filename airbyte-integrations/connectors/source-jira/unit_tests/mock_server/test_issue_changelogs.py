@@ -139,10 +139,7 @@ class TestIssueChangelogsStream(TestCase):
         # Mock parent issues endpoint (JQL search)
         http_mocker.get(
             JiraRequestBuilder.issues_endpoint(_DOMAIN).with_any_query_params().build(),
-            JiraJqlResponseBuilder()
-            .with_records(issue_records)
-            .with_pagination(start_at=0, max_results=50, total=2, is_last=True)
-            .build(),
+            JiraJqlResponseBuilder().with_records(issue_records).with_pagination(start_at=0, max_results=50, total=2, is_last=True).build(),
         )
 
         # Mock changelogs endpoint for issue 10001
@@ -246,10 +243,7 @@ class TestIssueChangelogsStream(TestCase):
         # Mock parent issues endpoint
         http_mocker.get(
             JiraRequestBuilder.issues_endpoint(_DOMAIN).with_any_query_params().build(),
-            JiraJqlResponseBuilder()
-            .with_records(issue_records)
-            .with_pagination(start_at=0, max_results=50, total=1, is_last=True)
-            .build(),
+            JiraJqlResponseBuilder().with_records(issue_records).with_pagination(start_at=0, max_results=50, total=1, is_last=True).build(),
         )
 
         # Mock changelogs endpoint for issue 10001
@@ -300,14 +294,25 @@ class TestIssueChangelogsStream(TestCase):
                 "author": {"accountId": "user1", "displayName": "User One", "active": True},
                 "created": "2024-01-10T00:00:00.000+0000",
                 "updated": "2024-01-10T00:00:00.000+0000",
-                "items": [{"field": "status", "fieldtype": "jira", "from": "10000", "fromString": "To Do", "to": "10001", "toString": "In Progress"}],
+                "items": [
+                    {
+                        "field": "status",
+                        "fieldtype": "jira",
+                        "from": "10000",
+                        "fromString": "To Do",
+                        "to": "10001",
+                        "toString": "In Progress",
+                    }
+                ],
             },
             {
                 "id": "100002",
                 "author": {"accountId": "user1", "displayName": "User One", "active": True},
                 "created": "2024-01-11T00:00:00.000+0000",
                 "updated": "2024-01-11T00:00:00.000+0000",
-                "items": [{"field": "assignee", "fieldtype": "jira", "from": None, "fromString": None, "to": "user2", "toString": "User Two"}],
+                "items": [
+                    {"field": "assignee", "fieldtype": "jira", "from": None, "fromString": None, "to": "user2", "toString": "User Two"}
+                ],
             },
         ]
 
@@ -325,10 +330,7 @@ class TestIssueChangelogsStream(TestCase):
         # Mock parent issues endpoint
         http_mocker.get(
             JiraRequestBuilder.issues_endpoint(_DOMAIN).with_any_query_params().build(),
-            JiraJqlResponseBuilder()
-            .with_records(issue_records)
-            .with_pagination(start_at=0, max_results=50, total=1, is_last=True)
-            .build(),
+            JiraJqlResponseBuilder().with_records(issue_records).with_pagination(start_at=0, max_results=50, total=1, is_last=True).build(),
         )
 
         # Mock changelogs endpoint with pagination
@@ -367,10 +369,7 @@ class TestIssueChangelogsStream(TestCase):
         # No parent issues
         http_mocker.get(
             JiraRequestBuilder.issues_endpoint(_DOMAIN).with_any_query_params().build(),
-            JiraJqlResponseBuilder()
-            .with_records([])
-            .with_pagination(start_at=0, max_results=50, total=0, is_last=True)
-            .build(),
+            JiraJqlResponseBuilder().with_records([]).with_pagination(start_at=0, max_results=50, total=0, is_last=True).build(),
         )
 
         source = get_source(config=config)
@@ -404,10 +403,7 @@ class TestIssueChangelogsStream(TestCase):
         # Mock parent issues endpoint
         http_mocker.get(
             JiraRequestBuilder.issues_endpoint(_DOMAIN).with_any_query_params().build(),
-            JiraJqlResponseBuilder()
-            .with_records(issue_records)
-            .with_pagination(start_at=0, max_results=50, total=1, is_last=True)
-            .build(),
+            JiraJqlResponseBuilder().with_records(issue_records).with_pagination(start_at=0, max_results=50, total=1, is_last=True).build(),
         )
 
         # Mock changelogs endpoint with empty response
@@ -454,17 +450,23 @@ class TestIssueChangelogsStream(TestCase):
                 "author": {"accountId": "user1", "displayName": "User One", "active": True},
                 "created": "2024-01-10T00:00:00.000+0000",
                 "updated": "2024-01-10T00:00:00.000+0000",
-                "items": [{"field": "status", "fieldtype": "jira", "from": "10000", "fromString": "To Do", "to": "10001", "toString": "In Progress"}],
+                "items": [
+                    {
+                        "field": "status",
+                        "fieldtype": "jira",
+                        "from": "10000",
+                        "fromString": "To Do",
+                        "to": "10001",
+                        "toString": "In Progress",
+                    }
+                ],
             },
         ]
 
         # Mock parent issues endpoint
         http_mocker.get(
             JiraRequestBuilder.issues_endpoint(_DOMAIN).with_any_query_params().build(),
-            JiraJqlResponseBuilder()
-            .with_records(issue_records)
-            .with_pagination(start_at=0, max_results=50, total=1, is_last=True)
-            .build(),
+            JiraJqlResponseBuilder().with_records(issue_records).with_pagination(start_at=0, max_results=50, total=1, is_last=True).build(),
         )
 
         # Mock changelogs endpoint
