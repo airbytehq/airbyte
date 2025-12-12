@@ -218,8 +218,9 @@ fun <T> querySingleValue(jdbcConnectionFactory: JdbcConnectionFactory, query: St
     jdbcConnectionFactory.get().use { connection ->
         val stmt = connection.prepareStatement(query)
 
-        val rs = stmt.executeQuery()
-        check(rs.next()) { "Could not query single value using [$query]" }
+        val rs: ResultSet = stmt.executeQuery()
+        check(rs.next()) { "Query unexpectedly produced no results: [$query]" }
+        check(rs.isLast) { "Query unexpectedly produced more than one result: [$query]" }
         return withRS(rs)
     }
 }

@@ -24,7 +24,7 @@ import io.airbyte.cdk.read.SelectQuerier
 import io.airbyte.cdk.read.SelectQuery
 import io.airbyte.cdk.read.Stream
 import io.airbyte.cdk.read.querySingleValue
-import io.airbyte.integrations.source.postgres.operations.PostgresSourceSelectQueryGenerator.Companion.toQualifyingTableName
+import io.airbyte.integrations.source.postgres.operations.PostgresSourceSelectQueryGenerator.Companion.toQualifiedTableName
 import io.github.oshai.kotlinlogging.KotlinLogging
 import io.micronaut.context.annotation.Primary
 import io.micronaut.context.annotation.Requires
@@ -148,7 +148,7 @@ class PostgresSourceJdbcConcurrentPartitionsCreator<
      * Get total relation size in bytes for a given table - this icludes toast data.
      */
     private fun totalRelationSize(stream: Stream): Long {
-        val sql = "SELECT pg_total_relation_size('${ toQualifyingTableName(stream.namespace, stream.name) }')"
+        val sql = "SELECT pg_total_relation_size('${ toQualifiedTableName(stream.namespace, stream.name) }')"
         return querySingleValue(JdbcConnectionFactory(sharedState.configuration), sql,
             { rs -> return@querySingleValue rs.getLong(1) })
     }
