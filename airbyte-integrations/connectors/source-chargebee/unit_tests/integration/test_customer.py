@@ -177,4 +177,6 @@ class TestCustomerStream(TestCase):
         assert latest_cursor_value > previous_state_timestamp, f"State should advance: {latest_cursor_value} > {previous_state_timestamp}"
 
         # State should match the latest record's cursor value
-        assert latest_cursor_value == 1705312800, f"State should be latest record's cursor value: expected 1705312800, got {latest_cursor_value}"
+        assert (
+            latest_cursor_value == 1705312800
+        ), f"State should be latest record's cursor value: expected 1705312800, got {latest_cursor_value}"

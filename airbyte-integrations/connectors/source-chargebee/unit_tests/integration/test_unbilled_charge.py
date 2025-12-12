@@ -103,9 +103,7 @@ class TestUnbilledChargeStream(TestCase):
 
         # Mock API response - NO query parameters except limit (per manifest)
         http_mocker.get(
-            RequestBuilder.unbilled_charges_endpoint()
-            .with_limit(100)
-            .build(),
+            RequestBuilder.unbilled_charges_endpoint().with_limit(100).build(),
             unbilled_charge_response(),
         )
 

@@ -103,9 +103,7 @@ class TestSiteMigrationDetailStream(TestCase):
 
         # Mock API response - NO query parameters except limit (per manifest)
         http_mocker.get(
-            RequestBuilder.site_migration_details_endpoint()
-            .with_limit(100)
-            .build(),
+            RequestBuilder.site_migration_details_endpoint().with_limit(100).build(),
             site_migration_detail_response(),
         )
 
