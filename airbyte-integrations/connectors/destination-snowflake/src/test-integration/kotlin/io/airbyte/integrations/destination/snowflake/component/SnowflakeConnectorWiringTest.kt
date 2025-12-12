@@ -80,9 +80,9 @@ class SnowflakeConnectorWiringTest(
 /**
  * Factory providing beans required for ConnectorWiringSuite tests.
  *
- * Creates a catalog with UPPERCASE names to match Snowflake's identifier behavior.
- * Snowflake uppercases unquoted identifiers, so we use uppercase in the catalog
- * to ensure the test's TableName matches the actual created table.
+ * Creates a catalog with UPPERCASE names to match Snowflake's identifier behavior. Snowflake
+ * uppercases unquoted identifiers, so we use uppercase in the catalog to ensure the test's
+ * TableName matches the actual created table.
  */
 @Requires(env = ["component"])
 @io.micronaut.context.annotation.Factory
