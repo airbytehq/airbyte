@@ -46,7 +46,7 @@ Data replication _isn't_ ideal when you:
 - Are working with a small amount of data
 - Need to trigger side effects, like sending an email or closing a ticket
 
-If data replication isn't what you're looking for, [agentic data](/ai-agents) might be.
+If data replication isn't what you're looking for, [Agent engine](/ai-agents) might be.
 
 ### Taxonomy of data movement
 

@@ -5,11 +5,11 @@ sidebar_label: "Connector MCP tutorial"
 import Tabs from '@theme/Tabs';
 import TabItem from '@theme/TabItem';
 
-# Get started with direct connectors: Connector MCP
+# Get started with AI connectors: Connector MCP
 
-In this tutorial, you'll install and run Airbyte's connector MCP server locally, connect the MCP server to Claude Code or your preferred agent, and learn to use natural language to explore your data. This tutorial uses Stripe, but if you don't have a Stripe account, you can use one of Airbyte's other direct connectors.
+In this tutorial, you'll install and run Airbyte's connector MCP server locally, connect the MCP server to Claude Code or your preferred agent, and learn to use natural language to explore your data. This tutorial uses Stripe, but if you don't have a Stripe account, you can use one of Airbyte's other AI connectors.
 
-The MCP server is quick and easy to set up, but it affords less control over how you use direct connectors compared to the Python SDK. Data goes directly from the API to your AI agent.
+The MCP server is quick and easy to set up, but it affords less control over how you use AI connectors compared to the Python SDK. Data goes directly from the API to your AI agent.
 
 ## Overview
 
@@ -26,7 +26,7 @@ Before you begin this tutorial, ensure you have installed the following software
 - Claude Code or the agent of your choice, and the plan necessary to run it locally
 - [Python](https://www.python.org/downloads/) version 3.13.7 or later
 - [uv](https://github.com/astral-sh/uv)
-- An account with Stripe, or a different third-party [supported by direct connectors](https://github.com/airbytehq/airbyte-ai-connectors/tree/main/connectors).
+- An account with Stripe, or a different third-party [supported by AI connectors](https://github.com/airbytehq/airbyte-ai-connectors/tree/main/connectors).
 
 ## Part 1: Clone the Connector MCP repository
 
@@ -46,7 +46,7 @@ cd connector-mcp
 
 ### Create a connector configuration file
 
-The `configured_connectors.yaml` file defines which direct connectors you are making available through the MCP and which secrets you need for authentication.
+The `configured_connectors.yaml` file defines which AI connectors you are making available through the MCP and which secrets you need for authentication.
 
 1. Create a file called `configured_connectors.yaml`. It's easiest to add this file to the root, but if you want to add it somewhere else, you can instruct the MCP where to find it later.
 
@@ -237,4 +237,4 @@ In this tutorial, you learned how to:
         token: GITHUB_TOKEN
     ```
 
-- If you need to run more complex processing and trigger effects based on your data, try the [Python](tutorial-python) tutorial to start using direct connectors with the Python SDK.
+- If you need to run more complex processing and trigger effects based on your data, try the [Python](tutorial-python) tutorial to start using AI connectors with the Python SDK.

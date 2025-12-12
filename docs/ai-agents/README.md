@@ -4,9 +4,9 @@ products: embedded
 
 import Taxonomy from "@site/static/_taxonomy_of_data_movement.md";
 
-# Agentic data platform
+# Agent engine
 
-Airbyte's agentic data platform is a set of tools to help you automate, understand, move, and work with your data in coordination with AI agents. Some of these tools are standalone open source solutions, and others are pay solutions built on top of Airbyte Cloud.
+Airbyte's Agent engine is a set of tools to help you automate, understand, move, and work with your data in coordination with AI agents. Some of these tools are standalone open source solutions, and others are pay solutions built on top of Airbyte Cloud.
 
 The platform is a solution for all types of audiences, from AI engineers who are deploying agents in large enterprises down to individual founders who need real-time context and action in their platforms.
 
@@ -16,10 +16,10 @@ The platform is a solution for all types of audiences, from AI engineers who are
 
 - **Authentication Proxies**: Connect safely to third party APIs using Airbyte's Authentication Proxies.
 
-- **Direct connectors**: AI-optimized connectors, which you can use with Airbyte's MCP server or your own agents written in Python.
+- **AI connectors**: AI-optimized connectors, which you can use with Airbyte's MCP server or your own agents written in Python.
 
 :::info New and growing
-The agentic data platform is new and growing rapidly. Airbyte is actively seeking feedback, design partners, and community involvement. Expect this library of tools to grow and change rapidly.
+The Agent engine is new and growing rapidly. Airbyte is actively seeking feedback, design partners, and community involvement. Expect this library of tools to grow and change rapidly.
 :::
 
 ## Why Airbyte?
@@ -34,11 +34,11 @@ The agentic data platform is new and growing rapidly. Airbyte is actively seekin
 
 ### The use case for agentic data
 
-The agentic data platform is an open source solution built on the Model Context Protocol (MCP). It enables agents to fetch, search, write, and reason with live business data.
+The Agent engine is an open source solution built on the Model Context Protocol (MCP). It enables agents to fetch, search, write, and reason with live business data.
 
 Even if you're not a data expert, you still need to interpret vendor data. That means cleaning, normalizing, stitching fields together, and transforming your and your customers' data into entities your agents can actually use.
 
-The agentic data platform is an ideal solution when you:
+The Agent engine is an ideal solution when you:
 
 - Don't want storage
 - Care a lot about freshness and latency
@@ -68,9 +68,9 @@ Airbyte Embedded creates isolated workspaces for each of your customers, allowin
 
 Once Airbyte enables your organizaton on Airbyte Embedded, you can begin onboarding customers via the Embedded Widget. You can download the Embedded demo app [from GitHub](https://github.com/airbytehq/embedded-demoapp).
 
-## Direct connectors
+## AI connectors
 
-Airbyte's direct connectors are Python packages that equip AI agents to call third-party APIs through strongly typed, well-documented tools. Each connector is ready to use directly in your Python app, in an agent framework, or exposed through an MCP. [Learn more >](connectors)
+Airbyte's AI connectors are Python packages that equip AI agents to call third-party APIs through strongly typed, well-documented tools. Each connector is ready to use directly in your Python app, in an agent framework, or exposed through an MCP. [Learn more >](connectors)
 
 ## MCP Servers
 
@@ -82,7 +82,7 @@ Airbyte provides multiple MCP (Model Context Protocol) servers to enable AI-assi
 
 ### Connector MCP
 
-Use [direct connectors](connectors) to interact with your data using natural language.
+Use [AI connectors](connectors) to interact with your data using natural language.
 
 ### Connector Builder MCP
 
