@@ -1,28 +1,28 @@
 import DocCardList from '@theme/DocCardList';
 
-# AI connectors
+# Agent connectors
 
-Airbyte's AI connectors are Python packages that equip AI agents to call third-party APIs through strongly typed, well-documented tools. Each connector is ready to use directly in your Python app, in an agent framework, or exposed through an MCP.
+Airbyte's agent connectors are Python packages that equip AI agents to call third-party APIs through strongly typed, well-documented tools. Each connector is ready to use directly in your Python app, in an agent framework, or exposed through an MCP.
 
-## How AI connectors differ from data replication connectors
+## How agent connectors differ from data replication connectors
 
-Traditional Airbyte connectors are for data replication. They move large volumes of data from a source into a destination such as a warehouse or data lake on a schedule. AI connectors are lightweight, type-safe Python clients that let AI agents call third-party APIs directly in real time.
+Traditional Airbyte connectors are for data replication. They move large volumes of data from a source into a destination such as a warehouse or data lake on a schedule. Agent connectors are lightweight, type-safe Python clients that let AI agents call third-party APIs directly in real time.
 
 The key differences are:
 
-- **Topology**: Data replication connectors are always used in a source-to-destination pairing managed by the Airbyte platform. AI connectors are standalone library packages that you import into your app or agent and call directly, with no source/destination pairing or sync pipeline.
+- **Topology**: Data replication connectors are always used in a source-to-destination pairing managed by the Airbyte platform. Agent connectors are standalone library packages that you import into your app or agent and call directly, with no source/destination pairing or sync pipeline.
 
-- **Use cases**: Data replication connectors are for batch ELT/ETL and analytics, building a full, historical dataset in a warehouse. AI connectors are for operational AI use cases: answering a question, fetching a slice of fresh data, or performing an action in a SaaS tool while an agent is reasoning.
+- **Use cases**: Data replication connectors are for batch ELT/ETL and analytics, building a full, historical dataset in a warehouse. Agent connectors are for operational AI use cases: answering a question, fetching a slice of fresh data, or performing an action in a SaaS tool while an agent is reasoning.
 
-- **Execution model**: Data replication connectors run as jobs orchestrated by the Airbyte platform with schedules and state tracking. AI connectors run inside your Python app or AI agent loop, returning results to that process immediately.
+- **Execution model**: Data replication connectors run as jobs orchestrated by the Airbyte platform with schedules and state tracking. Agent connectors run inside your Python app or AI agent loop, returning results to that process immediately.
 
-- **Data flow**: Data replication connectors write data into destinations and maintain state for incremental sync. AI connectors stream typed responses back to the caller without creating a replicated copy of the data.
+- **Data flow**: Data replication connectors write data into destinations and maintain state for incremental sync. Agent connectors stream typed responses back to the caller without creating a replicated copy of the data.
 
-AI connectors don't replace your existing source and destination connectors. They complement them by providing agentic, real-time access to the same systems. Unlike data replication connectors, you don't need to run the Airbyte platform to use AI connectors—they are regular Python packages you add to your application or agent.
+Agent connectors don't replace your existing source and destination connectors. They complement them by providing agentic, real-time access to the same systems. Unlike data replication connectors, you don't need to run the Airbyte platform to use Agent connectors—they are regular Python packages you add to your application or agent.
 
 ### Connector structure
 
-Each connector is a standalone Python package in the [Airbyte AI Connectors repository](https://github.com/airbytehq/airbyte-agent-connectors).
+Each connector is a standalone Python package in the [Airbyte Agent Connectors repository](https://github.com/airbytehq/airbyte-agent-connectors).
 
 ```text
 connectors/
@@ -46,7 +46,7 @@ Inside each connector folder, you can find the following.
 
 ## When to use these connectors
 
-Use Airbyte AI Connectors when you want:
+Use Airbyte agent Connectors when you want:
 
 - **Agent‑friendly data access**: Let LLM agents call real SaaS APIs, like a CRM, billing, or analytics, with guardrails and typed responses.
 
@@ -54,8 +54,8 @@ Use Airbyte AI Connectors when you want:
 
 - **Composable building blocks**: Combine multiple connectors in a single agent to orchestrate multi‑system workflows. Compared to building ad‑hoc API wrappers, these connectors give you a shared structure, generated clients, and alignment with the rest of the Airbyte ecosystem.
 
-## How to work with AI connectors
+## How to work with agent connectors
 
-Two options exist to work with an AI connector: Model Context Protocol (MCP) and Python SDK.
+Two options exist to work with an agent connector: Model Context Protocol (MCP) and Python SDK.
 
 <DocCardList />

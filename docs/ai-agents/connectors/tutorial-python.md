@@ -2,11 +2,11 @@
 sidebar_label: "Python SDK tutorial"
 ---
 
-# Get started with AI connectors: Python SDK
+# Get started with agent connectors: Python SDK
 
-In this tutorial, you'll create a new Python project with `uv`, add a Pydantic AI agent, equip it to use one of Airbyte's AI connectors, and use natural language to explore your data. This tutorial uses GitHub, but if you don't have a GitHub account, you can use one of Airbyte's other AI connectors and perform different operations.
+In this tutorial, you'll create a new Python project with `uv`, add a Pydantic AI agent, equip it to use one of Airbyte's agent connectors, and use natural language to explore your data. This tutorial uses GitHub, but if you don't have a GitHub account, you can use one of Airbyte's other agent connectors and perform different operations.
 
-Using the Python SDK is more time-consuming than the Connector MCP server, but affords you the most control over how you use AI connectors.
+Using the Python SDK is more time-consuming than the Connector MCP server, but affords you the most control over how you use agent connectors.
 
 ## Overview
 
@@ -67,7 +67,7 @@ uv add airbyte-ai-github pydantic-ai
 
 This command installs:
 
-- `airbyte-ai-github`: The Airbyte AI connector for GitHub, which provides type-safe access to GitHub's API.
+- `airbyte-ai-github`: The Airbyte agent connector for GitHub, which provides type-safe access to GitHub's API.
 - `pydantic-ai`: The AI agent framework, which includes support for multiple LLM providers including OpenAI, Anthropic, and Google.
 
 The GitHub connector also includes `python-dotenv`, which you can use to load environment variables from a `.env` file.
@@ -76,7 +76,7 @@ The GitHub connector also includes `python-dotenv`, which you can use to load en
 If you want a smaller installation with only OpenAI support, you can use `pydantic-ai-slim[openai]` instead of `pydantic-ai`. See the [Pydantic AI installation docs](https://ai.pydantic.dev/install/) for more options.
 :::
 
-## Part 3: Import Pydantic AI and the GitHub AI connector
+## Part 3: Import Pydantic AI and the GitHub agent connector
 
 Add the following imports to `agent.py`:
 
@@ -94,7 +94,7 @@ These imports provide:
 - `os`: Access environment variables for your GitHub token and LLM API key.
 - `load_dotenv`: Load environment variables from your `.env` file.
 - `Agent`: The Pydantic AI agent class that orchestrates LLM interactions and tool calls.
-- `GithubConnector`: The Airbyte AI connector that provides type-safe access to GitHub's API.
+- `GithubConnector`: The Airbyte agent connector that provides type-safe access to GitHub's API.
 - `GithubAuthConfig`: The authentication configuration for the GitHub connector.
 
 ## Part 4: Add a .env file with your secrets
@@ -124,7 +124,7 @@ Now that your environment is set up, add the following code to `agent.py` to cre
 
 ### Define the connector
 
-Define the AI connector for GitHub. It authenticates using your personal access token.
+Define the agent connector for GitHub. It authenticates using your personal access token.
 
 ```python title="agent.py"
 connector = GithubConnector(
@@ -154,7 +154,7 @@ agent = Agent(
 
 ## Part 6: Add tools to your agent
 
-Tools let your agent fetch real data from GitHub using Airbyte's AI connector. Without tools, the agent can only respond based on its training data. By registering connector operations as tools, the agent can decide when to call them based on natural language questions.
+Tools let your agent fetch real data from GitHub using Airbyte's agent connector. Without tools, the agent can only respond based on its training data. By registering connector operations as tools, the agent can decide when to call them based on natural language questions.
 
 Add the following code to `agent.py`.
 
@@ -236,12 +236,12 @@ If your agent fails to retrieve GitHub data, check the following:
 In this tutorial, you learned how to:
 
 - Set up a new Python project with `uv`
-- Add Pydantic AI and Airbyte's GitHub AI connector to your project
+- Add Pydantic AI and Airbyte's GitHub agent connector to your project
 - Configure environment variables and authentication
 - Add tools to your agent using the GitHub connector
 - Run your project and use natural language to interact with GitHub data
 
 ## Next steps
 
-- Add more tools and AI connectors to your project. For GitHub, you can wrap additional operations (like search, comments, or commits) as tools. Explore other AI connectors in the [Airbyte AI connectors catalog](https://github.com/airbytehq/airbyte-agent-connectors) to give your agent access to more services.
-- Consider how you might like to expand your agent's capabilities. For example, you might want to trigger effects like sending a Slack message or an email based on the agent's findings. You aren't limited to the capabilities of Airbyte's AI connectors. You can use other libraries and integrations to build an increasingly robust agent ecosystem.
+- Add more tools and agent connectors to your project. For GitHub, you can wrap additional operations (like search, comments, or commits) as tools. Explore other agent connectors in the [Airbyte agent connectors catalog](https://github.com/airbytehq/airbyte-agent-connectors) to give your agent access to more services.
+- Consider how you might like to expand your agent's capabilities. For example, you might want to trigger effects like sending a Slack message or an email based on the agent's findings. You aren't limited to the capabilities of Airbyte's agent connectors. You can use other libraries and integrations to build an increasingly robust agent ecosystem.

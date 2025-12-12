@@ -86,95 +86,6 @@
         }
       }
     },
-    "/api/v1/agents/chat": {
-      "post": {
-        "tags": ["Agents - Chat"],
-        "summary": "Post chat message",
-        "description": "Post a new message to a thread",
-        "operationId": "create_agents_chat",
-        "security": [
-          {
-            "HTTPBearer": []
-          }
-        ],
-        "parameters": [
-          {
-            "name": "x-organization-id",
-            "in": "header",
-            "required": false,
-            "schema": {
-              "type": "string",
-              "format": "uuid",
-              "description": "The organization ID to target for this request",
-              "title": "X-Organization-Id"
-            },
-            "description": "The organization ID to target for this request"
-          }
-        ],
-        "requestBody": {
-          "required": true,
-          "content": {
-            "application/json": {
-              "schema": {
-                "$ref": "#/components/schemas/ChatPostRequest"
-              }
-            }
-          }
-        },
-        "responses": {
-          "200": {
-            "description": "Successful Response",
-            "content": {
-              "text/event-stream": {
-                "schema": {
-                  "$ref": "#/components/schemas/ChatMessageEvent"
-                }
-              }
-            }
-          },
-          "400": {
-            "description": "Bad request",
-            "content": {
-              "application/json": {
-                "schema": {
-                  "$ref": "#/components/schemas/ApiErrorResponse"
-                }
-              }
-            }
-          },
-          "403": {
-            "description": "Forbidden",
-            "content": {
-              "application/json": {
-                "schema": {
-                  "$ref": "#/components/schemas/ApiErrorResponse"
-                }
-              }
-            }
-          },
-          "422": {
-            "description": "Unprocessable entity",
-            "content": {
-              "application/json": {
-                "schema": {
-                  "$ref": "#/components/schemas/ApiErrorResponse"
-                }
-              }
-            }
-          },
-          "500": {
-            "description": "Internal server error",
-            "content": {
-              "application/json": {
-                "schema": {
-                  "$ref": "#/components/schemas/ApiErrorResponse"
-                }
-              }
-            }
-          }
-        }
-      }
-    },
     "/api/v1/agents/chat/history/{thread_id}": {
       "get": {
         "tags": ["Agents - Chat History"],
@@ -875,6 +786,25 @@
               "title": "Source Id"
             },
             "description": "The source ID to search within"
+          },
+          {
+            "name": "connector_instance_id",
+            "in": "query",
+            "required": false,
+            "schema": {
+              "anyOf": [
+                {
+                  "type": "string",
+                  "format": "uuid"
+                },
+                {
+                  "type": "null"
+                }
+              ],
+              "description": "Optional connector instance ID for direct API queries",
+              "title": "Connector Instance Id"
+            },
+            "description": "Optional connector instance ID for direct API queries"
           },
           {
             "name": "x-organization-id",
@@ -12289,9 +12219,13 @@
           "set_selected_streams",
           "select_streams",
           "search",
-          "gong_query",
           "list_streams",
-          "get_stream_schema"
+          "get_stream_schema",
+          "list_connector_instances",
+          "get_connector_capabilities",
+          "connector_query",
+          "convert_dates_to_nanos",
+          "convert_nanos_to_dates"
         ],
         "title": "AgentToolName",
         "description": "Enum of tool names available to agents.\nThis enum is automatically synced to the frontend via OpenAPI generation,\nensuring type safety when handling tool calls and responses.\nWhen adding a new tool to an agent (e.g., in app/agents/chat_agent.py),\nadd the corresponding tool name here to expose it to the frontend."
@@ -13449,12 +13383,20 @@
           "result": {
             "title": "Result"
           },
-          "metadata": {
+          "connector_metadata": {
+            "title": "Connector Metadata"
+          },
+          "execution_metadata": {
             "$ref": "#/components/schemas/ExecutionMetadata"
           }
         },
         "type": "object",
-        "required": ["status", "result", "metadata"],
+        "required": [
+          "status",
+          "result",
+          "connector_metadata",
+          "execution_metadata"
+        ],
         "title": "ConnectorExecuteResponse",
         "description": "Standardized response envelope for connector execution."
       },
