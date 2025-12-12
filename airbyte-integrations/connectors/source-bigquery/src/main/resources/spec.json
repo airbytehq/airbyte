@@ -6,23 +6,47 @@
     "$schema": "http://json-schema.org/draft-07/schema#",
     "title": "BigQuery Source Spec",
     "type": "object",
-    "required": ["project_id", "credentials_json"],
+    "required": ["credentials_json"],
+    "anyOf": [
+      { "required": ["project_id"] },
+      { "required": ["project_ids"] }
+    ],
     "properties": {
-      "project_id": {
-        "type": "string",
-        "description": "The GCP project ID for the project containing the target BigQuery dataset.",
-        "title": "Project ID"
-      },
-      "dataset_id": {
-        "type": "string",
-        "description": "The dataset ID to search for tables and views. If you are only loading data from one dataset, setting this option could result in much faster schema discovery.",
-        "title": "Default Dataset ID"
-      },
       "credentials_json": {
         "type": "string",
         "description": "The contents of your Service Account Key JSON file. See the <a href=\"https://docs.airbyte.com/integrations/sources/bigquery#setup-the-bigquery-source-in-airbyte\">docs</a> for more information on how to obtain this key.",
         "title": "Credentials JSON",
-        "airbyte_secret": true
+        "airbyte_secret": true,
+        "order": 0
+      },
+      "project_id": {
+        "type": "string",
+        "description": "For single project - the GCP project ID for the project containing the target BigQuery dataset.",
+        "title": "Project ID",
+        "order": 1
+      },
+      "dataset_id": {
+        "type": "string",
+        "description": "For single project - the dataset ID to search for tables and views. If not specified, all datasets will be included.",
+        "title": "Dataset ID",
+        "order": 2
+      },
+      "project_ids": {
+        "type": "array",
+        "items": { "type": "string" },
+        "description": "For multiple project -  the GCP project IDs to sync data from. If specified, data will be synced from these projects instead of project_id. The service account must have BigQuery read access to all listed projects. The first project id in this list will be used for billing",
+        "title": "Project IDs",
+        "minItems": 1,
+        "order": 3
+      },
+      "dataset_ids": {
+        "type": "array",
+        "items": {
+          "type": "string"
+        },
+        "description": "For multiple project -  the dataset IDs to search for tables and views. When specified, only tables from these datasets will be synced. If a dataset does not exist in a project, it will be skipped. If not specified, all datasets will be included.",
+        "title": "Dataset IDs",
+        "order": 4
       }
     }
   }
