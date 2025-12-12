@@ -1,3 +1,32 @@
+## Version 0.1.89
+
+load cdk: components tests: data coercion tests for int+number
+
+## Version 0.1.88
+
+**Load CDK**
+
+* Add CDC_CURSOR_COLUMN_NAME constant.
+
+## Version 0.1.87
+
+**Load CDK**
+
+* Properly call NamespaceMapper before calculating final table names.
+
+## Version 0.1.86
+
+**Load CDK**
+
+* Adds toFinalSchema "escape hatch" for final table schema munging
+* Refactored Component test fixtures to require explicit StreamTableSchema creation using TableSchemaFactory
+
+## Version 0.1.85
+
+**Extract CDK**
+
+* Fix CDC partition reader race condition when draining records after debezium shutdown.
+
 ## Version 0.1.84
 
 load cdk: Move most DB packages into core. Refactor table schema interface into TableSchemaMapper.

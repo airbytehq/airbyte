@@ -595,6 +595,16 @@
       "source": "/platform/developer-guides/licenses/:path*",
       "destination": "/community/licenses/:path*",
       "statusCode": 301
+    },
+    {
+      "source": "/embedded-api/sonar",
+      "destination": "/ai-agents/embedded/api-reference/sonar",
+      "statusCode": 301
+    },
+    {
+      "source": "/embedded-api/:path*",
+      "destination": "/ai-agents/embedded/api-reference/:path*",
+      "statusCode": 301
     }
   ]
 }

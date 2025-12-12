@@ -63,7 +63,11 @@ class PostgresTableSchemaMapper(
     }
 
     override fun toColumnName(name: String): String {
-        return name.toPostgresCompatibleName()
+        return if (config.legacyRawTablesOnly) {
+            name
+        } else {
+            name.toPostgresCompatibleName()
+        }
     }
 
     override fun toColumnType(fieldType: FieldType): ColumnType {
