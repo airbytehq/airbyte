@@ -6,10 +6,10 @@ package io.airbyte.integrations.destination.postgres.db
 
 import io.airbyte.cdk.load.command.DestinationStream
 import io.airbyte.cdk.load.data.Transformations.Companion.toAlphanumericAndUnderscore
-import io.airbyte.cdk.load.orchestration.db.ColumnNameGenerator
-import io.airbyte.cdk.load.orchestration.db.FinalTableNameGenerator
-import io.airbyte.cdk.load.orchestration.db.legacy_typing_deduping.TypingDedupingUtil
-import io.airbyte.cdk.load.table.TableName
+import io.airbyte.cdk.load.schema.model.TableName
+import io.airbyte.cdk.load.table.ColumnNameGenerator
+import io.airbyte.cdk.load.table.FinalTableNameGenerator
+import io.airbyte.cdk.load.table.TypingDedupingUtil
 import io.airbyte.integrations.destination.postgres.spec.PostgresConfiguration
 import jakarta.inject.Singleton
 import java.util.Locale
