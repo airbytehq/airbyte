@@ -13,8 +13,11 @@ import io.airbyte.cdk.load.data.FieldType
 import io.airbyte.cdk.load.data.ObjectType
 import io.airbyte.cdk.load.data.StringType
 import io.airbyte.cdk.load.message.Meta
+import io.airbyte.cdk.load.schema.model.ColumnSchema
+import io.airbyte.cdk.load.schema.model.StreamTableSchema
+import io.airbyte.cdk.load.schema.model.TableName
+import io.airbyte.cdk.load.schema.model.TableNames
 import io.airbyte.cdk.load.table.ColumnNameMapping
-import io.airbyte.cdk.load.table.TableName
 import io.airbyte.integrations.destination.snowflake.client.SnowflakeAirbyteClient
 import io.airbyte.integrations.destination.snowflake.db.toSnowflakeCompatibleName
 import io.airbyte.integrations.destination.snowflake.spec.SnowflakeConfiguration
@@ -51,6 +54,30 @@ class SnowflakeChecker(
             "_airbyte_connection_test_${
                 UUID.randomUUID().toString().replace("-".toRegex(), "")}".toSnowflakeCompatibleName()
         val qualifiedTableName = TableName(namespace = outputSchema, name = tableName)
+        val tableSchema =
+            StreamTableSchema(
+                tableNames =
+                    TableNames(
+                        finalTableName = qualifiedTableName,
+                        tempTableName = qualifiedTableName
+                    ),
+                columnSchema =
+                    ColumnSchema(
+                        inputToFinalColumnNames =
+                            mapOf(
+                                CHECK_COLUMN_NAME to CHECK_COLUMN_NAME.toSnowflakeCompatibleName()
+                            ),
+                        finalSchema =
+                            mapOf(
+                                CHECK_COLUMN_NAME.toSnowflakeCompatibleName() to
+                                    io.airbyte.cdk.load.component.ColumnType("VARCHAR", false)
+                            ),
+                        inputSchema =
+                            mapOf(CHECK_COLUMN_NAME to FieldType(StringType, nullable = false))
+                    ),
+                importType = Append
+            )
+
         val destinationStream =
             DestinationStream(
                 unmappedNamespace = outputSchema,
@@ -63,7 +90,8 @@ class SnowflakeChecker(
                 generationId = 0L,
                 minimumGenerationId = 0L,
                 syncId = 0L,
-                namespaceMapper = NamespaceMapper()
+                namespaceMapper = NamespaceMapper(),
+                tableSchema = tableSchema
             )
         runBlocking {
             try {

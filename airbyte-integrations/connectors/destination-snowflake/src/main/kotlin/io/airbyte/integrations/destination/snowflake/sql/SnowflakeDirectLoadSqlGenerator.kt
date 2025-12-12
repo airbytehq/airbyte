@@ -5,13 +5,15 @@
 package io.airbyte.integrations.destination.snowflake.sql
 
 import io.airbyte.cdk.load.command.Dedupe
-import io.airbyte.cdk.load.command.DestinationStream
 import io.airbyte.cdk.load.component.ColumnType
 import io.airbyte.cdk.load.component.ColumnTypeChange
 import io.airbyte.cdk.load.message.Meta.Companion.COLUMN_NAME_AB_EXTRACTED_AT
+import io.airbyte.cdk.load.message.Meta.Companion.COLUMN_NAME_AB_GENERATION_ID
+import io.airbyte.cdk.load.message.Meta.Companion.COLUMN_NAME_AB_META
+import io.airbyte.cdk.load.message.Meta.Companion.COLUMN_NAME_AB_RAW_ID
+import io.airbyte.cdk.load.schema.model.StreamTableSchema
+import io.airbyte.cdk.load.schema.model.TableName
 import io.airbyte.cdk.load.table.CDC_DELETED_AT_COLUMN
-import io.airbyte.cdk.load.table.ColumnNameMapping
-import io.airbyte.cdk.load.table.TableName
 import io.airbyte.cdk.load.util.UUIDGenerator
 import io.airbyte.integrations.destination.snowflake.db.toSnowflakeCompatibleName
 import io.airbyte.integrations.destination.snowflake.spec.CdcDeletionMode
@@ -50,14 +52,35 @@ class SnowflakeDirectLoadSqlGenerator(
     }
 
     fun createTable(
-        stream: DestinationStream,
         tableName: TableName,
-        columnNameMapping: ColumnNameMapping,
+        tableSchema: StreamTableSchema,
         replace: Boolean
     ): String {
+        val finalSchema = tableSchema.columnSchema.finalSchema
+
+        // Build column declarations from the munged schema
         val columnDeclarations =
-            columnUtils
-                .columnsAndTypes(stream.schema.asColumns(), columnNameMapping)
+            buildList {
+                    // Add Airbyte meta columns
+                    add(
+                        "${COLUMN_NAME_AB_RAW_ID.quote()} ${SnowflakeDataType.VARCHAR.typeName} NOT NULL"
+                    )
+                    add(
+                        "${COLUMN_NAME_AB_EXTRACTED_AT.quote()} ${SnowflakeDataType.TIMESTAMP_TZ.typeName} NOT NULL"
+                    )
+                    add(
+                        "${COLUMN_NAME_AB_META.quote()} ${SnowflakeDataType.VARIANT.typeName} NOT NULL"
+                    )
+                    add(
+                        "${COLUMN_NAME_AB_GENERATION_ID.quote()} ${SnowflakeDataType.NUMBER.typeName}"
+                    )
+
+                    // Add user columns from the munged schema
+                    finalSchema.forEach { (columnName, columnType) ->
+                        val nullability = if (columnType.nullable) "" else " NOT NULL"
+                        add("${columnName.quote()} ${columnType.type}$nullability")
+                    }
+                }
                 .joinToString(",\n")
 
         // Snowflake supports CREATE OR REPLACE TABLE, which is simpler than drop+recreate
@@ -77,19 +100,19 @@ class SnowflakeDirectLoadSqlGenerator(
         "SHOW COLUMNS IN TABLE ${snowflakeSqlNameUtils.fullyQualifiedName(tableName)}".andLog()
 
     fun copyTable(
-        columnNameMapping: ColumnNameMapping,
+        columnNames: Set<String>,
         sourceTableName: TableName,
         targetTableName: TableName
     ): String {
-        val columnNames = columnUtils.getColumnNames(columnNameMapping)
+        val columnList = columnNames.joinToString(", ") { it.quote() }
 
         return """
             INSERT INTO ${snowflakeSqlNameUtils.fullyQualifiedName(targetTableName)} 
             (
-                $columnNames
+                $columnList
             )
             SELECT
-                $columnNames
+                $columnList
             FROM ${snowflakeSqlNameUtils.fullyQualifiedName(sourceTableName)}
             """
             .trimIndent()
@@ -97,19 +120,18 @@ class SnowflakeDirectLoadSqlGenerator(
     }
 
     fun upsertTable(
-        stream: DestinationStream,
-        columnNameMapping: ColumnNameMapping,
+        tableSchema: StreamTableSchema,
         sourceTableName: TableName,
         targetTableName: TableName
     ): String {
-        val importType = stream.importType as Dedupe
+        val importType = tableSchema.importType as Dedupe
+        val finalSchema = tableSchema.columnSchema.finalSchema
 
         // Build primary key matching condition
+        val pks = tableSchema.getPrimaryKey().flatten()
         val pkEquivalent =
-            if (importType.primaryKey.isNotEmpty()) {
-                importType.primaryKey.joinToString(" AND ") { fieldPath ->
-                    val fieldName = fieldPath.first()
-                    val columnName = columnNameMapping[fieldName] ?: fieldName
+            if (pks.isNotEmpty()) {
+                pks.joinToString(" AND ") { columnName ->
                     val targetTableColumnName = "target_table.${columnName.quote()}"
                     val newRecordColumnName = "new_record.${columnName.quote()}"
                     """($targetTableColumnName = $newRecordColumnName OR ($targetTableColumnName IS NULL AND $newRecordColumnName IS NULL))"""
@@ -120,36 +142,25 @@ class SnowflakeDirectLoadSqlGenerator(
             }
 
         // Build column lists for INSERT and UPDATE
-        val columnList: String =
-            columnUtils
-                .getFormattedColumnNames(
-                    columns = stream.schema.asColumns(),
-                    columnNameMapping = columnNameMapping,
-                    quote = false,
-                )
-                .joinToString(
-                    ",\n",
-                ) {
-                    it.quote()
-                }
+        val allColumns = buildList {
+            add(COLUMN_NAME_AB_RAW_ID)
+            add(COLUMN_NAME_AB_EXTRACTED_AT)
+            add(COLUMN_NAME_AB_META)
+            add(COLUMN_NAME_AB_GENERATION_ID)
+            addAll(finalSchema.keys)
+        }
 
+        val columnList: String = allColumns.joinToString(",\n") { it.quote() }
         val newRecordColumnList: String =
-            columnUtils
-                .getFormattedColumnNames(
-                    columns = stream.schema.asColumns(),
-                    columnNameMapping = columnNameMapping,
-                    quote = false,
-                )
-                .joinToString(",\n") { "new_record.${it.quote()}" }
+            allColumns.joinToString(",\n") { "new_record.${it.quote()}" }
 
         // Get deduped records from source
-        val selectSourceRecords = selectDedupedRecords(stream, sourceTableName, columnNameMapping)
+        val selectSourceRecords = selectDedupedRecords(tableSchema, sourceTableName)
 
         // Build cursor comparison for determining which record is newer
         val cursorComparison: String
-        if (importType.cursor.isNotEmpty()) {
-            val cursorFieldName = importType.cursor.first()
-            val cursor = (columnNameMapping[cursorFieldName] ?: cursorFieldName)
+        val cursor = tableSchema.getCursor().firstOrNull()
+        if (cursor != null) {
             val targetTableCursor = "target_table.${cursor.quote()}"
             val newRecordCursor = "new_record.${cursor.quote()}"
             cursorComparison =
@@ -169,21 +180,15 @@ class SnowflakeDirectLoadSqlGenerator(
 
         // Build column assignments for UPDATE
         val columnAssignments: String =
-            columnUtils
-                .getFormattedColumnNames(
-                    columns = stream.schema.asColumns(),
-                    columnNameMapping = columnNameMapping,
-                    quote = false,
-                )
-                .joinToString(",\n") { column ->
-                    "${column.quote()} = new_record.${column.quote()}"
-                }
+            allColumns.joinToString(",\n") { column ->
+                "${column.quote()} = new_record.${column.quote()}"
+            }
 
         // Handle CDC deletions based on mode
         val cdcDeleteClause: String
         val cdcSkipInsertClause: String
         if (
-            stream.schema.asColumns().containsKey(CDC_DELETED_AT_COLUMN) &&
+            finalSchema.containsKey(CDC_DELETED_AT_COLUMN) &&
                 snowflakeConfiguration.cdcDeletionMode == CdcDeletionMode.HARD_DELETE
         ) {
             // Execute CDC deletions if there's already a record
@@ -242,42 +247,34 @@ class SnowflakeDirectLoadSqlGenerator(
      * table. Uses ROW_NUMBER() window function to select the most recent record per primary key.
      */
     private fun selectDedupedRecords(
-        stream: DestinationStream,
-        sourceTableName: TableName,
-        columnNameMapping: ColumnNameMapping
+        tableSchema: StreamTableSchema,
+        sourceTableName: TableName
     ): String {
-        val columnList: String =
-            columnUtils
-                .getFormattedColumnNames(
-                    columns = stream.schema.asColumns(),
-                    columnNameMapping = columnNameMapping,
-                    quote = false,
-                )
-                .joinToString(
-                    ",\n",
-                ) {
-                    it.quote()
-                }
-        val importType = stream.importType as Dedupe
+        val allColumns = buildList {
+            add(COLUMN_NAME_AB_RAW_ID)
+            add(COLUMN_NAME_AB_EXTRACTED_AT)
+            add(COLUMN_NAME_AB_META)
+            add(COLUMN_NAME_AB_GENERATION_ID)
+            addAll(tableSchema.columnSchema.finalSchema.keys)
+        }
+        val columnList: String = allColumns.joinToString(",\n") { it.quote() }
+        val importType = tableSchema.importType as Dedupe
 
         // Build the primary key list for partitioning
+        val pks = tableSchema.getPrimaryKey().flatten()
         val pkList =
-            if (importType.primaryKey.isNotEmpty()) {
-                importType.primaryKey.joinToString(",") { fieldPath ->
-                    (columnNameMapping[fieldPath.first()] ?: fieldPath.first()).quote()
-                }
+            if (pks.isNotEmpty()) {
+                pks.joinToString(",") { it.quote() }
             } else {
                 // Should not happen as we check this earlier, but handle it defensively
                 throw IllegalArgumentException("Cannot deduplicate without primary key")
             }
 
         // Build cursor order clause for sorting within each partition
+        val cursor = tableSchema.getCursor().firstOrNull()
         val cursorOrderClause =
-            if (importType.cursor.isNotEmpty()) {
-                val columnName =
-                    (columnNameMapping[importType.cursor.first()] ?: importType.cursor.first())
-                        .quote()
-                "$columnName DESC NULLS LAST,"
+            if (cursor != null) {
+                "${cursor.quote()} DESC NULLS LAST,"
             } else {
                 ""
             }

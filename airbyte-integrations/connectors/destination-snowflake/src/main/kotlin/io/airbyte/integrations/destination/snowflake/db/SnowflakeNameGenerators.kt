@@ -5,49 +5,46 @@
 package io.airbyte.integrations.destination.snowflake.db
 
 import io.airbyte.cdk.ConfigErrorException
-import io.airbyte.cdk.load.command.DestinationStream
-import io.airbyte.cdk.load.orchestration.db.ColumnNameGenerator
-import io.airbyte.cdk.load.orchestration.db.FinalTableNameGenerator
-import io.airbyte.cdk.load.orchestration.db.legacy_typing_deduping.TypingDedupingUtil
-import io.airbyte.cdk.load.table.TableName
 import io.airbyte.integrations.destination.snowflake.spec.SnowflakeConfiguration
 import io.airbyte.integrations.destination.snowflake.sql.QUOTE
 import jakarta.inject.Singleton
 
-@Singleton
-class SnowflakeFinalTableNameGenerator(private val config: SnowflakeConfiguration) :
-    FinalTableNameGenerator {
-    override fun getTableName(streamDescriptor: DestinationStream.Descriptor): TableName {
-        val namespace = streamDescriptor.namespace ?: config.schema
-        return if (!config.legacyRawTablesOnly) {
-            TableName(
-                namespace = namespace.toSnowflakeCompatibleName(),
-                name = streamDescriptor.name.toSnowflakeCompatibleName(),
-            )
-        } else {
-            TableName(
-                namespace = config.internalTableSchema,
-                name =
-                    TypingDedupingUtil.concatenateRawTableName(
-                        namespace = escapeJsonIdentifier(namespace),
-                        name = escapeJsonIdentifier(streamDescriptor.name),
-                    ),
-            )
-        }
-    }
-}
+// @Deprecated("Use SnowflakeTableSchemaMapper instead")
+// @Singleton
+// class SnowflakeFinalTableNameGenerator(private val config: SnowflakeConfiguration) :
+//     FinalTableNameGenerator {
+//     override fun getTableName(streamDescriptor: DestinationStream.Descriptor): TableName {
+//         val namespace = streamDescriptor.namespace ?: config.schema
+//         return if (!config.legacyRawTablesOnly) {
+//             TableName(
+//                 namespace = namespace.toSnowflakeCompatibleName(),
+//                 name = streamDescriptor.name.toSnowflakeCompatibleName(),
+//             )
+//         } else {
+//             TableName(
+//                 namespace = config.internalTableSchema,
+//                 name =
+//                     TypingDedupingUtil.concatenateRawTableName(
+//                         namespace = escapeJsonIdentifier(namespace),
+//                         name = escapeJsonIdentifier(streamDescriptor.name),
+//                     ),
+//             )
+//         }
+//     }
+// }
 
 @Singleton
-class SnowflakeColumnNameGenerator(private val config: SnowflakeConfiguration) :
-    ColumnNameGenerator {
-    override fun getColumnName(column: String): ColumnNameGenerator.ColumnName {
+class SnowflakeColumnNameGenerator(private val config: SnowflakeConfiguration) {
+    data class ColumnName(val name: String, val displayName: String)
+
+    fun getColumnName(column: String): ColumnName {
         return if (!config.legacyRawTablesOnly) {
-            ColumnNameGenerator.ColumnName(
+            ColumnName(
                 column.toSnowflakeCompatibleName(),
                 column.toSnowflakeCompatibleName(),
             )
         } else {
-            ColumnNameGenerator.ColumnName(
+            ColumnName(
                 column,
                 column,
             )

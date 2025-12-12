@@ -13,8 +13,8 @@ import io.airbyte.cdk.load.component.TableColumns
 import io.airbyte.cdk.load.component.TableOperationsClient
 import io.airbyte.cdk.load.component.TableSchema
 import io.airbyte.cdk.load.component.TableSchemaEvolutionClient
+import io.airbyte.cdk.load.schema.model.TableName
 import io.airbyte.cdk.load.table.ColumnNameMapping
-import io.airbyte.cdk.load.table.TableName
 import io.airbyte.cdk.load.util.deserializeToNode
 import io.airbyte.integrations.destination.snowflake.db.ColumnDefinition
 import io.airbyte.integrations.destination.snowflake.db.escapeJsonIdentifier
@@ -126,7 +126,7 @@ class SnowflakeAirbyteClient(
         columnNameMapping: ColumnNameMapping,
         replace: Boolean
     ) {
-        execute(sqlGenerator.createTable(stream, tableName, columnNameMapping, replace))
+        execute(sqlGenerator.createTable(tableName, stream.tableSchema, replace))
         execute(sqlGenerator.createSnowflakeStage(tableName))
     }
 
@@ -163,7 +163,18 @@ class SnowflakeAirbyteClient(
         sourceTableName: TableName,
         targetTableName: TableName
     ) {
-        execute(sqlGenerator.copyTable(columnNameMapping, sourceTableName, targetTableName))
+        // Get all column names from the mapping (both meta columns and user columns)
+        val columnNames = buildSet {
+            // Add Airbyte meta columns
+            add("_AIRBYTE_RAW_ID")
+            add("_AIRBYTE_EXTRACTED_AT")
+            add("_AIRBYTE_META")
+            add("_AIRBYTE_GENERATION_ID")
+            // Add user columns from mapping
+            addAll(columnNameMapping.values)
+        }
+
+        execute(sqlGenerator.copyTable(columnNames, sourceTableName, targetTableName))
     }
 
     override suspend fun upsertTable(
@@ -172,9 +183,7 @@ class SnowflakeAirbyteClient(
         sourceTableName: TableName,
         targetTableName: TableName
     ) {
-        execute(
-            sqlGenerator.upsertTable(stream, columnNameMapping, sourceTableName, targetTableName)
-        )
+        execute(sqlGenerator.upsertTable(stream.tableSchema, sourceTableName, targetTableName))
     }
 
     override suspend fun dropTable(tableName: TableName) {
