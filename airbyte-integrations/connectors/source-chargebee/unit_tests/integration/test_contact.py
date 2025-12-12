@@ -38,7 +38,7 @@ class TestContactStream(TestCase):
         )
 
         output = read_output(config_builder=config(), stream_name=_STREAM_NAME)
-        assert len(output.records) >= 1
+        assert len(output.records) == 1
         assert output.records[0].record.data["id"] == "contact_001"
 
     @HttpMocker()
@@ -58,7 +58,7 @@ class TestContactStream(TestCase):
         )
 
         output = read_output(config_builder=config(), stream_name=_STREAM_NAME)
-        assert len(output.records) >= 2
+        assert len(output.records) == 2
 
     @HttpMocker()
     def test_both_transformations(self, http_mocker: HttpMocker) -> None:
@@ -81,7 +81,7 @@ class TestContactStream(TestCase):
 
         output = read_output(config_builder=config(), stream_name=_STREAM_NAME)
 
-        assert len(output.records) >= 1
+        assert len(output.records) == 1
         record_data = output.records[0].record.data
 
         # ========== Test Transformation #1: AddFields ==========

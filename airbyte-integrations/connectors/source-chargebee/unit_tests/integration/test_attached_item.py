@@ -38,7 +38,7 @@ class TestAttachedItemStream(TestCase):
         )
 
         output = read_output(config_builder=config(), stream_name=_STREAM_NAME)
-        assert len(output.records) >= 1
+        assert len(output.records) == 1
         assert output.records[0].record.data["id"] == "attached_001"
 
     @HttpMocker()
@@ -58,7 +58,7 @@ class TestAttachedItemStream(TestCase):
         )
 
         output = read_output(config_builder=config(), stream_name=_STREAM_NAME)
-        assert len(output.records) >= 2
+        assert len(output.records) == 2
 
     @HttpMocker()
     def test_transformation_custom_fields(self, http_mocker: HttpMocker) -> None:
@@ -77,7 +77,7 @@ class TestAttachedItemStream(TestCase):
 
         output = read_output(config_builder=config(), stream_name=_STREAM_NAME)
 
-        assert len(output.records) >= 1
+        assert len(output.records) == 1
         record_data = output.records[0].record.data
 
         # Assert cf_ fields are REMOVED from top level

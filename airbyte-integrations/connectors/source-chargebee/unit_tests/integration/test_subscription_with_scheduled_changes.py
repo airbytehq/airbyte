@@ -38,7 +38,7 @@ class TestSubscriptionWithScheduledChangesStream(TestCase):
         )
 
         output = read_output(config_builder=config(), stream_name=_STREAM_NAME)
-        assert len(output.records) >= 1
+        assert len(output.records) == 1
         assert output.records[0].record.data["id"] == "sub_001"
 
     @HttpMocker()
@@ -58,7 +58,7 @@ class TestSubscriptionWithScheduledChangesStream(TestCase):
         )
 
         output = read_output(config_builder=config(), stream_name=_STREAM_NAME)
-        assert len(output.records) >= 2
+        assert len(output.records) == 2
 
     @HttpMocker()
     def test_error_no_scheduled_changes_ignored(self, http_mocker: HttpMocker) -> None:
@@ -73,7 +73,12 @@ class TestSubscriptionWithScheduledChangesStream(TestCase):
         )
 
         output = read_output(config_builder=config(), stream_name=_STREAM_NAME)
+
+        # Verify no records returned (error was ignored)
         assert len(output.records) == 0
+
+        # Verify error message from manifest is logged
+        assert output.is_in_logs("No scheduled changes for subscription.")
 
     @HttpMocker()
     def test_both_transformations(self, http_mocker: HttpMocker) -> None:
@@ -96,7 +101,7 @@ class TestSubscriptionWithScheduledChangesStream(TestCase):
 
         output = read_output(config_builder=config(), stream_name=_STREAM_NAME)
 
-        assert len(output.records) >= 1
+        assert len(output.records) == 1
         record_data = output.records[0].record.data
 
         # ========== Test Transformation #1: AddFields ==========
