@@ -44,4 +44,8 @@ data:
   #         secretStore:
   #           type: GSM
   #           alias: airbyte-connector-testing-secret-store
+  externalDocumentationUrls:
+    - title: News API documentation
+      url: https://newsapi.org/docs
+      type: api_reference
 metadataSpecVersion: "1.0"

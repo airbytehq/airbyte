@@ -33,3 +33,10 @@ data:
   ab_internal:
     ql: 100
     sl: 100
+  externalDocumentationUrls:
+    - title: Concord API documentation
+      url: https://concord.walmartlabs.com/docs/api/
+      type: api_reference
+    - title: Concord authentication
+      url: https://concord.walmartlabs.com/docs/getting-started/authentication.html
+      type: authentication_guide
