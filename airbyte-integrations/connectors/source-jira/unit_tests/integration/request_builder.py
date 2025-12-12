@@ -4,6 +4,7 @@ import base64
 from typing import Optional
 
 from airbyte_cdk.test.mock_http import HttpRequest
+from airbyte_cdk.test.mock_http.request import ANY_QUERY_PARAMS
 
 
 class JiraRequestBuilder:
@@ -386,6 +387,7 @@ class JiraRequestBuilder:
         if self._any_query_params:
             return HttpRequest(
                 url=f"{self._get_base_url()}/{self._resource}",
+                query_params=ANY_QUERY_PARAMS,
                 headers={"Authorization": self._get_auth_header()},
             )
 
