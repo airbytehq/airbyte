@@ -103,9 +103,9 @@ export default function Home() {
       icon: ReleaseNotesIcon,
     },
     {
-      title: 'Agentic data platform',
+      title: 'Agent engine',
       link: '/ai-agents/',
-      description: 'Use Airbyte\'s agentic data platform to build intelligent data pipelines, explore your data, and work with it with help from AI.',
+      description: 'Use Airbyte\'s Agent engine to build intelligent data pipelines, explore your data, and work with it with help from AI.',
       icon: AIAgentsIcon,
     },
     {
@@ -136,7 +136,8 @@ export default function Home() {
               <p className={styles.heroDescription}>
                 Airbyte is an open source data integration, activation, and agentic data platform.
                 Use our data replication platform to consolidate data from hundreds of sources into your data warehouses, data lakes, and databases. 
-                Then, move data into the operational tools where work happens, like CRMs, marketing platforms, and support systems. Or, use our agentic data platform to ask questions, explore, and update your data with AI agents.
+                Then, move data into the operational tools where work happens, like CRMs, marketing platforms, and support systems. 
+                Or, use our Agent engine to ask questions, explore, and update your data with AI agents.
               </p>
             </div>
             <div className={styles.heroRight}>
