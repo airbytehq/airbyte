@@ -100,8 +100,8 @@ class JiraRequestBuilder:
 
     @classmethod
     def issue_resolutions_endpoint(cls, domain: str) -> "JiraRequestBuilder":
-        """Create a request builder for the /resolution endpoint."""
-        return cls(domain, "resolution", api_version="v3")
+        """Create a request builder for the /resolution/search endpoint."""
+        return cls(domain, "resolution/search", api_version="v3")
 
     @classmethod
     def issue_security_schemes_endpoint(cls, domain: str) -> "JiraRequestBuilder":
