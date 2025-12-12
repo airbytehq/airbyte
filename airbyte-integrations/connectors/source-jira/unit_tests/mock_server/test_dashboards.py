@@ -57,7 +57,10 @@ class TestDashboardsStream(TestCase):
         # First request doesn't include startAt parameter
         http_mocker.get(
             JiraRequestBuilder.dashboards_endpoint(_DOMAIN).with_max_results(50).build(),
-            JiraPaginatedResponseBuilder("dashboards").with_records(dashboard_records).with_pagination(start_at=0, max_results=50, total=2, is_last=True).build(),
+            JiraPaginatedResponseBuilder("dashboards")
+            .with_records(dashboard_records)
+            .with_pagination(start_at=0, max_results=50, total=2, is_last=True)
+            .build(),
         )
 
         source = get_source(config=config)
@@ -95,13 +98,19 @@ class TestDashboardsStream(TestCase):
         # Page 1 request (first request doesn't include startAt)
         http_mocker.get(
             JiraRequestBuilder.dashboards_endpoint(_DOMAIN).with_max_results(50).build(),
-            JiraPaginatedResponseBuilder("dashboards").with_records(page1_records).with_pagination(start_at=0, max_results=2, total=3, is_last=False).build(),
+            JiraPaginatedResponseBuilder("dashboards")
+            .with_records(page1_records)
+            .with_pagination(start_at=0, max_results=2, total=3, is_last=False)
+            .build(),
         )
 
         # Page 2 request (subsequent requests include startAt)
         http_mocker.get(
             JiraRequestBuilder.dashboards_endpoint(_DOMAIN).with_max_results(50).with_start_at(2).build(),
-            JiraPaginatedResponseBuilder("dashboards").with_records(page2_records).with_pagination(start_at=2, max_results=2, total=3, is_last=True).build(),
+            JiraPaginatedResponseBuilder("dashboards")
+            .with_records(page2_records)
+            .with_pagination(start_at=2, max_results=2, total=3, is_last=True)
+            .build(),
         )
 
         source = get_source(config=config)
@@ -123,7 +132,10 @@ class TestDashboardsStream(TestCase):
         # First request doesn't include startAt parameter
         http_mocker.get(
             JiraRequestBuilder.dashboards_endpoint(_DOMAIN).with_max_results(50).build(),
-            JiraPaginatedResponseBuilder("dashboards").with_records([]).with_pagination(start_at=0, max_results=50, total=0, is_last=True).build(),
+            JiraPaginatedResponseBuilder("dashboards")
+            .with_records([])
+            .with_pagination(start_at=0, max_results=50, total=0, is_last=True)
+            .build(),
         )
 
         source = get_source(config=config)

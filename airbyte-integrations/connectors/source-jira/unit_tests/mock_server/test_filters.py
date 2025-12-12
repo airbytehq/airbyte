@@ -59,7 +59,10 @@ class TestFiltersStream(TestCase):
 
         http_mocker.get(
             JiraRequestBuilder.filters_endpoint(_DOMAIN).with_any_query_params().build(),
-            JiraPaginatedResponseBuilder("values").with_records(filter_records).with_pagination(start_at=0, max_results=50, total=2, is_last=True).build(),
+            JiraPaginatedResponseBuilder("values")
+            .with_records(filter_records)
+            .with_pagination(start_at=0, max_results=50, total=2, is_last=True)
+            .build(),
         )
 
         source = get_source(config=config)
@@ -93,8 +96,14 @@ class TestFiltersStream(TestCase):
         http_mocker.get(
             JiraRequestBuilder.filters_endpoint(_DOMAIN).with_any_query_params().build(),
             [
-                JiraPaginatedResponseBuilder("values").with_records(page1_records).with_pagination(start_at=0, max_results=2, total=3, is_last=False).build(),
-                JiraPaginatedResponseBuilder("values").with_records(page2_records).with_pagination(start_at=2, max_results=2, total=3, is_last=True).build(),
+                JiraPaginatedResponseBuilder("values")
+                .with_records(page1_records)
+                .with_pagination(start_at=0, max_results=2, total=3, is_last=False)
+                .build(),
+                JiraPaginatedResponseBuilder("values")
+                .with_records(page2_records)
+                .with_pagination(start_at=2, max_results=2, total=3, is_last=True)
+                .build(),
             ],
         )
 
@@ -117,7 +126,10 @@ class TestFiltersStream(TestCase):
 
         http_mocker.get(
             JiraRequestBuilder.filters_endpoint(_DOMAIN).with_any_query_params().build(),
-            JiraPaginatedResponseBuilder("values").with_records([]).with_pagination(start_at=0, max_results=50, total=0, is_last=True).build(),
+            JiraPaginatedResponseBuilder("values")
+            .with_records([])
+            .with_pagination(start_at=0, max_results=50, total=0, is_last=True)
+            .build(),
         )
 
         source = get_source(config=config)

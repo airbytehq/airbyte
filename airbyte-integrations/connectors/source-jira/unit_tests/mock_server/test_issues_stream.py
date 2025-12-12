@@ -169,18 +169,51 @@ class TestIssuesStream(TestCase):
         config = ConfigBuilder().with_domain(_DOMAIN).build()
 
         page1_records = [
-            {"id": "10001", "key": "PROJ-1", "fields": {"summary": "Issue 1", "project": {"id": "10001", "key": "PROJ1"}, "created": "2024-01-01T00:00:00.000+0000", "updated": "2024-01-15T00:00:00.000+0000"}},
-            {"id": "10002", "key": "PROJ-2", "fields": {"summary": "Issue 2", "project": {"id": "10001", "key": "PROJ1"}, "created": "2024-01-02T00:00:00.000+0000", "updated": "2024-01-16T00:00:00.000+0000"}},
+            {
+                "id": "10001",
+                "key": "PROJ-1",
+                "fields": {
+                    "summary": "Issue 1",
+                    "project": {"id": "10001", "key": "PROJ1"},
+                    "created": "2024-01-01T00:00:00.000+0000",
+                    "updated": "2024-01-15T00:00:00.000+0000",
+                },
+            },
+            {
+                "id": "10002",
+                "key": "PROJ-2",
+                "fields": {
+                    "summary": "Issue 2",
+                    "project": {"id": "10001", "key": "PROJ1"},
+                    "created": "2024-01-02T00:00:00.000+0000",
+                    "updated": "2024-01-16T00:00:00.000+0000",
+                },
+            },
         ]
         page2_records = [
-            {"id": "10003", "key": "PROJ-3", "fields": {"summary": "Issue 3", "project": {"id": "10001", "key": "PROJ1"}, "created": "2024-01-03T00:00:00.000+0000", "updated": "2024-01-17T00:00:00.000+0000"}},
+            {
+                "id": "10003",
+                "key": "PROJ-3",
+                "fields": {
+                    "summary": "Issue 3",
+                    "project": {"id": "10001", "key": "PROJ1"},
+                    "created": "2024-01-03T00:00:00.000+0000",
+                    "updated": "2024-01-17T00:00:00.000+0000",
+                },
+            },
         ]
 
         http_mocker.get(
             JiraRequestBuilder.issues_endpoint(_DOMAIN).with_any_query_params().build(),
             [
-                JiraJqlResponseBuilder().with_records(page1_records).with_pagination(start_at=0, max_results=2, total=3, is_last=False, next_page_token="token123").build(),
-                JiraJqlResponseBuilder().with_records(page2_records).with_pagination(start_at=2, max_results=2, total=3, is_last=True).build(),
+                JiraJqlResponseBuilder()
+                .with_records(page1_records)
+                .with_pagination(start_at=0, max_results=2, total=3, is_last=False, next_page_token="token123")
+                .build(),
+                JiraJqlResponseBuilder()
+                .with_records(page2_records)
+                .with_pagination(start_at=2, max_results=2, total=3, is_last=True)
+                .build(),
             ],
         )
 
@@ -210,7 +243,10 @@ class TestIssuesStream(TestCase):
         ]
         http_mocker.get(
             JiraRequestBuilder.projects_endpoint(_DOMAIN).with_any_query_params().build(),
-            JiraPaginatedResponseBuilder("values").with_records(project_records).with_pagination(start_at=0, max_results=50, total=1, is_last=True).build(),
+            JiraPaginatedResponseBuilder("values")
+            .with_records(project_records)
+            .with_pagination(start_at=0, max_results=50, total=1, is_last=True)
+            .build(),
         )
 
         # Mock issues endpoint

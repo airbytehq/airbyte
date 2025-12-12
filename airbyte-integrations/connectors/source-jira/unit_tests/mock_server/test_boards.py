@@ -71,7 +71,10 @@ class TestBoardsStream(TestCase):
 
         http_mocker.get(
             JiraRequestBuilder.boards_endpoint(_DOMAIN).with_any_query_params().build(),
-            JiraAgileResponseBuilder("values").with_records(board_records).with_pagination(start_at=0, max_results=50, total=2, is_last=True).build(),
+            JiraAgileResponseBuilder("values")
+            .with_records(board_records)
+            .with_pagination(start_at=0, max_results=50, total=2, is_last=True)
+            .build(),
         )
 
         source = get_source(config=config)
@@ -110,8 +113,14 @@ class TestBoardsStream(TestCase):
         http_mocker.get(
             JiraRequestBuilder.boards_endpoint(_DOMAIN).with_any_query_params().build(),
             [
-                JiraAgileResponseBuilder("values").with_records(page1_records).with_pagination(start_at=0, max_results=2, total=3, is_last=False).build(),
-                JiraAgileResponseBuilder("values").with_records(page2_records).with_pagination(start_at=2, max_results=2, total=3, is_last=True).build(),
+                JiraAgileResponseBuilder("values")
+                .with_records(page1_records)
+                .with_pagination(start_at=0, max_results=2, total=3, is_last=False)
+                .build(),
+                JiraAgileResponseBuilder("values")
+                .with_records(page2_records)
+                .with_pagination(start_at=2, max_results=2, total=3, is_last=True)
+                .build(),
             ],
         )
 
@@ -144,7 +153,10 @@ class TestBoardsStream(TestCase):
 
         http_mocker.get(
             JiraRequestBuilder.boards_endpoint(_DOMAIN).with_any_query_params().build(),
-            JiraAgileResponseBuilder("values").with_records(board_records).with_pagination(start_at=0, max_results=50, total=3, is_last=True).build(),
+            JiraAgileResponseBuilder("values")
+            .with_records(board_records)
+            .with_pagination(start_at=0, max_results=50, total=3, is_last=True)
+            .build(),
         )
 
         source = get_source(config=config)
