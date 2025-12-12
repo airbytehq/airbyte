@@ -1,7 +1,3 @@
----
-products: embedded
----
-
 # Connector Builder MCP Server
 
 :::note

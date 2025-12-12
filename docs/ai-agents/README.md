@@ -1,7 +1,3 @@
----
-products: embedded
----
-
 import Taxonomy from "@site/static/_taxonomy_of_data_movement.md";
 
 # Agent engine

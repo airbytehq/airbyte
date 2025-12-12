@@ -1,7 +1,3 @@
----
-products: embedded
----
-
 # PyAirbyte MCP Server
 
 :::note
