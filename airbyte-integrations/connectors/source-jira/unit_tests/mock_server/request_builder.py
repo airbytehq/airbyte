@@ -205,8 +205,8 @@ class JiraRequestBuilder:
 
     @classmethod
     def project_components_endpoint(cls, domain: str, project_id_or_key: str) -> "JiraRequestBuilder":
-        """Create a request builder for the /project/{projectIdOrKey}/components endpoint."""
-        return cls(domain, f"project/{project_id_or_key}/components", api_version="v3")
+        """Create a request builder for the /project/{projectIdOrKey}/component endpoint."""
+        return cls(domain, f"project/{project_id_or_key}/component", api_version="v3")
 
     @classmethod
     def project_email_endpoint(cls, domain: str, project_id: str) -> "JiraRequestBuilder":
