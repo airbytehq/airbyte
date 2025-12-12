@@ -4,8 +4,9 @@ products: embedded
 
 # Connector Builder MCP Server
 
-> **NOTE:**
-> The Connector Builder MCP server is currently in development. This documentation will be updated as the server becomes available.
+:::note
+The Connector Builder MCP server is currently in development. This documentation will be updated as the server becomes available.
+:::
 
 The Connector Builder MCP server provides AI-driven connector building experience for building and testing Airbyte connectors using the [Model Context Protocol](https://modelcontextprotocol.io/). This enables AI assistants to help developers create, configure, and validate custom connectors through a standardized interface.
 

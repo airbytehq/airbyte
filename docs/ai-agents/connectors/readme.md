@@ -6,7 +6,7 @@ Airbyte's AI connectors are Python packages that equip AI agents to call third-p
 
 ## How AI connectors differ from data replication connectors
 
-Traditional Airbyte connectors are built for data replication. They move large volumes of data from a source into a destination such as a warehouse or data lake on a schedule. AI connectors are lightweight, type-safe Python clients that let AI agents call third-party APIs directly in real time.
+Traditional Airbyte connectors are for data replication. They move large volumes of data from a source into a destination such as a warehouse or data lake on a schedule. AI connectors are lightweight, type-safe Python clients that let AI agents call third-party APIs directly in real time.
 
 The key differences are:
 
@@ -31,6 +31,7 @@ connectors/
 │   ├── pyproject.toml
 │   ├── CHANGELOG.md
 │   └── README.md
+│   └── REFERENCE.md
 ├── github/
 │   └── ...
 └── ...
@@ -39,7 +40,7 @@ connectors/
 Inside each connector folder, you can find the following.
 
 - The generated Python client
-- A connector-specific README with supported operations and authentication requirements
+- Connector-specific documentation with supported operations and authentication requirements
 - Typed methods generated from Airbyte's connector definitions
 - Validation + error handling
 
@@ -47,9 +48,9 @@ Inside each connector folder, you can find the following.
 
 Use Airbyte AI Connectors when you want:
 
-- **Agent‑friendly data access**: Let LLM agents call real SaaS APIs. For example, CRM, billing, analytics) with guardrails and typed responses.
+- **Agent‑friendly data access**: Let LLM agents call real SaaS APIs, like a CRM, billing, or analytics, with guardrails and typed responses.
 
-- **Consistent auth and schemas**: Reuse a uniform configuration and error‑handling pattern across many APIs. Use connectors inside frameworks like PydanticAI, LangChain, or any custom agent loop.
+- **Consistent auth and schemas**: Reuse a uniform configuration and error‑handling pattern across many APIs. Use connectors inside frameworks like Pydantic AI, LangChain, or any custom agent loop.
 
 - **Composable building blocks**: Combine multiple connectors in a single agent to orchestrate multi‑system workflows. Compared to building ad‑hoc API wrappers, these connectors give you a shared structure, generated clients, and alignment with the rest of the Airbyte ecosystem.
 

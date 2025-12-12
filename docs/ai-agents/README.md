@@ -12,25 +12,21 @@ The platform is a solution for all types of audiences, from AI engineers who are
 
 - **MCP Servers**: Model Context Protocol (MCP) servers for different use cases. The [**PyAirbyte MCP**](#pyairbyte-mcp) is a local MCP server for managing Airbyte connectors through AI assistants. The [**Connector Builder MCP (coming soon)**](#connector-builder-mcp) is an AI-assisted connector development.
 
-- **Airbyte Embedded Widget**: App development teams who have signed up for Airbyte Embedded and are looking to get started onboarding customers using the Embedded Widget can follow the get started guide at the bottom of this page, which will step you through a complete sample onboarding app.
+- **Airbyte Embedded**: Add hundreds of integrations into your product instantly. Your end-users can authenticate into their data sources and begin syncing data to your product. You no longer need to spend engineering cycles on data movement. Focus on what makes your product great, rather than maintaining ELT pipelines.
 
-- **Authentication Proxies**: Connect safely to third party APIs using Airbyte's Authentication Proxies.
-
-- **AI connectors**: AI-optimized connectors, which you can use with Airbyte's MCP server or your own agents written in Python.
+- **AI connectors**: AI-optimized, type-safe connectors, usable with Airbyte's Connector MCP server or your own Python agents.
 
 :::info New and growing
-The Agent engine is new and growing rapidly. Airbyte is actively seeking feedback, design partners, and community involvement. Expect this library of tools to grow and change rapidly.
+The Agent engine is new and growing. Airbyte is actively seeking feedback, design partners, and community involvement. Expect this library of tools to grow and change rapidly.
 :::
 
 ## Why Airbyte?
 
 - **Agents hallucinate or fail**: Stale and incomplete data erodes agent effectiveness. AI agents need real-time context from multiple business systems to be fully effective.
 
-- **Custom API integrations are brittle and expensive**: Airbyte's library of agentic connectors are open source. Benefit from the economy of scale as your third-party APIs evolve, add new endpoints, and deprecate old ones.
+- **Custom API integrations are brittle and expensive**: Airbyte's library of agentic connectors are open source. Benefit from the economy of scale as third-party APIs evolve, add new endpoints, and deprecate old ones.
 
 - **Agents need to write, not just read**: Airbyte provides the operational backbone needed to make agentic AI actually work in production. Fetch, write, and reason with live business data through a standardized, open protocol.
-
-- **Agent data access needs governance and observability**: Every agent interaction is governed through row-level and user-level access controls that respect original source permissions. Complete OAuth handling and credential management means agents can only access what users are authorized to see. Every write operation is transactional and reversible with full audit trails, eliminating the governance black holes that prevent enterprises from deploying agents in production.
 
 ### The use case for agentic data
 
@@ -78,7 +74,7 @@ Airbyte provides multiple MCP (Model Context Protocol) servers to enable AI-assi
 
 ### PyAirbyte MCP
 
-[The PyAirbyte MCP server](./pyairbyte-mcp.md) is a local MCP server that provides a standardized interface for managing Airbyte connectors through MCP-compatible clients. It allows you to list connectors, validate configurations, and run sync operations using the MCP protocol. This is the recommended MCP server for most use cases.
+[The PyAirbyte MCP server](./mcp-servers/pyairbyte-mcp.md) is a local MCP server that provides a standardized interface for managing Airbyte connectors through MCP-compatible clients. It allows you to list connectors, validate configurations, and run sync operations using the MCP protocol. This is the recommended MCP server for most use cases.
 
 ### Connector MCP
 
@@ -86,4 +82,4 @@ Use [AI connectors](connectors) to interact with your data using natural languag
 
 ### Connector Builder MCP
 
-[The Connector Builder MCP server](./connector-builder-mcp.md) (coming soon) will provide AI-assisted capabilities for building and testing Airbyte connectors using the Model Context Protocol.
+[The Connector Builder MCP server](./mcp-servers/connector-builder-mcp.md) (coming soon) will provide AI-assisted capabilities for building and testing Airbyte connectors using the Model Context Protocol.
