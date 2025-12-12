@@ -16,5 +16,12 @@
     "allowSyntheticDefaultImports": true
   },
   "include": ["docosaurus.config.ts"],
-  "exclude": ["node_modules", "build", ".docusaurus", "dist"]
+  "exclude": ["node_modules", "build", ".docusaurus", "dist"],
+  "ts-node": {
+    "esm": true,
+    "experimentalEsm": true,
+    "moduleTypes": {
+      "js-yaml": "esm"
+    }
+  }
 }
