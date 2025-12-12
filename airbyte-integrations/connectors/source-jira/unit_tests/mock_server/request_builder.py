@@ -144,6 +144,11 @@ class JiraRequestBuilder:
         return cls(domain, f"issue/{issue_id_or_key}/properties", api_version="v3")
 
     @classmethod
+    def issue_property_endpoint(cls, domain: str, issue_id_or_key: str, property_key: str) -> "JiraRequestBuilder":
+        """Create a request builder for the /issue/{issueIdOrKey}/properties/{propertyKey} endpoint."""
+        return cls(domain, f"issue/{issue_id_or_key}/properties/{property_key}", api_version="v3")
+
+    @classmethod
     def issue_remote_links_endpoint(cls, domain: str, issue_id_or_key: str) -> "JiraRequestBuilder":
         """Create a request builder for the /issue/{issueIdOrKey}/remotelink endpoint."""
         return cls(domain, f"issue/{issue_id_or_key}/remotelink", api_version="v3")
