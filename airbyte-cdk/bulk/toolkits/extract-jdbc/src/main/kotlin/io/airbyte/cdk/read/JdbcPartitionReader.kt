@@ -222,11 +222,11 @@ class JdbcResumablePartitionReader<P : JdbcSplittablePartition<*>>(
         // The run method ended because of either the LIMIT or the timeout.
         // Adjust the LIMIT value so that it grows or shrinks to try to fit the timeout.
         if (incumbentLimit.get() > 0L) {
-            if (runComplete.get() && streamState.limit <= incumbentLimit.get()) {
-                // Increase the limit clause for the next PartitionReader, because it's too small.
-                // If it had been bigger then run might have executed for longer.
-                streamState.updateLimitState { it.up }
-            }
+//            if (runComplete.get() && streamState.limit <= incumbentLimit.get()) {
+//                // Increase the limit clause for the next PartitionReader, because it's too small.
+//                // If it had been bigger then run might have executed for longer.
+//                streamState.updateLimitState { it.up }
+//            }
             if (!runComplete.get() && incumbentLimit.get() <= streamState.limit) {
                 // Decrease the limit clause for the next PartitionReader, because it's too big.
                 // If it had been smaller then run might have completed in time.
