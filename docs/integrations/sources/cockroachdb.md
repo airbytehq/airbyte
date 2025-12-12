@@ -98,6 +98,7 @@ Your database user should now be ready for use with Airbyte.
 
 | Version | Date       | Pull Request                                             | Subject                                                                                                                                   |
 | :------ | :--------- | :------------------------------------------------------- | :---------------------------------------------------------------------------------------------------------------------------------------- |
+| 0.2.6 | 2025-12-12 | [XXXXX](https://github.com/airbytehq/airbyte/pull/XXXXX) | Fix database name encoding for special characters |
 | 0.2.5 | 2025-07-10 | [62914](https://github.com/airbytehq/airbyte/pull/62914) | Convert to new gradle build flow |
 | 0.2.4 | 2025-01-10 | [51484](https://github.com/airbytehq/airbyte/pull/51484) | Use a non root base image |
 | 0.2.3 | 2024-12-18 | [49915](https://github.com/airbytehq/airbyte/pull/49915) | Use a base image: airbyte/java-connector-base:1.0.0 |
