@@ -8,7 +8,7 @@ The platform is a solution for all types of audiences, from AI engineers who are
 
 - **MCP Servers**: Model Context Protocol (MCP) servers for different use cases. The [**PyAirbyte MCP**](#pyairbyte-mcp) is a local MCP server for managing Airbyte connectors through AI assistants. The [**Connector Builder MCP (coming soon)**](#connector-builder-mcp) is an AI-assisted connector development.
 
-- **Airbyte Embedded**: Add hundreds of integrations into your product instantly. Your end-users can authenticate into their data sources and begin syncing data to your product. You no longer need to spend engineering cycles on data movement. Focus on what makes your product great, rather than maintaining ELT pipelines.
+- **Airbyte Embedded**: Add hundreds of integrations into your product instantly. Your end-users can authenticate into their data sources and begin syncing data to your product. You no longer need to spend engineering cycles on data movement. Focus on what makes your product great, rather than maintaining data integrations.
 
 - **AI connectors**: AI-optimized, type-safe connectors, usable with Airbyte's Connector MCP server or your own Python agents.
 
