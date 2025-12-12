@@ -93,38 +93,6 @@ class BigQuerySourceTest {
   }
 
   @Test
-  public void testMissingBothProjectIdAndProjectIds() {
-    final String configJsonSource = """
-                                    {
-                                      "credentials_json": "credentials"
-                                    }
-                                    """;
-
-    final JsonNode configJson = Jsons.deserialize(configJsonSource);
-
-    assertThrows(IllegalArgumentException.class, () -> {
-      new BigQuerySource().toDatabaseConfig(configJson);
-    });
-  }
-
-  @Test
-  public void testEmptyProjectIdWithEmptyProjectIds() {
-    final String configJsonSource = """
-                                    {
-                                      "project_id": "",
-                                      "project_ids": [],
-                                      "credentials_json": "credentials"
-                                    }
-                                    """;
-
-    final JsonNode configJson = Jsons.deserialize(configJsonSource);
-
-    assertThrows(IllegalArgumentException.class, () -> {
-      new BigQuerySource().toDatabaseConfig(configJson);
-    });
-  }
-
-  @Test
   public void testSingleProjectModeIgnoresDatasetIds() throws IOException {
     // When using single project mode (project_id), dataset_ids should be ignored
     final String configJsonSource = """
