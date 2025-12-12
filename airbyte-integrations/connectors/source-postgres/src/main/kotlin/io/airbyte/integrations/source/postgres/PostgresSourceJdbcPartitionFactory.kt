@@ -7,6 +7,7 @@ package io.airbyte.integrations.source.postgres
 import com.fasterxml.jackson.databind.JsonNode
 import io.airbyte.cdk.ConfigErrorException
 import io.airbyte.cdk.StreamIdentifier
+import io.airbyte.cdk.command.JdbcSourceConfiguration
 import io.airbyte.cdk.command.OpaqueStateValue
 import io.airbyte.cdk.discover.DataField
 import io.airbyte.cdk.discover.DataOrMetaField
@@ -24,6 +25,7 @@ import io.airbyte.cdk.read.JdbcPartitionFactory
 import io.airbyte.cdk.read.JdbcStreamState
 import io.airbyte.cdk.read.Stream
 import io.airbyte.cdk.read.StreamFeedBootstrap
+import io.airbyte.cdk.read.querySingleValue
 import io.airbyte.cdk.util.Jsons
 import io.airbyte.integrations.source.postgres.PostgresSourceJdbcPartitionFactory.FilenodeChangeType.FILENODE_CHANGED
 import io.airbyte.integrations.source.postgres.PostgresSourceJdbcPartitionFactory.FilenodeChangeType.FILENODE_NEW_STREAM
@@ -33,15 +35,17 @@ import io.airbyte.integrations.source.postgres.PostgresSourceJdbcPartitionFactor
 import io.airbyte.integrations.source.postgres.config.PostgresSourceConfiguration
 import io.airbyte.integrations.source.postgres.ctid.Ctid
 import io.airbyte.integrations.source.postgres.operations.PostgresSourceSelectQueryGenerator
+import io.airbyte.integrations.source.postgres.operations.PostgresSourceSelectQueryGenerator.Companion.toQualifiedTableName
 import io.github.oshai.kotlinlogging.KotlinLogging
 import io.micronaut.context.annotation.Primary
 import jakarta.inject.Singleton
-import java.sql.PreparedStatement
 import java.util.concurrent.ConcurrentHashMap
+import java.util.concurrent.atomic.AtomicLong
+
 
 @Primary
 @Singleton
-class PostgresSourceJdbcPartitionFactory(
+open class PostgresSourceJdbcPartitionFactory(
     override val sharedState: DefaultJdbcSharedState,
     val selectQueryGenerator: PostgresSourceSelectQueryGenerator,
     val config: PostgresSourceConfiguration,
@@ -74,6 +78,7 @@ class PostgresSourceJdbcPartitionFactory(
                     lowerBound = null,
                     upperBound = null,
                     filenode,
+                    true
                 )
             }
                 ?: PostgresSourceJdbcUnsplittableSnapshotPartition(
@@ -92,6 +97,7 @@ class PostgresSourceJdbcPartitionFactory(
                 cursorChosenFromCatalog,
                 cursorUpperBound = null,
                 filenode,
+                true
             )
         }
             ?: PostgresSourceJdbcUnsplittableSnapshotWithCursorPartition(
@@ -166,6 +172,7 @@ class PostgresSourceJdbcPartitionFactory(
                         lowerBound = Jsons.textNode(streamState.maybeCtid!!.toString()),
                         upperBound = null,
                         filenode,
+                        true
                     )
                 }
             }
@@ -193,6 +200,7 @@ class PostgresSourceJdbcPartitionFactory(
                     cursor,
                     cursorCheckpoint,
                     filenode,
+                    true
                 )
             } else if (cursorCheckpoint == streamState.cursorUpperBound) {
                 // Incremental complete
@@ -239,21 +247,14 @@ class PostgresSourceJdbcPartitionFactory(
             jdbcConnectionFactory: JdbcConnectionFactory
         ): Filenode? {
             log.info { "Querying filenode for stream ${streamState.stream.id}" }
-            jdbcConnectionFactory.get().use { connection ->
-                val sql =
-                    """SELECT pg_relation_filenode('"${streamState.stream.namespace}"."${streamState.stream.name}"')"""
-                val stmt: PreparedStatement = connection.prepareStatement(sql)
-                val rs = stmt.executeQuery()
-                if (rs.next()) {
-                    val jdbcFieldType: JdbcFieldType<*> = LongFieldType
-                    val filenode: Any? = jdbcFieldType.jdbcGetter.get(rs, 1)
-                    log.info { "Found filenode: $filenode" }
-                    return filenode as? Filenode
-                } else {
-                    log.info { "filenode not found" }
-                }
-                return null
-            }
+            val sql =
+                """SELECT pg_relation_filenode('"${streamState.stream.namespace}"."${streamState.stream.name}"')"""
+            val jdbcFieldType: JdbcFieldType<*> = LongFieldType
+            val filenode: Any? = querySingleValue(jdbcConnectionFactory, sql, {
+                rs -> jdbcFieldType.jdbcGetter.get(rs, 1)
+            })
+            log.info { "Filenode for stream ${streamState.stream.id}: ${filenode ?: "not found"}" }
+            return filenode as? Filenode
         }
 
         const val POSTGRESQL_VERSION_TID_RANGE_SCAN_CAPABLE: Int = 14
@@ -267,6 +268,21 @@ class PostgresSourceJdbcPartitionFactory(
                     return true
                 }
             }
+        }
+
+        var cachedBlockSize: AtomicLong? = null
+
+        @Synchronized
+        fun blockSize(config: JdbcSourceConfiguration): Long {
+            if (cachedBlockSize == null) {
+                log.info { "Querying server block size setting." }
+                cachedBlockSize = AtomicLong(querySingleValue(JdbcConnectionFactory(config),
+                    "SELECT current_setting('block_size')::int",
+                    { rs -> rs.getLong(1)
+                }))
+                log.info { "Server block size is $cachedBlockSize." }
+            }
+            return cachedBlockSize?.get()!!
         }
     }
 
@@ -312,6 +328,12 @@ class PostgresSourceJdbcPartitionFactory(
         return cursor to cursors[cursorLabel]!!
     }
 
+    private fun relationSize(stream: Stream): Long {
+        val sql = "SELECT pg_relation_size('${ toQualifiedTableName(stream.namespace, stream.name) }')"
+        return querySingleValue(JdbcConnectionFactory(sharedState.configuration), sql,
+            { rs -> return@querySingleValue rs.getLong(1) })
+    }
+
     override fun split(
         unsplitPartition: PostgresSourceJdbcPartition,
         opaqueStateValues: List<OpaqueStateValue>
@@ -322,64 +344,73 @@ class PostgresSourceJdbcPartitionFactory(
             }
         }
 
+        // pg_relation_size returns the size of the table on disk, only the data in the main table file
+        // not including indexes or toast data
+        val relationSize =
+            relationSize(unsplitPartition.stream)
         return when (unsplitPartition) {
             is PostgresSourceJdbcSplittableSnapshotPartition ->
-                unsplitPartition.split(splitPartitionBoundaries)
+                unsplitPartition.split(splitPartitionBoundaries.size, splitPartitionBoundaries.first().filenode, relationSize)
             is PostgresSourceJdbcSplittableSnapshotWithCursorPartition ->
-                unsplitPartition.split(splitPartitionBoundaries)
+                unsplitPartition.split(splitPartitionBoundaries.size, splitPartitionBoundaries.first().filenode, relationSize)
             // TODO: implement split for cursor incremental partition
             else -> listOf(unsplitPartition)
         }
     }
 
+    /** Given table size and a starting point lower bound, the function will return a list of (lowerBound, upperBound) pairs for each
+     * partition. This is done by calculating the theoretical last page of the table (table size / block size), then dividing the range to get to the desired number of partitions.
+     */
+    internal fun computePartitionBounds(
+        lowerBound: JsonNode?,
+        numPartitions: Int,
+        relationSize: Long,
+        blockSize: Long
+    ): List<Pair<Ctid?, Ctid?>> {
+        val theoreticalLastPage: Long = relationSize / blockSize
+        log.info { "Theoretical last page: $theoreticalLastPage" }
+        val lowerBoundCtid: Ctid = lowerBound?.let {
+            if (it.isNull.not() && it.asText().isEmpty().not()) {
+                Ctid.of(it.asText())
+            } else null
+        } ?: Ctid.ZERO
+        val eachStep: Long = ((theoreticalLastPage - lowerBoundCtid.page) / numPartitions).coerceAtLeast(1)
+        val lbs: List<Ctid?> = listOf(lowerBoundCtid) + (1 ..< numPartitions).map {
+            Ctid(lowerBoundCtid.page + eachStep * it, 1)
+        }
+        val ubs: List<Ctid?> = lbs.drop(1) + listOf(null)
+
+        return lbs.zip(ubs)
+    }
+
     private fun PostgresSourceJdbcSplittableSnapshotPartition.split(
-        splitPointValues: List<PostgresSourceJdbcStreamStateValue>
+        numPartitions: Int,
+        filenode: Filenode?,
+        relationSize: Long,
     ): List<PostgresSourceJdbcSplittableSnapshotPartition> {
-        val inners: List<Ctid> = splitPointValues.map { Ctid.of(it.ctid!!) }
-        val lbCtid: Ctid? =
-            lowerBound?.let {
-                if (it.isNull.not() && it.isEmpty.not()) {
-                    Ctid.of(it[0].asText())
-                } else null
-            }
-        val ubCtid: Ctid? =
-            upperBound?.let {
-                if (it.isNull.not() && it.isEmpty.not()) {
-                    Ctid.of(it[0].asText())
-                } else null
-            }
-        val lbs: List<Ctid?> = listOf(lbCtid) + inners
-        val ubs: List<Ctid?> = inners + listOf(ubCtid)
-        return lbs.zip(ubs).map { (lowerBound, upperBound) ->
+        val bounds = computePartitionBounds(lowerBound, numPartitions, relationSize, blockSize(config))
+
+        return bounds.mapIndexed { index, (lowerBound, upperBound) ->
             PostgresSourceJdbcSplittableSnapshotPartition(
                 selectQueryGenerator,
                 streamState,
                 lowerBound?.let { Jsons.textNode(it.toString()) },
                 upperBound?.let { Jsons.textNode(it.toString()) },
-                splitPointValues.first().filenode,
+                filenode,
+                // The first partition includes the lower bound
+                index == 0
             )
         }
     }
 
     private fun PostgresSourceJdbcSplittableSnapshotWithCursorPartition.split(
-        splitPointValues: List<PostgresSourceJdbcStreamStateValue>
+        numPartitions: Int,
+        filenode: Filenode?,
+        relationSize: Long,
     ): List<PostgresSourceJdbcSplittableSnapshotWithCursorPartition> {
-        val inners: List<Ctid> = splitPointValues.map { Ctid.of(it.ctid!!) }
-        val lbCtid: Ctid? =
-            lowerBound?.let {
-                if (it.isNull.not() && it.isEmpty.not()) {
-                    Ctid.of(it[0].asText())
-                } else null
-            }
-        val ubCtid: Ctid? =
-            upperBound?.let {
-                if (it.isNull.not() && it.isEmpty.not()) {
-                    Ctid.of(it[0].asText())
-                } else null
-            }
-        val lbs: List<Ctid?> = listOf(lbCtid) + inners
-        val ubs: List<Ctid?> = inners + listOf(ubCtid)
-        return lbs.zip(ubs).map { (lowerBound, upperBound) ->
+        val bounds = computePartitionBounds(lowerBound, numPartitions, relationSize, blockSize(config))
+
+        return bounds.mapIndexed { index, (lowerBound, upperBound) ->
             PostgresSourceJdbcSplittableSnapshotWithCursorPartition(
                 selectQueryGenerator,
                 streamState,
@@ -387,7 +418,9 @@ class PostgresSourceJdbcPartitionFactory(
                 upperBound?.let { Jsons.textNode(it.toString()) },
                 cursor,
                 cursorUpperBound,
-                splitPointValues.first().filenode,
+                filenode,
+                // The first partition includes the lower bound
+                index == 0
             )
         }
     }

@@ -49,7 +49,7 @@ class PostgresSourceSelectQueryGenerator : SelectQueryGenerator {
 
     fun SelectQuerySpec.sql(): String {
         val components: List<String> =
-            listOf(select.sql(), from.sql(select.columns), where.sql(), orderBy.sql())
+            listOf(select.sql(), from.sql(), where.sql(), orderBy.sql())
         val sqlWithoutLimit: String = components.filter { it.isNotBlank() }.joinToString(" ")
         val limitClause: String =
             when (limit) {
@@ -79,26 +79,13 @@ class PostgresSourceSelectQueryGenerator : SelectQueryGenerator {
     fun DataField.sql(): String = "\"$id\""
 
     fun FromNode.sql(
-        columns: List<DataField>,
     ): String =
         when (this) {
             NoFrom -> "FROM DUAL"
             is From ->
-                if (this.namespace == null) "FROM \"$name\"" else "FROM \"$namespace\".\"$name\""
-            is FromSample -> {
-                val sample: String =
-                    if (sampleRateInv == 1L) {
-                        ""
-                    } else {
-                        " TABLESAMPLE SYSTEM(GREATEST(${sampleRatePercentage.toPlainString()}, 0.001))"
-                    }
-                val whereSample = where?.let { " ${it.sql()}" } ?: ""
-
-                val innerFrom: String = From(name, namespace).sql(columns) + sample + whereSample
-                val inner =
-                    "SELECT ${columns.joinToString(", ") { it.sql() }} $innerFrom ORDER BY RANDOM()"
-                "FROM (SELECT ${columns.joinToString(", ") { it.sql() }} FROM ($inner) AS ts LIMIT $sampleSize) AS l"
-            }
+                "FROM ${toQualifiedTableName(namespace, name)}"
+            // Simply return the first sample_size of rows from the table since we only used the sample to gauge row size
+            is FromSample -> From(name, namespace).sql()
         }
 
     fun WhereNode.sql(): String =
@@ -176,4 +163,9 @@ class PostgresSourceSelectQueryGenerator : SelectQueryGenerator {
             is From -> listOf()
             is FromSample -> this.where?.let { it.bindings() } ?: listOf()
         }
+
+    companion object {
+        fun toQualifiedTableName(namespace: String?, name: String): String =
+            if (namespace.isNullOrBlank()) "\"$name\"" else "\"$namespace\".\"$name\""
+    }
 }
