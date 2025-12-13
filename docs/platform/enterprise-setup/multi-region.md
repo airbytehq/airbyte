@@ -5,7 +5,7 @@ products: oss-enterprise
 import Tabs from '@theme/Tabs';
 import TabItem from '@theme/TabItem';
 
-# Multiple region deployments
+# Multiple region deployments (Self-Managed Enterprise)
 
 Self-Managed Enterprise customers can use Airbyte's public API to define regions and create independent data planes that operate in those regions. This ensures you're satisfying your data residency and governance requirements with a single Airbyte deployment, and it can help you reduce data egress costs with cloud providers.
 
@@ -51,7 +51,7 @@ Before you begin, make sure you've completed the following.
 
 - You need a Kubernetes cluster on which your data plane can run. For example, if your Airbyte control plane already runs on an EKS cluster on `us-west-2`, and you want your data plane to run on `eu-west-1`, create an EKS cluster on `eu-west-1`.
 
-- If you haven't already, get access to Airbyte's API by creating an application and generating an access token. For help, see [Configuring API access](../enterprise-setup/api-access-config).
+- If you haven't already, get access to Airbyte's API by creating an application and generating an access token. For help, see [Configuring API access](../using-airbyte/configuring-api-access).
 
 ## 1. Create a region {#step-1}
 
@@ -163,13 +163,11 @@ You can only associate each workspace with one region.
 
 Follow these steps to associate your region to your current workspace using Airbyte's user interface.
 
-1. In the navigation panel, click **Settings**.
+1. In the navigation panel, click **Workspace settings** > **General**.
 
-2. Under **Workspace**, click **General**.
+2. Under **Region**, select your region.
 
-3. Under **Region**, select your region.
-
-4. Click **Save changes**.
+3. Click **Save changes**.
 
   </TabItem>
   <TabItem value="workspace-association-api" label="API">
@@ -445,11 +443,7 @@ helm upgrade --install airbyte-enterprise airbyte/airbyte-data-plane --version 1
 
 You can see a list of your workspaces and the region associated to each from Airbyte's organization settings.
 
-1. In Airbyte's user interface, click **Settings**.
-
-2. Under **Organization**, click **General**.
-
-Airbyte displays your workspaces and each workspace region under **Regions**.
+1. In Airbyte's user interface, click **Workspace settings** > **General**. Airbyte displays your workspaces and each workspace region under **Regions**.
 
 ![Multiple regions displayed in Airbyte's General Organization settings](assets/multiple-regions-in-airbyte.png)
 
@@ -478,6 +472,3 @@ Response:
 
   </TabItem>
 </Tabs>
-
-
-

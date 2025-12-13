@@ -1,0 +1,22 @@
+{
+  "version.label": {
+    "message": "Next",
+    "description": "The label for version current"
+  },
+  "sidebar.ai-agents.category.AI Agents": {
+    "message": "AI Agents",
+    "description": "The label for category AI Agents in sidebar ai-agents"
+  },
+  "sidebar.ai-agents.category.Embedded": {
+    "message": "Embedded",
+    "description": "The label for category Embedded in sidebar ai-agents"
+  },
+  "sidebar.ai-agents.category.Widget": {
+    "message": "Widget",
+    "description": "The label for category Widget in sidebar ai-agents"
+  },
+  "sidebar.ai-agents.category.API": {
+    "message": "API",
+    "description": "The label for category API in sidebar ai-agents"
+  }
+}

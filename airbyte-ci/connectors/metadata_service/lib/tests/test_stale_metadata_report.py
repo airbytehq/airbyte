@@ -135,7 +135,6 @@ def test_get_latest_metadata_entries_on_gcs_success(mock_gcs_blobs):
     with (
         patch("metadata_service.stale_metadata_report.get_gcs_storage_client") as mock_get_client,
         patch("metadata_service.stale_metadata_report.yaml") as mock_yaml,
-        patch("metadata_service.stale_metadata_report.storage.Blob", new=Mock),
     ):
         mock_storage_client = Mock()
         mock_bucket = Mock()

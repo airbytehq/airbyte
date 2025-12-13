@@ -58,6 +58,12 @@ The `write` command will consume `AirbyteMessage`s from STDIN.
 
 The Docker image must contain an environment variable called `AIRBYTE_ENTRYPOINT`. This must be the same as the `ENTRYPOINT` of the image.
 
+**Important**: The `AIRBYTE_ENTRYPOINT` environment variable must use absolute paths to ensure proper execution. Note that the Airbyte platform may change the working directory at runtime (for instance, to `/source` for sources and `/dest` for destinations). Using relative paths in the entrypoint can cause execution failures when the working directory is overridden.
+
+**Example**:
+- ✅ Correct: `ENV AIRBYTE_ENTRYPOINT="python /airbyte/integration_code/main.py"`
+- ❌ Incorrect: `ENV AIRBYTE_ENTRYPOINT="./main.py"`
+
 ## Non-Root User: `airbyte`
 
 The Docker image should run under a user named `airbyte`.

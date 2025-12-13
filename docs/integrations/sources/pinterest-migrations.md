@@ -1,3 +1,5 @@
+import MigrationGuide from '@site/static/_migration_guides_upgrade_guide.md';
+
 # Pinterest Migration Guide
 
 ## Upgrading to 2.0.0
@@ -21,48 +23,9 @@ This change will affect the following streams:
 
 To gracefully handle these changes for your existing connections, we highly recommend resetting your data before resuming your data syncs with the new version.
 
-## Migration Steps
+## Connector upgrade guide
 
-### For Airbyte Open Source: Update the local connector image
-
-Airbyte Open Source users must manually update the connector image in their local registry before proceeding with the migration. To do so:
-
-1. Select **Settings** in the main navbar.
-   1. Select **Sources**.
-2. Find Pinterest in the list of connectors.
-
-:::note
-You will see two versions listed, the current in-use version and the latest version available.
-:::
-
-3. Select **Change** to update your OSS version to the latest available version.
-
-### Update the connector version
-
-1. Select **Sources** in the main navbar.
-2. Select the instance of the connector you wish to upgrade.
-
-:::note
-Each instance of the connector must be updated separately. If you have created multiple instances of a connector, updating one will not affect the others.
-:::
-
-3. Select **Upgrade**
-   1. Follow the prompt to confirm you are ready to upgrade to the new version.
-
-### Refresh affected schemas and reset data
-
-1. Select **Connections** in the main nav bar.
-   1. Select the connection(s) affected by the update.
-2. Select the **Schema** tab.
-3. Uncheck all streams except the affected ones.
-4. Select **Save changes** at the bottom of the page.
-5. Select the **Settings** tab.
-6. Press the **Clear your data** button.
-7. Return to the **Schema** tab.
-8. Check all your streams.
-9. Select **Sync now** to sync your data
-
-For more information on resetting your data in Airbyte, see [this page](/platform/operator-guides/clear).
+<MigrationGuide />
 
 ## Upgrading to 1.0.0
 

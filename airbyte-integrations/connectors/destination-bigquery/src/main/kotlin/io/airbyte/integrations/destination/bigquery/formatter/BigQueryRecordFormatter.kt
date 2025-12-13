@@ -29,10 +29,11 @@ import io.airbyte.cdk.load.data.TimestampWithTimezoneValue
 import io.airbyte.cdk.load.data.TimestampWithoutTimezoneValue
 import io.airbyte.cdk.load.message.DestinationRecordRaw
 import io.airbyte.cdk.load.message.Meta
-import io.airbyte.cdk.load.orchestration.db.ColumnNameMapping
+import io.airbyte.cdk.load.table.ColumnNameMapping
 import io.airbyte.cdk.load.util.BigDecimalUtil
 import io.airbyte.cdk.load.util.Jsons
 import io.airbyte.cdk.load.util.serializeToString
+import io.airbyte.integrations.destination.bigquery.write.standard_insert.RecordFormatter
 import io.airbyte.integrations.destination.bigquery.write.typing_deduping.direct_load_tables.BigqueryDirectLoadSqlGenerator
 import io.airbyte.protocol.models.v0.AirbyteRecordMessageMetaChange.Reason
 import java.math.BigInteger
@@ -50,9 +51,9 @@ import java.util.concurrent.TimeUnit
 class BigQueryRecordFormatter(
     private val columnNameMapping: ColumnNameMapping,
     private val legacyRawTablesOnly: Boolean,
-) {
+) : RecordFormatter {
 
-    fun formatRecord(record: DestinationRecordRaw): String {
+    override fun formatRecord(record: DestinationRecordRaw): String {
         val enrichedRecord =
             record.asEnrichedDestinationRecordAirbyteValue(respectLegacyUnions = true)
 
@@ -85,16 +86,11 @@ class BigQueryRecordFormatter(
                     outputRecord[key] = (value.abValue as IntegerValue).value
                 else -> {
                     if (!legacyRawTablesOnly) {
-                        // if we're null, then just don't write a value into the output JSON,
-                        // so that bigquery will load a NULL value.
-                        // Otherwise, do all the type validation stuff, then write a value into
-                        // the output JSON.
+                        validateAirbyteValue(value)
                         if (value.abValue != NullValue) {
-                            // first, validate the value.
-                            validateAirbyteValue(value)
                             // then, populate the record.
-                            // Bigquery has some strict requirements for datetime / time formatting,
-                            // so handle that here.
+                            // Bigquery has some strict requirements for datetime / time
+                            // formatting, so handle that here.
                             when (value.type) {
                                 TimestampTypeWithTimezone ->
                                     outputRecord[columnNameMapping[key]!!] =
@@ -145,28 +141,28 @@ class BigQueryRecordFormatter(
 
     companion object {
         // see https://cloud.google.com/bigquery/docs/reference/standard-sql/data-types
-        private val INT64_MIN_VALUE: BigInteger = BigInteger.valueOf(Long.MIN_VALUE)
-        private val INT64_MAX_VALUE: BigInteger = BigInteger.valueOf(Long.MAX_VALUE)
-        private const val NUMERIC_MAX_PRECISION = 38
-        private const val NUMERIC_MAX_SCALE = 9
-        private val NUMERIC_MAX_VALUE =
+        internal val INT64_MIN_VALUE: BigInteger = BigInteger.valueOf(Long.MIN_VALUE)
+        internal val INT64_MAX_VALUE: BigInteger = BigInteger.valueOf(Long.MAX_VALUE)
+        internal const val NUMERIC_MAX_PRECISION = 38
+        internal const val NUMERIC_MAX_SCALE = 9
+        internal val NUMERIC_MAX_VALUE =
             BigDecimalUtil()
                 .maxForRange(precision = NUMERIC_MAX_PRECISION, scale = NUMERIC_MAX_SCALE)
-        private val NUMERIC_MIN_VALUE = NUMERIC_MAX_VALUE.negate()
-        private val DATE_MIN_VALUE = LocalDate.parse("0001-01-01")
-        private val DATE_MAX_VALUE = LocalDate.parse("9999-12-31")
-        private val TIMESTAMP_MIN_VALUE = OffsetDateTime.parse("0001-01-01T00:00:00Z")
-        private val TIMESTAMP_MAX_VALUE = OffsetDateTime.parse("9999-12-31T23:59:59.999999Z")
-        private val DATETIME_MIN_VALUE = LocalDateTime.parse("0001-01-01T00:00:00")
-        private val DATETIME_MAX_VALUE = LocalDateTime.parse("9999-12-31T23:59:59.999999")
+        internal val NUMERIC_MIN_VALUE = NUMERIC_MAX_VALUE.negate()
+        internal val DATE_MIN_VALUE = LocalDate.parse("0001-01-01")
+        internal val DATE_MAX_VALUE = LocalDate.parse("9999-12-31")
+        internal val TIMESTAMP_MIN_VALUE = OffsetDateTime.parse("0001-01-01T00:00:00Z")
+        internal val TIMESTAMP_MAX_VALUE = OffsetDateTime.parse("9999-12-31T23:59:59.999999Z")
+        internal val DATETIME_MIN_VALUE = LocalDateTime.parse("0001-01-01T00:00:00")
+        internal val DATETIME_MAX_VALUE = LocalDateTime.parse("9999-12-31T23:59:59.999999")
 
-        private val DATETIME_WITH_TIMEZONE_FORMATTER: DateTimeFormatter =
+        internal val DATETIME_WITH_TIMEZONE_FORMATTER: DateTimeFormatter =
             DateTimeFormatter.ISO_OFFSET_DATE_TIME
-        private val DATETIME_WITHOUT_TIMEZONE_FORMATTER: DateTimeFormatter =
+        internal val DATETIME_WITHOUT_TIMEZONE_FORMATTER: DateTimeFormatter =
             DateTimeFormatter.ISO_DATE_TIME
-        private val TIME_WITHOUT_TIMEZONE_FORMATTER: DateTimeFormatter =
+        internal val TIME_WITHOUT_TIMEZONE_FORMATTER: DateTimeFormatter =
             DateTimeFormatter.ISO_LOCAL_TIME
-        private val TIME_WITH_TIMEZONE_FORMATTER: DateTimeFormatter =
+        internal val TIME_WITH_TIMEZONE_FORMATTER: DateTimeFormatter =
             DateTimeFormatter.ISO_OFFSET_TIME
 
         // This is the schema used to represent the final raw table
@@ -246,6 +242,10 @@ class BigQueryRecordFormatter(
         }
 
         fun validateAirbyteValue(value: EnrichedAirbyteValue) {
+            if (value.abValue == NullValue) {
+                // Null is always valid, so just return immediately
+                return
+            }
             when (value.type) {
                 is IntegerType -> {
                     (value.abValue as IntegerValue).value.let {

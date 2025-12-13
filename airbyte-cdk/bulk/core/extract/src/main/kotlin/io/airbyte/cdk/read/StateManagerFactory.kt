@@ -20,7 +20,11 @@ import io.airbyte.cdk.discover.MetaField
 import io.airbyte.cdk.discover.MetaFieldDecorator
 import io.airbyte.cdk.discover.MetadataQuerier
 import io.airbyte.cdk.output.CatalogValidationFailureHandler
+import io.airbyte.cdk.output.DataChannelFormat
+import io.airbyte.cdk.output.DataChannelFormat.JSONL
+import io.airbyte.cdk.output.DataChannelFormat.PROTOBUF
 import io.airbyte.cdk.output.DataChannelMedium
+import io.airbyte.cdk.output.DataChannelMedium.SOCKET
 import io.airbyte.cdk.output.FieldNotFound
 import io.airbyte.cdk.output.FieldTypeMismatch
 import io.airbyte.cdk.output.InvalidIncrementalSyncMode
@@ -49,6 +53,7 @@ class StateManagerFactory(
     val outputConsumer: OutputConsumer,
     val handler: CatalogValidationFailureHandler,
     @Value("\${${DATA_CHANNEL_PROPERTY_PREFIX}.medium}") val dataChannelMedium: String,
+    @Value("\${${DATA_CHANNEL_PROPERTY_PREFIX}.format}") val dataChannelFormat: String,
 ) {
     /** Generates a [StateManager] instance based on the provided inputs. */
     fun create(
@@ -87,15 +92,45 @@ class StateManagerFactory(
                     ConfiguredSyncMode.INCREMENTAL ->
                         stream.copy(schema = stream.schema + metaFieldDecorator.globalMetaFields)
                     ConfiguredSyncMode.FULL_REFRESH ->
-                        when (DataChannelMedium.valueOf(dataChannelMedium)) {
-                            // Because socket protobuf mode is using a sorted list of fields
-                            // Without including field id's we need to always send the full
-                            // set of fields as in the schema so sorting is maintained.
-                            DataChannelMedium.SOCKET ->
-                                stream.copy(
-                                    schema = stream.schema + metaFieldDecorator.globalMetaFields
-                                )
-                            DataChannelMedium.STDIO -> stream
+                        when (
+                            DataChannelMedium.valueOf(dataChannelMedium) to
+                                DataChannelFormat.valueOf(dataChannelFormat)
+                        ) {
+                            // Socket protobuf protobuf mode is using a sorted list of fields
+                            // Without including field id's.
+                            // We need to always match the full in catlog schema to maintain
+                            // sorting.
+                            // Output here needs to match Discover's JdbcAirbyteStreamFactory
+                            SOCKET to PROTOBUF ->
+                                if (stream.configuredPrimaryKey?.isNotEmpty() == true) {
+                                    stream.copy(
+                                        schema =
+                                            stream.schema + metaFieldDecorator.globalMetaFields,
+                                    )
+                                } else {
+                                    stream
+                                }
+                            // While Socket json doesn't strictly need to maintain any sorting order
+                            // We still want to include the meta fields if there is a primary key
+                            // For debugging sockets purposes - so proto and json records are the
+                            // same.
+                            SOCKET to JSONL ->
+                                if (stream.configuredPrimaryKey?.isNotEmpty() == true) {
+                                    stream.copy(
+                                        schema =
+                                            stream.schema + metaFieldDecorator.globalMetaFields,
+                                    )
+                                } else {
+                                    stream
+                                }
+
+                            // stdio protobuf mode not supported
+                            /*DataChannelMedium.STDIO to PROTOBUF ->  */
+
+                            // Legacy stdio json mode doesn't need metafields decorations in full
+                            // refresh
+                            DataChannelMedium.STDIO to JSONL -> stream
+                            else -> stream
                         }
                 }
             }

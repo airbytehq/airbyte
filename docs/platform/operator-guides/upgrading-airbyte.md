@@ -41,8 +41,7 @@ Upgrade by updating your `values.yaml` file and redeploying Airbyte. If you're n
    helm upgrade airbyte airbyte-v2/airbyte \
    --namespace airbyte-v2 \       # Target Kubernetes namespace
    --values ./values.yaml \       # Custom configuration values
-   --version 2.0.3 \              # Helm chart version to use
-   --set global.image.tag=1.7.0   # Airbyte version to use
+   --version 2.x.x                # Helm chart version to use
    ```
 
    </TabItem>
@@ -51,18 +50,26 @@ Upgrade by updating your `values.yaml` file and redeploying Airbyte. If you're n
    After 5 minutes, Helm prints a message showing how to port-forward Airbyte. This may take longer on Kubernetes clusters with slow internet connections. In general the message is as follows:
 
    ```bash
-   export POD_NAME=$(kubectl get pods -l "app.kubernetes.io/name=webapp" -o jsonpath="{.items[0].metadata.name}")
-   export CONTAINER_PORT=$(kubectl get pod  $POD_NAME -o jsonpath="{.spec.containers[0].ports[0].containerPort}")
+   Get the application URL by running these commands:
+
    echo "Visit http://127.0.0.1:8080 to use your application"
-   kubectl  port-forward $POD_NAME 8080:$CONTAINER_PORT
+   kubectl -n airbyte port-forward deployment/airbyte-server 8080:8001
    ```
 
 ## Upgrading Airbyte deployed with abctl
 
-`abctl` streamlines the way you manage a local installation of Airbyte OSS. 
+`abctl` streamlines the way you manage a local installation of Airbyte Core.
 
 Run `abctl local install` to upgrade to the latest version of Airbyte. If you'd like to ensure you're running the latest version of Airbyte, you can check the value of the Helm Chart's app version by running `abctl local status`.
 
 ### Upgrade abctl
 
-Occasionally, you need to update `abctl` to the latest version. Do that by running `brew upgrade abctl`. This is separate from upgrading Airbyte. It only upgrades the command line tool.
+Occasionally, you need to update `abctl` to the latest version. This is separate from upgrading Airbyte. It only upgrades the command line tool.
+
+#### macOS
+
+Run `brew upgrade abctl`.
+
+#### Linux
+
+Run `curl -LsfS https://get.airbyte.com | bash -`.

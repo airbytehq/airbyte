@@ -9,6 +9,7 @@ from urllib.parse import urlparse
 from airbyte_cdk.models import FailureType
 from airbyte_cdk.sources import AbstractSource
 from airbyte_cdk.sources.streams import Stream
+from airbyte_cdk.sources.streams.http.http_client import MessageRepresentationAirbyteTracedErrors
 from airbyte_cdk.sources.streams.http.requests_native_auth import MultipleTokenAuthenticator
 from airbyte_cdk.utils.traced_exception import AirbyteTracedException
 from source_github.utils import MultipleTokenAuthenticatorWithRateLimiter
@@ -184,7 +185,7 @@ class SourceGithub(AbstractSource):
             # 404 Client Error: Not Found for url: https://api.github.com/orgs/airbytehqBLA/repos?per_page=100
             org_name = message.split("https://api.github.com/orgs/")[1].split("/")[0]
             user_message = f'Organization name: "{org_name}" is unknown, "repository" config option should be updated. Please validate your repository config.'
-        elif "401 Client Error: Unauthorized for url" in message:
+        elif "401 Client Error: Unauthorized for url" in message or ("Error: Unauthorized" in message and "401" in message):
             # 401 Client Error: Unauthorized for url: https://api.github.com/orgs/datarootsio/repos?per_page=100&sort=updated&direction=desc
             user_message = (
                 "Github credentials have expired or changed, please review your credentials and re-authenticate or renew your access token."
@@ -203,6 +204,9 @@ class SourceGithub(AbstractSource):
                 )
             return True, None
 
+        except MessageRepresentationAirbyteTracedErrors as e:
+            user_message = self.user_friendly_error_message(e.message)
+            return False, user_message or e.message
         except Exception as e:
             message = repr(e)
             user_message = self.user_friendly_error_message(message)

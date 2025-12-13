@@ -63,6 +63,14 @@ class HubSpotOperationRepositoryTest {
                 )
             )
         } returns (aResponse(200, anUnavailableObject().build()))
+        every {
+            httpClient.send(
+                Request(
+                    method = RequestMethod.GET,
+                    url = "https://api.hubapi.com/crm/v3/schemas/PRODUCT"
+                )
+            )
+        } returns (aResponse(200, anUnavailableObject().build()))
     }
 
     @Test

@@ -123,17 +123,21 @@ This connector can sync multiple files by using glob-style patterns, rather than
 
 You must provide a path pattern. You can also provide many patterns split with \| for more complex directory layouts.
 
+:::tip
+When your folder contains multiple file types, use glob patterns to select only the files that match your configured format. For example, if your folder contains both CSV files and PDFs, and you've configured the connector to parse CSV files, use a pattern like `**/*.csv` to ensure only CSV files are processed. Without this filtering, the connector will attempt to parse all matched files as the configured format, which can cause parsing errors for incompatible file types.
+:::
+
 Each path pattern is a reference from the _root_ of the folder, so don't include the root folder name itself in the pattern\(s\).
 
 Some example patterns:
 
-- `**` : match everything.
+- `**` : match everything. (Warning: see the tip above regarding using this glob with folders containing multiple file types.)
 - `**/*.csv` : match all files with specific extension.
 - `myFolder/**/*.csv` : match all csv files anywhere under myFolder.
-- `*/**` : match everything at least one folder deep.
-- `*/*/*/**` : match everything at least three folders deep.
+- `*/**` : match everything at least one folder deep. (Warning: see the tip above regarding using this glob with folders containing multiple file types.)
+- `*/*/*/**` : match everything at least three folders deep. (Warning: see the tip above regarding using this glob with folders containing multiple file types.)
 - `**/file.*|**/file` : match every file called "file" with any extension \(or no extension\).
-- `x/*/y/*` : match all files that sit in sub-folder x -&gt; any folder -&gt; folder y.
+- `x/*/y/*` : match all files that sit in sub-folder x -&gt; any folder -&gt; folder y. (Warning: see the tip above regarding using this glob with folders containing multiple file types.)
 - `**/prefix*.csv` : match all csv files with specific prefix.
 - `**/prefix*.parquet` : match all parquet files with specific prefix.
 
@@ -276,40 +280,40 @@ Format options will not be taken into account. Instead, files will be transferre
 If enabled, sends subdirectory folder structure along with source file names to the destination. Otherwise, files will be synced by their names only. This option is ignored when file-based replication is not enabled.
 
 ### Replicate Permissions ACL
-This mode allows to sync Google Drive files permissions (ACLs) and Identities (users and groups) from your Google Workspace. 
+This mode allows to sync Google Drive files permissions (ACLs) and Identities (users and groups) from your Google Workspace.
 The Identities Stream is enabled by default.
 
 To use these features, ensure you have the correct permissions and have enabled the required Google APIs.
 
-#### Required Google APIs  
-Make sure the following APIs are enabled in your Google Cloud project:  
+#### Required Google APIs
+Make sure the following APIs are enabled in your Google Cloud project:
 
-- [Google Drive API](https://console.cloud.google.com/apis/library/drive.googleapis.com)  
+- [Google Drive API](https://console.cloud.google.com/apis/library/drive.googleapis.com)
   Provides access to read file metadata and permissions in Google Drive.
-- [Google Admin SDK API](https://console.cloud.google.com/apis/library/admin.googleapis.com)  
+- [Google Admin SDK API](https://console.cloud.google.com/apis/library/admin.googleapis.com)
   Allows retrieval of users and groups in your Google Workspace.
 
-#### Authorization Scopes  
-When setting up this connector, ensure that the following scopes are authorized in the Google consent screen:  
+#### Authorization Scopes
+When setting up this connector, ensure that the following scopes are authorized in the Google consent screen:
 
-- https://www.googleapis.com/auth/drive.readonly  
-- https://www.googleapis.com/auth/admin.directory.group.readonly  
-- https://www.googleapis.com/auth/admin.directory.group.member.readonly  
+- https://www.googleapis.com/auth/drive.readonly
+- https://www.googleapis.com/auth/admin.directory.group.readonly
+- https://www.googleapis.com/auth/admin.directory.group.member.readonly
 - https://www.googleapis.com/auth/admin.directory.user.readonly
 
 #### Domain Field (optional)
 If you are syncing **identities** (users and groups) from a different domain than the one associated with your user account, you must specify the `domain` field in the connector configuration.
 
-#### Streams  
+#### Streams
 
-#### 1. Files Permissions (ACLs)  
+#### 1. Files Permissions (ACLs)
 This stream syncs file permissions (Access Control Lists) for files in your Google Drive. You should set up a stream name and globs.
 
-#### 2. Identities (Users and Groups)  
+#### 2. Identities (Users and Groups)
 By default, this stream is enabled and retrieves information about **users and groups** in your Google Workspace. This helps you map file permissions (ACLs) to actual users and groups.
 
-#### Requirements:  
-- Ensure the **Google Admin SDK API** is enabled.  
+#### Requirements:
+- Ensure the **Google Admin SDK API** is enabled.
 - The authenticated user must have the necessary Google Admin Directory permissions.
 
 
@@ -320,6 +324,21 @@ By default, this stream is enabled and retrieves information about **users and g
 
 | Version | Date       | Pull Request                                             | Subject                                                                                      |
 |---------|------------|----------------------------------------------------------|----------------------------------------------------------------------------------------------|
+| 0.5.6 | 2025-12-02 | [70289](https://github.com/airbytehq/airbyte/pull/70289) | Update dependencies |
+| 0.5.5 | 2025-11-25 | [70090](https://github.com/airbytehq/airbyte/pull/70090) | Update dependencies |
+| 0.5.4 | 2025-11-18 | [69386](https://github.com/airbytehq/airbyte/pull/69386) | Update dependencies |
+| 0.5.3 | 2025-11-11 | [69272](https://github.com/airbytehq/airbyte/pull/69272) | Update dependencies |
+| 0.5.2 | 2025-11-04 | [69158](https://github.com/airbytehq/airbyte/pull/69158) | Update dependencies |
+| 0.5.1 | 2025-10-29 | [69053](https://github.com/airbytehq/airbyte/pull/69053) | Update dependencies |
+| 0.5.0 | 2025-10-23 | [68618](https://github.com/airbytehq/airbyte/pull/68618) | Update dependencies |
+| 0.4.10 | 2025-10-21 | [68321](https://github.com/airbytehq/airbyte/pull/68321) | Update dependencies |
+| 0.4.9 | 2025-10-14 | [68038](https://github.com/airbytehq/airbyte/pull/68038) | Update dependencies |
+| 0.4.8 | 2025-10-07 | [67259](https://github.com/airbytehq/airbyte/pull/67259) | Update dependencies |
+| 0.4.7 | 2025-09-30 | [66169](https://github.com/airbytehq/airbyte/pull/66169) | Update dependencies |
+| 0.4.6 | 2025-09-10 | [66009](https://github.com/airbytehq/airbyte/pull/66009) | Update to CDK v7 |
+| 0.4.5 | 2025-09-09 | [66108](https://github.com/airbytehq/airbyte/pull/66108) | Update dependencies |
+| 0.4.4 | 2025-08-23 | [61127](https://github.com/airbytehq/airbyte/pull/61127) | Update dependencies |
+| 0.4.3 | 2025-08-20 | [65081](https://github.com/airbytehq/airbyte/pull/65081) | Certify connector |
 | 0.4.2 | 2025-05-24 | [60621](https://github.com/airbytehq/airbyte/pull/60621) | Update dependencies |
 | 0.4.1 | 2025-05-10 | [58227](https://github.com/airbytehq/airbyte/pull/58227) | Update dependencies |
 | 0.4.0 | 2025-05-06 | [59690](https://github.com/airbytehq/airbyte/pull/59690) | Promoting release candidate 0.4.0-rc.1 to a main version. |

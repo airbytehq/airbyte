@@ -63,7 +63,7 @@ export const AppliesTo = (props) => {
             <a href="https://cloud.airbyte.com" target="_blank">
               try Airbyte Cloud
             </a>{" "}
-            for free with our 14-day trial.
+            for free with our 30-day trial.
           </>
         )}
       </div>

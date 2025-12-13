@@ -8,7 +8,7 @@ from __future__ import annotations
 from datetime import datetime
 from typing import Any, List, MutableMapping
 
-import pendulum
+from airbyte_cdk.utils.datetime_helpers import ab_datetime_now
 
 
 ACCESS_TOKEN = "test_access_token"
@@ -18,7 +18,7 @@ CLIENT_SECRET = "test_client_secret"
 DATE_FORMAT = "%Y-%m-%d"
 DATE_TIME_FORMAT = "%Y-%m-%dT%H:%M:%SZ"
 END_DATE = "2023-01-01T23:59:59Z"
-NOW = pendulum.now(tz="utc")
+NOW = ab_datetime_now()
 START_DATE = "2023-01-01T00:00:00Z"
 
 

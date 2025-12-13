@@ -52,7 +52,7 @@ jobs:
         # If comment-id is not provided, this will create a new
         # comment with the job run link.
         id: first-comment-action
-        uses: peter-evans/create-or-update-comment@v4
+        uses: peter-evans/create-or-update-comment@71345be0265236311c031f5c7866368bd1eff043 # v4.0.0
         with:
           comment-id: ${{ github.event.inputs.comment-id }}
           issue-number: ${{ github.event.inputs.pr }}
@@ -107,7 +107,7 @@ jobs:
           fi
 
       - name: Append success comment
-        uses: peter-evans/create-or-update-comment@v4
+        uses: peter-evans/create-or-update-comment@71345be0265236311c031f5c7866368bd1eff043 # v4.0.0
         if: success()
         with:
           comment-id: ${{ steps.first-comment-action.outputs.comment-id }}
@@ -116,7 +116,7 @@ jobs:
             > ✅ Approving regression tests
 
       - name: Append failure comment
-        uses: peter-evans/create-or-update-comment@v4
+        uses: peter-evans/create-or-update-comment@71345be0265236311c031f5c7866368bd1eff043 # v4.0.0
         if: failure()
         with:
           comment-id: ${{ steps.first-comment-action.outputs.comment-id }}

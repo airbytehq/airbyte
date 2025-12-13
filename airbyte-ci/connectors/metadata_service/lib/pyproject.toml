@@ -1,6 +1,6 @@
 [tool.poetry]
 name = "metadata-service"
-version = "0.27.0"
+version = "0.28.1"
 description = ""
 authors = ["Airbyte <contact@airbyte.io>"]
 readme = "README.md"
@@ -21,6 +21,9 @@ pygithub = "^2.7.0"
 pandas = "^2.3.1"
 tabulate = "^0.9.0"
 slack-sdk = "^3.36.0"
+dpath = "^2.2.0"
+sentry-sdk = "^1.28.1"
+jinja2 = "^3.1.2"
 
 
 [tool.poetry.group.dev.dependencies]
@@ -33,7 +36,7 @@ poethepoet = "^0.20.0"
 metadata_service = "metadata_service.commands:metadata_service"
 
 [tool.poe.tasks]
-generate-models = { shell = "./bin/generate-python-classes.sh" }
+generate-models = { shell = "npm ci --silent && ./bin/generate-metadata-models.sh" }
 replicate-prod = "gsutil -m rsync -r -d gs://prod-airbyte-cloud-connector-metadata-service gs://$TARGET_BUCKET"
 copy-connector-from-prod = "gsutil  -m rsync -r -d gs://prod-airbyte-cloud-connector-metadata-service/metadata/$CONNECTOR/$VERSION gs://$TARGET_BUCKET/metadata/$CONNECTOR/$VERSION"
 promote-connector-to-latest = "gsutil  -m rsync -r -d gs://$TARGET_BUCKET/metadata/$CONNECTOR/$VERSION gs://$TARGET_BUCKET/metadata/$CONNECTOR/latest"

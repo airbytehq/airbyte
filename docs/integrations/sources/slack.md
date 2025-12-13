@@ -23,6 +23,12 @@ The following instructions guide you through creating a Slack app. Airbyte can o
 If you are using a legacy Slack API Key, you can skip this section.
 :::
 
+:::warning
+**OAuth-only rate limit note:** When authenticating via **OAuth**, the Slack source applies a stricter API budget for the **Channel Messages** and **Threads** streams (effectively one request per minute). To avoid slowing down other Slack streams, we recommend creating a separate connection for these two streams. See the [Rate limiting](#rate-limiting) section for details.
+
+If you authenticate using a **legacy Slack API token**, this OAuth-specific limit does **not** apply.
+:::
+
 To create a Slack App, read this [tutorial](https://api.slack.com/tutorials/tracks/getting-a-token) on how to create an app, or follow these instructions. 
 
 1. Go to your [Apps](https://api.slack.com/apps)
@@ -150,9 +156,20 @@ Expand to see details about Slack connector limitations and troubleshooting.
 
 Slack has [rate limit restrictions](https://api.slack.com/docs/rate-limits).
 
+###### Rate Limits for Channel Messages and Threads streams: 
+
+**OAuth authentication:** For apps authenticated via OAuth, the connector enforces a stricter budget on:
+- [`conversations.replies`](https://api.slack.com/methods/conversations.replies)
+- [`conversations.history`](https://api.slack.com/methods/conversations.history)
+
+These two streams are effectively limited to **one request per minute**. Consider creating a **separate connection** for them so other streams (Users, Channels, Channel Members, etc.) are not slowed down.
+
+**Legacy API token authentication:** When using a legacy Slack API token, this OAuth-specific one-per-minute policy does **not** apply; only Slack’s general rate limits apply.
+
 ### Troubleshooting
 
 - Check out common troubleshooting issues for the Slack source connector on our Airbyte Forum [here](https://github.com/airbytehq/airbyte/discussions).
+
 
 </details>
 
@@ -166,6 +183,19 @@ Slack has [rate limit restrictions](https://api.slack.com/docs/rate-limits).
 
 | Version    | Date       | Pull Request                                             | Subject                                                                                                                                                                |
 |:-----------|:-----------|:---------------------------------------------------------|:-----------------------------------------------------------------------------------------------------------------------------------------------------------------------|
+| 3.1.7 | 2025-10-29 | [68772](https://github.com/airbytehq/airbyte/pull/68772) | Update dependencies |
+| 3.1.6 | 2025-10-21 | [68282](https://github.com/airbytehq/airbyte/pull/68282) | Update dependencies |
+| 3.1.5 | 2025-10-14 | [67767](https://github.com/airbytehq/airbyte/pull/67767) | Update dependencies |
+| 3.1.4 | 2025-10-07 | [67449](https://github.com/airbytehq/airbyte/pull/67449) | Update dependencies |
+| 3.1.3 | 2025-10-06 | [67084](https://github.com/airbytehq/airbyte/pull/67084) | Update dependencies |
+| 3.1.2 | 2025-09-30 | [66566](https://github.com/airbytehq/airbyte/pull/66566) | Update to CDK v7 |
+| 3.1.1 | 2025-09-24 | [66640](https://github.com/airbytehq/airbyte/pull/66640) | Update dependencies |
+| 3.1.0 | 2025-09-18 | [66501](https://github.com/airbytehq/airbyte/pull/66501) | Promoting release candidate 3.1.0-rc.1 to a main version. |
+| 3.1.0-rc.1 | 2025-09-10 | [64160](https://github.com/airbytehq/airbyte/pull/64160) | Migrate to manifest-only.                                                                                                                                              |
+| 3.0.0      | 2025-09-10 | [65937](https://github.com/airbytehq/airbyte/pull/65937) | Add migration guide for missing state issue                                                                                                                            |
+| 2.2.0      | 2025-09-10 | [66155](https://github.com/airbytehq/airbyte/pull/66155) | Promoting release candidate 2.2.0-rc.7 to a main version.                                                                                                              |
+| 2.2.0-rc.7 | 2025-08-21 | [65132](https://github.com/airbytehq/airbyte/pull/65132) | Update API budget to depend on auth method (rate limits apply only with OAuth).                                                                                        |
+| 2.2.0-rc.6 | 2025-08-14 | [64553](https://github.com/airbytehq/airbyte/pull/64553) | Add API budget for Threads and Channel Messages streams.                                                                                                               |
 | 2.2.0-rc.5 | 2025-08-06 | [64530](https://github.com/airbytehq/airbyte/pull/64530) | Set use_cache = true for Channels and Channel Messages streams.                                                                                                        |
 | 2.2.0-rc.4 | 2025-08-04 | [64486](https://github.com/airbytehq/airbyte/pull/64486) | Add backoff strategy for Channels stream.                                                                                                                              |
 | 2.2.0-rc.3 | 2025-07-29 | [64107](https://github.com/airbytehq/airbyte/pull/64107) | Add custom partition router.                                                                                                                                           |

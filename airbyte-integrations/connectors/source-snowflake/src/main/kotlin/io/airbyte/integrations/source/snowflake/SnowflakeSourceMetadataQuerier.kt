@@ -44,6 +44,7 @@ import kotlin.use
  */
 class SnowflakeSourceMetadataQuerier(
     val base: JdbcMetadataQuerier,
+    val schema: String? = null,
 ) : MetadataQuerier by base {
     private val log = KotlinLogging.logger {}
 
@@ -231,8 +232,8 @@ class SnowflakeSourceMetadataQuerier(
             for (namespace in
                 base.config.namespaces + base.config.namespaces.map { it.uppercase() }) {
                 // Query all schemas in the current database
-                dbmd.getTables(namespace, null, null, arrayOf("TABLE", "VIEW")).use { rs: ResultSet
-                    ->
+                dbmd.getTables(namespace, schema, null, arrayOf("TABLE", "VIEW")).use {
+                    rs: ResultSet ->
                     while (rs.next()) {
                         val tableName =
                             TableName(
@@ -328,7 +329,7 @@ class SnowflakeSourceMetadataQuerier(
                         checkQueries,
                         jdbcConnectionFactory,
                     )
-                return SnowflakeSourceMetadataQuerier(base)
+                return SnowflakeSourceMetadataQuerier(base, config.schema)
             }
         }
 

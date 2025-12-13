@@ -2,27 +2,15 @@ import ConnectorRegistry from '@site/src/components/ConnectorRegistry';
 
 # Connectors
 
-A connector is a tool to pull data from a source or push data to a destination.
-
-Source connectors connect to the APIs, file, databases, or data warehouses from which you want to pull data. Destination connectors are the data warehouses, data lakes, databases, or analytics tools to which you want to push data.
-
-Browse Airbyte's catalog below to see which connectors are available, read their documentation, or review the code and GitHub issues for that connector. Most connectors are available in both Cloud and Self-Managed versions of Airbyte, but some are only available in Self-Managed.
+Airbyte's library of connectors is used by the [data replication platform](/platform). A connector is a tool to pull data from a source or push data to a destination. To learn more about connectors, see [Sources, destinations, and connectors](../platform/move-data/sources-destinations-connectors). To learn how to use a specific connector, find the documentation for the connector you want to use, below.
 
 ## Contribute to Airbyte's connectors
 
-Don't see the connector you need? Need a connector to do something it doesn't currently do? Airbyte's connectors are open source. You can [build entirely new connectors](../platform/connector-development/) or contribute enhancements, bug fixes, and features to existing connectors. We encourage contributors to [add your changes](../platform/contributing-to-airbyte/) to Airbyte's public connector catalog, but you always have the option to publish them privately in your own workspaces.
+Don't see the connector you need? Need a connector to do something it doesn't currently do? Airbyte's connectors are open source. You can [build new connectors](../platform/connector-development/) or contribute fixes and features to existing connectors. You can [add your changes](/community/contributing-to-airbyte/) to Airbyte's public connector catalog to help others, or publish changes privately in your own workspaces.
 
 ## Connector support levels
 
-Each connector has one of the following support levels. Review [Connector support levels](connector-support-levels) for details on each tier.
-
-- **Airbyte**: maintained by Airbyte.
-
-- **Enterprise**: special, premium connectors available to Enterprise and Teams customers **for an additional cost**. To learn more about enterprise connectors, [talk to Sales](https://airbyte.com/company/talk-to-sales).
-
-- **Marketplace**: maintained by the open source community.
-
-- **Custom**: If you create your own custom connector, you alone are responsible for its maintenance.
+Connectors have different support levels (Airbyte, Marketplace, Enterprise, and Custom). Review [Connector support levels](/integrations/connector-support-levels) for details.
 
 ## All source connectors
 

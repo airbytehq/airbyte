@@ -1,0 +1,5889 @@
+version: 7.0.3
+type: DeclarativeSource
+
+check:
+  type: CheckStream
+  stream_names:
+    - pages
+
+definitions:
+  authenticator:
+    type: BearerAuthenticator
+    api_token:
+      "{{ config.get('credentials', {}).get('token') if config.get('credentials',
+      {}).get('auth_type') == 'token' else config.get('credentials', {}).get('access_token')
+      if config.get('credentials', {}).get('auth_type') == 'OAuth2.0' else config.get('access_token',
+      '') }}"
+    
+  error_handler:
+    type: CompositeErrorHandler
+    error_handlers:
+      - type: DefaultErrorHandler
+        backoff_strategies:
+          - type: WaitTimeFromHeader
+            header: retry-after
+        response_filters:
+          - type: HttpResponseFilter
+            action: RETRY
+            http_codes:
+              - 429
+      - type: DefaultErrorHandler
+        response_filters:
+          - type: HttpResponseFilter
+            action: IGNORE
+            http_codes:
+              - 400
+            error_message_contains: "The start_cursor provided is invalid:"
+          - type: HttpResponseFilter
+            action: IGNORE
+            http_codes:
+              - 404
+            error_message_contains: "Make sure the relevant pages and databases are shared with your integration."
+  record_selector:
+    type: RecordSelector
+    extractor:
+      type: DpathExtractor
+      field_path:
+        - results
+  request_parameter_paginator:
+    type: DefaultPaginator
+    page_token_option:
+      type: RequestOption
+      inject_into: request_parameter
+      field_name: start_cursor
+    page_size_option:
+      type: RequestOption
+      field_name: page_size
+      inject_into: request_parameter
+    pagination_strategy:
+      type: CursorPagination
+      page_size: 100
+      cursor_value: '{{ response.get("next_cursor") }}'
+      stop_condition: '{{ not response.get("has_more") }}'
+  body_json_paginator:
+    type: DefaultPaginator
+    page_token_option:
+      type: RequestOption
+      inject_into: body_json
+      field_name: start_cursor
+    page_size_option:
+      type: RequestOption
+      field_name: page_size
+      inject_into: body_json
+    pagination_strategy:
+      type: CursorPagination
+      page_size: 100
+      cursor_value: '{{ response.get("next_cursor") }}'
+      stop_condition: '{{ not response.get("has_more") }}'
+  client_side_incremental_sync:
+    type: DatetimeBasedCursor
+    cursor_field: last_edited_time
+    cursor_datetime_formats:
+      - "%Y-%m-%dT%H:%M:%S.%fZ"
+    datetime_format: "%Y-%m-%dT%H:%M:%S.%fZ"
+    start_datetime:
+      type: MinMaxDatetime
+      datetime: "{{ config.get('start_date', day_delta(-730, '%Y-%m-%dT%H:%M:%S.%fZ'))}}"
+    is_client_side_incremental: true
+  
+  base_retriever:
+    type: SimpleRetriever
+    requester:
+      type: HttpRequester
+      url_base: https://api.notion.com/v1/
+      authenticator:
+        $ref: "#/definitions/authenticator"
+      http_method: GET
+      request_headers:
+        Notion-Version: "2022-06-28"
+      error_handler:
+        $ref: "#/definitions/error_handler"
+    record_selector:
+      $ref: "#/definitions/record_selector"
+
+  pages_stream:
+    type: DeclarativeStream
+    name: pages
+    primary_key:
+      - id
+    retriever:
+      $ref: "#/definitions/base_retriever"
+      requester:
+        $ref: "#/definitions/base_retriever/requester"
+        path: search
+        http_method: POST
+        request_parameters: { }
+        request_body_json:
+          sort: '{ "direction": "descending", "timestamp": "last_edited_time" }'
+          filter: '{ "property": "object", "value": "page" }'
+      paginator:
+        $ref: "#/definitions/body_json_paginator"
+      partition_router: [ ]
+    incremental_sync:
+      $ref: "#/definitions/client_side_incremental_sync"
+    transformations:
+      - type: CustomTransformation
+        class_name: source_declarative_manifest.components.NotionPropertiesTransformation
+    schema_loader:
+      type: InlineSchemaLoader
+      schema:
+        $ref: "#/schemas/pages"
+
+streams:
+  - $ref: "#/definitions/pages_stream"
+  - type: DeclarativeStream
+    name: users
+    primary_key:
+      - id
+    retriever:
+      $ref: "#/definitions/base_retriever"
+      requester:
+        $ref: "#/definitions/base_retriever/requester"
+        path: users
+        request_parameters: {}
+        request_body_json: {}
+      paginator:
+        $ref: "#/definitions/request_parameter_paginator"
+      partition_router: []
+    transformations:
+      - type: CustomTransformation
+        class_name: source_declarative_manifest.components.NotionUserTransformation
+    schema_loader:
+      type: InlineSchemaLoader
+      schema:
+        $ref: "#/schemas/users"
+  - type: DeclarativeStream
+    name: databases
+    primary_key:
+      - id
+    retriever:
+      $ref: "#/definitions/base_retriever"
+      requester:
+        $ref: "#/definitions/base_retriever/requester"
+        path: search
+        http_method: POST
+        request_parameters: {}
+        request_body_json:
+          sort: '{ "direction": "descending", "timestamp": "last_edited_time" }'
+          filter: '{ "property": "object", "value": "database" }'
+      paginator:
+        $ref: "#/definitions/body_json_paginator"
+      partition_router: []
+    incremental_sync:
+      $ref: "#/definitions/client_side_incremental_sync"
+    transformations:
+      - type: CustomTransformation
+        class_name: source_declarative_manifest.components.NotionPropertiesTransformation
+    schema_loader:
+      type: InlineSchemaLoader
+      schema:
+        $ref: "#/schemas/databases"
+  - type: DeclarativeStream
+    name: comments
+    primary_key:
+      - id
+    incremental_sync:
+      $ref: "#/definitions/client_side_incremental_sync"
+    retriever:
+      $ref: "#/definitions/base_retriever"
+      requester:
+        $ref: "#/definitions/base_retriever/requester"
+        path: comments
+        request_parameters: {}
+        request_body_json: {}
+      paginator:
+        $ref: "#/definitions/request_parameter_paginator"
+      partition_router:
+        - type: SubstreamPartitionRouter
+          parent_stream_configs:
+            - type: ParentStreamConfig
+              parent_key: id
+              request_option:
+                type: RequestOption
+                field_name: block_id
+                inject_into: request_parameter
+              partition_field: id
+              stream:
+                $ref: "#/definitions/pages_stream"
+    schema_loader:
+      type: InlineSchemaLoader
+      schema:
+        $ref: "#/schemas/comments"
+  - type: DeclarativeStream
+    name: blocks
+    primary_key:
+      - id
+    incremental_sync:
+      $ref: "#/definitions/client_side_incremental_sync"
+      global_substream_cursor: true
+    retriever:
+      type: CustomRetriever
+      class_name: "source_declarative_manifest.components.BlocksRetriever"
+      partition_router:
+        type: SubstreamPartitionRouter
+        stream_name: blocks
+        parent_stream_configs:
+          - type: ParentStreamConfig
+            parent_key: id
+            partition_field: block_id
+            stream:
+              $ref: "#/definitions/pages_stream"
+      requester:
+        $ref: "#/definitions/base_retriever/requester"
+        path: blocks/{{ stream_partition['block_id'] }}/children
+        request_parameters: {}
+        request_body_json: {}
+      record_selector:
+        $ref: "#/definitions/record_selector"
+        record_filter:
+          type: RecordFilter
+          condition: '{{ record["type"] not in ["child_page", "child_database", "ai_block"] }}'
+      paginator:
+        $ref: "#/definitions/request_parameter_paginator"
+        $parameters:
+          # added because custom retriever fails without this
+          url_base: https://api.notion.com/v1/
+    schema_loader:
+      type: InlineSchemaLoader
+      schema:
+        $ref: "#/schemas/blocks"
+
+concurrency_level:
+  type: ConcurrencyLevel
+  default_concurrency: 3
+  max_concurrency: 10
+
+spec:
+  type: Spec
+  connection_specification:
+    "$schema": http://json-schema.org/draft-07/schema#
+    title: Notion Source Spec
+    type: object
+    properties:
+      start_date:
+        title: Start Date
+        description: UTC date and time in the format YYYY-MM-DDTHH:MM:SS.000Z. During
+          incremental sync, any data generated before this date will not be replicated.
+          If left blank, the start date will be set to 2 years before the present date.
+        pattern: "^[0-9]{4}-[0-9]{2}-[0-9]{2}T[0-9]{2}:[0-9]{2}:[0-9]{2}.[0-9]{3}Z$"
+        pattern_descriptor: YYYY-MM-DDTHH:MM:SS.000Z
+        examples:
+          - '2020-11-16T00:00:00.000Z'
+        type: string
+        format: date-time
+      credentials:
+        title: Authentication Method
+        description: Choose either OAuth (recommended for Airbyte Cloud) or Access Token.
+          See our <a href='https://docs.airbyte.com/integrations/sources/notion#setup-guide'>docs</a>
+          for more information.
+        type: object
+        order: 1
+        oneOf:
+          - type: object
+            title: OAuth2.0
+            required:
+              - auth_type
+              - client_id
+              - client_secret
+              - access_token
+            properties:
+              auth_type:
+                type: string
+                const: OAuth2.0
+              client_id:
+                title: Client ID
+                type: string
+                description: The Client ID of your Notion integration. See our <a href='https://docs.airbyte.com/integrations/sources/notion#step-2-set-permissions-and-acquire-authorization-credentials'>docs</a>
+                  for more information.
+                airbyte_secret: true
+              client_secret:
+                title: Client Secret
+                type: string
+                description: The Client Secret of your Notion integration. See our <a
+                  href='https://docs.airbyte.com/integrations/sources/notion#step-2-set-permissions-and-acquire-authorization-credentials'>docs</a>
+                  for more information.
+                airbyte_secret: true
+              access_token:
+                title: Access Token
+                type: string
+                description: The Access Token received by completing the OAuth flow for
+                  your Notion integration. See our <a href='https://docs.airbyte.com/integrations/sources/notion#step-2-set-permissions-and-acquire-authorization-credentials'>docs</a>
+                  for more information.
+                airbyte_secret: true
+          - type: object
+            title: Access Token
+            required:
+              - auth_type
+              - token
+            properties:
+              auth_type:
+                type: string
+                const: token
+              token:
+                title: Access Token
+                description: The Access Token for your private Notion integration. See
+                  the <a href='https://docs.airbyte.com/integrations/sources/notion#step-1-create-an-integration-in-notion'>docs</a>
+                  for more information on how to obtain this token.
+                type: string
+                airbyte_secret: true
+  advanced_auth:
+    auth_flow_type: oauth2.0
+    predicate_key:
+      - credentials
+      - auth_type
+    predicate_value: OAuth2.0
+    oauth_config_specification:
+      complete_oauth_output_specification:
+        type: object
+        properties:
+          access_token:
+            type: string
+            path_in_connector_config:
+              - credentials
+              - access_token
+      complete_oauth_server_input_specification:
+        type: object
+        properties:
+          client_id:
+            type: string
+          client_secret:
+            type: string
+      complete_oauth_server_output_specification:
+        type: object
+        properties:
+          client_id:
+            type: string
+            path_in_connector_config:
+              - credentials
+              - client_id
+          client_secret:
+            type: string
+            path_in_connector_config:
+              - credentials
+              - client_secret
+
+schemas:
+
+  users:
+    $schema: http://json-schema.org/draft-07/schema#
+    type: object
+    properties:
+      object:
+        enum:
+          - user
+      id:
+        type: string
+      name:
+        type:
+          - "null"
+          - string
+      avatar_url:
+        type:
+          - "null"
+          - string
+      type:
+        enum:
+          - person
+          - bot
+      person:
+        type:
+          - "null"
+          - object
+        additionalProperties: true
+        properties:
+          email:
+            type:
+              - "null"
+              - string
+      bot:
+        type:
+          - "null"
+          - object
+        additionalProperties: true
+        properties:
+          owner:
+            type: object
+            properties:
+              type:
+                type: string
+              info:
+                avatar_url:
+                  type:
+                    - "null"
+                    - string
+                id:
+                  type:
+                    - "null"
+                    - string
+                name:
+                  type:
+                    - "null"
+                    - string
+                object:
+                  type:
+                    - "null"
+                    - string
+                person:
+                  type:
+                    - "null"
+                    - object
+                  properties:
+                    email:
+                      type:
+                        - "null"
+                        - string
+                    type:
+                      type:
+                        - "null"
+                        - string
+              workspace:
+                type:
+                  - "null"
+                  - boolean
+          workspace_name:
+            type:
+              - "null"
+              - string
+  
+  databases:
+    $schema: http://json-schema.org/draft-07/schema#
+    type: object
+    additionalProperties: true
+    properties:
+      object:
+        description: The type of object represented by the database.
+        enum:
+          - database
+      id:
+        description: Unique identifier of the database.
+        type: string
+      created_time:
+        description: The timestamp when the database was created.
+        type: string
+        format: date-time
+      last_edited_time:
+        description: The timestamp when the database was last edited.
+        type: string
+        format: date-time
+      title:
+        description: Title or name of the database.
+        type: array
+        items:
+          type: object
+          properties:
+            type:
+              type:
+                - "null"
+                - string
+            text:
+              type:
+                - "null"
+                - object
+              additionalProperties: true
+              properties:
+                content:
+                  type:
+                    - "null"
+                    - string
+                link:
+                  type:
+                    - "null"
+                    - object
+                  additionalProperties: true
+                  properties:
+                    type:
+                      enum:
+                        - url
+                    url:
+                      type:
+                        - "null"
+                        - string
+            mention:
+              type:
+                - "null"
+                - object
+              additionalProperties: true
+              properties:
+                type:
+                  type:
+                    - "null"
+                    - string
+                info:
+                  type:
+                    - "null"
+                    - object
+                  properties:
+                    id:
+                      type:
+                        - "null"
+                        - string
+                    object:
+                      type:
+                        - "null"
+                        - string
+            equation:
+              type:
+                - "null"
+                - object
+              additionalProperties: true
+              properties:
+                expression:
+                  type:
+                    - "null"
+                    - string
+            annotations:
+              type:
+                - "null"
+                - object
+              additionalProperties: true
+              properties:
+                bold:
+                  type:
+                    - "null"
+                    - boolean
+                italic:
+                  type:
+                    - "null"
+                    - boolean
+                strikethrough:
+                  type:
+                    - "null"
+                    - boolean
+                underline:
+                  type:
+                    - "null"
+                    - boolean
+                code:
+                  type:
+                    - "null"
+                    - boolean
+                color:
+                  type:
+                    - "null"
+                    - string
+            plain_text:
+              type:
+                - "null"
+                - string
+            href:
+              type:
+                - "null"
+                - string
+      description:
+        description: Description text associated with the database.
+        type: array
+        items:
+          type: object
+          properties:
+            type:
+              type:
+                - "null"
+                - string
+            text:
+              type:
+                - "null"
+                - object
+              additionalProperties: true
+              properties:
+                content:
+                  type:
+                    - "null"
+                    - string
+                link:
+                  type:
+                    - "null"
+                    - object
+                  additionalProperties: true
+                  properties:
+                    type:
+                      enum:
+                        - url
+                    url:
+                      type:
+                        - "null"
+                        - string
+            mention:
+              type:
+                - "null"
+                - object
+              additionalProperties: true
+              properties:
+                type:
+                  type:
+                    - "null"
+                    - string
+                info:
+                  type:
+                    - "null"
+                    - object
+                  properties:
+                    id:
+                      type:
+                        - "null"
+                        - string
+                    object:
+                      type:
+                        - "null"
+                        - string
+            equation:
+              type:
+                - "null"
+                - object
+              additionalProperties: true
+              properties:
+                expression:
+                  type:
+                    - "null"
+                    - string
+            annotations:
+              type:
+                - "null"
+                - object
+              additionalProperties: true
+              properties:
+                bold:
+                  type:
+                    - "null"
+                    - boolean
+                italic:
+                  type:
+                    - "null"
+                    - boolean
+                strikethrough:
+                  type:
+                    - "null"
+                    - boolean
+                underline:
+                  type:
+                    - "null"
+                    - boolean
+                code:
+                  type:
+                    - "null"
+                    - boolean
+                color:
+                  type:
+                    - "null"
+                    - string
+            plain_text:
+              type:
+                - "null"
+                - string
+            href:
+              type:
+                - "null"
+                - string
+      last_edited_by:
+        description: The user who last edited the database.
+        type: object
+        properties:
+          object:
+            enum:
+              - user
+          id:
+            type: string
+          name:
+            type:
+              - "null"
+              - string
+          avatar_url:
+            type:
+              - "null"
+              - string
+          type:
+            enum:
+              - person
+              - bot
+          person:
+            type:
+              - "null"
+              - object
+            additionalProperties: true
+            properties:
+              email:
+                type:
+                  - "null"
+                  - string
+          bot:
+            type:
+              - "null"
+              - object
+            additionalProperties: true
+            properties:
+              owner:
+                type: object
+                properties:
+                  type:
+                    type: string
+                  info:
+                    avatar_url:
+                      type:
+                        - "null"
+                        - string
+                    id:
+                      type:
+                        - "null"
+                        - string
+                    name:
+                      type:
+                        - "null"
+                        - string
+                    object:
+                      type:
+                        - "null"
+                        - string
+                    person:
+                      type:
+                        - "null"
+                        - object
+                      properties:
+                        email:
+                          type:
+                            - "null"
+                            - string
+                        type:
+                          type:
+                            - "null"
+                            - string
+                  workspace:
+                    type:
+                      - "null"
+                      - boolean
+              workspace_name:
+                type:
+                  - "null"
+                  - string
+      created_by:
+        description: The user who created the database.
+        type: object
+        properties:
+          object:
+            enum:
+              - user
+          id:
+            type: string
+          name:
+            type:
+              - "null"
+              - string
+          avatar_url:
+            type:
+              - "null"
+              - string
+          type:
+            enum:
+              - person
+              - bot
+          person:
+            type:
+              - "null"
+              - object
+            additionalProperties: true
+            properties:
+              email:
+                type:
+                  - "null"
+                  - string
+          bot:
+            type:
+              - "null"
+              - object
+            additionalProperties: true
+            properties:
+              owner:
+                type: object
+                properties:
+                  type:
+                    type: string
+                  info:
+                    avatar_url:
+                      type:
+                        - "null"
+                        - string
+                    id:
+                      type:
+                        - "null"
+                        - string
+                    name:
+                      type:
+                        - "null"
+                        - string
+                    object:
+                      type:
+                        - "null"
+                        - string
+                    person:
+                      type:
+                        - "null"
+                        - object
+                      properties:
+                        email:
+                          type:
+                            - "null"
+                            - string
+                        type:
+                          type:
+                            - "null"
+                            - string
+                  workspace:
+                    type:
+                      - "null"
+                      - boolean
+              workspace_name:
+                type:
+                  - "null"
+                  - string
+      archived:
+        description: Indicates if the data is archived or not.
+        type: boolean
+      icon:
+        description: URL or reference to the icon of the database.
+        anyOf:
+          - type:
+              - "null"
+              - object
+            properties:
+              type:
+                enum:
+                  - file
+                  - external
+              caption:
+                type:
+                  - "null"
+                  - array
+                items:
+                  type: object
+                  properties:
+                    type:
+                      type:
+                        - "null"
+                        - string
+                    text:
+                      type:
+                        - "null"
+                        - object
+                      additionalProperties: true
+                      properties:
+                        content:
+                          type:
+                            - "null"
+                            - string
+                        link:
+                          type:
+                            - "null"
+                            - object
+                          additionalProperties: true
+                          properties:
+                            type:
+                              enum:
+                                - url
+                            url:
+                              type:
+                                - "null"
+                                - string
+                    mention:
+                      type:
+                        - "null"
+                        - object
+                      additionalProperties: true
+                      properties:
+                        type:
+                          type:
+                            - "null"
+                            - string
+                        info:
+                          type:
+                            - "null"
+                            - object
+                          properties:
+                            id:
+                              type:
+                                - "null"
+                                - string
+                            object:
+                              type:
+                                - "null"
+                                - string
+                    equation:
+                      type:
+                        - "null"
+                        - object
+                      additionalProperties: true
+                      properties:
+                        expression:
+                          type:
+                            - "null"
+                            - string
+                    annotations:
+                      type:
+                        - "null"
+                        - object
+                      additionalProperties: true
+                      properties:
+                        bold:
+                          type:
+                            - "null"
+                            - boolean
+                        italic:
+                          type:
+                            - "null"
+                            - boolean
+                        strikethrough:
+                          type:
+                            - "null"
+                            - boolean
+                        underline:
+                          type:
+                            - "null"
+                            - boolean
+                        code:
+                          type:
+                            - "null"
+                            - boolean
+                        color:
+                          type:
+                            - "null"
+                            - string
+                    plain_text:
+                      type:
+                        - "null"
+                        - string
+                    href:
+                      type:
+                        - "null"
+                        - string
+              external:
+                type:
+                  - "null"
+                  - object
+                additionalProperties: true
+                properties:
+                  url:
+                    type: string
+              file:
+                type:
+                  - "null"
+                  - object
+                additionalProperties: true
+                properties:
+                  url:
+                    type: string
+                  expiry_time:
+                    type: string
+                    format: date-time
+          - type:
+              - "null"
+              - object
+            properties:
+              type:
+                type: string
+              emoji:
+                type: string
+      cover:
+        description: URL or reference to the cover image of the database.
+        type:
+          - "null"
+          - object
+        properties:
+          type:
+            enum:
+              - file
+              - external
+          caption:
+            type:
+              - "null"
+              - array
+            items:
+              type: object
+              properties:
+                type:
+                  type:
+                    - "null"
+                    - string
+                text:
+                  type:
+                    - "null"
+                    - object
+                  additionalProperties: true
+                  properties:
+                    content:
+                      type:
+                        - "null"
+                        - string
+                    link:
+                      type:
+                        - "null"
+                        - object
+                      additionalProperties: true
+                      properties:
+                        type:
+                          enum:
+                            - url
+                        url:
+                          type:
+                            - "null"
+                            - string
+                mention:
+                  type:
+                    - "null"
+                    - object
+                  additionalProperties: true
+                  properties:
+                    type:
+                      type:
+                        - "null"
+                        - string
+                    info:
+                      type:
+                        - "null"
+                        - object
+                      properties:
+                        id:
+                          type:
+                            - "null"
+                            - string
+                        object:
+                          type:
+                            - "null"
+                            - string
+                equation:
+                  type:
+                    - "null"
+                    - object
+                  additionalProperties: true
+                  properties:
+                    expression:
+                      type:
+                        - "null"
+                        - string
+                annotations:
+                  type:
+                    - "null"
+                    - object
+                  additionalProperties: true
+                  properties:
+                    bold:
+                      type:
+                        - "null"
+                        - boolean
+                    italic:
+                      type:
+                        - "null"
+                        - boolean
+                    strikethrough:
+                      type:
+                        - "null"
+                        - boolean
+                    underline:
+                      type:
+                        - "null"
+                        - boolean
+                    code:
+                      type:
+                        - "null"
+                        - boolean
+                    color:
+                      type:
+                        - "null"
+                        - string
+                plain_text:
+                  type:
+                    - "null"
+                    - string
+                href:
+                  type:
+                    - "null"
+                    - string
+          external:
+            type:
+              - "null"
+              - object
+            additionalProperties: true
+            properties:
+              url:
+                type: string
+          file:
+            type:
+              - "null"
+              - object
+            additionalProperties: true
+            properties:
+              url:
+                type: string
+              expiry_time:
+                type: string
+                format: date-time
+      parent:
+        description: Indicates the parent database if it exists.
+        type: object
+        properties:
+          type:
+            enum:
+              - block_id
+              - database_id
+              - page_id
+              - workspace
+          block_id:
+            type: string
+          database_id:
+            type: string
+          page_id:
+            type: string
+          workspace:
+            type: boolean
+      url:
+        description: URL or reference to access the database.
+        type: string
+      is_inline:
+        description: Indicates if the database is displayed inline.
+        type:
+          - "null"
+          - boolean
+      public_url:
+        description: Public URL to access the database.
+        type:
+          - "null"
+          - string
+      properties:
+        description:
+          List of key-value pairs defining additional properties of the
+          database.
+        type: array
+        items:
+          type:
+            - "null"
+            - object
+          additionalProperties: true
+          properties:
+            name:
+              description: The name of the property.
+              type:
+                - "null"
+                - string
+            value:
+              description: The value of the property.
+              type: object
+              additionalProperties: true
+              anyOf:
+                - type: object
+                  additionalProperties: true
+                  properties:
+                    id:
+                      type: string
+                    type:
+                      enum:
+                        - checkbox
+                        - created_by
+                        - created_time
+                        - date
+                        - email
+                        - files
+                        - formula
+                        - last_edited_by
+                        - last_edited_time
+                        - multi_select
+                        - number
+                        - people
+                        - phone_number
+                        - relation
+                        - rich_text
+                        - rollup
+                        - select
+                        - status
+                        - title
+                        - url
+                    name:
+                      type: string
+                - type: object
+                  properties:
+                    id:
+                      type: string
+                    type:
+                      enum:
+                        - checkbox
+                    name:
+                      type: string
+                    checkbox:
+                      type: object
+                - type: object
+                  properties:
+                    id:
+                      type: string
+                    type:
+                      enum:
+                        - created_by
+                    name:
+                      type: string
+                    created_by:
+                      type: object
+                - type: object
+                  properties:
+                    id:
+                      type: string
+                    type:
+                      enum:
+                        - created_time
+                    name:
+                      type: string
+                    created_time:
+                      type: object
+                - type: object
+                  properties:
+                    id:
+                      type: string
+                    type:
+                      enum:
+                        - date
+                    name:
+                      type: string
+                    date:
+                      type: object
+                - type: object
+                  properties:
+                    id:
+                      type: string
+                    type:
+                      enum:
+                        - email
+                    name:
+                      type: string
+                    email:
+                      type: object
+                - type: object
+                  properties:
+                    id:
+                      type: string
+                    type:
+                      enum:
+                        - files
+                    name:
+                      type: string
+                    files:
+                      type: object
+                - type: object
+                  properties:
+                    id:
+                      type: string
+                    type:
+                      enum:
+                        - formula
+                    name:
+                      type: string
+                    expression:
+                      type: string
+                - type: object
+                  properties:
+                    id:
+                      type: string
+                    type:
+                      enum:
+                        - last_edited_by
+                    name:
+                      type: string
+                    last_edited_by:
+                      type: string
+                - type: object
+                  properties:
+                    id:
+                      type: string
+                    type:
+                      enum:
+                        - last_edited_time
+                    name:
+                      type: string
+                    last_edited_time:
+                      type: string
+                - type: object
+                  properties:
+                    id:
+                      type: string
+                    type:
+                      enum:
+                        - number
+                    name:
+                      type: string
+                    format:
+                      enum:
+                        - argentine_peso
+                        - baht
+                        - canadian_dollar
+                        - chilean_peso
+                        - colombian_peso
+                        - danish_krone
+                        - dirham
+                        - dollar
+                        - euro
+                        - forint
+                        - franc
+                        - hong_kong_dollar
+                        - koruna
+                        - krona
+                        - leu
+                        - lira
+                        - mexican_peso
+                        - new_taiwan_dollar
+                        - new_zealand_dollar
+                        - norwegian_krone
+                        - number
+                        - number_with_commas
+                        - percent
+                        - peruvian_sol
+                        - philippine_peso
+                        - pound
+                        - rand
+                        - real
+                        - ringgit
+                        - riyal
+                        - ruble
+                        - rupee
+                        - rupiah
+                        - shekel
+                        - singapore_dollar
+                        - uruguayan_peso
+                        - won
+                        - yen
+                        - yuan
+                        - zloty
+                - type: object
+                  properties:
+                    id:
+                      type: string
+                    type:
+                      enum:
+                        - select
+                        - multi_select
+                    name:
+                      type: string
+                    options:
+                      type: array
+                      items:
+                        type:
+                          - "null"
+                          - object
+                        properties:
+                          id:
+                            type:
+                              - "null"
+                              - string
+                          name:
+                            type:
+                              - "null"
+                              - string
+                          color:
+                            type:
+                              - "null"
+                              - string
+                - type: object
+                  properties:
+                    id:
+                      type: string
+                    type:
+                      enum:
+                        - people
+                    name:
+                      type: string
+                    people:
+                      type: string
+                - type: object
+                  properties:
+                    id:
+                      type: string
+                    type:
+                      enum:
+                        - phone_number
+                    name:
+                      type: string
+                    phone_number:
+                      type: object
+                - type: object
+                  properties:
+                    id:
+                      type: string
+                    type:
+                      enum:
+                        - relation
+                    name:
+                      type: string
+                    database_id:
+                      type: string
+                    synced_property_name:
+                      type:
+                        - "null"
+                        - string
+                    synced_property_id:
+                      type:
+                        - "null"
+                        - string
+                - type: object
+                  properties:
+                    id:
+                      type: string
+                    type:
+                      enum:
+                        - rich_text
+                    name:
+                      type: string
+                    rich_text:
+                      type: object
+                - type: object
+                  properties:
+                    id:
+                      type: string
+                    type:
+                      enum:
+                        - rollup
+                    name:
+                      type: string
+                    relation_property_name:
+                      type: string
+                    relation_property_id:
+                      type: string
+                    rollup_property_name:
+                      type: string
+                    rollup_property_id:
+                      type: string
+                    function:
+                      enum:
+                        - average
+                        - checked
+                        - count_per_group
+                        - count
+                        - count_values
+                        - date_range
+                        - earliest_date
+                        - empty
+                        - latest_date
+                        - max
+                        - median
+                        - min
+                        - not_empty
+                        - percent_checked
+                        - percent_empty
+                        - percent_not_empty
+                        - percent_per_group
+                        - percent_unchecked
+                        - range
+                        - unchecked
+                        - unique
+                        - show_original
+                        - show_unique
+                        - sum
+                - type: object
+                  properties:
+                    id:
+                      type: string
+                    type:
+                      enum:
+                        - status
+                    name:
+                      type: string
+                    status:
+                      type: object
+                      properties:
+                        options:
+                          type: array
+                          items:
+                            type:
+                              - "null"
+                              - object
+                            properties:
+                              id:
+                                type:
+                                  - "null"
+                                  - string
+                              name:
+                                type:
+                                  - "null"
+                                  - string
+                              color:
+                                type:
+                                  - "null"
+                                  - string
+                        groups:
+                          type: array
+                          items:
+                            type: object
+                            properties:
+                              id:
+                                type: string
+                              name:
+                                type: string
+                              color:
+                                type: string
+                              option_ids:
+                                type: array
+                                items:
+                                  type: string
+                - type: object
+                  properties:
+                    id:
+                      type: string
+                    type:
+                      enum:
+                        - title
+                    name:
+                      type: string
+                    title:
+                      type: object
+                - type: object
+                  properties:
+                    id:
+                      type: string
+                    type:
+                      enum:
+                        - url
+                    name:
+                      type: string
+                    url:
+                      type: object
+
+  pages:
+    $schema: http://json-schema.org/draft-07/schema#
+    type: object
+    additionalProperties: true
+    properties:
+      object:
+        description: Type or category of the page object.
+        enum:
+          - page
+      id:
+        description: Unique identifier of the page.
+        type: string
+      created_time:
+        description: Date and time when the page was created.
+        type: string
+        format: date-time
+      created_by:
+        description: User ID or name of the creator of the page.
+        type: object
+        properties:
+          object:
+            enum:
+              - user
+          id:
+            type: string
+          name:
+            type:
+              - "null"
+              - string
+          avatar_url:
+            type:
+              - "null"
+              - string
+          type:
+            enum:
+              - person
+              - bot
+          person:
+            type:
+              - "null"
+              - object
+            additionalProperties: true
+            properties:
+              email:
+                type:
+                  - "null"
+                  - string
+          bot:
+            type:
+              - "null"
+              - object
+            additionalProperties: true
+            properties:
+              owner:
+                type: object
+                properties:
+                  type:
+                    type: string
+                  info:
+                    avatar_url:
+                      type:
+                        - "null"
+                        - string
+                    id:
+                      type:
+                        - "null"
+                        - string
+                    name:
+                      type:
+                        - "null"
+                        - string
+                    object:
+                      type:
+                        - "null"
+                        - string
+                    person:
+                      type:
+                        - "null"
+                        - object
+                      properties:
+                        email:
+                          type:
+                            - "null"
+                            - string
+                        type:
+                          type:
+                            - "null"
+                            - string
+                  workspace:
+                    type:
+                      - "null"
+                      - boolean
+              workspace_name:
+                type:
+                  - "null"
+                  - string
+      last_edited_time:
+        description: Date and time when the page was last edited.
+        type: string
+        format: date-time
+      last_edited_by:
+        description: User ID or name of the last editor of the page.
+        type: object
+        properties:
+          object:
+            enum:
+              - user
+          id:
+            type: string
+          name:
+            type:
+              - "null"
+              - string
+          avatar_url:
+            type:
+              - "null"
+              - string
+          type:
+            enum:
+              - person
+              - bot
+          person:
+            type:
+              - "null"
+              - object
+            additionalProperties: true
+            properties:
+              email:
+                type:
+                  - "null"
+                  - string
+          bot:
+            type:
+              - "null"
+              - object
+            additionalProperties: true
+            properties:
+              owner:
+                type: object
+                properties:
+                  type:
+                    type: string
+                  info:
+                    avatar_url:
+                      type:
+                        - "null"
+                        - string
+                    id:
+                      type:
+                        - "null"
+                        - string
+                    name:
+                      type:
+                        - "null"
+                        - string
+                    object:
+                      type:
+                        - "null"
+                        - string
+                    person:
+                      type:
+                        - "null"
+                        - object
+                      properties:
+                        email:
+                          type:
+                            - "null"
+                            - string
+                        type:
+                          type:
+                            - "null"
+                            - string
+                  workspace:
+                    type:
+                      - "null"
+                      - boolean
+              workspace_name:
+                type:
+                  - "null"
+                  - string
+      archived:
+        description: Indicates whether the page is archived or not.
+        type: boolean
+      in_trash:
+        description: Indicates whether the page is in trash or not.
+        type: boolean
+      icon:
+        description: URL or reference to the page icon.
+        anyOf:
+          - type:
+              - "null"
+              - object
+            properties:
+              type:
+                enum:
+                  - file
+                  - external
+              caption:
+                type:
+                  - "null"
+                  - array
+                items:
+                  type: object
+                  properties:
+                    type:
+                      type:
+                        - "null"
+                        - string
+                    text:
+                      type:
+                        - "null"
+                        - object
+                      additionalProperties: true
+                      properties:
+                        content:
+                          type:
+                            - "null"
+                            - string
+                        link:
+                          type:
+                            - "null"
+                            - object
+                          additionalProperties: true
+                          properties:
+                            type:
+                              enum:
+                                - url
+                            url:
+                              type:
+                                - "null"
+                                - string
+                    mention:
+                      type:
+                        - "null"
+                        - object
+                      additionalProperties: true
+                      properties:
+                        type:
+                          type:
+                            - "null"
+                            - string
+                        info:
+                          type:
+                            - "null"
+                            - object
+                          properties:
+                            id:
+                              type:
+                                - "null"
+                                - string
+                            object:
+                              type:
+                                - "null"
+                                - string
+                    equation:
+                      type:
+                        - "null"
+                        - object
+                      additionalProperties: true
+                      properties:
+                        expression:
+                          type:
+                            - "null"
+                            - string
+                    annotations:
+                      type:
+                        - "null"
+                        - object
+                      additionalProperties: true
+                      properties:
+                        bold:
+                          type:
+                            - "null"
+                            - boolean
+                        italic:
+                          type:
+                            - "null"
+                            - boolean
+                        strikethrough:
+                          type:
+                            - "null"
+                            - boolean
+                        underline:
+                          type:
+                            - "null"
+                            - boolean
+                        code:
+                          type:
+                            - "null"
+                            - boolean
+                        color:
+                          type:
+                            - "null"
+                            - string
+                    plain_text:
+                      type:
+                        - "null"
+                        - string
+                    href:
+                      type:
+                        - "null"
+                        - string
+              external:
+                type:
+                  - "null"
+                  - object
+                additionalProperties: true
+                properties:
+                  url:
+                    type: string
+              file:
+                type:
+                  - "null"
+                  - object
+                additionalProperties: true
+                properties:
+                  url:
+                    type: string
+                  expiry_time:
+                    type: string
+                    format: date-time
+          - type:
+              - "null"
+              - object
+            properties:
+              type:
+                type: string
+              emoji:
+                type: string
+      cover:
+        description: URL or reference to the page cover image.
+        type:
+          - "null"
+          - object
+        properties:
+          type:
+            enum:
+              - file
+              - external
+          caption:
+            type:
+              - "null"
+              - array
+            items:
+              type: object
+              properties:
+                type:
+                  type:
+                    - "null"
+                    - string
+                text:
+                  type:
+                    - "null"
+                    - object
+                  additionalProperties: true
+                  properties:
+                    content:
+                      type:
+                        - "null"
+                        - string
+                    link:
+                      type:
+                        - "null"
+                        - object
+                      additionalProperties: true
+                      properties:
+                        type:
+                          enum:
+                            - url
+                        url:
+                          type:
+                            - "null"
+                            - string
+                mention:
+                  type:
+                    - "null"
+                    - object
+                  additionalProperties: true
+                  properties:
+                    type:
+                      type:
+                        - "null"
+                        - string
+                    info:
+                      type:
+                        - "null"
+                        - object
+                      properties:
+                        id:
+                          type:
+                            - "null"
+                            - string
+                        object:
+                          type:
+                            - "null"
+                            - string
+                equation:
+                  type:
+                    - "null"
+                    - object
+                  additionalProperties: true
+                  properties:
+                    expression:
+                      type:
+                        - "null"
+                        - string
+                annotations:
+                  type:
+                    - "null"
+                    - object
+                  additionalProperties: true
+                  properties:
+                    bold:
+                      type:
+                        - "null"
+                        - boolean
+                    italic:
+                      type:
+                        - "null"
+                        - boolean
+                    strikethrough:
+                      type:
+                        - "null"
+                        - boolean
+                    underline:
+                      type:
+                        - "null"
+                        - boolean
+                    code:
+                      type:
+                        - "null"
+                        - boolean
+                    color:
+                      type:
+                        - "null"
+                        - string
+                plain_text:
+                  type:
+                    - "null"
+                    - string
+                href:
+                  type:
+                    - "null"
+                    - string
+          external:
+            type:
+              - "null"
+              - object
+            additionalProperties: true
+            properties:
+              url:
+                type: string
+          file:
+            type:
+              - "null"
+              - object
+            additionalProperties: true
+            properties:
+              url:
+                type: string
+              expiry_time:
+                type: string
+                format: date-time
+      parent:
+        description: ID or reference to the parent page.
+        type: object
+        properties:
+          type:
+            enum:
+              - block_id
+              - database_id
+              - page_id
+              - workspace
+          block_id:
+            type: string
+          database_id:
+            type: string
+          page_id:
+            type: string
+          workspace:
+            type: boolean
+      url:
+        description: URL of the page within the service.
+        type: string
+      public_url:
+        description: Publicly accessible URL of the page.
+        type:
+          - "null"
+          - string
+      properties:
+        description: Custom properties associated with the page.
+        type: array
+        items:
+          type: object
+          additionalProperties: true
+          properties:
+            name:
+              description: Name or key of the custom property.
+              type:
+                - "null"
+                - string
+            value:
+              description: Value of the custom property.
+              type: object
+              additionalProperties: true
+              oneOf:
+                - type: object
+                  properties:
+                    id:
+                      type: string
+                    type:
+                      enum:
+                        - title
+                    title:
+                      type:
+                        - "null"
+                        - array
+                      items:
+                        type:
+                          - "null"
+                          - object
+                        additionalProperties: true
+                        properties:
+                          type:
+                            type:
+                              - "null"
+                              - string
+                          text:
+                            type:
+                              - "null"
+                              - object
+                            properties:
+                              content:
+                                type:
+                                  - "null"
+                                  - string
+                              link:
+                                type:
+                                  - "null"
+                                  - object
+                                additionalProperties: true
+                                properties:
+                                  type:
+                                    enum:
+                                      - url
+                                  url:
+                                    type:
+                                      - "null"
+                                      - string
+                          annotations:
+                            type:
+                              - "null"
+                              - object
+                            additionalProperties: true
+                            properties:
+                              bold:
+                                type:
+                                  - "null"
+                                  - boolean
+                              italic:
+                                type:
+                                  - "null"
+                                  - boolean
+                              strikethrough:
+                                type:
+                                  - "null"
+                                  - boolean
+                              underline:
+                                type:
+                                  - "null"
+                                  - boolean
+                              code:
+                                type:
+                                  - "null"
+                                  - boolean
+                              color:
+                                type:
+                                  - "null"
+                                  - string
+                          plain_text:
+                            type:
+                              - "null"
+                              - string
+                          href:
+                            type:
+                              - "null"
+                              - string
+                - type: object
+                  properties:
+                    id:
+                      type: string
+                    type:
+                      enum:
+                        - rich_text
+                    rich_text:
+                      type:
+                        - "null"
+                        - array
+                      items:
+                        type: object
+                        properties:
+                          type:
+                            type:
+                              - "null"
+                              - string
+                          text:
+                            type:
+                              - "null"
+                              - object
+                            additionalProperties: true
+                            properties:
+                              content:
+                                type:
+                                  - "null"
+                                  - string
+                              link:
+                                type:
+                                  - "null"
+                                  - object
+                                additionalProperties: true
+                                properties:
+                                  type:
+                                    enum:
+                                      - url
+                                  url:
+                                    type:
+                                      - "null"
+                                      - string
+                          mention:
+                            type:
+                              - "null"
+                              - object
+                            additionalProperties: true
+                            properties:
+                              type:
+                                type:
+                                  - "null"
+                                  - string
+                              info:
+                                type:
+                                  - "null"
+                                  - object
+                                properties:
+                                  id:
+                                    type:
+                                      - "null"
+                                      - string
+                                  object:
+                                    type:
+                                      - "null"
+                                      - string
+                          equation:
+                            type:
+                              - "null"
+                              - object
+                            additionalProperties: true
+                            properties:
+                              expression:
+                                type:
+                                  - "null"
+                                  - string
+                          annotations:
+                            type:
+                              - "null"
+                              - object
+                            additionalProperties: true
+                            properties:
+                              bold:
+                                type:
+                                  - "null"
+                                  - boolean
+                              italic:
+                                type:
+                                  - "null"
+                                  - boolean
+                              strikethrough:
+                                type:
+                                  - "null"
+                                  - boolean
+                              underline:
+                                type:
+                                  - "null"
+                                  - boolean
+                              code:
+                                type:
+                                  - "null"
+                                  - boolean
+                              color:
+                                type:
+                                  - "null"
+                                  - string
+                          plain_text:
+                            type:
+                              - "null"
+                              - string
+                          href:
+                            type:
+                              - "null"
+                              - string
+                - type: object
+                  properties:
+                    id:
+                      type: string
+                    type:
+                      enum:
+                        - select
+                    select:
+                      type:
+                        - "null"
+                        - object
+                      properties:
+                        id:
+                          type:
+                            - "null"
+                            - string
+                        name:
+                          type:
+                            - "null"
+                            - string
+                        color:
+                          type:
+                            - "null"
+                            - string
+                - type: object
+                  properties:
+                    id:
+                      type: string
+                    type:
+                      enum:
+                        - multi_select
+                    multi_select:
+                      type:
+                        - "null"
+                        - array
+                      items:
+                        type:
+                          - "null"
+                          - object
+                        properties:
+                          id:
+                            type:
+                              - "null"
+                              - string
+                          name:
+                            type:
+                              - "null"
+                              - string
+                          color:
+                            type:
+                              - "null"
+                              - string
+                - type: object
+                  properties:
+                    id:
+                      type: string
+                    type:
+                      enum:
+                        - date
+                    date:
+                      type:
+                        - "null"
+                        - object
+                      properties:
+                        start:
+                          type:
+                            - "null"
+                            - string
+                        end:
+                          type:
+                            - "null"
+                            - string
+                        time_zone:
+                          type:
+                            - "null"
+                            - string
+                - type: object
+                  properties:
+                    id:
+                      type: string
+                    type:
+                      enum:
+                        - formula
+                    formula:
+                      type:
+                        - "null"
+                        - object
+                      properties:
+                        type:
+                          enum:
+                            - string
+                            - number
+                            - boolean
+                            - date
+                        string:
+                          type:
+                            - "null"
+                            - string
+                        number:
+                          type:
+                            - "null"
+                            - number
+                        boolean:
+                          type:
+                            - "null"
+                            - boolean
+                        date:
+                          type:
+                            - "null"
+                            - object
+                          properties:
+                            start:
+                              type:
+                                - "null"
+                                - string
+                            end:
+                              type:
+                                - "null"
+                                - string
+                            time_zone:
+                              type:
+                                - "null"
+                                - string
+                - type: object
+                  properties:
+                    id:
+                      type: string
+                    type:
+                      enum:
+                        - relation
+                    relation:
+                      type:
+                        - "null"
+                        - array
+                      items:
+                        type: object
+                        properties:
+                          id:
+                            type: string
+                - type: object
+                  properties:
+                    id:
+                      type: string
+                    type:
+                      enum:
+                        - rollup
+                    rollup:
+                      type:
+                        - "null"
+                        - object
+                      properties:
+                        type:
+                          enum:
+                            - number
+                            - date
+                            - array
+                        number:
+                          type:
+                            - "null"
+                            - number
+                        date:
+                          type:
+                            - "null"
+                            - object
+                          properties:
+                            start:
+                              type:
+                                - "null"
+                                - string
+                            end:
+                              type:
+                                - "null"
+                                - string
+                            time_zone:
+                              type:
+                                - "null"
+                                - string
+                        array:
+                          type:
+                            - "null"
+                            - array
+                          items:
+                            type: object
+                            properties:
+                              type:
+                                type: string
+                - type: object
+                  properties:
+                    id:
+                      type: string
+                    type:
+                      enum:
+                        - people
+                    people:
+                      type:
+                        - "null"
+                        - array
+                      items:
+                        type: object
+                        properties:
+                          object:
+                            enum:
+                              - user
+                          id:
+                            type: string
+                          name:
+                            type:
+                              - "null"
+                              - string
+                          avatar_url:
+                            type:
+                              - "null"
+                              - string
+                          type:
+                            enum:
+                              - person
+                              - bot
+                          person:
+                            type:
+                              - "null"
+                              - object
+                            additionalProperties: true
+                            properties:
+                              email:
+                                type:
+                                  - "null"
+                                  - string
+                          bot:
+                            type:
+                              - "null"
+                              - object
+                            additionalProperties: true
+                            properties:
+                              owner:
+                                type: object
+                                properties:
+                                  type:
+                                    type: string
+                                  info:
+                                    avatar_url:
+                                      type:
+                                        - "null"
+                                        - string
+                                    id:
+                                      type:
+                                        - "null"
+                                        - string
+                                    name:
+                                      type:
+                                        - "null"
+                                        - string
+                                    object:
+                                      type:
+                                        - "null"
+                                        - string
+                                    person:
+                                      type:
+                                        - "null"
+                                        - object
+                                      properties:
+                                        email:
+                                          type:
+                                            - "null"
+                                            - string
+                                        type:
+                                          type:
+                                            - "null"
+                                            - string
+                                  workspace:
+                                    type:
+                                      - "null"
+                                      - boolean
+                              workspace_name:
+                                type:
+                                  - "null"
+                                  - string
+                - type: object
+                  properties:
+                    id:
+                      type: string
+                    type:
+                      enum:
+                        - files
+                    files:
+                      type:
+                        - "null"
+                        - array
+                      items:
+                        type: object
+                        properties:
+                          type:
+                            enum:
+                              - external
+                              - file
+                          url:
+                            type: string
+                          expiry_time:
+                            type:
+                              - "null"
+                              - string
+                          name:
+                            type: string
+                - type: object
+                  properties:
+                    id:
+                      type: string
+                    type:
+                      enum:
+                        - checkbox
+                    checkout:
+                      type:
+                        - "null"
+                        - boolean
+                - type: object
+                  properties:
+                    id:
+                      type: string
+                    type:
+                      enum:
+                        - url
+                    url:
+                      type: string
+                - type: object
+                  properties:
+                    id:
+                      type: string
+                    type:
+                      enum:
+                        - email
+                    email:
+                      type: string
+                - type: object
+                  properties:
+                    id:
+                      type: string
+                    type:
+                      enum:
+                        - phone_number
+                    phone_number:
+                      type: object
+                - type: object
+                  properties:
+                    id:
+                      type: string
+                    type:
+                      enum:
+                        - created_time
+                    created_time:
+                      type: string
+                - type: object
+                  properties:
+                    id:
+                      type: string
+                    type:
+                      enum:
+                        - created_by
+                    created_by:
+                      type: object
+                      properties:
+                        object:
+                          enum:
+                            - user
+                        id:
+                          type: string
+                        name:
+                          type:
+                            - "null"
+                            - string
+                        avatar_url:
+                          type:
+                            - "null"
+                            - string
+                        type:
+                          enum:
+                            - person
+                            - bot
+                        person:
+                          type:
+                            - "null"
+                            - object
+                          additionalProperties: true
+                          properties:
+                            email:
+                              type:
+                                - "null"
+                                - string
+                        bot:
+                          type:
+                            - "null"
+                            - object
+                          additionalProperties: true
+                          properties:
+                            owner:
+                              type: object
+                              properties:
+                                type:
+                                  type: string
+                                info:
+                                  avatar_url:
+                                    type:
+                                      - "null"
+                                      - string
+                                  id:
+                                    type:
+                                      - "null"
+                                      - string
+                                  name:
+                                    type:
+                                      - "null"
+                                      - string
+                                  object:
+                                    type:
+                                      - "null"
+                                      - string
+                                  person:
+                                    type:
+                                      - "null"
+                                      - object
+                                    properties:
+                                      email:
+                                        type:
+                                          - "null"
+                                          - string
+                                      type:
+                                        type:
+                                          - "null"
+                                          - string
+                                workspace:
+                                  type:
+                                    - "null"
+                                    - boolean
+                            workspace_name:
+                              type:
+                                - "null"
+                                - string
+                - type: object
+                  properties:
+                    id:
+                      type: string
+                    type:
+                      enum:
+                        - last_edited_time
+                    last_edited_time:
+                      type: string
+                - type: object
+                  properties:
+                    id:
+                      type: string
+                    type:
+                      enum:
+                        - last_edited_by
+                    last_edited_by:
+                      type: object
+                      properties:
+                        object:
+                          enum:
+                            - user
+                        id:
+                          type: string
+                        name:
+                          type:
+                            - "null"
+                            - string
+                        avatar_url:
+                          type:
+                            - "null"
+                            - string
+                        type:
+                          enum:
+                            - person
+                            - bot
+                        person:
+                          type:
+                            - "null"
+                            - object
+                          additionalProperties: true
+                          properties:
+                            email:
+                              type:
+                                - "null"
+                                - string
+                        bot:
+                          type:
+                            - "null"
+                            - object
+                          additionalProperties: true
+                          properties:
+                            owner:
+                              type: object
+                              properties:
+                                type:
+                                  type: string
+                                info:
+                                  avatar_url:
+                                    type:
+                                      - "null"
+                                      - string
+                                  id:
+                                    type:
+                                      - "null"
+                                      - string
+                                  name:
+                                    type:
+                                      - "null"
+                                      - string
+                                  object:
+                                    type:
+                                      - "null"
+                                      - string
+                                  person:
+                                    type:
+                                      - "null"
+                                      - object
+                                    properties:
+                                      email:
+                                        type:
+                                          - "null"
+                                          - string
+                                      type:
+                                        type:
+                                          - "null"
+                                          - string
+                                workspace:
+                                  type:
+                                    - "null"
+                                    - boolean
+                            workspace_name:
+                              type:
+                                - "null"
+                                - string
+                - type: object
+                  properties:
+                    id:
+                      type: string
+                    type:
+                      enum:
+                        - number
+                    number:
+                      type: object
+                      properties:
+                        format:
+                          type: string
+                - type: object
+                  properties:
+                    id:
+                      type: string
+                    type:
+                      enum:
+                        - status
+                    status:
+                      type:
+                        - "null"
+                        - object
+                      properties:
+                        id:
+                          type:
+                            - "null"
+                            - string
+                        name:
+                          type:
+                            - "null"
+                            - string
+                        color:
+                          type:
+                            - "null"
+                            - string
+                - type: object
+                  properties:
+                    id:
+                      type: string
+                    type:
+                      enum:
+                        - unique_id
+                    unique_id:
+                      type: object
+                      properties:
+                        number:
+                          type: number
+                        prefix:
+                          type:
+                            - "null"
+                            - string
+                - type: object
+                  properties:
+                    id:
+                      type: string
+                    type:
+                      enum:
+                        - verification
+                    verification:
+                      type: object
+                      properties:
+                        state:
+                          enum:
+                            - verified
+                            - unverified
+                        verified_by:
+                          type: object
+                          properties:
+                            object:
+                              enum:
+                                - user
+                            id:
+                              type: string
+                            name:
+                              type:
+                                - "null"
+                                - string
+                            avatar_url:
+                              type:
+                                - "null"
+                                - string
+                            type:
+                              enum:
+                                - person
+                                - bot
+                            person:
+                              type:
+                                - "null"
+                                - object
+                              additionalProperties: true
+                              properties:
+                                email:
+                                  type:
+                                    - "null"
+                                    - string
+                            bot:
+                              type:
+                                - "null"
+                                - object
+                              additionalProperties: true
+                              properties:
+                                owner:
+                                  type: object
+                                  properties:
+                                    type:
+                                      type: string
+                                    info:
+                                      avatar_url:
+                                        type:
+                                          - "null"
+                                          - string
+                                      id:
+                                        type:
+                                          - "null"
+                                          - string
+                                      name:
+                                        type:
+                                          - "null"
+                                          - string
+                                      object:
+                                        type:
+                                          - "null"
+                                          - string
+                                      person:
+                                        type:
+                                          - "null"
+                                          - object
+                                        properties:
+                                          email:
+                                            type:
+                                              - "null"
+                                              - string
+                                          type:
+                                            type:
+                                              - "null"
+                                              - string
+                                    workspace:
+                                      type:
+                                        - "null"
+                                        - boolean
+                                workspace_name:
+                                  type:
+                                    - "null"
+                                    - string
+                        date:
+                          type:
+                            - "null"
+                            - object
+                          properties:
+                            start:
+                              type:
+                                - "null"
+                                - string
+                            end:
+                              type:
+                                - "null"
+                                - string
+                            time_zone:
+                              type:
+                                - "null"
+                                - string
+
+  comments:
+    $schema: http://json-schema.org/draft-07/schema#
+    type: object
+    additionalProperties: true
+    properties:
+      object:
+        description: The object to which the comment is related.
+        enum:
+          - comment
+      id:
+        description: The unique identifier of the comment.
+        type: string
+      parent:
+        description: The parent of the comment.
+        type: object
+        properties:
+          type:
+            description: The type of the parent object.
+            enum:
+              - page_id
+          page_id:
+            description: The unique identifier of the parent page.
+            type: string
+      discussion_id:
+        description: The unique identifier of the discussion where the comment belongs.
+        type: string
+      created_time:
+        description: The timestamp when the comment was created.
+        type: string
+        format: date-time
+      last_edited_time:
+        description: The timestamp when the comment was last edited.
+        type: string
+        format: date-time
+      page_last_edited_time:
+        description: The timestamp when the page was last edited.
+        type: string
+        format: date-time
+      created_by:
+        description: The user who created the comment.
+        type: object
+        properties:
+          object:
+            enum:
+              - user
+          id:
+            type: string
+          name:
+            type:
+              - "null"
+              - string
+          avatar_url:
+            type:
+              - "null"
+              - string
+          type:
+            enum:
+              - person
+              - bot
+          person:
+            type:
+              - "null"
+              - object
+            additionalProperties: true
+            properties:
+              email:
+                type:
+                  - "null"
+                  - string
+          bot:
+            type:
+              - "null"
+              - object
+            additionalProperties: true
+            properties:
+              owner:
+                type: object
+                properties:
+                  type:
+                    type: string
+                  info:
+                    avatar_url:
+                      type:
+                        - "null"
+                        - string
+                    id:
+                      type:
+                        - "null"
+                        - string
+                    name:
+                      type:
+                        - "null"
+                        - string
+                    object:
+                      type:
+                        - "null"
+                        - string
+                    person:
+                      type:
+                        - "null"
+                        - object
+                      properties:
+                        email:
+                          type:
+                            - "null"
+                            - string
+                        type:
+                          type:
+                            - "null"
+                            - string
+                  workspace:
+                    type:
+                      - "null"
+                      - boolean
+              workspace_name:
+                type:
+                  - "null"
+                  - string
+      rich_text:
+        description: The rich text content of the comment.
+        type: array
+        items:
+          type: object
+          properties:
+            type:
+              description: The type of text.
+              type: string
+            text:
+              description: Text properties.
+              type: object
+              properties:
+                content:
+                  description: The content of the text.
+                  type: string
+                link:
+                  description: The link associated with the text.
+                  type:
+                    - "null"
+                    - object
+            annotations:
+              description: Annotations for text formatting.
+              type: object
+              properties:
+                bold:
+                  description: Indicates if the text is formatted as bold.
+                  type: boolean
+                italic:
+                  description: Indicates if the text is formatted as italic.
+                  type: boolean
+                strikethrough:
+                  description: Indicates if the text is formatted with strikethrough.
+                  type: boolean
+                underline:
+                  description: Indicates if the text is underlined.
+                  type: boolean
+                code:
+                  description: Indicates if the text is formatted as code.
+                  type: boolean
+                color:
+                  description: The color of the text.
+                  type: string
+            plain_text:
+              description: The plain text content.
+              type: string
+            href:
+              description: The hyperlink reference.
+              type:
+                - "null"
+                - string
+  
+  blocks:
+    $schema: http://json-schema.org/draft-07/schema#
+    type: object
+    additionalProperties: true
+    properties:
+      object:
+        description: Represents an object block.
+        enum:
+          - block
+      parent:
+        description: The parent block of the current block.
+        type: object
+        properties:
+          type:
+            enum:
+              - block_id
+              - database_id
+              - page_id
+              - workspace
+          block_id:
+            type: string
+          database_id:
+            type: string
+          page_id:
+            type: string
+          workspace:
+            type: boolean
+          sequence_number:
+            description: The sequence number of a given block within the parent block.
+            type: integer
+      id:
+        description: The unique identifier of the block.
+        type: string
+      created_time:
+        description: The timestamp when the block was created.
+        type: string
+        format: date-time
+      created_by:
+        description: The user who created the block.
+        type: object
+        properties:
+          object:
+            enum:
+              - user
+          id:
+            type: string
+          name:
+            type:
+              - "null"
+              - string
+          avatar_url:
+            type:
+              - "null"
+              - string
+          type:
+            enum:
+              - person
+              - bot
+          person:
+            type:
+              - "null"
+              - object
+            additionalProperties: true
+            properties:
+              email:
+                type:
+                  - "null"
+                  - string
+          bot:
+            type:
+              - "null"
+              - object
+            additionalProperties: true
+            properties:
+              owner:
+                type: object
+                properties:
+                  type:
+                    type: string
+                  info:
+                    avatar_url:
+                      type:
+                        - "null"
+                        - string
+                    id:
+                      type:
+                        - "null"
+                        - string
+                    name:
+                      type:
+                        - "null"
+                        - string
+                    object:
+                      type:
+                        - "null"
+                        - string
+                    person:
+                      type:
+                        - "null"
+                        - object
+                      properties:
+                        email:
+                          type:
+                            - "null"
+                            - string
+                        type:
+                          type:
+                            - "null"
+                            - string
+                  workspace:
+                    type:
+                      - "null"
+                      - boolean
+              workspace_name:
+                type:
+                  - "null"
+                  - string
+      last_edited_by:
+        description: The user who last edited the block.
+        type: object
+        properties:
+          object:
+            enum:
+              - user
+          id:
+            type: string
+          name:
+            type:
+              - "null"
+              - string
+          avatar_url:
+            type:
+              - "null"
+              - string
+          type:
+            enum:
+              - person
+              - bot
+          person:
+            type:
+              - "null"
+              - object
+            additionalProperties: true
+            properties:
+              email:
+                type:
+                  - "null"
+                  - string
+          bot:
+            type:
+              - "null"
+              - object
+            additionalProperties: true
+            properties:
+              owner:
+                type: object
+                properties:
+                  type:
+                    type: string
+                  info:
+                    avatar_url:
+                      type:
+                        - "null"
+                        - string
+                    id:
+                      type:
+                        - "null"
+                        - string
+                    name:
+                      type:
+                        - "null"
+                        - string
+                    object:
+                      type:
+                        - "null"
+                        - string
+                    person:
+                      type:
+                        - "null"
+                        - object
+                      properties:
+                        email:
+                          type:
+                            - "null"
+                            - string
+                        type:
+                          type:
+                            - "null"
+                            - string
+                  workspace:
+                    type:
+                      - "null"
+                      - boolean
+              workspace_name:
+                type:
+                  - "null"
+                  - string
+      last_edited_time:
+        description: The timestamp when the block was last edited.
+        type: string
+        format: date-time
+      archived:
+        description: Indicates if the block is archived or not.
+        type: boolean
+      has_children:
+        description: Indicates if the block has children or not.
+        type:
+          - "null"
+          - boolean
+      type:
+        description: The type of the block.
+        enum:
+          - bookmark
+          - breadcrumb
+          - bulleted_list_item
+          - callout
+          - child_database
+          - child_page
+          - code
+          - column
+          - column_list
+          - divider
+          - embed
+          - equation
+          - file
+          - heading_1
+          - heading_2
+          - heading_3
+          - image
+          - link_preview
+          - link_to_page
+          - numbered_list_item
+          - paragraph
+          - pdf
+          - quote
+          - synced_block
+          - table
+          - table_of_contents
+          - table_row
+          - template
+          - to_do
+          - toggle
+          - unsupported
+          - video
+      bookmark:
+        description: Represents a bookmark within the block
+        type: object
+        properties:
+          url:
+            description: The URL of the bookmark.
+            type: string
+          caption:
+            description: The caption associated with the bookmark.
+            type: array
+            items:
+              type: object
+              properties:
+                type:
+                  type:
+                    - "null"
+                    - string
+                text:
+                  type:
+                    - "null"
+                    - object
+                  additionalProperties: true
+                  properties:
+                    content:
+                      type:
+                        - "null"
+                        - string
+                    link:
+                      type:
+                        - "null"
+                        - object
+                      additionalProperties: true
+                      properties:
+                        type:
+                          enum:
+                            - url
+                        url:
+                          type:
+                            - "null"
+                            - string
+                mention:
+                  type:
+                    - "null"
+                    - object
+                  additionalProperties: true
+                  properties:
+                    type:
+                      type:
+                        - "null"
+                        - string
+                    info:
+                      type:
+                        - "null"
+                        - object
+                      properties:
+                        id:
+                          type:
+                            - "null"
+                            - string
+                        object:
+                          type:
+                            - "null"
+                            - string
+                equation:
+                  type:
+                    - "null"
+                    - object
+                  additionalProperties: true
+                  properties:
+                    expression:
+                      type:
+                        - "null"
+                        - string
+                annotations:
+                  type:
+                    - "null"
+                    - object
+                  additionalProperties: true
+                  properties:
+                    bold:
+                      type:
+                        - "null"
+                        - boolean
+                    italic:
+                      type:
+                        - "null"
+                        - boolean
+                    strikethrough:
+                      type:
+                        - "null"
+                        - boolean
+                    underline:
+                      type:
+                        - "null"
+                        - boolean
+                    code:
+                      type:
+                        - "null"
+                        - boolean
+                    color:
+                      type:
+                        - "null"
+                        - string
+                plain_text:
+                  type:
+                    - "null"
+                    - string
+                href:
+                  type:
+                    - "null"
+                    - string
+      breadcrumb:
+        description: Represents a breadcrumb block.
+        type: object
+      bulleted_list_item:
+        description: Represents an item in a bulleted list.
+        type: object
+        properties:
+          color:
+            type: string
+          rich_text:
+            type: array
+            items:
+              type: object
+              properties:
+                type:
+                  type:
+                    - "null"
+                    - string
+                text:
+                  type:
+                    - "null"
+                    - object
+                  additionalProperties: true
+                  properties:
+                    content:
+                      type:
+                        - "null"
+                        - string
+                    link:
+                      type:
+                        - "null"
+                        - object
+                      additionalProperties: true
+                      properties:
+                        type:
+                          enum:
+                            - url
+                        url:
+                          type:
+                            - "null"
+                            - string
+                mention:
+                  type:
+                    - "null"
+                    - object
+                  additionalProperties: true
+                  properties:
+                    type:
+                      type:
+                        - "null"
+                        - string
+                    info:
+                      type:
+                        - "null"
+                        - object
+                      properties:
+                        id:
+                          type:
+                            - "null"
+                            - string
+                        object:
+                          type:
+                            - "null"
+                            - string
+                equation:
+                  type:
+                    - "null"
+                    - object
+                  additionalProperties: true
+                  properties:
+                    expression:
+                      type:
+                        - "null"
+                        - string
+                annotations:
+                  type:
+                    - "null"
+                    - object
+                  additionalProperties: true
+                  properties:
+                    bold:
+                      type:
+                        - "null"
+                        - boolean
+                    italic:
+                      type:
+                        - "null"
+                        - boolean
+                    strikethrough:
+                      type:
+                        - "null"
+                        - boolean
+                    underline:
+                      type:
+                        - "null"
+                        - boolean
+                    code:
+                      type:
+                        - "null"
+                        - boolean
+                    color:
+                      type:
+                        - "null"
+                        - string
+                plain_text:
+                  type:
+                    - "null"
+                    - string
+                href:
+                  type:
+                    - "null"
+                    - string
+          children:
+            type: array
+            items:
+              type: object
+      callout:
+        description: Describes a callout message or content in the block
+        type: object
+        properties:
+          color:
+            description: The color of the callout element.
+            type: string
+          rich_text:
+            description: Rich text content within the callout.
+            type: array
+            items:
+              type: object
+              properties:
+                type:
+                  type:
+                    - "null"
+                    - string
+                text:
+                  type:
+                    - "null"
+                    - object
+                  additionalProperties: true
+                  properties:
+                    content:
+                      type:
+                        - "null"
+                        - string
+                    link:
+                      type:
+                        - "null"
+                        - object
+                      additionalProperties: true
+                      properties:
+                        type:
+                          enum:
+                            - url
+                        url:
+                          type:
+                            - "null"
+                            - string
+                mention:
+                  type:
+                    - "null"
+                    - object
+                  additionalProperties: true
+                  properties:
+                    type:
+                      type:
+                        - "null"
+                        - string
+                    info:
+                      type:
+                        - "null"
+                        - object
+                      properties:
+                        id:
+                          type:
+                            - "null"
+                            - string
+                        object:
+                          type:
+                            - "null"
+                            - string
+                equation:
+                  type:
+                    - "null"
+                    - object
+                  additionalProperties: true
+                  properties:
+                    expression:
+                      type:
+                        - "null"
+                        - string
+                annotations:
+                  type:
+                    - "null"
+                    - object
+                  additionalProperties: true
+                  properties:
+                    bold:
+                      type:
+                        - "null"
+                        - boolean
+                    italic:
+                      type:
+                        - "null"
+                        - boolean
+                    strikethrough:
+                      type:
+                        - "null"
+                        - boolean
+                    underline:
+                      type:
+                        - "null"
+                        - boolean
+                    code:
+                      type:
+                        - "null"
+                        - boolean
+                    color:
+                      type:
+                        - "null"
+                        - string
+                plain_text:
+                  type:
+                    - "null"
+                    - string
+                href:
+                  type:
+                    - "null"
+                    - string
+          icon:
+            description: The icon associated with the callout.
+            anyOf:
+              - type:
+                  - "null"
+                  - object
+                properties:
+                  type:
+                    enum:
+                      - file
+                      - external
+                  caption:
+                    type:
+                      - "null"
+                      - array
+                    items:
+                      type: object
+                      properties:
+                        type:
+                          type:
+                            - "null"
+                            - string
+                        text:
+                          type:
+                            - "null"
+                            - object
+                          additionalProperties: true
+                          properties:
+                            content:
+                              type:
+                                - "null"
+                                - string
+                            link:
+                              type:
+                                - "null"
+                                - object
+                              additionalProperties: true
+                              properties:
+                                type:
+                                  enum:
+                                    - url
+                                url:
+                                  type:
+                                    - "null"
+                                    - string
+                        mention:
+                          type:
+                            - "null"
+                            - object
+                          additionalProperties: true
+                          properties:
+                            type:
+                              type:
+                                - "null"
+                                - string
+                            info:
+                              type:
+                                - "null"
+                                - object
+                              properties:
+                                id:
+                                  type:
+                                    - "null"
+                                    - string
+                                object:
+                                  type:
+                                    - "null"
+                                    - string
+                        equation:
+                          type:
+                            - "null"
+                            - object
+                          additionalProperties: true
+                          properties:
+                            expression:
+                              type:
+                                - "null"
+                                - string
+                        annotations:
+                          type:
+                            - "null"
+                            - object
+                          additionalProperties: true
+                          properties:
+                            bold:
+                              type:
+                                - "null"
+                                - boolean
+                            italic:
+                              type:
+                                - "null"
+                                - boolean
+                            strikethrough:
+                              type:
+                                - "null"
+                                - boolean
+                            underline:
+                              type:
+                                - "null"
+                                - boolean
+                            code:
+                              type:
+                                - "null"
+                                - boolean
+                            color:
+                              type:
+                                - "null"
+                                - string
+                        plain_text:
+                          type:
+                            - "null"
+                            - string
+                        href:
+                          type:
+                            - "null"
+                            - string
+                  external:
+                    type:
+                      - "null"
+                      - object
+                    additionalProperties: true
+                    properties:
+                      url:
+                        type: string
+                  file:
+                    type:
+                      - "null"
+                      - object
+                    additionalProperties: true
+                    properties:
+                      url:
+                        type: string
+                      expiry_time:
+                        type: string
+                        format: date-time
+              - type:
+                  - "null"
+                  - object
+                properties:
+                  type:
+                    type: string
+                  emoji:
+                    type: string
+      child_page:
+        description: Represents a child page block.
+        type: object
+        properties:
+          title:
+            type: string
+      child_database:
+        description: Represents a child database block.
+        type: object
+        properties:
+          title:
+            type: string
+      code:
+        description: Contains code snippets or blocks in the block content
+        type: object
+        properties:
+          caption:
+            description: The caption associated with the code block.
+            type: array
+            items:
+              type: object
+              properties:
+                type:
+                  type:
+                    - "null"
+                    - string
+                text:
+                  type:
+                    - "null"
+                    - object
+                  additionalProperties: true
+                  properties:
+                    content:
+                      type:
+                        - "null"
+                        - string
+                    link:
+                      type:
+                        - "null"
+                        - object
+                      additionalProperties: true
+                      properties:
+                        type:
+                          enum:
+                            - url
+                        url:
+                          type:
+                            - "null"
+                            - string
+                mention:
+                  type:
+                    - "null"
+                    - object
+                  additionalProperties: true
+                  properties:
+                    type:
+                      type:
+                        - "null"
+                        - string
+                    info:
+                      type:
+                        - "null"
+                        - object
+                      properties:
+                        id:
+                          type:
+                            - "null"
+                            - string
+                        object:
+                          type:
+                            - "null"
+                            - string
+                equation:
+                  type:
+                    - "null"
+                    - object
+                  additionalProperties: true
+                  properties:
+                    expression:
+                      type:
+                        - "null"
+                        - string
+                annotations:
+                  type:
+                    - "null"
+                    - object
+                  additionalProperties: true
+                  properties:
+                    bold:
+                      type:
+                        - "null"
+                        - boolean
+                    italic:
+                      type:
+                        - "null"
+                        - boolean
+                    strikethrough:
+                      type:
+                        - "null"
+                        - boolean
+                    underline:
+                      type:
+                        - "null"
+                        - boolean
+                    code:
+                      type:
+                        - "null"
+                        - boolean
+                    color:
+                      type:
+                        - "null"
+                        - string
+                plain_text:
+                  type:
+                    - "null"
+                    - string
+                href:
+                  type:
+                    - "null"
+                    - string
+          rich_text:
+            description: Rich text content within the code block.
+            type: array
+            items:
+              type: object
+              properties:
+                type:
+                  type:
+                    - "null"
+                    - string
+                text:
+                  type:
+                    - "null"
+                    - object
+                  additionalProperties: true
+                  properties:
+                    content:
+                      type:
+                        - "null"
+                        - string
+                    link:
+                      type:
+                        - "null"
+                        - object
+                      additionalProperties: true
+                      properties:
+                        type:
+                          enum:
+                            - url
+                        url:
+                          type:
+                            - "null"
+                            - string
+                mention:
+                  type:
+                    - "null"
+                    - object
+                  additionalProperties: true
+                  properties:
+                    type:
+                      type:
+                        - "null"
+                        - string
+                    info:
+                      type:
+                        - "null"
+                        - object
+                      properties:
+                        id:
+                          type:
+                            - "null"
+                            - string
+                        object:
+                          type:
+                            - "null"
+                            - string
+                equation:
+                  type:
+                    - "null"
+                    - object
+                  additionalProperties: true
+                  properties:
+                    expression:
+                      type:
+                        - "null"
+                        - string
+                annotations:
+                  type:
+                    - "null"
+                    - object
+                  additionalProperties: true
+                  properties:
+                    bold:
+                      type:
+                        - "null"
+                        - boolean
+                    italic:
+                      type:
+                        - "null"
+                        - boolean
+                    strikethrough:
+                      type:
+                        - "null"
+                        - boolean
+                    underline:
+                      type:
+                        - "null"
+                        - boolean
+                    code:
+                      type:
+                        - "null"
+                        - boolean
+                    color:
+                      type:
+                        - "null"
+                        - string
+                plain_text:
+                  type:
+                    - "null"
+                    - string
+                href:
+                  type:
+                    - "null"
+                    - string
+          language:
+            description: The programming language used in the code block.
+            enum:
+              - abap
+              - arduino
+              - bash
+              - basic
+              - c
+              - clojure
+              - coffeescript
+              - c++
+              - c#
+              - css
+              - dart
+              - diff
+              - docker
+              - elixir
+              - elm
+              - erlang
+              - flow
+              - fortran
+              - f#
+              - gherkin
+              - glsl
+              - go
+              - graphql
+              - groovy
+              - haskell
+              - html
+              - java
+              - javascript
+              - json
+              - julia
+              - kotlin
+              - latex
+              - less
+              - lisp
+              - livescript
+              - lua
+              - makefile
+              - markdown
+              - markup
+              - matlab
+              - mermaid
+              - nix
+              - objective-c
+              - ocaml
+              - pascal
+              - perl
+              - php
+              - plain text
+              - powershell
+              - prolog
+              - protobuf
+              - python
+              - r
+              - reason
+              - ruby
+              - rust
+              - sass
+              - scala
+              - scheme
+              - scss
+              - shell
+              - sql
+              - swift
+              - typescript
+              - vb.net
+              - verilog
+              - vhdl
+              - visual basic
+              - webassembly
+              - xml
+              - yaml
+              - java/c/c++/c#
+      column:
+        description: Represents a column block.
+        type: object
+      column_list:
+        description: Represents a list of columns.
+        type: object
+      divider:
+        description: Represents a divider block.
+        type: object
+      embed:
+        description: Contains embedded content such as videos, tweets, etc.
+        type: object
+        properties:
+          url:
+            description: The URL of the embedded content.
+            type: string
+      equation:
+        description: Represents an equation or mathematical formula in the block
+        type: object
+        properties:
+          expression:
+            description: The mathematical expression in the block.
+            type: string
+      file:
+        description: Represents a file block.
+        type:
+          - "null"
+          - object
+        properties:
+          type:
+            enum:
+              - file
+              - external
+          caption:
+            type:
+              - "null"
+              - array
+            items:
+              type: object
+              properties:
+                type:
+                  type:
+                    - "null"
+                    - string
+                text:
+                  type:
+                    - "null"
+                    - object
+                  additionalProperties: true
+                  properties:
+                    content:
+                      type:
+                        - "null"
+                        - string
+                    link:
+                      type:
+                        - "null"
+                        - object
+                      additionalProperties: true
+                      properties:
+                        type:
+                          enum:
+                            - url
+                        url:
+                          type:
+                            - "null"
+                            - string
+                mention:
+                  type:
+                    - "null"
+                    - object
+                  additionalProperties: true
+                  properties:
+                    type:
+                      type:
+                        - "null"
+                        - string
+                    info:
+                      type:
+                        - "null"
+                        - object
+                      properties:
+                        id:
+                          type:
+                            - "null"
+                            - string
+                        object:
+                          type:
+                            - "null"
+                            - string
+                equation:
+                  type:
+                    - "null"
+                    - object
+                  additionalProperties: true
+                  properties:
+                    expression:
+                      type:
+                        - "null"
+                        - string
+                annotations:
+                  type:
+                    - "null"
+                    - object
+                  additionalProperties: true
+                  properties:
+                    bold:
+                      type:
+                        - "null"
+                        - boolean
+                    italic:
+                      type:
+                        - "null"
+                        - boolean
+                    strikethrough:
+                      type:
+                        - "null"
+                        - boolean
+                    underline:
+                      type:
+                        - "null"
+                        - boolean
+                    code:
+                      type:
+                        - "null"
+                        - boolean
+                    color:
+                      type:
+                        - "null"
+                        - string
+                plain_text:
+                  type:
+                    - "null"
+                    - string
+                href:
+                  type:
+                    - "null"
+                    - string
+          external:
+            type:
+              - "null"
+              - object
+            additionalProperties: true
+            properties:
+              url:
+                type: string
+          file:
+            type:
+              - "null"
+              - object
+            additionalProperties: true
+            properties:
+              url:
+                type: string
+              expiry_time:
+                type: string
+                format: date-time
+      heading_1:
+        description: Represents a level 1 heading.
+        type:
+          - "null"
+          - object
+        properties:
+          color:
+            type: string
+          rich_text:
+            type: array
+            items:
+              type: object
+              properties:
+                type:
+                  type:
+                    - "null"
+                    - string
+                text:
+                  type:
+                    - "null"
+                    - object
+                  additionalProperties: true
+                  properties:
+                    content:
+                      type:
+                        - "null"
+                        - string
+                    link:
+                      type:
+                        - "null"
+                        - object
+                      additionalProperties: true
+                      properties:
+                        type:
+                          enum:
+                            - url
+                        url:
+                          type:
+                            - "null"
+                            - string
+                mention:
+                  type:
+                    - "null"
+                    - object
+                  additionalProperties: true
+                  properties:
+                    type:
+                      type:
+                        - "null"
+                        - string
+                    info:
+                      type:
+                        - "null"
+                        - object
+                      properties:
+                        id:
+                          type:
+                            - "null"
+                            - string
+                        object:
+                          type:
+                            - "null"
+                            - string
+                equation:
+                  type:
+                    - "null"
+                    - object
+                  additionalProperties: true
+                  properties:
+                    expression:
+                      type:
+                        - "null"
+                        - string
+                annotations:
+                  type:
+                    - "null"
+                    - object
+                  additionalProperties: true
+                  properties:
+                    bold:
+                      type:
+                        - "null"
+                        - boolean
+                    italic:
+                      type:
+                        - "null"
+                        - boolean
+                    strikethrough:
+                      type:
+                        - "null"
+                        - boolean
+                    underline:
+                      type:
+                        - "null"
+                        - boolean
+                    code:
+                      type:
+                        - "null"
+                        - boolean
+                    color:
+                      type:
+                        - "null"
+                        - string
+                plain_text:
+                  type:
+                    - "null"
+                    - string
+                href:
+                  type:
+                    - "null"
+                    - string
+          is_toggleable:
+            type: boolean
+      heading_2:
+        description: Represents a level 2 heading.
+        type:
+          - "null"
+          - object
+        properties:
+          color:
+            type: string
+          rich_text:
+            type: array
+            items:
+              type: object
+              properties:
+                type:
+                  type:
+                    - "null"
+                    - string
+                text:
+                  type:
+                    - "null"
+                    - object
+                  additionalProperties: true
+                  properties:
+                    content:
+                      type:
+                        - "null"
+                        - string
+                    link:
+                      type:
+                        - "null"
+                        - object
+                      additionalProperties: true
+                      properties:
+                        type:
+                          enum:
+                            - url
+                        url:
+                          type:
+                            - "null"
+                            - string
+                mention:
+                  type:
+                    - "null"
+                    - object
+                  additionalProperties: true
+                  properties:
+                    type:
+                      type:
+                        - "null"
+                        - string
+                    info:
+                      type:
+                        - "null"
+                        - object
+                      properties:
+                        id:
+                          type:
+                            - "null"
+                            - string
+                        object:
+                          type:
+                            - "null"
+                            - string
+                equation:
+                  type:
+                    - "null"
+                    - object
+                  additionalProperties: true
+                  properties:
+                    expression:
+                      type:
+                        - "null"
+                        - string
+                annotations:
+                  type:
+                    - "null"
+                    - object
+                  additionalProperties: true
+                  properties:
+                    bold:
+                      type:
+                        - "null"
+                        - boolean
+                    italic:
+                      type:
+                        - "null"
+                        - boolean
+                    strikethrough:
+                      type:
+                        - "null"
+                        - boolean
+                    underline:
+                      type:
+                        - "null"
+                        - boolean
+                    code:
+                      type:
+                        - "null"
+                        - boolean
+                    color:
+                      type:
+                        - "null"
+                        - string
+                plain_text:
+                  type:
+                    - "null"
+                    - string
+                href:
+                  type:
+                    - "null"
+                    - string
+          is_toggleable:
+            type: boolean
+      heading_3:
+        description: Represents a level 3 heading.
+        type:
+          - "null"
+          - object
+        properties:
+          color:
+            type: string
+          rich_text:
+            type: array
+            items:
+              type: object
+              properties:
+                type:
+                  type:
+                    - "null"
+                    - string
+                text:
+                  type:
+                    - "null"
+                    - object
+                  additionalProperties: true
+                  properties:
+                    content:
+                      type:
+                        - "null"
+                        - string
+                    link:
+                      type:
+                        - "null"
+                        - object
+                      additionalProperties: true
+                      properties:
+                        type:
+                          enum:
+                            - url
+                        url:
+                          type:
+                            - "null"
+                            - string
+                mention:
+                  type:
+                    - "null"
+                    - object
+                  additionalProperties: true
+                  properties:
+                    type:
+                      type:
+                        - "null"
+                        - string
+                    info:
+                      type:
+                        - "null"
+                        - object
+                      properties:
+                        id:
+                          type:
+                            - "null"
+                            - string
+                        object:
+                          type:
+                            - "null"
+                            - string
+                equation:
+                  type:
+                    - "null"
+                    - object
+                  additionalProperties: true
+                  properties:
+                    expression:
+                      type:
+                        - "null"
+                        - string
+                annotations:
+                  type:
+                    - "null"
+                    - object
+                  additionalProperties: true
+                  properties:
+                    bold:
+                      type:
+                        - "null"
+                        - boolean
+                    italic:
+                      type:
+                        - "null"
+                        - boolean
+                    strikethrough:
+                      type:
+                        - "null"
+                        - boolean
+                    underline:
+                      type:
+                        - "null"
+                        - boolean
+                    code:
+                      type:
+                        - "null"
+                        - boolean
+                    color:
+                      type:
+                        - "null"
+                        - string
+                plain_text:
+                  type:
+                    - "null"
+                    - string
+                href:
+                  type:
+                    - "null"
+                    - string
+          is_toggleable:
+            type: boolean
+      image:
+        description: Represents an image block.
+        type:
+          - "null"
+          - object
+        properties:
+          type:
+            enum:
+              - file
+              - external
+          caption:
+            type:
+              - "null"
+              - array
+            items:
+              type: object
+              properties:
+                type:
+                  type:
+                    - "null"
+                    - string
+                text:
+                  type:
+                    - "null"
+                    - object
+                  additionalProperties: true
+                  properties:
+                    content:
+                      type:
+                        - "null"
+                        - string
+                    link:
+                      type:
+                        - "null"
+                        - object
+                      additionalProperties: true
+                      properties:
+                        type:
+                          enum:
+                            - url
+                        url:
+                          type:
+                            - "null"
+                            - string
+                mention:
+                  type:
+                    - "null"
+                    - object
+                  additionalProperties: true
+                  properties:
+                    type:
+                      type:
+                        - "null"
+                        - string
+                    info:
+                      type:
+                        - "null"
+                        - object
+                      properties:
+                        id:
+                          type:
+                            - "null"
+                            - string
+                        object:
+                          type:
+                            - "null"
+                            - string
+                equation:
+                  type:
+                    - "null"
+                    - object
+                  additionalProperties: true
+                  properties:
+                    expression:
+                      type:
+                        - "null"
+                        - string
+                annotations:
+                  type:
+                    - "null"
+                    - object
+                  additionalProperties: true
+                  properties:
+                    bold:
+                      type:
+                        - "null"
+                        - boolean
+                    italic:
+                      type:
+                        - "null"
+                        - boolean
+                    strikethrough:
+                      type:
+                        - "null"
+                        - boolean
+                    underline:
+                      type:
+                        - "null"
+                        - boolean
+                    code:
+                      type:
+                        - "null"
+                        - boolean
+                    color:
+                      type:
+                        - "null"
+                        - string
+                plain_text:
+                  type:
+                    - "null"
+                    - string
+                href:
+                  type:
+                    - "null"
+                    - string
+          external:
+            type:
+              - "null"
+              - object
+            additionalProperties: true
+            properties:
+              url:
+                type: string
+          file:
+            type:
+              - "null"
+              - object
+            additionalProperties: true
+            properties:
+              url:
+                type: string
+              expiry_time:
+                type: string
+                format: date-time
+      link_preview:
+        description: Displays a preview of an external link within the block
+        type: object
+        properties:
+          url:
+            description: The URL of the link preview.
+            type: string
+      link_to_page:
+        description: Provides a link to another page within the block
+        type: object
+        properties:
+          page_id:
+            description: The ID of the linked page.
+            type: string
+          type:
+            description: The type of the linked page.
+            type: string
+      numbered_list_item:
+        description: Represents an item in a numbered list.
+        type: object
+        properties:
+          color:
+            type: string
+          rich_text:
+            type: array
+            items:
+              type: object
+              properties:
+                type:
+                  type:
+                    - "null"
+                    - string
+                text:
+                  type:
+                    - "null"
+                    - object
+                  additionalProperties: true
+                  properties:
+                    content:
+                      type:
+                        - "null"
+                        - string
+                    link:
+                      type:
+                        - "null"
+                        - object
+                      additionalProperties: true
+                      properties:
+                        type:
+                          enum:
+                            - url
+                        url:
+                          type:
+                            - "null"
+                            - string
+                mention:
+                  type:
+                    - "null"
+                    - object
+                  additionalProperties: true
+                  properties:
+                    type:
+                      type:
+                        - "null"
+                        - string
+                    info:
+                      type:
+                        - "null"
+                        - object
+                      properties:
+                        id:
+                          type:
+                            - "null"
+                            - string
+                        object:
+                          type:
+                            - "null"
+                            - string
+                equation:
+                  type:
+                    - "null"
+                    - object
+                  additionalProperties: true
+                  properties:
+                    expression:
+                      type:
+                        - "null"
+                        - string
+                annotations:
+                  type:
+                    - "null"
+                    - object
+                  additionalProperties: true
+                  properties:
+                    bold:
+                      type:
+                        - "null"
+                        - boolean
+                    italic:
+                      type:
+                        - "null"
+                        - boolean
+                    strikethrough:
+                      type:
+                        - "null"
+                        - boolean
+                    underline:
+                      type:
+                        - "null"
+                        - boolean
+                    code:
+                      type:
+                        - "null"
+                        - boolean
+                    color:
+                      type:
+                        - "null"
+                        - string
+                plain_text:
+                  type:
+                    - "null"
+                    - string
+                href:
+                  type:
+                    - "null"
+                    - string
+          children:
+            type: array
+            items:
+              type: object
+      paragraph:
+        description: Represents a paragraph block.
+        type: object
+        properties:
+          color:
+            type: string
+          rich_text:
+            type: array
+            items:
+              type: object
+              properties:
+                type:
+                  type:
+                    - "null"
+                    - string
+                text:
+                  type:
+                    - "null"
+                    - object
+                  additionalProperties: true
+                  properties:
+                    content:
+                      type:
+                        - "null"
+                        - string
+                    link:
+                      type:
+                        - "null"
+                        - object
+                      additionalProperties: true
+                      properties:
+                        type:
+                          enum:
+                            - url
+                        url:
+                          type:
+                            - "null"
+                            - string
+                mention:
+                  type:
+                    - "null"
+                    - object
+                  additionalProperties: true
+                  properties:
+                    type:
+                      type:
+                        - "null"
+                        - string
+                    info:
+                      type:
+                        - "null"
+                        - object
+                      properties:
+                        id:
+                          type:
+                            - "null"
+                            - string
+                        object:
+                          type:
+                            - "null"
+                            - string
+                equation:
+                  type:
+                    - "null"
+                    - object
+                  additionalProperties: true
+                  properties:
+                    expression:
+                      type:
+                        - "null"
+                        - string
+                annotations:
+                  type:
+                    - "null"
+                    - object
+                  additionalProperties: true
+                  properties:
+                    bold:
+                      type:
+                        - "null"
+                        - boolean
+                    italic:
+                      type:
+                        - "null"
+                        - boolean
+                    strikethrough:
+                      type:
+                        - "null"
+                        - boolean
+                    underline:
+                      type:
+                        - "null"
+                        - boolean
+                    code:
+                      type:
+                        - "null"
+                        - boolean
+                    color:
+                      type:
+                        - "null"
+                        - string
+                plain_text:
+                  type:
+                    - "null"
+                    - string
+                href:
+                  type:
+                    - "null"
+                    - string
+          children:
+            type: array
+            items:
+              type: object
+      pdf:
+        description: Represents a PDF document block.
+        type:
+          - "null"
+          - object
+        properties:
+          type:
+            enum:
+              - file
+              - external
+          caption:
+            type:
+              - "null"
+              - array
+            items:
+              type: object
+              properties:
+                type:
+                  type:
+                    - "null"
+                    - string
+                text:
+                  type:
+                    - "null"
+                    - object
+                  additionalProperties: true
+                  properties:
+                    content:
+                      type:
+                        - "null"
+                        - string
+                    link:
+                      type:
+                        - "null"
+                        - object
+                      additionalProperties: true
+                      properties:
+                        type:
+                          enum:
+                            - url
+                        url:
+                          type:
+                            - "null"
+                            - string
+                mention:
+                  type:
+                    - "null"
+                    - object
+                  additionalProperties: true
+                  properties:
+                    type:
+                      type:
+                        - "null"
+                        - string
+                    info:
+                      type:
+                        - "null"
+                        - object
+                      properties:
+                        id:
+                          type:
+                            - "null"
+                            - string
+                        object:
+                          type:
+                            - "null"
+                            - string
+                equation:
+                  type:
+                    - "null"
+                    - object
+                  additionalProperties: true
+                  properties:
+                    expression:
+                      type:
+                        - "null"
+                        - string
+                annotations:
+                  type:
+                    - "null"
+                    - object
+                  additionalProperties: true
+                  properties:
+                    bold:
+                      type:
+                        - "null"
+                        - boolean
+                    italic:
+                      type:
+                        - "null"
+                        - boolean
+                    strikethrough:
+                      type:
+                        - "null"
+                        - boolean
+                    underline:
+                      type:
+                        - "null"
+                        - boolean
+                    code:
+                      type:
+                        - "null"
+                        - boolean
+                    color:
+                      type:
+                        - "null"
+                        - string
+                plain_text:
+                  type:
+                    - "null"
+                    - string
+                href:
+                  type:
+                    - "null"
+                    - string
+          external:
+            type:
+              - "null"
+              - object
+            additionalProperties: true
+            properties:
+              url:
+                type: string
+          file:
+            type:
+              - "null"
+              - object
+            additionalProperties: true
+            properties:
+              url:
+                type: string
+              expiry_time:
+                type: string
+                format: date-time
+      quote:
+        description: Represents a quote block.
+        type: object
+        properties:
+          color:
+            type: string
+          rich_text:
+            type: array
+            items:
+              type: object
+              properties:
+                type:
+                  type:
+                    - "null"
+                    - string
+                text:
+                  type:
+                    - "null"
+                    - object
+                  additionalProperties: true
+                  properties:
+                    content:
+                      type:
+                        - "null"
+                        - string
+                    link:
+                      type:
+                        - "null"
+                        - object
+                      additionalProperties: true
+                      properties:
+                        type:
+                          enum:
+                            - url
+                        url:
+                          type:
+                            - "null"
+                            - string
+                mention:
+                  type:
+                    - "null"
+                    - object
+                  additionalProperties: true
+                  properties:
+                    type:
+                      type:
+                        - "null"
+                        - string
+                    info:
+                      type:
+                        - "null"
+                        - object
+                      properties:
+                        id:
+                          type:
+                            - "null"
+                            - string
+                        object:
+                          type:
+                            - "null"
+                            - string
+                equation:
+                  type:
+                    - "null"
+                    - object
+                  additionalProperties: true
+                  properties:
+                    expression:
+                      type:
+                        - "null"
+                        - string
+                annotations:
+                  type:
+                    - "null"
+                    - object
+                  additionalProperties: true
+                  properties:
+                    bold:
+                      type:
+                        - "null"
+                        - boolean
+                    italic:
+                      type:
+                        - "null"
+                        - boolean
+                    strikethrough:
+                      type:
+                        - "null"
+                        - boolean
+                    underline:
+                      type:
+                        - "null"
+                        - boolean
+                    code:
+                      type:
+                        - "null"
+                        - boolean
+                    color:
+                      type:
+                        - "null"
+                        - string
+                plain_text:
+                  type:
+                    - "null"
+                    - string
+                href:
+                  type:
+                    - "null"
+                    - string
+          children:
+            type: array
+            items:
+              type: object
+      synced_block:
+        description: Represents a block synced from another source
+        type: object
+        properties:
+          synced_from:
+            description: Details about the source block being synced from
+            type:
+              - "null"
+              - object
+            properties:
+              type:
+                description: The type of the block synced from.
+                type: string
+                enum:
+                  - block_id
+              block_id:
+                description: The ID of the block synced from.
+                type: string
+          children:
+            description: Children blocks synced with the current block.
+            type:
+              - "null"
+              - array
+            items:
+              type:
+                - "null"
+                - object
+              additionalProperties: true
+      table:
+        description: Represents a table within the block
+        type: object
+        properties:
+          table_width:
+            description: The width of the table.
+            type: integer
+          has_column_header:
+            description: Indicates if the table has column headers.
+            type: boolean
+          has_row_header:
+            description: Indicates if the table has row headers.
+            type: boolean
+      table_of_contents:
+        description: Contains information regarding the table of contents
+        type: object
+        properties:
+          color:
+            description: The color of the table of contents.
+            type: string
+      table_row:
+        description: Represents a row in a table within the block
+        type: object
+        properties:
+          cells:
+            description: Contains the cell data for the row
+            type:
+              - "null"
+              - array
+            items:
+              type:
+                - "null"
+                - array
+              items:
+                description: The content of each cell in the table row.
+                type: object
+                properties:
+                  type:
+                    type:
+                      - "null"
+                      - string
+                  text:
+                    type:
+                      - "null"
+                      - object
+                    additionalProperties: true
+                    properties:
+                      content:
+                        type:
+                          - "null"
+                          - string
+                      link:
+                        type:
+                          - "null"
+                          - object
+                        additionalProperties: true
+                        properties:
+                          type:
+                            enum:
+                              - url
+                          url:
+                            type:
+                              - "null"
+                              - string
+                  mention:
+                    type:
+                      - "null"
+                      - object
+                    additionalProperties: true
+                    properties:
+                      type:
+                        type:
+                          - "null"
+                          - string
+                      info:
+                        type:
+                          - "null"
+                          - object
+                        properties:
+                          id:
+                            type:
+                              - "null"
+                              - string
+                          object:
+                            type:
+                              - "null"
+                              - string
+                  equation:
+                    type:
+                      - "null"
+                      - object
+                    additionalProperties: true
+                    properties:
+                      expression:
+                        type:
+                          - "null"
+                          - string
+                  annotations:
+                    type:
+                      - "null"
+                      - object
+                    additionalProperties: true
+                    properties:
+                      bold:
+                        type:
+                          - "null"
+                          - boolean
+                      italic:
+                        type:
+                          - "null"
+                          - boolean
+                      strikethrough:
+                        type:
+                          - "null"
+                          - boolean
+                      underline:
+                        type:
+                          - "null"
+                          - boolean
+                      code:
+                        type:
+                          - "null"
+                          - boolean
+                      color:
+                        type:
+                          - "null"
+                          - string
+                  plain_text:
+                    type:
+                      - "null"
+                      - string
+                  href:
+                    type:
+                      - "null"
+                      - string
+      template:
+        description: Specifies a template used within the block
+        type: object
+        properties:
+          rich_text:
+            description: Rich text content within the template block.
+            type: array
+            items:
+              type: object
+              properties:
+                type:
+                  type:
+                    - "null"
+                    - string
+                text:
+                  type:
+                    - "null"
+                    - object
+                  additionalProperties: true
+                  properties:
+                    content:
+                      type:
+                        - "null"
+                        - string
+                    link:
+                      type:
+                        - "null"
+                        - object
+                      additionalProperties: true
+                      properties:
+                        type:
+                          enum:
+                            - url
+                        url:
+                          type:
+                            - "null"
+                            - string
+                mention:
+                  type:
+                    - "null"
+                    - object
+                  additionalProperties: true
+                  properties:
+                    type:
+                      type:
+                        - "null"
+                        - string
+                    info:
+                      type:
+                        - "null"
+                        - object
+                      properties:
+                        id:
+                          type:
+                            - "null"
+                            - string
+                        object:
+                          type:
+                            - "null"
+                            - string
+                equation:
+                  type:
+                    - "null"
+                    - object
+                  additionalProperties: true
+                  properties:
+                    expression:
+                      type:
+                        - "null"
+                        - string
+                annotations:
+                  type:
+                    - "null"
+                    - object
+                  additionalProperties: true
+                  properties:
+                    bold:
+                      type:
+                        - "null"
+                        - boolean
+                    italic:
+                      type:
+                        - "null"
+                        - boolean
+                    strikethrough:
+                      type:
+                        - "null"
+                        - boolean
+                    underline:
+                      type:
+                        - "null"
+                        - boolean
+                    code:
+                      type:
+                        - "null"
+                        - boolean
+                    color:
+                      type:
+                        - "null"
+                        - string
+                plain_text:
+                  type:
+                    - "null"
+                    - string
+                href:
+                  type:
+                    - "null"
+                    - string
+      to_do:
+        description: Represents a to-do list or task content
+        type: object
+        properties:
+          rich_text:
+            description: Rich text associated with the to-do item
+            type: array
+            items:
+              description: Rich text content within the to-do block.
+              type: object
+              properties:
+                type:
+                  type:
+                    - "null"
+                    - string
+                text:
+                  type:
+                    - "null"
+                    - object
+                  additionalProperties: true
+                  properties:
+                    content:
+                      type:
+                        - "null"
+                        - string
+                    link:
+                      type:
+                        - "null"
+                        - object
+                      additionalProperties: true
+                      properties:
+                        type:
+                          enum:
+                            - url
+                        url:
+                          type:
+                            - "null"
+                            - string
+                mention:
+                  type:
+                    - "null"
+                    - object
+                  additionalProperties: true
+                  properties:
+                    type:
+                      type:
+                        - "null"
+                        - string
+                    info:
+                      type:
+                        - "null"
+                        - object
+                      properties:
+                        id:
+                          type:
+                            - "null"
+                            - string
+                        object:
+                          type:
+                            - "null"
+                            - string
+                equation:
+                  type:
+                    - "null"
+                    - object
+                  additionalProperties: true
+                  properties:
+                    expression:
+                      type:
+                        - "null"
+                        - string
+                annotations:
+                  type:
+                    - "null"
+                    - object
+                  additionalProperties: true
+                  properties:
+                    bold:
+                      type:
+                        - "null"
+                        - boolean
+                    italic:
+                      type:
+                        - "null"
+                        - boolean
+                    strikethrough:
+                      type:
+                        - "null"
+                        - boolean
+                    underline:
+                      type:
+                        - "null"
+                        - boolean
+                    code:
+                      type:
+                        - "null"
+                        - boolean
+                    color:
+                      type:
+                        - "null"
+                        - string
+                plain_text:
+                  type:
+                    - "null"
+                    - string
+                href:
+                  type:
+                    - "null"
+                    - string
+          checked:
+            description: Indicates if the to-do item is checked.
+            type:
+              - "null"
+              - boolean
+          color:
+            description: The color associated with the to-do item.
+            type: string
+          children:
+            description: Child elements within the to-do list
+            type: array
+            items:
+              description: Nested child items of the to-do block.
+              type: object
+      toggle:
+        description: Represents a toggle block.
+        type: object
+        properties:
+          color:
+            type: string
+          rich_text:
+            type: array
+            items:
+              type: object
+              properties:
+                type:
+                  type:
+                    - "null"
+                    - string
+                text:
+                  type:
+                    - "null"
+                    - object
+                  additionalProperties: true
+                  properties:
+                    content:
+                      type:
+                        - "null"
+                        - string
+                    link:
+                      type:
+                        - "null"
+                        - object
+                      additionalProperties: true
+                      properties:
+                        type:
+                          enum:
+                            - url
+                        url:
+                          type:
+                            - "null"
+                            - string
+                mention:
+                  type:
+                    - "null"
+                    - object
+                  additionalProperties: true
+                  properties:
+                    type:
+                      type:
+                        - "null"
+                        - string
+                    info:
+                      type:
+                        - "null"
+                        - object
+                      properties:
+                        id:
+                          type:
+                            - "null"
+                            - string
+                        object:
+                          type:
+                            - "null"
+                            - string
+                equation:
+                  type:
+                    - "null"
+                    - object
+                  additionalProperties: true
+                  properties:
+                    expression:
+                      type:
+                        - "null"
+                        - string
+                annotations:
+                  type:
+                    - "null"
+                    - object
+                  additionalProperties: true
+                  properties:
+                    bold:
+                      type:
+                        - "null"
+                        - boolean
+                    italic:
+                      type:
+                        - "null"
+                        - boolean
+                    strikethrough:
+                      type:
+                        - "null"
+                        - boolean
+                    underline:
+                      type:
+                        - "null"
+                        - boolean
+                    code:
+                      type:
+                        - "null"
+                        - boolean
+                    color:
+                      type:
+                        - "null"
+                        - string
+                plain_text:
+                  type:
+                    - "null"
+                    - string
+                href:
+                  type:
+                    - "null"
+                    - string
+          children:
+            type: array
+            items:
+              type: object
+      video:
+        description: Represents a video block.
+        type:
+          - "null"
+          - object
+        properties:
+          type:
+            enum:
+              - file
+              - external
+          caption:
+            type:
+              - "null"
+              - array
+            items:
+              type: object
+              properties:
+                type:
+                  type:
+                    - "null"
+                    - string
+                text:
+                  type:
+                    - "null"
+                    - object
+                  additionalProperties: true
+                  properties:
+                    content:
+                      type:
+                        - "null"
+                        - string
+                    link:
+                      type:
+                        - "null"
+                        - object
+                      additionalProperties: true
+                      properties:
+                        type:
+                          enum:
+                            - url
+                        url:
+                          type:
+                            - "null"
+                            - string
+                mention:
+                  type:
+                    - "null"
+                    - object
+                  additionalProperties: true
+                  properties:
+                    type:
+                      type:
+                        - "null"
+                        - string
+                    info:
+                      type:
+                        - "null"
+                        - object
+                      properties:
+                        id:
+                          type:
+                            - "null"
+                            - string
+                        object:
+                          type:
+                            - "null"
+                            - string
+                equation:
+                  type:
+                    - "null"
+                    - object
+                  additionalProperties: true
+                  properties:
+                    expression:
+                      type:
+                        - "null"
+                        - string
+                annotations:
+                  type:
+                    - "null"
+                    - object
+                  additionalProperties: true
+                  properties:
+                    bold:
+                      type:
+                        - "null"
+                        - boolean
+                    italic:
+                      type:
+                        - "null"
+                        - boolean
+                    strikethrough:
+                      type:
+                        - "null"
+                        - boolean
+                    underline:
+                      type:
+                        - "null"
+                        - boolean
+                    code:
+                      type:
+                        - "null"
+                        - boolean
+                    color:
+                      type:
+                        - "null"
+                        - string
+                plain_text:
+                  type:
+                    - "null"
+                    - string
+                href:
+                  type:
+                    - "null"
+                    - string
+          external:
+            type:
+              - "null"
+              - object
+            additionalProperties: true
+            properties:
+              url:
+                type: string
+          file:
+            type:
+              - "null"
+              - object
+            additionalProperties: true
+            properties:
+              url:
+                type: string
+              expiry_time:
+                type: string
+                format: date-time
+      unsupported:
+        description: Represents an unsupported block.
+        type: object

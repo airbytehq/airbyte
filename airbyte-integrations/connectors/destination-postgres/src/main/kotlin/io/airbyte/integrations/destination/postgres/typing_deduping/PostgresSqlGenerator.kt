@@ -11,7 +11,7 @@ import io.airbyte.integrations.base.destination.typing_deduping.Array
 import io.airbyte.integrations.base.destination.typing_deduping.Sql.Companion.concat
 import io.airbyte.integrations.base.destination.typing_deduping.Sql.Companion.of
 import io.airbyte.integrations.base.destination.typing_deduping.StreamId.Companion.concatenateRawTableName
-import io.airbyte.protocol.models.AirbyteRecordMessageMetaChange
+import io.airbyte.protocol.models.v0.AirbyteRecordMessageMetaChange
 import java.util.*
 import java.util.function.Function
 import java.util.stream.Collectors
@@ -207,15 +207,19 @@ class PostgresSqlGenerator(
                         DSL.`val`(null as String?)
                     )
                     .else_(DSL.cast(field, SQLDataType.VARCHAR))
+            var cleanedText = extractAsText
+            if (type == AirbyteProtocolType.NUMBER) {
+                cleanedText = DSL.trim(extractAsText, "\"")
+            }
             return if (useExpensiveSaferCasting) {
                 DSL.function(
                     DSL.name("pg_temp", "airbyte_safe_cast"),
                     dialectType,
-                    extractAsText,
+                    cleanedText,
                     DSL.cast(DSL.`val`(null as Any?), dialectType)
                 )
             } else {
-                DSL.cast(extractAsText, dialectType)
+                DSL.cast(cleanedText, dialectType)
             }
         }
     }
@@ -323,21 +327,22 @@ class PostgresSqlGenerator(
             .and(jsonTypeof(extractColumnAsJson(cdcDeletedAtColumn)).ne("null"))
     }
 
-    override fun getRowNumber(primaryKeys: List<ColumnId>, cursor: Optional<ColumnId>): Field<Int> {
+    override fun getRowNumber(
+        primaryKey: List<ColumnId>,
+        cursorField: Optional<ColumnId>
+    ): Field<Int> {
         // literally identical to redshift's getRowNumber implementation, changes here probably
         // should
         // be reflected there
         val primaryKeyFields =
-            if (primaryKeys != null)
-                primaryKeys
-                    .stream()
-                    .map { columnId: ColumnId -> DSL.field(DSL.quotedName(columnId.name)) }
-                    .collect(Collectors.toList())
-            else ArrayList()
+            primaryKey
+                .stream()
+                .map { columnId: ColumnId -> DSL.field(DSL.quotedName(columnId.name)) }
+                .collect(Collectors.toList())
         val orderedFields: MutableList<Field<*>> = ArrayList()
         // We can still use Jooq's field to get the quoted name with raw sql templating.
         // jooq's .desc returns SortField<?> instead of Field<?> and NULLS LAST doesn't work with it
-        cursor.ifPresent { columnId: ColumnId ->
+        cursorField.ifPresent { columnId: ColumnId ->
             orderedFields.add(
                 DSL.field("{0} desc NULLS LAST", DSL.field(DSL.quotedName(columnId.name)))
             )

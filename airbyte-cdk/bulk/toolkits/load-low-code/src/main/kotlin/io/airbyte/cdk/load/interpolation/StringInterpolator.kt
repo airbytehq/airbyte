@@ -21,7 +21,7 @@ import jinjava.javax.el.PropertyNotWritableException
  * This class allows for Kotlin/Python-like map accessor. Without this, the users of the low-code
  * language would need to use textual operator `get` (which is still allowed, but less expressive).
  * Given this class is registered as an ELResolver in the JinjavaConfig, the user will be able to
- * write `node["field"]` instead of `node.get("field").
+ * write `node["field"]` instead of `node.get("field")`.
  */
 @SuppressFBWarnings(
     "NP_PARAMETER_MUST_BE_NONNULL_BUT_MARKED_AS_NULLABLE",

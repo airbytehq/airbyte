@@ -4,6 +4,8 @@
 
 package io.airbyte.integrations.destination.bigquery
 
+import io.airbyte.cdk.load.config.DataChannelFormat
+import io.airbyte.cdk.load.config.DataChannelMedium
 import io.airbyte.cdk.load.test.util.DestinationDataDumper
 import io.airbyte.cdk.load.test.util.ExpectedRecordMapper
 import io.airbyte.cdk.load.test.util.UncoercedExpectedRecordMapper
@@ -16,6 +18,7 @@ import io.airbyte.cdk.load.write.SchematizedNestedValueBehavior
 import io.airbyte.cdk.load.write.SimpleValueBehavior
 import io.airbyte.cdk.load.write.StronglyTyped
 import io.airbyte.cdk.load.write.UnionBehavior
+import io.airbyte.cdk.load.write.UnknownTypesBehavior
 import io.airbyte.cdk.load.write.Untyped
 import io.airbyte.integrations.destination.bigquery.BigQueryDestinationTestUtils.GCS_STAGING_CONFIG
 import io.airbyte.integrations.destination.bigquery.BigQueryDestinationTestUtils.RAW_DATASET_OVERRIDE
@@ -23,7 +26,6 @@ import io.airbyte.integrations.destination.bigquery.BigQueryDestinationTestUtils
 import io.airbyte.integrations.destination.bigquery.spec.BigquerySpecification
 import io.airbyte.integrations.destination.bigquery.spec.CdcDeletionMode
 import io.airbyte.integrations.destination.bigquery.write.typing_deduping.BigqueryColumnNameGenerator
-import org.junit.jupiter.api.Test
 
 abstract class BigqueryWriteTest(
     configContents: String,
@@ -35,6 +37,10 @@ abstract class BigqueryWriteTest(
     nullEqualsUnset: Boolean,
     allTypesBehavior: AllTypesBehavior,
     coercesLegacyUnions: Boolean,
+    isStreamSchemaRetroactiveForUnknownTypeToString: Boolean = true,
+    unknownTypesBehavior: UnknownTypesBehavior = UnknownTypesBehavior.PASS_THROUGH,
+    dataChannelFormat: DataChannelFormat = DataChannelFormat.JSONL,
+    dataChannelMedium: DataChannelMedium = DataChannelMedium.STDIO
 ) :
     BasicFunctionalityIntegrationTest(
         configContents = configContents,
@@ -58,6 +64,11 @@ abstract class BigqueryWriteTest(
         nullEqualsUnset = nullEqualsUnset,
         configUpdater = BigqueryConfigUpdater,
         additionalMicronautEnvs = additionalMicronautEnvs,
+        isStreamSchemaRetroactiveForUnknownTypeToString =
+            isStreamSchemaRetroactiveForUnknownTypeToString,
+        unknownTypesBehavior = unknownTypesBehavior,
+        dataChannelFormat = dataChannelFormat,
+        dataChannelMedium = dataChannelMedium,
     )
 
 abstract class BigqueryRawTablesWriteTest(
@@ -78,6 +89,10 @@ abstract class BigqueryRawTablesWriteTest(
 abstract class BigqueryDirectLoadWriteTest(
     configContents: String,
     cdcDeletionMode: CdcDeletionMode,
+    isStreamSchemaRetroactiveForUnknownTypeToString: Boolean = true,
+    unknownTypesBehavior: UnknownTypesBehavior = UnknownTypesBehavior.PASS_THROUGH,
+    dataChannelFormat: DataChannelFormat = DataChannelFormat.JSONL,
+    dataChannelMedium: DataChannelMedium = DataChannelMedium.STDIO
 ) :
     BigqueryWriteTest(
         configContents = configContents,
@@ -112,6 +127,11 @@ abstract class BigqueryDirectLoadWriteTest(
             timeWithTimezoneBehavior = SimpleValueBehavior.STRONGLY_TYPE,
         ),
         coercesLegacyUnions = true,
+        isStreamSchemaRetroactiveForUnknownTypeToString =
+            isStreamSchemaRetroactiveForUnknownTypeToString,
+        unknownTypesBehavior = unknownTypesBehavior,
+        dataChannelFormat = dataChannelFormat,
+        dataChannelMedium = dataChannelMedium,
     )
 
 class StandardInsertRawOverrideRawTables :
@@ -129,10 +149,30 @@ class StandardInsertRawOverride :
         CdcDeletionMode.HARD_DELETE,
     )
 
+class StandardInsertRawOverrideProto :
+    BigqueryDirectLoadWriteTest(
+        BigQueryDestinationTestUtils.standardInsertRawOverrideConfig,
+        CdcDeletionMode.HARD_DELETE,
+        isStreamSchemaRetroactiveForUnknownTypeToString = false,
+        unknownTypesBehavior = UnknownTypesBehavior.NULL,
+        dataChannelFormat = DataChannelFormat.PROTOBUF,
+        dataChannelMedium = DataChannelMedium.SOCKET,
+    )
+
 class StandardInsert :
     BigqueryDirectLoadWriteTest(
         BigQueryDestinationTestUtils.standardInsertConfig,
         CdcDeletionMode.HARD_DELETE,
+    )
+
+class StandardInsertProto :
+    BigqueryDirectLoadWriteTest(
+        BigQueryDestinationTestUtils.standardInsertConfig,
+        CdcDeletionMode.HARD_DELETE,
+        isStreamSchemaRetroactiveForUnknownTypeToString = false,
+        unknownTypesBehavior = UnknownTypesBehavior.NULL,
+        dataChannelFormat = DataChannelFormat.PROTOBUF,
+        dataChannelMedium = DataChannelMedium.SOCKET,
     )
 
 class StandardInsertCdcSoftDeletes :
@@ -142,12 +182,20 @@ class StandardInsertCdcSoftDeletes :
             cdcDeletionMode = CdcDeletionMode.SOFT_DELETE,
         ),
         CdcDeletionMode.SOFT_DELETE
-    ) {
-    @Test
-    override fun testDedup() {
-        super.testDedup()
-    }
-}
+    )
+
+class StandardInsertCdcSoftDeletesProto :
+    BigqueryDirectLoadWriteTest(
+        BigQueryDestinationTestUtils.createConfig(
+            configFile = STANDARD_INSERT_CONFIG,
+            cdcDeletionMode = CdcDeletionMode.SOFT_DELETE,
+        ),
+        CdcDeletionMode.SOFT_DELETE,
+        isStreamSchemaRetroactiveForUnknownTypeToString = false,
+        unknownTypesBehavior = UnknownTypesBehavior.NULL,
+        dataChannelFormat = DataChannelFormat.PROTOBUF,
+        dataChannelMedium = DataChannelMedium.SOCKET,
+    )
 
 class GcsRawOverrideRawTables :
     BigqueryRawTablesWriteTest(
@@ -167,8 +215,31 @@ class GcsRawOverride :
         CdcDeletionMode.HARD_DELETE,
     )
 
+class GcsRawOverrideProto :
+    BigqueryDirectLoadWriteTest(
+        BigQueryDestinationTestUtils.createConfig(
+            configFile = GCS_STAGING_CONFIG,
+            rawDatasetId = RAW_DATASET_OVERRIDE,
+        ),
+        CdcDeletionMode.HARD_DELETE,
+        isStreamSchemaRetroactiveForUnknownTypeToString = false,
+        unknownTypesBehavior = UnknownTypesBehavior.NULL,
+        dataChannelFormat = DataChannelFormat.PROTOBUF,
+        dataChannelMedium = DataChannelMedium.SOCKET,
+    )
+
 class Gcs :
     BigqueryDirectLoadWriteTest(
         BigQueryDestinationTestUtils.createConfig(configFile = GCS_STAGING_CONFIG),
         CdcDeletionMode.HARD_DELETE,
+    )
+
+class GcsProto :
+    BigqueryDirectLoadWriteTest(
+        BigQueryDestinationTestUtils.createConfig(configFile = GCS_STAGING_CONFIG),
+        CdcDeletionMode.HARD_DELETE,
+        isStreamSchemaRetroactiveForUnknownTypeToString = false,
+        unknownTypesBehavior = UnknownTypesBehavior.NULL,
+        dataChannelFormat = DataChannelFormat.PROTOBUF,
+        dataChannelMedium = DataChannelMedium.SOCKET,
     )

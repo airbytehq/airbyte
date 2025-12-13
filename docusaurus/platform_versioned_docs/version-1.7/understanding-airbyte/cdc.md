@@ -62,7 +62,7 @@ For an example of how to enable CDC on a new schema in MSSQL, visit our [MSSQL T
 - [MongoDB](/integrations/sources/mongodb-v2)
 - [Oracle DB](/integrations/enterprise-connectors/source-oracle-enterprise)
 - [SAP HANA](/integrations/enterprise-connectors/source-sap-hana)
-- [IBM Db2](/integrations/enterprise-connectors/source-db2)
+- [IBM Db2](/integrations/enterprise-connectors/source-db2-enterprise)
 
 ## Coming Soon
 

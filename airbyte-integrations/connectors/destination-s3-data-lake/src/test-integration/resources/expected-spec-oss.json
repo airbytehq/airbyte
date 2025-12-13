@@ -147,8 +147,55 @@
             }
           },
           "required" : [ "catalog_type", "server_uri", "namespace" ]
+        }, {
+          "title" : "Polaris Catalog",
+          "type" : "object",
+          "additionalProperties" : true,
+          "description" : "Configuration details for connecting to an Apache Polaris-based Iceberg catalog.",
+          "properties" : {
+            "catalog_type" : {
+              "type" : "string",
+              "enum" : [ "POLARIS" ],
+              "default" : "POLARIS"
+            },
+            "server_uri" : {
+              "type" : "string",
+              "description" : "The base URL of the Polaris server used to connect to the Polaris catalog.",
+              "title" : "Polaris Server URI",
+              "order" : 1
+            },
+            "catalog_name" : {
+              "type" : "string",
+              "description" : "The name of the catalog in Polaris. This corresponds to the catalog name created via the Polaris Management API.",
+              "title" : "Polaris Catalog Name",
+              "order" : 2
+            },
+            "client_id" : {
+              "type" : "string",
+              "description" : "The OAuth Client ID for authenticating with the Polaris server.",
+              "title" : "Client ID",
+              "examples" : [ "abc123clientid" ],
+              "airbyte_secret" : true,
+              "order" : 3
+            },
+            "client_secret" : {
+              "type" : "string",
+              "description" : "The OAuth Client Secret for authenticating with the Polaris server.",
+              "title" : "Client Secret",
+              "examples" : [ "secretkey123" ],
+              "airbyte_secret" : true,
+              "order" : 4
+            },
+            "namespace" : {
+              "type" : "string",
+              "description" : "The Polaris namespace to be used in the Table identifier.\n           This will ONLY be used if the `Destination Namespace` setting for the connection is set to\n           `Destination-defined` or `Source-defined`",
+              "title" : "Default namespace",
+              "order" : 5
+            }
+          },
+          "required" : [ "catalog_type", "server_uri", "catalog_name", "client_id", "client_secret", "namespace" ]
         } ],
-        "description" : "Specifies the type of Iceberg catalog (e.g., NESSIE, GLUE, REST) and its associated configuration.",
+        "description" : "Specifies the type of Iceberg catalog (e.g., NESSIE, GLUE, REST, POLARIS) and its associated configuration.",
         "title" : "Catalog Type",
         "always_show" : true,
         "order" : 7,

@@ -49,7 +49,7 @@ object S3DataLakeTestUtil {
 
     fun getCatalog(
         config: S3DataLakeConfiguration,
-        awsAssumeRoleCredentials: AwsAssumeRoleCredentials
+        awsAssumeRoleCredentials: AwsAssumeRoleCredentials?
     ): Catalog {
         val icebergUtil = IcebergUtil(SimpleTableIdGenerator())
         val s3DataLakeUtil = S3DataLakeUtil(icebergUtil, awsAssumeRoleCredentials)

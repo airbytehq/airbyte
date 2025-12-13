@@ -11,10 +11,8 @@ import io.airbyte.protocol.models.v0.AirbyteMessage
 import io.airbyte.protocol.models.v0.AirbyteRecordMessage
 import io.airbyte.protocol.models.v0.AirbyteRecordMessageMeta
 import io.micronaut.context.annotation.Factory
-import io.micronaut.context.annotation.Requires
 import io.micronaut.context.annotation.Secondary
 import io.micronaut.context.annotation.Value
-import io.micronaut.context.env.Environment
 import jakarta.inject.Singleton
 import java.io.ByteArrayOutputStream
 import java.io.PrintStream
@@ -238,5 +236,5 @@ class StdoutOutputConsumer(
 @Factory
 private class PrintStreamFactory {
 
-    @Singleton @Requires(notEnv = [Environment.TEST]) fun stdout(): PrintStream = System.out
+    @Singleton fun stdout(): PrintStream = System.out
 }

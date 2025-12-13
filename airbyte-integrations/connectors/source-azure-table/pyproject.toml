@@ -3,11 +3,11 @@ requires = [ "poetry-core>=1.0.0",]
 build-backend = "poetry.core.masonry.api"
 
 [tool.poetry]
-version = "0.1.51"
+version = "0.1.57"
 name = "source-azure-table"
 description = "Source implementation for Azure Table."
 authors = [ "Airbyte <contact@airbyte.io>",]
-license = "MIT"
+license = "ELv2"
 readme = "README.md"
 documentation = "https://docs.airbyte.com/integrations/sources/azure-table"
 homepage = "https://airbyte.com"
