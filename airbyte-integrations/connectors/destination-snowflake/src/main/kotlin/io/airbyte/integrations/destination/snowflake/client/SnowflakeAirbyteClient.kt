@@ -16,13 +16,14 @@ import io.airbyte.cdk.load.component.TableSchemaEvolutionClient
 import io.airbyte.cdk.load.schema.model.TableName
 import io.airbyte.cdk.load.table.ColumnNameMapping
 import io.airbyte.cdk.load.util.deserializeToNode
-import io.airbyte.integrations.destination.snowflake.db.ColumnDefinition
 import io.airbyte.integrations.destination.snowflake.db.escapeJsonIdentifier
 import io.airbyte.integrations.destination.snowflake.db.toSnowflakeCompatibleName
 import io.airbyte.integrations.destination.snowflake.spec.SnowflakeConfiguration
 import io.airbyte.integrations.destination.snowflake.sql.COUNT_TOTAL_ALIAS
-import io.airbyte.integrations.destination.snowflake.sql.NOT_NULL
-import io.airbyte.integrations.destination.snowflake.sql.SnowflakeColumnUtils
+import io.airbyte.integrations.destination.snowflake.sql.SNOWFLAKE_AB_EXTRACTED_AT
+import io.airbyte.integrations.destination.snowflake.sql.SNOWFLAKE_AB_GENERATION_ID
+import io.airbyte.integrations.destination.snowflake.sql.SNOWFLAKE_AB_META
+import io.airbyte.integrations.destination.snowflake.sql.SNOWFLAKE_AB_RAW_ID
 import io.airbyte.integrations.destination.snowflake.sql.SnowflakeDirectLoadSqlGenerator
 import io.airbyte.integrations.destination.snowflake.sql.andLog
 import io.github.oshai.kotlinlogging.KotlinLogging
@@ -41,12 +42,16 @@ private val log = KotlinLogging.logger {}
 class SnowflakeAirbyteClient(
     private val dataSource: DataSource,
     private val sqlGenerator: SnowflakeDirectLoadSqlGenerator,
-    private val snowflakeColumnUtils: SnowflakeColumnUtils,
     private val snowflakeConfiguration: SnowflakeConfiguration,
 ) : TableOperationsClient, TableSchemaEvolutionClient {
 
     private val airbyteColumnNames =
-        snowflakeColumnUtils.getFormattedDefaultColumnNames(false).toSet()
+        setOf(
+            SNOWFLAKE_AB_RAW_ID,
+            SNOWFLAKE_AB_EXTRACTED_AT,
+            SNOWFLAKE_AB_META,
+            SNOWFLAKE_AB_GENERATION_ID
+        )
 
     override suspend fun countTable(tableName: TableName): Long? =
         try {
@@ -165,11 +170,11 @@ class SnowflakeAirbyteClient(
     ) {
         // Get all column names from the mapping (both meta columns and user columns)
         val columnNames = buildSet {
-            // Add Airbyte meta columns
-            add("_AIRBYTE_RAW_ID")
-            add("_AIRBYTE_EXTRACTED_AT")
-            add("_AIRBYTE_META")
-            add("_AIRBYTE_GENERATION_ID")
+            // Add Airbyte meta columns (using uppercase constants)
+            add(SNOWFLAKE_AB_RAW_ID)
+            add(SNOWFLAKE_AB_EXTRACTED_AT)
+            add(SNOWFLAKE_AB_META)
+            add(SNOWFLAKE_AB_GENERATION_ID)
             // Add user columns from mapping
             addAll(columnNameMapping.values)
         }
@@ -215,7 +220,7 @@ class SnowflakeAirbyteClient(
         stream: DestinationStream,
         columnNameMapping: ColumnNameMapping
     ): TableSchema {
-        return TableSchema(getColumnsFromStream(stream, columnNameMapping))
+        return TableSchema(stream.tableSchema.columnSchema.finalSchema)
     }
 
     override suspend fun applyChangeset(
@@ -280,49 +285,6 @@ class SnowflakeAirbyteClient(
         }
     }
 
-    internal fun getColumnsFromStream(
-        stream: DestinationStream,
-        columnNameMapping: ColumnNameMapping
-    ): Map<String, ColumnType> =
-        snowflakeColumnUtils
-            .columnsAndTypes(stream.schema.asColumns(), columnNameMapping)
-            .filter { column -> column.columnName !in airbyteColumnNames }
-            .associate { column ->
-                // columnsAndTypes returns types as either `FOO` or `FOO NOT NULL`.
-                // so check for that suffix.
-                val nullable = !column.columnType.endsWith(NOT_NULL)
-                val type =
-                    column.columnType
-                        .takeWhile { char ->
-                            // This is to remove any precision parts of the dialect type
-                            char != '('
-                        }
-                        .removeSuffix(NOT_NULL)
-                        .trim()
-
-                column.columnName to ColumnType(type, nullable)
-            }
-
-    internal fun generateSchemaChanges(
-        columnsInDb: Set<ColumnDefinition>,
-        columnsInStream: Set<ColumnDefinition>
-    ): Triple<Set<ColumnDefinition>, Set<ColumnDefinition>, Set<ColumnDefinition>> {
-        val addedColumns =
-            columnsInStream.filter { it.name !in columnsInDb.map { col -> col.name } }.toSet()
-        val deletedColumns =
-            columnsInDb.filter { it.name !in columnsInStream.map { col -> col.name } }.toSet()
-        val commonColumns =
-            columnsInStream.filter { it.name in columnsInDb.map { col -> col.name } }.toSet()
-        val modifiedColumns =
-            commonColumns
-                .filter {
-                    val dbType = columnsInDb.find { column -> it.name == column.name }?.type
-                    it.type != dbType
-                }
-                .toSet()
-        return Triple(addedColumns, deletedColumns, modifiedColumns)
-    }
-
     override suspend fun getGenerationId(tableName: TableName): Long =
         try {
             dataSource.connection.use { connection ->
@@ -335,7 +297,7 @@ class SnowflakeAirbyteClient(
                          * format.  In order to make sure these strings will match any column names
                          * that we have formatted in-memory, re-apply the escaping.
                          */
-                        resultSet.getLong(snowflakeColumnUtils.getGenerationIdColumnName())
+                        resultSet.getLong(sqlGenerator.getGenerationIdColumnName())
                     } else {
                         log.warn {
                             "No generation ID found for table ${tableName.toPrettyString()}, returning 0"

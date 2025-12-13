@@ -14,6 +14,12 @@ internal const val QUOTE: String = "\""
 
 fun sqlEscape(part: String) = part.replace("\\", "\\\\").replace("'", "\\'").replace("\"", "\\\"")
 
+/**
+ * Surrounds the string instance with double quotation marks (e.g. "some string" -> "\"some
+ * string\"").
+ */
+fun String.quote() = "$QUOTE$this$QUOTE"
+
 @Singleton
 class SnowflakeSqlNameUtils(
     private val snowflakeConfiguration: SnowflakeConfiguration,

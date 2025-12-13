@@ -4,7 +4,6 @@
 
 package io.airbyte.integrations.destination.snowflake.sql
 
-import io.airbyte.cdk.load.command.Dedupe
 import io.airbyte.cdk.load.component.ColumnType
 import io.airbyte.cdk.load.component.ColumnTypeChange
 import io.airbyte.cdk.load.message.Meta.Companion.COLUMN_NAME_AB_EXTRACTED_AT
@@ -24,6 +23,13 @@ import io.github.oshai.kotlinlogging.KotlinLogging
 import jakarta.inject.Singleton
 
 internal const val COUNT_TOTAL_ALIAS = "TOTAL"
+internal const val NOT_NULL = "NOT NULL"
+
+// Snowflake-compatible (uppercase) versions of the Airbyte meta column names
+internal val SNOWFLAKE_AB_RAW_ID = COLUMN_NAME_AB_RAW_ID.toSnowflakeCompatibleName()
+internal val SNOWFLAKE_AB_EXTRACTED_AT = COLUMN_NAME_AB_EXTRACTED_AT.toSnowflakeCompatibleName()
+internal val SNOWFLAKE_AB_META = COLUMN_NAME_AB_META.toSnowflakeCompatibleName()
+internal val SNOWFLAKE_AB_GENERATION_ID = COLUMN_NAME_AB_GENERATION_ID.toSnowflakeCompatibleName()
 
 private val log = KotlinLogging.logger {}
 
@@ -38,7 +44,6 @@ fun String.andLog(): String {
 
 @Singleton
 class SnowflakeDirectLoadSqlGenerator(
-    private val columnUtils: SnowflakeColumnUtils,
     private val uuidGenerator: UUIDGenerator,
     private val snowflakeConfiguration: SnowflakeConfiguration,
     private val snowflakeSqlNameUtils: SnowflakeSqlNameUtils,
@@ -61,18 +66,18 @@ class SnowflakeDirectLoadSqlGenerator(
         // Build column declarations from the munged schema
         val columnDeclarations =
             buildList {
-                    // Add Airbyte meta columns
+                    // Add Airbyte meta columns (using Snowflake-compatible uppercase names)
                     add(
-                        "${COLUMN_NAME_AB_RAW_ID.quote()} ${SnowflakeDataType.VARCHAR.typeName} NOT NULL"
+                        "${SNOWFLAKE_AB_RAW_ID.quote()} ${SnowflakeDataType.VARCHAR.typeName} NOT NULL"
                     )
                     add(
-                        "${COLUMN_NAME_AB_EXTRACTED_AT.quote()} ${SnowflakeDataType.TIMESTAMP_TZ.typeName} NOT NULL"
+                        "${SNOWFLAKE_AB_EXTRACTED_AT.quote()} ${SnowflakeDataType.TIMESTAMP_TZ.typeName} NOT NULL"
                     )
                     add(
-                        "${COLUMN_NAME_AB_META.quote()} ${SnowflakeDataType.VARIANT.typeName} NOT NULL"
+                        "${SNOWFLAKE_AB_META.quote()} ${SnowflakeDataType.VARIANT.typeName} NOT NULL"
                     )
                     add(
-                        "${COLUMN_NAME_AB_GENERATION_ID.quote()} ${SnowflakeDataType.NUMBER.typeName}"
+                        "${SNOWFLAKE_AB_GENERATION_ID.quote()} ${SnowflakeDataType.NUMBER.typeName}"
                     )
 
                     // Add user columns from the munged schema
@@ -124,7 +129,6 @@ class SnowflakeDirectLoadSqlGenerator(
         sourceTableName: TableName,
         targetTableName: TableName
     ): String {
-        val importType = tableSchema.importType as Dedupe
         val finalSchema = tableSchema.columnSchema.finalSchema
 
         // Build primary key matching condition
@@ -143,10 +147,10 @@ class SnowflakeDirectLoadSqlGenerator(
 
         // Build column lists for INSERT and UPDATE
         val allColumns = buildList {
-            add(COLUMN_NAME_AB_RAW_ID)
-            add(COLUMN_NAME_AB_EXTRACTED_AT)
-            add(COLUMN_NAME_AB_META)
-            add(COLUMN_NAME_AB_GENERATION_ID)
+            add(SNOWFLAKE_AB_RAW_ID)
+            add(SNOWFLAKE_AB_EXTRACTED_AT)
+            add(SNOWFLAKE_AB_META)
+            add(SNOWFLAKE_AB_GENERATION_ID)
             addAll(finalSchema.keys)
         }
 
@@ -167,15 +171,15 @@ class SnowflakeDirectLoadSqlGenerator(
                 """
                 (
                   $targetTableCursor < $newRecordCursor
-                  OR ($targetTableCursor = $newRecordCursor AND target_table."${COLUMN_NAME_AB_EXTRACTED_AT.toSnowflakeCompatibleName()}" < new_record."${COLUMN_NAME_AB_EXTRACTED_AT.toSnowflakeCompatibleName()}")
-                  OR ($targetTableCursor IS NULL AND $newRecordCursor IS NULL AND target_table."${COLUMN_NAME_AB_EXTRACTED_AT.toSnowflakeCompatibleName()}" < new_record."${COLUMN_NAME_AB_EXTRACTED_AT.toSnowflakeCompatibleName()}")
+                  OR ($targetTableCursor = $newRecordCursor AND target_table."$SNOWFLAKE_AB_EXTRACTED_AT" < new_record."$SNOWFLAKE_AB_EXTRACTED_AT")
+                  OR ($targetTableCursor IS NULL AND $newRecordCursor IS NULL AND target_table."$SNOWFLAKE_AB_EXTRACTED_AT" < new_record."$SNOWFLAKE_AB_EXTRACTED_AT")
                   OR ($targetTableCursor IS NULL AND $newRecordCursor IS $NOT_NULL)
                 )
             """.trimIndent()
         } else {
             // No cursor - use extraction timestamp only
             cursorComparison =
-                """target_table."${COLUMN_NAME_AB_EXTRACTED_AT.toSnowflakeCompatibleName()}" < new_record."${COLUMN_NAME_AB_EXTRACTED_AT.toSnowflakeCompatibleName()}""""
+                """target_table."$SNOWFLAKE_AB_EXTRACTED_AT" < new_record."$SNOWFLAKE_AB_EXTRACTED_AT""""
         }
 
         // Build column assignments for UPDATE
@@ -193,12 +197,11 @@ class SnowflakeDirectLoadSqlGenerator(
         ) {
             // Execute CDC deletions if there's already a record
             cdcDeleteClause =
-                "WHEN MATCHED AND new_record.\"${CDC_DELETED_AT_COLUMN.toSnowflakeCompatibleName()}\" IS NOT NULL AND $cursorComparison THEN DELETE"
+                "WHEN MATCHED AND new_record.\"${CDC_DELETED_AT_COLUMN}\" IS NOT NULL AND $cursorComparison THEN DELETE"
             // And skip insertion entirely if there's no matching record.
             // (This is possible if a single T+D batch contains both an insertion and deletion for
             // the same PK)
-            cdcSkipInsertClause =
-                "AND new_record.\"${CDC_DELETED_AT_COLUMN.toSnowflakeCompatibleName()}\" IS NULL"
+            cdcSkipInsertClause = "AND new_record.\"${CDC_DELETED_AT_COLUMN}\" IS NULL"
         } else {
             cdcDeleteClause = ""
             cdcSkipInsertClause = ""
@@ -251,14 +254,13 @@ class SnowflakeDirectLoadSqlGenerator(
         sourceTableName: TableName
     ): String {
         val allColumns = buildList {
-            add(COLUMN_NAME_AB_RAW_ID)
-            add(COLUMN_NAME_AB_EXTRACTED_AT)
-            add(COLUMN_NAME_AB_META)
-            add(COLUMN_NAME_AB_GENERATION_ID)
+            add(SNOWFLAKE_AB_RAW_ID)
+            add(SNOWFLAKE_AB_EXTRACTED_AT)
+            add(SNOWFLAKE_AB_META)
+            add(SNOWFLAKE_AB_GENERATION_ID)
             addAll(tableSchema.columnSchema.finalSchema.keys)
         }
         val columnList: String = allColumns.joinToString(",\n") { it.quote() }
-        val importType = tableSchema.importType as Dedupe
 
         // Build the primary key list for partitioning
         val pks = tableSchema.getPrimaryKey().flatten()
@@ -286,7 +288,7 @@ class SnowflakeDirectLoadSqlGenerator(
               FROM ${snowflakeSqlNameUtils.fullyQualifiedName(sourceTableName)}
             ), numbered_rows AS (
               SELECT *, ROW_NUMBER() OVER (
-                PARTITION BY $pkList ORDER BY $cursorOrderClause "${COLUMN_NAME_AB_EXTRACTED_AT.toSnowflakeCompatibleName()}" DESC
+                PARTITION BY $pkList ORDER BY $cursorOrderClause "$SNOWFLAKE_AB_EXTRACTED_AT" DESC
               ) AS row_number
               FROM records
             )
@@ -306,12 +308,21 @@ class SnowflakeDirectLoadSqlGenerator(
         tableName: TableName,
     ): String {
         return """
-            SELECT "${columnUtils.getGenerationIdColumnName()}"
+            SELECT "${getGenerationIdColumnName()}"
             FROM ${snowflakeSqlNameUtils.fullyQualifiedName(tableName)}
             LIMIT 1
         """
             .trimIndent()
             .andLog()
+    }
+
+    fun getGenerationIdColumnName(): String {
+        return if (snowflakeConfiguration.legacyRawTablesOnly) {
+            COLUMN_NAME_AB_GENERATION_ID
+        } else {
+            // Use the uppercase constant for generation ID
+            SNOWFLAKE_AB_GENERATION_ID
+        }
     }
 
     fun createSnowflakeStage(tableName: TableName): String {

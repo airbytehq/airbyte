@@ -9,11 +9,11 @@ import de.siegmar.fastcsv.writer.CsvWriter
 import de.siegmar.fastcsv.writer.LineDelimiter
 import de.siegmar.fastcsv.writer.QuoteStrategies
 import io.airbyte.cdk.load.data.AirbyteValue
+import io.airbyte.cdk.load.schema.model.ColumnSchema
 import io.airbyte.cdk.load.schema.model.TableName
 import io.airbyte.integrations.destination.snowflake.client.SnowflakeAirbyteClient
 import io.airbyte.integrations.destination.snowflake.spec.SnowflakeConfiguration
 import io.airbyte.integrations.destination.snowflake.sql.QUOTE
-import io.airbyte.integrations.destination.snowflake.sql.SnowflakeColumnUtils
 import io.github.oshai.kotlinlogging.KotlinLogging
 import java.io.File
 import java.io.OutputStream
@@ -36,10 +36,9 @@ private const val CSV_WRITER_BUFFER_SIZE = 1024 * 1024 // 1 MB
 
 class SnowflakeInsertBuffer(
     private val tableName: TableName,
-    val columns: LinkedHashMap<String, String>,
     private val snowflakeClient: SnowflakeAirbyteClient,
     val snowflakeConfiguration: SnowflakeConfiguration,
-    val snowflakeColumnUtils: SnowflakeColumnUtils,
+    val columnSchema: ColumnSchema,
     private val flushLimit: Int = DEFAULT_FLUSH_LIMIT,
 ) {
 
@@ -59,8 +58,8 @@ class SnowflakeInsertBuffer(
 
     private val snowflakeRecordFormatter: SnowflakeRecordFormatter =
         when (snowflakeConfiguration.legacyRawTablesOnly) {
-            true -> SnowflakeRawRecordFormatter(columns, snowflakeColumnUtils)
-            else -> SnowflakeSchemaRecordFormatter(columns, snowflakeColumnUtils)
+            true -> SnowflakeRawRecordFormatter()
+            else -> SnowflakeSchemaRecordFormatter(columnSchema)
         }
 
     fun accumulate(recordFields: Map<String, AirbyteValue>) {
