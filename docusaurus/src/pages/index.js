@@ -85,7 +85,7 @@ export default function Home() {
 
   const navLinks = [
     {
-      title: 'Data replication platform',
+      title: 'Platform',
       link: '/platform/',
       description: 'Use Airbyte\'s data replication platform to create connections, build custom connectors, and start syncing data in minutes.',
       icon: PlatformIcon,
@@ -103,9 +103,9 @@ export default function Home() {
       icon: ReleaseNotesIcon,
     },
     {
-      title: 'Agent engine',
+      title: 'AI agents',
       link: '/ai-agents/',
-      description: 'Use Airbyte\'s Agent engine to build intelligent data pipelines, explore your data, and work with it with help from AI.',
+      description: 'Equip your AI agents to explore and work with your data.',
       icon: AIAgentsIcon,
     },
     {
@@ -136,8 +136,7 @@ export default function Home() {
               <p className={styles.heroDescription}>
                 Airbyte is an open source data integration, activation, and agentic data platform.
                 Use our data replication platform to consolidate data from hundreds of sources into your data warehouses, data lakes, and databases. 
-                Then, move data into the operational tools where work happens, like CRMs, marketing platforms, and support systems. 
-                Or, use our Agent engine to ask questions, explore, and update your data with AI agents.
+                Then, move data into the operational tools where work happens, like CRMs, marketing platforms, and support systems.
               </p>
             </div>
             <div className={styles.heroRight}>

@@ -1,6 +1,7 @@
-import Taxonomy from "@site/static/_taxonomy_of_data_movement.md";
+# AI agents
 
-# Agent engine
+{/* 
+import Taxonomy from "@site/static/_taxonomy_of_data_movement.md";
 
 Airbyte's Agent engine is a set of tools to help you automate, understand, move, and work with your data in coordination with AI agents. Some of these tools are standalone open source solutions, and others are pay solutions built on top of Airbyte Cloud.
 
@@ -69,3 +70,4 @@ Airbyte's agent connectors are Python packages that equip AI agents to call thir
 ## Connector MCP
 
 Use [agent connectors](connectors) to interact with your data using natural language.
+*/}
