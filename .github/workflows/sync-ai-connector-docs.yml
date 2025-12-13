@@ -24,14 +24,17 @@ jobs:
       - name: Sync connector docs
         run: |
           DEST_DIR="docs/ai-agents/connectors"
-          rm -rf "$DEST_DIR"
           mkdir -p "$DEST_DIR"
 
           for connector_dir in ai-connectors-source/connectors/*/; do
             connector=$(basename "$connector_dir")
+
+            # Only delete/recreate the specific connector subdirectory
+            # This leaves any files directly in $DEST_DIR untouched
+            rm -rf "$DEST_DIR/$connector"
             mkdir -p "$DEST_DIR/$connector"
 
-            # Copy all markdown files
+            # Copy all markdown files for this connector
             for md_file in "$connector_dir"/*.md; do
               if [ -f "$md_file" ]; then
                 cp "$md_file" "$DEST_DIR/$connector/"
@@ -40,6 +43,9 @@ jobs:
           done
 
           echo "Synced $(ls -d $DEST_DIR/*/ 2>/dev/null | wc -l) connectors"
+
+      - name: Cleanup temporary checkout
+        run: rm -rf ai-connectors-source
 
       - name: Authenticate as GitHub App
         uses: actions/create-github-app-token@v2
