@@ -4,6 +4,9 @@ on:
   schedule:
     - cron: "0 */6 * * *" # Every 6 hours
   workflow_dispatch: # Manual trigger
+  push: # Temporary trigger for testing - remove before merging to master
+    branches:
+      - docs-agent-connectors
 
 jobs:
   sync-docs:
