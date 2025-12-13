@@ -24,6 +24,7 @@ API Reference: https://docs.zapsign.com.br/
 
 | Version          | Date              | Pull Request | Subject        |
 |------------------|-------------------|--------------|----------------|
+| 0.0.28 | 2025-12-09 | [70712](https://github.com/airbytehq/airbyte/pull/70712) | Update dependencies |
 | 0.0.27 | 2025-11-25 | [70105](https://github.com/airbytehq/airbyte/pull/70105) | Update dependencies |
 | 0.0.26 | 2025-11-18 | [69567](https://github.com/airbytehq/airbyte/pull/69567) | Update dependencies |
 | 0.0.25 | 2025-10-29 | [68971](https://github.com/airbytehq/airbyte/pull/68971) | Update dependencies |
