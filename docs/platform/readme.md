@@ -2,7 +2,7 @@
 products: all
 ---
 
-# Data replication platform
+# Platform
 
 import Tabs from "@theme/Tabs";
 import TabItem from "@theme/TabItem";
@@ -46,7 +46,6 @@ Data replication _isn't_ ideal when you:
 - Are working with a small amount of data
 - Need to trigger side effects, like sending an email or closing a ticket
 
-If data replication isn't what you're looking for, [Agent engine](/ai-agents) might be.
 
 ### Taxonomy of data movement
 
@@ -78,7 +77,7 @@ Airbyte's data replication platform is available as a self-managed, hybrid, or f
 
 <CardWithIcon title="Pro" description="A cloud solution for organizations looking to scale efficiently. Role based access control, single sign on, and more ensure Pro is a robust solution that can grow with your team." ctaText="Talk to Sales" ctaLink="https://airbyte.com/company/talk-to-sales" icon="fa-lock" />
 
-<CardWithIcon title="Enterprise Flex" description="An enterprise-grade, hybrid solution with for organizatons seeking the convenience of a fully managed solution with separate data planes for compliance and data sovereignty." ctaText="Learn more" ctaLink="enterprise-flex" icon="fa-lock" />
+<CardWithIcon title="Enterprise Flex" description="An enterprise-grade, hybrid solution for organizations seeking the convenience of a fully managed solution with separate data planes for compliance and data sovereignty." ctaText="Learn more" ctaLink="enterprise-flex" icon="fa-lock" />
 
 </Grid>
 
