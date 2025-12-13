@@ -10,9 +10,9 @@ import io.airbyte.cdk.ClockFactory
 import io.airbyte.cdk.StreamIdentifier
 import io.airbyte.cdk.command.JdbcSourceConfiguration
 import io.airbyte.cdk.command.OpaqueStateValue
+import io.airbyte.cdk.command.TableFilter
 import io.airbyte.cdk.data.IntCodec
 import io.airbyte.cdk.data.LocalDateCodec
-import io.airbyte.cdk.command.TableFilter
 import io.airbyte.cdk.discover.Field
 import io.airbyte.cdk.discover.MetaField
 import io.airbyte.cdk.discover.MetaFieldDecorator

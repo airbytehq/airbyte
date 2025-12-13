@@ -440,6 +440,34 @@ class CdcReplicationMethodConfigurationSpecification : IncrementalConfigurationS
     @JsonSchemaDefault("60")
     @JsonSchemaInject(json = """{"order":3,"min":1,"max":3600,"always_show":true}""")
     var debeziumShutdownTimeoutSeconds: Int? = 60
+
+    @JsonProperty("replication_slot", required = true)
+    @JsonSchemaTitle("Replication Slot")
+    @JsonPropertyDescription(
+        "A plugin logical replication slot. Read about <a href=\\\"https://docs.airbyte.com/integrations/sources/postgres#step-3-create-replication-slot\\\">replication slots</a>."
+    )
+    @JsonSchemaInject(json = """{"order":4,"always_show":true, "minLength":1}""")
+    lateinit var replicationSlot: String
+
+    @JsonProperty("publication", required = true)
+    @JsonSchemaTitle("Publication")
+    @JsonPropertyDescription(
+        "A Postgres publication used for consuming changes. Read about <a href=\\\"https://docs.airbyte.com/integrations/sources/postgres#step-4-create-publications-and-replication-identities-for-tables\\\">publications and replication identities</a>."
+    )
+    @JsonSchemaInject(json = """{"order":5,"always_show":true, "minLength":1}""")
+    lateinit var publication: String
+
+    @JsonProperty("lsn_commit_behavior")
+    @JsonSchemaTitle("LSN commit behavior")
+    @JsonPropertyDescription(
+        "Determines when Airbyte should flush the LSN of processed WAL logs in the source database. `After loading Data in the destination` is default. If `While reading Data` is selected, in case of a downstream failure (while loading data into the destination), next sync would result in a full sync."
+    )
+    @JsonSchemaDefault("After loading Data in the destination")
+    @JsonSchemaInject(
+        json =
+            """{"order":7,"enum":[ "While reading Data", "After loading Data in the destination"],"always_show":true}"""
+    )
+    var lsnCommitBehavior: String = "After loading Data in the destination"
 }
 
 @ConfigurationProperties("$CONNECTOR_CONFIG_PREFIX.cursor")

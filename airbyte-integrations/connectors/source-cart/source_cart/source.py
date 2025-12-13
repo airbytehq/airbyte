@@ -6,6 +6,7 @@ import base64
 import codecs
 import hashlib
 import hmac
+import logging
 import urllib.parse
 from enum import Enum
 from functools import wraps
@@ -15,11 +16,10 @@ import pendulum
 import requests
 from pendulum.parsing.exceptions import ParserError
 
-from airbyte_cdk import AirbyteLogger
 from airbyte_cdk.models import SyncMode
 from airbyte_cdk.sources import AbstractSource
 from airbyte_cdk.sources.streams import Stream
-from airbyte_cdk.sources.streams.http.auth import HttpAuthenticator
+from airbyte_cdk.sources.streams.http.requests_native_auth.abstract_token import AbstractHeaderAuthenticator
 
 from .streams import Addresses, CustomersCart, OrderItems, OrderPayments, Orders, OrderStatuses, Products
 
@@ -29,7 +29,7 @@ class AuthMethod(Enum):
     SINGLE_STORE_ACCESS_TOKEN = 2
 
 
-class CustomHeaderAuthenticator(HttpAuthenticator):
+class CustomHeaderAuthenticator(AbstractHeaderAuthenticator):
     def __init__(self, access_token, store_name):
         self.auth_method = AuthMethod.SINGLE_STORE_ACCESS_TOKEN
         self._store_name = store_name
@@ -45,7 +45,7 @@ class CustomHeaderAuthenticator(HttpAuthenticator):
         return {}
 
 
-class CentralAPIHeaderAuthenticator(HttpAuthenticator):
+class CentralAPIHeaderAuthenticator(AbstractHeaderAuthenticator):
     def __init__(self, user_name, user_secret, site_id):
         self.auth_method = AuthMethod.CENTRAL_API_ROUTER
         self.user_name = user_name
@@ -123,7 +123,7 @@ class SourceCart(AbstractSource):
         return authenticator
 
     @validate_config_values
-    def check_connection(self, logger: AirbyteLogger, config: Mapping[str, Any]) -> Tuple[bool, Any]:
+    def check_connection(self, logger: logging.Logger, config: Mapping[str, Any]) -> Tuple[bool, Any]:
         try:
             authenticator = self.get_auth(config)
             stream = Products(authenticator=authenticator, start_date=config["start_date"])

@@ -37,6 +37,7 @@ import java.nio.file.FileSystems
 import java.nio.file.Paths
 import java.time.Duration
 import java.util.UUID
+import kotlin.String
 import org.postgresql.jdbc.SslMode.ALLOW
 import org.postgresql.jdbc.SslMode.DISABLE
 import org.postgresql.jdbc.SslMode.PREFER
@@ -57,6 +58,7 @@ data class PostgresSourceConfiguration(
     //  https://github.com/airbytehq/airbyte/issues/24796
     // mapOf(PREPARE_THRESHOLD, "0", TCP_KEEP_ALIVE, "true")
     override val jdbcProperties: Map<String, String>,
+    val database: String,
     override val namespaces: Set<String>,
     val incrementalConfiguration: IncrementalConfiguration,
     override val maxConcurrency: Int,
@@ -94,6 +96,13 @@ data class CdcIncrementalConfiguration(
     val initialLoadTimeout: Duration,
     val invalidCdcCursorPositionBehavior: InvalidCdcCursorPositionBehavior,
     val shutdownTimeout: Duration,
+    val replicationSlot: String,
+    val publication: String,
+    val debeziumCommitsLsn: Boolean,
+// TODO: Support this configuration:
+//  initial waiting time in seconds
+//  size of the queue
+//  debezium heartbeat query
 ) : IncrementalConfiguration
 
 enum class InvalidCdcCursorPositionBehavior {
@@ -202,6 +211,7 @@ constructor(
             sshConnectionOptions = sshOpts,
             jdbcUrlFmt = jdbcUrlFmt,
             jdbcProperties = jdbcProperties,
+            database = pojo.database,
             namespaces = pojo.schemas?.toSet() ?: setOf("public"),
             incrementalConfiguration = incremental,
             maxConcurrency = maxConcurrency,
@@ -229,9 +239,12 @@ constructor(
                 val shutdownTimeout: Duration =
                     Duration.ofSeconds(incrementalSpec.debeziumShutdownTimeoutSeconds!!.toLong())
                 CdcIncrementalConfiguration(
-                    initialLoadTimeout,
-                    invalidCdcCursorPositionBehavior,
-                    shutdownTimeout,
+                    initialLoadTimeout = initialLoadTimeout,
+                    invalidCdcCursorPositionBehavior = invalidCdcCursorPositionBehavior,
+                    shutdownTimeout = shutdownTimeout,
+                    replicationSlot = incrementalSpec.replicationSlot,
+                    publication = incrementalSpec.publication,
+                    debeziumCommitsLsn = incrementalSpec.lsnCommitBehavior == "While reading Data",
                 )
             }
         }
