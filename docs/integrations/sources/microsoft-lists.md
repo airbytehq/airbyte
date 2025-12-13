@@ -61,6 +61,7 @@ Microsoft Lists connector enables seamless data integration and synchronization 
 
 | Version          | Date              | Pull Request | Subject        |
 |------------------|-------------------|--------------|----------------|
+| 0.0.47 | 2025-12-09 | [70767](https://github.com/airbytehq/airbyte/pull/70767) | Update dependencies |
 | 0.0.46 | 2025-11-25 | [70112](https://github.com/airbytehq/airbyte/pull/70112) | Update dependencies |
 | 0.0.45 | 2025-11-18 | [69573](https://github.com/airbytehq/airbyte/pull/69573) | Update dependencies |
 | 0.0.44 | 2025-10-29 | [69045](https://github.com/airbytehq/airbyte/pull/69045) | Update dependencies |
