@@ -15,6 +15,7 @@ import com.fasterxml.jackson.annotation.JsonSetter
 import com.fasterxml.jackson.annotation.JsonSubTypes
 import com.fasterxml.jackson.annotation.JsonTypeInfo
 import com.fasterxml.jackson.annotation.JsonValue
+import com.google.protobuf.value
 import com.kjetland.jackson.jsonSchema.annotations.JsonSchemaArrayWithUniqueItems
 import com.kjetland.jackson.jsonSchema.annotations.JsonSchemaDefault
 import com.kjetland.jackson.jsonSchema.annotations.JsonSchemaDescription
@@ -374,6 +375,10 @@ class MicronautPropertiesFriendlyEncryptionSpecification {
         value = StandardReplicationMethodConfigurationSpecification::class,
         name = "Standard"
     ),
+    JsonSubTypes.Type(
+        value = XminReplicationMethodConfigurationSpecification::class,
+        name = "Xmin"
+    ),
     JsonSubTypes.Type(value = CdcReplicationMethodConfigurationSpecification::class, name = "CDC"),
 )
 @JsonSchemaTitle("Update Method")
@@ -389,6 +394,14 @@ sealed interface IncrementalConfigurationSpecification
 )
 data object StandardReplicationMethodConfigurationSpecification :
     IncrementalConfigurationSpecification
+
+@JsonSchemaTitle("Detect Changes with Xmin System Column")
+@JsonSchemaDescription(
+    "<i>Recommended</i> - Incrementally reads new inserts and updates via Postgres " +
+        "<a href=\"https://docs.airbyte.com/integrations/sources/postgres/#xmin\">" +
+        "Xmin system column</a>. Suitable for databases that have low transaction pressure."
+)
+data object XminReplicationMethodConfigurationSpecification : IncrementalConfigurationSpecification
 
 @JsonSchemaTitle("Read Changes using Change Data Capture (CDC)")
 @JsonSchemaDescription(
