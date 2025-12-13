@@ -537,6 +537,104 @@ class TestBaseInsightsStream:
             ]
         )
 
+    def test_fields_custom_with_objective_results(self, api, some_config):
+        """Test that objective_results field is properly included in custom insights schema"""
+        stream = AdsInsights(
+            api=api,
+            account_ids=some_config["account_ids"],
+            start_date=datetime(2010, 1, 1),
+            end_date=datetime(2011, 1, 1),
+            fields=["objective_results"],
+            insights_lookback_window=28,
+        )
+
+        assert stream.fields() == ["objective_results"]
+        schema = stream.get_json_schema()
+        assert "objective_results" in schema["properties"], "objective_results should be in schema when specified in custom fields"
+        assert "date_start" in schema["properties"]
+        assert "date_stop" in schema["properties"]
+        assert "account_id" in schema["properties"]
+        assert "ad_id" in schema["properties"]
+
+    @pytest.mark.parametrize(
+        "custom_fields, record, expected_record",
+        [
+            pytest.param(
+                ["objective_results"],
+                {"results": [{"value": 123}]},
+                {"objective_results": [{"value": 123}]},
+                id="rename_results_to_objective_results",
+            ),
+            pytest.param(
+                ["objective_results", "results"],
+                {"results": [{"value": 123}]},
+                {"results": [{"value": 123}]},
+                id="no_rename_when_both_fields_requested",
+            ),
+            pytest.param(
+                ["objective_results"],
+                {"objective_results": [{"value": 456}]},
+                {"objective_results": [{"value": 456}]},
+                id="no_rename_when_objective_results_already_present",
+            ),
+            pytest.param(
+                ["objective_results"],
+                {"results": [{"value": 123}], "objective_results": [{"value": 456}]},
+                {"results": [{"value": 123}], "objective_results": [{"value": 456}]},
+                id="no_rename_when_both_fields_in_record",
+            ),
+            pytest.param(
+                None,
+                {"results": [{"value": 123}]},
+                {"results": [{"value": 123}]},
+                id="no_rename_when_no_custom_fields",
+            ),
+            pytest.param(
+                ["objective_results"],
+                {"results": [{"action_type": "purchase", "value": 10}], "impressions": 1000},
+                {"objective_results": [{"action_type": "purchase", "value": 10}], "impressions": 1000},
+                id="rename_preserves_other_fields",
+            ),
+            pytest.param(
+                ["objective_results"],
+                {"results": []},
+                {"objective_results": []},
+                id="rename_empty_results_array",
+            ),
+            pytest.param(
+                ["objective_results"],
+                {"impressions": 1000, "clicks": 50},
+                {"impressions": 1000, "clicks": 50},
+                id="no_rename_when_results_not_in_record",
+            ),
+            pytest.param(
+                ["impressions", "clicks"],
+                {"results": [{"value": 123}]},
+                {"results": [{"value": 123}]},
+                id="no_rename_when_objective_results_not_in_custom_fields",
+            ),
+            pytest.param(
+                ["objective_results"],
+                {"results": [{"action_type": "link_click", "value": 5}, {"action_type": "purchase", "value": 2}]},
+                {"objective_results": [{"action_type": "link_click", "value": 5}, {"action_type": "purchase", "value": 2}]},
+                id="rename_multiple_results_items",
+            ),
+        ],
+    )
+    def test_objective_results_renamed_from_results(self, api, some_config, custom_fields, record, expected_record):
+        """Test that 'results' field is renamed to 'objective_results' when appropriate"""
+        stream = AdsInsights(
+            api=api,
+            account_ids=some_config["account_ids"],
+            start_date=datetime(2010, 1, 1),
+            end_date=datetime(2011, 1, 1),
+            fields=custom_fields,
+            insights_lookback_window=28,
+        )
+
+        transformed = stream._transform_objective_results(record.copy())
+        assert transformed == expected_record
+
     def test_level_custom(self, api, some_config):
         stream = AdsInsights(
             api=api,
