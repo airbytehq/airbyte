@@ -26,6 +26,7 @@ Airbyte connector for [SendPulse](https://sendpulse.com/) allows you to seamless
 
 | Version          | Date              | Pull Request | Subject        |
 |------------------|-------------------|--------------|----------------|
+| 0.0.39 | 2025-12-09 | [70780](https://github.com/airbytehq/airbyte/pull/70780) | Update dependencies |
 | 0.0.38 | 2025-11-25 | [69999](https://github.com/airbytehq/airbyte/pull/69999) | Update dependencies |
 | 0.0.37 | 2025-11-18 | [69651](https://github.com/airbytehq/airbyte/pull/69651) | Update dependencies |
 | 0.0.36 | 2025-10-29 | [68888](https://github.com/airbytehq/airbyte/pull/68888) | Update dependencies |
