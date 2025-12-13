@@ -4,6 +4,7 @@
 
 package io.airbyte.integrations.destination.snowflake.sql
 
+import com.google.common.annotations.VisibleForTesting
 import io.airbyte.cdk.load.component.ColumnType
 import io.airbyte.cdk.load.component.ColumnTypeChange
 import io.airbyte.cdk.load.message.Meta.Companion.COLUMN_NAME_AB_EXTRACTED_AT
@@ -458,13 +459,16 @@ class SnowflakeDirectLoadSqlGenerator(
         return clauses
     }
 
-    private fun fullyQualifiedName(tableName: TableName): String =
+    @VisibleForTesting
+    internal fun fullyQualifiedName(tableName: TableName): String =
         combineParts(listOf(getDatabaseName(), tableName.namespace, tableName.name))
 
-    private fun fullyQualifiedNamespace(namespace: String) =
+    @VisibleForTesting
+    internal fun fullyQualifiedNamespace(namespace: String) =
         combineParts(listOf(getDatabaseName(), namespace))
 
-    private fun fullyQualifiedStageName(tableName: TableName, escape: Boolean = false): String {
+    @VisibleForTesting
+    internal fun fullyQualifiedStageName(tableName: TableName, escape: Boolean = false): String {
         val currentTableName =
             if (escape) {
                 tableName.name
@@ -482,7 +486,8 @@ class SnowflakeDirectLoadSqlGenerator(
         )
     }
 
-    private fun combineParts(parts: List<String>, escape: Boolean = false): String =
+    @VisibleForTesting
+    internal fun combineParts(parts: List<String>, escape: Boolean = false): String =
         parts
             .map { if (escape) sqlEscape(it) else it }
             .joinToString(separator = ".") {

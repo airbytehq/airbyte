@@ -4,6 +4,7 @@
 
 package io.airbyte.integrations.destination.snowflake.sql
 
+import io.airbyte.cdk.load.command.Append
 import io.airbyte.cdk.load.command.Dedupe
 import io.airbyte.cdk.load.command.DestinationStream
 import io.airbyte.cdk.load.component.ColumnType
@@ -14,10 +15,12 @@ import io.airbyte.cdk.load.data.StringType
 import io.airbyte.cdk.load.data.TimestampTypeWithTimezone
 import io.airbyte.cdk.load.message.Meta.Companion.COLUMN_NAME_AB_EXTRACTED_AT
 import io.airbyte.cdk.load.message.Meta.Companion.COLUMN_NAME_AB_GENERATION_ID
-import io.airbyte.cdk.load.message.Meta.Companion.COLUMN_NAME_DATA
+import io.airbyte.cdk.load.schema.model.ColumnSchema
+import io.airbyte.cdk.load.schema.model.StreamTableSchema
+import io.airbyte.cdk.load.schema.model.TableName
+import io.airbyte.cdk.load.schema.model.TableNames
 import io.airbyte.cdk.load.table.CDC_DELETED_AT_COLUMN
 import io.airbyte.cdk.load.table.ColumnNameMapping
-import io.airbyte.cdk.load.table.TableName
 import io.airbyte.cdk.load.util.UUIDGenerator
 import io.airbyte.integrations.destination.snowflake.schema.toSnowflakeCompatibleName
 import io.airbyte.integrations.destination.snowflake.spec.CdcDeletionMode
@@ -36,34 +39,19 @@ import org.junit.jupiter.api.Test
 
 internal class SnowflakeDirectLoadSqlGeneratorTest {
 
-    private lateinit var columnUtils: SnowflakeColumnUtils
     private lateinit var snowflakeDirectLoadSqlGenerator: SnowflakeDirectLoadSqlGenerator
     private val uuidGenerator: UUIDGenerator = mockk()
     private val snowflakeConfiguration: SnowflakeConfiguration = mockk()
-    private lateinit var snowflakeSqlNameUtils: SnowflakeSqlNameUtils
 
     @BeforeEach
     fun setUp() {
         every { snowflakeConfiguration.cdcDeletionMode } returns CdcDeletionMode.HARD_DELETE
         every { snowflakeConfiguration.database } returns "test-database"
         every { snowflakeConfiguration.legacyRawTablesOnly } returns false
-        columnUtils = mockk {
-            every { formatColumnName(any()) } answers
-                {
-                    val columnName = firstArg<String>()
-                    if (columnName == COLUMN_NAME_DATA) columnName
-                    else columnName.toSnowflakeCompatibleName()
-                }
-            every { getGenerationIdColumnName() } returns
-                COLUMN_NAME_AB_GENERATION_ID.toSnowflakeCompatibleName()
-        }
-        snowflakeSqlNameUtils = SnowflakeSqlNameUtils(snowflakeConfiguration)
         snowflakeDirectLoadSqlGenerator =
             SnowflakeDirectLoadSqlGenerator(
-                columnUtils = columnUtils,
                 uuidGenerator = uuidGenerator,
                 snowflakeConfiguration = snowflakeConfiguration,
-                snowflakeSqlNameUtils = snowflakeSqlNameUtils,
             )
     }
 
@@ -72,7 +60,7 @@ internal class SnowflakeDirectLoadSqlGeneratorTest {
         val tableName = TableName(namespace = "namespace", name = "name")
         val sql = snowflakeDirectLoadSqlGenerator.countTable(tableName)
         assertEquals(
-            "SELECT COUNT(*) AS TOTAL FROM ${snowflakeSqlNameUtils.fullyQualifiedName(tableName)}",
+            "SELECT COUNT(*) AS TOTAL FROM ${snowflakeDirectLoadSqlGenerator.fullyQualifiedName(tableName)}",
             sql
         )
     }
@@ -82,57 +70,82 @@ internal class SnowflakeDirectLoadSqlGeneratorTest {
         val namespace = "namespace"
         val sql = snowflakeDirectLoadSqlGenerator.createNamespace(namespace)
         assertEquals(
-            "CREATE SCHEMA IF NOT EXISTS ${snowflakeSqlNameUtils.fullyQualifiedNamespace(namespace)}",
+            "CREATE SCHEMA IF NOT EXISTS ${snowflakeDirectLoadSqlGenerator.fullyQualifiedNamespace(namespace)}",
             sql
         )
     }
 
     @Test
     fun testGenerateCreateTableStatement() {
-        val columnAndType =
-            ColumnAndType(columnName = "column-name", columnType = "VARCHAR NOT NULL")
-        val columnNameMapping = mockk<ColumnNameMapping>(relaxed = true)
-        val stream = mockk<DestinationStream>(relaxed = true)
         val tableName = TableName(namespace = "namespace", name = "name")
-
-        every { columnUtils.columnsAndTypes(any(), columnNameMapping) } returns
-            listOf(columnAndType)
+        val tableSchema =
+            StreamTableSchema(
+                tableNames = TableNames(finalTableName = tableName, tempTableName = tableName),
+                columnSchema =
+                    ColumnSchema(
+                        inputToFinalColumnNames = mapOf("column" to "COLUMN_NAME"),
+                        finalSchema = mapOf("COLUMN_NAME" to ColumnType("VARCHAR", false)),
+                        inputSchema = mapOf("column" to FieldType(StringType, nullable = false))
+                    ),
+                importType = Append
+            )
 
         val sql =
             snowflakeDirectLoadSqlGenerator.createTable(
-                stream = stream,
                 tableName = tableName,
-                columnNameMapping = columnNameMapping,
+                tableSchema = tableSchema,
                 replace = true
             )
-        assertEquals(
-            "CREATE OR REPLACE TABLE ${snowflakeSqlNameUtils.fullyQualifiedName(tableName)} (\n    $columnAndType\n)",
-            sql
-        )
+
+        // The expected SQL should match the exact format
+        val expectedTableName = snowflakeDirectLoadSqlGenerator.fullyQualifiedName(tableName)
+        val expectedSql =
+            """
+            CREATE OR REPLACE TABLE $expectedTableName (
+                "_AIRBYTE_RAW_ID" VARCHAR NOT NULL,
+                "_AIRBYTE_EXTRACTED_AT" TIMESTAMP_TZ NOT NULL,
+                "_AIRBYTE_META" VARIANT NOT NULL,
+                "_AIRBYTE_GENERATION_ID" NUMBER,
+                "COLUMN_NAME" VARCHAR NOT NULL
+            )
+        """.trimIndent()
+        assertEquals(expectedSql, sql)
     }
 
     @Test
     fun testGenerateCreateTableStatementNoReplace() {
-        val columnAndType =
-            ColumnAndType(columnName = "column-name", columnType = "VARCHAR NOT NULL")
-        val columnNameMapping = mockk<ColumnNameMapping>(relaxed = true)
-        val stream = mockk<DestinationStream>(relaxed = true)
         val tableName = TableName(namespace = "namespace", name = "name")
-
-        every { columnUtils.columnsAndTypes(any(), columnNameMapping) } returns
-            listOf(columnAndType)
+        val tableSchema =
+            StreamTableSchema(
+                tableNames = TableNames(finalTableName = tableName, tempTableName = tableName),
+                columnSchema =
+                    ColumnSchema(
+                        inputToFinalColumnNames = mapOf("column" to "COLUMN_NAME"),
+                        finalSchema = mapOf("COLUMN_NAME" to ColumnType("VARCHAR", false)),
+                        inputSchema = mapOf("column" to FieldType(StringType, nullable = false))
+                    ),
+                importType = Append
+            )
 
         val sql =
             snowflakeDirectLoadSqlGenerator.createTable(
-                stream = stream,
                 tableName = tableName,
-                columnNameMapping = columnNameMapping,
+                tableSchema = tableSchema,
                 replace = false
             )
-        assertEquals(
-            "CREATE TABLE ${snowflakeSqlNameUtils.fullyQualifiedName(tableName)} (\n    $columnAndType\n)",
-            sql
-        )
+
+        val expectedTableName = snowflakeDirectLoadSqlGenerator.fullyQualifiedName(tableName)
+        val expectedSql =
+            """
+            CREATE TABLE $expectedTableName (
+                "_AIRBYTE_RAW_ID" VARCHAR NOT NULL,
+                "_AIRBYTE_EXTRACTED_AT" TIMESTAMP_TZ NOT NULL,
+                "_AIRBYTE_META" VARIANT NOT NULL,
+                "_AIRBYTE_GENERATION_ID" NUMBER,
+                "COLUMN_NAME" VARCHAR NOT NULL
+            )
+        """.trimIndent()
+        assertEquals(expectedSql, sql)
     }
 
     @Test
@@ -140,42 +153,42 @@ internal class SnowflakeDirectLoadSqlGeneratorTest {
         val tableName = TableName(namespace = "namespace", name = "name")
         val sql = snowflakeDirectLoadSqlGenerator.showColumns(tableName)
         assertEquals(
-            "SHOW COLUMNS IN TABLE ${snowflakeSqlNameUtils.fullyQualifiedName(tableName)}",
+            "SHOW COLUMNS IN TABLE ${snowflakeDirectLoadSqlGenerator.fullyQualifiedName(tableName)}",
             sql
         )
     }
 
     @Test
     fun testGenerateCopyTable() {
-        val columnName = "column-name"
-        val mappedColumnName = "mapped-column-name"
-        val columns = mapOf(columnName to mappedColumnName)
-        val columnNameMapping = ColumnNameMapping(columns)
         val columnNames =
-            (DEFAULT_COLUMNS.map { it.columnName } + "mappedColumnName").joinToString(",") {
-                it.toSnowflakeCompatibleName().quote()
-            }
+            setOf(
+                "_AIRBYTE_RAW_ID",
+                "_AIRBYTE_EXTRACTED_AT",
+                "_AIRBYTE_META",
+                "_AIRBYTE_GENERATION_ID",
+                "MAPPED_COLUMN_NAME"
+            )
         val sourceTableName = TableName(namespace = "namespace", name = "source")
         val destinationTableName = TableName(namespace = "namespace", name = "destination")
 
-        every { columnUtils.getColumnNames(columnNameMapping) } returns columnNames
-
-        val expected =
-            """
-            INSERT INTO ${snowflakeSqlNameUtils.fullyQualifiedName(destinationTableName)} 
-            (
-                $columnNames
-            )
-            SELECT
-                $columnNames
-            FROM ${snowflakeSqlNameUtils.fullyQualifiedName(sourceTableName)}
-            """.trimIndent()
         val sql =
             snowflakeDirectLoadSqlGenerator.copyTable(
-                columnNameMapping = columnNameMapping,
+                columnNames = columnNames,
                 sourceTableName = sourceTableName,
                 targetTableName = destinationTableName,
             )
+
+        val columnList = columnNames.joinToString(", ") { "\"$it\"" }
+        val expected =
+            """
+            INSERT INTO ${snowflakeDirectLoadSqlGenerator.fullyQualifiedName(destinationTableName)} 
+            (
+                $columnList
+            )
+            SELECT
+                $columnList
+            FROM ${snowflakeDirectLoadSqlGenerator.fullyQualifiedName(sourceTableName)}
+            """.trimIndent()
         assertEquals(expected, sql)
     }
 
@@ -774,5 +787,71 @@ new_record."_AIRBYTE_GENERATION_ID"
 
         // Reserved keywords should be properly quoted
         assertEquals("CREATE TABLE $expectedTableName (\n    \n)", sql)
+    }
+
+    // Tests moved from SnowflakeSqlNameUtilsTest
+    @Test
+    fun testFullyQualifiedNameInCountTable() {
+        val databaseName = "test-database"
+        val namespace = "test-namespace"
+        val name = "test=name"
+        val tableName = TableName(namespace = namespace, name = name)
+        every { snowflakeConfiguration.database } returns databaseName
+
+        val sql = snowflakeDirectLoadSqlGenerator.countTable(tableName)
+
+        val expected =
+            "SELECT COUNT(*) AS TOTAL FROM ${snowflakeDirectLoadSqlGenerator.fullyQualifiedName(tableName)}"
+        assertEquals(expected, sql)
+    }
+
+    @Test
+    fun testFullyQualifiedNamespaceInCreateNamespace() {
+        val databaseName = "test-database"
+        val namespace = "test-namespace"
+        every { snowflakeConfiguration.database } returns databaseName
+
+        val sql = snowflakeDirectLoadSqlGenerator.createNamespace(namespace)
+
+        val expected =
+            "CREATE SCHEMA IF NOT EXISTS ${snowflakeDirectLoadSqlGenerator.fullyQualifiedNamespace(namespace)}"
+        assertEquals(expected, sql)
+    }
+
+    @Test
+    fun testFullyQualifiedStageNameInCreateStage() {
+        val databaseName = "test-database"
+        val namespace = "test-namespace"
+        val name = "test=name"
+        val tableName = TableName(namespace = namespace, name = name)
+        every { snowflakeConfiguration.database } returns databaseName
+
+        val sql = snowflakeDirectLoadSqlGenerator.createSnowflakeStage(tableName)
+
+        val expected =
+            "CREATE STAGE IF NOT EXISTS ${snowflakeDirectLoadSqlGenerator.fullyQualifiedStageName(tableName)}"
+        assertEquals(expected, sql)
+    }
+
+    @Test
+    fun testFullyQualifiedStageNameWithEscapeInPutInStage() {
+        val databaseName = "test-database"
+        val namespace = "test-namespace"
+        val name = "test=\"\"\'name"
+        val tableName = TableName(namespace = namespace, name = name)
+        every { snowflakeConfiguration.database } returns databaseName
+
+        val sql = snowflakeDirectLoadSqlGenerator.putInStage(tableName, "/tmp/test.csv")
+
+        val expectedStageName =
+            snowflakeDirectLoadSqlGenerator.fullyQualifiedStageName(tableName, true)
+        val expected =
+            """
+            PUT 'file:///tmp/test.csv' '@$expectedStageName'
+            AUTO_COMPRESS = FALSE
+            SOURCE_COMPRESSION = GZIP
+            OVERWRITE = TRUE
+        """.trimIndent()
+        assertEquals(expected, sql)
     }
 }

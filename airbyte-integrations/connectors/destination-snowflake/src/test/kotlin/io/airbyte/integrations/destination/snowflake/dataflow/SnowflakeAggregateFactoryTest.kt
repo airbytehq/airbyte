@@ -4,14 +4,15 @@
 
 package io.airbyte.integrations.destination.snowflake.dataflow
 
+import io.airbyte.cdk.load.command.DestinationCatalog
+import io.airbyte.cdk.load.command.DestinationStream
 import io.airbyte.cdk.load.command.DestinationStream.Descriptor
 import io.airbyte.cdk.load.dataflow.aggregate.StoreKey
-import io.airbyte.cdk.load.orchestration.db.direct_load_table.DirectLoadTableExecutionConfig
-import io.airbyte.cdk.load.table.TableName
+import io.airbyte.cdk.load.schema.model.TableName
+import io.airbyte.cdk.load.table.directload.DirectLoadTableExecutionConfig
 import io.airbyte.cdk.load.write.StreamStateStore
 import io.airbyte.integrations.destination.snowflake.client.SnowflakeAirbyteClient
 import io.airbyte.integrations.destination.snowflake.spec.SnowflakeConfiguration
-import io.airbyte.integrations.destination.snowflake.sql.SnowflakeColumnUtils
 import io.mockk.every
 import io.mockk.mockk
 import org.junit.jupiter.api.Assertions.assertEquals
@@ -22,27 +23,29 @@ internal class SnowflakeAggregateFactoryTest {
     @Test
     fun testCreatingAggregateWithRawBuffer() {
         val descriptor = Descriptor(namespace = "namespace", name = "name")
-        val directLoadTableExecutionConfig =
-            DirectLoadTableExecutionConfig(
-                tableName =
-                    TableName(
-                        namespace = descriptor.namespace!!,
-                        name = descriptor.name,
-                    )
+        val tableName =
+            TableName(
+                namespace = descriptor.namespace!!,
+                name = descriptor.name,
             )
+        val directLoadTableExecutionConfig = DirectLoadTableExecutionConfig(tableName = tableName)
         val key = StoreKey(namespace = descriptor.namespace!!, name = descriptor.name)
         val streamStore = StreamStateStore<DirectLoadTableExecutionConfig>()
-        streamStore.put(descriptor, directLoadTableExecutionConfig)
+        streamStore.put(key, directLoadTableExecutionConfig)
+
+        val stream = mockk<DestinationStream>(relaxed = true)
+        val catalog = mockk<DestinationCatalog> { every { getStream(key) } returns stream }
+
         val snowflakeClient = mockk<SnowflakeAirbyteClient>(relaxed = true)
         val snowflakeConfiguration =
             mockk<SnowflakeConfiguration> { every { legacyRawTablesOnly } returns true }
-        val snowflakeColumnUtils = mockk<SnowflakeColumnUtils>(relaxed = true)
+
         val factory =
             SnowflakeAggregateFactory(
                 snowflakeClient = snowflakeClient,
                 streamStateStore = streamStore,
                 snowflakeConfiguration = snowflakeConfiguration,
-                snowflakeColumnUtils = snowflakeColumnUtils,
+                catalog = catalog,
             )
         val aggregate = factory.create(key)
         assertNotNull(aggregate)

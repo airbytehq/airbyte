@@ -6,24 +6,15 @@ package io.airbyte.integrations.destination.snowflake.client
 
 import io.airbyte.cdk.ConfigErrorException
 import io.airbyte.cdk.load.command.DestinationStream
-import io.airbyte.cdk.load.command.NamespaceMapper
-import io.airbyte.cdk.load.command.Overwrite
 import io.airbyte.cdk.load.component.ColumnType
-import io.airbyte.cdk.load.config.NamespaceDefinitionType
-import io.airbyte.cdk.load.data.AirbyteType
-import io.airbyte.cdk.load.data.FieldType
 import io.airbyte.cdk.load.message.Meta.Companion.COLUMN_NAME_AB_GENERATION_ID
 import io.airbyte.cdk.load.message.Meta.Companion.COLUMN_NAME_AB_RAW_ID
+import io.airbyte.cdk.load.schema.model.TableName
 import io.airbyte.cdk.load.table.ColumnNameMapping
-import io.airbyte.cdk.load.table.TableName
-import io.airbyte.integrations.destination.snowflake.db.ColumnDefinition
 import io.airbyte.integrations.destination.snowflake.schema.toSnowflakeCompatibleName
 import io.airbyte.integrations.destination.snowflake.spec.SnowflakeConfiguration
 import io.airbyte.integrations.destination.snowflake.sql.COUNT_TOTAL_ALIAS
-import io.airbyte.integrations.destination.snowflake.sql.ColumnAndType
-import io.airbyte.integrations.destination.snowflake.sql.DEFAULT_COLUMNS
 import io.airbyte.integrations.destination.snowflake.sql.QUOTE
-import io.airbyte.integrations.destination.snowflake.sql.SnowflakeColumnUtils
 import io.airbyte.integrations.destination.snowflake.sql.SnowflakeDirectLoadSqlGenerator
 import io.mockk.Runs
 import io.mockk.every
@@ -49,31 +40,15 @@ internal class SnowflakeAirbyteClientTest {
     private lateinit var client: SnowflakeAirbyteClient
     private lateinit var dataSource: DataSource
     private lateinit var sqlGenerator: SnowflakeDirectLoadSqlGenerator
-    private lateinit var snowflakeColumnUtils: SnowflakeColumnUtils
     private lateinit var snowflakeConfiguration: SnowflakeConfiguration
 
     @BeforeEach
     fun setup() {
         dataSource = mockk()
         sqlGenerator = mockk(relaxed = true)
-        snowflakeColumnUtils =
-            mockk(relaxed = true) {
-                every { formatColumnName(any()) } answers
-                    {
-                        firstArg<String>().toSnowflakeCompatibleName()
-                    }
-                every { getFormattedDefaultColumnNames(any()) } returns
-                    DEFAULT_COLUMNS.map { it.columnName.toSnowflakeCompatibleName() }
-            }
         snowflakeConfiguration =
             mockk(relaxed = true) { every { database } returns "test_database" }
-        client =
-            SnowflakeAirbyteClient(
-                dataSource,
-                sqlGenerator,
-                snowflakeColumnUtils,
-                snowflakeConfiguration
-            )
+        client = SnowflakeAirbyteClient(dataSource, sqlGenerator, snowflakeConfiguration)
     }
 
     @Test
@@ -254,9 +229,7 @@ internal class SnowflakeAirbyteClientTest {
                 columnNameMapping = columnNameMapping,
                 replace = true,
             )
-            verify(exactly = 1) {
-                sqlGenerator.createTable(stream, tableName, columnNameMapping, true)
-            }
+            verify(exactly = 1) { sqlGenerator.createTable(tableName, stream.tableSchema, true) }
             verify(exactly = 1) { sqlGenerator.createSnowflakeStage(tableName) }
             verify(exactly = 2) { mockConnection.close() }
         }
@@ -288,7 +261,7 @@ internal class SnowflakeAirbyteClientTest {
                 targetTableName = destinationTableName,
             )
             verify(exactly = 1) {
-                sqlGenerator.copyTable(columnNameMapping, sourceTableName, destinationTableName)
+                sqlGenerator.copyTable(any<Set<String>>(), sourceTableName, destinationTableName)
             }
             verify(exactly = 1) { mockConnection.close() }
         }
@@ -322,12 +295,7 @@ internal class SnowflakeAirbyteClientTest {
                 targetTableName = destinationTableName,
             )
             verify(exactly = 1) {
-                sqlGenerator.upsertTable(
-                    stream,
-                    columnNameMapping,
-                    sourceTableName,
-                    destinationTableName
-                )
+                sqlGenerator.upsertTable(stream.tableSchema, sourceTableName, destinationTableName)
             }
             verify(exactly = 1) { mockConnection.close() }
         }
@@ -379,7 +347,7 @@ internal class SnowflakeAirbyteClientTest {
             }
 
         every { dataSource.connection } returns mockConnection
-        every { snowflakeColumnUtils.getGenerationIdColumnName() } returns generationIdColumnName
+        every { sqlGenerator.getGenerationIdColumnName() } returns generationIdColumnName
         every { sqlGenerator.getGenerationId(tableName) } returns
             "SELECT $generationIdColumnName FROM ${tableName.toPrettyString(QUOTE)}"
 
@@ -580,81 +548,6 @@ internal class SnowflakeAirbyteClientTest {
             )
 
         assertEquals(expectedColumns, result)
-    }
-
-    @Test
-    fun `getColumnsFromStream should return correct column definitions`() {
-        val schema = mockk<AirbyteType>()
-        val stream =
-            DestinationStream(
-                unmappedNamespace = "test_namespace",
-                unmappedName = "test_stream",
-                importType = Overwrite,
-                schema = schema,
-                generationId = 1,
-                minimumGenerationId = 1,
-                syncId = 1,
-                namespaceMapper = NamespaceMapper(NamespaceDefinitionType.DESTINATION)
-            )
-        val columnNameMapping =
-            ColumnNameMapping(
-                mapOf(
-                    "col1" to "COL1_MAPPED",
-                    "col2" to "COL2_MAPPED",
-                )
-            )
-
-        val col1FieldType = mockk<FieldType>()
-        every { col1FieldType.type } returns mockk()
-
-        val col2FieldType = mockk<FieldType>()
-        every { col2FieldType.type } returns mockk()
-
-        every { schema.asColumns() } returns
-            linkedMapOf("col1" to col1FieldType, "col2" to col2FieldType)
-        every { snowflakeColumnUtils.toDialectType(col1FieldType.type) } returns "VARCHAR(255)"
-        every { snowflakeColumnUtils.toDialectType(col2FieldType.type) } returns "NUMBER(38,0)"
-        every { snowflakeColumnUtils.columnsAndTypes(any(), any()) } returns
-            listOf(ColumnAndType("COL1_MAPPED", "VARCHAR"), ColumnAndType("COL2_MAPPED", "NUMBER"))
-        every { snowflakeColumnUtils.formatColumnName(any(), false) } answers
-            {
-                firstArg<String>().toSnowflakeCompatibleName()
-            }
-
-        val result = client.getColumnsFromStream(stream, columnNameMapping)
-
-        val expectedColumns =
-            mapOf(
-                "COL1_MAPPED" to ColumnType("VARCHAR", true),
-                "COL2_MAPPED" to ColumnType("NUMBER", true),
-            )
-
-        assertEquals(expectedColumns, result)
-    }
-
-    @Test
-    fun `generateSchemaChanges should correctly identify changes`() {
-        val columnsInDb =
-            setOf(
-                ColumnDefinition("COL1", "VARCHAR"),
-                ColumnDefinition("COL2", "NUMBER"),
-                ColumnDefinition("COL3", "BOOLEAN")
-            )
-        val columnsInStream =
-            setOf(
-                ColumnDefinition("COL1", "VARCHAR"), // Unchanged
-                ColumnDefinition("COL3", "TEXT"), // Modified
-                ColumnDefinition("COL4", "DATE") // Added
-            )
-
-        val (added, deleted, modified) = client.generateSchemaChanges(columnsInDb, columnsInStream)
-
-        assertEquals(1, added.size)
-        assertEquals("COL4", added.first().name)
-        assertEquals(1, deleted.size)
-        assertEquals("COL2", deleted.first().name)
-        assertEquals(1, modified.size)
-        assertEquals("COL3", modified.first().name)
     }
 
     @Test
