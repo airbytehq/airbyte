@@ -4,7 +4,7 @@ sidebar_position: 1
 
 # AI agents
 
-Airbyte provides a set of tools to help you automate, understand, move, and work with your data in coordination with AI agents. Some of these tools are standalone open source solutions, and others are pay solutions built on top of Airbyte Cloud.
+Airbyte provides a set of tools to help you automate, understand, move, and work with your data in coordination with AI agents. Some of these tools are standalone open source solutions, and others are paid solutions built on top of Airbyte Cloud.
 
 - **Agent connectors**: Use Airbyte's AI-optimized, type-safe connectors to power your own AI agents, or use them with Airbyte's Connector MCP server. [View the GitHub repo](https://github.com/airbytehq/airbyte-agent-connectors) or [try the tutorial](quickstarts). You can set up your own agent and explore your data in 15 minutes or less.
 
@@ -49,7 +49,7 @@ The Agent engine is an ideal solution when you:
 - Are working with a small amount of data
 - Need to trigger side effects, like sending an email or closing a ticket
 
-The agenda data platform _isn't_ ideal when you:
+The agentic data platform _isn't_ ideal when you:
 
 - Need all your data in one place
 - Need to join across datasets
@@ -70,7 +70,7 @@ If agentic data isn't what you're looking for and you need complex data aggregat
 
 Airbyte Embedded creates isolated workspaces for each of your customers, allowing them to configure their own data sources while keeping their data separate and secure. The Embedded Widget provides a pre-built UI component that handles the entire user onboarding flow from authentication to source configuration.
 
-Once Airbyte enables your organizaton on Airbyte Embedded, you can begin onboarding customers via the Embedded Widget. You can download the Embedded demo app [from GitHub](https://github.com/airbytehq/embedded-demoapp).
+Once Airbyte enables your organization on Airbyte Embedded, you can begin onboarding customers via the Embedded Widget. You can download the Embedded demo app [from GitHub](https://github.com/airbytehq/embedded-demoapp).
 
 ## Agent connectors
 
