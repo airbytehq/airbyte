@@ -470,7 +470,7 @@ open class PostgresSourceJdbcPartitionFactory(
             } else null
         } ?: Ctid.ZERO
         val eachStep: Long = ((theoreticalLastPage - lowerBoundCtid.page) / numPartitions).coerceAtLeast(1)
-        val lbs: List<Ctid?> = listOf(lowerBoundCtid) + (1 ..< numPartitions).map {
+        val lbs: List<Ctid?> = listOf(lowerBoundCtid) + (1..<numPartitions).map {
             Ctid(lowerBoundCtid.page + eachStep * it, 1)
         }
         val ubs: List<Ctid?> = lbs.drop(1) + listOf(null)
