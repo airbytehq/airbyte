@@ -1,10 +1,11 @@
 ---
 sidebar_label: "Python SDK tutorial"
+sidebar_position: 1
 ---
 
-# Get started with agent connectors: Python SDK
+# Agent connector tutorial: Python&nbsp;SDK
 
-In this tutorial, you'll create a new Python project with `uv`, add a Pydantic AI agent, equip it to use one of Airbyte's agent connectors, and use natural language to explore your data. This tutorial uses GitHub, but if you don't have a GitHub account, you can use one of Airbyte's other agent connectors and perform different operations.
+In this tutorial, you'll create a new Python project with uv, add a Pydantic AI agent, equip it to use one of Airbyte's agent connectors, and use natural language to explore your data. This tutorial uses GitHub, but if you don't have a GitHub account, you can use one of Airbyte's other agent connectors and perform different operations.
 
 Using the Python SDK is more time-consuming than the Connector MCP server, but affords you the most control over the context you send to your agent.
 
@@ -134,7 +135,7 @@ connector = GithubConnector(
 )
 ```
 
-### Create the agent
+### Define the agent
 
 Create a Pydantic AI agent with a system prompt that describes its purpose:
 
@@ -228,14 +229,14 @@ The agent has basic message history within each session, and you can ask followu
 If your agent fails to retrieve GitHub data, check the following:
 
 - **HTTP 401 errors**: Your `GITHUB_ACCESS_TOKEN` is invalid or expired. Generate a new token and update your `.env` file.
-- **HTTP 403 errors**: Your token doesn't have the required scopes. Ensure your token has `repo` scope for accessing repository data.
+- **HTTP 403 errors**: Your `GITHUB_ACCESS_TOKEN` doesn't have the required scopes. Ensure your token has `repo` scope for accessing repository data.
 - **OpenAI errors**: Verify your `OPENAI_API_KEY` is valid, has available credits, and won't exceed rate limits.
 
 ## Summary
 
 In this tutorial, you learned how to:
 
-- Set up a new Python project with `uv`
+- Set up a new Python project with uv
 - Add Pydantic AI and Airbyte's GitHub agent connector to your project
 - Configure environment variables and authentication
 - Add tools to your agent using the GitHub connector
