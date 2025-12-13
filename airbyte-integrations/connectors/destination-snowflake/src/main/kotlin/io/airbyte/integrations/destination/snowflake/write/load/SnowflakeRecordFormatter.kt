@@ -26,7 +26,7 @@ class SnowflakeSchemaRecordFormatter(
         snowflakeColumnUtils.getFormattedDefaultColumnNames(false).toSet()
 
     override fun format(record: Map<String, AirbyteValue>): List<Any> =
-        columns.map { (columnName, _) ->
+        columns.map { (columnName, columnType) ->
             /*
              * Meta columns are forced to uppercase for backwards compatibility with previous
              * versions of the destination.  Therefore, convert the column to lowercase so
@@ -43,7 +43,27 @@ class SnowflakeSchemaRecordFormatter(
                     // been escaped by the CDK before arriving at the aggregate, so no need
                     // to escape again here.
                     .find { it == columnName.toSnowflakeCompatibleName() }
-                    ?.let { record[it].toCsvValue() }
+                    ?.let {
+                        if (columnType == "TEXT") {
+                            // When writing to a string column, we need to handle nulls specially.
+                            // We're writingi to a CSV file, so we need separate valuese for NULL
+                            // and empty-string.
+                            // See also the sqlgenerator, where we set `EMPTY_FIELD_AS_NULL = FALSE`
+                            // in the COPY INTO statement.
+                            // Note that COPY INTO defaults to `NULL_IF = '\N`, which is that we're
+                            // relying on here.
+                            if (record[it] is NullValue || record[it] == null) {
+                                "\\N"
+                            } else {
+                                record[it].toCsvValue()
+                            }
+                        } else {
+                            // Otherwise, use the normal toCsvValue (e.g., if the value is a string,
+                            // just put it directly into the CSV).
+                            // Under the hood, objects/arrays are still json-serialized here.
+                            record[it].toCsvValue()
+                        }
+                    }
                     ?: ""
             }
         }
