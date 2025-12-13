@@ -1,11 +1,8 @@
----
-products: embedded
----
-
 # PyAirbyte MCP Server
 
-> **NOTE:**
-> This MCP server implementation is experimental and may change without notice between minor versions of PyAirbyte. The API may be modified or entirely refactored in future versions.
+:::note
+This MCP server implementation is experimental and may change without notice between minor versions of PyAirbyte. The API may be modified or entirely refactored in future versions.
+:::
 
 The PyAirbyte MCP (Model Context Protocol) server provides a standardized interface for managing Airbyte connectors through MCP-compatible clients. This experimental feature allows you to list connectors, validate configurations, and run sync operations using the MCP protocol.
 

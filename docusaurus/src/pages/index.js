@@ -85,15 +85,15 @@ export default function Home() {
 
   const navLinks = [
     {
-      title: 'Platform',
+      title: 'Data replication platform',
       link: '/platform/',
-      description: 'Deploy Airbyte locally, to cloud providers, or use Airbyte Cloud. Create connections, build custom connectors, and start syncing data in minutes.',
+      description: 'Use Airbyte\'s data replication platform to create connections, build custom connectors, and start syncing data in minutes.',
       icon: PlatformIcon,
     },
     {
       title: 'Connectors',
       link: '/integrations/',
-      description: 'Browse Airbyte\'s catalog of over 600 sources and destinations, and learn to set them up in Airbyte.',
+      description: 'Browse Airbyte\'s catalog of over 600 sources and destinations, and learn to set them up in Airbyte\'s data replication platform.',
       icon: ConnectorsIcon,
     },
     {
@@ -103,9 +103,9 @@ export default function Home() {
       icon: ReleaseNotesIcon,
     },
     {
-      title: 'AI agents',
+      title: 'Agent engine',
       link: '/ai-agents/',
-      description: 'Explore AI Agent tools and capabilities for building intelligent data pipelines.',
+      description: 'Use Airbyte\'s Agent engine to build intelligent data pipelines, explore your data, and work with it with help from AI.',
       icon: AIAgentsIcon,
     },
     {
@@ -134,11 +134,10 @@ export default function Home() {
           <div className={styles.heroContainer}>
             <div className={styles.heroLeft}>
               <p className={styles.heroDescription}>
-                Airbyte is an open source data integration and activation platform. 
-                It helps you consolidate data from hundreds of sources into your data 
-                warehouses, data lakes, and databases. Then, it helps you move data 
-                from those locations into the operational tools where work happens, 
-                like CRMs, marketing platforms, and support systems.
+                Airbyte is an open source data integration, activation, and agentic data platform.
+                Use our data replication platform to consolidate data from hundreds of sources into your data warehouses, data lakes, and databases. 
+                Then, move data into the operational tools where work happens, like CRMs, marketing platforms, and support systems. 
+                Or, use our Agent engine to ask questions, explore, and update your data with AI agents.
               </p>
             </div>
             <div className={styles.heroRight}>
