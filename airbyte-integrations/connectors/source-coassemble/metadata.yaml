@@ -13,11 +13,11 @@ data:
       enabled: false
       packageName: airbyte-source-coassemble
   connectorBuildOptions:
-    baseImage: docker.io/airbyte/source-declarative-manifest:7.5.1@sha256:8da9d362c184e2e46532ab94f6f9968a74835c0882d6a4a2f9f9c9e5b972f2a1
+    baseImage: docker.io/airbyte/source-declarative-manifest:7.6.0@sha256:9c0ea900af7e20d119da0446fc1679ca4015c5c5f7a3b022d321071570a78749
   connectorSubtype: api
   connectorType: source
   definitionId: 85999b05-fae0-4312-a3ae-f4987f50d434
-  dockerImageTag: 0.0.40
+  dockerImageTag: 0.0.41
   dockerRepository: airbyte/source-coassemble
   githubIssueLabel: source-coassemble
   icon: icon.svg
