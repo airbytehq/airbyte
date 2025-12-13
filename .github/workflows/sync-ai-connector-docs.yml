@@ -62,7 +62,7 @@ jobs:
           token: ${{ steps.get-app-token.outputs.token }}
           commit-message: "docs: sync agent connector docs from airbyte-agent-connectors repo"
           branch: auto-sync-ai-connector-docs
-          base: master
+          base: devin/1765657125-docs-update-terminology
           delete-branch: true
           title: "docs: sync agent connector docs from airbyte-agent-connectors repo"
           body: |
