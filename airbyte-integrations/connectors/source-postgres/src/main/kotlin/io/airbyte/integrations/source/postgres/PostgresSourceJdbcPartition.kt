@@ -15,7 +15,6 @@ import io.airbyte.cdk.output.sockets.toJson
 import io.airbyte.cdk.read.And
 import io.airbyte.cdk.read.Equal
 import io.airbyte.cdk.read.From
-import io.airbyte.cdk.read.FromSample
 import io.airbyte.cdk.read.Greater
 import io.airbyte.cdk.read.GreaterOrEqual
 import io.airbyte.cdk.read.JdbcCursorPartition
@@ -308,38 +307,43 @@ class PostgresSourceJdbcSplittableSnapshotWithXminPartition(
     xminUpperBound: JsonNode?,
     filenode: Filenode?,
     override val isLowerBoundIncluded: Boolean
-) : PostgresSourceCursorPartition(
-    selectQueryGenerator,
-    streamState,
-    listOf(ctidField),
-    xminField,
-    xminUpperBound,
-    filenode
-) {
+) :
+    PostgresSourceCursorPartition(
+        selectQueryGenerator,
+        streamState,
+        listOf(ctidField),
+        xminField,
+        xminUpperBound,
+        filenode
+    ) {
     override val completeState: OpaqueStateValue
-        get() = when (upperBound) {
-            null -> PostgresSourceJdbcStreamStateValue.xminIncrementalCheckpoint(
-                cursorUpperBound
-            )
-            else -> PostgresSourceJdbcStreamStateValue.snapshotWithXminCheckpoint(
-                upperBound,
-                cursorUpperBound,
-                filenode
-            )
-        }
+        get() =
+            when (upperBound) {
+                null ->
+                    PostgresSourceJdbcStreamStateValue.xminIncrementalCheckpoint(cursorUpperBound)
+                else ->
+                    PostgresSourceJdbcStreamStateValue.snapshotWithXminCheckpoint(
+                        upperBound,
+                        cursorUpperBound,
+                        filenode
+                    )
+            }
 
     override val cursorUpperBoundQuery: SelectQuery
-        get() = SelectQuery(
-            """
+        get() =
+            SelectQuery(
+                """
             SELECT CASE 
                 WHEN pg_is_in_recovery() 
                 THEN txid_snapshot_xmin(txid_current_snapshot()) 
                 ELSE txid_current() 
             END AS current_xmin
-            """.trimIndent().replace("\n", " "),
-            listOf(EmittedField("current_xmin", LongFieldType)),
-            emptyList()
-        )
+            """
+                    .trimIndent()
+                    .replace("\n", " "),
+                listOf(EmittedField("current_xmin", LongFieldType)),
+                emptyList()
+            )
 
     override fun incompleteState(lastRecord: SelectQuerier.ResultRow): OpaqueStateValue =
         PostgresSourceJdbcStreamStateValue.snapshotWithXminCheckpoint(
@@ -400,30 +404,40 @@ class PostgresSourceJdbcXminIncrementalPartition(
     val xminLowerBound: JsonNode?,
     override val isLowerBoundIncluded: Boolean,
     xminUpperBound: JsonNode?,
-): PostgresSourceCursorPartition(selectQueryGenerator, streamState, listOf(xminField), xminField, // TODO: check here
-    xminUpperBound, null) {
+) :
+    PostgresSourceCursorPartition(
+        selectQueryGenerator,
+        streamState,
+        listOf(xminField),
+        xminField, // TODO: check here
+        xminUpperBound,
+        null
+    ) {
     override val lowerBound: JsonNode? = xminLowerBound
     override val upperBound: JsonNode
         get() = cursorUpperBound
 
     override val cursorUpperBoundQuery: SelectQuery
-        get() = SelectQuery(
-            """
+        get() =
+            SelectQuery(
+                """
             SELECT CASE 
                 WHEN pg_is_in_recovery() 
                 THEN txid_snapshot_xmin(txid_current_snapshot()) 
                 ELSE txid_current() 
             END AS current_xmin
-            """.trimIndent().replace("\n", " "),
-            listOf(EmittedField("current_xmin", LongFieldType)),
-            emptyList()
-        )
+            """
+                    .trimIndent()
+                    .replace("\n", " "),
+                listOf(EmittedField("current_xmin", LongFieldType)),
+                emptyList()
+            )
 
     override fun samplingQuery(sampleRateInvPow2: Int): SelectQuery {
         val sampleSize: Int = streamState.sharedState.maxSampleSize
         val querySpec =
             SelectQuerySpec(
-                SelectColumns(listOf(xminField)+(stream.fields).distinct()),
+                SelectColumns(listOf(xminField) + (stream.fields).distinct()),
                 From(stream.name, stream.namespace),
                 limit = Limit(sampleSize.toLong())
             )

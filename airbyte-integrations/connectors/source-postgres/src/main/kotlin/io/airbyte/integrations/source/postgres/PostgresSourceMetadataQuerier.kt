@@ -1,15 +1,15 @@
+/*
+ * Copyright (c) 2025 Airbyte, Inc., all rights reserved.
+ */
+
 package io.airbyte.integrations.source.postgres
 
-import com.fasterxml.jackson.databind.node.ObjectNode
 import io.airbyte.cdk.ConfigErrorException
 import io.airbyte.cdk.check.JdbcCheckQueries
-import io.airbyte.cdk.discover.EmittedField
 import io.airbyte.cdk.discover.JdbcMetadataQuerier
 import io.airbyte.cdk.discover.MetadataQuerier
 import io.airbyte.cdk.jdbc.DefaultJdbcConstants
 import io.airbyte.cdk.jdbc.JdbcConnectionFactory
-import io.airbyte.cdk.jdbc.LongFieldType
-import io.airbyte.cdk.read.SelectQuery
 import io.airbyte.cdk.read.SelectQueryGenerator
 import io.airbyte.integrations.source.postgres.config.PostgresSourceConfiguration
 import io.airbyte.integrations.source.postgres.config.XminIncrementalConfiguration
@@ -21,17 +21,18 @@ import jakarta.inject.Singleton
 class PostgresSourceMetadataQuerier(
     val base: JdbcMetadataQuerier,
     val postgresSourceConfig: PostgresSourceConfiguration,
-
-): MetadataQuerier by base {
+) : MetadataQuerier by base {
     private val log = KotlinLogging.logger {}
 
     override fun extraChecks() {
         base.extraChecks()
         if (postgresSourceConfig.incrementalConfiguration is XminIncrementalConfiguration) {
             if (dbNumWraparound() > 0) {
-                throw ConfigErrorException("We detected XMIN transaction wraparound in the database, " +
-                    "which makes this sync option inefficient and can lead to higher credit consumption. " +
-                    "Please change the replication method to CDC or cursor based.")
+                throw ConfigErrorException(
+                    "We detected XMIN transaction wraparound in the database, " +
+                        "which makes this sync option inefficient and can lead to higher credit consumption. " +
+                        "Please change the replication method to CDC or cursor based."
+                )
             }
         }
     }
@@ -52,7 +53,6 @@ class PostgresSourceMetadataQuerier(
         }
         return 0
     }
-
 }
 
 @Singleton

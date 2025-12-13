@@ -90,6 +90,7 @@ data class PostgresSourceConfiguration(
 sealed interface IncrementalConfiguration
 
 data object UserDefinedCursorIncrementalConfiguration : IncrementalConfiguration
+
 data object XminIncrementalConfiguration : IncrementalConfiguration
 
 data class CdcIncrementalConfiguration(
