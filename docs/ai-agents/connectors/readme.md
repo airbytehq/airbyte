@@ -56,6 +56,11 @@ Use Airbyte agent Connectors when you want:
 
 ## How to work with agent connectors
 
-Two options exist to work with an agent connector: Model Context Protocol (MCP) and Python SDK.
+Two options exist to work with an agent connector: Airbyte's MCP server and Python SDK.
+
+- [Python SDK tutorial](../quickstarts/tutorial-python) (recommended)
+- [MCP tutorial](../quickstarts/tutorial-mcp) (experimental)
+
+## All agent connectors
 
 <DocCardList />
