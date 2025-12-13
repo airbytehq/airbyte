@@ -1,0 +1,24 @@
+{
+  "request_status": "SUCCESS",
+  "request_id": "test_request_id",
+  "campaigns": [
+    {
+      "sub_request_status": "SUCCESS",
+      "campaign": {
+        "id": "test_campaign_789",
+        "updated_at": "2024-01-15T10:00:00.000Z",
+        "created_at": "2023-01-01T00:00:00.000Z",
+        "name": "Test Campaign",
+        "ad_account_id": "test_adaccount_456",
+        "status": "ACTIVE",
+        "objective": "AWARENESS",
+        "start_time": "2024-01-01T00:00:00.000Z",
+        "end_time": "2024-12-31T23:59:59.000Z",
+        "daily_budget_micro": 100000000,
+        "lifetime_spend_cap_micro": 0,
+        "buy_model": "AUCTION",
+        "regulations": {}
+      }
+    }
+  ]
+}
