@@ -119,6 +119,16 @@ spec:
         description: Space-delimited list of projects. e.g. airbyte.io/documentation
           meltano/tap-gitlab.
         order: 4
+      num_workers:
+        type: integer
+        title: Number of Concurrent Workers
+        description: Number of concurrent threads for syncing. Higher values can speed
+          up syncs but may hit rate limits. GitLab allows 2,000 requests per minute
+          for authenticated users.
+        default: 10
+        minimum: 2
+        maximum: 50
+        order: 5
   advanced_auth:
     auth_flow_type: oauth2.0
     predicate_key:
@@ -870,7 +880,22 @@ definitions:
       schema:
         $ref: "#/schemas/pipelines"
 
+# Rate limits: https://docs.gitlab.com/ee/user/gitlab_com/#rate-limits-on-gitlabcom
+# - 2,000 requests per minute for authenticated API traffic
+api_budget:
+  type: HTTPAPIBudget
+  policies:
+    - type: FixedWindowCallRatePolicy
+      period: PT1M
+      call_limit: 2000
+      matchers:
+        - method: GET
+  status_codes_for_ratelimit_hit: [429]
 
+concurrency_level:
+  type: ConcurrencyLevel
+  default_concurrency: "{{ config.get('num_workers', 10) }}"
+  max_concurrency: 50
 
 streams:
   # Groups-based streams
