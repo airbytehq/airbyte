@@ -97,7 +97,8 @@ open class PostgresSourceJdbcPartitionFactory(
                         null,
                         null,
                         null,
-                        filenode)
+                        filenode,
+                        true)
                 } ?: PostgresSourceJdbcUnsplittableSnapshotPartition( // TEMP
                     selectQueryGenerator,
                     streamState,
@@ -115,6 +116,7 @@ open class PostgresSourceJdbcPartitionFactory(
                         cursorChosenFromCatalog,
                         cursorUpperBound = null,
                         filenode,
+                        true
                     )
                 }
                     ?: PostgresSourceJdbcUnsplittableSnapshotWithCursorPartition(
@@ -193,6 +195,7 @@ open class PostgresSourceJdbcPartitionFactory(
                                 lowerBound = Jsons.textNode(streamState.maybeCtid!!.toString()),
                                 upperBound = null,
                                 filenode,
+                                true
                             )
                         }
                     }
@@ -220,6 +223,7 @@ open class PostgresSourceJdbcPartitionFactory(
                             cursor,
                             cursorCheckpoint,
                             filenode,
+                            true
                         )
                     } else if (cursorCheckpoint == streamState.cursorUpperBound) {
                         // Incremental complete
@@ -266,6 +270,7 @@ open class PostgresSourceJdbcPartitionFactory(
                                 lowerBound = Jsons.textNode(streamState.maybeCtid.toString()),
                                 upperBound = null,
                                 filenode,
+                                true
                             )
                         }
 
@@ -284,6 +289,7 @@ open class PostgresSourceJdbcPartitionFactory(
                                 lowerBound = Jsons.textNode(streamState.maybeCtid.toString()),
                                 upperBound = null,
                                 filenode,
+                                true
                             )
                         } else if (sv.xmin == streamState.cursorUpperBound) {
                             // Incremental done
@@ -441,40 +447,12 @@ open class PostgresSourceJdbcPartitionFactory(
             is PostgresSourceJdbcSplittableSnapshotWithCursorPartition ->
                 unsplitPartition.split(splitPartitionBoundaries.size, splitPartitionBoundaries.first().filenode, relationSize)
             is PostgresSourceJdbcSplittableSnapshotWithXminPartition ->
-                unsplitPartition.split(splitPartitionBoundaries)
+                unsplitPartition.split(splitPartitionBoundaries.size, splitPartitionBoundaries.first().filenode, relationSize)
             // TODO: implement split for cursor incremental partition
             else -> listOf(unsplitPartition)
         }
     }
 
-    private fun PostgresSourceJdbcSplittableSnapshotWithXminPartition.split(
-        splitPointValues: List<PostgresSourceJdbcStreamStateValue>
-    ): List<PostgresSourceJdbcSplittableSnapshotWithXminPartition> {
-        val inners: List<Ctid> = splitPointValues.map { Ctid.of(it.ctid!!) }
-        val lbCtid: Ctid? =
-            lowerBound?.let {
-                if (it.isNull.not() && it.isEmpty.not()) {
-                    Ctid.of(it[0].asText())
-                } else null
-            }
-        val ubCtid: Ctid? =
-            upperBound?.let {
-                if (it.isNull.not() && it.isEmpty.not()) {
-                    Ctid.of(it[0].asText())
-                } else null
-            }
-        val lbs: List<Ctid?> = listOf(lbCtid) + inners
-        val ubs: List<Ctid?> = inners + listOf(ubCtid)
-        return lbs.zip(ubs).map { (lowerBound, upperBound) ->
-            PostgresSourceJdbcSplittableSnapshotWithXminPartition(
-                selectQueryGenerator,
-                streamState,
-                lowerBound?.let { Jsons.textNode(it.toString()) },
-                upperBound?.let { Jsons.textNode(it.toString()) },
-                cursorUpperBound,
-                splitPointValues.first().filenode,
-            )
-        }
     /** Given table size and a starting point lower bound, the function will return a list of (lowerBound, upperBound) pairs for each
      * partition. This is done by calculating the theoretical last page of the table (table size / block size), then dividing the range to get to the desired number of partitions.
      */
@@ -541,4 +519,24 @@ open class PostgresSourceJdbcPartitionFactory(
             )
         }
     }
+
+    private fun PostgresSourceJdbcSplittableSnapshotWithXminPartition.split(
+        numPartitions: Int,
+        filenode: Filenode?,
+        relationSize: Long,
+    ): List<PostgresSourceJdbcSplittableSnapshotWithXminPartition> {
+        val bounds = computePartitionBounds(lowerBound, numPartitions, relationSize, blockSize(config))
+        return bounds.mapIndexed { index, (lowerBound, upperBound) ->
+            PostgresSourceJdbcSplittableSnapshotWithXminPartition(
+                selectQueryGenerator,
+                streamState,
+                lowerBound?.let { Jsons.textNode(it.toString()) },
+                upperBound?.let { Jsons.textNode(it.toString()) },
+                cursorUpperBound,
+                filenode,
+                index == 0
+            )
+        }
+    }
+
 }

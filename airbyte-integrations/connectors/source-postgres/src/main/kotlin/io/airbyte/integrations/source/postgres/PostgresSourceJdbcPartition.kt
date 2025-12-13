@@ -306,7 +306,8 @@ class PostgresSourceJdbcSplittableSnapshotWithXminPartition(
     override val lowerBound: JsonNode?,
     override val upperBound: JsonNode?,
     xminUpperBound: JsonNode?,
-    filenode: Filenode?
+    filenode: Filenode?,
+    override val isLowerBoundIncluded: Boolean
 ) : PostgresSourceCursorPartition(
     selectQueryGenerator,
     streamState,
