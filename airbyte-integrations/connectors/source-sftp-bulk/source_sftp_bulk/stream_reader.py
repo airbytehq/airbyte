@@ -2,6 +2,7 @@
 
 
 import datetime
+import io
 import logging
 import stat
 import time
@@ -89,8 +90,30 @@ class SourceSFTPBulkStreamReader(AbstractFileBasedStreamReader):
                     )
 
     def open_file(self, file: RemoteFile, mode: FileReadMode, encoding: Optional[str], logger: logging.Logger) -> IOBase:
-        remote_file = self.sftp_client.sftp_connection.open(file.uri, mode=mode.value)
-        return remote_file
+        # Read the entire file content into memory to avoid paramiko's repositioning issues
+        # The TextIOWrapper on top of paramiko SFTP files causes seek operations that fail
+        # with "Repositioning not supported after read/write data" errors
+        
+        # Check file size first
+        file_size = self.file_size(file)
+        encoding = encoding or 'utf-8'
+        
+        # Check if file exceeds size limit (same as upload method)
+        if file_size > self.FILE_SIZE_LIMIT:
+            message = f"File size exceeds the limit. File uri: {file.uri}, size: {file_size / (1024 * 1024):.2f} MB"
+            raise FileSizeLimitError(message=message, internal_message=message, failure_type=FailureType.config_error)
+        
+        # Load entire file into memory
+        logger.debug(f"Loading file {file.uri} ({file_size / (1024 * 1024):.2f} MB) into memory")
+        
+        sftp_file = self.sftp_client.sftp_connection.open(file.uri, mode='rb')
+        try:
+            file_content = sftp_file.read()
+        finally:
+            sftp_file.close()
+        
+        return io.StringIO(file_content.decode(encoding, errors='replace'))
+
 
     @staticmethod
     def create_progress_handler(local_file_path: str, logger: logging.Logger):
