@@ -6,6 +6,23 @@ check:
   stream_names:
     - "campaigns"
 
+# Rate limits: https://mailchimp.com/developer/marketing/docs/fundamentals/#api-limits
+# Mailchimp has a limit of 10 simultaneous connections
+concurrency_level:
+  type: ConcurrencyLevel
+  default_concurrency: "{{ config.get('num_workers', 2) }}"
+  max_concurrency: 10
+
+api_budget:
+  type: HTTPAPIBudget
+  policies:
+    - type: MovingWindowCallRatePolicy
+      rates:
+        - limit: 10
+          interval: PT1S
+      matchers: []  # Catch-all for all endpoints
+  status_codes_for_ratelimit_hit: [429, 403]
+
 definitions:
   bearer_authenticator:
     type: BearerAuthenticator
@@ -4777,6 +4794,23 @@ spec:
         description: Technical fields used to identify datacenter to send request to
         type: string
         airbyte_hidden: true
+      num_workers:
+        type: integer
+        title: Number of Concurrent Workers
+        description: >-
+          The number of worker threads to use for the sync. Higher values can
+          speed up syncs but may hit rate limits. Mailchimp allows up to 10
+          simultaneous connections. More info about rate limits can be found on
+          Mailchimp's API <a
+          href="https://mailchimp.com/developer/marketing/docs/fundamentals/#api-limits">docs</a>.
+        default: 2
+        minimum: 2
+        maximum: 10
+        examples:
+          - 2
+          - 5
+          - 10
+        order: 3
   config_normalization_rules:
     type: ConfigNormalizationRules
     config_migrations:
