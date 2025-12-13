@@ -46,6 +46,7 @@ The Lever Hiring connector should not run into Lever Hiring API limitations unde
 
 | Version | Date       | Pull Request                                             | Subject                           |
 |:--------|:-----------|:---------------------------------------------------------|:----------------------------------|
+| 0.4.21 | 2025-12-09 | [70794](https://github.com/airbytehq/airbyte/pull/70794) | Update dependencies |
 | 0.4.20 | 2025-11-25 | [69501](https://github.com/airbytehq/airbyte/pull/69501) | Update dependencies |
 | 0.4.19 | 2025-10-29 | [68936](https://github.com/airbytehq/airbyte/pull/68936) | Update dependencies |
 | 0.4.18 | 2025-10-21 | [68331](https://github.com/airbytehq/airbyte/pull/68331) | Update dependencies |
