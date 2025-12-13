@@ -2,7 +2,7 @@ data:
   connectorSubtype: api
   connectorType: source
   definitionId: e1a3866b-d3b2-43b6-b6d7-8c1ee4d7f53f
-  dockerImageTag: 0.7.40
+  dockerImageTag: 0.7.41
   dockerRepository: airbyte/source-getlago
   githubIssueLabel: source-getlago
   icon: getlago.svg
@@ -39,7 +39,7 @@ data:
             type: GSM
             alias: airbyte-connector-testing-secret-store
   connectorBuildOptions:
-    baseImage: docker.io/airbyte/source-declarative-manifest:7.5.1@sha256:8da9d362c184e2e46532ab94f6f9968a74835c0882d6a4a2f9f9c9e5b972f2a1
+    baseImage: docker.io/airbyte/source-declarative-manifest:7.6.0@sha256:9c0ea900af7e20d119da0446fc1679ca4015c5c5f7a3b022d321071570a78749
   externalDocumentationUrls:
     - title: Lago API documentation
       url: https://doc.getlago.com/api-reference/intro
