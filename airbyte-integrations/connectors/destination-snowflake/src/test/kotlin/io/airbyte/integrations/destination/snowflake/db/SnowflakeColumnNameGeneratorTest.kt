@@ -4,6 +4,7 @@
 
 package io.airbyte.integrations.destination.snowflake.db
 
+import io.airbyte.integrations.destination.snowflake.schema.toSnowflakeCompatibleName
 import io.mockk.every
 import io.mockk.mockk
 import org.junit.jupiter.api.Assertions.assertEquals

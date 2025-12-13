@@ -4,17 +4,17 @@
 
 package io.airbyte.integrations.destination.snowflake.db
 
+import io.airbyte.cdk.load.command.DestinationCatalog
 import io.airbyte.cdk.load.component.TableOperationsClient
-import io.airbyte.cdk.load.orchestration.db.BaseDirectLoadInitialStatusGatherer
-import io.airbyte.cdk.load.orchestration.db.TempTableNameGenerator
+import io.airbyte.cdk.load.table.BaseDirectLoadInitialStatusGatherer
 import jakarta.inject.Singleton
 
 @Singleton
 class SnowflakeDirectLoadDatabaseInitialStatusGatherer(
     tableOperationsClient: TableOperationsClient,
-    tempTableNameGenerator: TempTableNameGenerator,
+    catalog: DestinationCatalog,
 ) :
     BaseDirectLoadInitialStatusGatherer(
         tableOperationsClient,
-        tempTableNameGenerator,
+        catalog,
     )
