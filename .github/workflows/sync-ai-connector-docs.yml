@@ -2,8 +2,8 @@ name: Sync AI Connector Docs
 
 on:
   schedule:
-    - cron: '0 */6 * * *'  # Every 6 hours
-  workflow_dispatch:  # Manual trigger
+    - cron: "0 */6 * * *" # Every 6 hours
+  workflow_dispatch: # Manual trigger
 
 jobs:
   sync-docs:
