@@ -5,7 +5,7 @@
 package io.airbyte.integrations.destination.snowflake.sql
 
 import io.airbyte.cdk.load.table.TableName
-import io.airbyte.integrations.destination.snowflake.db.toSnowflakeCompatibleName
+import io.airbyte.integrations.destination.snowflake.schema.toSnowflakeCompatibleName
 import io.airbyte.integrations.destination.snowflake.spec.SnowflakeConfiguration
 import io.mockk.every
 import io.mockk.mockk

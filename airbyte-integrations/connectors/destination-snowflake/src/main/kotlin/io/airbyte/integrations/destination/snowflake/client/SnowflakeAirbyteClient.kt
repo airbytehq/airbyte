@@ -13,13 +13,16 @@ import io.airbyte.cdk.load.component.TableColumns
 import io.airbyte.cdk.load.component.TableOperationsClient
 import io.airbyte.cdk.load.component.TableSchema
 import io.airbyte.cdk.load.component.TableSchemaEvolutionClient
+import io.airbyte.cdk.load.message.Meta.Companion.COLUMN_NAME_AB_EXTRACTED_AT
+import io.airbyte.cdk.load.message.Meta.Companion.COLUMN_NAME_AB_GENERATION_ID
 import io.airbyte.cdk.load.message.Meta.Companion.COLUMN_NAME_AB_LOADED_AT
+import io.airbyte.cdk.load.message.Meta.Companion.COLUMN_NAME_AB_META
+import io.airbyte.cdk.load.message.Meta.Companion.COLUMN_NAME_AB_RAW_ID
 import io.airbyte.cdk.load.message.Meta.Companion.COLUMN_NAME_DATA
 import io.airbyte.cdk.load.schema.model.TableName
 import io.airbyte.cdk.load.table.ColumnNameMapping
 import io.airbyte.cdk.load.util.deserializeToNode
-import io.airbyte.integrations.destination.snowflake.db.escapeJsonIdentifier
-import io.airbyte.integrations.destination.snowflake.db.toSnowflakeCompatibleName
+import io.airbyte.integrations.destination.snowflake.schema.toSnowflakeCompatibleName
 import io.airbyte.integrations.destination.snowflake.spec.SnowflakeConfiguration
 import io.airbyte.integrations.destination.snowflake.sql.COUNT_TOTAL_ALIAS
 import io.airbyte.integrations.destination.snowflake.sql.SNOWFLAKE_AB_EXTRACTED_AT
@@ -28,6 +31,7 @@ import io.airbyte.integrations.destination.snowflake.sql.SNOWFLAKE_AB_META
 import io.airbyte.integrations.destination.snowflake.sql.SNOWFLAKE_AB_RAW_ID
 import io.airbyte.integrations.destination.snowflake.sql.SnowflakeDirectLoadSqlGenerator
 import io.airbyte.integrations.destination.snowflake.sql.andLog
+import io.airbyte.integrations.destination.snowflake.sql.escapeJsonIdentifier
 import io.github.oshai.kotlinlogging.KotlinLogging
 import jakarta.inject.Singleton
 import java.sql.ResultSet
@@ -55,8 +59,13 @@ class SnowflakeAirbyteClient(
             SNOWFLAKE_AB_GENERATION_ID
         )
 
+    // these are not capitalized I guess
     private val rawAirbyteColumnNames =
         setOf(
+            COLUMN_NAME_AB_RAW_ID,
+            COLUMN_NAME_AB_EXTRACTED_AT,
+            COLUMN_NAME_AB_META,
+            COLUMN_NAME_AB_GENERATION_ID,
             COLUMN_NAME_DATA,
             COLUMN_NAME_AB_LOADED_AT,
         )

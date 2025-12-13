@@ -29,10 +29,9 @@ import io.airbyte.cdk.load.schema.model.StreamTableSchema
 import io.airbyte.cdk.load.schema.model.TableName
 import io.airbyte.cdk.load.table.TempTableNameGenerator
 import io.airbyte.cdk.load.table.TypingDedupingUtil
-import io.airbyte.integrations.destination.snowflake.db.escapeJsonIdentifier
-import io.airbyte.integrations.destination.snowflake.db.toSnowflakeCompatibleName
 import io.airbyte.integrations.destination.snowflake.spec.SnowflakeConfiguration
 import io.airbyte.integrations.destination.snowflake.sql.SnowflakeDataType
+import io.airbyte.integrations.destination.snowflake.sql.escapeJsonIdentifier
 import jakarta.inject.Singleton
 
 @Singleton

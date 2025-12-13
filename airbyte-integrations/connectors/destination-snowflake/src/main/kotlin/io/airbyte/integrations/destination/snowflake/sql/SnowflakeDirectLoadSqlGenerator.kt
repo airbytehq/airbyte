@@ -14,7 +14,7 @@ import io.airbyte.cdk.load.schema.model.StreamTableSchema
 import io.airbyte.cdk.load.schema.model.TableName
 import io.airbyte.cdk.load.table.CDC_DELETED_AT_COLUMN
 import io.airbyte.cdk.load.util.UUIDGenerator
-import io.airbyte.integrations.destination.snowflake.db.toSnowflakeCompatibleName
+import io.airbyte.integrations.destination.snowflake.schema.toSnowflakeCompatibleName
 import io.airbyte.integrations.destination.snowflake.spec.CdcDeletionMode
 import io.airbyte.integrations.destination.snowflake.spec.SnowflakeConfiguration
 import io.airbyte.integrations.destination.snowflake.write.load.CSV_FIELD_SEPARATOR
@@ -46,14 +46,13 @@ fun String.andLog(): String {
 class SnowflakeDirectLoadSqlGenerator(
     private val uuidGenerator: UUIDGenerator,
     private val snowflakeConfiguration: SnowflakeConfiguration,
-    private val snowflakeSqlNameUtils: SnowflakeSqlNameUtils,
 ) {
     fun countTable(tableName: TableName): String {
-        return "SELECT COUNT(*) AS $COUNT_TOTAL_ALIAS FROM ${snowflakeSqlNameUtils.fullyQualifiedName(tableName)}".andLog()
+        return "SELECT COUNT(*) AS $COUNT_TOTAL_ALIAS FROM ${fullyQualifiedName(tableName)}".andLog()
     }
 
     fun createNamespace(namespace: String): String {
-        return "CREATE SCHEMA IF NOT EXISTS ${snowflakeSqlNameUtils.fullyQualifiedNamespace(namespace)}".andLog()
+        return "CREATE SCHEMA IF NOT EXISTS ${fullyQualifiedNamespace(namespace)}".andLog()
     }
 
     fun createTable(
@@ -93,7 +92,7 @@ class SnowflakeDirectLoadSqlGenerator(
 
         val createTableStatement =
             """
-            $createOrReplace TABLE ${snowflakeSqlNameUtils.fullyQualifiedName(tableName)} (
+            $createOrReplace TABLE ${fullyQualifiedName(tableName)} (
                 $columnDeclarations
             )
         """.trimIndent()
@@ -102,7 +101,7 @@ class SnowflakeDirectLoadSqlGenerator(
     }
 
     fun showColumns(tableName: TableName): String =
-        "SHOW COLUMNS IN TABLE ${snowflakeSqlNameUtils.fullyQualifiedName(tableName)}".andLog()
+        "SHOW COLUMNS IN TABLE ${fullyQualifiedName(tableName)}".andLog()
 
     fun copyTable(
         columnNames: Set<String>,
@@ -112,13 +111,13 @@ class SnowflakeDirectLoadSqlGenerator(
         val columnList = columnNames.joinToString(", ") { it.quote() }
 
         return """
-            INSERT INTO ${snowflakeSqlNameUtils.fullyQualifiedName(targetTableName)} 
+            INSERT INTO ${fullyQualifiedName(targetTableName)} 
             (
                 $columnList
             )
             SELECT
                 $columnList
-            FROM ${snowflakeSqlNameUtils.fullyQualifiedName(sourceTableName)}
+            FROM ${fullyQualifiedName(sourceTableName)}
             """
             .trimIndent()
             .andLog()
@@ -211,7 +210,7 @@ class SnowflakeDirectLoadSqlGenerator(
         val mergeStatement =
             if (cdcDeleteClause.isNotEmpty()) {
                 """
-            MERGE INTO ${snowflakeSqlNameUtils.fullyQualifiedName(targetTableName)} AS target_table
+            MERGE INTO ${fullyQualifiedName(targetTableName)} AS target_table
             USING (
               $selectSourceRecords
             ) AS new_record
@@ -227,7 +226,7 @@ class SnowflakeDirectLoadSqlGenerator(
         """.trimIndent()
             } else {
                 """
-            MERGE INTO ${snowflakeSqlNameUtils.fullyQualifiedName(targetTableName)} AS target_table
+            MERGE INTO ${fullyQualifiedName(targetTableName)} AS target_table
             USING (
               $selectSourceRecords
             ) AS new_record
@@ -285,7 +284,7 @@ class SnowflakeDirectLoadSqlGenerator(
             WITH records AS (
               SELECT
                 $columnList
-              FROM ${snowflakeSqlNameUtils.fullyQualifiedName(sourceTableName)}
+              FROM ${fullyQualifiedName(sourceTableName)}
             ), numbered_rows AS (
               SELECT *, ROW_NUMBER() OVER (
                 PARTITION BY $pkList ORDER BY $cursorOrderClause "$SNOWFLAKE_AB_EXTRACTED_AT" DESC
@@ -301,7 +300,7 @@ class SnowflakeDirectLoadSqlGenerator(
     }
 
     fun dropTable(tableName: TableName): String {
-        return "DROP TABLE IF EXISTS ${snowflakeSqlNameUtils.fullyQualifiedName(tableName)}".andLog()
+        return "DROP TABLE IF EXISTS ${fullyQualifiedName(tableName)}".andLog()
     }
 
     fun getGenerationId(
@@ -309,7 +308,7 @@ class SnowflakeDirectLoadSqlGenerator(
     ): String {
         return """
             SELECT "${getGenerationIdColumnName()}"
-            FROM ${snowflakeSqlNameUtils.fullyQualifiedName(tableName)}
+            FROM ${fullyQualifiedName(tableName)}
             LIMIT 1
         """
             .trimIndent()
@@ -326,12 +325,12 @@ class SnowflakeDirectLoadSqlGenerator(
     }
 
     fun createSnowflakeStage(tableName: TableName): String {
-        val stageName = snowflakeSqlNameUtils.fullyQualifiedStageName(tableName)
+        val stageName = fullyQualifiedStageName(tableName)
         return "CREATE STAGE IF NOT EXISTS $stageName".andLog()
     }
 
     fun putInStage(tableName: TableName, tempFilePath: String): String {
-        val stageName = snowflakeSqlNameUtils.fullyQualifiedStageName(tableName, true)
+        val stageName = fullyQualifiedStageName(tableName, true)
         return """
             PUT 'file://$tempFilePath' '@$stageName'
             AUTO_COMPRESS = FALSE
@@ -343,10 +342,10 @@ class SnowflakeDirectLoadSqlGenerator(
     }
 
     fun copyFromStage(tableName: TableName, filename: String): String {
-        val stageName = snowflakeSqlNameUtils.fullyQualifiedStageName(tableName, true)
+        val stageName = fullyQualifiedStageName(tableName, true)
 
         return """
-            COPY INTO ${snowflakeSqlNameUtils.fullyQualifiedName(tableName)}
+            COPY INTO ${fullyQualifiedName(tableName)}
             FROM '@$stageName'
             FILE_FORMAT = (
                 TYPE = 'CSV'
@@ -370,7 +369,7 @@ class SnowflakeDirectLoadSqlGenerator(
 
     fun swapTableWith(sourceTableName: TableName, targetTableName: TableName): String {
         return """
-            ALTER TABLE ${snowflakeSqlNameUtils.fullyQualifiedName(sourceTableName)} SWAP WITH ${snowflakeSqlNameUtils.fullyQualifiedName(targetTableName)}
+            ALTER TABLE ${fullyQualifiedName(sourceTableName)} SWAP WITH ${fullyQualifiedName(targetTableName)}
         """
             .trimIndent()
             .andLog()
@@ -380,7 +379,7 @@ class SnowflakeDirectLoadSqlGenerator(
         // Snowflake RENAME TO only accepts the table name, not a fully qualified name
         // The renamed table stays in the same schema
         return """
-            ALTER TABLE ${snowflakeSqlNameUtils.fullyQualifiedName(sourceTableName)} RENAME TO ${snowflakeSqlNameUtils.fullyQualifiedName(targetTableName)}
+            ALTER TABLE ${fullyQualifiedName(sourceTableName)} RENAME TO ${fullyQualifiedName(targetTableName)}
         """
             .trimIndent()
             .andLog()
@@ -390,7 +389,7 @@ class SnowflakeDirectLoadSqlGenerator(
         schemaName: String,
         tableName: String,
     ): String =
-        """DESCRIBE TABLE ${snowflakeSqlNameUtils.fullyQualifiedName(TableName(schemaName, tableName))}""".andLog()
+        """DESCRIBE TABLE ${fullyQualifiedName(TableName(schemaName, tableName))}""".andLog()
 
     fun alterTable(
         tableName: TableName,
@@ -399,7 +398,7 @@ class SnowflakeDirectLoadSqlGenerator(
         modifiedColumns: Map<String, ColumnTypeChange>,
     ): Set<String> {
         val clauses = mutableSetOf<String>()
-        val prettyTableName = snowflakeSqlNameUtils.fullyQualifiedName(tableName)
+        val prettyTableName = fullyQualifiedName(tableName)
         addedColumns.forEach { (name, columnType) ->
             clauses.add(
                 // Note that we intentionally don't set NOT NULL.
@@ -458,4 +457,41 @@ class SnowflakeDirectLoadSqlGenerator(
         }
         return clauses
     }
+
+    private fun fullyQualifiedName(tableName: TableName): String =
+        combineParts(listOf(getDatabaseName(), tableName.namespace, tableName.name))
+
+    private fun fullyQualifiedNamespace(namespace: String) =
+        combineParts(listOf(getDatabaseName(), namespace))
+
+    private fun fullyQualifiedStageName(tableName: TableName, escape: Boolean = false): String {
+        val currentTableName =
+            if (escape) {
+                tableName.name
+            } else {
+                tableName.name
+            }
+        return combineParts(
+            parts =
+                listOf(
+                    getDatabaseName(),
+                    tableName.namespace,
+                    "$STAGE_NAME_PREFIX$currentTableName"
+                ),
+            escape = escape,
+        )
+    }
+
+    private fun combineParts(parts: List<String>, escape: Boolean = false): String =
+        parts
+            .map { if (escape) sqlEscape(it) else it }
+            .joinToString(separator = ".") {
+                if (!it.startsWith(QUOTE)) {
+                    "$QUOTE$it$QUOTE"
+                } else {
+                    it
+                }
+            }
+
+    private fun getDatabaseName() = snowflakeConfiguration.database.toSnowflakeCompatibleName()
 }
