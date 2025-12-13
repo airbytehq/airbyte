@@ -1,0 +1,30 @@
+data:
+  connectorBuildOptions:
+    baseImage: docker.io/airbyte/java-connector-base:2.0.3@sha256:119b8506bca069bbc8357a275936c7e2b0994e6947b81f1bf8d6ce9e16db7d47
+  connectorIPCOptions:
+    dataChannel:
+      version: "0.0.2"
+      supportedSerialization: ["JSONL", "PROTOBUF"]
+      supportedTransport: ["STDIO", "SOCKET"]
+  connectorSubtype: file
+  connectorTestSuitesOptions:
+    - suite: unitTests
+    - suite: integrationTests
+  connectorType: destination
+  dockerImageTag: 0.1.0
+  dockerRepository: airbyte/destination-dev-null-2
+  documentationUrl: https://docs.airbyte.com/integrations/destinations/dev-null-2
+  githubIssueLabel: destination-dev-null-2
+  icon: airbyte.svg
+  license: ELv2
+  name: Dev Null 2 (Test Destination)
+  registryOverrides:
+    cloud:
+      enabled: false
+    oss:
+      enabled: true
+  releaseStage: alpha
+  supportLevel: community
+  tags:
+    - language:java
+metadataSpecVersion: "1.0"
