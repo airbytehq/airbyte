@@ -50,6 +50,7 @@ The Wrike connector should not run into Wrike API limitations under normal usage
 
 | Version | Date       | Pull Request                                             | Subject                                                                |
 | :------ | :--------- | :------------------------------------------------------- |:-----------------------------------------------------------------------|
+| 0.3.45 | 2025-12-09 | [70687](https://github.com/airbytehq/airbyte/pull/70687) | Update dependencies |
 | 0.3.44 | 2025-11-25 | [70137](https://github.com/airbytehq/airbyte/pull/70137) | Update dependencies |
 | 0.3.43 | 2025-11-18 | [69645](https://github.com/airbytehq/airbyte/pull/69645) | Update dependencies |
 | 0.3.42 | 2025-10-29 | [68951](https://github.com/airbytehq/airbyte/pull/68951) | Update dependencies |
