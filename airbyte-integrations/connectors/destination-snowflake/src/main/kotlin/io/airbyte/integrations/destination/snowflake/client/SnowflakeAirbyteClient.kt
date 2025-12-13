@@ -13,6 +13,8 @@ import io.airbyte.cdk.load.component.TableColumns
 import io.airbyte.cdk.load.component.TableOperationsClient
 import io.airbyte.cdk.load.component.TableSchema
 import io.airbyte.cdk.load.component.TableSchemaEvolutionClient
+import io.airbyte.cdk.load.message.Meta.Companion.COLUMN_NAME_AB_LOADED_AT
+import io.airbyte.cdk.load.message.Meta.Companion.COLUMN_NAME_DATA
 import io.airbyte.cdk.load.schema.model.TableName
 import io.airbyte.cdk.load.table.ColumnNameMapping
 import io.airbyte.cdk.load.util.deserializeToNode
@@ -45,12 +47,18 @@ class SnowflakeAirbyteClient(
     private val snowflakeConfiguration: SnowflakeConfiguration,
 ) : TableOperationsClient, TableSchemaEvolutionClient {
 
-    private val airbyteColumnNames =
+    private val defaultAirbyteColumnNames =
         setOf(
             SNOWFLAKE_AB_RAW_ID,
             SNOWFLAKE_AB_EXTRACTED_AT,
             SNOWFLAKE_AB_META,
             SNOWFLAKE_AB_GENERATION_ID
+        )
+
+    private val rawAirbyteColumnNames =
+        setOf(
+            COLUMN_NAME_DATA,
+            COLUMN_NAME_AB_LOADED_AT,
         )
 
     override suspend fun countTable(tableName: TableName): Long? =
@@ -171,10 +179,7 @@ class SnowflakeAirbyteClient(
         // Get all column names from the mapping (both meta columns and user columns)
         val columnNames = buildSet {
             // Add Airbyte meta columns (using uppercase constants)
-            add(SNOWFLAKE_AB_RAW_ID)
-            add(SNOWFLAKE_AB_EXTRACTED_AT)
-            add(SNOWFLAKE_AB_META)
-            add(SNOWFLAKE_AB_GENERATION_ID)
+            addAll(defaultAirbyteColumnNames)
             // Add user columns from mapping
             addAll(columnNameMapping.values)
         }
@@ -267,7 +272,10 @@ class SnowflakeAirbyteClient(
                         val columnName = escapeJsonIdentifier(rs.getString("name"))
 
                         // Filter out airbyte columns
-                        if (airbyteColumnNames.contains(columnName)) {
+                        if (defaultAirbyteColumnNames.contains(columnName)) {
+                            continue
+                        }
+                        if (rawAirbyteColumnNames.contains(columnName)) {
                             continue
                         }
                         val dataType = rs.getString("type").takeWhile { char -> char != '(' }
