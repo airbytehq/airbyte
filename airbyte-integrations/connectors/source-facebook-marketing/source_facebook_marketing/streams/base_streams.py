@@ -3,6 +3,7 @@
 #
 
 import logging
+import re
 from abc import ABC, abstractmethod
 from datetime import datetime
 from functools import cache
@@ -78,6 +79,18 @@ class FBMarketingStream(Stream, ABC):
 
     @classmethod
     def fix_date_time(cls, record):
+        """
+        Normalize datetime fields to RFC 3339 format.
+
+        Meta API returns datetime fields in various non-compliant formats:
+        - "2021-07-08 08:54:12 UTC" (space instead of T, literal "UTC")
+        - "2023-01-19t20:38:59 0000" (lowercase t, space before timezone)
+        - "2025-11-27T16:49:49+0000" (missing colon in timezone offset)
+
+        RFC 3339 requires:
+        - "T" delimiter between date and time
+        - Timezone as "Z" for UTC or "±HH:MM" with colon
+        """
         date_time_fields = (
             "created_time",
             "creation_time",
@@ -90,9 +103,37 @@ class FBMarketingStream(Stream, ABC):
 
         if isinstance(record, dict):
             for field, value in record.items():
-                if isinstance(value, str):
-                    if field in date_time_fields:
-                        record[field] = value.replace("t", "T").replace(" 0000", "+0000")
+                if isinstance(value, str) and field in date_time_fields:
+                    fixed = value
+
+                    # Handle "YYYY-MM-DD HH:MM:SS UTC" format
+                    if " UTC" in fixed:
+                        fixed = fixed.replace(" UTC", "Z")
+
+                    # Normalize lowercase 't' to 'T'
+                    fixed = fixed.replace("t", "T")
+
+                    # Replace space between date and time with 'T' if not already present
+                    if " " in fixed and "T" not in fixed:
+                        fixed = fixed.replace(" ", "T", 1)
+
+                    # Handle " 0000" suffix (space then 0000) - treat as UTC
+                    if fixed.endswith(" 0000"):
+                        fixed = fixed[:-5] + "Z"
+                    else:
+                        # Handle numeric timezone offsets like +0000, -0000, +0100, -0500, etc.
+                        # RFC 3339 requires ±HH:MM format (with colon) or Z for UTC
+                        m = re.search(r"([+-])(\d{2})(\d{2})$", fixed)
+                        if m:
+                            sign, hh, mm = m.group(1), m.group(2), m.group(3)
+                            if hh == "00" and mm == "00":
+                                # +0000 / -0000 → UTC
+                                fixed = fixed[: m.start()] + "Z"
+                            else:
+                                # +HHMM / -HHMM → +HH:MM / -HH:MM
+                                fixed = fixed[: m.start()] + f"{sign}{hh}:{mm}"
+
+                    record[field] = fixed
                 else:
                     cls.fix_date_time(value)
 

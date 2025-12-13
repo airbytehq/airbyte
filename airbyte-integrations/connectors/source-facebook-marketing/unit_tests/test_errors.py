@@ -40,13 +40,13 @@ ad_creative_data = [
         "account_id": account_id,
         "id": "111111",
         "name": "ad creative 1",
-        "updated_time": "2023-03-21T22:33:56-0700",
+        "updated_time": "2023-03-21T22:33:56-07:00",
     },
     {
         "account_id": account_id,
         "id": "222222",
         "name": "ad creative 2",
-        "updated_time": "2023-03-22T22:33:56-0700",
+        "updated_time": "2023-03-22T22:33:56-07:00",
     },
 ]
 ad_creative_response = {

@@ -188,7 +188,7 @@ class TestFullRefresh(TestCase):
     def test_when_read_then_datetime_fields_transformed(self, http_mocker: HttpMocker) -> None:
         created_time_field = "created_time"
         input_datetime_value = "2024-01-01t00:00:00 0000"
-        expected_datetime_value = "2024-01-01T00:00:00+0000"
+        expected_datetime_value = "2024-01-01T00:00:00Z"
 
         http_mocker.get(get_account_request().build(), get_account_response())
         http_mocker.get(
