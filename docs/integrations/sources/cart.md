@@ -88,6 +88,7 @@ For more details on authentication, see the [Cart.com authentication documentati
 
 | Version | Date       | Pull Request                                             | Subject                                                                                |
 | :------ | :--------- | :------------------------------------------------------- | :------------------------------------------------------------------------------------- |
+| 0.3.39 | 2025-12-09 | [70634](https://github.com/airbytehq/airbyte/pull/70634) | Update dependencies |
 | 0.3.38 | 2025-12-02 | [70284](https://github.com/airbytehq/airbyte/pull/70284) | Update dependencies |
 | 0.3.37 | 2025-11-25 | [68900](https://github.com/airbytehq/airbyte/pull/68900) | Update dependencies |
 | 0.3.36 | 2025-11-24 | [69783](https://github.com/airbytehq/airbyte/pull/69783) | Upgrade to Python 3.13, base image 4.1.0, and CDK 7.x |
