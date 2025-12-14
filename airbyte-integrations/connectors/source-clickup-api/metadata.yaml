@@ -5,7 +5,7 @@ data:
   connectorSubtype: api
   connectorType: source
   definitionId: 311a7a27-3fb5-4f7e-8265-5e4afe258b66
-  dockerImageTag: 0.3.38
+  dockerImageTag: 0.3.39
   dockerRepository: airbyte/source-clickup-api
   githubIssueLabel: source-clickup-api
   icon: clickup.svg
@@ -43,7 +43,7 @@ data:
             type: GSM
             alias: airbyte-connector-testing-secret-store
   connectorBuildOptions:
-    baseImage: docker.io/airbyte/source-declarative-manifest:7.5.1@sha256:8da9d362c184e2e46532ab94f6f9968a74835c0882d6a4a2f9f9c9e5b972f2a1
+    baseImage: docker.io/airbyte/source-declarative-manifest:7.6.0@sha256:9c0ea900af7e20d119da0446fc1679ca4015c5c5f7a3b022d321071570a78749
   externalDocumentationUrls:
     - title: ClickUp API reference
       url: https://clickup.com/api/

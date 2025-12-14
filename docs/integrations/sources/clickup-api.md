@@ -57,6 +57,7 @@ Here are some optional fields:
 
 | Version | Date       | Pull Request                                             | Subject                           |
 | :------ | :--------- | :------------------------------------------------------- | :-------------------------------- |
+| 0.3.39 | 2025-12-09 | [70640](https://github.com/airbytehq/airbyte/pull/70640) | Update dependencies |
 | 0.3.38 | 2025-11-25 | [69907](https://github.com/airbytehq/airbyte/pull/69907) | Update dependencies |
 | 0.3.37 | 2025-11-18 | [69643](https://github.com/airbytehq/airbyte/pull/69643) | Update dependencies |
 | 0.3.36 | 2025-10-29 | [68906](https://github.com/airbytehq/airbyte/pull/68906) | Update dependencies |
