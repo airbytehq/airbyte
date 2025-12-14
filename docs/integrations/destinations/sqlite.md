@@ -77,6 +77,7 @@ Note: If you are running Airbyte on Windows with Docker backed by WSL2, you have
 
 | Version | Date       | Pull Request                                             | Subject                |
 |:--------| :--------- | :------------------------------------------------------- | :--------------------- |
+| 0.2.10 | 2025-12-09 | [60723](https://github.com/airbytehq/airbyte/pull/60723) | Update dependencies |
 | 0.2.9 | 2025-05-10 | [59805](https://github.com/airbytehq/airbyte/pull/59805) | Update dependencies |
 | 0.2.8 | 2025-05-03 | [59348](https://github.com/airbytehq/airbyte/pull/59348) | Update dependencies |
 | 0.2.7 | 2025-04-26 | [58682](https://github.com/airbytehq/airbyte/pull/58682) | Update dependencies |
