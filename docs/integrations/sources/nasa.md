@@ -43,6 +43,7 @@ The NASA connector should not run into NASA API limitations under normal usage. 
 
 | Version | Date       | Pull Request                                             | Subject                                    |
 | :------ | :--------- | :------------------------------------------------------- | :----------------------------------------- |
+| 0.3.33 | 2025-12-09 | [64268](https://github.com/airbytehq/airbyte/pull/64268) | Update dependencies |
 | 0.3.32 | 2025-07-26 | [63834](https://github.com/airbytehq/airbyte/pull/63834) | Update dependencies |
 | 0.3.31 | 2025-07-19 | [63410](https://github.com/airbytehq/airbyte/pull/63410) | Update dependencies |
 | 0.3.30 | 2025-07-12 | [63258](https://github.com/airbytehq/airbyte/pull/63258) | Update dependencies |
