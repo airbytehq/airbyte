@@ -31,6 +31,7 @@ This source can sync data from the [SmartEngage API](https://smartengage.com/doc
 
 | Version | Date       | Pull Request                                             | Subject                                                                         |
 | :------ | :--------- | :------------------------------------------------------- | :------------------------------------------------------------------------------ |
+| 0.2.33 | 2025-12-09 | [67440](https://github.com/airbytehq/airbyte/pull/67440) | Update dependencies |
 | 0.2.32 | 2025-09-30 | [66915](https://github.com/airbytehq/airbyte/pull/66915) | Update dependencies |
 | 0.2.31 | 2025-09-24 | [65724](https://github.com/airbytehq/airbyte/pull/65724) | Update dependencies |
 | 0.2.30 | 2025-08-23 | [65414](https://github.com/airbytehq/airbyte/pull/65414) | Update dependencies |
