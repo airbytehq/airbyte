@@ -13,11 +13,11 @@ data:
       enabled: false
       packageName: airbyte-source-openfda
   connectorBuildOptions:
-    baseImage: docker.io/airbyte/source-declarative-manifest:7.5.1@sha256:8da9d362c184e2e46532ab94f6f9968a74835c0882d6a4a2f9f9c9e5b972f2a1
+    baseImage: docker.io/airbyte/source-declarative-manifest:7.6.0@sha256:9c0ea900af7e20d119da0446fc1679ca4015c5c5f7a3b022d321071570a78749
   connectorSubtype: api
   connectorType: source
   definitionId: b97d588f-d49f-440c-9158-9dd33c59fd26
-  dockerImageTag: 0.0.41
+  dockerImageTag: 0.0.42
   dockerRepository: airbyte/source-openfda
   githubIssueLabel: source-openfda
   icon: icon.svg
