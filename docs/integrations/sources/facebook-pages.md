@@ -97,16 +97,17 @@ See Facebook's [documentation on rate limiting](https://developers.facebook.com/
 
 | Version | Date       | Pull Request                                                   | Subject                                                                                                                                                                |
 |:--------|:-----------|:---------------------------------------------------------------|:-----------------------------------------------------------------------------------------------------------------------------------------------------------------------|
-| 2.0.3   | 2025-12-01 | [70248](https://github.com/airbytehq/airbyte/pull/70248)       | Use correct pagination parameter name (`limit` instead of `page_size`)                                                                                                 |
-| 2.0.2   | 2025-12-01 | [70258](https://github.com/airbytehq/airbyte/pull/70258)       | Use Post stream for check, handle 400 error in Page stream                                                                                                             |
-| 2.0.1   | 2025-11-27 | [70242](https://github.com/airbytehq/airbyte/pull/70242)       | Refresh in-app documentation to reflect v24 API version                                                                                                                |
-| 2.0.0   | 2025-11-18 | [69714](https://github.com/airbytehq/airbyte/pull/69714)       | Upgrade Facebook API to v24.0                                                                                                                                          |
-| 1.1.4   | 2025-07-31 | [64141](https://github.com/airbytehq/airbyte/pull/64141)       | Upgrade Facebook API to v23.0                                                                                                                                          |
-| 1.1.3   | 2025-07-12 | [60391](https://github.com/airbytehq/airbyte/pull/60391)       | Update dependencies                                                                                                                                                    |
-| 1.1.2   | 2025-05-10 | [60043](https://github.com/airbytehq/airbyte/pull/60043)       | Update dependencies                                                                                                                                                    |
-| 1.1.1   | 2025-05-03 | [53787](https://github.com/airbytehq/airbyte/pull/53787)       | Update dependencies                                                                                                                                                    |
-| 1.1.0   | 2025-04-30 | [59126](https://github.com/airbytehq/airbyte/pull/59126)       | Re-enable in cloud and update versions                                                                                                                                 |
-| 1.0.32  | 2025-02-01 | [52793](https://github.com/airbytehq/airbyte/pull/52793)       | Update dependencies                                                                                                                                                    |
+| 2.0.4 | 2025-12-09 | [66825](https://github.com/airbytehq/airbyte/pull/66825) | Update dependencies |
+| 2.0.3 | 2025-12-01 | [70248](https://github.com/airbytehq/airbyte/pull/70248) | Use correct pagination parameter name (`limit` instead of `page_size`) |
+| 2.0.2 | 2025-12-01 | [70258](https://github.com/airbytehq/airbyte/pull/70258) | Use Post stream for check, handle 400 error in Page stream |
+| 2.0.1 | 2025-11-27 | [70242](https://github.com/airbytehq/airbyte/pull/70242) | Refresh in-app documentation to reflect v24 API version |
+| 2.0.0 | 2025-11-18 | [69714](https://github.com/airbytehq/airbyte/pull/69714) | Upgrade Facebook API to v24.0 |
+| 1.1.4 | 2025-07-31 | [64141](https://github.com/airbytehq/airbyte/pull/64141) | Upgrade Facebook API to v23.0 |
+| 1.1.3 | 2025-07-12 | [60391](https://github.com/airbytehq/airbyte/pull/60391) | Update dependencies |
+| 1.1.2 | 2025-05-10 | [60043](https://github.com/airbytehq/airbyte/pull/60043) | Update dependencies |
+| 1.1.1 | 2025-05-03 | [53787](https://github.com/airbytehq/airbyte/pull/53787) | Update dependencies |
+| 1.1.0 | 2025-04-30 | [59126](https://github.com/airbytehq/airbyte/pull/59126) | Re-enable in cloud and update versions |
+| 1.0.32 | 2025-02-01 | [52793](https://github.com/airbytehq/airbyte/pull/52793) | Update dependencies |
 | 1.0.31  | 2025-01-27 | [52122](https://github.com/airbytehq/airbyte/pull/52122/files) | Upgrade Facebook API to v21.0                                                                                                                                          |
 | 1.0.30  | 2025-01-25 | [52373](https://github.com/airbytehq/airbyte/pull/52373)       | Update dependencies                                                                                                                                                    |
 | 1.0.29  | 2025-01-18 | [51637](https://github.com/airbytehq/airbyte/pull/51637)       | Update dependencies                                                                                                                                                    |
