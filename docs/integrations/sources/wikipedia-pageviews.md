@@ -53,6 +53,7 @@ The Wikipedia Pageviews source connector supports the following [sync modes](htt
 
 | Version | Date       | Pull Request                                              | Subject        |
 | :------ | :--------- | :-------------------------------------------------------- | :------------- |
+| 0.2.23 | 2025-12-09 | [61186](https://github.com/airbytehq/airbyte/pull/61186) | Update dependencies |
 | 0.2.22 | 2025-05-24 | [60778](https://github.com/airbytehq/airbyte/pull/60778) | Update dependencies |
 | 0.2.21 | 2025-05-10 | [59940](https://github.com/airbytehq/airbyte/pull/59940) | Update dependencies |
 | 0.2.20 | 2025-05-04 | [58919](https://github.com/airbytehq/airbyte/pull/58919) | Update dependencies |
