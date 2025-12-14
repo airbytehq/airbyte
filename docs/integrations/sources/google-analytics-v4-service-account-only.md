@@ -9,6 +9,7 @@ Google has discontinued Universal Analytics in favor of Google Analytics 4. Airb
 
 | Version | Date       | Pull Request                                             | Subject                                  |
 |:--------|:-----------| :------------------------------------------------------- |:-----------------------------------------|
+| 0.1.5 | 2025-12-09 | [63100](https://github.com/airbytehq/airbyte/pull/63100) | Update dependencies |
 | 0.1.4 | 2025-02-15 | [53782](https://github.com/airbytehq/airbyte/pull/53782) | Update dependencies |
 | 0.1.3 | 2025-02-01 | [52827](https://github.com/airbytehq/airbyte/pull/52827) | Update dependencies |
 | 0.1.2 | 2024-12-12 | [49153](https://github.com/airbytehq/airbyte/pull/49153) | Starting with this version, the Docker image is now rootless. Please note that this and future versions will not be compatible with Airbyte versions earlier than 0.64 |
