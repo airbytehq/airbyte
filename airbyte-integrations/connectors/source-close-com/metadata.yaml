@@ -8,7 +8,7 @@ data:
   connectorSubtype: api
   connectorType: source
   definitionId: dfffecb7-9a13-43e9-acdc-b92af7997ca9
-  dockerImageTag: 0.6.15
+  dockerImageTag: 0.6.16
   dockerRepository: airbyte/source-close-com
   documentationUrl: https://docs.airbyte.com/integrations/sources/close-com
   githubIssueLabel: source-close-com
@@ -39,7 +39,7 @@ data:
             type: GSM
             alias: airbyte-connector-testing-secret-store
   connectorBuildOptions:
-    baseImage: docker.io/airbyte/source-declarative-manifest:6.48.10@sha256:09947fb38d07e515f9901a12f22cc44f1512f6148703341de80403c0e0c1b8c3
+    baseImage: docker.io/airbyte/source-declarative-manifest:7.6.0@sha256:9c0ea900af7e20d119da0446fc1679ca4015c5c5f7a3b022d321071570a78749
   externalDocumentationUrls:
     - title: Close API reference
       url: https://developer.close.com/
