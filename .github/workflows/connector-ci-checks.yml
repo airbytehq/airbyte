@@ -86,21 +86,27 @@ jobs:
               - 'airbyte-cdk/java/**/**/src/main/**/*'
               - 'airbyte-cdk/bulk/**/**/src/main/**/*'
 
+      - name: Install the latest version of uv
+        uses: astral-sh/setup-uv@d0cc045d04ccac9d8b7881df0226f9e82c39688e # v6.8.0
+
+      - name: Install airbyte-ops CLI
+        run: uv tool install airbyte-internal-ops
+
       - name: Generate Connector Matrix from Changes
         id: generate-matrix
         run: |
-          # Get the list of modified connectors
-          echo "connectors_matrix=$(./poe-tasks/get-modified-connectors.sh --json)" | tee -a $GITHUB_OUTPUT
+          # Get the list of modified connectors using airbyte-ops CLI
+          echo "connectors_matrix=$(airbyte-ops repo connector list . --modified-only --output-format=json-gh-matrix)" | tee -a $GITHUB_OUTPUT
 
           # If local-cdk-changed is true, get Java connectors with useLocalCdk = true
           # Otherwise, get modified Java connectors
           if [[ "${{ steps.cdk-changes.outputs.java-cdk == 'true' }}" == "true" ]]; then
-            echo "jvm_connectors_matrix=$(./poe-tasks/get-modified-connectors.sh --json --local-cdk)" | tee -a $GITHUB_OUTPUT
+            echo "jvm_connectors_matrix=$(airbyte-ops repo connector list . --modified-only --local-cdk --language=java --output-format=json-gh-matrix)" | tee -a $GITHUB_OUTPUT
           else
-            echo "jvm_connectors_matrix=$(./poe-tasks/get-modified-connectors.sh --json --java)" | tee -a $GITHUB_OUTPUT
+            echo "jvm_connectors_matrix=$(airbyte-ops repo connector list . --modified-only --language=java --output-format=json-gh-matrix)" | tee -a $GITHUB_OUTPUT
           fi
 
-          echo "non_jvm_connectors_matrix=$(./poe-tasks/get-modified-connectors.sh --json --no-java)" | tee -a $GITHUB_OUTPUT
+          echo "non_jvm_connectors_matrix=$(airbyte-ops repo connector list . --modified-only --exclude-language=java --output-format=json-gh-matrix)" | tee -a $GITHUB_OUTPUT
 
       - name: Set JVM Runner Type
         id: set-jvm-runner-type
