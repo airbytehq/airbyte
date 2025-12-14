@@ -7,11 +7,11 @@ data:
       - linkedin.com
       - api.linkedin.com
   connectorBuildOptions:
-    baseImage: docker.io/airbyte/source-declarative-manifest:7.4.0@sha256:1f8681a991f239c3f1a95826b9a78ff1326e03c03fdcb30bbfb2060ffa9c8e31
+    baseImage: docker.io/airbyte/source-declarative-manifest:7.6.0@sha256:9c0ea900af7e20d119da0446fc1679ca4015c5c5f7a3b022d321071570a78749
   connectorSubtype: api
   connectorType: source
   definitionId: 137ece28-5434-455c-8f34-69dc3782f451
-  dockerImageTag: 5.6.0
+  dockerImageTag: 5.6.1
   dockerRepository: airbyte/source-linkedin-ads
   documentationUrl: https://docs.airbyte.com/integrations/sources/linkedin-ads
   externalDocumentationUrls:
