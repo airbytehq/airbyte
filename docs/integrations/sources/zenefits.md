@@ -53,6 +53,7 @@ You can replicate the following tables using the Zenefits connector:
 
 | Version | Date       | Pull Request                                             | Subject                                                                         |
 | :------ | :--------- | :------------------------------------------------------- | :------------------------------------------------------------------------------ |
+| 0.3.21 | 2025-12-09 | [61184](https://github.com/airbytehq/airbyte/pull/61184) | Update dependencies |
 | 0.3.20 | 2025-05-24 | [60785](https://github.com/airbytehq/airbyte/pull/60785) | Update dependencies |
 | 0.3.19 | 2025-05-10 | [60019](https://github.com/airbytehq/airbyte/pull/60019) | Update dependencies |
 | 0.3.18 | 2025-05-04 | [59568](https://github.com/airbytehq/airbyte/pull/59568) | Update dependencies |
