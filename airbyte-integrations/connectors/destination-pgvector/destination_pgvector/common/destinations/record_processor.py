@@ -12,10 +12,9 @@ import queue
 import sys
 import warnings
 from collections import defaultdict
+from pathlib import Path
 from typing import TYPE_CHECKING, cast, final
 
-from airbyte import exceptions as exc
-from airbyte.strategies import WriteStrategy
 from airbyte_cdk.models import (
     AirbyteMessage,
     AirbyteRecordMessage,
@@ -24,13 +23,13 @@ from airbyte_cdk.models import (
     AirbyteStreamState,
     Type,
 )
+from airbyte_cdk.sql import exceptions as exc
 
+from destination_pgvector.common.sql.write_strategy import WriteStrategy
 from destination_pgvector.common.state.state_writers import StateWriterBase, StdOutStateWriter
 
 if TYPE_CHECKING:
     from collections.abc import Iterable, Iterator
-
-    from airbyte._batch_handles import BatchHandle
 
     from destination_pgvector.common.catalog.catalog_providers import CatalogProvider
     from destination_pgvector.common.state.state_writers import StateWriterBase
@@ -38,6 +37,21 @@ if TYPE_CHECKING:
 
 class AirbyteMessageParsingError(Exception):
     """Raised when an Airbyte message is invalid or cannot be parsed."""
+
+
+class BatchHandle:
+    """A handle for a batch of records written to a file."""
+    
+    def __init__(self, batch_id: str, files: list[Path]) -> None:
+        """Initialize the batch handle.
+        
+        Args:
+            batch_id: Unique identifier for the batch
+            files: List of file paths containing the batch data
+        """
+        self.batch_id = batch_id
+        self.files = files
+        self.finalized = False
 
 
 class RecordProcessorBase(abc.ABC):
