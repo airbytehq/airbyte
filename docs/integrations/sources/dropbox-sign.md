@@ -23,6 +23,7 @@ See the [API docs](https://developers.hellosign.com/api/reference/authentication
 
 | Version | Date | Pull Request | Subject |
 |---------|------|--------------|---------|
+| 0.0.42 | 2025-12-09 | [70565](https://github.com/airbytehq/airbyte/pull/70565) | Update dependencies |
 | 0.0.41 | 2025-11-25 | [70184](https://github.com/airbytehq/airbyte/pull/70184) | Update dependencies |
 | 0.0.40 | 2025-11-18 | [69387](https://github.com/airbytehq/airbyte/pull/69387) | Update dependencies |
 | 0.0.39 | 2025-10-29 | [68748](https://github.com/airbytehq/airbyte/pull/68748) | Update dependencies |
