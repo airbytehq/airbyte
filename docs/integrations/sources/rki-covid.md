@@ -56,6 +56,7 @@ Select start date
 
 | Version | Date       | Pull Request                                             | Subject                            |
 | :------ | :--------- | :------------------------------------------------------- | :--------------------------------- |
+| 0.1.42 | 2025-12-09 | [61621](https://github.com/airbytehq/airbyte/pull/61621) | Update dependencies |
 | 0.1.41 | 2025-05-24 | [60457](https://github.com/airbytehq/airbyte/pull/60457) | Update dependencies |
 | 0.1.40 | 2025-05-10 | [59011](https://github.com/airbytehq/airbyte/pull/59011) | Update dependencies |
 | 0.1.39 | 2025-04-19 | [58373](https://github.com/airbytehq/airbyte/pull/58373) | Update dependencies |
