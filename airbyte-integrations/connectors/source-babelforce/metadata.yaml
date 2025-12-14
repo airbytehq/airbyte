@@ -14,7 +14,7 @@ data:
   connectorSubtype: api
   connectorType: source
   definitionId: 971c3e1e-78a5-411e-ad56-c4052b50876b
-  dockerImageTag: 0.3.26
+  dockerImageTag: 0.3.27
   dockerRepository: airbyte/source-babelforce
   githubIssueLabel: source-babelforce
   icon: babelforce.svg
@@ -31,7 +31,7 @@ data:
     ql: 100
   supportLevel: community
   connectorBuildOptions:
-    baseImage: docker.io/airbyte/source-declarative-manifest:7.0.0@sha256:af8807056f8218ecf0d4ec6b6ee717cdf20251fee5d2c1c77b5723771363b9b0
+    baseImage: docker.io/airbyte/source-declarative-manifest:7.6.0@sha256:9c0ea900af7e20d119da0446fc1679ca4015c5c5f7a3b022d321071570a78749
   externalDocumentationUrls:
     - title: API documentation
       url: https://api.babelforce.com/
