@@ -67,6 +67,7 @@ The Instatus source connector supports the following [sync modes](https://docs.a
 
 | Version | Date       | Pull Request                                             | Subject                 |
 | :------ | :--------- | :------------------------------------------------------- | :---------------------- |
+| 0.2.16 | 2025-12-09 | [61125](https://github.com/airbytehq/airbyte/pull/61125) | Update dependencies |
 | 0.2.15 | 2025-05-24 | [60617](https://github.com/airbytehq/airbyte/pull/60617) | Update dependencies |
 | 0.2.14 | 2025-05-10 | [59859](https://github.com/airbytehq/airbyte/pull/59859) | Update dependencies |
 | 0.2.13 | 2025-05-03 | [59233](https://github.com/airbytehq/airbyte/pull/59233) | Update dependencies |

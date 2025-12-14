@@ -2,7 +2,7 @@ data:
   connectorSubtype: api
   connectorType: source
   definitionId: 1901024c-0249-45d0-bcac-31a954652927
-  dockerImageTag: 0.2.15
+  dockerImageTag: 0.2.16
   dockerRepository: airbyte/source-instatus
   githubIssueLabel: source-instatus
   icon: instatus.svg
@@ -42,7 +42,7 @@ data:
       #         type: GSM
       #         alias: airbyte-connector-testing-secret-store
   connectorBuildOptions:
-    baseImage: docker.io/airbyte/source-declarative-manifest:6.51.0@sha256:890b109f243b8b9406f23ea7522de41025f7b3e87f6fc9710bc1e521213a276f
+    baseImage: docker.io/airbyte/source-declarative-manifest:7.6.0@sha256:9c0ea900af7e20d119da0446fc1679ca4015c5c5f7a3b022d321071570a78749
   externalDocumentationUrls:
     - title: Instatus API documentation
       url: https://instatus.com/help/api
