@@ -45,7 +45,7 @@ import org.apache.kafka.connect.source.SourceRecord
 
 /** [PartitionReader] implementation for CDC with Debezium. */
 @SuppressFBWarnings(value = ["NP_NONNULL_RETURN_VIOLATION"], justification = "Micronaut DI")
-class CdcPartitionReader<T : Comparable<T>>(
+class CdcPartitionReader<T : PartiallyOrdered<T>>(
     val resourceAcquirer: ResourceAcquirer,
     val readerOps: CdcPartitionReaderDebeziumOperations<T>,
     val upperBound: T,
@@ -400,7 +400,7 @@ class CdcPartitionReader<T : Comparable<T>>(
                 if (currentPosition == null) {
                     return null
                 }
-                val isProgressing = lastHeartbeatPosition?.let { currentPosition > it } ?: true
+                val isProgressing = currentPosition.isGreater(lastHeartbeatPosition)
                 if (isProgressing) {
                     lastHeartbeatPosition = currentPosition
                     lastHeartbeatTime = now
@@ -420,7 +420,7 @@ class CdcPartitionReader<T : Comparable<T>>(
                 }
             }
 
-            if (currentPosition == null || currentPosition < upperBound) {
+            if (upperBound.isGreater(currentPosition)) {
                 return null
             }
             // Close because the current event is past the sync upper bound.

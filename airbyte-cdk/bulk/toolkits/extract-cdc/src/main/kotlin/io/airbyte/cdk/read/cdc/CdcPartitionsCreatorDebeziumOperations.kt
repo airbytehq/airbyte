@@ -7,7 +7,7 @@ package io.airbyte.cdk.read.cdc
 import io.airbyte.cdk.command.OpaqueStateValue
 import io.airbyte.cdk.read.Stream
 
-interface CdcPartitionsCreatorDebeziumOperations<T : Comparable<T>> {
+interface CdcPartitionsCreatorDebeziumOperations<T : PartiallyOrdered<T>> {
 
     /** Extracts the WAL position from a [DebeziumOffset]. */
     fun position(offset: DebeziumOffset): T
