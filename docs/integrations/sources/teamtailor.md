@@ -45,6 +45,7 @@ Make sure to have the add-ons installed in your account for using the `nps-respo
 
 | Version          | Date              | Pull Request | Subject        |
 |------------------|-------------------|--------------|----------------|
+| 0.0.38 | 2025-12-09 | [70609](https://github.com/airbytehq/airbyte/pull/70609) | Update dependencies |
 | 0.0.37 | 2025-11-25 | [70043](https://github.com/airbytehq/airbyte/pull/70043) | Update dependencies |
 | 0.0.36 | 2025-11-18 | [69594](https://github.com/airbytehq/airbyte/pull/69594) | Update dependencies |
 | 0.0.35 | 2025-10-29 | [69021](https://github.com/airbytehq/airbyte/pull/69021) | Update dependencies |
