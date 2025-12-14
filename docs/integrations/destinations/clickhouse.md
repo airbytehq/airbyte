@@ -173,7 +173,8 @@ The connector converts arrays and unions to strings for compatibility. If you ne
 
 | Version    | Date       | Pull Request                                               | Subject                                                                        |
 |:-----------|:-----------|:-----------------------------------------------------------|:-------------------------------------------------------------------------------|
-| 2.1.16 | 2025-12-12 | [70897](https://github.com/airbytehq/airbyte/pull/70897) | Promoting release candidate 2.1.16-rc.3 to a main version. |
+| 2.1.17     | 2025-12-12 | [70835](https://github.com/airbytehq/airbyte/pull/70835)   | Fix: Skip CDC cursor for version column consideration for dedupe.              |
+| 2.1.16     | 2025-12-12 | [70897](https://github.com/airbytehq/airbyte/pull/70897)   | Promoting release candidate 2.1.16-rc.3 to a main version.                     |
 | 2.1.16-rc.3| 2025-12-09 | [70835](https://github.com/airbytehq/airbyte/pull/70835)   | Pick up CDK fixes for namespace / prefix handling                              |
 | 2.1.16-rc.2| 2025-12-09 | [70358](https://github.com/airbytehq/airbyte/pull/70358)   | Internal refactor: Use TableSchemaMapper for schema operations cont.           |
 | 2.1.16-rc.1| 2025-12-04 | [70279](https://github.com/airbytehq/airbyte/pull/70279)   | Internal refactor: Use TableSchemaMapper for schema operations                 |
