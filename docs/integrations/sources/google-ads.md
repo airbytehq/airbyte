@@ -335,10 +335,11 @@ Due to a limitation in the Google Ads API which does not allow getting performan
 
 | Version     | Date       | Pull Request                                             | Subject                                                                                                                                                                |
 |:------------|:-----------|:---------------------------------------------------------|:-----------------------------------------------------------------------------------------------------------------------------------------------------------------------|
-| 4.1.3       | 2025-11-24 | [69844](https://github.com/airbytehq/airbyte/pull/69844) | Fix custom queries regular expression to be case-insensitive                                                                                                           |
-| 4.1.2       | 2025-11-24 | [69837](https://github.com/airbytehq/airbyte/pull/69837) | Fix schema loader for custom queries                                                                                                                                   |
-| 4.1.1       | 2025-11-21 | [69802](https://github.com/airbytehq/airbyte/pull/69802) | Fix custom query regex conditions                                                                                                                                      |
-| 4.1.0       | 2025-11-20 | [69776](https://github.com/airbytehq/airbyte/pull/69776) | Promoting release candidate 4.1.0-rc.8 to a main version.                                                                                                              |
+| 4.1.4 | 2025-12-09 | [69855](https://github.com/airbytehq/airbyte/pull/69855) | Update dependencies |
+| 4.1.3 | 2025-11-24 | [69844](https://github.com/airbytehq/airbyte/pull/69844) | Fix custom queries regular expression to be case-insensitive |
+| 4.1.2 | 2025-11-24 | [69837](https://github.com/airbytehq/airbyte/pull/69837) | Fix schema loader for custom queries |
+| 4.1.1 | 2025-11-21 | [69802](https://github.com/airbytehq/airbyte/pull/69802) | Fix custom query regex conditions |
+| 4.1.0 | 2025-11-20 | [69776](https://github.com/airbytehq/airbyte/pull/69776) | Promoting release candidate 4.1.0-rc.8 to a main version. |
 | 4.1.0-rc.8  | 2025-10-29 | [69084](https://github.com/airbytehq/airbyte/pull/69084) | Fix criterion streams                                                                                                                                                  |
 | 4.1.0-rc.7  | 2025-10-16 | [68030](https://github.com/airbytehq/airbyte/pull/68030) | Fix schema loader for `custom_queries` streams                                                                                                                         |
 | 4.1.0-rc.6  | 2025-09-25 | [66701](https://github.com/airbytehq/airbyte/pull/66701) | Enables progressive rollouts                                                                                                                                           |
