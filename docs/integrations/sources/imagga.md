@@ -28,6 +28,7 @@ API Reference: https://docs.imagga.com/#introduction
 
 | Version          | Date              | Pull Request | Subject        |
 |------------------|-------------------|--------------|----------------|
+| 0.0.26 | 2025-12-09 | [70463](https://github.com/airbytehq/airbyte/pull/70463) | Update dependencies |
 | 0.0.25 | 2025-11-25 | [70163](https://github.com/airbytehq/airbyte/pull/70163) | Update dependencies |
 | 0.0.24 | 2025-11-18 | [69514](https://github.com/airbytehq/airbyte/pull/69514) | Update dependencies |
 | 0.0.23 | 2025-10-29 | [68775](https://github.com/airbytehq/airbyte/pull/68775) | Update dependencies |
