@@ -71,6 +71,7 @@ The Kyriba connector should not run into API limitations under normal usage. [Cr
 
 | Version | Date       | Pull Request                                             | Subject                                                                                      |
 | :------ | :--------- | :------------------------------------------------------- | :------------------------------------------------------------------------------------------- |
+| 0.1.60 | 2025-12-09 | [68930](https://github.com/airbytehq/airbyte/pull/68930) | Update dependencies |
 | 0.1.59 | 2025-10-14 | [68065](https://github.com/airbytehq/airbyte/pull/68065) | Update dependencies |
 | 0.1.58 | 2025-10-07 | [67525](https://github.com/airbytehq/airbyte/pull/67525) | Update dependencies |
 | 0.1.57 | 2025-09-30 | [66818](https://github.com/airbytehq/airbyte/pull/66818) | Update dependencies |
