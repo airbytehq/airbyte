@@ -3,14 +3,14 @@ data:
     ql: 100
     sl: 100
   connectorBuildOptions:
-    baseImage: docker.io/airbyte/python-connector-base:4.0.0@sha256:d9894b6895923b379f3006fa251147806919c62b7d9021b5cd125bb67d7bbe22
+    baseImage: docker.io/airbyte/python-connector-base:4.1.0@sha256:1d1aa21d34e851df4e8a87b391c27724c06e2597608e7161f4d167be853bd7b6
   connectorSubtype: file
   connectorTestSuitesOptions:
     - suite: unitTests
     - suite: integrationTests
   connectorType: destination
   definitionId: e9810f61-4bab-46d2-bb22-edfc902e0644
-  dockerImageTag: 0.2.15
+  dockerImageTag: 0.2.16
   dockerRepository: airbyte/destination-sftp-json
   documentationUrl: https://docs.airbyte.com/integrations/destinations/sftp-json
   githubIssueLabel: destination-sftp-json
