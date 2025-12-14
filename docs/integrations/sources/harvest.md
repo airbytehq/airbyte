@@ -82,7 +82,14 @@ The Harvest source connector supports the following [sync modes](https://docs.ai
 
 ## Performance considerations
 
-The connector is restricted by the [Harvest rate limits](https://help.getharvest.com/api-v2/introduction/overview/general/#rate-limiting).
+The connector is restricted by the [Harvest rate limits](https://help.getharvest.com/api-v2/introduction/overview/general/#rate-limiting):
+
+- **General API**: 100 requests per 15 seconds
+- **Reports API**: 100 requests per 15 minutes
+
+The connector includes built-in rate limiting (`HTTPAPIBudget`) to proactively manage these limits and avoid HTTP 429 errors.
+
+You can configure the number of concurrent workers using the `num_workers` parameter (default: 10, maximum: 30). Higher values may improve sync speed but increase API usage.
 
 ## Changelog
 
@@ -91,6 +98,7 @@ The connector is restricted by the [Harvest rate limits](https://help.getharvest
 
 | Version | Date       | Pull Request                                             | Subject                                                                                                                                                                |
 |:--------|:-----------|:---------------------------------------------------------|:-----------------------------------------------------------------------------------------------------------------------------------------------------------------------|
+| 1.2.25 | 2025-12-11 | [70857](https://github.com/airbytehq/airbyte/pull/70857) | Add HTTPAPIBudget, concurrency_level, and configurable num_workers parameter |
 | 1.2.24 | 2025-11-25 | [70061](https://github.com/airbytehq/airbyte/pull/70061) | Update dependencies |
 | 1.2.23 | 2025-11-18 | [69372](https://github.com/airbytehq/airbyte/pull/69372) | Update dependencies |
 | 1.2.22 | 2025-10-29 | [68814](https://github.com/airbytehq/airbyte/pull/68814) | Update dependencies |
