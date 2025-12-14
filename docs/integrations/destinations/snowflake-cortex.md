@@ -84,6 +84,7 @@ To get started, sign up for [Snowflake](https://www.snowflake.com/en/). Ensure y
 
 | Version | Date       | Pull Request                                                  | Subject                                                                                                                                              |
 |:--------| :--------- |:--------------------------------------------------------------|:-----------------------------------------------------------------------------------------------------------------------------------------------------|
+| 0.2.28 | 2025-12-09 | [68753](https://github.com/airbytehq/airbyte/pull/68753) | Update dependencies |
 | 0.2.27 | 2025-10-21 | [68344](https://github.com/airbytehq/airbyte/pull/68344) | Update dependencies |
 | 0.2.26 | 2025-10-14 | [63066](https://github.com/airbytehq/airbyte/pull/63066) | Update dependencies |
 | 0.2.25 | 2025-05-17 | [51743](https://github.com/airbytehq/airbyte/pull/51743) | Update dependencies |
