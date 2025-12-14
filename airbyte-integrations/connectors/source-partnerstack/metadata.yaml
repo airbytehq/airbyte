@@ -2,7 +2,7 @@ data:
   connectorSubtype: api
   connectorType: source
   definitionId: d30fb809-6456-484d-8e2c-ee12e0f6888d
-  dockerImageTag: 0.3.11
+  dockerImageTag: 0.3.12
   dockerRepository: airbyte/source-partnerstack
   githubIssueLabel: source-partnerstack
   icon: partnerstack.svg
@@ -27,7 +27,7 @@ data:
     ql: 100
   supportLevel: community
   connectorBuildOptions:
-    baseImage: docker.io/airbyte/source-declarative-manifest:6.51.0@sha256:890b109f243b8b9406f23ea7522de41025f7b3e87f6fc9710bc1e521213a276f
+    baseImage: docker.io/airbyte/source-declarative-manifest:7.6.0@sha256:9c0ea900af7e20d119da0446fc1679ca4015c5c5f7a3b022d321071570a78749
   externalDocumentationUrls:
     - title: PartnerStack API documentation
       url: https://docs.partnerstack.com/docs/api-overview
