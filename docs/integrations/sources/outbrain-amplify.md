@@ -86,6 +86,7 @@ The Outbrain Amplify connector should not run into Outbrain Amplify API limitati
 
 | Version | Date       | Pull Request                                             | Subject                            |
 | :------ | :--------- | :------------------------------------------------------- | :--------------------------------- |
+| 0.2.22 | 2025-12-09 | [68984](https://github.com/airbytehq/airbyte/pull/68984) | Update dependencies |
 | 0.2.21 | 2025-10-14 | [67754](https://github.com/airbytehq/airbyte/pull/67754) | Update dependencies |
 | 0.2.20 | 2025-10-07 | [67079](https://github.com/airbytehq/airbyte/pull/67079/) | Fix broken pagination. |
 | 0.2.19 | 2025-10-07 | [67354](https://github.com/airbytehq/airbyte/pull/67354) | Update dependencies |
