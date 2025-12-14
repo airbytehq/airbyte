@@ -73,6 +73,7 @@ This guide will walk through how to create the credentials you need to run this 
 
 | Version | Date       | Pull Request                                             | Subject                                                       |
 | :------ | :--------- | :------------------------------------------------------- | :------------------------------------------------------------ |
+| 0.5.15 | 2025-12-09 | [60467](https://github.com/airbytehq/airbyte/pull/60467) | Update dependencies |
 | 0.5.14 | 2025-05-10 | [60070](https://github.com/airbytehq/airbyte/pull/60070) | Update dependencies |
 | 0.5.13 | 2025-05-03 | [59498](https://github.com/airbytehq/airbyte/pull/59498) | Update dependencies |
 | 0.5.12 | 2025-04-27 | [59039](https://github.com/airbytehq/airbyte/pull/59039) | Update dependencies |
