@@ -1,3 +1,7 @@
+## Version 0.1.90
+
+load cdk: components tests: data coercion tests cover all data types
+
 ## Version 0.1.89
 
 load cdk: components tests: data coercion tests for int+number
