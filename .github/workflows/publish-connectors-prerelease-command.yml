@@ -75,6 +75,9 @@ jobs:
           echo "run-url=https://github.com/${{ github.repository }}/actions/runs/$GITHUB_RUN_ID" >> $GITHUB_OUTPUT
           echo "pr-number=${{ inputs.pr }}" >> $GITHUB_OUTPUT
 
+      - name: Install uv
+        uses: astral-sh/setup-uv@d0cc045d04ccac9d8b7881df0226f9e82c39688e # v6.8.0
+
       - name: Resolve connector name
         id: resolve-connector
         run: |
@@ -86,11 +89,15 @@ jobs:
           fi
 
           echo "No connector provided, detecting modified connectors..."
-          MODIFIED_JSON=$(./poe-tasks/get-modified-connectors.sh --json)
+          # Use airbyte-ops CLI to get modified connectors
+          MODIFIED_JSON=$(uvx --from=airbyte-internal-ops airbyte-ops repo connector list \
+            --modified-only \
+            --output-format=json-gh-matrix)
           echo "Modified connectors JSON: $MODIFIED_JSON"
 
-          CONNECTORS=$(echo "$MODIFIED_JSON" | jq -r '.connector | map(select(. != "")) | .[]')
-          CONNECTOR_COUNT=$(echo "$MODIFIED_JSON" | jq -r '.connector | map(select(. != "")) | length')
+          # Extract connector names from the include array
+          CONNECTORS=$(echo "$MODIFIED_JSON" | jq -r '.include | map(select(.connector != "")) | .[].connector')
+          CONNECTOR_COUNT=$(echo "$MODIFIED_JSON" | jq -r '.include | map(select(.connector != "")) | length')
 
           echo "Found $CONNECTOR_COUNT modified connector(s)"
 
