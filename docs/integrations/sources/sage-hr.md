@@ -31,6 +31,7 @@ The Sage HR Airbyte Connector enables seamless data integration, allowing you to
 
 | Version          | Date              | Pull Request | Subject        |
 |------------------|-------------------|--------------|----------------|
+| 0.0.45 | 2025-12-09 | [70758](https://github.com/airbytehq/airbyte/pull/70758) | Update dependencies |
 | 0.0.44 | 2025-11-25 | [69986](https://github.com/airbytehq/airbyte/pull/69986) | Update dependencies |
 | 0.0.43 | 2025-11-18 | [69681](https://github.com/airbytehq/airbyte/pull/69681) | Update dependencies |
 | 0.0.42 | 2025-10-29 | [68884](https://github.com/airbytehq/airbyte/pull/68884) | Update dependencies |
