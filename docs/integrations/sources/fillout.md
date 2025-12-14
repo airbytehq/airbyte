@@ -24,6 +24,7 @@ The Airbyte connector for Fillout.com enables seamless data synchronization betw
 
 | Version | Date       | Pull Request | Subject                                                                             |
 | ------- | ---------- | ------------ | ----------------------------------------------------------------------------------- |
+| 0.2.40 | 2025-12-09 | [70550](https://github.com/airbytehq/airbyte/pull/70550) | Update dependencies |
 | 0.2.39 | 2025-11-25 | [70014](https://github.com/airbytehq/airbyte/pull/70014) | Update dependencies |
 | 0.2.38 | 2025-11-18 | [69481](https://github.com/airbytehq/airbyte/pull/69481) | Update dependencies |
 | 0.2.37 | 2025-10-29 | [68801](https://github.com/airbytehq/airbyte/pull/68801) | Update dependencies |
