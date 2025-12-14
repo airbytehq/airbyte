@@ -72,6 +72,7 @@ This connector is primarily designed to work with MotherDuck and local DuckDB fi
 
 | Version | Date       | Pull Request                                             | Subject                                                                                                                          |
 | :------ | :--------- | :------------------------------------------------------- | :------------------------------------------------------------------------------------------------------------------------------- |
+| 0.1.27 | 2025-12-09 | [68722](https://github.com/airbytehq/airbyte/pull/68722) | Update dependencies |
 | 0.1.26 | 2025-10-21 | [68338](https://github.com/airbytehq/airbyte/pull/68338) | Update dependencies |
 | 0.1.25 | 2025-10-14 | [67952](https://github.com/airbytehq/airbyte/pull/67952) | Update dependencies |
 | 0.1.24 | 2025-10-07 | [66822](https://github.com/airbytehq/airbyte/pull/66822) | Update dependencies |
