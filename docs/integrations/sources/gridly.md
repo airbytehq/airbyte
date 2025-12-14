@@ -38,6 +38,7 @@ This page contains the setup guide and reference information for the Gridly sour
 
 | Version | Date       | Pull Request                                             | Subject                                                     |
 | :------ | :--------- | :------------------------------------------------------- | :---------------------------------------------------------- |
+| 0.1.41 | 2025-12-09 | [61118](https://github.com/airbytehq/airbyte/pull/61118) | Update dependencies |
 | 0.1.40 | 2025-05-24 | [60679](https://github.com/airbytehq/airbyte/pull/60679) | Update dependencies |
 | 0.1.39 | 2025-05-10 | [59904](https://github.com/airbytehq/airbyte/pull/59904) | Update dependencies |
 | 0.1.38 | 2025-05-03 | [59241](https://github.com/airbytehq/airbyte/pull/59241) | Update dependencies |
