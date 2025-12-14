@@ -21,6 +21,7 @@ This connector use the Mantle API to get customers and subscriptions streams
 
 | Version          | Date              | Pull Request | Subject        |
 |------------------|-------------------|--------------|----------------|
+| 0.0.12 | 2025-12-09 | [70750](https://github.com/airbytehq/airbyte/pull/70750) | Update dependencies |
 | 0.0.11 | 2025-11-25 | [70132](https://github.com/airbytehq/airbyte/pull/70132) | Update dependencies |
 | 0.0.10 | 2025-11-18 | [69545](https://github.com/airbytehq/airbyte/pull/69545) | Update dependencies |
 | 0.0.9 | 2025-10-29 | [69069](https://github.com/airbytehq/airbyte/pull/69069) | Update dependencies |
