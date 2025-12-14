@@ -28,6 +28,7 @@ Airbyte connector for [Persona](https://withpersona.com) that makes it easy to m
 
 | Version          | Date              | Pull Request | Subject        |
 |------------------|-------------------|--------------|----------------|
+| 0.0.43 | 2025-12-09 | [70502](https://github.com/airbytehq/airbyte/pull/70502) | Update dependencies |
 | 0.0.42 | 2025-11-25 | [69945](https://github.com/airbytehq/airbyte/pull/69945) | Update dependencies |
 | 0.0.41 | 2025-11-18 | [69637](https://github.com/airbytehq/airbyte/pull/69637) | Update dependencies |
 | 0.0.40 | 2025-10-29 | [68973](https://github.com/airbytehq/airbyte/pull/68973) | Update dependencies |
