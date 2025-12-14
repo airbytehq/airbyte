@@ -26,6 +26,7 @@ Google Classroom connector enables seamless data integration between Google Clas
 
 | Version          | Date              | Pull Request | Subject        |
 |------------------|-------------------|--------------|----------------|
+| 0.0.41 | 2025-12-09 | [70700](https://github.com/airbytehq/airbyte/pull/70700) | Update dependencies |
 | 0.0.40 | 2025-11-25 | [69900](https://github.com/airbytehq/airbyte/pull/69900) | Update dependencies |
 | 0.0.39 | 2025-11-18 | [69413](https://github.com/airbytehq/airbyte/pull/69413) | Update dependencies |
 | 0.0.38 | 2025-10-29 | [69026](https://github.com/airbytehq/airbyte/pull/69026) | Update dependencies |
