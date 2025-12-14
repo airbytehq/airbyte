@@ -46,6 +46,7 @@ This source requires no setup.
 
 | Version | Date       | Pull Request                                             | Subject              |
 | :------ | :--------- | :------------------------------------------------------- | :------------------- |
+| 0.2.31 | 2025-12-09 | [65014](https://github.com/airbytehq/airbyte/pull/65014) | Update dependencies |
 | 0.2.30 | 2025-02-01 | [52954](https://github.com/airbytehq/airbyte/pull/52954) | Update dependencies |
 | 0.2.29 | 2025-01-25 | [52518](https://github.com/airbytehq/airbyte/pull/52518) | Update dependencies |
 | 0.2.28 | 2025-01-18 | [51361](https://github.com/airbytehq/airbyte/pull/51361) | Update dependencies |
