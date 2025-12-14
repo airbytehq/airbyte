@@ -58,6 +58,7 @@ BigCommerce has some [rate limit restrictions](https://developer.bigcommerce.com
 
 | Version | Date       | Pull Request                                             | Subject                                                     |
 | :------ | :--------- | :------------------------------------------------------- | :---------------------------------------------------------- |
+| 0.3.24 | 2025-12-09 | [61629](https://github.com/airbytehq/airbyte/pull/61629) | Update dependencies |
 | 0.3.23 | 2025-05-24 | [60642](https://github.com/airbytehq/airbyte/pull/60642) | Update dependencies |
 | 0.3.22 | 2025-05-10 | [59819](https://github.com/airbytehq/airbyte/pull/59819) | Update dependencies |
 | 0.3.21 | 2025-05-03 | [59330](https://github.com/airbytehq/airbyte/pull/59330) | Update dependencies |
