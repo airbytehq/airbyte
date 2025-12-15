@@ -212,28 +212,96 @@ class {DB}TestConfigFactory {
 }
 ```
 
-**Alternative: Environment variables** (for local development with existing database)
-
-```kotlin
-@Singleton
-@Primary
-fun testConfig(): {DB}Configuration {
-    return {DB}Configuration(
-        hostname = System.getenv("DB_HOSTNAME") ?: "localhost",
-        port = System.getenv("DB_PORT")?.toInt() ?: 5432,
-        database = System.getenv("DB_DATABASE") ?: "test",
-        username = System.getenv("DB_USERNAME") ?: "test",
-        password = System.getenv("DB_PASSWORD") ?: "test",
-    )
-}
-```
-
 **Why Testcontainers (recommended)?**
 - ✅ Isolated test environment (no conflicts)
 - ✅ Works in CI without setup
 - ✅ Reproducible across machines
 - ✅ Automatic cleanup
 - ✅ No manual database installation
+
+#### Part D: Testing Without Testcontainers
+
+**Use this approach when:**
+- No Testcontainers module exists for your database (Snowflake, BigQuery, Databricks)
+- Testing against a cloud-hosted or managed database
+- Testcontainers doesn't work in your environment
+
+**Prerequisites:**
+
+Before running tests, `secrets/config.json` must exist with valid database credentials.
+
+**File:** `destination-{db}/secrets/config.json`
+
+```json
+{
+  "hostname": "your-database-host.example.com",
+  "port": 5432,
+  "database": "your_database",
+  "username": "your_username",
+  "password": "your_password"
+}
+```
+
+⚠️ This file is gitignored - never commit credentials.
+
+**TestConfigFactory (reads from secrets file):**
+
+**File:** `src/test-integration/kotlin/.../component/{DB}TestConfigFactory.kt`
+
+```kotlin
+package io.airbyte.integrations.destination.{db}.component
+
+import com.fasterxml.jackson.module.kotlin.jacksonObjectMapper
+import com.fasterxml.jackson.module.kotlin.readValue
+import io.airbyte.cdk.command.MigratingConfigurationSpecificationSupplier
+import io.airbyte.integrations.destination.{db}.spec.*
+import io.micronaut.context.annotation.Factory
+import io.micronaut.context.annotation.Primary
+import io.micronaut.context.annotation.Requires
+import io.micronaut.context.annotation.Singleton
+import java.nio.file.Path
+
+@Factory
+@Requires(env = ["component"])
+class {DB}TestConfigFactory {
+
+    @Singleton
+    @Primary
+    fun testConfig(): {DB}Configuration {
+        val configPath = Path.of("secrets/config.json")
+        require(configPath.toFile().exists()) {
+            "Missing secrets/config.json - create this file with your database credentials"
+        }
+        return jacksonObjectMapper().readValue<{DB}Configuration>(configPath.toFile())
+    }
+
+    @Singleton
+    @Primary
+    fun testSpecSupplier(): MigratingConfigurationSpecificationSupplier<{DB}Specification> {
+        return object : MigratingConfigurationSpecificationSupplier<{DB}Specification> {
+            override fun get() = {DB}Specification()
+        }
+    }
+}
+```
+
+**Alternative: Environment variables** (for CI or when you prefer not to use files)
+
+Replace `testConfig()` with:
+
+```kotlin
+@Singleton
+@Primary
+fun testConfig(): {DB}Configuration {
+    return {DB}Configuration(
+        hostname = System.getenv("DB_HOSTNAME") ?: error("DB_HOSTNAME not set"),
+        port = System.getenv("DB_PORT")?.toInt() ?: error("DB_PORT not set"),
+        database = System.getenv("DB_DATABASE") ?: error("DB_DATABASE not set"),
+        username = System.getenv("DB_USERNAME") ?: error("DB_USERNAME not set"),
+        password = System.getenv("DB_PASSWORD") ?: error("DB_PASSWORD not set"),
+    )
+}
+```
 
 **Validate infrastructure setup:**
 ```bash

@@ -304,13 +304,139 @@ override suspend fun ensureSchemaMatches(
 - If source schema changed since last sync, applies schema changes
 - Automatic - no user intervention needed
 
-### Advanced Step 7: Validate Schema Evolution
+### Advanced Step 7: Create TableSchemaEvolutionTest
+
+**File:** `src/test-integration/kotlin/.../component/{DB}TableSchemaEvolutionTest.kt`
+
+```kotlin
+package io.airbyte.integrations.destination.{db}.component
+
+import io.airbyte.cdk.load.component.TableOperationsClient
+import io.airbyte.cdk.load.component.TableSchema
+import io.airbyte.cdk.load.component.TableSchemaEvolutionClient
+import io.airbyte.cdk.load.component.TableSchemaEvolutionSuite
+import io.airbyte.cdk.load.component.TestTableOperationsClient
+import io.airbyte.cdk.load.schema.TableSchemaFactory
+import io.micronaut.test.extensions.junit5.annotation.MicronautTest
+import org.junit.jupiter.api.Test
+
+@MicronautTest(environments = ["component"])
+class {DB}TableSchemaEvolutionTest(
+    override val client: TableSchemaEvolutionClient,
+    override val opsClient: TableOperationsClient,
+    override val testClient: TestTableOperationsClient,
+    override val schemaFactory: TableSchemaFactory,
+) : TableSchemaEvolutionSuite {
+
+    // Provide expected schema for your database's type representations
+    // This validates that discoverSchema() and computeSchema() produce consistent results
+    private val expectedAllTypesSchema: TableSchema by lazy {
+        // Build expected schema based on your TableSchemaMapper.toColumnType() implementation
+        // Example for Postgres:
+        // TableSchema(mapOf(
+        //     "boolean_col" to ColumnType("boolean", true),
+        //     "integer_col" to ColumnType("bigint", true),
+        //     "number_col" to ColumnType("numeric", true),
+        //     "string_col" to ColumnType("character varying", true),
+        //     ...
+        // ))
+        TODO("Define expected schema for all types")
+    }
+
+    @Test
+    override fun `discover recognizes all data types`() {
+        super.`discover recognizes all data types`(expectedAllTypesSchema)
+    }
+
+    @Test
+    override fun `computeSchema handles all data types`() {
+        super.`computeSchema handles all data types`(expectedAllTypesSchema)
+    }
+
+    @Test
+    override fun `noop diff`() {
+        super.`noop diff`()
+    }
+
+    @Test
+    override fun `changeset is correct when adding a column`() {
+        super.`changeset is correct when adding a column`()
+    }
+
+    @Test
+    override fun `changeset is correct when dropping a column`() {
+        super.`changeset is correct when dropping a column`()
+    }
+
+    @Test
+    override fun `changeset is correct when changing a column's type`() {
+        super.`changeset is correct when changing a column's type`()
+    }
+
+    @Test
+    override fun `apply changeset - handle sync mode append`() {
+        super.`apply changeset - handle sync mode append`()
+    }
+
+    @Test
+    override fun `apply changeset - handle changing sync mode from append to dedup`() {
+        super.`apply changeset - handle changing sync mode from append to dedup`()
+    }
+
+    @Test
+    override fun `apply changeset - handle changing sync mode from dedup to append`() {
+        super.`apply changeset - handle changing sync mode from dedup to append`()
+    }
+
+    @Test
+    override fun `apply changeset - handle sync mode dedup`() {
+        super.`apply changeset - handle sync mode dedup`()
+    }
+
+    @Test
+    override fun `change from string type to unknown type`() {
+        super.`change from string type to unknown type`()
+    }
+
+    @Test
+    override fun `change from unknown type to string type`() {
+        super.`change from unknown type to string type`()
+    }
+}
+```
+
+**What each test validates:**
+
+| Test | What It Validates |
+|------|-------------------|
+| `discover recognizes all data types` | discoverSchema() correctly identifies existing table columns |
+| `computeSchema handles all data types` | computeSchema() produces correct schema from stream definition |
+| `noop diff` | No changes detected when schemas match |
+| `changeset is correct when adding a column` | Detects when new columns need to be added |
+| `changeset is correct when dropping a column` | Detects when columns should be dropped |
+| `changeset is correct when changing a column's type` | Detects type changes |
+| `apply changeset - handle sync mode *` | Schema evolution works across sync mode changes |
+| `change from string/unknown type` | Complex type transformations work |
+
+**Note:** This test validates both `TableSchemaEvolutionClient` AND `TableSchemaMapper` (via `computeSchema`).
+
+### Advanced Step 8: Validate Schema Evolution
 
 **Validate:**
 ```bash
-$ ./gradlew :destination-{db}:componentTest  # 12 tests should pass
-$ ./gradlew :destination-{db}:integrationTest  # 3 tests should pass
+$ ./gradlew :destination-{db}:componentTest --tests "*TableSchemaEvolutionTest*"
+$ ./gradlew :destination-{db}:componentTest  # All component tests should pass
+$ ./gradlew :destination-{db}:integrationTest  # Integration tests should pass
 ```
+
+**Common failures and fixes:**
+
+| Failure | Likely Cause | Fix |
+|---------|--------------|-----|
+| `discover recognizes all data types` fails | discoverSchema() returns wrong types | Check information_schema query and type name normalization |
+| `computeSchema handles all data types` fails | TableSchemaMapper.toColumnType() returns wrong types | Update type mapping in TableSchemaMapper |
+| Type mismatch between discover/compute | Inconsistent type names (e.g., "VARCHAR" vs "varchar") | Normalize type names in both methods |
+| `apply changeset` fails | ALTER TABLE syntax wrong for your database | Check SqlGenerator.alterTable() implementation |
 
 ✅ **Checkpoint:** Schema evolution works + all previous phases still work
 

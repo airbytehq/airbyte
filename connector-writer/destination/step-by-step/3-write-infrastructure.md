@@ -5,6 +5,7 @@
 ## What You'll Build
 
 After completing this guide, you'll have:
+- TableSchemaMapper (unified schema transformation)
 - Name generators (table, column, temp)
 - TableCatalog DI setup
 - Write operation entry point
@@ -12,172 +13,188 @@ After completing this guide, you'll have:
 
 ---
 
-## Infrastructure Phase 1: Name Generators & TableCatalog DI
+## Infrastructure Phase 1: TableSchemaMapper
+
+**Goal:** Define how Airbyte schemas transform to your database's conventions
+
+**Checkpoint:** TableSchemaMapper implemented (validated later via TableSchemaEvolutionSuite)
+
+**📋 What TableSchemaMapper Does:**
+
+TableSchemaMapper is the **single source of truth** for schema transformations:
+- **Table names:** Stream descriptor → database table name
+- **Column names:** Airbyte column → database column (case, special chars)
+- **Column types:** Airbyte types → database types (INTEGER → BIGINT, etc.)
+- **Temp tables:** Generate staging table names
+
+This interface is used by:
+- `TableNameResolver` / `ColumnNameResolver` (CDK collision handling)
+- `TableSchemaEvolutionClient` (schema evolution in Phase 5)
+- `TableOperationsClient` (table creation)
+
+### Infrastructure Step 1: Create TableSchemaMapper
+
+**File:** `schema/{DB}TableSchemaMapper.kt`
+
+```kotlin
+package io.airbyte.integrations.destination.{db}.schema
+
+import io.airbyte.cdk.load.command.DestinationStream
+import io.airbyte.cdk.load.component.ColumnType
+import io.airbyte.cdk.load.data.*
+import io.airbyte.cdk.load.schema.TableSchemaMapper
+import io.airbyte.cdk.load.schema.model.TableName
+import io.airbyte.cdk.load.table.TempTableNameGenerator
+import io.airbyte.integrations.destination.{db}.spec.{DB}Configuration
+import jakarta.inject.Singleton
+
+@Singleton
+class {DB}TableSchemaMapper(
+    private val config: {DB}Configuration,
+    private val tempTableNameGenerator: TempTableNameGenerator,
+) : TableSchemaMapper {
+
+    override fun toFinalTableName(desc: DestinationStream.Descriptor): TableName {
+        val namespace = (desc.namespace ?: config.database).toDbCompatible()
+        val name = desc.name.toDbCompatible()
+        return TableName(namespace, name)
+    }
+
+    override fun toTempTableName(tableName: TableName): TableName {
+        return tempTableNameGenerator.generate(tableName)
+    }
+
+    override fun toColumnName(name: String): String {
+        return name.toDbCompatible()
+    }
+
+    override fun toColumnType(fieldType: FieldType): ColumnType {
+        val dbType = when (fieldType.type) {
+            BooleanType -> "BOOLEAN"
+            IntegerType -> "BIGINT"
+            NumberType -> "DECIMAL(38, 9)"
+            StringType -> "VARCHAR"
+            DateType -> "DATE"
+            TimeTypeWithTimezone, TimeTypeWithoutTimezone -> "TIME"
+            TimestampTypeWithTimezone -> "TIMESTAMP WITH TIME ZONE"
+            TimestampTypeWithoutTimezone -> "TIMESTAMP"
+            is ArrayType, ArrayTypeWithoutSchema -> "JSONB"
+            is ObjectType, ObjectTypeWithEmptySchema, ObjectTypeWithoutSchema -> "JSONB"
+            is UnionType, is UnknownType -> "JSONB"
+        }
+        return ColumnType(dbType, fieldType.nullable)
+    }
+
+    // Optional: Override for database-specific conflict detection
+    // Default is case-insensitive comparison
+    // override fun colsConflict(a: String, b: String): Boolean = a.equals(b, ignoreCase = true)
+}
+
+// Database-specific name transformation
+private fun String.toDbCompatible(): String {
+    // Snowflake: return this.uppercase()
+    // Postgres/ClickHouse: return this.lowercase()
+    // MySQL: return this.replace(Regex("[^a-zA-Z0-9_]"), "_")
+
+    // Example for Postgres:
+    return this
+        .lowercase()
+        .replace(Regex("[^a-z0-9_]"), "_")
+        .take(63)  // Postgres identifier limit
+}
+```
+
+**Database-specific type mappings:**
+
+| Airbyte Type | Postgres | MySQL | Snowflake | ClickHouse |
+|--------------|----------|-------|-----------|------------|
+| BooleanType | BOOLEAN | TINYINT(1) | BOOLEAN | Bool |
+| IntegerType | BIGINT | BIGINT | NUMBER(38,0) | Int64 |
+| NumberType | DECIMAL(38,9) | DECIMAL(38,9) | FLOAT | Decimal(38,9) |
+| StringType | VARCHAR | VARCHAR(65535) | VARCHAR | String |
+| TimestampTypeWithTimezone | TIMESTAMPTZ | TIMESTAMP | TIMESTAMP_TZ | DateTime64(3) |
+| ObjectType | JSONB | JSON | VARIANT | String |
+
+### Infrastructure Step 2: Validate Compilation
+
+```bash
+$ ./gradlew :destination-{db}:compileKotlin
+```
+
+Expected: BUILD SUCCESSFUL
+
+**Note:** TableSchemaMapper is validated via `TableSchemaEvolutionSuite` in [5-advanced-features.md](./5-advanced-features.md). No separate tests needed now.
+
+✅ **Checkpoint:** TableSchemaMapper implemented
+
+---
+
+## Infrastructure Phase 2: Name Generators & TableCatalog DI
 
 **Goal:** Create name generator beans required for TableCatalog instantiation
 
 **Checkpoint:** Compilation succeeds without DI errors
 
-**📋 Dependency Context:** TableCatalog (auto-instantiated by CDK) requires these three @Singleton beans:
-- RawTableNameGenerator
-- FinalTableNameGenerator
-- ColumnNameGenerator
+**📋 Dependency Context:** TableCatalog (auto-instantiated by CDK) requires these @Singleton beans:
+- FinalTableNameGenerator (delegates to TableSchemaMapper)
+- ColumnNameGenerator (delegates to TableSchemaMapper)
+- TempTableNameGenerator
 
-Without these beans, you'll get **"Error instantiating TableCatalog"** or **"No bean of type [FinalTableNameGenerator]"** errors in Phase 7 write tests.
+Without these beans, you'll get **"Error instantiating TableCatalog"** or **"No bean of type [FinalTableNameGenerator]"** errors in write tests.
 
-### Infrastructure Step 1: Create RawTableNameGenerator
+**Note:** These generators delegate to your `TableSchemaMapper` for the actual transformation logic.
+
+### Infrastructure Step 1: Create Name Generators
 
 **File:** `config/{DB}NameGenerators.kt`
+
+These generators delegate to your `TableSchemaMapper` for consistency:
 
 ```kotlin
 package io.airbyte.integrations.destination.{db}.config
 
 import io.airbyte.cdk.load.command.DestinationStream
-import io.airbyte.cdk.load.orchestration.db.RawTableNameGenerator
-import io.airbyte.cdk.load.table.TableName
-import io.airbyte.integrations.destination.{db}.spec.{DB}Configuration
-import io.micronaut.context.annotation.Singleton
+import io.airbyte.cdk.load.schema.model.TableName
+import io.airbyte.cdk.load.table.ColumnNameGenerator
+import io.airbyte.cdk.load.table.FinalTableNameGenerator
+import io.airbyte.integrations.destination.{db}.schema.{DB}TableSchemaMapper
+import jakarta.inject.Singleton
 
-@Singleton
-class {DB}RawTableNameGenerator(
-    private val config: {DB}Configuration,
-) : RawTableNameGenerator {
-    override fun getTableName(descriptor: DestinationStream.Descriptor): TableName {
-        // Raw tables typically go to internal schema
-        // Modern CDK uses final tables directly, so raw tables are rarely used
-        val namespace = config.database  // Or config.internalSchema if you have one
-        val name = "_airbyte_raw_${descriptor.namespace}_${descriptor.name}".toDbCompatible()
-        return TableName(namespace, name)
-    }
-}
-```
-
-**Notes:**
-- `@Singleton` annotation is **REQUIRED** - without it, Micronaut cannot inject this bean
-- RawTableNameGenerator is legacy from two-stage sync (raw → final tables)
-- Modern connectors typically use final tables only, but interface must be implemented
-- Keep implementation simple (identity mapping is fine)
-
-### Infrastructure Step 2: Create FinalTableNameGenerator
-
-**Add to same file:** `config/{DB}NameGenerators.kt`
-
-```kotlin
 @Singleton
 class {DB}FinalTableNameGenerator(
-    private val config: {DB}Configuration,
+    private val mapper: {DB}TableSchemaMapper,
 ) : FinalTableNameGenerator {
-    override fun getTableName(descriptor: DestinationStream.Descriptor): TableName {
-        val namespace = descriptor.namespace?.toDbCompatible()
-            ?: config.database
-        val name = descriptor.name.toDbCompatible()
-        return TableName(namespace, name)
+    override fun getTableName(streamDescriptor: DestinationStream.Descriptor): TableName {
+        // Delegate to TableSchemaMapper for consistent naming
+        return mapper.toFinalTableName(streamDescriptor)
     }
 }
-```
 
-**What this does:**
-- Maps Airbyte stream descriptor → database table name
-- Handles namespace mapping (if source has schemas/databases)
-- Applies database-specific name transformation rules
-
-**Example transforms:**
-```kotlin
-// Input: descriptor(namespace="public", name="users")
-// Output: TableName("public", "users")
-
-// Input: descriptor(namespace=null, name="customers")
-// Output: TableName("my_database", "customers")  // Uses config.database as fallback
-```
-
-### Infrastructure Step 3: Create ColumnNameGenerator
-
-**Add to same file:** `config/{DB}NameGenerators.kt`
-
-```kotlin
 @Singleton
-class {DB}ColumnNameGenerator : ColumnNameGenerator {
+class {DB}ColumnNameGenerator(
+    private val mapper: {DB}TableSchemaMapper,
+) : ColumnNameGenerator {
     override fun getColumnName(column: String): ColumnNameGenerator.ColumnName {
-        val dbName = column.toDbCompatible()
+        val dbName = mapper.toColumnName(column)
         return ColumnNameGenerator.ColumnName(
-            canonicalName = dbName,
             displayName = dbName,
+            canonicalName = dbName.lowercase(),  // For collision detection
         )
     }
 }
 ```
 
-**What this does:**
-- Maps Airbyte column names → database column names
-- Applies database-specific transformations (case, special chars)
+**Why delegate to TableSchemaMapper?**
+- Single source of truth for naming conventions
+- TableSchemaMapper is also used by schema evolution
+- Prevents inconsistencies between table creation and schema evolution
 
-**Example transforms:**
-```kotlin
-// Snowflake: uppercase
-"userId" → "USERID"
+**Notes:**
+- `@Singleton` annotation is **REQUIRED** - without it, Micronaut cannot inject these beans
+- `canonicalName` is used for collision detection (usually lowercase)
+- `displayName` is what appears in queries
 
-// Postgres/ClickHouse: lowercase
-"userId" → "userid"
-
-// MySQL: preserve case
-"userId" → "userId"
-```
-
-### Infrastructure Step 4: Add Name Transformation Helper
-
-**Add to same file:** `config/{DB}NameGenerators.kt`
-
-```kotlin
-// Helper function for database-specific name transformations
-private fun String.toDbCompatible(): String {
-    // Snowflake: uppercase
-    return this.uppercase()
-
-    // ClickHouse/Postgres: lowercase
-    return this.lowercase()
-
-    // MySQL: preserve case, but sanitize special chars
-    return this.replace(Regex("[^a-zA-Z0-9_]"), "_")
-
-    // Custom rules: Apply your database's naming conventions
-    // - Max length limits
-    // - Reserved word handling
-    // - Character restrictions
-}
-```
-
-**Database-specific examples:**
-
-**Snowflake:**
-```kotlin
-private fun String.toDbCompatible() = this.uppercase()
-```
-
-**ClickHouse:**
-```kotlin
-private fun String.toDbCompatible() = this.lowercase()
-```
-
-**Postgres (strict):**
-```kotlin
-private fun String.toDbCompatible(): String {
-    val sanitized = this
-        .lowercase()
-        .replace(Regex("[^a-z0-9_]"), "_")
-        .take(63)  // Postgres identifier limit
-
-    // Handle reserved words
-    return if (sanitized in POSTGRES_RESERVED_WORDS) {
-        "_$sanitized"
-    } else {
-        sanitized
-    }
-}
-
-private val POSTGRES_RESERVED_WORDS = setOf("user", "table", "select", ...)
-```
-
-### Infrastructure Step 5: Register TempTableNameGenerator in BeanFactory
+### Infrastructure Step 2: Register TempTableNameGenerator in BeanFactory
 
 **File:** Update `{DB}BeanFactory.kt`
 
@@ -200,7 +217,7 @@ fun tempTableNameGenerator(config: {DB}Configuration): TempTableNameGenerator {
 - CDK provides implementation, but YOU must register it
 - Used by Writer to create staging tables
 
-### Infrastructure Step 6: Verify Compilation
+### Infrastructure Step 3: Verify Compilation
 
 **Validate:**
 ```bash
@@ -210,12 +227,11 @@ $ ./gradlew :destination-{db}:integrationTest  # testSpecOss, testSuccessConfigs
 ```
 
 **If you see DI errors:**
-- Check all three classes have `@Singleton` annotation
+- Check all classes have `@Singleton` annotation
 - Verify package name matches your connector structure
 - Ensure classes implement correct interfaces:
-  - `RawTableNameGenerator` (from `io.airbyte.cdk.load.orchestration.db`)
-  - `FinalTableNameGenerator` (from `io.airbyte.cdk.load.orchestration.db`)
-  - `ColumnNameGenerator` (from `io.airbyte.cdk.load.orchestration.db`)
+  - `FinalTableNameGenerator` (from `io.airbyte.cdk.load.table`)
+  - `ColumnNameGenerator` (from `io.airbyte.cdk.load.table`)
 
 ✅ **Checkpoint:** Name generators registered + all previous phases still work
 
@@ -223,11 +239,11 @@ $ ./gradlew :destination-{db}:integrationTest  # testSpecOss, testSuccessConfigs
 
 ---
 
-⚠️ **IMPORTANT: Before starting Phase 7, read [Understanding Test Contexts](./7-troubleshooting.md#understanding-test-contexts) in the troubleshooting guide. Phase 7 introduces integration tests which behave differently than the component tests you've been using.**
+⚠️ **IMPORTANT: Before starting Phase 3, read [Understanding Test Contexts](./7-troubleshooting.md#understanding-test-contexts) in the troubleshooting guide. This phase introduces integration tests which behave differently than the component tests you've been using.**
 
 ---
 
-## Infrastructure Phase 2: Write Operation Infrastructure
+## Infrastructure Phase 3: Write Operation Infrastructure
 
 **Goal:** Create write operation infrastructure beans (no business logic yet)
 
