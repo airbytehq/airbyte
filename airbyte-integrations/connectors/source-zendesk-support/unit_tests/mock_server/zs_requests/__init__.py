@@ -2,6 +2,7 @@ from .automations_request_builder import AutomationsRequestBuilder
 from .brands_request_builder import BrandsRequestBuilder
 from .custom_roles_request_builder import CustomRolesRequestBuilder
 from .groups_request_builder import GroupsRequestBuilder
+from .schedules_request_builder import SchedulesRequestBuilder
 from .post_comment_votes_request_builder import PostCommentVotesRequestBuilder
 from .post_comments_request_builder import PostsCommentsRequestBuilder
 from .post_votes_request_builder import PostsVotesRequestBuilder
