@@ -11,7 +11,6 @@ import io.airbyte.cdk.load.util.Jsons
 import io.airbyte.integrations.destination.postgres.client.PostgresAirbyteClient
 import io.micronaut.context.annotation.Requires
 import jakarta.inject.Singleton
-import java.sql.Timestamp
 import java.time.OffsetDateTime
 import java.time.ZoneOffset
 import java.time.format.DateTimeFormatter
@@ -25,9 +24,7 @@ class PostgresTestTableOperationsClient(
 ) : TestTableOperationsClient {
     override suspend fun ping() {
         dataSource.connection.use { connection ->
-            connection.createStatement().use { statement ->
-                statement.executeQuery("SELECT 1")
-            }
+            connection.createStatement().use { statement -> statement.executeQuery("SELECT 1") }
         }
     }
 
@@ -50,7 +47,8 @@ class PostgresTestTableOperationsClient(
         val columnNames = columns.joinToString(", ") { "\"$it\"" }
         val placeholders = columns.indices.joinToString(", ") { "?" }
 
-        val sql = """
+        val sql =
+            """
             INSERT INTO "${table.namespace}"."${table.name}" ($columnNames)
             VALUES ($placeholders)
         """
@@ -74,16 +72,21 @@ class PostgresTestTableOperationsClient(
         val columnTypes = mutableMapOf<String, String>()
         dataSource.connection.use { connection ->
             connection.createStatement().use { statement ->
-                statement.executeQuery("""
+                statement
+                    .executeQuery(
+                        """
                     SELECT column_name, data_type
                     FROM information_schema.columns
                     WHERE table_schema = '${table.namespace}'
                     AND table_name = '${table.name}'
-                """).use { resultSet ->
-                    while (resultSet.next()) {
-                        columnTypes[resultSet.getString("column_name")] = resultSet.getString("data_type")
+                """
+                    )
+                    .use { resultSet ->
+                        while (resultSet.next()) {
+                            columnTypes[resultSet.getString("column_name")] =
+                                resultSet.getString("data_type")
+                        }
                     }
-                }
             }
         }
         return columnTypes
@@ -109,9 +112,11 @@ class PostgresTestTableOperationsClient(
         }
 
         when (value) {
-            null, is io.airbyte.cdk.load.data.NullValue -> statement.setNull(index, java.sql.Types.NULL)
+            null,
+            is io.airbyte.cdk.load.data.NullValue -> statement.setNull(index, java.sql.Types.NULL)
             is io.airbyte.cdk.load.data.StringValue -> statement.setString(index, value.value)
-            is io.airbyte.cdk.load.data.IntegerValue -> statement.setLong(index, value.value.toLong())
+            is io.airbyte.cdk.load.data.IntegerValue ->
+                statement.setLong(index, value.value.toLong())
             is io.airbyte.cdk.load.data.NumberValue -> statement.setBigDecimal(index, value.value)
             is io.airbyte.cdk.load.data.BooleanValue -> statement.setBoolean(index, value.value)
             is io.airbyte.cdk.load.data.TimestampWithTimezoneValue -> {
@@ -168,69 +173,84 @@ class PostgresTestTableOperationsClient(
     override suspend fun readTable(table: TableName): List<Map<String, Any>> {
         dataSource.connection.use { connection ->
             connection.createStatement().use { statement ->
-                statement.executeQuery("""SELECT * FROM "${table.namespace}"."${table.name}"""").use { resultSet ->
-                    val metaData = resultSet.metaData
-                    val columnCount = metaData.columnCount
-                    val result = mutableListOf<Map<String, Any>>()
+                statement
+                    .executeQuery("""SELECT * FROM "${table.namespace}"."${table.name}"""")
+                    .use { resultSet ->
+                        val metaData = resultSet.metaData
+                        val columnCount = metaData.columnCount
+                        val result = mutableListOf<Map<String, Any>>()
 
-                    while (resultSet.next()) {
-                        val row = mutableMapOf<String, Any>()
-                        for (i in 1..columnCount) {
-                            val columnName = metaData.getColumnName(i)
-                            val columnType = metaData.getColumnTypeName(i)
-                            when (columnType.lowercase()) {
-                                "timestamptz" -> {
-                                    val value = resultSet.getObject(i, OffsetDateTime::class.java)
-                                    if (value != null) {
-                                        val formattedTimestamp =
-                                            DateTimeFormatter.ISO_OFFSET_DATE_TIME.format(
-                                                value.withOffsetSameInstant(ZoneOffset.UTC)
-                                            )
-                                        row[columnName] = formattedTimestamp
-                                    }
-                                }
-                                "timestamp" -> {
-                                    val value = resultSet.getTimestamp(i)
-                                    if (value != null) {
-                                        val localDateTime = value.toLocalDateTime()
-                                        row[columnName] = DateTimeFormatter.ISO_LOCAL_DATE_TIME.format(localDateTime)
-                                    }
-                                }
-                                "jsonb", "json" -> {
-                                    val stringValue: String? = resultSet.getString(i)
-                                    if (stringValue != null) {
-                                        val parsedValue = Jsons.readValue(stringValue, Any::class.java)
-                                        val actualValue = when (parsedValue) {
-                                            is Int -> parsedValue.toLong()
-                                            else -> parsedValue
+                        while (resultSet.next()) {
+                            val row = mutableMapOf<String, Any>()
+                            for (i in 1..columnCount) {
+                                val columnName = metaData.getColumnName(i)
+                                val columnType = metaData.getColumnTypeName(i)
+                                when (columnType.lowercase()) {
+                                    "timestamptz" -> {
+                                        val value =
+                                            resultSet.getObject(i, OffsetDateTime::class.java)
+                                        if (value != null) {
+                                            val formattedTimestamp =
+                                                DateTimeFormatter.ISO_OFFSET_DATE_TIME.format(
+                                                    value.withOffsetSameInstant(ZoneOffset.UTC)
+                                                )
+                                            row[columnName] = formattedTimestamp
                                         }
-                                        row[columnName] = actualValue
                                     }
-                                }
-                                else -> {
-                                    val value = resultSet.getObject(i)
-                                    if (value != null) {
-                                        // For varchar columns that may contain JSON (from schema evolution),
-                                        // normalize the JSON to compact format for comparison
-                                        if (value is String && (value.startsWith("{") || value.startsWith("["))) {
-                                            try {
-                                                val parsed = Jsons.readValue(value, Any::class.java)
-                                                row[columnName] = Jsons.writeValueAsString(parsed)
-                                            } catch (_: Exception) {
+                                    "timestamp" -> {
+                                        val value = resultSet.getTimestamp(i)
+                                        if (value != null) {
+                                            val localDateTime = value.toLocalDateTime()
+                                            row[columnName] =
+                                                DateTimeFormatter.ISO_LOCAL_DATE_TIME.format(
+                                                    localDateTime
+                                                )
+                                        }
+                                    }
+                                    "jsonb",
+                                    "json" -> {
+                                        val stringValue: String? = resultSet.getString(i)
+                                        if (stringValue != null) {
+                                            val parsedValue =
+                                                Jsons.readValue(stringValue, Any::class.java)
+                                            val actualValue =
+                                                when (parsedValue) {
+                                                    is Int -> parsedValue.toLong()
+                                                    else -> parsedValue
+                                                }
+                                            row[columnName] = actualValue
+                                        }
+                                    }
+                                    else -> {
+                                        val value = resultSet.getObject(i)
+                                        if (value != null) {
+                                            // For varchar columns that may contain JSON (from
+                                            // schema evolution),
+                                            // normalize the JSON to compact format for comparison
+                                            if (
+                                                value is String &&
+                                                    (value.startsWith("{") || value.startsWith("["))
+                                            ) {
+                                                try {
+                                                    val parsed =
+                                                        Jsons.readValue(value, Any::class.java)
+                                                    row[columnName] =
+                                                        Jsons.writeValueAsString(parsed)
+                                                } catch (_: Exception) {
+                                                    row[columnName] = value
+                                                }
+                                            } else {
                                                 row[columnName] = value
                                             }
-                                        } else {
-                                            row[columnName] = value
                                         }
                                     }
                                 }
                             }
+                            result.add(row)
                         }
-                        result.add(row)
-                    }
 
-                    return result
-                }
+                        return result
+                    }
             }
         }
     }
