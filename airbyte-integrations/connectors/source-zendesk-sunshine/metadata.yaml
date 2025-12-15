@@ -10,13 +10,37 @@ data:
   connectorSubtype: api
   connectorType: source
   definitionId: 325e0640-e7b3-4e24-b823-3361008f603f
-  dockerImageTag: 0.3.38
+  dockerImageTag: 1.0.0
   dockerRepository: airbyte/source-zendesk-sunshine
   documentationUrl: https://docs.airbyte.com/integrations/sources/zendesk-sunshine
   githubIssueLabel: source-zendesk-sunshine
   icon: zendesk-sunshine.svg
   license: ELv2
   name: Zendesk Sunshine
+  releases:
+    breakingChanges:
+      1.0.0:
+        message: >-
+          This release migrates from the deprecated Zendesk Legacy Custom Objects API
+          (/api/sunshine/) to the new Custom Objects API (/api/v2/custom_objects/).
+          This is a breaking change because: (1) The legacy API streams (limits,
+          object_types, object_records, object_type_policies, relationship_types,
+          relationship_records) have been replaced with new streams (custom_objects,
+          custom_object_fields, custom_object_records) that use the new API structure.
+          (2) Users must migrate their legacy custom objects in Zendesk to the new
+          custom objects experience before using this connector version. (3) Existing
+          connections will need to be recreated with the new stream selection.
+          See Zendesk migration guide: https://developer.zendesk.com/documentation/custom-data/custom-objects/migrating-legacy-custom-objects-to-the-new-custom-objects-experience/
+        upgradeDeadline: "2026-06-01"
+        scopedImpact:
+          - scopeType: stream
+            impactedScopes:
+              - limits
+              - object_types
+              - object_records
+              - object_type_policies
+              - relationship_types
+              - relationship_records
   registryOverrides:
     cloud:
       enabled: true
@@ -52,8 +76,8 @@ data:
             type: GSM
             alias: airbyte-connector-testing-secret-store
   externalDocumentationUrls:
-    - title: Zendesk Sunshine API
-      url: https://developer.zendesk.com/api-reference/custom-data/custom-objects-api/introduction/
+    - title: Zendesk Custom Objects API
+      url: https://developer.zendesk.com/api-reference/custom-data/custom-objects/custom_objects/
       type: api_reference
     - title: Zendesk authentication
       url: https://developer.zendesk.com/api-reference/ticketing/introduction/#security-and-authentication
