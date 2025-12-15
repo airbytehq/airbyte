@@ -8,14 +8,13 @@ import io.airbyte.cdk.load.component.TestTableOperationsClient
 import io.airbyte.cdk.load.data.AirbyteValue
 import io.airbyte.cdk.load.dataflow.state.PartitionKey
 import io.airbyte.cdk.load.dataflow.transform.RecordDTO
-import io.airbyte.cdk.load.table.TableName
+import io.airbyte.cdk.load.schema.model.TableName
 import io.airbyte.cdk.load.util.Jsons
 import io.airbyte.integrations.destination.snowflake.client.SnowflakeAirbyteClient
 import io.airbyte.integrations.destination.snowflake.client.execute
 import io.airbyte.integrations.destination.snowflake.dataflow.SnowflakeAggregate
 import io.airbyte.integrations.destination.snowflake.spec.SnowflakeConfiguration
-import io.airbyte.integrations.destination.snowflake.sql.SnowflakeColumnUtils
-import io.airbyte.integrations.destination.snowflake.sql.SnowflakeSqlNameUtils
+import io.airbyte.integrations.destination.snowflake.sql.SnowflakeDirectLoadSqlGenerator
 import io.airbyte.integrations.destination.snowflake.sql.andLog
 import io.airbyte.integrations.destination.snowflake.write.load.SnowflakeInsertBuffer
 import io.micronaut.context.annotation.Requires
@@ -29,25 +28,35 @@ import net.snowflake.client.jdbc.SnowflakeTimestampWithTimezone
 class SnowflakeTestTableOperationsClient(
     private val client: SnowflakeAirbyteClient,
     private val dataSource: DataSource,
-    private val snowflakeSqlNameUtils: SnowflakeSqlNameUtils,
-    private val snowflakeColumnUtils: SnowflakeColumnUtils,
+    private val sqlGenerator: SnowflakeDirectLoadSqlGenerator,
     private val snowflakeConfiguration: SnowflakeConfiguration,
 ) : TestTableOperationsClient {
     override suspend fun dropNamespace(namespace: String) {
         dataSource.execute(
-            "DROP SCHEMA IF EXISTS ${snowflakeSqlNameUtils.fullyQualifiedNamespace(namespace)}".andLog()
+            "DROP SCHEMA IF EXISTS ${sqlGenerator.fullyQualifiedNamespace(namespace)}".andLog()
         )
     }
 
     override suspend fun insertRecords(table: TableName, records: List<Map<String, AirbyteValue>>) {
+        // For integration tests, we need to create a proper ColumnSchema
+        // We get the column info from describeTable and convert it
+        val columnTypes = client.describeTable(table)
+        val columnSchema =
+            io.airbyte.cdk.load.schema.model.ColumnSchema(
+                inputToFinalColumnNames = columnTypes.keys.associateWith { it },
+                finalSchema =
+                    columnTypes.mapValues { (_, type) ->
+                        io.airbyte.cdk.load.component.ColumnType(type, true)
+                    },
+                inputSchema = emptyMap() // Not needed for insert buffer
+            )
         val a =
             SnowflakeAggregate(
                 SnowflakeInsertBuffer(
-                    table,
-                    client.describeTable(table),
-                    client,
-                    snowflakeConfiguration,
-                    snowflakeColumnUtils,
+                    tableName = table,
+                    snowflakeClient = client,
+                    snowflakeConfiguration = snowflakeConfiguration,
+                    columnSchema = columnSchema,
                 )
             )
         records.forEach { a.accept(RecordDTO(it, PartitionKey(""), 0, 0)) }

@@ -468,15 +468,15 @@ class SnowflakeDirectLoadSqlGenerator(
     }
 
     @VisibleForTesting
-    internal fun fullyQualifiedName(tableName: TableName): String =
+    fun fullyQualifiedName(tableName: TableName): String =
         combineParts(listOf(getDatabaseName(), tableName.namespace, tableName.name))
 
     @VisibleForTesting
-    internal fun fullyQualifiedNamespace(namespace: String) =
+    fun fullyQualifiedNamespace(namespace: String) =
         combineParts(listOf(getDatabaseName(), namespace))
 
     @VisibleForTesting
-    internal fun fullyQualifiedStageName(tableName: TableName, escape: Boolean = false): String {
+    fun fullyQualifiedStageName(tableName: TableName, escape: Boolean = false): String {
         val currentTableName =
             if (escape) {
                 tableName.name

@@ -14,12 +14,12 @@ import io.airbyte.cdk.load.message.Meta
 import io.airbyte.cdk.load.table.CDC_DELETED_AT_COLUMN
 import io.airbyte.cdk.load.test.util.DestinationDataDumper
 import io.airbyte.cdk.load.test.util.OutputRecord
+import io.airbyte.cdk.load.util.UUIDGenerator
 import io.airbyte.cdk.load.util.deserializeToNode
 import io.airbyte.integrations.destination.snowflake.SnowflakeBeanFactory
-import io.airbyte.integrations.destination.snowflake.db.SnowflakeFinalTableNameGenerator
 import io.airbyte.integrations.destination.snowflake.schema.toSnowflakeCompatibleName
 import io.airbyte.integrations.destination.snowflake.spec.SnowflakeConfiguration
-import io.airbyte.integrations.destination.snowflake.sql.SnowflakeSqlNameUtils
+import io.airbyte.integrations.destination.snowflake.sql.SnowflakeDirectLoadSqlGenerator
 import io.airbyte.integrations.destination.snowflake.sql.sqlEscape
 import java.math.BigDecimal
 import net.snowflake.client.jdbc.SnowflakeTimestampWithTimezone
@@ -34,8 +34,7 @@ class SnowflakeDataDumper(
         stream: DestinationStream
     ): List<OutputRecord> {
         val config = configProvider(spec)
-        val sqlUtils = SnowflakeSqlNameUtils(config)
-        val snowflakeFinalTableNameGenerator = SnowflakeFinalTableNameGenerator(config)
+        val sqlGenerator = SnowflakeDirectLoadSqlGenerator(UUIDGenerator(), config)
         val dataSource =
             SnowflakeBeanFactory()
                 .snowflakeDataSource(snowflakeConfiguration = config, airbyteEdition = "COMMUNITY")
@@ -46,7 +45,10 @@ class SnowflakeDataDumper(
             ds.connection.use { connection ->
                 val statement = connection.createStatement()
                 val tableName =
-                    snowflakeFinalTableNameGenerator.getTableName(stream.mappedDescriptor)
+                    stream.tableSchema?.tableNames?.finalTableName
+                        ?: throw IllegalStateException(
+                            "Table name not found for stream ${stream.mappedDescriptor.name}"
+                        )
 
                 // First check if the table exists
                 val tableExistsQuery =
@@ -69,7 +71,7 @@ class SnowflakeDataDumper(
 
                 val resultSet =
                     statement.executeQuery(
-                        "SELECT * FROM ${sqlUtils.fullyQualifiedName(tableName)}"
+                        "SELECT * FROM ${sqlGenerator.fullyQualifiedName(tableName)}"
                     )
 
                 while (resultSet.next()) {
