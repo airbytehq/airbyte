@@ -1,5 +1,6 @@
 from .automations_records_builder import AutomationsRecordBuilder
 from .brands_records_builder import BrandsRecordBuilder
+from .custom_roles_records_builder import CustomRolesRecordBuilder
 from .groups_records_builder import GroupsRecordBuilder
 from .post_comment_votes_records_builder import PostCommentVotesRecordBuilder
 from .post_comments_records_builder import PostsCommentsRecordBuilder

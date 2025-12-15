@@ -39,9 +39,12 @@ class ZendeskSupportBaseRequestBuilder(ZendeskSuppportRequestBuilder):
         self._subdomain: str = subdomain
         self._authenticator: str = None
         self._client_access_token: Optional[str] = None
+        self._custom_url: Optional[str] = None
 
     @property
     def url(self) -> str:
+        if self._custom_url:
+            return self._custom_url
         return f"https://{self._subdomain}.zendesk.com/api/v2/{self._resource}"
 
     @property
@@ -64,4 +67,9 @@ class ZendeskSupportBaseRequestBuilder(ZendeskSuppportRequestBuilder):
 
     def with_subdomain(self, subdomain: str) -> "ZendeskSupportBaseRequestBuilder":
         self._subdomain: str = subdomain
+        return self
+
+    def with_custom_url(self, custom_url: str) -> "ZendeskSupportBaseRequestBuilder":
+        """Override the URL for pagination requests that use next_page URLs."""
+        self._custom_url: str = custom_url
         return self
