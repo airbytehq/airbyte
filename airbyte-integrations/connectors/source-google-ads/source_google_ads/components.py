@@ -697,6 +697,7 @@ class CustomGAQueryHttpRequester(HttpRequester):
     def __post_init__(self, parameters: Mapping[str, Any]):
         super().__post_init__(parameters=parameters)
         self.query = GAQL.parse(parameters.get("query"))
+        self.stream_response = True
 
     @staticmethod
     def is_metrics_in_custom_query(query: GAQL) -> bool:
