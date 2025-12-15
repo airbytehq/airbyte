@@ -220,13 +220,7 @@ class PostgresAirbyteClient(
         stream: DestinationStream,
         columnNameMapping: ColumnNameMapping
     ): TableSchema {
-        val defaultColumnNames = postgresColumnUtils.defaultColumns().map { it.columnName }.toSet()
-        val columns =
-            postgresColumnUtils
-                .getTargetColumns(stream, columnNameMapping)
-                .filter { it.columnName !in defaultColumnNames }
-                .associate { column -> column.columnName to ColumnType(column.columnTypeName, column.nullable) }
-        return TableSchema(columns)
+        return TableSchema(stream.tableSchema.columnSchema.finalSchema)
     }
 
     override suspend fun applyChangeset(

@@ -7,6 +7,7 @@ package io.airbyte.integrations.destination.postgres.component
 import io.airbyte.cdk.load.command.ImportType
 import io.airbyte.cdk.load.component.TableSchemaEvolutionFixtures
 import io.airbyte.cdk.load.component.TableSchemaEvolutionSuite
+import io.airbyte.cdk.load.schema.TableSchemaFactory
 import io.airbyte.integrations.destination.postgres.client.PostgresAirbyteClient
 import io.airbyte.integrations.destination.postgres.component.PostgresComponentTestFixtures.allTypesColumnNameMapping
 import io.airbyte.integrations.destination.postgres.component.PostgresComponentTestFixtures.allTypesTableSchema
@@ -20,6 +21,7 @@ class PostgresTableSchemaEvolutionTest(
     override val client: PostgresAirbyteClient,
     override val opsClient: PostgresAirbyteClient,
     override val testClient: PostgresTestTableOperationsClient,
+    override val schemaFactory: TableSchemaFactory,
 ) : TableSchemaEvolutionSuite {
 
     @Test
