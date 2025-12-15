@@ -1,4 +1,4 @@
-name: Sync AI Connector Docs
+name: Sync Agent Connector Docs
 
 on:
   schedule:
@@ -12,18 +12,18 @@ jobs:
       - name: Checkout airbyte repo
         uses: actions/checkout@08eba0b27e820071cde6df949e0beb9ba4906955 # v4.3.0
 
-      - name: Checkout airbyte-ai-connectors
+      - name: Checkout airbyte-agent-connectors
         uses: actions/checkout@08eba0b27e820071cde6df949e0beb9ba4906955 # v4.3.0
         with:
           repository: airbytehq/airbyte-agent-connectors
-          path: ai-connectors-source
+          path: agent-connectors-source
 
       - name: Sync connector docs
         run: |
           DEST_DIR="docs/ai-agents/connectors"
           mkdir -p "$DEST_DIR"
 
-          for connector_dir in ai-connectors-source/connectors/*/; do
+          for connector_dir in agent-connectors-source/connectors/*/; do
             connector=$(basename "$connector_dir")
 
             # Only delete/recreate the specific connector subdirectory
@@ -42,7 +42,7 @@ jobs:
           echo "Synced $(ls -d $DEST_DIR/*/ 2>/dev/null | wc -l) connectors"
 
       - name: Cleanup temporary checkout
-        run: rm -rf ai-connectors-source
+        run: rm -rf agent-connectors-source
 
       - name: Authenticate as GitHub App
         uses: actions/create-github-app-token@v2
@@ -62,9 +62,9 @@ jobs:
           delete-branch: true
           title: "docs: sync agent connector docs from airbyte-agent-connectors repo"
           body: |
-            Automated sync of AI connector docs from airbyte-ai-connectors.
+            Automated sync of agent connector docs from airbyte-agent-connectors.
 
-            This PR was automatically created by the sync-ai-connector-docs workflow.
+            This PR was automatically created by the sync-agent-connector-docs workflow.
           labels: |
             documentation
             auto-merge
