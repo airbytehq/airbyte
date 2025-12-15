@@ -1,15 +1,20 @@
 ---
 sidebar_label: "Connector MCP tutorial"
+sidebar_position: 2
 ---
 
 import Tabs from '@theme/Tabs';
 import TabItem from '@theme/TabItem';
 
-# Get started with agent connectors: Connector MCP
+# Agent connector tutorial: Connector MCP
 
 In this tutorial, you'll install and run Airbyte's connector MCP server locally, connect the MCP server to Claude Code or your preferred agent, and learn to use natural language to explore your data. This tutorial uses Stripe, but if you don't have a Stripe account, you can use one of Airbyte's other agent connectors.
 
-The MCP server is quick and easy to set up, but it affords less control over how you use agent connectors compared to the Python SDK. Data goes directly from the API to your AI agent.
+:::warning
+The Connector MCP server is experimental. It's quick and easy to set up, but it affords less control over how you use agent connectors compared to the Python SDK. Data goes directly from the API to your AI agent.
+
+Feel free to try the MCP server, but it's better to use the [Python SDK](tutorial-python) to build a more robust agent.
+:::
 
 ## Overview
 
