@@ -64,9 +64,7 @@ class PostgresAirbyteClient(
                 WHERE schema_name = '$namespace'
             )
             """
-        ) { rs ->
-            rs.next() && rs.getBoolean(1)
-        }
+        ) { rs -> rs.next() && rs.getBoolean(1) }
     }
 
     override suspend fun tableExists(table: TableName): Boolean {
@@ -78,9 +76,7 @@ class PostgresAirbyteClient(
                 AND table_name = '${table.name}'
             )
             """
-        ) { rs ->
-            rs.next() && rs.getBoolean(1)
-        }
+        ) { rs -> rs.next() && rs.getBoolean(1) }
     }
 
     override suspend fun createNamespace(namespace: String) {
@@ -242,19 +238,23 @@ class PostgresAirbyteClient(
 
             // Convert from TableColumns format to Column format
             val columnsToAdd =
-                columnChangeset.columnsToAdd.map { (name, type) ->
-                    Column(name, type.type, type.nullable)
-                }.toSet()
+                columnChangeset.columnsToAdd
+                    .map { (name, type) -> Column(name, type.type, type.nullable) }
+                    .toSet()
             val columnsToRemove =
-                columnChangeset.columnsToDrop.map { (name, type) ->
-                    Column(name, type.type, type.nullable)
-                }.toSet()
+                columnChangeset.columnsToDrop
+                    .map { (name, type) -> Column(name, type.type, type.nullable) }
+                    .toSet()
             val columnsToModify =
-                columnChangeset.columnsToChange.map { (name, change) ->
-                    Column(name, change.newType.type, change.newType.nullable)
-                }.toSet()
+                columnChangeset.columnsToChange
+                    .map { (name, change) ->
+                        Column(name, change.newType.type, change.newType.nullable)
+                    }
+                    .toSet()
             val columnsInDb =
-                (columnChangeset.columnsToRetain + columnChangeset.columnsToDrop + columnChangeset.columnsToChange.mapValues { it.value.originalType })
+                (columnChangeset.columnsToRetain +
+                        columnChangeset.columnsToDrop +
+                        columnChangeset.columnsToChange.mapValues { it.value.originalType })
                     .map { (name, type) -> Column(name, type.type, type.nullable) }
                     .toSet()
 
@@ -275,8 +275,8 @@ class PostgresAirbyteClient(
     }
 
     /**
-     * Gets columns from the database including their types for schema discovery.
-     * Unlike [getColumnsFromDb], this returns all columns including Airbyte metadata columns.
+     * Gets columns from the database including their types for schema discovery. Unlike
+     * [getColumnsFromDb], this returns all columns including Airbyte metadata columns.
      */
     private fun getColumnsFromDbForDiscovery(tableName: TableName): Map<String, ColumnType> =
         executeQuery(sqlGenerator.getTableSchema(tableName)) { rs ->

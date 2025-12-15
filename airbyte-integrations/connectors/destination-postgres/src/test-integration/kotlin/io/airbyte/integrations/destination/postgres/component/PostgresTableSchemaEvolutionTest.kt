@@ -79,8 +79,10 @@ class PostgresTableSchemaEvolutionTest(
         modifiedStreamImportType: ImportType,
     ) {
         super.`apply changeset`(
-            initialColumnNameMapping = TableSchemaEvolutionFixtures.APPLY_CHANGESET_INITIAL_COLUMN_MAPPING,
-            modifiedColumnNameMapping = TableSchemaEvolutionFixtures.APPLY_CHANGESET_MODIFIED_COLUMN_MAPPING,
+            initialColumnNameMapping =
+                TableSchemaEvolutionFixtures.APPLY_CHANGESET_INITIAL_COLUMN_MAPPING,
+            modifiedColumnNameMapping =
+                TableSchemaEvolutionFixtures.APPLY_CHANGESET_MODIFIED_COLUMN_MAPPING,
             TableSchemaEvolutionFixtures.APPLY_CHANGESET_EXPECTED_EXTRACTED_AT,
             initialStreamImportType,
             modifiedStreamImportType,

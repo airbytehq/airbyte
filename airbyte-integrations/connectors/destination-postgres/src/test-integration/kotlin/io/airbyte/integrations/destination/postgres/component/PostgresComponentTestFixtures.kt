@@ -7,7 +7,6 @@ package io.airbyte.integrations.destination.postgres.component
 import io.airbyte.cdk.load.component.ColumnType
 import io.airbyte.cdk.load.component.TableOperationsFixtures
 import io.airbyte.cdk.load.component.TableSchema
-import io.airbyte.cdk.load.table.ColumnNameMapping
 
 object PostgresComponentTestFixtures {
     // PostgreSQL uses lowercase column names by default (no transformation needed)

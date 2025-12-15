@@ -4,12 +4,12 @@
 
 package io.airbyte.integrations.destination.postgres.component
 
+import io.airbyte.cdk.load.util.Jsons
 import io.airbyte.integrations.destination.postgres.PostgresConfigUpdater
 import io.airbyte.integrations.destination.postgres.PostgresContainerHelper
 import io.airbyte.integrations.destination.postgres.spec.PostgresConfiguration
 import io.airbyte.integrations.destination.postgres.spec.PostgresConfigurationFactory
 import io.airbyte.integrations.destination.postgres.spec.PostgresSpecificationOss
-import io.airbyte.cdk.load.util.Jsons
 import io.micronaut.context.annotation.Factory
 import io.micronaut.context.annotation.Primary
 import io.micronaut.context.annotation.Requires
@@ -25,7 +25,8 @@ class PostgresComponentTestConfigFactory {
         PostgresContainerHelper.start()
 
         // Create a minimal config JSON and update it with container details
-        val configJson = """
+        val configJson =
+            """
             {
                 "host": "replace_me_host",
                 "port": "replace_me_port",
