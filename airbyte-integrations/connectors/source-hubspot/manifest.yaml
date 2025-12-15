@@ -944,6 +944,33 @@ definitions:
       schema:
         $ref: "#/schemas/owners_archived"
 
+  users_stream:
+    primary_key:
+      - id
+    $ref: "#/definitions/stream_base"
+    name: users
+    $parameters:
+      name: users
+      required_scopes: >-
+        crm.objects.users.read, settings.users.read
+    retriever:
+      $ref: "#/definitions/base_retriever"
+      requester:
+        $ref: "#/definitions/base_requester"
+        path: /settings/v3/users
+      paginator:
+        $ref: "#/definitions/cursor_paginator"
+      record_selector:
+        type: RecordSelector
+        extractor:
+          type: DpathExtractor
+          field_path:
+            - results
+    schema_loader:
+      type: InlineSchemaLoader
+      schema:
+        $ref: "#/schemas/users"
+
   ticket_pipelines_stream:
     primary_key:
       - id
@@ -1873,6 +1900,7 @@ streams:
   - "#/definitions/marketing_emails_stream"
   - "#/definitions/owners_archived_stream"
   - "#/definitions/owners_stream"
+  - "#/definitions/users_stream"
   - "#/definitions/products_stream"
   - "#/definitions/subscription_changes_stream"
   - "#/definitions/ticket_pipelines_stream"
@@ -5468,6 +5496,71 @@ schemas:
               type:
                 - "null"
                 - string
+
+  users:
+    $schema: http://json-schema.org/schema#
+    type:
+      - "null"
+      - object
+    additionalProperties: true
+    properties:
+      id:
+        description: The user's unique ID.
+        type:
+          - "null"
+          - string
+      email:
+        description: The user's email.
+        type:
+          - "null"
+          - string
+      firstName:
+        description: The user's first name.
+        type:
+          - "null"
+          - string
+      lastName:
+        description: The user's last name.
+        type:
+          - "null"
+          - string
+      primaryTeamId:
+        description: The user's primary team.
+        type:
+          - "null"
+          - string
+      roleId:
+        description: The user's role.
+        type:
+          - "null"
+          - string
+      roleIds:
+        description: A list of role IDs assigned to the user.
+        type:
+          - "null"
+          - array
+        items:
+          type: string
+      secondaryTeamIds:
+        description: The user's additional teams.
+        type:
+          - "null"
+          - array
+        items:
+          type: string
+      sendWelcomeEmail:
+        description:
+          Whether a welcome email was sent to the user.
+          This value will only be populated in response to a provisioning request.
+          Subsequent queries will be false.
+        type:
+          - "null"
+          - boolean
+      superAdmin:
+        description: Whether the user has super admin privileges.
+        type:
+          - "null"
+          - boolean
 
   workflows:
     $schema: "http://json-schema.org/draft-07/schema#"
