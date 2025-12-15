@@ -136,6 +136,7 @@ const config: Config = {
         path: "../docs/platform",
         routeBasePath: "/platform",
         sidebarPath: "./sidebar-platform.js",
+        lastVersion: "current", // Default to Cloud/Next version instead of latest numbered version
         editUrl: ({
           version,
           docPath,
