@@ -68,16 +68,16 @@ class SnowflakeDirectLoadSqlGenerator(
             buildList {
                     // Add Airbyte meta columns (using Snowflake-compatible uppercase names)
                     add(
-                        "${SNOWFLAKE_AB_RAW_ID.quote()} ${SnowflakeDataType.VARCHAR.typeName} NOT NULL"
+                        "${SNOWFLAKE_AB_RAW_ID.quote()} ${SnowflakeDataType.VARCHAR.typeName} NOT NULL",
                     )
                     add(
-                        "${SNOWFLAKE_AB_EXTRACTED_AT.quote()} ${SnowflakeDataType.TIMESTAMP_TZ.typeName} NOT NULL"
+                        "${SNOWFLAKE_AB_EXTRACTED_AT.quote()} ${SnowflakeDataType.TIMESTAMP_TZ.typeName} NOT NULL",
                     )
                     add(
-                        "${SNOWFLAKE_AB_META.quote()} ${SnowflakeDataType.VARIANT.typeName} NOT NULL"
+                        "${SNOWFLAKE_AB_META.quote()} ${SnowflakeDataType.VARIANT.typeName} NOT NULL",
                     )
                     add(
-                        "${SNOWFLAKE_AB_GENERATION_ID.quote()} ${SnowflakeDataType.NUMBER.typeName}"
+                        "${SNOWFLAKE_AB_GENERATION_ID.quote()} ${SnowflakeDataType.NUMBER.typeName}",
                     )
 
                     // Add user columns from the munged schema
@@ -86,17 +86,17 @@ class SnowflakeDirectLoadSqlGenerator(
                         add("${columnName.quote()} ${columnType.type}$nullability")
                     }
                 }
-                .joinToString(",\n")
+                .joinToString(",\n    ")
 
         // Snowflake supports CREATE OR REPLACE TABLE, which is simpler than drop+recreate
         val createOrReplace = if (replace) "CREATE OR REPLACE" else "CREATE"
 
         val createTableStatement =
             """
-            $createOrReplace TABLE ${fullyQualifiedName(tableName)} (
-                $columnDeclarations
-            )
-        """.trimIndent()
+            |$createOrReplace TABLE ${fullyQualifiedName(tableName)} (
+            |    $columnDeclarations
+            |)
+            """.trimMargin() // Something was tripping up trimIndent so we opt for trimMargin
 
         return createTableStatement.andLog()
     }
@@ -370,7 +370,11 @@ class SnowflakeDirectLoadSqlGenerator(
 
     fun swapTableWith(sourceTableName: TableName, targetTableName: TableName): String {
         return """
-            ALTER TABLE ${fullyQualifiedName(sourceTableName)} SWAP WITH ${fullyQualifiedName(targetTableName)}
+            ALTER TABLE ${fullyQualifiedName(sourceTableName)} SWAP WITH ${
+            fullyQualifiedName(
+                targetTableName,
+            )
+        }
         """
             .trimIndent()
             .andLog()
@@ -380,7 +384,11 @@ class SnowflakeDirectLoadSqlGenerator(
         // Snowflake RENAME TO only accepts the table name, not a fully qualified name
         // The renamed table stays in the same schema
         return """
-            ALTER TABLE ${fullyQualifiedName(sourceTableName)} RENAME TO ${fullyQualifiedName(targetTableName)}
+            ALTER TABLE ${fullyQualifiedName(sourceTableName)} RENAME TO ${
+            fullyQualifiedName(
+                targetTableName,
+            )
+        }
         """
             .trimIndent()
             .andLog()
@@ -406,7 +414,7 @@ class SnowflakeDirectLoadSqlGenerator(
                 // We're adding a new column, and we don't know what constitutes a reasonable
                 // default value for preexisting records.
                 // So we add the column as nullable.
-                "ALTER TABLE $prettyTableName ADD COLUMN ${name.quote()} ${columnType.type};".andLog()
+                "ALTER TABLE $prettyTableName ADD COLUMN ${name.quote()} ${columnType.type};".andLog(),
             )
         }
         deletedColumns.forEach {
@@ -420,26 +428,26 @@ class SnowflakeDirectLoadSqlGenerator(
                 val tempColumn = "${name}_${uuidGenerator.v4()}"
                 clauses.add(
                     // As above: we add the column as nullable.
-                    "ALTER TABLE $prettyTableName ADD COLUMN ${tempColumn.quote()} ${typeChange.newType.type};".andLog()
+                    "ALTER TABLE $prettyTableName ADD COLUMN ${tempColumn.quote()} ${typeChange.newType.type};".andLog(),
                 )
                 clauses.add(
-                    "UPDATE $prettyTableName SET ${tempColumn.quote()} = CAST(${name.quote()} AS ${typeChange.newType.type});".andLog()
+                    "UPDATE $prettyTableName SET ${tempColumn.quote()} = CAST(${name.quote()} AS ${typeChange.newType.type});".andLog(),
                 )
                 val backupColumn = "${tempColumn}_backup"
                 clauses.add(
                     """
                     ALTER TABLE $prettyTableName
                     RENAME COLUMN "$name" TO "$backupColumn";
-                    """.trimIndent()
+                    """.trimIndent(),
                 )
                 clauses.add(
                     """
                     ALTER TABLE $prettyTableName
                     RENAME COLUMN "$tempColumn" TO "$name";
-                    """.trimIndent()
+                    """.trimIndent(),
                 )
                 clauses.add(
-                    "ALTER TABLE $prettyTableName DROP COLUMN ${backupColumn.quote()};".andLog()
+                    "ALTER TABLE $prettyTableName DROP COLUMN ${backupColumn.quote()};".andLog(),
                 )
             } else if (!typeChange.originalType.nullable && typeChange.newType.nullable) {
                 // If the type is unchanged, we can change a column from NOT NULL to nullable.
@@ -448,7 +456,7 @@ class SnowflakeDirectLoadSqlGenerator(
                 // had null values.
                 // Users can always manually ALTER COLUMN ... SET NOT NULL if they want.
                 clauses.add(
-                    """ALTER TABLE $prettyTableName ALTER COLUMN "$name" DROP NOT NULL;""".andLog()
+                    """ALTER TABLE $prettyTableName ALTER COLUMN "$name" DROP NOT NULL;""".andLog(),
                 )
             } else {
                 log.info {
@@ -480,7 +488,7 @@ class SnowflakeDirectLoadSqlGenerator(
                 listOf(
                     getDatabaseName(),
                     tableName.namespace,
-                    "$STAGE_NAME_PREFIX$currentTableName"
+                    "$STAGE_NAME_PREFIX$currentTableName",
                 ),
             escape = escape,
         )

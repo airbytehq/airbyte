@@ -47,7 +47,12 @@ class SnowflakeChecker(
                 Meta.AirbyteMetaFields.GENERATION_ID.fieldName to AirbyteValue.from(0),
                 CHECK_COLUMN_NAME.toSnowflakeCompatibleName() to AirbyteValue.from("test-value")
             )
-        val outputSchema = snowflakeConfiguration.schema.toSnowflakeCompatibleName()
+        val outputSchema =
+            if (snowflakeConfiguration.legacyRawTablesOnly) {
+                snowflakeConfiguration.schema
+            } else {
+                snowflakeConfiguration.schema.toSnowflakeCompatibleName()
+            }
         val tableName =
             "_airbyte_connection_test_${
                 UUID.randomUUID().toString().replace("-".toRegex(), "")}".toSnowflakeCompatibleName()

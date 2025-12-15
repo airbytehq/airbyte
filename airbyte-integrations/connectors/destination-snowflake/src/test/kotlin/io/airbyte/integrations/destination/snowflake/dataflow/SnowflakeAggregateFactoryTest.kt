@@ -55,26 +55,29 @@ internal class SnowflakeAggregateFactoryTest {
     @Test
     fun testCreatingAggregateWithStagingBuffer() {
         val descriptor = Descriptor(namespace = "namespace", name = "name")
-        val directLoadTableExecutionConfig =
-            DirectLoadTableExecutionConfig(
-                tableName =
-                    TableName(
-                        namespace = descriptor.namespace!!,
-                        name = descriptor.name,
-                    )
+        val tableName =
+            TableName(
+                namespace = descriptor.namespace!!,
+                name = descriptor.name,
             )
+        val directLoadTableExecutionConfig = DirectLoadTableExecutionConfig(tableName = tableName)
         val key = StoreKey(namespace = descriptor.namespace!!, name = descriptor.name)
         val streamStore = StreamStateStore<DirectLoadTableExecutionConfig>()
-        streamStore.put(descriptor, directLoadTableExecutionConfig)
+        streamStore.put(key, directLoadTableExecutionConfig)
+
+        val stream = mockk<DestinationStream>(relaxed = true)
+        val catalog = mockk<DestinationCatalog> { every { getStream(key) } returns stream }
+
         val snowflakeClient = mockk<SnowflakeAirbyteClient>(relaxed = true)
-        val snowflakeConfiguration = mockk<SnowflakeConfiguration>(relaxed = true)
-        val snowflakeColumnUtils = mockk<SnowflakeColumnUtils>(relaxed = true)
+        val snowflakeConfiguration =
+            mockk<SnowflakeConfiguration> { every { legacyRawTablesOnly } returns false }
+
         val factory =
             SnowflakeAggregateFactory(
                 snowflakeClient = snowflakeClient,
                 streamStateStore = streamStore,
                 snowflakeConfiguration = snowflakeConfiguration,
-                snowflakeColumnUtils = snowflakeColumnUtils,
+                catalog = catalog,
             )
         val aggregate = factory.create(key)
         assertNotNull(aggregate)

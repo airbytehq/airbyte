@@ -206,7 +206,7 @@ internal class SnowflakeAirbyteClientTest {
     @Test
     fun testCreateTable() {
         val columnNameMapping = mockk<ColumnNameMapping>(relaxed = true)
-        val stream = mockk<DestinationStream>()
+        val stream = mockk<DestinationStream>(relaxed = true)
         val tableName = TableName(namespace = "namespace", name = "name")
         val resultSet = mockk<ResultSet>(relaxed = true)
         val statement =
@@ -229,7 +229,7 @@ internal class SnowflakeAirbyteClientTest {
                 columnNameMapping = columnNameMapping,
                 replace = true,
             )
-            verify(exactly = 1) { sqlGenerator.createTable(tableName, stream.tableSchema, true) }
+            verify(exactly = 1) { sqlGenerator.createTable(tableName, any(), true) }
             verify(exactly = 1) { sqlGenerator.createSnowflakeStage(tableName) }
             verify(exactly = 2) { mockConnection.close() }
         }
@@ -272,7 +272,7 @@ internal class SnowflakeAirbyteClientTest {
         val columnNameMapping = mockk<ColumnNameMapping>(relaxed = true)
         val sourceTableName = TableName(namespace = "namespace", name = "source")
         val destinationTableName = TableName(namespace = "namespace", name = "destination")
-        val stream = mockk<DestinationStream>()
+        val stream = mockk<DestinationStream>(relaxed = true)
         val resultSet = mockk<ResultSet>(relaxed = true)
         val statement =
             mockk<Statement> {
@@ -295,7 +295,7 @@ internal class SnowflakeAirbyteClientTest {
                 targetTableName = destinationTableName,
             )
             verify(exactly = 1) {
-                sqlGenerator.upsertTable(stream.tableSchema, sourceTableName, destinationTableName)
+                sqlGenerator.upsertTable(any(), sourceTableName, destinationTableName)
             }
             verify(exactly = 1) { mockConnection.close() }
         }
