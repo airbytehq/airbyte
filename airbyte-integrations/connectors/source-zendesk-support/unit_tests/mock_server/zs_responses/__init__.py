@@ -1,3 +1,4 @@
+from .automations_response_builder import AutomationsResponseBuilder
 from .brands_response_builder import BrandsResponseBuilder
 from .error_response_builder import ErrorResponseBuilder
 from .groups_response_builder import GroupsResponseBuilder

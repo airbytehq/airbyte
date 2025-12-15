@@ -1,3 +1,4 @@
+from .automations_records_builder import AutomationsRecordBuilder
 from .brands_records_builder import BrandsRecordBuilder
 from .groups_records_builder import GroupsRecordBuilder
 from .post_comment_votes_records_builder import PostCommentVotesRecordBuilder
