@@ -57,4 +57,7 @@ data:
     - title: WooCommerce authentication
       url: https://woocommerce.github.io/woocommerce-rest-api-docs/#authentication
       type: authentication_guide
+    - title: WooCommerce Developer Changelog
+      url: https://developer.woocommerce.com/changelog/
+      type: api_release_history
 metadataSpecVersion: "1.0"
