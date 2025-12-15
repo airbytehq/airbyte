@@ -36,20 +36,7 @@ definitions:
             field_path:
               - custom_objects
         paginator:
-          type: DefaultPaginator
-          page_token_option:
-            type: RequestOption
-            field_name: page[after]
-            inject_into: request_parameter
-          page_size_option:
-            type: RequestOption
-            field_name: page[size]
-            inject_into: request_parameter
-          pagination_strategy:
-            type: CursorPagination
-            page_size: 100
-            cursor_value: "{{ response.get('meta', {}).get('after_cursor', '') }}"
-            stop_condition: "{{ not response.get('meta', {}).get('has_more', False) }}"
+          type: NoPagination
       schema_loader:
         type: InlineSchemaLoader
         schema:
