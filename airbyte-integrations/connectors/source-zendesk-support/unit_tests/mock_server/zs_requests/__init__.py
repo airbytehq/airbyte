@@ -1,3 +1,4 @@
+from .brands_request_builder import BrandsRequestBuilder
 from .groups_request_builder import GroupsRequestBuilder
 from .post_comment_votes_request_builder import PostCommentVotesRequestBuilder
 from .post_comments_request_builder import PostsCommentsRequestBuilder
