@@ -12,16 +12,21 @@ import io.airbyte.cdk.load.data.ObjectValue
 import io.airbyte.cdk.load.data.json.toAirbyteValue
 import io.airbyte.cdk.load.message.Meta
 import io.airbyte.cdk.load.table.CDC_DELETED_AT_COLUMN
+import io.airbyte.cdk.load.table.DefaultTempTableNameGenerator
 import io.airbyte.cdk.load.test.util.DestinationDataDumper
 import io.airbyte.cdk.load.test.util.OutputRecord
 import io.airbyte.cdk.load.util.UUIDGenerator
 import io.airbyte.cdk.load.util.deserializeToNode
 import io.airbyte.integrations.destination.snowflake.SnowflakeBeanFactory
+import io.airbyte.integrations.destination.snowflake.schema.SnowflakeTableSchemaMapper
 import io.airbyte.integrations.destination.snowflake.schema.toSnowflakeCompatibleName
 import io.airbyte.integrations.destination.snowflake.spec.SnowflakeConfiguration
 import io.airbyte.integrations.destination.snowflake.sql.SnowflakeDirectLoadSqlGenerator
 import io.airbyte.integrations.destination.snowflake.sql.sqlEscape
 import java.math.BigDecimal
+import java.sql.Date
+import java.sql.Time
+import java.sql.Timestamp
 import net.snowflake.client.jdbc.SnowflakeTimestampWithTimezone
 
 private val AIRBYTE_META_COLUMNS = Meta.COLUMN_NAMES + setOf(CDC_DELETED_AT_COLUMN)
@@ -34,6 +39,11 @@ class SnowflakeDataDumper(
         stream: DestinationStream
     ): List<OutputRecord> {
         val config = configProvider(spec)
+        val snowflakeFinalTableNameGenerator =
+            SnowflakeTableSchemaMapper(
+                config = config,
+                tempTableNameGenerator = DefaultTempTableNameGenerator(),
+            )
         val sqlGenerator = SnowflakeDirectLoadSqlGenerator(UUIDGenerator(), config)
         val dataSource =
             SnowflakeBeanFactory()
@@ -45,10 +55,7 @@ class SnowflakeDataDumper(
             ds.connection.use { connection ->
                 val statement = connection.createStatement()
                 val tableName =
-                    stream.tableSchema?.tableNames?.finalTableName
-                        ?: throw IllegalStateException(
-                            "Table name not found for stream ${stream.mappedDescriptor.name}"
-                        )
+                    snowflakeFinalTableNameGenerator.toFinalTableName(stream.mappedDescriptor)
 
                 // First check if the table exists
                 val tableExistsQuery =
@@ -145,10 +152,10 @@ class SnowflakeDataDumper(
     private fun convertValue(value: Any?): Any? =
         when (value) {
             is BigDecimal -> value.toBigInteger()
-            is java.sql.Date -> value.toLocalDate()
+            is Date -> value.toLocalDate()
             is SnowflakeTimestampWithTimezone -> value.toZonedDateTime()
-            is java.sql.Time -> value.toLocalTime()
-            is java.sql.Timestamp -> value.toLocalDateTime()
+            is Time -> value.toLocalTime()
+            is Timestamp -> value.toLocalDateTime()
             else -> value
         }
 }
