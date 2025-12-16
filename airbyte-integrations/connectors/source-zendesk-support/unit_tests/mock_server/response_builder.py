@@ -172,6 +172,11 @@ class UsersRecordBuilder(ZendeskSupportRecordBuilder):
         record_template = cls.extract_record("users", __file__, NestedPath(["users", 0]))
         return cls(record_template, FieldPath("id"), FieldPath("updated_at"))
 
+    @classmethod
+    def record(cls) -> "UsersRecordBuilder":
+        """Alias for users_record() for backward compatibility."""
+        return cls.users_record()
+
     def with_id(self, id: int) -> "UsersRecordBuilder":
         self._record["id"] = id
         return self
@@ -355,11 +360,19 @@ class GroupsResponseBuilder(HttpResponseBuilder):
 
 class UsersResponseBuilder(HttpResponseBuilder):
     @classmethod
-    def users_response(cls, url: Optional[str] = None, cursor: Optional[str] = None) -> "UsersResponseBuilder":
+    def users_response(cls, url: Optional[HttpRequest] = None, cursor: Optional[str] = None) -> "UsersResponseBuilder":
         return cls(
             find_template("users", __file__),
             FieldPath("users"),
-            EndOfStreamPaginationStrategy(url, cursor) if url and cursor else None,
+            EndOfStreamPaginationStrategy(http_request_to_str(url), cursor),
+        )
+
+    @classmethod
+    def identities_response(cls, url: Optional[HttpRequest] = None, cursor: Optional[str] = None) -> "UsersResponseBuilder":
+        return cls(
+            find_template("users", __file__),
+            FieldPath("identities"),
+            EndOfStreamPaginationStrategy(http_request_to_str(url), cursor),
         )
 
 
