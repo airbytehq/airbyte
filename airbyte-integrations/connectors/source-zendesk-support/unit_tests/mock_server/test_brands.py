@@ -8,11 +8,9 @@ from airbyte_cdk.test.mock_http import HttpMocker
 from airbyte_cdk.utils.datetime_helpers import ab_datetime_now
 
 from .config import ConfigBuilder
+from .request_builder import ApiTokenAuthenticator, ZendeskSupportRequestBuilder
+from .response_builder import BrandsRecordBuilder, BrandsResponseBuilder, ErrorResponseBuilder
 from .utils import read_stream
-from .zs_requests import BrandsRequestBuilder
-from .zs_requests.request_authenticators import ApiTokenAuthenticator
-from .zs_responses import BrandsResponseBuilder, ErrorResponseBuilder
-from .zs_responses.records import BrandsRecordBuilder
 
 
 _NOW = ab_datetime_now()
@@ -34,7 +32,7 @@ class TestBrandsStreamFullRefresh(TestCase):
         return ApiTokenAuthenticator(email=config["credentials"]["email"], password=config["credentials"]["api_token"])
 
     def _base_brands_request(self, authenticator):
-        return BrandsRequestBuilder.brands_endpoint(authenticator).with_page_size(100)
+        return ZendeskSupportRequestBuilder.brands_endpoint(authenticator).with_page_size(100)
 
     @HttpMocker()
     def test_given_one_page_when_read_brands_then_return_records(self, http_mocker):

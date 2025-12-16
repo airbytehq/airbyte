@@ -8,11 +8,9 @@ from airbyte_cdk.test.mock_http import HttpMocker
 from airbyte_cdk.utils.datetime_helpers import ab_datetime_now
 
 from .config import ConfigBuilder
+from .request_builder import ApiTokenAuthenticator, ZendeskSupportRequestBuilder
+from .response_builder import CustomRolesRecordBuilder, CustomRolesResponseBuilder, ErrorResponseBuilder
 from .utils import read_stream
-from .zs_requests import CustomRolesRequestBuilder
-from .zs_requests.request_authenticators import ApiTokenAuthenticator
-from .zs_responses import CustomRolesResponseBuilder, ErrorResponseBuilder
-from .zs_responses.records import CustomRolesRecordBuilder
 
 
 _NOW = ab_datetime_now()
@@ -39,7 +37,7 @@ class TestCustomRolesStreamFullRefresh(TestCase):
         return ApiTokenAuthenticator(email=config["credentials"]["email"], password=config["credentials"]["api_token"])
 
     def _base_custom_roles_request(self, authenticator):
-        return CustomRolesRequestBuilder.custom_roles_endpoint(authenticator)
+        return ZendeskSupportRequestBuilder.custom_roles_endpoint(authenticator)
 
     @HttpMocker()
     def test_given_one_page_when_read_custom_roles_then_return_records(self, http_mocker):
