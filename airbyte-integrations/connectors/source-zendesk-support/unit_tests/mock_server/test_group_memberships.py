@@ -15,9 +15,6 @@ from .response_builder import ErrorResponseBuilder, GroupMembershipsRecordBuilde
 from .utils import datetime_to_string, read_stream
 
 
-_NOW = ab_datetime_now()
-
-
 class TestGroupMembershipsStreamFullRefresh(TestCase):
     """Test group_memberships stream which is a semi-incremental stream.
 

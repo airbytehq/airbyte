@@ -19,9 +19,6 @@ from .response_builder import (
 from .utils import datetime_to_string, read_stream
 
 
-_NOW = ab_datetime_now()
-
-
 class TestOrganizationMembershipsStreamFullRefresh(TestCase):
     """Test organization_memberships stream which is a semi-incremental stream."""
 

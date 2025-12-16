@@ -15,9 +15,6 @@ from .response_builder import ErrorResponseBuilder, TicketFieldsRecordBuilder, T
 from .utils import datetime_to_string, read_stream
 
 
-_NOW = ab_datetime_now()
-
-
 class TestTicketFieldsStreamFullRefresh(TestCase):
     """Test ticket_fields stream which is a semi-incremental stream."""
 

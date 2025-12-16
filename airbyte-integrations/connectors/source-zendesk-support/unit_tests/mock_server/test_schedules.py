@@ -22,9 +22,6 @@ from .response_builder import ErrorResponseBuilder, SchedulesRecordBuilder, Sche
 from .utils import get_log_messages_by_log_level, read_stream
 
 
-_NOW = ab_datetime_now()
-
-
 class TestSchedulesStreamFullRefresh(TestCase):
     """
     Tests for the schedules stream full refresh sync.

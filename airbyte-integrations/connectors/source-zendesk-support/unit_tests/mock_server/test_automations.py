@@ -14,9 +14,6 @@ from .response_builder import AutomationsRecordBuilder, AutomationsResponseBuild
 from .utils import get_log_messages_by_log_level, read_stream
 
 
-_NOW = ab_datetime_now()
-
-
 class TestAutomationsStreamFullRefresh(TestCase):
     @property
     def _config(self):

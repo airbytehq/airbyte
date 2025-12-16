@@ -22,9 +22,6 @@ from .response_builder import ErrorResponseBuilder, SlaPoliciesRecordBuilder, Sl
 from .utils import get_log_messages_by_log_level, read_stream
 
 
-_NOW = ab_datetime_now()
-
-
 class TestSlaPoliciesStreamFullRefresh(TestCase):
     """
     Tests for the sla_policies stream full refresh sync.

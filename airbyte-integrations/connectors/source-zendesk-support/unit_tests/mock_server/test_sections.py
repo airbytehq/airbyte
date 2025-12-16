@@ -14,9 +14,6 @@ from .response_builder import ErrorResponseBuilder, SectionsRecordBuilder, Secti
 from .utils import get_log_messages_by_log_level, read_stream
 
 
-_NOW = ab_datetime_now()
-
-
 class TestSectionsStreamFullRefresh(TestCase):
     """Test sections stream which uses links_next_paginator (cursor-based pagination)."""
 

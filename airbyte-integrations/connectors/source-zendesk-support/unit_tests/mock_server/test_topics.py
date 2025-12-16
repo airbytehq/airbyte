@@ -14,9 +14,6 @@ from .response_builder import ErrorResponseBuilder, TopicsRecordBuilder, TopicsR
 from .utils import get_log_messages_by_log_level, read_stream
 
 
-_NOW = ab_datetime_now()
-
-
 class TestTopicsStreamFullRefresh(TestCase):
     """Test topics stream which uses links_next_paginator (cursor-based pagination)."""
 

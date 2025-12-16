@@ -14,9 +14,6 @@ from .response_builder import CustomRolesRecordBuilder, CustomRolesResponseBuild
 from .utils import get_log_messages_by_log_level, read_stream
 
 
-_NOW = ab_datetime_now()
-
-
 class TestCustomRolesStreamFullRefresh(TestCase):
     """
     Tests for custom_roles stream.

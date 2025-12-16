@@ -15,9 +15,6 @@ from .response_builder import GroupsRecordBuilder, GroupsResponseBuilder
 from .utils import datetime_to_string, read_stream, string_to_datetime
 
 
-_NOW = ab_datetime_now()
-
-
 class TestGroupsStreamFullRefresh(TestCase):
     @property
     def _config(self):
@@ -34,10 +31,9 @@ class TestGroupsStreamFullRefresh(TestCase):
         return ApiTokenAuthenticator(email=config["credentials"]["email"], password=config["credentials"]["api_token"])
 
     @HttpMocker()
-    def test_given_incoming_state_semi_incremental_groups_does_not_emit_earlier_record(self, http_mocker):
+    def test_given_no_state_when_read_groups_then_return_all_records(self, http_mocker):
         """
-        Perform a semi-incremental sync where records that came before the current state are not included in the set
-        of records emitted
+        Perform a full refresh sync without state - all records after start_date are returned.
         """
         api_token_authenticator = self.get_authenticator(self._config)
         given_groups_with_later_records(
@@ -54,7 +50,7 @@ class TestGroupsStreamFullRefresh(TestCase):
     def test_given_incoming_state_semi_incremental_groups_does_not_emit_earlier_record(self, http_mocker):
         """
         Perform a semi-incremental sync where records that came before the current state are not included in the set
-        of records emitted
+        of records emitted.
         """
         api_token_authenticator = self.get_authenticator(self._config)
         given_groups_with_later_records(

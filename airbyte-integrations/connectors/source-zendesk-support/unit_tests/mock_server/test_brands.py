@@ -14,9 +14,6 @@ from .response_builder import BrandsRecordBuilder, BrandsResponseBuilder, ErrorR
 from .utils import get_log_messages_by_log_level, read_stream
 
 
-_NOW = ab_datetime_now()
-
-
 class TestBrandsStreamFullRefresh(TestCase):
     @property
     def _config(self):

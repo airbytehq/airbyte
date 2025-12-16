@@ -15,9 +15,6 @@ from .response_builder import ErrorResponseBuilder, NextPagePaginationStrategy, 
 from .utils import datetime_to_string, read_stream
 
 
-_NOW = ab_datetime_now()
-
-
 class TestTriggersStreamFullRefresh(TestCase):
     """Test triggers stream which is a semi-incremental stream."""
 
