@@ -1,7 +1,5 @@
 # Copyright (c) 2024 Airbyte, Inc., all rights reserved.
 
-from typing import Optional
-
 from airbyte_cdk.test.mock_http import HttpRequest
 from airbyte_cdk.test.mock_http.request import ANY_QUERY_PARAMS
 

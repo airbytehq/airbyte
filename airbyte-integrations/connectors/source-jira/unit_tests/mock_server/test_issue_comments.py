@@ -243,8 +243,9 @@ class TestIssueCommentsStream(TestCase):
         output = read(source, config=config, catalog=catalog, state=state)
 
         # Client-side filtering should only return comments updated after state cursor
-        # Comment 100002 (updated 2024-01-14) should be returned
-        assert len(output.records) >= 1
+        # Comment 100002 (updated 2024-01-14) should be returned, comment 100001 (updated 2024-01-08) filtered out
+        assert len(output.records) == 1
+        assert output.records[0].record.data["id"] == "100002"
 
         # Verify state message is emitted
         assert len(output.state_messages) > 0
