@@ -17,9 +17,11 @@ Example usage:
 
 import abc
 import base64
-from typing import Any, Dict, Optional
+import calendar
+from typing import Any, Dict, Optional, Union
 
 from airbyte_cdk.test.mock_http import HttpRequest
+from airbyte_cdk.utils.datetime_helpers import AirbyteDateTime
 
 
 class Authenticator(abc.ABC):
@@ -94,13 +96,23 @@ class ZendeskSupportRequestBuilder:
 
     @classmethod
     def users_endpoint(cls, authenticator: Authenticator) -> "ZendeskSupportRequestBuilder":
-        """Create a request builder for the /users endpoint."""
-        return cls(cls.DEFAULT_SUBDOMAIN, "users").with_authenticator(authenticator)
+        """Create a request builder for the /incremental/users/cursor.json endpoint (for user_identities stream)."""
+        return cls(cls.DEFAULT_SUBDOMAIN, "incremental/users/cursor.json").with_authenticator(authenticator)
 
     @classmethod
     def ticket_metrics_endpoint(cls, authenticator: Authenticator) -> "ZendeskSupportRequestBuilder":
-        """Create a request builder for the /ticket_metrics endpoint."""
+        """Create a request builder for the /ticket_metrics endpoint (alias for stateless)."""
         return cls(cls.DEFAULT_SUBDOMAIN, "ticket_metrics").with_authenticator(authenticator)
+
+    @classmethod
+    def stateless_ticket_metrics_endpoint(cls, authenticator: Authenticator) -> "ZendeskSupportRequestBuilder":
+        """Create a request builder for the /ticket_metrics endpoint (stateless)."""
+        return cls(cls.DEFAULT_SUBDOMAIN, "ticket_metrics").with_authenticator(authenticator)
+
+    @classmethod
+    def stateful_ticket_metrics_endpoint(cls, authenticator: Authenticator, ticket_id: int) -> "ZendeskSupportRequestBuilder":
+        """Create a request builder for the /tickets/{ticket_id}/metrics endpoint (stateful)."""
+        return cls(cls.DEFAULT_SUBDOMAIN, f"tickets/{ticket_id}/metrics").with_authenticator(authenticator)
 
     @classmethod
     def tickets_endpoint(cls, authenticator: Authenticator) -> "ZendeskSupportRequestBuilder":
@@ -200,6 +212,31 @@ class ZendeskSupportRequestBuilder:
     def with_query_param(self, key: str, value: Any) -> "ZendeskSupportRequestBuilder":
         """Add a custom query parameter."""
         self._query_params[key] = value
+        return self
+
+    def with_start_time(self, start_time: Union[str, AirbyteDateTime, int]) -> "ZendeskSupportRequestBuilder":
+        """Set the start_time query parameter for incremental syncs."""
+        if isinstance(start_time, AirbyteDateTime):
+            self._query_params["start_time"] = str(calendar.timegm(start_time.timetuple()))
+        elif isinstance(start_time, int):
+            self._query_params["start_time"] = str(start_time)
+        else:
+            self._query_params["start_time"] = start_time
+        return self
+
+    def with_cursor(self, cursor: str) -> "ZendeskSupportRequestBuilder":
+        """Set the cursor query parameter for cursor-based pagination."""
+        self._query_params["cursor"] = cursor
+        return self
+
+    def with_include(self, include: str) -> "ZendeskSupportRequestBuilder":
+        """Set the include query parameter for including related resources."""
+        self._query_params["include"] = include
+        return self
+
+    def with_per_page(self, per_page: int) -> "ZendeskSupportRequestBuilder":
+        """Set the per_page query parameter for pagination."""
+        self._query_params["per_page"] = per_page
         return self
 
     def build(self) -> HttpRequest:

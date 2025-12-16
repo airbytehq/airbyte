@@ -10,8 +10,8 @@ from airbyte_cdk.utils.datetime_helpers import ab_datetime_now
 
 from .config import ConfigBuilder
 from .helpers import given_groups_with_later_records
+from .request_builder import ApiTokenAuthenticator
 from .utils import datetime_to_string, read_stream, string_to_datetime
-from .zs_requests.request_authenticators import ApiTokenAuthenticator
 
 
 _NOW = ab_datetime_now()
