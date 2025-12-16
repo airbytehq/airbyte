@@ -12,50 +12,52 @@ from airbyte_cdk.test.catalog_builder import CatalogBuilder
 from airbyte_cdk.test.entrypoint_wrapper import read
 from airbyte_cdk.test.mock_http import HttpMocker, HttpResponse
 from airbyte_cdk.test.state_builder import StateBuilder
-from integration.config import ConfigBuilder
-from integration.request_builder import KlaviyoRequestBuilder
-from integration.response_builder import KlaviyoPaginatedResponseBuilder
+from mock_server.config import ConfigBuilder
+from mock_server.request_builder import KlaviyoRequestBuilder
+from mock_server.response_builder import KlaviyoPaginatedResponseBuilder
 
 
 _NOW = datetime(2024, 6, 1, 12, 0, 0, tzinfo=timezone.utc)
-_STREAM_NAME = "profiles"
+_STREAM_NAME = "global_exclusions"
 _API_KEY = "test_api_key_abc123"
 
 
 @freezegun.freeze_time(_NOW.isoformat())
-class TestProfilesStream(TestCase):
+class TestGlobalExclusionsStream(TestCase):
     """
-    Tests for the Klaviyo 'profiles' stream.
+    Tests for the Klaviyo 'global_exclusions' stream.
 
     Stream configuration from manifest.yaml:
-    - Incremental sync with DatetimeBasedCursor on 'updated' field
-    - Pagination: CursorPagination with page[size]=100
+    - Uses /profiles endpoint with additional-fields[profile]: subscriptions
+    - RecordFilter: Only returns profiles with suppression data
+    - Transformations:
+      - AddFields: extracts 'updated' from attributes
+      - AddFields: copies suppression to suppressions (plural)
+      - RemoveFields: removes original suppression field
     - Error handling: 429 RATE_LIMITED, 401/403 FAIL
-    - Transformations: AddFields to extract 'updated' from attributes
+    - Pagination: CursorPagination
     """
 
     @HttpMocker()
-    def test_full_refresh_single_page(self, http_mocker: HttpMocker):
+    def test_full_refresh_filters_suppressed_profiles(self, http_mocker: HttpMocker):
         """
-        Test full refresh sync with a single page of results.
+        Test that record_filter correctly filters only suppressed profiles.
 
-        Given: A configured Klaviyo connector
-        When: Running a full refresh sync for the profiles stream
-        Then: The connector should make the correct API request and return all records
+        The manifest configures:
+        record_filter:
+          type: RecordFilter
+          condition: "{{ record['attributes']['subscriptions']['email']['marketing']['suppression'] }}"
+
+        Given: API returns profiles with and without suppression
+        When: Running a full refresh sync
+        Then: Only profiles with suppression data should be returned
         """
         config = ConfigBuilder().with_api_key(_API_KEY).with_start_date(datetime(2024, 5, 31, tzinfo=timezone.utc)).build()
 
-        # Validate that the connector sends the correct query parameters
+        # Global exclusions stream uses profiles endpoint with additional-fields[profile]: subscriptions
         http_mocker.get(
             KlaviyoRequestBuilder.profiles_endpoint(_API_KEY)
-            .with_query_params(
-                {
-                    "filter": "greater-than(updated,2024-05-31T00:00:00+0000)",
-                    "sort": "updated",
-                    "additional-fields[profile]": "predictive_analytics",
-                    "page[size]": "100",
-                }
-            )
+            .with_query_params({"additional-fields[profile]": "subscriptions", "page[size]": "100"})
             .build(),
             HttpResponse(
                 body=json.dumps(
@@ -63,14 +65,99 @@ class TestProfilesStream(TestCase):
                         "data": [
                             {
                                 "type": "profile",
-                                "id": "profile_001",
+                                "id": "profile_suppressed",
                                 "attributes": {
-                                    "email": "test@example.com",
-                                    "first_name": "John",
-                                    "last_name": "Doe",
-                                    "updated": "2024-01-15T12:30:00+00:00",
+                                    "email": "suppressed@example.com",
+                                    "updated": "2024-05-31T12:30:00+00:00",
+                                    "subscriptions": {
+                                        "email": {
+                                            "marketing": {
+                                                "can_receive_email_marketing": False,
+                                                "consent": "UNSUBSCRIBED",
+                                                "suppression": [{"reason": "USER_SUPPRESSED", "timestamp": "2024-05-31T10:00:00+00:00"}],
+                                            }
+                                        },
+                                        "sms": {"marketing": {"can_receive_sms_marketing": False}},
+                                    },
                                 },
-                                "links": {"self": "https://a.klaviyo.com/api/profiles/profile_001"},
+                            },
+                            {
+                                "type": "profile",
+                                "id": "profile_not_suppressed",
+                                "attributes": {
+                                    "email": "active@example.com",
+                                    "updated": "2024-05-31T12:30:00+00:00",
+                                    "subscriptions": {
+                                        "email": {
+                                            "marketing": {
+                                                "can_receive_email_marketing": True,
+                                                "consent": "SUBSCRIBED",
+                                                "suppression": [],
+                                            }
+                                        },
+                                        "sms": {"marketing": {"can_receive_sms_marketing": True}},
+                                    },
+                                },
+                            },
+                        ],
+                        "links": {"self": "https://a.klaviyo.com/api/profiles", "next": None},
+                    }
+                ),
+                status_code=200,
+            ),
+        )
+
+        source = get_source(config=config)
+        catalog = CatalogBuilder().with_stream(_STREAM_NAME, SyncMode.full_refresh).build()
+        output = read(source, config=config, catalog=catalog)
+
+        assert len(output.records) == 1
+        record = output.records[0].record.data
+        assert record["id"] == "profile_suppressed"
+        assert record["attributes"]["email"] == "suppressed@example.com"
+
+    @HttpMocker()
+    def test_transformation_adds_suppressions_field(self, http_mocker: HttpMocker):
+        """
+        Test that transformations correctly add 'suppressions' and remove 'suppression'.
+
+        The manifest configures:
+        transformations:
+          - type: AddFields (copies suppression to suppressions)
+          - type: RemoveFields (removes original suppression)
+
+        Given: A suppressed profile record
+        When: Running a sync
+        Then: The record should have 'suppressions' field and no 'suppression' field
+        """
+        config = ConfigBuilder().with_api_key(_API_KEY).with_start_date(datetime(2024, 5, 31, tzinfo=timezone.utc)).build()
+
+        # Global exclusions stream uses profiles endpoint with additional-fields[profile]: subscriptions
+        http_mocker.get(
+            KlaviyoRequestBuilder.profiles_endpoint(_API_KEY)
+            .with_query_params({"additional-fields[profile]": "subscriptions", "page[size]": "100"})
+            .build(),
+            HttpResponse(
+                body=json.dumps(
+                    {
+                        "data": [
+                            {
+                                "type": "profile",
+                                "id": "profile_transform_test",
+                                "attributes": {
+                                    "email": "transform@example.com",
+                                    "updated": "2024-05-31T14:45:00+00:00",
+                                    "subscriptions": {
+                                        "email": {
+                                            "marketing": {
+                                                "can_receive_email_marketing": False,
+                                                "consent": "UNSUBSCRIBED",
+                                                "suppression": [{"reason": "HARD_BOUNCE", "timestamp": "2024-05-31T10:00:00+00:00"}],
+                                            }
+                                        },
+                                        "sms": {"marketing": {"can_receive_sms_marketing": False}},
+                                    },
+                                },
                             }
                         ],
                         "links": {"self": "https://a.klaviyo.com/api/profiles", "next": None},
@@ -86,87 +173,14 @@ class TestProfilesStream(TestCase):
 
         assert len(output.records) == 1
         record = output.records[0].record.data
-        assert record["id"] == "profile_001"
-        assert record["attributes"]["email"] == "test@example.com"
-        assert record["updated"] == "2024-01-15T12:30:00+00:00"
 
-    @HttpMocker()
-    def test_pagination_multiple_pages(self, http_mocker: HttpMocker):
-        """
-        Test that connector fetches all pages when pagination is present.
+        assert "updated" in record
+        assert record["updated"] == "2024-05-31T14:45:00+00:00"
 
-        NOTE: This test validates pagination for the 'profiles' stream. All streams
-        in source-klaviyo use the same CursorPagination configuration with RequestPath
-        page_token_option, so this provides pagination coverage for:
-        profiles, global_exclusions, events, events_detailed, email_templates,
-        campaigns, campaigns_detailed, flows, metrics, lists, lists_detailed
-
-        Given: An API that returns multiple pages of profiles
-        When: Running a full refresh sync
-        Then: The connector should follow pagination links and return all records
-        """
-        config = ConfigBuilder().with_api_key(_API_KEY).with_start_date(datetime(2024, 5, 31, tzinfo=timezone.utc)).build()
-
-        # Use a single mock with multiple responses served sequentially.
-        # The first response includes a next_page_link, the second response has no next link.
-        http_mocker.get(
-            KlaviyoRequestBuilder.profiles_endpoint(_API_KEY).with_any_query_params().build(),
-            [
-                KlaviyoPaginatedResponseBuilder()
-                .with_records(
-                    [
-                        {
-                            "type": "profile",
-                            "id": "profile_001",
-                            "attributes": {
-                                "email": "user1@example.com",
-                                "first_name": "User",
-                                "last_name": "One",
-                                "updated": "2024-05-31T10:00:00+00:00",
-                            },
-                        },
-                        {
-                            "type": "profile",
-                            "id": "profile_002",
-                            "attributes": {
-                                "email": "user2@example.com",
-                                "first_name": "User",
-                                "last_name": "Two",
-                                "updated": "2024-05-31T11:00:00+00:00",
-                            },
-                        },
-                    ]
-                )
-                .with_next_page_link("https://a.klaviyo.com/api/profiles?page[cursor]=abc123")
-                .build(),
-                KlaviyoPaginatedResponseBuilder()
-                .with_records(
-                    [
-                        {
-                            "type": "profile",
-                            "id": "profile_003",
-                            "attributes": {
-                                "email": "user3@example.com",
-                                "first_name": "User",
-                                "last_name": "Three",
-                                "updated": "2024-05-31T12:00:00+00:00",
-                            },
-                        }
-                    ]
-                )
-                .build(),
-            ],
-        )
-
-        source = get_source(config=config)
-        catalog = CatalogBuilder().with_stream(_STREAM_NAME, SyncMode.full_refresh).build()
-        output = read(source, config=config, catalog=catalog)
-
-        assert len(output.records) == 3
-        assert output.records[0].record.data["id"] == "profile_001"
-        assert output.records[1].record.data["id"] == "profile_002"
-        assert output.records[2].record.data["id"] == "profile_003"
-        assert all(record.record.stream == _STREAM_NAME for record in output.records)
+        marketing = record["attributes"]["subscriptions"]["email"]["marketing"]
+        assert "suppressions" in marketing
+        assert len(marketing["suppressions"]) == 1
+        assert marketing["suppressions"][0]["reason"] == "HARD_BOUNCE"
 
     @HttpMocker()
     def test_incremental_sync_first_sync_no_state(self, http_mocker: HttpMocker):
@@ -179,16 +193,10 @@ class TestProfilesStream(TestCase):
         """
         config = ConfigBuilder().with_api_key(_API_KEY).with_start_date(datetime(2024, 5, 31, tzinfo=timezone.utc)).build()
 
+        # Global exclusions stream uses profiles endpoint with additional-fields[profile]: subscriptions
         http_mocker.get(
             KlaviyoRequestBuilder.profiles_endpoint(_API_KEY)
-            .with_query_params(
-                {
-                    "filter": "greater-than(updated,2024-05-31T00:00:00+0000)",
-                    "sort": "updated",
-                    "additional-fields[profile]": "predictive_analytics",
-                    "page[size]": "100",
-                }
-            )
+            .with_query_params({"additional-fields[profile]": "subscriptions", "page[size]": "100"})
             .build(),
             HttpResponse(
                 body=json.dumps(
@@ -200,6 +208,14 @@ class TestProfilesStream(TestCase):
                                 "attributes": {
                                     "email": "test@example.com",
                                     "updated": "2024-05-31T12:30:00+00:00",
+                                    "subscriptions": {
+                                        "email": {
+                                            "marketing": {
+                                                "suppression": [{"reason": "USER_SUPPRESSED", "timestamp": "2024-05-31T10:00:00+00:00"}]
+                                            }
+                                        },
+                                        "sms": {"marketing": {}},
+                                    },
                                 },
                             }
                         ],
@@ -215,8 +231,6 @@ class TestProfilesStream(TestCase):
         output = read(source, config=config, catalog=catalog)
 
         assert len(output.records) == 1
-        assert output.records[0].record.data["id"] == "profile_001"
-
         assert len(output.state_messages) > 0
         latest_state = output.most_recent_state.stream_state.__dict__
         assert "updated" in latest_state
@@ -231,19 +245,12 @@ class TestProfilesStream(TestCase):
         Then: The connector should use the state cursor and return only new/updated records
         """
         config = ConfigBuilder().with_api_key(_API_KEY).with_start_date(datetime(2024, 5, 31, tzinfo=timezone.utc)).build()
-        state = StateBuilder().with_stream_state(_STREAM_NAME, {"updated": "2024-05-31T00:00:00+00:00"}).build()
+        state = StateBuilder().with_stream_state(_STREAM_NAME, {"updated": "2024-05-30T00:00:00+00:00"}).build()
 
-        # When state is provided, the filter uses the state cursor value
+        # Global exclusions stream uses profiles endpoint with additional-fields[profile]: subscriptions
         http_mocker.get(
             KlaviyoRequestBuilder.profiles_endpoint(_API_KEY)
-            .with_query_params(
-                {
-                    "filter": "greater-than(updated,2024-05-31T00:00:00+0000)",
-                    "sort": "updated",
-                    "additional-fields[profile]": "predictive_analytics",
-                    "page[size]": "100",
-                }
-            )
+            .with_query_params({"additional-fields[profile]": "subscriptions", "page[size]": "100"})
             .build(),
             HttpResponse(
                 body=json.dumps(
@@ -255,6 +262,14 @@ class TestProfilesStream(TestCase):
                                 "attributes": {
                                     "email": "new@example.com",
                                     "updated": "2024-05-31T10:00:00+00:00",
+                                    "subscriptions": {
+                                        "email": {
+                                            "marketing": {
+                                                "suppression": [{"reason": "SPAM_COMPLAINT", "timestamp": "2024-05-31T09:00:00+00:00"}]
+                                            }
+                                        },
+                                        "sms": {"marketing": {}},
+                                    },
                                 },
                             }
                         ],
@@ -278,74 +293,81 @@ class TestProfilesStream(TestCase):
         assert latest_state["updated"] == "2024-05-31T10:00:00+0000"
 
     @HttpMocker()
-    def test_transformation_adds_updated_field(self, http_mocker: HttpMocker):
+    def test_pagination_multiple_pages(self, http_mocker: HttpMocker):
         """
-        Test that the AddFields transformation correctly extracts 'updated' from attributes.
+        Test that connector fetches all pages when pagination is present.
 
-        The manifest configures:
-        transformations:
-          - type: AddFields
-            fields:
-              - path: [updated]
-                value: "{{ record.get('attributes', {}).get('updated') }}"
+        Given: An API that returns multiple pages of suppressed profiles
+        When: Running a full refresh sync
+        Then: The connector should follow pagination links and return all records
 
-        Given: A profile record with updated in attributes
-        When: Running a sync
-        Then: The 'updated' field should be added at the root level of the record
+        Note: Uses with_any_query_params() because pagination adds page[cursor] to the
+        request params, making exact matching impractical.
         """
         config = ConfigBuilder().with_api_key(_API_KEY).with_start_date(datetime(2024, 5, 31, tzinfo=timezone.utc)).build()
 
+        # Use with_any_query_params() since pagination adds page[cursor] dynamically
         http_mocker.get(
-            KlaviyoRequestBuilder.profiles_endpoint(_API_KEY)
-            .with_query_params(
-                {
-                    "filter": "greater-than(updated,2024-05-31T00:00:00+0000)",
-                    "sort": "updated",
-                    "additional-fields[profile]": "predictive_analytics",
-                    "page[size]": "100",
-                }
-            )
-            .build(),
-            HttpResponse(
-                body=json.dumps(
-                    {
-                        "data": [
-                            {
-                                "type": "profile",
-                                "id": "profile_transform_test",
-                                "attributes": {
-                                    "email": "transform@example.com",
-                                    "updated": "2024-05-31T14:45:00+00:00",
+            KlaviyoRequestBuilder.profiles_endpoint(_API_KEY).with_any_query_params().build(),
+            [
+                KlaviyoPaginatedResponseBuilder()
+                .with_records(
+                    [
+                        {
+                            "type": "profile",
+                            "id": "profile_001",
+                            "attributes": {
+                                "email": "user1@example.com",
+                                "updated": "2024-05-31T10:00:00+00:00",
+                                "subscriptions": {
+                                    "email": {
+                                        "marketing": {
+                                            "suppression": [{"reason": "USER_SUPPRESSED", "timestamp": "2024-05-31T09:00:00+00:00"}]
+                                        }
+                                    },
+                                    "sms": {"marketing": {}},
                                 },
-                            }
-                        ],
-                        "links": {"self": "https://a.klaviyo.com/api/profiles", "next": None},
-                    }
-                ),
-                status_code=200,
-            ),
+                            },
+                        }
+                    ]
+                )
+                .with_next_page_link("https://a.klaviyo.com/api/profiles?page[cursor]=abc123")
+                .build(),
+                KlaviyoPaginatedResponseBuilder()
+                .with_records(
+                    [
+                        {
+                            "type": "profile",
+                            "id": "profile_002",
+                            "attributes": {
+                                "email": "user2@example.com",
+                                "updated": "2024-05-31T11:00:00+00:00",
+                                "subscriptions": {
+                                    "email": {
+                                        "marketing": {"suppression": [{"reason": "HARD_BOUNCE", "timestamp": "2024-05-31T10:00:00+00:00"}]}
+                                    },
+                                    "sms": {"marketing": {}},
+                                },
+                            },
+                        }
+                    ]
+                )
+                .build(),
+            ],
         )
 
         source = get_source(config=config)
         catalog = CatalogBuilder().with_stream(_STREAM_NAME, SyncMode.full_refresh).build()
         output = read(source, config=config, catalog=catalog)
 
-        assert len(output.records) == 1
-        record = output.records[0].record.data
-        assert "updated" in record
-        assert record["updated"] == "2024-05-31T14:45:00+00:00"
-        assert record["attributes"]["updated"] == "2024-05-31T14:45:00+00:00"
+        assert len(output.records) == 2
+        assert output.records[0].record.data["id"] == "profile_001"
+        assert output.records[1].record.data["id"] == "profile_002"
 
     @HttpMocker()
     def test_rate_limit_429_handling(self, http_mocker: HttpMocker):
         """
         Test that connector handles 429 rate limit responses with RATE_LIMITED action.
-
-        The manifest configures:
-        response_filters:
-          - type: HttpResponseFilter
-            action: RATE_LIMITED
-            http_codes: [429]
 
         Given: An API that returns a 429 rate limit error
         When: Making an API request
@@ -353,16 +375,10 @@ class TestProfilesStream(TestCase):
         """
         config = ConfigBuilder().with_api_key(_API_KEY).with_start_date(datetime(2024, 5, 31, tzinfo=timezone.utc)).build()
 
+        # Global exclusions stream uses profiles endpoint with additional-fields[profile]: subscriptions
         http_mocker.get(
             KlaviyoRequestBuilder.profiles_endpoint(_API_KEY)
-            .with_query_params(
-                {
-                    "filter": "greater-than(updated,2024-05-31T00:00:00+0000)",
-                    "sort": "updated",
-                    "additional-fields[profile]": "predictive_analytics",
-                    "page[size]": "100",
-                }
-            )
+            .with_query_params({"additional-fields[profile]": "subscriptions", "page[size]": "100"})
             .build(),
             [
                 HttpResponse(
@@ -380,6 +396,14 @@ class TestProfilesStream(TestCase):
                                     "attributes": {
                                         "email": "retry@example.com",
                                         "updated": "2024-05-31T10:00:00+00:00",
+                                        "subscriptions": {
+                                            "email": {
+                                                "marketing": {
+                                                    "suppression": [{"reason": "USER_SUPPRESSED", "timestamp": "2024-05-31T09:00:00+00:00"}]
+                                                }
+                                            },
+                                            "sms": {"marketing": {}},
+                                        },
                                     },
                                 }
                             ],
@@ -413,30 +437,16 @@ class TestProfilesStream(TestCase):
         """
         Test that connector fails on 401 Unauthorized errors with FAIL action.
 
-        The manifest configures:
-        response_filters:
-          - type: HttpResponseFilter
-            action: FAIL
-            http_codes: [401, 403]
-            failure_type: config_error
-            error_message: "Please provide a valid API key..."
-
         Given: Invalid API credentials
         When: Making an API request that returns 401
         Then: The connector should fail with a config error
         """
         config = ConfigBuilder().with_api_key("invalid_key").with_start_date(datetime(2024, 5, 31, tzinfo=timezone.utc)).build()
 
+        # Global exclusions stream uses profiles endpoint with additional-fields[profile]: subscriptions
         http_mocker.get(
             KlaviyoRequestBuilder.profiles_endpoint("invalid_key")
-            .with_query_params(
-                {
-                    "filter": "greater-than(updated,2024-05-31T00:00:00+0000)",
-                    "sort": "updated",
-                    "additional-fields[profile]": "predictive_analytics",
-                    "page[size]": "100",
-                }
-            )
+            .with_query_params({"additional-fields[profile]": "subscriptions", "page[size]": "100"})
             .build(),
             HttpResponse(
                 body=json.dumps({"errors": [{"detail": "Invalid API key"}]}),
@@ -469,16 +479,10 @@ class TestProfilesStream(TestCase):
         """
         config = ConfigBuilder().with_api_key(_API_KEY).with_start_date(datetime(2024, 5, 31, tzinfo=timezone.utc)).build()
 
+        # Global exclusions stream uses profiles endpoint with additional-fields[profile]: subscriptions
         http_mocker.get(
             KlaviyoRequestBuilder.profiles_endpoint(_API_KEY)
-            .with_query_params(
-                {
-                    "filter": "greater-than(updated,2024-05-31T00:00:00+0000)",
-                    "sort": "updated",
-                    "additional-fields[profile]": "predictive_analytics",
-                    "page[size]": "100",
-                }
-            )
+            .with_query_params({"additional-fields[profile]": "subscriptions", "page[size]": "100"})
             .build(),
             HttpResponse(
                 body=json.dumps({"errors": [{"detail": "Forbidden - insufficient permissions"}]}),
@@ -498,73 +502,20 @@ class TestProfilesStream(TestCase):
         ), f"Expected error message '{expected_error_message}' in logs for 403 permission failure"
 
     @HttpMocker()
-    def test_empty_results(self, http_mocker: HttpMocker):
+    def test_empty_results_no_suppressed_profiles(self, http_mocker: HttpMocker):
         """
-        Test that connector handles empty results gracefully.
+        Test that connector handles empty results when no profiles are suppressed.
 
-        Given: An API that returns no profiles
+        Given: An API that returns profiles but none are suppressed
         When: Running a full refresh sync
         Then: The connector should return zero records without errors
         """
         config = ConfigBuilder().with_api_key(_API_KEY).with_start_date(datetime(2024, 5, 31, tzinfo=timezone.utc)).build()
 
+        # Global exclusions stream uses profiles endpoint with additional-fields[profile]: subscriptions
         http_mocker.get(
             KlaviyoRequestBuilder.profiles_endpoint(_API_KEY)
-            .with_query_params(
-                {
-                    "filter": "greater-than(updated,2024-05-31T00:00:00+0000)",
-                    "sort": "updated",
-                    "additional-fields[profile]": "predictive_analytics",
-                    "page[size]": "100",
-                }
-            )
-            .build(),
-            HttpResponse(
-                body=json.dumps({"data": [], "links": {"self": "https://a.klaviyo.com/api/profiles", "next": None}}),
-                status_code=200,
-            ),
-        )
-
-        source = get_source(config=config)
-        catalog = CatalogBuilder().with_stream(_STREAM_NAME, SyncMode.full_refresh).build()
-        output = read(source, config=config, catalog=catalog)
-
-        assert len(output.records) == 0
-        assert not any(log.log.level == "ERROR" for log in output.logs)
-
-    @HttpMocker()
-    def test_predictive_analytics_disabled(self, http_mocker: HttpMocker):
-        """
-        Test that predictive_analytics field is not requested when disabled.
-
-        The manifest configures:
-        request_parameters:
-          additional-fields[profile]: >-
-            {{ 'predictive_analytics' if not config['disable_fetching_predictive_analytics'] else '' }}
-
-        Given: Config with disable_fetching_predictive_analytics=True
-        When: Running a sync
-        Then: The additional-fields parameter should be empty
-        """
-        config = (
-            ConfigBuilder()
-            .with_api_key(_API_KEY)
-            .with_start_date(datetime(2024, 5, 31, tzinfo=timezone.utc))
-            .with_disable_fetching_predictive_analytics(True)
-            .build()
-        )
-
-        # When predictive_analytics is disabled, additional-fields[profile] should be empty string
-        http_mocker.get(
-            KlaviyoRequestBuilder.profiles_endpoint(_API_KEY)
-            .with_query_params(
-                {
-                    "filter": "greater-than(updated,2024-05-31T00:00:00+0000)",
-                    "sort": "updated",
-                    "additional-fields[profile]": "",
-                    "page[size]": "100",
-                }
-            )
+            .with_query_params({"additional-fields[profile]": "subscriptions", "page[size]": "100"})
             .build(),
             HttpResponse(
                 body=json.dumps(
@@ -572,10 +523,16 @@ class TestProfilesStream(TestCase):
                         "data": [
                             {
                                 "type": "profile",
-                                "id": "profile_no_analytics",
+                                "id": "profile_active",
                                 "attributes": {
-                                    "email": "noanalytics@example.com",
+                                    "email": "active@example.com",
                                     "updated": "2024-05-31T12:30:00+00:00",
+                                    "subscriptions": {
+                                        "email": {
+                                            "marketing": {"can_receive_email_marketing": True, "consent": "SUBSCRIBED", "suppression": []}
+                                        },
+                                        "sms": {"marketing": {"can_receive_sms_marketing": True}},
+                                    },
                                 },
                             }
                         ],
@@ -590,5 +547,5 @@ class TestProfilesStream(TestCase):
         catalog = CatalogBuilder().with_stream(_STREAM_NAME, SyncMode.full_refresh).build()
         output = read(source, config=config, catalog=catalog)
 
-        assert len(output.records) == 1
-        assert output.records[0].record.data["id"] == "profile_no_analytics"
+        assert len(output.records) == 0
+        assert not any(log.log.level == "ERROR" for log in output.logs)
