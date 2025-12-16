@@ -14,7 +14,7 @@ from airbyte_cdk.test.state_builder import StateBuilder
 from airbyte_cdk.utils.datetime_helpers import ab_datetime_now, ab_datetime_parse
 
 from .config import ConfigBuilder
-from .helpers import given_posts, given_ticket_forms
+from .helpers import given_posts, given_posts_multiple, given_ticket_forms
 from .request_builder import ApiTokenAuthenticator, ZendeskSupportRequestBuilder
 from .response_builder import ErrorResponseBuilder, PostCommentsRecordBuilder, PostCommentsResponseBuilder
 from .utils import datetime_to_string, get_log_messages_by_log_level, read_stream, string_to_datetime
@@ -61,6 +61,51 @@ class TestPostsCommentsStreamFullRefresh(TestCase):
 
         output = read_stream("post_comments", SyncMode.full_refresh, self._config)
         assert len(output.records) == 1
+
+    @HttpMocker()
+    def test_given_two_parent_posts_when_read_then_return_records_from_both_parents(self, http_mocker):
+        """
+        Test substream with 2+ parent records (per playbook requirement).
+        Verifies that child records are fetched for each parent post.
+        """
+        api_token_authenticator = self.get_authenticator(self._config)
+
+        # Setup 2 parent posts
+        post1_builder, post2_builder = given_posts_multiple(
+            http_mocker, string_to_datetime(self._config["start_date"]), api_token_authenticator
+        )
+        post1 = post1_builder.build()
+        post2 = post2_builder.build()
+
+        # Mock child endpoint for post 1
+        http_mocker.get(
+            ZendeskSupportRequestBuilder.posts_comments_endpoint(api_token_authenticator, post1["id"])
+            .with_start_time(self._config["start_date"])
+            .with_page_size(100)
+            .build(),
+            PostCommentsResponseBuilder.posts_comments_response()
+            .with_record(PostCommentsRecordBuilder.posts_comments_record().with_id(2001))
+            .build(),
+        )
+
+        # Mock child endpoint for post 2
+        http_mocker.get(
+            ZendeskSupportRequestBuilder.posts_comments_endpoint(api_token_authenticator, post2["id"])
+            .with_start_time(self._config["start_date"])
+            .with_page_size(100)
+            .build(),
+            PostCommentsResponseBuilder.posts_comments_response()
+            .with_record(PostCommentsRecordBuilder.posts_comments_record().with_id(2002))
+            .build(),
+        )
+
+        output = read_stream("post_comments", SyncMode.full_refresh, self._config)
+
+        # Verify records from both parent posts are returned
+        assert len(output.records) == 2
+        record_ids = [r.record.data["id"] for r in output.records]
+        assert 2001 in record_ids
+        assert 2002 in record_ids
 
     @HttpMocker()
     def test_given_403_error_when_read_posts_comments_then_skip_stream(self, http_mocker):

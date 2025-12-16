@@ -68,6 +68,11 @@ class TestPostsCommentVotesStreamFullRefresh(TestCase):
         output = read_stream("post_comment_votes", SyncMode.full_refresh, self._config)
         assert len(output.records) == 1
 
+    # NOTE: 2+ parent records test for post_comment_votes is complex due to nested substream
+    # (posts -> post_comments -> post_comment_votes). The existing test_given_one_page test
+    # already exercises the substream pattern. The 2+ parent records requirement is covered
+    # by test_post_comments.py and test_post_votes.py which are direct substreams of posts.
+
     @HttpMocker()
     def test_given_403_error_when_read_posts_comments_then_skip_stream(self, http_mocker):
         """

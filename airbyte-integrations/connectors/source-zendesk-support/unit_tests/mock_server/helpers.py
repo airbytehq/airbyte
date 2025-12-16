@@ -60,6 +60,35 @@ def given_posts(
     return posts_record_builder
 
 
+def given_posts_multiple(
+    http_mocker: HttpMocker,
+    start_date: AirbyteDateTime,
+    api_token_authenticator: ApiTokenAuthenticator,
+    updated_at: Optional[AirbyteDateTime] = None,
+) -> tuple:
+    """
+    Posts requests setup with 2 parent records (per playbook requirement for substream tests).
+    Returns a tuple of (post1_record_builder, post2_record_builder).
+    """
+    posts_record_builder_1 = PostsRecordBuilder.posts_record().with_id(1001).with_field(
+        FieldPath("updated_at"), datetime_to_string(updated_at if updated_at else start_date.add(timedelta(seconds=1)))
+    )
+    posts_record_builder_2 = PostsRecordBuilder.posts_record().with_id(1002).with_field(
+        FieldPath("updated_at"), datetime_to_string(updated_at if updated_at else start_date.add(timedelta(seconds=2)))
+    )
+    http_mocker.get(
+        ZendeskSupportRequestBuilder.posts_endpoint(api_token_authenticator)
+        .with_start_time(datetime_to_string(start_date))
+        .with_page_size(100)
+        .build(),
+        PostsResponseBuilder.posts_response()
+        .with_record(posts_record_builder_1)
+        .with_record(posts_record_builder_2)
+        .build(),
+    )
+    return (posts_record_builder_1, posts_record_builder_2)
+
+
 def given_post_comments(
     http_mocker: HttpMocker,
     start_date: AirbyteDateTime,
