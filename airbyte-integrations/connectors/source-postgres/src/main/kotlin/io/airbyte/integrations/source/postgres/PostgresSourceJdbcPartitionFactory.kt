@@ -100,11 +100,8 @@ open class PostgresSourceJdbcPartitionFactory(
                         true
                     )
                 }
-                    ?: PostgresSourceJdbcUnsplittableSnapshotWithXminPartition( // TODO: check here
-                        // if views can ever
-                        // be xmin
-                        selectQueryGenerator,
-                        streamState,
+                    ?: error(
+                        "Unexpected incremetal sync for a table ${stream.id} with no filenode."
                     )
             }
             is UserDefinedCursorIncrementalConfiguration -> {
@@ -308,7 +305,7 @@ open class PostgresSourceJdbcPartitionFactory(
                                     xminUpperBound = streamState.cursorUpperBound,
                                 )
                             }
-                                ?: throw ConfigErrorException(
+                                ?: error(
                                     "Unexpected incremetal sync for a table ${stream.id} with no filenode."
                                 )
                         }
