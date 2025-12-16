@@ -15,11 +15,9 @@ from airbyte_cdk.utils.datetime_helpers import ab_datetime_now, ab_datetime_pars
 
 from .config import ConfigBuilder
 from .helpers import given_posts, given_ticket_forms
+from .request_builder import ApiTokenAuthenticator, ZendeskSupportRequestBuilder
+from .response_builder import ErrorResponseBuilder, PostCommentsRecordBuilder, PostCommentsResponseBuilder
 from .utils import datetime_to_string, get_log_messages_by_log_level, read_stream, string_to_datetime
-from .zs_requests import PostsCommentsRequestBuilder
-from .zs_requests.request_authenticators import ApiTokenAuthenticator
-from .zs_responses import ErrorResponseBuilder, PostsCommentsResponseBuilder
-from .zs_responses.records import PostsCommentsRecordBuilder
 
 
 _NOW = ab_datetime_now()
@@ -54,11 +52,11 @@ class TestPostsCommentsStreamFullRefresh(TestCase):
         post = posts_record_builder.build()
 
         http_mocker.get(
-            PostsCommentsRequestBuilder.posts_comments_endpoint(api_token_authenticator, post["id"])
+            ZendeskSupportRequestBuilder.posts_comments_endpoint(api_token_authenticator, post["id"])
             .with_start_time(self._config["start_date"])
             .with_page_size(100)
             .build(),
-            PostsCommentsResponseBuilder.posts_comments_response().with_record(PostsCommentsRecordBuilder.posts_comments_record()).build(),
+            PostCommentsResponseBuilder.posts_comments_response().with_record(PostCommentsRecordBuilder.posts_comments_record()).build(),
         )
 
         output = read_stream("post_comments", SyncMode.full_refresh, self._config)
@@ -77,7 +75,7 @@ class TestPostsCommentsStreamFullRefresh(TestCase):
         post = posts_record_builder.build()
 
         http_mocker.get(
-            PostsCommentsRequestBuilder.posts_comments_endpoint(api_token_authenticator, post["id"])
+            ZendeskSupportRequestBuilder.posts_comments_endpoint(api_token_authenticator, post["id"])
             .with_start_time(self._config["start_date"])
             .with_page_size(100)
             .build(),
@@ -107,7 +105,7 @@ class TestPostsCommentsStreamFullRefresh(TestCase):
         post = posts_record_builder.build()
 
         http_mocker.get(
-            PostsCommentsRequestBuilder.posts_comments_endpoint(api_token_authenticator, post["id"])
+            ZendeskSupportRequestBuilder.posts_comments_endpoint(api_token_authenticator, post["id"])
             .with_start_time(self._config["start_date"])
             .with_page_size(100)
             .build(),
@@ -137,7 +135,7 @@ class TestPostsCommentsStreamFullRefresh(TestCase):
         post = posts_record_builder.build()
 
         http_mocker.get(
-            PostsCommentsRequestBuilder.posts_comments_endpoint(api_token_authenticator, post["id"])
+            ZendeskSupportRequestBuilder.posts_comments_endpoint(api_token_authenticator, post["id"])
             .with_start_time(self._config["start_date"])
             .with_page_size(100)
             .build(),
@@ -179,14 +177,14 @@ class TestPostsCommentsStreamIncremental(TestCase):
         posts_record_builder = given_posts(http_mocker, string_to_datetime(self._config["start_date"]), api_token_authenticator)
 
         post = posts_record_builder.build()
-        post_comments_record_builder = PostsCommentsRecordBuilder.posts_comments_record()
+        post_comments_record_builder = PostCommentsRecordBuilder.posts_comments_record()
 
         http_mocker.get(
-            PostsCommentsRequestBuilder.posts_comments_endpoint(api_token_authenticator, post["id"])
+            ZendeskSupportRequestBuilder.posts_comments_endpoint(api_token_authenticator, post["id"])
             .with_start_time(self._config["start_date"])
             .with_page_size(100)
             .build(),
-            PostsCommentsResponseBuilder.posts_comments_response().with_record(post_comments_record_builder).build(),
+            PostCommentsResponseBuilder.posts_comments_response().with_record(post_comments_record_builder).build(),
         )
 
         output = read_stream("post_comments", SyncMode.incremental, self._config)
@@ -236,35 +234,35 @@ class TestPostsCommentsStreamIncremental(TestCase):
         posts_record_builder = given_posts(http_mocker, state_start_date, api_token_authenticator)
         post = posts_record_builder.build()
 
-        post_comments_first_record_builder = PostsCommentsRecordBuilder.posts_comments_record().with_field(
+        post_comments_first_record_builder = PostCommentsRecordBuilder.posts_comments_record().with_field(
             FieldPath("updated_at"), datetime_to_string(first_page_record_updated_at)
         )
 
         # Read first page request mock
         http_mocker.get(
-            PostsCommentsRequestBuilder.posts_comments_endpoint(api_token_authenticator, post["id"])
+            ZendeskSupportRequestBuilder.posts_comments_endpoint(api_token_authenticator, post["id"])
             .with_start_time(datetime_to_string(state_start_date))
             .with_page_size(100)
             .build(),
-            PostsCommentsResponseBuilder.posts_comments_response(
-                PostsCommentsRequestBuilder.posts_comments_endpoint(api_token_authenticator, post["id"]).with_page_size(100).build()
+            PostCommentsResponseBuilder.posts_comments_response(
+                ZendeskSupportRequestBuilder.posts_comments_endpoint(api_token_authenticator, post["id"]).with_page_size(100).build()
             )
             .with_pagination()
             .with_record(post_comments_first_record_builder)
             .build(),
         )
 
-        post_comments_last_record_builder = PostsCommentsRecordBuilder.posts_comments_record().with_field(
+        post_comments_last_record_builder = PostCommentsRecordBuilder.posts_comments_record().with_field(
             FieldPath("updated_at"), datetime_to_string(last_page_record_updated_at)
         )
 
         # Read second page request mock
         http_mocker.get(
-            PostsCommentsRequestBuilder.posts_comments_endpoint(api_token_authenticator, post["id"])
+            ZendeskSupportRequestBuilder.posts_comments_endpoint(api_token_authenticator, post["id"])
             .with_page_after("after-cursor")
             .with_page_size(100)
             .build(),
-            PostsCommentsResponseBuilder.posts_comments_response().with_record(post_comments_last_record_builder).build(),
+            PostCommentsResponseBuilder.posts_comments_response().with_record(post_comments_last_record_builder).build(),
         )
 
         output = read_stream(

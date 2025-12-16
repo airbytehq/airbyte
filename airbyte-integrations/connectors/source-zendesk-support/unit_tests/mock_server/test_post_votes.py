@@ -15,11 +15,9 @@ from airbyte_cdk.utils.datetime_helpers import ab_datetime_now, ab_datetime_pars
 
 from .config import ConfigBuilder
 from .helpers import given_posts, given_ticket_forms
+from .request_builder import ApiTokenAuthenticator, ZendeskSupportRequestBuilder
+from .response_builder import ErrorResponseBuilder, PostVotesRecordBuilder, PostVotesResponseBuilder
 from .utils import datetime_to_string, get_log_messages_by_log_level, read_stream, string_to_datetime
-from .zs_requests import PostsVotesRequestBuilder
-from .zs_requests.request_authenticators import ApiTokenAuthenticator
-from .zs_responses import ErrorResponseBuilder, PostsVotesResponseBuilder
-from .zs_responses.records import PostsVotesRecordBuilder
 
 
 _NOW = datetime.now(timezone.utc)
@@ -53,11 +51,11 @@ class TestPostsVotesStreamFullRefresh(TestCase):
         post = posts_record_builder.build()
 
         http_mocker.get(
-            PostsVotesRequestBuilder.posts_votes_endpoint(api_token_authenticator, post["id"])
+            ZendeskSupportRequestBuilder.posts_votes_endpoint(api_token_authenticator, post["id"])
             .with_start_time(self._config["start_date"])
             .with_page_size(100)
             .build(),
-            PostsVotesResponseBuilder.posts_votes_response().with_record(PostsVotesRecordBuilder.posts_votes_record()).build(),
+            PostVotesResponseBuilder.posts_votes_response().with_record(PostVotesRecordBuilder.posts_votes_record()).build(),
         )
 
         output = read_stream("post_votes", SyncMode.full_refresh, self._config)
@@ -76,7 +74,7 @@ class TestPostsVotesStreamFullRefresh(TestCase):
         post = posts_record_builder.build()
 
         http_mocker.get(
-            PostsVotesRequestBuilder.posts_votes_endpoint(api_token_authenticator, post["id"])
+            ZendeskSupportRequestBuilder.posts_votes_endpoint(api_token_authenticator, post["id"])
             .with_start_time(self._config["start_date"])
             .with_page_size(100)
             .build(),
@@ -106,7 +104,7 @@ class TestPostsVotesStreamFullRefresh(TestCase):
         post = posts_record_builder.build()
 
         http_mocker.get(
-            PostsVotesRequestBuilder.posts_votes_endpoint(api_token_authenticator, post["id"])
+            ZendeskSupportRequestBuilder.posts_votes_endpoint(api_token_authenticator, post["id"])
             .with_start_time(self._config["start_date"])
             .with_page_size(100)
             .build(),
@@ -136,7 +134,7 @@ class TestPostsVotesStreamFullRefresh(TestCase):
         post = posts_record_builder.build()
 
         http_mocker.get(
-            PostsVotesRequestBuilder.posts_votes_endpoint(api_token_authenticator, post["id"])
+            ZendeskSupportRequestBuilder.posts_votes_endpoint(api_token_authenticator, post["id"])
             .with_start_time(self._config["start_date"])
             .with_page_size(100)
             .build(),
@@ -178,14 +176,14 @@ class TestPostsVotesStreamIncremental(TestCase):
         posts_record_builder = given_posts(http_mocker, string_to_datetime(self._config["start_date"]), api_token_authenticator)
 
         post = posts_record_builder.build()
-        post_votes_record_builder = PostsVotesRecordBuilder.posts_votes_record()
+        post_votes_record_builder = PostVotesRecordBuilder.posts_votes_record()
 
         http_mocker.get(
-            PostsVotesRequestBuilder.posts_votes_endpoint(api_token_authenticator, post["id"])
+            ZendeskSupportRequestBuilder.posts_votes_endpoint(api_token_authenticator, post["id"])
             .with_start_time(self._config["start_date"])
             .with_page_size(100)
             .build(),
-            PostsVotesResponseBuilder.posts_votes_response().with_record(post_votes_record_builder).build(),
+            PostVotesResponseBuilder.posts_votes_response().with_record(post_votes_record_builder).build(),
         )
 
         output = read_stream("post_votes", SyncMode.incremental, self._config)
@@ -235,18 +233,18 @@ class TestPostsVotesStreamIncremental(TestCase):
         posts_record_builder = given_posts(http_mocker, state_start_date, api_token_authenticator)
         post = posts_record_builder.build()
 
-        post_votes_first_record_builder = PostsVotesRecordBuilder.posts_votes_record().with_field(
+        post_votes_first_record_builder = PostVotesRecordBuilder.posts_votes_record().with_field(
             FieldPath("updated_at"), datetime_to_string(first_page_record_updated_at)
         )
 
         # Read first page request mock
         http_mocker.get(
-            PostsVotesRequestBuilder.posts_votes_endpoint(api_token_authenticator, post["id"])
+            ZendeskSupportRequestBuilder.posts_votes_endpoint(api_token_authenticator, post["id"])
             .with_start_time(datetime_to_string(state_start_date))
             .with_page_size(100)
             .build(),
-            PostsVotesResponseBuilder.posts_votes_response(
-                PostsVotesRequestBuilder.posts_votes_endpoint(api_token_authenticator, post["id"]).with_page_size(100).build()
+            PostVotesResponseBuilder.posts_votes_response(
+                ZendeskSupportRequestBuilder.posts_votes_endpoint(api_token_authenticator, post["id"]).with_page_size(100).build()
             )
             .with_pagination()
             .with_record(post_votes_first_record_builder)
@@ -254,18 +252,18 @@ class TestPostsVotesStreamIncremental(TestCase):
         )
 
         post_votes_last_record_builder = (
-            PostsVotesRecordBuilder.posts_votes_record()
+            PostVotesRecordBuilder.posts_votes_record()
             .with_id("last_record_id_from_last_page")
             .with_field(FieldPath("updated_at"), datetime_to_string(last_page_record_updated_at))
         )
 
         # Read second page request mock
         http_mocker.get(
-            PostsVotesRequestBuilder.posts_votes_endpoint(api_token_authenticator, post["id"])
+            ZendeskSupportRequestBuilder.posts_votes_endpoint(api_token_authenticator, post["id"])
             .with_page_after("after-cursor")
             .with_page_size(100)
             .build(),
-            PostsVotesResponseBuilder.posts_votes_response().with_record(post_votes_last_record_builder).build(),
+            PostVotesResponseBuilder.posts_votes_response().with_record(post_votes_last_record_builder).build(),
         )
 
         output = read_stream(

@@ -21,7 +21,7 @@ import calendar
 from typing import Any, Dict, Optional, Union
 
 from airbyte_cdk.test.mock_http import HttpRequest
-from airbyte_cdk.utils.datetime_helpers import AirbyteDateTime
+from airbyte_cdk.utils.datetime_helpers import AirbyteDateTime, ab_datetime_parse
 
 
 class Authenticator(abc.ABC):
@@ -126,8 +126,8 @@ class ZendeskSupportRequestBuilder:
 
     @classmethod
     def articles_endpoint(cls, authenticator: Authenticator) -> "ZendeskSupportRequestBuilder":
-        """Create a request builder for the /help_center/articles endpoint."""
-        return cls(cls.DEFAULT_SUBDOMAIN, "help_center/articles").with_authenticator(authenticator)
+        """Create a request builder for the /help_center/incremental/articles endpoint."""
+        return cls(cls.DEFAULT_SUBDOMAIN, "help_center/incremental/articles").with_authenticator(authenticator)
 
     @classmethod
     def posts_endpoint(cls, authenticator: Authenticator) -> "ZendeskSupportRequestBuilder":
@@ -140,9 +140,19 @@ class ZendeskSupportRequestBuilder:
         return cls(cls.DEFAULT_SUBDOMAIN, f"community/posts/{post_id}/comments").with_authenticator(authenticator)
 
     @classmethod
+    def posts_comments_endpoint(cls, authenticator: Authenticator, post_id: int) -> "ZendeskSupportRequestBuilder":
+        """Alias for post_comments_endpoint() for backward compatibility."""
+        return cls.post_comments_endpoint(authenticator, post_id)
+
+    @classmethod
     def post_votes_endpoint(cls, authenticator: Authenticator, post_id: int) -> "ZendeskSupportRequestBuilder":
         """Create a request builder for the /community/posts/{post_id}/votes endpoint."""
         return cls(cls.DEFAULT_SUBDOMAIN, f"community/posts/{post_id}/votes").with_authenticator(authenticator)
+
+    @classmethod
+    def posts_votes_endpoint(cls, authenticator: Authenticator, post_id: int) -> "ZendeskSupportRequestBuilder":
+        """Alias for post_votes_endpoint() for backward compatibility."""
+        return cls.post_votes_endpoint(authenticator, post_id)
 
     @classmethod
     def post_comment_votes_endpoint(cls, authenticator: Authenticator, post_id: int, comment_id: int) -> "ZendeskSupportRequestBuilder":
@@ -175,7 +185,9 @@ class ZendeskSupportRequestBuilder:
     @property
     def query_params(self) -> Dict[str, Any]:
         """Build query parameters for the request."""
-        params = dict(self._query_params)
+        params = {}
+        for key, value in self._query_params.items():
+            params[key] = value
         if self._page_size is not None:
             params["page[size]"] = self._page_size
         if self._after_cursor is not None:
@@ -204,6 +216,10 @@ class ZendeskSupportRequestBuilder:
         self._after_cursor = after_cursor
         return self
 
+    def with_page_after(self, next_page_token: str) -> "ZendeskSupportRequestBuilder":
+        """Alias for with_after_cursor() for backward compatibility."""
+        return self.with_after_cursor(next_page_token)
+
     def with_custom_url(self, custom_url: str) -> "ZendeskSupportRequestBuilder":
         """Override the URL for pagination requests that use next_page URLs."""
         self._custom_url = custom_url
@@ -215,13 +231,18 @@ class ZendeskSupportRequestBuilder:
         return self
 
     def with_start_time(self, start_time: Union[str, AirbyteDateTime, int]) -> "ZendeskSupportRequestBuilder":
-        """Set the start_time query parameter for incremental syncs."""
+        """Set the start_time query parameter for incremental syncs.
+        
+        Converts datetime strings and AirbyteDateTime to Unix timestamps.
+        Integer values are passed through as-is.
+        """
         if isinstance(start_time, AirbyteDateTime):
-            self._query_params["start_time"] = str(calendar.timegm(start_time.timetuple()))
+            self._query_params["start_time"] = calendar.timegm(start_time.timetuple())
         elif isinstance(start_time, int):
-            self._query_params["start_time"] = str(start_time)
-        else:
             self._query_params["start_time"] = start_time
+        elif isinstance(start_time, str):
+            parsed = ab_datetime_parse(start_time)
+            self._query_params["start_time"] = calendar.timegm(parsed.utctimetuple())
         return self
 
     def with_cursor(self, cursor: str) -> "ZendeskSupportRequestBuilder":

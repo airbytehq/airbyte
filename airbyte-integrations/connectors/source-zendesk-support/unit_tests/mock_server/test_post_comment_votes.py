@@ -15,11 +15,9 @@ from airbyte_cdk.utils.datetime_helpers import ab_datetime_now, ab_datetime_pars
 
 from .config import ConfigBuilder
 from .helpers import given_post_comments, given_posts, given_ticket_forms
+from .request_builder import ApiTokenAuthenticator, ZendeskSupportRequestBuilder
+from .response_builder import ErrorResponseBuilder, PostCommentVotesRecordBuilder, PostCommentVotesResponseBuilder
 from .utils import datetime_to_string, get_log_messages_by_log_level, read_stream, string_to_datetime
-from .zs_requests import PostCommentVotesRequestBuilder
-from .zs_requests.request_authenticators import ApiTokenAuthenticator
-from .zs_responses import ErrorResponseBuilder, PostCommentVotesResponseBuilder
-from .zs_responses.records import PostCommentVotesRecordBuilder
 
 
 _NOW = datetime.now(timezone.utc)
@@ -58,7 +56,7 @@ class TestPostsCommentVotesStreamFullRefresh(TestCase):
         post_comment = posts_comments_record_builder.build()
 
         http_mocker.get(
-            PostCommentVotesRequestBuilder.post_comment_votes_endpoint(api_token_authenticator, post["id"], post_comment["id"])
+            ZendeskSupportRequestBuilder.post_comment_votes_endpoint(api_token_authenticator, post["id"], post_comment["id"])
             .with_start_time(self._config["start_date"])
             .with_page_size(100)
             .build(),
@@ -88,7 +86,7 @@ class TestPostsCommentVotesStreamFullRefresh(TestCase):
         post_comment = posts_comments_record_builder.build()
 
         http_mocker.get(
-            PostCommentVotesRequestBuilder.post_comment_votes_endpoint(api_token_authenticator, post["id"], post_comment["id"])
+            ZendeskSupportRequestBuilder.post_comment_votes_endpoint(api_token_authenticator, post["id"], post_comment["id"])
             .with_start_time(self._config["start_date"])
             .with_page_size(100)
             .build(),
@@ -123,7 +121,7 @@ class TestPostsCommentVotesStreamFullRefresh(TestCase):
         post_comment = posts_comments_record_builder.build()
 
         http_mocker.get(
-            PostCommentVotesRequestBuilder.post_comment_votes_endpoint(api_token_authenticator, post["id"], post_comment["id"])
+            ZendeskSupportRequestBuilder.post_comment_votes_endpoint(api_token_authenticator, post["id"], post_comment["id"])
             .with_start_time(self._config["start_date"])
             .with_page_size(100)
             .build(),
@@ -158,7 +156,7 @@ class TestPostsCommentVotesStreamFullRefresh(TestCase):
         post_comment = posts_comments_record_builder.build()
 
         http_mocker.get(
-            PostCommentVotesRequestBuilder.post_comment_votes_endpoint(api_token_authenticator, post["id"], post_comment["id"])
+            ZendeskSupportRequestBuilder.post_comment_votes_endpoint(api_token_authenticator, post["id"], post_comment["id"])
             .with_start_time(self._config["start_date"])
             .with_page_size(100)
             .build(),
@@ -218,7 +216,7 @@ class TestPostsCommentVotesStreamIncremental(TestCase):
         post_comment_votes = post_comment_votes_record_builder.build()
 
         http_mocker.get(
-            PostCommentVotesRequestBuilder.post_comment_votes_endpoint(api_token_authenticator, post["id"], post_comment["id"])
+            ZendeskSupportRequestBuilder.post_comment_votes_endpoint(api_token_authenticator, post["id"], post_comment["id"])
             .with_start_time(self._config["start_date"])
             .with_page_size(100)
             .build(),
@@ -296,12 +294,12 @@ class TestPostsCommentVotesStreamIncremental(TestCase):
 
         # Read first page request mock
         http_mocker.get(
-            PostCommentVotesRequestBuilder.post_comment_votes_endpoint(api_token_authenticator, post["id"], post_comment["id"])
+            ZendeskSupportRequestBuilder.post_comment_votes_endpoint(api_token_authenticator, post["id"], post_comment["id"])
             .with_start_time(datetime_to_string(state_start_date))
             .with_page_size(100)
             .build(),
             PostCommentVotesResponseBuilder.post_comment_votes_response(
-                PostCommentVotesRequestBuilder.post_comment_votes_endpoint(api_token_authenticator, post["id"], post_comment["id"])
+                ZendeskSupportRequestBuilder.post_comment_votes_endpoint(api_token_authenticator, post["id"], post_comment["id"])
                 .with_page_size(100)
                 .build()
             )
@@ -318,7 +316,7 @@ class TestPostsCommentVotesStreamIncremental(TestCase):
 
         # Read second page request mock
         http_mocker.get(
-            PostCommentVotesRequestBuilder.post_comment_votes_endpoint(api_token_authenticator, post["id"], post_comment["id"])
+            ZendeskSupportRequestBuilder.post_comment_votes_endpoint(api_token_authenticator, post["id"], post_comment["id"])
             .with_page_after("after-cursor")
             .with_page_size(100)
             .build(),

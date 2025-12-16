@@ -11,11 +11,9 @@ from airbyte_cdk.test.state_builder import StateBuilder
 from airbyte_cdk.utils.datetime_helpers import ab_datetime_now
 
 from .config import ConfigBuilder
+from .request_builder import ApiTokenAuthenticator, ZendeskSupportRequestBuilder
+from .response_builder import ArticlesRecordBuilder, ArticlesResponseBuilder
 from .utils import datetime_to_string, read_stream
-from .zs_requests.articles_request_builder import ArticlesRequestBuilder
-from .zs_requests.request_authenticators import ApiTokenAuthenticator
-from .zs_responses.articles_response_builder import ArticlesResponseBuilder
-from .zs_responses.records.articles_records_builder import ArticlesRecordBuilder
 
 
 _NOW = ab_datetime_now()
@@ -40,7 +38,7 @@ class TestArticlesStream(TestCase):
         config = self._config().with_start_date(_START_DATE).build()
         api_token_authenticator = self._get_authenticator(config)
         http_mocker.get(
-            ArticlesRequestBuilder.articles_endpoint(api_token_authenticator).with_start_time(_START_DATE).build(),
+            ZendeskSupportRequestBuilder.articles_endpoint(api_token_authenticator).with_start_time(_START_DATE).build(),
             ArticlesResponseBuilder.response()
             .with_record(ArticlesRecordBuilder.record())
             .with_record(ArticlesRecordBuilder.record())
@@ -56,10 +54,10 @@ class TestArticlesStream(TestCase):
         config = self._config().with_start_date(_START_DATE).build()
         api_token_authenticator = self._get_authenticator(config)
         next_page_http_request = (
-            ArticlesRequestBuilder.articles_endpoint(api_token_authenticator).with_start_time(_START_DATE.add(timedelta(days=10))).build()
+            ZendeskSupportRequestBuilder.articles_endpoint(api_token_authenticator).with_start_time(_START_DATE.add(timedelta(days=10))).build()
         )
         http_mocker.get(
-            ArticlesRequestBuilder.articles_endpoint(api_token_authenticator).with_start_time(_START_DATE).build(),
+            ZendeskSupportRequestBuilder.articles_endpoint(api_token_authenticator).with_start_time(_START_DATE).build(),
             ArticlesResponseBuilder.response(next_page_http_request)
             .with_record(ArticlesRecordBuilder.record())
             .with_record(ArticlesRecordBuilder.record())
@@ -81,7 +79,7 @@ class TestArticlesStream(TestCase):
         api_token_authenticator = self._get_authenticator(config)
         most_recent_cursor_value = _START_DATE.add(timedelta(days=2))
         http_mocker.get(
-            ArticlesRequestBuilder.articles_endpoint(api_token_authenticator).with_start_time(_START_DATE).build(),
+            ZendeskSupportRequestBuilder.articles_endpoint(api_token_authenticator).with_start_time(_START_DATE).build(),
             ArticlesResponseBuilder.response()
             .with_record(ArticlesRecordBuilder.record().with_cursor(datetime_to_string(most_recent_cursor_value)))
             .build(),
@@ -97,7 +95,7 @@ class TestArticlesStream(TestCase):
         api_token_authenticator = self._get_authenticator(config)
         state_cursor_value = _START_DATE.add(timedelta(days=2))
         http_mocker.get(
-            ArticlesRequestBuilder.articles_endpoint(api_token_authenticator).with_start_time(state_cursor_value).build(),
+            ZendeskSupportRequestBuilder.articles_endpoint(api_token_authenticator).with_start_time(state_cursor_value).build(),
             ArticlesResponseBuilder.response().with_record(ArticlesRecordBuilder.record()).build(),
         )
 

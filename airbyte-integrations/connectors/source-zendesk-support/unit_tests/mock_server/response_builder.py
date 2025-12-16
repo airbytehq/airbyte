@@ -191,6 +191,17 @@ class TicketMetricsRecordBuilder(ZendeskSupportRecordBuilder):
         record_template = cls.extract_record("ticket_metrics", __file__, NestedPath(["ticket_metrics", 0]))
         return cls(record_template, FieldPath("id"), FieldPath("updated_at"))
 
+    @classmethod
+    def stateless_ticket_metrics_record(cls) -> "TicketMetricsRecordBuilder":
+        """Alias for ticket_metrics_record() for backward compatibility."""
+        return cls.ticket_metrics_record()
+
+    @classmethod
+    def stateful_ticket_metrics_record(cls) -> "TicketMetricsRecordBuilder":
+        """Record builder for stateful ticket metrics (single ticket metric)."""
+        record_template = cls.extract_record("stateful_ticket_metrics", __file__, FieldPath("ticket_metric"))
+        return cls(record_template, FieldPath("id"), FieldPath("updated_at"))
+
     def with_id(self, id: int) -> "TicketMetricsRecordBuilder":
         self._record["id"] = id
         return self
@@ -224,6 +235,11 @@ class ArticlesRecordBuilder(ZendeskSupportRecordBuilder):
         record_template = cls.extract_record("articles", __file__, NestedPath(["articles", 0]))
         return cls(record_template, FieldPath("id"), FieldPath("updated_at"))
 
+    @classmethod
+    def record(cls) -> "ArticlesRecordBuilder":
+        """Alias for articles_record() for backward compatibility."""
+        return cls.articles_record()
+
     def with_id(self, id: int) -> "ArticlesRecordBuilder":
         self._record["id"] = id
         return self
@@ -246,6 +262,11 @@ class PostCommentsRecordBuilder(ZendeskSupportRecordBuilder):
         record_template = cls.extract_record("post_comments", __file__, NestedPath(["comments", 0]))
         return cls(record_template, FieldPath("id"), FieldPath("updated_at"))
 
+    @classmethod
+    def posts_comments_record(cls) -> "PostCommentsRecordBuilder":
+        """Alias for post_comments_record() for backward compatibility."""
+        return cls.post_comments_record()
+
     def with_id(self, id: int) -> "PostCommentsRecordBuilder":
         self._record["id"] = id
         return self
@@ -257,6 +278,11 @@ class PostVotesRecordBuilder(ZendeskSupportRecordBuilder):
         record_template = cls.extract_record("post_votes", __file__, NestedPath(["votes", 0]))
         return cls(record_template, FieldPath("id"), FieldPath("updated_at"))
 
+    @classmethod
+    def posts_votes_record(cls) -> "PostVotesRecordBuilder":
+        """Alias for post_votes_record() for backward compatibility."""
+        return cls.post_votes_record()
+
     def with_id(self, id: int) -> "PostVotesRecordBuilder":
         self._record["id"] = id
         return self
@@ -267,6 +293,11 @@ class PostCommentVotesRecordBuilder(ZendeskSupportRecordBuilder):
     def post_comment_votes_record(cls) -> "PostCommentVotesRecordBuilder":
         record_template = cls.extract_record("post_comment_votes", __file__, NestedPath(["votes", 0]))
         return cls(record_template, FieldPath("id"), FieldPath("updated_at"))
+
+    @classmethod
+    def post_commetn_votes_record(cls) -> "PostCommentVotesRecordBuilder":
+        """Alias with typo for backward compatibility (original code had typo)."""
+        return cls.post_comment_votes_record()
 
     def with_id(self, id: int) -> "PostCommentVotesRecordBuilder":
         self._record["id"] = id
@@ -390,6 +421,24 @@ class TicketMetricsResponseBuilder(HttpResponseBuilder):
             EndOfStreamPaginationStrategy(url, cursor) if url and cursor else None,
         )
 
+    @classmethod
+    def stateless_ticket_metrics_response(cls) -> "TicketMetricsResponseBuilder":
+        """Response builder for stateless ticket metrics (list of metrics)."""
+        return cls(
+            find_template("stateless_ticket_metrics", __file__),
+            NestedPath(["ticket_metrics", 0]),
+            CursorBasedPaginationStrategy(),
+        )
+
+    @classmethod
+    def stateful_ticket_metrics_response(cls) -> "TicketMetricsResponseBuilder":
+        """Response builder for stateful ticket metrics (single ticket metric)."""
+        return cls(
+            find_template("stateful_ticket_metrics", __file__),
+            FieldPath("ticket_metric"),
+            CursorBasedPaginationStrategy(),
+        )
+
 
 class TicketsResponseBuilder(HttpResponseBuilder):
     @classmethod
@@ -417,8 +466,13 @@ class ArticlesResponseBuilder(HttpResponseBuilder):
         return cls(
             find_template("articles", __file__),
             FieldPath("articles"),
-            CursorBasedPaginationStrategy(http_request_to_str(request_without_cursor_for_pagination)),
+            NextPagePaginationStrategy(http_request_to_str(request_without_cursor_for_pagination)),
         )
+
+    @classmethod
+    def response(cls, next_page_url: Optional[HttpRequest] = None) -> "ArticlesResponseBuilder":
+        """Alias for articles_response() for backward compatibility."""
+        return cls.articles_response(next_page_url)
 
 
 class PostsResponseBuilder(HttpResponseBuilder):
@@ -440,6 +494,11 @@ class PostCommentsResponseBuilder(HttpResponseBuilder):
             CursorBasedPaginationStrategy(http_request_to_str(request_without_cursor_for_pagination)),
         )
 
+    @classmethod
+    def posts_comments_response(cls, request_without_cursor_for_pagination: Optional[HttpRequest] = None) -> "PostCommentsResponseBuilder":
+        """Alias for post_comments_response() for backward compatibility."""
+        return cls.post_comments_response(request_without_cursor_for_pagination)
+
 
 class PostVotesResponseBuilder(HttpResponseBuilder):
     @classmethod
@@ -449,6 +508,11 @@ class PostVotesResponseBuilder(HttpResponseBuilder):
             FieldPath("votes"),
             CursorBasedPaginationStrategy(http_request_to_str(request_without_cursor_for_pagination)),
         )
+
+    @classmethod
+    def posts_votes_response(cls, request_without_cursor_for_pagination: Optional[HttpRequest] = None) -> "PostVotesResponseBuilder":
+        """Alias for post_votes_response() for backward compatibility."""
+        return cls.post_votes_response(request_without_cursor_for_pagination)
 
 
 class PostCommentVotesResponseBuilder(HttpResponseBuilder):

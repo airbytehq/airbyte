@@ -13,11 +13,9 @@ from airbyte_cdk.utils.datetime_helpers import ab_datetime_now, ab_datetime_pars
 
 from .config import ConfigBuilder
 from .helpers import given_tickets_with_state
+from .request_builder import ApiTokenAuthenticator, ZendeskSupportRequestBuilder
+from .response_builder import TicketMetricsRecordBuilder, TicketMetricsResponseBuilder
 from .utils import read_stream
-from .zs_requests import TicketMetricsRequestBuilder
-from .zs_requests.request_authenticators import ApiTokenAuthenticator
-from .zs_responses import TicketMetricsResponseBuilder
-from .zs_responses.records import TicketMetricsRecordBuilder
 
 
 _NOW = ab_datetime_now()
@@ -46,7 +44,7 @@ class TestTicketMetricsIncremental(TestCase):
         ticket_metrics_record_builder = TicketMetricsRecordBuilder.stateless_ticket_metrics_record().with_cursor(record_updated_at)
 
         http_mocker.get(
-            TicketMetricsRequestBuilder.stateless_ticket_metrics_endpoint(api_token_authenticator).with_page_size(100).build(),
+            ZendeskSupportRequestBuilder.stateless_ticket_metrics_endpoint(api_token_authenticator).with_page_size(100).build(),
             TicketMetricsResponseBuilder.stateless_ticket_metrics_response().with_record(ticket_metrics_record_builder).build(),
         )
 
@@ -78,7 +76,7 @@ class TestTicketMetricsIncremental(TestCase):
         )
 
         http_mocker.get(
-            TicketMetricsRequestBuilder.stateful_ticket_metrics_endpoint(api_token_authenticator, ticket["id"]).build(),
+            ZendeskSupportRequestBuilder.stateful_ticket_metrics_endpoint(api_token_authenticator, ticket["id"]).build(),
             TicketMetricsResponseBuilder.stateful_ticket_metrics_response().with_record(ticket_metrics_first_record_builder).build(),
         )
 

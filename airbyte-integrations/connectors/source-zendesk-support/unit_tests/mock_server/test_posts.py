@@ -11,12 +11,9 @@ from airbyte_cdk.test.state_builder import StateBuilder
 from airbyte_cdk.utils.datetime_helpers import ab_datetime_now
 
 from .config import ConfigBuilder
+from .request_builder import ApiTokenAuthenticator, Authenticator, ZendeskSupportRequestBuilder
+from .response_builder import PostsRecordBuilder, PostsResponseBuilder
 from .utils import datetime_to_string, read_stream
-from .zs_requests import PostsRequestBuilder
-from .zs_requests.request_authenticators import ApiTokenAuthenticator
-from .zs_requests.request_authenticators.authenticator import Authenticator
-from .zs_responses import PostsResponseBuilder
-from .zs_responses.records import PostsRecordBuilder
 
 
 _NOW = ab_datetime_now()
@@ -36,8 +33,8 @@ class TestPostsStream(TestCase):
     def _get_authenticator(self, config):
         return ApiTokenAuthenticator(email=config["credentials"]["email"], password=config["credentials"]["api_token"])
 
-    def _base_posts_request(self, authenticator: Authenticator) -> PostsRequestBuilder:
-        return PostsRequestBuilder.posts_endpoint(authenticator).with_page_size(100)
+    def _base_posts_request(self, authenticator: Authenticator) -> ZendeskSupportRequestBuilder:
+        return ZendeskSupportRequestBuilder.posts_endpoint(authenticator).with_page_size(100)
 
     @HttpMocker()
     def test_given_one_page_when_read_then_return_records(self, http_mocker):
@@ -82,7 +79,7 @@ class TestPostsStream(TestCase):
         api_token_authenticator = self._get_authenticator(config)
         most_recent_cursor_value = _START_DATE.add(timedelta(days=2))
         http_mocker.get(
-            PostsRequestBuilder.posts_endpoint(api_token_authenticator)
+            ZendeskSupportRequestBuilder.posts_endpoint(api_token_authenticator)
             .with_start_time(datetime_to_string(_START_DATE))
             .with_page_size(100)
             .build(),
@@ -102,7 +99,7 @@ class TestPostsStream(TestCase):
         api_token_authenticator = self._get_authenticator(config)
         state_cursor_value = datetime_to_string(_START_DATE.add(timedelta(days=2)))
         http_mocker.get(
-            PostsRequestBuilder.posts_endpoint(api_token_authenticator).with_start_time(state_cursor_value).with_page_size(100).build(),
+            ZendeskSupportRequestBuilder.posts_endpoint(api_token_authenticator).with_start_time(state_cursor_value).with_page_size(100).build(),
             PostsResponseBuilder.posts_response().with_record(PostsRecordBuilder.posts_record()).build(),
         )
 
@@ -118,7 +115,7 @@ class TestPostsStream(TestCase):
         api_token_authenticator = self._get_authenticator(config)
         state_cursor_value = _START_DATE.add(timedelta(days=2))
         http_mocker.get(
-            PostsRequestBuilder.posts_endpoint(api_token_authenticator)
+            ZendeskSupportRequestBuilder.posts_endpoint(api_token_authenticator)
             .with_start_time(datetime_to_string(state_cursor_value))
             .with_page_size(100)
             .build(),
