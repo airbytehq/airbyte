@@ -36,19 +36,22 @@ from .utils import http_request_to_str
 
 
 class CursorBasedPaginationStrategy(PaginationStrategy):
-    """Pagination strategy for cursor-based pagination with links.next."""
+    """Pagination strategy for cursor-based pagination with links.next.
+    
+    For links_next_paginator with page_token_option: RequestPath, the connector uses
+    the full URL from links.next as the next request. The next_page_url should already
+    include all necessary query parameters (including the cursor).
+    """
 
-    def __init__(self, first_url: Optional[str] = None) -> None:
-        self._first_url = first_url
+    def __init__(self, next_page_url: Optional[str] = None) -> None:
+        self._next_page_url = next_page_url
 
     def update(self, response: Dict[str, Any]) -> None:
         response["meta"]["has_more"] = True
         response["meta"]["after_cursor"] = "after-cursor"
         response["meta"]["before_cursor"] = "before-cursor"
-        if self._first_url:
-            response["links"]["next"] = (
-                self._first_url + "&page[after]=after-cursor" if "?" in self._first_url else self._first_url + "?page[after]=after-cursor"
-            )
+        if self._next_page_url:
+            response["links"]["next"] = self._next_page_url
 
 
 class NextPagePaginationStrategy(PaginationStrategy):
@@ -537,4 +540,345 @@ class PostCommentVotesResponseBuilder(HttpResponseBuilder):
             find_template("post_comment_votes", __file__),
             FieldPath("votes"),
             CursorBasedPaginationStrategy(http_request_to_str(request_without_cursor_for_pagination)),
+        )
+
+
+# Record Builders for new streams
+
+
+class AccountAttributesRecordBuilder(ZendeskSupportRecordBuilder):
+    @classmethod
+    def account_attributes_record(cls) -> "AccountAttributesRecordBuilder":
+        record_template = cls.extract_record("account_attributes", __file__, NestedPath(["attributes", 0]))
+        return cls(record_template, FieldPath("id"), None)
+
+    def with_id(self, id: str) -> "AccountAttributesRecordBuilder":
+        self._record["id"] = id
+        return self
+
+
+class AttributeDefinitionsRecordBuilder(ZendeskSupportRecordBuilder):
+    @classmethod
+    def attribute_definitions_record(cls) -> "AttributeDefinitionsRecordBuilder":
+        record_template = cls.extract_record("attribute_definitions", __file__, FieldPath("definitions"))
+        return cls(record_template, None, None)
+
+
+class UserFieldsRecordBuilder(ZendeskSupportRecordBuilder):
+    @classmethod
+    def user_fields_record(cls) -> "UserFieldsRecordBuilder":
+        record_template = cls.extract_record("user_fields", __file__, NestedPath(["user_fields", 0]))
+        return cls(record_template, FieldPath("id"), FieldPath("updated_at"))
+
+    def with_id(self, id: int) -> "UserFieldsRecordBuilder":
+        self._record["id"] = id
+        return self
+
+
+class CategoriesRecordBuilder(ZendeskSupportRecordBuilder):
+    @classmethod
+    def categories_record(cls) -> "CategoriesRecordBuilder":
+        record_template = cls.extract_record("categories", __file__, NestedPath(["categories", 0]))
+        return cls(record_template, FieldPath("id"), FieldPath("updated_at"))
+
+    def with_id(self, id: int) -> "CategoriesRecordBuilder":
+        self._record["id"] = id
+        return self
+
+
+class SectionsRecordBuilder(ZendeskSupportRecordBuilder):
+    @classmethod
+    def sections_record(cls) -> "SectionsRecordBuilder":
+        record_template = cls.extract_record("sections", __file__, NestedPath(["sections", 0]))
+        return cls(record_template, FieldPath("id"), FieldPath("updated_at"))
+
+    def with_id(self, id: int) -> "SectionsRecordBuilder":
+        self._record["id"] = id
+        return self
+
+
+class TopicsRecordBuilder(ZendeskSupportRecordBuilder):
+    @classmethod
+    def topics_record(cls) -> "TopicsRecordBuilder":
+        record_template = cls.extract_record("topics", __file__, NestedPath(["topics", 0]))
+        return cls(record_template, FieldPath("id"), FieldPath("updated_at"))
+
+    def with_id(self, id: int) -> "TopicsRecordBuilder":
+        self._record["id"] = id
+        return self
+
+
+# Response Builders for new streams
+
+
+class AccountAttributesResponseBuilder(HttpResponseBuilder):
+    @classmethod
+    def account_attributes_response(
+        cls, request_without_cursor_for_pagination: Optional[HttpRequest] = None
+    ) -> "AccountAttributesResponseBuilder":
+        return cls(
+            find_template("account_attributes", __file__),
+            FieldPath("attributes"),
+            NextPagePaginationStrategy(http_request_to_str(request_without_cursor_for_pagination)),
+        )
+
+
+class AttributeDefinitionsResponseBuilder(HttpResponseBuilder):
+    @classmethod
+    def attribute_definitions_response(cls) -> "AttributeDefinitionsResponseBuilder":
+        return cls(
+            find_template("attribute_definitions", __file__),
+            FieldPath("definitions"),
+            None,
+        )
+
+
+class UserFieldsResponseBuilder(HttpResponseBuilder):
+    @classmethod
+    def user_fields_response(
+        cls, request_without_cursor_for_pagination: Optional[HttpRequest] = None
+    ) -> "UserFieldsResponseBuilder":
+        return cls(
+            find_template("user_fields", __file__),
+            FieldPath("user_fields"),
+            NextPagePaginationStrategy(http_request_to_str(request_without_cursor_for_pagination)),
+        )
+
+
+class CategoriesResponseBuilder(HttpResponseBuilder):
+    @classmethod
+    def categories_response(
+        cls, request_without_cursor_for_pagination: Optional[HttpRequest] = None
+    ) -> "CategoriesResponseBuilder":
+        return cls(
+            find_template("categories", __file__),
+            FieldPath("categories"),
+            CursorBasedPaginationStrategy(http_request_to_str(request_without_cursor_for_pagination)),
+        )
+
+
+class SectionsResponseBuilder(HttpResponseBuilder):
+    @classmethod
+    def sections_response(
+        cls, request_without_cursor_for_pagination: Optional[HttpRequest] = None
+    ) -> "SectionsResponseBuilder":
+        return cls(
+            find_template("sections", __file__),
+            FieldPath("sections"),
+            CursorBasedPaginationStrategy(http_request_to_str(request_without_cursor_for_pagination)),
+        )
+
+
+class TopicsResponseBuilder(HttpResponseBuilder):
+    @classmethod
+    def topics_response(
+        cls, request_without_cursor_for_pagination: Optional[HttpRequest] = None
+    ) -> "TopicsResponseBuilder":
+        return cls(
+            find_template("topics", __file__),
+            FieldPath("topics"),
+            CursorBasedPaginationStrategy(http_request_to_str(request_without_cursor_for_pagination)),
+        )
+
+
+# Record Builders for semi-incremental streams
+
+
+class GroupMembershipsRecordBuilder(ZendeskSupportRecordBuilder):
+    @classmethod
+    def group_memberships_record(cls) -> "GroupMembershipsRecordBuilder":
+        record_template = cls.extract_record("group_memberships", __file__, NestedPath(["group_memberships", 0]))
+        return cls(record_template, FieldPath("id"), FieldPath("updated_at"))
+
+    def with_id(self, id: int) -> "GroupMembershipsRecordBuilder":
+        self._record["id"] = id
+        return self
+
+    def with_cursor(self, cursor: str) -> "GroupMembershipsRecordBuilder":
+        self._record["updated_at"] = cursor
+        return self
+
+
+class MacrosRecordBuilder(ZendeskSupportRecordBuilder):
+    @classmethod
+    def macros_record(cls) -> "MacrosRecordBuilder":
+        record_template = cls.extract_record("macros", __file__, NestedPath(["macros", 0]))
+        return cls(record_template, FieldPath("id"), FieldPath("updated_at"))
+
+    def with_id(self, id: int) -> "MacrosRecordBuilder":
+        self._record["id"] = id
+        return self
+
+    def with_cursor(self, cursor: str) -> "MacrosRecordBuilder":
+        self._record["updated_at"] = cursor
+        return self
+
+
+class OrganizationFieldsRecordBuilder(ZendeskSupportRecordBuilder):
+    @classmethod
+    def organization_fields_record(cls) -> "OrganizationFieldsRecordBuilder":
+        record_template = cls.extract_record("organization_fields", __file__, NestedPath(["organization_fields", 0]))
+        return cls(record_template, FieldPath("id"), FieldPath("updated_at"))
+
+    def with_id(self, id: int) -> "OrganizationFieldsRecordBuilder":
+        self._record["id"] = id
+        return self
+
+    def with_cursor(self, cursor: str) -> "OrganizationFieldsRecordBuilder":
+        self._record["updated_at"] = cursor
+        return self
+
+
+class OrganizationMembershipsRecordBuilder(ZendeskSupportRecordBuilder):
+    @classmethod
+    def organization_memberships_record(cls) -> "OrganizationMembershipsRecordBuilder":
+        record_template = cls.extract_record("organization_memberships", __file__, NestedPath(["organization_memberships", 0]))
+        return cls(record_template, FieldPath("id"), FieldPath("updated_at"))
+
+    def with_id(self, id: int) -> "OrganizationMembershipsRecordBuilder":
+        self._record["id"] = id
+        return self
+
+    def with_cursor(self, cursor: str) -> "OrganizationMembershipsRecordBuilder":
+        self._record["updated_at"] = cursor
+        return self
+
+
+class TicketFieldsRecordBuilder(ZendeskSupportRecordBuilder):
+    @classmethod
+    def ticket_fields_record(cls) -> "TicketFieldsRecordBuilder":
+        record_template = cls.extract_record("ticket_fields", __file__, NestedPath(["ticket_fields", 0]))
+        return cls(record_template, FieldPath("id"), FieldPath("updated_at"))
+
+    def with_id(self, id: int) -> "TicketFieldsRecordBuilder":
+        self._record["id"] = id
+        return self
+
+    def with_cursor(self, cursor: str) -> "TicketFieldsRecordBuilder":
+        self._record["updated_at"] = cursor
+        return self
+
+
+class TicketActivitiesRecordBuilder(ZendeskSupportRecordBuilder):
+    @classmethod
+    def ticket_activities_record(cls) -> "TicketActivitiesRecordBuilder":
+        record_template = cls.extract_record("ticket_activities", __file__, NestedPath(["activities", 0]))
+        return cls(record_template, FieldPath("id"), FieldPath("updated_at"))
+
+    def with_id(self, id: int) -> "TicketActivitiesRecordBuilder":
+        self._record["id"] = id
+        return self
+
+    def with_cursor(self, cursor: str) -> "TicketActivitiesRecordBuilder":
+        self._record["updated_at"] = cursor
+        return self
+
+
+class TriggersRecordBuilder(ZendeskSupportRecordBuilder):
+    @classmethod
+    def triggers_record(cls) -> "TriggersRecordBuilder":
+        record_template = cls.extract_record("triggers", __file__, NestedPath(["triggers", 0]))
+        return cls(record_template, FieldPath("id"), FieldPath("updated_at"))
+
+    def with_id(self, id: int) -> "TriggersRecordBuilder":
+        self._record["id"] = id
+        return self
+
+    def with_cursor(self, cursor: str) -> "TriggersRecordBuilder":
+        self._record["updated_at"] = cursor
+        return self
+
+
+# Response Builders for semi-incremental streams
+
+
+class GroupMembershipsResponseBuilder(HttpResponseBuilder):
+    @classmethod
+    def group_memberships_response(
+        cls, request_without_cursor_for_pagination: Optional[HttpRequest] = None
+    ) -> "GroupMembershipsResponseBuilder":
+        return cls(
+            find_template("group_memberships", __file__),
+            FieldPath("group_memberships"),
+            CursorBasedPaginationStrategy(http_request_to_str(request_without_cursor_for_pagination)),
+        )
+
+
+class MacrosResponseBuilder(HttpResponseBuilder):
+    @classmethod
+    def macros_response(
+        cls, request_without_cursor_for_pagination: Optional[HttpRequest] = None
+    ) -> "MacrosResponseBuilder":
+        return cls(
+            find_template("macros", __file__),
+            FieldPath("macros"),
+            CursorBasedPaginationStrategy(http_request_to_str(request_without_cursor_for_pagination)),
+        )
+
+
+class OrganizationFieldsResponseBuilder(HttpResponseBuilder):
+    """Response builder for organization_fields stream.
+    
+    This stream uses the base retriever with next_page pagination (not links.next).
+    """
+
+    @classmethod
+    def organization_fields_response(
+        cls, next_page_url: Optional[str] = None
+    ) -> "OrganizationFieldsResponseBuilder":
+        return cls(
+            find_template("organization_fields", __file__),
+            FieldPath("organization_fields"),
+            NextPagePaginationStrategy(next_page_url),
+        )
+
+
+class OrganizationMembershipsResponseBuilder(HttpResponseBuilder):
+    @classmethod
+    def organization_memberships_response(
+        cls, request_without_cursor_for_pagination: Optional[HttpRequest] = None
+    ) -> "OrganizationMembershipsResponseBuilder":
+        return cls(
+            find_template("organization_memberships", __file__),
+            FieldPath("organization_memberships"),
+            CursorBasedPaginationStrategy(http_request_to_str(request_without_cursor_for_pagination)),
+        )
+
+
+class TicketFieldsResponseBuilder(HttpResponseBuilder):
+    @classmethod
+    def ticket_fields_response(
+        cls, request_without_cursor_for_pagination: Optional[HttpRequest] = None
+    ) -> "TicketFieldsResponseBuilder":
+        return cls(
+            find_template("ticket_fields", __file__),
+            FieldPath("ticket_fields"),
+            CursorBasedPaginationStrategy(http_request_to_str(request_without_cursor_for_pagination)),
+        )
+
+
+class TicketActivitiesResponseBuilder(HttpResponseBuilder):
+    @classmethod
+    def ticket_activities_response(
+        cls, request_without_cursor_for_pagination: Optional[HttpRequest] = None
+    ) -> "TicketActivitiesResponseBuilder":
+        return cls(
+            find_template("ticket_activities", __file__),
+            FieldPath("activities"),
+            CursorBasedPaginationStrategy(http_request_to_str(request_without_cursor_for_pagination)),
+        )
+
+
+class TriggersResponseBuilder(HttpResponseBuilder):
+    """Response builder for triggers stream.
+    
+    This stream uses the base retriever with next_page pagination (not links.next).
+    """
+
+    @classmethod
+    def triggers_response(cls, next_page_url: Optional[str] = None) -> "TriggersResponseBuilder":
+        return cls(
+            find_template("triggers", __file__),
+            FieldPath("triggers"),
+            NextPagePaginationStrategy(next_page_url),
         )

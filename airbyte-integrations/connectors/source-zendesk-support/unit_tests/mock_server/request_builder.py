@@ -159,6 +159,126 @@ class ZendeskSupportRequestBuilder:
         """Create a request builder for the /community/posts/{post_id}/comments/{comment_id}/votes endpoint."""
         return cls(cls.DEFAULT_SUBDOMAIN, f"community/posts/{post_id}/comments/{comment_id}/votes").with_authenticator(authenticator)
 
+    @classmethod
+    def account_attributes_endpoint(cls, authenticator: Authenticator) -> "ZendeskSupportRequestBuilder":
+        """Create a request builder for the /routing/attributes endpoint."""
+        return cls(cls.DEFAULT_SUBDOMAIN, "routing/attributes").with_authenticator(authenticator)
+
+    @classmethod
+    def attribute_definitions_endpoint(cls, authenticator: Authenticator) -> "ZendeskSupportRequestBuilder":
+        """Create a request builder for the /routing/attributes/definitions endpoint."""
+        return cls(cls.DEFAULT_SUBDOMAIN, "routing/attributes/definitions").with_authenticator(authenticator)
+
+    @classmethod
+    def user_fields_endpoint(cls, authenticator: Authenticator) -> "ZendeskSupportRequestBuilder":
+        """Create a request builder for the /user_fields endpoint."""
+        return cls(cls.DEFAULT_SUBDOMAIN, "user_fields").with_authenticator(authenticator)
+
+    @classmethod
+    def categories_endpoint(cls, authenticator: Authenticator) -> "ZendeskSupportRequestBuilder":
+        """Create a request builder for the /help_center/categories endpoint."""
+        return cls(cls.DEFAULT_SUBDOMAIN, "help_center/categories").with_authenticator(authenticator)
+
+    @classmethod
+    def sections_endpoint(cls, authenticator: Authenticator) -> "ZendeskSupportRequestBuilder":
+        """Create a request builder for the /help_center/sections endpoint."""
+        return cls(cls.DEFAULT_SUBDOMAIN, "help_center/sections").with_authenticator(authenticator)
+
+    @classmethod
+    def topics_endpoint(cls, authenticator: Authenticator) -> "ZendeskSupportRequestBuilder":
+        """Create a request builder for the /community/topics endpoint."""
+        return cls(cls.DEFAULT_SUBDOMAIN, "community/topics").with_authenticator(authenticator)
+
+    @classmethod
+    def group_memberships_endpoint(cls, authenticator: Authenticator) -> "ZendeskSupportRequestBuilder":
+        """Create a request builder for the /group_memberships endpoint."""
+        return cls(cls.DEFAULT_SUBDOMAIN, "group_memberships").with_authenticator(authenticator)
+
+    @classmethod
+    def macros_endpoint(cls, authenticator: Authenticator) -> "ZendeskSupportRequestBuilder":
+        """Create a request builder for the /macros endpoint."""
+        return cls(cls.DEFAULT_SUBDOMAIN, "macros").with_authenticator(authenticator)
+
+    @classmethod
+    def organization_fields_endpoint(cls, authenticator: Authenticator) -> "ZendeskSupportRequestBuilder":
+        """Create a request builder for the /organization_fields endpoint."""
+        return cls(cls.DEFAULT_SUBDOMAIN, "organization_fields").with_authenticator(authenticator)
+
+    @classmethod
+    def organization_memberships_endpoint(cls, authenticator: Authenticator) -> "ZendeskSupportRequestBuilder":
+        """Create a request builder for the /organization_memberships endpoint."""
+        return cls(cls.DEFAULT_SUBDOMAIN, "organization_memberships").with_authenticator(authenticator)
+
+    @classmethod
+    def organizations_endpoint(cls, authenticator: Authenticator) -> "ZendeskSupportRequestBuilder":
+        """Create a request builder for the /incremental/organizations endpoint."""
+        return cls(cls.DEFAULT_SUBDOMAIN, "incremental/organizations").with_authenticator(authenticator)
+
+    @classmethod
+    def satisfaction_ratings_endpoint(cls, authenticator: Authenticator) -> "ZendeskSupportRequestBuilder":
+        """Create a request builder for the /satisfaction_ratings endpoint."""
+        return cls(cls.DEFAULT_SUBDOMAIN, "satisfaction_ratings").with_authenticator(authenticator)
+
+    @classmethod
+    def ticket_fields_endpoint(cls, authenticator: Authenticator) -> "ZendeskSupportRequestBuilder":
+        """Create a request builder for the /ticket_fields endpoint."""
+        return cls(cls.DEFAULT_SUBDOMAIN, "ticket_fields").with_authenticator(authenticator)
+
+    @classmethod
+    def ticket_activities_endpoint(cls, authenticator: Authenticator) -> "ZendeskSupportRequestBuilder":
+        """Create a request builder for the /activities endpoint."""
+        return cls(cls.DEFAULT_SUBDOMAIN, "activities").with_authenticator(authenticator)
+
+    @classmethod
+    def ticket_audits_endpoint(cls, authenticator: Authenticator) -> "ZendeskSupportRequestBuilder":
+        """Create a request builder for the /ticket_audits endpoint."""
+        return cls(cls.DEFAULT_SUBDOMAIN, "ticket_audits").with_authenticator(authenticator)
+
+    @classmethod
+    def ticket_comments_endpoint(cls, authenticator: Authenticator) -> "ZendeskSupportRequestBuilder":
+        """Create a request builder for the /incremental/ticket_events.json endpoint."""
+        return cls(cls.DEFAULT_SUBDOMAIN, "incremental/ticket_events.json").with_authenticator(authenticator)
+
+    @classmethod
+    def ticket_metric_events_endpoint(cls, authenticator: Authenticator) -> "ZendeskSupportRequestBuilder":
+        """Create a request builder for the /incremental/ticket_metric_events endpoint."""
+        return cls(cls.DEFAULT_SUBDOMAIN, "incremental/ticket_metric_events").with_authenticator(authenticator)
+
+    @classmethod
+    def ticket_skips_endpoint(cls, authenticator: Authenticator) -> "ZendeskSupportRequestBuilder":
+        """Create a request builder for the /skips endpoint."""
+        return cls(cls.DEFAULT_SUBDOMAIN, "skips").with_authenticator(authenticator)
+
+    @classmethod
+    def triggers_endpoint(cls, authenticator: Authenticator) -> "ZendeskSupportRequestBuilder":
+        """Create a request builder for the /triggers endpoint."""
+        return cls(cls.DEFAULT_SUBDOMAIN, "triggers").with_authenticator(authenticator)
+
+    @classmethod
+    def audit_logs_endpoint(cls, authenticator: Authenticator) -> "ZendeskSupportRequestBuilder":
+        """Create a request builder for the /audit_logs endpoint."""
+        return cls(cls.DEFAULT_SUBDOMAIN, "audit_logs").with_authenticator(authenticator)
+
+    @classmethod
+    def article_comments_endpoint(cls, authenticator: Authenticator, article_id: int) -> "ZendeskSupportRequestBuilder":
+        """Create a request builder for the /help_center/articles/{article_id}/comments endpoint."""
+        return cls(cls.DEFAULT_SUBDOMAIN, f"help_center/articles/{article_id}/comments").with_authenticator(authenticator)
+
+    @classmethod
+    def article_votes_endpoint(cls, authenticator: Authenticator, article_id: int) -> "ZendeskSupportRequestBuilder":
+        """Create a request builder for the /help_center/articles/{article_id}/votes endpoint."""
+        return cls(cls.DEFAULT_SUBDOMAIN, f"help_center/articles/{article_id}/votes").with_authenticator(authenticator)
+
+    @classmethod
+    def article_comment_votes_endpoint(cls, authenticator: Authenticator, article_id: int, comment_id: int) -> "ZendeskSupportRequestBuilder":
+        """Create a request builder for the /help_center/articles/{article_id}/comments/{comment_id}/votes endpoint."""
+        return cls(cls.DEFAULT_SUBDOMAIN, f"help_center/articles/{article_id}/comments/{comment_id}/votes").with_authenticator(authenticator)
+
+    @classmethod
+    def article_attachments_endpoint(cls, authenticator: Authenticator, article_id: int) -> "ZendeskSupportRequestBuilder":
+        """Create a request builder for the /help_center/articles/{article_id}/attachments endpoint."""
+        return cls(cls.DEFAULT_SUBDOMAIN, f"help_center/articles/{article_id}/attachments").with_authenticator(authenticator)
+
     def __init__(self, subdomain: str, resource: str) -> None:
         """
         Initialize the request builder.
@@ -258,6 +378,21 @@ class ZendeskSupportRequestBuilder:
     def with_per_page(self, per_page: int) -> "ZendeskSupportRequestBuilder":
         """Set the per_page query parameter for pagination."""
         self._query_params["per_page"] = per_page
+        return self
+
+    def with_sort_by(self, sort_by: str) -> "ZendeskSupportRequestBuilder":
+        """Set the sort_by query parameter for sorting."""
+        self._query_params["sort_by"] = sort_by
+        return self
+
+    def with_sort_order(self, sort_order: str) -> "ZendeskSupportRequestBuilder":
+        """Set the sort_order query parameter for sorting."""
+        self._query_params["sort_order"] = sort_order
+        return self
+
+    def with_sort(self, sort: str) -> "ZendeskSupportRequestBuilder":
+        """Set the sort query parameter for sorting."""
+        self._query_params["sort"] = sort
         return self
 
     def build(self) -> HttpRequest:
