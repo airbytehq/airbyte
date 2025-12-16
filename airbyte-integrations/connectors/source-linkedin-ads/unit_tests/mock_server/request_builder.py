@@ -106,10 +106,20 @@ class LinkedInAdsRequestBuilder:
         return self
 
     def build(self) -> HttpRequest:
-        # If query params are already embedded in the URL, don't pass them separately
-        query_params = None if self._query_params_in_url else (self._query_params if self._query_params else None)
+        url = f"{self._BASE_URL}{self._path}"
+
+        # If query params are already embedded in the URL, append any additional params to the URL
+        if self._query_params_in_url:
+            # Append additional query params (like 'start' for pagination) to the URL
+            if self._query_params:
+                for key, value in self._query_params.items():
+                    url = f"{url}&{key}={value}"
+            query_params = None
+        else:
+            query_params = self._query_params if self._query_params else None
+
         return HttpRequest(
-            url=f"{self._BASE_URL}{self._path}",
+            url=url,
             query_params=query_params,
             headers=self._headers if self._headers else None,
         )

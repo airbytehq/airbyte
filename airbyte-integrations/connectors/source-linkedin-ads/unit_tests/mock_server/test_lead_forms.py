@@ -14,7 +14,7 @@ from unit_tests.conftest import get_source
 
 from .config import ConfigBuilder
 from .request_builder import LinkedInAdsRequestBuilder
-from .response_builder import LinkedInAdsPaginatedResponseBuilder
+from .response_builder import LinkedInAdsOffsetPaginatedResponseBuilder, LinkedInAdsPaginatedResponseBuilder
 
 
 _NOW = datetime(2024, 6, 15, 12, 0, 0, tzinfo=timezone.utc)
@@ -76,7 +76,7 @@ class TestLeadFormsStream(TestCase):
         )
 
         http_mocker.get(
-            LinkedInAdsRequestBuilder.lead_forms_endpoint(111111111).with_any_query_params().build(),
+            LinkedInAdsRequestBuilder.lead_forms_endpoint(111111111).build(),
             LinkedInAdsPaginatedResponseBuilder.single_page(
                 [
                     _create_lead_form_record(1001, 111111111, "Form 1"),
@@ -92,6 +92,59 @@ class TestLeadFormsStream(TestCase):
         assert len(output.records) == 2
         record_ids = {record.record.data["id"] for record in output.records}
         assert record_ids == {1001, 1002}
+
+    @HttpMocker()
+    def test_cursor_pagination(self, http_mocker: HttpMocker):
+        """
+        Test that connector handles CursorPagination correctly for lead_forms.
+
+        The lead_forms stream uses CursorPagination with 'start' parameter.
+        The cursor value is calculated as: start + count from the response paging.
+        Pagination stops when total == 0 in the response.
+
+        Given: An API that returns multiple pages using cursor pagination
+        When: Running a full refresh sync
+        Then: The connector should follow pagination and return all records
+        """
+        config = ConfigBuilder().build()
+
+        # Mock parent accounts endpoint
+        http_mocker.get(
+            LinkedInAdsRequestBuilder.accounts_endpoint().with_q("search").with_page_size(500).build(),
+            LinkedInAdsPaginatedResponseBuilder.single_page([_create_account_record(111111111, "Account 1")]),
+        )
+
+        # First page - returns 2 records with paging info indicating more records
+        http_mocker.get(
+            LinkedInAdsRequestBuilder.lead_forms_endpoint(111111111).build(),
+            LinkedInAdsOffsetPaginatedResponseBuilder()
+            .with_records(
+                [
+                    _create_lead_form_record(1001, 111111111, "Form 1"),
+                    _create_lead_form_record(1002, 111111111, "Form 2"),
+                ]
+            )
+            .with_paging(start=0, count=2, total=3)
+            .build(),
+        )
+
+        # Second page - returns 1 record with paging info indicating no more records
+        http_mocker.get(
+            LinkedInAdsRequestBuilder.lead_forms_endpoint(111111111).with_start(2).build(),
+            LinkedInAdsOffsetPaginatedResponseBuilder()
+            .with_records([_create_lead_form_record(1003, 111111111, "Form 3")])
+            .with_paging(start=2, count=1, total=0)
+            .build(),
+        )
+
+        source = get_source(config=config)
+        catalog = CatalogBuilder().with_stream(_STREAM_NAME, SyncMode.full_refresh).build()
+        output = read(source, config=config, catalog=catalog)
+
+        assert len(output.records) == 3
+        record_ids = {record.record.data["id"] for record in output.records}
+        assert record_ids == {1001, 1002, 1003}
+        assert all(record.record.stream == _STREAM_NAME for record in output.records)
 
     @HttpMocker()
     def test_multiple_parent_accounts(self, http_mocker: HttpMocker):
@@ -115,12 +168,12 @@ class TestLeadFormsStream(TestCase):
         )
 
         http_mocker.get(
-            LinkedInAdsRequestBuilder.lead_forms_endpoint(111111111).with_any_query_params().build(),
+            LinkedInAdsRequestBuilder.lead_forms_endpoint(111111111).build(),
             LinkedInAdsPaginatedResponseBuilder.single_page([_create_lead_form_record(1001, 111111111, "Form 1")]),
         )
 
         http_mocker.get(
-            LinkedInAdsRequestBuilder.lead_forms_endpoint(222222222).with_any_query_params().build(),
+            LinkedInAdsRequestBuilder.lead_forms_endpoint(222222222).build(),
             LinkedInAdsPaginatedResponseBuilder.single_page([_create_lead_form_record(2001, 222222222, "Form 2")]),
         )
 
@@ -171,7 +224,7 @@ class TestLeadFormsStream(TestCase):
         )
 
         http_mocker.get(
-            LinkedInAdsRequestBuilder.lead_forms_endpoint(111111111).with_any_query_params().build(),
+            LinkedInAdsRequestBuilder.lead_forms_endpoint(111111111).build(),
             LinkedInAdsPaginatedResponseBuilder.single_page([]),
         )
 
@@ -199,7 +252,7 @@ class TestLeadFormsStream(TestCase):
         )
 
         http_mocker.get(
-            LinkedInAdsRequestBuilder.lead_forms_endpoint(111111111).with_any_query_params().build(),
+            LinkedInAdsRequestBuilder.lead_forms_endpoint(111111111).build(),
             LinkedInAdsPaginatedResponseBuilder.single_page(
                 [
                     _create_lead_form_record(1001, 111111111, "Form 1", last_modified=_TIMESTAMP_JAN_2024),
@@ -232,7 +285,7 @@ class TestLeadFormsStream(TestCase):
         )
 
         http_mocker.get(
-            LinkedInAdsRequestBuilder.lead_forms_endpoint(111111111).with_any_query_params().build(),
+            LinkedInAdsRequestBuilder.lead_forms_endpoint(111111111).build(),
             LinkedInAdsPaginatedResponseBuilder.single_page(
                 [
                     _create_lead_form_record(1001, 111111111, "Form 1", last_modified=_TIMESTAMP_JAN_2024),
