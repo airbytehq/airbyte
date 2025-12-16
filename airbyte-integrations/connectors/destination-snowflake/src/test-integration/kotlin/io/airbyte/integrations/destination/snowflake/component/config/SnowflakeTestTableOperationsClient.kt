@@ -2,8 +2,9 @@
  * Copyright (c) 2025 Airbyte, Inc., all rights reserved.
  */
 
-package io.airbyte.integrations.destination.snowflake.component
+package io.airbyte.integrations.destination.snowflake.component.config
 
+import io.airbyte.cdk.load.component.ColumnType
 import io.airbyte.cdk.load.component.TestTableOperationsClient
 import io.airbyte.cdk.load.data.AirbyteValue
 import io.airbyte.cdk.load.dataflow.state.PartitionKey
@@ -52,7 +53,7 @@ class SnowflakeTestTableOperationsClient(
                 inputToFinalColumnNames = columnTypes.keys.associateWith { it },
                 finalSchema =
                     columnTypes.mapValues { (_, _) ->
-                        io.airbyte.cdk.load.component.ColumnType("", true)
+                        ColumnType("", true)
                     },
                 inputSchema = emptyMap() // Not needed for insert buffer
             )
