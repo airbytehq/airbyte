@@ -343,11 +343,17 @@ class SnowflakeDirectLoadSqlGenerator(
             .andLog()
     }
 
-    fun copyFromStage(tableName: TableName, filename: String): String {
+    fun copyFromStage(
+        tableName: TableName,
+        filename: String,
+        columnNames: List<String>? = null
+    ): String {
         val stageName = fullyQualifiedStageName(tableName, true)
+        val columnList =
+            columnNames?.let { names -> "(${names.joinToString(", ") { it.quote() }})" } ?: ""
 
         return """
-            COPY INTO ${fullyQualifiedName(tableName)}
+            COPY INTO ${fullyQualifiedName(tableName)}$columnList
             FROM '@$stageName'
             FILE_FORMAT = (
                 TYPE = 'CSV'

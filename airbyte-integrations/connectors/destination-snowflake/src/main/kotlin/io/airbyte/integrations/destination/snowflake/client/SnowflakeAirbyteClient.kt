@@ -339,8 +339,8 @@ class SnowflakeAirbyteClient(
         execute(sqlGenerator.putInStage(tableName, tempFilePath))
     }
 
-    fun copyFromStage(tableName: TableName, filename: String) {
-        execute(sqlGenerator.copyFromStage(tableName, filename))
+    fun copyFromStage(tableName: TableName, filename: String, columnNames: List<String>) {
+        execute(sqlGenerator.copyFromStage(tableName, filename, columnNames))
     }
 
     fun describeTable(tableName: TableName): LinkedHashMap<String, String> =

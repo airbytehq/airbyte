@@ -8,7 +8,6 @@ import io.airbyte.cdk.load.data.AirbyteValue
 import io.airbyte.cdk.load.data.NullValue
 import io.airbyte.cdk.load.data.StringValue
 import io.airbyte.cdk.load.data.csv.toCsvValue
-import io.airbyte.cdk.load.message.Meta
 import io.airbyte.cdk.load.message.Meta.Companion.COLUMN_NAMES
 import io.airbyte.cdk.load.message.Meta.Companion.COLUMN_NAME_AB_EXTRACTED_AT
 import io.airbyte.cdk.load.message.Meta.Companion.COLUMN_NAME_AB_GENERATION_ID
@@ -25,7 +24,8 @@ interface SnowflakeRecordFormatter {
 class SnowflakeSchemaRecordFormatter(
     val columnSchema: ColumnSchema,
 ) : SnowflakeRecordFormatter {
-    val nonAirbyteKeys = columnSchema.finalSchema.keys.filterNot { COLUMN_NAMES.contains(it.lowercase()) }
+    val nonAirbyteKeys =
+        columnSchema.finalSchema.keys.filterNot { COLUMN_NAMES.contains(it.lowercase()) }
 
     override fun format(record: Map<String, AirbyteValue>): List<Any> {
         val result = mutableListOf<Any>()
@@ -37,9 +37,7 @@ class SnowflakeSchemaRecordFormatter(
         result.add(record[COLUMN_NAME_AB_GENERATION_ID].toCsvValue())
 
         // Add user columns from the final schema
-        nonAirbyteKeys.forEach { columnName ->
-            result.add(record[columnName].toCsvValue())
-        }
+        nonAirbyteKeys.forEach { columnName -> result.add(record[columnName].toCsvValue()) }
 
         return result
     }

@@ -469,7 +469,7 @@ internal class SnowflakeAirbyteClientTest {
         every { dataSource.connection } returns mockConnection
 
         runBlocking {
-            client.copyFromStage(tableName, "test.csv.gz")
+            client.copyFromStage(tableName, "test.csv.gz", listOf())
             verify(exactly = 1) { sqlGenerator.copyFromStage(tableName, "test.csv.gz") }
             verify(exactly = 1) { mockConnection.close() }
         }
