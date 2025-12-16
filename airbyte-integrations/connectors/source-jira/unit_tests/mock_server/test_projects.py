@@ -36,6 +36,10 @@ class TestProjectsStream(TestCase):
     def test_full_refresh_single_page(self, http_mocker: HttpMocker):
         """
         Test that connector correctly fetches projects with a single page.
+
+        This test validates that the projects stream sends the correct static request parameters:
+        - expand=description,lead (to include project description and lead info)
+        - status=['live', 'archived', 'deleted'] (to include all project statuses)
         """
         config = ConfigBuilder().with_domain(_DOMAIN).build()
 
@@ -56,10 +60,15 @@ class TestProjectsStream(TestCase):
             },
         ]
 
-        # Projects endpoint uses expand and status parameters, but they're encoded in a complex way
-        # Use with_any_query_params() to match any query parameters
+        # Projects endpoint uses static expand and status parameters from manifest.yaml:
+        #   expand: "description,lead"
+        #   status: "['live', 'archived', 'deleted']"
         http_mocker.get(
-            JiraRequestBuilder.projects_endpoint(_DOMAIN).with_any_query_params().build(),
+            JiraRequestBuilder.projects_endpoint(_DOMAIN)
+            .with_max_results(50)
+            .with_expand("description,lead")
+            .with_query_param("status", "['live', 'archived', 'deleted']")
+            .build(),
             JiraPaginatedResponseBuilder("values")
             .with_records(project_records)
             .with_pagination(start_at=0, max_results=50, total=2, is_last=True)
