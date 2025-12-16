@@ -13,6 +13,7 @@ from airbyte_cdk import YamlDeclarativeSource
 from airbyte_cdk.test.catalog_builder import CatalogBuilder
 from airbyte_cdk.test.state_builder import StateBuilder
 
+
 os.environ["REQUEST_CACHE_PATH"] = "REQUEST_CACHE_PATH"
 
 
