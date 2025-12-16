@@ -40,7 +40,10 @@ class TestOrganizationMembershipsStreamFullRefresh(TestCase):
         return ZendeskSupportRequestBuilder.organization_memberships_endpoint(authenticator).with_page_size(100)
 
     @HttpMocker()
-    def test_given_one_page_when_read_organization_memberships_then_return_records(self, http_mocker):
+    def test_given_one_page_when_read_organization_memberships_then_return_records_and_emit_state(self, http_mocker):
+        """Test reading organization_memberships with a single page of results.
+        Per playbook: validate a resulting state message is emitted for incremental streams.
+        """
         api_token_authenticator = self.get_authenticator(self._config)
 
         http_mocker.get(
@@ -54,8 +57,12 @@ class TestOrganizationMembershipsStreamFullRefresh(TestCase):
             .build(),
         )
 
-        output = read_stream("organization_memberships", SyncMode.full_refresh, self._config)
+        output = read_stream("organization_memberships", SyncMode.incremental, self._config)
         assert len(output.records) == 1
+        # Per playbook: validate state message is emitted for incremental streams
+        assert output.most_recent_state is not None
+        assert output.most_recent_state.stream_descriptor.name == "organization_memberships"
+        assert "updated_at" in output.most_recent_state.stream_state.__dict__
 
     @HttpMocker()
     def test_given_two_pages_when_read_organization_memberships_then_return_all_records(self, http_mocker):

@@ -46,7 +46,10 @@ class TestTicketActivitiesStreamFullRefresh(TestCase):
         )
 
     @HttpMocker()
-    def test_given_one_page_when_read_ticket_activities_then_return_records(self, http_mocker):
+    def test_given_one_page_when_read_ticket_activities_then_return_records_and_emit_state(self, http_mocker):
+        """Test reading ticket_activities with a single page of results.
+        Per playbook: validate a resulting state message is emitted for incremental streams.
+        """
         api_token_authenticator = self.get_authenticator(self._config)
 
         http_mocker.get(
@@ -60,8 +63,12 @@ class TestTicketActivitiesStreamFullRefresh(TestCase):
             .build(),
         )
 
-        output = read_stream("ticket_activities", SyncMode.full_refresh, self._config)
+        output = read_stream("ticket_activities", SyncMode.incremental, self._config)
         assert len(output.records) == 1
+        # Per playbook: validate state message is emitted for incremental streams
+        assert output.most_recent_state is not None
+        assert output.most_recent_state.stream_descriptor.name == "ticket_activities"
+        assert "updated_at" in output.most_recent_state.stream_state.__dict__
 
     @HttpMocker()
     def test_given_two_pages_when_read_ticket_activities_then_return_all_records(self, http_mocker):

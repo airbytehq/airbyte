@@ -337,3 +337,59 @@ class TestPostsCommentsStreamIncremental(TestCase):
                 "use_global_cursor": False,
             }
         )
+
+
+@freezegun.freeze_time(_NOW.isoformat())
+class TestPostCommentsTransformations(TestCase):
+    """Test transformations for post_comments stream.
+
+    Per playbook: All streams that support transformations should validate
+    that transformations are applied on the resulting records.
+
+    The post_comments stream has an AddFields transformation that adds
+    _airbyte_parent_id with value { 'post_id': record['post_id'], 'comment_id': record['id'] }
+    """
+
+    @property
+    def _config(self):
+        return (
+            ConfigBuilder()
+            .with_basic_auth_credentials("user@example.com", "password")
+            .with_subdomain("d3v-airbyte")
+            .with_start_date(_START_DATE)
+            .build()
+        )
+
+    def _get_authenticator(self, config):
+        return ApiTokenAuthenticator(email=config["credentials"]["email"], password=config["credentials"]["api_token"])
+
+    @HttpMocker()
+    def test_given_record_when_read_then_airbyte_parent_id_transformation_applied(self, http_mocker):
+        """Test that _airbyte_parent_id transformation is applied to records.
+
+        The transformation adds _airbyte_parent_id field with value:
+        { 'post_id': record['post_id'], 'comment_id': record['id'] }
+        """
+        api_token_authenticator = self._get_authenticator(self._config)
+        posts_record_builder = given_posts(http_mocker, string_to_datetime(self._config["start_date"]), api_token_authenticator)
+
+        post = posts_record_builder.build()
+        comment_id = 12345
+        post_comments_record_builder = PostCommentsRecordBuilder.posts_comments_record().with_id(comment_id)
+
+        http_mocker.get(
+            ZendeskSupportRequestBuilder.posts_comments_endpoint(api_token_authenticator, post["id"])
+            .with_start_time(self._config["start_date"])
+            .with_page_size(100)
+            .build(),
+            PostCommentsResponseBuilder.posts_comments_response().with_record(post_comments_record_builder).build(),
+        )
+
+        output = read_stream("post_comments", SyncMode.full_refresh, self._config)
+        assert len(output.records) == 1
+
+        record_data = output.records[0].record.data
+        # Verify _airbyte_parent_id transformation is applied
+        assert "_airbyte_parent_id" in record_data, "Expected _airbyte_parent_id field to be present"
+        assert record_data["_airbyte_parent_id"]["post_id"] == post["id"], "Expected post_id in _airbyte_parent_id"
+        assert record_data["_airbyte_parent_id"]["comment_id"] == comment_id, "Expected comment_id in _airbyte_parent_id"

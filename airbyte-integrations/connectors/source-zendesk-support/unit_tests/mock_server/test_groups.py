@@ -31,9 +31,10 @@ class TestGroupsStreamFullRefresh(TestCase):
         return ApiTokenAuthenticator(email=config["credentials"]["email"], password=config["credentials"]["api_token"])
 
     @HttpMocker()
-    def test_given_no_state_when_read_groups_then_return_all_records(self, http_mocker):
+    def test_given_no_state_when_read_groups_then_return_records_and_emit_state(self, http_mocker):
         """
         Perform a full refresh sync without state - all records after start_date are returned.
+        Per playbook: validate a resulting state message is emitted.
         """
         api_token_authenticator = self.get_authenticator(self._config)
         given_groups_with_later_records(
@@ -43,8 +44,12 @@ class TestGroupsStreamFullRefresh(TestCase):
             api_token_authenticator,
         )
 
-        output = read_stream("groups", SyncMode.full_refresh, self._config)
+        output = read_stream("groups", SyncMode.incremental, self._config)
         assert len(output.records) == 2
+        # Per playbook: validate state message is emitted for incremental streams
+        assert output.most_recent_state is not None
+        assert output.most_recent_state.stream_descriptor.name == "groups"
+        assert "updated_at" in output.most_recent_state.stream_state.__dict__
 
     @HttpMocker()
     def test_given_incoming_state_semi_incremental_groups_does_not_emit_earlier_record(self, http_mocker):
