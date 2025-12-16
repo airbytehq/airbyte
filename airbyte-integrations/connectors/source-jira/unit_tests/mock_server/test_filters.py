@@ -31,10 +31,16 @@ class TestFiltersStream(TestCase):
     Uses retriever_use_cache for caching
     """
 
+    # Static expand parameter from manifest.yaml for filters stream
+    _FILTERS_EXPAND = "description,owner,jql,viewUrl,searchUrl,favourite,favouritedCount,sharePermissions,isWritable,subscriptions"
+
     @HttpMocker()
     def test_full_refresh_single_page(self, http_mocker: HttpMocker):
         """
         Test that connector correctly fetches filters in a single page.
+
+        This test validates that the filters stream sends the correct static request parameters:
+        - expand parameter with all filter fields to include in the response
         """
         config = ConfigBuilder().with_domain(_DOMAIN).build()
 
@@ -57,8 +63,12 @@ class TestFiltersStream(TestCase):
             },
         ]
 
+        # Filters endpoint uses static expand parameter from manifest.yaml
         http_mocker.get(
-            JiraRequestBuilder.filters_endpoint(_DOMAIN).with_any_query_params().build(),
+            JiraRequestBuilder.filters_endpoint(_DOMAIN)
+            .with_max_results(50)
+            .with_expand(self._FILTERS_EXPAND)
+            .build(),
             JiraPaginatedResponseBuilder("values")
             .with_records(filter_records)
             .with_pagination(start_at=0, max_results=50, total=2, is_last=True)
@@ -93,6 +103,8 @@ class TestFiltersStream(TestCase):
             {"id": "10003", "name": "Filter 3", "self": f"https://{_DOMAIN}/rest/api/3/filter/10003"},
         ]
 
+        # Use with_any_query_params() here because pagination involves dynamic startAt
+        # parameters that change between pages (startAt=0 for page 1, startAt=2 for page 2)
         http_mocker.get(
             JiraRequestBuilder.filters_endpoint(_DOMAIN).with_any_query_params().build(),
             [
@@ -125,7 +137,10 @@ class TestFiltersStream(TestCase):
         config = ConfigBuilder().with_domain(_DOMAIN).build()
 
         http_mocker.get(
-            JiraRequestBuilder.filters_endpoint(_DOMAIN).with_any_query_params().build(),
+            JiraRequestBuilder.filters_endpoint(_DOMAIN)
+            .with_max_results(50)
+            .with_expand(self._FILTERS_EXPAND)
+            .build(),
             JiraPaginatedResponseBuilder("values")
             .with_records([])
             .with_pagination(start_at=0, max_results=50, total=0, is_last=True)
@@ -147,7 +162,10 @@ class TestFiltersStream(TestCase):
         config = ConfigBuilder().with_domain(_DOMAIN).build()
 
         http_mocker.get(
-            JiraRequestBuilder.filters_endpoint(_DOMAIN).with_any_query_params().build(),
+            JiraRequestBuilder.filters_endpoint(_DOMAIN)
+            .with_max_results(50)
+            .with_expand(self._FILTERS_EXPAND)
+            .build(),
             HttpResponse(
                 body=json.dumps({"errorMessages": ["Bad request"]}),
                 status_code=400,
