@@ -1,0 +1,17 @@
+{
+  "list": [
+    {
+      "comment": {
+        "id": "comment_001",
+        "entity_type": "customer",
+        "entity_id": "cust_001",
+        "notes": "This is a test comment",
+        "added_by": "user@example.com",
+        "created_at": 1705312800,
+        "object": "comment",
+        "cf_priority": "High",
+        "cf_category": "Support"
+      }
+    }
+  ]
+}
