@@ -2267,7 +2267,7 @@ definitions:
     requester:
       $ref: "#/definitions/requester"
       request_parameters:
-        store_ids: '["{{ config.store_id }}"]'
+        store_ids: '["{{ stream_partition["store_id"] }}"]'
         dimensions: '["campaign_id", "stat_time_day"]'
         metrics: '["cost", "net_cost", "orders", "cost_per_order", "gross_revenue", "roi", "campaign_name", "operation_status", "bid_type"]'
         start_date: "{{ stream_interval['start_time'] }}"
@@ -2285,7 +2285,14 @@ definitions:
         page_size: 1000
         start_from_page: 1
     partition_router:
-      $ref: "#/definitions/single_id_partition_router"
+      - $ref: "#/definitions/single_id_partition_router"
+      - type: SubstreamPartitionRouter
+        parent_stream_configs:
+          - type: ParentStreamConfig
+            parent_key: store_id
+            partition_field: store_id
+            stream:
+              $ref: "#/definitions/gmv_max_campaigns_stream"
 
   gmv_max_campaign_reports_daily_stream:
     type: DeclarativeStream
@@ -2361,6 +2368,11 @@ definitions:
             - string
         shop_id:
           description: The TikTok Shop ID associated with the campaign.
+          type:
+            - "null"
+            - string
+        store_id:
+          description: The TikTok Shop Store ID associated with the campaign. Used for GMV Max reporting.
           type:
             - "null"
             - string
@@ -6061,11 +6073,6 @@ spec:
         default: false
         order: 4
         type: boolean
-      store_id:
-        title: TikTok Shop Store ID
-        description: The TikTok Shop Store ID for GMV Max campaign reporting. Required for syncing GMV Max campaign data.
-        order: 5
-        type: string
   advanced_auth:
     auth_flow_type: oauth2.0
     predicate_key:
