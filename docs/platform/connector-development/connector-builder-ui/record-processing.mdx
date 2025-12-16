@@ -381,28 +381,15 @@ Some APIs return records nested within a response body alongside metadata fields
   "status": 200,
   "body": {
     "results": [
-      {
-        "app": "Call of Duty: Mobile",
-        "source": "TikTok Ads",
-        "start_date": "2025-11-21",
-        "end_date": "2025-11-21",
-        "adn_clicks": 89950,
-        "tracker_clicks": 148,
-        "custom_installs": 6668
-      },
-      // ..
+      { "id": 1, "name": "record_one" },
+      { "id": 2, "name": "record_two" }
     ],
-    "num_of_rows": 2,
-    "total": {
-      "adn_clicks": 1853058,
-      "tracker_clicks": 2087366,
-      "custom_installs": 260673
-    }
+    "total": { "count": 2 }
   }
 }
 ```
 
-In this case, **setting the Download Extractor Field Path in the Advanced options to `results`** extracts each object in the `results` array as an individual record. The `status`, `num_of_rows`, and `total` fields are discarded, and each item in the `results` array becomes a separate record.
+In this case, **setting the Download Extractor Field Path in the Advanced options to `results`** extracts each object in the `results` array as an individual record. The `status` and `total` fields are discarded, and each item in the `results` array becomes a separate record.
 
 #### Root array
 
