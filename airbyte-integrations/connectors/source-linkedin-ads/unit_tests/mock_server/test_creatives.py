@@ -88,8 +88,9 @@ class TestCreativesStream(TestCase):
             ),
         )
 
+        # Creatives endpoint uses q=criteria parameter
         http_mocker.get(
-            LinkedInAdsRequestBuilder.creatives_endpoint(111111111).with_any_query_params().build(),
+            LinkedInAdsRequestBuilder.creatives_endpoint(111111111).with_criteria("criteria").build(),
             LinkedInAdsPaginatedResponseBuilder.single_page(
                 [
                     _create_creative_record(1001, 111111111, "Creative 1"),
@@ -99,7 +100,7 @@ class TestCreativesStream(TestCase):
         )
 
         http_mocker.get(
-            LinkedInAdsRequestBuilder.creatives_endpoint(222222222).with_any_query_params().build(),
+            LinkedInAdsRequestBuilder.creatives_endpoint(222222222).with_criteria("criteria").build(),
             LinkedInAdsPaginatedResponseBuilder.single_page([_create_creative_record(2001, 222222222, "Creative 3")]),
         )
 
@@ -133,8 +134,9 @@ class TestCreativesStream(TestCase):
         )
 
         # Provide multiple responses for the same endpoint to handle pagination
+        # Creatives endpoint uses q=criteria parameter
         http_mocker.get(
-            LinkedInAdsRequestBuilder.creatives_endpoint(111111111).with_any_query_params().build(),
+            LinkedInAdsRequestBuilder.creatives_endpoint(111111111).with_criteria("criteria").build(),
             [
                 LinkedInAdsPaginatedResponseBuilder()
                 .with_records(
@@ -174,7 +176,7 @@ class TestCreativesStream(TestCase):
         )
 
         http_mocker.get(
-            LinkedInAdsRequestBuilder.creatives_endpoint(111111111).with_any_query_params().build(),
+            LinkedInAdsRequestBuilder.creatives_endpoint(111111111).with_criteria("criteria").build(),
             LinkedInAdsPaginatedResponseBuilder.single_page([_create_creative_record(1001, 111111111, "Creative 1")]),
         )
 
@@ -204,7 +206,7 @@ class TestCreativesStream(TestCase):
         )
 
         http_mocker.get(
-            LinkedInAdsRequestBuilder.creatives_endpoint(111111111).with_any_query_params().build(),
+            LinkedInAdsRequestBuilder.creatives_endpoint(111111111).with_criteria("criteria").build(),
             LinkedInAdsPaginatedResponseBuilder.single_page(
                 [
                     _create_creative_record(1001, 111111111, "Old Creative", "ACTIVE", "2024-01-01T00:00:00+0000"),
@@ -261,7 +263,7 @@ class TestCreativesStream(TestCase):
         )
 
         http_mocker.get(
-            LinkedInAdsRequestBuilder.creatives_endpoint(111111111).with_any_query_params().build(),
+            LinkedInAdsRequestBuilder.creatives_endpoint(111111111).with_criteria("criteria").build(),
             LinkedInAdsPaginatedResponseBuilder.empty_page(),
         )
 
@@ -293,7 +295,7 @@ class TestCreativesStream(TestCase):
 
         # First request returns 429, second request succeeds
         http_mocker.get(
-            LinkedInAdsRequestBuilder.creatives_endpoint(111111111).with_any_query_params().build(),
+            LinkedInAdsRequestBuilder.creatives_endpoint(111111111).with_criteria("criteria").build(),
             [
                 HttpResponse(status_code=429, body='{"message": "Rate limit exceeded"}'),
                 LinkedInAdsPaginatedResponseBuilder.single_page([_create_creative_record(1001, 111111111, "Creative 1")]),
@@ -327,7 +329,7 @@ class TestCreativesStream(TestCase):
 
         # First request returns 500, second request succeeds
         http_mocker.get(
-            LinkedInAdsRequestBuilder.creatives_endpoint(111111111).with_any_query_params().build(),
+            LinkedInAdsRequestBuilder.creatives_endpoint(111111111).with_criteria("criteria").build(),
             [
                 HttpResponse(status_code=500, body='{"message": "Internal server error"}'),
                 LinkedInAdsPaginatedResponseBuilder.single_page([_create_creative_record(1001, 111111111, "Creative 1")]),

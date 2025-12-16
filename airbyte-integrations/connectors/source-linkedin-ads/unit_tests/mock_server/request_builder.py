@@ -99,6 +99,10 @@ class LinkedInAdsRequestBuilder:
         self._query_params["search"] = search
         return self
 
+    def with_criteria(self, criteria: str) -> "LinkedInAdsRequestBuilder":
+        self._query_params["q"] = criteria
+        return self
+
     def with_any_query_params(self) -> "LinkedInAdsRequestBuilder":
         from airbyte_cdk.test.mock_http.request import ANY_QUERY_PARAMS
 
