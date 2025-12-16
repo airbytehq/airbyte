@@ -46,7 +46,8 @@ data class PostgresSourceJdbcV2CompatibilityStreamStateValue(
             stream: Stream
         ): PostgresSourceJdbcStreamStateValue {
 
-            val internalIncremental: PostgresSourceJdbcV2CompatibilityStreamStateValue? by lazy {
+            // the internal incremental_state value
+            val incrementalState: PostgresSourceJdbcV2CompatibilityStreamStateValue? by lazy {
                 v2.incrementalState?.let {
                     if (it.isNull || it.isEmpty) {
                         return@let null
@@ -67,29 +68,7 @@ data class PostgresSourceJdbcV2CompatibilityStreamStateValue(
                                 buildCursorMap(stream, v2.cursorField, v2.cursorValue)
                             }
                             V2StateType.ctid.serialized ->
-                                internalIncremental?.let { internalIncremental ->
-                                    when (internalIncremental.stateType) {
-                                        V2StateType.cursor_based.serialized -> {
-                                            buildCursorMap(
-                                                stream,
-                                                internalIncremental.cursorField,
-                                                internalIncremental.cursorValue
-                                            )
-                                        }
-                                        else -> emptyMap()
-                                    }
-                                } ?: emptyMap()
-                            ///////////////////////////
-/*                                v2.incrementalState?.let {
-                                    if (it.isNull || it.isEmpty) {
-                                        return@let emptyMap()
-                                    }
-                                    val incrementalState =
-                                        Jsons.treeToValue(
-                                            it,
-                                            PostgresSourceJdbcV2CompatibilityStreamStateValue::class
-                                                .java
-                                        )
+                                incrementalState?.let { incrementalState ->
                                     when (incrementalState.stateType) {
                                         V2StateType.cursor_based.serialized -> {
                                             buildCursorMap(
@@ -100,17 +79,16 @@ data class PostgresSourceJdbcV2CompatibilityStreamStateValue(
                                         }
                                         else -> emptyMap()
                                     }
-                                }
-                                    ?: emptyMap()*/
+                                } ?: emptyMap()
                             else -> emptyMap()
                         },
                     xmin = when (v2.stateType) {
                         V2StateType.xmin.serialized -> v2.xminXidValue?.let { xminXid -> Jsons.valueToTree(xminXid) as JsonNode }
                         V2StateType.ctid.serialized -> {
-                            internalIncremental?.let { internalIncremental ->
-                                when (internalIncremental.stateType) {
+                            incrementalState?.let { incrementalState ->
+                                when (incrementalState.stateType) {
                                     V2StateType.xmin.serialized -> {
-                                        internalIncremental.xminXidValue?.let { xminXid ->
+                                        incrementalState.xminXidValue?.let { xminXid ->
                                             Jsons.valueToTree(
                                                 xminXid
                                             ) as JsonNode

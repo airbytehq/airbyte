@@ -77,6 +77,7 @@ class PostgresSourceJdbcStreamState(val base: DefaultJdbcStreamState) :
             }
         }
 
+        // We want to sense and stop if an xmin wraparound occurred mid-sync sync.
         if (partition is PostgresSourceJdbcSplittableSnapshotWithXminPartition || partition is PostgresSourceJdbcXminIncrementalPartition) {
             jdbcConnectionFactory.get().use { conn ->
                 if (dbNumWraparound(conn) > 0) {

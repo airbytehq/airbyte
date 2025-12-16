@@ -110,12 +110,12 @@ class PostgresSourceStreamFactory : JdbcAirbyteStreamFactory {
         val isCdc = config.isCdc()
         val hasPK = hasValidPrimaryKey(discoveredStream)
         val hasPotentialCursorField = hasPotentialCursorFields(discoveredStream)
-
         val isXmin = postgresConfig.incrementalConfiguration is XminIncrementalConfiguration
+
         val syncModes =
             when {
                 // Incremental sync is only provided as a sync option if the stream has a potential
-                // cursor field or is configured as CDC with a valid primary key.
+                // cursor field or is configured as CDC or Xmin with a valid primary key.
                 !isCdc && hasPotentialCursorField || (isCdc || isXmin) && hasPK ->
                     listOf(SyncMode.FULL_REFRESH, SyncMode.INCREMENTAL)
                 else -> listOf(SyncMode.FULL_REFRESH)

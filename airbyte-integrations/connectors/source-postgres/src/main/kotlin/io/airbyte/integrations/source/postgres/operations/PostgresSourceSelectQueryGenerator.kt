@@ -103,6 +103,7 @@ class PostgresSourceSelectQueryGenerator : SelectQueryGenerator {
                     is NonEmittedField ->
                         when (column.id) {
                             ctidField.id -> "${column.sql()} = ?::tid"
+                            xminField.id -> "${column.sql()}::text::bigint = ?"
                             else -> "${column.sql()} = ?"
                         }
                     else -> "${column.sql()} = ?"

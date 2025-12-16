@@ -77,6 +77,33 @@ class PostgresSourceJdbcUnsplittableSnapshotPartition(
         get() = PostgresSourceJdbcStreamStateValue.snapshotCompleted
 }
 
+class PostgresSourceJdbcUnsplittableSnapshotWithXminPartition(
+    selectQueryGenerator: SelectQueryGenerator,
+    streamState: PostgresSourceJdbcStreamState,
+) : PostgresSourceJdbcUnsplittablePartition(selectQueryGenerator, streamState),
+    JdbcCursorPartition<PostgresSourceJdbcStreamState> {
+    override val completeState: OpaqueStateValue
+        get() = PostgresSourceJdbcStreamStateValue.xminIncrementalCheckpoint(
+            streamState.cursorUpperBound ?: Jsons.nullNode()
+        )
+
+    override val cursorUpperBoundQuery: SelectQuery
+        get() =
+            SelectQuery(
+                """
+            SELECT CASE 
+                WHEN pg_is_in_recovery() 
+                THEN txid_snapshot_xmin(txid_current_snapshot()) 
+                ELSE txid_current() 
+            END AS current_xmin
+            """
+                    .trimIndent()
+                    .replace("\n", " "),
+                listOf(EmittedField("current_xmin", LongFieldType)),
+                emptyList()
+            )
+}
+
 class PostgresSourceJdbcUnsplittableSnapshotWithCursorPartition(
     selectQueryGenerator: SelectQueryGenerator,
     streamState: PostgresSourceJdbcStreamState,
@@ -409,7 +436,7 @@ class PostgresSourceJdbcXminIncrementalPartition(
         selectQueryGenerator,
         streamState,
         listOf(xminField),
-        xminField, // TODO: check here
+        xminField,
         xminUpperBound,
         null
     ) {

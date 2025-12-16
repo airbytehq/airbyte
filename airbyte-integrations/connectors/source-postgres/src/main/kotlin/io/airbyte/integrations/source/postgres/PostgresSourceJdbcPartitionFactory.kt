@@ -99,7 +99,7 @@ open class PostgresSourceJdbcPartitionFactory(
                         null,
                         filenode,
                         true)
-                } ?: PostgresSourceJdbcUnsplittableSnapshotPartition( // TEMP
+                } ?: PostgresSourceJdbcUnsplittableSnapshotWithXminPartition( // TODO: check here if views can ever be xmin
                     selectQueryGenerator,
                     streamState,
                 )
@@ -139,8 +139,6 @@ open class PostgresSourceJdbcPartitionFactory(
         val stream: Stream = streamFeedBootstrap.feed
         val streamState: PostgresSourceJdbcStreamState = streamState(streamFeedBootstrap)
         val opaqueStateValue: OpaqueStateValue? = streamFeedBootstrap.currentState
-        val isCursorBasedIncremental: Boolean =
-            stream.configuredSyncMode == ConfiguredSyncMode.INCREMENTAL && !config.global
 
         // An empty table stream state will be marked as a nullNode. This prevents repeated attempt
         // to read it
@@ -159,9 +157,14 @@ open class PostgresSourceJdbcPartitionFactory(
             return coldStart(streamState, filenode)
         }
 
-        val sv: PostgresSourceJdbcStreamStateValue = streamState.stateValue!!
+        val sv: PostgresSourceJdbcStreamStateValue by lazy {
+            streamState.stateValue!!
+        }
+
         when (config.incrementalConfiguration) {
             is UserDefinedCursorIncrementalConfiguration -> {
+                val isCursorBasedIncremental: Boolean =
+                    stream.configuredSyncMode == ConfiguredSyncMode.INCREMENTAL
                 val cursorPair: Pair<DataField, JsonNode>? =
                     if (sv.cursors.isEmpty()) {
                         null
@@ -251,7 +254,6 @@ open class PostgresSourceJdbcPartitionFactory(
                 }
             }
             is XminIncrementalConfiguration -> {
-                //Is table FR or incremental
                 return when (stream.configuredSyncMode) {
                     ConfiguredSyncMode.FULL_REFRESH -> {
                         if (fileNodeChange in listOf(FILENODE_CHANGED)) {
@@ -292,14 +294,6 @@ open class PostgresSourceJdbcPartitionFactory(
                                 filenode,
                                 true
                             )
-                            /*PostgresSourceJdbcSplittableSnapshotPartition(
-                                selectQueryGenerator,
-                                streamState,
-                                lowerBound = Jsons.textNode(streamState.maybeCtid.toString()),
-                                upperBound = null,
-                                filenode,
-                                true
-                            )*/
                         } else if (sv.xmin == streamState.cursorUpperBound) {
                             // Incremental done
                             null
@@ -313,14 +307,7 @@ open class PostgresSourceJdbcPartitionFactory(
                                     xminUpperBound = streamState.cursorUpperBound,
                                 )
                             }
-                            /*?: PostgresSourceJdbcUnsplittableXminIncrementalPartition(
-                                selectQueryGenerator,
-                                streamState,
-                                cursor,
-                                cursorLowerBound = cursorCheckpoint,
-                                isLowerBoundIncluded = true,
-                                explicitCursorUpperBound = streamState.cursorUpperBound,
-                            )*/
+                            ?: throw ConfigErrorException("Unexpected incremetal sync for a table ${stream.id} with no filenode.")
                         }
                     }
                 }
@@ -479,7 +466,7 @@ open class PostgresSourceJdbcPartitionFactory(
             } else null
         } ?: Ctid.ZERO
         val eachStep: Long = ((theoreticalLastPage - lowerBoundCtid.page) / numPartitions).coerceAtLeast(1)
-        val lbs: List<Ctid?> = listOf(lowerBoundCtid) + (1..<numPartitions).map {
+        val lbs: List<Ctid?> = listOf(lowerBoundCtid) + (1..< numPartitions).map {
             Ctid(lowerBoundCtid.page + eachStep * it, 1)
         }
         val ubs: List<Ctid?> = lbs.drop(1) + listOf(null)
