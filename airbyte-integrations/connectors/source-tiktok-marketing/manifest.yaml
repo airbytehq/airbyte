@@ -2287,7 +2287,7 @@ definitions:
     type: DeclarativeStream
     name: gmv_max_campaign_reports_daily
     $parameters:
-      path: "gmv_max/campaign/report/"
+      path: "gmv_max/report/get/"
     primary_key:
       - campaign_id
       - stat_time_day
