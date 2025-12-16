@@ -4,12 +4,12 @@ from datetime import datetime, timezone
 from unittest import TestCase
 
 import freezegun
+
 from airbyte_cdk.models import SyncMode
 from airbyte_cdk.test.catalog_builder import CatalogBuilder
 from airbyte_cdk.test.entrypoint_wrapper import read
 from airbyte_cdk.test.mock_http import HttpMocker
 from airbyte_cdk.test.state_builder import StateBuilder
-
 from unit_tests.conftest import get_source
 
 from .config import ConfigBuilder
@@ -106,9 +106,7 @@ class TestConversionsStream(TestCase):
 
         http_mocker.get(
             LinkedInAdsRequestBuilder.conversions_endpoint(222222222).with_count(500).build(),
-            LinkedInAdsOffsetPaginatedResponseBuilder()
-            .with_records([_create_conversion_record(2001, 222222222)])
-            .build(),
+            LinkedInAdsOffsetPaginatedResponseBuilder().with_records([_create_conversion_record(2001, 222222222)]).build(),
         )
 
         source = get_source(config=config)
@@ -144,19 +142,13 @@ class TestConversionsStream(TestCase):
         # First page request (no start param)
         http_mocker.get(
             LinkedInAdsRequestBuilder.conversions_endpoint(111111111).with_count(500).build(),
-            LinkedInAdsOffsetPaginatedResponseBuilder()
-            .with_records(page1_records)
-            .with_paging(start=0, count=500, total=502)
-            .build(),
+            LinkedInAdsOffsetPaginatedResponseBuilder().with_records(page1_records).with_paging(start=0, count=500, total=502).build(),
         )
 
         # Second page request (with start=500)
         http_mocker.get(
             LinkedInAdsRequestBuilder.conversions_endpoint(111111111).with_count(500).with_start(500).build(),
-            LinkedInAdsOffsetPaginatedResponseBuilder()
-            .with_records(page2_records)
-            .with_paging(start=500, count=500, total=502)
-            .build(),
+            LinkedInAdsOffsetPaginatedResponseBuilder().with_records(page2_records).with_paging(start=500, count=500, total=502).build(),
         )
 
         source = get_source(config=config)
@@ -183,9 +175,7 @@ class TestConversionsStream(TestCase):
 
         http_mocker.get(
             LinkedInAdsRequestBuilder.conversions_endpoint(111111111).with_count(500).build(),
-            LinkedInAdsOffsetPaginatedResponseBuilder()
-            .with_records([_create_conversion_record(1001, 111111111)])
-            .build(),
+            LinkedInAdsOffsetPaginatedResponseBuilder().with_records([_create_conversion_record(1001, 111111111)]).build(),
         )
 
         source = get_source(config=config)
