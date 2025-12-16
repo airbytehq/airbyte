@@ -79,8 +79,11 @@ class TestFullRefresh(TestCase):
         output = self._read(config_=config())
         # each breakdown should produce a record
         assert len(output.records) == 3
-        # Verify transformation: breakdown and page_id fields are added from partition
+        # Verify transformation: breakdown, page_id, business_account_id, and metric fields are added
         for record in output.records:
             assert "breakdown" in record.record.data
             assert "page_id" in record.record.data
+            assert "business_account_id" in record.record.data
+            assert "metric" in record.record.data
             assert record.record.data["page_id"] is not None
+            assert record.record.data["business_account_id"] is not None
