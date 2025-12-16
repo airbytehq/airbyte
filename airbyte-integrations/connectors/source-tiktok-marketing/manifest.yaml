@@ -2267,7 +2267,7 @@ definitions:
     requester:
       $ref: "#/definitions/requester"
       request_parameters:
-        store_ids: "{{ [stream_partition['store_id']] }}"
+        store_ids: '["{{ stream_partition.store_id }}"]'
         dimensions: '["campaign_id", "stat_time_day"]'
         metrics: '["cost", "net_cost", "orders", "cost_per_order", "gross_revenue", "roi", "campaign_name", "operation_status", "bid_type"]'
         start_date: "{{ stream_interval['start_time'] }}"
