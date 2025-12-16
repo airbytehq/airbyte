@@ -1,4 +1,4 @@
-# Airbyte Github AI Connector
+# Github agent connector
 
 GitHub is a platform for version control and collaborative software development
 using Git. This connector provides access to repositories, branches, commits, issues,
@@ -6,7 +6,7 @@ pull requests, reviews, comments, releases, organizations, teams, and users for
 development workflow analysis and project management insights.
 
 
-## Example Questions
+## Example questions
 
 - Show me all open issues in my repositories this month
 - List the top 5 repositories I've starred recently
@@ -19,7 +19,7 @@ development workflow analysis and project management insights.
 - List all milestones for our current development sprint
 - Show me insights about pull request review patterns in our team
 
-## Unsupported Questions
+## Unsupported questions
 
 - Create a new issue in the project repository
 - Update the status of this pull request
@@ -46,7 +46,9 @@ connector = GithubConnector(
 result = connector.repositories.get()
 ```
 
-## Documentation
+## Full documentation
+
+This connector supports the following entities and actions.
 
 | Entity | Actions |
 |--------|---------|
@@ -69,16 +71,16 @@ result = connector.repositories.get()
 | Stargazers | [List](./REFERENCE.md#stargazers-list) |
 | Viewer | [Get](./REFERENCE.md#viewer-get) |
 | Viewer Repositories | [List](./REFERENCE.md#viewer-repositories-list) |
+| Projects | [List](./REFERENCE.md#projects-list), [Get](./REFERENCE.md#projects-get) |
+| Project Items | [List](./REFERENCE.md#project-items-list) |
 
 
-For detailed documentation on available actions and parameters, see [REFERENCE.md](./REFERENCE.md).
+For detailed documentation on available actions and parameters, see this connector's [full reference documentation](./REFERENCE.md).
 
-For the service's official API docs, see [Github API Reference](https://docs.github.com/en/rest).
+For the service's official API docs, see the [Github API reference](https://docs.github.com/en/rest).
 
-## Version Information
+## Version information
 
-**Package Version:** 0.18.18
-
-**Connector Version:** 0.1.2
-
-**Generated with connector-sdk:** c4c39c2797ecd929407c9417c728d425f77b37ed
+- **Package version:** 0.18.21
+- **Connector version:** 0.1.5
+- **Generated with Connector SDK commit SHA:** 57f08f6035b744556fa96334a7b764759896287c
