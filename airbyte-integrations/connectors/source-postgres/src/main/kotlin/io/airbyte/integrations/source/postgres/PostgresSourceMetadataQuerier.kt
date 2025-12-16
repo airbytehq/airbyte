@@ -17,41 +17,47 @@ import io.airbyte.protocol.models.v0.ConfiguredAirbyteCatalog
 import io.github.oshai.kotlinlogging.KotlinLogging
 import io.micronaut.context.annotation.Primary
 import jakarta.inject.Singleton
+import java.sql.Connection
 
 class PostgresSourceMetadataQuerier(
     val base: JdbcMetadataQuerier,
     val postgresSourceConfig: PostgresSourceConfiguration,
 ) : MetadataQuerier by base {
-    private val log = KotlinLogging.logger {}
 
     override fun extraChecks() {
         base.extraChecks()
         if (postgresSourceConfig.incrementalConfiguration is XminIncrementalConfiguration) {
-            if (dbNumWraparound() > 0) {
-                throw ConfigErrorException(
-                    "We detected XMIN transaction wraparound in the database, " +
-                        "which makes this sync option inefficient and can lead to higher credit consumption. " +
-                        "Please change the replication method to CDC or cursor based."
-                )
+            base.conn.use { conn ->
+                if (dbNumWraparound(base.conn) > 0) {
+                    throw ConfigErrorException(xminWraparoundError)
+                }
             }
         }
     }
 
-    private fun dbNumWraparound(): Long {
-        log.info { "Querying server xmin wraparound status" }
-        val query =
-            """
+    companion object {
+        private val log = KotlinLogging.logger {}
+
+        const val xminWraparoundError: String = "We detected XMIN transaction wraparound in the database, " +
+            "which makes this sync option inefficient and can lead to higher credit consumption. " +
+            "Please change the replication method to CDC or cursor based."
+
+        public fun dbNumWraparound(conn: Connection): Long {
+            log.info { "Querying server xmin wraparound status" }
+            val query =
+                """
             select (txid_snapshot_xmin(txid_current_snapshot()) >> 32) AS num_wraparound
         """.trimIndent()
-        base.conn.createStatement().use { stmt ->
-            stmt.executeQuery(query).use { rs ->
-                if (rs.next()) {
-                    val numWraparound = rs.getLong("num_wraparound")
-                    return numWraparound
+            conn.createStatement().use { stmt ->
+                stmt.executeQuery(query).use { rs ->
+                    if (rs.next()) {
+                        val numWraparound = rs.getLong("num_wraparound")
+                        return numWraparound
+                    }
                 }
             }
+            return 0
         }
-        return 0
     }
 }
 

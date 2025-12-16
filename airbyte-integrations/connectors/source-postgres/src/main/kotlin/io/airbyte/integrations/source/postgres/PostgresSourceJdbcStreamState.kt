@@ -4,6 +4,7 @@
 
 package io.airbyte.integrations.source.postgres
 
+import io.airbyte.cdk.ConfigErrorException
 import io.airbyte.cdk.TransientErrorException
 import io.airbyte.cdk.jdbc.JdbcConnectionFactory
 import io.airbyte.cdk.read.DefaultJdbcSharedState
@@ -11,6 +12,7 @@ import io.airbyte.cdk.read.DefaultJdbcStreamState
 import io.airbyte.cdk.read.JdbcPartition
 import io.airbyte.cdk.read.JdbcStreamState
 import io.airbyte.cdk.util.Jsons
+import io.airbyte.integrations.source.postgres.PostgresSourceMetadataQuerier.Companion.dbNumWraparound
 import io.airbyte.integrations.source.postgres.ctid.Ctid
 import io.github.oshai.kotlinlogging.KotlinLogging
 
@@ -58,18 +60,29 @@ class PostgresSourceJdbcStreamState(val base: DefaultJdbcStreamState) :
             when (partition) {
                 is PostgresSourceJdbcSplittableSnapshotPartition -> partition.filenode
                 is PostgresSourceJdbcSplittableSnapshotWithCursorPartition -> partition.filenode
-                else -> return
+                is PostgresSourceJdbcSplittableSnapshotWithXminPartition -> partition.filenode
+                else -> null
             }
-        val currentFilenode: Filenode? =
-            PostgresSourceJdbcPartitionFactory.getStreamFilenode(
-                partition.streamState,
-                jdbcConnectionFactory
-            )
+        savedFilenode?.let {
+            val currentFilenode: Filenode? =
+                PostgresSourceJdbcPartitionFactory.getStreamFilenode(
+                    partition.streamState,
+                    jdbcConnectionFactory
+                )
 
-        if (currentFilenode != savedFilenode) {
-            throw TransientErrorException(
-                "Full vacuum on table ${partition.streamState.stream.id} detected. Filenode changed from ${savedFilenode} to $currentFilenode"
-            )
+            if (currentFilenode != savedFilenode) {
+                throw TransientErrorException(
+                    "Full vacuum on table ${partition.streamState.stream.id} detected. Filenode changed from ${savedFilenode} to $currentFilenode"
+                )
+            }
+        }
+
+        if (partition is PostgresSourceJdbcSplittableSnapshotWithXminPartition || partition is PostgresSourceJdbcXminIncrementalPartition) {
+            jdbcConnectionFactory.get().use { conn ->
+                if (dbNumWraparound(conn) > 0) {
+                    throw ConfigErrorException(PostgresSourceMetadataQuerier.xminWraparoundError)
+                }
+            }
         }
     }
 }

@@ -94,7 +94,7 @@ data class PostgresSourceJdbcStreamStateValue(
                     ctid = ctidCheckpoint.asText(),
                     xmin = xminCheckpoint,
                     filenode = filenode,
-                    stateType = StateType.XMIN_BASED.serialized,
+                    stateType = StateType.CTID_BASED.serialized,
                 )
             )
     }

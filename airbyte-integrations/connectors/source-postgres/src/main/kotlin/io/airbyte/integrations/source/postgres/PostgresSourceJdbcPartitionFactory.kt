@@ -283,14 +283,23 @@ open class PostgresSourceJdbcPartitionFactory(
                         }
                         if (streamState.maybeCtid != null) {
                             // snapshot ongoing
-                            PostgresSourceJdbcSplittableSnapshotPartition(
+                            PostgresSourceJdbcSplittableSnapshotWithXminPartition(
+                                selectQueryGenerator,
+                                streamState,
+                                Jsons.textNode(streamState.maybeCtid.toString()),
+                                null,
+                                sv.xmin,
+                                filenode,
+                                true
+                            )
+                            /*PostgresSourceJdbcSplittableSnapshotPartition(
                                 selectQueryGenerator,
                                 streamState,
                                 lowerBound = Jsons.textNode(streamState.maybeCtid.toString()),
                                 upperBound = null,
                                 filenode,
                                 true
-                            )
+                            )*/
                         } else if (sv.xmin == streamState.cursorUpperBound) {
                             // Incremental done
                             null
