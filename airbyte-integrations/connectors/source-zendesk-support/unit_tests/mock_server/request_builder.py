@@ -232,7 +232,7 @@ class ZendeskSupportRequestBuilder:
 
     def with_start_time(self, start_time: Union[str, AirbyteDateTime, int]) -> "ZendeskSupportRequestBuilder":
         """Set the start_time query parameter for incremental syncs.
-        
+
         Converts datetime strings and AirbyteDateTime to Unix timestamps.
         Integer values are passed through as-is.
         """

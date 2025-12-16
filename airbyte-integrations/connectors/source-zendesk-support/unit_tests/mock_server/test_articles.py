@@ -54,7 +54,9 @@ class TestArticlesStream(TestCase):
         config = self._config().with_start_date(_START_DATE).build()
         api_token_authenticator = self._get_authenticator(config)
         next_page_http_request = (
-            ZendeskSupportRequestBuilder.articles_endpoint(api_token_authenticator).with_start_time(_START_DATE.add(timedelta(days=10))).build()
+            ZendeskSupportRequestBuilder.articles_endpoint(api_token_authenticator)
+            .with_start_time(_START_DATE.add(timedelta(days=10)))
+            .build()
         )
         http_mocker.get(
             ZendeskSupportRequestBuilder.articles_endpoint(api_token_authenticator).with_start_time(_START_DATE).build(),

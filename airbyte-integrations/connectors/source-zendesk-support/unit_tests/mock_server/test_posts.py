@@ -99,7 +99,10 @@ class TestPostsStream(TestCase):
         api_token_authenticator = self._get_authenticator(config)
         state_cursor_value = datetime_to_string(_START_DATE.add(timedelta(days=2)))
         http_mocker.get(
-            ZendeskSupportRequestBuilder.posts_endpoint(api_token_authenticator).with_start_time(state_cursor_value).with_page_size(100).build(),
+            ZendeskSupportRequestBuilder.posts_endpoint(api_token_authenticator)
+            .with_start_time(state_cursor_value)
+            .with_page_size(100)
+            .build(),
             PostsResponseBuilder.posts_response().with_record(PostsRecordBuilder.posts_record()).build(),
         )
 
