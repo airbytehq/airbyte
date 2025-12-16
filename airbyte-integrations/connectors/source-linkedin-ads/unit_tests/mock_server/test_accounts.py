@@ -5,12 +5,12 @@ from datetime import datetime, timezone
 from unittest import TestCase
 
 import freezegun
-from unit_tests.conftest import get_source
 
 from airbyte_cdk.models import SyncMode
 from airbyte_cdk.test.catalog_builder import CatalogBuilder
 from airbyte_cdk.test.entrypoint_wrapper import read
 from airbyte_cdk.test.mock_http import HttpMocker, HttpResponse
+from unit_tests.conftest import get_source
 
 from .config import ConfigBuilder
 from .request_builder import LinkedInAdsRequestBuilder
@@ -64,13 +64,8 @@ class TestAccountsStream(TestCase):
         config = ConfigBuilder().build()
 
         http_mocker.get(
-            LinkedInAdsRequestBuilder.accounts_endpoint()
-            .with_q("search")
-            .with_page_size(500)
-            .build(),
-            LinkedInAdsPaginatedResponseBuilder.single_page(
-                [_create_account_record(123456789, "Acme Corporation")]
-            ),
+            LinkedInAdsRequestBuilder.accounts_endpoint().with_q("search").with_page_size(500).build(),
+            LinkedInAdsPaginatedResponseBuilder.single_page([_create_account_record(123456789, "Acme Corporation")]),
         )
 
         source = get_source(config=config)
@@ -100,10 +95,7 @@ class TestAccountsStream(TestCase):
         config = ConfigBuilder().build()
 
         http_mocker.get(
-            LinkedInAdsRequestBuilder.accounts_endpoint()
-            .with_q("search")
-            .with_page_size(500)
-            .build(),
+            LinkedInAdsRequestBuilder.accounts_endpoint().with_q("search").with_page_size(500).build(),
             LinkedInAdsPaginatedResponseBuilder()
             .with_records(
                 [
@@ -121,9 +113,7 @@ class TestAccountsStream(TestCase):
             .with_page_size(500)
             .with_page_token("next_page_token_123")
             .build(),
-            LinkedInAdsPaginatedResponseBuilder.single_page(
-                [_create_account_record(333333333, "Account 3")]
-            ),
+            LinkedInAdsPaginatedResponseBuilder.single_page([_create_account_record(333333333, "Account 3")]),
         )
 
         source = get_source(config=config)
@@ -148,10 +138,7 @@ class TestAccountsStream(TestCase):
         config = ConfigBuilder().build()
 
         http_mocker.get(
-            LinkedInAdsRequestBuilder.accounts_endpoint()
-            .with_q("search")
-            .with_page_size(500)
-            .build(),
+            LinkedInAdsRequestBuilder.accounts_endpoint().with_q("search").with_page_size(500).build(),
             LinkedInAdsPaginatedResponseBuilder.empty_page(),
         )
 
@@ -174,10 +161,7 @@ class TestAccountsStream(TestCase):
         config = ConfigBuilder().with_account_ids([123456789]).build()
 
         http_mocker.get(
-            LinkedInAdsRequestBuilder.accounts_endpoint()
-            .with_q("search")
-            .with_page_size(500)
-            .build(),
+            LinkedInAdsRequestBuilder.accounts_endpoint().with_q("search").with_page_size(500).build(),
             LinkedInAdsPaginatedResponseBuilder.single_page(
                 [
                     _create_account_record(123456789, "Matching Account"),
@@ -206,18 +190,13 @@ class TestAccountsStream(TestCase):
         config = ConfigBuilder().build()
 
         http_mocker.get(
-            LinkedInAdsRequestBuilder.accounts_endpoint()
-            .with_q("search")
-            .with_page_size(500)
-            .build(),
+            LinkedInAdsRequestBuilder.accounts_endpoint().with_q("search").with_page_size(500).build(),
             [
                 HttpResponse(
                     body=json.dumps({"message": "Internal Server Error"}),
                     status_code=500,
                 ),
-                LinkedInAdsPaginatedResponseBuilder.single_page(
-                    [_create_account_record(123456789, "Account After Retry")]
-                ),
+                LinkedInAdsPaginatedResponseBuilder.single_page([_create_account_record(123456789, "Account After Retry")]),
             ],
         )
 
@@ -240,19 +219,14 @@ class TestAccountsStream(TestCase):
         config = ConfigBuilder().build()
 
         http_mocker.get(
-            LinkedInAdsRequestBuilder.accounts_endpoint()
-            .with_q("search")
-            .with_page_size(500)
-            .build(),
+            LinkedInAdsRequestBuilder.accounts_endpoint().with_q("search").with_page_size(500).build(),
             [
                 HttpResponse(
                     body=json.dumps({"message": "Rate limit exceeded"}),
                     status_code=429,
                     headers={"Retry-After": "1"},
                 ),
-                LinkedInAdsPaginatedResponseBuilder.single_page(
-                    [_create_account_record(123456789, "Account After Rate Limit")]
-                ),
+                LinkedInAdsPaginatedResponseBuilder.single_page([_create_account_record(123456789, "Account After Rate Limit")]),
             ],
         )
 

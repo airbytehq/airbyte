@@ -8,9 +8,8 @@ import sys
 from pathlib import Path
 from typing import Any, Mapping, Optional
 
-from pytest import fixture
-
 from airbyte_protocol_dataclasses.models import ConfiguredAirbyteCatalog
+from pytest import fixture
 
 from airbyte_cdk.sources.declarative.yaml_declarative_source import YamlDeclarativeSource
 from airbyte_cdk.test.catalog_builder import CatalogBuilder
@@ -26,7 +25,9 @@ def clear_cache_before_each_test():
     cache_path = os.environ.get("REQUEST_CACHE_PATH")
     if cache_path and os.path.exists(cache_path):
         import shutil
+
         shutil.rmtree(cache_path, ignore_errors=True)
+
 
 pytest_plugins = ["airbyte_cdk.test.utils.manifest_only_fixtures"]
 

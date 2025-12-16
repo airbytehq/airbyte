@@ -53,9 +53,7 @@ class LinkedInAdsRequestBuilder:
         return builder
 
     @classmethod
-    def lead_form_responses_endpoint(
-        cls, account_id: int
-    ) -> "LinkedInAdsRequestBuilder":
+    def lead_form_responses_endpoint(cls, account_id: int) -> "LinkedInAdsRequestBuilder":
         builder = cls("/leadFormResponses")
         builder._query_params["q"] = "owner"
         builder._query_params["owner"] = f"urn:li:sponsoredAccount:{account_id}"

@@ -19,15 +19,11 @@ class LinkedInAdsPaginatedResponseBuilder:
         self._total: Optional[int] = None
         self._status_code: int = 200
 
-    def with_records(
-        self, records: List[Dict[str, Any]]
-    ) -> "LinkedInAdsPaginatedResponseBuilder":
+    def with_records(self, records: List[Dict[str, Any]]) -> "LinkedInAdsPaginatedResponseBuilder":
         self._records = records
         return self
 
-    def with_next_page_token(
-        self, token: str
-    ) -> "LinkedInAdsPaginatedResponseBuilder":
+    def with_next_page_token(self, token: str) -> "LinkedInAdsPaginatedResponseBuilder":
         self._next_page_token = token
         return self
 
@@ -35,9 +31,7 @@ class LinkedInAdsPaginatedResponseBuilder:
         self._total = total
         return self
 
-    def with_status_code(
-        self, status_code: int
-    ) -> "LinkedInAdsPaginatedResponseBuilder":
+    def with_status_code(self, status_code: int) -> "LinkedInAdsPaginatedResponseBuilder":
         self._status_code = status_code
         return self
 
@@ -56,9 +50,7 @@ class LinkedInAdsPaginatedResponseBuilder:
         return HttpResponse(body=json.dumps(body), status_code=self._status_code)
 
     @classmethod
-    def single_page(
-        cls, records: List[Dict[str, Any]], total: Optional[int] = None
-    ) -> HttpResponse:
+    def single_page(cls, records: List[Dict[str, Any]], total: Optional[int] = None) -> HttpResponse:
         builder = cls().with_records(records)
         if total is not None:
             builder.with_total(total)
@@ -80,21 +72,15 @@ class LinkedInAdsOffsetPaginatedResponseBuilder:
         self._paging: Dict[str, Any] = {}
         self._status_code: int = 200
 
-    def with_records(
-        self, records: List[Dict[str, Any]]
-    ) -> "LinkedInAdsOffsetPaginatedResponseBuilder":
+    def with_records(self, records: List[Dict[str, Any]]) -> "LinkedInAdsOffsetPaginatedResponseBuilder":
         self._records = records
         return self
 
-    def with_paging(
-        self, start: int, count: int, total: int
-    ) -> "LinkedInAdsOffsetPaginatedResponseBuilder":
+    def with_paging(self, start: int, count: int, total: int) -> "LinkedInAdsOffsetPaginatedResponseBuilder":
         self._paging = {"start": start, "count": count, "total": total}
         return self
 
-    def with_status_code(
-        self, status_code: int
-    ) -> "LinkedInAdsOffsetPaginatedResponseBuilder":
+    def with_status_code(self, status_code: int) -> "LinkedInAdsOffsetPaginatedResponseBuilder":
         self._status_code = status_code
         return self
 
@@ -107,9 +93,7 @@ class LinkedInAdsOffsetPaginatedResponseBuilder:
         return HttpResponse(body=json.dumps(body), status_code=self._status_code)
 
     @classmethod
-    def single_page(
-        cls, records: List[Dict[str, Any]], total: Optional[int] = None
-    ) -> HttpResponse:
+    def single_page(cls, records: List[Dict[str, Any]], total: Optional[int] = None) -> HttpResponse:
         builder = cls().with_records(records)
         if total is not None:
             builder.with_paging(start=0, count=len(records), total=total)
@@ -130,15 +114,11 @@ class LinkedInAdsAnalyticsResponseBuilder:
         self._records: List[Dict[str, Any]] = []
         self._status_code: int = 200
 
-    def with_records(
-        self, records: List[Dict[str, Any]]
-    ) -> "LinkedInAdsAnalyticsResponseBuilder":
+    def with_records(self, records: List[Dict[str, Any]]) -> "LinkedInAdsAnalyticsResponseBuilder":
         self._records = records
         return self
 
-    def with_status_code(
-        self, status_code: int
-    ) -> "LinkedInAdsAnalyticsResponseBuilder":
+    def with_status_code(self, status_code: int) -> "LinkedInAdsAnalyticsResponseBuilder":
         self._status_code = status_code
         return self
 

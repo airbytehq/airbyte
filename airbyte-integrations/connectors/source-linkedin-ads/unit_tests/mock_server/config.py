@@ -31,9 +31,7 @@ class ConfigBuilder:
         }
         return self
 
-    def with_oauth2(
-        self, client_id: str, client_secret: str, refresh_token: str
-    ) -> "ConfigBuilder":
+    def with_oauth2(self, client_id: str, client_secret: str, refresh_token: str) -> "ConfigBuilder":
         self._config["credentials"] = {
             "auth_method": "oAuth2.0",
             "client_id": client_id,
@@ -50,9 +48,7 @@ class ConfigBuilder:
         self._config["lookback_window"] = lookback_window
         return self
 
-    def with_ad_analytics_reports(
-        self, reports: List[Dict[str, Any]]
-    ) -> "ConfigBuilder":
+    def with_ad_analytics_reports(self, reports: List[Dict[str, Any]]) -> "ConfigBuilder":
         self._config["ad_analytics_reports"] = reports
         return self
 

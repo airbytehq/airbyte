@@ -5,13 +5,13 @@ from datetime import datetime, timezone
 from unittest import TestCase
 
 import freezegun
-from unit_tests.conftest import get_source
 
 from airbyte_cdk.models import SyncMode
 from airbyte_cdk.test.catalog_builder import CatalogBuilder
 from airbyte_cdk.test.entrypoint_wrapper import read
 from airbyte_cdk.test.mock_http import HttpMocker, HttpResponse
 from airbyte_cdk.test.state_builder import StateBuilder
+from unit_tests.conftest import get_source
 
 from .config import ConfigBuilder
 from .request_builder import LinkedInAdsRequestBuilder
@@ -76,10 +76,7 @@ class TestAccountUsersStream(TestCase):
         config = ConfigBuilder().build()
 
         http_mocker.get(
-            LinkedInAdsRequestBuilder.accounts_endpoint()
-            .with_q("search")
-            .with_page_size(500)
-            .build(),
+            LinkedInAdsRequestBuilder.accounts_endpoint().with_q("search").with_page_size(500).build(),
             LinkedInAdsPaginatedResponseBuilder.single_page(
                 [
                     _create_account_record(111111111, "Account 1"),
@@ -89,9 +86,7 @@ class TestAccountUsersStream(TestCase):
         )
 
         http_mocker.get(
-            LinkedInAdsRequestBuilder.account_users_endpoint(111111111)
-            .with_count(500)
-            .build(),
+            LinkedInAdsRequestBuilder.account_users_endpoint(111111111).with_count(500).build(),
             LinkedInAdsOffsetPaginatedResponseBuilder.single_page(
                 [
                     _create_account_user_record(111111111, "user_1", "ACCOUNT_BILLING_ADMIN"),
@@ -102,9 +97,7 @@ class TestAccountUsersStream(TestCase):
         )
 
         http_mocker.get(
-            LinkedInAdsRequestBuilder.account_users_endpoint(222222222)
-            .with_count(500)
-            .build(),
+            LinkedInAdsRequestBuilder.account_users_endpoint(222222222).with_count(500).build(),
             LinkedInAdsOffsetPaginatedResponseBuilder.single_page(
                 [_create_account_user_record(222222222, "user_3", "CREATIVE_MANAGER")],
                 total=1,
@@ -138,27 +131,14 @@ class TestAccountUsersStream(TestCase):
         config = ConfigBuilder().build()
 
         http_mocker.get(
-            LinkedInAdsRequestBuilder.accounts_endpoint()
-            .with_q("search")
-            .with_page_size(500)
-            .build(),
-            LinkedInAdsPaginatedResponseBuilder.single_page(
-                [_create_account_record(111111111, "Account 1")]
-            ),
+            LinkedInAdsRequestBuilder.accounts_endpoint().with_q("search").with_page_size(500).build(),
+            LinkedInAdsPaginatedResponseBuilder.single_page([_create_account_record(111111111, "Account 1")]),
         )
 
-        first_page_records = [
-            _create_account_user_record(111111111, f"user_{i}", "VIEWER")
-            for i in range(500)
-        ]
+        first_page_records = [_create_account_user_record(111111111, f"user_{i}", "VIEWER") for i in range(500)]
         http_mocker.get(
-            LinkedInAdsRequestBuilder.account_users_endpoint(111111111)
-            .with_count(500)
-            .build(),
-            LinkedInAdsOffsetPaginatedResponseBuilder()
-            .with_records(first_page_records)
-            .with_paging(start=0, count=500, total=502)
-            .build(),
+            LinkedInAdsRequestBuilder.account_users_endpoint(111111111).with_count(500).build(),
+            LinkedInAdsOffsetPaginatedResponseBuilder().with_records(first_page_records).with_paging(start=0, count=500, total=502).build(),
         )
 
         second_page_records = [
@@ -166,10 +146,7 @@ class TestAccountUsersStream(TestCase):
             _create_account_user_record(111111111, "user_501", "CREATIVE_MANAGER"),
         ]
         http_mocker.get(
-            LinkedInAdsRequestBuilder.account_users_endpoint(111111111)
-            .with_count(500)
-            .with_start(500)
-            .build(),
+            LinkedInAdsRequestBuilder.account_users_endpoint(111111111).with_count(500).with_start(500).build(),
             LinkedInAdsOffsetPaginatedResponseBuilder()
             .with_records(second_page_records)
             .with_paging(start=500, count=2, total=502)
@@ -199,19 +176,12 @@ class TestAccountUsersStream(TestCase):
         config = ConfigBuilder().build()
 
         http_mocker.get(
-            LinkedInAdsRequestBuilder.accounts_endpoint()
-            .with_q("search")
-            .with_page_size(500)
-            .build(),
-            LinkedInAdsPaginatedResponseBuilder.single_page(
-                [_create_account_record(111111111, "Account 1")]
-            ),
+            LinkedInAdsRequestBuilder.accounts_endpoint().with_q("search").with_page_size(500).build(),
+            LinkedInAdsPaginatedResponseBuilder.single_page([_create_account_record(111111111, "Account 1")]),
         )
 
         http_mocker.get(
-            LinkedInAdsRequestBuilder.account_users_endpoint(111111111)
-            .with_count(500)
-            .build(),
+            LinkedInAdsRequestBuilder.account_users_endpoint(111111111).with_count(500).build(),
             LinkedInAdsOffsetPaginatedResponseBuilder.single_page(
                 [_create_account_user_record(111111111, "user_1", "ACCOUNT_BILLING_ADMIN")],
                 total=1,
@@ -236,32 +206,19 @@ class TestAccountUsersStream(TestCase):
         Then: Only records newer than the cursor should be returned (client-side filtering)
         """
         config = ConfigBuilder().build()
-        state = StateBuilder().with_stream_state(
-            _STREAM_NAME, {"lastModified": "2024-06-01T00:00:00+00:00"}
-        ).build()
+        state = StateBuilder().with_stream_state(_STREAM_NAME, {"lastModified": "2024-06-01T00:00:00+00:00"}).build()
 
         http_mocker.get(
-            LinkedInAdsRequestBuilder.accounts_endpoint()
-            .with_q("search")
-            .with_page_size(500)
-            .build(),
-            LinkedInAdsPaginatedResponseBuilder.single_page(
-                [_create_account_record(111111111, "Account 1")]
-            ),
+            LinkedInAdsRequestBuilder.accounts_endpoint().with_q("search").with_page_size(500).build(),
+            LinkedInAdsPaginatedResponseBuilder.single_page([_create_account_record(111111111, "Account 1")]),
         )
 
-        old_user = _create_account_user_record(
-            111111111, "old_user", "VIEWER", last_modified="2024-01-01T00:00:00.000Z"
-        )
+        old_user = _create_account_user_record(111111111, "old_user", "VIEWER", last_modified="2024-01-01T00:00:00.000Z")
 
-        new_user = _create_account_user_record(
-            111111111, "new_user", "ACCOUNT_BILLING_ADMIN", last_modified="2024-07-01T00:00:00.000Z"
-        )
+        new_user = _create_account_user_record(111111111, "new_user", "ACCOUNT_BILLING_ADMIN", last_modified="2024-07-01T00:00:00.000Z")
 
         http_mocker.get(
-            LinkedInAdsRequestBuilder.account_users_endpoint(111111111)
-            .with_count(500)
-            .build(),
+            LinkedInAdsRequestBuilder.account_users_endpoint(111111111).with_count(500).build(),
             LinkedInAdsOffsetPaginatedResponseBuilder.single_page(
                 [old_user, new_user],
                 total=2,
@@ -287,10 +244,7 @@ class TestAccountUsersStream(TestCase):
         config = ConfigBuilder().build()
 
         http_mocker.get(
-            LinkedInAdsRequestBuilder.accounts_endpoint()
-            .with_q("search")
-            .with_page_size(500)
-            .build(),
+            LinkedInAdsRequestBuilder.accounts_endpoint().with_q("search").with_page_size(500).build(),
             LinkedInAdsPaginatedResponseBuilder.empty_page(),
         )
 
@@ -313,19 +267,12 @@ class TestAccountUsersStream(TestCase):
         config = ConfigBuilder().build()
 
         http_mocker.get(
-            LinkedInAdsRequestBuilder.accounts_endpoint()
-            .with_q("search")
-            .with_page_size(500)
-            .build(),
-            LinkedInAdsPaginatedResponseBuilder.single_page(
-                [_create_account_record(111111111, "Account 1")]
-            ),
+            LinkedInAdsRequestBuilder.accounts_endpoint().with_q("search").with_page_size(500).build(),
+            LinkedInAdsPaginatedResponseBuilder.single_page([_create_account_record(111111111, "Account 1")]),
         )
 
         http_mocker.get(
-            LinkedInAdsRequestBuilder.account_users_endpoint(111111111)
-            .with_count(500)
-            .build(),
+            LinkedInAdsRequestBuilder.account_users_endpoint(111111111).with_count(500).build(),
             LinkedInAdsOffsetPaginatedResponseBuilder.empty_page(),
         )
 

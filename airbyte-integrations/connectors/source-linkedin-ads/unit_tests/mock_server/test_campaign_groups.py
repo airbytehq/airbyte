@@ -4,13 +4,13 @@ from datetime import datetime, timezone
 from unittest import TestCase
 
 import freezegun
-from unit_tests.conftest import get_source
 
 from airbyte_cdk.models import SyncMode
 from airbyte_cdk.test.catalog_builder import CatalogBuilder
 from airbyte_cdk.test.entrypoint_wrapper import read
 from airbyte_cdk.test.mock_http import HttpMocker
 from airbyte_cdk.test.state_builder import StateBuilder
+from unit_tests.conftest import get_source
 
 from .config import ConfigBuilder
 from .request_builder import LinkedInAdsRequestBuilder
@@ -76,10 +76,7 @@ class TestCampaignGroupsStream(TestCase):
         config = ConfigBuilder().build()
 
         http_mocker.get(
-            LinkedInAdsRequestBuilder.accounts_endpoint()
-            .with_q("search")
-            .with_page_size(500)
-            .build(),
+            LinkedInAdsRequestBuilder.accounts_endpoint().with_q("search").with_page_size(500).build(),
             LinkedInAdsPaginatedResponseBuilder.single_page(
                 [
                     _create_account_record(111111111, "Account 1"),
@@ -89,9 +86,7 @@ class TestCampaignGroupsStream(TestCase):
         )
 
         http_mocker.get(
-            LinkedInAdsRequestBuilder.campaign_groups_endpoint(111111111)
-            .with_any_query_params()
-            .build(),
+            LinkedInAdsRequestBuilder.campaign_groups_endpoint(111111111).with_any_query_params().build(),
             LinkedInAdsPaginatedResponseBuilder.single_page(
                 [
                     _create_campaign_group_record(1001, 111111111, "Group 1"),
@@ -101,12 +96,8 @@ class TestCampaignGroupsStream(TestCase):
         )
 
         http_mocker.get(
-            LinkedInAdsRequestBuilder.campaign_groups_endpoint(222222222)
-            .with_any_query_params()
-            .build(),
-            LinkedInAdsPaginatedResponseBuilder.single_page(
-                [_create_campaign_group_record(2001, 222222222, "Group 3")]
-            ),
+            LinkedInAdsRequestBuilder.campaign_groups_endpoint(222222222).with_any_query_params().build(),
+            LinkedInAdsPaginatedResponseBuilder.single_page([_create_campaign_group_record(2001, 222222222, "Group 3")]),
         )
 
         source = get_source(config=config)
@@ -134,20 +125,13 @@ class TestCampaignGroupsStream(TestCase):
         config = ConfigBuilder().build()
 
         http_mocker.get(
-            LinkedInAdsRequestBuilder.accounts_endpoint()
-            .with_q("search")
-            .with_page_size(500)
-            .build(),
-            LinkedInAdsPaginatedResponseBuilder.single_page(
-                [_create_account_record(111111111, "Account 1")]
-            ),
+            LinkedInAdsRequestBuilder.accounts_endpoint().with_q("search").with_page_size(500).build(),
+            LinkedInAdsPaginatedResponseBuilder.single_page([_create_account_record(111111111, "Account 1")]),
         )
 
         # Provide multiple responses for the same endpoint to handle pagination
         http_mocker.get(
-            LinkedInAdsRequestBuilder.campaign_groups_endpoint(111111111)
-            .with_any_query_params()
-            .build(),
+            LinkedInAdsRequestBuilder.campaign_groups_endpoint(111111111).with_any_query_params().build(),
             [
                 LinkedInAdsPaginatedResponseBuilder()
                 .with_records(
@@ -158,9 +142,7 @@ class TestCampaignGroupsStream(TestCase):
                 )
                 .with_next_page_token("next_page_token_abc")
                 .build(),
-                LinkedInAdsPaginatedResponseBuilder.single_page(
-                    [_create_campaign_group_record(1003, 111111111, "Group 3")]
-                ),
+                LinkedInAdsPaginatedResponseBuilder.single_page([_create_campaign_group_record(1003, 111111111, "Group 3")]),
             ],
         )
 
@@ -184,22 +166,13 @@ class TestCampaignGroupsStream(TestCase):
         config = ConfigBuilder().build()
 
         http_mocker.get(
-            LinkedInAdsRequestBuilder.accounts_endpoint()
-            .with_q("search")
-            .with_page_size(500)
-            .build(),
-            LinkedInAdsPaginatedResponseBuilder.single_page(
-                [_create_account_record(111111111, "Account 1")]
-            ),
+            LinkedInAdsRequestBuilder.accounts_endpoint().with_q("search").with_page_size(500).build(),
+            LinkedInAdsPaginatedResponseBuilder.single_page([_create_account_record(111111111, "Account 1")]),
         )
 
         http_mocker.get(
-            LinkedInAdsRequestBuilder.campaign_groups_endpoint(111111111)
-            .with_any_query_params()
-            .build(),
-            LinkedInAdsPaginatedResponseBuilder.single_page(
-                [_create_campaign_group_record(1001, 111111111, "Group 1")]
-            ),
+            LinkedInAdsRequestBuilder.campaign_groups_endpoint(111111111).with_any_query_params().build(),
+            LinkedInAdsPaginatedResponseBuilder.single_page([_create_campaign_group_record(1001, 111111111, "Group 1")]),
         )
 
         source = get_source(config=config)
@@ -220,32 +193,19 @@ class TestCampaignGroupsStream(TestCase):
         Then: Only records newer than the cursor should be returned (client-side filtering)
         """
         config = ConfigBuilder().build()
-        state = StateBuilder().with_stream_state(
-            _STREAM_NAME, {"lastModified": "2024-06-01T00:00:00+0000"}
-        ).build()
+        state = StateBuilder().with_stream_state(_STREAM_NAME, {"lastModified": "2024-06-01T00:00:00+0000"}).build()
 
         http_mocker.get(
-            LinkedInAdsRequestBuilder.accounts_endpoint()
-            .with_q("search")
-            .with_page_size(500)
-            .build(),
-            LinkedInAdsPaginatedResponseBuilder.single_page(
-                [_create_account_record(111111111, "Account 1")]
-            ),
+            LinkedInAdsRequestBuilder.accounts_endpoint().with_q("search").with_page_size(500).build(),
+            LinkedInAdsPaginatedResponseBuilder.single_page([_create_account_record(111111111, "Account 1")]),
         )
 
         http_mocker.get(
-            LinkedInAdsRequestBuilder.campaign_groups_endpoint(111111111)
-            .with_any_query_params()
-            .build(),
+            LinkedInAdsRequestBuilder.campaign_groups_endpoint(111111111).with_any_query_params().build(),
             LinkedInAdsPaginatedResponseBuilder.single_page(
                 [
-                    _create_campaign_group_record(
-                        1001, 111111111, "Old Group", "ACTIVE", "2024-01-01T00:00:00+0000"
-                    ),
-                    _create_campaign_group_record(
-                        1002, 111111111, "New Group", "ACTIVE", "2024-07-01T00:00:00+0000"
-                    ),
+                    _create_campaign_group_record(1001, 111111111, "Old Group", "ACTIVE", "2024-01-01T00:00:00+0000"),
+                    _create_campaign_group_record(1002, 111111111, "New Group", "ACTIVE", "2024-07-01T00:00:00+0000"),
                 ]
             ),
         )
@@ -270,10 +230,7 @@ class TestCampaignGroupsStream(TestCase):
         config = ConfigBuilder().build()
 
         http_mocker.get(
-            LinkedInAdsRequestBuilder.accounts_endpoint()
-            .with_q("search")
-            .with_page_size(500)
-            .build(),
+            LinkedInAdsRequestBuilder.accounts_endpoint().with_q("search").with_page_size(500).build(),
             LinkedInAdsPaginatedResponseBuilder.empty_page(),
         )
 
@@ -296,19 +253,12 @@ class TestCampaignGroupsStream(TestCase):
         config = ConfigBuilder().build()
 
         http_mocker.get(
-            LinkedInAdsRequestBuilder.accounts_endpoint()
-            .with_q("search")
-            .with_page_size(500)
-            .build(),
-            LinkedInAdsPaginatedResponseBuilder.single_page(
-                [_create_account_record(111111111, "Account 1")]
-            ),
+            LinkedInAdsRequestBuilder.accounts_endpoint().with_q("search").with_page_size(500).build(),
+            LinkedInAdsPaginatedResponseBuilder.single_page([_create_account_record(111111111, "Account 1")]),
         )
 
         http_mocker.get(
-            LinkedInAdsRequestBuilder.campaign_groups_endpoint(111111111)
-            .with_any_query_params()
-            .build(),
+            LinkedInAdsRequestBuilder.campaign_groups_endpoint(111111111).with_any_query_params().build(),
             LinkedInAdsPaginatedResponseBuilder.empty_page(),
         )
 
