@@ -51,10 +51,7 @@ class SnowflakeTestTableOperationsClient(
         val columnSchema =
             io.airbyte.cdk.load.schema.model.ColumnSchema(
                 inputToFinalColumnNames = columnTypes.keys.associateWith { it },
-                finalSchema =
-                    columnTypes.mapValues { (_, _) ->
-                        ColumnType("", true)
-                    },
+                finalSchema = columnTypes.mapValues { (_, _) -> ColumnType("", true) },
                 inputSchema = emptyMap() // Not needed for insert buffer
             )
         val a =
