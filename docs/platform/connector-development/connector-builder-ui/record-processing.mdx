@@ -410,7 +410,7 @@ Some APIs return records nested within a response body alongside metadata fields
 }
 ```
 
-In this case, **setting the Field Path to `body`,`results`** extracts each object in the `results` array as an individual record. The `status`, `num_of_rows`, and `total` fields are discarded, and each item in the `results` array becomes a separate record.
+In this case, **setting the Download Extractor Field Path in the Advanced options to `results`** extracts each object in the `results` array as an individual record. The `status`, `num_of_rows`, and `total` fields are discarded, and each item in the `results` array becomes a separate record.
 
 #### Root array
 
