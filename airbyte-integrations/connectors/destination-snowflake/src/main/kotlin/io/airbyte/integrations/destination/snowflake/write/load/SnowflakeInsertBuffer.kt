@@ -94,7 +94,7 @@ class SnowflakeInsertBuffer(
                 }
                 // Finally, copy the data from the staging table to the final table
                 // Pass column names to ensure correct mapping even after ALTER TABLE operations
-                val columnNames = columnManager.getTableColumns(columnSchema)
+                val columnNames = columnManager.getTableColumnNames(columnSchema)
                 snowflakeClient.copyFromStage(tableName, filePath.fileName.toString(), columnNames)
                 logger.info {
                     "Finished insert of $recordCount row(s) into ${tableName.toPrettyString(quote = QUOTE)}."

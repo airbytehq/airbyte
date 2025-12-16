@@ -351,7 +351,7 @@ internal class SnowflakeAirbyteClientTest {
             }
 
         every { dataSource.connection } returns mockConnection
-        every { sqlGenerator.getGenerationIdColumnName() } returns generationIdColumnName
+        every { columnManager.getGenerationIdColumnName() } returns generationIdColumnName
         every { sqlGenerator.getGenerationId(tableName) } returns
             "SELECT $generationIdColumnName FROM ${tableName.toPrettyString(QUOTE)}"
 
@@ -544,7 +544,7 @@ internal class SnowflakeAirbyteClientTest {
         every { dataSource.connection } returns connection
 
         // Mock the columnManager to return the correct set of meta columns
-        every { columnManager.getMetaColumns() } returns
+        every { columnManager.getMetaColumnNames() } returns
             setOf(COLUMN_NAME_AB_RAW_ID.toSnowflakeCompatibleName())
 
         val result = client.getColumnsFromDb(tableName)

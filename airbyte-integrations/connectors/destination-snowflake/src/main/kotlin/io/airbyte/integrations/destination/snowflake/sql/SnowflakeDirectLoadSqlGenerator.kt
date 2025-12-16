@@ -15,6 +15,7 @@ import io.airbyte.cdk.load.schema.model.StreamTableSchema
 import io.airbyte.cdk.load.schema.model.TableName
 import io.airbyte.cdk.load.table.CDC_DELETED_AT_COLUMN
 import io.airbyte.cdk.load.util.UUIDGenerator
+import io.airbyte.integrations.destination.snowflake.schema.SnowflakeColumnManager
 import io.airbyte.integrations.destination.snowflake.schema.toSnowflakeCompatibleName
 import io.airbyte.integrations.destination.snowflake.spec.CdcDeletionMode
 import io.airbyte.integrations.destination.snowflake.spec.SnowflakeConfiguration
@@ -47,7 +48,8 @@ fun String.andLog(): String {
 @Singleton
 class SnowflakeDirectLoadSqlGenerator(
     private val uuidGenerator: UUIDGenerator,
-    private val snowflakeConfiguration: SnowflakeConfiguration,
+    private val config: SnowflakeConfiguration,
+    private val columnManager: SnowflakeColumnManager,
 ) {
     fun countTable(tableName: TableName): String {
         return "SELECT COUNT(*) AS $COUNT_TOTAL_ALIAS FROM ${fullyQualifiedName(tableName)}".andLog()
@@ -63,23 +65,16 @@ class SnowflakeDirectLoadSqlGenerator(
         replace: Boolean
     ): String {
         val finalSchema = tableSchema.columnSchema.finalSchema
+        val metaColumns = columnManager.getMetaColumns()
 
-        // Build column declarations from the munged schema
+        // Build column declarations from the meta columns and user schema
         val columnDeclarations =
             buildList {
-                    // Add Airbyte meta columns (using Snowflake-compatible uppercase names)
-                    add(
-                        "${SNOWFLAKE_AB_RAW_ID.quote()} ${SnowflakeDataType.VARCHAR.typeName} NOT NULL",
-                    )
-                    add(
-                        "${SNOWFLAKE_AB_EXTRACTED_AT.quote()} ${SnowflakeDataType.TIMESTAMP_TZ.typeName} NOT NULL",
-                    )
-                    add(
-                        "${SNOWFLAKE_AB_META.quote()} ${SnowflakeDataType.VARIANT.typeName} NOT NULL",
-                    )
-                    add(
-                        "${SNOWFLAKE_AB_GENERATION_ID.quote()} ${SnowflakeDataType.NUMBER.typeName}",
-                    )
+                    // Add Airbyte meta columns from the column manager
+                    metaColumns.forEach { (columnName, columnType) ->
+                        val nullability = if (columnType.nullable) "" else " NOT NULL"
+                        add("${columnName.quote()} ${columnType.type}$nullability")
+                    }
 
                     // Add user columns from the munged schema
                     finalSchema.forEach { (columnName, columnType) ->
@@ -194,7 +189,7 @@ class SnowflakeDirectLoadSqlGenerator(
         val cdcSkipInsertClause: String
         if (
             finalSchema.containsKey(SNOWFLAKE_AB_CDC_DELETED_AT_COLUMN) &&
-                snowflakeConfiguration.cdcDeletionMode == CdcDeletionMode.HARD_DELETE
+                config.cdcDeletionMode == CdcDeletionMode.HARD_DELETE
         ) {
             // Execute CDC deletions if there's already a record
             cdcDeleteClause =
@@ -309,21 +304,12 @@ class SnowflakeDirectLoadSqlGenerator(
         tableName: TableName,
     ): String {
         return """
-            SELECT "${getGenerationIdColumnName()}"
+            SELECT "${columnManager.getGenerationIdColumnName()}"
             FROM ${fullyQualifiedName(tableName)}
             LIMIT 1
         """
             .trimIndent()
             .andLog()
-    }
-
-    fun getGenerationIdColumnName(): String {
-        return if (snowflakeConfiguration.legacyRawTablesOnly) {
-            COLUMN_NAME_AB_GENERATION_ID
-        } else {
-            // Use the uppercase constant for generation ID
-            SNOWFLAKE_AB_GENERATION_ID
-        }
     }
 
     fun createSnowflakeStage(tableName: TableName): String {
@@ -512,5 +498,5 @@ class SnowflakeDirectLoadSqlGenerator(
                 }
             }
 
-    private fun getDatabaseName() = snowflakeConfiguration.database.toSnowflakeCompatibleName()
+    private fun getDatabaseName() = config.database.toSnowflakeCompatibleName()
 }

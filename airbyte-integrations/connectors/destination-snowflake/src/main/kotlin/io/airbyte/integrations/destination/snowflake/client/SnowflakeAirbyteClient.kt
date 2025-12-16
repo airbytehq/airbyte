@@ -161,7 +161,7 @@ class SnowflakeAirbyteClient(
         // Get all column names from the mapping (both meta columns and user columns)
         val columnNames = buildSet {
             // Add Airbyte meta columns (using uppercase constants)
-            addAll(columnManager.getMetaColumns())
+            addAll(columnManager.getMetaColumnNames())
             // Add user columns from mapping
             addAll(columnNameMapping.values)
         }
@@ -254,7 +254,7 @@ class SnowflakeAirbyteClient(
                         val columnName = escapeJsonIdentifier(rs.getString("name"))
 
                         // Filter out airbyte columns
-                        if (columnManager.getMetaColumns().contains(columnName)) {
+                        if (columnManager.getMetaColumnNames().contains(columnName)) {
                             continue
                         }
                         val dataType = rs.getString("type").takeWhile { char -> char != '(' }
@@ -284,7 +284,7 @@ class SnowflakeAirbyteClient(
                          * format.  In order to make sure these strings will match any column names
                          * that we have formatted in-memory, re-apply the escaping.
                          */
-                        resultSet.getLong(sqlGenerator.getGenerationIdColumnName())
+                        resultSet.getLong(columnManager.getGenerationIdColumnName())
                     } else {
                         log.warn {
                             "No generation ID found for table ${tableName.toPrettyString()}, returning 0"

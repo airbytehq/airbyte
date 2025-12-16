@@ -15,6 +15,7 @@ import io.airbyte.cdk.load.schema.model.StreamTableSchema
 import io.airbyte.cdk.load.schema.model.TableName
 import io.airbyte.cdk.load.schema.model.TableNames
 import io.airbyte.cdk.load.util.UUIDGenerator
+import io.airbyte.integrations.destination.snowflake.schema.SnowflakeColumnManager
 import io.airbyte.integrations.destination.snowflake.schema.toSnowflakeCompatibleName
 import io.airbyte.integrations.destination.snowflake.spec.CdcDeletionMode
 import io.airbyte.integrations.destination.snowflake.spec.SnowflakeConfiguration
@@ -32,16 +33,28 @@ internal class SnowflakeDirectLoadSqlGeneratorTest {
     private lateinit var snowflakeDirectLoadSqlGenerator: SnowflakeDirectLoadSqlGenerator
     private val uuidGenerator: UUIDGenerator = mockk()
     private val snowflakeConfiguration: SnowflakeConfiguration = mockk()
+    private val snowflakeColumnManager: SnowflakeColumnManager = mockk(relaxed = true)
 
     @BeforeEach
     fun setUp() {
         every { snowflakeConfiguration.cdcDeletionMode } returns CdcDeletionMode.HARD_DELETE
         every { snowflakeConfiguration.database } returns "test-database"
         every { snowflakeConfiguration.legacyRawTablesOnly } returns false
+
+        // Mock the column manager to return meta columns for schema mode
+        every { snowflakeColumnManager.getMetaColumns() } returns
+            linkedMapOf(
+                "_AIRBYTE_RAW_ID" to ColumnType("VARCHAR", false),
+                "_AIRBYTE_EXTRACTED_AT" to ColumnType("TIMESTAMP_TZ", false),
+                "_AIRBYTE_META" to ColumnType("VARIANT", false),
+                "_AIRBYTE_GENERATION_ID" to ColumnType("NUMBER", true),
+            )
+
         snowflakeDirectLoadSqlGenerator =
             SnowflakeDirectLoadSqlGenerator(
                 uuidGenerator = uuidGenerator,
-                snowflakeConfiguration = snowflakeConfiguration,
+                config = snowflakeConfiguration,
+                columnManager = snowflakeColumnManager,
             )
     }
 

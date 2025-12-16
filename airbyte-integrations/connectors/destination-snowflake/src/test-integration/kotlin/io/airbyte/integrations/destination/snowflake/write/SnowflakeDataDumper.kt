@@ -18,6 +18,7 @@ import io.airbyte.cdk.load.test.util.OutputRecord
 import io.airbyte.cdk.load.util.UUIDGenerator
 import io.airbyte.cdk.load.util.deserializeToNode
 import io.airbyte.integrations.destination.snowflake.SnowflakeBeanFactory
+import io.airbyte.integrations.destination.snowflake.schema.SnowflakeColumnManager
 import io.airbyte.integrations.destination.snowflake.schema.SnowflakeTableSchemaMapper
 import io.airbyte.integrations.destination.snowflake.schema.toSnowflakeCompatibleName
 import io.airbyte.integrations.destination.snowflake.spec.SnowflakeConfiguration
@@ -44,7 +45,9 @@ class SnowflakeDataDumper(
                 config = config,
                 tempTableNameGenerator = DefaultTempTableNameGenerator(),
             )
-        val sqlGenerator = SnowflakeDirectLoadSqlGenerator(UUIDGenerator(), config)
+        val snowflakeColumnManager = SnowflakeColumnManager(config)
+        val sqlGenerator =
+            SnowflakeDirectLoadSqlGenerator(UUIDGenerator(), config, snowflakeColumnManager)
         val dataSource =
             SnowflakeBeanFactory()
                 .snowflakeDataSource(snowflakeConfiguration = config, airbyteEdition = "COMMUNITY")

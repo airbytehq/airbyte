@@ -9,11 +9,14 @@ import io.airbyte.cdk.load.command.DestinationStream
 import io.airbyte.cdk.load.data.StringValue
 import io.airbyte.cdk.load.data.json.toAirbyteValue
 import io.airbyte.cdk.load.message.Meta
+import io.airbyte.cdk.load.table.DefaultTempTableNameGenerator
 import io.airbyte.cdk.load.test.util.DestinationDataDumper
 import io.airbyte.cdk.load.test.util.OutputRecord
 import io.airbyte.cdk.load.util.UUIDGenerator
 import io.airbyte.cdk.load.util.deserializeToNode
 import io.airbyte.integrations.destination.snowflake.SnowflakeBeanFactory
+import io.airbyte.integrations.destination.snowflake.schema.SnowflakeColumnManager
+import io.airbyte.integrations.destination.snowflake.schema.SnowflakeTableSchemaMapper
 import io.airbyte.integrations.destination.snowflake.spec.SnowflakeConfiguration
 import io.airbyte.integrations.destination.snowflake.sql.SnowflakeDirectLoadSqlGenerator
 
@@ -27,7 +30,18 @@ class SnowflakeRawDataDumper(
         val output = mutableListOf<OutputRecord>()
 
         val config = configProvider(spec)
-        val sqlGenerator = SnowflakeDirectLoadSqlGenerator(UUIDGenerator(), config)
+        val snowflakeColumnManager = SnowflakeColumnManager(config)
+        val sqlGenerator =
+            SnowflakeDirectLoadSqlGenerator(
+                UUIDGenerator(),
+                config,
+                snowflakeColumnManager,
+            )
+        val snowflakeFinalTableNameGenerator =
+            SnowflakeTableSchemaMapper(
+                config = config,
+                tempTableNameGenerator = DefaultTempTableNameGenerator(),
+            )
         val dataSource =
             SnowflakeBeanFactory()
                 .snowflakeDataSource(snowflakeConfiguration = config, airbyteEdition = "COMMUNITY")
@@ -36,10 +50,7 @@ class SnowflakeRawDataDumper(
             ds.connection.use { connection ->
                 val statement = connection.createStatement()
                 val tableName =
-                    stream.tableSchema?.tableNames?.finalTableName
-                        ?: throw IllegalStateException(
-                            "Table name not found for stream ${stream.mappedDescriptor.name}"
-                        )
+                    snowflakeFinalTableNameGenerator.toFinalTableName(stream.mappedDescriptor)
 
                 val resultSet =
                     statement.executeQuery(

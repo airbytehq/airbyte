@@ -45,7 +45,7 @@ class SnowflakeTestTableOperationsClient(
         // Fetch the columns and filter out the meta columns so we're just looking at user columns
         val columnTypes =
             client.describeTable(table).filterNot {
-                columnManager.getMetaColumns().contains(it.key)
+                columnManager.getMetaColumnNames().contains(it.key)
             }
         val columnSchema =
             io.airbyte.cdk.load.schema.model.ColumnSchema(
