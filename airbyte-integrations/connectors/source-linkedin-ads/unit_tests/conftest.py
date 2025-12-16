@@ -8,6 +8,8 @@ import sys
 from pathlib import Path
 from typing import Any, Mapping, Optional
 
+from pytest import fixture
+
 from airbyte_protocol_dataclasses.models import ConfiguredAirbyteCatalog
 
 from airbyte_cdk.sources.declarative.yaml_declarative_source import YamlDeclarativeSource
@@ -16,6 +18,15 @@ from airbyte_cdk.test.state_builder import StateBuilder
 
 
 os.environ["REQUEST_CACHE_PATH"] = "REQUEST_CACHE_PATH"
+
+
+@fixture(autouse=True)
+def clear_cache_before_each_test():
+    """Clear the HTTP request cache before each test to prevent test pollution."""
+    cache_path = os.environ.get("REQUEST_CACHE_PATH")
+    if cache_path and os.path.exists(cache_path):
+        import shutil
+        shutil.rmtree(cache_path, ignore_errors=True)
 
 pytest_plugins = ["airbyte_cdk.test.utils.manifest_only_fixtures"]
 
@@ -33,9 +44,9 @@ _YAML_FILE_PATH = _SOURCE_FOLDER_PATH / "manifest.yaml"
 sys.path.append(str(_SOURCE_FOLDER_PATH))  # to allow loading custom components
 
 
-def get_source(config, catalog: Optional[ConfiguredAirbyteCatalog] = None) -> YamlDeclarativeSource:
+def get_source(config, catalog: Optional[ConfiguredAirbyteCatalog] = None, state=None) -> YamlDeclarativeSource:
     catalog = catalog or CatalogBuilder().build()
-    state = StateBuilder().build()
+    state = state if state is not None else StateBuilder().build()
     return YamlDeclarativeSource(path_to_yaml=str(_YAML_FILE_PATH), catalog=catalog, config=config, state=state)
 
 
