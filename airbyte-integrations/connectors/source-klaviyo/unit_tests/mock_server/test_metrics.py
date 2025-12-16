@@ -12,20 +12,20 @@ from airbyte_cdk.test.catalog_builder import CatalogBuilder
 from airbyte_cdk.test.entrypoint_wrapper import read
 from airbyte_cdk.test.mock_http import HttpMocker, HttpResponse
 from airbyte_cdk.test.state_builder import StateBuilder
-from integration.config import ConfigBuilder
-from integration.request_builder import KlaviyoRequestBuilder
-from integration.response_builder import KlaviyoPaginatedResponseBuilder
+from mock_server.config import ConfigBuilder
+from mock_server.request_builder import KlaviyoRequestBuilder
+from mock_server.response_builder import KlaviyoPaginatedResponseBuilder
 
 
 _NOW = datetime(2024, 6, 1, 12, 0, 0, tzinfo=timezone.utc)
-_STREAM_NAME = "lists"
+_STREAM_NAME = "metrics"
 _API_KEY = "test_api_key_abc123"
 
 
 @freezegun.freeze_time(_NOW.isoformat())
-class TestListsStream(TestCase):
+class TestMetricsStream(TestCase):
     """
-    Tests for the Klaviyo 'lists' stream.
+    Tests for the Klaviyo 'metrics' stream.
 
     Stream configuration from manifest.yaml:
     - Client-side incremental sync (is_client_side_incremental: true)
@@ -42,30 +42,30 @@ class TestListsStream(TestCase):
         Test full refresh sync with a single page of results.
 
         Given: A configured Klaviyo connector
-        When: Running a full refresh sync for the lists stream
+        When: Running a full refresh sync for the metrics stream
         Then: The connector should make the correct API request and return all records
         """
         config = ConfigBuilder().with_api_key(_API_KEY).with_start_date(datetime(2024, 5, 31, tzinfo=timezone.utc)).build()
 
-        # Lists stream has no query parameters (no request_parameters in manifest)
+        # Metrics stream has no query parameters (no request_parameters in manifest)
         http_mocker.get(
-            KlaviyoRequestBuilder.lists_endpoint(_API_KEY).build(),
+            KlaviyoRequestBuilder.metrics_endpoint(_API_KEY).build(),
             HttpResponse(
                 body=json.dumps(
                     {
                         "data": [
                             {
-                                "type": "list",
-                                "id": "list_001",
+                                "type": "metric",
+                                "id": "metric_001",
                                 "attributes": {
-                                    "name": "Newsletter Subscribers",
+                                    "name": "Placed Order",
                                     "created": "2024-05-31T10:00:00+00:00",
                                     "updated": "2024-05-31T12:30:00+00:00",
-                                    "opt_in_process": "single_opt_in",
+                                    "integration": {"id": "integration_001", "name": "Shopify"},
                                 },
                             }
                         ],
-                        "links": {"self": "https://a.klaviyo.com/api/lists", "next": None},
+                        "links": {"self": "https://a.klaviyo.com/api/metrics", "next": None},
                     }
                 ),
                 status_code=200,
@@ -78,54 +78,56 @@ class TestListsStream(TestCase):
 
         assert len(output.records) == 1
         record = output.records[0].record.data
-        assert record["id"] == "list_001"
-        assert record["attributes"]["name"] == "Newsletter Subscribers"
+        assert record["id"] == "metric_001"
+        assert record["attributes"]["name"] == "Placed Order"
 
     @HttpMocker()
     def test_pagination_multiple_pages(self, http_mocker: HttpMocker):
         """
         Test that connector fetches all pages when pagination is present.
 
-        Given: An API that returns multiple pages of lists
+        Given: An API that returns multiple pages of metrics
         When: Running a full refresh sync
         Then: The connector should follow pagination links and return all records
+
+        Note: Uses with_any_query_params() because pagination adds page[cursor] to the
+        request params, making exact matching impractical.
         """
         config = ConfigBuilder().with_api_key(_API_KEY).with_start_date(datetime(2024, 5, 31, tzinfo=timezone.utc)).build()
 
-        # Use a single mock with multiple responses to avoid ambiguity in mock matching.
-        # The first response includes a next_page_link, the second response has no next link.
-        # Lists stream has no query parameters (no request_parameters in manifest)
+        # Use a single mock with any query params since pagination adds page[cursor]
+        # which makes exact query param matching impractical
         http_mocker.get(
-            KlaviyoRequestBuilder.lists_endpoint(_API_KEY).build(),
+            KlaviyoRequestBuilder.metrics_endpoint(_API_KEY).with_any_query_params().build(),
             [
                 KlaviyoPaginatedResponseBuilder()
                 .with_records(
                     [
                         {
-                            "type": "list",
-                            "id": "list_001",
+                            "type": "metric",
+                            "id": "metric_001",
                             "attributes": {
-                                "name": "List 1",
+                                "name": "Metric 1",
                                 "created": "2024-05-31T10:00:00+00:00",
                                 "updated": "2024-05-31T10:00:00+00:00",
-                                "opt_in_process": "single_opt_in",
+                                "integration": {"id": "int_001", "name": "Shopify"},
                             },
                         }
                     ]
                 )
-                .with_next_page_link("https://a.klaviyo.com/api/lists?page[cursor]=abc123")
+                .with_next_page_link("https://a.klaviyo.com/api/metrics?page[cursor]=abc123")
                 .build(),
                 KlaviyoPaginatedResponseBuilder()
                 .with_records(
                     [
                         {
-                            "type": "list",
-                            "id": "list_002",
+                            "type": "metric",
+                            "id": "metric_002",
                             "attributes": {
-                                "name": "List 2",
+                                "name": "Metric 2",
                                 "created": "2024-05-31T11:00:00+00:00",
                                 "updated": "2024-05-31T11:00:00+00:00",
-                                "opt_in_process": "double_opt_in",
+                                "integration": {"id": "int_001", "name": "Shopify"},
                             },
                         }
                     ]
@@ -139,8 +141,8 @@ class TestListsStream(TestCase):
         output = read(source, config=config, catalog=catalog)
 
         assert len(output.records) == 2
-        assert output.records[0].record.data["id"] == "list_001"
-        assert output.records[1].record.data["id"] == "list_002"
+        assert output.records[0].record.data["id"] == "metric_001"
+        assert output.records[1].record.data["id"] == "metric_002"
 
     @HttpMocker()
     def test_client_side_incremental_first_sync_no_state(self, http_mocker: HttpMocker):
@@ -153,25 +155,25 @@ class TestListsStream(TestCase):
         """
         config = ConfigBuilder().with_api_key(_API_KEY).with_start_date(datetime(2024, 5, 31, tzinfo=timezone.utc)).build()
 
-        # Lists stream has no query parameters (no request_parameters in manifest)
+        # Metrics stream has no query parameters (no request_parameters in manifest)
         http_mocker.get(
-            KlaviyoRequestBuilder.lists_endpoint(_API_KEY).build(),
+            KlaviyoRequestBuilder.metrics_endpoint(_API_KEY).build(),
             HttpResponse(
                 body=json.dumps(
                     {
                         "data": [
                             {
-                                "type": "list",
-                                "id": "list_001",
+                                "type": "metric",
+                                "id": "metric_001",
                                 "attributes": {
-                                    "name": "Test List",
+                                    "name": "Test Metric",
                                     "created": "2024-05-31T10:00:00+00:00",
                                     "updated": "2024-05-31T12:30:00+00:00",
-                                    "opt_in_process": "single_opt_in",
+                                    "integration": {"id": "int_001", "name": "Shopify"},
                                 },
                             }
                         ],
-                        "links": {"self": "https://a.klaviyo.com/api/lists", "next": None},
+                        "links": {"self": "https://a.klaviyo.com/api/metrics", "next": None},
                     }
                 ),
                 status_code=200,
@@ -183,7 +185,7 @@ class TestListsStream(TestCase):
         output = read(source, config=config, catalog=catalog)
 
         assert len(output.records) == 1
-        assert output.records[0].record.data["id"] == "list_001"
+        assert output.records[0].record.data["id"] == "metric_001"
 
         assert len(output.state_messages) > 0
         latest_state = output.most_recent_state.stream_state.__dict__
@@ -206,35 +208,35 @@ class TestListsStream(TestCase):
         # Using +0000 format (without colon) to match connector's timezone format
         state = StateBuilder().with_stream_state(_STREAM_NAME, {"updated": "2024-03-01T00:00:00+0000"}).build()
 
-        # Lists stream has no query parameters (no request_parameters in manifest)
+        # Metrics stream has no query parameters (no request_parameters in manifest)
         http_mocker.get(
-            KlaviyoRequestBuilder.lists_endpoint(_API_KEY).build(),
+            KlaviyoRequestBuilder.metrics_endpoint(_API_KEY).build(),
             HttpResponse(
                 body=json.dumps(
                     {
                         "data": [
                             {
-                                "type": "list",
-                                "id": "list_old",
+                                "type": "metric",
+                                "id": "metric_old",
                                 "attributes": {
-                                    "name": "Old List",
+                                    "name": "Old Metric",
                                     "created": "2024-01-01T10:00:00+00:00",
                                     "updated": "2024-02-15T10:00:00+00:00",
-                                    "opt_in_process": "single_opt_in",
+                                    "integration": {"id": "int_001", "name": "Shopify"},
                                 },
                             },
                             {
-                                "type": "list",
-                                "id": "list_new",
+                                "type": "metric",
+                                "id": "metric_new",
                                 "attributes": {
-                                    "name": "New List",
+                                    "name": "New Metric",
                                     "created": "2024-03-10T10:00:00+00:00",
                                     "updated": "2024-03-15T10:00:00+00:00",
-                                    "opt_in_process": "double_opt_in",
+                                    "integration": {"id": "int_001", "name": "Shopify"},
                                 },
                             },
                         ],
-                        "links": {"self": "https://a.klaviyo.com/api/lists", "next": None},
+                        "links": {"self": "https://a.klaviyo.com/api/metrics", "next": None},
                     }
                 ),
                 status_code=200,
@@ -246,7 +248,7 @@ class TestListsStream(TestCase):
         output = read(source, config=config, catalog=catalog, state=state)
 
         assert len(output.records) == 1
-        assert output.records[0].record.data["id"] == "list_new"
+        assert output.records[0].record.data["id"] == "metric_new"
 
         assert len(output.state_messages) > 0
         latest_state = output.most_recent_state.stream_state.__dict__
@@ -269,25 +271,25 @@ class TestListsStream(TestCase):
         # Using +0000 format (without colon) to match connector's timezone format
         state = StateBuilder().with_stream_state(_STREAM_NAME, {"updated": "2024-03-01T00:00:00+0000"}).build()
 
-        # Lists stream has no query parameters (no request_parameters in manifest)
+        # Metrics stream has no query parameters (no request_parameters in manifest)
         http_mocker.get(
-            KlaviyoRequestBuilder.lists_endpoint(_API_KEY).build(),
+            KlaviyoRequestBuilder.metrics_endpoint(_API_KEY).build(),
             HttpResponse(
                 body=json.dumps(
                     {
                         "data": [
                             {
-                                "type": "list",
-                                "id": "list_old",
+                                "type": "metric",
+                                "id": "metric_old",
                                 "attributes": {
-                                    "name": "Old List",
+                                    "name": "Old Metric",
                                     "created": "2024-01-01T10:00:00+00:00",
                                     "updated": "2024-02-01T10:00:00+00:00",
-                                    "opt_in_process": "single_opt_in",
+                                    "integration": {"id": "int_001", "name": "Shopify"},
                                 },
                             }
                         ],
-                        "links": {"self": "https://a.klaviyo.com/api/lists", "next": None},
+                        "links": {"self": "https://a.klaviyo.com/api/metrics", "next": None},
                     }
                 ),
                 status_code=200,
@@ -305,31 +307,31 @@ class TestListsStream(TestCase):
         """
         Test that the AddFields transformation correctly extracts 'updated' from attributes.
 
-        Given: A list record with updated in attributes
+        Given: A metric record with updated in attributes
         When: Running a sync
         Then: The 'updated' field should be added at the root level of the record
         """
         config = ConfigBuilder().with_api_key(_API_KEY).with_start_date(datetime(2024, 5, 31, tzinfo=timezone.utc)).build()
 
-        # Lists stream has no query parameters (no request_parameters in manifest)
+        # Metrics stream has no query parameters (no request_parameters in manifest)
         http_mocker.get(
-            KlaviyoRequestBuilder.lists_endpoint(_API_KEY).build(),
+            KlaviyoRequestBuilder.metrics_endpoint(_API_KEY).build(),
             HttpResponse(
                 body=json.dumps(
                     {
                         "data": [
                             {
-                                "type": "list",
-                                "id": "list_transform_test",
+                                "type": "metric",
+                                "id": "metric_transform_test",
                                 "attributes": {
                                     "name": "Transform Test",
                                     "created": "2024-05-31T10:00:00+00:00",
                                     "updated": "2024-05-31T14:45:00+00:00",
-                                    "opt_in_process": "single_opt_in",
+                                    "integration": {"id": "int_001", "name": "Shopify"},
                                 },
                             }
                         ],
-                        "links": {"self": "https://a.klaviyo.com/api/lists", "next": None},
+                        "links": {"self": "https://a.klaviyo.com/api/metrics", "next": None},
                     }
                 ),
                 status_code=200,
@@ -356,9 +358,9 @@ class TestListsStream(TestCase):
         """
         config = ConfigBuilder().with_api_key(_API_KEY).with_start_date(datetime(2024, 5, 31, tzinfo=timezone.utc)).build()
 
-        # Lists stream has no query parameters (no request_parameters in manifest)
+        # Metrics stream has no query parameters (no request_parameters in manifest)
         http_mocker.get(
-            KlaviyoRequestBuilder.lists_endpoint(_API_KEY).build(),
+            KlaviyoRequestBuilder.metrics_endpoint(_API_KEY).build(),
             [
                 HttpResponse(
                     body=json.dumps({"errors": [{"detail": "Rate limit exceeded"}]}),
@@ -370,17 +372,17 @@ class TestListsStream(TestCase):
                         {
                             "data": [
                                 {
-                                    "type": "list",
-                                    "id": "list_after_retry",
+                                    "type": "metric",
+                                    "id": "metric_after_retry",
                                     "attributes": {
                                         "name": "After Retry",
                                         "created": "2024-05-31T10:00:00+00:00",
                                         "updated": "2024-05-31T10:00:00+00:00",
-                                        "opt_in_process": "single_opt_in",
+                                        "integration": {"id": "int_001", "name": "Shopify"},
                                     },
                                 }
                             ],
-                            "links": {"self": "https://a.klaviyo.com/api/lists", "next": None},
+                            "links": {"self": "https://a.klaviyo.com/api/metrics", "next": None},
                         }
                     ),
                     status_code=200,
@@ -393,7 +395,7 @@ class TestListsStream(TestCase):
         output = read(source, config=config, catalog=catalog)
 
         assert len(output.records) == 1
-        assert output.records[0].record.data["id"] == "list_after_retry"
+        assert output.records[0].record.data["id"] == "metric_after_retry"
 
         log_messages = [log.log.message for log in output.logs]
         # Check for backoff log message pattern
@@ -416,9 +418,9 @@ class TestListsStream(TestCase):
         """
         config = ConfigBuilder().with_api_key("invalid_key").with_start_date(datetime(2024, 5, 31, tzinfo=timezone.utc)).build()
 
-        # Lists stream has no query parameters (no request_parameters in manifest)
+        # Metrics stream has no query parameters (no request_parameters in manifest)
         http_mocker.get(
-            KlaviyoRequestBuilder.lists_endpoint("invalid_key").build(),
+            KlaviyoRequestBuilder.metrics_endpoint("invalid_key").build(),
             HttpResponse(
                 body=json.dumps({"errors": [{"detail": "Invalid API key"}]}),
                 status_code=401,
@@ -450,9 +452,9 @@ class TestListsStream(TestCase):
         """
         config = ConfigBuilder().with_api_key(_API_KEY).with_start_date(datetime(2024, 5, 31, tzinfo=timezone.utc)).build()
 
-        # Lists stream has no query parameters (no request_parameters in manifest)
+        # Metrics stream has no query parameters (no request_parameters in manifest)
         http_mocker.get(
-            KlaviyoRequestBuilder.lists_endpoint(_API_KEY).build(),
+            KlaviyoRequestBuilder.metrics_endpoint(_API_KEY).build(),
             HttpResponse(
                 body=json.dumps({"errors": [{"detail": "Forbidden - insufficient permissions"}]}),
                 status_code=403,
@@ -475,17 +477,17 @@ class TestListsStream(TestCase):
         """
         Test that connector handles empty results gracefully.
 
-        Given: An API that returns no lists
+        Given: An API that returns no metrics
         When: Running a full refresh sync
         Then: The connector should return zero records without errors
         """
         config = ConfigBuilder().with_api_key(_API_KEY).with_start_date(datetime(2024, 5, 31, tzinfo=timezone.utc)).build()
 
-        # Lists stream has no query parameters (no request_parameters in manifest)
+        # Metrics stream has no query parameters (no request_parameters in manifest)
         http_mocker.get(
-            KlaviyoRequestBuilder.lists_endpoint(_API_KEY).build(),
+            KlaviyoRequestBuilder.metrics_endpoint(_API_KEY).build(),
             HttpResponse(
-                body=json.dumps({"data": [], "links": {"self": "https://a.klaviyo.com/api/lists", "next": None}}),
+                body=json.dumps({"data": [], "links": {"self": "https://a.klaviyo.com/api/metrics", "next": None}}),
                 status_code=200,
             ),
         )
