@@ -271,6 +271,78 @@ class TestFullRefresh(TestCase):
         assert not any(log.log.level == "ERROR" for log in output.logs)
 
     @HttpMocker()
+    def test_substream_with_multiple_parent_records(self, http_mocker: HttpMocker) -> None:
+        """Test media_insights substream against 2+ parent records per playbook requirements."""
+        http_mocker.get(
+            get_account_request().build(),
+            get_account_response(),
+        )
+        # Mock parent stream returning 2 media records (reels and general_media)
+        parent_response = {
+            "data": [
+                {
+                    "caption": "a caption",
+                    "comments_count": 2,
+                    "id": MEDIA_ID_REELS,
+                    "ig_id": "3123724930722523505",
+                    "is_comment_enabled": True,
+                    "like_count": 12,
+                    "media_type": "VIDEO",
+                    "media_product_type": "REELS",
+                    "media_url": "https://fakecontent.com/path/to/content",
+                    "owner": {"id": "41408147298757123"},
+                    "permalink": "https://instagram.com/permalink/123",
+                    "shortcode": "HGagdsy38",
+                    "thumbnail_url": "https://fakecontent.cdninstagram.com/v/somepath/",
+                    "timestamp": "2023-06-12T19:20:02+0000",
+                    "username": "username",
+                },
+                {
+                    "caption": "another caption",
+                    "comments_count": 0,
+                    "id": MEDIA_ID_GENERAL_MEDIA,
+                    "ig_id": "2034885879374760912",
+                    "is_comment_enabled": True,
+                    "like_count": 52,
+                    "media_type": "IMAGE",
+                    "media_product_type": "FEED",
+                    "media_url": "https://fakecontent.com/path/to/content2",
+                    "owner": {"id": "41408147298757123"},
+                    "permalink": "https://instagram.com/permalink/456",
+                    "shortcode": "ABC123",
+                    "timestamp": "2019-05-02T11:42:01+0000",
+                    "username": "username",
+                },
+            ],
+            "paging": {"cursors": {"before": "cursor123"}},
+        }
+        http_mocker.get(
+            _get_parent_request().build(),
+            HttpResponse(json.dumps(parent_response), 200),
+        )
+
+        # Mock child requests for both parent records
+        http_mocker.get(
+            _get_child_request(media_id=MEDIA_ID_REELS, metric=_METRICS[MEDIA_ID_REELS]).build(),
+            HttpResponse(json.dumps(find_template(f"{_STREAM_NAME}_for_{REELS}", __file__)), 200),
+        )
+        http_mocker.get(
+            _get_child_request(media_id=MEDIA_ID_GENERAL_MEDIA, metric=_METRICS[MEDIA_ID_GENERAL_MEDIA]).build(),
+            HttpResponse(json.dumps(find_template(f"{_STREAM_NAME}_for_{GENERAL_MEDIA}", __file__)), 200),
+        )
+
+        output = self._read(config_=config())
+        # Verify we get records from both parent records
+        assert len(output.records) == 2
+        record_ids = {r.record.data["id"] for r in output.records}
+        assert MEDIA_ID_REELS in record_ids
+        assert MEDIA_ID_GENERAL_MEDIA in record_ids
+        # Verify transformations on all records
+        for record in output.records:
+            assert record.record.data["page_id"]
+            assert record.record.data["business_account_id"]
+
+    @HttpMocker()
     def test_instagram_insights_error_posted_before_business(self, http_mocker: HttpMocker) -> None:
         test = ERROR_POSTED_BEFORE_BUSINESS
         http_mocker.get(

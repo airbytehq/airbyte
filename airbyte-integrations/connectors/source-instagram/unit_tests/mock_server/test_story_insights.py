@@ -158,3 +158,84 @@ class TestFullRefresh(TestCase):
             assert metric in output.records[0].record.data
         # For IGNORE handlers, verify no ERROR logs are produced
         assert not any(log.log.level == "ERROR" for log in output.logs)
+
+    @HttpMocker()
+    def test_substream_with_multiple_parent_records(self, http_mocker: HttpMocker) -> None:
+        """Test story_insights substream against 2+ parent records per playbook requirements."""
+        STORIES_ID_2 = "3874523487645"
+        http_mocker.get(
+            get_account_request().build(),
+            get_account_response(),
+        )
+        # Mock parent stream returning 2 story records
+        parent_response = {
+            "data": [
+                {
+                    "id": STORIES_ID,
+                    "ig_id": "ig_id_1",
+                    "like_count": 0,
+                    "media_type": "VIDEO",
+                    "media_product_type": "STORY",
+                    "media_url": "https://fakecontent.cdninstagram.com/path1/path2/some_value",
+                    "owner": {"id": "owner_id"},
+                    "permalink": "https://placeholder.com/stories/username/some_id_value",
+                    "shortcode": "ERUY34867_3",
+                    "thumbnail_url": "https://content.cdnfaker.com/path1/path2/some_value",
+                    "timestamp": "2024-06-17T19:39:18+0000",
+                    "username": "username",
+                },
+                {
+                    "id": STORIES_ID_2,
+                    "ig_id": "ig_id_2",
+                    "like_count": 5,
+                    "media_type": "IMAGE",
+                    "media_product_type": "STORY",
+                    "media_url": "https://fakecontent.cdninstagram.com/path1/path2/another_value",
+                    "owner": {"id": "owner_id"},
+                    "permalink": "https://placeholder.com/stories/username/another_id_value",
+                    "shortcode": "XYZ98765_4",
+                    "thumbnail_url": "https://content.cdnfaker.com/path1/path2/another_value",
+                    "timestamp": "2024-06-18T10:15:30+0000",
+                    "username": "username",
+                },
+            ],
+            "paging": {"cursors": {"before": "cursor123"}},
+        }
+        http_mocker.get(
+            _get_parent_request().build(),
+            HttpResponse(json.dumps(parent_response), 200),
+        )
+
+        # Mock child requests for both parent records
+        http_mocker.get(
+            _get_child_request(media_id=STORIES_ID, metric=_METRICS).build(),
+            HttpResponse(json.dumps(find_template(f"{_STREAM_NAME}_for_{HAPPY_PATH}", __file__)), 200),
+        )
+        # Build response for second story with different ID
+        story_insights_response_2 = {
+            "data": [
+                {"name": "reach", "period": "lifetime", "values": [{"value": 150}], "title": "Reach", "description": "desc", "id": f"{STORIES_ID_2}/insights/reach/lifetime"},
+                {"name": "replies", "period": "lifetime", "values": [{"value": 3}], "title": "Replies", "description": "desc", "id": f"{STORIES_ID_2}/insights/replies/lifetime"},
+                {"name": "follows", "period": "lifetime", "values": [{"value": 2}], "title": "Follows", "description": "desc", "id": f"{STORIES_ID_2}/insights/follows/lifetime"},
+                {"name": "profile_visits", "period": "lifetime", "values": [{"value": 10}], "title": "Profile Visits", "description": "desc", "id": f"{STORIES_ID_2}/insights/profile_visits/lifetime"},
+                {"name": "shares", "period": "lifetime", "values": [{"value": 1}], "title": "Shares", "description": "desc", "id": f"{STORIES_ID_2}/insights/shares/lifetime"},
+                {"name": "total_interactions", "period": "lifetime", "values": [{"value": 16}], "title": "Total Interactions", "description": "desc", "id": f"{STORIES_ID_2}/insights/total_interactions/lifetime"},
+            ]
+        }
+        http_mocker.get(
+            _get_child_request(media_id=STORIES_ID_2, metric=_METRICS).build(),
+            HttpResponse(json.dumps(story_insights_response_2), 200),
+        )
+
+        output = self._read(config_=config())
+        # Verify we get records from both parent records
+        assert len(output.records) == 2
+        record_ids = {r.record.data["id"] for r in output.records}
+        assert STORIES_ID in record_ids
+        assert STORIES_ID_2 in record_ids
+        # Verify transformations on all records
+        for record in output.records:
+            assert record.record.data["page_id"]
+            assert record.record.data["business_account_id"]
+            for metric in _METRICS:
+                assert metric in record.record.data

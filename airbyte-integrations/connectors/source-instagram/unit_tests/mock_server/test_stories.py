@@ -85,6 +85,12 @@ class TestFullRefresh(TestCase):
 
         output = self._read(config_=config())
         assert len(output.records) == 1
+        # Verify transformations are applied (page_id, business_account_id, story_insights_info, timestamp)
+        record = output.records[0].record.data
+        assert "page_id" in record
+        assert "business_account_id" in record
+        assert "story_insights_info" in record
+        assert "timestamp" in record
 
     @HttpMocker()
     def test_given_multiple_pages_when_read_then_return_records(self, http_mocker: HttpMocker) -> None:
