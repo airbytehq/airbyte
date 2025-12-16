@@ -3,8 +3,8 @@
 from datetime import timedelta
 from unittest import TestCase
 
-from airbyte_cdk.models import SyncMode
 from airbyte_cdk.models import Level as LogLevel
+from airbyte_cdk.models import SyncMode
 from airbyte_cdk.test.mock_http import HttpMocker
 from airbyte_cdk.test.state_builder import StateBuilder
 from airbyte_cdk.utils.datetime_helpers import ab_datetime_now

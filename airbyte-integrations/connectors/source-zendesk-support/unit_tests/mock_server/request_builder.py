@@ -270,9 +270,13 @@ class ZendeskSupportRequestBuilder:
         return cls(cls.DEFAULT_SUBDOMAIN, f"help_center/articles/{article_id}/votes").with_authenticator(authenticator)
 
     @classmethod
-    def article_comment_votes_endpoint(cls, authenticator: Authenticator, article_id: int, comment_id: int) -> "ZendeskSupportRequestBuilder":
+    def article_comment_votes_endpoint(
+        cls, authenticator: Authenticator, article_id: int, comment_id: int
+    ) -> "ZendeskSupportRequestBuilder":
         """Create a request builder for the /help_center/articles/{article_id}/comments/{comment_id}/votes endpoint."""
-        return cls(cls.DEFAULT_SUBDOMAIN, f"help_center/articles/{article_id}/comments/{comment_id}/votes").with_authenticator(authenticator)
+        return cls(cls.DEFAULT_SUBDOMAIN, f"help_center/articles/{article_id}/comments/{comment_id}/votes").with_authenticator(
+            authenticator
+        )
 
     @classmethod
     def article_attachments_endpoint(cls, authenticator: Authenticator, article_id: int) -> "ZendeskSupportRequestBuilder":

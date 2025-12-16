@@ -37,11 +37,11 @@ from .utils import http_request_to_str
 
 class CursorBasedPaginationStrategy(PaginationStrategy):
     """Pagination strategy for cursor-based pagination with links.next.
-    
+
     For links_next_paginator with page_token_option: RequestPath, the connector uses
     the full URL from links.next as the next request. The next_page_url should already
     include all necessary query parameters (including the cursor).
-    
+
     Per playbook: The last page response must explicitly satisfy the stop_condition
     (meta.has_more = false) to verify pagination stops correctly.
     """
@@ -640,9 +640,7 @@ class AttributeDefinitionsResponseBuilder(HttpResponseBuilder):
 
 class UserFieldsResponseBuilder(HttpResponseBuilder):
     @classmethod
-    def user_fields_response(
-        cls, request_without_cursor_for_pagination: Optional[HttpRequest] = None
-    ) -> "UserFieldsResponseBuilder":
+    def user_fields_response(cls, request_without_cursor_for_pagination: Optional[HttpRequest] = None) -> "UserFieldsResponseBuilder":
         return cls(
             find_template("user_fields", __file__),
             FieldPath("user_fields"),
@@ -652,9 +650,7 @@ class UserFieldsResponseBuilder(HttpResponseBuilder):
 
 class CategoriesResponseBuilder(HttpResponseBuilder):
     @classmethod
-    def categories_response(
-        cls, request_without_cursor_for_pagination: Optional[HttpRequest] = None
-    ) -> "CategoriesResponseBuilder":
+    def categories_response(cls, request_without_cursor_for_pagination: Optional[HttpRequest] = None) -> "CategoriesResponseBuilder":
         return cls(
             find_template("categories", __file__),
             FieldPath("categories"),
@@ -664,9 +660,7 @@ class CategoriesResponseBuilder(HttpResponseBuilder):
 
 class SectionsResponseBuilder(HttpResponseBuilder):
     @classmethod
-    def sections_response(
-        cls, request_without_cursor_for_pagination: Optional[HttpRequest] = None
-    ) -> "SectionsResponseBuilder":
+    def sections_response(cls, request_without_cursor_for_pagination: Optional[HttpRequest] = None) -> "SectionsResponseBuilder":
         return cls(
             find_template("sections", __file__),
             FieldPath("sections"),
@@ -676,9 +670,7 @@ class SectionsResponseBuilder(HttpResponseBuilder):
 
 class TopicsResponseBuilder(HttpResponseBuilder):
     @classmethod
-    def topics_response(
-        cls, request_without_cursor_for_pagination: Optional[HttpRequest] = None
-    ) -> "TopicsResponseBuilder":
+    def topics_response(cls, request_without_cursor_for_pagination: Optional[HttpRequest] = None) -> "TopicsResponseBuilder":
         return cls(
             find_template("topics", __file__),
             FieldPath("topics"),
@@ -811,9 +803,7 @@ class GroupMembershipsResponseBuilder(HttpResponseBuilder):
 
 class MacrosResponseBuilder(HttpResponseBuilder):
     @classmethod
-    def macros_response(
-        cls, request_without_cursor_for_pagination: Optional[HttpRequest] = None
-    ) -> "MacrosResponseBuilder":
+    def macros_response(cls, request_without_cursor_for_pagination: Optional[HttpRequest] = None) -> "MacrosResponseBuilder":
         return cls(
             find_template("macros", __file__),
             FieldPath("macros"),
@@ -823,14 +813,12 @@ class MacrosResponseBuilder(HttpResponseBuilder):
 
 class OrganizationFieldsResponseBuilder(HttpResponseBuilder):
     """Response builder for organization_fields stream.
-    
+
     This stream uses the base retriever with next_page pagination (not links.next).
     """
 
     @classmethod
-    def organization_fields_response(
-        cls, next_page_url: Optional[str] = None
-    ) -> "OrganizationFieldsResponseBuilder":
+    def organization_fields_response(cls, next_page_url: Optional[str] = None) -> "OrganizationFieldsResponseBuilder":
         return cls(
             find_template("organization_fields", __file__),
             FieldPath("organization_fields"),
@@ -852,9 +840,7 @@ class OrganizationMembershipsResponseBuilder(HttpResponseBuilder):
 
 class TicketFieldsResponseBuilder(HttpResponseBuilder):
     @classmethod
-    def ticket_fields_response(
-        cls, request_without_cursor_for_pagination: Optional[HttpRequest] = None
-    ) -> "TicketFieldsResponseBuilder":
+    def ticket_fields_response(cls, request_without_cursor_for_pagination: Optional[HttpRequest] = None) -> "TicketFieldsResponseBuilder":
         return cls(
             find_template("ticket_fields", __file__),
             FieldPath("ticket_fields"),
@@ -876,7 +862,7 @@ class TicketActivitiesResponseBuilder(HttpResponseBuilder):
 
 class TriggersResponseBuilder(HttpResponseBuilder):
     """Response builder for triggers stream.
-    
+
     This stream uses the base retriever with next_page pagination (not links.next).
     """
 

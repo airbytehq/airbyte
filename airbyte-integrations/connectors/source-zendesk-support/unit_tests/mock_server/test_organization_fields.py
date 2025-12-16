@@ -3,8 +3,8 @@
 from datetime import timedelta
 from unittest import TestCase
 
-from airbyte_cdk.models import SyncMode
 from airbyte_cdk.models import Level as LogLevel
+from airbyte_cdk.models import SyncMode
 from airbyte_cdk.test.mock_http import HttpMocker
 from airbyte_cdk.test.state_builder import StateBuilder
 from airbyte_cdk.utils.datetime_helpers import ab_datetime_now
@@ -64,14 +64,12 @@ class TestOrganizationFieldsStreamFullRefresh(TestCase):
     @HttpMocker()
     def test_given_two_pages_when_read_organization_fields_then_return_all_records(self, http_mocker):
         """Test pagination for organization_fields stream.
-        
+
         This stream uses the base retriever with next_page pagination (per_page + next_page URL).
         """
         api_token_authenticator = self.get_authenticator(self._config)
 
-        next_page_http_request = (
-            self._base_organization_fields_request(api_token_authenticator).with_query_param("page", "2").build()
-        )
+        next_page_http_request = self._base_organization_fields_request(api_token_authenticator).with_query_param("page", "2").build()
         next_page_url = "https://d3v-airbyte.zendesk.com/api/v2/organization_fields?page=2&per_page=100"
 
         http_mocker.get(
@@ -118,10 +116,7 @@ class TestOrganizationFieldsStreamFullRefresh(TestCase):
 
         http_mocker.get(
             self._base_organization_fields_request(api_token_authenticator).build(),
-            OrganizationFieldsResponseBuilder.organization_fields_response()
-            .with_record(old_record)
-            .with_record(new_record)
-            .build(),
+            OrganizationFieldsResponseBuilder.organization_fields_response().with_record(old_record).with_record(new_record).build(),
         )
 
         state_value = {"updated_at": datetime_to_string(ab_datetime_now().subtract(timedelta(weeks=102)))}

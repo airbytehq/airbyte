@@ -3,8 +3,8 @@
 from datetime import timedelta
 from unittest import TestCase
 
-from airbyte_cdk.models import SyncMode
 from airbyte_cdk.models import Level as LogLevel
+from airbyte_cdk.models import SyncMode
 from airbyte_cdk.test.mock_http import HttpMocker
 from airbyte_cdk.utils.datetime_helpers import ab_datetime_now
 
@@ -41,9 +41,7 @@ class TestUserFieldsStreamFullRefresh(TestCase):
 
         http_mocker.get(
             self._base_user_fields_request(api_token_authenticator).build(),
-            UserFieldsResponseBuilder.user_fields_response()
-            .with_record(UserFieldsRecordBuilder.user_fields_record())
-            .build(),
+            UserFieldsResponseBuilder.user_fields_response().with_record(UserFieldsRecordBuilder.user_fields_record()).build(),
         )
 
         output = read_stream("user_fields", SyncMode.full_refresh, self._config)
@@ -54,9 +52,7 @@ class TestUserFieldsStreamFullRefresh(TestCase):
         """Test pagination for user_fields stream."""
         api_token_authenticator = self.get_authenticator(self._config)
 
-        next_page_http_request = (
-            self._base_user_fields_request(api_token_authenticator).with_query_param("page", "2").build()
-        )
+        next_page_http_request = self._base_user_fields_request(api_token_authenticator).with_query_param("page", "2").build()
 
         http_mocker.get(
             self._base_user_fields_request(api_token_authenticator).build(),

@@ -3,8 +3,8 @@
 from datetime import timedelta
 from unittest import TestCase
 
-from airbyte_cdk.models import SyncMode
 from airbyte_cdk.models import Level as LogLevel
+from airbyte_cdk.models import SyncMode
 from airbyte_cdk.test.mock_http import HttpMocker
 from airbyte_cdk.test.state_builder import StateBuilder
 from airbyte_cdk.utils.datetime_helpers import ab_datetime_now
@@ -37,7 +37,7 @@ class TestTicketActivitiesStreamFullRefresh(TestCase):
 
     def _base_ticket_activities_request(self, authenticator):
         """Build base request for ticket_activities stream.
-        
+
         The ticket_activities stream uses links_next_paginator with additional sort parameters.
         """
         return (
@@ -71,9 +71,7 @@ class TestTicketActivitiesStreamFullRefresh(TestCase):
         """Test pagination for ticket_activities stream."""
         api_token_authenticator = self.get_authenticator(self._config)
 
-        next_page_http_request = (
-            self._base_ticket_activities_request(api_token_authenticator).with_after_cursor("after-cursor").build()
-        )
+        next_page_http_request = self._base_ticket_activities_request(api_token_authenticator).with_after_cursor("after-cursor").build()
 
         http_mocker.get(
             self._base_ticket_activities_request(api_token_authenticator).build(),
@@ -119,10 +117,7 @@ class TestTicketActivitiesStreamFullRefresh(TestCase):
 
         http_mocker.get(
             self._base_ticket_activities_request(api_token_authenticator).build(),
-            TicketActivitiesResponseBuilder.ticket_activities_response()
-            .with_record(old_record)
-            .with_record(new_record)
-            .build(),
+            TicketActivitiesResponseBuilder.ticket_activities_response().with_record(old_record).with_record(new_record).build(),
         )
 
         state_value = {"updated_at": datetime_to_string(ab_datetime_now().subtract(timedelta(weeks=102)))}

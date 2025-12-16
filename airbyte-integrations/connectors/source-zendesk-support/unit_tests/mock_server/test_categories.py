@@ -3,8 +3,8 @@
 from datetime import timedelta
 from unittest import TestCase
 
-from airbyte_cdk.models import SyncMode
 from airbyte_cdk.models import Level as LogLevel
+from airbyte_cdk.models import SyncMode
 from airbyte_cdk.test.mock_http import HttpMocker
 from airbyte_cdk.utils.datetime_helpers import ab_datetime_now
 
@@ -43,9 +43,7 @@ class TestCategoriesStreamFullRefresh(TestCase):
 
         http_mocker.get(
             self._base_categories_request(api_token_authenticator).build(),
-            CategoriesResponseBuilder.categories_response()
-            .with_record(CategoriesRecordBuilder.categories_record())
-            .build(),
+            CategoriesResponseBuilder.categories_response().with_record(CategoriesRecordBuilder.categories_record()).build(),
         )
 
         output = read_stream("categories", SyncMode.full_refresh, self._config)
@@ -66,9 +64,7 @@ class TestCategoriesStreamFullRefresh(TestCase):
 
         http_mocker.get(
             self._base_categories_request(api_token_authenticator).with_after_cursor("after-cursor").build(),
-            CategoriesResponseBuilder.categories_response()
-            .with_record(CategoriesRecordBuilder.categories_record().with_id(67890))
-            .build(),
+            CategoriesResponseBuilder.categories_response().with_record(CategoriesRecordBuilder.categories_record().with_id(67890)).build(),
         )
 
         output = read_stream("categories", SyncMode.full_refresh, self._config)
