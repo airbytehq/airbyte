@@ -69,10 +69,11 @@ class TestTicketMetricsIncremental(TestCase):
         ticket = tickets_records_builder.build()
 
         child_cursor_value = ab_datetime_now().subtract(timedelta(days=1))
+        child_cursor_str = child_cursor_value.strftime("%Y-%m-%dT%H:%M:%SZ")
         ticket_metrics_first_record_builder = (
             TicketMetricsRecordBuilder.stateful_ticket_metrics_record()
             .with_field(FieldPath("ticket_id"), ticket["id"])
-            .with_cursor(int(child_cursor_value.timestamp()))
+            .with_cursor(child_cursor_str)
         )
 
         http_mocker.get(
@@ -84,13 +85,16 @@ class TestTicketMetricsIncremental(TestCase):
 
         assert len(output.records) == 1
         assert output.most_recent_state.stream_descriptor.name == "ticket_metrics"
+        # Note: The stateful ticket_metrics stream uses the parent's generated_timestamp as the cursor
+        # (see manifest.yaml transformation: record['generated_timestamp'] if 'generated_timestamp' in record else stream_slice.extra_fields['generated_timestamp'])
+        # So the cursor value is the parent's timestamp, not the child's updated_at
         assert output.most_recent_state.stream_state.__dict__ == {
             "lookback_window": 0,
             "parent_state": {"tickets": {"generated_timestamp": int(parent_cursor_value.timestamp())}},
-            "state": {"_ab_updated_at": str(int(child_cursor_value.timestamp()))},
+            "state": {"_ab_updated_at": str(int(parent_cursor_value.timestamp()))},
             "states": [
                 {
-                    "cursor": {"_ab_updated_at": str(int(child_cursor_value.timestamp()))},
+                    "cursor": {"_ab_updated_at": str(int(parent_cursor_value.timestamp()))},
                     "partition": {"parent_slice": {}, "ticket_id": 35436},
                 }
             ],

@@ -426,7 +426,7 @@ class TicketMetricsResponseBuilder(HttpResponseBuilder):
         """Response builder for stateless ticket metrics (list of metrics)."""
         return cls(
             find_template("stateless_ticket_metrics", __file__),
-            NestedPath(["ticket_metrics", 0]),
+            FieldPath("ticket_metrics"),
             CursorBasedPaginationStrategy(),
         )
 

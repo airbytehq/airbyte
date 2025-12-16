@@ -116,8 +116,8 @@ class ZendeskSupportRequestBuilder:
 
     @classmethod
     def tickets_endpoint(cls, authenticator: Authenticator) -> "ZendeskSupportRequestBuilder":
-        """Create a request builder for the /tickets endpoint."""
-        return cls(cls.DEFAULT_SUBDOMAIN, "tickets").with_authenticator(authenticator)
+        """Create a request builder for the /incremental/tickets/cursor.json endpoint."""
+        return cls(cls.DEFAULT_SUBDOMAIN, "incremental/tickets/cursor.json").with_authenticator(authenticator)
 
     @classmethod
     def ticket_forms_endpoint(cls, authenticator: Authenticator) -> "ZendeskSupportRequestBuilder":
