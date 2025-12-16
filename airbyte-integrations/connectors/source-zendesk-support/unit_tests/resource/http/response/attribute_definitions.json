@@ -5,13 +5,13 @@
         "subject": "requester_role",
         "title": "Requester role",
         "operators": [
-          {"value": "is", "title": "Is", "terminal": false},
-          {"value": "is_not", "title": "Is not", "terminal": false}
+          { "value": "is", "title": "Is", "terminal": false },
+          { "value": "is_not", "title": "Is not", "terminal": false }
         ],
         "values": [
-          {"value": "end_user", "title": "End user"},
-          {"value": "agent", "title": "Agent"},
-          {"value": "admin", "title": "Admin"}
+          { "value": "end_user", "title": "End user" },
+          { "value": "agent", "title": "Agent" },
+          { "value": "admin", "title": "Admin" }
         ]
       }
     ],
