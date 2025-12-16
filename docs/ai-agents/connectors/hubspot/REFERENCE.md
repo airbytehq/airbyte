@@ -1001,7 +1001,7 @@ curl --location 'https://api.airbyte.ai/api/v1/connectors/instances/{your_connec
 
 #### Objects Get
 
-Read an Object identified by `{objectId}`. `{objectId}` refers to the internal object ID by default, or optionally any unique property value as specified by the idProperty query param. Control what is returned via the properties query param.
+Read an Object identified by \{objectId\}. \{objectId\} refers to the internal object ID by default, or optionally any unique property value as specified by the idProperty query param. Control what is returned via the properties query param.
 
 **Python SDK**
 

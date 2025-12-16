@@ -30,20 +30,17 @@ development workflow analysis and project management insights.
 ## Installation
 
 ```bash
-uv pip install airbyte-ai-github
+uv pip install airbyte-agent-github
 ```
 
 ## Usage
 
 ```python
-from airbyte_ai_github import GithubConnector, GithubAuthConfig
+from airbyte_agent_github import GithubConnector, GithubAuthConfig
 
 connector = GithubConnector(
   auth_config=GithubAuthConfig(
-    access_token="...",
-    refresh_token="...",
-    client_id="...",
-    client_secret="..."
+    access_token="..."
   )
 )
 result = connector.repositories.get()
@@ -80,8 +77,8 @@ For the service's official API docs, see [Github API Reference](https://docs.git
 
 ## Version Information
 
-**Package Version:** 0.18.10
+**Package Version:** 0.18.18
 
-**Connector Version:** 0.1.1
+**Connector Version:** 0.1.2
 
-**Generated with connector-sdk:** 1ab72bd8e7249872a4cf66327dd1a0bf68905acb
+**Generated with connector-sdk:** c4c39c2797ecd929407c9417c728d425f77b37ed

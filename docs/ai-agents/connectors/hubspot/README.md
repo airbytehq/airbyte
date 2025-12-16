@@ -27,13 +27,13 @@ tickets, and custom objects for customer relationship management and sales analy
 ## Installation
 
 ```bash
-uv pip install airbyte-ai-hubspot
+uv pip install airbyte-agent-hubspot
 ```
 
 ## Usage
 
 ```python
-from airbyte_ai_hubspot import HubspotConnector, HubspotAuthConfig
+from airbyte_agent_hubspot import HubspotConnector, HubspotAuthConfig
 
 connector = HubspotConnector(
   auth_config=HubspotAuthConfig(
@@ -64,8 +64,8 @@ For the service's official API docs, see [Hubspot API Reference](https://develop
 
 ## Version Information
 
-**Package Version:** 0.15.11
+**Package Version:** 0.15.18
 
 **Connector Version:** 0.1.2
 
-**Generated with connector-sdk:** 1ab72bd8e7249872a4cf66327dd1a0bf68905acb
+**Generated with connector-sdk:** c4c39c2797ecd929407c9417c728d425f77b37ed

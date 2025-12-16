@@ -1572,14 +1572,11 @@ curl --location 'https://api.airbyte.ai/api/v1/connectors/instances/{your_connec
 The Github connector supports the following authentication methods:
 
 
-### Authentication
+### GitHub OAuth 2.0
 
 | Field Name | Type | Required | Description |
 |------------|------|----------|-------------|
-| `access_token` | `str` | No | OAuth2 access token |
-| `refresh_token` | `str` | No | OAuth2 refresh token (optional) |
-| `client_id` | `str` | No | OAuth2 client ID (optional) |
-| `client_secret` | `str` | No | OAuth2 client secret (optional) |
+| `access_token` | `str` | Yes | OAuth 2.0 access token |
 
 #### Example
 
@@ -1588,10 +1585,7 @@ The Github connector supports the following authentication methods:
 ```python
 GithubConnector(
   auth_config=GithubAuthConfig(
-    access_token="<OAuth2 access token>",
-    refresh_token="<OAuth2 refresh token (optional)>",
-    client_id="<OAuth2 client ID (optional)>",
-    client_secret="<OAuth2 client secret (optional)>"
+    access_token="<OAuth 2.0 access token>"
   )
 )
 ```
@@ -1605,10 +1599,41 @@ curl --location 'https://api.airbyte.ai/api/v1/connectors/instances' \
 --data '{
   "connector_definition_id": "ef69ef6e-aa7f-4af1-a01d-ef775033524e",
   "auth_config": {
-    "access_token": "<OAuth2 access token>",
-    "refresh_token": "<OAuth2 refresh token (optional)>",
-    "client_id": "<OAuth2 client ID (optional)>",
-    "client_secret": "<OAuth2 client secret (optional)>"
+    "access_token": "<OAuth 2.0 access token>"
+  },
+  "name": "My Github Connector"
+}'
+```
+
+
+### GitHub Personal Access Token
+
+| Field Name | Type | Required | Description |
+|------------|------|----------|-------------|
+| `token` | `str` | Yes | GitHub personal access token (fine-grained or classic) |
+
+#### Example
+
+**Python SDK**
+
+```python
+GithubConnector(
+  auth_config=GithubAuthConfig(
+    token="<GitHub personal access token (fine-grained or classic)>"
+  )
+)
+```
+
+**API**
+
+```bash
+curl --location 'https://api.airbyte.ai/api/v1/connectors/instances' \
+--header 'Content-Type: application/json' \
+--header 'Authorization: Bearer {your_auth_token}' \
+--data '{
+  "connector_definition_id": "ef69ef6e-aa7f-4af1-a01d-ef775033524e",
+  "auth_config": {
+    "token": "<GitHub personal access token (fine-grained or classic)>"
   },
   "name": "My Github Connector"
 }'

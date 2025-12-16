@@ -30,13 +30,13 @@ teams, and users for project tracking, workload analysis, and productivity insig
 ## Installation
 
 ```bash
-uv pip install airbyte-ai-asana
+uv pip install airbyte-agent-asana
 ```
 
 ## Usage
 
 ```python
-from airbyte_ai_asana import AsanaConnector, AsanaAuthConfig
+from airbyte_agent_asana import AsanaConnector, AsanaAuthConfig
 
 connector = AsanaConnector(
   auth_config=AsanaAuthConfig(
@@ -67,6 +67,14 @@ result = connector.tasks.list()
 | Teams | [Get](./REFERENCE.md#teams-get) |
 | Workspace Teams | [List](./REFERENCE.md#workspace-teams-list) |
 | User Teams | [List](./REFERENCE.md#user-teams-list) |
+| Attachments | [List](./REFERENCE.md#attachments-list), [Get](./REFERENCE.md#attachments-get), [Download](./REFERENCE.md#attachments-download) |
+| Workspace Tags | [List](./REFERENCE.md#workspace-tags-list) |
+| Tags | [Get](./REFERENCE.md#tags-get) |
+| Project Sections | [List](./REFERENCE.md#project-sections-list) |
+| Sections | [Get](./REFERENCE.md#sections-get) |
+| Task Subtasks | [List](./REFERENCE.md#task-subtasks-list) |
+| Task Dependencies | [List](./REFERENCE.md#task-dependencies-list) |
+| Task Dependents | [List](./REFERENCE.md#task-dependents-list) |
 
 
 For detailed documentation on available actions and parameters, see [REFERENCE.md](./REFERENCE.md).
@@ -75,8 +83,8 @@ For the service's official API docs, see [Asana API Reference](https://developer
 
 ## Version Information
 
-**Package Version:** 0.19.10
+**Package Version:** 0.19.19
 
-**Connector Version:** 0.1.1
+**Connector Version:** 0.1.4
 
-**Generated with connector-sdk:** 1ab72bd8e7249872a4cf66327dd1a0bf68905acb
+**Generated with connector-sdk:** c4c39c2797ecd929407c9417c728d425f77b37ed
