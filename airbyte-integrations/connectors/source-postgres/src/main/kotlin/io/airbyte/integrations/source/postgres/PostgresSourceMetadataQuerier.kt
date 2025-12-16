@@ -38,9 +38,10 @@ class PostgresSourceMetadataQuerier(
     companion object {
         private val log = KotlinLogging.logger {}
 
-        const val xminWraparoundError: String = "We detected XMIN transaction wraparound in the database, " +
-            "which makes this sync option inefficient and can lead to higher credit consumption. " +
-            "Please change the replication method to CDC or cursor based."
+        const val xminWraparoundError: String =
+            "We detected XMIN transaction wraparound in the database, " +
+                "which makes this sync option inefficient and can lead to higher credit consumption. " +
+                "Please change the replication method to CDC or cursor based."
 
         public fun dbNumWraparound(conn: Connection): Long {
             log.info { "Querying server xmin wraparound status" }

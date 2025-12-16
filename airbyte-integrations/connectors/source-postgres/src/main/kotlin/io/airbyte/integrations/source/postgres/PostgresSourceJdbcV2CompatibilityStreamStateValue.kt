@@ -52,7 +52,10 @@ data class PostgresSourceJdbcV2CompatibilityStreamStateValue(
                     if (it.isNull || it.isEmpty) {
                         return@let null
                     }
-                    Jsons.treeToValue(it, PostgresSourceJdbcV2CompatibilityStreamStateValue::class.java)
+                    Jsons.treeToValue(
+                        it,
+                        PostgresSourceJdbcV2CompatibilityStreamStateValue::class.java
+                    )
                 }
             }
 
@@ -68,38 +71,37 @@ data class PostgresSourceJdbcV2CompatibilityStreamStateValue(
                                 buildCursorMap(stream, v2.cursorField, v2.cursorValue)
                             }
                             V2StateType.ctid.serialized ->
-                                incrementalState?.let { incrementalState ->
-                                    when (incrementalState.stateType) {
+                                incrementalState?.let {
+                                    when (it.stateType) {
                                         V2StateType.cursor_based.serialized -> {
-                                            buildCursorMap(
-                                                stream,
-                                                incrementalState.cursorField,
-                                                incrementalState.cursorValue
-                                            )
+                                            buildCursorMap(stream, it.cursorField, it.cursorValue)
                                         }
                                         else -> emptyMap()
                                     }
-                                } ?: emptyMap()
+                                }
+                                    ?: emptyMap()
                             else -> emptyMap()
                         },
-                    xmin = when (v2.stateType) {
-                        V2StateType.xmin.serialized -> v2.xminXidValue?.let { xminXid -> Jsons.valueToTree(xminXid) as JsonNode }
-                        V2StateType.ctid.serialized -> {
-                            incrementalState?.let { incrementalState ->
-                                when (incrementalState.stateType) {
-                                    V2StateType.xmin.serialized -> {
-                                        incrementalState.xminXidValue?.let { xminXid ->
-                                            Jsons.valueToTree(
-                                                xminXid
-                                            ) as JsonNode
+                    xmin =
+                        when (v2.stateType) {
+                            V2StateType.xmin.serialized ->
+                                v2.xminXidValue?.let { xminXid ->
+                                    Jsons.valueToTree(xminXid) as JsonNode
+                                }
+                            V2StateType.ctid.serialized -> {
+                                incrementalState?.let {
+                                    when (it.stateType) {
+                                        V2StateType.xmin.serialized -> {
+                                            it.xminXidValue?.let { xminXid ->
+                                                Jsons.valueToTree(xminXid) as JsonNode
+                                            }
                                         }
+                                        else -> null
                                     }
-                                    else -> null
                                 }
                             }
+                            else -> null
                         }
-                        else -> null
-                    }
                 )
 
             return v3
