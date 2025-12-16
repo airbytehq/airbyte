@@ -1,6 +1,7 @@
 # LinkedIn Ads source connector
 
 This directory contains the manifest-only connector for `source-linkedin-ads`.
+
 This _manifest-only_ connector is not a Python package on its own, as it runs inside of the base `source-declarative-manifest` image.
 
 For information about how to configure and use this connector within Airbyte, see [the connector's full documentation](https://docs.airbyte.com/integrations/sources/linkedin-ads).
