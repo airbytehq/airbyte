@@ -14,6 +14,7 @@ class LinkedInAdsRequestBuilder:
         self._path = path
         self._query_params: Dict[str, Any] = {}
         self._headers: Dict[str, str] = {}
+        self._query_params_in_url = False  # Flag to indicate query params are embedded in URL
 
     @classmethod
     def accounts_endpoint(cls) -> "LinkedInAdsRequestBuilder":
@@ -47,16 +48,23 @@ class LinkedInAdsRequestBuilder:
 
     @classmethod
     def lead_forms_endpoint(cls, account_id: int) -> "LinkedInAdsRequestBuilder":
-        builder = cls("/leadForms")
-        builder._query_params["q"] = "owner"
-        builder._query_params["owner"] = f"urn:li:sponsoredAccount:{account_id}"
+        # The lead_forms endpoint has the owner embedded in the path with URL encoding
+        # Path format: leadForms?owner=(sponsoredAccount:urn%3Ali%3AsponsoredAccount%3A{account_id})&q=owner&count=500
+        # The %3A is URL-encoded colon (:)
+        # Note: We include all query params in the path since HttpRequest doesn't allow both
+        builder = cls(f"/leadForms?owner=(sponsoredAccount:urn%3Ali%3AsponsoredAccount%3A{account_id})&q=owner&count=500")
+        builder._query_params_in_url = True
         return builder
 
     @classmethod
     def lead_form_responses_endpoint(cls, account_id: int) -> "LinkedInAdsRequestBuilder":
-        builder = cls("/leadFormResponses")
-        builder._query_params["q"] = "owner"
-        builder._query_params["owner"] = f"urn:li:sponsoredAccount:{account_id}"
+        # The lead_form_responses endpoint has the owner embedded in the path with URL encoding
+        # Path format: leadFormResponses?owner=(sponsoredAccount:urn%3Ali%3AsponsoredAccount%3A{account_id})&leadType=(leadType:SPONSORED)&q=owner&count=500
+        # Note: We include all query params in the path since HttpRequest doesn't allow both
+        builder = cls(
+            f"/leadFormResponses?owner=(sponsoredAccount:urn%3Ali%3AsponsoredAccount%3A{account_id})&leadType=(leadType:SPONSORED)&q=owner&count=500"
+        )
+        builder._query_params_in_url = True
         return builder
 
     @classmethod
@@ -98,8 +106,10 @@ class LinkedInAdsRequestBuilder:
         return self
 
     def build(self) -> HttpRequest:
+        # If query params are already embedded in the URL, don't pass them separately
+        query_params = None if self._query_params_in_url else (self._query_params if self._query_params else None)
         return HttpRequest(
             url=f"{self._BASE_URL}{self._path}",
-            query_params=self._query_params if self._query_params else None,
+            query_params=query_params,
             headers=self._headers if self._headers else None,
         )
