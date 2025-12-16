@@ -214,12 +214,54 @@ class TestFullRefresh(TestCase):
         # Build response for second story with different ID
         story_insights_response_2 = {
             "data": [
-                {"name": "reach", "period": "lifetime", "values": [{"value": 150}], "title": "Reach", "description": "desc", "id": f"{STORIES_ID_2}/insights/reach/lifetime"},
-                {"name": "replies", "period": "lifetime", "values": [{"value": 3}], "title": "Replies", "description": "desc", "id": f"{STORIES_ID_2}/insights/replies/lifetime"},
-                {"name": "follows", "period": "lifetime", "values": [{"value": 2}], "title": "Follows", "description": "desc", "id": f"{STORIES_ID_2}/insights/follows/lifetime"},
-                {"name": "profile_visits", "period": "lifetime", "values": [{"value": 10}], "title": "Profile Visits", "description": "desc", "id": f"{STORIES_ID_2}/insights/profile_visits/lifetime"},
-                {"name": "shares", "period": "lifetime", "values": [{"value": 1}], "title": "Shares", "description": "desc", "id": f"{STORIES_ID_2}/insights/shares/lifetime"},
-                {"name": "total_interactions", "period": "lifetime", "values": [{"value": 16}], "title": "Total Interactions", "description": "desc", "id": f"{STORIES_ID_2}/insights/total_interactions/lifetime"},
+                {
+                    "name": "reach",
+                    "period": "lifetime",
+                    "values": [{"value": 150}],
+                    "title": "Reach",
+                    "description": "desc",
+                    "id": f"{STORIES_ID_2}/insights/reach/lifetime",
+                },
+                {
+                    "name": "replies",
+                    "period": "lifetime",
+                    "values": [{"value": 3}],
+                    "title": "Replies",
+                    "description": "desc",
+                    "id": f"{STORIES_ID_2}/insights/replies/lifetime",
+                },
+                {
+                    "name": "follows",
+                    "period": "lifetime",
+                    "values": [{"value": 2}],
+                    "title": "Follows",
+                    "description": "desc",
+                    "id": f"{STORIES_ID_2}/insights/follows/lifetime",
+                },
+                {
+                    "name": "profile_visits",
+                    "period": "lifetime",
+                    "values": [{"value": 10}],
+                    "title": "Profile Visits",
+                    "description": "desc",
+                    "id": f"{STORIES_ID_2}/insights/profile_visits/lifetime",
+                },
+                {
+                    "name": "shares",
+                    "period": "lifetime",
+                    "values": [{"value": 1}],
+                    "title": "Shares",
+                    "description": "desc",
+                    "id": f"{STORIES_ID_2}/insights/shares/lifetime",
+                },
+                {
+                    "name": "total_interactions",
+                    "period": "lifetime",
+                    "values": [{"value": 16}],
+                    "title": "Total Interactions",
+                    "description": "desc",
+                    "id": f"{STORIES_ID_2}/insights/total_interactions/lifetime",
+                },
             ]
         }
         http_mocker.get(
