@@ -1,19 +1,16 @@
 # Copyright (c) 2024 Airbyte, Inc., all rights reserved.
 
-import os
 import sys
 from pathlib import Path
-from typing import Any, Mapping
+from typing import Any, List, Mapping, Optional
 
-from pytest import fixture
-
+from airbyte_cdk.models import AirbyteStateMessage, ConfiguredAirbyteCatalog, SyncMode
 from airbyte_cdk.sources.declarative.yaml_declarative_source import YamlDeclarativeSource
 from airbyte_cdk.test.catalog_builder import CatalogBuilder
+from airbyte_cdk.test.entrypoint_wrapper import EntrypointOutput, read
 from airbyte_cdk.test.state_builder import StateBuilder
 
-
-pytest_plugins = ["airbyte_cdk.test.utils.manifest_only_fixtures"]
-os.environ["REQUEST_CACHE_PATH"] = "REQUEST_CACHE_PATH"
+from .config import ConfigBuilder
 
 
 def _get_manifest_path() -> Path:
@@ -21,7 +18,7 @@ def _get_manifest_path() -> Path:
     ci_path = Path("/airbyte/integration_code/source_declarative_manifest")
     if ci_path.exists():
         return ci_path
-    return Path(__file__).parent.parent
+    return Path(__file__).parent.parent.parent
 
 
 _SOURCE_FOLDER_PATH = _get_manifest_path()
@@ -36,11 +33,22 @@ def get_source(config: Mapping[str, Any], state=None) -> YamlDeclarativeSource:
     return YamlDeclarativeSource(path_to_yaml=str(_YAML_FILE_PATH), catalog=catalog, config=config, state=state)
 
 
-@fixture(autouse=True)
-def clear_cache_before_each_test():
-    """CRITICAL: Clear HTTP request cache between tests to ensure isolation."""
-    cache_dir = Path(os.getenv("REQUEST_CACHE_PATH"))
-    if cache_dir.exists() and cache_dir.is_dir():
-        for file_path in cache_dir.glob("*.sqlite"):
-            file_path.unlink()
-    yield
+def catalog(stream_name: str, sync_mode: SyncMode) -> ConfiguredAirbyteCatalog:
+    return CatalogBuilder().with_stream(stream_name, sync_mode).build()
+
+
+def config() -> ConfigBuilder:
+    return ConfigBuilder()
+
+
+def read_output(
+    config_builder: ConfigBuilder,
+    stream_name: str,
+    sync_mode: SyncMode = SyncMode.full_refresh,
+    state: Optional[List[AirbyteStateMessage]] = None,
+    expecting_exception: bool = False,
+) -> EntrypointOutput:
+    """Read records from a single stream."""
+    _catalog = catalog(stream_name, sync_mode)
+    _config = config_builder.build()
+    return read(get_source(config=_config), _config, _catalog, state, expecting_exception)
