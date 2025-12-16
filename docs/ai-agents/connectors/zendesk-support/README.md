@@ -29,13 +29,13 @@ for customer support analytics and service performance insights.
 ## Installation
 
 ```bash
-uv pip install airbyte-ai-zendesk-support
+uv pip install airbyte-agent-zendesk-support
 ```
 
 ## Usage
 
 ```python
-from airbyte_ai_zendesk_support import ZendeskSupportConnector, ZendeskSupportAuthConfig
+from airbyte_agent_zendesk_support import ZendeskSupportConnector, ZendeskSupportAuthConfig
 
 connector = ZendeskSupportConnector(
   auth_config=ZendeskSupportAuthConfig(

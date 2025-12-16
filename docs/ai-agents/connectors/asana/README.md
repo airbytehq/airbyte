@@ -30,13 +30,13 @@ teams, and users for project tracking, workload analysis, and productivity insig
 ## Installation
 
 ```bash
-uv pip install airbyte-ai-asana
+uv pip install airbyte-agent-asana
 ```
 
 ## Usage
 
 ```python
-from airbyte_ai_asana import AsanaConnector, AsanaAuthConfig
+from airbyte_agent_asana import AsanaConnector, AsanaAuthConfig
 
 connector = AsanaConnector(
   auth_config=AsanaAuthConfig(

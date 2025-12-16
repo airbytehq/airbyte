@@ -5,13 +5,13 @@ Connector for Jira API
 ## Installation
 
 ```bash
-uv pip install airbyte-ai-jira
+uv pip install airbyte-agent-jira
 ```
 
 ## Usage
 
 ```python
-from airbyte_ai_jira import JiraConnector, JiraAuthConfig
+from airbyte_agent_jira import JiraConnector, JiraAuthConfig
 
 connector = JiraConnector(
   auth_config=JiraAuthConfig(

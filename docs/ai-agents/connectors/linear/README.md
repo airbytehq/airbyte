@@ -29,13 +29,13 @@ for sprint planning, backlog management, and development workflow analysis.
 ## Installation
 
 ```bash
-uv pip install airbyte-ai-linear
+uv pip install airbyte-agent-linear
 ```
 
 ## Usage
 
 ```python
-from airbyte_ai_linear import LinearConnector, LinearAuthConfig
+from airbyte_agent_linear import LinearConnector, LinearAuthConfig
 
 connector = LinearConnector(
   auth_config=LinearAuthConfig(
