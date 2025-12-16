@@ -123,17 +123,21 @@ This connector can sync multiple files by using glob-style patterns, rather than
 
 You must provide a path pattern. You can also provide many patterns split with \| for more complex directory layouts.
 
+:::tip
+When your folder contains multiple file types, use glob patterns to select only the files that match your configured format. For example, if your folder contains both CSV files and PDFs, and you've configured the connector to parse CSV files, use a pattern like `**/*.csv` to ensure only CSV files are processed. Without this filtering, the connector will attempt to parse all matched files as the configured format, which can cause parsing errors for incompatible file types.
+:::
+
 Each path pattern is a reference from the _root_ of the folder, so don't include the root folder name itself in the pattern\(s\).
 
 Some example patterns:
 
-- `**` : match everything.
+- `**` : match everything. (Warning: see the tip above regarding using this glob with folders containing multiple file types.)
 - `**/*.csv` : match all files with specific extension.
 - `myFolder/**/*.csv` : match all csv files anywhere under myFolder.
-- `*/**` : match everything at least one folder deep.
-- `*/*/*/**` : match everything at least three folders deep.
+- `*/**` : match everything at least one folder deep. (Warning: see the tip above regarding using this glob with folders containing multiple file types.)
+- `*/*/*/**` : match everything at least three folders deep. (Warning: see the tip above regarding using this glob with folders containing multiple file types.)
 - `**/file.*|**/file` : match every file called "file" with any extension \(or no extension\).
-- `x/*/y/*` : match all files that sit in sub-folder x -&gt; any folder -&gt; folder y.
+- `x/*/y/*` : match all files that sit in sub-folder x -&gt; any folder -&gt; folder y. (Warning: see the tip above regarding using this glob with folders containing multiple file types.)
 - `**/prefix*.csv` : match all csv files with specific prefix.
 - `**/prefix*.parquet` : match all parquet files with specific prefix.
 
@@ -320,6 +324,7 @@ By default, this stream is enabled and retrieves information about **users and g
 
 | Version | Date       | Pull Request                                             | Subject                                                                                      |
 |---------|------------|----------------------------------------------------------|----------------------------------------------------------------------------------------------|
+| 0.5.6 | 2025-12-02 | [70289](https://github.com/airbytehq/airbyte/pull/70289) | Update dependencies |
 | 0.5.5 | 2025-11-25 | [70090](https://github.com/airbytehq/airbyte/pull/70090) | Update dependencies |
 | 0.5.4 | 2025-11-18 | [69386](https://github.com/airbytehq/airbyte/pull/69386) | Update dependencies |
 | 0.5.3 | 2025-11-11 | [69272](https://github.com/airbytehq/airbyte/pull/69272) | Update dependencies |

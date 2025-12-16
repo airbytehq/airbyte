@@ -4,8 +4,6 @@
 
 package io.airbyte.cdk.load.component
 
-import io.airbyte.cdk.load.command.Append
-import io.airbyte.cdk.load.command.Dedupe
 import io.airbyte.cdk.load.command.DestinationStream
 import io.airbyte.cdk.load.command.NamespaceMapper
 import io.airbyte.cdk.load.data.AirbyteValue
@@ -25,15 +23,18 @@ import io.airbyte.cdk.load.data.TimeTypeWithoutTimezone
 import io.airbyte.cdk.load.data.TimestampTypeWithTimezone
 import io.airbyte.cdk.load.data.TimestampTypeWithoutTimezone
 import io.airbyte.cdk.load.data.TimestampWithTimezoneValue
+import io.airbyte.cdk.load.data.UnionType
 import io.airbyte.cdk.load.data.UnknownType
 import io.airbyte.cdk.load.message.Meta.Companion.COLUMN_NAME_AB_EXTRACTED_AT
 import io.airbyte.cdk.load.message.Meta.Companion.COLUMN_NAME_AB_GENERATION_ID
 import io.airbyte.cdk.load.message.Meta.Companion.COLUMN_NAME_AB_META
 import io.airbyte.cdk.load.message.Meta.Companion.COLUMN_NAME_AB_RAW_ID
+import io.airbyte.cdk.load.schema.model.StreamTableSchema
+import io.airbyte.cdk.load.schema.model.TableName
 import io.airbyte.cdk.load.table.CDC_DELETED_AT_COLUMN
 import io.airbyte.cdk.load.table.ColumnNameMapping
-import io.airbyte.cdk.load.table.TableName
 import io.airbyte.cdk.load.util.Jsons
+import io.airbyte.cdk.util.invert
 import java.util.UUID
 import org.junit.jupiter.api.Assertions
 
@@ -84,6 +85,18 @@ object TableOperationsFixtures {
                 "array" to FieldType(ArrayType(FieldType(StringType, true)), true),
                 "object" to
                     FieldType(ObjectType(linkedMapOf("key" to FieldType(StringType, true))), true),
+                "union" to
+                    FieldType(
+                        UnionType(setOf(StringType, IntegerType), isLegacyUnion = false),
+                        true
+                    ),
+                // Most destinations just ignore the isLegacyUnion flag, which is totally fine.
+                // This is here for the small set of connectors that respect it.
+                "legacy_union" to
+                    FieldType(
+                        UnionType(setOf(StringType, IntegerType), isLegacyUnion = true),
+                        true
+                    ),
                 "unknown" to FieldType(UnknownType(Jsons.readTree("""{"type": "potato"}""")), true),
             ),
         )
@@ -101,6 +114,8 @@ object TableOperationsFixtures {
                 "time_ntz" to "time_ntz",
                 "array" to "array",
                 "object" to "object",
+                "union" to "union",
+                "legacy_union" to "legacy_union",
                 "unknown" to "unknown",
             )
         )
@@ -673,10 +688,10 @@ object TableOperationsFixtures {
     }
 
     // Create common destination stream configurations
-    fun createAppendStream(
+    fun createStream(
         namespace: String,
         name: String,
-        schema: ObjectType,
+        tableSchema: StreamTableSchema,
         generationId: Long = 1,
         minimumGenerationId: Long = 0,
         syncId: Long = 1,
@@ -684,37 +699,13 @@ object TableOperationsFixtures {
         DestinationStream(
             unmappedNamespace = namespace,
             unmappedName = name,
-            importType = Append,
+            importType = tableSchema.importType,
             generationId = generationId,
             minimumGenerationId = minimumGenerationId,
             syncId = syncId,
-            schema = schema,
+            schema = ObjectType(LinkedHashMap(tableSchema.columnSchema.inputSchema)),
             namespaceMapper = NamespaceMapper(),
-        )
-
-    fun createDedupeStream(
-        namespace: String,
-        name: String,
-        schema: ObjectType,
-        primaryKey: List<List<String>>,
-        cursor: List<String>,
-        generationId: Long = 1,
-        minimumGenerationId: Long = 0,
-        syncId: Long = 1,
-    ): DestinationStream =
-        DestinationStream(
-            unmappedNamespace = namespace,
-            unmappedName = name,
-            importType =
-                Dedupe(
-                    primaryKey = primaryKey,
-                    cursor = cursor,
-                ),
-            generationId = generationId,
-            minimumGenerationId = minimumGenerationId,
-            syncId = syncId,
-            schema = schema,
-            namespaceMapper = NamespaceMapper(),
+            tableSchema = tableSchema,
         )
 
     fun <V> List<Map<String, V>>.sortBy(key: String) =
@@ -722,6 +713,9 @@ object TableOperationsFixtures {
         // that the sort key is always comparable.
         // In practice, it's generally some sort of ID column (int/string/etc.).
         @Suppress("UNCHECKED_CAST") this.sortedBy { it[key] as Comparable<Any> }
+
+    fun <V> Map<String, V>.prettyString() =
+        "{" + this.entries.sortedBy { it.key }.joinToString(", ") + "}"
 
     fun <V> List<Map<String, V>>.applyColumnNameMapping(mapping: ColumnNameMapping) =
         map { record ->
@@ -732,8 +726,13 @@ object TableOperationsFixtures {
         airbyteMetaColumnMapping: Map<String, String>
     ): List<Map<String, V>> {
         val totalMapping = ColumnNameMapping(columnNameMapping + airbyteMetaColumnMapping)
-        return map { record -> record.mapKeys { (k, _) -> totalMapping.originalName(k) ?: k } }
+        return map { record -> record.mapKeys { (k, _) -> totalMapping.invert()[k] ?: k } }
     }
+
+    fun <V> List<Map<String, V>>.removeAirbyteColumns(
+        airbyteMetaColumnMapping: Map<String, String>
+    ): List<Map<String, V>> =
+        this.map { rec -> rec.filter { !airbyteMetaColumnMapping.containsValue(it.key) } }
 
     fun <V> List<Map<String, V>>.removeNulls() =
         this.map { record -> record.filterValues { it != null } }
@@ -765,6 +764,15 @@ object TableOperationsFixtures {
             *pairs,
         )
 
+    fun inputRecord(vararg pairs: Pair<String, AirbyteValue>) =
+        inputRecord(
+            rawId = UUID.randomUUID().toString(),
+            extractedAt = "2025-01-23T00:00:00Z",
+            meta = linkedMapOf(),
+            generationId = 1,
+            pairs = pairs,
+        )
+
     fun outputRecord(
         rawId: String,
         extractedAt: String,
@@ -781,14 +789,14 @@ object TableOperationsFixtures {
         )
 
     fun assertEquals(
-        expectedRecords: List<Map<String, Any>>,
-        actualRecords: List<Map<String, Any>>,
+        expectedRecords: List<Map<String, Any?>>,
+        actualRecords: List<Map<String, Any?>>,
         sortKey: String,
         message: String,
     ) =
         Assertions.assertEquals(
-            expectedRecords.sortBy(sortKey).joinToString("\n"),
-            actualRecords.sortBy(sortKey).joinToString("\n"),
+            expectedRecords.sortBy(sortKey).joinToString("\n") { it.prettyString() },
+            actualRecords.sortBy(sortKey).joinToString("\n") { it.prettyString() },
             message,
         )
 }
