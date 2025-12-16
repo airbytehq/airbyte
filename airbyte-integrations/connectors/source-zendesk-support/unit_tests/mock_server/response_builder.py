@@ -356,54 +356,54 @@ class AutomationsResponseBuilder(HttpResponseBuilder):
 
 class CustomRolesResponseBuilder(HttpResponseBuilder):
     @classmethod
-    def custom_roles_response(cls, next_page_url: Optional[str] = None) -> "CustomRolesResponseBuilder":
+    def custom_roles_response(cls, request_without_cursor_for_pagination: Optional[HttpRequest] = None) -> "CustomRolesResponseBuilder":
+        """Response builder for custom_roles stream with next_page pagination."""
         return cls(
             find_template("custom_roles", __file__),
             FieldPath("custom_roles"),
-            NextPagePaginationStrategy(next_page_url) if next_page_url else None,
+            NextPagePaginationStrategy(http_request_to_str(request_without_cursor_for_pagination)),
         )
 
 
 class SchedulesResponseBuilder(HttpResponseBuilder):
     @classmethod
-    def schedules_response(cls, next_page_url: Optional[str] = None) -> "SchedulesResponseBuilder":
+    def schedules_response(cls, request_without_cursor_for_pagination: Optional[HttpRequest] = None) -> "SchedulesResponseBuilder":
+        """Response builder for schedules stream with next_page pagination."""
         return cls(
             find_template("schedules", __file__),
             FieldPath("schedules"),
-            NextPagePaginationStrategy(next_page_url) if next_page_url else None,
+            NextPagePaginationStrategy(http_request_to_str(request_without_cursor_for_pagination)),
         )
 
 
 class SlaPoliciesResponseBuilder(HttpResponseBuilder):
     @classmethod
-    def sla_policies_response(cls, next_page_url: Optional[str] = None) -> "SlaPoliciesResponseBuilder":
+    def sla_policies_response(cls, request_without_cursor_for_pagination: Optional[HttpRequest] = None) -> "SlaPoliciesResponseBuilder":
+        """Response builder for sla_policies stream with next_page pagination."""
         return cls(
             find_template("sla_policies", __file__),
             FieldPath("sla_policies"),
-            NextPagePaginationStrategy(next_page_url) if next_page_url else None,
+            NextPagePaginationStrategy(http_request_to_str(request_without_cursor_for_pagination)),
         )
 
 
 class GroupsResponseBuilder(HttpResponseBuilder):
     @classmethod
     def groups_response(cls, request_without_cursor_for_pagination: Optional[HttpRequest] = None) -> "GroupsResponseBuilder":
-        return cls(
-            find_template("groups", __file__),
-            FieldPath("groups"),
-            CursorBasedPaginationStrategy(http_request_to_str(request_without_cursor_for_pagination)),
-        )
+        """Response builder for groups stream.
 
-    @classmethod
-    def groups_response_with_pagination(cls, next_page_url: Optional[str] = None) -> "GroupsResponseBuilder":
-        """Response builder for groups with explicit pagination control.
+        The groups stream uses the base retriever which has:
+        - next_page field for pagination (not links.next)
+        - per_page parameter (not page[size])
+        - stop_condition: last_page_size == 0
 
         Args:
-            next_page_url: URL for the next page. If None, indicates last page (no more pages).
+            request_without_cursor_for_pagination: HttpRequest for the next page. If None, indicates last page.
         """
         return cls(
             find_template("groups", __file__),
             FieldPath("groups"),
-            CursorBasedPaginationStrategy(next_page_url) if next_page_url else None,
+            NextPagePaginationStrategy(http_request_to_str(request_without_cursor_for_pagination)),
         )
 
 

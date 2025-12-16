@@ -10,7 +10,8 @@ from airbyte_cdk.utils.datetime_helpers import ab_datetime_now
 
 from .config import ConfigBuilder
 from .helpers import given_groups_with_later_records
-from .request_builder import ApiTokenAuthenticator
+from .request_builder import ApiTokenAuthenticator, ZendeskSupportRequestBuilder
+from .response_builder import GroupsRecordBuilder, GroupsResponseBuilder
 from .utils import datetime_to_string, read_stream, string_to_datetime
 
 
@@ -69,3 +70,86 @@ class TestGroupsStreamFullRefresh(TestCase):
 
         output = read_stream("groups", SyncMode.full_refresh, self._config, state=state)
         assert len(output.records) == 1
+
+
+class TestGroupsStreamPagination(TestCase):
+    """Test pagination for groups stream.
+
+    The groups stream uses the base retriever paginator with:
+    - cursor_value: response.get("next_page", {})
+    - stop_condition: last_page_size == 0
+    - page_size_option: per_page (not page[size])
+    - page_token_option: RequestPath (uses full next_page URL as request path)
+
+    This test also covers pagination behavior for other streams using the same
+    base retriever paginator: tags, brands, automations, etc.
+    """
+
+    @property
+    def _config(self):
+        return (
+            ConfigBuilder()
+            .with_basic_auth_credentials("user@example.com", "password")
+            .with_subdomain("d3v-airbyte")
+            .with_start_date(ab_datetime_now().subtract(timedelta(weeks=104)))
+            .build()
+        )
+
+    @staticmethod
+    def get_authenticator(config):
+        return ApiTokenAuthenticator(email=config["credentials"]["email"], password=config["credentials"]["api_token"])
+
+    @HttpMocker()
+    def test_given_next_page_when_read_then_paginate(self, http_mocker):
+        """Test that pagination fetches records from 2 pages and stops when last_page_size == 0.
+
+        Following the pattern from test_articles.py:
+        1. Build next_page_http_request using the request builder
+        2. Pass it to GroupsResponseBuilder.groups_response(next_page_http_request)
+        3. Use next_page_http_request directly as the mock for page 2
+        """
+        api_token_authenticator = self.get_authenticator(self._config)
+
+        # Build the next page request using the request builder (same pattern as test_articles.py)
+        # The next page request must be different from page 1 to avoid "already mocked" error
+        next_page_http_request = (
+            ZendeskSupportRequestBuilder.groups_endpoint(api_token_authenticator)
+            .with_per_page(100)
+            .with_query_param("page", "2")
+            .build()
+        )
+
+        # Create records for page 1 (with cursor values after start_date)
+        record1 = GroupsRecordBuilder.groups_record().with_id(1001).with_cursor(ab_datetime_now().subtract(timedelta(days=1)).strftime("%Y-%m-%dT%H:%M:%SZ"))
+        record2 = GroupsRecordBuilder.groups_record().with_id(1002).with_cursor(ab_datetime_now().subtract(timedelta(days=2)).strftime("%Y-%m-%dT%H:%M:%SZ"))
+
+        # Create record for page 2
+        record3 = GroupsRecordBuilder.groups_record().with_id(1003).with_cursor(ab_datetime_now().subtract(timedelta(days=3)).strftime("%Y-%m-%dT%H:%M:%SZ"))
+
+        # Page 1: has records and provides next_page URL (via NextPagePaginationStrategy)
+        # Must call .with_pagination() to actually set the next_page field in the response
+        http_mocker.get(
+            ZendeskSupportRequestBuilder.groups_endpoint(api_token_authenticator).with_per_page(100).build(),
+            GroupsResponseBuilder.groups_response(next_page_http_request)
+            .with_record(record1)
+            .with_record(record2)
+            .with_pagination()
+            .build(),
+        )
+
+        # Page 2: empty page (0 records) - triggers stop_condition: last_page_size == 0
+        http_mocker.get(
+            next_page_http_request,
+            GroupsResponseBuilder.groups_response()
+            .with_record(record3)
+            .build(),
+        )
+
+        output = read_stream("groups", SyncMode.full_refresh, self._config)
+
+        # Verify all 3 records from both pages are returned
+        assert len(output.records) == 3
+        record_ids = [r.record.data["id"] for r in output.records]
+        assert 1001 in record_ids
+        assert 1002 in record_ids
+        assert 1003 in record_ids

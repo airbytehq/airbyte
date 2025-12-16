@@ -11,8 +11,6 @@ Pagination is handled via the next_page field in the response.
 from datetime import timedelta
 from unittest import TestCase
 
-import pytest
-
 from airbyte_cdk.models import SyncMode
 from airbyte_cdk.test.mock_http import HttpMocker
 from airbyte_cdk.utils.datetime_helpers import ab_datetime_now
@@ -67,15 +65,54 @@ class TestSlaPoliciesStreamFullRefresh(TestCase):
         output = read_stream("sla_policies", SyncMode.full_refresh, self._config)
         assert len(output.records) == 1
 
-    @pytest.mark.skip(
-        reason="Pagination test skipped - sla_policies uses CursorPagination with next_page URL (RequestPath). "
-        "The HttpMocker has difficulty matching the full next_page URL. "
-        "Single page and error handling tests provide sufficient coverage."
-    )
     @HttpMocker()
-    def test_given_two_pages_when_read_sla_policies_then_return_all_records(self, http_mocker):
-        """Test reading sla_policies with pagination across two pages."""
-        pass
+    def test_given_next_page_when_read_then_paginate(self, http_mocker):
+        """Test that pagination fetches records from 2 pages and stops when last_page_size == 0.
+
+        This test covers pagination behavior for streams using next_page URL pagination.
+        """
+        api_token_authenticator = self.get_authenticator(self._config)
+
+        # Build the next page request using the request builder
+        next_page_http_request = (
+            ZendeskSupportRequestBuilder.sla_policies_endpoint(api_token_authenticator)
+            .with_query_param("page", "2")
+            .build()
+        )
+
+        # Create records for page 1
+        record1 = SlaPoliciesRecordBuilder.sla_policies_record().with_id(1001)
+        record2 = SlaPoliciesRecordBuilder.sla_policies_record().with_id(1002)
+
+        # Create record for page 2
+        record3 = SlaPoliciesRecordBuilder.sla_policies_record().with_id(1003)
+
+        # Page 1: has records and provides next_page URL
+        http_mocker.get(
+            self._base_sla_policies_request(api_token_authenticator).build(),
+            SlaPoliciesResponseBuilder.sla_policies_response(next_page_http_request)
+            .with_record(record1)
+            .with_record(record2)
+            .with_pagination()
+            .build(),
+        )
+
+        # Page 2: has one more record
+        http_mocker.get(
+            next_page_http_request,
+            SlaPoliciesResponseBuilder.sla_policies_response()
+            .with_record(record3)
+            .build(),
+        )
+
+        output = read_stream("sla_policies", SyncMode.full_refresh, self._config)
+
+        # Verify all 3 records from both pages are returned
+        assert len(output.records) == 3
+        record_ids = [r.record.data["id"] for r in output.records]
+        assert 1001 in record_ids
+        assert 1002 in record_ids
+        assert 1003 in record_ids
 
     @HttpMocker()
     def test_given_403_error_when_read_sla_policies_then_fail(self, http_mocker):

@@ -51,9 +51,54 @@ class TestCustomRolesStreamFullRefresh(TestCase):
         output = read_stream("custom_roles", SyncMode.full_refresh, self._config)
         assert len(output.records) == 1
 
-    # Note: Pagination test for custom_roles is skipped because this stream uses CursorPagination
-    # with next_page URL (RequestPath token option), which requires different mocking approach.
-    # The pagination behavior is covered by other streams using the same pattern.
+    @HttpMocker()
+    def test_given_next_page_when_read_then_paginate(self, http_mocker):
+        """Test that pagination fetches records from 2 pages and stops when last_page_size == 0.
+
+        This test covers pagination behavior for streams using next_page URL pagination.
+        """
+        api_token_authenticator = self.get_authenticator(self._config)
+
+        # Build the next page request using the request builder
+        next_page_http_request = (
+            ZendeskSupportRequestBuilder.custom_roles_endpoint(api_token_authenticator)
+            .with_query_param("page", "2")
+            .build()
+        )
+
+        # Create records for page 1
+        record1 = CustomRolesRecordBuilder.custom_roles_record().with_id(1001)
+        record2 = CustomRolesRecordBuilder.custom_roles_record().with_id(1002)
+
+        # Create record for page 2
+        record3 = CustomRolesRecordBuilder.custom_roles_record().with_id(1003)
+
+        # Page 1: has records and provides next_page URL
+        http_mocker.get(
+            self._base_custom_roles_request(api_token_authenticator).build(),
+            CustomRolesResponseBuilder.custom_roles_response(next_page_http_request)
+            .with_record(record1)
+            .with_record(record2)
+            .with_pagination()
+            .build(),
+        )
+
+        # Page 2: has one more record
+        http_mocker.get(
+            next_page_http_request,
+            CustomRolesResponseBuilder.custom_roles_response()
+            .with_record(record3)
+            .build(),
+        )
+
+        output = read_stream("custom_roles", SyncMode.full_refresh, self._config)
+
+        # Verify all 3 records from both pages are returned
+        assert len(output.records) == 3
+        record_ids = [r.record.data["id"] for r in output.records]
+        assert 1001 in record_ids
+        assert 1002 in record_ids
+        assert 1003 in record_ids
 
     @HttpMocker()
     def test_given_403_error_when_read_custom_roles_then_fail(self, http_mocker):
