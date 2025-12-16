@@ -4,12 +4,12 @@ from datetime import datetime, timezone
 from unittest import TestCase
 
 import freezegun
+
 from airbyte_cdk.models import SyncMode
 from airbyte_cdk.test.catalog_builder import CatalogBuilder
 from airbyte_cdk.test.entrypoint_wrapper import read
 from airbyte_cdk.test.mock_http import HttpMocker
 from airbyte_cdk.test.state_builder import StateBuilder
-
 from unit_tests.conftest import get_source
 
 from .config import ConfigBuilder
@@ -51,9 +51,7 @@ def _create_lead_form_response_record(
         "form": {"leadGenFormUrn": f"urn:li:leadGenForm:{form_id}"},
         "owner": {"sponsoredAccount": f"urn:li:sponsoredAccount:{account_id}"},
         "submittedAt": submitted_at,
-        "formResponse": {
-            "answers": [{"questionId": "q1", "answerDetails": {"textQuestionAnswer": {"answer": "Test Answer"}}}]
-        },
+        "formResponse": {"answers": [{"questionId": "q1", "answerDetails": {"textQuestionAnswer": {"answer": "Test Answer"}}}]},
     }
 
 
@@ -119,16 +117,12 @@ class TestLeadFormResponsesStream(TestCase):
 
         http_mocker.get(
             LinkedInAdsRequestBuilder.lead_form_responses_endpoint(111111111).build(),
-            LinkedInAdsPaginatedResponseBuilder.single_page(
-                [_create_lead_form_response_record("resp-1001", 111111111, "form-1")]
-            ),
+            LinkedInAdsPaginatedResponseBuilder.single_page([_create_lead_form_response_record("resp-1001", 111111111, "form-1")]),
         )
 
         http_mocker.get(
             LinkedInAdsRequestBuilder.lead_form_responses_endpoint(222222222).build(),
-            LinkedInAdsPaginatedResponseBuilder.single_page(
-                [_create_lead_form_response_record("resp-2001", 222222222, "form-2")]
-            ),
+            LinkedInAdsPaginatedResponseBuilder.single_page([_create_lead_form_response_record("resp-2001", 222222222, "form-2")]),
         )
 
         source = get_source(config=config)
@@ -213,12 +207,8 @@ class TestLeadFormResponsesStream(TestCase):
             LinkedInAdsRequestBuilder.lead_form_responses_endpoint(111111111).build(),
             LinkedInAdsPaginatedResponseBuilder.single_page(
                 [
-                    _create_lead_form_response_record(
-                        "resp-1001", 111111111, "form-1", submitted_at=_TIMESTAMP_JAN_2024
-                    ),
-                    _create_lead_form_response_record(
-                        "resp-1002", 111111111, "form-2", submitted_at=_TIMESTAMP_JUN_2024
-                    ),
+                    _create_lead_form_response_record("resp-1001", 111111111, "form-1", submitted_at=_TIMESTAMP_JAN_2024),
+                    _create_lead_form_response_record("resp-1002", 111111111, "form-2", submitted_at=_TIMESTAMP_JUN_2024),
                 ]
             ),
         )
@@ -250,12 +240,8 @@ class TestLeadFormResponsesStream(TestCase):
             LinkedInAdsRequestBuilder.lead_form_responses_endpoint(111111111).build(),
             LinkedInAdsPaginatedResponseBuilder.single_page(
                 [
-                    _create_lead_form_response_record(
-                        "resp-1001", 111111111, "form-1", submitted_at=_TIMESTAMP_JAN_2024
-                    ),
-                    _create_lead_form_response_record(
-                        "resp-1002", 111111111, "form-2", submitted_at=_TIMESTAMP_JUN_2024
-                    ),
+                    _create_lead_form_response_record("resp-1001", 111111111, "form-1", submitted_at=_TIMESTAMP_JAN_2024),
+                    _create_lead_form_response_record("resp-1002", 111111111, "form-2", submitted_at=_TIMESTAMP_JUN_2024),
                 ]
             ),
         )
