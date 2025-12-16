@@ -14,7 +14,7 @@ from airbyte_cdk.utils.datetime_helpers import ab_datetime_now, ab_datetime_pars
 from .config import ConfigBuilder
 from .helpers import given_tickets_with_state
 from .request_builder import ApiTokenAuthenticator, ZendeskSupportRequestBuilder
-from .response_builder import TicketMetricsRecordBuilder, TicketMetricsResponseBuilder
+from .response_builder import ErrorResponseBuilder, TicketMetricsRecordBuilder, TicketMetricsResponseBuilder
 from .utils import read_stream
 
 
@@ -100,3 +100,124 @@ class TestTicketMetricsIncremental(TestCase):
             ],
             "use_global_cursor": False,
         }
+
+
+@freezegun.freeze_time(_NOW.isoformat())
+class TestTicketMetricsErrorHandling(TestCase):
+    """Test error handling for ticket_metrics stream.
+
+    The stateful ticket_metrics stream has IGNORE error handlers for 403 and 404 responses.
+    Per the playbook, we must verify:
+    1. The error is gracefully ignored (no records returned for that partition)
+    2. No ERROR logs are produced
+    """
+
+    @property
+    def _config(self):
+        return (
+            ConfigBuilder()
+            .with_basic_auth_credentials("user@example.com", "password")
+            .with_subdomain("d3v-airbyte")
+            .with_start_date(_TWO_YEARS_AGO_DATETIME)
+            .build()
+        )
+
+    def _get_authenticator(self, config):
+        return ApiTokenAuthenticator(email=config["credentials"]["email"], password=config["credentials"]["api_token"])
+
+    @HttpMocker()
+    def test_given_403_error_when_read_stateful_then_ignore_error_and_no_error_logs(self, http_mocker):
+        """Test that 403 errors are gracefully ignored in stateful mode with no ERROR logs."""
+        api_token_authenticator = self._get_authenticator(self._config)
+
+        state_cursor_value = int(ab_datetime_now().subtract(timedelta(days=2)).timestamp())
+        state = StateBuilder().with_stream_state("ticket_metrics", state={"_ab_updated_at": state_cursor_value}).build()
+        parent_cursor_value = ab_datetime_now().subtract(timedelta(days=2))
+        tickets_records_builder = given_tickets_with_state(
+            http_mocker, ab_datetime_parse(state_cursor_value), parent_cursor_value, api_token_authenticator
+        )
+        ticket = tickets_records_builder.build()
+
+        # Mock 403 error response for the ticket metrics endpoint
+        http_mocker.get(
+            ZendeskSupportRequestBuilder.stateful_ticket_metrics_endpoint(api_token_authenticator, ticket["id"]).build(),
+            ErrorResponseBuilder.response_with_status(403).build(),
+        )
+
+        output = read_stream("ticket_metrics", SyncMode.incremental, self._config, state)
+
+        # Verify no records returned for this partition (error was ignored)
+        assert len(output.records) == 0
+        # Verify no ERROR logs were produced (per playbook requirement for IGNORE handlers)
+        assert not any(log.log.level == "ERROR" for log in output.logs)
+
+    @HttpMocker()
+    def test_given_404_error_when_read_stateful_then_ignore_error_and_no_error_logs(self, http_mocker):
+        """Test that 404 errors are gracefully ignored in stateful mode with no ERROR logs."""
+        api_token_authenticator = self._get_authenticator(self._config)
+
+        state_cursor_value = int(ab_datetime_now().subtract(timedelta(days=2)).timestamp())
+        state = StateBuilder().with_stream_state("ticket_metrics", state={"_ab_updated_at": state_cursor_value}).build()
+        parent_cursor_value = ab_datetime_now().subtract(timedelta(days=2))
+        tickets_records_builder = given_tickets_with_state(
+            http_mocker, ab_datetime_parse(state_cursor_value), parent_cursor_value, api_token_authenticator
+        )
+        ticket = tickets_records_builder.build()
+
+        # Mock 404 error response for the ticket metrics endpoint (ticket was deleted)
+        http_mocker.get(
+            ZendeskSupportRequestBuilder.stateful_ticket_metrics_endpoint(api_token_authenticator, ticket["id"]).build(),
+            ErrorResponseBuilder.response_with_status(404).build(),
+        )
+
+        output = read_stream("ticket_metrics", SyncMode.incremental, self._config, state)
+
+        # Verify no records returned for this partition (error was ignored)
+        assert len(output.records) == 0
+        # Verify no ERROR logs were produced (per playbook requirement for IGNORE handlers)
+        assert not any(log.log.level == "ERROR" for log in output.logs)
+
+
+@freezegun.freeze_time(_NOW.isoformat())
+class TestTicketMetricsTransformations(TestCase):
+    """Test transformations for ticket_metrics stream.
+
+    The ticket_metrics stream adds _ab_updated_at transformation:
+    - Stateless mode: _ab_updated_at = format_datetime(record['updated_at'], '%s')
+    - Stateful mode: _ab_updated_at = record['generated_timestamp'] or stream_slice.extra_fields['generated_timestamp']
+    """
+
+    @property
+    def _config(self):
+        return (
+            ConfigBuilder()
+            .with_basic_auth_credentials("user@example.com", "password")
+            .with_subdomain("d3v-airbyte")
+            .with_start_date(_TWO_YEARS_AGO_DATETIME)
+            .build()
+        )
+
+    def _get_authenticator(self, config):
+        return ApiTokenAuthenticator(email=config["credentials"]["email"], password=config["credentials"]["api_token"])
+
+    @HttpMocker()
+    def test_stateless_mode_transformation_adds_ab_updated_at_from_updated_at(self, http_mocker):
+        """Test that stateless mode adds _ab_updated_at derived from updated_at field."""
+        record_updated_at: str = ab_datetime_now().subtract(timedelta(days=1)).strftime("%Y-%m-%dT%H:%M:%SZ")
+        api_token_authenticator = self._get_authenticator(self._config)
+        ticket_metrics_record_builder = TicketMetricsRecordBuilder.stateless_ticket_metrics_record().with_cursor(record_updated_at)
+
+        http_mocker.get(
+            ZendeskSupportRequestBuilder.stateless_ticket_metrics_endpoint(api_token_authenticator).with_page_size(100).build(),
+            TicketMetricsResponseBuilder.stateless_ticket_metrics_response().with_record(ticket_metrics_record_builder).build(),
+        )
+
+        output = read_stream("ticket_metrics", SyncMode.incremental, self._config)
+
+        assert len(output.records) == 1
+        # Verify _ab_updated_at transformation is applied and equals the expected timestamp
+        record = output.records[0].record.data
+        assert "_ab_updated_at" in record
+        expected_timestamp = int(ab_datetime_parse(record_updated_at).timestamp())
+        # The transformation returns an integer (value_type: "integer" in manifest)
+        assert record["_ab_updated_at"] == expected_timestamp

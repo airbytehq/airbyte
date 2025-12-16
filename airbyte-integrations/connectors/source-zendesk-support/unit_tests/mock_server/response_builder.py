@@ -393,6 +393,19 @@ class GroupsResponseBuilder(HttpResponseBuilder):
             CursorBasedPaginationStrategy(http_request_to_str(request_without_cursor_for_pagination)),
         )
 
+    @classmethod
+    def groups_response_with_pagination(cls, next_page_url: Optional[str] = None) -> "GroupsResponseBuilder":
+        """Response builder for groups with explicit pagination control.
+
+        Args:
+            next_page_url: URL for the next page. If None, indicates last page (no more pages).
+        """
+        return cls(
+            find_template("groups", __file__),
+            FieldPath("groups"),
+            CursorBasedPaginationStrategy(next_page_url) if next_page_url else None,
+        )
+
 
 class UsersResponseBuilder(HttpResponseBuilder):
     @classmethod
