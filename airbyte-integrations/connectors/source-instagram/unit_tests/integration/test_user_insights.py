@@ -10,7 +10,6 @@ import freezegun
 from airbyte_cdk.models import SyncMode
 from airbyte_cdk.test.entrypoint_wrapper import EntrypointOutput
 from airbyte_cdk.test.mock_http import HttpMocker, HttpResponse
-from airbyte_cdk.test.mock_http.response_builder import find_template
 from airbyte_cdk.test.state_builder import StateBuilder
 
 from .config import BUSINESS_ACCOUNT_ID, PAGE_ID, ConfigBuilder
@@ -31,6 +30,50 @@ def _get_user_insights_request_any_params(business_account_id: str) -> RequestBu
     multiple time slices. Using with_any_query_params() allows matching all these requests.
     """
     return RequestBuilder.get_user_lifetime_insights_endpoint(item_id=business_account_id).with_any_query_params()
+
+
+def _build_user_insights_response() -> HttpResponse:
+    """Build a successful user_insights response inline."""
+    body = {
+        "data": [
+            {
+                "name": "follower_count",
+                "period": "day",
+                "values": [{"value": 1000, "end_time": "2024-01-15T07:00:00+0000"}],
+                "title": "Follower Count",
+                "description": "Total number of followers",
+                "id": f"{BUSINESS_ACCOUNT_ID}/insights/follower_count/day",
+            },
+            {
+                "name": "reach",
+                "period": "day",
+                "values": [{"value": 500, "end_time": "2024-01-15T07:00:00+0000"}],
+                "title": "Reach",
+                "description": "Total reach",
+                "id": f"{BUSINESS_ACCOUNT_ID}/insights/reach/day",
+            },
+        ]
+    }
+    return HttpResponse(json.dumps(body), 200)
+
+
+def _build_error_response(code: int, message: str, error_subcode: int = None) -> HttpResponse:
+    """Build an error response inline.
+
+    Args:
+        code: The error code (e.g., 100, 10)
+        message: The error message
+        error_subcode: Optional error subcode (e.g., 2108006, 33)
+    """
+    error = {
+        "message": message,
+        "type": "OAuthException",
+        "code": code,
+        "fbtrace_id": "ABC123",
+    }
+    if error_subcode is not None:
+        error["error_subcode"] = error_subcode
+    return HttpResponse(json.dumps({"error": error}), 400)
 
 
 class TestFullRefresh(TestCase):
@@ -60,7 +103,7 @@ class TestFullRefresh(TestCase):
         # Mock all user_insights requests with any query params since datetime params are dynamic
         http_mocker.get(
             _get_user_insights_request_any_params(BUSINESS_ACCOUNT_ID).build(),
-            HttpResponse(json.dumps(find_template("user_insights", __file__)), 200),
+            _build_user_insights_response(),
         )
 
         output = self._read(config_=config())
@@ -97,7 +140,7 @@ class TestIncremental(TestCase):
 
         http_mocker.get(
             _get_user_insights_request_any_params(BUSINESS_ACCOUNT_ID).build(),
-            HttpResponse(json.dumps(find_template("user_insights", __file__)), 200),
+            _build_user_insights_response(),
         )
 
         output = self._read(config_=config())
@@ -133,7 +176,7 @@ class TestIncremental(TestCase):
 
         http_mocker.get(
             _get_user_insights_request_any_params(BUSINESS_ACCOUNT_ID).build(),
-            HttpResponse(json.dumps(find_template("user_insights", __file__)), 200),
+            _build_user_insights_response(),
         )
 
         output = self._read(config_=config(), state=state)
@@ -172,7 +215,7 @@ class TestErrorHandling(TestCase):
 
         http_mocker.get(
             _get_user_insights_request_any_params(BUSINESS_ACCOUNT_ID).build(),
-            HttpResponse(json.dumps(find_template("user_insights_for_error_subcode_2108006", __file__)), 400),
+            _build_error_response(code=100, message="Invalid parameter", error_subcode=2108006),
         )
 
         output = self._read(config_=config())
@@ -190,7 +233,7 @@ class TestErrorHandling(TestCase):
 
         http_mocker.get(
             _get_user_insights_request_any_params(BUSINESS_ACCOUNT_ID).build(),
-            HttpResponse(json.dumps(find_template("user_insights_for_error_code_100_subcode_33", __file__)), 400),
+            _build_error_response(code=100, message="Unsupported get request", error_subcode=33),
         )
 
         output = self._read(config_=config())
@@ -208,7 +251,7 @@ class TestErrorHandling(TestCase):
 
         http_mocker.get(
             _get_user_insights_request_any_params(BUSINESS_ACCOUNT_ID).build(),
-            HttpResponse(json.dumps(find_template("user_insights_for_error_code_10", __file__)), 400),
+            _build_error_response(code=10, message="(#10) Application does not have permission for this action"),
         )
 
         output = self._read(config_=config())
