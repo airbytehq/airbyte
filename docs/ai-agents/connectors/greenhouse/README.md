@@ -31,13 +31,13 @@ for recruiting analytics and talent acquisition insights.
 ## Installation
 
 ```bash
-uv pip install airbyte-ai-greenhouse
+uv pip install airbyte-agent-greenhouse
 ```
 
 ## Usage
 
 ```python
-from airbyte_ai_greenhouse import GreenhouseConnector, GreenhouseAuthConfig
+from airbyte_agent_greenhouse import GreenhouseConnector, GreenhouseAuthConfig
 
 connector = GreenhouseConnector(
   auth_config=GreenhouseAuthConfig(
@@ -71,8 +71,8 @@ For the service's official API docs, see [Greenhouse API Reference](https://deve
 
 ## Version Information
 
-**Package Version:** 0.17.10
+**Package Version:** 0.17.17
 
 **Connector Version:** 0.1.1
 
-**Generated with connector-sdk:** 1ab72bd8e7249872a4cf66327dd1a0bf68905acb
+**Generated with connector-sdk:** c4c39c2797ecd929407c9417c728d425f77b37ed

@@ -391,7 +391,7 @@ curl --location 'https://api.airbyte.ai/api/v1/connectors/instances/{your_connec
 #### Call Audio Download
 
 Downloads the audio media file for a call. Temporarily, the request body must be configured with:
-`{"filter": {"callIds": [CALL_ID]}, "contentSelector": {"exposedFields": {"media": true}}}`
+\{"filter": \{"callIds": [CALL_ID]\}, "contentSelector": \{"exposedFields": \{"media": true\}\}\}
 
 
 **Python SDK**
@@ -433,7 +433,7 @@ curl --location 'https://api.airbyte.ai/api/v1/connectors/instances/{your_connec
 #### Call Video Download
 
 Downloads the video media file for a call. Temporarily, the request body must be configured with:
-`{"filter": {"callIds": [CALL_ID]}, "contentSelector": {"exposedFields": {"media": true}}}`
+\{"filter": \{"callIds": [CALL_ID]\}, "contentSelector": \{"exposedFields": \{"media": true\}\}\}
 
 
 **Python SDK**

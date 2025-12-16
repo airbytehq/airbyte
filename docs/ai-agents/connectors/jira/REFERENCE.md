@@ -779,7 +779,7 @@ The connector requires the following configuration variables:
 
 | Variable | Type | Required | Default | Description |
 |----------|------|----------|---------|-------------|
-| `subdomain` | `string` | Yes | `{subdomain}` | Your Jira Cloud subdomain |
+| `subdomain` | `string` | Yes | \{subdomain\} | Your Jira Cloud subdomain |
 
 These variables are used to construct the base API URL. Pass them via the `config` parameter when initializing the connector.
 
