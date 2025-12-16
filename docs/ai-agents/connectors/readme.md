@@ -27,7 +27,7 @@ Each connector is a standalone Python package in the [Airbyte Agent Connectors r
 ```text
 connectors/
 ├── stripe/
-│   ├── airbyte_ai_stripe/
+│   ├── airbyte_agent_stripe/
 │   ├── pyproject.toml
 │   ├── CHANGELOG.md
 │   └── README.md
