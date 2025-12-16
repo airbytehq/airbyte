@@ -65,10 +65,7 @@ class TestFiltersStream(TestCase):
 
         # Filters endpoint uses static expand parameter from manifest.yaml
         http_mocker.get(
-            JiraRequestBuilder.filters_endpoint(_DOMAIN)
-            .with_max_results(50)
-            .with_expand(self._FILTERS_EXPAND)
-            .build(),
+            JiraRequestBuilder.filters_endpoint(_DOMAIN).with_max_results(50).with_expand(self._FILTERS_EXPAND).build(),
             JiraPaginatedResponseBuilder("values")
             .with_records(filter_records)
             .with_pagination(start_at=0, max_results=50, total=2, is_last=True)
@@ -137,10 +134,7 @@ class TestFiltersStream(TestCase):
         config = ConfigBuilder().with_domain(_DOMAIN).build()
 
         http_mocker.get(
-            JiraRequestBuilder.filters_endpoint(_DOMAIN)
-            .with_max_results(50)
-            .with_expand(self._FILTERS_EXPAND)
-            .build(),
+            JiraRequestBuilder.filters_endpoint(_DOMAIN).with_max_results(50).with_expand(self._FILTERS_EXPAND).build(),
             JiraPaginatedResponseBuilder("values")
             .with_records([])
             .with_pagination(start_at=0, max_results=50, total=0, is_last=True)
@@ -162,10 +156,7 @@ class TestFiltersStream(TestCase):
         config = ConfigBuilder().with_domain(_DOMAIN).build()
 
         http_mocker.get(
-            JiraRequestBuilder.filters_endpoint(_DOMAIN)
-            .with_max_results(50)
-            .with_expand(self._FILTERS_EXPAND)
-            .build(),
+            JiraRequestBuilder.filters_endpoint(_DOMAIN).with_max_results(50).with_expand(self._FILTERS_EXPAND).build(),
             HttpResponse(
                 body=json.dumps({"errorMessages": ["Bad request"]}),
                 status_code=400,
