@@ -169,9 +169,52 @@ class TestIssueWatchersStream(TestCase):
         assert not any(log.log.level == "ERROR" for log in output.logs)
 
     @HttpMocker()
+    def test_error_400_ignored(self, http_mocker: HttpMocker):
+        """
+        Test that 400 errors are ignored gracefully.
+
+        Per manifest.yaml, the error_handler for this stream has:
+        http_codes: [400, 404] -> action: IGNORE
+        """
+        config = ConfigBuilder().with_domain(_DOMAIN).build()
+
+        # Issues must include fields.project for the issues_stream transformations
+        issues = [
+            {
+                "id": "10001",
+                "key": "PROJ-1",
+                "fields": {
+                    "updated": "2024-01-15T10:00:00.000+0000",
+                    "created": "2024-01-01T10:00:00.000+0000",
+                    "project": {"id": "10000", "key": "PROJ"},
+                },
+            },
+        ]
+
+        http_mocker.get(
+            JiraRequestBuilder.issues_endpoint(_DOMAIN).with_any_query_params().build(),
+            JiraJqlResponseBuilder().with_records(issues).with_pagination(start_at=0, max_results=50, total=1).build(),
+        )
+
+        http_mocker.get(
+            JiraRequestBuilder.issue_watchers_endpoint(_DOMAIN, "PROJ-1").build(),
+            HttpResponse(body=json.dumps({"errorMessages": ["Bad request"]}), status_code=400),
+        )
+
+        source = get_source(config=config)
+        catalog = CatalogBuilder().with_stream(_STREAM_NAME, SyncMode.full_refresh).build()
+        output = read(source, config=config, catalog=catalog)
+
+        assert len(output.records) == 0
+        assert not any(log.log.level == "ERROR" for log in output.logs)
+
+    @HttpMocker()
     def test_error_404_ignored(self, http_mocker: HttpMocker):
         """
-        Test that 404 errors are ignored gracefully (IGNORE error handler).
+        Test that 404 errors are ignored gracefully.
+
+        Per manifest.yaml, the error_handler for this stream has:
+        http_codes: [400, 404] -> action: IGNORE
         """
         config = ConfigBuilder().with_domain(_DOMAIN).build()
 

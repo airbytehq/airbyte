@@ -190,6 +190,92 @@ class TestIssueCustomFieldOptionsStream(TestCase):
         assert not any(log.log.level == "ERROR" for log in output.logs)
 
     @HttpMocker()
+    def test_error_400_ignored(self, http_mocker: HttpMocker):
+        """
+        Test that 400 errors are ignored gracefully.
+
+        Per manifest.yaml, the error_handler for this stream has:
+        http_codes: [400, 403, 404] -> action: IGNORE
+        """
+        config = ConfigBuilder().with_domain(_DOMAIN).build()
+
+        issue_fields = [
+            {"id": "customfield_10001", "name": "Priority", "custom": True, "schema": {"type": "option", "items": None}},
+        ]
+
+        http_mocker.get(
+            JiraRequestBuilder.issue_fields_endpoint(_DOMAIN).build(),
+            HttpResponse(body=json.dumps(issue_fields), status_code=200),
+        )
+
+        contexts = [
+            {"id": "10000", "name": "Default Context", "isGlobalContext": True},
+        ]
+
+        http_mocker.get(
+            JiraRequestBuilder.issue_custom_field_contexts_endpoint(_DOMAIN, "customfield_10001").with_any_query_params().build(),
+            JiraPaginatedResponseBuilder("values")
+            .with_records(contexts)
+            .with_pagination(start_at=0, max_results=50, total=1, is_last=True)
+            .build(),
+        )
+
+        http_mocker.get(
+            JiraRequestBuilder.issue_custom_field_options_endpoint(_DOMAIN, "customfield_10001", "10000").with_any_query_params().build(),
+            HttpResponse(body=json.dumps({"errorMessages": ["Bad request"]}), status_code=400),
+        )
+
+        source = get_source(config=config)
+        catalog = CatalogBuilder().with_stream(_STREAM_NAME, SyncMode.full_refresh).build()
+        output = read(source, config=config, catalog=catalog)
+
+        assert len(output.records) == 0
+        assert not any(log.log.level == "ERROR" for log in output.logs)
+
+    @HttpMocker()
+    def test_error_403_ignored(self, http_mocker: HttpMocker):
+        """
+        Test that 403 errors are ignored gracefully.
+
+        Per manifest.yaml, the error_handler for this stream has:
+        http_codes: [400, 403, 404] -> action: IGNORE
+        """
+        config = ConfigBuilder().with_domain(_DOMAIN).build()
+
+        issue_fields = [
+            {"id": "customfield_10001", "name": "Priority", "custom": True, "schema": {"type": "option", "items": None}},
+        ]
+
+        http_mocker.get(
+            JiraRequestBuilder.issue_fields_endpoint(_DOMAIN).build(),
+            HttpResponse(body=json.dumps(issue_fields), status_code=200),
+        )
+
+        contexts = [
+            {"id": "10000", "name": "Default Context", "isGlobalContext": True},
+        ]
+
+        http_mocker.get(
+            JiraRequestBuilder.issue_custom_field_contexts_endpoint(_DOMAIN, "customfield_10001").with_any_query_params().build(),
+            JiraPaginatedResponseBuilder("values")
+            .with_records(contexts)
+            .with_pagination(start_at=0, max_results=50, total=1, is_last=True)
+            .build(),
+        )
+
+        http_mocker.get(
+            JiraRequestBuilder.issue_custom_field_options_endpoint(_DOMAIN, "customfield_10001", "10000").with_any_query_params().build(),
+            HttpResponse(body=json.dumps({"errorMessages": ["Forbidden"]}), status_code=403),
+        )
+
+        source = get_source(config=config)
+        catalog = CatalogBuilder().with_stream(_STREAM_NAME, SyncMode.full_refresh).build()
+        output = read(source, config=config, catalog=catalog)
+
+        assert len(output.records) == 0
+        assert not any(log.log.level == "ERROR" for log in output.logs)
+
+    @HttpMocker()
     def test_empty_contexts(self, http_mocker: HttpMocker):
         """
         Test that connector handles no contexts gracefully.
