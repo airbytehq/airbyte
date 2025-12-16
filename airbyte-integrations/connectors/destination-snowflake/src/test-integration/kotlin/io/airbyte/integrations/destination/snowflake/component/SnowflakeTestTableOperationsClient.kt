@@ -45,8 +45,8 @@ class SnowflakeTestTableOperationsClient(
             io.airbyte.cdk.load.schema.model.ColumnSchema(
                 inputToFinalColumnNames = columnTypes.keys.associateWith { it },
                 finalSchema =
-                    columnTypes.mapValues { (_, type) ->
-                        io.airbyte.cdk.load.component.ColumnType(type, true)
+                    columnTypes.mapValues { (_, _) ->
+                        io.airbyte.cdk.load.component.ColumnType("", true)
                     },
                 inputSchema = emptyMap() // Not needed for insert buffer
             )
