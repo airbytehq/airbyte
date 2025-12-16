@@ -41,13 +41,18 @@ class CursorBasedPaginationStrategy(PaginationStrategy):
     For links_next_paginator with page_token_option: RequestPath, the connector uses
     the full URL from links.next as the next request. The next_page_url should already
     include all necessary query parameters (including the cursor).
+    
+    Per playbook: The last page response must explicitly satisfy the stop_condition
+    (meta.has_more = false) to verify pagination stops correctly.
     """
 
     def __init__(self, next_page_url: Optional[str] = None) -> None:
         self._next_page_url = next_page_url
 
     def update(self, response: Dict[str, Any]) -> None:
-        response["meta"]["has_more"] = True
+        # Set has_more based on whether there's a next page URL
+        # This ensures the stop_condition (not response['meta']['has_more']) is properly verified
+        response["meta"]["has_more"] = self._next_page_url is not None
         response["meta"]["after_cursor"] = "after-cursor"
         response["meta"]["before_cursor"] = "before-cursor"
         if self._next_page_url:

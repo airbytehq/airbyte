@@ -4,13 +4,14 @@ from datetime import timedelta
 from unittest import TestCase
 
 from airbyte_cdk.models import SyncMode
+from airbyte_cdk.models import Level as LogLevel
 from airbyte_cdk.test.mock_http import HttpMocker
 from airbyte_cdk.utils.datetime_helpers import ab_datetime_now
 
 from .config import ConfigBuilder
 from .request_builder import ApiTokenAuthenticator, ZendeskSupportRequestBuilder
 from .response_builder import ErrorResponseBuilder, TagsRecordBuilder, TagsResponseBuilder
-from .utils import read_stream
+from .utils import get_log_messages_by_log_level, read_stream
 
 
 _NOW = ab_datetime_now()
@@ -68,6 +69,10 @@ class TestTagsStreamFullRefresh(TestCase):
 
     @HttpMocker()
     def test_given_403_error_when_read_tags_then_fail(self, http_mocker):
+        """Test that 403 errors cause the stream to fail with proper error logging.
+        
+        Per playbook: FAIL error handlers must assert both error code AND error message.
+        """
         api_token_authenticator = self.get_authenticator(self._config)
 
         http_mocker.get(
@@ -77,9 +82,17 @@ class TestTagsStreamFullRefresh(TestCase):
 
         output = read_stream("tags", SyncMode.full_refresh, self._config, expecting_exception=True)
         assert len(output.records) == 0
+        # Assert error code and message per playbook requirement
+        error_logs = list(get_log_messages_by_log_level(output.logs, LogLevel.ERROR))
+        assert any("403" in msg for msg in error_logs), "Expected 403 error code in logs"
+        assert any("the 403 error" in msg for msg in error_logs), "Expected error message in logs"
 
     @HttpMocker()
     def test_given_404_error_when_read_tags_then_fail(self, http_mocker):
+        """Test that 404 errors cause the stream to fail with proper error logging.
+        
+        Per playbook: FAIL error handlers must assert both error code AND error message.
+        """
         api_token_authenticator = self.get_authenticator(self._config)
 
         http_mocker.get(
@@ -89,3 +102,7 @@ class TestTagsStreamFullRefresh(TestCase):
 
         output = read_stream("tags", SyncMode.full_refresh, self._config, expecting_exception=True)
         assert len(output.records) == 0
+        # Assert error code and message per playbook requirement
+        error_logs = list(get_log_messages_by_log_level(output.logs, LogLevel.ERROR))
+        assert any("404" in msg for msg in error_logs), "Expected 404 error code in logs"
+        assert any("the 404 error" in msg for msg in error_logs), "Expected error message in logs"
