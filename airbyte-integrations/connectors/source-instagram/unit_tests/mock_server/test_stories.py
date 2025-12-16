@@ -19,7 +19,7 @@ from airbyte_cdk.test.mock_http.response_builder import (
 from .config import BUSINESS_ACCOUNT_ID, ConfigBuilder
 from .pagination import NEXT_PAGE_TOKEN, InstagramPaginationStrategy
 from .request_builder import RequestBuilder, get_account_request
-from .response_builder import get_account_response
+from .response_builder import SECOND_BUSINESS_ACCOUNT_ID, get_account_response, get_multiple_accounts_response
 from .utils import config, read_output
 
 
@@ -110,3 +110,29 @@ class TestFullRefresh(TestCase):
 
         output = self._read(config_=config())
         assert len(output.records) == 3
+
+    @HttpMocker()
+    def test_substream_with_multiple_parent_accounts(self, http_mocker: HttpMocker) -> None:
+        """Test stories stream against 2+ parent accounts per playbook requirements."""
+        http_mocker.get(
+            get_account_request().build(),
+            get_multiple_accounts_response(),
+        )
+        # Mock stories requests for both accounts
+        http_mocker.get(
+            _get_request().build(),
+            _get_response().with_record(_record()).build(),
+        )
+        http_mocker.get(
+            RequestBuilder.get_stories_endpoint(item_id=SECOND_BUSINESS_ACCOUNT_ID).with_limit(100).with_fields(FIELDS).build(),
+            _get_response().with_record(_record()).build(),
+        )
+
+        output = self._read(config_=config())
+        # Verify we get records from both accounts
+        assert len(output.records) == 2
+        # Verify transformations on all records
+        for record in output.records:
+            assert "page_id" in record.record.data
+            assert "business_account_id" in record.record.data
+            assert "story_insights_info" in record.record.data
