@@ -33,3 +33,7 @@ data:
   ab_internal:
     ql: 100
     sl: 100
+  externalDocumentationUrls:
+    - title: Wasabi Stats API
+      url: https://docs.wasabi.com/docs/stats-api
+      type: api_reference

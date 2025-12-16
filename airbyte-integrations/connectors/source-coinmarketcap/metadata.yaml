@@ -47,4 +47,17 @@ data:
           secretStore:
             type: GSM
             alias: airbyte-connector-testing-secret-store
+  externalDocumentationUrls:
+    - title: CoinMarketCap API reference
+      url: https://coinmarketcap.com/api/documentation/v1/
+      type: api_reference
+    - title: CoinMarketCap authentication
+      url: https://coinmarketcap.com/api/documentation/v1/#section/Authentication
+      type: authentication_guide
+    - title: CoinMarketCap rate limits
+      url: https://coinmarketcap.com/api/documentation/v1/#section/Standards-and-Conventions
+      type: rate_limits
+    - title: CoinMarketCap Status
+      url: https://status.coinmarketcap.com/
+      type: status_page
 metadataSpecVersion: "1.0"

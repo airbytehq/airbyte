@@ -1,0 +1,24 @@
+{
+  "results": [
+    {
+      "id": "auto-123-abc",
+      "aggregation": "total",
+      "step_id": "step-1",
+      "stats": {
+        "bounce_drops": 0,
+        "bounces": 3,
+        "clicks": 100,
+        "delivered": 500,
+        "invalid_emails": 1,
+        "opens": 250,
+        "requests": 510,
+        "spam_report_drops": 0,
+        "spam_reports": 2,
+        "unique_clicks": 80,
+        "unique_opens": 200,
+        "unsubscribes": 5
+      }
+    }
+  ],
+  "_metadata": {}
+}

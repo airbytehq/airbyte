@@ -1,0 +1,18 @@
+{
+  "list": [
+    {
+      "quote_line_group": {
+        "id": "qlg_001",
+        "version": 1,
+        "sub_total": 1000,
+        "total": 1000,
+        "credits_applied": 0,
+        "amount_paid": 0,
+        "amount_due": 1000,
+        "object": "quote_line_group",
+        "cf_line_category": "Subscription",
+        "cf_approval_required": "Yes"
+      }
+    }
+  ]
+}
