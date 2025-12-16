@@ -40,6 +40,21 @@ import io.airbyte.cdk.util.Jsons
 val ctidField = NonEmittedField("ctid", StringFieldType)
 val xminField = NonEmittedField("xmin", LongFieldType)
 
+val xminCursorUpperBoundQuery =
+    SelectQuery(
+        """
+            SELECT CASE 
+                WHEN pg_is_in_recovery() 
+                THEN txid_snapshot_xmin(txid_current_snapshot()) 
+                ELSE txid_current() 
+            END AS current_xmin
+            """
+            .trimIndent()
+            .replace("\n", " "),
+        listOf(EmittedField("current_xmin", LongFieldType)),
+        emptyList()
+    )
+
 sealed class PostgresSourceJdbcPartition(
     val selectQueryGenerator: SelectQueryGenerator,
     final override val streamState: PostgresSourceJdbcStreamState,
@@ -90,20 +105,7 @@ class PostgresSourceJdbcUnsplittableSnapshotWithXminPartition(
             )
 
     override val cursorUpperBoundQuery: SelectQuery
-        get() =
-            SelectQuery(
-                """
-            SELECT CASE 
-                WHEN pg_is_in_recovery() 
-                THEN txid_snapshot_xmin(txid_current_snapshot()) 
-                ELSE txid_current() 
-            END AS current_xmin
-            """
-                    .trimIndent()
-                    .replace("\n", " "),
-                listOf(EmittedField("current_xmin", LongFieldType)),
-                emptyList()
-            )
+        get() = xminCursorUpperBoundQuery
 }
 
 class PostgresSourceJdbcUnsplittableSnapshotWithCursorPartition(
@@ -359,20 +361,7 @@ class PostgresSourceJdbcSplittableSnapshotWithXminPartition(
             }
 
     override val cursorUpperBoundQuery: SelectQuery
-        get() =
-            SelectQuery(
-                """
-            SELECT CASE 
-                WHEN pg_is_in_recovery() 
-                THEN txid_snapshot_xmin(txid_current_snapshot()) 
-                ELSE txid_current() 
-            END AS current_xmin
-            """
-                    .trimIndent()
-                    .replace("\n", " "),
-                listOf(EmittedField("current_xmin", LongFieldType)),
-                emptyList()
-            )
+        get() = xminCursorUpperBoundQuery
 
     override fun incompleteState(lastRecord: SelectQuerier.ResultRow): OpaqueStateValue =
         PostgresSourceJdbcStreamStateValue.snapshotWithXminCheckpoint(
