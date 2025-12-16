@@ -2,7 +2,7 @@ data:
   connectorSubtype: api
   connectorType: source
   definitionId: f39208dc-7e1c-48b8-919b-5006360cc27f
-  dockerImageTag: 0.1.39
+  dockerImageTag: 0.1.40
   dockerRepository: airbyte/source-commcare
   githubIssueLabel: source-commcare
   icon: commcare.svg
@@ -29,7 +29,7 @@ data:
   connectorTestSuitesOptions:
     - suite: unitTests
   connectorBuildOptions:
-    baseImage: docker.io/airbyte/python-connector-base:4.0.0@sha256:d9894b6895923b379f3006fa251147806919c62b7d9021b5cd125bb67d7bbe22
+    baseImage: docker.io/airbyte/python-connector-base:4.1.0@sha256:1d1aa21d34e851df4e8a87b391c27724c06e2597608e7161f4d167be853bd7b6
   externalDocumentationUrls:
     - title: CommCare API reference
       url: https://confluence.dimagi.com/display/commcarepublic/CommCare+HQ+APIs
