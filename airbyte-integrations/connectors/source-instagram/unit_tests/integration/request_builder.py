@@ -6,7 +6,7 @@ from __future__ import annotations
 from typing import List, Optional, Union
 
 from airbyte_cdk.connector_builder.connector_builder_handler import resolve_manifest
-from airbyte_cdk.test.mock_http.request import HttpRequest
+from airbyte_cdk.test.mock_http.request import ANY_QUERY_PARAMS, HttpRequest
 
 from ..conftest import get_source
 from .config import ACCOUNTS_FIELDS
@@ -79,6 +79,14 @@ class RequestBuilder:
         if with_format and isinstance(value, List):
             value = self._get_formatted_fields(value)
         self._query_params[param] = value
+        return self
+
+    def with_any_query_params(self) -> RequestBuilder:
+        """Set query params to ANY_QUERY_PARAMS to match any query parameters.
+
+        This is useful for streams with dynamic query parameters like datetime cursors.
+        """
+        self._query_params = ANY_QUERY_PARAMS
         return self
 
     @staticmethod

@@ -1,0 +1,9 @@
+{
+  "error": {
+    "message": "Invalid parameter",
+    "type": "OAuthException",
+    "code": 100,
+    "error_subcode": 2108006,
+    "fbtrace_id": "ABC123"
+  }
+}

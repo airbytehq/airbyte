@@ -156,3 +156,5 @@ class TestFullRefresh(TestCase):
         assert output.records[0].record.data["id"]
         for metric in _METRICS:
             assert metric in output.records[0].record.data
+        # For IGNORE handlers, verify no ERROR logs are produced
+        assert not any(log.log.level == "ERROR" for log in output.logs)

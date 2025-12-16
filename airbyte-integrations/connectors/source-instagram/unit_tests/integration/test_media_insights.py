@@ -267,6 +267,8 @@ class TestFullRefresh(TestCase):
         assert output.records[0].record.data["id"]
         for metric in _METRICS[MEDIA_ID_GENERAL_MEDIA]:
             assert metric in output.records[0].record.data
+        # For IGNORE handlers, verify no ERROR logs are produced
+        assert not any(log.log.level == "ERROR" for log in output.logs)
 
     @HttpMocker()
     def test_instagram_insights_error_posted_before_business(self, http_mocker: HttpMocker) -> None:
@@ -298,6 +300,8 @@ class TestFullRefresh(TestCase):
         assert output.records[0].record.data["id"]
         for metric in _METRICS[MEDIA_ID_GENERAL_MEDIA]:
             assert metric in output.records[0].record.data
+        # For IGNORE handlers, verify no ERROR logs are produced
+        assert not any(log.log.level == "ERROR" for log in output.logs)
 
     @HttpMocker()
     def test_instagram_insights_error_with_wrong_permissions(self, http_mocker: HttpMocker) -> None:
@@ -330,6 +334,8 @@ class TestFullRefresh(TestCase):
         assert output.records[0].record.data["id"]
         for metric in _METRICS[MEDIA_ID_GENERAL_MEDIA]:
             assert metric in output.records[0].record.data
+        # For IGNORE handlers, verify no ERROR logs are produced
+        assert not any(log.log.level == "ERROR" for log in output.logs)
 
     @HttpMocker()
     def test_instagram_insights_error_with_wrong_permissions_code_10(self, http_mocker: HttpMocker) -> None:
@@ -362,3 +368,5 @@ class TestFullRefresh(TestCase):
         assert output.records[0].record.data["id"]
         for metric in _METRICS[MEDIA_ID_GENERAL_MEDIA]:
             assert metric in output.records[0].record.data
+        # For IGNORE handlers, verify no ERROR logs are produced
+        assert not any(log.log.level == "ERROR" for log in output.logs)

@@ -1,0 +1,9 @@
+{
+  "error": {
+    "message": "Unsupported get request",
+    "type": "OAuthException",
+    "code": 100,
+    "error_subcode": 33,
+    "fbtrace_id": "DEF456"
+  }
+}

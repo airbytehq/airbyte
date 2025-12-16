@@ -1,0 +1,17 @@
+{
+  "data": [
+    {
+      "name": "reach",
+      "period": "days_28",
+      "values": [
+        {
+          "value": 15000,
+          "end_time": "2024-01-15T07:00:00+0000"
+        }
+      ],
+      "title": "Reach",
+      "description": "Total reach for the last 28 days",
+      "id": "222222222222222/insights/reach/days_28"
+    }
+  ]
+}

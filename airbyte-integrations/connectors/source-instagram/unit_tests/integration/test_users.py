@@ -80,3 +80,6 @@ class TestFullRefresh(TestCase):
 
         output = self._read(config_=config())
         assert len(output.records) == 1
+        # Verify transformation: page_id field is added from partition
+        assert "page_id" in output.records[0].record.data
+        assert output.records[0].record.data["page_id"] is not None
