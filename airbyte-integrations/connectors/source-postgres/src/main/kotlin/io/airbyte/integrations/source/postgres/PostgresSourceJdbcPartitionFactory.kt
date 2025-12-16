@@ -44,7 +44,6 @@ import jakarta.inject.Singleton
 import java.util.concurrent.ConcurrentHashMap
 import java.util.concurrent.atomic.AtomicLong
 
-
 @Primary
 @Singleton
 open class PostgresSourceJdbcPartitionFactory(
@@ -98,11 +97,15 @@ open class PostgresSourceJdbcPartitionFactory(
                         null,
                         null,
                         filenode,
-                        true)
-                } ?: PostgresSourceJdbcUnsplittableSnapshotWithXminPartition( // TODO: check here if views can ever be xmin
-                    selectQueryGenerator,
-                    streamState,
-                )
+                        true
+                    )
+                }
+                    ?: PostgresSourceJdbcUnsplittableSnapshotWithXminPartition( // TODO: check here
+                        // if views can ever
+                        // be xmin
+                        selectQueryGenerator,
+                        streamState,
+                    )
             }
             is UserDefinedCursorIncrementalConfiguration -> {
                 val cursorChosenFromCatalog: DataField =
@@ -124,7 +127,6 @@ open class PostgresSourceJdbcPartitionFactory(
                         streamState,
                         cursorChosenFromCatalog,
                     )
-
             }
             else -> TODO("CDC Incremental is not supported yet")
         }
@@ -157,9 +159,7 @@ open class PostgresSourceJdbcPartitionFactory(
             return coldStart(streamState, filenode)
         }
 
-        val sv: PostgresSourceJdbcStreamStateValue by lazy {
-            streamState.stateValue!!
-        }
+        val sv: PostgresSourceJdbcStreamStateValue by lazy { streamState.stateValue!! }
 
         when (config.incrementalConfiguration) {
             is UserDefinedCursorIncrementalConfiguration -> {
@@ -187,7 +187,9 @@ open class PostgresSourceJdbcPartitionFactory(
                         null
                     } else {
                         // Snapshot ongoing
-                        if (fileNodeChange != FILENODE_NO_CHANGE) { // TODO: need other values? new stream
+                        if (
+                            fileNodeChange != FILENODE_NO_CHANGE
+                        ) { // TODO: need other values? new stream
                             handler.accept(InvalidPrimaryKey(stream.id, listOf(ctidField.id)))
                             streamState.reset()
                             coldStart(streamState, filenode)
@@ -206,12 +208,12 @@ open class PostgresSourceJdbcPartitionFactory(
                     val (cursor: DataField, cursorCheckpoint: JsonNode) = cursorPair
                     if (
                         !isCursorBasedIncremental ||
-                        fileNodeChange !in
-                        listOf(
-                            FILENODE_NO_CHANGE,
-                            NO_FILENODE,
-                            FILENODE_NEW_STREAM,
-                        )
+                            fileNodeChange !in
+                                listOf(
+                                    FILENODE_NO_CHANGE,
+                                    NO_FILENODE,
+                                    FILENODE_NEW_STREAM,
+                                )
                     ) {
                         handler.accept(ResetStream(stream.id))
                         streamState.reset()
@@ -275,7 +277,6 @@ open class PostgresSourceJdbcPartitionFactory(
                                 true
                             )
                         }
-
                     }
                     ConfiguredSyncMode.INCREMENTAL -> {
                         if (fileNodeChange in listOf(FILENODE_CHANGED)) {
@@ -307,14 +308,15 @@ open class PostgresSourceJdbcPartitionFactory(
                                     xminUpperBound = streamState.cursorUpperBound,
                                 )
                             }
-                            ?: throw ConfigErrorException("Unexpected incremetal sync for a table ${stream.id} with no filenode.")
+                                ?: throw ConfigErrorException(
+                                    "Unexpected incremetal sync for a table ${stream.id} with no filenode."
+                                )
                         }
                     }
                 }
             }
             else -> TODO("Not implemented yet")
         }
-
     }
 
     enum class FilenodeChangeType {
@@ -339,9 +341,12 @@ open class PostgresSourceJdbcPartitionFactory(
             val sql =
                 """SELECT pg_relation_filenode('"${streamState.stream.namespace}"."${streamState.stream.name}"')"""
             val jdbcFieldType: JdbcFieldType<*> = LongFieldType
-            val filenode: Any? = querySingleValue(jdbcConnectionFactory, sql, {
-                rs -> jdbcFieldType.jdbcGetter.get(rs, 1)
-            })
+            val filenode: Any? =
+                querySingleValue(
+                    jdbcConnectionFactory,
+                    sql,
+                    { rs -> jdbcFieldType.jdbcGetter.get(rs, 1) }
+                )
             log.info { "Filenode for stream ${streamState.stream.id}: ${filenode ?: "not found"}" }
             return filenode as? Filenode
         }
@@ -365,10 +370,14 @@ open class PostgresSourceJdbcPartitionFactory(
         fun blockSize(config: JdbcSourceConfiguration): Long {
             if (cachedBlockSize == null) {
                 log.info { "Querying server block size setting." }
-                cachedBlockSize = AtomicLong(querySingleValue(JdbcConnectionFactory(config),
-                    "SELECT current_setting('block_size')::int",
-                    { rs -> rs.getLong(1)
-                }))
+                cachedBlockSize =
+                    AtomicLong(
+                        querySingleValue(
+                            JdbcConnectionFactory(config),
+                            "SELECT current_setting('block_size')::int",
+                            { rs -> rs.getLong(1) }
+                        )
+                    )
                 log.info { "Server block size is $cachedBlockSize." }
             }
             return cachedBlockSize?.get()!!
@@ -418,9 +427,15 @@ open class PostgresSourceJdbcPartitionFactory(
     }
 
     private fun relationSize(stream: Stream): Long {
-        val sql = "SELECT pg_relation_size('${ toQualifiedTableName(stream.namespace, stream.name) }')"
-        return querySingleValue(JdbcConnectionFactory(sharedState.configuration), sql,
-            { rs -> return@querySingleValue rs.getLong(1) })
+        val sql =
+            "SELECT pg_relation_size('${ toQualifiedTableName(stream.namespace, stream.name) }')"
+        return querySingleValue(
+            JdbcConnectionFactory(sharedState.configuration),
+            sql,
+            { rs ->
+                return@querySingleValue rs.getLong(1)
+            }
+        )
     }
 
     override fun split(
@@ -433,24 +448,39 @@ open class PostgresSourceJdbcPartitionFactory(
             }
         }
 
-        // pg_relation_size returns the size of the table on disk, only the data in the main table file
+        // pg_relation_size returns the size of the table on disk, only the data in the main table
+        // file
         // not including indexes or toast data
-        val relationSize =
-            relationSize(unsplitPartition.stream)
+        val relationSize = relationSize(unsplitPartition.stream)
         return when (unsplitPartition) {
             is PostgresSourceJdbcSplittableSnapshotPartition ->
-                unsplitPartition.split(splitPartitionBoundaries.size, splitPartitionBoundaries.first().filenode, relationSize)
+                unsplitPartition.split(
+                    splitPartitionBoundaries.size,
+                    splitPartitionBoundaries.first().filenode,
+                    relationSize
+                )
             is PostgresSourceJdbcSplittableSnapshotWithCursorPartition ->
-                unsplitPartition.split(splitPartitionBoundaries.size, splitPartitionBoundaries.first().filenode, relationSize)
+                unsplitPartition.split(
+                    splitPartitionBoundaries.size,
+                    splitPartitionBoundaries.first().filenode,
+                    relationSize
+                )
             is PostgresSourceJdbcSplittableSnapshotWithXminPartition ->
-                unsplitPartition.split(splitPartitionBoundaries.size, splitPartitionBoundaries.first().filenode, relationSize)
+                unsplitPartition.split(
+                    splitPartitionBoundaries.size,
+                    splitPartitionBoundaries.first().filenode,
+                    relationSize
+                )
             // TODO: implement split for cursor incremental partition
             else -> listOf(unsplitPartition)
         }
     }
 
-    /** Given table size and a starting point lower bound, the function will return a list of (lowerBound, upperBound) pairs for each
-     * partition. This is done by calculating the theoretical last page of the table (table size / block size), then dividing the range to get to the desired number of partitions.
+    /**
+     * Given table size and a starting point lower bound, the function will return a list of
+     * (lowerBound, upperBound) pairs for each partition. This is done by calculating the
+     * theoretical last page of the table (table size / block size), then dividing the range to get
+     * to the desired number of partitions.
      */
     internal fun computePartitionBounds(
         lowerBound: JsonNode?,
@@ -460,15 +490,18 @@ open class PostgresSourceJdbcPartitionFactory(
     ): List<Pair<Ctid?, Ctid?>> {
         val theoreticalLastPage: Long = relationSize / blockSize
         log.info { "Theoretical last page: $theoreticalLastPage" }
-        val lowerBoundCtid: Ctid = lowerBound?.let {
-            if (it.isNull.not() && it.asText().isEmpty().not()) {
-                Ctid.of(it.asText())
-            } else null
-        } ?: Ctid.ZERO
-        val eachStep: Long = ((theoreticalLastPage - lowerBoundCtid.page) / numPartitions).coerceAtLeast(1)
-        val lbs: List<Ctid?> = listOf(lowerBoundCtid) + (1..< numPartitions).map {
-            Ctid(lowerBoundCtid.page + eachStep * it, 1)
-        }
+        val lowerBoundCtid: Ctid =
+            lowerBound?.let {
+                if (it.isNull.not() && it.asText().isEmpty().not()) {
+                    Ctid.of(it.asText())
+                } else null
+            }
+                ?: Ctid.ZERO
+        val eachStep: Long =
+            ((theoreticalLastPage - lowerBoundCtid.page) / numPartitions).coerceAtLeast(1)
+        val lbs: List<Ctid?> =
+            listOf(lowerBoundCtid) +
+                (1 until numPartitions).map { Ctid(lowerBoundCtid.page + eachStep * it, 1) }
         val ubs: List<Ctid?> = lbs.drop(1) + listOf(null)
 
         return lbs.zip(ubs)
@@ -479,7 +512,8 @@ open class PostgresSourceJdbcPartitionFactory(
         filenode: Filenode?,
         relationSize: Long,
     ): List<PostgresSourceJdbcSplittableSnapshotPartition> {
-        val bounds = computePartitionBounds(lowerBound, numPartitions, relationSize, blockSize(config))
+        val bounds =
+            computePartitionBounds(lowerBound, numPartitions, relationSize, blockSize(config))
 
         return bounds.mapIndexed { index, (lowerBound, upperBound) ->
             PostgresSourceJdbcSplittableSnapshotPartition(
@@ -499,7 +533,8 @@ open class PostgresSourceJdbcPartitionFactory(
         filenode: Filenode?,
         relationSize: Long,
     ): List<PostgresSourceJdbcSplittableSnapshotWithCursorPartition> {
-        val bounds = computePartitionBounds(lowerBound, numPartitions, relationSize, blockSize(config))
+        val bounds =
+            computePartitionBounds(lowerBound, numPartitions, relationSize, blockSize(config))
 
         return bounds.mapIndexed { index, (lowerBound, upperBound) ->
             PostgresSourceJdbcSplittableSnapshotWithCursorPartition(
@@ -521,7 +556,8 @@ open class PostgresSourceJdbcPartitionFactory(
         filenode: Filenode?,
         relationSize: Long,
     ): List<PostgresSourceJdbcSplittableSnapshotWithXminPartition> {
-        val bounds = computePartitionBounds(lowerBound, numPartitions, relationSize, blockSize(config))
+        val bounds =
+            computePartitionBounds(lowerBound, numPartitions, relationSize, blockSize(config))
         return bounds.mapIndexed { index, (lowerBound, upperBound) ->
             PostgresSourceJdbcSplittableSnapshotWithXminPartition(
                 selectQueryGenerator,
@@ -534,5 +570,4 @@ open class PostgresSourceJdbcPartitionFactory(
             )
         }
     }
-
 }
