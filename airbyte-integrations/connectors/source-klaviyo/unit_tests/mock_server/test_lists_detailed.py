@@ -12,9 +12,9 @@ from airbyte_cdk.test.catalog_builder import CatalogBuilder
 from airbyte_cdk.test.entrypoint_wrapper import read
 from airbyte_cdk.test.mock_http import HttpMocker, HttpResponse
 from airbyte_cdk.test.state_builder import StateBuilder
-from integration.config import ConfigBuilder
-from integration.request_builder import KlaviyoRequestBuilder
-from integration.response_builder import KlaviyoPaginatedResponseBuilder
+from mock_server.config import ConfigBuilder
+from mock_server.request_builder import KlaviyoRequestBuilder
+from mock_server.response_builder import KlaviyoPaginatedResponseBuilder
 
 
 _NOW = datetime(2024, 6, 1, 12, 0, 0, tzinfo=timezone.utc)
