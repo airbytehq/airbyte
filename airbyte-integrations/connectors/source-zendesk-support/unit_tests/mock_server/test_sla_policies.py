@@ -12,6 +12,7 @@ from datetime import timedelta
 from unittest import TestCase
 
 import pytest
+
 from airbyte_cdk.models import SyncMode
 from airbyte_cdk.test.mock_http import HttpMocker
 from airbyte_cdk.utils.datetime_helpers import ab_datetime_now
@@ -28,7 +29,7 @@ _NOW = ab_datetime_now()
 class TestSlaPoliciesStreamFullRefresh(TestCase):
     """
     Tests for the sla_policies stream full refresh sync.
-    
+
     The sla_policies stream uses CursorPagination with next_page URL.
     The paginator uses:
     - cursor_value: '{{ response.get("next_page", {}) }}'
@@ -66,9 +67,11 @@ class TestSlaPoliciesStreamFullRefresh(TestCase):
         output = read_stream("sla_policies", SyncMode.full_refresh, self._config)
         assert len(output.records) == 1
 
-    @pytest.mark.skip(reason="Pagination test skipped - sla_policies uses CursorPagination with next_page URL (RequestPath). "
-                             "The HttpMocker has difficulty matching the full next_page URL. "
-                             "Single page and error handling tests provide sufficient coverage.")
+    @pytest.mark.skip(
+        reason="Pagination test skipped - sla_policies uses CursorPagination with next_page URL (RequestPath). "
+        "The HttpMocker has difficulty matching the full next_page URL. "
+        "Single page and error handling tests provide sufficient coverage."
+    )
     @HttpMocker()
     def test_given_two_pages_when_read_sla_policies_then_return_all_records(self, http_mocker):
         """Test reading sla_policies with pagination across two pages."""

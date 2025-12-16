@@ -34,6 +34,7 @@ from .utils import http_request_to_str
 
 # Pagination Strategies
 
+
 class CursorBasedPaginationStrategy(PaginationStrategy):
     """Pagination strategy for cursor-based pagination with links.next."""
 
@@ -75,6 +76,7 @@ class EndOfStreamPaginationStrategy(PaginationStrategy):
 
 # Base Record Builder
 
+
 class ZendeskSupportRecordBuilder(RecordBuilder):
     """Base record builder for Zendesk Support records."""
 
@@ -84,6 +86,7 @@ class ZendeskSupportRecordBuilder(RecordBuilder):
 
 
 # Per-Stream Record Builders
+
 
 class TagsRecordBuilder(ZendeskSupportRecordBuilder):
     @classmethod
@@ -272,6 +275,7 @@ class PostCommentVotesRecordBuilder(ZendeskSupportRecordBuilder):
 
 # Error Response Builder
 
+
 class ErrorResponseBuilder:
     """Builder for error responses."""
 
@@ -287,6 +291,7 @@ class ErrorResponseBuilder:
 
 
 # Response Builders for each stream
+
 
 class TagsResponseBuilder(HttpResponseBuilder):
     @classmethod
@@ -448,7 +453,9 @@ class PostVotesResponseBuilder(HttpResponseBuilder):
 
 class PostCommentVotesResponseBuilder(HttpResponseBuilder):
     @classmethod
-    def post_comment_votes_response(cls, request_without_cursor_for_pagination: Optional[HttpRequest] = None) -> "PostCommentVotesResponseBuilder":
+    def post_comment_votes_response(
+        cls, request_without_cursor_for_pagination: Optional[HttpRequest] = None
+    ) -> "PostCommentVotesResponseBuilder":
         return cls(
             find_template("post_comment_votes", __file__),
             FieldPath("votes"),

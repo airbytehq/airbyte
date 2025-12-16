@@ -39,7 +39,10 @@ class TestUserIdentitiesStream(TestCase):
         config = self._config().with_start_date(_START_DATE).build()
         api_token_authenticator = self._get_authenticator(config)
         http_mocker.get(
-            ZendeskSupportRequestBuilder.users_endpoint(api_token_authenticator).with_include("identities").with_start_time(_START_DATE).build(),
+            ZendeskSupportRequestBuilder.users_endpoint(api_token_authenticator)
+            .with_include("identities")
+            .with_start_time(_START_DATE)
+            .build(),
             UsersResponseBuilder.identities_response()
             .with_record(UsersRecordBuilder.record())
             .with_record(UsersRecordBuilder.record())
@@ -55,8 +58,13 @@ class TestUserIdentitiesStream(TestCase):
         config = self._config().with_start_date(_START_DATE).build()
         api_token_authenticator = self._get_authenticator(config)
         http_mocker.get(
-            ZendeskSupportRequestBuilder.users_endpoint(api_token_authenticator).with_include("identities").with_start_time(_START_DATE).build(),
-            UsersResponseBuilder.identities_response(ZendeskSupportRequestBuilder.users_endpoint(api_token_authenticator).build(), _A_CURSOR)
+            ZendeskSupportRequestBuilder.users_endpoint(api_token_authenticator)
+            .with_include("identities")
+            .with_start_time(_START_DATE)
+            .build(),
+            UsersResponseBuilder.identities_response(
+                ZendeskSupportRequestBuilder.users_endpoint(api_token_authenticator).build(), _A_CURSOR
+            )
             .with_record(UsersRecordBuilder.record())
             .with_record(UsersRecordBuilder.record())
             .with_pagination()
@@ -77,7 +85,10 @@ class TestUserIdentitiesStream(TestCase):
         api_token_authenticator = self._get_authenticator(config)
         most_recent_cursor_value = _START_DATE.add(timedelta(days=2))
         http_mocker.get(
-            ZendeskSupportRequestBuilder.users_endpoint(api_token_authenticator).with_include("identities").with_start_time(_START_DATE).build(),
+            ZendeskSupportRequestBuilder.users_endpoint(api_token_authenticator)
+            .with_include("identities")
+            .with_start_time(_START_DATE)
+            .build(),
             UsersResponseBuilder.identities_response()
             .with_record(UsersRecordBuilder.record().with_cursor(datetime_to_string(most_recent_cursor_value)))
             .build(),
@@ -93,7 +104,10 @@ class TestUserIdentitiesStream(TestCase):
         api_token_authenticator = self._get_authenticator(config)
         state_cursor_value = _START_DATE.add(timedelta(days=2))
         http_mocker.get(
-            ZendeskSupportRequestBuilder.users_endpoint(api_token_authenticator).with_include("identities").with_start_time(state_cursor_value).build(),
+            ZendeskSupportRequestBuilder.users_endpoint(api_token_authenticator)
+            .with_include("identities")
+            .with_start_time(state_cursor_value)
+            .build(),
             UsersResponseBuilder.identities_response().with_record(UsersRecordBuilder.record()).build(),
         )
 

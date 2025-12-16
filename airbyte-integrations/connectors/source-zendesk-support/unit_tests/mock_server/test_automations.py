@@ -60,7 +60,9 @@ class TestAutomationsStreamFullRefresh(TestCase):
 
         http_mocker.get(
             self._base_automations_request(api_token_authenticator).with_after_cursor("after-cursor").build(),
-            AutomationsResponseBuilder.automations_response().with_record(AutomationsRecordBuilder.automations_record().with_id(67890)).build(),
+            AutomationsResponseBuilder.automations_response()
+            .with_record(AutomationsRecordBuilder.automations_record().with_id(67890))
+            .build(),
         )
 
         output = read_stream("automations", SyncMode.full_refresh, self._config)
