@@ -2253,6 +2253,8 @@ definitions:
       type: SimpleRetriever
       requester:
         $ref: "#/definitions/requester"
+        request_parameters:
+          filtering: '{"gmv_max_promotion_types": ["PRODUCT_GMV_MAX"]}'
       record_selector:
         $ref: "#/definitions/record_selector"
       paginator:
@@ -2265,10 +2267,12 @@ definitions:
     requester:
       $ref: "#/definitions/requester"
       request_parameters:
+        store_ids: '["{{ config.store_id }}"]'
         dimensions: '["campaign_id", "stat_time_day"]'
-        metrics: '["spend", "impressions", "clicks", "conversion", "complete_payment", "onsite_shopping", "value_per_complete_payment", "total_onsite_shopping_value", "cpc", "cpm", "ctr", "total_complete_payment_rate"]'
+        metrics: '["cost", "net_cost", "orders", "cost_per_order", "gross_revenue", "roi", "campaign_name", "operation_status", "bid_type"]'
         start_date: "{{ stream_interval['start_time'] }}"
         end_date: "{{ stream_interval['end_time'] }}"
+        filtering: '{"gmv_max_promotion_types": ["PRODUCT_GMV_MAX"]}'
       authenticator:
         $ref: "#/definitions/authenticator"
       request_body_json: {}
@@ -2395,63 +2399,48 @@ definitions:
             - "null"
             - object
           properties:
-            spend:
-              description: Amount of money spent.
+            cost:
+              description: Total cost/spend for the campaign.
               type:
                 - "null"
                 - string
-            impressions:
-              description: Number of times the advertisement is viewed.
+            net_cost:
+              description: Net cost after deductions.
               type:
                 - "null"
                 - string
-            clicks:
-              description: The number of clicks on the advertisement.
+            orders:
+              description: Number of orders generated.
               type:
                 - "null"
                 - string
-            cpc:
-              description: Cost per click.
+            cost_per_order:
+              description: Average cost per order.
               type:
                 - "null"
                 - string
-            cpm:
-              description: Cost per thousand impressions.
+            gross_revenue:
+              description: Total gross revenue generated.
               type:
                 - "null"
                 - string
-            ctr:
-              description: Click-through rate.
+            roi:
+              description: Return on investment.
               type:
                 - "null"
                 - string
-            conversion:
-              description: The number of conversions.
+            campaign_name:
+              description: Name of the campaign.
               type:
                 - "null"
                 - string
-            complete_payment:
-              description: Number of completed payments.
+            operation_status:
+              description: Current operation status of the campaign.
               type:
                 - "null"
                 - string
-            onsite_shopping:
-              description: Number of onsite shopping events.
-              type:
-                - "null"
-                - string
-            value_per_complete_payment:
-              description: Average value per completed payment.
-              type:
-                - "null"
-                - string
-            total_onsite_shopping_value:
-              description: Total value of onsite shopping.
-              type:
-                - "null"
-                - string
-            total_complete_payment_rate:
-              description: Rate of completed payments.
+            bid_type:
+              description: The bid type used for the campaign.
               type:
                 - "null"
                 - string
@@ -6072,6 +6061,11 @@ spec:
         default: false
         order: 4
         type: boolean
+      store_id:
+        title: TikTok Shop Store ID
+        description: The TikTok Shop Store ID for GMV Max campaign reporting. Required for syncing GMV Max campaign data.
+        order: 5
+        type: string
   advanced_auth:
     auth_flow_type: oauth2.0
     predicate_key:
