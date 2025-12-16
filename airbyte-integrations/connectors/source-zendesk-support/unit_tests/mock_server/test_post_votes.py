@@ -82,9 +82,7 @@ class TestPostsVotesStreamFullRefresh(TestCase):
             .with_start_time(self._config["start_date"])
             .with_page_size(100)
             .build(),
-            PostVotesResponseBuilder.posts_votes_response()
-            .with_record(PostVotesRecordBuilder.posts_votes_record().with_id(3001))
-            .build(),
+            PostVotesResponseBuilder.posts_votes_response().with_record(PostVotesRecordBuilder.posts_votes_record().with_id(3001)).build(),
         )
 
         # Mock child endpoint for post 2
@@ -93,9 +91,7 @@ class TestPostsVotesStreamFullRefresh(TestCase):
             .with_start_time(self._config["start_date"])
             .with_page_size(100)
             .build(),
-            PostVotesResponseBuilder.posts_votes_response()
-            .with_record(PostVotesRecordBuilder.posts_votes_record().with_id(3002))
-            .build(),
+            PostVotesResponseBuilder.posts_votes_response().with_record(PostVotesRecordBuilder.posts_votes_record().with_id(3002)).build(),
         )
 
         output = read_stream("post_votes", SyncMode.full_refresh, self._config)
