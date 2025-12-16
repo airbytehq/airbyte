@@ -1,6 +1,10 @@
-# Github
+# Github full reference
 
-## Supported Entities and Actions
+This is the full reference documentation for the Github agent connector.
+
+## Supported entities and actions
+
+The Github connector supports the following entities and actions.
 
 | Entity | Actions |
 |--------|---------|
@@ -23,6 +27,8 @@
 | Stargazers | [List](#stargazers-list) |
 | Viewer | [Get](#viewer-get) |
 | Viewer Repositories | [List](#viewer-repositories-list) |
+| Projects | [List](#projects-list), [Get](#projects-get) |
+| Project Items | [List](#project-items-list) |
 
 ### Repositories
 
@@ -56,7 +62,7 @@ curl --location 'https://api.airbyte.ai/api/v1/connectors/instances/{your_connec
 ```
 
 
-**Params**
+**Parameters**
 
 | Parameter Name | Type | Required | Description |
 |----------------|------|----------|-------------|
@@ -95,7 +101,7 @@ curl --location 'https://api.airbyte.ai/api/v1/connectors/instances/{your_connec
 ```
 
 
-**Params**
+**Parameters**
 
 | Parameter Name | Type | Required | Description |
 |----------------|------|----------|-------------|
@@ -137,15 +143,11 @@ curl --location 'https://api.airbyte.ai/api/v1/connectors/instances/{your_connec
 ```
 
 
-**Params**
+**Parameters**
 
 | Parameter Name | Type | Required | Description |
 |----------------|------|----------|-------------|
-| `query` | `string` | Yes | GitHub repository search query. Examples:
-- "language:python stars:>1000"
-- "topic:machine-learning"
-- "org:facebook is:public"
- |
+| `query` | `string` | Yes | GitHub repository search query using GitHub's search syntax |
 | `limit` | `integer` | No | Number of results to return |
 | `after` | `string` | No | Cursor for pagination (from previous response's endCursor) |
 | `fields` | `array<string>` | No | Optional array of field names to select.
@@ -183,7 +185,7 @@ curl --location 'https://api.airbyte.ai/api/v1/connectors/instances/{your_connec
 ```
 
 
-**Params**
+**Parameters**
 
 | Parameter Name | Type | Required | Description |
 |----------------|------|----------|-------------|
@@ -225,7 +227,7 @@ curl --location 'https://api.airbyte.ai/api/v1/connectors/instances/{your_connec
 ```
 
 
-**Params**
+**Parameters**
 
 | Parameter Name | Type | Required | Description |
 |----------------|------|----------|-------------|
@@ -268,7 +270,7 @@ curl --location 'https://api.airbyte.ai/api/v1/connectors/instances/{your_connec
 ```
 
 
-**Params**
+**Parameters**
 
 | Parameter Name | Type | Required | Description |
 |----------------|------|----------|-------------|
@@ -310,7 +312,7 @@ curl --location 'https://api.airbyte.ai/api/v1/connectors/instances/{your_connec
 ```
 
 
-**Params**
+**Parameters**
 
 | Parameter Name | Type | Required | Description |
 |----------------|------|----------|-------------|
@@ -353,7 +355,7 @@ curl --location 'https://api.airbyte.ai/api/v1/connectors/instances/{your_connec
 ```
 
 
-**Params**
+**Parameters**
 
 | Parameter Name | Type | Required | Description |
 |----------------|------|----------|-------------|
@@ -395,7 +397,7 @@ curl --location 'https://api.airbyte.ai/api/v1/connectors/instances/{your_connec
 ```
 
 
-**Params**
+**Parameters**
 
 | Parameter Name | Type | Required | Description |
 |----------------|------|----------|-------------|
@@ -438,7 +440,7 @@ curl --location 'https://api.airbyte.ai/api/v1/connectors/instances/{your_connec
 ```
 
 
-**Params**
+**Parameters**
 
 | Parameter Name | Type | Required | Description |
 |----------------|------|----------|-------------|
@@ -480,7 +482,7 @@ curl --location 'https://api.airbyte.ai/api/v1/connectors/instances/{your_connec
 ```
 
 
-**Params**
+**Parameters**
 
 | Parameter Name | Type | Required | Description |
 |----------------|------|----------|-------------|
@@ -524,7 +526,7 @@ curl --location 'https://api.airbyte.ai/api/v1/connectors/instances/{your_connec
 ```
 
 
-**Params**
+**Parameters**
 
 | Parameter Name | Type | Required | Description |
 |----------------|------|----------|-------------|
@@ -562,14 +564,11 @@ curl --location 'https://api.airbyte.ai/api/v1/connectors/instances/{your_connec
 ```
 
 
-**Params**
+**Parameters**
 
 | Parameter Name | Type | Required | Description |
 |----------------|------|----------|-------------|
-| `query` | `string` | Yes | GitHub issue search query. Examples:
-- "repo:owner/name is:issue is:open"
-- "repo:owner/name is:issue label:bug"
- |
+| `query` | `string` | Yes | GitHub issue search query using GitHub's search syntax |
 | `per_page` | `integer` | No | The number of results per page |
 | `after` | `string` | No | Cursor for pagination |
 | `fields` | `array<string>` | No | Optional array of field names to select |
@@ -607,7 +606,7 @@ curl --location 'https://api.airbyte.ai/api/v1/connectors/instances/{your_connec
 ```
 
 
-**Params**
+**Parameters**
 
 | Parameter Name | Type | Required | Description |
 |----------------|------|----------|-------------|
@@ -651,7 +650,7 @@ curl --location 'https://api.airbyte.ai/api/v1/connectors/instances/{your_connec
 ```
 
 
-**Params**
+**Parameters**
 
 | Parameter Name | Type | Required | Description |
 |----------------|------|----------|-------------|
@@ -689,14 +688,11 @@ curl --location 'https://api.airbyte.ai/api/v1/connectors/instances/{your_connec
 ```
 
 
-**Params**
+**Parameters**
 
 | Parameter Name | Type | Required | Description |
 |----------------|------|----------|-------------|
-| `query` | `string` | Yes | GitHub PR search query. Examples:
-- "repo:owner/name type:pr is:open"
-- "repo:owner/name type:pr author:username"
- |
+| `query` | `string` | Yes | GitHub pull request search query using GitHub's search syntax |
 | `per_page` | `integer` | No | The number of results per page |
 | `after` | `string` | No | Cursor for pagination |
 | `fields` | `array<string>` | No | Optional array of field names to select |
@@ -736,7 +732,7 @@ curl --location 'https://api.airbyte.ai/api/v1/connectors/instances/{your_connec
 ```
 
 
-**Params**
+**Parameters**
 
 | Parameter Name | Type | Required | Description |
 |----------------|------|----------|-------------|
@@ -782,7 +778,7 @@ curl --location 'https://api.airbyte.ai/api/v1/connectors/instances/{your_connec
 ```
 
 
-**Params**
+**Parameters**
 
 | Parameter Name | Type | Required | Description |
 |----------------|------|----------|-------------|
@@ -827,7 +823,7 @@ curl --location 'https://api.airbyte.ai/api/v1/connectors/instances/{your_connec
 ```
 
 
-**Params**
+**Parameters**
 
 | Parameter Name | Type | Required | Description |
 |----------------|------|----------|-------------|
@@ -869,7 +865,7 @@ curl --location 'https://api.airbyte.ai/api/v1/connectors/instances/{your_connec
 ```
 
 
-**Params**
+**Parameters**
 
 | Parameter Name | Type | Required | Description |
 |----------------|------|----------|-------------|
@@ -914,7 +910,7 @@ curl --location 'https://api.airbyte.ai/api/v1/connectors/instances/{your_connec
 ```
 
 
-**Params**
+**Parameters**
 
 | Parameter Name | Type | Required | Description |
 |----------------|------|----------|-------------|
@@ -954,7 +950,7 @@ curl --location 'https://api.airbyte.ai/api/v1/connectors/instances/{your_connec
 ```
 
 
-**Params**
+**Parameters**
 
 | Parameter Name | Type | Required | Description |
 |----------------|------|----------|-------------|
@@ -997,7 +993,7 @@ curl --location 'https://api.airbyte.ai/api/v1/connectors/instances/{your_connec
 ```
 
 
-**Params**
+**Parameters**
 
 | Parameter Name | Type | Required | Description |
 |----------------|------|----------|-------------|
@@ -1039,7 +1035,7 @@ curl --location 'https://api.airbyte.ai/api/v1/connectors/instances/{your_connec
 ```
 
 
-**Params**
+**Parameters**
 
 | Parameter Name | Type | Required | Description |
 |----------------|------|----------|-------------|
@@ -1083,7 +1079,7 @@ curl --location 'https://api.airbyte.ai/api/v1/connectors/instances/{your_connec
 ```
 
 
-**Params**
+**Parameters**
 
 | Parameter Name | Type | Required | Description |
 |----------------|------|----------|-------------|
@@ -1123,7 +1119,7 @@ curl --location 'https://api.airbyte.ai/api/v1/connectors/instances/{your_connec
 ```
 
 
-**Params**
+**Parameters**
 
 | Parameter Name | Type | Required | Description |
 |----------------|------|----------|-------------|
@@ -1159,7 +1155,7 @@ curl --location 'https://api.airbyte.ai/api/v1/connectors/instances/{your_connec
 ```
 
 
-**Params**
+**Parameters**
 
 | Parameter Name | Type | Required | Description |
 |----------------|------|----------|-------------|
@@ -1199,7 +1195,7 @@ curl --location 'https://api.airbyte.ai/api/v1/connectors/instances/{your_connec
 ```
 
 
-**Params**
+**Parameters**
 
 | Parameter Name | Type | Required | Description |
 |----------------|------|----------|-------------|
@@ -1235,7 +1231,7 @@ curl --location 'https://api.airbyte.ai/api/v1/connectors/instances/{your_connec
 ```
 
 
-**Params**
+**Parameters**
 
 | Parameter Name | Type | Required | Description |
 |----------------|------|----------|-------------|
@@ -1273,14 +1269,11 @@ curl --location 'https://api.airbyte.ai/api/v1/connectors/instances/{your_connec
 ```
 
 
-**Params**
+**Parameters**
 
 | Parameter Name | Type | Required | Description |
 |----------------|------|----------|-------------|
-| `query` | `string` | Yes | GitHub user search query. Examples:
-- "location:san francisco"
-- "followers:>1000"
- |
+| `query` | `string` | Yes | GitHub user search query using GitHub's search syntax |
 | `limit` | `integer` | No | Number of results to return |
 | `after` | `string` | No | Cursor for pagination |
 | `fields` | `array<string>` | No | Optional array of field names to select |
@@ -1316,7 +1309,7 @@ curl --location 'https://api.airbyte.ai/api/v1/connectors/instances/{your_connec
 ```
 
 
-**Params**
+**Parameters**
 
 | Parameter Name | Type | Required | Description |
 |----------------|------|----------|-------------|
@@ -1356,7 +1349,7 @@ curl --location 'https://api.airbyte.ai/api/v1/connectors/instances/{your_connec
 ```
 
 
-**Params**
+**Parameters**
 
 | Parameter Name | Type | Required | Description |
 |----------------|------|----------|-------------|
@@ -1397,7 +1390,7 @@ curl --location 'https://api.airbyte.ai/api/v1/connectors/instances/{your_connec
 ```
 
 
-**Params**
+**Parameters**
 
 | Parameter Name | Type | Required | Description |
 |----------------|------|----------|-------------|
@@ -1440,7 +1433,7 @@ curl --location 'https://api.airbyte.ai/api/v1/connectors/instances/{your_connec
 ```
 
 
-**Params**
+**Parameters**
 
 | Parameter Name | Type | Required | Description |
 |----------------|------|----------|-------------|
@@ -1482,7 +1475,7 @@ curl --location 'https://api.airbyte.ai/api/v1/connectors/instances/{your_connec
 ```
 
 
-**Params**
+**Parameters**
 
 | Parameter Name | Type | Required | Description |
 |----------------|------|----------|-------------|
@@ -1521,7 +1514,7 @@ curl --location 'https://api.airbyte.ai/api/v1/connectors/instances/{your_connec
 ```
 
 
-**Params**
+**Parameters**
 
 | Parameter Name | Type | Required | Description |
 |----------------|------|----------|-------------|
@@ -1556,10 +1549,136 @@ curl --location 'https://api.airbyte.ai/api/v1/connectors/instances/{your_connec
 ```
 
 
-**Params**
+**Parameters**
 
 | Parameter Name | Type | Required | Description |
 |----------------|------|----------|-------------|
+| `per_page` | `integer` | No | The number of results per page |
+| `after` | `string` | No | Cursor for pagination (from previous response's endCursor) |
+| `fields` | `array<string>` | No | Optional array of field names to select |
+
+
+### Projects
+
+#### Projects List
+
+Returns a list of GitHub Projects V2 for the specified organization.
+Projects V2 are the new project boards that replaced classic projects.
+
+
+**Python SDK**
+
+```python
+github.projects.list(
+    org="<str>"
+)
+```
+
+**API**
+
+```bash
+curl --location 'https://api.airbyte.ai/api/v1/connectors/instances/{your_connector_instance_id}/execute' \
+--header 'Content-Type: application/json' \
+--header 'Authorization: Bearer {your_auth_token}' \
+--data '{
+    "entity": "projects",
+    "action": "list",
+    "params": {
+        "org": "<str>"
+    }
+}'
+```
+
+
+**Parameters**
+
+| Parameter Name | Type | Required | Description |
+|----------------|------|----------|-------------|
+| `org` | `string` | Yes | The organization login/username |
+| `per_page` | `integer` | No | The number of results per page |
+| `after` | `string` | No | Cursor for pagination (from previous response's endCursor) |
+| `fields` | `array<string>` | No | Optional array of field names to select |
+
+
+#### Projects Get
+
+Gets information about a specific GitHub Project V2 by number
+
+**Python SDK**
+
+```python
+github.projects.get(
+    org="<str>",
+    project_number=0
+)
+```
+
+**API**
+
+```bash
+curl --location 'https://api.airbyte.ai/api/v1/connectors/instances/{your_connector_instance_id}/execute' \
+--header 'Content-Type: application/json' \
+--header 'Authorization: Bearer {your_auth_token}' \
+--data '{
+    "entity": "projects",
+    "action": "get",
+    "params": {
+        "org": "<str>",
+        "project_number": 0
+    }
+}'
+```
+
+
+**Parameters**
+
+| Parameter Name | Type | Required | Description |
+|----------------|------|----------|-------------|
+| `org` | `string` | Yes | The organization login/username |
+| `project_number` | `integer` | Yes | The project number |
+| `fields` | `array<string>` | No | Optional array of field names to select |
+
+
+### Project Items
+
+#### Project Items List
+
+Returns a list of items (issues, pull requests, draft issues) in a GitHub Project V2.
+Each item includes its field values like Status, Priority, etc.
+
+
+**Python SDK**
+
+```python
+github.project_items.list(
+    org="<str>",
+    project_number=0
+)
+```
+
+**API**
+
+```bash
+curl --location 'https://api.airbyte.ai/api/v1/connectors/instances/{your_connector_instance_id}/execute' \
+--header 'Content-Type: application/json' \
+--header 'Authorization: Bearer {your_auth_token}' \
+--data '{
+    "entity": "project_items",
+    "action": "list",
+    "params": {
+        "org": "<str>",
+        "project_number": 0
+    }
+}'
+```
+
+
+**Parameters**
+
+| Parameter Name | Type | Required | Description |
+|----------------|------|----------|-------------|
+| `org` | `string` | Yes | The organization login/username |
+| `project_number` | `integer` | Yes | The project number |
 | `per_page` | `integer` | No | The number of results per page |
 | `after` | `string` | No | Cursor for pagination (from previous response's endCursor) |
 | `fields` | `array<string>` | No | Optional array of field names to select |
@@ -1569,7 +1688,7 @@ curl --location 'https://api.airbyte.ai/api/v1/connectors/instances/{your_connec
 
 ## Authentication
 
-The Github connector supports the following authentication methods:
+The Github connector supports the following authentication methods.
 
 
 ### GitHub OAuth 2.0
