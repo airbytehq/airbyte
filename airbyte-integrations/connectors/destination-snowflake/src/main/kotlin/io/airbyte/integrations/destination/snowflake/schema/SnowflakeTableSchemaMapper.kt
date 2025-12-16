@@ -107,11 +107,9 @@ class SnowflakeTableSchemaMapper(
 
         // For dedupe mode, ensure primary key columns and cursor column (if valid) are non-nullable
         val pks = tableSchema.getPrimaryKey().flatten()
-        val cursor = tableSchema.getCursor().firstOrNull()
 
         val nonNullCols = buildSet {
             addAll(pks) // Primary keys are always non-nullable
-            cursor?.let { add(it) } // Cursor is also non-nullable if it exists
         }
 
         val finalSchema =
