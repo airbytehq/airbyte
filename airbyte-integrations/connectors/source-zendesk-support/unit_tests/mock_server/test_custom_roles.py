@@ -61,9 +61,7 @@ class TestCustomRolesStreamFullRefresh(TestCase):
 
         # Build the next page request using the request builder
         next_page_http_request = (
-            ZendeskSupportRequestBuilder.custom_roles_endpoint(api_token_authenticator)
-            .with_query_param("page", "2")
-            .build()
+            ZendeskSupportRequestBuilder.custom_roles_endpoint(api_token_authenticator).with_query_param("page", "2").build()
         )
 
         # Create records for page 1
@@ -86,9 +84,7 @@ class TestCustomRolesStreamFullRefresh(TestCase):
         # Page 2: has one more record
         http_mocker.get(
             next_page_http_request,
-            CustomRolesResponseBuilder.custom_roles_response()
-            .with_record(record3)
-            .build(),
+            CustomRolesResponseBuilder.custom_roles_response().with_record(record3).build(),
         )
 
         output = read_stream("custom_roles", SyncMode.full_refresh, self._config)

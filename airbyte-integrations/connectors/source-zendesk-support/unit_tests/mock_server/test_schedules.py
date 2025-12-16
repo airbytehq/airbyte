@@ -101,9 +101,7 @@ class TestSchedulesStreamFullRefresh(TestCase):
         # Page 2: has one more record
         http_mocker.get(
             next_page_http_request,
-            SchedulesResponseBuilder.schedules_response()
-            .with_record(record3)
-            .build(),
+            SchedulesResponseBuilder.schedules_response().with_record(record3).build(),
         )
 
         output = read_stream("schedules", SyncMode.full_refresh, self._config)

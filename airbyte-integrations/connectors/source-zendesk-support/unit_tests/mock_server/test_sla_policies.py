@@ -75,9 +75,7 @@ class TestSlaPoliciesStreamFullRefresh(TestCase):
 
         # Build the next page request using the request builder
         next_page_http_request = (
-            ZendeskSupportRequestBuilder.sla_policies_endpoint(api_token_authenticator)
-            .with_query_param("page", "2")
-            .build()
+            ZendeskSupportRequestBuilder.sla_policies_endpoint(api_token_authenticator).with_query_param("page", "2").build()
         )
 
         # Create records for page 1
@@ -100,9 +98,7 @@ class TestSlaPoliciesStreamFullRefresh(TestCase):
         # Page 2: has one more record
         http_mocker.get(
             next_page_http_request,
-            SlaPoliciesResponseBuilder.sla_policies_response()
-            .with_record(record3)
-            .build(),
+            SlaPoliciesResponseBuilder.sla_policies_response().with_record(record3).build(),
         )
 
         output = read_stream("sla_policies", SyncMode.full_refresh, self._config)

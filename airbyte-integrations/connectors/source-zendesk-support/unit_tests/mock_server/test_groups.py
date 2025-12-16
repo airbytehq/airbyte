@@ -113,18 +113,27 @@ class TestGroupsStreamPagination(TestCase):
         # Build the next page request using the request builder (same pattern as test_articles.py)
         # The next page request must be different from page 1 to avoid "already mocked" error
         next_page_http_request = (
-            ZendeskSupportRequestBuilder.groups_endpoint(api_token_authenticator)
-            .with_per_page(100)
-            .with_query_param("page", "2")
-            .build()
+            ZendeskSupportRequestBuilder.groups_endpoint(api_token_authenticator).with_per_page(100).with_query_param("page", "2").build()
         )
 
         # Create records for page 1 (with cursor values after start_date)
-        record1 = GroupsRecordBuilder.groups_record().with_id(1001).with_cursor(ab_datetime_now().subtract(timedelta(days=1)).strftime("%Y-%m-%dT%H:%M:%SZ"))
-        record2 = GroupsRecordBuilder.groups_record().with_id(1002).with_cursor(ab_datetime_now().subtract(timedelta(days=2)).strftime("%Y-%m-%dT%H:%M:%SZ"))
+        record1 = (
+            GroupsRecordBuilder.groups_record()
+            .with_id(1001)
+            .with_cursor(ab_datetime_now().subtract(timedelta(days=1)).strftime("%Y-%m-%dT%H:%M:%SZ"))
+        )
+        record2 = (
+            GroupsRecordBuilder.groups_record()
+            .with_id(1002)
+            .with_cursor(ab_datetime_now().subtract(timedelta(days=2)).strftime("%Y-%m-%dT%H:%M:%SZ"))
+        )
 
         # Create record for page 2
-        record3 = GroupsRecordBuilder.groups_record().with_id(1003).with_cursor(ab_datetime_now().subtract(timedelta(days=3)).strftime("%Y-%m-%dT%H:%M:%SZ"))
+        record3 = (
+            GroupsRecordBuilder.groups_record()
+            .with_id(1003)
+            .with_cursor(ab_datetime_now().subtract(timedelta(days=3)).strftime("%Y-%m-%dT%H:%M:%SZ"))
+        )
 
         # Page 1: has records and provides next_page URL (via NextPagePaginationStrategy)
         # Must call .with_pagination() to actually set the next_page field in the response
@@ -140,9 +149,7 @@ class TestGroupsStreamPagination(TestCase):
         # Page 2: empty page (0 records) - triggers stop_condition: last_page_size == 0
         http_mocker.get(
             next_page_http_request,
-            GroupsResponseBuilder.groups_response()
-            .with_record(record3)
-            .build(),
+            GroupsResponseBuilder.groups_response().with_record(record3).build(),
         )
 
         output = read_stream("groups", SyncMode.full_refresh, self._config)
