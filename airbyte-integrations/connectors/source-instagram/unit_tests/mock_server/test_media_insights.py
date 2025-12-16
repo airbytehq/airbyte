@@ -344,6 +344,10 @@ class TestFullRefresh(TestCase):
 
     @HttpMocker()
     def test_instagram_insights_error_posted_before_business(self, http_mocker: HttpMocker) -> None:
+        """Test that error_subcode 2108006 (posted before business conversion) is gracefully ignored.
+
+        Verifies both error code and error message assertion per playbook requirements.
+        """
         test = ERROR_POSTED_BEFORE_BUSINESS
         http_mocker.get(
             get_account_request().build(),
@@ -372,11 +376,18 @@ class TestFullRefresh(TestCase):
         assert output.records[0].record.data["id"]
         for metric in _METRICS[MEDIA_ID_GENERAL_MEDIA]:
             assert metric in output.records[0].record.data
-        # For IGNORE handlers, verify no ERROR logs are produced
         assert not any(log.log.level == "ERROR" for log in output.logs)
+        log_messages = [log.log.message for log in output.logs]
+        assert any("Insights error for business_account_id" in msg for msg in log_messages), (
+            f"Expected 'Insights error for business_account_id' in logs but got: {log_messages}"
+        )
 
     @HttpMocker()
     def test_instagram_insights_error_with_wrong_permissions(self, http_mocker: HttpMocker) -> None:
+        """Test that error code 100 with subcode 33 (wrong permissions) is gracefully ignored.
+
+        Verifies both error code and error message assertion per playbook requirements.
+        """
         test = ERROR_WITH_WRONG_PERMISSIONS
         http_mocker.get(
             get_account_request().build(),
@@ -399,18 +410,24 @@ class TestFullRefresh(TestCase):
         )
 
         output = self._read(config_=config())
-        # error was ignored and correct record was processed
         assert len(output.records) == 1
         assert output.records[0].record.data["page_id"]
         assert output.records[0].record.data["business_account_id"]
         assert output.records[0].record.data["id"]
         for metric in _METRICS[MEDIA_ID_GENERAL_MEDIA]:
             assert metric in output.records[0].record.data
-        # For IGNORE handlers, verify no ERROR logs are produced
         assert not any(log.log.level == "ERROR" for log in output.logs)
+        log_messages = [log.log.message for log in output.logs]
+        assert any("Check provided permissions for" in msg for msg in log_messages), (
+            f"Expected 'Check provided permissions for' in logs but got: {log_messages}"
+        )
 
     @HttpMocker()
     def test_instagram_insights_error_with_wrong_permissions_code_10(self, http_mocker: HttpMocker) -> None:
+        """Test that error code 10 with permission denied message is gracefully ignored.
+
+        Verifies both error code and error message assertion per playbook requirements.
+        """
         test = ERROR_WITH_WRONG_PERMISSIONS_CODE_10
         http_mocker.get(
             get_account_request().build(),
@@ -433,12 +450,14 @@ class TestFullRefresh(TestCase):
         )
 
         output = self._read(config_=config())
-        # error was ignored and correct record was processed
         assert len(output.records) == 1
         assert output.records[0].record.data["page_id"]
         assert output.records[0].record.data["business_account_id"]
         assert output.records[0].record.data["id"]
         for metric in _METRICS[MEDIA_ID_GENERAL_MEDIA]:
             assert metric in output.records[0].record.data
-        # For IGNORE handlers, verify no ERROR logs are produced
         assert not any(log.log.level == "ERROR" for log in output.logs)
+        log_messages = [log.log.message for log in output.logs]
+        assert any("Check provided permissions for" in msg for msg in log_messages), (
+            f"Expected 'Check provided permissions for' in logs but got: {log_messages}"
+        )

@@ -128,6 +128,10 @@ class TestFullRefresh(TestCase):
 
     @HttpMocker()
     def test_instagram_story_insights_for_error_code_30(self, http_mocker: HttpMocker) -> None:
+        """Test that error code 10 is gracefully ignored.
+
+        Verifies both error code and error message assertion per playbook requirements.
+        """
         test = ERROR_10
         http_mocker.get(
             get_account_request().build(),
@@ -149,15 +153,17 @@ class TestFullRefresh(TestCase):
         )
 
         output = self._read(config_=config())
-        # error was ignored and correct record was processed
         assert len(output.records) == 1
         assert output.records[0].record.data["page_id"]
         assert output.records[0].record.data["business_account_id"]
         assert output.records[0].record.data["id"]
         for metric in _METRICS:
             assert metric in output.records[0].record.data
-        # For IGNORE handlers, verify no ERROR logs are produced
         assert not any(log.log.level == "ERROR" for log in output.logs)
+        log_messages = [log.log.message for log in output.logs]
+        assert any("Insights error" in msg for msg in log_messages), (
+            f"Expected 'Insights error' in logs but got: {log_messages}"
+        )
 
     @HttpMocker()
     def test_substream_with_multiple_parent_records(self, http_mocker: HttpMocker) -> None:
