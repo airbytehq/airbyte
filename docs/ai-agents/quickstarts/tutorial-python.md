@@ -23,7 +23,7 @@ The tutorial assumes you have basic knowledge of the following tools, but most s
 
 Before you begin this tutorial, ensure you have the following.
 
-- [Python](https://www.python.org/downloads/) version 3.10 or later
+- [Python](https://www.python.org/downloads/) version 3.13 or later
 - [uv](https://github.com/astral-sh/uv)
 - A [GitHub personal access token](https://github.com/settings/tokens). For this tutorial, a classic token with `repo` scope is sufficient.
 - An [OpenAI API key](https://platform.openai.com/api-keys). This tutorial uses OpenAI, but Pydantic AI supports other LLM providers if you prefer.
@@ -63,12 +63,12 @@ You create `.env` and `uv.lock` files in later steps, so don't worry about them 
 Install the GitHub connector and Pydantic AI. This tutorial uses OpenAI as the LLM provider, but Pydantic AI supports many other providers.
 
 ```bash
-uv add airbyte-ai-github pydantic-ai
+uv add airbyte-agent-github pydantic-ai
 ```
 
 This command installs:
 
-- `airbyte-ai-github`: The Airbyte agent connector for GitHub, which provides type-safe access to GitHub's API.
+- `airbyte-agent-github`: The Airbyte agent connector for GitHub, which provides type-safe access to GitHub's API.
 - `pydantic-ai`: The AI agent framework, which includes support for multiple LLM providers including OpenAI, Anthropic, and Google.
 
 The GitHub connector also includes `python-dotenv`, which you can use to load environment variables from a `.env` file.
@@ -86,8 +86,8 @@ import os
 
 from dotenv import load_dotenv
 from pydantic_ai import Agent
-from airbyte_ai_github import GithubConnector
-from airbyte_ai_github.models import GithubAuthConfig
+from airbyte_agent_github import GithubConnector
+from airbyte_agent_github.models import GithubAuthConfig
 ```
 
 These imports provide:
