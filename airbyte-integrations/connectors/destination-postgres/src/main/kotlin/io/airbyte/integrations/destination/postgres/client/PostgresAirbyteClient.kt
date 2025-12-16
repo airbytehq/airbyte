@@ -4,6 +4,7 @@
 
 package io.airbyte.integrations.destination.postgres.client
 
+import edu.umd.cs.findbugs.annotations.SuppressFBWarnings
 import io.airbyte.cdk.ConfigErrorException
 import io.airbyte.cdk.load.command.DestinationStream
 import io.airbyte.cdk.load.component.ColumnChangeset
@@ -29,6 +30,11 @@ import javax.sql.DataSource
 private val log = KotlinLogging.logger {}
 
 @Singleton
+@SuppressFBWarnings(
+    value = ["SQL_NONCONSTANT_STRING_PASSED_TO_EXECUTE"],
+    justification =
+        "There is little chance of SQL injection. There is also little need for statement reuse. The basic statement is more readable than the prepared statement."
+)
 class PostgresAirbyteClient(
     private val dataSource: DataSource,
     private val sqlGenerator: PostgresDirectLoadSqlGenerator,
