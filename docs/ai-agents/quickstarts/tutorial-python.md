@@ -3,7 +3,7 @@ sidebar_label: "Python SDK tutorial"
 sidebar_position: 1
 ---
 
-# Agent connector tutorial: Python&nbsp;SDK
+# Agent connector tutorial: Python SDK
 
 In this tutorial, you'll create a new Python project with uv, add a Pydantic AI agent, equip it to use one of Airbyte's agent connectors, and use natural language to explore your data. This tutorial uses GitHub, but if you don't have a GitHub account, you can use one of Airbyte's other agent connectors and perform different operations.
 
