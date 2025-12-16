@@ -166,7 +166,12 @@ curl --location 'https://api.airbyte.ai/api/v1/connectors/instances/{your_connec
 
 | Parameter Name | Type | Required | Description |
 |----------------|------|----------|-------------|
-| `q` | `string` | Yes | SOSL search query. Format: FIND \{searchTerm\} IN scope RETURNING Object(fields) [LIMIT n]. Examples: `FIND {Acme} IN ALL FIELDS RETURNING Account(Id,Name)`, `FIND {tech*} IN NAME FIELDS RETURNING Account(Id,Name,Industry) LIMIT 50`, `FIND {"exact phrase"} RETURNING Account(Id,Name,Website)` |
+| `q` | `string` | Yes | SOSL search query. Format: FIND \{searchTerm\} IN scope RETURNING Object(fields) [LIMIT n]
+Examples:
+- "FIND \{Acme\} IN ALL FIELDS RETURNING Account(Id,Name)"
+- "FIND \{tech*\} IN NAME FIELDS RETURNING Account(Id,Name,Industry) LIMIT 50"
+- "FIND \{\"exact phrase\"\} RETURNING Account(Id,Name,Website)"
+ |
 
 
 <details>
@@ -329,7 +334,11 @@ curl --location 'https://api.airbyte.ai/api/v1/connectors/instances/{your_connec
 
 | Parameter Name | Type | Required | Description |
 |----------------|------|----------|-------------|
-| `q` | `string` | Yes | SOSL search query. Format: FIND \{searchTerm\} RETURNING Contact(fields) [LIMIT n]. Examples: `FIND {John} IN NAME FIELDS RETURNING Contact(Id,FirstName,LastName,Email)`, `FIND {*@example.com} IN EMAIL FIELDS RETURNING Contact(Id,Name,Email) LIMIT 25` |
+| `q` | `string` | Yes | SOSL search query. Format: FIND \{searchTerm\} RETURNING Contact(fields) [LIMIT n]
+Examples:
+- "FIND \{John\} IN NAME FIELDS RETURNING Contact(Id,FirstName,LastName,Email)"
+- "FIND \{*@example.com\} IN EMAIL FIELDS RETURNING Contact(Id,Name,Email) LIMIT 25"
+ |
 
 
 <details>
@@ -492,7 +501,11 @@ curl --location 'https://api.airbyte.ai/api/v1/connectors/instances/{your_connec
 
 | Parameter Name | Type | Required | Description |
 |----------------|------|----------|-------------|
-| `q` | `string` | Yes | SOSL search query. Format: FIND \{searchTerm\} RETURNING Lead(fields) [LIMIT n]. Examples: `FIND {Smith} IN NAME FIELDS RETURNING Lead(Id,FirstName,LastName,Company,Status)`, `FIND {marketing} IN ALL FIELDS RETURNING Lead(Id,Name,LeadSource) LIMIT 50` |
+| `q` | `string` | Yes | SOSL search query. Format: FIND \{searchTerm\} RETURNING Lead(fields) [LIMIT n]
+Examples:
+- "FIND \{Smith\} IN NAME FIELDS RETURNING Lead(Id,FirstName,LastName,Company,Status)"
+- "FIND \{marketing\} IN ALL FIELDS RETURNING Lead(Id,Name,LeadSource) LIMIT 50"
+ |
 
 
 <details>
@@ -655,7 +668,11 @@ curl --location 'https://api.airbyte.ai/api/v1/connectors/instances/{your_connec
 
 | Parameter Name | Type | Required | Description |
 |----------------|------|----------|-------------|
-| `q` | `string` | Yes | SOSL search query. Format: FIND \{searchTerm\} RETURNING Opportunity(fields) [LIMIT n]. Examples: `FIND {Enterprise} IN NAME FIELDS RETURNING Opportunity(Id,Name,Amount,StageName)`, `FIND {renewal} IN ALL FIELDS RETURNING Opportunity(Id,Name,CloseDate) LIMIT 25` |
+| `q` | `string` | Yes | SOSL search query. Format: FIND \{searchTerm\} RETURNING Opportunity(fields) [LIMIT n]
+Examples:
+- "FIND \{Enterprise\} IN NAME FIELDS RETURNING Opportunity(Id,Name,Amount,StageName)"
+- "FIND \{renewal\} IN ALL FIELDS RETURNING Opportunity(Id,Name,CloseDate) LIMIT 25"
+ |
 
 
 <details>
@@ -818,7 +835,11 @@ curl --location 'https://api.airbyte.ai/api/v1/connectors/instances/{your_connec
 
 | Parameter Name | Type | Required | Description |
 |----------------|------|----------|-------------|
-| `q` | `string` | Yes | SOSL search query. Format: FIND \{searchTerm\} RETURNING Task(fields) [LIMIT n]. Examples: `FIND {follow up} IN ALL FIELDS RETURNING Task(Id,Subject,Status,Priority)`, `FIND {call} IN NAME FIELDS RETURNING Task(Id,Subject,ActivityDate) LIMIT 50` |
+| `q` | `string` | Yes | SOSL search query. Format: FIND \{searchTerm\} RETURNING Task(fields) [LIMIT n]
+Examples:
+- "FIND \{follow up\} IN ALL FIELDS RETURNING Task(Id,Subject,Status,Priority)"
+- "FIND \{call\} IN NAME FIELDS RETURNING Task(Id,Subject,ActivityDate) LIMIT 50"
+ |
 
 
 <details>
@@ -981,7 +1002,11 @@ curl --location 'https://api.airbyte.ai/api/v1/connectors/instances/{your_connec
 
 | Parameter Name | Type | Required | Description |
 |----------------|------|----------|-------------|
-| `q` | `string` | Yes | SOSL search query. Format: FIND \{searchTerm\} RETURNING Event(fields) [LIMIT n]. Examples: `FIND {meeting} IN ALL FIELDS RETURNING Event(Id,Subject,StartDateTime,Location)`, `FIND {demo} IN NAME FIELDS RETURNING Event(Id,Subject,EndDateTime) LIMIT 25` |
+| `q` | `string` | Yes | SOSL search query. Format: FIND \{searchTerm\} RETURNING Event(fields) [LIMIT n]
+Examples:
+- "FIND \{meeting\} IN ALL FIELDS RETURNING Event(Id,Subject,StartDateTime,Location)"
+- "FIND \{demo\} IN NAME FIELDS RETURNING Event(Id,Subject,EndDateTime) LIMIT 25"
+ |
 
 
 <details>
@@ -1144,7 +1169,11 @@ curl --location 'https://api.airbyte.ai/api/v1/connectors/instances/{your_connec
 
 | Parameter Name | Type | Required | Description |
 |----------------|------|----------|-------------|
-| `q` | `string` | Yes | SOSL search query. Format: FIND \{searchTerm\} RETURNING Campaign(fields) [LIMIT n]. Examples: `FIND {webinar} IN ALL FIELDS RETURNING Campaign(Id,Name,Type,Status)`, `FIND {2024} IN NAME FIELDS RETURNING Campaign(Id,Name,StartDate,IsActive) LIMIT 50` |
+| `q` | `string` | Yes | SOSL search query. Format: FIND \{searchTerm\} RETURNING Campaign(fields) [LIMIT n]
+Examples:
+- "FIND \{webinar\} IN ALL FIELDS RETURNING Campaign(Id,Name,Type,Status)"
+- "FIND \{2024\} IN NAME FIELDS RETURNING Campaign(Id,Name,StartDate,IsActive) LIMIT 50"
+ |
 
 
 <details>
@@ -1309,7 +1338,11 @@ curl --location 'https://api.airbyte.ai/api/v1/connectors/instances/{your_connec
 
 | Parameter Name | Type | Required | Description |
 |----------------|------|----------|-------------|
-| `q` | `string` | Yes | SOSL search query. Format: FIND \{searchTerm\} RETURNING Case(fields) [LIMIT n]. Examples: `FIND {login issue} IN ALL FIELDS RETURNING Case(Id,CaseNumber,Subject,Status)`, `FIND {urgent} IN NAME FIELDS RETURNING Case(Id,Subject,Priority) LIMIT 25` |
+| `q` | `string` | Yes | SOSL search query. Format: FIND \{searchTerm\} RETURNING Case(fields) [LIMIT n]
+Examples:
+- "FIND \{login issue\} IN ALL FIELDS RETURNING Case(Id,CaseNumber,Subject,Status)"
+- "FIND \{urgent\} IN NAME FIELDS RETURNING Case(Id,Subject,Priority) LIMIT 25"
+ |
 
 
 <details>
@@ -1472,7 +1505,11 @@ curl --location 'https://api.airbyte.ai/api/v1/connectors/instances/{your_connec
 
 | Parameter Name | Type | Required | Description |
 |----------------|------|----------|-------------|
-| `q` | `string` | Yes | SOSL search query. Format: FIND \{searchTerm\} RETURNING Note(fields) [LIMIT n]. Examples: `FIND {important} IN ALL FIELDS RETURNING Note(Id,Title,ParentId)`, `FIND {action items} IN NAME FIELDS RETURNING Note(Id,Title,Body) LIMIT 50` |
+| `q` | `string` | Yes | SOSL search query. Format: FIND \{searchTerm\} RETURNING Note(fields) [LIMIT n]
+Examples:
+- "FIND \{important\} IN ALL FIELDS RETURNING Note(Id,Title,ParentId)"
+- "FIND \{action items\} IN NAME FIELDS RETURNING Note(Id,Title,Body) LIMIT 50"
+ |
 
 
 <details>
