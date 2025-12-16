@@ -5,6 +5,7 @@
 package io.airbyte.integrations.destination.snowflake.check
 
 import io.airbyte.integrations.destination.snowflake.client.SnowflakeAirbyteClient
+import io.airbyte.integrations.destination.snowflake.schema.SnowflakeColumnManager
 import io.airbyte.integrations.destination.snowflake.schema.toSnowflakeCompatibleName
 import io.airbyte.integrations.destination.snowflake.spec.SnowflakeConfiguration
 import io.mockk.coEvery
@@ -29,10 +30,13 @@ internal class SnowflakeCheckerTest {
             every { legacyRawTablesOnly } returns isLegacyRawTablesOnly
         }
 
+        val columnManager: SnowflakeColumnManager = SnowflakeColumnManager(snowflakeConfiguration)
+
         val checker =
             SnowflakeChecker(
                 snowflakeAirbyteClient = snowflakeAirbyteClient,
                 snowflakeConfiguration = snowflakeConfiguration,
+                columnManager = columnManager,
             )
         checker.check()
 
@@ -59,10 +63,13 @@ internal class SnowflakeCheckerTest {
             every { legacyRawTablesOnly } returns isLegacyRawTablesOnly
         }
 
+        val columnManager: SnowflakeColumnManager = SnowflakeColumnManager(snowflakeConfiguration)
+
         val checker =
             SnowflakeChecker(
                 snowflakeAirbyteClient = snowflakeAirbyteClient,
                 snowflakeConfiguration = snowflakeConfiguration,
+                columnManager = columnManager,
             )
 
         assertThrows<IllegalArgumentException> { checker.check() }

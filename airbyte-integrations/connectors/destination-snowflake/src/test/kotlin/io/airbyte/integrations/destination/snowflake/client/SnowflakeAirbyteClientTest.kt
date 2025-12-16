@@ -11,6 +11,7 @@ import io.airbyte.cdk.load.message.Meta.Companion.COLUMN_NAME_AB_GENERATION_ID
 import io.airbyte.cdk.load.message.Meta.Companion.COLUMN_NAME_AB_RAW_ID
 import io.airbyte.cdk.load.schema.model.TableName
 import io.airbyte.cdk.load.table.ColumnNameMapping
+import io.airbyte.integrations.destination.snowflake.schema.SnowflakeColumnManager
 import io.airbyte.integrations.destination.snowflake.schema.toSnowflakeCompatibleName
 import io.airbyte.integrations.destination.snowflake.spec.SnowflakeConfiguration
 import io.airbyte.integrations.destination.snowflake.sql.COUNT_TOTAL_ALIAS
@@ -41,6 +42,7 @@ internal class SnowflakeAirbyteClientTest {
     private lateinit var dataSource: DataSource
     private lateinit var sqlGenerator: SnowflakeDirectLoadSqlGenerator
     private lateinit var snowflakeConfiguration: SnowflakeConfiguration
+    private lateinit var columnManager: SnowflakeColumnManager
 
     @BeforeEach
     fun setup() {
@@ -48,7 +50,9 @@ internal class SnowflakeAirbyteClientTest {
         sqlGenerator = mockk(relaxed = true)
         snowflakeConfiguration =
             mockk(relaxed = true) { every { database } returns "test_database" }
-        client = SnowflakeAirbyteClient(dataSource, sqlGenerator, snowflakeConfiguration)
+        columnManager = mockk(relaxed = true)
+        client =
+            SnowflakeAirbyteClient(dataSource, sqlGenerator, snowflakeConfiguration, columnManager)
     }
 
     @Test
@@ -470,7 +474,7 @@ internal class SnowflakeAirbyteClientTest {
 
         runBlocking {
             client.copyFromStage(tableName, "test.csv.gz", listOf())
-            verify(exactly = 1) { sqlGenerator.copyFromStage(tableName, "test.csv.gz") }
+            verify(exactly = 1) { sqlGenerator.copyFromStage(tableName, "test.csv.gz", listOf()) }
             verify(exactly = 1) { mockConnection.close() }
         }
     }
@@ -538,6 +542,10 @@ internal class SnowflakeAirbyteClientTest {
         every { connection.close() } just Runs
 
         every { dataSource.connection } returns connection
+
+        // Mock the columnManager to return the correct set of meta columns
+        every { columnManager.getMetaColumns() } returns
+            setOf(COLUMN_NAME_AB_RAW_ID.toSnowflakeCompatibleName())
 
         val result = client.getColumnsFromDb(tableName)
 

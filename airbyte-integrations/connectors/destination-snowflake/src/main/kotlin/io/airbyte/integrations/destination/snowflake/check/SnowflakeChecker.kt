@@ -19,6 +19,7 @@ import io.airbyte.cdk.load.schema.model.TableName
 import io.airbyte.cdk.load.schema.model.TableNames
 import io.airbyte.cdk.load.table.ColumnNameMapping
 import io.airbyte.integrations.destination.snowflake.client.SnowflakeAirbyteClient
+import io.airbyte.integrations.destination.snowflake.schema.SnowflakeColumnManager
 import io.airbyte.integrations.destination.snowflake.schema.toSnowflakeCompatibleName
 import io.airbyte.integrations.destination.snowflake.spec.SnowflakeConfiguration
 import io.airbyte.integrations.destination.snowflake.write.load.SnowflakeInsertBuffer
@@ -33,6 +34,7 @@ internal const val CHECK_COLUMN_NAME = "test_key"
 class SnowflakeChecker(
     private val snowflakeAirbyteClient: SnowflakeAirbyteClient,
     private val snowflakeConfiguration: SnowflakeConfiguration,
+    private val columnManager: SnowflakeColumnManager,
 ) : DestinationCheckerV2 {
 
     override fun check() {
@@ -112,6 +114,7 @@ class SnowflakeChecker(
                         snowflakeClient = snowflakeAirbyteClient,
                         snowflakeConfiguration = snowflakeConfiguration,
                         columnSchema = tableSchema.columnSchema,
+                        columnManager = columnManager,
                     )
 
                 snowflakeInsertBuffer.accumulate(data)

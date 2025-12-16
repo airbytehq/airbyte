@@ -24,7 +24,7 @@ interface SnowflakeRecordFormatter {
 class SnowflakeSchemaRecordFormatter(
     val columnSchema: ColumnSchema,
 ) : SnowflakeRecordFormatter {
-    val nonAirbyteKeys =
+    val userColumns =
         columnSchema.finalSchema.keys.filterNot { COLUMN_NAMES.contains(it.lowercase()) }
 
     override fun format(record: Map<String, AirbyteValue>): List<Any> {
@@ -37,7 +37,7 @@ class SnowflakeSchemaRecordFormatter(
         result.add(record[COLUMN_NAME_AB_GENERATION_ID].toCsvValue())
 
         // Add user columns from the final schema
-        nonAirbyteKeys.forEach { columnName -> result.add(record[columnName].toCsvValue()) }
+        userColumns.forEach { columnName -> result.add(record[columnName].toCsvValue()) }
 
         return result
     }

@@ -13,6 +13,7 @@ import io.airbyte.cdk.load.util.Jsons
 import io.airbyte.integrations.destination.snowflake.client.SnowflakeAirbyteClient
 import io.airbyte.integrations.destination.snowflake.client.execute
 import io.airbyte.integrations.destination.snowflake.dataflow.SnowflakeAggregate
+import io.airbyte.integrations.destination.snowflake.schema.SnowflakeColumnManager
 import io.airbyte.integrations.destination.snowflake.spec.SnowflakeConfiguration
 import io.airbyte.integrations.destination.snowflake.sql.SnowflakeDirectLoadSqlGenerator
 import io.airbyte.integrations.destination.snowflake.sql.andLog
@@ -30,6 +31,7 @@ class SnowflakeTestTableOperationsClient(
     private val dataSource: DataSource,
     private val sqlGenerator: SnowflakeDirectLoadSqlGenerator,
     private val snowflakeConfiguration: SnowflakeConfiguration,
+    private val columnManager: SnowflakeColumnManager,
 ) : TestTableOperationsClient {
     override suspend fun dropNamespace(namespace: String) {
         dataSource.execute(
@@ -38,9 +40,13 @@ class SnowflakeTestTableOperationsClient(
     }
 
     override suspend fun insertRecords(table: TableName, records: List<Map<String, AirbyteValue>>) {
-        // For integration tests, we need to create a proper ColumnSchema
-        // We get the column info from describeTable and convert it
-        val columnTypes = client.describeTable(table)
+        // TODO: we should just pass a proper column schema
+        // Since we don't pass in a proper column schema, we have to recreate one here
+        // Fetch the columns and filter out the meta columns so we're just looking at user columns
+        val columnTypes =
+            client.describeTable(table).filterNot {
+                columnManager.getMetaColumns().contains(it.key)
+            }
         val columnSchema =
             io.airbyte.cdk.load.schema.model.ColumnSchema(
                 inputToFinalColumnNames = columnTypes.keys.associateWith { it },
@@ -57,6 +63,7 @@ class SnowflakeTestTableOperationsClient(
                     snowflakeClient = client,
                     snowflakeConfiguration = snowflakeConfiguration,
                     columnSchema = columnSchema,
+                    columnManager = columnManager,
                 )
             )
         records.forEach { a.accept(RecordDTO(it, PartitionKey(""), 0, 0)) }

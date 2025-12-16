@@ -13,22 +13,13 @@ import io.airbyte.cdk.load.component.TableColumns
 import io.airbyte.cdk.load.component.TableOperationsClient
 import io.airbyte.cdk.load.component.TableSchema
 import io.airbyte.cdk.load.component.TableSchemaEvolutionClient
-import io.airbyte.cdk.load.message.Meta.Companion.COLUMN_NAME_AB_EXTRACTED_AT
-import io.airbyte.cdk.load.message.Meta.Companion.COLUMN_NAME_AB_GENERATION_ID
-import io.airbyte.cdk.load.message.Meta.Companion.COLUMN_NAME_AB_LOADED_AT
-import io.airbyte.cdk.load.message.Meta.Companion.COLUMN_NAME_AB_META
-import io.airbyte.cdk.load.message.Meta.Companion.COLUMN_NAME_AB_RAW_ID
-import io.airbyte.cdk.load.message.Meta.Companion.COLUMN_NAME_DATA
 import io.airbyte.cdk.load.schema.model.TableName
 import io.airbyte.cdk.load.table.ColumnNameMapping
 import io.airbyte.cdk.load.util.deserializeToNode
+import io.airbyte.integrations.destination.snowflake.schema.SnowflakeColumnManager
 import io.airbyte.integrations.destination.snowflake.schema.toSnowflakeCompatibleName
 import io.airbyte.integrations.destination.snowflake.spec.SnowflakeConfiguration
 import io.airbyte.integrations.destination.snowflake.sql.COUNT_TOTAL_ALIAS
-import io.airbyte.integrations.destination.snowflake.sql.SNOWFLAKE_AB_EXTRACTED_AT
-import io.airbyte.integrations.destination.snowflake.sql.SNOWFLAKE_AB_GENERATION_ID
-import io.airbyte.integrations.destination.snowflake.sql.SNOWFLAKE_AB_META
-import io.airbyte.integrations.destination.snowflake.sql.SNOWFLAKE_AB_RAW_ID
 import io.airbyte.integrations.destination.snowflake.sql.SnowflakeDirectLoadSqlGenerator
 import io.airbyte.integrations.destination.snowflake.sql.andLog
 import io.airbyte.integrations.destination.snowflake.sql.escapeJsonIdentifier
@@ -49,26 +40,8 @@ class SnowflakeAirbyteClient(
     private val dataSource: DataSource,
     private val sqlGenerator: SnowflakeDirectLoadSqlGenerator,
     private val snowflakeConfiguration: SnowflakeConfiguration,
+    private val columnManager: SnowflakeColumnManager,
 ) : TableOperationsClient, TableSchemaEvolutionClient {
-
-    private val defaultAirbyteColumnNames =
-        setOf(
-            SNOWFLAKE_AB_RAW_ID,
-            SNOWFLAKE_AB_EXTRACTED_AT,
-            SNOWFLAKE_AB_META,
-            SNOWFLAKE_AB_GENERATION_ID
-        )
-
-    // these are not capitalized I guess
-    private val rawAirbyteColumnNames =
-        setOf(
-            COLUMN_NAME_AB_RAW_ID,
-            COLUMN_NAME_AB_EXTRACTED_AT,
-            COLUMN_NAME_AB_META,
-            COLUMN_NAME_AB_GENERATION_ID,
-            COLUMN_NAME_DATA,
-            COLUMN_NAME_AB_LOADED_AT,
-        )
 
     override suspend fun countTable(tableName: TableName): Long? =
         try {
@@ -188,7 +161,7 @@ class SnowflakeAirbyteClient(
         // Get all column names from the mapping (both meta columns and user columns)
         val columnNames = buildSet {
             // Add Airbyte meta columns (using uppercase constants)
-            addAll(defaultAirbyteColumnNames)
+            addAll(columnManager.getMetaColumns())
             // Add user columns from mapping
             addAll(columnNameMapping.values)
         }
@@ -281,10 +254,7 @@ class SnowflakeAirbyteClient(
                         val columnName = escapeJsonIdentifier(rs.getString("name"))
 
                         // Filter out airbyte columns
-                        if (defaultAirbyteColumnNames.contains(columnName)) {
-                            continue
-                        }
-                        if (rawAirbyteColumnNames.contains(columnName)) {
+                        if (columnManager.getMetaColumns().contains(columnName)) {
                             continue
                         }
                         val dataType = rs.getString("type").takeWhile { char -> char != '(' }

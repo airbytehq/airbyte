@@ -12,6 +12,7 @@ import io.airbyte.cdk.load.schema.model.TableName
 import io.airbyte.cdk.load.table.directload.DirectLoadTableExecutionConfig
 import io.airbyte.cdk.load.write.StreamStateStore
 import io.airbyte.integrations.destination.snowflake.client.SnowflakeAirbyteClient
+import io.airbyte.integrations.destination.snowflake.schema.SnowflakeColumnManager
 import io.airbyte.integrations.destination.snowflake.spec.SnowflakeConfiguration
 import io.mockk.every
 import io.mockk.mockk
@@ -39,6 +40,7 @@ internal class SnowflakeAggregateFactoryTest {
         val snowflakeClient = mockk<SnowflakeAirbyteClient>(relaxed = true)
         val snowflakeConfiguration =
             mockk<SnowflakeConfiguration> { every { legacyRawTablesOnly } returns true }
+        val columnManager = SnowflakeColumnManager(snowflakeConfiguration)
 
         val factory =
             SnowflakeAggregateFactory(
@@ -46,6 +48,7 @@ internal class SnowflakeAggregateFactoryTest {
                 streamStateStore = streamStore,
                 snowflakeConfiguration = snowflakeConfiguration,
                 catalog = catalog,
+                columnManager = columnManager,
             )
         val aggregate = factory.create(key)
         assertNotNull(aggregate)
@@ -71,6 +74,7 @@ internal class SnowflakeAggregateFactoryTest {
         val snowflakeClient = mockk<SnowflakeAirbyteClient>(relaxed = true)
         val snowflakeConfiguration =
             mockk<SnowflakeConfiguration> { every { legacyRawTablesOnly } returns false }
+        val columnManager = SnowflakeColumnManager(snowflakeConfiguration)
 
         val factory =
             SnowflakeAggregateFactory(
@@ -78,6 +82,7 @@ internal class SnowflakeAggregateFactoryTest {
                 streamStateStore = streamStore,
                 snowflakeConfiguration = snowflakeConfiguration,
                 catalog = catalog,
+                columnManager = columnManager,
             )
         val aggregate = factory.create(key)
         assertNotNull(aggregate)

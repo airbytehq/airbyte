@@ -9,16 +9,12 @@ import de.siegmar.fastcsv.writer.CsvWriter
 import de.siegmar.fastcsv.writer.LineDelimiter
 import de.siegmar.fastcsv.writer.QuoteStrategies
 import io.airbyte.cdk.load.data.AirbyteValue
-import io.airbyte.cdk.load.message.Meta
 import io.airbyte.cdk.load.schema.model.ColumnSchema
 import io.airbyte.cdk.load.schema.model.TableName
 import io.airbyte.integrations.destination.snowflake.client.SnowflakeAirbyteClient
+import io.airbyte.integrations.destination.snowflake.schema.SnowflakeColumnManager
 import io.airbyte.integrations.destination.snowflake.spec.SnowflakeConfiguration
 import io.airbyte.integrations.destination.snowflake.sql.QUOTE
-import io.airbyte.integrations.destination.snowflake.sql.SNOWFLAKE_AB_EXTRACTED_AT
-import io.airbyte.integrations.destination.snowflake.sql.SNOWFLAKE_AB_GENERATION_ID
-import io.airbyte.integrations.destination.snowflake.sql.SNOWFLAKE_AB_META
-import io.airbyte.integrations.destination.snowflake.sql.SNOWFLAKE_AB_RAW_ID
 import io.github.oshai.kotlinlogging.KotlinLogging
 import java.io.File
 import java.io.OutputStream
@@ -44,6 +40,7 @@ class SnowflakeInsertBuffer(
     private val snowflakeClient: SnowflakeAirbyteClient,
     val snowflakeConfiguration: SnowflakeConfiguration,
     val columnSchema: ColumnSchema,
+    private val columnManager: SnowflakeColumnManager,
     private val flushLimit: Int = DEFAULT_FLUSH_LIMIT,
 ) {
 
@@ -97,28 +94,7 @@ class SnowflakeInsertBuffer(
                 }
                 // Finally, copy the data from the staging table to the final table
                 // Pass column names to ensure correct mapping even after ALTER TABLE operations
-                val columnNames =
-                    if (snowflakeConfiguration.legacyRawTablesOnly) {
-                        // Raw mode has a fixed set of columns (lowercase)
-                        listOf(
-                            Meta.COLUMN_NAME_AB_RAW_ID,
-                            Meta.COLUMN_NAME_AB_EXTRACTED_AT,
-                            Meta.COLUMN_NAME_AB_META,
-                            Meta.COLUMN_NAME_AB_GENERATION_ID,
-                            Meta.COLUMN_NAME_AB_LOADED_AT,
-                            Meta.COLUMN_NAME_DATA,
-                        )
-                    } else {
-                        // Schema mode: meta columns first, then user columns
-                        buildList {
-                            // Meta columns first (in uppercase)
-                            add(SNOWFLAKE_AB_RAW_ID)
-                            add(SNOWFLAKE_AB_EXTRACTED_AT)
-                            add(SNOWFLAKE_AB_META)
-                            add(SNOWFLAKE_AB_GENERATION_ID)
-                            addAll(columnSchema.finalSchema.keys)
-                        }
-                    }
+                val columnNames = columnManager.getTableColumns(columnSchema)
                 snowflakeClient.copyFromStage(tableName, filePath.fileName.toString(), columnNames)
                 logger.info {
                     "Finished insert of $recordCount row(s) into ${tableName.toPrettyString(quote = QUOTE)}."
