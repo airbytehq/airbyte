@@ -31,13 +31,13 @@ for recruiting analytics and talent acquisition insights.
 ## Installation
 
 ```bash
-uv pip install airbyte-agent-greenhouse
+uv pip install airbyte-ai-greenhouse
 ```
 
 ## Usage
 
 ```python
-from airbyte_agent_greenhouse import GreenhouseConnector, GreenhouseAuthConfig
+from airbyte_ai_greenhouse import GreenhouseConnector, GreenhouseAuthConfig
 
 connector = GreenhouseConnector(
   auth_config=GreenhouseAuthConfig(

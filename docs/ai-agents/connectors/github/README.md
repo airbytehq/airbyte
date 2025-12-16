@@ -30,13 +30,13 @@ development workflow analysis and project management insights.
 ## Installation
 
 ```bash
-uv pip install airbyte-agent-github
+uv pip install airbyte-ai-github
 ```
 
 ## Usage
 
 ```python
-from airbyte_agent_github import GithubConnector, GithubAuthConfig
+from airbyte_ai_github import GithubConnector, GithubAuthConfig
 
 connector = GithubConnector(
   auth_config=GithubAuthConfig(

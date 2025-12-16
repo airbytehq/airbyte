@@ -29,13 +29,13 @@ coaching metrics, and library content for sales performance analysis and revenue
 ## Installation
 
 ```bash
-uv pip install airbyte-agent-gong
+uv pip install airbyte-ai-gong
 ```
 
 ## Usage
 
 ```python
-from airbyte_agent_gong import GongConnector, GongAuthConfig
+from airbyte_ai_gong import GongConnector, GongAuthConfig
 
 connector = GongConnector(
   auth_config=GongAuthConfig(

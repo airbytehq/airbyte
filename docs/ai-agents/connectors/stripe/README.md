@@ -29,13 +29,13 @@ access to customers for payment analytics and customer management.
 ## Installation
 
 ```bash
-uv pip install airbyte-agent-stripe
+uv pip install airbyte-ai-stripe
 ```
 
 ## Usage
 
 ```python
-from airbyte_agent_stripe import StripeConnector, StripeAuthConfig
+from airbyte_ai_stripe import StripeConnector, StripeAuthConfig
 
 connector = StripeConnector(
   auth_config=StripeAuthConfig(
