@@ -62,7 +62,6 @@ const config: Config = {
   // anything else should match the repo name
   baseUrl: "/",
   onBrokenLinks: "throw",
-  trailingSlash: false,
 
   favicon: "img/favicon.png",
   organizationName: "airbytehq", // Usually your GitHub org/user name.

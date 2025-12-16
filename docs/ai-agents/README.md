@@ -6,7 +6,7 @@ sidebar_position: 1
 
 Airbyte provides a set of tools to help you automate, understand, move, and work with your data in coordination with AI agents. Some of these tools are standalone open source solutions, and others are paid solutions built on top of Airbyte Cloud.
 
-- **Agent connectors**: Use Airbyte's AI-optimized, type-safe connectors to power your own AI agents, or use them with Airbyte's Connector MCP server. [View the GitHub repo](https://github.com/airbytehq/airbyte-agent-connectors) or [try the tutorial](quickstarts). You can set up your own agent and explore your data in 15 minutes or less.
+- **Agent connectors**: Use Airbyte's AI-optimized, type-safe connectors to power your own AI agents, or use them with Airbyte's Connector MCP server. [View the GitHub repo](https://github.com/airbytehq/airbyte-agent-connectors) or [try the tutorial](/ai-agents/quickstarts/). You can set up your own agent and explore your data in 15 minutes or less.
 
 - **Airbyte Embedded**: Add hundreds of integrations into your product instantly. Your end-users can authenticate into their data sources and begin syncing data to your product. You no longer need to spend engineering cycles on data movement. Focus on what makes your product great, rather than maintaining data integrations.
 
