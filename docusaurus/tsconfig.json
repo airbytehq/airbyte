@@ -9,12 +9,25 @@
     "skipLibCheck": true,
     "forceConsistentCasingInFileNames": true,
     "jsx": "react-jsx",
+    "jsxImportSource": "react",
     "declaration": true,
     "declarationMap": true,
     "sourceMap": true,
     "resolveJsonModule": true,
-    "allowSyntheticDefaultImports": true
+    "allowSyntheticDefaultImports": true,
+    "types": ["react", "react-dom", "node"],
+    "baseUrl": ".",
+    "paths": {
+      "@site/*": ["./*"]
+    }
   },
-  "include": ["docosaurus.config.ts"],
-  "exclude": ["node_modules", "build", ".docusaurus", "dist"]
+  "include": ["docosaurus.config.ts", "src/**/*"],
+  "exclude": ["node_modules", "build", ".docusaurus", "dist"],
+  "ts-node": {
+    "esm": true,
+    "experimentalEsm": true,
+    "moduleTypes": {
+      "js-yaml": "esm"
+    }
+  }
 }

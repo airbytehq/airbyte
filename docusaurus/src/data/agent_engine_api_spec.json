@@ -4687,6 +4687,21 @@
         "required": ["id", "name", "source_template", "replication_config"],
         "title": "ConnectorSourceUpdateResponse"
       },
+      "ConnectorInstancesListResponse": {
+        "properties": {
+          "instances": {
+            "items": {
+              "$ref": "#/components/schemas/ConnectorInstanceResponse"
+            },
+            "type": "array",
+            "title": "Instances"
+          }
+        },
+        "type": "object",
+        "required": ["instances"],
+        "title": "ConnectorInstancesListResponse",
+        "description": "Response model for listing connector instances."
+      },
       "ConnectorSpecification": {
         "properties": {
           "documentationUrl": {
@@ -5379,7 +5394,850 @@
           "scope_type": {
             "$ref": "#/components/schemas/ScopeType"
           },
-          "scope_id": {
+          "first_workspace_id": {
+            "type": "string",
+            "format": "uuid",
+            "title": "First Workspace Id"
+          },
+          "onboarding_status": {
+            "$ref": "#/components/schemas/OnboardingStatusEnum"
+          },
+          "secret_migration_status": {
+            "anyOf": [
+              {
+                "$ref": "#/components/schemas/SecretMigrationStatus"
+              },
+              {
+                "type": "null"
+              }
+            ]
+          }
+        },
+        "type": "object",
+        "required": [
+          "id",
+          "organization_name",
+          "first_workspace_id",
+          "onboarding_status"
+        ],
+        "title": "Organization"
+      },
+      "OrganizationBillingInfo": {
+        "properties": {
+          "paymentStatus": {
+            "type": "string",
+            "enum": [
+              "disabled",
+              "grace_period",
+              "locked",
+              "manual",
+              "okay",
+              "uninitialized"
+            ],
+            "title": "Paymentstatus"
+          },
+          "subscriptionStatus": {
+            "anyOf": [
+              {
+                "type": "string",
+                "enum": ["pre_subscription", "subscribed", "unsubscribed"]
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "Subscriptionstatus"
+          },
+          "accountType": {
+            "anyOf": [
+              {
+                "type": "string",
+                "enum": ["free", "internal"]
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "Accounttype"
+          },
+          "gracePeriodEndsAt": {
+            "anyOf": [
+              {
+                "type": "integer"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "Graceperiodendsat"
+          },
+          "billingState": {
+            "anyOf": [
+              {
+                "$ref": "#/components/schemas/BillingStateEnum"
+              },
+              {
+                "type": "null"
+              }
+            ]
+          },
+          "trialEndsAt": {
+            "anyOf": [
+              {
+                "type": "string",
+                "format": "date-time"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "Trialendsat"
+          }
+        },
+        "type": "object",
+        "required": ["paymentStatus"],
+        "title": "OrganizationBillingInfo"
+      },
+      "OrganizationDetailResponse": {
+        "properties": {
+          "organizationId": {
+            "type": "string",
+            "format": "uuid",
+            "title": "Organizationid"
+          },
+          "organizationName": {
+            "type": "string",
+            "title": "Organizationname"
+          },
+          "email": {
+            "anyOf": [
+              {
+                "type": "string"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "Email"
+          }
+        },
+        "type": "object",
+        "required": ["organizationId", "organizationName"],
+        "title": "OrganizationDetailResponse"
+      },
+      "OrganizationInfoResponse": {
+        "properties": {
+          "organizationId": {
+            "type": "string",
+            "format": "uuid",
+            "title": "Organizationid"
+          },
+          "organizationName": {
+            "type": "string",
+            "title": "Organizationname"
+          },
+          "sso": {
+            "type": "boolean",
+            "title": "Sso"
+          },
+          "billing": {
+            "anyOf": [
+              {
+                "$ref": "#/components/schemas/OrganizationBillingInfo"
+              },
+              {
+                "type": "null"
+              }
+            ]
+          }
+        },
+        "type": "object",
+        "required": ["organizationId", "organizationName", "sso"],
+        "title": "OrganizationInfoResponse"
+      },
+      "OrganizationSignupResponse": {
+        "properties": {
+          "organization_id": {
+            "type": "string",
+            "format": "uuid",
+            "title": "Organization Id"
+          },
+          "provisioning_state": {
+            "type": "string",
+            "title": "Provisioning State"
+          },
+          "orb_subscription_id": {
+            "anyOf": [
+              {
+                "type": "string"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "Orb Subscription Id"
+          },
+          "stigg_subscription_id": {
+            "anyOf": [
+              {
+                "type": "string"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "Stigg Subscription Id"
+          },
+          "error_message": {
+            "anyOf": [
+              {
+                "type": "string"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "Error Message"
+          },
+          "organization_name": {
+            "type": "string",
+            "title": "Organization Name"
+          },
+          "first_workspace_id": {
+            "type": "string",
+            "format": "uuid",
+            "title": "First Workspace Id"
+          },
+          "onboarding_status": {
+            "$ref": "#/components/schemas/OnboardingStatusEnum"
+          },
+          "secret_migration_status": {
+            "anyOf": [
+              {
+                "$ref": "#/components/schemas/SecretMigrationStatus"
+              },
+              {
+                "type": "null"
+              }
+            ]
+          }
+        },
+        "type": "object",
+        "required": [
+          "organization_id",
+          "provisioning_state",
+          "organization_name",
+          "first_workspace_id",
+          "onboarding_status"
+        ],
+        "title": "OrganizationSignupResponse",
+        "description": "Response schema for organization signup endpoint.\n\nAll non-optional fields are guaranteed to be present:\n- organization_name: Always fetched from Airbyte API\n- first_workspace_id: Raises HTTPException if not available\n- onboarding_status: Has default value (NOT_STARTED) from Organization model"
+      },
+      "OrganizationSubscriptionCreditBlock": {
+        "properties": {
+          "amount": {
+            "anyOf": [
+              {
+                "type": "number"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "Amount"
+          },
+          "expiryDate": {
+            "anyOf": [
+              {
+                "type": "string",
+                "format": "date-time"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "Expirydate"
+          }
+        },
+        "type": "object",
+        "title": "OrganizationSubscriptionCreditBlock"
+      },
+      "OrganizationSubscriptionCredits": {
+        "properties": {
+          "balance": {
+            "anyOf": [
+              {
+                "type": "number"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "Balance"
+          },
+          "blocks": {
+            "anyOf": [
+              {
+                "items": {
+                  "$ref": "#/components/schemas/OrganizationSubscriptionCreditBlock"
+                },
+                "type": "array"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "Blocks"
+          }
+        },
+        "type": "object",
+        "title": "OrganizationSubscriptionCredits"
+      },
+      "OrganizationSubscriptionResponse": {
+        "properties": {
+          "name": {
+            "type": "string",
+            "title": "Name"
+          },
+          "planId": {
+            "anyOf": [
+              {
+                "type": "string"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "Planid"
+          },
+          "planUnitPrice": {
+            "anyOf": [
+              {
+                "type": "string"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "Planunitprice"
+          },
+          "planPriceCurrency": {
+            "anyOf": [
+              {
+                "type": "string"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "Planpricecurrency"
+          },
+          "planPriceCadence": {
+            "anyOf": [
+              {
+                "type": "string"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "Planpricecadence"
+          },
+          "selfServeSubscription": {
+            "type": "boolean",
+            "title": "Selfservesubscription"
+          },
+          "balanceHidden": {
+            "type": "boolean",
+            "title": "Balancehidden"
+          },
+          "cancellationDate": {
+            "anyOf": [
+              {
+                "type": "string",
+                "format": "date-time"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "Cancellationdate"
+          },
+          "upcomingInvoice": {
+            "anyOf": [
+              {
+                "$ref": "#/components/schemas/OrganizationSubscriptionUpcomingInvoice"
+              },
+              {
+                "type": "null"
+              }
+            ]
+          },
+          "credits": {
+            "anyOf": [
+              {
+                "$ref": "#/components/schemas/OrganizationSubscriptionCredits"
+              },
+              {
+                "type": "null"
+              }
+            ]
+          }
+        },
+        "type": "object",
+        "required": ["name", "selfServeSubscription", "balanceHidden"],
+        "title": "OrganizationSubscriptionResponse"
+      },
+      "OrganizationSubscriptionUpcomingInvoice": {
+        "properties": {
+          "currency": {
+            "type": "string",
+            "title": "Currency"
+          },
+          "amount": {
+            "type": "string",
+            "title": "Amount"
+          },
+          "dueDate": {
+            "type": "string",
+            "format": "date",
+            "title": "Duedate"
+          }
+        },
+        "type": "object",
+        "required": ["currency", "amount", "dueDate"],
+        "title": "OrganizationSubscriptionUpcomingInvoice"
+      },
+      "OrganizationsListResponse": {
+        "properties": {
+          "organizations": {
+            "items": {
+              "$ref": "#/components/schemas/Organization"
+            },
+            "type": "array",
+            "title": "Organizations"
+          }
+        },
+        "type": "object",
+        "required": ["organizations"],
+        "title": "OrganizationsListResponse"
+      },
+      "PatchOp": {
+        "properties": {
+          "op": {
+            "type": "string",
+            "title": "Op"
+          },
+          "path": {
+            "type": "string",
+            "title": "Path"
+          },
+          "value": {
+            "anyOf": [
+              {},
+              {
+                "type": "null"
+              }
+            ],
+            "title": "Value"
+          }
+        },
+        "type": "object",
+        "required": ["op", "path"],
+        "title": "PatchOp"
+      },
+      "PaymentInformationCustomer": {
+        "properties": {
+          "email": {
+            "anyOf": [
+              {
+                "type": "string"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "Email"
+          },
+          "customerAddress": {
+            "anyOf": [
+              {
+                "$ref": "#/components/schemas/Address"
+              },
+              {
+                "type": "null"
+              }
+            ]
+          },
+          "shippingAddress": {
+            "anyOf": [
+              {
+                "$ref": "#/components/schemas/Address"
+              },
+              {
+                "type": "null"
+              }
+            ]
+          },
+          "defaultPaymentMethod": {
+            "anyOf": [
+              {
+                "$ref": "#/components/schemas/PaymentMethod"
+              },
+              {
+                "type": "null"
+              }
+            ]
+          }
+        },
+        "type": "object",
+        "title": "PaymentInformationCustomer"
+      },
+      "PaymentInformationResponse": {
+        "properties": {
+          "customer": {
+            "anyOf": [
+              {
+                "$ref": "#/components/schemas/PaymentInformationCustomer"
+              },
+              {
+                "type": "null"
+              }
+            ]
+          }
+        },
+        "type": "object",
+        "title": "PaymentInformationResponse"
+      },
+      "PaymentMethod": {
+        "properties": {
+          "type": {
+            "type": "string",
+            "title": "Type"
+          },
+          "cardBrand": {
+            "anyOf": [
+              {
+                "type": "string"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "Cardbrand"
+          },
+          "cardLastDigits": {
+            "anyOf": [
+              {
+                "type": "string"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "Cardlastdigits"
+          },
+          "cardExpireMonth": {
+            "anyOf": [
+              {
+                "type": "integer"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "Cardexpiremonth"
+          },
+          "cardExpireYear": {
+            "anyOf": [
+              {
+                "type": "integer"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "Cardexpireyear"
+          }
+        },
+        "type": "object",
+        "required": ["type"],
+        "title": "PaymentMethod"
+      },
+      "QaIssue": {
+        "properties": {
+          "severity": {
+            "type": "string",
+            "enum": ["low", "medium", "high"],
+            "title": "Severity"
+          },
+          "summary": {
+            "type": "string",
+            "title": "Summary"
+          },
+          "description": {
+            "type": "string",
+            "title": "Description"
+          },
+          "remediation": {
+            "anyOf": [
+              {
+                "type": "string"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "Remediation"
+          },
+          "issue_type": {
+            "$ref": "#/components/schemas/QaIssueType"
+          },
+          "context": {
+            "anyOf": [
+              {
+                "$ref": "#/components/schemas/StreamDescriptionIssueContext"
+              },
+              {
+                "$ref": "#/components/schemas/StreamFieldDescriptionIssueContext"
+              },
+              {
+                "$ref": "#/components/schemas/ForeignKeysIssueContext"
+              },
+              {
+                "$ref": "#/components/schemas/CategoriesIssueContext"
+              },
+              {
+                "$ref": "#/components/schemas/ValidationIssueContext"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "Context"
+          }
+        },
+        "type": "object",
+        "required": ["severity", "summary", "description", "issue_type"],
+        "title": "QaIssue"
+      },
+      "QaIssueCatalogContext-Input": {
+        "anyOf": [
+          {
+            "$ref": "#/components/schemas/StreamDescriptionCatalogContext"
+          },
+          {
+            "$ref": "#/components/schemas/StreamFieldDescriptionCatalogContext"
+          },
+          {
+            "$ref": "#/components/schemas/ForeignKeyCatalogContext"
+          },
+          {
+            "$ref": "#/components/schemas/CategoryCatalogContext"
+          },
+          {
+            "$ref": "#/components/schemas/ValidationCatalogContext"
+          }
+        ]
+      },
+      "QaIssueCatalogContext-Output": {
+        "anyOf": [
+          {
+            "$ref": "#/components/schemas/StreamDescriptionCatalogContext"
+          },
+          {
+            "$ref": "#/components/schemas/StreamFieldDescriptionCatalogContext"
+          },
+          {
+            "$ref": "#/components/schemas/ForeignKeyCatalogContext"
+          },
+          {
+            "$ref": "#/components/schemas/CategoryCatalogContext"
+          },
+          {
+            "$ref": "#/components/schemas/ValidationCatalogContext"
+          }
+        ]
+      },
+      "QaIssueType": {
+        "type": "string",
+        "enum": [
+          "stream_descriptions",
+          "stream_field_descriptions",
+          "foreign_keys",
+          "categories",
+          "validation"
+        ],
+        "title": "QaIssueType"
+      },
+      "QaIssueWithContext-Input": {
+        "properties": {
+          "issue": {
+            "$ref": "#/components/schemas/QaIssue"
+          },
+          "catalog_context": {
+            "anyOf": [
+              {
+                "$ref": "#/components/schemas/QaIssueCatalogContext-Input"
+              },
+              {
+                "type": "null"
+              }
+            ]
+          }
+        },
+        "type": "object",
+        "required": ["issue"],
+        "title": "QaIssueWithContext"
+      },
+      "QaIssueWithContext-Output": {
+        "properties": {
+          "issue": {
+            "$ref": "#/components/schemas/QaIssue"
+          },
+          "catalog_context": {
+            "anyOf": [
+              {
+                "$ref": "#/components/schemas/QaIssueCatalogContext-Output"
+              },
+              {
+                "type": "null"
+              }
+            ]
+          }
+        },
+        "type": "object",
+        "required": ["issue"],
+        "title": "QaIssueWithContext"
+      },
+      "QaOutput": {
+        "properties": {
+          "summary": {
+            "type": "string",
+            "title": "Summary"
+          },
+          "issues": {
+            "items": {
+              "$ref": "#/components/schemas/QaIssueWithContext-Output"
+            },
+            "type": "array",
+            "title": "Issues"
+          }
+        },
+        "type": "object",
+        "required": ["summary"],
+        "title": "QaOutput"
+      },
+      "Query": {
+        "properties": {
+          "filter": {
+            "anyOf": [
+              {
+                "$ref": "#/components/schemas/EqCondition"
+              },
+              {
+                "$ref": "#/components/schemas/NeqCondition"
+              },
+              {
+                "$ref": "#/components/schemas/GtCondition"
+              },
+              {
+                "$ref": "#/components/schemas/GteCondition"
+              },
+              {
+                "$ref": "#/components/schemas/LtCondition"
+              },
+              {
+                "$ref": "#/components/schemas/LteCondition"
+              },
+              {
+                "$ref": "#/components/schemas/InCondition"
+              },
+              {
+                "$ref": "#/components/schemas/LikeCondition"
+              },
+              {
+                "$ref": "#/components/schemas/FuzzyCondition"
+              },
+              {
+                "$ref": "#/components/schemas/SemanticCondition"
+              },
+              {
+                "$ref": "#/components/schemas/NotCondition"
+              },
+              {
+                "$ref": "#/components/schemas/AndCondition"
+              },
+              {
+                "$ref": "#/components/schemas/OrCondition"
+              },
+              {
+                "$ref": "#/components/schemas/AnyCondition"
+              },
+              {
+                "$ref": "#/components/schemas/ContainsCondition"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "Filter",
+            "description": "Optional filter condition. If omitted, returns all documents."
+          },
+          "sort": {
+            "anyOf": [
+              {
+                "items": {
+                  "additionalProperties": {
+                    "type": "string",
+                    "enum": ["asc", "desc"]
+                  },
+                  "type": "object"
+                },
+                "type": "array"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "Sort",
+            "description": "Optional sort fields. Example: [{'created_at': 'desc'}, {'name': 'asc'}]"
+          }
+        },
+        "type": "object",
+        "title": "Query",
+        "description": "Query wrapper for conditions."
+      },
+      "QueueInformation": {
+        "properties": {
+          "total": {
+            "type": "integer",
+            "title": "Total"
+          },
+          "scheduled_count": {
+            "type": "integer",
+            "title": "Scheduled Count"
+          },
+          "pending_count": {
+            "type": "integer",
+            "title": "Pending Count"
+          }
+        },
+        "type": "object",
+        "required": ["total", "scheduled_count", "pending_count"],
+        "title": "QueueInformation"
+      },
+      "RateLimitConfigCreate": {
+        "properties": {
+          "limit_count": {
+            "type": "integer",
+            "minimum": 1,
+            "title": "Limit Count"
+          },
+          "limit_period": {
+            "$ref": "#/components/schemas/RateLimitPeriod"
+          },
+          "organization_id": {
             "anyOf": [
               {
                 "type": "string",
@@ -5530,6 +6388,227 @@
         "type": "object",
         "required": ["organization_id", "workspace_id", "external_user_id"],
         "title": "ScopedTokenInfoGetResponse"
+      },
+      "SearchBackend": {
+        "type": "string",
+        "enum": ["opensearch", "galaxy"],
+        "title": "SearchBackend",
+        "description": "Search backend to use for queries."
+      },
+      "SearchHit": {
+        "properties": {
+          "id": {
+            "anyOf": [
+              {
+                "type": "string"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "Id"
+          },
+          "score": {
+            "anyOf": [
+              {
+                "type": "number"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "Score"
+          },
+          "data": {
+            "additionalProperties": true,
+            "type": "object",
+            "title": "Data"
+          }
+        },
+        "type": "object",
+        "required": ["data"],
+        "title": "SearchHit",
+        "description": "A single search result."
+      },
+      "SearchRequest": {
+        "properties": {
+          "query": {
+            "$ref": "#/components/schemas/Query"
+          },
+          "limit": {
+            "type": "integer",
+            "title": "Limit",
+            "description": "Maximum number of results to return",
+            "default": 1000
+          },
+          "cursor": {
+            "anyOf": [
+              {
+                "type": "string"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "Cursor",
+            "description": "Pagination cursor"
+          },
+          "fields": {
+            "anyOf": [
+              {
+                "items": {
+                  "items": {
+                    "type": "string"
+                  },
+                  "type": "array"
+                },
+                "type": "array"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "Fields",
+            "description": "Field paths to include in results. Each path is a list of keys for nested access. Example: [['id'], ['user', 'name'], ['metadata', 'tags']] returns id, user.name, and metadata.tags."
+          },
+          "backend": {
+            "$ref": "#/components/schemas/SearchBackend",
+            "description": "Search backend to use. 'opensearch' (default) or 'galaxy' for Trino-based queries.",
+            "default": "opensearch"
+          }
+        },
+        "type": "object",
+        "required": ["query"],
+        "title": "SearchRequest",
+        "description": "Request schema for search endpoint."
+      },
+      "SearchResponse": {
+        "properties": {
+          "hits": {
+            "items": {
+              "$ref": "#/components/schemas/SearchHit"
+            },
+            "type": "array",
+            "title": "Hits",
+            "default": []
+          },
+          "total": {
+            "type": "integer",
+            "title": "Total"
+          },
+          "next_cursor": {
+            "anyOf": [
+              {
+                "type": "string"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "Next Cursor"
+          },
+          "took_ms": {
+            "anyOf": [
+              {
+                "type": "integer"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "Took Ms"
+          }
+        },
+        "type": "object",
+        "required": ["total"],
+        "title": "SearchResponse",
+        "description": "Response schema for search endpoint."
+      },
+      "SecretMigrationStatus": {
+        "type": "string",
+        "enum": [
+          "NOT_STARTED",
+          "IN_PROGRESS",
+          "COMPLETED",
+          "FAILED",
+          "NOT_APPLICABLE"
+        ],
+        "title": "SecretMigrationStatus",
+        "description": "Status of secret storage migration during organization enrollment.\n\n- NOT_STARTED: Migration has not been initiated (should not appear in practice)\n- IN_PROGRESS: Migration is currently running\n- COMPLETED: Secrets successfully migrated from default to organization-specific storage\n- FAILED: Migration encountered an error (enrollment continues, status tracked for monitoring)\n- NOT_APPLICABLE: No migration needed (CUSTOMER_OWNED storage, or no default secrets to migrate)"
+      },
+      "SemanticCondition": {
+        "properties": {
+          "semantic": {
+            "additionalProperties": {
+              "type": "string"
+            },
+            "type": "object",
+            "title": "Semantic",
+            "description": "Semantic search: {field_name: pattern}"
+          }
+        },
+        "type": "object",
+        "required": ["semantic"],
+        "title": "SemanticCondition",
+        "description": "AI-powered natural language search."
+      },
+      "SonarCatalogInput": {
+        "properties": {
+          "streams": {
+            "items": {
+              "$ref": "#/components/schemas/SonarStream"
+            },
+            "type": "array",
+            "title": "Streams"
+          },
+          "selected_streams": {
+            "anyOf": [
+              {
+                "items": {
+                  "type": "string"
+                },
+                "type": "array"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "Selected Streams",
+            "description": "DEPRECATED: Stream selection is now managed in UI localStorage. This field is no longer used.",
+            "deprecated": true
+          }
+        },
+        "type": "object",
+        "title": "SonarCatalogInput"
+      },
+      "SonarCatalogOutput": {
+        "properties": {
+          "streams": {
+            "items": {
+              "$ref": "#/components/schemas/SonarStream"
+            },
+            "type": "array",
+            "title": "Streams"
+          },
+          "selected_streams": {
+            "anyOf": [
+              {
+                "items": {
+                  "type": "string"
+                },
+                "type": "array"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "Selected Streams",
+            "description": "DEPRECATED: Stream selection is now managed in UI localStorage. This field is no longer used.",
+            "deprecated": true
+          }
+        },
+        "type": "object",
+        "title": "SonarCatalogOutput"
       },
       "SonarCatalogSchemaType": {
         "type": "string",

@@ -1,0 +1,199 @@
+/* Combobox Wrapper - Establishes positioning context for dropdown */
+.comboboxWrapper {
+  position: relative;
+  display: inline-block;
+  width: 300px;
+  z-index: 100;
+}
+
+/* Input Styling */
+.input {
+  width: 100%;
+  padding: 0.5rem 2.5rem 0.5rem 1rem;
+  border: 1px solid var(--ifm-color-primary-lightest);
+  border-radius: 4px;
+  color: var(--ifm-color-primary);
+  font-size: 0.9rem;
+  font-family: inherit;
+  transition: all 0.2s ease;
+  margin-left: 0;
+  cursor: text;
+  box-sizing: border-box;
+}
+
+.input:hover {
+  border-color: var(--ifm-color-primary-lighter);
+}
+
+.input:focus {
+  outline: none;
+  border-color: var(--ifm-color-primary);
+  box-shadow: 0 0 0 2px var(--ifm-color-primary-lightest);
+}
+
+/* Chevron Icon */
+.chevron {
+  position: absolute;
+  right: 0.75rem;
+  pointer-events: auto;
+  font-size: 0.6rem;
+  color: var(--ifm-color-emphasis-600);
+  transition: transform 0.2s ease;
+  cursor: pointer;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+}
+
+/* Dropdown Menu */
+.dropdown {
+  position: absolute;
+  background-color:var(--color-white) !important;
+
+  border: 1px solid var(--ifm-color-border);
+  border-radius: 4px;
+  box-shadow: 0 8px 24px rgba(0, 0, 0, 0.15);
+  z-index: 99999 !important;
+  max-height: 300px;
+  overflow-y: auto;
+  overflow-x: hidden;
+  list-style: none;
+  margin: 0;
+  padding: 0;
+  width: 300px;
+ }  
+
+/* Dropdown Option */
+.option {
+  width: 100%;
+  padding: 0.5rem 0.75rem;
+  border: none;
+  /* Ensure solid opaque background - use RGB with explicit alpha */
+  background-color: var(--ifm-background-surface-primary) !important;
+  color: var(--ifm-color-content) !important;
+  text-align: left;
+  cursor: pointer;
+  font-size: 0.9rem;
+  font-family: inherit;
+  transition: background-color 0.15s ease;
+  display: flex;
+  flex-direction: column;
+  gap: 0.25rem;
+  /* Force full coverage of background */
+  box-sizing: border-box;
+  /* Ensure option doesn't inherit opacity from parent */
+  opacity: 1;
+}
+
+.option:first-child {
+  border-top-left-radius: 3px;
+  border-top-right-radius: 3px;
+}
+
+.option:last-child {
+  border-bottom-left-radius: 3px;
+  border-bottom-right-radius: 3px;
+}
+
+.option:hover,
+.option.active {
+  background-color: var(--ifm-color-emphasis-100) !important;
+  color: var(--ifm-color-content) !important;
+  font-weight: bold;
+}
+
+.option.selected {
+  background-color: var(--ifm-color-primary-lightest) !important;
+  color: var(--color-grey-900) !important;
+  font-weight: 600;
+}
+
+.option.selected.active {
+  background-color: var(--ifm-color-primary-lighter) !important;
+  color: var(--color-grey-900) !important;
+}
+
+.optionName {
+  font-weight: 500;
+  color: var(--ifm-color-content);
+}
+
+.optionId {
+  font-size: 0.8rem;
+  color: var(--ifm-color-content) !important;
+  font-family: "Courier New", monospace;
+}
+
+.option.selected .optionId {
+  color: var(--color-grey-900) !important;
+  font-weight: 600;
+}
+
+/* No Results */
+.noResults {
+  padding: 1rem 0.75rem;
+  text-align: center;
+  color: var(--ifm-color-emphasis-600);
+  font-size: 0.85rem;
+}
+
+/* Dropdown Button Styling */
+.dropdownButton {
+  position: absolute;
+  right: 0.75rem;
+  top: 50%;
+  transform: translateY(-50%);
+  background: none;
+  border: none;
+  cursor: pointer;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  padding: 0.25rem;
+  color: var(--ifm-color-emphasis-600);
+  transition: color 0.2s ease, transform 0.2s ease;
+}
+
+.dropdownButton:hover {
+  color: var(--ifm-color-primary);
+}
+
+/* Rotate chevron icon when dropdown is open */
+.dropdownButton[aria-expanded="true"] {
+  transform: translateY(-50%) rotate(180deg);
+}
+
+.dropdownButton[aria-expanded="false"] {
+  transform: translateY(-50%) rotate(0deg);
+}
+
+/* Scrollbar Styling */
+.dropdown::-webkit-scrollbar {
+  width: 6px;
+}
+
+.dropdown::-webkit-scrollbar-track {
+  background: transparent;
+}
+
+.dropdown::-webkit-scrollbar-thumb {
+  background: var(--ifm-color-emphasis-400);
+  border-radius: 3px;
+}
+
+.dropdown::-webkit-scrollbar-thumb:hover {
+  background: var(--ifm-color-emphasis-600);
+}
+
+/* Dark mode adjustments */
+html[data-theme="dark"] .input {
+  box-shadow: 0 1px 2px rgba(0, 0, 0, 0.2);
+}
+
+html[data-theme="dark"] .input:focus {
+  box-shadow: 0 0 0 2px var(--ifm-color-primary-lightest);
+}
+
+html[data-theme="dark"] .dropdown {
+  box-shadow: 0 4px 12px rgba(0, 0, 0, 0.4);
+}
