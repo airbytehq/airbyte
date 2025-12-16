@@ -43,7 +43,7 @@ internal class SnowflakeInsertBufferTest {
     fun testAccumulate() {
         val tableName = mockk<TableName>(relaxed = true)
         val column = "columnName"
-        val columns = linkedMapOf(column to "NUMBER(38,0)")
+        val columns = linkedMapOf(column to "NUMBER")
         val snowflakeAirbyteClient = mockk<SnowflakeAirbyteClient>(relaxed = true)
         val record = createRecord(column)
         val buffer =
@@ -64,7 +64,7 @@ internal class SnowflakeInsertBufferTest {
         val tableName = mockk<TableName>(relaxed = true)
         val stagingFile = "stage.csv.gz"
         val column = "columnName"
-        val columns = linkedMapOf(column to "NUMBER(38,0)")
+        val columns = linkedMapOf(column to "NUMBER")
         val snowflakeAirbyteClient = mockk<SnowflakeAirbyteClient>(relaxed = true)
         val record = createRecord(column)
         val buffer =
@@ -90,7 +90,7 @@ internal class SnowflakeInsertBufferTest {
     fun testFlushToNoStaging() {
         val tableName = mockk<TableName>(relaxed = true)
         val column = "columnName"
-        val columns = linkedMapOf(column to "NUMBER(38,0)")
+        val columns = linkedMapOf(column to "NUMBER")
         val snowflakeAirbyteClient = mockk<SnowflakeAirbyteClient>(relaxed = true)
         every { snowflakeConfiguration.legacyRawTablesOnly } returns true
         val record = createRecord(column)
@@ -114,7 +114,7 @@ internal class SnowflakeInsertBufferTest {
     fun testFileCreation() {
         val tableName = mockk<TableName>(relaxed = true)
         val column = "columnName"
-        val columns = linkedMapOf(column to "NUMBER(38,0)")
+        val columns = linkedMapOf(column to "NUMBER")
         val snowflakeAirbyteClient = mockk<SnowflakeAirbyteClient>(relaxed = true)
         val record = createRecord(column)
         val buffer =

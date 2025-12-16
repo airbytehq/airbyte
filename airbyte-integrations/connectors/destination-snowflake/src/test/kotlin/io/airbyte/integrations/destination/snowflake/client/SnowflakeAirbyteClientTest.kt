@@ -524,7 +524,7 @@ internal class SnowflakeAirbyteClientTest {
             "COL1" andThen
             COLUMN_NAME_AB_RAW_ID.toSnowflakeCompatibleName() andThen
             "COL2"
-        every { resultSet.getString("type") } returns "VARCHAR(255)" andThen "NUMBER(38,0)"
+        every { resultSet.getString("type") } returns "VARCHAR(255)" andThen "NUMBER"
         every { resultSet.getString("null?") } returns "Y" andThen "N" andThen "N"
 
         val statement =

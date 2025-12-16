@@ -453,8 +453,7 @@ class SnowflakeDirectLoadSqlGenerator(
             } else if (!typeChange.originalType.nullable && typeChange.newType.nullable) {
                 // If the type is unchanged, we can change a column from NOT NULL to nullable.
                 // But we'll never do the reverse, because there's a decent chance that historical
-                // records
-                // had null values.
+                // records had null values.
                 // Users can always manually ALTER COLUMN ... SET NOT NULL if they want.
                 clauses.add(
                     """ALTER TABLE $prettyTableName ALTER COLUMN "$name" DROP NOT NULL;""".andLog(),

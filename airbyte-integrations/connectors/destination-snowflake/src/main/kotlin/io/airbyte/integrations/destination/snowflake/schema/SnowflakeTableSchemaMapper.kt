@@ -99,31 +99,4 @@ class SnowflakeTableSchemaMapper(
 
         return ColumnType(snowflakeType, fieldType.nullable)
     }
-
-    override fun toFinalSchema(tableSchema: StreamTableSchema): StreamTableSchema {
-        if (tableSchema.importType !is Dedupe) {
-            return tableSchema
-        }
-
-        // For dedupe mode, ensure primary key columns and cursor column (if valid) are non-nullable
-        val pks = tableSchema.getPrimaryKey().flatten()
-
-        val nonNullCols = buildSet {
-            addAll(pks) // Primary keys are always non-nullable
-        }
-
-        val finalSchema =
-            tableSchema.columnSchema.finalSchema
-                .map { (columnName, columnType) ->
-                    columnName to
-                        columnType.copy(
-                            nullable = columnType.nullable && !nonNullCols.contains(columnName)
-                        )
-                }
-                .toMap()
-
-        return tableSchema.copy(
-            columnSchema = tableSchema.columnSchema.copy(finalSchema = finalSchema)
-        )
-    }
 }

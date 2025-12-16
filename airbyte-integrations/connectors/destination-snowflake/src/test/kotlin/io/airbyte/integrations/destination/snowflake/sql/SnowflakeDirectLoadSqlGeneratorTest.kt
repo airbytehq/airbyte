@@ -95,7 +95,7 @@ internal class SnowflakeDirectLoadSqlGeneratorTest {
                 "_AIRBYTE_RAW_ID" VARCHAR NOT NULL,
                 "_AIRBYTE_EXTRACTED_AT" TIMESTAMP_TZ NOT NULL,
                 "_AIRBYTE_META" VARIANT NOT NULL,
-                "_AIRBYTE_GENERATION_ID" NUMBER(38,0),
+                "_AIRBYTE_GENERATION_ID" NUMBER,
                 "COLUMN_NAME" VARCHAR NOT NULL
             )
             """.trimIndent()
@@ -131,7 +131,7 @@ internal class SnowflakeDirectLoadSqlGeneratorTest {
                 "_AIRBYTE_RAW_ID" VARCHAR NOT NULL,
                 "_AIRBYTE_EXTRACTED_AT" TIMESTAMP_TZ NOT NULL,
                 "_AIRBYTE_META" VARIANT NOT NULL,
-                "_AIRBYTE_GENERATION_ID" NUMBER(38,0),
+                "_AIRBYTE_GENERATION_ID" NUMBER,
                 "COLUMN_NAME" VARCHAR NOT NULL
             )
             """.trimIndent()
