@@ -607,7 +607,7 @@ interface TableOperationsSuite {
         val targetTableSchema =
             schemaFactory.make(
                 targetTable,
-                Fixtures.TEST_INTEGER_SCHEMA.properties,
+                Fixtures.ID_TEST_WITH_CDC_SCHEMA.properties,
                 Dedupe(
                     primaryKey = listOf(listOf(Fixtures.ID_FIELD)),
                     cursor = listOf(Fixtures.TEST_FIELD),
