@@ -11,48 +11,62 @@ The YouTube Data API v3 provides access to YouTube data, such as videos, playlis
 ## Prerequisites
 
 - One or more YouTube Channel IDs you want to sync data from
-- One of the following authentication methods:
+<!-- env:oss -->
+- (For Airbyte Open Source) One of the following authentication methods:
   - A Google API Key with the YouTube Data API v3 enabled
-  - Google OAuth 2.0 credentials (Client ID, Client Secret, and Refresh Token)
-
-To obtain credentials, you need to create a project in the [Google Cloud Console](https://console.cloud.google.com/) and enable the YouTube Data API v3.
+  - OAuth 2.0 credentials (Client ID, Client Secret, and Refresh Token)
+<!-- /env:oss -->
 
 ## Setup guide
 
-### Step 1: Create a Google Cloud project
-
-1. Go to the [Google Cloud Console](https://console.cloud.google.com/).
-2. Create a new project or select an existing one.
-3. Navigate to **APIs & Services** > **Library**.
-4. Search for "YouTube Data API v3" and enable it.
-
-### Step 2: Choose your authentication method
-
-You can authenticate using either an API Key or OAuth 2.0.
-
-#### Option A: API Key (simpler setup)
-
-1. In the Google Cloud Console, go to **APIs & Services** > **Credentials**.
-2. Click **Create Credentials** > **API key**.
-3. Copy the generated API key.
-4. (Recommended) Click **Restrict key** to limit the key's usage to the YouTube Data API v3.
-
-#### Option B: OAuth 2.0 (required for accessing private data)
-
-1. In the Google Cloud Console, go to **APIs & Services** > **Credentials**.
-2. Click **Create Credentials** > **OAuth client ID**.
-3. Select **Web application** as the application type.
-4. Add your authorized redirect URIs.
-5. Copy the **Client ID** and **Client Secret**.
-6. Use these credentials to obtain a refresh token through the OAuth 2.0 flow.
-
-### Step 3: Find your YouTube Channel IDs
+### Step 1: Find your YouTube Channel IDs
 
 1. Go to [YouTube](https://www.youtube.com/) and navigate to the channel you want to sync.
 2. The Channel ID is in the URL: `https://www.youtube.com/channel/CHANNEL_ID`.
 3. Alternatively, you can find it in YouTube Studio under **Settings** > **Channel** > **Advanced settings**.
 
-### Step 4: Set up the connector in Airbyte
+<!-- env:cloud -->
+
+### Step 2: Set up the connector in Airbyte Cloud
+
+1. [Log into your Airbyte Cloud](https://cloud.airbyte.com/workspaces) account.
+2. Click **Sources** and then click **+ New source**.
+3. Select **YouTube Data API** from the list.
+4. Enter a name for your source.
+5. Choose your authentication method:
+   - For **OAuth 2.0**: Click **Sign in with Google** to authenticate your Google account.
+   - For **API Key**: Enter your Google API key.
+6. Enter one or more Channel IDs to sync data from.
+7. Click **Set up source**.
+
+<!-- /env:cloud -->
+
+<!-- env:oss -->
+
+### Step 2: (For Airbyte Open Source) Create credentials
+
+#### Option A: API Key (simpler setup, public data only)
+
+1. Go to the [Google Cloud Console](https://console.cloud.google.com/).
+2. Create a new project or select an existing one.
+3. Navigate to **APIs & Services** > **Library** and enable the YouTube Data API v3.
+4. Go to **APIs & Services** > **Credentials**.
+5. Click **Create Credentials** > **API key**.
+6. Copy the generated API key.
+7. (Recommended) Click **Restrict key** to limit the key's usage to the YouTube Data API v3.
+
+#### Option B: OAuth 2.0 (required for accessing private data)
+
+1. Go to the [Google Cloud Console](https://console.cloud.google.com/).
+2. Create a new project or select an existing one.
+3. Navigate to **APIs & Services** > **Library** and enable the YouTube Data API v3.
+4. Go to **APIs & Services** > **Credentials**.
+5. Click **Create Credentials** > **OAuth client ID**.
+6. Configure the OAuth consent screen if prompted.
+7. Copy the **Client ID** and **Client Secret**.
+8. Use these credentials to obtain a refresh token. Refer to [Google's OAuth 2.0 documentation](https://developers.google.com/identity/protocols/oauth2) for detailed instructions.
+
+### Step 3: Set up the connector in Airbyte Open Source
 
 1. In Airbyte, go to **Sources** and click **+ New source**.
 2. Select **YouTube Data API** from the list.
@@ -61,7 +75,7 @@ You can authenticate using either an API Key or OAuth 2.0.
 5. Enter one or more Channel IDs to sync data from.
 6. Click **Set up source**.
 
-<HideInUI>
+<!-- /env:oss -->
 
 ## Supported sync modes
 
@@ -93,8 +107,6 @@ The YouTube Data API source connector supports the following sync modes:
 - The YouTube Data API has [quota limits](https://developers.google.com/youtube/v3/getting-started#quota). Each API request costs a certain number of quota units, and the default quota is 10,000 units per day.
 - API keys can only access public data. To access private data, you must use OAuth 2.0 authentication.
 - The connector does not support service account authentication because the YouTube Data API does not support this method.
-
-</HideInUI>
 
 ## Changelog
 
