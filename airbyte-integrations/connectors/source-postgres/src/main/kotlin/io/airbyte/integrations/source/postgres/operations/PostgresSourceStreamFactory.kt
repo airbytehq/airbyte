@@ -15,6 +15,7 @@ import io.airbyte.cdk.discover.DataOrMetaField
 import io.airbyte.cdk.discover.DiscoveredStream
 import io.airbyte.cdk.discover.JdbcAirbyteStreamFactory
 import io.airbyte.cdk.discover.MetaField
+import io.airbyte.cdk.jdbc.JdbcConnectionFactory
 import io.airbyte.cdk.output.sockets.FieldValueEncoder
 import io.airbyte.cdk.output.sockets.NativeRecordPayload
 import io.airbyte.cdk.read.Stream
@@ -32,7 +33,7 @@ import java.time.OffsetDateTime
 
 @Singleton
 @Primary
-class PostgresSourceStreamFactory : JdbcAirbyteStreamFactory {
+class PostgresSourceStreamFactory(val jdbcConnectionFactory: JdbcConnectionFactory) : JdbcAirbyteStreamFactory {
 
     override val globalCursor: DataOrMetaField = PostgresSourceCdcMetaFields.CDC_LSN
 
@@ -43,6 +44,7 @@ class PostgresSourceStreamFactory : JdbcAirbyteStreamFactory {
             CommonMetaField.CDC_DELETED_AT,
         )
 
+    val viewsBySchema: MutableMap<String, List<String>> = mutableMapOf()
     override fun decorateRecordData(
         timestamp: OffsetDateTime,
         globalStateValue: OpaqueStateValue?,
@@ -111,12 +113,21 @@ class PostgresSourceStreamFactory : JdbcAirbyteStreamFactory {
         val hasPK = hasValidPrimaryKey(discoveredStream)
         val hasPotentialCursorField = hasPotentialCursorFields(discoveredStream)
         val isXmin = postgresConfig.incrementalConfiguration is XminIncrementalConfiguration
+        var isView = false
+        discoveredStream.id.namespace?.let { namespace ->
+            if (viewsBySchema.containsKey(namespace).not()) {
+                viewsBySchema[namespace] = getViewsInSchema(namespace)
+            }
+            isView = viewsBySchema[namespace]?.contains(discoveredStream.id.name) == true
+        }
+
 
         val syncModes =
             when {
                 // Incremental sync is only provided as a sync option if the stream has a potential
                 // cursor field or is configured as CDC or Xmin with a valid primary key.
-                !isCdc && hasPotentialCursorField || (isCdc || isXmin) && hasPK ->
+                isXmin.not() && (isCdc.not() && hasPotentialCursorField || isCdc && hasPK)
+                    || isXmin && isView.not() ->
                     listOf(SyncMode.FULL_REFRESH, SyncMode.INCREMENTAL)
                 else -> listOf(SyncMode.FULL_REFRESH)
             }
@@ -134,4 +145,15 @@ class PostgresSourceStreamFactory : JdbcAirbyteStreamFactory {
             }
         return stream
     }
+
+    private fun getViewsInSchema(schema: String): List<String> =
+        jdbcConnectionFactory.get().use { conn ->
+            val query = "SELECT viewname FROM pg_catalog.pg_views WHERE schemaname = ?"
+            conn.prepareStatement(query).use { stmt ->
+                stmt.setString(1, schema)
+                stmt.executeQuery().use { rs ->
+                    generateSequence { if (rs.next()) rs.getString("viewname") else null }.toList()
+                }
+            }
+        }
 }

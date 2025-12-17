@@ -219,11 +219,12 @@ fun <T> querySingleValue(
     withRS: (ResultSet) -> T
 ): T {
     jdbcConnectionFactory.get().use { connection ->
-        val stmt = connection.prepareStatement(query)
-
-        val rs: ResultSet = stmt.executeQuery()
-        check(rs.next()) { "Query unexpectedly produced no results: [$query]" }
-        check(rs.isLast) { "Query unexpectedly produced more than one result: [$query]" }
-        return withRS(rs)
+        connection.prepareStatement(query).use { stmt ->
+            stmt.executeQuery().use { rs ->
+                check(rs.next()) { "Query unexpectedly produced no results: [$query]" }
+                check(rs.isLast) { "Query unexpectedly produced more than one result: [$query]" }
+                return withRS(rs)
+            }
+        }
     }
 }
