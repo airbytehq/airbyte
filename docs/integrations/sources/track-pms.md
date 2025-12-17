@@ -6,13 +6,23 @@ Website: https://tnsinc.com/
 API Docs: https://developer.trackhs.com  
 Authentication Docs: https://developer.trackhs.com/docs/authentication#authentication  
 
+## Prerequisites
+
+To use this connector, you need API credentials from your Track PMS account. Contact your Track PMS administrator or Track support to obtain your API key and secret. For more information, see the [Track authentication documentation](https://developer.trackhs.com/docs/authentication#authentication).
+
 ## Configuration
 
 | Input | Type | Description | Default Value |
 |-------|------|-------------|---------------|
-| `customer_domain` | `string` | Customer Domain.  |  |
-| `api_key` | `string` | API Key.  |  |
-| `api_secret` | `string` | API Secret.  |  |
+| `customer_domain` | `string` | Your Track PMS domain. Enter the domain only, without `https://` or trailing paths. For example: `api.trackhs.com` or your customer-specific subdomain. |  |
+| `api_key` | `string` | Your Track API key, used as the username for authentication. |  |
+| `api_secret` | `string` | Your Track API secret, used as the password for authentication. |  |
+
+The connector uses HTTP Basic authentication, sending `api_key` as the username and `api_secret` as the password. If authentication fails, verify that you have provided both values correctly.
+
+## Sync behavior
+
+The connector handles Track's API rate limit of 10,000 requests per 5 minutes. When the rate limit is reached, the connector waits approximately 5 minutes before retrying.
 
 ## Streams
 | Stream Name | Primary Key | Pagination | Supports Full Sync | Supports Incremental | API Docs |
