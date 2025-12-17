@@ -137,12 +137,16 @@ class TestTicketFormsErrorHandling(TestCase):
 
     @HttpMocker()
     def test_given_403_error_when_read_ticket_forms_then_fail_with_error_log(self, http_mocker):
-        """Test that 403 errors cause the stream to fail with proper error logging."""
+        """Test that 403 errors cause the stream to fail with proper error logging.
+
+        Per playbook: FAIL error handlers must assert both error code AND error message.
+        """
         api_token_authenticator = self._get_authenticator(self._config)
+        error_message = "Forbidden - You do not have access to this resource"
 
         http_mocker.get(
             ZendeskSupportRequestBuilder.ticket_forms_endpoint(api_token_authenticator).build(),
-            ErrorResponseBuilder.response_with_status(403).build(),
+            ErrorResponseBuilder.response_with_status(403).with_error_message(error_message).build(),
         )
 
         output = read_stream("ticket_forms", SyncMode.full_refresh, self._config, expecting_exception=True)
@@ -150,15 +154,20 @@ class TestTicketFormsErrorHandling(TestCase):
         assert len(output.records) == 0
         error_logs = list(get_log_messages_by_log_level(output.logs, LogLevel.ERROR))
         assert any("403" in msg for msg in error_logs), "Expected 403 error code in logs"
+        assert any(error_message in msg for msg in error_logs), f"Expected error message '{error_message}' in logs"
 
     @HttpMocker()
     def test_given_404_error_when_read_ticket_forms_then_fail_with_error_log(self, http_mocker):
-        """Test that 404 errors cause the stream to fail with proper error logging."""
+        """Test that 404 errors cause the stream to fail with proper error logging.
+
+        Per playbook: FAIL error handlers must assert both error code AND error message.
+        """
         api_token_authenticator = self._get_authenticator(self._config)
+        error_message = "Not Found - The requested resource does not exist"
 
         http_mocker.get(
             ZendeskSupportRequestBuilder.ticket_forms_endpoint(api_token_authenticator).build(),
-            ErrorResponseBuilder.response_with_status(404).build(),
+            ErrorResponseBuilder.response_with_status(404).with_error_message(error_message).build(),
         )
 
         output = read_stream("ticket_forms", SyncMode.full_refresh, self._config, expecting_exception=True)
@@ -166,3 +175,4 @@ class TestTicketFormsErrorHandling(TestCase):
         assert len(output.records) == 0
         error_logs = list(get_log_messages_by_log_level(output.logs, LogLevel.ERROR))
         assert any("404" in msg for msg in error_logs), "Expected 404 error code in logs"
+        assert any(error_message in msg for msg in error_logs), f"Expected error message '{error_message}' in logs"

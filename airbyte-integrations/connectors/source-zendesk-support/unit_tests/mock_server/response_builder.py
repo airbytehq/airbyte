@@ -316,17 +316,35 @@ class PostCommentVotesRecordBuilder(ZendeskSupportRecordBuilder):
 
 
 class ErrorResponseBuilder:
-    """Builder for error responses."""
+    """Builder for error responses.
+
+    Per playbook: FAIL error handlers must assert both error code AND error message.
+    Use with_error_message() to set a deterministic error message that can be asserted in tests.
+    """
 
     def __init__(self, status_code: int):
         self._status_code: int = status_code
+        self._error_message: Optional[str] = None
 
     @classmethod
-    def response_with_status(cls, status_code) -> "ErrorResponseBuilder":
+    def response_with_status(cls, status_code: int) -> "ErrorResponseBuilder":
         return cls(status_code)
 
+    def with_error_message(self, message: str) -> "ErrorResponseBuilder":
+        """Set a custom error message for the response.
+
+        For 403/404 errors, the manifest uses {{ response.get('error') }}.
+        For 504 errors, the manifest uses {{ response.text }}.
+        """
+        self._error_message = message
+        return self
+
     def build(self) -> HttpResponse:
-        return HttpResponse(json.dumps(find_template(str(self._status_code), __file__)), self._status_code)
+        if self._error_message:
+            body = json.dumps({"error": self._error_message})
+        else:
+            body = json.dumps({"error": f"Error {self._status_code}"})
+        return HttpResponse(body, self._status_code)
 
 
 # Response Builders for each stream
@@ -1025,6 +1043,16 @@ class SatisfactionRatingsResponseBuilder(HttpResponseBuilder):
 
 
 class TicketAuditsResponseBuilder(HttpResponseBuilder):
+    """Response builder for ticket_audits stream.
+
+    Per manifest.yaml, ticket_audits uses CursorPagination with before_url as the cursor value.
+    Use with_before_url() to set a next page URL for testing is_data_feed pagination stop behavior.
+    """
+
+    def __init__(self, template: Dict[str, Any], records_path: Path, pagination_strategy: Optional[PaginationStrategy]):
+        super().__init__(template, records_path, pagination_strategy)
+        self._before_url: Optional[str] = None
+
     @classmethod
     def ticket_audits_response(cls, request_without_cursor_for_pagination: Optional[HttpRequest] = None) -> "TicketAuditsResponseBuilder":
         return cls(
@@ -1032,6 +1060,25 @@ class TicketAuditsResponseBuilder(HttpResponseBuilder):
             FieldPath("audits"),
             CursorBasedPaginationStrategy(http_request_to_str(request_without_cursor_for_pagination)),
         )
+
+    def with_before_url(self, before_url: str) -> "TicketAuditsResponseBuilder":
+        """Set the before_url to signal there's a next page.
+
+        Per manifest.yaml, ticket_audits uses cursor_value: "{{ response.get('before_url') }}"
+        Setting this signals to the connector that there's more data to fetch.
+        For is_data_feed tests, set this but don't mock the next page - if the connector
+        tries to fetch it, the test will fail due to an unmatched HTTP request.
+        """
+        self._before_url = before_url
+        return self
+
+    def build(self) -> HttpResponse:
+        response = super().build()
+        if self._before_url:
+            body = json.loads(response.body)
+            body["before_url"] = self._before_url
+            return HttpResponse(json.dumps(body), response.status_code)
+        return response
 
 
 class TicketCommentsResponseBuilder(HttpResponseBuilder):
