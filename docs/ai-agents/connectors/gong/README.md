@@ -1,4 +1,4 @@
-# Airbyte Gong AI Connector
+# Gong agent connector
 
 Gong is a revenue intelligence platform that captures and analyzes customer interactions
 across calls, emails, and web conferences. This connector provides access to users,
@@ -6,7 +6,7 @@ recorded calls with transcripts, activity statistics, scorecards, trackers, work
 coaching metrics, and library content for sales performance analysis and revenue insights.
 
 
-## Example Questions
+## Example questions
 
 - List all users in my Gong account
 - Show me calls from last week
@@ -17,7 +17,7 @@ coaching metrics, and library content for sales performance analysis and revenue
 - What trackers are set up in my account?
 - Get coaching metrics for manager user123
 
-## Unsupported Questions
+## Unsupported questions
 
 - Create a new user in Gong
 - Delete a call recording
@@ -39,14 +39,15 @@ from airbyte_agent_gong import GongConnector, GongAuthConfig
 
 connector = GongConnector(
   auth_config=GongAuthConfig(
-    access_key="...",
-    access_key_secret="..."
+    access_token="..."
   )
 )
 result = connector.users.list()
 ```
 
-## Documentation
+## Full documentation
+
+This connector supports the following entities and actions.
 
 | Entity | Actions |
 |--------|---------|
@@ -68,14 +69,12 @@ result = connector.users.list()
 | Stats Activity Scorecards | [List](./REFERENCE.md#stats-activity-scorecards-list) |
 
 
-For detailed documentation on available actions and parameters, see [REFERENCE.md](./REFERENCE.md).
+For detailed documentation on available actions and parameters, see this connector's [full reference documentation](./REFERENCE.md).
 
-For the service's official API docs, see [Gong API Reference](https://gong.app.gong.io/settings/api/documentation).
+For the service's official API docs, see the [Gong API reference](https://gong.app.gong.io/settings/api/documentation).
 
-## Version Information
+## Version information
 
-**Package Version:** 0.19.19
-
-**Connector Version:** 0.1.3
-
-**Generated with connector-sdk:** c4c39c2797ecd929407c9417c728d425f77b37ed
+- **Package version:** 0.19.20
+- **Connector version:** 0.1.5
+- **Generated with Connector SDK commit SHA:** 4fe5029b71369ddb9ad9b5912e7f957fb4f81747
