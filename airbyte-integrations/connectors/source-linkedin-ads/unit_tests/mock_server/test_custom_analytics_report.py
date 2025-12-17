@@ -91,7 +91,7 @@ def _create_analytics_record(
 def _get_custom_analytics_report_config() -> list:
     """
     Returns the ad_analytics_reports config required for custom_analytics_report stream.
-    
+
     The custom_analytics_report stream uses ConfigComponentsResolver which reads from
     the ad_analytics_reports config. Without this config, the stream produces zero slices
     and makes no HTTP requests.
