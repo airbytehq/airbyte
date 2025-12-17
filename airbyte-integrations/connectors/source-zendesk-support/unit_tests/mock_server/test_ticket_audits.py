@@ -5,6 +5,7 @@ from unittest import TestCase
 
 import freezegun
 
+from airbyte_cdk.models import Level as LogLevel
 from airbyte_cdk.models import SyncMode
 from airbyte_cdk.test.mock_http import HttpMocker
 from airbyte_cdk.test.mock_http.response_builder import FieldPath
@@ -13,8 +14,8 @@ from airbyte_cdk.utils.datetime_helpers import ab_datetime_now
 
 from .config import ConfigBuilder
 from .request_builder import ApiTokenAuthenticator, ZendeskSupportRequestBuilder
-from .response_builder import TicketAuditsRecordBuilder, TicketAuditsResponseBuilder
-from .utils import datetime_to_string, read_stream, string_to_datetime
+from .response_builder import ErrorResponseBuilder, TicketAuditsRecordBuilder, TicketAuditsResponseBuilder
+from .utils import datetime_to_string, get_log_messages_by_log_level, read_stream, string_to_datetime
 
 
 _NOW = ab_datetime_now()
@@ -110,3 +111,126 @@ class TestTicketAuditsStreamIncremental(TestCase):
         assert len(output.records) == 1
         assert output.records[0].record.data["id"] == 2
         assert output.most_recent_state is not None
+
+
+@freezegun.freeze_time(_NOW.isoformat())
+class TestTicketAuditsErrorHandling(TestCase):
+    """Test error handling for ticket_audits stream.
+
+    Per manifest.yaml, ticket_audits has FAIL error handlers for:
+    - 504: Gateway timeout
+    - 403, 404: Permission/not found errors
+    Per playbook: FAIL error handlers must assert both error code AND error message.
+    """
+
+    @property
+    def _config(self):
+        return (
+            ConfigBuilder()
+            .with_basic_auth_credentials("user@example.com", "password")
+            .with_subdomain("d3v-airbyte")
+            .with_start_date(_START_DATE)
+            .build()
+        )
+
+    def _get_authenticator(self, config):
+        return ApiTokenAuthenticator(email=config["credentials"]["email"], password=config["credentials"]["api_token"])
+
+    @HttpMocker()
+    def test_given_403_error_when_read_ticket_audits_then_fail_with_error_log(self, http_mocker):
+        """Test that 403 errors cause the stream to fail with proper error logging."""
+        api_token_authenticator = self._get_authenticator(self._config)
+
+        http_mocker.get(
+            ZendeskSupportRequestBuilder.ticket_audits_endpoint(api_token_authenticator).with_page_size(100).build(),
+            ErrorResponseBuilder.response_with_status(403).build(),
+        )
+
+        output = read_stream("ticket_audits", SyncMode.full_refresh, self._config, expecting_exception=True)
+
+        assert len(output.records) == 0
+        error_logs = list(get_log_messages_by_log_level(output.logs, LogLevel.ERROR))
+        assert any("403" in msg for msg in error_logs), "Expected 403 error code in logs"
+
+    @HttpMocker()
+    def test_given_404_error_when_read_ticket_audits_then_fail_with_error_log(self, http_mocker):
+        """Test that 404 errors cause the stream to fail with proper error logging."""
+        api_token_authenticator = self._get_authenticator(self._config)
+
+        http_mocker.get(
+            ZendeskSupportRequestBuilder.ticket_audits_endpoint(api_token_authenticator).with_page_size(100).build(),
+            ErrorResponseBuilder.response_with_status(404).build(),
+        )
+
+        output = read_stream("ticket_audits", SyncMode.full_refresh, self._config, expecting_exception=True)
+
+        assert len(output.records) == 0
+        error_logs = list(get_log_messages_by_log_level(output.logs, LogLevel.ERROR))
+        assert any("404" in msg for msg in error_logs), "Expected 404 error code in logs"
+
+    @HttpMocker()
+    def test_given_504_error_when_read_ticket_audits_then_fail_with_error_log(self, http_mocker):
+        """Test that 504 gateway timeout errors cause the stream to fail with proper error logging."""
+        api_token_authenticator = self._get_authenticator(self._config)
+
+        http_mocker.get(
+            ZendeskSupportRequestBuilder.ticket_audits_endpoint(api_token_authenticator).with_page_size(100).build(),
+            ErrorResponseBuilder.response_with_status(504).build(),
+        )
+
+        output = read_stream("ticket_audits", SyncMode.full_refresh, self._config, expecting_exception=True)
+
+        assert len(output.records) == 0
+        error_logs = list(get_log_messages_by_log_level(output.logs, LogLevel.ERROR))
+        assert any("504" in msg for msg in error_logs), "Expected 504 error code in logs"
+
+
+@freezegun.freeze_time(_NOW.isoformat())
+class TestTicketAuditsDataFeed(TestCase):
+    """Test data feed behavior for ticket_audits stream.
+
+    Per manifest.yaml, ticket_audits has is_data_feed: true which means:
+    - Pagination should stop when old records are detected
+    - If Page 1 contains records older than state, Page 2 should not be fetched
+    - Client-side filtering applies even if API returns all records
+    """
+
+    @property
+    def _config(self):
+        return (
+            ConfigBuilder()
+            .with_basic_auth_credentials("user@example.com", "password")
+            .with_subdomain("d3v-airbyte")
+            .with_start_date(_START_DATE)
+            .build()
+        )
+
+    def _get_authenticator(self, config):
+        return ApiTokenAuthenticator(email=config["credentials"]["email"], password=config["credentials"]["api_token"])
+
+    @HttpMocker()
+    def test_given_data_feed_with_old_records_when_read_then_stop_pagination(self, http_mocker):
+        """Test that pagination stops when old records are detected (is_data_feed: true behavior).
+
+        When is_data_feed is true and records older than state are detected on page 1,
+        page 2 should not be fetched because the stream assumes data is sorted by cursor.
+        """
+        api_token_authenticator = self._get_authenticator(self._config)
+        state_cursor_value = _START_DATE.add(timedelta(days=30))
+        old_cursor_value = datetime_to_string(state_cursor_value.subtract(timedelta(days=5)))
+        new_cursor_value = datetime_to_string(state_cursor_value.add(timedelta(days=1)))
+
+        http_mocker.get(
+            ZendeskSupportRequestBuilder.ticket_audits_endpoint(api_token_authenticator).with_page_size(100).build(),
+            TicketAuditsResponseBuilder.ticket_audits_response()
+            .with_record(TicketAuditsRecordBuilder.ticket_audits_record().with_id(1).with_field(FieldPath("created_at"), new_cursor_value))
+            .with_record(TicketAuditsRecordBuilder.ticket_audits_record().with_id(2).with_field(FieldPath("created_at"), old_cursor_value))
+            .build(),
+        )
+
+        state = StateBuilder().with_stream_state("ticket_audits", {"created_at": datetime_to_string(state_cursor_value)}).build()
+
+        output = read_stream("ticket_audits", SyncMode.incremental, self._config, state)
+
+        assert len(output.records) == 1
+        assert output.records[0].record.data["id"] == 1
