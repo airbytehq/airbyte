@@ -19,7 +19,7 @@ The YouTube Data API v3 provides access to YouTube data, such as videos, playlis
 
 ## Setup guide
 
-### Step 1: Find your YouTube Channel IDs
+### Find your YouTube Channel IDs
 
 1. Go to [YouTube](https://www.youtube.com/) and navigate to the channel you want to sync.
 2. The Channel ID is in the URL: `https://www.youtube.com/channel/CHANNEL_ID`.
@@ -27,7 +27,7 @@ The YouTube Data API v3 provides access to YouTube data, such as videos, playlis
 
 <!-- env:cloud -->
 
-### Step 2: Set up the connector in Airbyte Cloud
+### For Airbyte Cloud
 
 1. [Log into your Airbyte Cloud](https://cloud.airbyte.com/workspaces) account.
 2. Click **Sources** and then click **+ New source**.
@@ -43,9 +43,13 @@ The YouTube Data API v3 provides access to YouTube data, such as videos, playlis
 
 <!-- env:oss -->
 
-### Step 2: (For Airbyte Open Source) Create credentials
+### For Airbyte Open Source
 
-#### Option A: API Key (simpler setup, public data only)
+#### Create credentials
+
+You can authenticate using either an API Key or OAuth 2.0.
+
+**Option A: API Key (simpler setup, public data only)**
 
 1. Go to the [Google Cloud Console](https://console.cloud.google.com/).
 2. Create a new project or select an existing one.
@@ -55,7 +59,7 @@ The YouTube Data API v3 provides access to YouTube data, such as videos, playlis
 6. Copy the generated API key.
 7. (Recommended) Click **Restrict key** to limit the key's usage to the YouTube Data API v3.
 
-#### Option B: OAuth 2.0 (required for accessing private data)
+**Option B: OAuth 2.0 (required for accessing private data)**
 
 1. Go to the [Google Cloud Console](https://console.cloud.google.com/).
 2. Create a new project or select an existing one.
@@ -66,7 +70,7 @@ The YouTube Data API v3 provides access to YouTube data, such as videos, playlis
 7. Copy the **Client ID** and **Client Secret**.
 8. Use these credentials to obtain a refresh token. Refer to [Google's OAuth 2.0 documentation](https://developers.google.com/identity/protocols/oauth2) for detailed instructions.
 
-### Step 3: Set up the connector in Airbyte Open Source
+#### Set up the connector
 
 1. In Airbyte, go to **Sources** and click **+ New source**.
 2. Select **YouTube Data API** from the list.
