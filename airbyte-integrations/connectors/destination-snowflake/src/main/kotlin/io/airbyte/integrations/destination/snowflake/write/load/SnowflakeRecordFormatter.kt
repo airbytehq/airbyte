@@ -30,7 +30,8 @@ class SnowflakeSchemaRecordFormatter(
     override fun format(record: Map<String, AirbyteValue>): List<Any> {
         val result = mutableListOf<Any>()
 
-        // Add meta columns in order using the lowercase meta key
+        // WARNING: Unlike the user fields, the meta fields on the record are not munged for
+        // the destination. So we add meta columns in order using the original lowercase meta key.
         result.add(record[COLUMN_NAME_AB_RAW_ID].toCsvValue())
         result.add(record[COLUMN_NAME_AB_EXTRACTED_AT].toCsvValue())
         result.add(record[COLUMN_NAME_AB_META].toCsvValue())
