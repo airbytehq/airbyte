@@ -117,7 +117,7 @@ class TestCustomAnalyticsReportStream(TestCase):
         config = ConfigBuilder().with_start_date("2024-06-01").build()
 
         http_mocker.get(
-            LinkedInAdsRequestBuilder.accounts_endpoint().with_any_query_params().build(),
+            LinkedInAdsRequestBuilder.accounts_endpoint().with_q("search").with_page_size(500).build(),
             LinkedInAdsPaginatedResponseBuilder.single_page([_create_account_record(111111111, "Account 1")]),
         )
 
@@ -152,7 +152,7 @@ class TestCustomAnalyticsReportStream(TestCase):
         config = ConfigBuilder().with_start_date("2024-06-01").build()
 
         http_mocker.get(
-            LinkedInAdsRequestBuilder.accounts_endpoint().with_any_query_params().build(),
+            LinkedInAdsRequestBuilder.accounts_endpoint().with_q("search").with_page_size(500).build(),
             LinkedInAdsPaginatedResponseBuilder.single_page([_create_account_record(111111111, "Account 1")]),
         )
 
@@ -190,7 +190,7 @@ class TestCustomAnalyticsReportStream(TestCase):
         config = ConfigBuilder().with_start_date("2024-06-01").build()
 
         http_mocker.get(
-            LinkedInAdsRequestBuilder.accounts_endpoint().with_any_query_params().build(),
+            LinkedInAdsRequestBuilder.accounts_endpoint().with_q("search").with_page_size(500).build(),
             LinkedInAdsPaginatedResponseBuilder.single_page([_create_account_record(111111111, "Account 1")]),
         )
 
@@ -223,7 +223,7 @@ class TestCustomAnalyticsReportStream(TestCase):
         config = ConfigBuilder().with_start_date("2024-06-01").build()
 
         http_mocker.get(
-            LinkedInAdsRequestBuilder.accounts_endpoint().with_any_query_params().build(),
+            LinkedInAdsRequestBuilder.accounts_endpoint().with_q("search").with_page_size(500).build(),
             LinkedInAdsPaginatedResponseBuilder.single_page([_create_account_record(111111111, "Account 1")]),
         )
 
@@ -251,7 +251,7 @@ class TestCustomAnalyticsReportStream(TestCase):
         config = ConfigBuilder().with_start_date("2024-06-01").build()
 
         http_mocker.get(
-            LinkedInAdsRequestBuilder.accounts_endpoint().with_any_query_params().build(),
+            LinkedInAdsRequestBuilder.accounts_endpoint().with_q("search").with_page_size(500).build(),
             LinkedInAdsPaginatedResponseBuilder.single_page([_create_account_record(111111111, "Account 1")]),
         )
 
@@ -284,7 +284,7 @@ class TestCustomAnalyticsReportStream(TestCase):
         config = ConfigBuilder().with_start_date("2024-06-01").build()
 
         http_mocker.get(
-            LinkedInAdsRequestBuilder.accounts_endpoint().with_any_query_params().build(),
+            LinkedInAdsRequestBuilder.accounts_endpoint().with_q("search").with_page_size(500).build(),
             LinkedInAdsPaginatedResponseBuilder.single_page([_create_account_record(111111111, "Account 1")]),
         )
 
@@ -325,7 +325,7 @@ class TestCustomAnalyticsReportStream(TestCase):
         config = ConfigBuilder().with_start_date("2024-06-01").build()
 
         http_mocker.get(
-            LinkedInAdsRequestBuilder.accounts_endpoint().with_any_query_params().build(),
+            LinkedInAdsRequestBuilder.accounts_endpoint().with_q("search").with_page_size(500).build(),
             LinkedInAdsPaginatedResponseBuilder.single_page([_create_account_record(111111111, "Account 1")]),
         )
 
