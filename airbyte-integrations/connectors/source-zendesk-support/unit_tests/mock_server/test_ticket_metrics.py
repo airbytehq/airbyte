@@ -23,6 +23,43 @@ _TWO_YEARS_AGO_DATETIME = _NOW.subtract(timedelta(weeks=104))
 
 
 @freezegun.freeze_time(_NOW.isoformat())
+class TestTicketMetricsFullRefresh(TestCase):
+    """Test full refresh sync behavior for ticket_metrics stream.
+
+    Per playbook requirement: All streams should test full refresh sync behavior at minimum.
+    """
+
+    @property
+    def _config(self):
+        return (
+            ConfigBuilder()
+            .with_basic_auth_credentials("user@example.com", "password")
+            .with_subdomain("d3v-airbyte")
+            .with_start_date(_TWO_YEARS_AGO_DATETIME)
+            .build()
+        )
+
+    def _get_authenticator(self, config):
+        return ApiTokenAuthenticator(email=config["credentials"]["email"], password=config["credentials"]["api_token"])
+
+    @HttpMocker()
+    def test_given_one_page_when_read_ticket_metrics_then_return_records(self, http_mocker):
+        """Test basic full refresh sync returns records."""
+        record_updated_at: str = ab_datetime_now().subtract(timedelta(days=1)).strftime("%Y-%m-%dT%H:%M:%SZ")
+        api_token_authenticator = self._get_authenticator(self._config)
+        ticket_metrics_record_builder = TicketMetricsRecordBuilder.stateless_ticket_metrics_record().with_cursor(record_updated_at)
+
+        http_mocker.get(
+            ZendeskSupportRequestBuilder.stateless_ticket_metrics_endpoint(api_token_authenticator).with_page_size(100).build(),
+            TicketMetricsResponseBuilder.stateless_ticket_metrics_response().with_record(ticket_metrics_record_builder).build(),
+        )
+
+        output = read_stream("ticket_metrics", SyncMode.full_refresh, self._config)
+
+        assert len(output.records) == 1
+
+
+@freezegun.freeze_time(_NOW.isoformat())
 class TestTicketMetricsIncremental(TestCase):
     @property
     def _config(self):
