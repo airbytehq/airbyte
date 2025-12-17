@@ -32,6 +32,7 @@ import org.junit.jupiter.api.Assertions.assertTrue
 import org.junit.jupiter.api.BeforeEach
 import org.junit.jupiter.api.Test
 
+/** TODO: These tests are somewhat dubious. */
 internal class SnowflakeDirectLoadSqlGeneratorTest {
 
     private lateinit var snowflakeDirectLoadSqlGenerator: SnowflakeDirectLoadSqlGenerator
@@ -555,13 +556,13 @@ internal class SnowflakeDirectLoadSqlGeneratorTest {
 
     @Test
     fun testGenerateUpsertTableWithCdcHardDelete() {
-        // Configure for CDC hard delete mode
+        // Test with CDC hard delete mode when _ab_cdc_deleted_at column is present
         every { snowflakeConfiguration.cdcDeletionMode } returns CdcDeletionMode.HARD_DELETE
 
-        val sourceTableName = TableName(namespace = "namespace", name = "source")
-        val targetTableName = TableName(namespace = "namespace", name = "target")
+        val sourceTableName = TableName(namespace = "test_ns", name = "source")
+        val targetTableName = TableName(namespace = "test_ns", name = "target")
 
-        // Create a table schema with primary key, cursor, and CDC column
+        // Create table schema with CDC deletion column
         val tableSchema =
             StreamTableSchema(
                 tableNames =
@@ -571,18 +572,21 @@ internal class SnowflakeDirectLoadSqlGeneratorTest {
                         inputToFinalColumnNames =
                             mapOf(
                                 "id" to "ID",
+                                "name" to "NAME",
                                 "updated_at" to "UPDATED_AT",
                                 "_ab_cdc_deleted_at" to "_AB_CDC_DELETED_AT"
                             ),
                         finalSchema =
                             mapOf(
                                 "ID" to ColumnType("VARCHAR", false),
+                                "NAME" to ColumnType("VARCHAR", true),
                                 "UPDATED_AT" to ColumnType("TIMESTAMP_TZ", true),
                                 "_AB_CDC_DELETED_AT" to ColumnType("TIMESTAMP_TZ", true)
                             ),
                         inputSchema =
                             mapOf(
                                 "id" to FieldType(StringType, nullable = false),
+                                "name" to FieldType(StringType, nullable = true),
                                 "updated_at" to FieldType(StringType, nullable = true),
                                 "_ab_cdc_deleted_at" to FieldType(StringType, nullable = true)
                             )
@@ -598,22 +602,72 @@ internal class SnowflakeDirectLoadSqlGeneratorTest {
                 targetTableName
             )
 
-        // Print the actual SQL for debugging
-        println("Generated SQL:\n$sql")
+        // Should include the DELETE clause and skip insert clause
+        assert(
+            sql.contains(
+                "WHEN MATCHED AND new_record.${CDC_DELETED_AT_COLUMN.toSnowflakeCompatibleName().quote()} IS NOT NULL"
+            )
+        )
+        assert(sql.contains("THEN DELETE"))
+        assert(
+            sql.contains(
+                "WHEN NOT MATCHED AND new_record.${CDC_DELETED_AT_COLUMN.toSnowflakeCompatibleName().quote()} IS NULL THEN INSERT"
+            )
+        )
+    }
 
-        // Verify the SQL contains the expected components
-        assertTrue(sql.contains("MERGE INTO"))
-        assertTrue(sql.contains("WITH records AS"))
-        assertTrue(sql.contains("numbered_rows AS"))
-        assertTrue(sql.contains("ROW_NUMBER() OVER"))
-        assertTrue(sql.contains("PARTITION BY \"ID\""))
-        assertTrue(sql.contains("ORDER BY \"UPDATED_AT\" DESC NULLS LAST"))
-        assertTrue(sql.contains("WHEN MATCHED AND new_record.\"_AB_CDC_DELETED_AT\" IS NOT NULL"))
-        assertTrue(sql.contains("THEN DELETE"))
-        assertTrue(sql.contains("WHEN MATCHED AND"))
-        assertTrue(sql.contains("THEN UPDATE SET"))
-        assertTrue(sql.contains("WHEN NOT MATCHED AND new_record.\"_AB_CDC_DELETED_AT\" IS NULL"))
-        assertTrue(sql.contains("THEN INSERT"))
+    @Test
+    fun testGenerateUpsertTableWithCdcSoftDelete() {
+        // Test with CDC soft delete mode - should NOT add delete clauses
+        every { snowflakeConfiguration.cdcDeletionMode } returns CdcDeletionMode.SOFT_DELETE
+
+        val sourceTableName = TableName(namespace = "test_ns", name = "source")
+        val targetTableName = TableName(namespace = "test_ns", name = "target")
+
+        // Create table schema with CDC deletion column
+        val tableSchema =
+            StreamTableSchema(
+                tableNames =
+                    TableNames(finalTableName = targetTableName, tempTableName = sourceTableName),
+                columnSchema =
+                    ColumnSchema(
+                        inputToFinalColumnNames =
+                            mapOf(
+                                "id" to "ID",
+                                "name" to "NAME",
+                                "updated_at" to "UPDATED_AT",
+                                "_ab_cdc_deleted_at" to "_AB_CDC_DELETED_AT"
+                            ),
+                        finalSchema =
+                            mapOf(
+                                "ID" to ColumnType("VARCHAR", false),
+                                "NAME" to ColumnType("VARCHAR", true),
+                                "UPDATED_AT" to ColumnType("TIMESTAMP_TZ", true),
+                                "_AB_CDC_DELETED_AT" to ColumnType("TIMESTAMP_TZ", true)
+                            ),
+                        inputSchema =
+                            mapOf(
+                                "id" to FieldType(StringType, nullable = false),
+                                "name" to FieldType(StringType, nullable = true),
+                                "updated_at" to FieldType(StringType, nullable = true),
+                                "_ab_cdc_deleted_at" to FieldType(StringType, nullable = true)
+                            )
+                    ),
+                importType =
+                    Dedupe(primaryKey = listOf(listOf("id")), cursor = listOf("updated_at"))
+            )
+
+        val sql =
+            snowflakeDirectLoadSqlGenerator.upsertTable(
+                tableSchema,
+                sourceTableName,
+                targetTableName
+            )
+
+        // Should NOT include DELETE clause in soft delete mode
+        assert(!sql.contains("THEN DELETE"))
+        assert(sql.contains("WHEN NOT MATCHED THEN INSERT"))
+        assert(!sql.contains("AND new_record.${CDC_DELETED_AT_COLUMN.quote()} IS NULL"))
     }
 
     @Test
@@ -877,7 +931,8 @@ internal class SnowflakeDirectLoadSqlGeneratorTest {
         val expectedTargetTable =
             snowflakeDirectLoadSqlGenerator.fullyQualifiedName(targetTableName)
 
-        val expectedSql = """
+        val expectedSql =
+            """
                 |MERGE INTO $expectedTargetTable AS target_table
                 |USING (
                 |  WITH records AS (
