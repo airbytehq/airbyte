@@ -873,3 +873,248 @@ class TriggersResponseBuilder(HttpResponseBuilder):
             FieldPath("triggers"),
             NextPagePaginationStrategy(next_page_url),
         )
+
+
+# Additional Record Builders for missing streams
+
+
+class OrganizationsRecordBuilder(ZendeskSupportRecordBuilder):
+    @classmethod
+    def organizations_record(cls) -> "OrganizationsRecordBuilder":
+        record_template = cls.extract_record("organizations", __file__, NestedPath(["organizations", 0]))
+        return cls(record_template, FieldPath("id"), FieldPath("updated_at"))
+
+    def with_id(self, id: int) -> "OrganizationsRecordBuilder":
+        self._record["id"] = id
+        return self
+
+
+class SatisfactionRatingsRecordBuilder(ZendeskSupportRecordBuilder):
+    @classmethod
+    def satisfaction_ratings_record(cls) -> "SatisfactionRatingsRecordBuilder":
+        record_template = cls.extract_record("satisfaction_ratings", __file__, NestedPath(["satisfaction_ratings", 0]))
+        return cls(record_template, FieldPath("id"), FieldPath("updated_at"))
+
+    def with_id(self, id: int) -> "SatisfactionRatingsRecordBuilder":
+        self._record["id"] = id
+        return self
+
+
+class TicketAuditsRecordBuilder(ZendeskSupportRecordBuilder):
+    @classmethod
+    def ticket_audits_record(cls) -> "TicketAuditsRecordBuilder":
+        record_template = cls.extract_record("ticket_audits", __file__, NestedPath(["audits", 0]))
+        return cls(record_template, FieldPath("id"), FieldPath("created_at"))
+
+    def with_id(self, id: int) -> "TicketAuditsRecordBuilder":
+        self._record["id"] = id
+        return self
+
+
+class TicketCommentsRecordBuilder(ZendeskSupportRecordBuilder):
+    @classmethod
+    def ticket_comments_record(cls) -> "TicketCommentsRecordBuilder":
+        record_template = cls.extract_record("ticket_comments", __file__, NestedPath(["ticket_events", 0, "child_events", 0]))
+        return cls(record_template, FieldPath("id"), FieldPath("updated_at"))
+
+    def with_id(self, id: int) -> "TicketCommentsRecordBuilder":
+        self._record["id"] = id
+        return self
+
+
+class TicketMetricEventsRecordBuilder(ZendeskSupportRecordBuilder):
+    @classmethod
+    def ticket_metric_events_record(cls) -> "TicketMetricEventsRecordBuilder":
+        record_template = cls.extract_record("ticket_metric_events", __file__, NestedPath(["ticket_metric_events", 0]))
+        return cls(record_template, FieldPath("id"), FieldPath("time"))
+
+    def with_id(self, id: int) -> "TicketMetricEventsRecordBuilder":
+        self._record["id"] = id
+        return self
+
+
+class TicketSkipsRecordBuilder(ZendeskSupportRecordBuilder):
+    @classmethod
+    def ticket_skips_record(cls) -> "TicketSkipsRecordBuilder":
+        record_template = cls.extract_record("ticket_skips", __file__, NestedPath(["skips", 0]))
+        return cls(record_template, FieldPath("id"), FieldPath("updated_at"))
+
+    def with_id(self, id: int) -> "TicketSkipsRecordBuilder":
+        self._record["id"] = id
+        return self
+
+
+class AuditLogsRecordBuilder(ZendeskSupportRecordBuilder):
+    @classmethod
+    def audit_logs_record(cls) -> "AuditLogsRecordBuilder":
+        record_template = cls.extract_record("audit_logs", __file__, NestedPath(["audit_logs", 0]))
+        return cls(record_template, FieldPath("id"), FieldPath("created_at"))
+
+    def with_id(self, id: int) -> "AuditLogsRecordBuilder":
+        self._record["id"] = id
+        return self
+
+
+class ArticleCommentsRecordBuilder(ZendeskSupportRecordBuilder):
+    @classmethod
+    def article_comments_record(cls) -> "ArticleCommentsRecordBuilder":
+        record_template = cls.extract_record("article_comments", __file__, NestedPath(["comments", 0]))
+        return cls(record_template, FieldPath("id"), FieldPath("updated_at"))
+
+    def with_id(self, id: int) -> "ArticleCommentsRecordBuilder":
+        self._record["id"] = id
+        return self
+
+
+class ArticleVotesRecordBuilder(ZendeskSupportRecordBuilder):
+    @classmethod
+    def article_votes_record(cls) -> "ArticleVotesRecordBuilder":
+        record_template = cls.extract_record("article_votes", __file__, NestedPath(["votes", 0]))
+        return cls(record_template, FieldPath("id"), FieldPath("updated_at"))
+
+    def with_id(self, id: int) -> "ArticleVotesRecordBuilder":
+        self._record["id"] = id
+        return self
+
+
+class ArticleAttachmentsRecordBuilder(ZendeskSupportRecordBuilder):
+    @classmethod
+    def article_attachments_record(cls) -> "ArticleAttachmentsRecordBuilder":
+        record_template = cls.extract_record("article_attachments", __file__, NestedPath(["article_attachments", 0]))
+        return cls(record_template, FieldPath("id"), FieldPath("updated_at"))
+
+    def with_id(self, id: int) -> "ArticleAttachmentsRecordBuilder":
+        self._record["id"] = id
+        return self
+
+
+class ArticleCommentVotesRecordBuilder(ZendeskSupportRecordBuilder):
+    @classmethod
+    def article_comment_votes_record(cls) -> "ArticleCommentVotesRecordBuilder":
+        record_template = cls.extract_record("article_comment_votes", __file__, NestedPath(["votes", 0]))
+        return cls(record_template, FieldPath("id"), FieldPath("updated_at"))
+
+    def with_id(self, id: int) -> "ArticleCommentVotesRecordBuilder":
+        self._record["id"] = id
+        return self
+
+
+# Additional Response Builders for missing streams
+
+
+class OrganizationsResponseBuilder(HttpResponseBuilder):
+    @classmethod
+    def organizations_response(cls, url: Optional[str] = None, cursor: Optional[str] = None) -> "OrganizationsResponseBuilder":
+        return cls(
+            find_template("organizations", __file__),
+            FieldPath("organizations"),
+            EndOfStreamPaginationStrategy(url, cursor) if url and cursor else None,
+        )
+
+
+class SatisfactionRatingsResponseBuilder(HttpResponseBuilder):
+    @classmethod
+    def satisfaction_ratings_response(
+        cls, request_without_cursor_for_pagination: Optional[HttpRequest] = None
+    ) -> "SatisfactionRatingsResponseBuilder":
+        return cls(
+            find_template("satisfaction_ratings", __file__),
+            FieldPath("satisfaction_ratings"),
+            CursorBasedPaginationStrategy(http_request_to_str(request_without_cursor_for_pagination)),
+        )
+
+
+class TicketAuditsResponseBuilder(HttpResponseBuilder):
+    @classmethod
+    def ticket_audits_response(cls, request_without_cursor_for_pagination: Optional[HttpRequest] = None) -> "TicketAuditsResponseBuilder":
+        return cls(
+            find_template("ticket_audits", __file__),
+            FieldPath("audits"),
+            CursorBasedPaginationStrategy(http_request_to_str(request_without_cursor_for_pagination)),
+        )
+
+
+class TicketCommentsResponseBuilder(HttpResponseBuilder):
+    @classmethod
+    def ticket_comments_response(cls, url: Optional[str] = None, cursor: Optional[str] = None) -> "TicketCommentsResponseBuilder":
+        return cls(
+            find_template("ticket_comments", __file__),
+            FieldPath("ticket_events"),
+            EndOfStreamPaginationStrategy(url, cursor) if url and cursor else None,
+        )
+
+
+class TicketMetricEventsResponseBuilder(HttpResponseBuilder):
+    @classmethod
+    def ticket_metric_events_response(
+        cls, request_without_cursor_for_pagination: Optional[HttpRequest] = None
+    ) -> "TicketMetricEventsResponseBuilder":
+        return cls(
+            find_template("ticket_metric_events", __file__),
+            FieldPath("ticket_metric_events"),
+            CursorBasedPaginationStrategy(http_request_to_str(request_without_cursor_for_pagination)),
+        )
+
+
+class TicketSkipsResponseBuilder(HttpResponseBuilder):
+    @classmethod
+    def ticket_skips_response(cls, request_without_cursor_for_pagination: Optional[HttpRequest] = None) -> "TicketSkipsResponseBuilder":
+        return cls(
+            find_template("ticket_skips", __file__),
+            FieldPath("skips"),
+            CursorBasedPaginationStrategy(http_request_to_str(request_without_cursor_for_pagination)),
+        )
+
+
+class AuditLogsResponseBuilder(HttpResponseBuilder):
+    @classmethod
+    def audit_logs_response(cls, request_without_cursor_for_pagination: Optional[HttpRequest] = None) -> "AuditLogsResponseBuilder":
+        return cls(
+            find_template("audit_logs", __file__),
+            FieldPath("audit_logs"),
+            CursorBasedPaginationStrategy(http_request_to_str(request_without_cursor_for_pagination)),
+        )
+
+
+class ArticleCommentsResponseBuilder(HttpResponseBuilder):
+    @classmethod
+    def article_comments_response(
+        cls, request_without_cursor_for_pagination: Optional[HttpRequest] = None
+    ) -> "ArticleCommentsResponseBuilder":
+        return cls(
+            find_template("article_comments", __file__),
+            FieldPath("comments"),
+            CursorBasedPaginationStrategy(http_request_to_str(request_without_cursor_for_pagination)),
+        )
+
+
+class ArticleVotesResponseBuilder(HttpResponseBuilder):
+    @classmethod
+    def article_votes_response(cls, request_without_cursor_for_pagination: Optional[HttpRequest] = None) -> "ArticleVotesResponseBuilder":
+        return cls(
+            find_template("article_votes", __file__),
+            FieldPath("votes"),
+            CursorBasedPaginationStrategy(http_request_to_str(request_without_cursor_for_pagination)),
+        )
+
+
+class ArticleAttachmentsResponseBuilder(HttpResponseBuilder):
+    @classmethod
+    def article_attachments_response(cls) -> "ArticleAttachmentsResponseBuilder":
+        return cls(
+            find_template("article_attachments", __file__),
+            FieldPath("article_attachments"),
+            None,
+        )
+
+
+class ArticleCommentVotesResponseBuilder(HttpResponseBuilder):
+    @classmethod
+    def article_comment_votes_response(
+        cls, request_without_cursor_for_pagination: Optional[HttpRequest] = None
+    ) -> "ArticleCommentVotesResponseBuilder":
+        return cls(
+            find_template("article_comment_votes", __file__),
+            FieldPath("votes"),
+            CursorBasedPaginationStrategy(http_request_to_str(request_without_cursor_for_pagination)),
+        )
