@@ -131,6 +131,13 @@
         "default": 14,
         "examples": [14],
         "order": 6
+      },
+      "include_geo_target": {
+        "title": "Include Geo Target Segments",
+        "type": "boolean",
+        "description": "When enabled, the geographic_view stream will include geo_target_city and geo_target_region segments. Note: Enabling this option may result in fewer rows being returned, as the Google Ads API filters out rows where these segments have no value.",
+        "default": false,
+        "order": 7
       }
     }
   },
