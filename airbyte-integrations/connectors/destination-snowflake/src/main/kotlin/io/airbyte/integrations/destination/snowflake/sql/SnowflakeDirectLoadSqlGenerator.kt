@@ -150,9 +150,9 @@ class SnowflakeDirectLoadSqlGenerator(
             addAll(finalSchema.keys)
         }
 
-        val columnList: String = allColumns.joinToString(",\n") { it.quote() }
+        val columnList: String = allColumns.joinToString(",\n  ") { it.quote() }
         val newRecordColumnList: String =
-            allColumns.joinToString(",\n") { "new_record.${it.quote()}" }
+            allColumns.joinToString(",\n  ") { "new_record.${it.quote()}" }
 
         // Get deduped records from source
         val selectSourceRecords = selectDedupedRecords(tableSchema, sourceTableName)
@@ -180,7 +180,7 @@ class SnowflakeDirectLoadSqlGenerator(
 
         // Build column assignments for UPDATE
         val columnAssignments: String =
-            allColumns.joinToString(",\n") { column ->
+            allColumns.joinToString(",\n  ") { column ->
                 "${column.quote()} = new_record.${column.quote()}"
             }
 
@@ -207,35 +207,35 @@ class SnowflakeDirectLoadSqlGenerator(
         val mergeStatement =
             if (cdcDeleteClause.isNotEmpty()) {
                 """
-            MERGE INTO ${fullyQualifiedName(targetTableName)} AS target_table
-            USING (
-              $selectSourceRecords
-            ) AS new_record
-            ON $pkEquivalent
-            $cdcDeleteClause
-            WHEN MATCHED AND $cursorComparison THEN UPDATE SET
-              $columnAssignments
-            WHEN NOT MATCHED $cdcSkipInsertClause THEN INSERT (
-              $columnList
-            ) VALUES (
-              $newRecordColumnList
-            )
-        """.trimIndent()
+            |MERGE INTO ${fullyQualifiedName(targetTableName)} AS target_table
+            |USING (
+            |$selectSourceRecords
+            |) AS new_record
+            |ON $pkEquivalent
+            |$cdcDeleteClause
+            |WHEN MATCHED AND $cursorComparison THEN UPDATE SET
+            |  $columnAssignments
+            |WHEN NOT MATCHED $cdcSkipInsertClause THEN INSERT (
+            |  $columnList
+            |) VALUES (
+            |  $newRecordColumnList
+            |)
+        """.trimMargin()
             } else {
                 """
-            MERGE INTO ${fullyQualifiedName(targetTableName)} AS target_table
-            USING (
-              $selectSourceRecords
-            ) AS new_record
-            ON $pkEquivalent
-            WHEN MATCHED AND $cursorComparison THEN UPDATE SET
-              $columnAssignments
-            WHEN NOT MATCHED THEN INSERT (
-              $columnList
-            ) VALUES (
-              $newRecordColumnList
-            )
-        """.trimIndent()
+            |MERGE INTO ${fullyQualifiedName(targetTableName)} AS target_table
+            |USING (
+            |$selectSourceRecords
+            |) AS new_record
+            |ON $pkEquivalent
+            |WHEN MATCHED AND $cursorComparison THEN UPDATE SET
+            |  $columnAssignments
+            |WHEN NOT MATCHED THEN INSERT (
+            |  $columnList
+            |) VALUES (
+            |  $newRecordColumnList
+            |)
+        """.trimMargin()
             }
 
         return mergeStatement.andLog()
@@ -256,7 +256,7 @@ class SnowflakeDirectLoadSqlGenerator(
             add(SNOWFLAKE_AB_GENERATION_ID)
             addAll(tableSchema.columnSchema.finalSchema.keys)
         }
-        val columnList: String = allColumns.joinToString(",\n") { it.quote() }
+        val columnList: String = allColumns.joinToString(",\n      ") { it.quote() }
 
         // Build the primary key list for partitioning
         val pks = tableSchema.getPrimaryKey().flatten()
@@ -278,21 +278,21 @@ class SnowflakeDirectLoadSqlGenerator(
             }
 
         return """
-            WITH records AS (
-              SELECT
-                $columnList
-              FROM ${fullyQualifiedName(sourceTableName)}
-            ), numbered_rows AS (
-              SELECT *, ROW_NUMBER() OVER (
-                PARTITION BY $pkList ORDER BY $cursorOrderClause "$SNOWFLAKE_AB_EXTRACTED_AT" DESC
-              ) AS row_number
-              FROM records
-            )
-            SELECT $columnList
-            FROM numbered_rows
-            WHERE row_number = 1
+            |  WITH records AS (
+            |    SELECT
+            |      $columnList
+            |    FROM ${fullyQualifiedName(sourceTableName)}
+            |  ), numbered_rows AS (
+            |    SELECT *, ROW_NUMBER() OVER (
+            |      PARTITION BY $pkList ORDER BY $cursorOrderClause "$SNOWFLAKE_AB_EXTRACTED_AT" DESC
+            |    ) AS row_number
+            |    FROM records
+            |  )
+            |  SELECT $columnList
+            |  FROM numbered_rows
+            |  WHERE row_number = 1
         """
-            .trimIndent()
+            .trimMargin()
             .andLog()
     }
 
@@ -339,25 +339,25 @@ class SnowflakeDirectLoadSqlGenerator(
             columnNames?.let { names -> "(${names.joinToString(", ") { it.quote() }})" } ?: ""
 
         return """
-            COPY INTO ${fullyQualifiedName(tableName)}$columnList
-            FROM '@$stageName'
-            FILE_FORMAT = (
-                TYPE = 'CSV'
-                COMPRESSION = GZIP
-                FIELD_DELIMITER = '$CSV_FIELD_SEPARATOR'
-                RECORD_DELIMITER = '$CSV_LINE_DELIMITER'
-                FIELD_OPTIONALLY_ENCLOSED_BY = '"'
-                TRIM_SPACE = TRUE
-                ERROR_ON_COLUMN_COUNT_MISMATCH = FALSE
-                REPLACE_INVALID_CHARACTERS = TRUE
-                ESCAPE = NONE
-                ESCAPE_UNENCLOSED_FIELD = NONE
-            )
-            ON_ERROR = 'ABORT_STATEMENT'
-            PURGE = TRUE
-            files = ('$filename')
+            |COPY INTO ${fullyQualifiedName(tableName)}$columnList
+            |FROM '@$stageName'
+            |FILE_FORMAT = (
+            |    TYPE = 'CSV'
+            |    COMPRESSION = GZIP
+            |    FIELD_DELIMITER = '$CSV_FIELD_SEPARATOR'
+            |    RECORD_DELIMITER = '$CSV_LINE_DELIMITER'
+            |    FIELD_OPTIONALLY_ENCLOSED_BY = '"'
+            |    TRIM_SPACE = TRUE
+            |    ERROR_ON_COLUMN_COUNT_MISMATCH = FALSE
+            |    REPLACE_INVALID_CHARACTERS = TRUE
+            |    ESCAPE = NONE
+            |    ESCAPE_UNENCLOSED_FIELD = NONE
+            |)
+            |ON_ERROR = 'ABORT_STATEMENT'
+            |PURGE = TRUE
+            |files = ('$filename')
         """
-            .trimIndent()
+            .trimMargin()
             .andLog()
     }
 
