@@ -17,16 +17,16 @@ fun String.toClickHouseCompatibleName(): String {
     //    a digit (0-9), or an underscore (_) with a single underscore.
     var transformed = toAlphanumericAndUnderscore(this)
 
-    // 2. Ensure the identifier does not start with a digit.
-    //    If it starts with a digit, prepend an underscore.
-    if (transformed.isNotEmpty() && transformed[0].isDigit()) {
-        transformed = "_$transformed"
-    }
-
-    // 3.Do not allow empty strings.
+    // 2.Do not allow empty strings.
     if (transformed.isEmpty()) {
         return "default_name_${UUID.randomUUID()}" // A fallback name if the input results in an
         // empty string
+    }
+
+    // 3. Ensure the identifier does not start with a digit.
+    //    If it starts with a digit, prepend an underscore.
+    if (transformed[0].isDigit()) {
+        transformed = "_$transformed"
     }
 
     return transformed
