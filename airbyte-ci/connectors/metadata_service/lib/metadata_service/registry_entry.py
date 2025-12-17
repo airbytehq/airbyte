@@ -533,7 +533,9 @@ def generate_and_persist_registry_entry(
 
     # For latest versions that are disabled, delete any existing registry entry to remove it from the registry
     if (
-        "-rc" not in metadata_dict["data"]["dockerImageTag"] and "-dev" not in metadata_dict["data"]["dockerImageTag"]
+        "-rc" not in metadata_dict["data"]["dockerImageTag"]
+        and "-dev" not in metadata_dict["data"]["dockerImageTag"]
+        and "-preview" not in metadata_dict["data"]["dockerImageTag"]
     ) and not metadata_dict["data"]["registryOverrides"][registry_type]["enabled"]:
         logger.info(
             f"{registry_type} is not enabled: deleting existing {registry_type} registry entry for {metadata_dict['data']['dockerRepository']} at latest path."
