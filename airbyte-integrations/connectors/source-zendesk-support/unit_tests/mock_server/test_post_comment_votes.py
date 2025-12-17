@@ -16,7 +16,15 @@ from airbyte_cdk.utils.datetime_helpers import ab_datetime_now, ab_datetime_pars
 from .config import ConfigBuilder
 from .helpers import given_post_comments, given_posts, given_ticket_forms
 from .request_builder import ApiTokenAuthenticator, ZendeskSupportRequestBuilder
-from .response_builder import ErrorResponseBuilder, PostCommentVotesRecordBuilder, PostCommentVotesResponseBuilder
+from .response_builder import (
+    ErrorResponseBuilder,
+    PostCommentsRecordBuilder,
+    PostCommentsResponseBuilder,
+    PostCommentVotesRecordBuilder,
+    PostCommentVotesResponseBuilder,
+    PostsRecordBuilder,
+    PostsResponseBuilder,
+)
 from .utils import datetime_to_string, get_log_messages_by_log_level, read_stream, string_to_datetime
 
 
@@ -68,12 +76,104 @@ class TestPostsCommentVotesStreamFullRefresh(TestCase):
         output = read_stream("post_comment_votes", SyncMode.full_refresh, self._config)
         assert len(output.records) == 1
 
-    # NOTE: 2+ parent records test for post_comment_votes is complex due to nested substream
-    # (posts -> post_comments -> post_comment_votes). The mock HTTP framework has difficulty
-    # matching URLs when parent record IDs are dynamically set because the JSON templates
-    # contain default IDs that get used by the connector. The 2+ parent records requirement
-    # is covered by test_post_comments.py and test_post_votes.py which are direct substreams
-    # of posts and properly exercise the substream partitioning logic.
+    @HttpMocker()
+    def test_given_two_parent_comments_when_read_then_return_records_from_both_parents(self, http_mocker):
+        """
+        Test nested substream with 2+ parent comments (per playbook requirement).
+        Verifies that child records are fetched for each parent comment across different posts.
+
+        Structure: posts (grandparent) → post_comments (parent) → post_comment_votes (child)
+        """
+        api_token_authenticator = self.get_authenticator(self._config)
+        start_date = string_to_datetime(self._config["start_date"])
+
+        # Setup 2 grandparent posts with explicit IDs
+        posts_record_builder_1 = (
+            PostsRecordBuilder.posts_record()
+            .with_id(1001)
+            .with_field(FieldPath("updated_at"), datetime_to_string(start_date.add(timedelta(seconds=1))))
+        )
+        posts_record_builder_2 = (
+            PostsRecordBuilder.posts_record()
+            .with_id(1002)
+            .with_field(FieldPath("updated_at"), datetime_to_string(start_date.add(timedelta(seconds=2))))
+        )
+
+        # Mock the grandparent endpoint with both posts
+        http_mocker.get(
+            ZendeskSupportRequestBuilder.posts_endpoint(api_token_authenticator)
+            .with_start_time(datetime_to_string(start_date))
+            .with_page_size(100)
+            .build(),
+            PostsResponseBuilder.posts_response().with_record(posts_record_builder_1).with_record(posts_record_builder_2).build(),
+        )
+
+        post1 = posts_record_builder_1.build()
+        post2 = posts_record_builder_2.build()
+
+        # Setup parent comment for post1
+        comment1_builder = (
+            PostCommentsRecordBuilder.post_comments_record()
+            .with_id(2001)
+            .with_field(FieldPath("post_id"), post1["id"])
+            .with_field(FieldPath("updated_at"), datetime_to_string(start_date.add(timedelta(seconds=3))))
+        )
+
+        http_mocker.get(
+            ZendeskSupportRequestBuilder.post_comments_endpoint(api_token_authenticator, post1["id"])
+            .with_start_time(datetime_to_string(start_date))
+            .with_page_size(100)
+            .build(),
+            PostCommentsResponseBuilder.post_comments_response().with_record(comment1_builder).build(),
+        )
+        comment1 = comment1_builder.build()
+
+        # Setup parent comment for post2
+        comment2_builder = (
+            PostCommentsRecordBuilder.post_comments_record()
+            .with_id(2002)
+            .with_field(FieldPath("post_id"), post2["id"])
+            .with_field(FieldPath("updated_at"), datetime_to_string(start_date.add(timedelta(seconds=4))))
+        )
+
+        http_mocker.get(
+            ZendeskSupportRequestBuilder.post_comments_endpoint(api_token_authenticator, post2["id"])
+            .with_start_time(datetime_to_string(start_date))
+            .with_page_size(100)
+            .build(),
+            PostCommentsResponseBuilder.post_comments_response().with_record(comment2_builder).build(),
+        )
+        comment2 = comment2_builder.build()
+
+        # Mock child votes for comment1 (from post1)
+        http_mocker.get(
+            ZendeskSupportRequestBuilder.post_comment_votes_endpoint(api_token_authenticator, post1["id"], comment1["id"])
+            .with_start_time(self._config["start_date"])
+            .with_page_size(100)
+            .build(),
+            PostCommentVotesResponseBuilder.post_comment_votes_response()
+            .with_record(PostCommentVotesRecordBuilder.post_commetn_votes_record().with_id(3001))
+            .build(),
+        )
+
+        # Mock child votes for comment2 (from post2)
+        http_mocker.get(
+            ZendeskSupportRequestBuilder.post_comment_votes_endpoint(api_token_authenticator, post2["id"], comment2["id"])
+            .with_start_time(self._config["start_date"])
+            .with_page_size(100)
+            .build(),
+            PostCommentVotesResponseBuilder.post_comment_votes_response()
+            .with_record(PostCommentVotesRecordBuilder.post_commetn_votes_record().with_id(3002))
+            .build(),
+        )
+
+        output = read_stream("post_comment_votes", SyncMode.full_refresh, self._config)
+
+        # Verify records from both parent comments
+        assert len(output.records) == 2
+        record_ids = [r.record.data["id"] for r in output.records]
+        assert 3001 in record_ids
+        assert 3002 in record_ids
 
     @HttpMocker()
     def test_given_403_error_when_read_posts_comments_then_skip_stream(self, http_mocker):
