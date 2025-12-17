@@ -100,23 +100,21 @@ override fun computeSchema(
     stream: DestinationStream,
     columnNameMapping: ColumnNameMapping
 ): TableSchema {
-    val columns = stream.schema.asColumns()
-        .filter { (name, _) -> name !in AIRBYTE_META_COLUMNS }
-        .mapKeys { (name, _) -> columnNameMapping[name]!! }
-        .mapValues { (_, field) ->
-            val dbType = columnUtils.toDialectType(field.type)
-                .takeWhile { it != '(' }  // Strip precision
-            ColumnType(dbType, field.nullable)
-        }
-
-    return TableSchema(columns)
+    // Modern CDK pattern: schema is pre-computed by CDK using TableSchemaMapper
+    return TableSchema(stream.tableSchema.columnSchema.finalSchema)
 }
 ```
 
 **What this does:**
-- Converts Airbyte schema → database schema
-- Applies column name mapping (Phase 6 generators)
-- Uses ColumnUtils.toDialectType() from Phase 4
+- Returns the pre-computed final schema from the stream
+- CDK has already applied `TableSchemaMapper.toColumnType()` and `toColumnName()` to compute this
+- No manual type conversion needed - TableSchemaMapper handles it
+
+**Why this is simpler than manual conversion:**
+- TableSchemaMapper (from Phase 3.1) defines type mappings
+- CDK calls mapper during catalog initialization
+- Result is stored in `stream.tableSchema.columnSchema.finalSchema`
+- `computeSchema()` just returns this pre-computed value
 
 ### Advanced Step 3: Implement alterTable() - ADD COLUMN
 

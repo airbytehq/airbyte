@@ -21,7 +21,7 @@ After completing this guide, you'll have:
 
 **📋 What TableSchemaMapper Does:**
 
-TableSchemaMapper is the **single source of truth** for schema transformations:
+TableSchemaMapper defines schema transformations:
 - **Table names:** Stream descriptor → database table name
 - **Column names:** Airbyte column → database column (case, special chars)
 - **Column types:** Airbyte types → database types (INTEGER → BIGINT, etc.)
@@ -30,7 +30,6 @@ TableSchemaMapper is the **single source of truth** for schema transformations:
 This interface is used by:
 - `TableNameResolver` / `ColumnNameResolver` (CDK collision handling)
 - `TableSchemaEvolutionClient` (schema evolution in Phase 5)
-- `TableOperationsClient` (table creation)
 
 ### Infrastructure Step 1: Create TableSchemaMapper
 
@@ -41,10 +40,27 @@ package io.airbyte.integrations.destination.{db}.schema
 
 import io.airbyte.cdk.load.command.DestinationStream
 import io.airbyte.cdk.load.component.ColumnType
-import io.airbyte.cdk.load.data.*
+import io.airbyte.cdk.load.data.ArrayType
+import io.airbyte.cdk.load.data.ArrayTypeWithoutSchema
+import io.airbyte.cdk.load.data.BooleanType
+import io.airbyte.cdk.load.data.DateType
+import io.airbyte.cdk.load.data.FieldType
+import io.airbyte.cdk.load.data.IntegerType
+import io.airbyte.cdk.load.data.NumberType
+import io.airbyte.cdk.load.data.ObjectType
+import io.airbyte.cdk.load.data.ObjectTypeWithEmptySchema
+import io.airbyte.cdk.load.data.ObjectTypeWithoutSchema
+import io.airbyte.cdk.load.data.StringType
+import io.airbyte.cdk.load.data.TimeTypeWithTimezone
+import io.airbyte.cdk.load.data.TimeTypeWithoutTimezone
+import io.airbyte.cdk.load.data.TimestampTypeWithTimezone
+import io.airbyte.cdk.load.data.TimestampTypeWithoutTimezone
+import io.airbyte.cdk.load.data.UnionType
+import io.airbyte.cdk.load.data.UnknownType
 import io.airbyte.cdk.load.schema.TableSchemaMapper
 import io.airbyte.cdk.load.schema.model.TableName
 import io.airbyte.cdk.load.table.TempTableNameGenerator
+import io.airbyte.integrations.destination.{db}.config.toDbCompatibleName
 import io.airbyte.integrations.destination.{db}.spec.{DB}Configuration
 import jakarta.inject.Singleton
 
@@ -55,8 +71,8 @@ class {DB}TableSchemaMapper(
 ) : TableSchemaMapper {
 
     override fun toFinalTableName(desc: DestinationStream.Descriptor): TableName {
-        val namespace = (desc.namespace ?: config.database).toDbCompatible()
-        val name = desc.name.toDbCompatible()
+        val namespace = (desc.namespace ?: config.database).toDbCompatibleName()
+        val name = desc.name.toDbCompatibleName()
         return TableName(namespace, name)
     }
 
@@ -65,42 +81,30 @@ class {DB}TableSchemaMapper(
     }
 
     override fun toColumnName(name: String): String {
-        return name.toDbCompatible()
+        return name.toDbCompatibleName()
     }
 
     override fun toColumnType(fieldType: FieldType): ColumnType {
         val dbType = when (fieldType.type) {
-            BooleanType -> "BOOLEAN"
-            IntegerType -> "BIGINT"
-            NumberType -> "DECIMAL(38, 9)"
-            StringType -> "VARCHAR"
-            DateType -> "DATE"
-            TimeTypeWithTimezone, TimeTypeWithoutTimezone -> "TIME"
-            TimestampTypeWithTimezone -> "TIMESTAMP WITH TIME ZONE"
-            TimestampTypeWithoutTimezone -> "TIMESTAMP"
-            is ArrayType, ArrayTypeWithoutSchema -> "JSONB"
-            is ObjectType, ObjectTypeWithEmptySchema, ObjectTypeWithoutSchema -> "JSONB"
-            is UnionType, is UnknownType -> "JSONB"
+            BooleanType -> {DB}SqlTypes.BOOLEAN
+            DateType -> {DB}SqlTypes.DATE
+            IntegerType -> {DB}SqlTypes.BIGINT
+            NumberType -> {DB}SqlTypes.DECIMAL
+            StringType -> {DB}SqlTypes.VARCHAR
+            TimeTypeWithTimezone,
+            TimeTypeWithoutTimezone -> {DB}SqlTypes.TIME
+            TimestampTypeWithTimezone,
+            TimestampTypeWithoutTimezone -> {DB}SqlTypes.TIMESTAMP
+            is ArrayType,
+            ArrayTypeWithoutSchema,
+            is UnionType,
+            is UnknownType -> {DB}SqlTypes.JSON
+            ObjectTypeWithEmptySchema,
+            ObjectTypeWithoutSchema,
+            is ObjectType -> {DB}SqlTypes.JSON
         }
         return ColumnType(dbType, fieldType.nullable)
     }
-
-    // Optional: Override for database-specific conflict detection
-    // Default is case-insensitive comparison
-    // override fun colsConflict(a: String, b: String): Boolean = a.equals(b, ignoreCase = true)
-}
-
-// Database-specific name transformation
-private fun String.toDbCompatible(): String {
-    // Snowflake: return this.uppercase()
-    // Postgres/ClickHouse: return this.lowercase()
-    // MySQL: return this.replace(Regex("[^a-zA-Z0-9_]"), "_")
-
-    // Example for Postgres:
-    return this
-        .lowercase()
-        .replace(Regex("[^a-z0-9_]"), "_")
-        .take(63)  // Postgres identifier limit
 }
 ```
 
@@ -113,7 +117,38 @@ private fun String.toDbCompatible(): String {
 | NumberType | DECIMAL(38,9) | DECIMAL(38,9) | FLOAT | Decimal(38,9) |
 | StringType | VARCHAR | VARCHAR(65535) | VARCHAR | String |
 | TimestampTypeWithTimezone | TIMESTAMPTZ | TIMESTAMP | TIMESTAMP_TZ | DateTime64(3) |
-| ObjectType | JSONB | JSON | VARIANT | String |
+| ObjectType | JSONB | JSON | VARIANT | String/JSON |
+
+**Optional: Override toFinalSchema() for Dedupe Mode**
+
+Some databases need to adjust column nullability for dedupe mode (e.g., ClickHouse's ReplacingMergeTree requires non-null PK/cursor columns):
+
+```kotlin
+override fun toFinalSchema(tableSchema: StreamTableSchema): StreamTableSchema {
+    if (tableSchema.importType !is Dedupe) {
+        return tableSchema  // No changes for append/overwrite
+    }
+
+    // Make PK and cursor columns non-nullable for dedupe
+    val pks = tableSchema.getPrimaryKey().flatten()
+    val cursor = tableSchema.getCursor().firstOrNull()
+    val nonNullCols = buildSet {
+        addAll(pks)
+        cursor?.let { add(it) }
+    }
+
+    val finalSchema = tableSchema.columnSchema.finalSchema
+        .mapValues { (name, type) ->
+            if (name in nonNullCols) type.copy(nullable = false) else type
+        }
+
+    return tableSchema.copy(
+        columnSchema = tableSchema.columnSchema.copy(finalSchema = finalSchema)
+    )
+}
+```
+
+Most databases don't need this override - the default implementation returns the schema unchanged.
 
 ### Infrastructure Step 2: Validate Compilation
 
@@ -121,7 +156,7 @@ private fun String.toDbCompatible(): String {
 $ ./gradlew :destination-{db}:compileKotlin
 ```
 
-Expected: BUILD SUCCESSFUL
+Expected: BUILD SUCCESSFUL (may have unresolved reference to `toDbCompatibleName` until Phase 2)
 
 **Note:** TableSchemaMapper is validated via `TableSchemaEvolutionSuite` in [5-advanced-features.md](./5-advanced-features.md). No separate tests needed now.
 
@@ -136,81 +171,104 @@ Expected: BUILD SUCCESSFUL
 **Checkpoint:** Compilation succeeds without DI errors
 
 **📋 Dependency Context:** TableCatalog (auto-instantiated by CDK) requires these @Singleton beans:
-- FinalTableNameGenerator (delegates to TableSchemaMapper)
-- ColumnNameGenerator (delegates to TableSchemaMapper)
+- FinalTableNameGenerator
+- ColumnNameGenerator
 - TempTableNameGenerator
 
 Without these beans, you'll get **"Error instantiating TableCatalog"** or **"No bean of type [FinalTableNameGenerator]"** errors in write tests.
 
-**Note:** These generators delegate to your `TableSchemaMapper` for the actual transformation logic.
-
 ### Infrastructure Step 1: Create Name Generators
 
-**File:** `config/{DB}NameGenerators.kt`
-
-These generators delegate to your `TableSchemaMapper` for consistency:
+**Add to file:** `config/{DB}NameGenerators.kt` (same file as the helper function)
 
 ```kotlin
 package io.airbyte.integrations.destination.{db}.config
 
 import io.airbyte.cdk.load.command.DestinationStream
+import io.airbyte.cdk.load.data.Transformations.Companion.toAlphanumericAndUnderscore
 import io.airbyte.cdk.load.schema.model.TableName
 import io.airbyte.cdk.load.table.ColumnNameGenerator
 import io.airbyte.cdk.load.table.FinalTableNameGenerator
-import io.airbyte.integrations.destination.{db}.schema.{DB}TableSchemaMapper
+import io.airbyte.integrations.destination.{db}.spec.{DB}Configuration
 import jakarta.inject.Singleton
+import java.util.Locale
+import java.util.UUID
 
 @Singleton
 class {DB}FinalTableNameGenerator(
-    private val mapper: {DB}TableSchemaMapper,
+    private val config: {DB}Configuration,
 ) : FinalTableNameGenerator {
     override fun getTableName(streamDescriptor: DestinationStream.Descriptor): TableName {
-        // Delegate to TableSchemaMapper for consistent naming
-        return mapper.toFinalTableName(streamDescriptor)
+        val namespace = (streamDescriptor.namespace ?: config.database).toDbCompatibleName()
+        val name = streamDescriptor.name.toDbCompatibleName()
+        return TableName(namespace, name)
     }
 }
 
 @Singleton
-class {DB}ColumnNameGenerator(
-    private val mapper: {DB}TableSchemaMapper,
-) : ColumnNameGenerator {
+class {DB}ColumnNameGenerator : ColumnNameGenerator {
     override fun getColumnName(column: String): ColumnNameGenerator.ColumnName {
-        val dbName = mapper.toColumnName(column)
         return ColumnNameGenerator.ColumnName(
-            displayName = dbName,
-            canonicalName = dbName.lowercase(),  // For collision detection
+            column.toDbCompatibleName(),
+            column.lowercase(Locale.getDefault()).toDbCompatibleName(),
         )
     }
 }
-```
 
-**Why delegate to TableSchemaMapper?**
-- Single source of truth for naming conventions
-- TableSchemaMapper is also used by schema evolution
-- Prevents inconsistencies between table creation and schema evolution
+/**
+ * Transforms a string to be compatible with {DB} table and column names.
+ */
+fun String.toDbCompatibleName(): String {
+    // 1. Replace non-alphanumeric characters with underscore
+    var transformed = toAlphanumericAndUnderscore(this)
+
+    // 2. Ensure identifier does not start with a digit
+    if (transformed.isNotEmpty() && transformed[0].isDigit()) {
+        transformed = "_$transformed"
+    }
+
+    // 3. Handle empty strings
+    if (transformed.isEmpty()) {
+        return "default_name_${UUID.randomUUID()}"
+    }
+
+    return transformed
+}
+```
 
 **Notes:**
 - `@Singleton` annotation is **REQUIRED** - without it, Micronaut cannot inject these beans
 - `canonicalName` is used for collision detection (usually lowercase)
 - `displayName` is what appears in queries
+- Both generators use the same `toDbCompatibleName()` helper as `TableSchemaMapper`
 
 ### Infrastructure Step 2: Register TempTableNameGenerator in BeanFactory
 
 **File:** Update `{DB}BeanFactory.kt`
 
+Choose the pattern that fits your database:
+
+**Pattern A: Simple (no separate internal schema)**
+```kotlin
+@Singleton
+fun tempTableNameGenerator(): TempTableNameGenerator {
+    return DefaultTempTableNameGenerator()
+}
+```
+
+**Pattern B: With internal schema (Postgres, Snowflake)**
 ```kotlin
 @Singleton
 fun tempTableNameGenerator(config: {DB}Configuration): TempTableNameGenerator {
     return DefaultTempTableNameGenerator(
-        internalNamespace = config.database  // Or config.internalSchema if you have one
+        internalNamespace = config.internalSchema
     )
 }
 ```
 
-**What this does:**
-- Temp tables are used during overwrite/dedupe operations
-- CDK provides `DefaultTempTableNameGenerator` implementation
-- Just needs to know which namespace to use for temp tables
+**Which pattern to use:**
+- **Pattern A:** Temp tables in same namespace as final tables (ClickHouse)
+- **Pattern B:** Dedicated internal/staging schema for temp tables (Postgres, Snowflake)
 
 **Why register as bean?**
 - TempTableNameGenerator is an interface, not a class
@@ -269,7 +327,7 @@ import io.airbyte.cdk.Operation
 import io.airbyte.cdk.load.dataflow.DestinationLifecycle
 import io.micronaut.context.annotation.Primary
 import io.micronaut.context.annotation.Requires
-import io.micronaut.context.annotation.Singleton
+import jakarta.inject.Singleton
 
 @Primary
 @Singleton
@@ -316,17 +374,18 @@ IllegalStateException: A legal sync requires a declared @Singleton of a type tha
 ```kotlin
 package io.airbyte.integrations.destination.{db}.config
 
+import io.airbyte.cdk.load.command.DestinationCatalog
 import io.airbyte.cdk.load.component.TableOperationsClient
-import io.airbyte.cdk.load.orchestration.db.*
-import io.micronaut.context.annotation.Singleton
+import io.airbyte.cdk.load.table.BaseDirectLoadInitialStatusGatherer
+import jakarta.inject.Singleton
 
 @Singleton
 class {DB}DirectLoadDatabaseInitialStatusGatherer(
     tableOperationsClient: TableOperationsClient,
-    tempTableNameGenerator: TempTableNameGenerator,
+    catalog: DestinationCatalog,
 ) : BaseDirectLoadInitialStatusGatherer(
     tableOperationsClient,
-    tempTableNameGenerator,
+    catalog,
 )
 ```
 
@@ -351,35 +410,9 @@ DirectLoadInitialStatus(
 )
 ```
 
-⚠️ **MISSING IN V1 GUIDE:** This step existed as code but bean registration was missing!
+**Note:** The `@Singleton` annotation on the class is sufficient - no separate BeanFactory registration needed. Micronaut will auto-discover this bean.
 
-### Infrastructure Step 3: Register DatabaseInitialStatusGatherer in BeanFactory
-
-**File:** Update `{DB}BeanFactory.kt`
-
-```kotlin
-@Singleton
-fun initialStatusGatherer(
-    client: TableOperationsClient,
-    tempTableNameGenerator: TempTableNameGenerator,
-): DatabaseInitialStatusGatherer<DirectLoadInitialStatus> {
-    return {DB}DirectLoadDatabaseInitialStatusGatherer(client, tempTableNameGenerator)
-}
-```
-
-⚠️ **CRITICAL:** This bean registration was MISSING in V1 guide!
-
-**Why this is needed:**
-- Writer requires `DatabaseInitialStatusGatherer<DirectLoadInitialStatus>` injection
-- Without this bean: `No bean of type [DatabaseInitialStatusGatherer] exists`
-- Class exists but bean registration forgotten → DI error
-
-**Why use factory method instead of class @Singleton?**
-- DatabaseInitialStatusGatherer is generic: `DatabaseInitialStatusGatherer<DirectLoadInitialStatus>`
-- Micronaut needs explicit return type for generic beans
-- Factory method provides type safety
-
-### Infrastructure Step 4: Create ColumnNameMapper
+### Infrastructure Step 3: Create ColumnNameMapper
 
 **File:** `write/transform/{DB}ColumnNameMapper.kt`
 
@@ -389,7 +422,7 @@ package io.airbyte.integrations.destination.{db}.write.transform
 import io.airbyte.cdk.load.command.DestinationStream
 import io.airbyte.cdk.load.dataflow.transform.ColumnNameMapper
 import io.airbyte.cdk.load.table.TableCatalog
-import io.micronaut.context.annotation.Singleton
+import jakarta.inject.Singleton
 
 @Singleton
 class {DB}ColumnNameMapper(
@@ -423,7 +456,7 @@ class {DB}ColumnNameMapper(
 - ColumnNameMapper: Uses mappings during transform (Phase 7)
 - Separation of concerns: generation vs. application
 
-### Infrastructure Step 5: Register AggregatePublishingConfig in BeanFactory
+### Infrastructure Step 4: Register AggregatePublishingConfig in BeanFactory
 
 **File:** Update `{DB}BeanFactory.kt`
 
@@ -465,7 +498,7 @@ fun aggregatePublishingConfig(dataChannelMedium: DataChannelMedium): AggregatePu
 - Tune later based on performance requirements
 - Start with defaults - they work for most databases
 
-### Infrastructure Step 6: Create WriteInitializationTest
+### Infrastructure Step 5: Create WriteInitializationTest
 
 **File:** `src/test-integration/kotlin/.../write/{DB}WriteInitTest.kt`
 
@@ -514,7 +547,7 @@ Phase 7: WriteInitTest validates they work with real catalog
 Phase 8: ConnectorWiringSuite validates full write path with mock catalog
 ```
 
-### Infrastructure Step 7: Create Test Config File
+### Infrastructure Step 6: Create Test Config File
 
 **File:** `secrets/config.json`
 
@@ -541,7 +574,7 @@ $ mkdir -p destination-{db}/secrets
 
 **Note:** Add `secrets/` to `.gitignore` to avoid committing credentials
 
-### Infrastructure Step 8: Validate WriteInitializationTest
+### Infrastructure Step 7: Validate WriteInitializationTest
 
 **Validate:**
 ```bash

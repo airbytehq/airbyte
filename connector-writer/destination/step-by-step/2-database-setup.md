@@ -56,10 +56,11 @@ This file contains two phases:
 package io.airbyte.integrations.destination.{db}
 
 import io.airbyte.cdk.Operation
+import io.airbyte.cdk.command.ConfigurationSpecificationSupplier
 import io.airbyte.integrations.destination.{db}.spec.*
 import io.micronaut.context.annotation.Factory
 import io.micronaut.context.annotation.Requires
-import io.micronaut.context.annotation.Singleton
+import jakarta.inject.Singleton
 import javax.sql.DataSource
 import com.zaxxer.hikari.HikariDataSource
 
@@ -69,7 +70,7 @@ class {DB}BeanFactory {
     @Singleton
     fun configuration(
         configFactory: {DB}ConfigurationFactory,
-        specFactory: MigratingConfigurationSpecificationSupplier<{DB}Specification>,
+        specFactory: ConfigurationSpecificationSupplier<{DB}Specification>,
     ): {DB}Configuration {
         val spec = specFactory.get()
         return configFactory.makeWithoutExceptionHandling(spec)
@@ -151,12 +152,11 @@ dependencies {
 ```kotlin
 package io.airbyte.integrations.destination.{db}.component
 
-import io.airbyte.cdk.command.MigratingConfigurationSpecificationSupplier
 import io.airbyte.integrations.destination.{db}.spec.*
 import io.micronaut.context.annotation.Factory
 import io.micronaut.context.annotation.Primary
 import io.micronaut.context.annotation.Requires
-import io.micronaut.context.annotation.Singleton
+import jakarta.inject.Singleton
 import org.testcontainers.containers.{DB}Container  // e.g., PostgreSQLContainer
 
 @Factory
@@ -198,16 +198,6 @@ class {DB}TestConfigFactory {
             username = container.username,
             password = container.password,
         )
-    }
-
-    @Singleton
-    @Primary
-    fun testSpecSupplier(
-        config: {DB}Configuration
-    ): MigratingConfigurationSpecificationSupplier<{DB}Specification> {
-        return object : MigratingConfigurationSpecificationSupplier<{DB}Specification> {
-            override fun get() = {DB}Specification()
-        }
     }
 }
 ```
@@ -251,15 +241,12 @@ Before running tests, `secrets/config.json` must exist with valid database crede
 ```kotlin
 package io.airbyte.integrations.destination.{db}.component
 
-import com.fasterxml.jackson.module.kotlin.jacksonObjectMapper
-import com.fasterxml.jackson.module.kotlin.readValue
-import io.airbyte.cdk.command.MigratingConfigurationSpecificationSupplier
+import io.airbyte.cdk.load.component.config.TestConfigLoader.loadTestConfig
 import io.airbyte.integrations.destination.{db}.spec.*
 import io.micronaut.context.annotation.Factory
 import io.micronaut.context.annotation.Primary
 import io.micronaut.context.annotation.Requires
-import io.micronaut.context.annotation.Singleton
-import java.nio.file.Path
+import jakarta.inject.Singleton
 
 @Factory
 @Requires(env = ["component"])
@@ -268,19 +255,11 @@ class {DB}TestConfigFactory {
     @Singleton
     @Primary
     fun testConfig(): {DB}Configuration {
-        val configPath = Path.of("secrets/config.json")
-        require(configPath.toFile().exists()) {
-            "Missing secrets/config.json - create this file with your database credentials"
-        }
-        return jacksonObjectMapper().readValue<{DB}Configuration>(configPath.toFile())
-    }
-
-    @Singleton
-    @Primary
-    fun testSpecSupplier(): MigratingConfigurationSpecificationSupplier<{DB}Specification> {
-        return object : MigratingConfigurationSpecificationSupplier<{DB}Specification> {
-            override fun get() = {DB}Specification()
-        }
+        return loadTestConfig(
+            {DB}Specification::class.java,
+            {DB}ConfigurationFactory::class.java,
+            "test-instance.json",  // or "config.json" in secrets/
+        )
     }
 }
 ```
@@ -320,7 +299,7 @@ Expected: BUILD SUCCESSFUL
 package io.airbyte.integrations.destination.{db}.client
 
 import io.airbyte.cdk.load.data.*
-import io.micronaut.context.annotation.Singleton
+import jakarta.inject.Singleton
 
 @Singleton
 class {DB}ColumnUtils {
@@ -379,9 +358,9 @@ package io.airbyte.integrations.destination.{db}.client
 
 import io.airbyte.cdk.load.command.DestinationStream
 import io.airbyte.cdk.load.table.ColumnNameMapping
-import io.airbyte.cdk.load.table.TableName
+import io.airbyte.cdk.load.schema.model.TableName
 import io.github.oshai.kotlinlogging.KotlinLogging
-import io.micronaut.context.annotation.Singleton
+import jakarta.inject.Singleton
 
 private val log = KotlinLogging.logger {}
 
@@ -538,10 +517,10 @@ import io.airbyte.cdk.load.command.DestinationStream
 import io.airbyte.cdk.load.component.TableOperationsClient
 import io.airbyte.cdk.load.component.TableSchemaEvolutionClient
 import io.airbyte.cdk.load.table.ColumnNameMapping
-import io.airbyte.cdk.load.table.TableName
+import io.airbyte.cdk.load.schema.model.TableName
 import io.airbyte.integrations.destination.{db}.spec.{DB}Configuration
 import io.github.oshai.kotlinlogging.KotlinLogging
-import io.micronaut.context.annotation.Singleton
+import jakarta.inject.Singleton
 import java.sql.SQLException
 import javax.sql.DataSource
 
@@ -719,9 +698,9 @@ package io.airbyte.integrations.destination.{db}.component
 
 import io.airbyte.cdk.load.component.TestTableOperationsClient
 import io.airbyte.cdk.load.data.*
-import io.airbyte.cdk.load.table.TableName
+import io.airbyte.cdk.load.schema.model.TableName
 import io.micronaut.context.annotation.Requires
-import io.micronaut.context.annotation.Singleton
+import jakarta.inject.Singleton
 import java.sql.Date
 import java.sql.PreparedStatement
 import java.sql.Timestamp
@@ -1059,10 +1038,10 @@ import io.airbyte.cdk.load.check.DestinationCheckerV2
 import io.airbyte.cdk.load.command.DestinationStream
 import io.airbyte.cdk.load.data.*
 import io.airbyte.cdk.load.table.ColumnNameMapping
-import io.airbyte.cdk.load.table.TableName
+import io.airbyte.cdk.load.schema.model.TableName
 import io.airbyte.integrations.destination.{db}.client.{DB}AirbyteClient
 import io.airbyte.integrations.destination.{db}.spec.{DB}Configuration
-import io.micronaut.context.annotation.Singleton
+import jakarta.inject.Singleton
 import kotlinx.coroutines.runBlocking
 import java.util.UUID
 
