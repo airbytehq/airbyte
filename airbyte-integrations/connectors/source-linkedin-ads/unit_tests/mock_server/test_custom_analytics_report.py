@@ -88,6 +88,23 @@ def _create_analytics_record(
     }
 
 
+def _get_custom_analytics_report_config() -> list:
+    """
+    Returns the ad_analytics_reports config required for custom_analytics_report stream.
+    
+    The custom_analytics_report stream uses ConfigComponentsResolver which reads from
+    the ad_analytics_reports config. Without this config, the stream produces zero slices
+    and makes no HTTP requests.
+    """
+    return [
+        {
+            "name": "test_report",
+            "pivot_by": "CAMPAIGN",
+            "time_granularity": "DAILY",
+        }
+    ]
+
+
 @freezegun.freeze_time("2024-06-15T00:00:00Z")
 class TestCustomAnalyticsReportStream(TestCase):
     """
@@ -99,10 +116,11 @@ class TestCustomAnalyticsReportStream(TestCase):
     - Transformations that add 'sponsoredCampaign' and 'pivot' fields
     - CustomRecordExtractor and CustomErrorHandler (LinkedInAdsErrorHandler)
     - SubstreamPartitionRouter to iterate over parent campaigns
-    - DYNAMIC_FIELD for pivot and timeGranularity (configurable)
+    - ConfigComponentsResolver that reads from ad_analytics_reports config
 
-    Note: This stream is very similar to ad_campaign_analytics but allows
-    custom pivot and timeGranularity values via configuration.
+    Note: This stream requires ad_analytics_reports config to be set with at least
+    one report configuration containing name, pivot_by, and time_granularity.
+    Without this config, the stream produces zero slices and makes no HTTP requests.
     """
 
     @HttpMocker()
@@ -110,11 +128,11 @@ class TestCustomAnalyticsReportStream(TestCase):
         """
         Test that connector fetches analytics for a parent campaign.
 
-        Given: A parent campaign with analytics data
+        Given: A parent campaign with analytics data and ad_analytics_reports config
         When: Running a full refresh sync
         Then: The connector should fetch analytics for the campaign
         """
-        config = ConfigBuilder().with_start_date("2024-06-01").build()
+        config = ConfigBuilder().with_start_date("2024-06-01").with_ad_analytics_reports(_get_custom_analytics_report_config()).build()
 
         http_mocker.get(
             LinkedInAdsRequestBuilder.accounts_endpoint().with_q("search").with_page_size(500).build(),
@@ -144,12 +162,12 @@ class TestCustomAnalyticsReportStream(TestCase):
         """
         Test that transformations add 'sponsoredCampaign' and 'pivot' fields.
 
-        Given: Analytics data from the API
+        Given: Analytics data from the API with ad_analytics_reports config
         When: Running a full refresh sync
         Then: Records should have 'sponsoredCampaign' and 'pivot' fields added
-              The pivot value should be 'DYNAMIC_FIELD' for custom_analytics_report
+              The pivot value should be 'CAMPAIGN' (from config) for custom_analytics_report
         """
-        config = ConfigBuilder().with_start_date("2024-06-01").build()
+        config = ConfigBuilder().with_start_date("2024-06-01").with_ad_analytics_reports(_get_custom_analytics_report_config()).build()
 
         http_mocker.get(
             LinkedInAdsRequestBuilder.accounts_endpoint().with_q("search").with_page_size(500).build(),
@@ -176,18 +194,18 @@ class TestCustomAnalyticsReportStream(TestCase):
         assert "sponsoredCampaign" in record_data
         assert record_data["sponsoredCampaign"] == "1001"
         assert "pivot" in record_data
-        assert record_data["pivot"] == "DYNAMIC_FIELD"
+        assert record_data["pivot"] == "CAMPAIGN"
 
     @HttpMocker()
     def test_incremental_sync_initial(self, http_mocker: HttpMocker):
         """
         Test incremental sync without prior state (first sync).
 
-        Given: No prior state
+        Given: No prior state and ad_analytics_reports config
         When: Running an incremental sync
         Then: All records should be returned and state should be emitted
         """
-        config = ConfigBuilder().with_start_date("2024-06-01").build()
+        config = ConfigBuilder().with_start_date("2024-06-01").with_ad_analytics_reports(_get_custom_analytics_report_config()).build()
 
         http_mocker.get(
             LinkedInAdsRequestBuilder.accounts_endpoint().with_q("search").with_page_size(500).build(),
@@ -216,11 +234,11 @@ class TestCustomAnalyticsReportStream(TestCase):
         """
         Test that connector handles empty parent stream gracefully.
 
-        Given: No parent campaigns
+        Given: No parent campaigns and ad_analytics_reports config
         When: Running a full refresh sync
         Then: No child requests should be made and zero records returned
         """
-        config = ConfigBuilder().with_start_date("2024-06-01").build()
+        config = ConfigBuilder().with_start_date("2024-06-01").with_ad_analytics_reports(_get_custom_analytics_report_config()).build()
 
         http_mocker.get(
             LinkedInAdsRequestBuilder.accounts_endpoint().with_q("search").with_page_size(500).build(),
@@ -244,11 +262,11 @@ class TestCustomAnalyticsReportStream(TestCase):
         """
         Test that connector handles parent with no analytics data gracefully.
 
-        Given: A parent campaign with no analytics data
+        Given: A parent campaign with no analytics data and ad_analytics_reports config
         When: Running a full refresh sync
         Then: Zero records should be returned without errors
         """
-        config = ConfigBuilder().with_start_date("2024-06-01").build()
+        config = ConfigBuilder().with_start_date("2024-06-01").with_ad_analytics_reports(_get_custom_analytics_report_config()).build()
 
         http_mocker.get(
             LinkedInAdsRequestBuilder.accounts_endpoint().with_q("search").with_page_size(500).build(),
@@ -277,11 +295,11 @@ class TestCustomAnalyticsReportStream(TestCase):
         """
         Test that analytics records contain expected metric fields.
 
-        Given: Analytics data with impressions and clicks
+        Given: Analytics data with impressions and clicks and ad_analytics_reports config
         When: Running a full refresh sync
         Then: Records should contain the expected metric fields
         """
-        config = ConfigBuilder().with_start_date("2024-06-01").build()
+        config = ConfigBuilder().with_start_date("2024-06-01").with_ad_analytics_reports(_get_custom_analytics_report_config()).build()
 
         http_mocker.get(
             LinkedInAdsRequestBuilder.accounts_endpoint().with_q("search").with_page_size(500).build(),
@@ -315,14 +333,14 @@ class TestCustomAnalyticsReportStream(TestCase):
         """
         Test that connector fetches analytics for multiple parent campaigns.
 
-        Given: Multiple parent campaigns with analytics data
+        Given: Multiple parent campaigns with analytics data and ad_analytics_reports config
         When: Running a full refresh sync
         Then: The connector should fetch analytics for each campaign
 
         Note: This test validates the SubstreamPartitionRouter behavior
         with multiple parent records.
         """
-        config = ConfigBuilder().with_start_date("2024-06-01").build()
+        config = ConfigBuilder().with_start_date("2024-06-01").with_ad_analytics_reports(_get_custom_analytics_report_config()).build()
 
         http_mocker.get(
             LinkedInAdsRequestBuilder.accounts_endpoint().with_q("search").with_page_size(500).build(),
