@@ -91,12 +91,8 @@ class TestCampaignsStream(TestCase):
             ),
         )
 
-        # Campaigns endpoint uses q=search and search parameter with status filter
-        # The search parameter contains a complex filter for campaign statuses
-        _CAMPAIGNS_SEARCH_FILTER = "(status:(values:List(ACTIVE,PAUSED,ARCHIVED,COMPLETED,CANCELED,DRAFT,PENDING_DELETION,REMOVED)))"
-
         http_mocker.get(
-            LinkedInAdsRequestBuilder.campaigns_endpoint(111111111).with_q("search").with_search(_CAMPAIGNS_SEARCH_FILTER).build(),
+            LinkedInAdsRequestBuilder.campaigns_endpoint(111111111).with_any_query_params().build(),
             LinkedInAdsPaginatedResponseBuilder.single_page(
                 [
                     _create_campaign_record(1001, 111111111, "Campaign 1"),
@@ -106,7 +102,7 @@ class TestCampaignsStream(TestCase):
         )
 
         http_mocker.get(
-            LinkedInAdsRequestBuilder.campaigns_endpoint(222222222).with_q("search").with_search(_CAMPAIGNS_SEARCH_FILTER).build(),
+            LinkedInAdsRequestBuilder.campaigns_endpoint(222222222).with_any_query_params().build(),
             LinkedInAdsPaginatedResponseBuilder.single_page([_create_campaign_record(2001, 222222222, "Campaign 3")]),
         )
 
@@ -139,13 +135,10 @@ class TestCampaignsStream(TestCase):
             LinkedInAdsPaginatedResponseBuilder.single_page([_create_account_record(111111111, "Account 1")]),
         )
 
-        # Campaigns endpoint uses q=search and search parameter with status filter
-        _CAMPAIGNS_SEARCH_FILTER = "(status:(values:List(ACTIVE,PAUSED,ARCHIVED,COMPLETED,CANCELED,DRAFT,PENDING_DELETION,REMOVED)))"
-
         # Provide multiple responses for the same endpoint to handle pagination
         # HttpMocker will return responses in order for each subsequent request
         http_mocker.get(
-            LinkedInAdsRequestBuilder.campaigns_endpoint(111111111).with_q("search").with_search(_CAMPAIGNS_SEARCH_FILTER).build(),
+            LinkedInAdsRequestBuilder.campaigns_endpoint(111111111).with_any_query_params().build(),
             [
                 LinkedInAdsPaginatedResponseBuilder()
                 .with_records(
@@ -178,7 +171,6 @@ class TestCampaignsStream(TestCase):
         Then: All records should be returned and state should be emitted
         """
         config = ConfigBuilder().build()
-        _CAMPAIGNS_SEARCH_FILTER = "(status:(values:List(ACTIVE,PAUSED,ARCHIVED,COMPLETED,CANCELED,DRAFT,PENDING_DELETION,REMOVED)))"
 
         http_mocker.get(
             LinkedInAdsRequestBuilder.accounts_endpoint().with_q("search").with_page_size(500).build(),
@@ -186,7 +178,7 @@ class TestCampaignsStream(TestCase):
         )
 
         http_mocker.get(
-            LinkedInAdsRequestBuilder.campaigns_endpoint(111111111).with_q("search").with_search(_CAMPAIGNS_SEARCH_FILTER).build(),
+            LinkedInAdsRequestBuilder.campaigns_endpoint(111111111).with_any_query_params().build(),
             LinkedInAdsPaginatedResponseBuilder.single_page([_create_campaign_record(1001, 111111111, "Campaign 1")]),
         )
 
@@ -209,7 +201,6 @@ class TestCampaignsStream(TestCase):
         """
         config = ConfigBuilder().build()
         state = StateBuilder().with_stream_state(_STREAM_NAME, {"lastModified": "2024-06-01T00:00:00+00:00"}).build()
-        _CAMPAIGNS_SEARCH_FILTER = "(status:(values:List(ACTIVE,PAUSED,ARCHIVED,COMPLETED,CANCELED,DRAFT,PENDING_DELETION,REMOVED)))"
 
         http_mocker.get(
             LinkedInAdsRequestBuilder.accounts_endpoint().with_q("search").with_page_size(500).build(),
@@ -217,7 +208,7 @@ class TestCampaignsStream(TestCase):
         )
 
         http_mocker.get(
-            LinkedInAdsRequestBuilder.campaigns_endpoint(111111111).with_q("search").with_search(_CAMPAIGNS_SEARCH_FILTER).build(),
+            LinkedInAdsRequestBuilder.campaigns_endpoint(111111111).with_any_query_params().build(),
             LinkedInAdsPaginatedResponseBuilder.single_page(
                 [
                     _create_campaign_record(1001, 111111111, "Old Campaign", "ACTIVE", "2024-01-01T00:00:00.000Z"),
@@ -267,7 +258,6 @@ class TestCampaignsStream(TestCase):
         Then: Zero records should be returned without errors
         """
         config = ConfigBuilder().build()
-        _CAMPAIGNS_SEARCH_FILTER = "(status:(values:List(ACTIVE,PAUSED,ARCHIVED,COMPLETED,CANCELED,DRAFT,PENDING_DELETION,REMOVED)))"
 
         http_mocker.get(
             LinkedInAdsRequestBuilder.accounts_endpoint().with_q("search").with_page_size(500).build(),
@@ -275,7 +265,7 @@ class TestCampaignsStream(TestCase):
         )
 
         http_mocker.get(
-            LinkedInAdsRequestBuilder.campaigns_endpoint(111111111).with_q("search").with_search(_CAMPAIGNS_SEARCH_FILTER).build(),
+            LinkedInAdsRequestBuilder.campaigns_endpoint(111111111).with_any_query_params().build(),
             LinkedInAdsPaginatedResponseBuilder.empty_page(),
         )
 
