@@ -43,17 +43,27 @@ class TestTicketAuditsStreamFullRefresh(TestCase):
     def test_given_one_page_when_read_ticket_audits_then_return_records(self, http_mocker):
         """Test full refresh sync for ticket_audits stream.
 
-        Per manifest.yaml, ticket_audits has request_parameters: sort_by=created_at, sort_order=desc.
+        Per manifest.yaml, ticket_audits has:
+        - request_parameters: sort_by=created_at, sort_order=desc
+        - page_size_option.field_name: "limit" with page_size: 200
         Per playbook: Tests must use .with_query_param() for all static request parameters.
+
+        Note: ticket_audits is a semi-incremental stream that filters records client-side
+        based on start_date, so we must set created_at to be after start_date.
         """
         api_token_authenticator = self._get_authenticator(self._config)
+        # Record must have created_at after start_date to pass client-side filtering
+        cursor_value = datetime_to_string(_START_DATE.add(timedelta(days=1)))
+
         http_mocker.get(
             ZendeskSupportRequestBuilder.ticket_audits_endpoint(api_token_authenticator)
-            .with_page_size(100)
             .with_query_param("sort_by", "created_at")
             .with_query_param("sort_order", "desc")
+            .with_query_param("limit", 200)
             .build(),
-            TicketAuditsResponseBuilder.ticket_audits_response().with_record(TicketAuditsRecordBuilder.ticket_audits_record()).build(),
+            TicketAuditsResponseBuilder.ticket_audits_response()
+            .with_record(TicketAuditsRecordBuilder.ticket_audits_record().with_field(FieldPath("created_at"), cursor_value))
+            .build(),
         )
 
         output = read_stream("ticket_audits", SyncMode.full_refresh, self._config)
@@ -80,12 +90,22 @@ class TestTicketAuditsStreamIncremental(TestCase):
 
     @HttpMocker()
     def test_given_no_state_when_read_ticket_audits_then_return_records_and_emit_state(self, http_mocker):
+        """Test incremental sync with no prior state (first sync).
+
+        Per manifest.yaml, ticket_audits has:
+        - request_parameters: sort_by=created_at, sort_order=desc
+        - page_size_option.field_name: "limit" with page_size: 200
+        """
         api_token_authenticator = self._get_authenticator(self._config)
         start_date = string_to_datetime(self._config["start_date"])
         cursor_value = datetime_to_string(start_date.add(timedelta(days=1)))
 
         http_mocker.get(
-            ZendeskSupportRequestBuilder.ticket_audits_endpoint(api_token_authenticator).with_page_size(100).build(),
+            ZendeskSupportRequestBuilder.ticket_audits_endpoint(api_token_authenticator)
+            .with_query_param("sort_by", "created_at")
+            .with_query_param("sort_order", "desc")
+            .with_query_param("limit", 200)
+            .build(),
             TicketAuditsResponseBuilder.ticket_audits_response()
             .with_record(TicketAuditsRecordBuilder.ticket_audits_record().with_field(FieldPath("created_at"), cursor_value))
             .build(),
@@ -99,14 +119,23 @@ class TestTicketAuditsStreamIncremental(TestCase):
 
     @HttpMocker()
     def test_given_state_when_read_ticket_audits_then_filter_records_by_state(self, http_mocker):
-        """Semi-incremental streams filter records client-side based on state."""
+        """Semi-incremental streams filter records client-side based on state.
+
+        Per manifest.yaml, ticket_audits has:
+        - request_parameters: sort_by=created_at, sort_order=desc
+        - page_size_option.field_name: "limit" with page_size: 200
+        """
         api_token_authenticator = self._get_authenticator(self._config)
         state_cursor_value = _START_DATE.add(timedelta(days=30))
         old_cursor_value = datetime_to_string(state_cursor_value.subtract(timedelta(days=1)))
         new_cursor_value = datetime_to_string(state_cursor_value.add(timedelta(days=1)))
 
         http_mocker.get(
-            ZendeskSupportRequestBuilder.ticket_audits_endpoint(api_token_authenticator).with_page_size(100).build(),
+            ZendeskSupportRequestBuilder.ticket_audits_endpoint(api_token_authenticator)
+            .with_query_param("sort_by", "created_at")
+            .with_query_param("sort_order", "desc")
+            .with_query_param("limit", 200)
+            .build(),
             TicketAuditsResponseBuilder.ticket_audits_response()
             .with_record(TicketAuditsRecordBuilder.ticket_audits_record().with_id(1).with_field(FieldPath("created_at"), old_cursor_value))
             .with_record(TicketAuditsRecordBuilder.ticket_audits_record().with_id(2).with_field(FieldPath("created_at"), new_cursor_value))
@@ -150,12 +179,19 @@ class TestTicketAuditsErrorHandling(TestCase):
         """Test that 403 errors cause the stream to fail with proper error logging.
 
         Per playbook: FAIL error handlers must assert both error code AND error message.
+        Per manifest.yaml, ticket_audits has:
+        - request_parameters: sort_by=created_at, sort_order=desc
+        - page_size_option.field_name: "limit" with page_size: 200
         """
         api_token_authenticator = self._get_authenticator(self._config)
         error_message = "Forbidden - You do not have access to this resource"
 
         http_mocker.get(
-            ZendeskSupportRequestBuilder.ticket_audits_endpoint(api_token_authenticator).with_page_size(100).build(),
+            ZendeskSupportRequestBuilder.ticket_audits_endpoint(api_token_authenticator)
+            .with_query_param("sort_by", "created_at")
+            .with_query_param("sort_order", "desc")
+            .with_query_param("limit", 200)
+            .build(),
             ErrorResponseBuilder.response_with_status(403).with_error_message(error_message).build(),
         )
 
@@ -171,12 +207,19 @@ class TestTicketAuditsErrorHandling(TestCase):
         """Test that 404 errors cause the stream to fail with proper error logging.
 
         Per playbook: FAIL error handlers must assert both error code AND error message.
+        Per manifest.yaml, ticket_audits has:
+        - request_parameters: sort_by=created_at, sort_order=desc
+        - page_size_option.field_name: "limit" with page_size: 200
         """
         api_token_authenticator = self._get_authenticator(self._config)
         error_message = "Not Found - The requested resource does not exist"
 
         http_mocker.get(
-            ZendeskSupportRequestBuilder.ticket_audits_endpoint(api_token_authenticator).with_page_size(100).build(),
+            ZendeskSupportRequestBuilder.ticket_audits_endpoint(api_token_authenticator)
+            .with_query_param("sort_by", "created_at")
+            .with_query_param("sort_order", "desc")
+            .with_query_param("limit", 200)
+            .build(),
             ErrorResponseBuilder.response_with_status(404).with_error_message(error_message).build(),
         )
 
@@ -192,12 +235,19 @@ class TestTicketAuditsErrorHandling(TestCase):
         """Test that 504 gateway timeout errors cause the stream to fail with proper error logging.
 
         Per playbook: FAIL error handlers must assert both error code AND error message.
+        Per manifest.yaml, ticket_audits has:
+        - request_parameters: sort_by=created_at, sort_order=desc
+        - page_size_option.field_name: "limit" with page_size: 200
         """
         api_token_authenticator = self._get_authenticator(self._config)
         error_message = "Gateway Timeout - The server did not respond in time"
 
         http_mocker.get(
-            ZendeskSupportRequestBuilder.ticket_audits_endpoint(api_token_authenticator).with_page_size(100).build(),
+            ZendeskSupportRequestBuilder.ticket_audits_endpoint(api_token_authenticator)
+            .with_query_param("sort_by", "created_at")
+            .with_query_param("sort_order", "desc")
+            .with_query_param("limit", 200)
+            .build(),
             ErrorResponseBuilder.response_with_status(504).with_error_message(error_message).build(),
         )
 
@@ -251,7 +301,11 @@ class TestTicketAuditsDataFeed(TestCase):
         page_2_url = "https://d3v-airbyte.zendesk.com/api/v2/ticket_audits?cursor=page2"
 
         http_mocker.get(
-            ZendeskSupportRequestBuilder.ticket_audits_endpoint(api_token_authenticator).with_page_size(100).build(),
+            ZendeskSupportRequestBuilder.ticket_audits_endpoint(api_token_authenticator)
+            .with_query_param("sort_by", "created_at")
+            .with_query_param("sort_order", "desc")
+            .with_query_param("limit", 200)
+            .build(),
             TicketAuditsResponseBuilder.ticket_audits_response()
             .with_record(TicketAuditsRecordBuilder.ticket_audits_record().with_id(1).with_field(FieldPath("created_at"), new_cursor_value))
             .with_record(TicketAuditsRecordBuilder.ticket_audits_record().with_id(2).with_field(FieldPath("created_at"), old_cursor_value))
