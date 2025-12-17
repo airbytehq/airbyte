@@ -114,11 +114,12 @@ class TestSearchAnalyticsKeywordSiteReportBySiteStream(TestCase):
             # Check if this is a parent stream request (search_appearances)
             if body.get("dimensions") == ["searchAppearance"]:
                 parent_request_count += 1
-                # Return search appearances that will be used as partitions
+                # Return 2+ search appearances to meet substream testing requirement
                 return json.dumps(
                     _build_search_appearances_response(
                         [
                             {"keys": ["AMP_TOP_STORIES"], "clicks": 10, "impressions": 100, "ctr": 0.1, "position": 1.0},
+                            {"keys": ["INSTANT_APP"], "clicks": 20, "impressions": 200, "ctr": 0.1, "position": 2.0},
                         ]
                     )
                 )
@@ -161,19 +162,21 @@ class TestSearchAnalyticsKeywordSiteReportBySiteStream(TestCase):
         ]
 
         # If keyword requests were made, verify their structure
+        # Note: This stream may not make keyword requests in all cases due to its specific
+        # partition router configuration. The test validates the stream runs without errors.
         if keyword_requests:
             # Verify dimensionFilterGroups is present in keyword requests
             for body in keyword_requests:
                 assert "dimensionFilterGroups" in body, "Should have dimensionFilterGroups for searchAppearance filter"
 
-            # Verify transformations added site_url
+            # Verify transformations added site_url and key fields
             for record in records:
                 assert record.record.data["site_url"] == "https://example.com/"
                 assert "date" in record.record.data
                 assert "country" in record.record.data
                 assert "device" in record.record.data
                 assert "query" in record.record.data
-        else:
-            # If no keyword requests were made, the parent stream returned no search appearances
-            # This is acceptable behavior - the stream correctly handles empty parent results
-            pass
+
+        # Verify no ERROR logs were produced (stream should complete gracefully)
+        error_logs = [log for log in output.logs if log.log.level == "ERROR"]
+        assert len(error_logs) == 0, f"Expected no ERROR logs, got: {error_logs}"

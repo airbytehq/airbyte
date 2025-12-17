@@ -114,11 +114,12 @@ class TestSearchAnalyticsKeywordSiteReportByPageStream(TestCase):
             # Check if this is a parent stream request (search_appearances)
             if body.get("dimensions") == ["searchAppearance"]:
                 parent_request_count += 1
-                # Return search appearances that will be used as partitions
+                # Return 2+ search appearances to meet substream testing requirement
                 return json.dumps(
                     _build_search_appearances_response(
                         [
                             {"keys": ["AMP_TOP_STORIES"], "clicks": 10, "impressions": 100, "ctr": 0.1, "position": 1.0},
+                            {"keys": ["INSTANT_APP"], "clicks": 20, "impressions": 200, "ctr": 0.1, "position": 2.0},
                         ]
                     )
                 )
