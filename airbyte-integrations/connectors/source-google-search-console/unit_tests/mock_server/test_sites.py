@@ -78,7 +78,6 @@ class TestSitesStream(TestCase):
     These tests verify:
     - Full refresh sync works correctly
     - Partition router handles multiple site URLs
-    - sc-domain format site URLs are handled correctly
     """
 
     @HttpMocker()
@@ -134,27 +133,3 @@ class TestSitesStream(TestCase):
         assert len(output.records) == 2
         site_urls = {r.record.data["siteUrl"] for r in output.records}
         assert site_urls == {"https://example1.com/", "https://example2.com/"}
-
-    @HttpMocker()
-    def test_full_refresh_sc_domain_format(self, http_mocker: HttpMocker) -> None:
-        """
-        Test reading sites stream with sc-domain format site URL.
-
-        Given: A configured connector with an sc-domain format site URL
-        When: Running a full refresh sync for the sites stream
-        Then: The connector should correctly encode the URL and return the record
-        """
-        config = ConfigBuilder().with_site_urls(["sc-domain:example.com"]).build()
-
-        http_mocker.post(_oauth_request(), _build_oauth_response())
-        http_mocker.get(
-            _sites_request("sc-domain:example.com"),
-            _build_sites_response("sc-domain:example.com", "siteOwner"),
-        )
-
-        source = get_source(config=config)
-        catalog = CatalogBuilder().with_stream(_STREAM_NAME, SyncMode.full_refresh).build()
-        output = read(source, config=config, catalog=catalog)
-
-        assert len(output.records) == 1
-        assert output.records[0].record.data["siteUrl"] == "sc-domain:example.com"

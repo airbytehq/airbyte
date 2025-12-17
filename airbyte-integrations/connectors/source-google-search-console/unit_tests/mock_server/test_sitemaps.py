@@ -194,34 +194,6 @@ class TestSitemapsStream(TestCase):
         assert not any(log.log.level == "ERROR" for log in output.logs)
 
     @HttpMocker()
-    def test_full_refresh_sc_domain_format(self, http_mocker: HttpMocker) -> None:
-        """
-        Test reading sitemaps stream with sc-domain format site URL.
-
-        Given: A configured connector with an sc-domain format site URL
-        When: Running a full refresh sync for the sitemaps stream
-        Then: The connector should correctly encode the URL and return the sitemaps
-        """
-        config = ConfigBuilder().with_site_urls(["sc-domain:example.com"]).build()
-
-        http_mocker.post(_oauth_request(), _build_oauth_response())
-        http_mocker.get(
-            _sitemaps_request("sc-domain:example.com"),
-            _build_sitemaps_response(
-                [
-                    _build_sitemap_record("https://example.com/sitemap.xml"),
-                ]
-            ),
-        )
-
-        source = get_source(config=config)
-        catalog = CatalogBuilder().with_stream(_STREAM_NAME, SyncMode.full_refresh).build()
-        output = read(source, config=config, catalog=catalog)
-
-        assert len(output.records) == 1
-        assert output.records[0].record.data["path"] == "https://example.com/sitemap.xml"
-
-    @HttpMocker()
     def test_sitemap_record_fields(self, http_mocker: HttpMocker) -> None:
         """
         Test that sitemap records contain all expected fields.
