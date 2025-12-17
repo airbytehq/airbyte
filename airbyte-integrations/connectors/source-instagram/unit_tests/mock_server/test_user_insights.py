@@ -15,7 +15,7 @@ from airbyte_cdk.test.state_builder import StateBuilder
 from .config import BUSINESS_ACCOUNT_ID, PAGE_ID, ConfigBuilder
 from .request_builder import RequestBuilder, get_account_request
 from .response_builder import get_account_response
-from .utils import config, read_output
+from .utils import read_output
 
 
 _STREAM_NAME = "user_insights"
