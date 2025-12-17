@@ -3,7 +3,7 @@ name: Publish Connectors Pre-release
 # It can be triggered via the /publish-connectors-prerelease slash command from PR comments,
 # or via the MCP tool `publish_connector_to_airbyte_registry`.
 #
-# Pre-release versions are tagged with the format: {version}-dev.{10-char-git-sha}
+# Pre-release versions are tagged with the format: {version}-preview.{7-char-git-sha}
 # These versions are NOT eligible for semver auto-advancement but ARE available
 # for version pinning via the scoped_configuration API.
 #
@@ -66,7 +66,7 @@ jobs:
       - name: Get short SHA
         id: get-sha
         run: |
-          SHORT_SHA=$(git rev-parse --short=10 HEAD)
+          SHORT_SHA=$(git rev-parse --short=7 HEAD)
           echo "short-sha=$SHORT_SHA" >> $GITHUB_OUTPUT
 
       - name: Get job variables
@@ -135,7 +135,7 @@ jobs:
             > Publishing pre-release build for connector `${{ steps.resolve-connector.outputs.connector-name }}`.
             > Branch: `${{ inputs.gitref }}`
             >
-            > Pre-release versions will be tagged as `{version}-dev.${{ steps.get-sha.outputs.short-sha }}`
+            > Pre-release versions will be tagged as `{version}-preview.${{ steps.get-sha.outputs.short-sha }}`
             > and are available for version pinning via the scoped_configuration API.
             >
             > [View workflow run](${{ steps.job-vars.outputs.run-url }})

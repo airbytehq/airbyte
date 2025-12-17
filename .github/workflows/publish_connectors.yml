@@ -305,8 +305,8 @@ jobs:
           echo "connector-version=$(poe -qq get-version)" | tee -a $GITHUB_OUTPUT
           CONNECTOR_VERSION=$(poe -qq get-version)
           if [[ "${{ inputs.release-type }}" == "pre-release" ]]; then
-            hash=$(git rev-parse --short=10 HEAD)
-            echo "docker-image-tag=${CONNECTOR_VERSION}-dev.${hash}" | tee -a $GITHUB_OUTPUT
+            hash=$(git rev-parse --short=7 HEAD)
+            echo "docker-image-tag=${CONNECTOR_VERSION}-preview.${hash}" | tee -a $GITHUB_OUTPUT
             echo "release-type-flag=--pre-release" | tee -a $GITHUB_OUTPUT
           else
             echo "docker-image-tag=${CONNECTOR_VERSION}" | tee -a $GITHUB_OUTPUT
