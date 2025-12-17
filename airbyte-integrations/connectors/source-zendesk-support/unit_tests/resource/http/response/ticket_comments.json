@@ -4,10 +4,11 @@
       "id": 35436,
       "ticket_id": 35436,
       "timestamp": 1723660897,
+      "via_reference_id": 123,
       "child_events": [
         {
           "id": 1,
-          "type": "Comment",
+          "event_type": "Comment",
           "body": "Test comment",
           "public": true,
           "author_id": 235323,

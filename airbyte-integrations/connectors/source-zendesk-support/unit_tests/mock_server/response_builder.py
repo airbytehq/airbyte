@@ -647,6 +647,14 @@ class AccountAttributesResponseBuilder(HttpResponseBuilder):
 
 
 class AttributeDefinitionsResponseBuilder(HttpResponseBuilder):
+    """Custom response builder for attribute_definitions stream.
+
+    This stream uses a custom extractor (ZendeskSupportAttributeDefinitionsExtractor) that expects
+    a nested structure with definitions.conditions_all and definitions.conditions_any arrays.
+    The standard HttpResponseBuilder.build() would replace the definitions field with an empty list,
+    so we override build() to preserve the template structure.
+    """
+
     @classmethod
     def attribute_definitions_response(cls) -> "AttributeDefinitionsResponseBuilder":
         return cls(
@@ -654,6 +662,10 @@ class AttributeDefinitionsResponseBuilder(HttpResponseBuilder):
             FieldPath("definitions"),
             None,
         )
+
+    def build(self) -> HttpResponse:
+        # Override to preserve the nested structure - don't replace definitions with records list
+        return HttpResponse(json.dumps(self._response), self._status_code)
 
 
 class UserFieldsResponseBuilder(HttpResponseBuilder):
@@ -1082,6 +1094,14 @@ class TicketAuditsResponseBuilder(HttpResponseBuilder):
 
 
 class TicketCommentsResponseBuilder(HttpResponseBuilder):
+    """Custom response builder for ticket_comments stream.
+
+    This stream uses a custom extractor (ZendeskSupportExtractorEvents) that expects
+    a nested structure with ticket_events[].child_events[] where child_events have event_type="Comment".
+    The standard HttpResponseBuilder.build() would replace the ticket_events field with an empty list,
+    so we override build() to preserve the template structure.
+    """
+
     @classmethod
     def ticket_comments_response(cls, url: Optional[str] = None, cursor: Optional[str] = None) -> "TicketCommentsResponseBuilder":
         return cls(
@@ -1089,6 +1109,10 @@ class TicketCommentsResponseBuilder(HttpResponseBuilder):
             FieldPath("ticket_events"),
             EndOfStreamPaginationStrategy(url, cursor) if url and cursor else None,
         )
+
+    def build(self) -> HttpResponse:
+        # Override to preserve the nested structure - don't replace ticket_events with records list
+        return HttpResponse(json.dumps(self._response), self._status_code)
 
 
 class TicketMetricEventsResponseBuilder(HttpResponseBuilder):

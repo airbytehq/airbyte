@@ -11,7 +11,7 @@ from airbyte_cdk.utils.datetime_helpers import ab_datetime_now
 
 from .config import ConfigBuilder
 from .request_builder import ApiTokenAuthenticator, ZendeskSupportRequestBuilder
-from .response_builder import AttributeDefinitionsRecordBuilder, AttributeDefinitionsResponseBuilder
+from .response_builder import AttributeDefinitionsResponseBuilder
 from .utils import read_stream
 
 
@@ -39,11 +39,12 @@ class TestAttributeDefinitionsStreamFullRefresh(TestCase):
     @HttpMocker()
     def test_given_one_page_when_read_attribute_definitions_then_return_records(self, http_mocker):
         api_token_authenticator = self._get_authenticator(self._config)
+        # Note: attribute_definitions uses a custom extractor that expects a nested structure
+        # with definitions.conditions_all and definitions.conditions_any arrays.
+        # The template already has the correct structure, so we don't use .with_record().
         http_mocker.get(
-            ZendeskSupportRequestBuilder.attribute_definitions_endpoint(api_token_authenticator).build(),
-            AttributeDefinitionsResponseBuilder.attribute_definitions_response()
-            .with_record(AttributeDefinitionsRecordBuilder.attribute_definitions_record())
-            .build(),
+            ZendeskSupportRequestBuilder.attribute_definitions_endpoint(api_token_authenticator).with_per_page(100).build(),
+            AttributeDefinitionsResponseBuilder.attribute_definitions_response().build(),
         )
 
         output = read_stream("attribute_definitions", SyncMode.full_refresh, self._config)
