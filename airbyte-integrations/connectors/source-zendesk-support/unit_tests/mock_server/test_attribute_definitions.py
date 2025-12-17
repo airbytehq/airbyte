@@ -48,4 +48,4 @@ class TestAttributeDefinitionsStreamFullRefresh(TestCase):
 
         output = read_stream("attribute_definitions", SyncMode.full_refresh, self._config)
 
-        assert len(output.records) >= 1
+        assert len(output.records) == 1

@@ -54,7 +54,7 @@ class TestTicketCommentsStreamFullRefresh(TestCase):
 
         output = read_stream("ticket_comments", SyncMode.full_refresh, self._config)
 
-        assert len(output.records) >= 1
+        assert len(output.records) == 1
 
 
 @freezegun.freeze_time(_NOW.isoformat())
@@ -91,7 +91,7 @@ class TestTicketCommentsStreamIncremental(TestCase):
 
         output = read_stream("ticket_comments", SyncMode.incremental, self._config)
 
-        assert len(output.records) >= 1
+        assert len(output.records) == 1
         assert output.most_recent_state is not None
         assert output.most_recent_state.stream_descriptor.name == "ticket_comments"
 
@@ -114,6 +114,6 @@ class TestTicketCommentsStreamIncremental(TestCase):
 
         output = read_stream("ticket_comments", SyncMode.incremental, self._config, state)
 
-        assert len(output.records) >= 1
+        assert len(output.records) == 1
         assert output.most_recent_state is not None
         assert output.most_recent_state.stream_descriptor.name == "ticket_comments"
