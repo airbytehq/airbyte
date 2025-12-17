@@ -69,7 +69,7 @@ def _oauth_request() -> HttpRequest:
 @freeze_time("2024-01-04T00:00:00Z")
 class TestSearchAnalyticsByDateStream(TestCase):
     """Tests for the search_analytics_by_date stream.
-    
+
     This stream partitions by site_urls AND search_types (6 types: web, news, image, video, discover, googleNews).
     We test with a single site URL and use a permissive matcher to handle the complex request body matching.
     """
@@ -83,58 +83,56 @@ class TestSearchAnalyticsByDateStream(TestCase):
     @HttpMocker()
     def test_full_refresh_single_site(self, http_mocker: HttpMocker) -> None:
         """Test full refresh with a single site URL.
-        
+
         Uses a permissive matcher for the search analytics endpoint to handle
         the complex request body matching with DatetimeBasedCursor.
         """
         # Mock OAuth token refresh via HttpMocker
         http_mocker.post(_oauth_request(), _build_oauth_response())
-        
-        config = (
-            ConfigBuilder()
-            .with_site_urls(["https://example.com/"])
-            .with_start_date("2024-01-01")
-            .with_end_date("2024-01-03")
-            .build()
-        )
-        
+
+        config = ConfigBuilder().with_site_urls(["https://example.com/"]).with_start_date("2024-01-01").with_end_date("2024-01-03").build()
+
         # Track captured request bodies for assertions
         captured_bodies: List[Dict[str, Any]] = []
-        
+
         def search_analytics_callback(request: rm.request._RequestObjectProxy, context: Any) -> str:
             """Callback to capture request bodies and return appropriate responses."""
             body = json.loads(request.body)
             captured_bodies.append(body)
-            
+
             # Return data only for "web" search type
             if body.get("type") == "web":
-                return json.dumps(_build_search_analytics_response([
-                    _build_search_analytics_row("2024-01-01", clicks=100, impressions=1000),
-                    _build_search_analytics_row("2024-01-02", clicks=150, impressions=1500),
-                    _build_search_analytics_row("2024-01-03", clicks=200, impressions=2000),
-                ]))
+                return json.dumps(
+                    _build_search_analytics_response(
+                        [
+                            _build_search_analytics_row("2024-01-01", clicks=100, impressions=1000),
+                            _build_search_analytics_row("2024-01-02", clicks=150, impressions=1500),
+                            _build_search_analytics_row("2024-01-03", clicks=200, impressions=2000),
+                        ]
+                    )
+                )
             return json.dumps(_build_search_analytics_response([]))
-        
+
         # Register permissive matcher for search analytics endpoint via underlying requests_mock
         http_mocker._mocker.post(
             re.compile(r"https://www\.googleapis\.com/webmasters/v3/sites/.*/searchAnalytics/query"),
             text=search_analytics_callback,
         )
-        
+
         output = self._read_stream(config)
         records = [message for message in output.records if message.record.stream == _STREAM_NAME]
-        
+
         # Verify we captured requests for all 6 search types
         captured_search_types = {body.get("type") for body in captured_bodies}
         assert captured_search_types == set(_SEARCH_TYPES), f"Expected {_SEARCH_TYPES}, got {captured_search_types}"
-        
+
         # Should have 3 records (from web search type)
         assert len(records) == 3
-        
+
         # Verify record fields
         record_dates = {r.record.data["date"] for r in records}
         assert record_dates == {"2024-01-01", "2024-01-02", "2024-01-03"}
-        
+
         # Verify transformations added site_url and search_type
         for record in records:
             assert record.record.data["site_url"] == "https://example.com/"
@@ -145,23 +143,17 @@ class TestSearchAnalyticsByDateStream(TestCase):
         """Test full refresh when API returns no data for any search type."""
         # Mock OAuth token refresh via HttpMocker
         http_mocker.post(_oauth_request(), _build_oauth_response())
-        
-        config = (
-            ConfigBuilder()
-            .with_site_urls(["https://example.com/"])
-            .with_start_date("2024-01-01")
-            .with_end_date("2024-01-03")
-            .build()
-        )
-        
+
+        config = ConfigBuilder().with_site_urls(["https://example.com/"]).with_start_date("2024-01-01").with_end_date("2024-01-03").build()
+
         # Register permissive matcher that returns empty responses
         http_mocker._mocker.post(
             re.compile(r"https://www\.googleapis\.com/webmasters/v3/sites/.*/searchAnalytics/query"),
             json=_build_search_analytics_response([]),
         )
-        
+
         output = self._read_stream(config)
         records = [message for message in output.records if message.record.stream == _STREAM_NAME]
-        
+
         # Should have 0 records
         assert len(records) == 0
