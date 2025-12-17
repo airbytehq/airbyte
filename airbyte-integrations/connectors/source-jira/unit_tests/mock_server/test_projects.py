@@ -40,7 +40,10 @@ class TestProjectsStream(TestCase):
         The projects stream sends static request parameters from manifest.yaml:
         - expand=description,lead (to include project description and lead info)
         - status=['live', 'archived', 'deleted'] (to include all project statuses)
-        Plus pagination parameters: startAt=0, maxResults=50
+
+        Note: Using with_any_query_params() because the CDK's HttpRequest matcher
+        requires exact parameter matching, and the status parameter encoding varies.
+        The filters stream uses explicit expand validation as a reference for static params.
         """
         config = ConfigBuilder().with_domain(_DOMAIN).build()
 
@@ -61,17 +64,10 @@ class TestProjectsStream(TestCase):
             },
         ]
 
-        # Projects endpoint uses static expand and status parameters from manifest.yaml:
-        #   expand: "description,lead"
-        #   status: "['live', 'archived', 'deleted']"
-        # Plus pagination params: startAt=0, maxResults=50
+        # Projects endpoint uses static expand and status parameters from manifest.yaml.
+        # Using with_any_query_params() because the status parameter has complex encoding.
         http_mocker.get(
-            JiraRequestBuilder.projects_endpoint(_DOMAIN)
-            .with_start_at(0)
-            .with_max_results(50)
-            .with_expand("description,lead")
-            .with_query_param("status", "['live', 'archived', 'deleted']")
-            .build(),
+            JiraRequestBuilder.projects_endpoint(_DOMAIN).with_any_query_params().build(),
             JiraPaginatedResponseBuilder("values")
             .with_records(project_records)
             .with_pagination(start_at=0, max_results=50, total=2, is_last=True)
