@@ -33,7 +33,8 @@ import java.time.OffsetDateTime
 
 @Singleton
 @Primary
-class PostgresSourceStreamFactory(val jdbcConnectionFactory: JdbcConnectionFactory) : JdbcAirbyteStreamFactory {
+class PostgresSourceStreamFactory(val jdbcConnectionFactory: JdbcConnectionFactory) :
+    JdbcAirbyteStreamFactory {
 
     override val globalCursor: DataOrMetaField = PostgresSourceCdcMetaFields.CDC_LSN
 
@@ -121,14 +122,12 @@ class PostgresSourceStreamFactory(val jdbcConnectionFactory: JdbcConnectionFacto
             isView = viewsBySchema[namespace]?.contains(discoveredStream.id.name) == true
         }
 
-
         val syncModes =
             when {
                 // Incremental sync is only provided as a sync option if the stream has a potential
                 // cursor field or is configured as CDC or Xmin with a valid primary key.
-                isXmin.not() && (isCdc.not() && hasPotentialCursorField || isCdc && hasPK)
-                    || isXmin && isView.not() ->
-                    listOf(SyncMode.FULL_REFRESH, SyncMode.INCREMENTAL)
+                isXmin.not() && (isCdc.not() && hasPotentialCursorField || isCdc && hasPK) ||
+                    isXmin && isView.not() -> listOf(SyncMode.FULL_REFRESH, SyncMode.INCREMENTAL)
                 else -> listOf(SyncMode.FULL_REFRESH)
             }
         val primaryKey: List<List<String>> =
