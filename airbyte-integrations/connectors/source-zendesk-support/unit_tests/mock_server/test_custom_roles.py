@@ -115,7 +115,7 @@ class TestCustomRolesStreamFullRefresh(TestCase):
         # Assert error code and message per playbook requirement
         error_logs = list(get_log_messages_by_log_level(output.logs, LogLevel.ERROR))
         assert any("403" in msg for msg in error_logs), "Expected 403 error code in logs"
-        assert any("the 403 error" in msg for msg in error_logs), "Expected error message in logs"
+        assert any("Error 403" in msg for msg in error_logs), "Expected error message in logs"
 
     @HttpMocker()
     def test_given_404_error_when_read_custom_roles_then_fail(self, http_mocker):
@@ -131,4 +131,4 @@ class TestCustomRolesStreamFullRefresh(TestCase):
         # Assert error code and message per playbook requirement
         error_logs = list(get_log_messages_by_log_level(output.logs, LogLevel.ERROR))
         assert any("404" in msg for msg in error_logs), "Expected 404 error code in logs"
-        assert any("the 404 error" in msg for msg in error_logs), "Expected error message in logs"
+        assert any("Error 404" in msg for msg in error_logs), "Expected error message in logs"

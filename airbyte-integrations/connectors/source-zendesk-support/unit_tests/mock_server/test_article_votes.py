@@ -61,7 +61,7 @@ class TestArticleVotesStreamFullRefresh(TestCase):
         article = article_builder.build()
 
         http_mocker.get(
-            ZendeskSupportRequestBuilder.article_votes_endpoint(api_token_authenticator, article["id"]).with_page_size(100).build(),
+            ZendeskSupportRequestBuilder.article_votes_endpoint(api_token_authenticator, article["id"]).with_any_query_params().build(),
             ArticleVotesResponseBuilder.article_votes_response().with_record(ArticleVotesRecordBuilder.article_votes_record()).build(),
         )
 
@@ -95,14 +95,14 @@ class TestArticleVotesStreamFullRefresh(TestCase):
         article2 = article_builder_2.build()
 
         http_mocker.get(
-            ZendeskSupportRequestBuilder.article_votes_endpoint(api_token_authenticator, article1["id"]).with_page_size(100).build(),
+            ZendeskSupportRequestBuilder.article_votes_endpoint(api_token_authenticator, article1["id"]).with_any_query_params().build(),
             ArticleVotesResponseBuilder.article_votes_response()
             .with_record(ArticleVotesRecordBuilder.article_votes_record().with_id(2001))
             .build(),
         )
 
         http_mocker.get(
-            ZendeskSupportRequestBuilder.article_votes_endpoint(api_token_authenticator, article2["id"]).with_page_size(100).build(),
+            ZendeskSupportRequestBuilder.article_votes_endpoint(api_token_authenticator, article2["id"]).with_any_query_params().build(),
             ArticleVotesResponseBuilder.article_votes_response()
             .with_record(ArticleVotesRecordBuilder.article_votes_record().with_id(2002))
             .build(),

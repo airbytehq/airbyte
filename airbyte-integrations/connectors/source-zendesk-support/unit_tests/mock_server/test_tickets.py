@@ -14,7 +14,7 @@ from airbyte_cdk.utils.datetime_helpers import ab_datetime_now
 from .config import ConfigBuilder
 from .request_builder import ApiTokenAuthenticator, ZendeskSupportRequestBuilder
 from .response_builder import TicketsRecordBuilder, TicketsResponseBuilder
-from .utils import datetime_to_string, read_stream, string_to_datetime
+from .utils import read_stream
 
 
 _NOW = ab_datetime_now()

@@ -61,7 +61,7 @@ class TestArticleCommentsStreamFullRefresh(TestCase):
         article = article_builder.build()
 
         http_mocker.get(
-            ZendeskSupportRequestBuilder.article_comments_endpoint(api_token_authenticator, article["id"]).with_page_size(100).build(),
+            ZendeskSupportRequestBuilder.article_comments_endpoint(api_token_authenticator, article["id"]).with_any_query_params().build(),
             ArticleCommentsResponseBuilder.article_comments_response()
             .with_record(ArticleCommentsRecordBuilder.article_comments_record())
             .build(),
@@ -97,14 +97,14 @@ class TestArticleCommentsStreamFullRefresh(TestCase):
         article2 = article_builder_2.build()
 
         http_mocker.get(
-            ZendeskSupportRequestBuilder.article_comments_endpoint(api_token_authenticator, article1["id"]).with_page_size(100).build(),
+            ZendeskSupportRequestBuilder.article_comments_endpoint(api_token_authenticator, article1["id"]).with_any_query_params().build(),
             ArticleCommentsResponseBuilder.article_comments_response()
             .with_record(ArticleCommentsRecordBuilder.article_comments_record().with_id(1001))
             .build(),
         )
 
         http_mocker.get(
-            ZendeskSupportRequestBuilder.article_comments_endpoint(api_token_authenticator, article2["id"]).with_page_size(100).build(),
+            ZendeskSupportRequestBuilder.article_comments_endpoint(api_token_authenticator, article2["id"]).with_any_query_params().build(),
             ArticleCommentsResponseBuilder.article_comments_response()
             .with_record(ArticleCommentsRecordBuilder.article_comments_record().with_id(1002))
             .build(),
@@ -155,7 +155,7 @@ class TestArticleCommentsTransformations(TestCase):
         )
 
         http_mocker.get(
-            ZendeskSupportRequestBuilder.article_comments_endpoint(api_token_authenticator, article_id).with_page_size(100).build(),
+            ZendeskSupportRequestBuilder.article_comments_endpoint(api_token_authenticator, article_id).with_any_query_params().build(),
             ArticleCommentsResponseBuilder.article_comments_response()
             .with_record(ArticleCommentsRecordBuilder.article_comments_record().with_id(comment_id))
             .build(),

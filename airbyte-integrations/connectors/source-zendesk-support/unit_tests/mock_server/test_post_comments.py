@@ -14,7 +14,7 @@ from airbyte_cdk.test.state_builder import StateBuilder
 from airbyte_cdk.utils.datetime_helpers import ab_datetime_now, ab_datetime_parse
 
 from .config import ConfigBuilder
-from .helpers import given_posts, given_posts_multiple, given_ticket_forms
+from .helpers import given_posts, given_posts_multiple
 from .request_builder import ApiTokenAuthenticator, ZendeskSupportRequestBuilder
 from .response_builder import ErrorResponseBuilder, PostCommentsRecordBuilder, PostCommentsResponseBuilder
 from .utils import datetime_to_string, get_log_messages_by_log_level, read_stream, string_to_datetime

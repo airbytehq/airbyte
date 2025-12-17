@@ -70,13 +70,13 @@ class TestArticleCommentVotesStreamFullRefresh(TestCase):
         )
 
         http_mocker.get(
-            ZendeskSupportRequestBuilder.article_comments_endpoint(api_token_authenticator, article_id).with_page_size(100).build(),
+            ZendeskSupportRequestBuilder.article_comments_endpoint(api_token_authenticator, article_id).with_any_query_params().build(),
             ArticleCommentsResponseBuilder.article_comments_response().with_record(comment_builder).build(),
         )
 
         http_mocker.get(
             ZendeskSupportRequestBuilder.article_comment_votes_endpoint(api_token_authenticator, article_id, comment_id)
-            .with_page_size(100)
+            .with_any_query_params()
             .build(),
             ArticleCommentVotesResponseBuilder.article_comment_votes_response()
             .with_record(ArticleCommentVotesRecordBuilder.article_comment_votes_record())
@@ -124,7 +124,7 @@ class TestArticleCommentVotesStreamFullRefresh(TestCase):
         )
 
         http_mocker.get(
-            ZendeskSupportRequestBuilder.article_comments_endpoint(api_token_authenticator, article1_id).with_page_size(100).build(),
+            ZendeskSupportRequestBuilder.article_comments_endpoint(api_token_authenticator, article1_id).with_any_query_params().build(),
             ArticleCommentsResponseBuilder.article_comments_response().with_record(comment1_builder).build(),
         )
 
@@ -135,13 +135,13 @@ class TestArticleCommentVotesStreamFullRefresh(TestCase):
         )
 
         http_mocker.get(
-            ZendeskSupportRequestBuilder.article_comments_endpoint(api_token_authenticator, article2_id).with_page_size(100).build(),
+            ZendeskSupportRequestBuilder.article_comments_endpoint(api_token_authenticator, article2_id).with_any_query_params().build(),
             ArticleCommentsResponseBuilder.article_comments_response().with_record(comment2_builder).build(),
         )
 
         http_mocker.get(
             ZendeskSupportRequestBuilder.article_comment_votes_endpoint(api_token_authenticator, article1_id, comment1_id)
-            .with_page_size(100)
+            .with_any_query_params()
             .build(),
             ArticleCommentVotesResponseBuilder.article_comment_votes_response()
             .with_record(ArticleCommentVotesRecordBuilder.article_comment_votes_record().with_id(3001))
@@ -150,7 +150,7 @@ class TestArticleCommentVotesStreamFullRefresh(TestCase):
 
         http_mocker.get(
             ZendeskSupportRequestBuilder.article_comment_votes_endpoint(api_token_authenticator, article2_id, comment2_id)
-            .with_page_size(100)
+            .with_any_query_params()
             .build(),
             ArticleCommentVotesResponseBuilder.article_comment_votes_response()
             .with_record(ArticleCommentVotesRecordBuilder.article_comment_votes_record().with_id(3002))

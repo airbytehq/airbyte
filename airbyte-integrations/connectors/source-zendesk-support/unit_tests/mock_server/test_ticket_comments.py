@@ -7,7 +7,6 @@ import freezegun
 
 from airbyte_cdk.models import SyncMode
 from airbyte_cdk.test.mock_http import HttpMocker
-from airbyte_cdk.test.mock_http.response_builder import FieldPath
 from airbyte_cdk.test.state_builder import StateBuilder
 from airbyte_cdk.utils.datetime_helpers import ab_datetime_now
 
@@ -19,7 +18,6 @@ from .utils import read_stream
 
 _NOW = ab_datetime_now()
 _START_DATE = _NOW.subtract(timedelta(weeks=104))
-_A_CURSOR = "MTU3NjYxMzUzOS4wfHw0Njd8"
 
 
 @freezegun.freeze_time(_NOW.isoformat())

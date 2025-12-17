@@ -61,7 +61,7 @@ class TestArticleAttachmentsStreamFullRefresh(TestCase):
         article = article_builder.build()
 
         http_mocker.get(
-            ZendeskSupportRequestBuilder.article_attachments_endpoint(api_token_authenticator, article["id"]).build(),
+            ZendeskSupportRequestBuilder.article_attachments_endpoint(api_token_authenticator, article["id"]).with_any_query_params().build(),
             ArticleAttachmentsResponseBuilder.article_attachments_response()
             .with_record(ArticleAttachmentsRecordBuilder.article_attachments_record())
             .build(),
@@ -97,14 +97,14 @@ class TestArticleAttachmentsStreamFullRefresh(TestCase):
         article2 = article_builder_2.build()
 
         http_mocker.get(
-            ZendeskSupportRequestBuilder.article_attachments_endpoint(api_token_authenticator, article1["id"]).build(),
+            ZendeskSupportRequestBuilder.article_attachments_endpoint(api_token_authenticator, article1["id"]).with_any_query_params().build(),
             ArticleAttachmentsResponseBuilder.article_attachments_response()
             .with_record(ArticleAttachmentsRecordBuilder.article_attachments_record().with_id(3001))
             .build(),
         )
 
         http_mocker.get(
-            ZendeskSupportRequestBuilder.article_attachments_endpoint(api_token_authenticator, article2["id"]).build(),
+            ZendeskSupportRequestBuilder.article_attachments_endpoint(api_token_authenticator, article2["id"]).with_any_query_params().build(),
             ArticleAttachmentsResponseBuilder.article_attachments_response()
             .with_record(ArticleAttachmentsRecordBuilder.article_attachments_record().with_id(3002))
             .build(),

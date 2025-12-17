@@ -11,7 +11,7 @@ from airbyte_cdk.utils.datetime_helpers import ab_datetime_now
 
 from .config import ConfigBuilder
 from .request_builder import ApiTokenAuthenticator, ZendeskSupportRequestBuilder
-from .response_builder import ErrorResponseBuilder, NextPagePaginationStrategy, TriggersRecordBuilder, TriggersResponseBuilder
+from .response_builder import ErrorResponseBuilder, TriggersRecordBuilder, TriggersResponseBuilder
 from .utils import datetime_to_string, read_stream
 
 
@@ -139,7 +139,7 @@ class TestTriggersStreamFullRefresh(TestCase):
         # Assert error code and message per playbook requirement
         error_logs = list(get_log_messages_by_log_level(output.logs, LogLevel.ERROR))
         assert any("403" in msg for msg in error_logs), "Expected 403 error code in logs"
-        assert any("the 403 error" in msg for msg in error_logs), "Expected error message in logs"
+        assert any("Error 403" in msg for msg in error_logs), "Expected error message in logs"
 
     @HttpMocker()
     def test_given_404_error_when_read_triggers_then_fail(self, http_mocker):
@@ -155,4 +155,4 @@ class TestTriggersStreamFullRefresh(TestCase):
         # Assert error code and message per playbook requirement
         error_logs = list(get_log_messages_by_log_level(output.logs, LogLevel.ERROR))
         assert any("404" in msg for msg in error_logs), "Expected 404 error code in logs"
-        assert any("the 404 error" in msg for msg in error_logs), "Expected error message in logs"
+        assert any("Error 404" in msg for msg in error_logs), "Expected error message in logs"
