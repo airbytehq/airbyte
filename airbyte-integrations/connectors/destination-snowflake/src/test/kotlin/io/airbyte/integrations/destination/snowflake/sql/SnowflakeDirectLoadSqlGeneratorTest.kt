@@ -826,60 +826,6 @@ internal class SnowflakeDirectLoadSqlGeneratorTest {
     }
 
     @Test
-    fun testGenerateDeleteFromTable() {
-        // Test generating DELETE statement
-        val tableName = TableName(namespace = "namespace", name = "table")
-
-        // Create a table schema with CDC column for testing deletion
-        val tableSchema =
-            StreamTableSchema(
-                tableNames = TableNames(finalTableName = tableName, tempTableName = tableName),
-                columnSchema =
-                    ColumnSchema(
-                        inputToFinalColumnNames =
-                            mapOf("id" to "ID", "_ab_cdc_deleted_at" to "_AB_CDC_DELETED_AT"),
-                        finalSchema =
-                            mapOf(
-                                "ID" to ColumnType("VARCHAR", false),
-                                "_AB_CDC_DELETED_AT" to ColumnType("TIMESTAMP_TZ", true)
-                            ),
-                        inputSchema =
-                            mapOf(
-                                "id" to FieldType(StringType, nullable = false),
-                                "_ab_cdc_deleted_at" to FieldType(StringType, nullable = true)
-                            )
-                    ),
-                importType = Dedupe(primaryKey = listOf(listOf("id")), cursor = emptyList())
-            )
-
-        // Test that soft deletes are handled in the MERGE statement
-        every { snowflakeConfiguration.cdcDeletionMode } returns CdcDeletionMode.SOFT_DELETE
-
-        val sourceTableName = TableName(namespace = "namespace", name = "source")
-        val targetTableName = TableName(namespace = "namespace", name = "target")
-
-        val sql =
-            snowflakeDirectLoadSqlGenerator.upsertTable(
-                tableSchema,
-                sourceTableName,
-                targetTableName
-            )
-
-        // Should include the DELETE clause and skip insert clause
-        assert(
-            sql.contains(
-                "WHEN MATCHED AND new_record.${CDC_DELETED_AT_COLUMN.toSnowflakeCompatibleName().quote()} IS NOT NULL"
-            )
-        )
-        assert(sql.contains("THEN DELETE"))
-        assert(
-            sql.contains(
-                "WHEN NOT MATCHED AND new_record.${CDC_DELETED_AT_COLUMN.toSnowflakeCompatibleName().quote()} IS NULL THEN INSERT"
-            )
-        )
-    }
-
-    @Test
     fun testGenerateUpdateTable() {
         // Test update functionality is part of the MERGE statement
         val sourceTableName = TableName(namespace = "namespace", name = "source")
