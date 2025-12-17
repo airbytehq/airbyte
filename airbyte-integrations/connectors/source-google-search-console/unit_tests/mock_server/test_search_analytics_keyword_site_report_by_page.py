@@ -26,6 +26,7 @@ from airbyte_cdk.models import SyncMode
 from airbyte_cdk.test.catalog_builder import CatalogBuilder
 from airbyte_cdk.test.entrypoint_wrapper import read
 from airbyte_cdk.test.mock_http import HttpMocker, HttpRequest, HttpResponse
+from airbyte_cdk.test.state_builder import StateBuilder
 from unit_tests.conftest import get_source
 
 
@@ -89,11 +90,11 @@ class TestSearchAnalyticsKeywordSiteReportByPageStream(TestCase):
     Uses aggregationType: byPage.
     """
 
-    def _read_stream(self, config: dict) -> list:
+    def _read_stream(self, config: dict, state: list = None, sync_mode: SyncMode = SyncMode.full_refresh) -> list:
         """Helper to read the stream and return output."""
-        source = get_source(config)
-        catalog = CatalogBuilder().with_stream(_STREAM_NAME, SyncMode.full_refresh).build()
-        return read(source, config, catalog)
+        source = get_source(config, state=state)
+        catalog = CatalogBuilder().with_stream(_STREAM_NAME, sync_mode).build()
+        return read(source, config, catalog, state=state)
 
     @HttpMocker()
     def test_full_refresh_single_site(self, http_mocker: HttpMocker) -> None:
@@ -179,3 +180,144 @@ class TestSearchAnalyticsKeywordSiteReportByPageStream(TestCase):
             assert "country" in record.record.data
             assert "device" in record.record.data
             assert "query" in record.record.data
+
+    @HttpMocker()
+    def test_error_handler_ignore_permission_error(self, http_mocker: HttpMocker) -> None:
+        """Test IGNORE error handler for 403 permission errors.
+
+        The error handler should ignore 403 errors with "User does not have sufficient permission" message.
+        """
+        http_mocker.post(_oauth_request(), _build_oauth_response())
+
+        config = ConfigBuilder().with_site_urls(["https://example.com/"]).with_start_date("2024-01-01").with_end_date("2024-01-03").build()
+
+        def permission_error_callback(request: rm.request._RequestObjectProxy, context: Any) -> str:
+            """Return 403 permission error for all requests."""
+            context.status_code = 403
+            return json.dumps({"error": {"message": "User does not have sufficient permission"}})
+
+        http_mocker._mocker.post(
+            re.compile(r"https://www\.googleapis\.com/webmasters/v3/sites/.*/searchAnalytics/query"),
+            text=permission_error_callback,
+        )
+
+        output = self._read_stream(config)
+        records = [message for message in output.records if message.record.stream == _STREAM_NAME]
+
+        # Should have 0 records due to permission error being ignored
+        assert len(records) == 0
+
+        # Verify no ERROR logs (permission error should be ignored gracefully)
+        error_logs = [log for log in output.logs if hasattr(log, "log") and log.log.level == "ERROR"]
+        assert len(error_logs) == 0, "Expected no ERROR logs for ignored permission errors"
+
+    @HttpMocker()
+    def test_incremental_sync_first_sync_no_state(self, http_mocker: HttpMocker) -> None:
+        """Test incremental sync with no prior state (first sync).
+
+        This simulates the first sync where no state is passed in.
+        The connector should fetch all data from start_date and emit a state message.
+        """
+        http_mocker.post(_oauth_request(), _build_oauth_response())
+
+        config = ConfigBuilder().with_site_urls(["https://example.com/"]).with_start_date("2024-01-01").with_end_date("2024-01-03").build()
+
+        def search_analytics_callback(request: rm.request._RequestObjectProxy, context: Any) -> str:
+            body = json.loads(request.body)
+            # Check if this is a parent stream request (search_appearances)
+            if body.get("dimensions") == ["searchAppearance"]:
+                return json.dumps(
+                    _build_search_appearances_response(
+                        [{"keys": ["AMP_TOP_STORIES"], "clicks": 10, "impressions": 100, "ctr": 0.1, "position": 1.0}]
+                    )
+                )
+            # Return data for keyword site report by page
+            if body.get("dimensions") == ["date", "country", "device", "query"]:
+                return json.dumps(
+                    _build_search_analytics_response(
+                        [
+                            _build_search_analytics_row("2024-01-01", "usa", "DESKTOP", "test query", clicks=100, impressions=1000),
+                            _build_search_analytics_row("2024-01-02", "gbr", "MOBILE", "another query", clicks=150, impressions=1500),
+                        ]
+                    )
+                )
+            return json.dumps(_build_search_analytics_response([]))
+
+        http_mocker._mocker.post(
+            re.compile(r"https://www\.googleapis\.com/webmasters/v3/sites/.*/searchAnalytics/query"),
+            text=search_analytics_callback,
+        )
+
+        output = self._read_stream(config, state=None, sync_mode=SyncMode.incremental)
+        records = [message for message in output.records if message.record.stream == _STREAM_NAME]
+
+        # Should have records from keyword site report by page
+        assert len(records) >= 1, f"Expected at least 1 record, got {len(records)}"
+
+        # Verify state message was emitted
+        state_messages = output.state_messages
+        assert len(state_messages) > 0, "Expected state message to be emitted after first sync"
+
+    @HttpMocker()
+    def test_incremental_sync_with_prior_state(self, http_mocker: HttpMocker) -> None:
+        """Test incremental sync with prior state (second sync).
+
+        This simulates a subsequent sync where state is passed in.
+        The connector should fetch data starting from the state cursor value.
+        """
+        http_mocker.post(_oauth_request(), _build_oauth_response())
+
+        config = ConfigBuilder().with_site_urls(["https://example.com/"]).with_start_date("2024-01-01").with_end_date("2024-01-05").build()
+
+        # Build state with prior cursor value
+        prior_state = (
+            StateBuilder()
+            .with_stream_state(
+                _STREAM_NAME,
+                {
+                    "states": [
+                        {
+                            "partition": {"site_url": "https://example.com/", "search_appearance": "AMP_TOP_STORIES"},
+                            "cursor": {"date": "2024-01-02"},
+                        }
+                    ]
+                },
+            )
+            .build()
+        )
+
+        def search_analytics_callback(request: rm.request._RequestObjectProxy, context: Any) -> str:
+            body = json.loads(request.body)
+            # Check if this is a parent stream request (search_appearances)
+            if body.get("dimensions") == ["searchAppearance"]:
+                return json.dumps(
+                    _build_search_appearances_response(
+                        [{"keys": ["AMP_TOP_STORIES"], "clicks": 10, "impressions": 100, "ctr": 0.1, "position": 1.0}]
+                    )
+                )
+            # Return data for keyword site report by page
+            if body.get("dimensions") == ["date", "country", "device", "query"]:
+                return json.dumps(
+                    _build_search_analytics_response(
+                        [
+                            _build_search_analytics_row("2024-01-03", "usa", "DESKTOP", "new query", clicks=200, impressions=2000),
+                            _build_search_analytics_row("2024-01-04", "deu", "TABLET", "fresh query", clicks=250, impressions=2500),
+                        ]
+                    )
+                )
+            return json.dumps(_build_search_analytics_response([]))
+
+        http_mocker._mocker.post(
+            re.compile(r"https://www\.googleapis\.com/webmasters/v3/sites/.*/searchAnalytics/query"),
+            text=search_analytics_callback,
+        )
+
+        output = self._read_stream(config, state=prior_state, sync_mode=SyncMode.incremental)
+        records = [message for message in output.records if message.record.stream == _STREAM_NAME]
+
+        # Should have records from keyword site report by page (after state cursor)
+        assert len(records) >= 1, f"Expected at least 1 record, got {len(records)}"
+
+        # Verify state message was emitted with updated cursor
+        state_messages = output.state_messages
+        assert len(state_messages) > 0, "Expected state message to be emitted"
