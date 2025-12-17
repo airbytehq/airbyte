@@ -154,6 +154,21 @@ class TestSearchAnalyticsKeywordSiteReportBySiteStream(TestCase):
         # Verify parent stream was called to get search appearances
         assert parent_request_count > 0, "Parent stream (search_appearances) should have been called"
 
+        # Note: This stream has a complex nested partition structure:
+        # 1. search_appearances parent stream partitions by site_url AND search_type (web, news, image, video)
+        # 2. search_appearances extracts searchAppearance values from API response
+        # 3. keyword_site_report_by_site then partitions by site_url AND search_appearance
+        # 4. The child request uses search_type from parent_slice (nested partition)
+        #
+        # Due to this complexity, the mock may not fully simulate the partition routing.
+        # The test validates:
+        # - Parent stream (search_appearances) is called
+        # - Stream completes without ERROR logs
+        # - If records are emitted, they have correct transformations
+        #
+        # The other keyword stream tests (keyword_page_report, keyword_site_report_by_page)
+        # provide coverage for the SubstreamPartitionRouter behavior.
+
         # Verify dimensions in keyword site report by site requests
         keyword_requests = [
             b
@@ -162,10 +177,7 @@ class TestSearchAnalyticsKeywordSiteReportBySiteStream(TestCase):
         ]
 
         # If keyword requests were made, verify their structure
-        # Note: This stream may not make keyword requests in all cases due to its specific
-        # partition router configuration. The test validates the stream runs without errors.
         if keyword_requests:
-            # Verify dimensionFilterGroups is present in keyword requests
             for body in keyword_requests:
                 assert "dimensionFilterGroups" in body, "Should have dimensionFilterGroups for searchAppearance filter"
 

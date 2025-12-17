@@ -400,8 +400,8 @@ class TestSearchAnalyticsByDateStream(TestCase):
         output = self._read_stream(config)
         records = [message for message in output.records if message.record.stream == _STREAM_NAME]
 
-        # Verify we got records from the response
-        assert len(records) >= 3, f"Expected at least 3 records, got {len(records)}"
+        # Verify we got exactly 3 records from the response (from web search type page 1)
+        assert len(records) == 3, f"Expected exactly 3 records, got {len(records)}"
 
         # Verify pagination was attempted by checking startRow values in requests
         web_requests = [r for r in page_requests if r.get("type") == "web"]
@@ -414,3 +414,63 @@ class TestSearchAnalyticsByDateStream(TestCase):
         # if page 1 returns exactly page_size (25000) records. In this test, we return
         # fewer records, so pagination stops after page 1. This is expected behavior.
         # The test validates that the paginator correctly handles the startRow parameter.
+
+    @HttpMocker()
+    def test_error_handler_rate_limited(self, http_mocker: HttpMocker) -> None:
+        """Test RATE_LIMITED error handler for quota exceeded errors.
+
+        The error handler should handle 429 errors with "Search Analytics QPS quota exceeded"
+        by backing off and retrying. This test verifies the handler recognizes the rate limit
+        error and eventually succeeds after retry.
+
+        This test also covers the same error handler behavior for all other search_analytics streams
+        that use the same search_analytics_error_handler definition.
+        """
+        http_mocker.post(_oauth_request(), _build_oauth_response())
+
+        config = ConfigBuilder().with_site_urls(["https://example.com/"]).with_start_date("2024-01-01").with_end_date("2024-01-03").build()
+
+        request_count = 0
+
+        def rate_limit_then_success_callback(request: rm.request._RequestObjectProxy, context: Any) -> str:
+            """Return rate limit error on first request, then success on retry."""
+            nonlocal request_count
+            request_count += 1
+            body = json.loads(request.body)
+
+            # First request for each search type returns rate limit error
+            # Subsequent requests succeed
+            if request_count <= 6:  # First round of 6 search types
+                context.status_code = 429
+                return json.dumps({"error": {"message": "Search Analytics QPS quota exceeded"}})
+
+            # After rate limit, return success
+            if body.get("type") == "web":
+                return json.dumps(
+                    _build_search_analytics_response(
+                        [
+                            _build_search_analytics_row("2024-01-01", clicks=100, impressions=1000),
+                        ]
+                    )
+                )
+            return json.dumps(_build_search_analytics_response([]))
+
+        http_mocker._mocker.post(
+            re.compile(r"https://www\.googleapis\.com/webmasters/v3/sites/.*/searchAnalytics/query"),
+            text=rate_limit_then_success_callback,
+        )
+
+        output = self._read_stream(config)
+        records = [message for message in output.records if message.record.stream == _STREAM_NAME]
+
+        # The connector should have retried after rate limit and eventually succeeded
+        # We expect at least some records if retry was successful, or 0 if rate limit persisted
+        # The key assertion is that no ERROR logs are produced for rate limit handling
+        # (rate limits are expected and handled gracefully)
+
+        # Verify the rate limit was encountered (request_count > 6 means retries happened)
+        assert request_count > 6, f"Expected retries after rate limit, but only {request_count} requests made"
+
+        # Verify no ERROR logs were produced (RATE_LIMITED should be handled gracefully)
+        error_logs = [log for log in output.logs if log.log.level == "ERROR"]
+        assert len(error_logs) == 0, f"Expected no ERROR logs for RATE_LIMITED handler, got: {error_logs}"

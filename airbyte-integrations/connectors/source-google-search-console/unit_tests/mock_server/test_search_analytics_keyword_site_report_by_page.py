@@ -166,8 +166,11 @@ class TestSearchAnalyticsKeywordSiteReportByPageStream(TestCase):
         for body in keyword_requests:
             assert "dimensionFilterGroups" in body, "Should have dimensionFilterGroups for searchAppearance filter"
 
-        # Should have records from the keyword site report by page
-        assert len(records) >= 1
+        # Should have records from the keyword site report by page (2 parent records x 1 record each = 2 records)
+        # Note: Record count may vary based on partitions, asserting at least 1 record with key field validation
+        assert len(records) >= 1, f"Expected at least 1 record, got {len(records)}"
+        # Verify specific key fields are present
+        assert records[0].record.data["query"] == "test query", "Expected specific query in record"
 
         # Verify transformations added site_url
         for record in records:
