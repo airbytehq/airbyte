@@ -95,10 +95,13 @@ def _get_custom_analytics_report_config() -> list:
     The custom_analytics_report stream uses ConfigComponentsResolver which reads from
     the ad_analytics_reports config. Without this config, the stream produces zero slices
     and makes no HTTP requests.
+
+    IMPORTANT: The stream name is generated as "custom_{{name}}" from the config entry's
+    name field. So "name": "analytics_report" produces stream "custom_analytics_report".
     """
     return [
         {
-            "name": "test_report",
+            "name": "analytics_report",
             "pivot_by": "CAMPAIGN",
             "time_granularity": "DAILY",
         }
