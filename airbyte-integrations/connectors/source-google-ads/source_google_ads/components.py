@@ -697,6 +697,7 @@ class CustomGAQueryHttpRequester(HttpRequester):
     def __post_init__(self, parameters: Mapping[str, Any]):
         super().__post_init__(parameters=parameters)
         self.query = GAQL.parse(parameters.get("query"))
+        self.stream_response = True
 
     @staticmethod
     def is_metrics_in_custom_query(query: GAQL) -> bool:
@@ -759,6 +760,17 @@ class CustomGAQueryHttpRequester(HttpRequester):
         query_upper = self.query.upper()
         from_index = query_upper.find("FROM")
         return self.query[from_index + 4 :].strip()
+
+
+class CustomGAQueryClickViewHttpRequester(CustomGAQueryHttpRequester):
+    @staticmethod
+    def _insert_segments_date_expr(query: GAQL, start_date: str, end_date: str) -> GAQL:
+        if "segments.date" not in query.fields:
+            query = query.append_field("segments.date")
+        condition = f"segments.date ='{start_date}'"
+        if query.where:
+            return query.set_where(query.where + " AND " + condition)
+        return query.set_where(condition)
 
 
 @dataclass()
