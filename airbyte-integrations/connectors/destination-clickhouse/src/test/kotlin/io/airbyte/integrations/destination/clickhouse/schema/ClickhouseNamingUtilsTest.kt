@@ -2,13 +2,13 @@
  * Copyright (c) 2025 Airbyte, Inc., all rights reserved.
  */
 
-package io.airbyte.integrations.destination.clickhouse.config
+package io.airbyte.integrations.destination.clickhouse.schema
 
 import java.util.UUID
 import org.junit.jupiter.api.Assertions
 import org.junit.jupiter.api.Test
 
-class ClickhouseNameGeneratorTest {
+class ClickhouseNamingUtilsTest {
     @Test
     fun `toClickHouseCompatibleName replaces special characters with underscores`() {
         Assertions.assertEquals("hello_world", "hello world".toClickHouseCompatibleName())
