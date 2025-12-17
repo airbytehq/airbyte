@@ -14,7 +14,7 @@ from airbyte_cdk.test.state_builder import StateBuilder
 
 from .config import BUSINESS_ACCOUNT_ID, PAGE_ID, ConfigBuilder
 from .request_builder import RequestBuilder, get_account_request
-from .response_builder import get_account_response
+from .response_builder import SECOND_BUSINESS_ACCOUNT_ID, SECOND_PAGE_ID, get_account_response, get_multiple_accounts_response
 from .utils import read_output
 
 
@@ -128,6 +128,46 @@ class TestFullRefresh(TestCase):
         assert record.get("page_id") == PAGE_ID
         assert record.get("business_account_id") == BUSINESS_ACCOUNT_ID
 
+    @HttpMocker()
+    @freezegun.freeze_time(_FROZEN_TIME)
+    def test_substream_with_multiple_parent_accounts(self, http_mocker: HttpMocker) -> None:
+        """Test user_insights stream against 2+ parent accounts per playbook requirements.
+
+        This test verifies that the stream correctly processes data from multiple parent accounts
+        and applies transformations (page_id, business_account_id) to records from each account.
+        """
+        http_mocker.get(
+            get_account_request().build(),
+            get_multiple_accounts_response(),
+        )
+
+        # Mock user_insights requests for both accounts
+        http_mocker.get(
+            _get_user_insights_request_any_params(BUSINESS_ACCOUNT_ID).build(),
+            _build_user_insights_response(),
+        )
+        http_mocker.get(
+            _get_user_insights_request_any_params(SECOND_BUSINESS_ACCOUNT_ID).build(),
+            _build_user_insights_response(),
+        )
+
+        test_config = ConfigBuilder().with_start_date("2024-01-15T00:00:00Z")
+        output = self._read(config_=test_config)
+
+        # Verify we get records from both accounts
+        assert len(output.records) == 2
+
+        # Verify transformations on all records
+        business_account_ids = {record.record.data.get("business_account_id") for record in output.records}
+        assert BUSINESS_ACCOUNT_ID in business_account_ids
+        assert SECOND_BUSINESS_ACCOUNT_ID in business_account_ids
+
+        for record in output.records:
+            assert "page_id" in record.record.data
+            assert record.record.data["page_id"] is not None
+            assert "business_account_id" in record.record.data
+            assert record.record.data["business_account_id"] is not None
+
 
 class TestIncremental(TestCase):
     @staticmethod
@@ -174,13 +214,18 @@ class TestIncremental(TestCase):
 
         With prior state at 2024-01-15T00:00:00+00:00 and frozen time at 2024-01-15T12:00:00Z,
         the stream should request data with since=2024-01-15T00:00:00Z.
-        We verify the outbound request includes the expected since parameter derived from state.
+        We verify the outbound request includes the expected since parameter derived from state
+        by mocking specific query params for each QueryProperties chunk.
 
-        Note: Using with_any_query_params() here because the DatetimeBasedCursor with QueryProperties
-        makes multiple requests with different period/metric combinations. The key validation is that
-        the stream correctly uses the prior state value as the starting point for the sync.
+        The DatetimeBasedCursor uses the state value as the starting point, and the frozen time
+        determines the end datetime. With step P1D, there's only one time slice from state to now.
         """
         prior_state_value = "2024-01-15T00:00:00+00:00"
+        # Expected since value derived from state - the API uses the state value format directly
+        expected_since = "2024-01-15T00:00:00+00:00"
+        # Expected until value is the frozen time (in the same format as the API expects)
+        expected_until = "2024-01-15T12:00:00+00:00"
+
         state = (
             StateBuilder()
             .with_stream_state(
@@ -202,21 +247,52 @@ class TestIncremental(TestCase):
             get_account_response(),
         )
 
+        # Mock each QueryProperties chunk with specific params to validate the since parameter
+        # Chunk 1: period=day, metric=follower_count,reach
         http_mocker.get(
-            _get_user_insights_request_any_params(BUSINESS_ACCOUNT_ID).build(),
+            _get_user_insights_request_with_params(
+                BUSINESS_ACCOUNT_ID, since=expected_since, until=expected_until, period="day", metric="follower_count,reach"
+            ).build(),
+            _build_user_insights_response(),
+        )
+        # Chunk 2: period=week, metric=reach
+        http_mocker.get(
+            _get_user_insights_request_with_params(
+                BUSINESS_ACCOUNT_ID, since=expected_since, until=expected_until, period="week", metric="reach"
+            ).build(),
+            _build_user_insights_response(),
+        )
+        # Chunk 3: period=days_28, metric=reach
+        http_mocker.get(
+            _get_user_insights_request_with_params(
+                BUSINESS_ACCOUNT_ID, since=expected_since, until=expected_until, period="days_28", metric="reach"
+            ).build(),
+            _build_user_insights_response(),
+        )
+        # Chunk 4: period=lifetime, metric=online_followers
+        http_mocker.get(
+            _get_user_insights_request_with_params(
+                BUSINESS_ACCOUNT_ID, since=expected_since, until=expected_until, period="lifetime", metric="online_followers"
+            ).build(),
             _build_user_insights_response(),
         )
 
         test_config = ConfigBuilder().with_start_date("2024-01-14T00:00:00Z")
         output = self._read(config_=test_config, state=state)
-        # Using >= 1 because with_any_query_params() matches all 4 QueryProperties chunks
-        # (day/follower_count,reach; week/reach; days_28/reach; lifetime/online_followers)
-        # and returns the same response for each. The merge strategy operates within chunks,
-        # not across them, so record count is non-deterministic. We assert on specific IDs below.
-        assert len(output.records) >= 1
+
+        # With specific mocks for each chunk, we can now assert exact record count
+        # The merge strategy groups by date, and all chunks return the same date (2024-01-15T07:00:00+0000)
+        # so records should be merged into 1 record
+        assert len(output.records) == 1
         assert len(output.state_messages) >= 1
-        for record in output.records:
-            assert record.record.data.get("business_account_id") == BUSINESS_ACCOUNT_ID
+
+        # Verify the record has the expected business_account_id
+        record = output.records[0].record.data
+        assert record.get("business_account_id") == BUSINESS_ACCOUNT_ID
+
+        # Verify the record date matches the expected date from our response
+        # Note: The date is normalized to RFC 3339 format (+00:00) by the schema normalization
+        assert record.get("date") == "2024-01-15T07:00:00+00:00"
 
 
 class TestErrorHandling(TestCase):
