@@ -1118,3 +1118,26 @@ class ArticleCommentVotesResponseBuilder(HttpResponseBuilder):
             FieldPath("votes"),
             CursorBasedPaginationStrategy(http_request_to_str(request_without_cursor_for_pagination)),
         )
+
+
+class UserIdentitiesRecordBuilder(ZendeskSupportRecordBuilder):
+    @classmethod
+    def user_identities_record(cls) -> "UserIdentitiesRecordBuilder":
+        record_template = cls.extract_record("user_identities", __file__, NestedPath(["identities", 0]))
+        return cls(record_template, FieldPath("id"), FieldPath("updated_at"))
+
+    def with_id(self, id: int) -> "UserIdentitiesRecordBuilder":
+        self._record["id"] = id
+        return self
+
+
+class UserIdentitiesResponseBuilder(HttpResponseBuilder):
+    @classmethod
+    def user_identities_response(
+        cls, request_without_cursor_for_pagination: Optional[HttpRequest] = None
+    ) -> "UserIdentitiesResponseBuilder":
+        return cls(
+            find_template("user_identities", __file__),
+            FieldPath("identities"),
+            CursorBasedPaginationStrategy(http_request_to_str(request_without_cursor_for_pagination)),
+        )
