@@ -21,6 +21,7 @@ import calendar
 from typing import Any, Dict, Optional, Union
 
 from airbyte_cdk.test.mock_http import HttpRequest
+from airbyte_cdk.test.mock_http.request import ANY_QUERY_PARAMS
 from airbyte_cdk.utils.datetime_helpers import AirbyteDateTime, ab_datetime_parse
 
 
@@ -96,8 +97,13 @@ class ZendeskSupportRequestBuilder:
 
     @classmethod
     def users_endpoint(cls, authenticator: Authenticator) -> "ZendeskSupportRequestBuilder":
-        """Create a request builder for the /incremental/users/cursor.json endpoint (for user_identities stream)."""
+        """Create a request builder for the /incremental/users/cursor.json endpoint."""
         return cls(cls.DEFAULT_SUBDOMAIN, "incremental/users/cursor.json").with_authenticator(authenticator)
+
+    @classmethod
+    def user_identities_endpoint(cls, authenticator: Authenticator) -> "ZendeskSupportRequestBuilder":
+        """Create a request builder for the /incremental/users/cursor.json endpoint with include=identities (for user_identities stream)."""
+        return cls(cls.DEFAULT_SUBDOMAIN, "incremental/users/cursor.json").with_authenticator(authenticator).with_include("identities")
 
     @classmethod
     def ticket_metrics_endpoint(cls, authenticator: Authenticator) -> "ZendeskSupportRequestBuilder":
@@ -246,8 +252,8 @@ class ZendeskSupportRequestBuilder:
 
     @classmethod
     def ticket_skips_endpoint(cls, authenticator: Authenticator) -> "ZendeskSupportRequestBuilder":
-        """Create a request builder for the /skips endpoint."""
-        return cls(cls.DEFAULT_SUBDOMAIN, "skips").with_authenticator(authenticator)
+        """Create a request builder for the /skips.json endpoint."""
+        return cls(cls.DEFAULT_SUBDOMAIN, "skips.json").with_authenticator(authenticator)
 
     @classmethod
     def triggers_endpoint(cls, authenticator: Authenticator) -> "ZendeskSupportRequestBuilder":
@@ -309,6 +315,8 @@ class ZendeskSupportRequestBuilder:
     @property
     def query_params(self) -> Dict[str, Any]:
         """Build query parameters for the request."""
+        if self._query_params is ANY_QUERY_PARAMS:
+            return ANY_QUERY_PARAMS
         params = {}
         for key, value in self._query_params.items():
             params[key] = value
@@ -352,6 +360,11 @@ class ZendeskSupportRequestBuilder:
     def with_query_param(self, key: str, value: Any) -> "ZendeskSupportRequestBuilder":
         """Add a custom query parameter."""
         self._query_params[key] = value
+        return self
+
+    def with_any_query_params(self) -> "ZendeskSupportRequestBuilder":
+        """Allow any query parameters to match. Use when parameters are dynamic or can't be precisely mocked."""
+        self._query_params = ANY_QUERY_PARAMS
         return self
 
     def with_start_time(self, start_time: Union[str, AirbyteDateTime, int]) -> "ZendeskSupportRequestBuilder":

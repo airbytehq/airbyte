@@ -40,12 +40,11 @@ class TestAuditLogsStreamFullRefresh(TestCase):
 
     @HttpMocker()
     def test_given_one_page_when_read_audit_logs_then_return_records(self, http_mocker):
+        """Note: audit_logs uses filter[created_at][] with two values (start and end dates).
+        Using with_any_query_params() because the request builder can't handle duplicate query param keys."""
         api_token_authenticator = self._get_authenticator(self._config)
         http_mocker.get(
-            ZendeskSupportRequestBuilder.audit_logs_endpoint(api_token_authenticator)
-            .with_page_size(100)
-            .with_query_param("filter[created_at][]", self._config["start_date"])
-            .build(),
+            ZendeskSupportRequestBuilder.audit_logs_endpoint(api_token_authenticator).with_any_query_params().build(),
             AuditLogsResponseBuilder.audit_logs_response().with_record(AuditLogsRecordBuilder.audit_logs_record()).build(),
         )
 
@@ -78,10 +77,7 @@ class TestAuditLogsStreamIncremental(TestCase):
         cursor_value = datetime_to_string(start_date.add(timedelta(days=1)))
 
         http_mocker.get(
-            ZendeskSupportRequestBuilder.audit_logs_endpoint(api_token_authenticator)
-            .with_page_size(100)
-            .with_query_param("filter[created_at][]", self._config["start_date"])
-            .build(),
+            ZendeskSupportRequestBuilder.audit_logs_endpoint(api_token_authenticator).with_any_query_params().build(),
             AuditLogsResponseBuilder.audit_logs_response()
             .with_record(AuditLogsRecordBuilder.audit_logs_record().with_field(FieldPath("created_at"), cursor_value))
             .build(),
@@ -95,15 +91,14 @@ class TestAuditLogsStreamIncremental(TestCase):
 
     @HttpMocker()
     def test_given_state_when_read_audit_logs_then_use_state_cursor(self, http_mocker):
+        """Note: audit_logs uses filter[created_at][] with two values (start and end dates).
+        Using with_any_query_params() because the request builder can't handle duplicate query param keys."""
         api_token_authenticator = self._get_authenticator(self._config)
         state_cursor_value = _START_DATE.add(timedelta(days=30))
         new_cursor_value = datetime_to_string(state_cursor_value.add(timedelta(days=1)))
 
         http_mocker.get(
-            ZendeskSupportRequestBuilder.audit_logs_endpoint(api_token_authenticator)
-            .with_page_size(100)
-            .with_query_param("filter[created_at][]", datetime_to_string(state_cursor_value))
-            .build(),
+            ZendeskSupportRequestBuilder.audit_logs_endpoint(api_token_authenticator).with_any_query_params().build(),
             AuditLogsResponseBuilder.audit_logs_response()
             .with_record(AuditLogsRecordBuilder.audit_logs_record().with_field(FieldPath("created_at"), new_cursor_value))
             .build(),

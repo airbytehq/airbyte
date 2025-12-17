@@ -41,8 +41,9 @@ class TestSatisfactionRatingsStreamFullRefresh(TestCase):
         api_token_authenticator = self._get_authenticator(self._config)
         http_mocker.get(
             ZendeskSupportRequestBuilder.satisfaction_ratings_endpoint(api_token_authenticator)
-            .with_start_time(self._config["start_date"])
+            .with_sort("created_at")
             .with_page_size(100)
+            .with_start_time(self._config["start_date"])
             .build(),
             SatisfactionRatingsResponseBuilder.satisfaction_ratings_response()
             .with_record(SatisfactionRatingsRecordBuilder.satisfaction_ratings_record())
@@ -77,8 +78,9 @@ class TestSatisfactionRatingsStreamIncremental(TestCase):
 
         http_mocker.get(
             ZendeskSupportRequestBuilder.satisfaction_ratings_endpoint(api_token_authenticator)
-            .with_start_time(self._config["start_date"])
+            .with_sort("created_at")
             .with_page_size(100)
+            .with_start_time(self._config["start_date"])
             .build(),
             SatisfactionRatingsResponseBuilder.satisfaction_ratings_response()
             .with_record(SatisfactionRatingsRecordBuilder.satisfaction_ratings_record().with_field(FieldPath("updated_at"), cursor_value))
@@ -99,8 +101,9 @@ class TestSatisfactionRatingsStreamIncremental(TestCase):
 
         http_mocker.get(
             ZendeskSupportRequestBuilder.satisfaction_ratings_endpoint(api_token_authenticator)
-            .with_start_time(datetime_to_string(state_cursor_value))
+            .with_sort("created_at")
             .with_page_size(100)
+            .with_start_time(datetime_to_string(state_cursor_value))
             .build(),
             SatisfactionRatingsResponseBuilder.satisfaction_ratings_response()
             .with_record(
