@@ -18,7 +18,7 @@ from airbyte_cdk.test.mock_http.response_builder import (
 
 from .config import BUSINESS_ACCOUNT_ID, ConfigBuilder
 from .request_builder import RequestBuilder, get_account_request
-from .response_builder import get_account_response
+from .response_builder import SECOND_BUSINESS_ACCOUNT_ID, get_account_response, get_multiple_accounts_response
 from .utils import config, read_output
 
 
@@ -80,3 +80,31 @@ class TestFullRefresh(TestCase):
 
         output = self._read(config_=config())
         assert len(output.records) == 1
+        # Verify transformation: page_id field is added from partition
+        assert "page_id" in output.records[0].record.data
+        assert output.records[0].record.data["page_id"] is not None
+
+    @HttpMocker()
+    def test_substream_with_multiple_parent_accounts(self, http_mocker: HttpMocker) -> None:
+        """Test users stream against 2+ parent accounts per playbook requirements."""
+        http_mocker.get(
+            get_account_request().build(),
+            get_multiple_accounts_response(),
+        )
+        # Mock users requests for both accounts
+        http_mocker.get(
+            _get_request().build(),
+            _get_response().with_record(_record()).build(),
+        )
+        http_mocker.get(
+            RequestBuilder.get_users_endpoint(item_id=SECOND_BUSINESS_ACCOUNT_ID).with_fields(_FIELDS).build(),
+            _get_response().with_record(_record()).build(),
+        )
+
+        output = self._read(config_=config())
+        # Verify we get records from both accounts
+        assert len(output.records) == 2
+        # Verify transformations on all records
+        for record in output.records:
+            assert "page_id" in record.record.data
+            assert record.record.data["page_id"] is not None

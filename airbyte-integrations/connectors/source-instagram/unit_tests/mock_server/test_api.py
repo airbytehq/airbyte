@@ -67,6 +67,11 @@ class TestFullRefresh(TestCase):
 
         output = self._read(config_=config())
         assert len(output.records) == 1
+        # Verify transformations are applied (page_id, business_account_id in account field)
+        record = output.records[0].record.data
+        assert "account" in record
+        assert "page_id" in record["account"]
+        assert "business_account_id" in record["account"]
 
     @HttpMocker()
     def test_accounts_with_no_instagram_business_account_field(self, http_mocker: HttpMocker) -> None:

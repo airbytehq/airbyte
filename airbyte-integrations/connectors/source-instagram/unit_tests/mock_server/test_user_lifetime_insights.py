@@ -18,7 +18,7 @@ from airbyte_cdk.test.mock_http.response_builder import (
 
 from .config import BUSINESS_ACCOUNT_ID, ConfigBuilder
 from .request_builder import RequestBuilder, get_account_request
-from .response_builder import get_account_response
+from .response_builder import SECOND_BUSINESS_ACCOUNT_ID, get_account_response, get_multiple_accounts_response
 from .utils import config, read_output
 
 
@@ -79,3 +79,47 @@ class TestFullRefresh(TestCase):
         output = self._read(config_=config())
         # each breakdown should produce a record
         assert len(output.records) == 3
+        # Verify transformation: breakdown, page_id, business_account_id, and metric fields are added
+        for record in output.records:
+            assert "breakdown" in record.record.data
+            assert "page_id" in record.record.data
+            assert "business_account_id" in record.record.data
+            assert "metric" in record.record.data
+            assert record.record.data["page_id"] is not None
+            assert record.record.data["business_account_id"] is not None
+
+    @HttpMocker()
+    def test_substream_with_multiple_parent_accounts(self, http_mocker: HttpMocker) -> None:
+        """Test user_lifetime_insights stream against 2+ parent accounts per playbook requirements."""
+        http_mocker.get(
+            get_account_request().build(),
+            get_multiple_accounts_response(),
+        )
+        # Mock requests for both accounts (each account has 3 breakdowns)
+        for breakdown in ["city", "country", "age,gender"]:
+            # First account
+            http_mocker.get(
+                _get_request().with_custom_param("breakdown", breakdown).build(),
+                _get_response().with_record(_record()).build(),
+            )
+            # Second account
+            http_mocker.get(
+                RequestBuilder.get_user_lifetime_insights_endpoint(item_id=SECOND_BUSINESS_ACCOUNT_ID)
+                .with_custom_param("metric", "follower_demographics")
+                .with_custom_param("period", "lifetime")
+                .with_custom_param("metric_type", "total_value")
+                .with_limit(100)
+                .with_custom_param("breakdown", breakdown)
+                .build(),
+                _get_response().with_record(_record()).build(),
+            )
+
+        output = self._read(config_=config())
+        # 2 accounts × 3 breakdowns = 6 records
+        assert len(output.records) == 6
+        # Verify transformations on all records
+        for record in output.records:
+            assert "breakdown" in record.record.data
+            assert "page_id" in record.record.data
+            assert "business_account_id" in record.record.data
+            assert "metric" in record.record.data
