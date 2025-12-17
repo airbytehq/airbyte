@@ -158,9 +158,7 @@ class TestFullRefresh(TestCase):
             assert metric in output.records[0].record.data
         assert not any(log.log.level == "ERROR" for log in output.logs)
         log_messages = [log.log.message for log in output.logs]
-        assert any("Insights error" in msg for msg in log_messages), (
-            f"Expected 'Insights error' in logs but got: {log_messages}"
-        )
+        assert any("Insights error" in msg for msg in log_messages), f"Expected 'Insights error' in logs but got: {log_messages}"
 
     @HttpMocker()
     def test_substream_with_multiple_parent_records(self, http_mocker: HttpMocker) -> None:
