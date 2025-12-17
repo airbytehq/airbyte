@@ -36,9 +36,7 @@ def _get_user_insights_request_any_params(business_account_id: str) -> RequestBu
     return RequestBuilder.get_user_lifetime_insights_endpoint(item_id=business_account_id).with_any_query_params()
 
 
-def _get_user_insights_request_with_params(
-    business_account_id: str, since: str, until: str, period: str, metric: str
-) -> RequestBuilder:
+def _get_user_insights_request_with_params(business_account_id: str, since: str, until: str, period: str, metric: str) -> RequestBuilder:
     """Create a request builder for user_insights with specific query params."""
     return (
         RequestBuilder.get_user_lifetime_insights_endpoint(item_id=business_account_id)
@@ -267,9 +265,9 @@ class TestErrorHandling(TestCase):
         assert len(output.records) == 0
         assert not any(log.log.level == "ERROR" for log in output.logs)
         log_messages = [log.log.message for log in output.logs]
-        assert any("Insights error for business_account_id" in msg for msg in log_messages), (
-            f"Expected 'Insights error for business_account_id' in logs but got: {log_messages}"
-        )
+        assert any(
+            "Insights error for business_account_id" in msg for msg in log_messages
+        ), f"Expected 'Insights error for business_account_id' in logs but got: {log_messages}"
 
     @HttpMocker()
     @freezegun.freeze_time(_FROZEN_TIME)
@@ -294,9 +292,9 @@ class TestErrorHandling(TestCase):
         assert len(output.records) == 0
         assert not any(log.log.level == "ERROR" for log in output.logs)
         log_messages = [log.log.message for log in output.logs]
-        assert any("Check provided permissions for" in msg for msg in log_messages), (
-            f"Expected 'Check provided permissions for' in logs but got: {log_messages}"
-        )
+        assert any(
+            "Check provided permissions for" in msg for msg in log_messages
+        ), f"Expected 'Check provided permissions for' in logs but got: {log_messages}"
 
     @HttpMocker()
     @freezegun.freeze_time(_FROZEN_TIME)
@@ -321,6 +319,6 @@ class TestErrorHandling(TestCase):
         assert len(output.records) == 0
         assert not any(log.log.level == "ERROR" for log in output.logs)
         log_messages = [log.log.message for log in output.logs]
-        assert any("Check provided permissions for" in msg for msg in log_messages), (
-            f"Expected 'Check provided permissions for' in logs but got: {log_messages}"
-        )
+        assert any(
+            "Check provided permissions for" in msg for msg in log_messages
+        ), f"Expected 'Check provided permissions for' in logs but got: {log_messages}"
