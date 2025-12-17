@@ -25,6 +25,7 @@ The connector uses HTTP Basic authentication, sending `api_key` as the username 
 The connector handles Track's API rate limit of 10,000 requests per 5 minutes. When the rate limit is reached, the connector waits approximately 5 minutes before retrying.
 
 ## Streams
+
 | Stream Name | Primary Key | Pagination | Supports Full Sync | Supports Incremental | API Docs |
 |-------------|-------------|------------|---------------------|----------------------|----------------------|
 | accounting_accounts | id | DefaultPaginator | ✅ |  ❌  | [Link](https://developer.trackhs.com/reference/getledgeraccounts) |
