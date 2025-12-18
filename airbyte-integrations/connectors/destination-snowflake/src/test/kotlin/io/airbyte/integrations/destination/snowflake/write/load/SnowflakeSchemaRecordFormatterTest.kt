@@ -28,15 +28,6 @@ internal class SnowflakeSchemaRecordFormatterTest {
         val inputToFinalColumnNames = mutableMapOf<String, String>()
         val inputSchema = mutableMapOf<String, FieldType>()
 
-        // Add meta columns
-        finalSchema[COLUMN_NAME_AB_RAW_ID.toSnowflakeCompatibleName()] =
-            ColumnType("VARCHAR", false)
-        finalSchema[COLUMN_NAME_AB_EXTRACTED_AT.toSnowflakeCompatibleName()] =
-            ColumnType("TIMESTAMP_TZ", false)
-        finalSchema[COLUMN_NAME_AB_META.toSnowflakeCompatibleName()] = ColumnType("VARIANT", false)
-        finalSchema[COLUMN_NAME_AB_GENERATION_ID.toSnowflakeCompatibleName()] =
-            ColumnType("NUMBER", true)
-
         // Add user columns
         userColumns.forEach { (name, type) ->
             val finalName = name.toSnowflakeCompatibleName()

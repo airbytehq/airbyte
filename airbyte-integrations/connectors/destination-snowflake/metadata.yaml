@@ -3,8 +3,6 @@ data:
     ql: 300
     sl: 300
     requireVersionIncrementsInPullRequests: false
-    rollout:
-      enabled: true
   connectorSubtype: database
   connectorType: destination
   definitionId: 424892c4-daac-4491-b35d-c6688ba547ba
@@ -33,6 +31,8 @@ data:
       enabled: true
   releaseStage: generally_available
   releases:
+    rolloutConfiguration:
+      enableProgressiveRollout: true
     breakingChanges:
       2.0.0:
         message: Remove GCS/S3 loading method support.

@@ -8,7 +8,6 @@ import io.airbyte.cdk.load.data.AirbyteValue
 import io.airbyte.cdk.load.data.NullValue
 import io.airbyte.cdk.load.data.StringValue
 import io.airbyte.cdk.load.data.csv.toCsvValue
-import io.airbyte.cdk.load.message.Meta.Companion.COLUMN_NAMES
 import io.airbyte.cdk.load.message.Meta.Companion.COLUMN_NAME_AB_EXTRACTED_AT
 import io.airbyte.cdk.load.message.Meta.Companion.COLUMN_NAME_AB_GENERATION_ID
 import io.airbyte.cdk.load.message.Meta.Companion.COLUMN_NAME_AB_LOADED_AT
@@ -24,8 +23,7 @@ interface SnowflakeRecordFormatter {
 class SnowflakeSchemaRecordFormatter(
     val columnSchema: ColumnSchema,
 ) : SnowflakeRecordFormatter {
-    val userColumns =
-        columnSchema.finalSchema.keys.filterNot { COLUMN_NAMES.contains(it.lowercase()) }
+    val userColumns = columnSchema.finalSchema.keys
 
     override fun format(record: Map<String, AirbyteValue>): List<Any> {
         val result = mutableListOf<Any>()
