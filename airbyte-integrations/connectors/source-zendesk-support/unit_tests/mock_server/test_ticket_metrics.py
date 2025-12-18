@@ -137,8 +137,9 @@ class TestTicketMetricsIncremental(TestCase):
 
         # Check parent_state timestamp (can be int or string)
         actual_generated_ts = state_dict["parent_state"]["tickets"]["generated_timestamp"]
-        assert actual_generated_ts == expected_timestamp or actual_generated_ts == str(expected_timestamp), \
-            f"Expected {expected_timestamp} or '{expected_timestamp}', got {actual_generated_ts}"
+        assert actual_generated_ts == expected_timestamp or actual_generated_ts == str(
+            expected_timestamp
+        ), f"Expected {expected_timestamp} or '{expected_timestamp}', got {actual_generated_ts}"
 
 
 @freezegun.freeze_time(_NOW.isoformat())

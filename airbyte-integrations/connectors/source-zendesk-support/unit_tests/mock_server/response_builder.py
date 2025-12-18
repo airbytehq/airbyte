@@ -71,13 +71,13 @@ class NextPagePaginationStrategy(PaginationStrategy):
 
 class EndOfStreamPaginationStrategy(PaginationStrategy):
     """Pagination strategy for end_of_stream-based pagination.
-    
+
     Different streams use different paginators:
     - end_of_stream_paginator uses: cursor_value: '{{ response.get("next_page", {}) }}'
     - after_url_paginator uses: cursor_value: '{{ response.get("after_url") }}'
-    
+
     Both use: stop_condition: '{{ response.get("end_of_stream") }}'
-    
+
     We set both next_page and after_url to support both paginator types.
     """
 

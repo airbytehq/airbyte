@@ -18,7 +18,14 @@ from .config import ConfigBuilder
 from .helpers import given_posts, given_posts_multiple
 from .request_builder import ApiTokenAuthenticator, ZendeskSupportRequestBuilder
 from .response_builder import ErrorResponseBuilder, PostVotesRecordBuilder, PostVotesResponseBuilder
-from .utils import datetime_to_string, extract_cursor_value_from_state, get_log_messages_by_log_level, get_partition_ids_from_state, read_stream, string_to_datetime
+from .utils import (
+    datetime_to_string,
+    extract_cursor_value_from_state,
+    get_log_messages_by_log_level,
+    get_partition_ids_from_state,
+    read_stream,
+    string_to_datetime,
+)
 
 
 _NOW = datetime.now(timezone.utc)
@@ -233,13 +240,13 @@ class TestPostsVotesStreamIncremental(TestCase):
 
         post_vote = post_votes_record_builder.build()
         assert output.most_recent_state.stream_descriptor.name == "post_votes"
-        
+
         # Use flexible state assertion that handles different CDK state formats
         state_dict = output.most_recent_state.stream_state.__dict__
         expected_cursor_value = str(int(string_to_datetime(post_vote["updated_at"]).timestamp()))
         actual_cursor_value = extract_cursor_value_from_state(state_dict, "updated_at")
         assert actual_cursor_value == expected_cursor_value, f"Expected cursor {expected_cursor_value}, got {actual_cursor_value}"
-        
+
         # Verify partition contains the expected post_id
         partition_ids = get_partition_ids_from_state(state_dict, "post_id")
         assert post["id"] in partition_ids, f"Expected post_id {post['id']} in partitions, got {partition_ids}"
@@ -266,13 +273,17 @@ class TestPostsVotesStreamIncremental(TestCase):
         older_vote_time = start_date.add(timedelta(days=1))
         newer_vote_time = start_date.add(timedelta(days=2))
 
-        older_vote_builder = PostVotesRecordBuilder.posts_votes_record().with_field(
-            FieldPath("updated_at"), datetime_to_string(older_vote_time)
-        ).with_id(3001)
+        older_vote_builder = (
+            PostVotesRecordBuilder.posts_votes_record()
+            .with_field(FieldPath("updated_at"), datetime_to_string(older_vote_time))
+            .with_id(3001)
+        )
 
-        newer_vote_builder = PostVotesRecordBuilder.posts_votes_record().with_field(
-            FieldPath("updated_at"), datetime_to_string(newer_vote_time)
-        ).with_id(3002)
+        newer_vote_builder = (
+            PostVotesRecordBuilder.posts_votes_record()
+            .with_field(FieldPath("updated_at"), datetime_to_string(newer_vote_time))
+            .with_id(3002)
+        )
 
         # Mock the votes endpoint with both records (no pagination)
         http_mocker.get(
@@ -280,10 +291,7 @@ class TestPostsVotesStreamIncremental(TestCase):
             .with_start_time(self._config["start_date"])
             .with_page_size(100)
             .build(),
-            PostVotesResponseBuilder.posts_votes_response()
-            .with_record(older_vote_builder)
-            .with_record(newer_vote_builder)
-            .build(),
+            PostVotesResponseBuilder.posts_votes_response().with_record(older_vote_builder).with_record(newer_vote_builder).build(),
         )
 
         # Read stream

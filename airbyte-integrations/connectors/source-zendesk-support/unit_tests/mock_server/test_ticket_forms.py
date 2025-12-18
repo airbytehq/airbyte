@@ -90,7 +90,6 @@ class TestTicketFormsStreamIncremental(TestCase):
         assert output.most_recent_state.stream_descriptor.name == "ticket_forms"
 
 
-
 @freezegun.freeze_time(_NOW.isoformat())
 class TestTicketFormsErrorHandling(TestCase):
     """Test error handling for ticket_forms stream.

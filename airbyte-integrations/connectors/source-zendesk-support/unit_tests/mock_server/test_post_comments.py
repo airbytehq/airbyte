@@ -18,7 +18,14 @@ from .config import ConfigBuilder
 from .helpers import given_posts, given_posts_multiple
 from .request_builder import ApiTokenAuthenticator, ZendeskSupportRequestBuilder
 from .response_builder import ErrorResponseBuilder, PostCommentsRecordBuilder, PostCommentsResponseBuilder
-from .utils import datetime_to_string, extract_cursor_value_from_state, get_log_messages_by_log_level, get_partition_ids_from_state, read_stream, string_to_datetime
+from .utils import (
+    datetime_to_string,
+    extract_cursor_value_from_state,
+    get_log_messages_by_log_level,
+    get_partition_ids_from_state,
+    read_stream,
+    string_to_datetime,
+)
 
 
 _NOW = ab_datetime_now()
@@ -238,13 +245,13 @@ class TestPostsCommentsStreamIncremental(TestCase):
 
         post_comment = post_comments_record_builder.build()
         assert output.most_recent_state.stream_descriptor.name == "post_comments"
-        
+
         # Use flexible state assertion that handles different CDK state formats
         state_dict = output.most_recent_state.stream_state.__dict__
         expected_cursor_value = str(int(string_to_datetime(post_comment["updated_at"]).timestamp()))
         actual_cursor_value = extract_cursor_value_from_state(state_dict, "updated_at")
         assert actual_cursor_value == expected_cursor_value, f"Expected cursor {expected_cursor_value}, got {actual_cursor_value}"
-        
+
         # Verify partition contains the expected post_id
         partition_ids = get_partition_ids_from_state(state_dict, "post_id")
         assert post["id"] in partition_ids, f"Expected post_id {post['id']} in partitions, got {partition_ids}"
@@ -271,13 +278,17 @@ class TestPostsCommentsStreamIncremental(TestCase):
         older_comment_time = start_date.add(timedelta(days=1))
         newer_comment_time = start_date.add(timedelta(days=2))
 
-        older_comment_builder = PostCommentsRecordBuilder.posts_comments_record().with_field(
-            FieldPath("updated_at"), datetime_to_string(older_comment_time)
-        ).with_id(2001)
+        older_comment_builder = (
+            PostCommentsRecordBuilder.posts_comments_record()
+            .with_field(FieldPath("updated_at"), datetime_to_string(older_comment_time))
+            .with_id(2001)
+        )
 
-        newer_comment_builder = PostCommentsRecordBuilder.posts_comments_record().with_field(
-            FieldPath("updated_at"), datetime_to_string(newer_comment_time)
-        ).with_id(2002)
+        newer_comment_builder = (
+            PostCommentsRecordBuilder.posts_comments_record()
+            .with_field(FieldPath("updated_at"), datetime_to_string(newer_comment_time))
+            .with_id(2002)
+        )
 
         # Mock the comments endpoint with both records (no pagination)
         http_mocker.get(

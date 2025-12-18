@@ -26,7 +26,14 @@ from .response_builder import (
     PostsRecordBuilder,
     PostsResponseBuilder,
 )
-from .utils import datetime_to_string, extract_cursor_value_from_state, get_log_messages_by_log_level, get_partition_ids_from_state, read_stream, string_to_datetime
+from .utils import (
+    datetime_to_string,
+    extract_cursor_value_from_state,
+    get_log_messages_by_log_level,
+    get_partition_ids_from_state,
+    read_stream,
+    string_to_datetime,
+)
 
 
 _NOW = datetime.now(timezone.utc)
@@ -337,7 +344,7 @@ class TestPostsCommentVotesStreamIncremental(TestCase):
         assert len(output.records) == 1
 
         assert output.most_recent_state.stream_descriptor.name == "post_comment_votes"
-        
+
         # Use flexible state assertion that handles different CDK state formats
         state_dict = output.most_recent_state.stream_state.__dict__
         expected_cursor_value = str(int(string_to_datetime(post_comment_votes["updated_at"]).timestamp()))
@@ -375,13 +382,17 @@ class TestPostsCommentVotesStreamIncremental(TestCase):
         older_vote_time = start_date.add(timedelta(days=1))
         newer_vote_time = start_date.add(timedelta(days=2))
 
-        older_vote_builder = PostCommentVotesRecordBuilder.post_commetn_votes_record().with_field(
-            FieldPath("updated_at"), datetime_to_string(older_vote_time)
-        ).with_id("vote_1001")
+        older_vote_builder = (
+            PostCommentVotesRecordBuilder.post_commetn_votes_record()
+            .with_field(FieldPath("updated_at"), datetime_to_string(older_vote_time))
+            .with_id("vote_1001")
+        )
 
-        newer_vote_builder = PostCommentVotesRecordBuilder.post_commetn_votes_record().with_field(
-            FieldPath("updated_at"), datetime_to_string(newer_vote_time)
-        ).with_id("vote_1002")
+        newer_vote_builder = (
+            PostCommentVotesRecordBuilder.post_commetn_votes_record()
+            .with_field(FieldPath("updated_at"), datetime_to_string(newer_vote_time))
+            .with_id("vote_1002")
+        )
 
         # Mock the comment votes endpoint with both records (no pagination)
         http_mocker.get(
