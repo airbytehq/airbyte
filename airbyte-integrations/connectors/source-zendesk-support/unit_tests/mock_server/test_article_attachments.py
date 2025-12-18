@@ -6,7 +6,7 @@ from unittest import TestCase
 import freezegun
 
 from airbyte_cdk.models import SyncMode
-from airbyte_cdk.test.mock_http import HttpMocker
+from airbyte_cdk.test.mock_http import HttpMocker, HttpRequest, HttpResponse
 from airbyte_cdk.test.mock_http.response_builder import FieldPath
 from airbyte_cdk.utils.datetime_helpers import ab_datetime_now
 
@@ -60,11 +60,20 @@ class TestArticleAttachmentsStreamFullRefresh(TestCase):
 
         article = article_builder.build()
 
+        attachment_builder = ArticleAttachmentsRecordBuilder.article_attachments_record()
+
         http_mocker.get(
             ZendeskSupportRequestBuilder.article_attachments_endpoint(api_token_authenticator, article["id"]).with_any_query_params().build(),
             ArticleAttachmentsResponseBuilder.article_attachments_response()
-            .with_record(ArticleAttachmentsRecordBuilder.article_attachments_record())
+            .with_record(attachment_builder)
             .build(),
+        )
+
+        # Mock the file download URL (content_url) that the CDK's file_uploader tries to access
+        attachment = attachment_builder.build()
+        http_mocker.get(
+            HttpRequest(url=attachment["content_url"]),
+            HttpResponse(body=b"fake file content", status_code=200),
         )
 
         output = read_stream("article_attachments", SyncMode.full_refresh, self._config)
@@ -96,18 +105,41 @@ class TestArticleAttachmentsStreamFullRefresh(TestCase):
         article1 = article_builder_1.build()
         article2 = article_builder_2.build()
 
+        attachment_builder_1 = (
+            ArticleAttachmentsRecordBuilder.article_attachments_record()
+            .with_id(3001)
+            .with_field(FieldPath("content_url"), "https://company.zendesk.com/hc/article_attachments/3001/test1.pdf")
+        )
+        attachment_builder_2 = (
+            ArticleAttachmentsRecordBuilder.article_attachments_record()
+            .with_id(3002)
+            .with_field(FieldPath("content_url"), "https://company.zendesk.com/hc/article_attachments/3002/test2.pdf")
+        )
+
         http_mocker.get(
             ZendeskSupportRequestBuilder.article_attachments_endpoint(api_token_authenticator, article1["id"]).with_any_query_params().build(),
             ArticleAttachmentsResponseBuilder.article_attachments_response()
-            .with_record(ArticleAttachmentsRecordBuilder.article_attachments_record().with_id(3001))
+            .with_record(attachment_builder_1)
             .build(),
         )
 
         http_mocker.get(
             ZendeskSupportRequestBuilder.article_attachments_endpoint(api_token_authenticator, article2["id"]).with_any_query_params().build(),
             ArticleAttachmentsResponseBuilder.article_attachments_response()
-            .with_record(ArticleAttachmentsRecordBuilder.article_attachments_record().with_id(3002))
+            .with_record(attachment_builder_2)
             .build(),
+        )
+
+        # Mock the file download URLs (content_url) that the CDK's file_uploader tries to access
+        attachment1 = attachment_builder_1.build()
+        attachment2 = attachment_builder_2.build()
+        http_mocker.get(
+            HttpRequest(url=attachment1["content_url"]),
+            HttpResponse(body=b"fake file content 1", status_code=200),
+        )
+        http_mocker.get(
+            HttpRequest(url=attachment2["content_url"]),
+            HttpResponse(body=b"fake file content 2", status_code=200),
         )
 
         output = read_stream("article_attachments", SyncMode.full_refresh, self._config)

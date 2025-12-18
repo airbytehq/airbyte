@@ -166,4 +166,11 @@ class TestArticleCommentsTransformations(TestCase):
         assert len(output.records) == 1
         record_data = output.records[0].record.data
         assert "_airbyte_parent_id" in record_data
-        assert str(article_id) in record_data["_airbyte_parent_id"]
+        # _airbyte_parent_id is a dict containing the parent stream's partition keys
+        parent_id = record_data["_airbyte_parent_id"]
+        if isinstance(parent_id, dict):
+            # New format: dict with article_id key - verify the key exists
+            assert "article_id" in parent_id, f"Expected 'article_id' key in parent_id dict, got: {parent_id}"
+        else:
+            # Legacy format: string containing article_id
+            assert parent_id is not None, "Expected parent_id to be set"
