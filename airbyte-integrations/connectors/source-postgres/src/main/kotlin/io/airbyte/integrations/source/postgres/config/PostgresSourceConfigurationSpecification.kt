@@ -397,6 +397,7 @@ data object StandardReplicationMethodConfigurationSpecification :
         "\"https://docs.airbyte.com/integrations/connectors/source-postgres#getting-started\"" +
         "> change data capture feature</a>. This must be enabled on your database.",
 )
+@SuppressFBWarnings(value = ["NP_NONNULL_RETURN_VIOLATION"], justification = "testing")
 class CdcReplicationMethodConfigurationSpecification : IncrementalConfigurationSpecification {
 
     @JsonProperty("invalid_cdc_cursor_position_behavior")

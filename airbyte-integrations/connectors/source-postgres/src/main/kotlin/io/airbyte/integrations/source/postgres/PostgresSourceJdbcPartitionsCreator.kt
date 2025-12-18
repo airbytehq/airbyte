@@ -4,6 +4,7 @@
 
 package io.airbyte.integrations.source.postgres
 
+import edu.umd.cs.findbugs.annotations.SuppressFBWarnings
 import io.airbyte.cdk.command.OpaqueStateValue
 import io.airbyte.cdk.jdbc.JdbcConnectionFactory
 import io.airbyte.cdk.output.sockets.toJson
@@ -147,6 +148,7 @@ class PostgresSourceJdbcConcurrentPartitionsCreator<
     /**
      * Get total relation size in bytes for a given table - this icludes toast data.
      */
+    @SuppressFBWarnings(value = ["SQL_PREPARED_STATEMENT_GENERATED_FROM_NONCONSTANT_STRING"], justification = "testing")
     private fun totalRelationSize(stream: Stream): Long {
         val sql = "SELECT pg_total_relation_size('${ toQualifiedTableName(stream.namespace, stream.name) }')"
         return querySingleValue(JdbcConnectionFactory(sharedState.configuration), sql,

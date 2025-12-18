@@ -5,6 +5,7 @@
 package io.airbyte.integrations.source.postgres
 
 import com.fasterxml.jackson.databind.JsonNode
+import edu.umd.cs.findbugs.annotations.SuppressFBWarnings
 import io.airbyte.cdk.ConfigErrorException
 import io.airbyte.cdk.StreamIdentifier
 import io.airbyte.cdk.command.JdbcSourceConfiguration
@@ -328,6 +329,7 @@ open class PostgresSourceJdbcPartitionFactory(
         return cursor to cursors[cursorLabel]!!
     }
 
+    @SuppressFBWarnings(value = ["SQL_PREPARED_STATEMENT_GENERATED_FROM_NONCONSTANT_STRING"], justification = "testing")
     private fun relationSize(stream: Stream): Long {
         val sql = "SELECT pg_relation_size('${ toQualifiedTableName(stream.namespace, stream.name) }')"
         return querySingleValue(JdbcConnectionFactory(sharedState.configuration), sql,

@@ -35,6 +35,26 @@
         "always_show": true,
         "airbyte_secret": true
       },
+      "entra_service_principal_auth": {
+        "type": "boolean",
+        "default": false,
+        "description": "Interpret password as a client secret for a Microsoft Entra service principal",
+        "title": "Azure Entra Service Principal Authentication",
+        "order": 6,
+        "always_show": true
+      },
+      "entra_tenant_id": {
+        "type": "string",
+        "description": "If using Entra service principal, the ID of the tenant",
+        "title": "Azure Entra Tenant Id",
+        "order": 7
+      },
+      "entra_client_id": {
+        "type": "string",
+        "description": "If using Entra service principal, the application ID of the service principal",
+        "title": "Azure Entra Client Id",
+        "order": 8
+      },
       "schemas": {
         "type": "array",
         "items": {
@@ -42,7 +62,7 @@
         },
         "description": "The list of schemas to sync from. Defaults to public. Case sensitive.",
         "title": "Schemas",
-        "order": 6,
+        "order": 9,
         "always_show": true,
         "uniqueItems": true
       },
@@ -50,7 +70,7 @@
         "type": "string",
         "description": "Additional properties to pass to the JDBC URL string when connecting to the database formatted as 'key=value' pairs separated by the symbol '&'. (example: key1=value1&key2=value2&key3=value3).",
         "title": "JDBC URL Params",
-        "order": 7
+        "order": 10
       },
       "tunnel_method": {
         "oneOf": [
@@ -62,11 +82,15 @@
             "properties": {
               "tunnel_method": {
                 "type": "string",
-                "enum": ["NO_TUNNEL"],
+                "enum": [
+                  "NO_TUNNEL"
+                ],
                 "default": "NO_TUNNEL"
               }
             },
-            "required": ["tunnel_method"]
+            "required": [
+              "tunnel_method"
+            ]
           },
           {
             "title": "SSH Key Authentication",
@@ -76,7 +100,9 @@
             "properties": {
               "tunnel_method": {
                 "type": "string",
-                "enum": ["SSH_KEY_AUTH"],
+                "enum": [
+                  "SSH_KEY_AUTH"
+                ],
                 "default": "SSH_KEY_AUTH"
               },
               "tunnel_host": {
@@ -125,7 +151,9 @@
             "properties": {
               "tunnel_method": {
                 "type": "string",
-                "enum": ["SSH_PASSWORD_AUTH"],
+                "enum": [
+                  "SSH_PASSWORD_AUTH"
+                ],
                 "default": "SSH_PASSWORD_AUTH"
               },
               "tunnel_host": {
@@ -168,10 +196,10 @@
         ],
         "description": "Whether to initiate an SSH tunnel before connecting to the database, and if so, which kind of authentication to use.",
         "title": "SSH Tunnel Method",
-        "order": 9,
+        "order": 11,
         "type": "object"
       },
-      "cursor": {
+      "replication_method": {
         "oneOf": [
           {
             "title": "Scan Changes with User Defined Cursor",
@@ -179,13 +207,17 @@
             "additionalProperties": true,
             "description": "Incrementally detects new inserts and updates using the <a href=\"https://docs.airbyte.com/understanding-airbyte/connections/incremental-append/#user-defined-cursor\">cursor column</a> chosen when configuring a connection (e.g. created_at, updated_at).",
             "properties": {
-              "cursor_method": {
+              "method": {
                 "type": "string",
-                "enum": ["user_defined"],
-                "default": "user_defined"
+                "enum": [
+                  "Standard"
+                ],
+                "default": "Standard"
               }
             },
-            "required": ["cursor_method"]
+            "required": [
+              "method"
+            ]
           },
           {
             "title": "Read Changes using Change Data Capture (CDC)",
@@ -193,10 +225,12 @@
             "additionalProperties": true,
             "description": "<i>Recommended</i> - Incrementally reads new inserts, updates, and deletes using Postgres's <a href=\"https://docs.airbyte.com/integrations/connectors/source-postgres#getting-started\"> change data capture feature</a>. This must be enabled on your database.",
             "properties": {
-              "cursor_method": {
+              "method": {
                 "type": "string",
-                "enum": ["cdc"],
-                "default": "cdc"
+                "enum": [
+                  "CDC"
+                ],
+                "default": "CDC"
               },
               "invalid_cdc_cursor_position_behavior": {
                 "type": "string",
@@ -204,7 +238,10 @@
                 "description": "Determines whether Airbyte should fail or re-sync data in case of an stale/invalid cursor value in the mined logs. If 'Fail sync' is chosen, a user will have to manually reset the connection before being able to continue syncing data. If 'Re-sync data' is chosen, Airbyte will automatically trigger a refresh but could lead to higher cloud costs and data loss.",
                 "title": "Invalid CDC Position Behavior (Advanced)",
                 "order": 1,
-                "enum": ["Fail sync", "Re-sync data"],
+                "enum": [
+                  "Fail sync",
+                  "Re-sync data"
+                ],
                 "always_show": true
               },
               "initial_load_timeout_hours": {
@@ -226,14 +263,47 @@
                 "min": 1,
                 "max": 3600,
                 "always_show": true
+              },
+              "replication_slot": {
+                "type": "string",
+                "description": "A plugin logical replication slot. Read about <a href=\\\"https://docs.airbyte.com/integrations/sources/postgres#step-3-create-replication-slot\\\">replication slots</a>.",
+                "title": "Replication Slot",
+                "order": 4,
+                "always_show": true,
+                "minLength": 1
+              },
+              "publication": {
+                "type": "string",
+                "description": "A Postgres publication used for consuming changes. Read about <a href=\\\"https://docs.airbyte.com/integrations/sources/postgres#step-4-create-publications-and-replication-identities-for-tables\\\">publications and replication identities</a>.",
+                "title": "Publication",
+                "order": 5,
+                "always_show": true,
+                "minLength": 1
+              },
+              "lsn_commit_behavior": {
+                "type": "string",
+                "default": "After loading Data in the destination",
+                "description": "Determines when Airbyte should flush the LSN of processed WAL logs in the source database. `After loading Data in the destination` is default. If `While reading Data` is selected, in case of a downstream failure (while loading data into the destination), next sync would result in a full sync.",
+                "title": "LSN commit behavior",
+                "order": 7,
+                "enum": [
+                  "While reading Data",
+                  "After loading Data in the destination"
+                ],
+                "always_show": true
               }
             },
-            "required": ["cursor_method"]
+            "required": [
+              "method",
+              "replication_slot",
+              "publication",
+              "lsn_commit_behavior"
+            ]
           }
         ],
         "description": "Configures how data is extracted from the database.",
         "title": "Update Method",
-        "order": 10,
+        "order": 12,
         "display_type": "radio",
         "type": "object"
       },
@@ -248,20 +318,20 @@
         "default": 300,
         "description": "How often (in seconds) a stream should checkpoint, when possible.",
         "title": "Checkpoint Target Time Interval",
-        "order": 11
+        "order": 13
       },
       "max_db_connections": {
         "type": "integer",
         "description": "Maximum number of concurrent queries to the database. Leave empty to let Airbyte optimize performance.",
         "title": "Max Concurrent Queries to Database",
-        "order": 12
+        "order": 14
       },
       "check_privileges": {
         "type": "boolean",
         "default": true,
         "description": "When this feature is enabled, during schema discovery the connector will query each table or view individually to check access privileges and inaccessible tables, views, or columns therein will be removed. In large schemas, this might cause schema discovery to take too long, in which case it might be advisable to disable this feature.",
         "title": "Check Table and Column Access Privileges",
-        "order": 13
+        "order": 15
       },
       "ssl_mode": {
         "oneOf": [
@@ -273,11 +343,15 @@
             "properties": {
               "mode": {
                 "type": "string",
-                "enum": ["disable"],
+                "enum": [
+                  "disable"
+                ],
                 "default": "disable"
               }
             },
-            "required": ["mode"]
+            "required": [
+              "mode"
+            ]
           },
           {
             "title": "allow",
@@ -287,11 +361,15 @@
             "properties": {
               "mode": {
                 "type": "string",
-                "enum": ["allow"],
+                "enum": [
+                  "allow"
+                ],
                 "default": "allow"
               }
             },
-            "required": ["mode"]
+            "required": [
+              "mode"
+            ]
           },
           {
             "title": "prefer",
@@ -301,11 +379,15 @@
             "properties": {
               "mode": {
                 "type": "string",
-                "enum": ["prefer"],
+                "enum": [
+                  "prefer"
+                ],
                 "default": "prefer"
               }
             },
-            "required": ["mode"]
+            "required": [
+              "mode"
+            ]
           },
           {
             "title": "require",
@@ -315,11 +397,15 @@
             "properties": {
               "mode": {
                 "type": "string",
-                "enum": ["require"],
+                "enum": [
+                  "require"
+                ],
                 "default": "require"
               }
             },
-            "required": ["mode"]
+            "required": [
+              "mode"
+            ]
           },
           {
             "title": "verify_ca",
@@ -329,7 +415,9 @@
             "properties": {
               "mode": {
                 "type": "string",
-                "enum": ["verify_ca"],
+                "enum": [
+                  "verify_ca"
+                ],
                 "default": "verify_ca"
               },
               "ca_certificate": {
@@ -361,7 +449,10 @@
                 "multiline": true
               }
             },
-            "required": ["mode", "ca_certificate"]
+            "required": [
+              "mode",
+              "ca_certificate"
+            ]
           },
           {
             "title": "verify_full",
@@ -371,7 +462,9 @@
             "properties": {
               "mode": {
                 "type": "string",
-                "enum": ["verify_full"],
+                "enum": [
+                  "verify_full"
+                ],
                 "default": "verify_full"
               },
               "ca_certificate": {
@@ -403,7 +496,10 @@
                 "multiline": true
               }
             },
-            "required": ["mode", "ca_certificate"]
+            "required": [
+              "mode",
+              "ca_certificate"
+            ]
           }
         ],
         "description": "The encryption method which is used when communicating with the database.",
@@ -417,8 +513,9 @@
       "host",
       "port",
       "username",
+      "entra_service_principal_auth",
       "tunnel_method",
-      "cursor",
+      "replication_method",
       "database"
     ]
   },
