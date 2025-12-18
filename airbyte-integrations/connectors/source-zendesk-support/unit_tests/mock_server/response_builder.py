@@ -72,9 +72,13 @@ class NextPagePaginationStrategy(PaginationStrategy):
 class EndOfStreamPaginationStrategy(PaginationStrategy):
     """Pagination strategy for end_of_stream-based pagination.
     
-    The connector's end_of_stream_paginator uses:
-    - cursor_value: '{{ response.get("next_page", {}) }}' - looks for next_page field
-    - stop_condition: '{{ response.get("end_of_stream") }}' - checks end_of_stream to stop
+    Different streams use different paginators:
+    - end_of_stream_paginator uses: cursor_value: '{{ response.get("next_page", {}) }}'
+    - after_url_paginator uses: cursor_value: '{{ response.get("after_url") }}'
+    
+    Both use: stop_condition: '{{ response.get("end_of_stream") }}'
+    
+    We set both next_page and after_url to support both paginator types.
     """
 
     def __init__(self, url: str, cursor) -> None:
@@ -82,7 +86,13 @@ class EndOfStreamPaginationStrategy(PaginationStrategy):
         self._cursor = cursor
 
     def update(self, response: Dict[str, Any]) -> None:
-        response["next_page"] = f"{self._next_page_url}?cursor={self._cursor}"
+        # Handle URLs that may already have query params
+        if self._next_page_url and "?" in self._next_page_url:
+            next_url = f"{self._next_page_url}&cursor={self._cursor}"
+        else:
+            next_url = f"{self._next_page_url}?cursor={self._cursor}"
+        response["next_page"] = next_url
+        response["after_url"] = next_url
         response["after_cursor"] = self._cursor
         response["end_of_stream"] = False
 

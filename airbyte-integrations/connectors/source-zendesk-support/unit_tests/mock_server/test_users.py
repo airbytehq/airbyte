@@ -63,7 +63,7 @@ class TestUserIdentitiesStream(TestCase):
             .with_start_time(_START_DATE)
             .build(),
             UsersResponseBuilder.identities_response(
-                ZendeskSupportRequestBuilder.users_endpoint(api_token_authenticator).build(), _A_CURSOR
+                ZendeskSupportRequestBuilder.users_endpoint(api_token_authenticator).with_include("identities").build(), _A_CURSOR
             )
             .with_record(UsersRecordBuilder.record())
             .with_record(UsersRecordBuilder.record())
