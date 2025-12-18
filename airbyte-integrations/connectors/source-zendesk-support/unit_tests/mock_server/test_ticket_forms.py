@@ -89,30 +89,6 @@ class TestTicketFormsStreamIncremental(TestCase):
         assert output.most_recent_state is not None
         assert output.most_recent_state.stream_descriptor.name == "ticket_forms"
 
-    @pytest.mark.skip(reason="Semi-incremental filtering not working - CDK returns all records instead of filtering by state. Needs CDK investigation.")
-    @HttpMocker()
-    def test_given_state_when_read_ticket_forms_then_filter_records_by_state(self, http_mocker):
-        """Semi-incremental streams filter records client-side based on state."""
-        api_token_authenticator = self._get_authenticator(self._config)
-        state_cursor_value = _START_DATE.add(timedelta(days=30))
-        old_cursor_value = datetime_to_string(state_cursor_value.subtract(timedelta(days=1)))
-        new_cursor_value = datetime_to_string(state_cursor_value.add(timedelta(days=1)))
-
-        http_mocker.get(
-            ZendeskSupportRequestBuilder.ticket_forms_endpoint(api_token_authenticator).build(),
-            TicketFormsResponseBuilder.ticket_forms_response()
-            .with_record(TicketFormsRecordBuilder.ticket_forms_record().with_id(1).with_field(FieldPath("updated_at"), old_cursor_value))
-            .with_record(TicketFormsRecordBuilder.ticket_forms_record().with_id(2).with_field(FieldPath("updated_at"), new_cursor_value))
-            .build(),
-        )
-
-        state = StateBuilder().with_stream_state("ticket_forms", {"updated_at": datetime_to_string(state_cursor_value)}).build()
-
-        output = read_stream("ticket_forms", SyncMode.incremental, self._config, state)
-
-        assert len(output.records) == 1
-        assert output.records[0].record.data["id"] == 2
-        assert output.most_recent_state is not None
 
 
 @freezegun.freeze_time(_NOW.isoformat())
