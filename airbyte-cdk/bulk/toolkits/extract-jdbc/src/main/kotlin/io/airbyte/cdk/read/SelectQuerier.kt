@@ -210,20 +210,23 @@ class JdbcSelectQuerier(
  *
  * @param jdbcConnectionFactory Factory for creating JDBC connections
  * @param query SQL query string to execute (should return exactly one row)
- * @param withRS Lambda function to process the ResultSet and extract the desired value
+ * @param bindParameters Optional lambda to bind parameters to the PreparedStatement before execution
+ * @param withResultSet Lambda function to process the ResultSet and extract the desired value
  * @return The value extracted from the single result row using the withRS function
  */
 fun <T> querySingleValue(
     jdbcConnectionFactory: JdbcConnectionFactory,
     query: String,
-    withRS: (ResultSet) -> T
+    bindParameters: ((PreparedStatement) -> Unit)?,
+    withResultSet: (ResultSet) -> T
 ): T {
     jdbcConnectionFactory.get().use { connection ->
         connection.prepareStatement(query).use { stmt ->
+            bindParameters?.invoke(stmt)
             stmt.executeQuery().use { rs ->
                 check(rs.next()) { "Query unexpectedly produced no results: [$query]" }
                 check(rs.isLast) { "Query unexpectedly produced more than one result: [$query]" }
-                return withRS(rs)
+                return withResultSet(rs)
             }
         }
     }

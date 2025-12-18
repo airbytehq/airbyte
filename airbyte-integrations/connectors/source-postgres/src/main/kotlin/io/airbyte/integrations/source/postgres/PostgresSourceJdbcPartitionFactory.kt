@@ -185,8 +185,8 @@ open class PostgresSourceJdbcPartitionFactory(
                     } else {
                         // Snapshot ongoing
                         if (
-                            fileNodeChange != FILENODE_NO_CHANGE
-                        ) { // TODO: need other values? new stream
+                            fileNodeChange  !in  listOf(FILENODE_NO_CHANGE, FILENODE_NOT_FOUND)
+                        ) {
                             handler.accept(InvalidPrimaryKey(stream.id, listOf(ctidField.id)))
                             streamState.reset()
                             coldStart(streamState, filenode)
@@ -231,7 +231,7 @@ open class PostgresSourceJdbcPartitionFactory(
                         // Incremental complete
                         null
                     } else {
-                        filenode?.let { // Incremental ongoing
+                        filenode?.run { // Incremental ongoing
                             PostgresSourceJdbcCursorIncrementalPartition(
                                 selectQueryGenerator,
                                 streamState,
@@ -255,7 +255,7 @@ open class PostgresSourceJdbcPartitionFactory(
             is XminIncrementalConfiguration -> {
                 return when (stream.configuredSyncMode) {
                     ConfiguredSyncMode.FULL_REFRESH -> {
-                        if (fileNodeChange in listOf(FILENODE_CHANGED)) {
+                        if (fileNodeChange in listOf(FILENODE_CHANGED, FILENODE_NOT_FOUND)) {
                             handler.accept(ResetStream(stream.id))
                             streamState.reset()
                             coldStart(streamState, filenode)
@@ -276,7 +276,7 @@ open class PostgresSourceJdbcPartitionFactory(
                         }
                     }
                     ConfiguredSyncMode.INCREMENTAL -> {
-                        if (fileNodeChange in listOf(FILENODE_CHANGED)) {
+                        if (fileNodeChange in listOf(FILENODE_CHANGED, FILENODE_NOT_FOUND)) {
                             handler.accept(ResetStream(stream.id))
                             streamState.reset()
                             coldStart(streamState, filenode)
@@ -335,13 +335,15 @@ open class PostgresSourceJdbcPartitionFactory(
             jdbcConnectionFactory: JdbcConnectionFactory
         ): Filenode? {
             log.info { "Querying filenode for stream ${streamState.stream.id}" }
-            val sql =
-                """SELECT pg_relation_filenode('"${streamState.stream.namespace}"."${streamState.stream.name}"')"""
+            val sql =  "SELECT pg_relation_filenode(?::regclass)"
             val jdbcFieldType: JdbcFieldType<*> = LongFieldType
             val filenode: Any? =
                 querySingleValue(
                     jdbcConnectionFactory,
                     sql,
+                    { stmt ->
+                        stmt.setString(1, """"${streamState.stream.namespace}"."${streamState.stream.name}"""")
+                    },
                     { rs -> jdbcFieldType.jdbcGetter.get(rs, 1) }
                 )
             log.info { "Filenode for stream ${streamState.stream.id}: ${filenode ?: "not found"}" }
@@ -372,6 +374,7 @@ open class PostgresSourceJdbcPartitionFactory(
                         querySingleValue(
                             JdbcConnectionFactory(config),
                             "SELECT current_setting('block_size')::int",
+                            null,
                             { rs -> rs.getLong(1) }
                         )
                     )
@@ -425,10 +428,13 @@ open class PostgresSourceJdbcPartitionFactory(
 
     private fun relationSize(stream: Stream): Long {
         val sql =
-            "SELECT pg_relation_size('${ toQualifiedTableName(stream.namespace, stream.name) }')"
+            "SELECT pg_relation_size(?)"
         return querySingleValue(
             JdbcConnectionFactory(sharedState.configuration),
             sql,
+            { stmt ->
+                stmt.setString(1,toQualifiedTableName(stream.namespace, stream.name))
+            },
             { rs ->
                 return@querySingleValue rs.getLong(1)
             }
@@ -446,8 +452,7 @@ open class PostgresSourceJdbcPartitionFactory(
         }
 
         // pg_relation_size returns the size of the table on disk, only the data in the main table
-        // file
-        // not including indexes or toast data
+        // file not including indexes or toast data
         val relationSize = relationSize(unsplitPartition.stream)
         return when (unsplitPartition) {
             is PostgresSourceJdbcSplittableSnapshotPartition ->

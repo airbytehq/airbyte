@@ -144,13 +144,16 @@ class PostgresSourceJdbcConcurrentPartitionsCreator<
         return partitions.map { JdbcNonResumablePartitionReader(it) }
     }
 
-    /** Get total relation size in bytes for a given table - this icludes toast data. */
+    /** Get total relation size in bytes for a given table - this includes toast data. */
     private fun totalRelationSize(stream: Stream): Long {
         val sql =
-            "SELECT pg_total_relation_size('${ toQualifiedTableName(stream.namespace, stream.name) }')"
+            "SELECT pg_total_relation_size(?)"
         return querySingleValue(
             JdbcConnectionFactory(sharedState.configuration),
             sql,
+            { stmt ->
+                stmt.setString(1,toQualifiedTableName(stream.namespace, stream.name))
+            },
             { rs ->
                 return@querySingleValue rs.getLong(1)
             }

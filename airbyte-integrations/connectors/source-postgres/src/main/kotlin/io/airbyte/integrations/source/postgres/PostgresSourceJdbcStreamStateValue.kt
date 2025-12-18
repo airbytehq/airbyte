@@ -58,15 +58,15 @@ data class PostgresSourceJdbcStreamStateValue(
         fun xminIncrementalCheckpoint(
             xminCheckpoint: JsonNode,
         ): OpaqueStateValue =
-            when (xminCheckpoint.isNull) {
-                true -> Jsons.nullNode()
-                false ->
-                    Jsons.valueToTree(
-                        PostgresSourceJdbcStreamStateValue(
-                            stateType = StateType.XMIN_BASED.serialized,
-                            xmin = xminCheckpoint
-                        )
-                    )
+            if (xminCheckpoint.isNull) {
+                Jsons.nullNode()
+            } else {
+                Jsons.valueToTree(
+                    PostgresSourceJdbcStreamStateValue(
+                        stateType = StateType.XMIN_BASED.serialized,
+                        xmin = xminCheckpoint,
+                    ),
+                )
             }
 
         fun snapshotWithCursorCheckpoint(

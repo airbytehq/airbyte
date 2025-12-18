@@ -81,7 +81,7 @@ class PostgresSourceSelectQueryGenerator : SelectQueryGenerator {
 
     fun FromNode.sql(): String =
         when (this) {
-            NoFrom -> "FROM DUAL"
+            NoFrom -> "FROM 1"
             is From -> "FROM ${toQualifiedTableName(namespace, name)}"
             // Simply return the first sample_size of rows from the table since we only used the
             // sample to gauge row size

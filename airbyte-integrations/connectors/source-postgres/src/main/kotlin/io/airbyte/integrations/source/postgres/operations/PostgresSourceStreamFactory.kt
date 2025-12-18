@@ -112,7 +112,7 @@ class PostgresSourceStreamFactory(val jdbcConnectionFactory: JdbcConnectionFacto
         val postgresConfig = config as PostgresSourceConfiguration
         val isCdc = config.isCdc()
         val hasPK = hasValidPrimaryKey(discoveredStream)
-        val hasPotentialCursorField = hasPotentialCursorFields(discoveredStream)
+        val hasPotentialCursorFields = hasPotentialCursorFields(discoveredStream)
         val isXmin = postgresConfig.incrementalConfiguration is XminIncrementalConfiguration
         var isView = false
         discoveredStream.id.namespace?.let { namespace ->
@@ -126,7 +126,7 @@ class PostgresSourceStreamFactory(val jdbcConnectionFactory: JdbcConnectionFacto
             when {
                 // Incremental sync is only provided as a sync option if the stream has a potential
                 // cursor field or is configured as CDC or Xmin with a valid primary key.
-                isXmin.not() && (isCdc.not() && hasPotentialCursorField || isCdc && hasPK) ||
+                isXmin.not() && (isCdc.not() && hasPotentialCursorFields || isCdc && hasPK) ||
                     isXmin && isView.not() -> listOf(SyncMode.FULL_REFRESH, SyncMode.INCREMENTAL)
                 else -> listOf(SyncMode.FULL_REFRESH)
             }
