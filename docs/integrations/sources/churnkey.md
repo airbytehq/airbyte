@@ -11,7 +11,7 @@ connects to churnkey to retrieve session details
 ## Streams
 | Stream Name | Primary Key | Pagination | Supports Full Sync | Supports Incremental |
 |-------------|-------------|------------|---------------------|----------------------|
-| sessions |  | No pagination | ✅ |  ❌  |
+| sessions |  | DefaultPaginator | ✅ |  ❌  |
 | session-aggregation |  | No pagination | ✅ |  ❌  |
 
 ## Changelog
@@ -21,6 +21,7 @@ connects to churnkey to retrieve session details
 
 | Version          | Date              | Pull Request | Subject        |
 |------------------|-------------------|--------------|----------------|
+| 0.0.18 | 2025-12-02 | [68141](https://github.com/airbytehq/airbyte/pull/68141) | Added pagination |
 | 0.0.17 | 2025-11-25 | [69906](https://github.com/airbytehq/airbyte/pull/69906) | Update dependencies |
 | 0.0.16 | 2025-11-18 | [69633](https://github.com/airbytehq/airbyte/pull/69633) | Update dependencies |
 | 0.0.15 | 2025-10-29 | [68859](https://github.com/airbytehq/airbyte/pull/68859) | Update dependencies |
