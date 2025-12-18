@@ -48,16 +48,19 @@ class TestBrandsStreamFullRefresh(TestCase):
     def test_given_two_pages_when_read_brands_then_return_all_records(self, http_mocker):
         api_token_authenticator = self.get_authenticator(self._config)
 
+        # Create the next page request first - this URL will be used in links.next
+        next_page_http_request = self._base_brands_request(api_token_authenticator).with_after_cursor("after-cursor").build()
+
         http_mocker.get(
             self._base_brands_request(api_token_authenticator).build(),
-            BrandsResponseBuilder.brands_response(self._base_brands_request(api_token_authenticator).build())
+            BrandsResponseBuilder.brands_response(next_page_http_request)
             .with_record(BrandsRecordBuilder.brands_record())
             .with_pagination()
             .build(),
         )
 
         http_mocker.get(
-            self._base_brands_request(api_token_authenticator).with_after_cursor("after-cursor").build(),
+            next_page_http_request,
             BrandsResponseBuilder.brands_response().with_record(BrandsRecordBuilder.brands_record().with_id(67890)).build(),
         )
 
