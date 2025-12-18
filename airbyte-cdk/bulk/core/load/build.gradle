@@ -13,6 +13,7 @@ kotlin {
 
 dependencies {
     api("com.github.f4b6a3:uuid-creator:6.1.1")
+    implementation 'commons-codec:commons-codec:1.16.0'
 
     implementation project(':airbyte-cdk:bulk:core:bulk-cdk-core-base')
     implementation 'org.apache.commons:commons-lang3:3.17.0'
@@ -23,6 +24,7 @@ dependencies {
     testFixturesApi testFixtures(project(':airbyte-cdk:bulk:core:bulk-cdk-core-base'))
 
     testImplementation("org.jetbrains.kotlinx:kotlinx-coroutines-test:1.8.1")
+    testFixturesApi("org.jetbrains.kotlinx:kotlinx-coroutines-test:1.8.1")
     testImplementation("io.mockk:mockk:1.13.12")
     implementation "org.jetbrains.kotlin:kotlin-reflect:2.0.20"
     testFixturesImplementation "uk.org.webcompere:system-stubs-jupiter:2.1.7"

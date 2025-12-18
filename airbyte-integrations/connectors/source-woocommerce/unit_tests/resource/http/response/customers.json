@@ -1,0 +1,49 @@
+[
+  {
+    "id": 1,
+    "date_created": "2024-01-05T09:00:00",
+    "date_modified": "2024-03-01T15:20:00",
+    "date_created_gmt": "2024-01-05T09:00:00",
+    "date_modified_gmt": "2024-03-01T15:20:00",
+    "email": "john.doe@example.com",
+    "first_name": "John",
+    "last_name": "Doe",
+    "role": "customer",
+    "username": "johndoe",
+    "billing": {
+      "first_name": "John",
+      "last_name": "Doe",
+      "company": "",
+      "address_1": "123 Main St",
+      "address_2": "",
+      "city": "San Francisco",
+      "state": "CA",
+      "postcode": "94102",
+      "country": "US",
+      "email": "john.doe@example.com",
+      "phone": "555-1234"
+    },
+    "shipping": {
+      "first_name": "John",
+      "last_name": "Doe",
+      "company": "",
+      "address_1": "123 Main St",
+      "address_2": "",
+      "city": "San Francisco",
+      "state": "CA",
+      "postcode": "94102",
+      "country": "US"
+    },
+    "is_paying_customer": true,
+    "avatar_url": "https://secure.gravatar.com/avatar/abc123?s=96&d=mm&r=g",
+    "meta_data": [],
+    "_links": {
+      "self": [
+        { "href": "https://test-shop.example.com/wp-json/wc/v3/customers/1" }
+      ],
+      "collection": [
+        { "href": "https://test-shop.example.com/wp-json/wc/v3/customers" }
+      ]
+    }
+  }
+]

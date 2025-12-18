@@ -12,10 +12,6 @@ These limitations only apply to those using the Standard plan. If you upgrade to
 
 - Max number of workspaces per user: 1. If you were a Cloud Standard customer before September 24, 2025, Airbyte has grandfathered you into its historical 3-workspace limit.
 
-- Max number of instances of the same source connector: 10
-
-- Max number of destinations in a workspace: 20
-
 ## Cloud limitations for all plans
 
 - Max number of streams that can be returned by a source in a discover call: 1,000

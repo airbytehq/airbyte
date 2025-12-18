@@ -23,6 +23,7 @@ import io.airbyte.cdk.load.write.UnionBehavior
 import io.airbyte.cdk.load.write.UnknownTypesBehavior
 import io.airbyte.integrations.destination.snowflake.SnowflakeTestUtils.CONFIG_WITH_AUTH_STAGING
 import io.airbyte.integrations.destination.snowflake.SnowflakeTestUtils.CONFIG_WITH_AUTH_STAGING_AND_RAW_OVERRIDE
+import io.airbyte.integrations.destination.snowflake.SnowflakeTestUtils.CONFIG_WITH_AUTH_STAGING_IGNORE_CASING
 import io.airbyte.integrations.destination.snowflake.SnowflakeTestUtils.getConfigPath
 import io.airbyte.integrations.destination.snowflake.spec.SnowflakeConfigurationFactory
 import io.airbyte.integrations.destination.snowflake.spec.SnowflakeSpecification
@@ -33,6 +34,7 @@ import org.junit.jupiter.api.Disabled
 import org.junit.jupiter.api.Test
 
 internal val CONFIG_PATH = getConfigPath(CONFIG_WITH_AUTH_STAGING)
+internal val CONFIG_IGNORE_CASING_PATH = getConfigPath(CONFIG_WITH_AUTH_STAGING_IGNORE_CASING)
 internal val RAW_CONFIG_PATH = getConfigPath(CONFIG_WITH_AUTH_STAGING_AND_RAW_OVERRIDE)
 
 class SnowflakeInsertAcceptanceTest :
@@ -44,11 +46,28 @@ class SnowflakeInsertAcceptanceTest :
             },
         recordMapper = SnowflakeExpectedRecordMapper,
         nameMapper = SnowflakeNameMapper(),
-        unknownTypesBehavior = UnknownTypesBehavior.SERIALIZE,
+        unknownTypesBehavior = UnknownTypesBehavior.PASS_THROUGH,
     ) {
     @Test
-    override fun testFunkyCharactersDedup() {
-        super.testFunkyCharactersDedup()
+    override fun testAppendSchemaEvolution() {
+        super.testAppendSchemaEvolution()
+    }
+}
+
+class SnowflakeInsertIgnoreCasingAcceptanceTest :
+    SnowflakeAcceptanceTest(
+        configPath = CONFIG_IGNORE_CASING_PATH,
+        dataDumper =
+            SnowflakeDataDumper { spec ->
+                SnowflakeConfigurationFactory().make(spec as SnowflakeSpecification)
+            },
+        recordMapper = SnowflakeExpectedRecordMapper,
+        nameMapper = SnowflakeNameMapper(),
+        unknownTypesBehavior = UnknownTypesBehavior.PASS_THROUGH,
+    ) {
+    @Test
+    override fun testBasicWrite() {
+        super.testBasicWrite()
     }
 }
 
@@ -115,6 +134,12 @@ class SnowflakeRawInsertProtoAcceptanceTest :
     override fun testBasicWrite() {
         super.testBasicWrite()
     }
+
+    @Disabled("https://github.com/airbytehq/airbyte-internal-issues/issues/15495")
+    @Test
+    override fun testContainerTypes() {
+        super.testContainerTypes()
+    }
 }
 
 abstract class SnowflakeAcceptanceTest(
@@ -140,7 +165,7 @@ abstract class SnowflakeAcceptanceTest(
         isStreamSchemaRetroactiveForUnknownTypeToString =
             isStreamSchemaRetroactiveForUnknownTypeToString,
         dedupBehavior = dedupBehavior,
-        stringifySchemalessObjects = true,
+        stringifySchemalessObjects = false,
         schematizedObjectBehavior = SchematizedNestedValueBehavior.PASS_THROUGH,
         schematizedArrayBehavior = SchematizedNestedValueBehavior.PASS_THROUGH,
         unionBehavior = UnionBehavior.PASS_THROUGH,
@@ -167,14 +192,8 @@ abstract class SnowflakeAcceptanceTest(
         recordMangler = recordMapper,
         nameMapper = nameMapper,
         coercesLegacyUnions = coercesLegacyUnions,
-    ) {
-
-    @Disabled override fun testUnions() {}
-
-    @Disabled override fun testAppendJsonSchemaEvolution() {}
-
-    @Disabled override fun testContainerTypes() {}
-}
+        useDataFlowPipeline = true,
+    )
 
 fun stringToMeta(metaAsString: String?): OutputRecord.Meta? {
     if (metaAsString.isNullOrEmpty()) {

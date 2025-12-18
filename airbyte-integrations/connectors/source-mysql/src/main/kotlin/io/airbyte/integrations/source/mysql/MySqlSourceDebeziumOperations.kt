@@ -12,18 +12,14 @@ import com.fasterxml.jackson.databind.node.ObjectNode
 import com.fasterxml.jackson.databind.node.TextNode
 import io.airbyte.cdk.ConfigErrorException
 import io.airbyte.cdk.command.OpaqueStateValue
-import io.airbyte.cdk.data.BinaryCodec
 import io.airbyte.cdk.data.DoubleCodec
 import io.airbyte.cdk.data.FloatCodec
 import io.airbyte.cdk.data.JsonCodec
 import io.airbyte.cdk.data.JsonEncoder
 import io.airbyte.cdk.data.LeafAirbyteSchemaType
 import io.airbyte.cdk.data.NullCodec
-import io.airbyte.cdk.data.TextCodec
 import io.airbyte.cdk.discover.CommonMetaField
 import io.airbyte.cdk.discover.Field
-import io.airbyte.cdk.jdbc.BinaryStreamFieldType
-import io.airbyte.cdk.jdbc.BytesFieldType
 import io.airbyte.cdk.jdbc.FloatFieldType
 import io.airbyte.cdk.jdbc.JdbcConnectionFactory
 import io.airbyte.cdk.jdbc.LongFieldType
@@ -103,16 +99,24 @@ class MySqlSourceDebeziumOperations(
             when (field.type.airbyteSchemaType) {
                 LeafAirbyteSchemaType.INTEGER,
                 LeafAirbyteSchemaType.NUMBER -> {
-                    val textNode: TextNode? = data[field.id] as? TextNode /*?: continue*/
+                    val textNode: TextNode? = data[field.id] as? TextNode
                     if (textNode != null) {
                         val bigDecimal = BigDecimal(textNode.textValue()).stripTrailingZeros()
                         data.put(field.id, bigDecimal)
                     }
                 }
                 LeafAirbyteSchemaType.JSONB -> {
-                    val textNode: TextNode? = data[field.id] as? TextNode /*?: continue*/
+                    val textNode: TextNode? = data[field.id] as? TextNode
                     if (textNode != null) {
                         data.set<JsonNode>(field.id, Jsons.readTree(textNode.textValue()))
+                    }
+                }
+                LeafAirbyteSchemaType.BINARY -> {
+                    val textNode: TextNode? = data[field.id] as? TextNode
+                    if (textNode != null) {
+                        val bytes: ByteArray =
+                            Base64.decodeBase64(textNode.textValue().toByteArray())
+                        data.set<JsonNode>(field.id, Jsons.binaryNode(bytes))
                     }
                 }
                 else -> {
@@ -129,9 +133,6 @@ class MySqlSourceDebeziumOperations(
                         when (field.type) {
                             FloatFieldType ->
                                 if (data[field.id] is FloatNode) FloatCodec else DoubleCodec
-                            BytesFieldType,
-                            BinaryStreamFieldType ->
-                                if (data[field.id].isBinary) BinaryCodec else TextCodec
                             else -> field.type.jsonEncoder as JsonCodec<*>
                         }
                     @Suppress("UNCHECKED_CAST")
@@ -171,7 +172,7 @@ class MySqlSourceDebeziumOperations(
 
         resultRow[MySqlSourceCdcMetaFields.CDC_LOG_POS.id] =
             FieldValueEncoder(
-                position.position,
+                position.position.toDouble(),
                 MySqlSourceCdcMetaFields.CDC_LOG_POS.type.jsonEncoder as JsonEncoder<Any>
             )
 

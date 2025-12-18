@@ -26,17 +26,15 @@ A connector reaching version 1.0 is considered mature and comes with semver guar
 
 Each connector's changelog details its update history. You can find it in the [connector catalog](/integrations/) at the end of each individual connector's entry.
 
-<Arcade id="vMZISMWeitH8X7kT1ArF" title="Review a Connector Changelog" paddingBottom="calc(61.37931034482759% + 41px)" />
-
 ## How Airbyte Handles Connector Updates
 
-### Airbyte Cloud
+### Cloud plans
 
 **Minor and Patch Versions:** These are applied automatically and immediately to your instance. You don't need to take any action.
 
 **Major Versions:** A major version will include notable changes that affect your schema or sync success. We will notify you ahead of time to give you a window to prepare for the change. At the end of the window, we will automatically upgrade your connector to ensure you receive the latest updates. Examples of major version changes are shared in our [breaking change documentation](/platform/using-airbyte/schema-change-management#major-connector-version-upgrades).
 
-### Airbyte Open Source (OSS) and Self-Managed Enterprise (SME)
+### Self-managed plans
 
 Airbyte recommends using the latest version of Airbyte when updating connections.
 
@@ -48,8 +46,6 @@ Airbyte recommends using the latest version of Airbyte when updating connections
 1. Opt-in to the update on the settings page.
 
 2. While there is an option available to upgrade all connections at once, we recommend that you accept the update for each individual connection using the affected connector. This allows you to review and potentially adjust the connection settings before applying the update.
-
-<Arcade id="WfelDcLx6EivqngiTlFR" title="Settings > Connector Upgrade Prompts" paddingBottom="calc(61.37931034482759% + 41px)" />
 
 When new major versions are released, we recommended you update promptly to avoid potential compatibility issues.
 

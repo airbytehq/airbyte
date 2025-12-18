@@ -10,5 +10,6 @@ CONNECTOR_PATH_PREFIXES = {
     "airbyte-integrations/connectors",
     "docs/integrations/sources",
     "docs/integrations/destinations",
+    "docs/ai-agents/connectors",
 }
 MERGE_METHOD = "squash"

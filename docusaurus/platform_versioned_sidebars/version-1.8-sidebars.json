@@ -101,7 +101,20 @@
                     "using-airbyte/core-concepts/sync-modes/incremental-append",
                     "using-airbyte/core-concepts/sync-modes/full-refresh-append",
                     "using-airbyte/core-concepts/sync-modes/full-refresh-overwrite",
-                    "using-airbyte/core-concepts/sync-modes/full-refresh-overwrite-deduped"
+                    "using-airbyte/core-concepts/sync-modes/full-refresh-overwrite-deduped",
+                    {
+                      "type": "category",
+                      "label": "Change Data Capture (CDC)",
+                      "link": {
+                        "type": "generated-index",
+                        "title": "Change Data Capture (CDC)",
+                        "description": "Learn about CDC in Airbyte and best practices for configuration."
+                      },
+                      "items": [
+                        "understanding-airbyte/cdc",
+                        "understanding-airbyte/cdc-best-practices"
+                      ]
+                    }
                   ]
                 }
               ]
@@ -486,7 +499,6 @@
             "understanding-airbyte/beginners-guide-to-catalog",
             "understanding-airbyte/supported-data-types",
             "understanding-airbyte/secrets",
-            "understanding-airbyte/cdc",
             "understanding-airbyte/resumability",
             "understanding-airbyte/json-avro-conversion",
             "understanding-airbyte/schemaless-sources-and-destinations",
@@ -531,7 +543,11 @@
               "label": "Resources",
               "items": [
                 "contributing-to-airbyte/resources/pull-requests-handbook",
-                "contributing-to-airbyte/resources/qa-checks"
+                {
+                  "type": "link",
+                  "label": "QA checks",
+                  "href": "/community/contributing-to-airbyte/resources/qa-checks"
+                }
               ]
             }
           ]
