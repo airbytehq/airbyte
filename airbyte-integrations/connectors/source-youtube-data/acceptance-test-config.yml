@@ -17,14 +17,14 @@ acceptance_tests:
     tests:
       - config_path: "secrets/config_oauth.json"
   basic_read:
-      tests:
-        - config_path: "secrets/config_oauth.json"
-          configured_catalog_path: "integration_tests/configured_catalog.json"
-          timeout_seconds: 1200
+    tests:
+      - config_path: "secrets/config_oauth.json"
+        configured_catalog_path: "integration_tests/configured_catalog.json"
+        timeout_seconds: 1200
   incremental:
     bypass_reason: "Connector doesn't support Incremental sync for any stream"
   full_refresh:
     tests:
-        - config_path: "secrets/config_oauth.json"
-          configured_catalog_path: "integration_tests/configured_catalog.json"
-          timeout_seconds: 3600
+      - config_path: "secrets/config_oauth.json"
+        configured_catalog_path: "integration_tests/configured_catalog.json"
+        timeout_seconds: 3600
