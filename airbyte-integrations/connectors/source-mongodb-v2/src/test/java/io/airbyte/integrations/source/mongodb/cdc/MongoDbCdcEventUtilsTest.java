@@ -261,9 +261,9 @@ class MongoDbCdcEventUtilsTest {
   }
 
   /*
-   * The following tests the dynamic array wrapping functionality. If discovery identifies a field as an array,
-   * the schema expects an array. Since MongoDB is dynamic, users can store int, object, or string
-   * values in that field. To prevent destinations from nulling out these values due to type
+   * The following tests the dynamic array wrapping functionality. If discovery identifies a field as
+   * an array, the schema expects an array. Since MongoDB is dynamic, users can store int, object, or
+   * string values in that field. To prevent destinations from nulling out these values due to type
    * mismatch, we wrap them in arrays.
    */
   @Test

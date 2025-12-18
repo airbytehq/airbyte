@@ -272,8 +272,8 @@ public class MongoDbStateManager implements SourceStateMessageProducer<Document>
   }
 
   /**
-   * Extracts field schemas from the stream's properties into a map (Map<String, JsonNode>).
-   * Used for type checking during data transformation (e.g., determining if a field expects an array).
+   * Extracts field schemas from the stream's properties into a map (Map<String, JsonNode>). Used for
+   * type checking during data transformation (e.g., determining if a field expects an array).
    */
   private Map<String, JsonNode> getStreamFields(final ConfiguredAirbyteStream stream) {
     final Map<String, JsonNode> fieldSchemas = new HashMap<>();
