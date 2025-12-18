@@ -161,7 +161,7 @@ This source can sync data for the [Shopify REST API](https://shopify.dev/api/adm
 - [Order Refunds](https://shopify.dev/api/admin-rest/2024-04/resources/refund#top)
 - [Order Risks (GraphQL)](https://shopify.dev/api/admin-rest/2024-04/resources/order-risk#top)
 - [Pages](https://shopify.dev/api/admin-rest/2024-04/resources/page#top)
-- [Price Rules](https://shopify.dev/api/admin-rest/2024-04/resources/pricerule#top)
+- [Price Rules](https://shopify.dev/docs/api/admin-rest/2024-04/resources/pricerule)
 - [Products (GraphQL)](https://shopify.dev/docs/api/admin-graphql/2024-04/queries/products)
 - [Product Images (GraphQL)](https://shopify.dev/docs/api/admin-graphql/2024-04/objects/Image)
 - [Product Variants (GraphQL)](https://shopify.dev/docs/api/admin-graphql/2024-04/queries/productVariant)
@@ -248,6 +248,7 @@ For all `Shopify GraphQL BULK` api requests these limitations are applied: https
 
 | Version    | Date       | Pull Request                                             | Subject                                                                                                                                                                                                                                                                                                                                                                                   |
 |:-----------|:-----------|:---------------------------------------------------------|:------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------|
+| 3.1.0 | 2025-12-18 | [70989](https://github.com/airbytehq/airbyte/pull/70989) | Implement client-side incremental sync for `collects` stream. Cursor field changed from `id` to `updated_at` to capture updates to existing records. See [migration guide](./shopify-migrations.md). |
 | 3.0.13 | 2025-10-21 | [68245](https://github.com/airbytehq/airbyte/pull/68245) | Update dependencies |
 | 3.0.12 | 2025-10-14 | [67805](https://github.com/airbytehq/airbyte/pull/67805) | Update dependencies |
 | 3.0.11 | 2025-10-07 | [67448](https://github.com/airbytehq/airbyte/pull/67448) | Update dependencies |
