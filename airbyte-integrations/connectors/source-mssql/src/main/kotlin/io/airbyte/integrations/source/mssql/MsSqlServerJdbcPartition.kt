@@ -270,7 +270,7 @@ sealed class MsSqlServerJdbcResumablePartition(
         return selectQueryGenerator.generate(querySpec.optimize())
     }
 
-    val where: Where
+    open val where: Where
         get() {
             val zippedLowerBound: List<Pair<Field, JsonNode>> =
                 lowerBound?.let { checkpointColumns.zip(it) } ?: listOf()
@@ -449,6 +449,60 @@ sealed class MsSqlServerJdbcCursorPartition(
             } else {
                 null
             }
+
+    /**
+     * Override where clause to ensure cursor-based incremental syncs always use exclusive
+     * comparison (> instead of >=) to avoid re-reading records that were already synced.
+     * This prevents the same change set from being identified on consecutive days.
+     */
+    override val where: Where
+        get() {
+            val zippedLowerBound: List<Pair<Field, JsonNode>> =
+                lowerBound?.let { checkpointColumns.zip(it) } ?: listOf()
+            val lowerBoundDisj: List<WhereClauseNode> =
+                zippedLowerBound.mapIndexed { idx: Int, (gtCol: Field, gtValue: JsonNode) ->
+                    // For cursor-based incremental syncs, always use exclusive comparison (>)
+                    // to avoid re-reading records that were already synced
+                    val lastLeaf: WhereClauseLeafNode =
+                        if (gtCol.id == cursor.id) {
+                            // Always use > for cursor field to prevent duplicate reads
+                            Greater(gtCol, gtValue)
+                        } else if (isLowerBoundIncluded && idx == checkpointColumns.size - 1) {
+                            GreaterOrEqual(gtCol, gtValue)
+                        } else {
+                            Greater(gtCol, gtValue)
+                        }
+                    And(
+                        zippedLowerBound.take(idx).map { (eqCol: Field, eqValue: JsonNode) ->
+                            Equal(eqCol, eqValue)
+                        } + listOf(lastLeaf),
+                    )
+                }
+            val zippedUpperBound: List<Pair<Field, JsonNode>> =
+                upperBound?.let { checkpointColumns.zip(it) } ?: listOf()
+            val upperBoundDisj: List<WhereClauseNode> =
+                zippedUpperBound.mapIndexed { idx: Int, (leqCol: Field, leqValue: JsonNode) ->
+                    val lastLeaf: WhereClauseLeafNode =
+                        if (idx < zippedUpperBound.size - 1) {
+                            Lesser(leqCol, leqValue)
+                        } else {
+                            LesserOrEqual(leqCol, leqValue)
+                        }
+                    And(
+                        zippedUpperBound.take(idx).map { (eqCol: Field, eqValue: JsonNode) ->
+                            Equal(eqCol, eqValue)
+                        } + listOf(lastLeaf),
+                    )
+                }
+            val baseClause = And(Or(lowerBoundDisj), Or(upperBoundDisj))
+            // Add additional where clause if present
+            val additional = additionalWhereClause
+            return if (additional != null) {
+                Where(And(baseClause, additional))
+            } else {
+                Where(baseClause)
+            }
+        }
 }
 
 class MsSqlServerJdbcSnapshotWithCursorPartition(

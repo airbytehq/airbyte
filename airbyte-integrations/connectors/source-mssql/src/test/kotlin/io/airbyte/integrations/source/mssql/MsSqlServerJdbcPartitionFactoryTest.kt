@@ -25,8 +25,11 @@ import io.airbyte.cdk.output.sockets.NativeRecordPayload
 import io.airbyte.cdk.read.ConcurrencyResource
 import io.airbyte.cdk.read.ConfiguredSyncMode
 import io.airbyte.cdk.read.DefaultJdbcSharedState
+import io.airbyte.cdk.read.From
 import io.airbyte.cdk.read.ResourceAcquirer
+import io.airbyte.cdk.read.SelectColumns
 import io.airbyte.cdk.read.SelectQuerier
+import io.airbyte.cdk.read.SelectQuerySpec
 import io.airbyte.cdk.read.StateManager
 import io.airbyte.cdk.read.Stream
 import io.airbyte.cdk.read.StreamFeedBootstrap
@@ -553,6 +556,69 @@ class MsSqlServerJdbcPartitionFactoryTest {
         assertEquals(13, cursorLowerBound.decimalValue().toInt())
         // Verify it's BigDecimal, not Double
         assertTrue(cursorLowerBound.isBigDecimal)
+    }
+
+    @Test
+    fun testCursorIncrementalPartitionUsesGreaterNotGreaterOrEqual() {
+        // Test that cursor-based incremental partitions always use exclusive comparison (>)
+        // instead of inclusive comparison (>=) to prevent re-reading records that were
+        // already synced. This fixes issue #70945 where the same change set was being
+        // identified on consecutive days.
+        val incomingStateValue: OpaqueStateValue =
+            Jsons.readTree(
+                """
+              {
+              "cursor": "12345",
+              "version": 3,
+              "state_type": "cursor_based",
+              "stream_name": "test_table",
+              "cursor_field": [
+                "id"
+              ],
+              "stream_namespace": "dbo",
+              "cursor_record_count": 1 
+              } 
+        """.trimIndent()
+            )
+
+        val partition =
+            msSqlServerJdbcPartitionFactory.create(streamFeedBootstrap(stream, incomingStateValue))
+        assertTrue(partition is MsSqlServerJdbcCursorIncrementalPartition)
+
+        val cursorPartition = partition as MsSqlServerJdbcCursorIncrementalPartition
+
+        // Generate the SQL query from the WHERE clause to verify it uses > not >=
+        val query = cursorPartition.resumableQuery(100)
+        val sql = query.sql
+
+        // Verify the SQL contains exclusive comparison (> not >=) for the cursor field
+        assertTrue(
+            sql.contains("[id] > ?"),
+            "SQL should use exclusive comparison (> not >=) for cursor field. SQL: $sql"
+        )
+        assertTrue(
+            !sql.contains("[id] >= ?"),
+            "SQL should NOT use inclusive comparison (>=) for cursor field. SQL: $sql"
+        )
+
+        // Also verify by checking the WHERE clause structure directly
+        val whereClause = cursorPartition.where
+        val whereSql = selectQueryGenerator.generate(
+            SelectQuerySpec(
+                SelectColumns(stream.fields),
+                From(stream.name, stream.namespace),
+                whereClause
+            )
+        ).sql
+
+        assertTrue(
+            whereSql.contains("[id] > ?"),
+            "WHERE clause should use exclusive comparison (> not >=) for cursor field. SQL: $whereSql"
+        )
+        assertTrue(
+            !whereSql.contains("[id] >= ?"),
+            "WHERE clause should NOT use inclusive comparison (>=) for cursor field. SQL: $whereSql"
+        )
     }
 
     @Test
