@@ -45,7 +45,10 @@ class TestTicketSkipsStreamFullRefresh(TestCase):
         cursor_value = datetime_to_string(start_date.add(timedelta(days=1)))
 
         http_mocker.get(
-            ZendeskSupportRequestBuilder.ticket_skips_endpoint(api_token_authenticator).with_query_param("sort_order", "desc").with_page_size(100).build(),
+            ZendeskSupportRequestBuilder.ticket_skips_endpoint(api_token_authenticator)
+            .with_query_param("sort_order", "desc")
+            .with_page_size(100)
+            .build(),
             TicketSkipsResponseBuilder.ticket_skips_response()
             .with_record(TicketSkipsRecordBuilder.ticket_skips_record().with_field(FieldPath("updated_at"), cursor_value))
             .build(),
@@ -80,7 +83,10 @@ class TestTicketSkipsStreamIncremental(TestCase):
         cursor_value = datetime_to_string(start_date.add(timedelta(days=1)))
 
         http_mocker.get(
-            ZendeskSupportRequestBuilder.ticket_skips_endpoint(api_token_authenticator).with_query_param("sort_order", "desc").with_page_size(100).build(),
+            ZendeskSupportRequestBuilder.ticket_skips_endpoint(api_token_authenticator)
+            .with_query_param("sort_order", "desc")
+            .with_page_size(100)
+            .build(),
             TicketSkipsResponseBuilder.ticket_skips_response()
             .with_record(TicketSkipsRecordBuilder.ticket_skips_record().with_field(FieldPath("updated_at"), cursor_value))
             .build(),
@@ -101,7 +107,10 @@ class TestTicketSkipsStreamIncremental(TestCase):
         new_cursor_value = datetime_to_string(state_cursor_value.add(timedelta(days=1)))
 
         http_mocker.get(
-            ZendeskSupportRequestBuilder.ticket_skips_endpoint(api_token_authenticator).with_query_param("sort_order", "desc").with_page_size(100).build(),
+            ZendeskSupportRequestBuilder.ticket_skips_endpoint(api_token_authenticator)
+            .with_query_param("sort_order", "desc")
+            .with_page_size(100)
+            .build(),
             TicketSkipsResponseBuilder.ticket_skips_response()
             .with_record(TicketSkipsRecordBuilder.ticket_skips_record().with_id(1).with_field(FieldPath("updated_at"), old_cursor_value))
             .with_record(TicketSkipsRecordBuilder.ticket_skips_record().with_id(2).with_field(FieldPath("updated_at"), new_cursor_value))

@@ -63,10 +63,10 @@ class TestArticleAttachmentsStreamFullRefresh(TestCase):
         attachment_builder = ArticleAttachmentsRecordBuilder.article_attachments_record()
 
         http_mocker.get(
-            ZendeskSupportRequestBuilder.article_attachments_endpoint(api_token_authenticator, article["id"]).with_any_query_params().build(),
-            ArticleAttachmentsResponseBuilder.article_attachments_response()
-            .with_record(attachment_builder)
+            ZendeskSupportRequestBuilder.article_attachments_endpoint(api_token_authenticator, article["id"])
+            .with_any_query_params()
             .build(),
+            ArticleAttachmentsResponseBuilder.article_attachments_response().with_record(attachment_builder).build(),
         )
 
         # Mock the file download URL (content_url) that the CDK's file_uploader tries to access
@@ -117,17 +117,17 @@ class TestArticleAttachmentsStreamFullRefresh(TestCase):
         )
 
         http_mocker.get(
-            ZendeskSupportRequestBuilder.article_attachments_endpoint(api_token_authenticator, article1["id"]).with_any_query_params().build(),
-            ArticleAttachmentsResponseBuilder.article_attachments_response()
-            .with_record(attachment_builder_1)
+            ZendeskSupportRequestBuilder.article_attachments_endpoint(api_token_authenticator, article1["id"])
+            .with_any_query_params()
             .build(),
+            ArticleAttachmentsResponseBuilder.article_attachments_response().with_record(attachment_builder_1).build(),
         )
 
         http_mocker.get(
-            ZendeskSupportRequestBuilder.article_attachments_endpoint(api_token_authenticator, article2["id"]).with_any_query_params().build(),
-            ArticleAttachmentsResponseBuilder.article_attachments_response()
-            .with_record(attachment_builder_2)
+            ZendeskSupportRequestBuilder.article_attachments_endpoint(api_token_authenticator, article2["id"])
+            .with_any_query_params()
             .build(),
+            ArticleAttachmentsResponseBuilder.article_attachments_response().with_record(attachment_builder_2).build(),
         )
 
         # Mock the file download URLs (content_url) that the CDK's file_uploader tries to access

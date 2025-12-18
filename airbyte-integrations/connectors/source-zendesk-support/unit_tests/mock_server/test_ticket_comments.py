@@ -45,9 +45,7 @@ class TestTicketCommentsStreamFullRefresh(TestCase):
         # because the start_time parameter is dynamically calculated based on config start_date.
         # The template already has the correct nested structure, so we don't use .with_record().
         http_mocker.get(
-            ZendeskSupportRequestBuilder.ticket_comments_endpoint(api_token_authenticator)
-            .with_any_query_params()
-            .build(),
+            ZendeskSupportRequestBuilder.ticket_comments_endpoint(api_token_authenticator).with_any_query_params().build(),
             TicketCommentsResponseBuilder.ticket_comments_response().build(),
         )
 
@@ -81,9 +79,7 @@ class TestTicketCommentsStreamIncremental(TestCase):
         # calculated based on config start_date. The template already has the correct nested
         # structure, so we don't use .with_record().
         http_mocker.get(
-            ZendeskSupportRequestBuilder.ticket_comments_endpoint(api_token_authenticator)
-            .with_any_query_params()
-            .build(),
+            ZendeskSupportRequestBuilder.ticket_comments_endpoint(api_token_authenticator).with_any_query_params().build(),
             TicketCommentsResponseBuilder.ticket_comments_response().build(),
         )
 
@@ -102,9 +98,7 @@ class TestTicketCommentsStreamIncremental(TestCase):
         # calculated based on state cursor value. The template already has the correct nested
         # structure, so we don't use .with_record().
         http_mocker.get(
-            ZendeskSupportRequestBuilder.ticket_comments_endpoint(api_token_authenticator)
-            .with_any_query_params()
-            .build(),
+            ZendeskSupportRequestBuilder.ticket_comments_endpoint(api_token_authenticator).with_any_query_params().build(),
             TicketCommentsResponseBuilder.ticket_comments_response().build(),
         )
 
