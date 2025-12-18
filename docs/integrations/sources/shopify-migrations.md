@@ -9,6 +9,7 @@ This version changes the cursor field for the `collects` stream from `id` to `up
 The `collects` stream previously used `id` as the cursor field with `since_id` filtering. This approach only captured new records but missed updates to existing collect records (product-collection relationships).
 
 The new implementation uses `updated_at` as the cursor field with client-side incremental sync. This means:
+
 - All records are fetched from the API (similar to full refresh)
 - Records are filtered client-side based on the `updated_at` cursor
 - Both new records AND updates to existing records are now captured
