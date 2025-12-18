@@ -22,7 +22,7 @@ data class DatabricksConnectorConfig(
     @JsonProperty("authentication") val authentication: Authentication,
     @JsonProperty("purge_staging_data") val purgeStagingData: Boolean = true,
     @JsonProperty("enable_liquid_clustering") val enableLiquidClustering: Boolean = false,
-){
+) {
     companion object {
         fun deserialize(jsonNode: JsonNode): DatabricksConnectorConfig {
             val objectMapper = MoreMappers.initMapper()
