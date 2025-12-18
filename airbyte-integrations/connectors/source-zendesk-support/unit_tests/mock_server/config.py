@@ -27,6 +27,22 @@ class ConfigBuilder:
         self._credentials["email"] = email
         return self
 
+    def with_oauth_refresh_credentials(
+        self,
+        client_id: str,
+        client_secret: str,
+        refresh_token: str,
+        access_token: str,
+        token_expiry_date: str,
+    ) -> "ConfigBuilder":
+        self._credentials["credentials"] = "oauth2_refresh"
+        self._credentials["client_id"] = client_id
+        self._credentials["client_secret"] = client_secret
+        self._credentials["refresh_token"] = refresh_token
+        self._credentials["access_token"] = access_token
+        self._credentials["token_expiry_date"] = token_expiry_date
+        return self
+
     def with_start_date(self, start_date: AirbyteDateTime) -> "ConfigBuilder":
         self._start_date = start_date.strftime("%Y-%m-%dT%H:%M:%SZ")
         return self
