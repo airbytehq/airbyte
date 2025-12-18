@@ -48,16 +48,19 @@ class TestTagsStreamFullRefresh(TestCase):
     def test_given_two_pages_when_read_tags_then_return_all_records(self, http_mocker):
         api_token_authenticator = self.get_authenticator(self._config)
 
+        # Create the next page request first - this URL will be used in links.next
+        next_page_http_request = self._base_tags_request(api_token_authenticator).with_after_cursor("after-cursor").build()
+
         http_mocker.get(
             self._base_tags_request(api_token_authenticator).build(),
-            TagsResponseBuilder.tags_response(self._base_tags_request(api_token_authenticator).build())
+            TagsResponseBuilder.tags_response(next_page_http_request)
             .with_record(TagsRecordBuilder.tags_record())
             .with_pagination()
             .build(),
         )
 
         http_mocker.get(
-            self._base_tags_request(api_token_authenticator).with_after_cursor("after-cursor").build(),
+            next_page_http_request,
             TagsResponseBuilder.tags_response().with_record(TagsRecordBuilder.tags_record().with_name("second-tag")).build(),
         )
 

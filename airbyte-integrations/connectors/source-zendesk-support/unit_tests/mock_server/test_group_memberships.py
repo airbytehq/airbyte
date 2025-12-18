@@ -12,7 +12,7 @@ from airbyte_cdk.utils.datetime_helpers import ab_datetime_now
 from .config import ConfigBuilder
 from .request_builder import ApiTokenAuthenticator, ZendeskSupportRequestBuilder
 from .response_builder import ErrorResponseBuilder, GroupMembershipsRecordBuilder, GroupMembershipsResponseBuilder
-from .utils import datetime_to_string, read_stream
+from .utils import datetime_to_string, get_log_messages_by_log_level, read_stream
 
 
 class TestGroupMembershipsStreamFullRefresh(TestCase):

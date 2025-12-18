@@ -16,7 +16,7 @@ from .response_builder import (
     OrganizationMembershipsRecordBuilder,
     OrganizationMembershipsResponseBuilder,
 )
-from .utils import datetime_to_string, read_stream
+from .utils import datetime_to_string, get_log_messages_by_log_level, read_stream
 
 
 class TestOrganizationMembershipsStreamFullRefresh(TestCase):
