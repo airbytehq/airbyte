@@ -41,6 +41,11 @@ data:
           secretStore:
             type: GSM
             alias: airbyte-connector-testing-secret-store
+        - name: SECRET_YOUTUBE-DATA_API_KEY_CREDS
+          fileName: config.json
+          secretStore:
+            type: GSM
+            alias: airbyte-connector-testing-secret-store
   externalDocumentationUrls:
     - title: YouTube Data API v3
       url: https://developers.google.com/youtube/v3
