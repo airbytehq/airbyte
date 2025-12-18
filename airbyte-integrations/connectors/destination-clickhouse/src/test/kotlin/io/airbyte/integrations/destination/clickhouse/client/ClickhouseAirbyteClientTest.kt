@@ -21,7 +21,6 @@ import io.airbyte.cdk.load.schema.model.StreamTableSchema
 import io.airbyte.cdk.load.schema.model.TableName
 import io.airbyte.cdk.load.table.ColumnNameMapping
 import io.airbyte.cdk.load.table.TempTableNameGenerator
-import io.airbyte.integrations.destination.clickhouse.config.ClickhouseFinalTableNameGenerator
 import io.mockk.coEvery
 import io.mockk.coVerify
 import io.mockk.coVerifyOrder
@@ -39,8 +38,6 @@ class ClickhouseAirbyteClientTest {
     // Mocks
     private val client: ClickHouseClientRaw = mockk(relaxed = true)
     private val clickhouseSqlGenerator: ClickhouseSqlGenerator = mockk(relaxed = true)
-    private val clickhouseFinalTableNameGenerator: ClickhouseFinalTableNameGenerator =
-        mockk(relaxed = true)
     private val tempTableNameGenerator: TempTableNameGenerator = mockk(relaxed = true)
 
     // Client
@@ -105,7 +102,6 @@ class ClickhouseAirbyteClientTest {
             alterTableStatement
         coEvery { clickhouseAirbyteClient.execute(alterTableStatement) } returns
             mockk(relaxed = true)
-        every { clickhouseFinalTableNameGenerator.getTableName(any()) } returns mockTableName
 
         mockCHSchemaWithAirbyteColumns()
 
@@ -172,7 +168,6 @@ class ClickhouseAirbyteClientTest {
 
         coEvery { clickhouseAirbyteClient.execute(any()) } returns mockk(relaxed = true)
         every { tempTableNameGenerator.generate(any()) } returns tempTableName
-        every { clickhouseFinalTableNameGenerator.getTableName(any()) } returns finalTableName
 
         mockCHSchemaWithAirbyteColumns()
 
@@ -225,8 +220,6 @@ class ClickhouseAirbyteClientTest {
     @Test
     fun `test ensure schema matches fails if no airbyte columns`() = runTest {
         val finalTableName = TableName("fin", "al")
-
-        every { clickhouseFinalTableNameGenerator.getTableName(any()) } returns finalTableName
 
         val columnMapping = ColumnNameMapping(mapOf())
         val stream =
