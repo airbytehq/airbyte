@@ -25,8 +25,11 @@ class SnowflakeSchemaRecordFormatter : SnowflakeRecordFormatter {
         val result = mutableListOf<Any>()
         val userColumns = columnSchema.finalSchema.keys
 
-        // WARNING: Unlike the user fields, the meta fields on the record are not munged for
-        // the destination. So we add meta columns in order using the original lowercase meta key.
+        // WARNING:  MUST match the order defined in SnowflakeColumnManager#getTableColumnNames
+        //
+        // Why don't we just use that here? Well, unlike the user fields, the meta fields on the
+        // record are not munged for the destination. So we must access the values for those columns
+        // using the original lowercase meta key.
         result.add(record[COLUMN_NAME_AB_RAW_ID].toCsvValue())
         result.add(record[COLUMN_NAME_AB_EXTRACTED_AT].toCsvValue())
         result.add(record[COLUMN_NAME_AB_META].toCsvValue())

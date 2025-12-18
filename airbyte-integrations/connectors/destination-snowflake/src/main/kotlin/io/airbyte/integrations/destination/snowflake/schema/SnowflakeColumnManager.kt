@@ -30,6 +30,8 @@ class SnowflakeColumnManager(
      * Get the list of column names for a table in the order they should appear in the CSV file and
      * COPY INTO statement.
      *
+     * Warning: MUST match the order defined in SnowflakeRecordFormatter
+     *
      * @param columnSchema The schema containing column information (ignored in raw mode)
      * @return List of column names in the correct order
      */
