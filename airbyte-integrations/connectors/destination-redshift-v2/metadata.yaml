@@ -26,9 +26,9 @@ data:
     cloud:
       enabled: false
     oss:
-      enabled: true
+      enabled: false
   releaseStage: alpha
-  documentationUrl: https://docs.airbyte.com/integrations/destinations/redshift
+  documentationUrl: https://docs.airbyte.com/integrations/destinations/redshift-v2
   tags:
     - language:java
   supportLevel: community
