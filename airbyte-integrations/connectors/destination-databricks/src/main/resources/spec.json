@@ -117,6 +117,13 @@
         "title": "Raw Table Schema Name",
         "default": "airbyte_internal",
         "order": 10
+      },
+      "enable_liquid_clustering": {
+        "type": "boolean",
+        "description": "When enabled, tables will be created with CLUSTER BY AUTO, allowing Databricks to automatically optimize table layout for query performance. This can significantly improve query performance for transformation jobs. See https://docs.databricks.com/en/delta/clustering.html for more details.",
+        "title": "Enable Liquid Clustering (CLUSTER BY AUTO)",
+        "default": false,
+        "order": 11
       }
     }
   }
