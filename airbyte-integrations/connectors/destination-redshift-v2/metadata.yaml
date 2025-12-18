@@ -1,6 +1,10 @@
 data:
+  ab_internal:
+    ql: 100
+    sl: 100
   connectorSubtype: database
   connectorType: destination
+  definitionId: 2b158b71-55a4-4cf5-b36b-810f7e63b3ea
   dockerImageTag: 0.1.0
   dockerRepository: airbyte/destination-redshift-v2
   githubIssueLabel: destination-redshift-v2
@@ -32,9 +36,9 @@ data:
     - suite: unitTests
     - suite: integrationTests
       testSecrets:
-        - fileName: config.json
-          name: SECRET_DESTINATION_REDSHIFT_V2_CONFIG
+        - name: SECRET_DESTINATION_REDSHIFT_V2_CONFIG
+          fileName: config.json
           secretStore:
-            alias: airbyte-connector-testing-secret-store
             type: GSM
+            alias: airbyte-connector-testing-secret-store
 metadataSpecVersion: "1.0"
