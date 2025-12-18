@@ -235,7 +235,7 @@ class TestOAuthRefreshTokenRotation(TestCase):
 
 
 @pytest.mark.parametrize(
-    "initial_refresh_token,expected_new_refresh_token,test_id",
+    "initial_refresh_token,expected_new_refresh_token",
     [
         pytest.param(
             _INITIAL_REFRESH_TOKEN,
@@ -253,7 +253,6 @@ class TestOAuthRefreshTokenRotation(TestCase):
 def test_oauth_refresh_token_rotation_parametrized(
     initial_refresh_token: str,
     expected_new_refresh_token: str,
-    test_id: str,
 ):
     """
     Parametrized test for OAuth refresh token rotation with different token values.
