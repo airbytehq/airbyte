@@ -405,13 +405,15 @@ class OAuthTokenRefreshResponseBuilder:
 
     def build(self) -> HttpResponse:
         """Build and return the HttpResponse object."""
-        body = json.dumps({
-            "access_token": self._access_token,
-            "refresh_token": self._refresh_token,
-            "token_type": self._token_type,
-            "expires_in": self._expires_in,
-            "scope": self._scope,
-        })
+        body = json.dumps(
+            {
+                "access_token": self._access_token,
+                "refresh_token": self._refresh_token,
+                "token_type": self._token_type,
+                "expires_in": self._expires_in,
+                "scope": self._scope,
+            }
+        )
         return HttpResponse(body, self._status_code)
 
 
