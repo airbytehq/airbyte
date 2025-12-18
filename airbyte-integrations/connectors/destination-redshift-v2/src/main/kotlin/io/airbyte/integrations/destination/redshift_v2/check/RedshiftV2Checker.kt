@@ -32,9 +32,7 @@ class RedshiftV2Checker(
         checkRedshiftConnection(config)
 
         // Check S3 staging if configured
-        config.s3Config?.let { s3Config ->
-            checkS3Staging(s3Config)
-        }
+        config.s3Config?.let { s3Config -> checkS3Staging(s3Config) }
     }
 
     private fun checkRedshiftConnection(config: RedshiftV2Configuration) {

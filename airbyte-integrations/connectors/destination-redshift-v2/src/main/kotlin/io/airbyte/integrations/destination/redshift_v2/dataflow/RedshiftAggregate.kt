@@ -4,6 +4,8 @@
 
 package io.airbyte.integrations.destination.redshift_v2.dataflow
 
+import io.airbyte.cdk.load.command.DestinationCatalog
+import io.airbyte.cdk.load.component.ColumnType
 import io.airbyte.cdk.load.data.AirbyteValue
 import io.airbyte.cdk.load.data.ArrayValue
 import io.airbyte.cdk.load.data.BooleanValue
@@ -17,8 +19,6 @@ import io.airbyte.cdk.load.data.TimeWithTimezoneValue
 import io.airbyte.cdk.load.data.TimeWithoutTimezoneValue
 import io.airbyte.cdk.load.data.TimestampWithTimezoneValue
 import io.airbyte.cdk.load.data.TimestampWithoutTimezoneValue
-import io.airbyte.cdk.load.command.DestinationCatalog
-import io.airbyte.cdk.load.component.ColumnType
 import io.airbyte.cdk.load.dataflow.aggregate.Aggregate
 import io.airbyte.cdk.load.dataflow.aggregate.AggregateFactory
 import io.airbyte.cdk.load.dataflow.aggregate.StoreKey
