@@ -56,12 +56,14 @@ class TestTicketsStreamFullRefresh(TestCase):
             ZendeskSupportRequestBuilder.tickets_endpoint(api_token_authenticator).with_start_time(self._config["start_date"]).build()
         )
 
-        # Build the next page URL string for cursor-based pagination
-        next_page_url = f"https://d3v-airbyte.zendesk.com/api/v2/incremental/tickets?start_time={int(_START_DATE.timestamp())}&cursor={_A_CURSOR}"
+        # Build the base URL for cursor-based pagination
+        # Note: EndOfStreamPaginationStrategy appends ?cursor={cursor} to this URL
+        # Must match the path used by tickets_endpoint: incremental/tickets/cursor.json
+        base_url = "https://d3v-airbyte.zendesk.com/api/v2/incremental/tickets/cursor.json"
 
         http_mocker.get(
             first_page_request,
-            TicketsResponseBuilder.tickets_response(next_page_url, _A_CURSOR)
+            TicketsResponseBuilder.tickets_response(base_url, _A_CURSOR)
             .with_record(TicketsRecordBuilder.tickets_record().with_id(1))
             .with_pagination()
             .build(),

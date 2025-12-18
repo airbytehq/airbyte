@@ -58,12 +58,14 @@ class TestOrganizationsStreamFullRefresh(TestCase):
             ZendeskSupportRequestBuilder.organizations_endpoint(api_token_authenticator).with_start_time(self._config["start_date"]).build()
         )
 
-        # Build the next page URL string for cursor-based pagination
-        next_page_url = f"https://d3v-airbyte.zendesk.com/api/v2/incremental/organizations?start_time={int(_START_DATE.timestamp())}&cursor={_A_CURSOR}"
+        # Build the base URL for cursor-based pagination
+        # Note: EndOfStreamPaginationStrategy appends ?cursor={cursor} to this URL
+        # Must match the path used by organizations_endpoint: incremental/organizations
+        base_url = "https://d3v-airbyte.zendesk.com/api/v2/incremental/organizations"
 
         http_mocker.get(
             first_page_request,
-            OrganizationsResponseBuilder.organizations_response(next_page_url, _A_CURSOR)
+            OrganizationsResponseBuilder.organizations_response(base_url, _A_CURSOR)
             .with_record(OrganizationsRecordBuilder.organizations_record().with_id(1))
             .with_pagination()
             .build(),

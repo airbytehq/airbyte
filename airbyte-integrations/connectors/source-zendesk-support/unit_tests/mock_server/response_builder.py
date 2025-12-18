@@ -70,14 +70,19 @@ class NextPagePaginationStrategy(PaginationStrategy):
 
 
 class EndOfStreamPaginationStrategy(PaginationStrategy):
-    """Pagination strategy for end_of_stream-based pagination."""
+    """Pagination strategy for end_of_stream-based pagination.
+    
+    The connector's end_of_stream_paginator uses:
+    - cursor_value: '{{ response.get("next_page", {}) }}' - looks for next_page field
+    - stop_condition: '{{ response.get("end_of_stream") }}' - checks end_of_stream to stop
+    """
 
     def __init__(self, url: str, cursor) -> None:
         self._next_page_url = url
         self._cursor = cursor
 
     def update(self, response: Dict[str, Any]) -> None:
-        response["after_url"] = f"{self._next_page_url}?cursor={self._cursor}"
+        response["next_page"] = f"{self._next_page_url}?cursor={self._cursor}"
         response["after_cursor"] = self._cursor
         response["end_of_stream"] = False
 
