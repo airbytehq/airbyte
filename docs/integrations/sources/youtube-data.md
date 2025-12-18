@@ -1,24 +1,116 @@
-# Youtube Data API
-The YouTube Data API v3 is an API that provides access to YouTube data, such as videos, playlists, channels, comments and simple stats.
-This is a simpler version of Youtube connector, if you need more detailed reports from your channel please check
-the [Youtube Analytics Connector](https://docs.airbyte.com/integrations/sources/youtube-analytics)
+# YouTube Data API
 
+<HideInUI>
 
-## Configuration
+This page contains the setup guide and reference information for the [YouTube Data API](https://developers.google.com/youtube/v3) source connector.
 
-| Input | Type | Description | Default Value |
-|-------|------|-------------|---------------|
-| `api_key` | `string` | API Key.  |  |
-| `channel_id` | `string` | channel_id.  |  |
+</HideInUI>
 
-## Streams
+The YouTube Data API v3 provides access to YouTube data, such as videos, playlists, channels, comments, and simple stats. This connector is a simpler version of the YouTube connector. If you need more detailed reports from your channel, use the [YouTube Analytics Connector](https://docs.airbyte.com/integrations/sources/youtube-analytics).
+
+## Prerequisites
+
+- One or more YouTube Channel IDs you want to sync data from
+<!-- env:oss -->
+- (For Airbyte Open Source) One of the following authentication methods:
+  - A Google API Key with the YouTube Data API v3 enabled
+  - OAuth 2.0 credentials (Client ID, Client Secret, and Refresh Token)
+<!-- /env:oss -->
+
+## Setup guide
+
+### Find your YouTube Channel IDs
+
+1. Go to [YouTube](https://www.youtube.com/) and navigate to the channel you want to sync.
+2. The Channel ID is in the URL: `https://www.youtube.com/channel/CHANNEL_ID`.
+3. Alternatively, you can find it in YouTube Studio under **Settings** > **Channel** > **Advanced settings**.
+
+<!-- env:cloud -->
+
+### For Airbyte Cloud
+
+1. [Log into your Airbyte Cloud](https://cloud.airbyte.com/workspaces) account.
+2. Click **Sources** and then click **+ New source**.
+3. Select **YouTube Data API** from the list.
+4. Enter a name for your source.
+5. Choose your authentication method:
+   - For **OAuth 2.0**: Click **Sign in with Google** to authenticate your Google account.
+   - For **API Key**: Enter your Google API key.
+6. Enter one or more Channel IDs to sync data from.
+7. Click **Set up source**.
+
+<!-- /env:cloud -->
+
+<!-- env:oss -->
+
+### For Airbyte Open Source
+
+#### Create credentials
+
+You can authenticate using either an API Key or OAuth 2.0.
+
+**Option A: API Key (simpler setup, public data only)**
+
+1. Go to the [Google Cloud Console](https://console.cloud.google.com/).
+2. Create a new project or select an existing one.
+3. Navigate to **APIs & Services** > **Library** and enable the YouTube Data API v3.
+4. Go to **APIs & Services** > **Credentials**.
+5. Click **Create Credentials** > **API key**.
+6. Copy the generated API key.
+7. (Recommended) Click **Restrict key** to limit the key's usage to the YouTube Data API v3.
+
+**Option B: OAuth 2.0 (required for accessing private data)**
+
+1. Go to the [Google Cloud Console](https://console.cloud.google.com/).
+2. Create a new project or select an existing one.
+3. Navigate to **APIs & Services** > **Library** and enable the YouTube Data API v3.
+4. Go to **APIs & Services** > **Credentials**.
+5. Click **Create Credentials** > **OAuth client ID**.
+6. Configure the OAuth consent screen if prompted.
+7. Copy the **Client ID** and **Client Secret**.
+8. Use these credentials to obtain a refresh token. Refer to [Google's OAuth 2.0 documentation](https://developers.google.com/identity/protocols/oauth2) for detailed instructions.
+
+#### Set up the connector
+
+1. In Airbyte, go to **Sources** and click **+ New source**.
+2. Select **YouTube Data API** from the list.
+3. Enter a name for your source.
+4. Choose your authentication method and enter the required credentials.
+5. Enter one or more Channel IDs to sync data from.
+6. Click **Set up source**.
+
+<!-- /env:oss -->
+
+## Supported sync modes
+
+The YouTube Data API source connector supports the following sync modes:
+
+- [Full Refresh - Overwrite](https://docs.airbyte.com/understanding-airbyte/connections/full-refresh-overwrite/)
+- [Full Refresh - Append](https://docs.airbyte.com/understanding-airbyte/connections/full-refresh-append)
+
+## Supported streams
+
 | Stream Name | Primary Key | Pagination | Supports Full Sync | Supports Incremental |
 |-------------|-------------|------------|---------------------|----------------------|
-| videos |  | DefaultPaginator | ✅ |  ❌  |
-| video_details |  | DefaultPaginator | ✅ |  ❌  |
-| channels | id | DefaultPaginator | ✅ |  ❌  |
-| comments |  | DefaultPaginator | ✅ |  ❌  |
-| channel_comments | id | DefaultPaginator | ✅ |  ❌  |
+| video | videoId | DefaultPaginator | Yes | No |
+| videos | | DefaultPaginator | Yes | No |
+| channels | id | DefaultPaginator | Yes | No |
+| comments | | DefaultPaginator | Yes | No |
+| channel_comments | | DefaultPaginator | Yes | No |
+
+### Stream descriptions
+
+- **video**: Detailed information about videos from the specified channels, including title, description, thumbnails, and publish date.
+- **videos**: A list of video IDs from the specified channels.
+- **channels**: Information about the specified YouTube channels, including statistics and content details.
+- **comments**: Comments on videos from the specified channels.
+- **channel_comments**: All comment threads related to the specified channels.
+
+## Limitations and considerations
+
+- The YouTube Data API has [quota limits](https://developers.google.com/youtube/v3/getting-started#quota). Each API request costs a certain number of quota units, and the default quota is 10,000 units per day.
+- API keys can only access public data. To access private data, you must use OAuth 2.0 authentication.
+- The connector does not support service account authentication because the YouTube Data API does not support this method.
 
 ## Changelog
 
