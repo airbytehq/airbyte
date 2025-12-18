@@ -38,8 +38,8 @@ private val log = KotlinLogging.logger {}
 private const val FLUSH_LIMIT = 1000
 
 /**
- * Accumulates and flushes records to Redshift via INSERT statements.
- * NOT a @Singleton - created per-stream by AggregateFactory.
+ * Accumulates and flushes records to Redshift via INSERT statements. NOT a @Singleton - created
+ * per-stream by AggregateFactory.
  */
 class RedshiftAggregate(
     private val tableName: TableName,
@@ -60,9 +60,7 @@ class RedshiftAggregate(
 
         try {
             log.info { "Flushing ${buffer.size} records to $tableName..." }
-            dataSource.connection.use { _ ->
-                buffer.forEach { record -> insertRecord(record) }
-            }
+            dataSource.connection.use { _ -> buffer.forEach { record -> insertRecord(record) } }
             log.info { "Finished flushing ${buffer.size} records" }
         } finally {
             buffer.clear()
@@ -72,7 +70,8 @@ class RedshiftAggregate(
     private fun insertRecord(record: Map<String, AirbyteValue>) {
         val columns = record.keys.joinToString(", ") { "\"$it\"" }
         val placeholders = record.keys.joinToString(", ") { "?" }
-        val sql = """
+        val sql =
+            """
             INSERT INTO "${tableName.namespace}"."${tableName.name}" ($columns)
             VALUES ($placeholders)
         """.trimIndent()

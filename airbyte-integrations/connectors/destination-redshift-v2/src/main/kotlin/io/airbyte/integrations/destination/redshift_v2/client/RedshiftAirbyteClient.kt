@@ -235,14 +235,16 @@ class RedshiftAirbyteClient(
         stream: DestinationStream,
         columnNameMapping: ColumnNameMapping
     ): Map<String, ColumnType> =
-        stream.schema.asColumns()
+        stream.schema
+            .asColumns()
             .mapNotNull { (fieldName, fieldType) ->
                 val columnName = columnNameMapping[fieldName] ?: fieldName
                 if (columnName in airbyteColumnNames) {
                     null
                 } else {
                     val rawType = columnUtils.toDialectType(fieldType.type)
-                    // Strip size specifier (e.g., VARCHAR(65535) -> VARCHAR) to match getColumnsFromDb
+                    // Strip size specifier (e.g., VARCHAR(65535) -> VARCHAR) to match
+                    // getColumnsFromDb
                     val baseType = rawType.takeWhile { it != '(' }
                     val type = normalizeRedshiftType(baseType)
                     columnName to ColumnType(type, fieldType.nullable)

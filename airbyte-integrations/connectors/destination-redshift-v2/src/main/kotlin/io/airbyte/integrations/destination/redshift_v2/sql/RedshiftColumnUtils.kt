@@ -32,19 +32,21 @@ import jakarta.inject.Singleton
 internal const val NOT_NULL = "NOT NULL"
 
 /** Default Airbyte metadata columns with their types */
-private val DEFAULT_COLUMN_NAMES = listOf(
-    COLUMN_NAME_AB_RAW_ID,
-    COLUMN_NAME_AB_EXTRACTED_AT,
-    COLUMN_NAME_AB_META,
-    COLUMN_NAME_AB_GENERATION_ID,
-)
+private val DEFAULT_COLUMN_NAMES =
+    listOf(
+        COLUMN_NAME_AB_RAW_ID,
+        COLUMN_NAME_AB_EXTRACTED_AT,
+        COLUMN_NAME_AB_META,
+        COLUMN_NAME_AB_GENERATION_ID,
+    )
 
-private val DEFAULT_COLUMN_TYPES = listOf(
-    "${RedshiftDataType.VARCHAR.typeName} $NOT_NULL",
-    "${RedshiftDataType.TIMESTAMPTZ.typeName} $NOT_NULL",
-    "${RedshiftDataType.SUPER.typeName} $NOT_NULL",
-    RedshiftDataType.BIGINT.typeName,
-)
+private val DEFAULT_COLUMN_TYPES =
+    listOf(
+        "${RedshiftDataType.VARCHAR.typeName} $NOT_NULL",
+        "${RedshiftDataType.TIMESTAMPTZ.typeName} $NOT_NULL",
+        "${RedshiftDataType.SUPER.typeName} $NOT_NULL",
+        RedshiftDataType.BIGINT.typeName,
+    )
 
 @Singleton
 class RedshiftColumnUtils {
@@ -71,22 +73,22 @@ class RedshiftColumnUtils {
             }
 
     /**
-     * Returns column declarations for CREATE TABLE statements.
-     * Format: "column_name" TYPE [NOT NULL]
+     * Returns column declarations for CREATE TABLE statements. Format: "column_name" TYPE [NOT
+     * NULL]
      */
     fun columnsAndTypes(
         columns: Map<String, FieldType>,
         columnNameMapping: ColumnNameMapping
     ): List<String> {
-        val defaultColumns = DEFAULT_COLUMN_NAMES.zip(DEFAULT_COLUMN_TYPES) { name, type ->
-            "${name.quote()} $type"
-        }
-        val userColumns = columns.map { (fieldName, type) ->
-            val columnName = columnNameMapping[fieldName] ?: fieldName
-            val typeName = toDialectType(type.type)
-            val typeDecl = if (type.nullable) typeName else "$typeName $NOT_NULL"
-            "${columnName.quote()} $typeDecl"
-        }
+        val defaultColumns =
+            DEFAULT_COLUMN_NAMES.zip(DEFAULT_COLUMN_TYPES) { name, type -> "${name.quote()} $type" }
+        val userColumns =
+            columns.map { (fieldName, type) ->
+                val columnName = columnNameMapping[fieldName] ?: fieldName
+                val typeName = toDialectType(type.type)
+                val typeDecl = if (type.nullable) typeName else "$typeName $NOT_NULL"
+                "${columnName.quote()} $typeDecl"
+            }
         return defaultColumns + userColumns
     }
 
