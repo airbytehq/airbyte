@@ -242,7 +242,9 @@ class RedshiftAirbyteClient(
                     null
                 } else {
                     val rawType = columnUtils.toDialectType(fieldType.type)
-                    val type = normalizeRedshiftType(rawType)
+                    // Strip size specifier (e.g., VARCHAR(65535) -> VARCHAR) to match getColumnsFromDb
+                    val baseType = rawType.takeWhile { it != '(' }
+                    val type = normalizeRedshiftType(baseType)
                     columnName to ColumnType(type, fieldType.nullable)
                 }
             }

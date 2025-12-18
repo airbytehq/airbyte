@@ -21,6 +21,7 @@ object RedshiftComponentTestFixtures {
     val allTypesTableSchema =
         TableSchema(
             mapOf(
+                // Type sizes are stripped for schema comparison (VARCHAR(65535) -> VARCHAR)
                 "string" to ColumnType("VARCHAR", true),
                 "boolean" to ColumnType("BOOLEAN", true),
                 "integer" to ColumnType("BIGINT", true),
@@ -34,6 +35,8 @@ object RedshiftComponentTestFixtures {
                 "time_ntz" to ColumnType("TIME", true),
                 "array" to ColumnType("SUPER", true),
                 "object" to ColumnType("SUPER", true),
+                // Note: union and legacy_union are filtered out by schema normalization
+                // (UnionType collapses to its underlying types)
                 "unknown" to ColumnType("SUPER", true),
             )
         )
