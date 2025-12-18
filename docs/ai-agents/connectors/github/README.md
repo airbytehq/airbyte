@@ -43,7 +43,7 @@ connector = GithubConnector(
     access_token="..."
   )
 )
-result = connector.repositories.get()
+result = await connector.repositories.get()
 ```
 
 ## Full documentation
@@ -81,6 +81,6 @@ For the service's official API docs, see the [Github API reference](https://docs
 
 ## Version information
 
-- **Package version:** 0.18.21
+- **Package version:** 0.18.24
 - **Connector version:** 0.1.5
-- **Generated with Connector SDK commit SHA:** 57f08f6035b744556fa96334a7b764759896287c
+- **Generated with Connector SDK commit SHA:** f7c55d3e3cdc7568cab2da9d736285eec58f044b

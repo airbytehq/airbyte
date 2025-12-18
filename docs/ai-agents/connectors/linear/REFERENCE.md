@@ -1,6 +1,10 @@
-# Linear
+# Linear full reference
 
-## Supported Entities and Actions
+This is the full reference documentation for the Linear agent connector.
+
+## Supported entities and actions
+
+The Linear connector supports the following entities and actions.
 
 | Entity | Actions |
 |--------|---------|
@@ -17,7 +21,7 @@ Returns a paginated list of issues via GraphQL with pagination support
 **Python SDK**
 
 ```python
-linear.issues.list()
+await linear.issues.list()
 ```
 
 **API**
@@ -33,7 +37,7 @@ curl --location 'https://api.airbyte.ai/api/v1/connectors/instances/{your_connec
 ```
 
 
-**Params**
+**Parameters**
 
 | Parameter Name | Type | Required | Description |
 |----------------|------|----------|-------------|
@@ -60,7 +64,7 @@ Get a single issue by ID via GraphQL
 **Python SDK**
 
 ```python
-linear.issues.get(
+await linear.issues.get(
     id="<str>"
 )
 ```
@@ -81,7 +85,7 @@ curl --location 'https://api.airbyte.ai/api/v1/connectors/instances/{your_connec
 ```
 
 
-**Params**
+**Parameters**
 
 | Parameter Name | Type | Required | Description |
 |----------------|------|----------|-------------|
@@ -109,7 +113,7 @@ Returns a paginated list of projects via GraphQL with pagination support
 **Python SDK**
 
 ```python
-linear.projects.list()
+await linear.projects.list()
 ```
 
 **API**
@@ -125,7 +129,7 @@ curl --location 'https://api.airbyte.ai/api/v1/connectors/instances/{your_connec
 ```
 
 
-**Params**
+**Parameters**
 
 | Parameter Name | Type | Required | Description |
 |----------------|------|----------|-------------|
@@ -152,7 +156,7 @@ Get a single project by ID via GraphQL
 **Python SDK**
 
 ```python
-linear.projects.get(
+await linear.projects.get(
     id="<str>"
 )
 ```
@@ -173,7 +177,7 @@ curl --location 'https://api.airbyte.ai/api/v1/connectors/instances/{your_connec
 ```
 
 
-**Params**
+**Parameters**
 
 | Parameter Name | Type | Required | Description |
 |----------------|------|----------|-------------|
@@ -201,7 +205,7 @@ Returns a list of teams via GraphQL with pagination support
 **Python SDK**
 
 ```python
-linear.teams.list()
+await linear.teams.list()
 ```
 
 **API**
@@ -217,7 +221,7 @@ curl --location 'https://api.airbyte.ai/api/v1/connectors/instances/{your_connec
 ```
 
 
-**Params**
+**Parameters**
 
 | Parameter Name | Type | Required | Description |
 |----------------|------|----------|-------------|
@@ -244,7 +248,7 @@ Get a single team by ID via GraphQL
 **Python SDK**
 
 ```python
-linear.teams.get(
+await linear.teams.get(
     id="<str>"
 )
 ```
@@ -265,7 +269,7 @@ curl --location 'https://api.airbyte.ai/api/v1/connectors/instances/{your_connec
 ```
 
 
-**Params**
+**Parameters**
 
 | Parameter Name | Type | Required | Description |
 |----------------|------|----------|-------------|
@@ -288,7 +292,7 @@ curl --location 'https://api.airbyte.ai/api/v1/connectors/instances/{your_connec
 
 ## Authentication
 
-The Linear connector supports the following authentication methods:
+The Linear connector supports the following authentication methods.
 
 
 ### Authentication

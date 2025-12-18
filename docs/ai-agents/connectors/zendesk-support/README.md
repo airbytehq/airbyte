@@ -1,4 +1,4 @@
-# Airbyte Zendesk-Support AI Connector
+# Zendesk-Support agent connector
 
 Zendesk Support is a customer service platform that helps businesses manage support
 tickets, customer interactions, and help center content. This connector provides
@@ -7,7 +7,7 @@ triggers, macros, views, satisfaction ratings, SLA policies, and help center art
 for customer support analytics and service performance insights.
 
 
-## Example Questions
+## Example questions
 
 - Show me the tickets assigned to me last week
 - What are the top 5 support issues our organization has faced this month?
@@ -18,7 +18,7 @@ for customer support analytics and service performance insights.
 - Identify the most common ticket fields used in our support workflow
 - Summarize the performance of our SLA policies this quarter
 
-## Unsupported Questions
+## Unsupported questions
 
 - Create a new support ticket for [customerX]
 - Update the priority of this ticket
@@ -43,10 +43,12 @@ connector = ZendeskSupportConnector(
     refresh_token="..."
   )
 )
-result = connector.tickets.list()
+result = await connector.tickets.list()
 ```
 
-## Documentation
+## Full documentation
+
+This connector supports the following entities and actions.
 
 | Entity | Actions |
 |--------|---------|
@@ -74,14 +76,12 @@ result = connector.tickets.list()
 | Article Attachments | [List](./REFERENCE.md#article-attachments-list), [Get](./REFERENCE.md#article-attachments-get), [Download](./REFERENCE.md#article-attachments-download) |
 
 
-For detailed documentation on available actions and parameters, see [REFERENCE.md](./REFERENCE.md).
+For detailed documentation on available actions and parameters, see this connector's [full reference documentation](./REFERENCE.md).
 
-For the service's official API docs, see [Zendesk-Support API Reference](https://developer.zendesk.com/api-reference/ticketing/introduction/).
+For the service's official API docs, see the [Zendesk-Support API reference](https://developer.zendesk.com/api-reference/ticketing/introduction/).
 
-## Version Information
+## Version information
 
-**Package Version:** 0.18.18
-
-**Connector Version:** 0.1.3
-
-**Generated with connector-sdk:** c4c39c2797ecd929407c9417c728d425f77b37ed
+- **Package version:** 0.18.21
+- **Connector version:** 0.1.3
+- **Generated with Connector SDK commit SHA:** f7c55d3e3cdc7568cab2da9d736285eec58f044b

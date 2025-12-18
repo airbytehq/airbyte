@@ -39,7 +39,7 @@ Gets information about a specific GitHub repository using GraphQL
 **Python SDK**
 
 ```python
-github.repositories.get(
+await github.repositories.get(
     owner="<str>",
     repo="<str>"
 )
@@ -80,7 +80,7 @@ Returns a list of repositories for the specified user using GraphQL
 **Python SDK**
 
 ```python
-github.repositories.list(
+await github.repositories.list(
     username="<str>"
 )
 ```
@@ -122,7 +122,7 @@ Examples: "language:python stars:>1000", "topic:machine-learning", "org:facebook
 **Python SDK**
 
 ```python
-github.repositories.search(
+await github.repositories.search(
     query="<str>"
 )
 ```
@@ -164,7 +164,7 @@ Returns a list of repositories for the specified organization using GraphQL
 **Python SDK**
 
 ```python
-github.org_repositories.list(
+await github.org_repositories.list(
     org="<str>"
 )
 ```
@@ -204,7 +204,7 @@ Returns a list of branches for the specified repository using GraphQL
 **Python SDK**
 
 ```python
-github.branches.list(
+await github.branches.list(
     owner="<str>",
     repo="<str>"
 )
@@ -245,7 +245,7 @@ Gets information about a specific branch using GraphQL
 **Python SDK**
 
 ```python
-github.branches.get(
+await github.branches.get(
     owner="<str>",
     repo="<str>",
     branch="<str>"
@@ -289,7 +289,7 @@ Returns a list of commits for the default branch using GraphQL
 **Python SDK**
 
 ```python
-github.commits.list(
+await github.commits.list(
     owner="<str>",
     repo="<str>"
 )
@@ -330,7 +330,7 @@ Gets information about a specific commit by SHA using GraphQL
 **Python SDK**
 
 ```python
-github.commits.get(
+await github.commits.get(
     owner="<str>",
     repo="<str>",
     sha="<str>"
@@ -374,7 +374,7 @@ Returns a list of releases for the specified repository using GraphQL
 **Python SDK**
 
 ```python
-github.releases.list(
+await github.releases.list(
     owner="<str>",
     repo="<str>"
 )
@@ -415,7 +415,7 @@ Gets information about a specific release by tag name using GraphQL
 **Python SDK**
 
 ```python
-github.releases.get(
+await github.releases.get(
     owner="<str>",
     repo="<str>",
     tag="<str>"
@@ -459,7 +459,7 @@ Returns a list of issues for the specified repository using GraphQL
 **Python SDK**
 
 ```python
-github.issues.list(
+await github.issues.list(
     owner="<str>",
     repo="<str>"
 )
@@ -501,7 +501,7 @@ Gets information about a specific issue using GraphQL
 **Python SDK**
 
 ```python
-github.issues.get(
+await github.issues.get(
     owner="<str>",
     repo="<str>",
     number=0
@@ -543,7 +543,7 @@ Search for issues using GitHub's search syntax
 **Python SDK**
 
 ```python
-github.issues.search(
+await github.issues.search(
     query="<str>"
 )
 ```
@@ -583,7 +583,7 @@ Returns a list of pull requests for the specified repository using GraphQL
 **Python SDK**
 
 ```python
-github.pull_requests.list(
+await github.pull_requests.list(
     owner="<str>",
     repo="<str>"
 )
@@ -625,7 +625,7 @@ Gets information about a specific pull request using GraphQL
 **Python SDK**
 
 ```python
-github.pull_requests.get(
+await github.pull_requests.get(
     owner="<str>",
     repo="<str>",
     number=0
@@ -667,7 +667,7 @@ Search for pull requests using GitHub's search syntax
 **Python SDK**
 
 ```python
-github.pull_requests.search(
+await github.pull_requests.search(
     query="<str>"
 )
 ```
@@ -707,7 +707,7 @@ Returns a list of reviews for the specified pull request using GraphQL
 **Python SDK**
 
 ```python
-github.reviews.list(
+await github.reviews.list(
     owner="<str>",
     repo="<str>",
     number=0
@@ -753,7 +753,7 @@ Returns a list of comments for the specified issue using GraphQL
 **Python SDK**
 
 ```python
-github.comments.list(
+await github.comments.list(
     owner="<str>",
     repo="<str>",
     number=0
@@ -802,7 +802,7 @@ where each comment includes both 'id' (node ID) and 'databaseId' (numeric ID).
 **Python SDK**
 
 ```python
-github.comments.get(
+await github.comments.get(
     id="<str>"
 )
 ```
@@ -840,7 +840,7 @@ Returns a list of comments for the specified pull request using GraphQL
 **Python SDK**
 
 ```python
-github.pr_comments.list(
+await github.pr_comments.list(
     owner="<str>",
     repo="<str>",
     number=0
@@ -889,7 +889,7 @@ where each comment includes both 'id' (node ID) and 'databaseId' (numeric ID).
 **Python SDK**
 
 ```python
-github.pr_comments.get(
+await github.pr_comments.get(
     id="<str>"
 )
 ```
@@ -927,7 +927,7 @@ Returns a list of labels for the specified repository using GraphQL
 **Python SDK**
 
 ```python
-github.labels.list(
+await github.labels.list(
     owner="<str>",
     repo="<str>"
 )
@@ -968,7 +968,7 @@ Gets information about a specific label by name using GraphQL
 **Python SDK**
 
 ```python
-github.labels.get(
+await github.labels.get(
     owner="<str>",
     repo="<str>",
     name="<str>"
@@ -1012,7 +1012,7 @@ Returns a list of milestones for the specified repository using GraphQL
 **Python SDK**
 
 ```python
-github.milestones.list(
+await github.milestones.list(
     owner="<str>",
     repo="<str>"
 )
@@ -1054,7 +1054,7 @@ Gets information about a specific milestone by number using GraphQL
 **Python SDK**
 
 ```python
-github.milestones.get(
+await github.milestones.get(
     owner="<str>",
     repo="<str>",
     number=0
@@ -1098,7 +1098,7 @@ Gets information about a specific organization using GraphQL
 **Python SDK**
 
 ```python
-github.organizations.get(
+await github.organizations.get(
     org="<str>"
 )
 ```
@@ -1134,7 +1134,7 @@ Returns a list of organizations the user belongs to using GraphQL
 **Python SDK**
 
 ```python
-github.organizations.list(
+await github.organizations.list(
     username="<str>"
 )
 ```
@@ -1174,7 +1174,7 @@ Gets information about a specific user using GraphQL
 **Python SDK**
 
 ```python
-github.users.get(
+await github.users.get(
     username="<str>"
 )
 ```
@@ -1210,7 +1210,7 @@ Returns a list of members for the specified organization using GraphQL
 **Python SDK**
 
 ```python
-github.users.list(
+await github.users.list(
     org="<str>"
 )
 ```
@@ -1248,7 +1248,7 @@ Search for GitHub users using search syntax
 **Python SDK**
 
 ```python
-github.users.search(
+await github.users.search(
     query="<str>"
 )
 ```
@@ -1288,7 +1288,7 @@ Returns a list of teams for the specified organization using GraphQL
 **Python SDK**
 
 ```python
-github.teams.list(
+await github.teams.list(
     org="<str>"
 )
 ```
@@ -1326,7 +1326,7 @@ Gets information about a specific team using GraphQL
 **Python SDK**
 
 ```python
-github.teams.get(
+await github.teams.get(
     org="<str>",
     team_slug="<str>"
 )
@@ -1367,7 +1367,7 @@ Returns a list of tags for the specified repository using GraphQL
 **Python SDK**
 
 ```python
-github.tags.list(
+await github.tags.list(
     owner="<str>",
     repo="<str>"
 )
@@ -1408,7 +1408,7 @@ Gets information about a specific tag by name using GraphQL
 **Python SDK**
 
 ```python
-github.tags.get(
+await github.tags.get(
     owner="<str>",
     repo="<str>",
     tag="<str>"
@@ -1452,7 +1452,7 @@ Returns a list of users who have starred the repository using GraphQL
 **Python SDK**
 
 ```python
-github.stargazers.list(
+await github.stargazers.list(
     owner="<str>",
     repo="<str>"
 )
@@ -1498,7 +1498,7 @@ the current user's profile, permissions, or associated resources.
 **Python SDK**
 
 ```python
-github.viewer.get()
+await github.viewer.get()
 ```
 
 **API**
@@ -1533,7 +1533,7 @@ automatically lists repositories for the current authenticated user.
 **Python SDK**
 
 ```python
-github.viewer_repositories.list()
+await github.viewer_repositories.list()
 ```
 
 **API**
@@ -1569,7 +1569,7 @@ Projects V2 are the new project boards that replaced classic projects.
 **Python SDK**
 
 ```python
-github.projects.list(
+await github.projects.list(
     org="<str>"
 )
 ```
@@ -1607,7 +1607,7 @@ Gets information about a specific GitHub Project V2 by number
 **Python SDK**
 
 ```python
-github.projects.get(
+await github.projects.get(
     org="<str>",
     project_number=0
 )
@@ -1650,7 +1650,7 @@ Each item includes its field values like Status, Priority, etc.
 **Python SDK**
 
 ```python
-github.project_items.list(
+await github.project_items.list(
     org="<str>",
     project_number=0
 )

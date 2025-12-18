@@ -1,11 +1,11 @@
-# Airbyte Stripe AI Connector
+# Stripe agent connector
 
 Stripe is a payment processing platform that enables businesses to accept payments,
 manage subscriptions, and handle financial transactions. This connector provides
 access to customers for payment analytics and customer management.
 
 
-## Example Questions
+## Example questions
 
 - Show me my top 10 customers by total revenue this month
 - List all customers who have spent over $5,000 in the last quarter
@@ -18,7 +18,7 @@ access to customers for payment analytics and customer management.
 - What are the key financial insights from my customer base?
 - Break down my customers by their average transaction value
 
-## Unsupported Questions
+## Unsupported questions
 
 - Create a new customer profile in Stripe
 - Update the billing information for [customerX]
@@ -42,10 +42,12 @@ connector = StripeConnector(
     api_key="..."
   )
 )
-result = connector.customers.list()
+result = await connector.customers.list()
 ```
 
-## Documentation
+## Full documentation
+
+This connector supports the following entities and actions.
 
 | Entity | Actions |
 |--------|---------|
@@ -62,14 +64,12 @@ result = connector.customers.list()
 | Payouts | [List](./REFERENCE.md#payouts-list), [Get](./REFERENCE.md#payouts-get) |
 
 
-For detailed documentation on available actions and parameters, see [REFERENCE.md](./REFERENCE.md).
+For detailed documentation on available actions and parameters, see this connector's [full reference documentation](./REFERENCE.md).
 
-For the service's official API docs, see [Stripe API Reference](https://docs.stripe.com/api).
+For the service's official API docs, see the [Stripe API reference](https://docs.stripe.com/api).
 
-## Version Information
+## Version information
 
-**Package Version:** 0.5.18
-
-**Connector Version:** 0.1.2
-
-**Generated with connector-sdk:** c4c39c2797ecd929407c9417c728d425f77b37ed
+- **Package version:** 0.5.21
+- **Connector version:** 0.1.2
+- **Generated with Connector SDK commit SHA:** f7c55d3e3cdc7568cab2da9d736285eec58f044b

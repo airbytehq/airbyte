@@ -34,7 +34,7 @@ Returns a list of all users in the Gong account
 **Python SDK**
 
 ```python
-gong.users.list()
+await gong.users.list()
 ```
 
 **API**
@@ -101,7 +101,7 @@ Get a single user by ID
 **Python SDK**
 
 ```python
-gong.users.get(
+await gong.users.get(
     id="<str>"
 )
 ```
@@ -165,7 +165,7 @@ Retrieve calls data by date range
 **Python SDK**
 
 ```python
-gong.calls.list()
+await gong.calls.list()
 ```
 
 **API**
@@ -238,7 +238,7 @@ Get specific call data by ID
 **Python SDK**
 
 ```python
-gong.calls.get(
+await gong.calls.get(
     id="<str>"
 )
 ```
@@ -306,7 +306,7 @@ Retrieve detailed call data including participants, interaction stats, and conte
 **Python SDK**
 
 ```python
-gong.calls_extensive.list(
+await gong.calls_extensive.list(
     filter={}
 )
 ```
@@ -483,7 +483,7 @@ List all company workspaces
 **Python SDK**
 
 ```python
-gong.workspaces.list()
+await gong.workspaces.list()
 ```
 
 **API**
@@ -524,7 +524,7 @@ Returns transcripts for calls in a specified date range or specific call IDs
 **Python SDK**
 
 ```python
-gong.call_transcripts.list()
+await gong.call_transcripts.list()
 ```
 
 **API**
@@ -583,7 +583,7 @@ Provides aggregated user activity metrics across a specified period
 **Python SDK**
 
 ```python
-gong.stats_activity_aggregate.list()
+await gong.stats_activity_aggregate.list()
 ```
 
 **API**
@@ -657,7 +657,7 @@ Delivers daily user activity metrics across a specified date range
 **Python SDK**
 
 ```python
-gong.stats_activity_day_by_day.list()
+await gong.stats_activity_day_by_day.list()
 ```
 
 **API**
@@ -733,7 +733,7 @@ Returns interaction stats for users based on calls that have Whisper turned on
 **Python SDK**
 
 ```python
-gong.stats_interaction.list()
+await gong.stats_interaction.list()
 ```
 
 **API**
@@ -794,7 +794,7 @@ Retrieve all scorecard configurations in the company
 **Python SDK**
 
 ```python
-gong.settings_scorecards.list()
+await gong.settings_scorecards.list()
 ```
 
 **API**
@@ -859,7 +859,7 @@ Retrieve all keyword tracker configurations in the company
 **Python SDK**
 
 ```python
-gong.settings_trackers.list()
+await gong.settings_trackers.list()
 ```
 
 **API**
@@ -917,7 +917,7 @@ Retrieve the folder structure of the call library
 **Python SDK**
 
 ```python
-gong.library_folders.list(
+await gong.library_folders.list(
     workspace_id="<str>"
 )
 ```
@@ -970,7 +970,7 @@ Retrieve calls in a specific library folder
 **Python SDK**
 
 ```python
-gong.library_folder_content.list(
+await gong.library_folder_content.list(
     folder_id="<str>"
 )
 ```
@@ -1035,7 +1035,7 @@ Retrieve coaching metrics for a manager and their direct reports
 **Python SDK**
 
 ```python
-gong.coaching.list(
+await gong.coaching.list(
     workspace_id="<str>",
     manager_id="<str>",
     from_="2025-01-01T00:00:00Z",
@@ -1102,7 +1102,7 @@ Retrieve answered scorecards for applicable reviewed users or scorecards for a d
 **Python SDK**
 
 ```python
-gong.stats_activity_scorecards.list()
+await gong.stats_activity_scorecards.list()
 ```
 
 **API**

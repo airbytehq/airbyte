@@ -1,6 +1,10 @@
-# Greenhouse
+# Greenhouse full reference
 
-## Supported Entities and Actions
+This is the full reference documentation for the Greenhouse agent connector.
+
+## Supported entities and actions
+
+The Greenhouse connector supports the following entities and actions.
 
 | Entity | Actions |
 |--------|---------|
@@ -26,7 +30,7 @@ Returns a paginated list of all candidates in the organization
 **Python SDK**
 
 ```python
-greenhouse.candidates.list()
+await greenhouse.candidates.list()
 ```
 
 **API**
@@ -42,7 +46,7 @@ curl --location 'https://api.airbyte.ai/api/v1/connectors/instances/{your_connec
 ```
 
 
-**Params**
+**Parameters**
 
 | Parameter Name | Type | Required | Description |
 |----------------|------|----------|-------------|
@@ -57,7 +61,7 @@ Get a single candidate by ID
 **Python SDK**
 
 ```python
-greenhouse.candidates.get(
+await greenhouse.candidates.get(
     id=0
 )
 ```
@@ -78,7 +82,7 @@ curl --location 'https://api.airbyte.ai/api/v1/connectors/instances/{your_connec
 ```
 
 
-**Params**
+**Parameters**
 
 | Parameter Name | Type | Required | Description |
 |----------------|------|----------|-------------|
@@ -131,7 +135,7 @@ Returns a paginated list of all applications
 **Python SDK**
 
 ```python
-greenhouse.applications.list()
+await greenhouse.applications.list()
 ```
 
 **API**
@@ -147,7 +151,7 @@ curl --location 'https://api.airbyte.ai/api/v1/connectors/instances/{your_connec
 ```
 
 
-**Params**
+**Parameters**
 
 | Parameter Name | Type | Required | Description |
 |----------------|------|----------|-------------|
@@ -167,7 +171,7 @@ Get a single application by ID
 **Python SDK**
 
 ```python
-greenhouse.applications.get(
+await greenhouse.applications.get(
     id=0
 )
 ```
@@ -188,7 +192,7 @@ curl --location 'https://api.airbyte.ai/api/v1/connectors/instances/{your_connec
 ```
 
 
-**Params**
+**Parameters**
 
 | Parameter Name | Type | Required | Description |
 |----------------|------|----------|-------------|
@@ -240,7 +244,7 @@ Returns a paginated list of all jobs in the organization
 **Python SDK**
 
 ```python
-greenhouse.jobs.list()
+await greenhouse.jobs.list()
 ```
 
 **API**
@@ -256,7 +260,7 @@ curl --location 'https://api.airbyte.ai/api/v1/connectors/instances/{your_connec
 ```
 
 
-**Params**
+**Parameters**
 
 | Parameter Name | Type | Required | Description |
 |----------------|------|----------|-------------|
@@ -271,7 +275,7 @@ Get a single job by ID
 **Python SDK**
 
 ```python
-greenhouse.jobs.get(
+await greenhouse.jobs.get(
     id=0
 )
 ```
@@ -292,7 +296,7 @@ curl --location 'https://api.airbyte.ai/api/v1/connectors/instances/{your_connec
 ```
 
 
-**Params**
+**Parameters**
 
 | Parameter Name | Type | Required | Description |
 |----------------|------|----------|-------------|
@@ -334,7 +338,7 @@ Returns a paginated list of all offers
 **Python SDK**
 
 ```python
-greenhouse.offers.list()
+await greenhouse.offers.list()
 ```
 
 **API**
@@ -350,7 +354,7 @@ curl --location 'https://api.airbyte.ai/api/v1/connectors/instances/{your_connec
 ```
 
 
-**Params**
+**Parameters**
 
 | Parameter Name | Type | Required | Description |
 |----------------|------|----------|-------------|
@@ -368,7 +372,7 @@ Get a single offer by ID
 **Python SDK**
 
 ```python
-greenhouse.offers.get(
+await greenhouse.offers.get(
     id=0
 )
 ```
@@ -389,7 +393,7 @@ curl --location 'https://api.airbyte.ai/api/v1/connectors/instances/{your_connec
 ```
 
 
-**Params**
+**Parameters**
 
 | Parameter Name | Type | Required | Description |
 |----------------|------|----------|-------------|
@@ -429,7 +433,7 @@ Returns a paginated list of all users
 **Python SDK**
 
 ```python
-greenhouse.users.list()
+await greenhouse.users.list()
 ```
 
 **API**
@@ -445,7 +449,7 @@ curl --location 'https://api.airbyte.ai/api/v1/connectors/instances/{your_connec
 ```
 
 
-**Params**
+**Parameters**
 
 | Parameter Name | Type | Required | Description |
 |----------------|------|----------|-------------|
@@ -464,7 +468,7 @@ Get a single user by ID
 **Python SDK**
 
 ```python
-greenhouse.users.get(
+await greenhouse.users.get(
     id=0
 )
 ```
@@ -485,7 +489,7 @@ curl --location 'https://api.airbyte.ai/api/v1/connectors/instances/{your_connec
 ```
 
 
-**Params**
+**Parameters**
 
 | Parameter Name | Type | Required | Description |
 |----------------|------|----------|-------------|
@@ -526,7 +530,7 @@ Returns a paginated list of all departments
 **Python SDK**
 
 ```python
-greenhouse.departments.list()
+await greenhouse.departments.list()
 ```
 
 **API**
@@ -542,7 +546,7 @@ curl --location 'https://api.airbyte.ai/api/v1/connectors/instances/{your_connec
 ```
 
 
-**Params**
+**Parameters**
 
 | Parameter Name | Type | Required | Description |
 |----------------|------|----------|-------------|
@@ -557,7 +561,7 @@ Get a single department by ID
 **Python SDK**
 
 ```python
-greenhouse.departments.get(
+await greenhouse.departments.get(
     id=0
 )
 ```
@@ -578,7 +582,7 @@ curl --location 'https://api.airbyte.ai/api/v1/connectors/instances/{your_connec
 ```
 
 
-**Params**
+**Parameters**
 
 | Parameter Name | Type | Required | Description |
 |----------------|------|----------|-------------|
@@ -612,7 +616,7 @@ Returns a paginated list of all offices
 **Python SDK**
 
 ```python
-greenhouse.offices.list()
+await greenhouse.offices.list()
 ```
 
 **API**
@@ -628,7 +632,7 @@ curl --location 'https://api.airbyte.ai/api/v1/connectors/instances/{your_connec
 ```
 
 
-**Params**
+**Parameters**
 
 | Parameter Name | Type | Required | Description |
 |----------------|------|----------|-------------|
@@ -643,7 +647,7 @@ Get a single office by ID
 **Python SDK**
 
 ```python
-greenhouse.offices.get(
+await greenhouse.offices.get(
     id=0
 )
 ```
@@ -664,7 +668,7 @@ curl --location 'https://api.airbyte.ai/api/v1/connectors/instances/{your_connec
 ```
 
 
-**Params**
+**Parameters**
 
 | Parameter Name | Type | Required | Description |
 |----------------|------|----------|-------------|
@@ -700,7 +704,7 @@ Returns a paginated list of all job posts
 **Python SDK**
 
 ```python
-greenhouse.job_posts.list()
+await greenhouse.job_posts.list()
 ```
 
 **API**
@@ -716,7 +720,7 @@ curl --location 'https://api.airbyte.ai/api/v1/connectors/instances/{your_connec
 ```
 
 
-**Params**
+**Parameters**
 
 | Parameter Name | Type | Required | Description |
 |----------------|------|----------|-------------|
@@ -733,7 +737,7 @@ Get a single job post by ID
 **Python SDK**
 
 ```python
-greenhouse.job_posts.get(
+await greenhouse.job_posts.get(
     id=0
 )
 ```
@@ -754,7 +758,7 @@ curl --location 'https://api.airbyte.ai/api/v1/connectors/instances/{your_connec
 ```
 
 
-**Params**
+**Parameters**
 
 | Parameter Name | Type | Required | Description |
 |----------------|------|----------|-------------|
@@ -796,7 +800,7 @@ Returns a paginated list of all sources
 **Python SDK**
 
 ```python
-greenhouse.sources.list()
+await greenhouse.sources.list()
 ```
 
 **API**
@@ -812,7 +816,7 @@ curl --location 'https://api.airbyte.ai/api/v1/connectors/instances/{your_connec
 ```
 
 
-**Params**
+**Parameters**
 
 | Parameter Name | Type | Required | Description |
 |----------------|------|----------|-------------|
@@ -829,7 +833,7 @@ Returns a paginated list of all scheduled interviews
 **Python SDK**
 
 ```python
-greenhouse.scheduled_interviews.list()
+await greenhouse.scheduled_interviews.list()
 ```
 
 **API**
@@ -845,7 +849,7 @@ curl --location 'https://api.airbyte.ai/api/v1/connectors/instances/{your_connec
 ```
 
 
-**Params**
+**Parameters**
 
 | Parameter Name | Type | Required | Description |
 |----------------|------|----------|-------------|
@@ -866,7 +870,7 @@ Get a single scheduled interview by ID
 **Python SDK**
 
 ```python
-greenhouse.scheduled_interviews.get(
+await greenhouse.scheduled_interviews.get(
     id=0
 )
 ```
@@ -887,7 +891,7 @@ curl --location 'https://api.airbyte.ai/api/v1/connectors/instances/{your_connec
 ```
 
 
-**Params**
+**Parameters**
 
 | Parameter Name | Type | Required | Description |
 |----------------|------|----------|-------------|
@@ -953,7 +957,7 @@ curl --location 'https://api.airbyte.ai/api/v1/connectors/instances/{your_connec
 ```
 
 
-**Params**
+**Parameters**
 
 | Parameter Name | Type | Required | Description |
 |----------------|------|----------|-------------|
@@ -997,7 +1001,7 @@ curl --location 'https://api.airbyte.ai/api/v1/connectors/instances/{your_connec
 ```
 
 
-**Params**
+**Parameters**
 
 | Parameter Name | Type | Required | Description |
 |----------------|------|----------|-------------|
@@ -1010,7 +1014,7 @@ curl --location 'https://api.airbyte.ai/api/v1/connectors/instances/{your_connec
 
 ## Authentication
 
-The Greenhouse connector supports the following authentication methods:
+The Greenhouse connector supports the following authentication methods.
 
 
 ### Harvest API Key Authentication
