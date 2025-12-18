@@ -16,7 +16,11 @@ class RedshiftCheckTest :
             listOf(
                 CheckTestConfig(
                     Files.readString(Path.of("secrets/config.json")),
-                    name = "Valid Redshift connection",
+                    name = "Valid Redshift connection (standard inserts)",
+                ),
+                CheckTestConfig(
+                    Files.readString(Path.of("secrets/config_staging.json")),
+                    name = "Valid Redshift connection (S3 staging)",
                 ),
             ),
         failConfigFilenamesAndFailureReasons = emptyMap(),
