@@ -42,7 +42,7 @@ connector = GongConnector(
     access_token="..."
   )
 )
-result = connector.users.list()
+result = await connector.users.list()
 ```
 
 ## Full documentation
@@ -75,6 +75,6 @@ For the service's official API docs, see the [Gong API reference](https://gong.a
 
 ## Version information
 
-- **Package version:** 0.19.20
+- **Package version:** 0.19.23
 - **Connector version:** 0.1.5
-- **Generated with Connector SDK commit SHA:** 4fe5029b71369ddb9ad9b5912e7f957fb4f81747
+- **Generated with Connector SDK commit SHA:** f7c55d3e3cdc7568cab2da9d736285eec58f044b

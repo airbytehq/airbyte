@@ -1,11 +1,11 @@
-# Airbyte Hubspot AI Connector
+# Hubspot agent connector
 
 HubSpot is a CRM platform that provides tools for marketing, sales, customer service,
 and content management. This connector provides access to contacts, companies, deals,
 tickets, and custom objects for customer relationship management and sales analytics.
 
 
-## Example Questions
+## Example questions
 
 - Show me all deals from [Company] this quarter
 - What are the top 5 most valuable deals in my pipeline right now?
@@ -16,7 +16,7 @@ tickets, and custom objects for customer relationship management and sales analy
 - Compare the number of deals closed by different sales representatives
 - Find all tickets related to a specific product issue and summarize their status
 
-## Unsupported Questions
+## Unsupported questions
 
 - Create a new contact record for [personX]
 - Update the contact information for [customerY]
@@ -43,10 +43,12 @@ connector = HubspotConnector(
     access_token="..."
   )
 )
-result = connector.contacts.list()
+result = await connector.contacts.list()
 ```
 
-## Documentation
+## Full documentation
+
+This connector supports the following entities and actions.
 
 | Entity | Actions |
 |--------|---------|
@@ -58,14 +60,12 @@ result = connector.contacts.list()
 | Objects | [List](./REFERENCE.md#objects-list), [Get](./REFERENCE.md#objects-get) |
 
 
-For detailed documentation on available actions and parameters, see [REFERENCE.md](./REFERENCE.md).
+For detailed documentation on available actions and parameters, see this connector's [full reference documentation](./REFERENCE.md).
 
-For the service's official API docs, see [Hubspot API Reference](https://developers.hubspot.com/docs/api/crm/understanding-the-crm).
+For the service's official API docs, see the [Hubspot API reference](https://developers.hubspot.com/docs/api/crm/understanding-the-crm).
 
-## Version Information
+## Version information
 
-**Package Version:** 0.15.18
-
-**Connector Version:** 0.1.2
-
-**Generated with connector-sdk:** c4c39c2797ecd929407c9417c728d425f77b37ed
+- **Package version:** 0.15.21
+- **Connector version:** 0.1.2
+- **Generated with Connector SDK commit SHA:** f7c55d3e3cdc7568cab2da9d736285eec58f044b
