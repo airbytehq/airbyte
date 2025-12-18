@@ -17,6 +17,8 @@ import io.airbyte.cdk.load.data.TimeWithTimezoneValue
 import io.airbyte.cdk.load.data.TimeWithoutTimezoneValue
 import io.airbyte.cdk.load.data.TimestampWithTimezoneValue
 import io.airbyte.cdk.load.data.TimestampWithoutTimezoneValue
+import io.airbyte.cdk.load.command.DestinationCatalog
+import io.airbyte.cdk.load.component.ColumnType
 import io.airbyte.cdk.load.dataflow.aggregate.Aggregate
 import io.airbyte.cdk.load.dataflow.aggregate.AggregateFactory
 import io.airbyte.cdk.load.dataflow.aggregate.StoreKey
@@ -25,12 +27,14 @@ import io.airbyte.cdk.load.schema.model.TableName
 import io.airbyte.cdk.load.table.directload.DirectLoadTableExecutionConfig
 import io.airbyte.cdk.load.util.serializeToString
 import io.airbyte.cdk.load.write.StreamStateStore
+import io.airbyte.integrations.destination.redshift_v2.spec.RedshiftV2Configuration
 import io.github.oshai.kotlinlogging.KotlinLogging
 import io.micronaut.context.annotation.Factory
 import jakarta.inject.Singleton
 import java.sql.PreparedStatement
 import java.sql.Timestamp
 import java.sql.Types
+import java.time.Clock
 import javax.sql.DataSource
 
 private val log = KotlinLogging.logger {}
@@ -110,11 +114,24 @@ class RedshiftAggregate(
 class RedshiftAggregateFactory(
     private val dataSource: DataSource,
     private val streamStateStore: StreamStateStore<DirectLoadTableExecutionConfig>,
+    private val config: RedshiftV2Configuration,
+    private val clock: Clock,
+    private val catalog: DestinationCatalog,
 ) : AggregateFactory {
 
     @Singleton
     override fun create(key: StoreKey): Aggregate {
         val tableName = streamStateStore.get(key)!!.tableName
-        return RedshiftAggregate(tableName, dataSource)
+        val stream = catalog.getStream(key)
+        val finalSchema: Map<String, ColumnType> = stream.tableSchema.columnSchema.finalSchema
+
+        // Use staging aggregate if S3 config is present, otherwise use direct inserts
+        return if (config.s3Config != null) {
+            log.info { "Using S3 staging for stream: $tableName" }
+            RedshiftStagingAggregate(tableName, dataSource, config.s3Config, clock, finalSchema)
+        } else {
+            log.info { "Using direct inserts for stream: $tableName" }
+            RedshiftAggregate(tableName, dataSource)
+        }
     }
 }
