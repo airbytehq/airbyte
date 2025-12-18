@@ -3,10 +3,12 @@ data:
     ql: 300
     sl: 300
     requireVersionIncrementsInPullRequests: false
+    rollout:
+      enabled: true
   connectorSubtype: database
   connectorType: destination
   definitionId: 424892c4-daac-4491-b35d-c6688ba547ba
-  dockerImageTag: 4.0.31
+  dockerImageTag: 4.0.32-rc.1
   dockerRepository: airbyte/destination-snowflake
   documentationUrl: https://docs.airbyte.com/integrations/destinations/snowflake
   githubIssueLabel: destination-snowflake
