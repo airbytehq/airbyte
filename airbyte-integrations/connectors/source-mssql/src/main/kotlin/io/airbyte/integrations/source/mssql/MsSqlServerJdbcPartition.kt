@@ -452,8 +452,8 @@ sealed class MsSqlServerJdbcCursorPartition(
 
     /**
      * Override where clause to ensure cursor-based incremental syncs always use exclusive
-     * comparison (> instead of >=) to avoid re-reading records that were already synced.
-     * This prevents the same change set from being identified on consecutive days.
+     * comparison (> instead of >=) to avoid re-reading records that were already synced. This
+     * prevents the same change set from being identified on consecutive days.
      */
     override val where: Where
         get() {

@@ -603,13 +603,16 @@ class MsSqlServerJdbcPartitionFactoryTest {
 
         // Also verify by checking the WHERE clause structure directly
         val whereClause = cursorPartition.where
-        val whereSql = selectQueryGenerator.generate(
-            SelectQuerySpec(
-                SelectColumns(stream.fields),
-                From(stream.name, stream.namespace),
-                whereClause
-            )
-        ).sql
+        val whereSql =
+            selectQueryGenerator
+                .generate(
+                    SelectQuerySpec(
+                        SelectColumns(stream.fields),
+                        From(stream.name, stream.namespace),
+                        whereClause
+                    )
+                )
+                .sql
 
         assertTrue(
             whereSql.contains("[id] > ?"),
