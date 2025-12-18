@@ -210,7 +210,8 @@ class JdbcSelectQuerier(
  *
  * @param jdbcConnectionFactory Factory for creating JDBC connections
  * @param query SQL query string to execute (should return exactly one row)
- * @param bindParameters Optional lambda to bind parameters to the PreparedStatement before execution
+ * @param bindParameters Optional lambda to bind parameters to the PreparedStatement before
+ * execution
  * @param withResultSet Lambda function to process the ResultSet and extract the desired value
  * @return The value extracted from the single result row using the withRS function
  */

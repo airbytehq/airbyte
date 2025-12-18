@@ -184,9 +184,7 @@ open class PostgresSourceJdbcPartitionFactory(
                         null
                     } else {
                         // Snapshot ongoing
-                        if (
-                            fileNodeChange  !in  listOf(FILENODE_NO_CHANGE, FILENODE_NOT_FOUND)
-                        ) {
+                        if (fileNodeChange !in listOf(FILENODE_NO_CHANGE, FILENODE_NOT_FOUND)) {
                             handler.accept(InvalidPrimaryKey(stream.id, listOf(ctidField.id)))
                             streamState.reset()
                             coldStart(streamState, filenode)
@@ -335,14 +333,17 @@ open class PostgresSourceJdbcPartitionFactory(
             jdbcConnectionFactory: JdbcConnectionFactory
         ): Filenode? {
             log.info { "Querying filenode for stream ${streamState.stream.id}" }
-            val sql =  "SELECT pg_relation_filenode(?::regclass)"
+            val sql = "SELECT pg_relation_filenode(?::regclass)"
             val jdbcFieldType: JdbcFieldType<*> = LongFieldType
             val filenode: Any? =
                 querySingleValue(
                     jdbcConnectionFactory,
                     sql,
                     { stmt ->
-                        stmt.setString(1, """"${streamState.stream.namespace}"."${streamState.stream.name}"""")
+                        stmt.setString(
+                            1,
+                            """"${streamState.stream.namespace}"."${streamState.stream.name}""""
+                        )
                     },
                     { rs -> jdbcFieldType.jdbcGetter.get(rs, 1) }
                 )
@@ -427,14 +428,11 @@ open class PostgresSourceJdbcPartitionFactory(
     }
 
     private fun relationSize(stream: Stream): Long {
-        val sql =
-            "SELECT pg_relation_size(?)"
+        val sql = "SELECT pg_relation_size(?)"
         return querySingleValue(
             JdbcConnectionFactory(sharedState.configuration),
             sql,
-            { stmt ->
-                stmt.setString(1,toQualifiedTableName(stream.namespace, stream.name))
-            },
+            { stmt -> stmt.setString(1, toQualifiedTableName(stream.namespace, stream.name)) },
             { rs ->
                 return@querySingleValue rs.getLong(1)
             }
