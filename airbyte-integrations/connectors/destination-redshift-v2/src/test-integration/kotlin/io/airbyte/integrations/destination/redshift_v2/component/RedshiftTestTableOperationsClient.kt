@@ -12,7 +12,6 @@ import io.airbyte.cdk.load.schema.model.TableName
 import io.airbyte.cdk.load.util.Jsons
 import io.airbyte.integrations.destination.redshift_v2.client.RedshiftAirbyteClient
 import io.airbyte.integrations.destination.redshift_v2.dataflow.RedshiftAggregate
-import io.airbyte.integrations.destination.redshift_v2.write.load.RedshiftInsertBuffer
 import io.github.oshai.kotlinlogging.KotlinLogging
 import io.micronaut.context.annotation.Requires
 import jakarta.inject.Singleton
@@ -47,7 +46,7 @@ class RedshiftTestTableOperationsClient(
         // Get the actual table columns so we only insert columns that exist
         val tableColumns = getTableColumns(table)
 
-        val aggregate = RedshiftAggregate(RedshiftInsertBuffer(table, dataSource))
+        val aggregate = RedshiftAggregate(table, dataSource)
         records.forEach { record ->
             // Filter record to only include columns that exist in the table
             val filteredRecord =

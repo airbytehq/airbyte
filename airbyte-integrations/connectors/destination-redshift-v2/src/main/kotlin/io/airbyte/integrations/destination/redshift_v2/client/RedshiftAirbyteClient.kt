@@ -17,7 +17,6 @@ import io.airbyte.cdk.load.schema.model.TableName
 import io.airbyte.cdk.load.table.ColumnNameMapping
 import io.airbyte.integrations.destination.redshift_v2.spec.RedshiftV2Configuration
 import io.airbyte.integrations.destination.redshift_v2.sql.COUNT_TOTAL_ALIAS
-import io.airbyte.integrations.destination.redshift_v2.sql.NOT_NULL
 import io.airbyte.integrations.destination.redshift_v2.sql.RedshiftColumnUtils
 import io.airbyte.integrations.destination.redshift_v2.sql.RedshiftSqlGenerator
 import io.github.oshai.kotlinlogging.KotlinLogging
@@ -236,21 +235,18 @@ class RedshiftAirbyteClient(
         stream: DestinationStream,
         columnNameMapping: ColumnNameMapping
     ): Map<String, ColumnType> =
-        columnUtils
-            .columnsAndTypes(stream.schema.asColumns(), columnNameMapping)
-            .filter { column -> column.columnName !in airbyteColumnNames }
-            .associate { column ->
-                val nullable = !column.columnType.endsWith(NOT_NULL)
-                val rawType =
-                    column.columnType
-                        .takeWhile { char -> char != '(' }
-                        .removeSuffix(NOT_NULL)
-                        .trim()
-                // Normalize type names to match what discoverSchema returns
-                val type = normalizeRedshiftType(rawType)
-
-                column.columnName to ColumnType(type, nullable)
+        stream.schema.asColumns()
+            .mapNotNull { (fieldName, fieldType) ->
+                val columnName = columnNameMapping[fieldName] ?: fieldName
+                if (columnName in airbyteColumnNames) {
+                    null
+                } else {
+                    val rawType = columnUtils.toDialectType(fieldType.type)
+                    val type = normalizeRedshiftType(rawType)
+                    columnName to ColumnType(type, fieldType.nullable)
+                }
             }
+            .toMap()
 
     // ========================================
     // TableSchemaEvolutionClient IMPLEMENTATION
