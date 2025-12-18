@@ -56,16 +56,20 @@ class TestPostsStream(TestCase):
     def test_given_has_more_when_read_then_paginate(self, http_mocker):
         config = self._config().with_start_date(_START_DATE).build()
         api_token_authenticator = self._get_authenticator(config)
+
+        # Create the next page request first - this URL will be used in links.next
+        next_page_http_request = self._base_posts_request(api_token_authenticator).with_after_cursor("after-cursor").build()
+
         http_mocker.get(
             self._base_posts_request(api_token_authenticator).with_start_time(datetime_to_string(_START_DATE)).build(),
-            PostsResponseBuilder.posts_response(self._base_posts_request(api_token_authenticator).build())
+            PostsResponseBuilder.posts_response(next_page_http_request)
             .with_record(PostsRecordBuilder.posts_record())
             .with_record(PostsRecordBuilder.posts_record())
             .with_pagination()
             .build(),
         )
         http_mocker.get(
-            self._base_posts_request(api_token_authenticator).with_after_cursor("after-cursor").build(),
+            next_page_http_request,
             PostsResponseBuilder.posts_response().with_record(PostsRecordBuilder.posts_record()).build(),
         )
 

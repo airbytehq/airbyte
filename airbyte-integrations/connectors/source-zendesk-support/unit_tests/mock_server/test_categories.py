@@ -51,16 +51,19 @@ class TestCategoriesStreamFullRefresh(TestCase):
         """Test pagination for categories stream using links.next cursor-based pagination."""
         api_token_authenticator = self.get_authenticator(self._config)
 
+        # Create the next page request first - this URL will be used in links.next
+        next_page_http_request = self._base_categories_request(api_token_authenticator).with_after_cursor("after-cursor").build()
+
         http_mocker.get(
             self._base_categories_request(api_token_authenticator).build(),
-            CategoriesResponseBuilder.categories_response(self._base_categories_request(api_token_authenticator).build())
+            CategoriesResponseBuilder.categories_response(next_page_http_request)
             .with_record(CategoriesRecordBuilder.categories_record())
             .with_pagination()
             .build(),
         )
 
         http_mocker.get(
-            self._base_categories_request(api_token_authenticator).with_after_cursor("after-cursor").build(),
+            next_page_http_request,
             CategoriesResponseBuilder.categories_response().with_record(CategoriesRecordBuilder.categories_record().with_id(67890)).build(),
         )
 
