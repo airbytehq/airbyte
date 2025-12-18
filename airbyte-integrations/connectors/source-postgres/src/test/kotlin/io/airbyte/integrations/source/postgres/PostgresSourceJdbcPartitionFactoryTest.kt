@@ -24,13 +24,15 @@ class PostgresSourceJdbcPartitionFactoryTest {
 
     @BeforeEach
     fun setup() {
-        // Create mocked dependencies - we only need the factory instance to call computePartitionBounds
-        factory = PostgresSourceJdbcPartitionFactory(
-            sharedState = mockk<DefaultJdbcSharedState>(),
-            selectQueryGenerator = mockk<PostgresSourceSelectQueryGenerator>(),
-            config = mockk<PostgresSourceConfiguration>(),
-            handler = mockk<CatalogValidationFailureHandler>()
-        )
+        // Create mocked dependencies - we only need the factory instance to call
+        // computePartitionBounds
+        factory =
+            PostgresSourceJdbcPartitionFactory(
+                sharedState = mockk<DefaultJdbcSharedState>(),
+                selectQueryGenerator = mockk<PostgresSourceSelectQueryGenerator>(),
+                config = mockk<PostgresSourceConfiguration>(),
+                handler = mockk<CatalogValidationFailureHandler>()
+            )
     }
 
     @Test
@@ -41,7 +43,8 @@ class PostgresSourceJdbcPartitionFactoryTest {
         val relationSize = 1024L * 1024L // 1 MB
 
         // When
-        val bounds = factory.computePartitionBounds(lowerBound, numPartitions, relationSize, testBlockSize)
+        val bounds =
+            factory.computePartitionBounds(lowerBound, numPartitions, relationSize, testBlockSize)
 
         // Then
         assertEquals(4, bounds.size)
@@ -70,7 +73,8 @@ class PostgresSourceJdbcPartitionFactoryTest {
         val relationSize = 16384L // 2 blocks
 
         // When
-        val bounds = factory.computePartitionBounds(lowerBound, numPartitions, relationSize, testBlockSize)
+        val bounds =
+            factory.computePartitionBounds(lowerBound, numPartitions, relationSize, testBlockSize)
 
         // Then
         assertEquals(2, bounds.size)
@@ -89,7 +93,8 @@ class PostgresSourceJdbcPartitionFactoryTest {
         val relationSize = 24576L // 3 blocks
 
         // When
-        val bounds = factory.computePartitionBounds(lowerBound, numPartitions, relationSize, testBlockSize)
+        val bounds =
+            factory.computePartitionBounds(lowerBound, numPartitions, relationSize, testBlockSize)
 
         // Then
         assertEquals(3, bounds.size)
@@ -104,7 +109,8 @@ class PostgresSourceJdbcPartitionFactoryTest {
         val relationSize = 163840L // 20 blocks
 
         // When
-        val bounds = factory.computePartitionBounds(lowerBound, numPartitions, relationSize, testBlockSize)
+        val bounds =
+            factory.computePartitionBounds(lowerBound, numPartitions, relationSize, testBlockSize)
 
         // Then
         assertEquals(2, bounds.size)
@@ -125,7 +131,8 @@ class PostgresSourceJdbcPartitionFactoryTest {
         val relationSize = 819200L // 100 blocks (100 * 8192)
 
         // When
-        val bounds = factory.computePartitionBounds(lowerBound, numPartitions, relationSize, testBlockSize)
+        val bounds =
+            factory.computePartitionBounds(lowerBound, numPartitions, relationSize, testBlockSize)
 
         // Then: each partition should get 20 pages (100 / 5)
         assertEquals(5, bounds.size)
@@ -154,7 +161,8 @@ class PostgresSourceJdbcPartitionFactoryTest {
         val relationSize = 81920L // 10 blocks
 
         // When
-        val bounds = factory.computePartitionBounds(lowerBound, numPartitions, relationSize, testBlockSize)
+        val bounds =
+            factory.computePartitionBounds(lowerBound, numPartitions, relationSize, testBlockSize)
 
         // Then
         assertEquals(1, bounds.size)
@@ -170,7 +178,8 @@ class PostgresSourceJdbcPartitionFactoryTest {
         val relationSize = 8192L // 1 block
 
         // When
-        val bounds = factory.computePartitionBounds(lowerBound, numPartitions, relationSize, testBlockSize)
+        val bounds =
+            factory.computePartitionBounds(lowerBound, numPartitions, relationSize, testBlockSize)
 
         // Then: eachStep should be coerced to at least 1
         assertEquals(10, bounds.size)
@@ -195,7 +204,8 @@ class PostgresSourceJdbcPartitionFactoryTest {
         val relationSize = 1024L * 1024L * 1024L // 1 GB
 
         // When
-        val bounds = factory.computePartitionBounds(lowerBound, numPartitions, relationSize, testBlockSize)
+        val bounds =
+            factory.computePartitionBounds(lowerBound, numPartitions, relationSize, testBlockSize)
 
         // Then
         assertEquals(10, bounds.size)
@@ -220,7 +230,8 @@ class PostgresSourceJdbcPartitionFactoryTest {
         val relationSize = 819200L // 100 blocks total
 
         // When
-        val bounds = factory.computePartitionBounds(lowerBound, numPartitions, relationSize, testBlockSize)
+        val bounds =
+            factory.computePartitionBounds(lowerBound, numPartitions, relationSize, testBlockSize)
 
         // Then: should split the remaining 50 pages (100 - 50) into 2 partitions
         assertEquals(2, bounds.size)
@@ -240,7 +251,8 @@ class PostgresSourceJdbcPartitionFactoryTest {
         val relationSize = 573440L // 70 blocks
 
         // When
-        val bounds = factory.computePartitionBounds(lowerBound, numPartitions, relationSize, testBlockSize)
+        val bounds =
+            factory.computePartitionBounds(lowerBound, numPartitions, relationSize, testBlockSize)
 
         // Then: verify that each partition's upper bound matches the next partition's lower bound
         assertEquals(7, bounds.size)
@@ -265,7 +277,8 @@ class PostgresSourceJdbcPartitionFactoryTest {
         val relationSize = 0L
 
         // When
-        val bounds = factory.computePartitionBounds(lowerBound, numPartitions, relationSize, testBlockSize)
+        val bounds =
+            factory.computePartitionBounds(lowerBound, numPartitions, relationSize, testBlockSize)
 
         // Then: theoretical last page is 0, step size should be coerced to 1
         assertEquals(3, bounds.size)
@@ -288,7 +301,8 @@ class PostgresSourceJdbcPartitionFactoryTest {
         val relationSize = 204800L // 25 blocks
 
         // When
-        val bounds = factory.computePartitionBounds(lowerBound, numPartitions, relationSize, testBlockSize)
+        val bounds =
+            factory.computePartitionBounds(lowerBound, numPartitions, relationSize, testBlockSize)
 
         // Then: 25 / 4 = 6 pages per partition (integer division)
         assertEquals(4, bounds.size)

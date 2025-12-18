@@ -269,10 +269,11 @@ class StateManagerFactory(
             configuredStream.primaryKey?.asSequence()?.let { pkOrNull(it.toList()) }
         val configuredCursor: DataOrMetaField? =
             configuredStream.cursorField?.asSequence()?.let { cursorOrNull(it.toList()) }
+        val sourceDefinedCursor = configuredStream.stream.sourceDefinedCursor
         val configuredSyncMode: ConfiguredSyncMode =
             when (configuredStream.syncMode) {
                 SyncMode.INCREMENTAL ->
-                    if (configuredCursor == null) {
+                    if (configuredCursor == null && sourceDefinedCursor.not()) {
                         handler.accept(InvalidIncrementalSyncMode(streamID))
                         ConfiguredSyncMode.FULL_REFRESH
                     } else {
