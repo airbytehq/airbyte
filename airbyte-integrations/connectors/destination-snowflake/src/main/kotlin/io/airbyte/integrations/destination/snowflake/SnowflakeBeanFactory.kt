@@ -20,6 +20,9 @@ import io.airbyte.integrations.destination.snowflake.spec.KeyPairAuthConfigurati
 import io.airbyte.integrations.destination.snowflake.spec.SnowflakeConfiguration
 import io.airbyte.integrations.destination.snowflake.spec.SnowflakeConfigurationFactory
 import io.airbyte.integrations.destination.snowflake.spec.UsernamePasswordAuthConfiguration
+import io.airbyte.integrations.destination.snowflake.write.load.SnowflakeRawRecordFormatter
+import io.airbyte.integrations.destination.snowflake.write.load.SnowflakeRecordFormatter
+import io.airbyte.integrations.destination.snowflake.write.load.SnowflakeSchemaRecordFormatter
 import io.micronaut.context.annotation.Factory
 import io.micronaut.context.annotation.Primary
 import io.micronaut.context.annotation.Requires
@@ -203,6 +206,17 @@ class SnowflakeBeanFactory {
         destinationChecker: DestinationCheckerV2,
         outputConsumer: OutputConsumer,
     ) = CheckOperationV2(destinationChecker, outputConsumer)
+
+    @Singleton
+    fun snowflakeRecordFormatter(
+        snowflakeConfiguration: SnowflakeConfiguration
+    ): SnowflakeRecordFormatter {
+        return if (snowflakeConfiguration.legacyRawTablesOnly) {
+            SnowflakeRawRecordFormatter()
+        } else {
+            SnowflakeSchemaRecordFormatter()
+        }
+    }
 
     @Singleton
     fun aggregatePublishingConfig(dataChannelMedium: DataChannelMedium): AggregatePublishingConfig {

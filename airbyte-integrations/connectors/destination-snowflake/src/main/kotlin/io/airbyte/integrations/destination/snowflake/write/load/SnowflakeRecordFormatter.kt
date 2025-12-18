@@ -17,16 +17,13 @@ import io.airbyte.cdk.load.schema.model.ColumnSchema
 import io.airbyte.cdk.load.util.Jsons
 
 interface SnowflakeRecordFormatter {
-    fun format(record: Map<String, AirbyteValue>): List<Any>
+    fun format(record: Map<String, AirbyteValue>, columnSchema: ColumnSchema): List<Any>
 }
 
-class SnowflakeSchemaRecordFormatter(
-    val columnSchema: ColumnSchema,
-) : SnowflakeRecordFormatter {
-    val userColumns = columnSchema.finalSchema.keys
-
-    override fun format(record: Map<String, AirbyteValue>): List<Any> {
+class SnowflakeSchemaRecordFormatter : SnowflakeRecordFormatter {
+    override fun format(record: Map<String, AirbyteValue>, columnSchema: ColumnSchema): List<Any> {
         val result = mutableListOf<Any>()
+        val userColumns = columnSchema.finalSchema.keys
 
         // WARNING: Unlike the user fields, the meta fields on the record are not munged for
         // the destination. So we add meta columns in order using the original lowercase meta key.
@@ -44,7 +41,7 @@ class SnowflakeSchemaRecordFormatter(
 
 class SnowflakeRawRecordFormatter : SnowflakeRecordFormatter {
 
-    override fun format(record: Map<String, AirbyteValue>): List<Any> =
+    override fun format(record: Map<String, AirbyteValue>, columnSchema: ColumnSchema): List<Any> =
         toOutputRecord(record.toMutableMap())
 
     private fun toOutputRecord(record: MutableMap<String, AirbyteValue>): List<Any> {

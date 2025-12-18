@@ -41,6 +41,7 @@ class SnowflakeInsertBuffer(
     val snowflakeConfiguration: SnowflakeConfiguration,
     val columnSchema: ColumnSchema,
     private val columnManager: SnowflakeColumnManager,
+    private val snowflakeRecordFormatter: SnowflakeRecordFormatter,
     private val flushLimit: Int = DEFAULT_FLUSH_LIMIT,
 ) {
 
@@ -57,12 +58,6 @@ class SnowflakeInsertBuffer(
             .quoteCharacter(CSV_QUOTE_CHARACTER)
             .lineDelimiter(CSV_LINE_DELIMITER)
             .quoteStrategy(QuoteStrategies.REQUIRED)
-
-    private val snowflakeRecordFormatter: SnowflakeRecordFormatter =
-        when (snowflakeConfiguration.legacyRawTablesOnly) {
-            true -> SnowflakeRawRecordFormatter()
-            else -> SnowflakeSchemaRecordFormatter(columnSchema)
-        }
 
     fun accumulate(recordFields: Map<String, AirbyteValue>) {
         if (csvFilePath == null) {
@@ -120,7 +115,9 @@ class SnowflakeInsertBuffer(
 
     private fun writeToCsvFile(record: Map<String, AirbyteValue>) {
         csvWriter?.let {
-            it.writeRecord(snowflakeRecordFormatter.format(record).map { col -> col.toString() })
+            it.writeRecord(
+                snowflakeRecordFormatter.format(record, columnSchema).map { col -> col.toString() }
+            )
             recordCount++
             if ((recordCount % flushLimit) == 0) {
                 it.flush()

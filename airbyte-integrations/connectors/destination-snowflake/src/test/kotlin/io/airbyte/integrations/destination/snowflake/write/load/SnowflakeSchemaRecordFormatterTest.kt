@@ -50,8 +50,8 @@ internal class SnowflakeSchemaRecordFormatterTest {
         val userColumns = mapOf(columnName to "VARCHAR(16777216)")
         val columnSchema = createColumnSchema(userColumns)
         val record = createRecord(columnName, columnValue)
-        val formatter = SnowflakeSchemaRecordFormatter(columnSchema = columnSchema)
-        val formattedValue = formatter.format(record)
+        val formatter = SnowflakeSchemaRecordFormatter()
+        val formattedValue = formatter.format(record, columnSchema)
         val expectedValue =
             createExpected(
                 record = record,
@@ -67,8 +67,8 @@ internal class SnowflakeSchemaRecordFormatterTest {
         val userColumns = mapOf(columnName to "VARIANT")
         val columnSchema = createColumnSchema(userColumns)
         val record = createRecord(columnName, columnValue)
-        val formatter = SnowflakeSchemaRecordFormatter(columnSchema = columnSchema)
-        val formattedValue = formatter.format(record)
+        val formatter = SnowflakeSchemaRecordFormatter()
+        val formattedValue = formatter.format(record, columnSchema)
         val expectedValue =
             createExpected(
                 record = record,
@@ -85,8 +85,8 @@ internal class SnowflakeSchemaRecordFormatterTest {
             mapOf(columnName to "VARCHAR(16777216)", "missing-column" to "VARCHAR(16777216)")
         val columnSchema = createColumnSchema(userColumns)
         val record = createRecord(columnName, columnValue)
-        val formatter = SnowflakeSchemaRecordFormatter(columnSchema = columnSchema)
-        val formattedValue = formatter.format(record)
+        val formatter = SnowflakeSchemaRecordFormatter()
+        val formattedValue = formatter.format(record, columnSchema)
         val expectedValue =
             createExpected(
                 record = record,

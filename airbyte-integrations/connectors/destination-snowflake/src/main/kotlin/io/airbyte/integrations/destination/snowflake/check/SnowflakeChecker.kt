@@ -23,6 +23,7 @@ import io.airbyte.integrations.destination.snowflake.schema.SnowflakeColumnManag
 import io.airbyte.integrations.destination.snowflake.schema.toSnowflakeCompatibleName
 import io.airbyte.integrations.destination.snowflake.spec.SnowflakeConfiguration
 import io.airbyte.integrations.destination.snowflake.write.load.SnowflakeInsertBuffer
+import io.airbyte.integrations.destination.snowflake.write.load.SnowflakeSchemaRecordFormatter
 import jakarta.inject.Singleton
 import java.time.OffsetDateTime
 import java.util.UUID
@@ -115,6 +116,7 @@ class SnowflakeChecker(
                         snowflakeConfiguration = snowflakeConfiguration,
                         columnSchema = tableSchema.columnSchema,
                         columnManager = columnManager,
+                        snowflakeRecordFormatter = SnowflakeSchemaRecordFormatter(),
                     )
 
                 snowflakeInsertBuffer.accumulate(data)

@@ -15,6 +15,7 @@ import io.airbyte.cdk.load.message.Meta.Companion.COLUMN_NAME_AB_LOADED_AT
 import io.airbyte.cdk.load.message.Meta.Companion.COLUMN_NAME_AB_META
 import io.airbyte.cdk.load.message.Meta.Companion.COLUMN_NAME_AB_RAW_ID
 import io.airbyte.cdk.load.message.Meta.Companion.COLUMN_NAME_DATA
+import io.airbyte.cdk.load.schema.model.ColumnSchema
 import org.junit.jupiter.api.Assertions.assertEquals
 import org.junit.jupiter.api.Test
 
@@ -60,7 +61,9 @@ internal class SnowflakeRawRecordFormatterTest {
         val columns = AIRBYTE_COLUMN_TYPES_MAP
         val record = createRecord(columnName = columnName, columnValue = columnValue)
         val formatter = SnowflakeRawRecordFormatter()
-        val formattedValue = formatter.format(record)
+        // RawRecordFormatter doesn't use columnSchema but still needs one per interface
+        val dummyColumnSchema = ColumnSchema(emptyMap(), emptyMap(), emptyMap())
+        val formattedValue = formatter.format(record, dummyColumnSchema)
         val expectedValue =
             createExpected(
                 record = record,
@@ -76,7 +79,9 @@ internal class SnowflakeRawRecordFormatterTest {
         val columnValue = "test-column-value"
         val record = createRecord(columnName = columnName, columnValue = columnValue)
         val formatter = SnowflakeRawRecordFormatter()
-        val formattedValue = formatter.format(record)
+        // RawRecordFormatter doesn't use columnSchema but still needs one per interface
+        val dummyColumnSchema = ColumnSchema(emptyMap(), emptyMap(), emptyMap())
+        val formattedValue = formatter.format(record, dummyColumnSchema)
 
         // The formatter outputs in a fixed order regardless of input column order:
         // 1. AB_RAW_ID

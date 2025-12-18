@@ -14,6 +14,7 @@ import io.airbyte.integrations.destination.snowflake.client.SnowflakeAirbyteClie
 import io.airbyte.integrations.destination.snowflake.schema.SnowflakeColumnManager
 import io.airbyte.integrations.destination.snowflake.spec.SnowflakeConfiguration
 import io.airbyte.integrations.destination.snowflake.write.load.SnowflakeInsertBuffer
+import io.airbyte.integrations.destination.snowflake.write.load.SnowflakeRecordFormatter
 import jakarta.inject.Singleton
 
 @Singleton
@@ -23,6 +24,7 @@ class SnowflakeAggregateFactory(
     private val snowflakeConfiguration: SnowflakeConfiguration,
     private val catalog: DestinationCatalog,
     private val columnManager: SnowflakeColumnManager,
+    private val snowflakeRecordFormatter: SnowflakeRecordFormatter,
 ) : AggregateFactory {
     override fun create(key: StoreKey): Aggregate {
         val stream = catalog.getStream(key)
@@ -35,6 +37,7 @@ class SnowflakeAggregateFactory(
                 snowflakeConfiguration = snowflakeConfiguration,
                 columnSchema = stream.tableSchema.columnSchema,
                 columnManager = columnManager,
+                snowflakeRecordFormatter = snowflakeRecordFormatter,
             )
         return SnowflakeAggregate(buffer = buffer)
     }

@@ -19,6 +19,7 @@ import io.airbyte.integrations.destination.snowflake.spec.SnowflakeConfiguration
 import io.airbyte.integrations.destination.snowflake.sql.SnowflakeDirectLoadSqlGenerator
 import io.airbyte.integrations.destination.snowflake.sql.andLog
 import io.airbyte.integrations.destination.snowflake.write.load.SnowflakeInsertBuffer
+import io.airbyte.integrations.destination.snowflake.write.load.SnowflakeRecordFormatter
 import io.micronaut.context.annotation.Requires
 import jakarta.inject.Singleton
 import java.time.format.DateTimeFormatter
@@ -33,6 +34,7 @@ class SnowflakeTestTableOperationsClient(
     private val sqlGenerator: SnowflakeDirectLoadSqlGenerator,
     private val snowflakeConfiguration: SnowflakeConfiguration,
     private val columnManager: SnowflakeColumnManager,
+    private val snowflakeRecordFormatter: SnowflakeRecordFormatter,
 ) : TestTableOperationsClient {
     override suspend fun dropNamespace(namespace: String) {
         dataSource.execute(
@@ -62,6 +64,7 @@ class SnowflakeTestTableOperationsClient(
                     snowflakeConfiguration = snowflakeConfiguration,
                     columnSchema = columnSchema,
                     columnManager = columnManager,
+                    snowflakeRecordFormatter = snowflakeRecordFormatter,
                 )
             )
         records.forEach { a.accept(RecordDTO(it, PartitionKey(""), 0, 0)) }

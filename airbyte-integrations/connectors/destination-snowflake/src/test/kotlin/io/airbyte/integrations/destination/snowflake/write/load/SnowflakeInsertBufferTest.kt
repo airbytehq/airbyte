@@ -35,10 +35,12 @@ internal class SnowflakeInsertBufferTest {
     private lateinit var snowflakeConfiguration: SnowflakeConfiguration
     private lateinit var columnManager: SnowflakeColumnManager
     private lateinit var columnSchema: ColumnSchema
+    private lateinit var snowflakeRecordFormatter: SnowflakeRecordFormatter
 
     @BeforeEach
     fun setUp() {
         snowflakeConfiguration = mockk(relaxed = true)
+        snowflakeRecordFormatter = SnowflakeSchemaRecordFormatter()
         columnManager =
             mockk(relaxed = true) {
                 every { getMetaColumns() } returns
@@ -78,6 +80,7 @@ internal class SnowflakeInsertBufferTest {
                 snowflakeConfiguration = snowflakeConfiguration,
                 columnSchema = columnSchema,
                 columnManager = columnManager,
+                snowflakeRecordFormatter = snowflakeRecordFormatter,
             )
         assertEquals(0, buffer.recordCount)
         runBlocking { buffer.accumulate(record) }
@@ -103,6 +106,7 @@ internal class SnowflakeInsertBufferTest {
                 snowflakeConfiguration = snowflakeConfiguration,
                 columnSchema = columnSchema,
                 columnManager = columnManager,
+                snowflakeRecordFormatter = snowflakeRecordFormatter,
                 flushLimit = 1,
             )
         val expectedColumnNames =
@@ -143,6 +147,7 @@ internal class SnowflakeInsertBufferTest {
                 snowflakeConfiguration = snowflakeConfiguration,
                 columnSchema = columnSchema,
                 columnManager = columnManager,
+                snowflakeRecordFormatter = snowflakeRecordFormatter,
                 flushLimit = 1,
             )
         val expectedColumnNames =
@@ -183,6 +188,7 @@ internal class SnowflakeInsertBufferTest {
                 snowflakeConfiguration = snowflakeConfiguration,
                 columnSchema = columnSchema,
                 columnManager = columnManager,
+                snowflakeRecordFormatter = snowflakeRecordFormatter,
                 flushLimit = 1,
             )
         runBlocking {
