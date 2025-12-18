@@ -120,6 +120,7 @@ class TestArticleCommentVotesStreamFullRefresh(TestCase):
         comment1_builder = (
             ArticleCommentsRecordBuilder.article_comments_record()
             .with_id(comment1_id)
+            .with_field(FieldPath("source_id"), article1_id)
             .with_field(FieldPath("updated_at"), datetime_to_string(start_date.add(timedelta(days=3))))
         )
 
@@ -131,6 +132,7 @@ class TestArticleCommentVotesStreamFullRefresh(TestCase):
         comment2_builder = (
             ArticleCommentsRecordBuilder.article_comments_record()
             .with_id(comment2_id)
+            .with_field(FieldPath("source_id"), article2_id)
             .with_field(FieldPath("updated_at"), datetime_to_string(start_date.add(timedelta(days=4))))
         )
 
