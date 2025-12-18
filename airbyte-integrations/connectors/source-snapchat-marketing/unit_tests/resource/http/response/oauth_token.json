@@ -1,0 +1,7 @@
+{
+  "access_token": "test_access_token",
+  "token_type": "Bearer",
+  "expires_in": 1800,
+  "refresh_token": "test_refresh_token",
+  "scope": "snapchat-marketing-api"
+}
