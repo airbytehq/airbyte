@@ -127,7 +127,7 @@ class TestTicketMetricsIncremental(TestCase):
         # So the cursor value is the parent's timestamp, not the child's updated_at
         assert output.most_recent_state.stream_state.__dict__ == {
             "lookback_window": 0,
-            "parent_state": {"tickets": {"generated_timestamp": int(parent_cursor_value.timestamp())}},
+            "parent_state": {"tickets": {"generated_timestamp": str(int(parent_cursor_value.timestamp()))}},
             "state": {"_ab_updated_at": str(int(parent_cursor_value.timestamp()))},
             "states": [
                 {
