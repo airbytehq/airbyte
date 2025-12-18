@@ -94,7 +94,6 @@ class TestTicketMetricsIncremental(TestCase):
             "_ab_updated_at": str(int(ab_datetime_parse(record_updated_at).timestamp()))
         }
 
-    @pytest.mark.skip(reason="State structure assertion has environment-dependent type (int vs str) - CDK state format inconsistent between local and CI")
     @HttpMocker()
     def test_given_state_when_read_then_migrate_state_to_per_partition(self, http_mocker):
         api_token_authenticator = self._get_authenticator(self._config)

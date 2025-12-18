@@ -89,7 +89,7 @@ class TestTicketFormsStreamIncremental(TestCase):
         assert output.most_recent_state is not None
         assert output.most_recent_state.stream_descriptor.name == "ticket_forms"
 
-    @pytest.mark.skip(reason="Semi-incremental filtering behavior has changed - CDK state handling for semi-incremental streams needs investigation")
+    @pytest.mark.skip(reason="Semi-incremental filtering not working - CDK returns all records instead of filtering by state. Needs CDK investigation.")
     @HttpMocker()
     def test_given_state_when_read_ticket_forms_then_filter_records_by_state(self, http_mocker):
         """Semi-incremental streams filter records client-side based on state."""
