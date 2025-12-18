@@ -2,10 +2,10 @@
   "streams": [
     {
       "stream": {
-        "name": "object_types",
+        "name": "custom_objects",
         "json_schema": {},
-        "supported_sync_modes": ["full_refresh", "incremental"],
-        "source_defined_cursor": true,
+        "supported_sync_modes": ["full_refresh"],
+        "source_defined_cursor": false,
         "default_cursor_field": []
       },
       "sync_mode": "full_refresh",
@@ -14,7 +14,19 @@
     },
     {
       "stream": {
-        "name": "object_records",
+        "name": "custom_object_fields",
+        "json_schema": {},
+        "supported_sync_modes": ["full_refresh"],
+        "source_defined_cursor": false,
+        "default_cursor_field": []
+      },
+      "sync_mode": "full_refresh",
+      "cursor_field": [],
+      "destination_sync_mode": "append"
+    },
+    {
+      "stream": {
+        "name": "custom_object_records",
         "json_schema": {},
         "supported_sync_modes": ["full_refresh", "incremental"],
         "source_defined_cursor": true,
@@ -22,54 +34,6 @@
       },
       "sync_mode": "incremental",
       "cursor_field": ["updated_at"],
-      "destination_sync_mode": "append"
-    },
-    {
-      "stream": {
-        "name": "relationship_types",
-        "json_schema": {},
-        "supported_sync_modes": ["full_refresh", "incremental"],
-        "source_defined_cursor": true,
-        "default_cursor_field": []
-      },
-      "sync_mode": "full_refresh",
-      "cursor_field": [],
-      "destination_sync_mode": "append"
-    },
-    {
-      "stream": {
-        "name": "relationship_records",
-        "json_schema": {},
-        "supported_sync_modes": ["full_refresh", "incremental"],
-        "source_defined_cursor": true,
-        "default_cursor_field": []
-      },
-      "sync_mode": "full_refresh",
-      "cursor_field": [],
-      "destination_sync_mode": "append"
-    },
-    {
-      "stream": {
-        "name": "object_type_policies",
-        "json_schema": {},
-        "supported_sync_modes": ["full_refresh", "incremental"],
-        "source_defined_cursor": true,
-        "default_cursor_field": []
-      },
-      "sync_mode": "full_refresh",
-      "cursor_field": [],
-      "destination_sync_mode": "append"
-    },
-    {
-      "stream": {
-        "name": "limits",
-        "json_schema": {},
-        "supported_sync_modes": ["full_refresh", "incremental"],
-        "source_defined_cursor": true,
-        "default_cursor_field": []
-      },
-      "sync_mode": "full_refresh",
-      "cursor_field": [],
       "destination_sync_mode": "append"
     }
   ]

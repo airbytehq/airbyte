@@ -2,24 +2,17 @@
 
 ## Sync overview
 
-The Zendesk Chat source supports Full Refresh and Incremental syncs.
+The Zendesk Sunshine source supports Full Refresh and Incremental syncs.
 
-This source can sync data for the [Zendesk Sunshine API](https://developer.zendesk.com/documentation/custom-data/custom-objects/custom-objects-handbook/).
+This source can sync data for the [Zendesk Custom Objects API](https://developer.zendesk.com/api-reference/custom-data/custom-objects/custom_objects/).
 
 ### Output schema
 
 This Source is capable of syncing the following core Streams:
 
-- [ObjectTypes](https://developer.zendesk.com/api-reference/custom-data/custom-objects-api/resource_types/)
-- [ObjectRecords](https://developer.zendesk.com/api-reference/custom-data/custom-objects-api/resources/)
-- [RelationshipTypes](https://developer.zendesk.com/api-reference/custom-data/custom-objects-api/relationship_types/)
-- [RelationshipRecords](https://developer.zendesk.com/api-reference/custom-data/custom-objects-api/relationships/)
-- [ObjectTypePolicies](https://developer.zendesk.com/api-reference/custom-data/custom-objects-api/permissions/)
-- [Jobs](https://developer.zendesk.com/api-reference/custom-data/custom-objects-api/jobs/)
-
-  This stream is currently not available because it stores data temporary.
-
-- [Limits](https://developer.zendesk.com/api-reference/custom-data/custom-objects-api/limits/)
+- [CustomObjects](https://developer.zendesk.com/api-reference/custom-data/custom-objects/custom_objects/)
+- [CustomObjectFields](https://developer.zendesk.com/api-reference/custom-data/custom-objects/custom_object_fields/)
+- [CustomObjectRecords](https://developer.zendesk.com/api-reference/custom-data/custom-objects/custom_object_records/)
 
 ### Data type mapping
 
@@ -68,6 +61,7 @@ We recommend creating a restricted, read-only key specifically for Airbyte acces
 
 | Version | Date       | Pull Request                                             | Subject                                                                         |
 | :------ | :--------- | :------------------------------------------------------- | :------------------------------------------------------------------------------ |
+| 1.0.0 | 2025-12-15 | [XXXXX](https://github.com/airbytehq/airbyte/pull/XXXXX) | Migrate from deprecated Legacy Custom Objects API to new Custom Objects API. This is a breaking change - see migration guide. |
 | 0.3.38 | 2025-11-25 | [70071](https://github.com/airbytehq/airbyte/pull/70071) | Update dependencies |
 | 0.3.37 | 2025-11-18 | [69511](https://github.com/airbytehq/airbyte/pull/69511) | Update dependencies |
 | 0.3.36 | 2025-10-29 | [68965](https://github.com/airbytehq/airbyte/pull/68965) | Update dependencies |
