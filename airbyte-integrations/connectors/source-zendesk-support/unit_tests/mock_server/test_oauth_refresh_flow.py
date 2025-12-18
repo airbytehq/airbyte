@@ -75,12 +75,14 @@ def _build_oauth_refresh_config(
 
 def _build_token_refresh_response_json(access_token: str, refresh_token: str, expires_in: int = 7200) -> str:
     """Build a JSON response string for the token refresh endpoint."""
-    return json.dumps({
-        "access_token": access_token,
-        "refresh_token": refresh_token,
-        "token_type": "bearer",
-        "expires_in": expires_in,
-    })
+    return json.dumps(
+        {
+            "access_token": access_token,
+            "refresh_token": refresh_token,
+            "token_type": "bearer",
+            "expires_in": expires_in,
+        }
+    )
 
 
 @freezegun.freeze_time(_NOW.isoformat())
