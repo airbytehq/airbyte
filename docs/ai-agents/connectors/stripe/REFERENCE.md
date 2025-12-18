@@ -1,6 +1,10 @@
-# Stripe
+# Stripe full reference
 
-## Supported Entities and Actions
+This is the full reference documentation for the Stripe agent connector.
+
+## Supported entities and actions
+
+The Stripe connector supports the following entities and actions.
 
 | Entity | Actions |
 |--------|---------|
@@ -25,7 +29,7 @@ Returns a list of your customers. The customers are returned sorted by creation 
 **Python SDK**
 
 ```python
-stripe.customers.list()
+await stripe.customers.list()
 ```
 
 **API**
@@ -41,7 +45,7 @@ curl --location 'https://api.airbyte.ai/api/v1/connectors/instances/{your_connec
 ```
 
 
-**Params**
+**Parameters**
 
 | Parameter Name | Type | Required | Description |
 |----------------|------|----------|-------------|
@@ -110,7 +114,7 @@ Retrieves a Customer object.
 **Python SDK**
 
 ```python
-stripe.customers.get(
+await stripe.customers.get(
     id="<str>"
 )
 ```
@@ -131,7 +135,7 @@ curl --location 'https://api.airbyte.ai/api/v1/connectors/instances/{your_connec
 ```
 
 
-**Params**
+**Parameters**
 
 | Parameter Name | Type | Required | Description |
 |----------------|------|----------|-------------|
@@ -186,7 +190,7 @@ Search for customers using Stripe's Search Query Language.
 **Python SDK**
 
 ```python
-stripe.customers.search(
+await stripe.customers.search(
     query="<str>"
 )
 ```
@@ -207,7 +211,7 @@ curl --location 'https://api.airbyte.ai/api/v1/connectors/instances/{your_connec
 ```
 
 
-**Params**
+**Parameters**
 
 | Parameter Name | Type | Required | Description |
 |----------------|------|----------|-------------|
@@ -272,7 +276,7 @@ Returns a list of invoices
 **Python SDK**
 
 ```python
-stripe.invoices.list()
+await stripe.invoices.list()
 ```
 
 **API**
@@ -288,7 +292,7 @@ curl --location 'https://api.airbyte.ai/api/v1/connectors/instances/{your_connec
 ```
 
 
-**Params**
+**Parameters**
 
 | Parameter Name | Type | Required | Description |
 |----------------|------|----------|-------------|
@@ -421,7 +425,7 @@ Retrieves the invoice with the given ID
 **Python SDK**
 
 ```python
-stripe.invoices.get(
+await stripe.invoices.get(
     id="<str>"
 )
 ```
@@ -442,7 +446,7 @@ curl --location 'https://api.airbyte.ai/api/v1/connectors/instances/{your_connec
 ```
 
 
-**Params**
+**Parameters**
 
 | Parameter Name | Type | Required | Description |
 |----------------|------|----------|-------------|
@@ -557,7 +561,7 @@ Search for invoices using Stripe's Search Query Language
 **Python SDK**
 
 ```python
-stripe.invoices.search(
+await stripe.invoices.search(
     query="<str>"
 )
 ```
@@ -578,7 +582,7 @@ curl --location 'https://api.airbyte.ai/api/v1/connectors/instances/{your_connec
 ```
 
 
-**Params**
+**Parameters**
 
 | Parameter Name | Type | Required | Description |
 |----------------|------|----------|-------------|
@@ -702,7 +706,7 @@ Returns a list of charges you've previously created. The charges are returned in
 **Python SDK**
 
 ```python
-stripe.charges.list()
+await stripe.charges.list()
 ```
 
 **API**
@@ -718,7 +722,7 @@ curl --location 'https://api.airbyte.ai/api/v1/connectors/instances/{your_connec
 ```
 
 
-**Params**
+**Parameters**
 
 | Parameter Name | Type | Required | Description |
 |----------------|------|----------|-------------|
@@ -808,7 +812,7 @@ Retrieves the details of a charge that has previously been created
 **Python SDK**
 
 ```python
-stripe.charges.get(
+await stripe.charges.get(
     id="<str>"
 )
 ```
@@ -829,7 +833,7 @@ curl --location 'https://api.airbyte.ai/api/v1/connectors/instances/{your_connec
 ```
 
 
-**Params**
+**Parameters**
 
 | Parameter Name | Type | Required | Description |
 |----------------|------|----------|-------------|
@@ -904,7 +908,7 @@ Search for charges using Stripe's Search Query Language
 **Python SDK**
 
 ```python
-stripe.charges.search(
+await stripe.charges.search(
     query="<str>"
 )
 ```
@@ -925,7 +929,7 @@ curl --location 'https://api.airbyte.ai/api/v1/connectors/instances/{your_connec
 ```
 
 
-**Params**
+**Parameters**
 
 | Parameter Name | Type | Required | Description |
 |----------------|------|----------|-------------|
@@ -1009,7 +1013,7 @@ By default, returns a list of subscriptions that have not been canceled
 **Python SDK**
 
 ```python
-stripe.subscriptions.list()
+await stripe.subscriptions.list()
 ```
 
 **API**
@@ -1025,7 +1029,7 @@ curl --location 'https://api.airbyte.ai/api/v1/connectors/instances/{your_connec
 ```
 
 
-**Params**
+**Parameters**
 
 | Parameter Name | Type | Required | Description |
 |----------------|------|----------|-------------|
@@ -1130,7 +1134,7 @@ Retrieves the subscription with the given ID
 **Python SDK**
 
 ```python
-stripe.subscriptions.get(
+await stripe.subscriptions.get(
     id="<str>"
 )
 ```
@@ -1151,7 +1155,7 @@ curl --location 'https://api.airbyte.ai/api/v1/connectors/instances/{your_connec
 ```
 
 
-**Params**
+**Parameters**
 
 | Parameter Name | Type | Required | Description |
 |----------------|------|----------|-------------|
@@ -1226,7 +1230,7 @@ Search for subscriptions using Stripe's Search Query Language
 **Python SDK**
 
 ```python
-stripe.subscriptions.search(
+await stripe.subscriptions.search(
     query="<str>"
 )
 ```
@@ -1247,7 +1251,7 @@ curl --location 'https://api.airbyte.ai/api/v1/connectors/instances/{your_connec
 ```
 
 
-**Params**
+**Parameters**
 
 | Parameter Name | Type | Required | Description |
 |----------------|------|----------|-------------|
@@ -1331,7 +1335,7 @@ Returns a list of all refunds you've previously created. The refunds are returne
 **Python SDK**
 
 ```python
-stripe.refunds.list()
+await stripe.refunds.list()
 ```
 
 **API**
@@ -1347,7 +1351,7 @@ curl --location 'https://api.airbyte.ai/api/v1/connectors/instances/{your_connec
 ```
 
 
-**Params**
+**Parameters**
 
 | Parameter Name | Type | Required | Description |
 |----------------|------|----------|-------------|
@@ -1408,7 +1412,7 @@ Retrieves the details of an existing refund
 **Python SDK**
 
 ```python
-stripe.refunds.get(
+await stripe.refunds.get(
     id="<str>"
 )
 ```
@@ -1429,7 +1433,7 @@ curl --location 'https://api.airbyte.ai/api/v1/connectors/instances/{your_connec
 ```
 
 
-**Params**
+**Parameters**
 
 | Parameter Name | Type | Required | Description |
 |----------------|------|----------|-------------|
@@ -1477,7 +1481,7 @@ Returns a list of your products. The products are returned sorted by creation da
 **Python SDK**
 
 ```python
-stripe.products.list()
+await stripe.products.list()
 ```
 
 **API**
@@ -1493,7 +1497,7 @@ curl --location 'https://api.airbyte.ai/api/v1/connectors/instances/{your_connec
 ```
 
 
-**Params**
+**Parameters**
 
 | Parameter Name | Type | Required | Description |
 |----------------|------|----------|-------------|
@@ -1556,7 +1560,7 @@ Retrieves the details of an existing product. Supply the unique product ID and S
 **Python SDK**
 
 ```python
-stripe.products.get(
+await stripe.products.get(
     id="<str>"
 )
 ```
@@ -1577,7 +1581,7 @@ curl --location 'https://api.airbyte.ai/api/v1/connectors/instances/{your_connec
 ```
 
 
-**Params**
+**Parameters**
 
 | Parameter Name | Type | Required | Description |
 |----------------|------|----------|-------------|
@@ -1623,7 +1627,7 @@ Search for products using Stripe's Search Query Language.
 **Python SDK**
 
 ```python
-stripe.products.search(
+await stripe.products.search(
     query="<str>"
 )
 ```
@@ -1644,7 +1648,7 @@ curl --location 'https://api.airbyte.ai/api/v1/connectors/instances/{your_connec
 ```
 
 
-**Params**
+**Parameters**
 
 | Parameter Name | Type | Required | Description |
 |----------------|------|----------|-------------|
@@ -1700,7 +1704,7 @@ Retrieves the current account balance, based on the authentication that was used
 **Python SDK**
 
 ```python
-stripe.balance.get()
+await stripe.balance.get()
 ```
 
 **API**
@@ -1745,7 +1749,7 @@ Returns a list of transactions that have contributed to the Stripe account balan
 **Python SDK**
 
 ```python
-stripe.balance_transactions.list()
+await stripe.balance_transactions.list()
 ```
 
 **API**
@@ -1761,7 +1765,7 @@ curl --location 'https://api.airbyte.ai/api/v1/connectors/instances/{your_connec
 ```
 
 
-**Params**
+**Parameters**
 
 | Parameter Name | Type | Required | Description |
 |----------------|------|----------|-------------|
@@ -1819,7 +1823,7 @@ Retrieves the balance transaction with the given ID.
 **Python SDK**
 
 ```python
-stripe.balance_transactions.get(
+await stripe.balance_transactions.get(
     id="<str>"
 )
 ```
@@ -1840,7 +1844,7 @@ curl --location 'https://api.airbyte.ai/api/v1/connectors/instances/{your_connec
 ```
 
 
-**Params**
+**Parameters**
 
 | Parameter Name | Type | Required | Description |
 |----------------|------|----------|-------------|
@@ -1883,7 +1887,7 @@ Returns a list of PaymentIntents. The payment intents are returned sorted by cre
 **Python SDK**
 
 ```python
-stripe.payment_intents.list()
+await stripe.payment_intents.list()
 ```
 
 **API**
@@ -1899,7 +1903,7 @@ curl --location 'https://api.airbyte.ai/api/v1/connectors/instances/{your_connec
 ```
 
 
-**Params**
+**Parameters**
 
 | Parameter Name | Type | Required | Description |
 |----------------|------|----------|-------------|
@@ -1958,7 +1962,7 @@ Retrieves the details of a PaymentIntent that has previously been created.
 **Python SDK**
 
 ```python
-stripe.payment_intents.get(
+await stripe.payment_intents.get(
     id="<str>"
 )
 ```
@@ -1979,7 +1983,7 @@ curl --location 'https://api.airbyte.ai/api/v1/connectors/instances/{your_connec
 ```
 
 
-**Params**
+**Parameters**
 
 | Parameter Name | Type | Required | Description |
 |----------------|------|----------|-------------|
@@ -2023,7 +2027,7 @@ Search for payment intents using Stripe's Search Query Language.
 **Python SDK**
 
 ```python
-stripe.payment_intents.search(
+await stripe.payment_intents.search(
     query="<str>"
 )
 ```
@@ -2044,7 +2048,7 @@ curl --location 'https://api.airbyte.ai/api/v1/connectors/instances/{your_connec
 ```
 
 
-**Params**
+**Parameters**
 
 | Parameter Name | Type | Required | Description |
 |----------------|------|----------|-------------|
@@ -2098,7 +2102,7 @@ Returns a list of your disputes. The disputes are returned sorted by creation da
 **Python SDK**
 
 ```python
-stripe.disputes.list()
+await stripe.disputes.list()
 ```
 
 **API**
@@ -2114,7 +2118,7 @@ curl --location 'https://api.airbyte.ai/api/v1/connectors/instances/{your_connec
 ```
 
 
-**Params**
+**Parameters**
 
 | Parameter Name | Type | Required | Description |
 |----------------|------|----------|-------------|
@@ -2171,7 +2175,7 @@ Retrieves the dispute with the given ID.
 **Python SDK**
 
 ```python
-stripe.disputes.get(
+await stripe.disputes.get(
     id="<str>"
 )
 ```
@@ -2192,7 +2196,7 @@ curl --location 'https://api.airbyte.ai/api/v1/connectors/instances/{your_connec
 ```
 
 
-**Params**
+**Parameters**
 
 | Parameter Name | Type | Required | Description |
 |----------------|------|----------|-------------|
@@ -2236,7 +2240,7 @@ Returns a list of existing payouts sent to third-party bank accounts or payouts 
 **Python SDK**
 
 ```python
-stripe.payouts.list()
+await stripe.payouts.list()
 ```
 
 **API**
@@ -2252,7 +2256,7 @@ curl --location 'https://api.airbyte.ai/api/v1/connectors/instances/{your_connec
 ```
 
 
-**Params**
+**Parameters**
 
 | Parameter Name | Type | Required | Description |
 |----------------|------|----------|-------------|
@@ -2325,7 +2329,7 @@ Retrieves the details of an existing payout. Supply the unique payout ID from ei
 **Python SDK**
 
 ```python
-stripe.payouts.get(
+await stripe.payouts.get(
     id="<str>"
 )
 ```
@@ -2346,7 +2350,7 @@ curl --location 'https://api.airbyte.ai/api/v1/connectors/instances/{your_connec
 ```
 
 
-**Params**
+**Parameters**
 
 | Parameter Name | Type | Required | Description |
 |----------------|------|----------|-------------|
@@ -2396,7 +2400,7 @@ curl --location 'https://api.airbyte.ai/api/v1/connectors/instances/{your_connec
 
 ## Authentication
 
-The Stripe connector supports the following authentication methods:
+The Stripe connector supports the following authentication methods.
 
 
 ### API Key Authentication
