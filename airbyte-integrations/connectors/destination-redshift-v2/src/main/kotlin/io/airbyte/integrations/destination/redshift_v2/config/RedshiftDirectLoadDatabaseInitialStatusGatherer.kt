@@ -13,7 +13,8 @@ import jakarta.inject.Singleton
 class RedshiftDirectLoadDatabaseInitialStatusGatherer(
     tableOperationsClient: TableOperationsClient,
     catalog: DestinationCatalog,
-) : BaseDirectLoadInitialStatusGatherer(
-    tableOperationsClient,
-    catalog,
-)
+) :
+    BaseDirectLoadInitialStatusGatherer(
+        tableOperationsClient,
+        catalog,
+    )

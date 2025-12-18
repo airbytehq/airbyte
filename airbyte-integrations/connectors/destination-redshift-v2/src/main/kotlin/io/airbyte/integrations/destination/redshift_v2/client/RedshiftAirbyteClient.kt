@@ -132,16 +132,18 @@ class RedshiftAirbyteClient(
             "upsertTable: source=${sourceTableName.toPrettyString()}, target=${targetTableName.toPrettyString()}"
         }
         // Execute all upsert statements (DELETE + INSERT pattern)
-        sqlGenerator.upsertTable(stream, columnNameMapping, sourceTableName, targetTableName)
+        sqlGenerator
+            .upsertTable(stream, columnNameMapping, sourceTableName, targetTableName)
             .forEach { execute(it) }
     }
 
     override suspend fun dropTable(tableName: TableName) {
-        val dropSql = if (config.dropCascade) {
-            "${sqlGenerator.dropTable(tableName)} CASCADE"
-        } else {
-            sqlGenerator.dropTable(tableName)
-        }
+        val dropSql =
+            if (config.dropCascade) {
+                "${sqlGenerator.dropTable(tableName)} CASCADE"
+            } else {
+                sqlGenerator.dropTable(tableName)
+            }
         execute(dropSql)
     }
 
@@ -168,8 +170,8 @@ class RedshiftAirbyteClient(
         }
 
     /**
-     * Normalize Redshift data type names to canonical forms.
-     * Redshift uses various synonyms for the same types:
+     * Normalize Redshift data type names to canonical forms. Redshift uses various synonyms for the
+     * same types:
      * - CHARACTER VARYING -> VARCHAR
      * - TIMESTAMP WITH TIME ZONE -> TIMESTAMPTZ
      * - TIMESTAMP WITHOUT TIME ZONE -> TIMESTAMP
@@ -186,9 +188,12 @@ class RedshiftAirbyteClient(
             "TIME WITH TIME ZONE" -> "TIMETZ"
             "TIME WITHOUT TIME ZONE" -> "TIME"
             "DOUBLE PRECISION" -> "DOUBLE"
-            "INT8", "INT64" -> "BIGINT"
-            "INT4", "INT32" -> "INTEGER"
-            "INT2", "INT16" -> "SMALLINT"
+            "INT8",
+            "INT64" -> "BIGINT"
+            "INT4",
+            "INT32" -> "INTEGER"
+            "INT2",
+            "INT16" -> "SMALLINT"
             "FLOAT8" -> "DOUBLE"
             "FLOAT4" -> "REAL"
             "BOOL" -> "BOOLEAN"
@@ -209,9 +214,10 @@ class RedshiftAirbyteClient(
                         if (airbyteColumnNames.contains(columnName)) {
                             continue
                         }
-                        val rawDataType = resultSet.getString("data_type")
-                            .uppercase()
-                            .takeWhile { char -> char != '(' }
+                        val rawDataType =
+                            resultSet.getString("data_type").uppercase().takeWhile { char ->
+                                char != '('
+                            }
                         val dataType = normalizeRedshiftType(rawDataType)
                         val nullable = resultSet.getString("is_nullable") == "YES"
 
@@ -235,10 +241,11 @@ class RedshiftAirbyteClient(
             .filter { column -> column.columnName !in airbyteColumnNames }
             .associate { column ->
                 val nullable = !column.columnType.endsWith(NOT_NULL)
-                val rawType = column.columnType
-                    .takeWhile { char -> char != '(' }
-                    .removeSuffix(NOT_NULL)
-                    .trim()
+                val rawType =
+                    column.columnType
+                        .takeWhile { char -> char != '(' }
+                        .removeSuffix(NOT_NULL)
+                        .trim()
                 // Normalize type names to match what discoverSchema returns
                 val type = normalizeRedshiftType(rawType)
 
@@ -271,8 +278,8 @@ class RedshiftAirbyteClient(
     ) {
         if (
             columnChangeset.columnsToAdd.isNotEmpty() ||
-            columnChangeset.columnsToDrop.isNotEmpty() ||
-            columnChangeset.columnsToChange.isNotEmpty()
+                columnChangeset.columnsToDrop.isNotEmpty() ||
+                columnChangeset.columnsToChange.isNotEmpty()
         ) {
             log.info { "Summary of the table alterations for ${tableName.toPrettyString()}:" }
             log.info { "Added columns: ${columnChangeset.columnsToAdd}" }
@@ -313,7 +320,7 @@ class RedshiftAirbyteClient(
         val errorMessage = e.message?.lowercase() ?: ""
         when {
             errorMessage.contains("permission denied") ||
-            errorMessage.contains("insufficient privileges") -> {
+                errorMessage.contains("insufficient privileges") -> {
                 throw ConfigErrorException(e.message ?: "Permission error", e)
             }
             else -> throw e

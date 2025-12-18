@@ -64,28 +64,32 @@ class RedshiftV2ConfigurationFactory :
     override fun makeWithoutExceptionHandling(
         pojo: RedshiftV2Specification
     ): RedshiftV2Configuration {
-        val s3Config = when (val uploadMethod = pojo.uploadingMethod) {
-            is S3StagingSpecification -> S3StagingConfiguration(
-                s3BucketName = uploadMethod.s3BucketName,
-                s3BucketPath = uploadMethod.s3BucketPath,
-                s3BucketRegion = uploadMethod.s3BucketRegion,
-                accessKeyId = uploadMethod.accessKeyId,
-                secretAccessKey = uploadMethod.secretAccessKey,
-                fileNamePattern = uploadMethod.fileNamePattern,
-                purgeStagingData = uploadMethod.purgeStagingData ?: true,
-            )
-            is StandardSpecification, null -> null
-        }
+        val s3Config =
+            when (val uploadMethod = pojo.uploadingMethod) {
+                is S3StagingSpecification ->
+                    S3StagingConfiguration(
+                        s3BucketName = uploadMethod.s3BucketName,
+                        s3BucketPath = uploadMethod.s3BucketPath,
+                        s3BucketRegion = uploadMethod.s3BucketRegion,
+                        accessKeyId = uploadMethod.accessKeyId,
+                        secretAccessKey = uploadMethod.secretAccessKey,
+                        fileNamePattern = uploadMethod.fileNamePattern,
+                        purgeStagingData = uploadMethod.purgeStagingData ?: true,
+                    )
+                is StandardSpecification,
+                null -> null
+            }
 
         return RedshiftV2Configuration(
             realHost = pojo.host,
             realPort = pojo.port,
             sshTunnel = pojo.tunnelMethod ?: SshNoTunnelMethod,
-            sshConnectionOptions = SshConnectionOptions(
-                sessionHeartbeatInterval = 1.seconds,
-                globalHeartbeatInterval = 2.seconds,
-                idleTimeout = 0.seconds, // No timeout
-            ),
+            sshConnectionOptions =
+                SshConnectionOptions(
+                    sessionHeartbeatInterval = 1.seconds,
+                    globalHeartbeatInterval = 2.seconds,
+                    idleTimeout = 0.seconds, // No timeout
+                ),
             username = pojo.username,
             password = pojo.password,
             database = pojo.database,
@@ -93,7 +97,7 @@ class RedshiftV2ConfigurationFactory :
             jdbcUrlParams = pojo.jdbcUrlParams,
             s3Config = s3Config,
             rawDataSchema = pojo.rawDataSchema?.takeIf { it.isNotBlank() }
-                ?: DbConstants.DEFAULT_RAW_TABLE_NAMESPACE,
+                    ?: DbConstants.DEFAULT_RAW_TABLE_NAMESPACE,
             disableTypeDedupe = pojo.disableTypeDedupe ?: false,
             dropCascade = pojo.dropCascade ?: false,
         )

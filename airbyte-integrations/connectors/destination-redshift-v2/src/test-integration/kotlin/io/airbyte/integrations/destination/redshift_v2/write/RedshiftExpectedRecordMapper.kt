@@ -18,10 +18,13 @@ import java.time.ZoneOffset
  * Redshift-specific expected record mapper that handles:
  *
  * 1. TIMESTAMPTZ normalization: Redshift normalizes all TIMESTAMPTZ values to UTC internally.
+ * ```
  *    For example, '2023-01-23T11:34:56-01:00' is stored and returned as '2023-01-23T12:34:56Z'.
- *
+ * ```
  * 2. Null character replacement: Redshift cannot store null characters (\u0000) in strings.
+ * ```
  *    We replace them with spaces during insertion, so expected values need the same treatment.
+ * ```
  */
 object RedshiftExpectedRecordMapper : ExpectedRecordMapper {
     override fun mapRecord(expectedRecord: OutputRecord, schema: AirbyteType): OutputRecord {
@@ -43,9 +46,7 @@ object RedshiftExpectedRecordMapper : ExpectedRecordMapper {
             is ArrayValue -> ArrayValue(value.values.map { normalizeValues(it) })
             is ObjectValue ->
                 ObjectValue(
-                    value.values.mapValuesTo(linkedMapOf()) { (_, v) ->
-                        normalizeValues(v)
-                    }
+                    value.values.mapValuesTo(linkedMapOf()) { (_, v) -> normalizeValues(v) }
                 )
             else -> value
         }

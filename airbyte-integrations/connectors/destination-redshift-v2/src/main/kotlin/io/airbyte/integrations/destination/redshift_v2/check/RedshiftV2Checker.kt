@@ -43,11 +43,12 @@ class RedshiftV2Checker(
             )
 
             // Verify the insert
-            val count = connection.createStatement().use { statement ->
-                statement.executeQuery("SELECT COUNT(*) FROM $qualifiedTableName").use { rs ->
-                    if (rs.next()) rs.getLong(1) else 0L
+            val count =
+                connection.createStatement().use { statement ->
+                    statement.executeQuery("SELECT COUNT(*) FROM $qualifiedTableName").use { rs ->
+                        if (rs.next()) rs.getLong(1) else 0L
+                    }
                 }
-            }
 
             require(count == 1L) {
                 "Failed to insert expected rows into check table. Actual written: $count"
@@ -68,8 +69,6 @@ class RedshiftV2Checker(
     }
 
     private fun Connection.execute(sql: String) {
-        createStatement().use { statement ->
-            statement.execute(sql)
-        }
+        createStatement().use { statement -> statement.execute(sql) }
     }
 }

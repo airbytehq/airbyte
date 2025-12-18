@@ -26,8 +26,8 @@ import io.airbyte.cdk.load.data.UnknownType
 import io.airbyte.cdk.load.schema.TableSchemaMapper
 import io.airbyte.cdk.load.schema.model.TableName
 import io.airbyte.cdk.load.table.TempTableNameGenerator
-import io.airbyte.integrations.destination.redshift_v2.sql.RedshiftDataType
 import io.airbyte.integrations.destination.redshift_v2.spec.RedshiftV2Configuration
+import io.airbyte.integrations.destination.redshift_v2.sql.RedshiftDataType
 import jakarta.inject.Singleton
 
 @Singleton
@@ -51,33 +51,36 @@ class RedshiftTableSchemaMapper(
     }
 
     override fun toColumnType(fieldType: FieldType): ColumnType {
-        val redshiftType = when (fieldType.type) {
-            BooleanType -> RedshiftDataType.BOOLEAN.typeName
-            IntegerType -> RedshiftDataType.BIGINT.typeName
-            NumberType -> RedshiftDataType.DOUBLE.typeName
-            StringType -> RedshiftDataType.VARCHAR.typeName
-            DateType -> RedshiftDataType.DATE.typeName
-            TimeTypeWithTimezone, TimeTypeWithoutTimezone -> RedshiftDataType.TIME.typeName
-            TimestampTypeWithTimezone -> RedshiftDataType.TIMESTAMPTZ.typeName
-            TimestampTypeWithoutTimezone -> RedshiftDataType.TIMESTAMP.typeName
-            is ArrayType, ArrayTypeWithoutSchema -> RedshiftDataType.SUPER.typeName
-            is ObjectType, ObjectTypeWithEmptySchema, ObjectTypeWithoutSchema -> RedshiftDataType.SUPER.typeName
-            is UnionType, is UnknownType -> RedshiftDataType.SUPER.typeName
-        }
+        val redshiftType =
+            when (fieldType.type) {
+                BooleanType -> RedshiftDataType.BOOLEAN.typeName
+                IntegerType -> RedshiftDataType.BIGINT.typeName
+                NumberType -> RedshiftDataType.DOUBLE.typeName
+                StringType -> RedshiftDataType.VARCHAR.typeName
+                DateType -> RedshiftDataType.DATE.typeName
+                TimeTypeWithTimezone,
+                TimeTypeWithoutTimezone -> RedshiftDataType.TIME.typeName
+                TimestampTypeWithTimezone -> RedshiftDataType.TIMESTAMPTZ.typeName
+                TimestampTypeWithoutTimezone -> RedshiftDataType.TIMESTAMP.typeName
+                is ArrayType,
+                ArrayTypeWithoutSchema -> RedshiftDataType.SUPER.typeName
+                is ObjectType,
+                ObjectTypeWithEmptySchema,
+                ObjectTypeWithoutSchema -> RedshiftDataType.SUPER.typeName
+                is UnionType,
+                is UnknownType -> RedshiftDataType.SUPER.typeName
+            }
         return ColumnType(redshiftType, fieldType.nullable)
     }
 }
 
 /**
- * Transforms a string to be compatible with Redshift identifiers.
- * Redshift identifiers are case-insensitive and stored as lowercase.
- * Max identifier length is 127 characters.
+ * Transforms a string to be compatible with Redshift identifiers. Redshift identifiers are
+ * case-insensitive and stored as lowercase. Max identifier length is 127 characters.
  */
 fun String.toRedshiftCompatibleName(): String {
     // Redshift identifiers: lowercase, alphanumeric + underscore
-    var transformed = this
-        .lowercase()
-        .replace(Regex("[^a-z0-9_]"), "_")
+    var transformed = this.lowercase().replace(Regex("[^a-z0-9_]"), "_")
 
     // Ensure the identifier does not start with a digit
     if (transformed.isNotEmpty() && transformed[0].isDigit()) {

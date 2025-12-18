@@ -4,13 +4,10 @@
 
 package io.airbyte.integrations.destination.redshift_v2.sql
 
-/**
- * Redshift data types.
- * Redshift is PostgreSQL-based but has some differences in type support.
- */
+/** Redshift data types. Redshift is PostgreSQL-based but has some differences in type support. */
 enum class RedshiftDataType(val typeName: String) {
     // String types
-    VARCHAR("VARCHAR(65535)"),  // Max VARCHAR length in Redshift
+    VARCHAR("VARCHAR(65535)"), // Max VARCHAR length in Redshift
 
     // Numeric types
     BIGINT("BIGINT"),

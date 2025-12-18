@@ -25,14 +25,14 @@ class RedshiftBasicFunctionalityTest :
     BasicFunctionalityIntegrationTest(
         configContents = Files.readString(Path.of("secrets/config.json")),
         configSpecClass = RedshiftV2Specification::class.java,
-        dataDumper = RedshiftDataDumper(
-            configProvider = { spec ->
-                RedshiftV2ConfigurationFactory().makeWithoutExceptionHandling(
-                    spec as RedshiftV2Specification
-                )
-            },
-            dataSourceProvider = { config -> createDataSource(config) }
-        ),
+        dataDumper =
+            RedshiftDataDumper(
+                configProvider = { spec ->
+                    RedshiftV2ConfigurationFactory()
+                        .makeWithoutExceptionHandling(spec as RedshiftV2Specification)
+                },
+                dataSourceProvider = { config -> createDataSource(config) }
+            ),
         destinationCleaner = RedshiftDataCleaner,
         // Redshift normalizes TIMESTAMPTZ to UTC, so we need to normalize expected values too
         recordMangler = RedshiftExpectedRecordMapper,
@@ -58,11 +58,12 @@ class RedshiftBasicFunctionalityTest :
         commitDataIncrementallyToEmptyDestinationOnDedupe = false,
 
         // Type system behavior - Redshift has BIGINT (64-bit) and DOUBLE PRECISION
-        allTypesBehavior = StronglyTyped(
-            integerCanBeLarge = false,  // BIGINT has 64-bit limits
-            numberCanBeLarge = true,    // DOUBLE PRECISION can handle 1e39 (IEEE 754)
-            nestedFloatLosesPrecision = false, // SUPER preserves JSON precision
-        ),
+        allTypesBehavior =
+            StronglyTyped(
+                integerCanBeLarge = false, // BIGINT has 64-bit limits
+                numberCanBeLarge = true, // DOUBLE PRECISION can handle 1e39 (IEEE 754)
+                nestedFloatLosesPrecision = false, // SUPER preserves JSON precision
+            ),
         unknownTypesBehavior = UnknownTypesBehavior.PASS_THROUGH,
         nullEqualsUnset = true,
 
@@ -76,12 +77,12 @@ class RedshiftBasicFunctionalityTest :
         fun beforeAll() {
             // Configure cleaner with test namespaces
             val config = Files.readString(Path.of("secrets/config.json"))
-            val spec = io.airbyte.cdk.command.ValidatedJsonUtils.parseUnvalidated(
-                config,
-                RedshiftV2Specification::class.java
-            )
-            val redshiftConfig = RedshiftV2ConfigurationFactory()
-                .makeWithoutExceptionHandling(spec)
+            val spec =
+                io.airbyte.cdk.command.ValidatedJsonUtils.parseUnvalidated(
+                    config,
+                    RedshiftV2Specification::class.java
+                )
+            val redshiftConfig = RedshiftV2ConfigurationFactory().makeWithoutExceptionHandling(spec)
 
             RedshiftDataCleaner.configure(
                 dataSourceProvider = { createDataSource(redshiftConfig) },
@@ -90,16 +91,17 @@ class RedshiftBasicFunctionalityTest :
         }
 
         private fun createDataSource(config: RedshiftV2Configuration): DataSource {
-            val hikariConfig = HikariConfig().apply {
-                jdbcUrl = config.jdbcUrl
-                username = config.username
-                password = config.password
-                driverClassName = "com.amazon.redshift.jdbc42.Driver"
-                maximumPoolSize = 5
-                minimumIdle = 1
-                connectionTimeout = 30000
-                idleTimeout = 600000
-            }
+            val hikariConfig =
+                HikariConfig().apply {
+                    jdbcUrl = config.jdbcUrl
+                    username = config.username
+                    password = config.password
+                    driverClassName = "com.amazon.redshift.jdbc42.Driver"
+                    maximumPoolSize = 5
+                    minimumIdle = 1
+                    connectionTimeout = 30000
+                    idleTimeout = 600000
+                }
             return HikariDataSource(hikariConfig)
         }
     }

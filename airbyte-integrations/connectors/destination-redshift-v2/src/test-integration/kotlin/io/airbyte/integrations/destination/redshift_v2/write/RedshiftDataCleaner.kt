@@ -11,22 +11,23 @@ object RedshiftDataCleaner : DestinationCleaner {
     private var dataSourceProvider: (() -> DataSource)? = null
     private var testNamespaces: List<String> = emptyList()
 
-    fun configure(
-        dataSourceProvider: () -> DataSource,
-        testNamespaces: List<String>
-    ) {
+    fun configure(dataSourceProvider: () -> DataSource, testNamespaces: List<String>) {
         this.dataSourceProvider = dataSourceProvider
         this.testNamespaces = testNamespaces
     }
 
     override fun cleanup() {
         val provider = dataSourceProvider ?: return
-        val namespaces = testNamespaces.ifEmpty { return }
+        val namespaces =
+            testNamespaces.ifEmpty {
+                return
+            }
 
         provider().connection.use { connection ->
             namespaces.forEach { namespace ->
                 // Find all tables in the namespace
-                val sql = """
+                val sql =
+                    """
                     SELECT table_name
                     FROM information_schema.tables
                     WHERE table_schema = '$namespace'
@@ -44,7 +45,9 @@ object RedshiftDataCleaner : DestinationCleaner {
                 tablesToDrop.forEach { tableName ->
                     try {
                         connection.createStatement().use { statement ->
-                            statement.execute("""DROP TABLE IF EXISTS "$namespace"."$tableName" CASCADE""")
+                            statement.execute(
+                                """DROP TABLE IF EXISTS "$namespace"."$tableName" CASCADE"""
+                            )
                         }
                     } catch (e: Exception) {
                         // Ignore errors during cleanup

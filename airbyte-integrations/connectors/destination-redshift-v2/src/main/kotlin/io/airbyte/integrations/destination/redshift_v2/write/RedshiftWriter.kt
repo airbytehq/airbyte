@@ -34,12 +34,15 @@ class RedshiftWriter(
 
     override suspend fun setup() {
         // Create all namespaces (both final table and temp table namespaces)
-        val namespaces = names.streams.flatMap { stream ->
-            listOfNotNull(
-                stream.tableSchema.tableNames.finalTableName?.namespace,
-                stream.tableSchema.tableNames.tempTableName?.namespace
-            )
-        }.toSet()
+        val namespaces =
+            names.streams
+                .flatMap { stream ->
+                    listOfNotNull(
+                        stream.tableSchema.tableNames.finalTableName?.namespace,
+                        stream.tableSchema.tableNames.tempTableName?.namespace
+                    )
+                }
+                .toSet()
 
         namespaces.forEach { client.createNamespace(it) }
 

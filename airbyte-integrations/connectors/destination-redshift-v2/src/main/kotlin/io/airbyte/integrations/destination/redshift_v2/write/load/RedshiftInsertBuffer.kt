@@ -28,8 +28,8 @@ import javax.sql.DataSource
 private val log = KotlinLogging.logger {}
 
 /**
- * Accumulates records and flushes to Redshift in batches.
- * NOT a @Singleton - created per-stream by AggregateFactory.
+ * Accumulates records and flushes to Redshift in batches. NOT a @Singleton - created per-stream by
+ * AggregateFactory.
  */
 class RedshiftInsertBuffer(
     private val tableName: TableName,
@@ -54,11 +54,7 @@ class RedshiftInsertBuffer(
         try {
             log.info { "Flushing $recordCount records to $tableName..." }
 
-            dataSource.connection.use { _ ->
-                buffer.forEach { record ->
-                    insertRecord(record)
-                }
-            }
+            dataSource.connection.use { _ -> buffer.forEach { record -> insertRecord(record) } }
 
             log.info { "Finished flushing $recordCount records" }
         } finally {
@@ -70,7 +66,8 @@ class RedshiftInsertBuffer(
     private fun insertRecord(record: Map<String, AirbyteValue>) {
         val columns = record.keys.joinToString(", ") { "\"$it\"" }
         val placeholders = record.keys.joinToString(", ") { "?" }
-        val sql = """
+        val sql =
+            """
             INSERT INTO "${tableName.namespace}"."${tableName.name}" ($columns)
             VALUES ($placeholders)
         """.trimIndent()

@@ -6,6 +6,7 @@ package io.airbyte.integrations.destination.redshift_v2.write
 
 import io.airbyte.cdk.command.ConfigurationSpecification
 import io.airbyte.cdk.load.command.DestinationStream
+import io.airbyte.cdk.load.data.AirbyteType
 import io.airbyte.cdk.load.data.AirbyteValue
 import io.airbyte.cdk.load.data.ArrayValue
 import io.airbyte.cdk.load.data.BooleanValue
@@ -13,16 +14,15 @@ import io.airbyte.cdk.load.data.DateValue
 import io.airbyte.cdk.load.data.IntegerValue
 import io.airbyte.cdk.load.data.NullValue
 import io.airbyte.cdk.load.data.NumberValue
-import io.airbyte.cdk.load.data.AirbyteType
 import io.airbyte.cdk.load.data.ObjectType
 import io.airbyte.cdk.load.data.ObjectValue
 import io.airbyte.cdk.load.data.StringValue
 import io.airbyte.cdk.load.data.TimeTypeWithTimezone
-import io.airbyte.cdk.load.data.UnknownType
 import io.airbyte.cdk.load.data.TimeWithTimezoneValue
 import io.airbyte.cdk.load.data.TimeWithoutTimezoneValue
 import io.airbyte.cdk.load.data.TimestampWithTimezoneValue
 import io.airbyte.cdk.load.data.TimestampWithoutTimezoneValue
+import io.airbyte.cdk.load.data.UnknownType
 import io.airbyte.cdk.load.message.Meta
 import io.airbyte.cdk.load.schema.model.TableName
 import io.airbyte.cdk.load.test.util.DestinationDataDumper
@@ -46,8 +46,8 @@ class RedshiftDataDumper(
 ) : DestinationDataDumper {
 
     /**
-     * Generate the final table name from a stream descriptor.
-     * This matches the logic in RedshiftTableSchemaMapper.toFinalTableName().
+     * Generate the final table name from a stream descriptor. This matches the logic in
+     * RedshiftTableSchemaMapper.toFinalTableName().
      */
     private fun getTableName(
         descriptor: DestinationStream.Descriptor,
@@ -89,7 +89,8 @@ class RedshiftDataDumper(
 
         dataSource.connection.use { connection ->
             // First check if the table exists
-            val tableExistsQuery = """
+            val tableExistsQuery =
+                """
                 SELECT COUNT(*) AS table_count
                 FROM information_schema.tables
                 WHERE table_schema = '$namespace'
@@ -126,21 +127,22 @@ class RedshiftDataDumper(
                         }
                     }
 
-                    val rawId = rs.getString(Meta.COLUMN_NAME_AB_RAW_ID)?.let { UUID.fromString(it) }
-                    val extractedAt = rs.getTimestamp(Meta.COLUMN_NAME_AB_EXTRACTED_AT)
-                        .toInstant()
+                    val rawId =
+                        rs.getString(Meta.COLUMN_NAME_AB_RAW_ID)?.let { UUID.fromString(it) }
+                    val extractedAt = rs.getTimestamp(Meta.COLUMN_NAME_AB_EXTRACTED_AT).toInstant()
                     val generationId = rs.getLong(Meta.COLUMN_NAME_AB_GENERATION_ID)
                     val metaJson = rs.getString(Meta.COLUMN_NAME_AB_META)
 
                     val airbyteMeta = parseAirbyteMeta(metaJson)
-                    val outputRecord = OutputRecord(
-                        rawId = rawId,
-                        extractedAt = extractedAt,
-                        loadedAt = null,
-                        generationId = generationId,
-                        data = ObjectValue(dataMap),
-                        airbyteMeta = airbyteMeta
-                    )
+                    val outputRecord =
+                        OutputRecord(
+                            rawId = rawId,
+                            extractedAt = extractedAt,
+                            loadedAt = null,
+                            generationId = generationId,
+                            data = ObjectValue(dataMap),
+                            airbyteMeta = airbyteMeta
+                        )
                     output.add(outputRecord)
                 }
             }
@@ -163,14 +165,15 @@ class RedshiftDataDumper(
         originalType: AirbyteType?
     ): AirbyteValue {
         // Get raw value based on column type
-        val value = when (columnType.lowercase()) {
-            "timestamptz" -> rs.getObject(index, OffsetDateTime::class.java)
-            "timestamp" -> rs.getObject(index, LocalDateTime::class.java)
-            "timetz" -> rs.getObject(index, OffsetTime::class.java)
-            "time" -> rs.getObject(index, LocalTime::class.java)
-            "date" -> rs.getObject(index, LocalDate::class.java)
-            else -> rs.getObject(index)
-        }
+        val value =
+            when (columnType.lowercase()) {
+                "timestamptz" -> rs.getObject(index, OffsetDateTime::class.java)
+                "timestamp" -> rs.getObject(index, LocalDateTime::class.java)
+                "timetz" -> rs.getObject(index, OffsetTime::class.java)
+                "time" -> rs.getObject(index, LocalTime::class.java)
+                "date" -> rs.getObject(index, LocalDate::class.java)
+                else -> rs.getObject(index)
+            }
 
         if (value == null) return NullValue
 
@@ -198,7 +201,6 @@ class RedshiftDataDumper(
             return parseJsonValue(value.toString())
         }
 
-
         // Then check value type
         return when (value) {
             is String -> StringValue(value)
@@ -213,9 +215,8 @@ class RedshiftDataDumper(
             is OffsetTime -> TimeWithTimezoneValue(value)
             is LocalTime -> TimeWithoutTimezoneValue(value)
             is LocalDate -> DateValue(value)
-            is java.sql.Timestamp -> TimestampWithTimezoneValue(
-                value.toInstant().atOffset(java.time.ZoneOffset.UTC)
-            )
+            is java.sql.Timestamp ->
+                TimestampWithTimezoneValue(value.toInstant().atOffset(java.time.ZoneOffset.UTC))
             is java.sql.Date -> DateValue(value.toLocalDate())
             is java.sql.Time -> TimeWithoutTimezoneValue(value.toLocalTime())
             else -> StringValue(value.toString())
@@ -230,19 +231,18 @@ class RedshiftDataDumper(
             // If that fails, use the text value directly (it's a plain string)
             if (node.isTextual) {
                 val textContent = node.asText()
-                node = try {
-                    io.airbyte.cdk.load.util.Jsons.readTree(textContent)
-                } catch (e: Exception) {
-                    // The text content is not valid JSON, return it as a plain string
-                    return StringValue(textContent)
-                }
+                node =
+                    try {
+                        io.airbyte.cdk.load.util.Jsons.readTree(textContent)
+                    } catch (e: Exception) {
+                        // The text content is not valid JSON, return it as a plain string
+                        return StringValue(textContent)
+                    }
             }
             when {
                 node.isObject -> {
                     val map = linkedMapOf<String, AirbyteValue>()
-                    node.fields().forEach { (key, value) ->
-                        map[key] = parseJsonNode(value)
-                    }
+                    node.fields().forEach { (key, value) -> map[key] = parseJsonNode(value) }
                     ObjectValue(map)
                 }
                 node.isArray -> {
@@ -265,9 +265,7 @@ class RedshiftDataDumper(
             node.isBoolean -> BooleanValue(node.asBoolean())
             node.isObject -> {
                 val map = linkedMapOf<String, AirbyteValue>()
-                node.fields().forEach { (key, value) ->
-                    map[key] = parseJsonNode(value)
-                }
+                node.fields().forEach { (key, value) -> map[key] = parseJsonNode(value) }
                 ObjectValue(map)
             }
             node.isArray -> {
@@ -291,20 +289,26 @@ class RedshiftDataDumper(
             }
 
             val syncId = node.get("sync_id")?.asLong()
-            val changes = node.get("changes")?.mapNotNull { change ->
-                try {
-                    val field = change.get("field")?.asText() ?: return@mapNotNull null
-                    val changeType = change.get("change")?.asText()?.let {
-                        AirbyteRecordMessageMetaChange.Change.fromValue(it)
-                    } ?: return@mapNotNull null
-                    val reason = change.get("reason")?.asText()?.let {
-                        AirbyteRecordMessageMetaChange.Reason.fromValue(it)
-                    } ?: return@mapNotNull null
-                    Meta.Change(field, changeType, reason)
-                } catch (e: Exception) {
-                    null
+            val changes =
+                node.get("changes")?.mapNotNull { change ->
+                    try {
+                        val field = change.get("field")?.asText() ?: return@mapNotNull null
+                        val changeType =
+                            change.get("change")?.asText()?.let {
+                                AirbyteRecordMessageMetaChange.Change.fromValue(it)
+                            }
+                                ?: return@mapNotNull null
+                        val reason =
+                            change.get("reason")?.asText()?.let {
+                                AirbyteRecordMessageMetaChange.Reason.fromValue(it)
+                            }
+                                ?: return@mapNotNull null
+                        Meta.Change(field, changeType, reason)
+                    } catch (e: Exception) {
+                        null
+                    }
                 }
-            } ?: emptyList()
+                    ?: emptyList()
             OutputRecord.Meta(syncId = syncId, changes = changes)
         } catch (e: Exception) {
             OutputRecord.Meta(syncId = null, changes = emptyList())

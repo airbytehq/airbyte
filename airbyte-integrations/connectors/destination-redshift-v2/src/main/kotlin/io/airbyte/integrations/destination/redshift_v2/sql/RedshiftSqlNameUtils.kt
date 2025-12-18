@@ -10,8 +10,8 @@ import jakarta.inject.Singleton
 internal const val QUOTE: String = "\""
 
 /**
- * Surrounds the string instance with double quotation marks.
- * Redshift uses PostgreSQL-style double quotes for identifiers.
+ * Surrounds the string instance with double quotation marks. Redshift uses PostgreSQL-style double
+ * quotes for identifiers.
  */
 fun String.quote() = "$QUOTE$this$QUOTE"
 

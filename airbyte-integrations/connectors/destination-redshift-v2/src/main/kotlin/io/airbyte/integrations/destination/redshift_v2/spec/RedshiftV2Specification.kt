@@ -32,7 +32,8 @@ class RedshiftV2Specification : ConfigurationSpecification() {
     @JsonSchemaTitle("Port")
     @JsonPropertyDescription("Port of the database.")
     @JsonSchemaInject(
-        json = """{"group": "connection", "order": 1, "minimum": 0, "maximum": 65536, "default": 5439, "examples": ["5439"]}"""
+        json =
+            """{"group": "connection", "order": 1, "minimum": 0, "maximum": 65536, "default": 5439, "examples": ["5439"]}"""
     )
     var port: Int = 5439
 
@@ -60,7 +61,8 @@ class RedshiftV2Specification : ConfigurationSpecification() {
         "The default schema tables are written to if the source does not specify a namespace. Unless specifically configured, the usual value for this field is \"public\"."
     )
     @JsonSchemaInject(
-        json = """{"group": "connection", "order": 5, "examples": ["public"], "default": "public"}"""
+        json =
+            """{"group": "connection", "order": 5, "examples": ["public"], "default": "public"}"""
     )
     var schema: String = "public"
 
@@ -95,9 +97,7 @@ class RedshiftV2Specification : ConfigurationSpecification() {
     var disableTypeDedupe: Boolean? = false
 
     @JsonProperty("drop_cascade")
-    @JsonSchemaTitle(
-        "Drop tables with CASCADE. (WARNING! Risk of unrecoverable data loss)"
-    )
+    @JsonSchemaTitle("Drop tables with CASCADE. (WARNING! Risk of unrecoverable data loss)")
     @JsonPropertyDescription(
         "Drop tables with CASCADE. WARNING! This will delete all data in all dependent objects (views, etc.). Use with caution. This option is intended for usecases which can easily rebuild the dependent objects."
     )
@@ -147,7 +147,6 @@ class S3StagingSpecification(
     @get:JsonProperty("s3_bucket_name")
     @get:JsonSchemaInject(json = """{"order": 0, "examples": ["airbyte.staging"]}""")
     val s3BucketName: String = "",
-
     @get:JsonSchemaTitle("S3 Bucket Path")
     @get:JsonPropertyDescription(
         "The directory under the S3 bucket where data will be written. If not provided, then defaults to the root directory."
@@ -155,15 +154,14 @@ class S3StagingSpecification(
     @get:JsonProperty("s3_bucket_path")
     @get:JsonSchemaInject(json = """{"order": 1, "examples": ["data_sync/test"]}""")
     val s3BucketPath: String? = null,
-
     @get:JsonSchemaTitle("S3 Bucket Region")
     @get:JsonPropertyDescription("The region of the S3 staging bucket.")
     @get:JsonProperty("s3_bucket_region")
     @get:JsonSchemaInject(
-        json = """{"order": 2, "default": "", "enum": ["", "af-south-1", "ap-east-1", "ap-northeast-1", "ap-northeast-2", "ap-northeast-3", "ap-south-1", "ap-south-2", "ap-southeast-1", "ap-southeast-2", "ap-southeast-3", "ap-southeast-4", "ca-central-1", "ca-west-1", "cn-north-1", "cn-northwest-1", "eu-central-1", "eu-central-2", "eu-north-1", "eu-south-1", "eu-south-2", "eu-west-1", "eu-west-2", "eu-west-3", "il-central-1", "me-central-1", "me-south-1", "sa-east-1", "us-east-1", "us-east-2", "us-gov-east-1", "us-gov-west-1", "us-west-1", "us-west-2"]}"""
+        json =
+            """{"order": 2, "default": "", "enum": ["", "af-south-1", "ap-east-1", "ap-northeast-1", "ap-northeast-2", "ap-northeast-3", "ap-south-1", "ap-south-2", "ap-southeast-1", "ap-southeast-2", "ap-southeast-3", "ap-southeast-4", "ca-central-1", "ca-west-1", "cn-north-1", "cn-northwest-1", "eu-central-1", "eu-central-2", "eu-north-1", "eu-south-1", "eu-south-2", "eu-west-1", "eu-west-2", "eu-west-3", "il-central-1", "me-central-1", "me-south-1", "sa-east-1", "us-east-1", "us-east-2", "us-gov-east-1", "us-gov-west-1", "us-west-1", "us-west-2"]}"""
     )
     val s3BucketRegion: String = "",
-
     @get:JsonSchemaTitle("S3 Access Key Id")
     @get:JsonPropertyDescription(
         "This ID grants access to the above S3 staging bucket. Airbyte requires Read and Write permissions to the given bucket."
@@ -171,23 +169,25 @@ class S3StagingSpecification(
     @get:JsonProperty("access_key_id")
     @get:JsonSchemaInject(json = """{"order": 3, "airbyte_secret": true}""")
     val accessKeyId: String = "",
-
     @get:JsonSchemaTitle("S3 Secret Access Key")
     @get:JsonPropertyDescription("The corresponding secret to the above access key id.")
     @get:JsonProperty("secret_access_key")
     @get:JsonSchemaInject(json = """{"order": 4, "airbyte_secret": true}""")
     val secretAccessKey: String = "",
-
     @get:JsonSchemaTitle("S3 Filename pattern")
-    @get:JsonPropertyDescription("The pattern allows you to set the file-name format for the S3 staging file(s)")
+    @get:JsonPropertyDescription(
+        "The pattern allows you to set the file-name format for the S3 staging file(s)"
+    )
     @get:JsonProperty("file_name_pattern")
     @get:JsonSchemaInject(
-        json = """{"order": 5, "examples": ["{date}", "{date:yyyy_MM}", "{timestamp}", "{part_number}", "{sync_id}"]}"""
+        json =
+            """{"order": 5, "examples": ["{date}", "{date:yyyy_MM}", "{timestamp}", "{part_number}", "{sync_id}"]}"""
     )
     val fileNamePattern: String? = null,
-
     @get:JsonSchemaTitle("Purge Staging Files and Tables")
-    @get:JsonPropertyDescription("Whether to delete the staging files from S3 after completing the sync.")
+    @get:JsonPropertyDescription(
+        "Whether to delete the staging files from S3 after completing the sync."
+    )
     @get:JsonProperty("purge_staging_data")
     @get:JsonSchemaInject(json = """{"order": 6, "default": true}""")
     val purgeStagingData: Boolean? = true,

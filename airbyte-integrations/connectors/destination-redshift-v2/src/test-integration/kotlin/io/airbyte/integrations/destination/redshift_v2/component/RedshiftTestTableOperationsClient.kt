@@ -31,9 +31,7 @@ class RedshiftTestTableOperationsClient(
 
     override suspend fun ping() {
         dataSource.connection.use { connection ->
-            connection.createStatement().use { statement ->
-                statement.executeQuery("SELECT 1")
-            }
+            connection.createStatement().use { statement -> statement.executeQuery("SELECT 1") }
         }
     }
 
@@ -49,14 +47,13 @@ class RedshiftTestTableOperationsClient(
         // Get the actual table columns so we only insert columns that exist
         val tableColumns = getTableColumns(table)
 
-        val aggregate = RedshiftAggregate(
-            RedshiftInsertBuffer(table, dataSource)
-        )
+        val aggregate = RedshiftAggregate(RedshiftInsertBuffer(table, dataSource))
         records.forEach { record ->
             // Filter record to only include columns that exist in the table
-            val filteredRecord = record.filterKeys { key ->
-                tableColumns.contains(key) || key.startsWith("_airbyte")
-            }
+            val filteredRecord =
+                record.filterKeys { key ->
+                    tableColumns.contains(key) || key.startsWith("_airbyte")
+                }
             aggregate.accept(RecordDTO(filteredRecord, PartitionKey(""), 0, 0))
         }
         aggregate.flush()
@@ -65,7 +62,8 @@ class RedshiftTestTableOperationsClient(
     private fun getTableColumns(table: TableName): Set<String> {
         return dataSource.connection.use { connection ->
             connection.createStatement().use { statement ->
-                val sql = """
+                val sql =
+                    """
                     SELECT column_name
                     FROM information_schema.columns
                     WHERE table_schema = '${table.namespace}'
@@ -84,9 +82,8 @@ class RedshiftTestTableOperationsClient(
     override suspend fun readTable(table: TableName): List<Map<String, Any>> {
         dataSource.connection.use { connection ->
             connection.createStatement().use { statement ->
-                val resultSet = statement.executeQuery(
-                    """SELECT * FROM "${table.namespace}"."${table.name}""""
-                )
+                val resultSet =
+                    statement.executeQuery("""SELECT * FROM "${table.namespace}"."${table.name}"""")
                 val metaData = resultSet.metaData
                 val columnCount = metaData.columnCount
                 val result = mutableListOf<Map<String, Any>>()
@@ -108,11 +105,13 @@ class RedshiftTestTableOperationsClient(
                                 val stringValue = resultSet.getString(i)
                                 if (stringValue != null) {
                                     try {
-                                        val parsedValue = Jsons.readValue(stringValue, Any::class.java)
-                                        val actualValue = when (parsedValue) {
-                                            is Int -> parsedValue.toLong()
-                                            else -> parsedValue
-                                        }
+                                        val parsedValue =
+                                            Jsons.readValue(stringValue, Any::class.java)
+                                        val actualValue =
+                                            when (parsedValue) {
+                                                is Int -> parsedValue.toLong()
+                                                else -> parsedValue
+                                            }
                                         row[columnName] = actualValue
                                     } catch (e: Exception) {
                                         row[columnName] = stringValue

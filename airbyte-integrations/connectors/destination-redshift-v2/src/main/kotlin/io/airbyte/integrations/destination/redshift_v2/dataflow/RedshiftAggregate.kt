@@ -16,8 +16,8 @@ import jakarta.inject.Singleton
 import javax.sql.DataSource
 
 /**
- * Processes transformed records for a single stream.
- * NOT a @Singleton - created per-stream by AggregateFactory.
+ * Processes transformed records for a single stream. NOT a @Singleton - created per-stream by
+ * AggregateFactory.
  */
 class RedshiftAggregate(
     private val buffer: RedshiftInsertBuffer,
@@ -42,10 +42,11 @@ class RedshiftAggregateFactory(
     override fun create(key: StoreKey): Aggregate {
         val tableName = streamStateStore.get(key)!!.tableName
 
-        val buffer = RedshiftInsertBuffer(
-            tableName = tableName,
-            dataSource = dataSource,
-        )
+        val buffer =
+            RedshiftInsertBuffer(
+                tableName = tableName,
+                dataSource = dataSource,
+            )
 
         return RedshiftAggregate(buffer)
     }

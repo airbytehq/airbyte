@@ -45,15 +45,16 @@ class RedshiftV2BeanFactory {
     @Singleton
     fun redshiftConfiguration(
         configFactory: RedshiftV2ConfigurationFactory,
-        specSupplier: io.airbyte.cdk.command.ConfigurationSpecificationSupplier<RedshiftV2Specification>,
+        specSupplier:
+            io.airbyte.cdk.command.ConfigurationSpecificationSupplier<RedshiftV2Specification>,
     ): RedshiftV2Configuration {
         val spec = specSupplier.get()
         return configFactory.makeWithoutExceptionHandling(spec)
     }
 
     /**
-     * Creates the SSH tunnel session if configured.
-     * The tunnel session manages the SSH connection lifecycle.
+     * Creates the SSH tunnel session if configured. The tunnel session manages the SSH connection
+     * lifecycle.
      */
     @Singleton
     @Requires(property = Operation.PROPERTY, notEquals = "spec")
@@ -67,14 +68,16 @@ class RedshiftV2BeanFactory {
         // Update config with tunneled host/port
         config.tunnelHost = session.address.hostString
         config.tunnelPort = session.address.port
-        log.info { "Tunnel session created, connecting via ${config.tunnelHost}:${config.tunnelPort}" }
+        log.info {
+            "Tunnel session created, connecting via ${config.tunnelHost}:${config.tunnelPort}"
+        }
 
         return session
     }
 
     /**
-     * Dummy DataSource for the spec operation. Spec doesn't have a configuration present,
-     * so we cannot create the real data source.
+     * Dummy DataSource for the spec operation. Spec doesn't have a configuration present, so we
+     * cannot create the real data source.
      */
     @Singleton
     @Requires(property = Operation.PROPERTY, value = "spec")
@@ -98,23 +101,25 @@ class RedshiftV2BeanFactory {
     @Requires(property = Operation.PROPERTY, notEquals = "spec")
     fun redshiftDataSource(
         config: RedshiftV2Configuration,
-        @Suppress("UNUSED_PARAMETER") tunnelSession: TunnelSession, // Ensure tunnel is created first
+        @Suppress("UNUSED_PARAMETER")
+        tunnelSession: TunnelSession, // Ensure tunnel is created first
     ): HikariDataSource {
         log.info { "Creating Redshift DataSource with JDBC URL: ${config.jdbcUrl}" }
 
-        val datasourceConfig = HikariConfig().apply {
-            connectionTimeout = DATA_SOURCE_CONNECTION_TIMEOUT_MS
-            maximumPoolSize = DATA_SOURCE_MAX_POOL_SIZE
-            minimumIdle = 0
-            idleTimeout = DATA_SOURCE_IDLE_TIMEOUT_MS
-            initializationFailTimeout = -1
-            leakDetectionThreshold = DATA_SOURCE_CONNECTION_TIMEOUT_MS + 10000L
-            maxLifetime = DATA_SOURCE_IDLE_TIMEOUT_MS + 10000L
-            driverClassName = "com.amazon.redshift.jdbc42.Driver"
-            jdbcUrl = config.jdbcUrl
-            username = config.username
-            password = config.password
-        }
+        val datasourceConfig =
+            HikariConfig().apply {
+                connectionTimeout = DATA_SOURCE_CONNECTION_TIMEOUT_MS
+                maximumPoolSize = DATA_SOURCE_MAX_POOL_SIZE
+                minimumIdle = 0
+                idleTimeout = DATA_SOURCE_IDLE_TIMEOUT_MS
+                initializationFailTimeout = -1
+                leakDetectionThreshold = DATA_SOURCE_CONNECTION_TIMEOUT_MS + 10000L
+                maxLifetime = DATA_SOURCE_IDLE_TIMEOUT_MS + 10000L
+                driverClassName = "com.amazon.redshift.jdbc42.Driver"
+                jdbcUrl = config.jdbcUrl
+                username = config.username
+                password = config.password
+            }
 
         return HikariDataSource(datasourceConfig)
     }

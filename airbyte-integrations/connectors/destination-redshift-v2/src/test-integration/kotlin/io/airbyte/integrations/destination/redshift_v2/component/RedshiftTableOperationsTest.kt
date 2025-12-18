@@ -6,7 +6,6 @@ package io.airbyte.integrations.destination.redshift_v2.component
 
 import io.airbyte.cdk.load.component.TableOperationsFixtures
 import io.airbyte.cdk.load.component.TableOperationsSuite
-import io.airbyte.cdk.load.component.TestTableOperationsClient
 import io.airbyte.cdk.load.message.Meta
 import io.airbyte.cdk.load.schema.TableSchemaFactory
 import io.airbyte.integrations.destination.redshift_v2.client.RedshiftAirbyteClient
