@@ -35,7 +35,7 @@ definitions:
                   - type: HttpResponseFilter
                     http_codes:
                       - 400
-                    action: IGNORE
+                    action: FAIL
                     predicate: >-
                       {{ 'Data for the given start date is not available' in
                       response['message']}}
