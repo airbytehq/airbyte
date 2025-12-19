@@ -116,6 +116,15 @@ def table_schema() -> str:
         "properties": {
             "key1": {"type": ["null", "string"]},
             "key2": {"type": ["null", "string"]},
+            "object_key": {
+                "type": ["object"],
+                "properties": {
+                    "number": {"type": "number"},
+                    "street_name": {"type": "string"},
+                    "street_type": {"enum": ["Street", "Avenue", "Boulevard"]},
+                },
+            },
+            "empty_object_key": {"type": ["object"]},
         },
     }
     return schema
@@ -211,7 +220,12 @@ def airbyte_message1(test_table_name: str):
         type=Type.RECORD,
         record=AirbyteRecordMessage(
             stream=test_table_name,
-            data={"key1": fake.unique.first_name(), "key2": str(fake.ssn())},
+            data={
+                "key1": fake.unique.first_name(),
+                "key2": str(fake.ssn()),
+                "object_key": {},
+                "empty_object_key": {},
+            },
             emitted_at=int(datetime.now().timestamp()) * 1000,
         ),
     )
@@ -225,7 +239,12 @@ def airbyte_message2(test_table_name: str):
         type=Type.RECORD,
         record=AirbyteRecordMessage(
             stream=test_table_name,
-            data={"key1": fake.unique.first_name(), "key2": str(fake.ssn())},
+            data={
+                "key1": fake.unique.first_name(),
+                "key2": str(fake.ssn()),
+                "object_key": {},
+                "empty_object_key": {"a": {}},
+            },
             emitted_at=int(datetime.now().timestamp()) * 1000,
         ),
     )
@@ -242,6 +261,8 @@ def airbyte_message2_update(airbyte_message2: AirbyteMessage, test_table_name: s
             data={
                 "key1": airbyte_message2.record.data["key1"],
                 "key2": str(fake.ssn()),
+                "object_key": {},
+                "empty_object_key": {},
             },
             emitted_at=int(datetime.now().timestamp()) * 1000,
         ),
@@ -346,7 +367,7 @@ def test_write(
     assert len(result) == 1
 
     sql_result = sql_processor._execute_sql(
-        "SELECT key1, key2, _airbyte_raw_id, _airbyte_extracted_at, _airbyte_meta "
+        "SELECT key1, key2, object_key, empty_object_key, _airbyte_raw_id, _airbyte_extracted_at, _airbyte_meta "
         f"FROM {test_schema_name}.{test_table_name} ORDER BY key1"
     )
 
@@ -355,6 +376,10 @@ def test_write(
     assert sql_result[1][0] == "Megan"
     assert sql_result[0][1] == "868-98-1034"
     assert sql_result[1][1] == "777-54-0664"
+    assert sql_result[0][2] == {}
+    assert sql_result[1][2] == {}
+    assert sql_result[0][3] == {"a": {}}
+    assert sql_result[1][3] == {}
 
 
 def test_write_dupe(
