@@ -17,7 +17,6 @@ import io.airbyte.cdk.load.component.DataCoercionStringFixtures.LONG_STRING
 import io.airbyte.cdk.load.component.DataCoercionSuite
 import io.airbyte.cdk.load.component.DataCoercionTimestampNtzFixtures
 import io.airbyte.cdk.load.component.DataCoercionTimestampTzFixtures
-import io.airbyte.cdk.load.component.DataCoercionUnionFixtures
 import io.airbyte.cdk.load.component.DataCoercionUnknownFixtures
 import io.airbyte.cdk.load.component.DataCoercionUnknownFixtures.STR_VALUE
 import io.airbyte.cdk.load.component.HIGH_PRECISION_TIMESTAMP
@@ -26,7 +25,6 @@ import io.airbyte.cdk.load.component.MINIMUM_TIMESTAMP
 import io.airbyte.cdk.load.component.OUT_OF_RANGE_TIMESTAMP
 import io.airbyte.cdk.load.component.TableOperationsClient
 import io.airbyte.cdk.load.component.TestTableOperationsClient
-import io.airbyte.cdk.load.component.UNION_STR_VALUE
 import io.airbyte.cdk.load.component.toArgs
 import io.airbyte.cdk.load.data.AirbyteValue
 import io.airbyte.cdk.load.data.DateValue
@@ -209,9 +207,7 @@ class ClickhouseDataCoercionTest(
      * legacy union values`].
      */
     @ParameterizedTest
-    @MethodSource(
-        "io.airbyte.integrations.destination.clickhouse.component.ClickhouseDataCoercionTest#union"
-    )
+    @MethodSource("io.airbyte.cdk.load.component.DataCoercionUnionFixtures#stringifiedUnions")
     override fun `handle union values`(
         inputValue: AirbyteValue,
         expectedValue: Any?,
@@ -387,20 +383,6 @@ class ClickhouseDataCoercionTest(
                                 outputValue = (fixture.inputValue as StringValue).value,
                                 changeReason = null,
                             )
-                        else -> fixture
-                    }
-                }
-                .toArgs()
-
-        @JvmStatic
-        fun union() =
-            DataCoercionUnionFixtures.stringifiedUnions
-                .map { fixture ->
-                    when (fixture.name) {
-                        // we're writing the string directly into the column,
-                        // rather than json-serializing it.
-                        // that's... probably justifiable?
-                        UNION_STR_VALUE -> fixture.copy(outputValue = "foo")
                         else -> fixture
                     }
                 }
