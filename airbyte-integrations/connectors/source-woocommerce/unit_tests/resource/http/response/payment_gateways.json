@@ -1,0 +1,35 @@
+[
+  {
+    "id": "bacs",
+    "title": "Direct bank transfer",
+    "description": "Make your payment directly into our bank account.",
+    "order": 0,
+    "enabled": true,
+    "method_title": "Direct bank transfer",
+    "method_description": "Take payments in person via BACS.",
+    "method_supports": ["products"],
+    "settings": {
+      "title": {
+        "id": "title",
+        "label": "Title",
+        "description": "This controls the title which the user sees during checkout.",
+        "type": "text",
+        "value": "Direct bank transfer",
+        "default": "Direct bank transfer",
+        "tip": "This controls the title which the user sees during checkout.",
+        "placeholder": ""
+      }
+    }
+  },
+  {
+    "id": "paypal",
+    "title": "PayPal",
+    "description": "Pay via PayPal.",
+    "order": 1,
+    "enabled": true,
+    "method_title": "PayPal",
+    "method_description": "PayPal Standard redirects customers to PayPal to enter their payment information.",
+    "method_supports": ["products", "refunds"],
+    "settings": {}
+  }
+]

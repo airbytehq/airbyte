@@ -49,6 +49,7 @@ class PostgresWriter(
     override fun createStreamLoader(stream: DestinationStream): StreamLoader {
         val initialStatus = initialStatuses[stream]!!
         val realTableName = stream.tableSchema.tableNames.finalTableName!!
+
         val tempTableName = tempTableNameGenerator.generate(realTableName)
         val columnNameMapping =
             ColumnNameMapping(stream.tableSchema.columnSchema.inputToFinalColumnNames)

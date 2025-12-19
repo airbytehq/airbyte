@@ -54,8 +54,11 @@ class ClickhouseSqlGenerator {
                     // Check if cursor column type is valid for ClickHouse ReplacingMergeTree
                     val cursor = tableSchema.getCursor().firstOrNull()
                     val cursorType = cursor?.let { finalSchema[it]?.type }
+
+                    val useCursorAsVersion =
+                        cursorType != null && isValidVersionColumn(cursor, cursorType)
                     val versionColumn =
-                        if (cursorType?.isValidVersionColumnType() ?: false) {
+                        if (useCursorAsVersion) {
                             "`$cursor`"
                         } else {
                             // Fallback to _airbyte_extracted_at if no cursor is specified or cursor

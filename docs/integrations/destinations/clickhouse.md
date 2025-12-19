@@ -34,6 +34,21 @@ For optimal deduplication in Incremental - Append + Deduped sync mode, use a cur
 
 If you use a different cursor column type, like `string`, the connector falls back to using the `_airbyte_extracted_at` timestamp for deduplication ordering. This fallback may not accurately reflect the natural ordering of your source data, and you'll see a warning in the sync logs.
 
+:::warning
+
+Airbyte's ClickHouse connector leveragese the [ReplacingMergeTree](https://clickhouse.com/docs/engines/table-engines/mergetree-family/replacingmergetree#query-time-de-duplication--final) table engine to handle deduplication.
+To guarantee deduplicated results at query time, you can add the `FINAL` operator to your query string. For example:
+
+```sql
+SELECT * FROM your_table FINAL
+```
+
+Without this, you may see duplicated or deleted results when querying your data.
+
+:::
+
+Alternatively, you may also be able to [tune your merge settings](https://clickhouse.com/docs/guides/replacing-merge-tree#tuning-merges-for-better-query-performance) to better match your query patterns.
+
 ## Requirements
 
 To use the ClickHouse destination connector, you need:
@@ -158,6 +173,10 @@ The connector converts arrays and unions to strings for compatibility. If you ne
 
 | Version    | Date       | Pull Request                                               | Subject                                                                        |
 |:-----------|:-----------|:-----------------------------------------------------------|:-------------------------------------------------------------------------------|
+| 2.1.18     | 2025-12-17 | [XXXXX](https://github.com/airbytehq/airbyte/pull/XXXXX)   | Internal refactor: Remove name generator classes, simplify naming utilities    |
+| 2.1.17     | 2025-12-12 | [70835](https://github.com/airbytehq/airbyte/pull/70835)   | Fix: Skip CDC cursor for version column consideration for dedupe.              |
+| 2.1.16     | 2025-12-12 | [70897](https://github.com/airbytehq/airbyte/pull/70897)   | Promoting release candidate 2.1.16-rc.3 to a main version.                     |
+| 2.1.16-rc.3| 2025-12-09 | [70835](https://github.com/airbytehq/airbyte/pull/70835)   | Pick up CDK fixes for namespace / prefix handling                              |
 | 2.1.16-rc.2| 2025-12-09 | [70358](https://github.com/airbytehq/airbyte/pull/70358)   | Internal refactor: Use TableSchemaMapper for schema operations cont.           |
 | 2.1.16-rc.1| 2025-12-04 | [70279](https://github.com/airbytehq/airbyte/pull/70279)   | Internal refactor: Use TableSchemaMapper for schema operations                 |
 | 2.1.15     | 2025-12-03 | [69829](https://github.com/airbytehq/airbyte/pull/69829)   | Bump ClickHouse client to 0.9.4                                                |
