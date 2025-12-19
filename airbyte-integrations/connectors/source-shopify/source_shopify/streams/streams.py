@@ -171,7 +171,7 @@ class DeletedProducts(IncrementalShopifyStream):
 
     @property
     def url_base(self) -> str:
-        return f"https://{self.config['shop']}.myshopify.com/admin/api/{self.config['api_version']}/graphql.json"
+        return f"https://{self.config['shop']}.myshopify.com/admin/api/{self.api_version}/graphql.json"
 
     def path(self, **kwargs) -> str:
         return ""
