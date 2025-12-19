@@ -92,7 +92,8 @@ class RedshiftBasicFunctionalityTest :
 
             RedshiftDataCleaner.configure(
                 dataSourceProvider = { createDataSource(redshiftConfig) },
-                testNamespaces = listOf("test", redshiftConfig.schema, redshiftConfig.internalSchema)
+                testNamespaces =
+                    listOf("test", redshiftConfig.schema, redshiftConfig.internalSchema)
             )
         }
 
