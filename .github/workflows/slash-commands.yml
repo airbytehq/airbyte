@@ -30,20 +30,20 @@ jobs:
             -H "Authorization: Bearer $GH_TOKEN" \
             -H "Accept: application/vnd.github+json" \
             "$PR_URL")
-          
+
           if [[ "$HTTP_CODE" != "200" ]]; then
             echo "::error::Failed to fetch PR info: HTTP $HTTP_CODE"
             cat /tmp/pr_info.json
             exit 1
           fi
-          
+
           # Extract fields with validation (jq -e fails if field is null)
           REF=$(jq -er '.head.ref' /tmp/pr_info.json)
           REPO=$(jq -er '.head.repo.full_name' /tmp/pr_info.json)
-          
+
           # Log parsed values for debugging
           echo "::notice::Parsed PR metadata - repo: '$REPO', ref: '$REF'"
-          
+
           echo "ref=$REF" >> $GITHUB_OUTPUT
           echo "repo=$REPO" >> $GITHUB_OUTPUT
 
