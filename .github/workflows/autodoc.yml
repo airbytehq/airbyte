@@ -8,6 +8,10 @@
 # - Only on pushes to master branch
 # - Excludes bot-authored pushes to prevent automation loops
 # - Processes any connector with metadata.yaml changes
+#
+# Limitations:
+# - Only processes one connector per push (the first metadata.yaml found in changed files)
+# - If multiple connectors change in a single push, only the first is processed
 
 name: Autodoc
 
@@ -36,19 +40,36 @@ jobs:
       - name: Get files changed in this push
         id: push-files
         run: |
-          echo "🔍 Fetching files changed in push from ${{ github.event.before }} to ${{ github.sha }}..."
-          FILES=$(git diff --name-only ${{ github.event.before }} ${{ github.sha }} | jq -R -s -c 'split("\n")[:-1]')
+          BEFORE="${{ github.event.before }}"
+          SHA="${{ github.sha }}"
+          
+          # Handle edge cases where github.event.before may be invalid
+          # (e.g., all-zeros for first push, or commit not present locally after force push)
+          if [ -z "$BEFORE" ] || [ "$BEFORE" = "0000000000000000000000000000000000000000" ]; then
+            echo "⚠️  No valid 'before' commit (first push or force push) - using first parent as fallback"
+            BEFORE="${SHA}^"
+          elif ! git cat-file -e "${BEFORE}^{commit}" 2>/dev/null; then
+            echo "⚠️  'before' commit not found locally - using first parent as fallback"
+            BEFORE="${SHA}^"
+          fi
+          
+          echo "🔍 Fetching files changed in push from $BEFORE to $SHA..."
+          FILES=$(git diff --name-only "$BEFORE" "$SHA" 2>/dev/null | jq -R -s -c 'split("\n")[:-1]') || FILES="[]"
 
           if [ -z "$FILES" ] || [ "$FILES" = "[]" ]; then
             echo "ℹ️  No files changed in this push - skipping documentation update."
+            echo "has_changes=false" >> $GITHUB_OUTPUT
+            echo "files=[]" >> $GITHUB_OUTPUT
             exit 0
           fi
 
           echo "✅ Successfully fetched changed files list"
+          echo "has_changes=true" >> $GITHUB_OUTPUT
           echo "files=$FILES" >> $GITHUB_OUTPUT
 
       # Step 3: Check if this push affects a connector
       - name: Check for connector changes
+        if: steps.push-files.outputs.has_changes == 'true'
         id: check-connector
         run: |
           echo "🔍 Checking if push contains connector changes..."
