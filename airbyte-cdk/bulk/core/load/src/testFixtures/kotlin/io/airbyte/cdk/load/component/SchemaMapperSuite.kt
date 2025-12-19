@@ -18,40 +18,35 @@ interface SchemaMapperSuite {
         get() = "table"
 
     fun `simple table name`(expectedTableName: TableName) {
-        val namespace = TableOperationsFixtures.generateTestNamespace("namespace-test")
-        val name = TableOperationsFixtures.generateTestNamespace("table-test")
         val tableName =
-            tableSchemaMapper.toFinalTableName(DestinationStream.Descriptor(namespace, name))
+            tableSchemaMapper.toFinalTableName(
+                DestinationStream.Descriptor("namespace-test", "table-test")
+            )
         assertEquals(expectedTableName, tableName)
     }
 
     fun `funky chars in table name`(expectedTableName: TableName) {
-        val namespace =
-            TableOperationsFixtures.generateTestNamespace(
-                "namespace-test- -`~!@#$%^&*()-=_+[]\\{}|o'O\",./<>?"
-            )
-        val name =
-            TableOperationsFixtures.generateTestNamespace(
-                "table-test- -`~!@#$%^&*()-=_+[]\\{}|o'O\",./<>?"
-            )
         val tableName =
-            tableSchemaMapper.toFinalTableName(DestinationStream.Descriptor(namespace, name))
+            tableSchemaMapper.toFinalTableName(
+                DestinationStream.Descriptor(
+                    "namespace-test- -`~!@#$%^&*()-=_+[]\\{}|;':\",./<>?",
+                    "table-test- -`~!@#$%^&*()-=_+[]\\{}|;':\",./<>?"
+                )
+            )
         assertEquals(expectedTableName, tableName)
     }
 
     fun `table name starts with non-letter character`(expectedTableName: TableName) {
-        val namespace = TableOperationsFixtures.generateTestNamespace("1foo")
-        val name = TableOperationsFixtures.generateTestNamespace("1foo")
         val tableName =
-            tableSchemaMapper.toFinalTableName(DestinationStream.Descriptor(namespace, name))
+            tableSchemaMapper.toFinalTableName(DestinationStream.Descriptor("1foo", "1foo"))
         assertEquals(expectedTableName, tableName)
     }
 
     fun `table name is reserved keyword`(expectedTableName: TableName) {
-        val namespace = TableOperationsFixtures.generateTestNamespace(reservedKeyword)
-        val name = TableOperationsFixtures.generateTestNamespace(reservedKeyword)
         val tableName =
-            tableSchemaMapper.toFinalTableName(DestinationStream.Descriptor(namespace, name))
+            tableSchemaMapper.toFinalTableName(
+                DestinationStream.Descriptor(reservedKeyword, reservedKeyword)
+            )
         assertEquals(expectedTableName, tableName)
     }
 
@@ -70,7 +65,7 @@ interface SchemaMapperSuite {
 
     fun `column name with funky chars`(expectedColumnName: String) {
         val columnName =
-            tableSchemaMapper.toColumnName("column-test- -`~!@#$%^&*()-=_+[]\\{}|o'O\",./<>?")
+            tableSchemaMapper.toColumnName("column-test- -`~!@#$%^&*()-=_+[]\\{}|;':\",./<>?")
         assertEquals(expectedColumnName, columnName)
     }
 
