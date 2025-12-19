@@ -40,7 +40,7 @@ class RedshiftV2BeanFactory {
     fun tempTableNameGenerator(
         config: RedshiftV2Configuration,
     ): TempTableNameGenerator =
-        DefaultTempTableNameGenerator(internalNamespace = config.rawDataSchema)
+        DefaultTempTableNameGenerator(internalNamespace = config.internalSchema)
 
     @Singleton
     fun redshiftConfiguration(

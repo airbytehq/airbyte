@@ -80,22 +80,6 @@ class RedshiftV2Specification : ConfigurationSpecification() {
     @JsonSchemaInject(json = """{"group": "connection", "order": 7, "display_type": "radio"}""")
     var uploadingMethod: UploadingMethodSpecification? = null
 
-    @JsonProperty("raw_data_schema")
-    @JsonSchemaTitle("Destinations V2 Raw Table Schema")
-    @JsonPropertyDescription("The schema to write raw tables into (default: airbyte_internal).")
-    @JsonSchemaInject(json = """{"group": "tables", "order": 0}""")
-    var rawDataSchema: String? = null
-
-    @JsonProperty("disable_type_dedupe")
-    @JsonSchemaTitle(
-        "Disable Final Tables. (WARNING! Unstable option; Columns in raw table schema might change between versions)"
-    )
-    @JsonPropertyDescription(
-        "Disable Writing Final Tables. WARNING! The data format in _airbyte_data is likely stable but there are no guarantees that other metadata columns will remain the same in future versions"
-    )
-    @JsonSchemaInject(json = """{"group": "tables", "order": 1, "default": false}""")
-    var disableTypeDedupe: Boolean? = false
-
     @JsonProperty("drop_cascade")
     @JsonSchemaTitle("Drop tables with CASCADE. (WARNING! Risk of unrecoverable data loss)")
     @JsonPropertyDescription(

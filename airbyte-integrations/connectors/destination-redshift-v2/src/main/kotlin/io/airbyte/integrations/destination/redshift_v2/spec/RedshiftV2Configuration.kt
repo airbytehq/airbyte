@@ -25,8 +25,8 @@ data class RedshiftV2Configuration(
     val schema: String,
     val jdbcUrlParams: String?,
     val s3Config: S3StagingConfiguration?,
-    val rawDataSchema: String,
-    val disableTypeDedupe: Boolean,
+    /** Schema for internal/temp tables during sync operations. */
+    val internalSchema: String,
     val dropCascade: Boolean,
 ) : DestinationConfiguration(), SshTunnelConfiguration {
 
@@ -96,9 +96,7 @@ class RedshiftV2ConfigurationFactory :
             schema = pojo.schema,
             jdbcUrlParams = pojo.jdbcUrlParams,
             s3Config = s3Config,
-            rawDataSchema = pojo.rawDataSchema?.takeIf { it.isNotBlank() }
-                    ?: DbConstants.DEFAULT_RAW_TABLE_NAMESPACE,
-            disableTypeDedupe = pojo.disableTypeDedupe ?: false,
+            internalSchema = DbConstants.DEFAULT_RAW_TABLE_NAMESPACE,
             dropCascade = pojo.dropCascade ?: false,
         )
     }
