@@ -112,7 +112,7 @@ class SnowflakeTableSchemaMapper(
                     finalSchema =
                         mapOf(
                             Meta.COLUMN_NAME_DATA to
-                                ColumnType(SnowflakeDataType.OBJECT.typeName, false)
+                                ColumnType(SnowflakeDataType.VARIANT.typeName, false)
                         )
                 ),
             importType = tableSchema.importType,
