@@ -100,17 +100,18 @@ The YouTube Data API source connector supports the following sync modes:
 
 ### Stream descriptions
 
-- **video**: Detailed information about videos from the specified channels, including title, description, thumbnails, and publish date.
-- **videos**: A list of video IDs from the specified channels.
-- **channels**: Information about the specified YouTube channels, including statistics and content details.
-- **comments**: Comments on videos from the specified channels.
-- **channel_comments**: All comment threads related to the specified channels.
+- **video**: Detailed information about videos from the specified channels, including title, description, thumbnails, publish date, tags, category, and language settings. This stream uses the `videos` parent stream to first discover video IDs, then fetches full video details for each.
+- **videos**: A list of video IDs discovered by searching the specified channels. This stream is used internally by the `video` and `comments` streams to identify which videos to fetch data for.
+- **channels**: Information about the specified YouTube channels, including channel description, custom URL, country, thumbnails, and subscriber/view/video counts.
+- **comments**: Comment threads on individual videos from the specified channels. For each video discovered in the channel, this stream fetches the top-level comments and their replies.
+- **channel_comments**: All comment threads related to the specified channels, including comments on the channel's videos and comments that mention the channel. This provides a broader view of channel engagement than the `comments` stream.
 
 ## Limitations and considerations
 
-- The YouTube Data API has [quota limits](https://developers.google.com/youtube/v3/getting-started#quota). Each API request costs a certain number of quota units, and the default quota is 10,000 units per day.
+- The YouTube Data API has [quota limits](https://developers.google.com/youtube/v3/getting-started#quota). Each API request costs a certain number of quota units, and the default quota is 10,000 units per day. The search endpoint used by the `videos` stream has a higher quota cost (100 units per request) compared to other endpoints.
 - API keys can only access public data. To access private data, you must use OAuth 2.0 authentication.
-- The connector does not support service account authentication because the YouTube Data API does not support this method.
+- When using OAuth 2.0, the connector requests the `youtube.force-ssl` scope, which provides read and write access to YouTube resources. This scope is required even though the connector only reads data.
+- The connector does not support service account authentication because the YouTube Data API does not support this method for most operations.
 
 ## Changelog
 
