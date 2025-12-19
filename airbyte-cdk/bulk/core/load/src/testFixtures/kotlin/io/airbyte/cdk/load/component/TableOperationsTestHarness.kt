@@ -145,7 +145,8 @@ class TableOperationsTestHarness(
                 "test",
                 airbyteMetaField = null,
             )
-        val validatedValue = coercer.validate(inputValueAsEnrichedAirbyteValue)
+        val mappedValue = coercer.map(inputValueAsEnrichedAirbyteValue)
+        val validatedValue = coercer.validate(mappedValue)
         val valueToInsert: AirbyteValue
         val changeReason: Reason?
         when (validatedValue) {
@@ -158,7 +159,7 @@ class TableOperationsTestHarness(
                 changeReason = validatedValue.reason
             }
             ValidationResult.Valid -> {
-                valueToInsert = inputValue
+                valueToInsert = mappedValue.abValue
                 changeReason = null
             }
         }
