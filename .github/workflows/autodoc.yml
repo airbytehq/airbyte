@@ -42,7 +42,7 @@ jobs:
         run: |
           BEFORE="${{ github.event.before }}"
           SHA="${{ github.sha }}"
-          
+
           # Handle edge cases where github.event.before may be invalid
           # (e.g., all-zeros for first push, or commit not present locally after force push)
           if [ -z "$BEFORE" ] || [ "$BEFORE" = "0000000000000000000000000000000000000000" ]; then
@@ -52,7 +52,7 @@ jobs:
             echo "⚠️  'before' commit not found locally - using first parent as fallback"
             BEFORE="${SHA}^"
           fi
-          
+
           echo "🔍 Fetching files changed in push from $BEFORE to $SHA..."
           FILES=$(git diff --name-only "$BEFORE" "$SHA" 2>/dev/null | jq -R -s -c 'split("\n")[:-1]') || FILES="[]"
 
