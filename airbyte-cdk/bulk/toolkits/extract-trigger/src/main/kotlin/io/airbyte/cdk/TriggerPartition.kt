@@ -100,7 +100,7 @@ class TriggerUnsplittableSnapshotWithCursorPartition(
         get() =
             TriggerStreamStateValue.cursorIncrementalCheckpoint(
                 cursor,
-                cursorCheckpoint = streamState.cursorUpperBound!!,
+                cursorCheckpoint = streamState.cursorUpperBound ?: Jsons.nullNode(),
             )
 
     override val cursorUpperBoundQuery: SelectQuery
@@ -276,7 +276,7 @@ sealed class TriggerCursorPartition(
     JdbcCursorPartition<TriggerStreamState> {
 
     val cursorUpperBound: JsonNode
-        get() = explicitCursorUpperBound ?: streamState.cursorUpperBound!!
+        get() = explicitCursorUpperBound ?: streamState.cursorUpperBound ?: Jsons.nullNode()
     val cursorUpperBoundFrom: From =
         if (triggerCdcPartitionState == null) from
         else

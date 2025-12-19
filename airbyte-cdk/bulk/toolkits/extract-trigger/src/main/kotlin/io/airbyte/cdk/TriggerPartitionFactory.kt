@@ -63,6 +63,13 @@ class TriggerPartitionFactory(
         val stream: Stream = streamFeedBootstrap.feed
         val streamState: TriggerStreamState = streamState(streamFeedBootstrap)
         val opaqueStateValue: OpaqueStateValue? = streamFeedBootstrap.currentState
+
+        // An empty table stream state will be marked as a nullNode. This prevents repeated attempt
+        // to read it
+        if (opaqueStateValue?.isNull == true) {
+            return null
+        }
+
         if (opaqueStateValue == null) {
             return coldStart(streamState)
         }
