@@ -44,7 +44,6 @@ from airbyte_cdk.sources.utils.schema_helpers import ResourceSchemaLoader
 from .base_streams import (
     FullRefreshShopifyGraphQlBulkStream,
     IncrementalShopifyGraphQlBulkStream,
-    IncrementalShopifyGraphQlBulkStreamWithDeletedEvents,
     IncrementalShopifyNestedStream,
     IncrementalShopifyStream,
     IncrementalShopifyStreamWithDeletedEvents,
@@ -132,9 +131,8 @@ class MetafieldDraftOrders(IncrementalShopifyGraphQlBulkStream):
     bulk_query: MetafieldDraftOrder = MetafieldDraftOrder
 
 
-class Products(IncrementalShopifyGraphQlBulkStreamWithDeletedEvents):
+class Products(IncrementalShopifyGraphQlBulkStream):
     bulk_query: Product = Product
-    deleted_events_api_name = "Product"
 
 
 class MetafieldProducts(IncrementalShopifyGraphQlBulkStream):

@@ -872,68 +872,6 @@ class IncrementalShopifyGraphQlBulkStream(IncrementalShopifyStream):
         self.emit_checkpoint_message()
 
 
-class IncrementalShopifyGraphQlBulkStreamWithDeletedEvents(IncrementalShopifyGraphQlBulkStream):
-    """
-    This class combines the GraphQL BULK stream functionality with deleted events support.
-    It fetches deleted records from the REST Events API after the main GraphQL BULK data is pulled.
-    """
-
-    deleted_events_api_name: str = None
-
-    def __init__(self, config: Dict) -> None:
-        self._stream_state: MutableMapping[str, Any] = {}
-        super().__init__(config)
-
-    @property
-    def deleted_events(self) -> ShopifyDeletedEventsStream:
-        """
-        The Events stream instance to fetch the `destroyed` records for specified `deleted_events_api_name`.
-        See more in `ShopifyDeletedEventsStream` class.
-        """
-        return ShopifyDeletedEventsStream(self.config, self.deleted_events_api_name)
-
-    @property
-    def default_deleted_state_comparison_value(self) -> Union[int, str]:
-        """
-        Set the default STATE comparison value for cases when the deleted record doesn't have its value.
-        We expect the `deleted_at` cursor field for destroyed records would be always type of String.
-        """
-        return ""
-
-    def get_updated_state(
-        self,
-        current_stream_state: MutableMapping[str, Any],
-        latest_record: Mapping[str, Any],
-    ) -> MutableMapping[str, Any]:
-        """
-        We extend the stream state with `deleted` property to store the `destroyed` records STATE separately from the Stream State.
-        """
-        self._stream_state = super().get_updated_state(self._stream_state, latest_record)
-        # add `deleted` property to each stream supports `deleted events`,
-        # to provide the `Incremental` sync mode, for the `Incremental Delete` records.
-        last_deleted_record_value = latest_record.get(self.deleted_cursor_field) or self.default_deleted_state_comparison_value
-        current_deleted_state_value = current_stream_state.get(self.deleted_cursor_field) or self.default_deleted_state_comparison_value
-        self._stream_state["deleted"] = {self.deleted_cursor_field: max(last_deleted_record_value, current_deleted_state_value)}
-        return self._stream_state
-
-    def read_records(
-        self,
-        sync_mode: SyncMode,
-        cursor_field: Optional[List[str]] = None,
-        stream_slice: Optional[Mapping[str, Any]] = None,
-        stream_state: Optional[Mapping[str, Any]] = None,
-    ) -> Iterable[StreamData]:
-        """Override to fetch deleted records for supported streams after the main GraphQL BULK data is pulled."""
-        # main records stream via GraphQL BULK
-        yield from super().read_records(
-            sync_mode=sync_mode, cursor_field=cursor_field, stream_slice=stream_slice, stream_state=stream_state
-        )
-        # fetch deleted events after the Stream data is pulled
-        yield from self.deleted_events.read_records(
-            sync_mode=sync_mode, cursor_field=cursor_field, stream_slice=stream_slice, stream_state=stream_state
-        )
-
-
 class FullRefreshShopifyGraphQlBulkStream(ShopifyStream):
     data_field = "graphql"
     http_method = "POST"
