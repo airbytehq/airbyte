@@ -55,13 +55,28 @@ jobs:
       short-sha: ${{ steps.get-sha.outputs.short-sha }}
       connector-name: ${{ steps.resolve-connector.outputs.connector-name }}
       connector-version: ${{ steps.connector-version.outputs.connector-version }}
+      gitref: ${{ steps.sanitize.outputs.gitref }}
     steps:
+      - name: Sanitize inputs
+        id: sanitize
+        run: |
+          # Handle cases where inputs may be empty or the literal string "null" from jq
+          REPO="${{ inputs.repo }}"
+          GITREF="${{ inputs.gitref }}"
+          if [[ -z "$REPO" || "$REPO" == "null" ]]; then
+            REPO="airbytehq/airbyte"
+          fi
+          if [[ -z "$GITREF" || "$GITREF" == "null" ]]; then
+            GITREF=""
+          fi
+          echo "repo=$REPO" >> $GITHUB_OUTPUT
+          echo "gitref=$GITREF" >> $GITHUB_OUTPUT
+
       - name: Checkout to get commit SHA
         uses: actions/checkout@v4
         with:
-          # Use hardcoded fallback since github.repository may be null when triggered via API
-          repository: ${{ inputs.repo || 'airbytehq/airbyte' }}
-          ref: ${{ inputs.gitref || '' }}
+          repository: ${{ steps.sanitize.outputs.repo }}
+          ref: ${{ steps.sanitize.outputs.gitref }}
           fetch-depth: 0
 
       - name: Get short SHA
@@ -148,7 +163,7 @@ jobs:
     with:
       connectors: ${{ format('--name={0}', needs.init.outputs.connector-name) }}
       release-type: pre-release
-      gitref: ${{ inputs.gitref }}
+      gitref: ${{ needs.init.outputs.gitref }}
     secrets: inherit
 
   post-completion:
