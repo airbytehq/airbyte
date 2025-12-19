@@ -206,33 +206,27 @@ class DeletedProducts(IncrementalShopifyStream):
         }
 
     def next_page_token(self, response: requests.Response) -> Optional[Mapping[str, Any]]:
-        try:
-            json_response = response.json()
-            page_info = json_response.get("data", {}).get("events", {}).get("pageInfo", {})
-            if page_info.get("hasNextPage"):
-                return {"cursor": page_info.get("endCursor")}
-        except Exception:
-            pass
+        json_response = response.json()
+        page_info = json_response.get("data", {}).get("events", {}).get("pageInfo", {})
+        if page_info.get("hasNextPage"):
+            return {"cursor": page_info.get("endCursor")}
         return None
 
     def parse_response(self, response: requests.Response, **kwargs) -> Iterable[Mapping]:
-        try:
-            json_response = response.json()
-            events = json_response.get("data", {}).get("events", {}).get("nodes", [])
-            for event in events:
-                if event.get("subjectType") == "Product" and event.get("subjectId"):
-                    subject_id = event.get("subjectId", "")
-                    product_id = int(subject_id.split("/")[-1]) if "/" in subject_id else None
-                    if product_id:
-                        yield {
-                            "id": product_id,
-                            "deleted_at": event.get("createdAt"),
-                            "deleted_message": event.get("message"),
-                            "deleted_description": None,
-                            "shop_url": self.config.get("shop"),
-                        }
-        except Exception as e:
-            self.logger.warning(f"Error parsing response: {e}")
+        json_response = response.json()
+        events = json_response.get("data", {}).get("events", {}).get("nodes", [])
+        for event in events:
+            if event.get("subjectType") == "Product" and event.get("subjectId"):
+                subject_id = event.get("subjectId", "")
+                product_id = int(subject_id.split("/")[-1]) if "/" in subject_id else None
+                if product_id:
+                    yield {
+                        "id": product_id,
+                        "deleted_at": event.get("createdAt"),
+                        "deleted_message": event.get("message"),
+                        "deleted_description": None,
+                        "shop_url": self.config.get("shop"),
+                    }
 
 
 class MetafieldProducts(IncrementalShopifyGraphQlBulkStream):
