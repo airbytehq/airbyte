@@ -135,6 +135,106 @@ class Products(IncrementalShopifyGraphQlBulkStream):
     bulk_query: Product = Product
 
 
+class DeletedProducts(IncrementalShopifyStream):
+    """
+    Stream for fetching deleted products using the Shopify GraphQL Events API.
+    This stream queries events with action:destroy and subject_type:Product to get deleted product records.
+    https://shopify.dev/docs/api/admin-graphql/latest/queries/events
+    """
+
+    data_field = "graphql"
+    cursor_field = "deleted_at"
+    http_method = "POST"
+    filter_field = None
+
+    _page_cursor: Optional[str] = None
+
+    EVENTS_QUERY = """
+    query GetDeletedProductEvents($first: Int!, $after: String, $query: String) {
+        events(first: $first, after: $after, query: $query, sortKey: CREATED_AT) {
+            pageInfo {
+                hasNextPage
+                endCursor
+            }
+            nodes {
+                ... on BasicEvent {
+                    id
+                    createdAt
+                    message
+                    subjectId
+                    subjectType
+                }
+            }
+        }
+    }
+    """
+
+    @property
+    def url_base(self) -> str:
+        return f"https://{self.config['shop']}.myshopify.com/admin/api/{self.config['api_version']}/graphql.json"
+
+    def path(self, **kwargs) -> str:
+        return ""
+
+    def request_params(
+        self, stream_state: Mapping[str, Any] = None, next_page_token: Mapping[str, Any] = None, **kwargs
+    ) -> MutableMapping[str, Any]:
+        return {}
+
+    def request_body_json(
+        self,
+        stream_state: Optional[Mapping[str, Any]] = None,
+        stream_slice: Optional[Mapping[str, Any]] = None,
+        next_page_token: Optional[Mapping[str, Any]] = None,
+    ) -> Optional[Mapping[str, Any]]:
+        query_filter = "action:destroy AND subject_type:Product"
+        if stream_state and stream_state.get(self.cursor_field):
+            state_value = stream_state[self.cursor_field]
+            query_filter += f" AND created_at:>'{state_value}'"
+
+        variables = {
+            "first": 250,
+            "query": query_filter,
+        }
+
+        if next_page_token and next_page_token.get("cursor"):
+            variables["after"] = next_page_token["cursor"]
+
+        return {
+            "query": self.EVENTS_QUERY,
+            "variables": variables,
+        }
+
+    def next_page_token(self, response: requests.Response) -> Optional[Mapping[str, Any]]:
+        try:
+            json_response = response.json()
+            page_info = json_response.get("data", {}).get("events", {}).get("pageInfo", {})
+            if page_info.get("hasNextPage"):
+                return {"cursor": page_info.get("endCursor")}
+        except Exception:
+            pass
+        return None
+
+    def parse_response(self, response: requests.Response, **kwargs) -> Iterable[Mapping]:
+        try:
+            json_response = response.json()
+            events = json_response.get("data", {}).get("events", {}).get("nodes", [])
+            for event in events:
+                if event.get("subjectType") == "Product" and event.get("subjectId"):
+                    subject_id = event.get("subjectId", "")
+                    product_id = int(subject_id.split("/")[-1]) if "/" in subject_id else None
+                    if product_id:
+                        yield {
+                            "id": product_id,
+                            "deleted_at": event.get("createdAt"),
+                            "deleted_message": event.get("message"),
+                            "deleted_description": None,
+                            "shop_url": self.config.get("shop"),
+                        }
+        except Exception as e:
+            self.logger.warning(f"Error parsing response: {e}")
+
+
 class MetafieldProducts(IncrementalShopifyGraphQlBulkStream):
     parent_stream_class = Products
     bulk_query: MetafieldProduct = MetafieldProduct
