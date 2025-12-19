@@ -20,7 +20,13 @@ import java.nio.file.Path
 import javax.sql.DataSource
 import org.junit.jupiter.api.BeforeAll
 import org.junit.jupiter.api.Test
+import org.junit.jupiter.api.parallel.Execution
+import org.junit.jupiter.api.parallel.ExecutionMode
+import org.junit.jupiter.api.parallel.ResourceLock
 
+/** Prevent concurrent execution with other Redshift test classes to avoid cluster contention. */
+@Execution(ExecutionMode.SAME_THREAD)
+@ResourceLock("redshift-cluster")
 class RedshiftBasicFunctionalityTest :
     BasicFunctionalityIntegrationTest(
         configContents = Files.readString(Path.of("secrets/config.json")),

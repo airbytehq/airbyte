@@ -20,6 +20,9 @@ import java.nio.file.Path
 import javax.sql.DataSource
 import org.junit.jupiter.api.BeforeAll
 import org.junit.jupiter.api.Test
+import org.junit.jupiter.api.parallel.Execution
+import org.junit.jupiter.api.parallel.ExecutionMode
+import org.junit.jupiter.api.parallel.ResourceLock
 
 /**
  * Integration tests for Redshift destination using S3 staging upload method. Uses
@@ -27,6 +30,8 @@ import org.junit.jupiter.api.Test
  *
  * Records are written to S3 as gzipped CSV files and loaded via Redshift COPY command.
  */
+@Execution(ExecutionMode.SAME_THREAD)
+@ResourceLock("redshift-cluster")
 class RedshiftStagingBasicFunctionalityTest :
     BasicFunctionalityIntegrationTest(
         configContents = Files.readString(Path.of("secrets/config_staging.json")),
