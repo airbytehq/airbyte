@@ -163,6 +163,7 @@ This source can sync data for the [Shopify REST API](https://shopify.dev/api/adm
 - [Pages](https://shopify.dev/api/admin-rest/2024-04/resources/page#top)
 - [Price Rules](https://shopify.dev/api/admin-rest/2024-04/resources/pricerule#top)
 - [Products (GraphQL)](https://shopify.dev/docs/api/admin-graphql/2024-04/queries/products)
+- [Deleted Products (GraphQL)](https://shopify.dev/docs/api/admin-graphql/2024-04/queries/events) - Product deletion events
 - [Product Images (GraphQL)](https://shopify.dev/docs/api/admin-graphql/2024-04/objects/Image)
 - [Product Variants (GraphQL)](https://shopify.dev/docs/api/admin-graphql/2024-04/queries/productVariant)
 - [Shop](https://shopify.dev/api/admin-rest/2024-04/resources/shop)
@@ -176,9 +177,9 @@ This source can sync data for the [Shopify REST API](https://shopify.dev/api/adm
 
 ## Capturing deleted records
 
-The connector captures deletions for records in the `Articles`, `Blogs`, `CustomCollections`, `Orders`, `Pages`, `PriceRules` and `Products` streams.
+The connector captures deletions for records in the `Articles`, `Blogs`, `CustomCollections`, `Orders`, `Pages`, and `PriceRules` streams. When a record is deleted, the connector outputs a record with the `ID` of that record and the `deleted_at`, `deleted_message`, and `deleted_description` fields filled out. No other fields are filled out for the deleted records.
 
-When a record is deleted, the connector outputs a record with the `ID` of that record and the `deleted_at`, `deleted_message`, and `deleted_description` fields filled out. No other fields are filled out for the deleted records.
+For deleted products, use the dedicated `Deleted Products` stream, which queries the Shopify GraphQL Events API for product deletion events. This stream returns records with `id` (the product ID), `deleted_at`, `deleted_message`, and `shop_url` fields.
 
 Check the following Shopify documentation for more information about [retrieving deleted records](https://shopify.dev/docs/api/admin-rest/2024-04/resources/event).
 
