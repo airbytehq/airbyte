@@ -1,6 +1,10 @@
-# Salesforce
+# Salesforce full reference
 
-## Supported Entities and Actions
+This is the full reference documentation for the Salesforce agent connector.
+
+## Supported entities and actions
+
+The Salesforce connector supports the following entities and actions.
 
 | Entity | Actions |
 |--------|---------|
@@ -28,7 +32,7 @@ For pagination, check the response: if `done` is false, use `nextRecordsUrl` to 
 **Python SDK**
 
 ```python
-salesforce.accounts.list(
+await salesforce.accounts.list(
     q="<str>"
 )
 ```
@@ -49,7 +53,7 @@ curl --location 'https://api.airbyte.ai/api/v1/connectors/instances/{your_connec
 ```
 
 
-**Params**
+**Parameters**
 
 | Parameter Name | Type | Required | Description |
 |----------------|------|----------|-------------|
@@ -86,7 +90,7 @@ Use the `fields` parameter to retrieve only specific fields for better performan
 **Python SDK**
 
 ```python
-salesforce.accounts.get(
+await salesforce.accounts.get(
     id="<str>"
 )
 ```
@@ -107,7 +111,7 @@ curl --location 'https://api.airbyte.ai/api/v1/connectors/instances/{your_connec
 ```
 
 
-**Params**
+**Parameters**
 
 | Parameter Name | Type | Required | Description |
 |----------------|------|----------|-------------|
@@ -141,7 +145,7 @@ Use SOQL (list action) for structured queries with specific field conditions.
 **Python SDK**
 
 ```python
-salesforce.accounts.search(
+await salesforce.accounts.search(
     q="<str>"
 )
 ```
@@ -162,11 +166,16 @@ curl --location 'https://api.airbyte.ai/api/v1/connectors/instances/{your_connec
 ```
 
 
-**Params**
+**Parameters**
 
 | Parameter Name | Type | Required | Description |
 |----------------|------|----------|-------------|
-| `q` | `string` | Yes | SOSL search query. Format: FIND \{searchTerm\} IN scope RETURNING Object(fields) [LIMIT n]. Examples: `FIND {Acme} IN ALL FIELDS RETURNING Account(Id,Name)`, `FIND {tech*} IN NAME FIELDS RETURNING Account(Id,Name,Industry) LIMIT 50`, `FIND {"exact phrase"} RETURNING Account(Id,Name,Website)` |
+| `q` | `string` | Yes | SOSL search query. Format: FIND \{searchTerm\} IN scope RETURNING Object(fields) [LIMIT n]
+Examples:
+- "FIND \{Acme\} IN ALL FIELDS RETURNING Account(Id,Name)"
+- "FIND \{tech*\} IN NAME FIELDS RETURNING Account(Id,Name,Industry) LIMIT 50"
+- "FIND \{\"exact phrase\"\} RETURNING Account(Id,Name,Website)"
+ |
 
 
 <details>
@@ -192,7 +201,7 @@ For pagination, check the response: if `done` is false, use `nextRecordsUrl` to 
 **Python SDK**
 
 ```python
-salesforce.contacts.list(
+await salesforce.contacts.list(
     q="<str>"
 )
 ```
@@ -213,7 +222,7 @@ curl --location 'https://api.airbyte.ai/api/v1/connectors/instances/{your_connec
 ```
 
 
-**Params**
+**Parameters**
 
 | Parameter Name | Type | Required | Description |
 |----------------|------|----------|-------------|
@@ -250,7 +259,7 @@ Use the `fields` parameter to retrieve only specific fields for better performan
 **Python SDK**
 
 ```python
-salesforce.contacts.get(
+await salesforce.contacts.get(
     id="<str>"
 )
 ```
@@ -271,7 +280,7 @@ curl --location 'https://api.airbyte.ai/api/v1/connectors/instances/{your_connec
 ```
 
 
-**Params**
+**Parameters**
 
 | Parameter Name | Type | Required | Description |
 |----------------|------|----------|-------------|
@@ -304,7 +313,7 @@ SOSL is optimized for text-based searches across multiple fields.
 **Python SDK**
 
 ```python
-salesforce.contacts.search(
+await salesforce.contacts.search(
     q="<str>"
 )
 ```
@@ -325,11 +334,15 @@ curl --location 'https://api.airbyte.ai/api/v1/connectors/instances/{your_connec
 ```
 
 
-**Params**
+**Parameters**
 
 | Parameter Name | Type | Required | Description |
 |----------------|------|----------|-------------|
-| `q` | `string` | Yes | SOSL search query. Format: FIND \{searchTerm\} RETURNING Contact(fields) [LIMIT n]. Examples: `FIND {John} IN NAME FIELDS RETURNING Contact(Id,FirstName,LastName,Email)`, `FIND {*@example.com} IN EMAIL FIELDS RETURNING Contact(Id,Name,Email) LIMIT 25` |
+| `q` | `string` | Yes | SOSL search query. Format: FIND \{searchTerm\} RETURNING Contact(fields) [LIMIT n]
+Examples:
+- "FIND \{John\} IN NAME FIELDS RETURNING Contact(Id,FirstName,LastName,Email)"
+- "FIND \{*@example.com\} IN EMAIL FIELDS RETURNING Contact(Id,Name,Email) LIMIT 25"
+ |
 
 
 <details>
@@ -355,7 +368,7 @@ For pagination, check the response: if `done` is false, use `nextRecordsUrl` to 
 **Python SDK**
 
 ```python
-salesforce.leads.list(
+await salesforce.leads.list(
     q="<str>"
 )
 ```
@@ -376,7 +389,7 @@ curl --location 'https://api.airbyte.ai/api/v1/connectors/instances/{your_connec
 ```
 
 
-**Params**
+**Parameters**
 
 | Parameter Name | Type | Required | Description |
 |----------------|------|----------|-------------|
@@ -413,7 +426,7 @@ Use the `fields` parameter to retrieve only specific fields for better performan
 **Python SDK**
 
 ```python
-salesforce.leads.get(
+await salesforce.leads.get(
     id="<str>"
 )
 ```
@@ -434,7 +447,7 @@ curl --location 'https://api.airbyte.ai/api/v1/connectors/instances/{your_connec
 ```
 
 
-**Params**
+**Parameters**
 
 | Parameter Name | Type | Required | Description |
 |----------------|------|----------|-------------|
@@ -467,7 +480,7 @@ SOSL is optimized for text-based searches across multiple fields.
 **Python SDK**
 
 ```python
-salesforce.leads.search(
+await salesforce.leads.search(
     q="<str>"
 )
 ```
@@ -488,11 +501,15 @@ curl --location 'https://api.airbyte.ai/api/v1/connectors/instances/{your_connec
 ```
 
 
-**Params**
+**Parameters**
 
 | Parameter Name | Type | Required | Description |
 |----------------|------|----------|-------------|
-| `q` | `string` | Yes | SOSL search query. Format: FIND \{searchTerm\} RETURNING Lead(fields) [LIMIT n]. Examples: `FIND {Smith} IN NAME FIELDS RETURNING Lead(Id,FirstName,LastName,Company,Status)`, `FIND {marketing} IN ALL FIELDS RETURNING Lead(Id,Name,LeadSource) LIMIT 50` |
+| `q` | `string` | Yes | SOSL search query. Format: FIND \{searchTerm\} RETURNING Lead(fields) [LIMIT n]
+Examples:
+- "FIND \{Smith\} IN NAME FIELDS RETURNING Lead(Id,FirstName,LastName,Company,Status)"
+- "FIND \{marketing\} IN ALL FIELDS RETURNING Lead(Id,Name,LeadSource) LIMIT 50"
+ |
 
 
 <details>
@@ -518,7 +535,7 @@ For pagination, check the response: if `done` is false, use `nextRecordsUrl` to 
 **Python SDK**
 
 ```python
-salesforce.opportunities.list(
+await salesforce.opportunities.list(
     q="<str>"
 )
 ```
@@ -539,7 +556,7 @@ curl --location 'https://api.airbyte.ai/api/v1/connectors/instances/{your_connec
 ```
 
 
-**Params**
+**Parameters**
 
 | Parameter Name | Type | Required | Description |
 |----------------|------|----------|-------------|
@@ -576,7 +593,7 @@ Use the `fields` parameter to retrieve only specific fields for better performan
 **Python SDK**
 
 ```python
-salesforce.opportunities.get(
+await salesforce.opportunities.get(
     id="<str>"
 )
 ```
@@ -597,7 +614,7 @@ curl --location 'https://api.airbyte.ai/api/v1/connectors/instances/{your_connec
 ```
 
 
-**Params**
+**Parameters**
 
 | Parameter Name | Type | Required | Description |
 |----------------|------|----------|-------------|
@@ -630,7 +647,7 @@ SOSL is optimized for text-based searches across multiple fields.
 **Python SDK**
 
 ```python
-salesforce.opportunities.search(
+await salesforce.opportunities.search(
     q="<str>"
 )
 ```
@@ -651,11 +668,15 @@ curl --location 'https://api.airbyte.ai/api/v1/connectors/instances/{your_connec
 ```
 
 
-**Params**
+**Parameters**
 
 | Parameter Name | Type | Required | Description |
 |----------------|------|----------|-------------|
-| `q` | `string` | Yes | SOSL search query. Format: FIND \{searchTerm\} RETURNING Opportunity(fields) [LIMIT n]. Examples: `FIND {Enterprise} IN NAME FIELDS RETURNING Opportunity(Id,Name,Amount,StageName)`, `FIND {renewal} IN ALL FIELDS RETURNING Opportunity(Id,Name,CloseDate) LIMIT 25` |
+| `q` | `string` | Yes | SOSL search query. Format: FIND \{searchTerm\} RETURNING Opportunity(fields) [LIMIT n]
+Examples:
+- "FIND \{Enterprise\} IN NAME FIELDS RETURNING Opportunity(Id,Name,Amount,StageName)"
+- "FIND \{renewal\} IN ALL FIELDS RETURNING Opportunity(Id,Name,CloseDate) LIMIT 25"
+ |
 
 
 <details>
@@ -681,7 +702,7 @@ For pagination, check the response: if `done` is false, use `nextRecordsUrl` to 
 **Python SDK**
 
 ```python
-salesforce.tasks.list(
+await salesforce.tasks.list(
     q="<str>"
 )
 ```
@@ -702,7 +723,7 @@ curl --location 'https://api.airbyte.ai/api/v1/connectors/instances/{your_connec
 ```
 
 
-**Params**
+**Parameters**
 
 | Parameter Name | Type | Required | Description |
 |----------------|------|----------|-------------|
@@ -739,7 +760,7 @@ Use the `fields` parameter to retrieve only specific fields for better performan
 **Python SDK**
 
 ```python
-salesforce.tasks.get(
+await salesforce.tasks.get(
     id="<str>"
 )
 ```
@@ -760,7 +781,7 @@ curl --location 'https://api.airbyte.ai/api/v1/connectors/instances/{your_connec
 ```
 
 
-**Params**
+**Parameters**
 
 | Parameter Name | Type | Required | Description |
 |----------------|------|----------|-------------|
@@ -793,7 +814,7 @@ SOSL is optimized for text-based searches across multiple fields.
 **Python SDK**
 
 ```python
-salesforce.tasks.search(
+await salesforce.tasks.search(
     q="<str>"
 )
 ```
@@ -814,11 +835,15 @@ curl --location 'https://api.airbyte.ai/api/v1/connectors/instances/{your_connec
 ```
 
 
-**Params**
+**Parameters**
 
 | Parameter Name | Type | Required | Description |
 |----------------|------|----------|-------------|
-| `q` | `string` | Yes | SOSL search query. Format: FIND \{searchTerm\} RETURNING Task(fields) [LIMIT n]. Examples: `FIND {follow up} IN ALL FIELDS RETURNING Task(Id,Subject,Status,Priority)`, `FIND {call} IN NAME FIELDS RETURNING Task(Id,Subject,ActivityDate) LIMIT 50` |
+| `q` | `string` | Yes | SOSL search query. Format: FIND \{searchTerm\} RETURNING Task(fields) [LIMIT n]
+Examples:
+- "FIND \{follow up\} IN ALL FIELDS RETURNING Task(Id,Subject,Status,Priority)"
+- "FIND \{call\} IN NAME FIELDS RETURNING Task(Id,Subject,ActivityDate) LIMIT 50"
+ |
 
 
 <details>
@@ -844,7 +869,7 @@ For pagination, check the response: if `done` is false, use `nextRecordsUrl` to 
 **Python SDK**
 
 ```python
-salesforce.events.list(
+await salesforce.events.list(
     q="<str>"
 )
 ```
@@ -865,7 +890,7 @@ curl --location 'https://api.airbyte.ai/api/v1/connectors/instances/{your_connec
 ```
 
 
-**Params**
+**Parameters**
 
 | Parameter Name | Type | Required | Description |
 |----------------|------|----------|-------------|
@@ -902,7 +927,7 @@ Use the `fields` parameter to retrieve only specific fields for better performan
 **Python SDK**
 
 ```python
-salesforce.events.get(
+await salesforce.events.get(
     id="<str>"
 )
 ```
@@ -923,7 +948,7 @@ curl --location 'https://api.airbyte.ai/api/v1/connectors/instances/{your_connec
 ```
 
 
-**Params**
+**Parameters**
 
 | Parameter Name | Type | Required | Description |
 |----------------|------|----------|-------------|
@@ -956,7 +981,7 @@ SOSL is optimized for text-based searches across multiple fields.
 **Python SDK**
 
 ```python
-salesforce.events.search(
+await salesforce.events.search(
     q="<str>"
 )
 ```
@@ -977,11 +1002,15 @@ curl --location 'https://api.airbyte.ai/api/v1/connectors/instances/{your_connec
 ```
 
 
-**Params**
+**Parameters**
 
 | Parameter Name | Type | Required | Description |
 |----------------|------|----------|-------------|
-| `q` | `string` | Yes | SOSL search query. Format: FIND \{searchTerm\} RETURNING Event(fields) [LIMIT n]. Examples: `FIND {meeting} IN ALL FIELDS RETURNING Event(Id,Subject,StartDateTime,Location)`, `FIND {demo} IN NAME FIELDS RETURNING Event(Id,Subject,EndDateTime) LIMIT 25` |
+| `q` | `string` | Yes | SOSL search query. Format: FIND \{searchTerm\} RETURNING Event(fields) [LIMIT n]
+Examples:
+- "FIND \{meeting\} IN ALL FIELDS RETURNING Event(Id,Subject,StartDateTime,Location)"
+- "FIND \{demo\} IN NAME FIELDS RETURNING Event(Id,Subject,EndDateTime) LIMIT 25"
+ |
 
 
 <details>
@@ -1007,7 +1036,7 @@ For pagination, check the response: if `done` is false, use `nextRecordsUrl` to 
 **Python SDK**
 
 ```python
-salesforce.campaigns.list(
+await salesforce.campaigns.list(
     q="<str>"
 )
 ```
@@ -1028,7 +1057,7 @@ curl --location 'https://api.airbyte.ai/api/v1/connectors/instances/{your_connec
 ```
 
 
-**Params**
+**Parameters**
 
 | Parameter Name | Type | Required | Description |
 |----------------|------|----------|-------------|
@@ -1065,7 +1094,7 @@ Use the `fields` parameter to retrieve only specific fields for better performan
 **Python SDK**
 
 ```python
-salesforce.campaigns.get(
+await salesforce.campaigns.get(
     id="<str>"
 )
 ```
@@ -1086,7 +1115,7 @@ curl --location 'https://api.airbyte.ai/api/v1/connectors/instances/{your_connec
 ```
 
 
-**Params**
+**Parameters**
 
 | Parameter Name | Type | Required | Description |
 |----------------|------|----------|-------------|
@@ -1119,7 +1148,7 @@ SOSL is optimized for text-based searches across multiple fields.
 **Python SDK**
 
 ```python
-salesforce.campaigns.search(
+await salesforce.campaigns.search(
     q="<str>"
 )
 ```
@@ -1140,11 +1169,15 @@ curl --location 'https://api.airbyte.ai/api/v1/connectors/instances/{your_connec
 ```
 
 
-**Params**
+**Parameters**
 
 | Parameter Name | Type | Required | Description |
 |----------------|------|----------|-------------|
-| `q` | `string` | Yes | SOSL search query. Format: FIND \{searchTerm\} RETURNING Campaign(fields) [LIMIT n]. Examples: `FIND {webinar} IN ALL FIELDS RETURNING Campaign(Id,Name,Type,Status)`, `FIND {2024} IN NAME FIELDS RETURNING Campaign(Id,Name,StartDate,IsActive) LIMIT 50` |
+| `q` | `string` | Yes | SOSL search query. Format: FIND \{searchTerm\} RETURNING Campaign(fields) [LIMIT n]
+Examples:
+- "FIND \{webinar\} IN ALL FIELDS RETURNING Campaign(Id,Name,Type,Status)"
+- "FIND \{2024\} IN NAME FIELDS RETURNING Campaign(Id,Name,StartDate,IsActive) LIMIT 50"
+ |
 
 
 <details>
@@ -1170,7 +1203,7 @@ For pagination, check the response: if `done` is false, use `nextRecordsUrl` to 
 **Python SDK**
 
 ```python
-salesforce.cases.list(
+await salesforce.cases.list(
     q="<str>"
 )
 ```
@@ -1191,7 +1224,7 @@ curl --location 'https://api.airbyte.ai/api/v1/connectors/instances/{your_connec
 ```
 
 
-**Params**
+**Parameters**
 
 | Parameter Name | Type | Required | Description |
 |----------------|------|----------|-------------|
@@ -1229,7 +1262,7 @@ Use the `fields` parameter to retrieve only specific fields for better performan
 **Python SDK**
 
 ```python
-salesforce.cases.get(
+await salesforce.cases.get(
     id="<str>"
 )
 ```
@@ -1250,7 +1283,7 @@ curl --location 'https://api.airbyte.ai/api/v1/connectors/instances/{your_connec
 ```
 
 
-**Params**
+**Parameters**
 
 | Parameter Name | Type | Required | Description |
 |----------------|------|----------|-------------|
@@ -1284,7 +1317,7 @@ SOSL is optimized for text-based searches across multiple fields.
 **Python SDK**
 
 ```python
-salesforce.cases.search(
+await salesforce.cases.search(
     q="<str>"
 )
 ```
@@ -1305,11 +1338,15 @@ curl --location 'https://api.airbyte.ai/api/v1/connectors/instances/{your_connec
 ```
 
 
-**Params**
+**Parameters**
 
 | Parameter Name | Type | Required | Description |
 |----------------|------|----------|-------------|
-| `q` | `string` | Yes | SOSL search query. Format: FIND \{searchTerm\} RETURNING Case(fields) [LIMIT n]. Examples: `FIND {login issue} IN ALL FIELDS RETURNING Case(Id,CaseNumber,Subject,Status)`, `FIND {urgent} IN NAME FIELDS RETURNING Case(Id,Subject,Priority) LIMIT 25` |
+| `q` | `string` | Yes | SOSL search query. Format: FIND \{searchTerm\} RETURNING Case(fields) [LIMIT n]
+Examples:
+- "FIND \{login issue\} IN ALL FIELDS RETURNING Case(Id,CaseNumber,Subject,Status)"
+- "FIND \{urgent\} IN NAME FIELDS RETURNING Case(Id,Subject,Priority) LIMIT 25"
+ |
 
 
 <details>
@@ -1335,7 +1372,7 @@ For pagination, check the response: if `done` is false, use `nextRecordsUrl` to 
 **Python SDK**
 
 ```python
-salesforce.notes.list(
+await salesforce.notes.list(
     q="<str>"
 )
 ```
@@ -1356,7 +1393,7 @@ curl --location 'https://api.airbyte.ai/api/v1/connectors/instances/{your_connec
 ```
 
 
-**Params**
+**Parameters**
 
 | Parameter Name | Type | Required | Description |
 |----------------|------|----------|-------------|
@@ -1393,7 +1430,7 @@ Use the `fields` parameter to retrieve only specific fields for better performan
 **Python SDK**
 
 ```python
-salesforce.notes.get(
+await salesforce.notes.get(
     id="<str>"
 )
 ```
@@ -1414,7 +1451,7 @@ curl --location 'https://api.airbyte.ai/api/v1/connectors/instances/{your_connec
 ```
 
 
-**Params**
+**Parameters**
 
 | Parameter Name | Type | Required | Description |
 |----------------|------|----------|-------------|
@@ -1447,7 +1484,7 @@ SOSL is optimized for text-based searches across multiple fields.
 **Python SDK**
 
 ```python
-salesforce.notes.search(
+await salesforce.notes.search(
     q="<str>"
 )
 ```
@@ -1468,11 +1505,15 @@ curl --location 'https://api.airbyte.ai/api/v1/connectors/instances/{your_connec
 ```
 
 
-**Params**
+**Parameters**
 
 | Parameter Name | Type | Required | Description |
 |----------------|------|----------|-------------|
-| `q` | `string` | Yes | SOSL search query. Format: FIND \{searchTerm\} RETURNING Note(fields) [LIMIT n]. Examples: `FIND {important} IN ALL FIELDS RETURNING Note(Id,Title,ParentId)`, `FIND {action items} IN NAME FIELDS RETURNING Note(Id,Title,Body) LIMIT 50` |
+| `q` | `string` | Yes | SOSL search query. Format: FIND \{searchTerm\} RETURNING Note(fields) [LIMIT n]
+Examples:
+- "FIND \{important\} IN ALL FIELDS RETURNING Note(Id,Title,ParentId)"
+- "FIND \{action items\} IN NAME FIELDS RETURNING Note(Id,Title,Body) LIMIT 50"
+ |
 
 
 <details>
@@ -1499,7 +1540,7 @@ Note: ContentVersion does not support FIELDS(STANDARD), so specific fields must 
 **Python SDK**
 
 ```python
-salesforce.content_versions.list(
+await salesforce.content_versions.list(
     q="<str>"
 )
 ```
@@ -1520,7 +1561,7 @@ curl --location 'https://api.airbyte.ai/api/v1/connectors/instances/{your_connec
 ```
 
 
-**Params**
+**Parameters**
 
 | Parameter Name | Type | Required | Description |
 |----------------|------|----------|-------------|
@@ -1562,7 +1603,7 @@ Use the download action to retrieve the actual file binary.
 **Python SDK**
 
 ```python
-salesforce.content_versions.get(
+await salesforce.content_versions.get(
     id="<str>"
 )
 ```
@@ -1583,7 +1624,7 @@ curl --location 'https://api.airbyte.ai/api/v1/connectors/instances/{your_connec
 ```
 
 
-**Params**
+**Parameters**
 
 | Parameter Name | Type | Required | Description |
 |----------------|------|----------|-------------|
@@ -1645,7 +1686,7 @@ curl --location 'https://api.airbyte.ai/api/v1/connectors/instances/{your_connec
 ```
 
 
-**Params**
+**Parameters**
 
 | Parameter Name | Type | Required | Description |
 |----------------|------|----------|-------------|
@@ -1667,7 +1708,7 @@ Note: Attachments are a legacy feature; consider using ContentVersion (Salesforc
 **Python SDK**
 
 ```python
-salesforce.attachments.list(
+await salesforce.attachments.list(
     q="<str>"
 )
 ```
@@ -1688,7 +1729,7 @@ curl --location 'https://api.airbyte.ai/api/v1/connectors/instances/{your_connec
 ```
 
 
-**Params**
+**Parameters**
 
 | Parameter Name | Type | Required | Description |
 |----------------|------|----------|-------------|
@@ -1729,7 +1770,7 @@ Note: Attachments are a legacy feature; consider using ContentVersion for new im
 **Python SDK**
 
 ```python
-salesforce.attachments.get(
+await salesforce.attachments.get(
     id="<str>"
 )
 ```
@@ -1750,7 +1791,7 @@ curl --location 'https://api.airbyte.ai/api/v1/connectors/instances/{your_connec
 ```
 
 
-**Params**
+**Parameters**
 
 | Parameter Name | Type | Required | Description |
 |----------------|------|----------|-------------|
@@ -1810,7 +1851,7 @@ curl --location 'https://api.airbyte.ai/api/v1/connectors/instances/{your_connec
 ```
 
 
-**Params**
+**Parameters**
 
 | Parameter Name | Type | Required | Description |
 |----------------|------|----------|-------------|
@@ -1831,7 +1872,7 @@ For pagination, check the response: if `done` is false, use `nextRecordsUrl` to 
 **Python SDK**
 
 ```python
-salesforce.query.list(
+await salesforce.query.list(
     q="<str>"
 )
 ```
@@ -1852,7 +1893,7 @@ curl --location 'https://api.airbyte.ai/api/v1/connectors/instances/{your_connec
 ```
 
 
-**Params**
+**Parameters**
 
 | Parameter Name | Type | Required | Description |
 |----------------|------|----------|-------------|
@@ -1883,18 +1924,16 @@ Examples:
 
 ## Configuration
 
-The connector requires the following configuration variables:
+The Salesforce connector requires the following configuration variables. These variables are used to construct the base API URL. Pass them via the `config` parameter when initializing the connector.
 
 | Variable | Type | Required | Default | Description |
 |----------|------|----------|---------|-------------|
 | `instance_url` | `string` | Yes | https://login.salesforce.com | Your Salesforce instance URL (e.g., https://na1.salesforce.com) |
 
-These variables are used to construct the base API URL. Pass them via the `config` parameter when initializing the connector.
-
 
 ## Authentication
 
-The Salesforce connector supports the following authentication methods:
+The Salesforce connector supports the following authentication methods.
 
 
 ### Salesforce OAuth 2.0

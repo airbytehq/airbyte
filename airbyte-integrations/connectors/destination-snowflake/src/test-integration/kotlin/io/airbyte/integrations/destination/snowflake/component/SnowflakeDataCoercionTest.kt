@@ -29,6 +29,7 @@ import io.airbyte.cdk.load.component.toArgs
 import io.airbyte.cdk.load.data.AirbyteValue
 import io.airbyte.cdk.load.dataflow.transform.ValueCoercer
 import io.airbyte.cdk.load.schema.TableSchemaFactory
+import io.airbyte.integrations.destination.snowflake.component.config.SnowflakeComponentTestFixtures
 import io.airbyte.protocol.models.v0.AirbyteRecordMessageMetaChange.Reason
 import io.micronaut.test.extensions.junit5.annotation.MicronautTest
 import java.math.BigDecimal

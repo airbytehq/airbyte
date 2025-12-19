@@ -1,11 +1,11 @@
-# Airbyte Linear AI Connector
+# Linear agent connector
 
 Linear is a modern issue tracking and project management tool built for software
 development teams. This connector provides access to issues, projects, and teams
 for sprint planning, backlog management, and development workflow analysis.
 
 
-## Example Questions
+## Example questions
 
 - Show me the open issues assigned to my team this week
 - List out all projects I'm currently involved in
@@ -17,7 +17,7 @@ for sprint planning, backlog management, and development workflow analysis.
 - Which projects have the most unresolved issues?
 - Give me an overview of my team's current project backlog
 
-## Unsupported Questions
+## Unsupported questions
 
 - Create a new issue for the backend team
 - Update the priority of this specific issue
@@ -29,23 +29,25 @@ for sprint planning, backlog management, and development workflow analysis.
 ## Installation
 
 ```bash
-uv pip install airbyte-ai-linear
+uv pip install airbyte-agent-linear
 ```
 
 ## Usage
 
 ```python
-from airbyte_ai_linear import LinearConnector, LinearAuthConfig
+from airbyte_agent_linear import LinearConnector, LinearAuthConfig
 
 connector = LinearConnector(
   auth_config=LinearAuthConfig(
     api_key="..."
   )
 )
-result = connector.issues.list()
+result = await connector.issues.list()
 ```
 
-## Documentation
+## Full documentation
+
+This connector supports the following entities and actions.
 
 | Entity | Actions |
 |--------|---------|
@@ -54,14 +56,12 @@ result = connector.issues.list()
 | Teams | [List](./REFERENCE.md#teams-list), [Get](./REFERENCE.md#teams-get) |
 
 
-For detailed documentation on available actions and parameters, see [REFERENCE.md](./REFERENCE.md).
+For detailed documentation on available actions and parameters, see this connector's [full reference documentation](./REFERENCE.md).
 
-For the service's official API docs, see [Linear API Reference](https://linear.app/developers/graphql).
+For the service's official API docs, see the [Linear API reference](https://linear.app/developers/graphql).
 
-## Version Information
+## Version information
 
-**Package Version:** 0.19.10
-
-**Connector Version:** 0.1.1
-
-**Generated with connector-sdk:** 1ab72bd8e7249872a4cf66327dd1a0bf68905acb
+- **Package version:** 0.19.20
+- **Connector version:** 0.1.1
+- **Generated with Connector SDK commit SHA:** f7c55d3e3cdc7568cab2da9d736285eec58f044b

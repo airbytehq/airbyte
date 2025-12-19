@@ -1,4 +1,4 @@
-# Airbyte Greenhouse AI Connector
+# Greenhouse agent connector
 
 Greenhouse is an applicant tracking system (ATS) that helps companies manage their
 hiring process. This connector provides access to candidates, applications, jobs,
@@ -6,7 +6,7 @@ offers, users, departments, offices, job posts, sources, and scheduled interview
 for recruiting analytics and talent acquisition insights.
 
 
-## Example Questions
+## Example questions
 
 - Show me candidates from [Company] who applied last month
 - What are the top 5 sources for our job applications this quarter?
@@ -19,7 +19,7 @@ for recruiting analytics and talent acquisition insights.
 - Summarize the candidate pipeline for our latest job posting
 - Find the most active departments in recruiting this month
 
-## Unsupported Questions
+## Unsupported questions
 
 - Create a new job posting for the marketing team
 - Schedule an interview for [candidate]
@@ -31,23 +31,25 @@ for recruiting analytics and talent acquisition insights.
 ## Installation
 
 ```bash
-uv pip install airbyte-ai-greenhouse
+uv pip install airbyte-agent-greenhouse
 ```
 
 ## Usage
 
 ```python
-from airbyte_ai_greenhouse import GreenhouseConnector, GreenhouseAuthConfig
+from airbyte_agent_greenhouse import GreenhouseConnector, GreenhouseAuthConfig
 
 connector = GreenhouseConnector(
   auth_config=GreenhouseAuthConfig(
     api_key="..."
   )
 )
-result = connector.candidates.list()
+result = await connector.candidates.list()
 ```
 
-## Documentation
+## Full documentation
+
+This connector supports the following entities and actions.
 
 | Entity | Actions |
 |--------|---------|
@@ -65,14 +67,12 @@ result = connector.candidates.list()
 | Candidate Attachment | [Download](./REFERENCE.md#candidate-attachment-download) |
 
 
-For detailed documentation on available actions and parameters, see [REFERENCE.md](./REFERENCE.md).
+For detailed documentation on available actions and parameters, see this connector's [full reference documentation](./REFERENCE.md).
 
-For the service's official API docs, see [Greenhouse API Reference](https://developers.greenhouse.io/harvest.html).
+For the service's official API docs, see the [Greenhouse API reference](https://developers.greenhouse.io/harvest.html).
 
-## Version Information
+## Version information
 
-**Package Version:** 0.17.10
-
-**Connector Version:** 0.1.1
-
-**Generated with connector-sdk:** 1ab72bd8e7249872a4cf66327dd1a0bf68905acb
+- **Package version:** 0.17.20
+- **Connector version:** 0.1.1
+- **Generated with Connector SDK commit SHA:** f7c55d3e3cdc7568cab2da9d736285eec58f044b

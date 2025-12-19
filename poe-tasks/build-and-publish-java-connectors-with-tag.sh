@@ -7,7 +7,7 @@
 #   --name <name>:    Specifies the connector name (e.g., destination-bigquery).
 #                    
 #   --release-type:   Specifies the release type:
-#                     - pre-release: Builds with a dev tag (version-dev.githash).
+#                     - pre-release: Builds with a preview tag (version-preview.githash).
 #                     - main-release: Builds with the exact version from metadata.yaml.
 #                     Defaults to pre-release if not specified.
 #

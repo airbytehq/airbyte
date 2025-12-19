@@ -8,8 +8,10 @@ import io.airbyte.cdk.load.component.TableOperationsFixtures
 import io.airbyte.cdk.load.component.TableOperationsSuite
 import io.airbyte.cdk.load.schema.TableSchemaFactory
 import io.airbyte.integrations.destination.snowflake.client.SnowflakeAirbyteClient
-import io.airbyte.integrations.destination.snowflake.component.SnowflakeComponentTestFixtures.idTestWithCdcMapping
-import io.airbyte.integrations.destination.snowflake.component.SnowflakeComponentTestFixtures.testMapping
+import io.airbyte.integrations.destination.snowflake.component.config.SnowflakeComponentTestFixtures
+import io.airbyte.integrations.destination.snowflake.component.config.SnowflakeComponentTestFixtures.idTestWithCdcMapping
+import io.airbyte.integrations.destination.snowflake.component.config.SnowflakeComponentTestFixtures.testMapping
+import io.airbyte.integrations.destination.snowflake.component.config.SnowflakeTestTableOperationsClient
 import io.micronaut.test.extensions.junit5.annotation.MicronautTest
 import org.junit.jupiter.api.Test
 import org.junit.jupiter.api.parallel.Execution

@@ -1,11 +1,11 @@
-# Airbyte Asana AI Connector
+# Asana agent connector
 
 Asana is a work management platform that helps teams organize, track, and manage
 projects and tasks. This connector provides access to tasks, projects, workspaces,
 teams, and users for project tracking, workload analysis, and productivity insights.
 
 
-## Example Questions
+## Example questions
 
 - What tasks are assigned to me this week?
 - List all projects in my workspace
@@ -18,7 +18,7 @@ teams, and users for project tracking, workload analysis, and productivity insig
 - Identify overdue tasks across all my projects
 - Show me details of my current workspace and its users
 
-## Unsupported Questions
+## Unsupported questions
 
 - Create a new task for [TeamMember]
 - Update the priority of this task
@@ -30,13 +30,13 @@ teams, and users for project tracking, workload analysis, and productivity insig
 ## Installation
 
 ```bash
-uv pip install airbyte-ai-asana
+uv pip install airbyte-agent-asana
 ```
 
 ## Usage
 
 ```python
-from airbyte_ai_asana import AsanaConnector, AsanaAuthConfig
+from airbyte_agent_asana import AsanaConnector, AsanaAuthConfig
 
 connector = AsanaConnector(
   auth_config=AsanaAuthConfig(
@@ -46,10 +46,12 @@ connector = AsanaConnector(
     client_secret="..."
   )
 )
-result = connector.tasks.list()
+result = await connector.tasks.list()
 ```
 
-## Documentation
+## Full documentation
+
+This connector supports the following entities and actions.
 
 | Entity | Actions |
 |--------|---------|
@@ -67,16 +69,22 @@ result = connector.tasks.list()
 | Teams | [Get](./REFERENCE.md#teams-get) |
 | Workspace Teams | [List](./REFERENCE.md#workspace-teams-list) |
 | User Teams | [List](./REFERENCE.md#user-teams-list) |
+| Attachments | [List](./REFERENCE.md#attachments-list), [Get](./REFERENCE.md#attachments-get), [Download](./REFERENCE.md#attachments-download) |
+| Workspace Tags | [List](./REFERENCE.md#workspace-tags-list) |
+| Tags | [Get](./REFERENCE.md#tags-get) |
+| Project Sections | [List](./REFERENCE.md#project-sections-list) |
+| Sections | [Get](./REFERENCE.md#sections-get) |
+| Task Subtasks | [List](./REFERENCE.md#task-subtasks-list) |
+| Task Dependencies | [List](./REFERENCE.md#task-dependencies-list) |
+| Task Dependents | [List](./REFERENCE.md#task-dependents-list) |
 
 
-For detailed documentation on available actions and parameters, see [REFERENCE.md](./REFERENCE.md).
+For detailed documentation on available actions and parameters, see this connector's [full reference documentation](./REFERENCE.md).
 
-For the service's official API docs, see [Asana API Reference](https://developers.asana.com/reference/rest-api-reference).
+For the service's official API docs, see the [Asana API reference](https://developers.asana.com/reference/rest-api-reference).
 
-## Version Information
+## Version information
 
-**Package Version:** 0.19.10
-
-**Connector Version:** 0.1.1
-
-**Generated with connector-sdk:** 1ab72bd8e7249872a4cf66327dd1a0bf68905acb
+- **Package version:** 0.19.22
+- **Connector version:** 0.1.4
+- **Generated with Connector SDK commit SHA:** f7c55d3e3cdc7568cab2da9d736285eec58f044b

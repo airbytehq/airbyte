@@ -1,17 +1,17 @@
-# Airbyte Jira AI Connector
+# Jira agent connector
 
 Connector for Jira API
 
 ## Installation
 
 ```bash
-uv pip install airbyte-ai-jira
+uv pip install airbyte-agent-jira
 ```
 
 ## Usage
 
 ```python
-from airbyte_ai_jira import JiraConnector, JiraAuthConfig
+from airbyte_agent_jira import JiraConnector, JiraAuthConfig
 
 connector = JiraConnector(
   auth_config=JiraAuthConfig(
@@ -19,10 +19,12 @@ connector = JiraConnector(
     password="..."
   )
 )
-result = connector.issues.search()
+result = await connector.issues.search()
 ```
 
-## Documentation
+## Full documentation
+
+This connector supports the following entities and actions.
 
 | Entity | Actions |
 |--------|---------|
@@ -34,14 +36,12 @@ result = connector.issues.search()
 | Issue Worklogs | [List](./REFERENCE.md#issue-worklogs-list), [Get](./REFERENCE.md#issue-worklogs-get) |
 
 
-For detailed documentation on available actions and parameters, see [REFERENCE.md](./REFERENCE.md).
+For detailed documentation on available actions and parameters, see this connector's [full reference documentation](./REFERENCE.md).
 
-For the service's official API docs, see [Jira API Reference](https://developer.atlassian.com/cloud/jira/platform/rest/v3/intro/).
+For the service's official API docs, see the [Jira API reference](https://developer.atlassian.com/cloud/jira/platform/rest/v3/intro/).
 
-## Version Information
+## Version information
 
-**Package Version:** 0.1.1
-
-**Connector Version:** 1.0.2
-
-**Generated with connector-sdk:** 1ab72bd8e7249872a4cf66327dd1a0bf68905acb
+- **Package version:** 0.1.11
+- **Connector version:** 1.0.2
+- **Generated with Connector SDK commit SHA:** f7c55d3e3cdc7568cab2da9d736285eec58f044b

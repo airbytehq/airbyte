@@ -1,4 +1,4 @@
-# Airbyte Salesforce AI Connector
+# Salesforce agent connector
 
 Salesforce is a cloud-based CRM platform that helps businesses manage customer
 relationships, sales pipelines, and business operations. This connector provides
@@ -6,7 +6,7 @@ access to accounts, contacts, leads, opportunities, tasks, events, campaigns, ca
 notes, and attachments for sales analytics and customer relationship management.
 
 
-## Example Questions
+## Example questions
 
 - Show me my top 5 opportunities this month
 - List all contacts from [Company] in the last quarter
@@ -18,7 +18,7 @@ notes, and attachments for sales analytics and customer relationship management.
 - Identify the highest value opportunities I'm currently tracking
 - Show me the notes and attachments for [customerX]'s account
 
-## Unsupported Questions
+## Unsupported questions
 
 - Create a new lead for [personX]
 - Update the status of my sales opportunity
@@ -29,13 +29,13 @@ notes, and attachments for sales analytics and customer relationship management.
 ## Installation
 
 ```bash
-uv pip install airbyte-ai-salesforce
+uv pip install airbyte-agent-salesforce
 ```
 
 ## Usage
 
 ```python
-from airbyte_ai_salesforce import SalesforceConnector, SalesforceAuthConfig
+from airbyte_agent_salesforce import SalesforceConnector, SalesforceAuthConfig
 
 connector = SalesforceConnector(
   auth_config=SalesforceAuthConfig(
@@ -44,10 +44,12 @@ connector = SalesforceConnector(
     client_secret="..."
   )
 )
-result = connector.accounts.list()
+result = await connector.accounts.list()
 ```
 
-## Documentation
+## Full documentation
+
+This connector supports the following entities and actions.
 
 | Entity | Actions |
 |--------|---------|
@@ -65,14 +67,12 @@ result = connector.accounts.list()
 | Query | [List](./REFERENCE.md#query-list) |
 
 
-For detailed documentation on available actions and parameters, see [REFERENCE.md](./REFERENCE.md).
+For detailed documentation on available actions and parameters, see this connector's [full reference documentation](./REFERENCE.md).
 
-For the service's official API docs, see [Salesforce API Reference](https://developer.salesforce.com/docs/atlas.en-us.api_rest.meta/api_rest/intro_rest.htm).
+For the service's official API docs, see the [Salesforce API reference](https://developer.salesforce.com/docs/atlas.en-us.api_rest.meta/api_rest/intro_rest.htm).
 
-## Version Information
+## Version information
 
-**Package Version:** 0.1.4
-
-**Connector Version:** 1.0.3
-
-**Generated with connector-sdk:** 1ab72bd8e7249872a4cf66327dd1a0bf68905acb
+- **Package version:** 0.1.14
+- **Connector version:** 1.0.3
+- **Generated with Connector SDK commit SHA:** f7c55d3e3cdc7568cab2da9d736285eec58f044b
