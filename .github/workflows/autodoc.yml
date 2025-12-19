@@ -40,6 +40,12 @@ jobs:
       - name: Get files changed in this push
         id: push-files
         run: |
+          # Verify jq is available (pre-installed on GitHub runners, but check defensively)
+          if ! command -v jq &> /dev/null; then
+            echo "::error::jq is required but not found. Please ensure the runner image includes jq."
+            exit 1
+          fi
+
           BEFORE="${{ github.event.before }}"
           SHA="${{ github.sha }}"
 
