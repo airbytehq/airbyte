@@ -59,9 +59,9 @@
         "title": "Customer ID(s)",
         "type": "string",
         "description": "Comma-separated list of (client) customer IDs. Each customer ID must be specified as a 10-digit number without dashes. For detailed instructions on finding this value, refer to our <a href=\"https://docs.airbyte.com/integrations/sources/google-ads#setup-guide\">documentation</a>.",
-        "pattern": "^[0-9]{10}(,[0-9]{10})*$",
+        "pattern": "^\\s*[0-9]{10}\\s*(\\s*,\\s*[0-9]{10}\\s*)*$",
         "pattern_descriptor": "The customer ID must be 10 digits. Separate multiple customer IDs using commas.",
-        "examples": ["6783948572,5839201945"],
+        "examples": ["6783948572, 5839201945"],
         "order": 1
       },
       "customer_status_filter": {
