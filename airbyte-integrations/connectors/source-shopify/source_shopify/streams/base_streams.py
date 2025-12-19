@@ -929,7 +929,9 @@ class IncrementalShopifyGraphQlBulkStreamWithDeletedEvents(IncrementalShopifyGra
             sync_mode=sync_mode, cursor_field=cursor_field, stream_slice=stream_slice, stream_state=stream_state
         )
         # fetch deleted events after the Stream data is pulled
-        yield from self.deleted_events.read_records(stream_state=stream_state)
+        yield from self.deleted_events.read_records(
+            sync_mode=sync_mode, cursor_field=cursor_field, stream_slice=stream_slice, stream_state=stream_state
+        )
 
 
 class FullRefreshShopifyGraphQlBulkStream(ShopifyStream):
