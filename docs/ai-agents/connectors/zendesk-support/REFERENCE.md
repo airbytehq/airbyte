@@ -2629,7 +2629,7 @@ The Zendesk-Support connector supports the following authentication methods.
 
 ```python
 ZendeskSupportConnector(
-  auth_config=ZendeskSupportAuthConfig(
+  auth_config=ZendeskSupportOauth20AuthConfig(
     access_token="<OAuth 2.0 access token>",
     refresh_token="<OAuth 2.0 refresh token (optional)>"
   )
@@ -2666,7 +2666,7 @@ curl --location 'https://api.airbyte.ai/api/v1/connectors/instances' \
 
 ```python
 ZendeskSupportConnector(
-  auth_config=ZendeskSupportAuthConfig(
+  auth_config=ZendeskSupportApiTokenAuthConfig(
     email="<Your Zendesk account email address>",
     api_token="<Your Zendesk API token from Admin Center>"
   )

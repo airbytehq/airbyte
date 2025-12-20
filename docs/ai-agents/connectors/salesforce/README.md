@@ -47,6 +47,7 @@ connector = SalesforceConnector(
 result = await connector.accounts.list()
 ```
 
+
 ## Full documentation
 
 This connector supports the following entities and actions.
@@ -73,6 +74,6 @@ For the service's official API docs, see the [Salesforce API reference](https://
 
 ## Version information
 
-- **Package version:** 0.1.14
+- **Package version:** 0.1.17
 - **Connector version:** 1.0.3
-- **Generated with Connector SDK commit SHA:** f7c55d3e3cdc7568cab2da9d736285eec58f044b
+- **Generated with Connector SDK commit SHA:** 12f6b994298f84dfa217940afe7c6b19bec4167b
