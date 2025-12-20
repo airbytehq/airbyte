@@ -6,6 +6,10 @@
 
 ## Version 0.1.92
 
+extract cdk: fix trigger table handling of empty tables
+
+## Version 0.1.92
+
 load cdk: datacoercion suite calls ValueCoercer.map
 
 ## Version 0.1.91
