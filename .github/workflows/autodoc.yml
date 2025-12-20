@@ -10,8 +10,9 @@
 # - Processes any connector with metadata.yaml changes
 #
 # Limitations:
-# - Only processes one connector per push (the first metadata.yaml found in changed files)
-# - If multiple connectors change in a single push, only the first is processed
+# - The workflow only identifies one connector per push (the first metadata.yaml found)
+# - However, Devin AI is usually smart enough to detect and document all changed connectors
+#   in a multi-connector push, even if the workflow only explicitly identifies one
 
 name: Autodoc
 
