@@ -23,11 +23,11 @@ jobs:
   recommend-documentation-updates:
     name: Recommend documentation updates with AI
     runs-on: ubuntu-latest
-    # Only run for human authors, exclude bot accounts, and skip draft PRs
+    # Only run for human PR authors, exclude bot accounts, and skip draft PRs
     if: |
       !github.event.pull_request.draft &&
-      !contains(fromJSON('["airbyteio", "octavia-bot", "octavia-bot-hoard", "github-actions[bot]", "dependabot[bot]"]'), github.actor) &&
-      !endsWith(github.actor, '[bot]')
+      !contains(fromJSON('["airbyteio", "octavia-bot", "octavia-bot-hoard", "github-actions[bot]", "dependabot[bot]"]'), github.event.pull_request.user.login) &&
+      !endsWith(github.event.pull_request.user.login, '[bot]')
 
     steps:
       # Step 1: Check if this is a fork PR without secrets access
