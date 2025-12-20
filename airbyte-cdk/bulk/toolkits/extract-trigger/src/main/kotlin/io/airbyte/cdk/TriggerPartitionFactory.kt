@@ -14,6 +14,7 @@ import io.airbyte.cdk.output.InvalidPrimaryKey
 import io.airbyte.cdk.output.ResetStream
 import io.airbyte.cdk.read.ConfiguredSyncMode
 import io.airbyte.cdk.read.DefaultJdbcSharedState
+import io.airbyte.cdk.read.DefaultJdbcStreamStateValue
 import io.airbyte.cdk.read.JdbcPartitionFactory
 import io.airbyte.cdk.read.SelectQueryGenerator
 import io.airbyte.cdk.read.Stream
@@ -73,8 +74,8 @@ class TriggerPartitionFactory(
         if (opaqueStateValue == null) {
             return coldStart(streamState)
         }
-        val sv: TriggerStreamStateValue =
-            Jsons.treeToValue(opaqueStateValue, TriggerStreamStateValue::class.java)
+        val sv: DefaultJdbcStreamStateValue =
+            Jsons.treeToValue(opaqueStateValue, DefaultJdbcStreamStateValue::class.java)
         val pkMap: Map<Field, JsonNode> =
             sv.pkMap(stream)
                 ?: run {
@@ -158,7 +159,7 @@ class TriggerPartitionFactory(
         }
     }
 
-    private fun TriggerStreamStateValue.pkMap(stream: Stream): Map<Field, JsonNode>? {
+    private fun DefaultJdbcStreamStateValue.pkMap(stream: Stream): Map<Field, JsonNode>? {
         if (primaryKey.isEmpty()) {
             return mapOf()
         }
@@ -172,7 +173,7 @@ class TriggerPartitionFactory(
         return fields.associateWith { primaryKey[it.id]!! }
     }
 
-    private fun TriggerStreamStateValue.cursorPair(stream: Stream): Pair<Field, JsonNode>? {
+    private fun DefaultJdbcStreamStateValue.cursorPair(stream: Stream): Pair<Field, JsonNode>? {
         if (cursors.size > 1) {
             handler.accept(
                 InvalidCursor(stream.id, cursors.keys.toString()),
@@ -247,8 +248,8 @@ class TriggerPartitionFactory(
         unsplitPartition: TriggerPartition,
         opaqueStateValues: List<OpaqueStateValue>
     ): List<TriggerPartition> {
-        val splitPartitionBoundaries: List<TriggerStreamStateValue> by lazy {
-            opaqueStateValues.map { Jsons.treeToValue(it, TriggerStreamStateValue::class.java) }
+        val splitPartitionBoundaries: List<DefaultJdbcStreamStateValue> by lazy {
+            opaqueStateValues.map { Jsons.treeToValue(it, DefaultJdbcStreamStateValue::class.java) }
         }
         return when (unsplitPartition) {
             is TriggerSplittableSnapshotPartition ->
@@ -262,7 +263,7 @@ class TriggerPartitionFactory(
     }
 
     private fun TriggerSplittableSnapshotPartition.split(
-        splitPointValues: List<TriggerStreamStateValue>
+        splitPointValues: List<DefaultJdbcStreamStateValue>
     ): List<TriggerSplittableSnapshotPartition> {
         val inners: List<List<JsonNode>> =
             splitPointValues.mapNotNull { it.pkMap(streamState.stream)?.values?.toList() }
@@ -282,7 +283,7 @@ class TriggerPartitionFactory(
     }
 
     private fun TriggerSplittableSnapshotWithCursorPartition.split(
-        splitPointValues: List<TriggerStreamStateValue>
+        splitPointValues: List<DefaultJdbcStreamStateValue>
     ): List<TriggerSplittableSnapshotWithCursorPartition> {
         val inners: List<List<JsonNode>> =
             splitPointValues.mapNotNull { it.pkMap(streamState.stream)?.values?.toList() }
@@ -304,7 +305,7 @@ class TriggerPartitionFactory(
     }
 
     private fun TriggerCursorIncrementalPartition.split(
-        splitPointValues: List<TriggerStreamStateValue>
+        splitPointValues: List<DefaultJdbcStreamStateValue>
     ): List<TriggerCursorIncrementalPartition> {
         val inners: List<JsonNode> = splitPointValues.mapNotNull { it.cursorPair(stream)?.second }
         val lbs: List<JsonNode> = listOf(cursorLowerBound) + inners

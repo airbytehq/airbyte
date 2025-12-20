@@ -9,6 +9,7 @@ import com.fasterxml.jackson.databind.node.ObjectNode
 import io.airbyte.cdk.command.OpaqueStateValue
 import io.airbyte.cdk.discover.Field
 import io.airbyte.cdk.read.And
+import io.airbyte.cdk.read.DefaultJdbcStreamStateValue
 import io.airbyte.cdk.read.Equal
 import io.airbyte.cdk.read.From
 import io.airbyte.cdk.read.FromSample
@@ -80,7 +81,7 @@ class TriggerUnsplittableSnapshotPartition(
     config: TriggerTableConfig,
 ) : TriggerUnsplittablePartition(selectQueryGenerator, streamState, config) {
 
-    override val completeState: OpaqueStateValue = TriggerStreamStateValue.snapshotCompleted
+    override val completeState: OpaqueStateValue = DefaultJdbcStreamStateValue.snapshotCompleted
 }
 
 /**
@@ -98,7 +99,7 @@ class TriggerUnsplittableSnapshotWithCursorPartition(
 
     override val completeState: OpaqueStateValue
         get() =
-            TriggerStreamStateValue.cursorIncrementalCheckpoint(
+            DefaultJdbcStreamStateValue.cursorIncrementalCheckpoint(
                 cursor,
                 cursorCheckpoint = streamState.cursorUpperBound ?: Jsons.nullNode(),
             )
@@ -239,16 +240,16 @@ class TriggerSplittableSnapshotPartition(
     override val completeState: OpaqueStateValue
         get() =
             when (upperBound) {
-                null -> TriggerStreamStateValue.snapshotCompleted
+                null -> DefaultJdbcStreamStateValue.snapshotCompleted
                 else ->
-                    TriggerStreamStateValue.snapshotCheckpoint(
+                    DefaultJdbcStreamStateValue.snapshotCheckpoint(
                         primaryKey = checkpointColumns,
                         primaryKeyCheckpoint = upperBound,
                     )
             }
 
     override fun incompleteState(lastRecord: ObjectNode): OpaqueStateValue =
-        TriggerStreamStateValue.snapshotCheckpoint(
+        DefaultJdbcStreamStateValue.snapshotCheckpoint(
             primaryKey = checkpointColumns,
             primaryKeyCheckpoint = checkpointColumns.map { lastRecord[it.id] ?: Jsons.nullNode() },
         )
@@ -321,12 +322,12 @@ class TriggerSplittableSnapshotWithCursorPartition(
         get() =
             when (upperBound) {
                 null ->
-                    TriggerStreamStateValue.cursorIncrementalCheckpoint(
+                    DefaultJdbcStreamStateValue.cursorIncrementalCheckpoint(
                         cursor,
                         cursorUpperBound,
                     )
                 else ->
-                    TriggerStreamStateValue.snapshotWithCursorCheckpoint(
+                    DefaultJdbcStreamStateValue.snapshotWithCursorCheckpoint(
                         primaryKey = checkpointColumns,
                         primaryKeyCheckpoint = upperBound,
                         cursor,
@@ -335,7 +336,7 @@ class TriggerSplittableSnapshotWithCursorPartition(
             }
 
     override fun incompleteState(lastRecord: ObjectNode): OpaqueStateValue =
-        TriggerStreamStateValue.snapshotWithCursorCheckpoint(
+        DefaultJdbcStreamStateValue.snapshotWithCursorCheckpoint(
             primaryKey = checkpointColumns,
             primaryKeyCheckpoint = checkpointColumns.map { lastRecord[it.id] ?: Jsons.nullNode() },
             cursor,
@@ -373,13 +374,13 @@ class TriggerCursorIncrementalPartition(
 
     override val completeState: OpaqueStateValue
         get() =
-            TriggerStreamStateValue.cursorIncrementalCheckpoint(
+            DefaultJdbcStreamStateValue.cursorIncrementalCheckpoint(
                 cursor,
                 cursorCheckpoint = cursorUpperBound,
             )
 
     override fun incompleteState(lastRecord: ObjectNode): OpaqueStateValue =
-        TriggerStreamStateValue.cursorIncrementalCheckpoint(
+        DefaultJdbcStreamStateValue.cursorIncrementalCheckpoint(
             cursor,
             cursorCheckpoint = lastRecord[cursor.id] ?: Jsons.nullNode(),
         )
