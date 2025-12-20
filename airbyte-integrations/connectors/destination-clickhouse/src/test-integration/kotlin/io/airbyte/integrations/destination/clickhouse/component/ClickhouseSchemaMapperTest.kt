@@ -5,14 +5,19 @@
 package io.airbyte.integrations.destination.clickhouse.component
 
 import io.airbyte.cdk.load.component.SchemaMapperSuite
+import io.airbyte.cdk.load.component.TableOperationsClient
+import io.airbyte.cdk.load.schema.TableSchemaFactory
 import io.airbyte.cdk.load.schema.TableSchemaMapper
 import io.airbyte.cdk.load.schema.model.TableName
 import io.micronaut.test.extensions.junit5.annotation.MicronautTest
 import org.junit.jupiter.api.Test
 
 @MicronautTest(environments = ["component"])
-class ClickhouseSchemaMapperTest(override val tableSchemaMapper: TableSchemaMapper) :
-    SchemaMapperSuite {
+class ClickhouseSchemaMapperTest(
+    override val tableSchemaMapper: TableSchemaMapper,
+    override val schemaFactory: TableSchemaFactory,
+    override val opsClient: TableOperationsClient,
+) : SchemaMapperSuite {
     @Test
     fun `simple table name`() {
         super.`simple table name`(TableName("namespace_test", "table_test"))
