@@ -1195,7 +1195,7 @@ The Gong connector supports the following authentication methods.
 
 ```python
 GongConnector(
-  auth_config=GongAuthConfig(
+  auth_config=GongOauth20AuthenticationAuthConfig(
     access_token="<Your Gong OAuth2 Access Token. Token refresh is managed externally.>"
   )
 )
@@ -1230,7 +1230,7 @@ curl --location 'https://api.airbyte.ai/api/v1/connectors/instances' \
 
 ```python
 GongConnector(
-  auth_config=GongAuthConfig(
+  auth_config=GongAccessKeyAuthenticationAuthConfig(
     access_key="<Your Gong API Access Key>",
     access_key_secret="<Your Gong API Access Key Secret>"
   )

@@ -34,17 +34,38 @@ uv pip install airbyte-agent-zendesk-support
 
 ## Usage
 
+This connector supports multiple authentication methods:
+
+### OAuth 2.0
+
 ```python
-from airbyte_agent_zendesk_support import ZendeskSupportConnector, ZendeskSupportAuthConfig
+from airbyte_agent_zendesk_support import ZendeskSupportConnector
+from airbyte_agent_zendesk_support.models import ZendeskSupportOauth20AuthConfig
 
 connector = ZendeskSupportConnector(
-  auth_config=ZendeskSupportAuthConfig(
+  auth_config=ZendeskSupportOauth20AuthConfig(
     access_token="...",
     refresh_token="..."
   )
 )
 result = await connector.tickets.list()
 ```
+
+### API Token
+
+```python
+from airbyte_agent_zendesk_support import ZendeskSupportConnector
+from airbyte_agent_zendesk_support.models import ZendeskSupportApiTokenAuthConfig
+
+connector = ZendeskSupportConnector(
+  auth_config=ZendeskSupportApiTokenAuthConfig(
+    email="...",
+    api_token="..."
+  )
+)
+result = await connector.tickets.list()
+```
+
 
 ## Full documentation
 
@@ -82,6 +103,6 @@ For the service's official API docs, see the [Zendesk-Support API reference](htt
 
 ## Version information
 
-- **Package version:** 0.18.21
+- **Package version:** 0.18.24
 - **Connector version:** 0.1.3
-- **Generated with Connector SDK commit SHA:** f7c55d3e3cdc7568cab2da9d736285eec58f044b
+- **Generated with Connector SDK commit SHA:** 12f6b994298f84dfa217940afe7c6b19bec4167b
