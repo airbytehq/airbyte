@@ -5,7 +5,8 @@
 # the proposed changes and provide documentation guidance before the PR is merged.
 #
 # Workflow triggers:
-# - Only on PRs opened to merge into master branch
+# - Only on non-draft PRs opened to merge into master branch
+# - Also triggers when a draft PR is marked as ready for review
 # - Excludes bot-authored PRs to prevent automation loops
 # - Only processes PRs from non-forked repos or forks with secrets access
 # - Triggers for any connector changes (not filtered by support level)
@@ -14,7 +15,7 @@ name: Autodoc PR Review
 
 on:
   pull_request:
-    types: [opened]
+    types: [opened, ready_for_review]
     branches:
       - master
 
@@ -22,8 +23,9 @@ jobs:
   recommend-documentation-updates:
     name: Recommend documentation updates with AI
     runs-on: ubuntu-latest
-    # Only run for human authors, exclude bot accounts
+    # Only run for human authors, exclude bot accounts, and skip draft PRs
     if: |
+      !github.event.pull_request.draft &&
       !contains(fromJSON('["airbyteio", "octavia-bot", "octavia-bot-hoard", "github-actions[bot]", "dependabot[bot]"]'), github.actor) &&
       !endsWith(github.actor, '[bot]')
 
