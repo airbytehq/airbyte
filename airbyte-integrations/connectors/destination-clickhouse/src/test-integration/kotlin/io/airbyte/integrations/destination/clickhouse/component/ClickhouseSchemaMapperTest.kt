@@ -4,8 +4,11 @@
 
 package io.airbyte.integrations.destination.clickhouse.component
 
+import io.airbyte.cdk.load.command.DestinationStreamFactory
+import io.airbyte.cdk.load.command.NamespaceMapper
 import io.airbyte.cdk.load.component.SchemaMapperSuite
 import io.airbyte.cdk.load.component.TableOperationsClient
+import io.airbyte.cdk.load.schema.TableNameResolver
 import io.airbyte.cdk.load.schema.TableSchemaFactory
 import io.airbyte.cdk.load.schema.TableSchemaMapper
 import io.airbyte.cdk.load.schema.model.TableName
@@ -17,6 +20,9 @@ class ClickhouseSchemaMapperTest(
     override val tableSchemaMapper: TableSchemaMapper,
     override val schemaFactory: TableSchemaFactory,
     override val opsClient: TableOperationsClient,
+    override val streamFactory: DestinationStreamFactory,
+    override val tableNameResolver: TableNameResolver,
+    override val namespaceMapper: NamespaceMapper,
 ) : SchemaMapperSuite {
     @Test
     fun `simple table name`() {
@@ -49,6 +55,11 @@ class ClickhouseSchemaMapperTest(
     }
 
     @Test
+    override fun `stream names avoid collisions`() {
+        super.`stream names avoid collisions`()
+    }
+
+    @Test
     fun `simple column name`() {
         super.`simple column name`("column_test")
     }
@@ -73,5 +84,10 @@ class ClickhouseSchemaMapperTest(
         super.`column types support all airbyte types`(
             ClickhouseTableSchemaEvolutionTest.allTypesSchema.columns
         )
+    }
+
+    @Test
+    override fun `column names avoid collisions`() {
+        super.`column names avoid collisions`()
     }
 }
