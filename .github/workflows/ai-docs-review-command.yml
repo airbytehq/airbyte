@@ -18,20 +18,28 @@ name: AI Docs Review Command
 
 on:
   workflow_dispatch:
+    # Note on "required: false" for all inputs:
+    # GitHub's "required" field only affects the manual "Run workflow" UI, not runtime behavior.
+    # We set required: false to allow the workflow to start and fail gracefully with helpful
+    # error messages (see "Validate required inputs" step) instead of GitHub's generic errors.
+    # The slash command dispatcher always provides these inputs when triggered via /ai-docs-review.
     inputs:
       pr:
-        description: "Pull request number (required)"
+        description: "Pull request number (required for execution, validated at runtime)"
         type: number
         required: false
       comment-id:
-        description: "The comment-id of the slash command. Used to update the comment with the status."
+        description: "The comment-id of the slash command. Used to update the comment with the status. (optional)"
         required: false
+      # Note: repo and gitref are passed by the slash command dispatcher but are NOT used by this workflow.
+      # We use github.repository and refs/pull/N/head instead for fork PR compatibility.
+      # These inputs are kept to maintain compatibility with the dispatcher's static-args contract.
       repo:
-        description: "Repo in owner/repo format (passed by slash command dispatcher)"
+        description: "Repo in owner/repo format (passed by dispatcher, unused - kept for compatibility)"
         required: false
         default: "airbytehq/airbyte"
       gitref:
-        description: "Git ref to checkout (passed by slash command dispatcher, or fetched from PR if empty)"
+        description: "Git ref (passed by dispatcher, unused - we use refs/pull/N/head instead)"
         required: false
 
 run-name: "AI Docs Review for PR #${{ github.event.inputs.pr || 'unknown' }}"
