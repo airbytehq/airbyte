@@ -15,6 +15,7 @@ import json
 import re
 from typing import Any, Dict, List
 from unittest import TestCase
+from unittest.mock import patch
 
 import requests_mock as rm
 from freezegun import freeze_time
@@ -157,6 +158,7 @@ class TestSearchAnalyticsPageReportStream(TestCase):
             assert "device" in record.record.data
             assert "page" in record.record.data
 
+    @patch("airbyte_cdk.sources.streams.http.rate_limiting.time.sleep", lambda x: None)
     @HttpMocker()
     def test_error_handler_rate_limited(self, http_mocker: HttpMocker) -> None:
         """Test RATE_LIMITED error handler for 429 errors.
