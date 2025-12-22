@@ -1,3 +1,9 @@
+## Version 0.1.93
+
+**Load CDK**
+
+* Add KDoc documentation to core destination interfaces: Aggregate, AggregateFactory and RecordDTO.
+
 ## Version 0.1.92
 
 load cdk: datacoercion suite calls ValueCoercer.map
