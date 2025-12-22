@@ -45,6 +45,7 @@ connector = StripeConnector(
 result = await connector.customers.list()
 ```
 
+
 ## Full documentation
 
 This connector supports the following entities and actions.
@@ -70,6 +71,6 @@ For the service's official API docs, see the [Stripe API reference](https://docs
 
 ## Version information
 
-- **Package version:** 0.5.21
+- **Package version:** 0.5.24
 - **Connector version:** 0.1.2
-- **Generated with Connector SDK commit SHA:** f7c55d3e3cdc7568cab2da9d736285eec58f044b
+- **Generated with Connector SDK commit SHA:** 12f6b994298f84dfa217940afe7c6b19bec4167b

@@ -34,16 +34,37 @@ uv pip install airbyte-agent-gong
 
 ## Usage
 
+This connector supports multiple authentication methods:
+
+### OAuth 2.0 Authentication
+
 ```python
-from airbyte_agent_gong import GongConnector, GongAuthConfig
+from airbyte_agent_gong import GongConnector
+from airbyte_agent_gong.models import GongOauth20AuthenticationAuthConfig
 
 connector = GongConnector(
-  auth_config=GongAuthConfig(
+  auth_config=GongOauth20AuthenticationAuthConfig(
     access_token="..."
   )
 )
 result = await connector.users.list()
 ```
+
+### Access Key Authentication
+
+```python
+from airbyte_agent_gong import GongConnector
+from airbyte_agent_gong.models import GongAccessKeyAuthenticationAuthConfig
+
+connector = GongConnector(
+  auth_config=GongAccessKeyAuthenticationAuthConfig(
+    access_key="...",
+    access_key_secret="..."
+  )
+)
+result = await connector.users.list()
+```
+
 
 ## Full documentation
 
@@ -75,6 +96,6 @@ For the service's official API docs, see the [Gong API reference](https://gong.a
 
 ## Version information
 
-- **Package version:** 0.19.23
+- **Package version:** 0.19.26
 - **Connector version:** 0.1.5
-- **Generated with Connector SDK commit SHA:** f7c55d3e3cdc7568cab2da9d736285eec58f044b
+- **Generated with Connector SDK commit SHA:** 12f6b994298f84dfa217940afe7c6b19bec4167b
