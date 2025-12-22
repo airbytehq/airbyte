@@ -19,6 +19,7 @@ from unittest import TestCase
 import requests_mock as rm
 from freezegun import freeze_time
 from mock_server.config import ConfigBuilder
+from mock_server.response_builder import create_oauth_response
 
 from airbyte_cdk.models import SyncMode
 from airbyte_cdk.test.catalog_builder import CatalogBuilder
@@ -50,15 +51,6 @@ def _build_search_analytics_row(
     }
 
 
-def _build_oauth_response() -> HttpResponse:
-    """Build a mock OAuth token response."""
-    body = {
-        "access_token": "test_access_token",
-        "expires_in": 3600,
-        "token_type": "Bearer",
-    }
-    return HttpResponse(body=json.dumps(body), status_code=200)
-
 
 def _oauth_request() -> HttpRequest:
     """Build a mock OAuth token request."""
@@ -85,7 +77,7 @@ class TestSearchAnalyticsByCountryStream(TestCase):
     @HttpMocker()
     def test_full_refresh_single_site(self, http_mocker: HttpMocker) -> None:
         """Test full refresh with a single site URL."""
-        http_mocker.post(_oauth_request(), _build_oauth_response())
+        http_mocker.post(_oauth_request(), create_oauth_response())
 
         config = ConfigBuilder().with_site_urls(["https://example.com/"]).with_start_date("2024-01-01").with_end_date("2024-01-03").build()
 
@@ -147,7 +139,7 @@ class TestSearchAnalyticsByCountryStream(TestCase):
         The error handler should ignore 403 errors with "User does not have sufficient permission"
         and continue without logging ERROR level messages.
         """
-        http_mocker.post(_oauth_request(), _build_oauth_response())
+        http_mocker.post(_oauth_request(), create_oauth_response())
 
         config = ConfigBuilder().with_site_urls(["https://example.com/"]).with_start_date("2024-01-01").with_end_date("2024-01-03").build()
 
@@ -178,7 +170,7 @@ class TestSearchAnalyticsByCountryStream(TestCase):
         This simulates the first sync where no state is passed in.
         The connector should fetch all data from start_date and emit a state message.
         """
-        http_mocker.post(_oauth_request(), _build_oauth_response())
+        http_mocker.post(_oauth_request(), create_oauth_response())
 
         config = ConfigBuilder().with_site_urls(["https://example.com/"]).with_start_date("2024-01-01").with_end_date("2024-01-03").build()
 
@@ -217,7 +209,7 @@ class TestSearchAnalyticsByCountryStream(TestCase):
         This simulates a subsequent sync where state is passed in.
         The connector should fetch data starting from the state cursor value.
         """
-        http_mocker.post(_oauth_request(), _build_oauth_response())
+        http_mocker.post(_oauth_request(), create_oauth_response())
 
         config = ConfigBuilder().with_site_urls(["https://example.com/"]).with_start_date("2024-01-01").with_end_date("2024-01-05").build()
 

@@ -20,6 +20,7 @@ from unittest.mock import patch
 import requests_mock as rm
 from freezegun import freeze_time
 from mock_server.config import ConfigBuilder
+from mock_server.response_builder import create_oauth_response
 
 from airbyte_cdk.models import SyncMode
 from airbyte_cdk.test.catalog_builder import CatalogBuilder
@@ -49,15 +50,6 @@ def _build_search_analytics_row(date: str, clicks: int = 100, impressions: int =
         "position": position,
     }
 
-
-def _build_oauth_response() -> HttpResponse:
-    """Build a mock OAuth token response."""
-    body = {
-        "access_token": "test_access_token",
-        "expires_in": 3600,
-        "token_type": "Bearer",
-    }
-    return HttpResponse(body=json.dumps(body), status_code=200)
 
 
 def _oauth_request() -> HttpRequest:
@@ -90,7 +82,7 @@ class TestSearchAnalyticsByDateStream(TestCase):
         the complex request body matching with DatetimeBasedCursor.
         """
         # Mock OAuth token refresh via HttpMocker
-        http_mocker.post(_oauth_request(), _build_oauth_response())
+        http_mocker.post(_oauth_request(), create_oauth_response())
 
         config = ConfigBuilder().with_site_urls(["https://example.com/"]).with_start_date("2024-01-01").with_end_date("2024-01-03").build()
 
@@ -144,7 +136,7 @@ class TestSearchAnalyticsByDateStream(TestCase):
     def test_full_refresh_empty_response(self, http_mocker: HttpMocker) -> None:
         """Test full refresh when API returns no data for any search type."""
         # Mock OAuth token refresh via HttpMocker
-        http_mocker.post(_oauth_request(), _build_oauth_response())
+        http_mocker.post(_oauth_request(), create_oauth_response())
 
         config = ConfigBuilder().with_site_urls(["https://example.com/"]).with_start_date("2024-01-01").with_end_date("2024-01-03").build()
 
@@ -174,7 +166,7 @@ class TestSearchAnalyticsByDateStream(TestCase):
         - search_analytics_page_report, search_analytics_site_report_by_page, search_analytics_site_report_by_site
         - search_analytics_keyword_page_report, search_analytics_keyword_site_report_by_page, search_analytics_keyword_site_report_by_site
         """
-        http_mocker.post(_oauth_request(), _build_oauth_response())
+        http_mocker.post(_oauth_request(), create_oauth_response())
 
         config = ConfigBuilder().with_site_urls(["https://example.com/"]).with_start_date("2024-01-01").with_end_date("2024-01-03").build()
 
@@ -220,7 +212,7 @@ class TestSearchAnalyticsByDateStream(TestCase):
         - search_analytics_page_report, search_analytics_site_report_by_page, search_analytics_site_report_by_site
         - search_analytics_keyword_page_report, search_analytics_keyword_site_report_by_page, search_analytics_keyword_site_report_by_site
         """
-        http_mocker.post(_oauth_request(), _build_oauth_response())
+        http_mocker.post(_oauth_request(), create_oauth_response())
 
         config = ConfigBuilder().with_site_urls(["https://example.com/"]).with_start_date("2024-01-01").with_end_date("2024-01-03").build()
 
@@ -256,7 +248,7 @@ class TestSearchAnalyticsByDateStream(TestCase):
         This test also covers the same incremental sync behavior for all other search_analytics streams
         that use the same DatetimeBasedCursor definition.
         """
-        http_mocker.post(_oauth_request(), _build_oauth_response())
+        http_mocker.post(_oauth_request(), create_oauth_response())
 
         config = ConfigBuilder().with_site_urls(["https://example.com/"]).with_start_date("2024-01-01").with_end_date("2024-01-03").build()
 
@@ -308,7 +300,7 @@ class TestSearchAnalyticsByDateStream(TestCase):
         This test also covers the same incremental sync behavior for all other search_analytics streams
         that use the same DatetimeBasedCursor definition.
         """
-        http_mocker.post(_oauth_request(), _build_oauth_response())
+        http_mocker.post(_oauth_request(), create_oauth_response())
 
         config = ConfigBuilder().with_site_urls(["https://example.com/"]).with_start_date("2024-01-01").with_end_date("2024-01-05").build()
 
@@ -387,7 +379,7 @@ class TestSearchAnalyticsByDateStream(TestCase):
         that pagination is properly configured even though page 2 is not requested (expected behavior
         when fewer than page_size records are returned).
         """
-        http_mocker.post(_oauth_request(), _build_oauth_response())
+        http_mocker.post(_oauth_request(), create_oauth_response())
 
         config = ConfigBuilder().with_site_urls(["https://example.com/"]).with_start_date("2024-01-01").with_end_date("2024-01-03").build()
 
@@ -458,7 +450,7 @@ class TestSearchAnalyticsByDateStream(TestCase):
         - search_analytics_page_report, search_analytics_site_report_by_page, search_analytics_site_report_by_site
         - search_analytics_keyword_page_report, search_analytics_keyword_site_report_by_page, search_analytics_keyword_site_report_by_site
         """
-        http_mocker.post(_oauth_request(), _build_oauth_response())
+        http_mocker.post(_oauth_request(), create_oauth_response())
 
         config = ConfigBuilder().with_site_urls(["https://example.com/"]).with_start_date("2024-01-01").with_end_date("2024-01-03").build()
 
