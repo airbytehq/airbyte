@@ -34,7 +34,6 @@ definitions:
             field_path:
               - items
               - "*"
-              - snippet
         paginator:
           type: DefaultPaginator
           page_token_option:
@@ -84,7 +83,7 @@ definitions:
           path: channels
           http_method: GET
           request_parameters:
-            part: snippet,contentDetails,statistics
+            part: snippet,contentDetails,statistics,brandingSettings,topicDetails,status,localizations,contentOwnerDetails
         record_selector:
           type: RecordSelector
           extractor:
@@ -92,7 +91,6 @@ definitions:
             field_path:
               - items
               - "*"
-              - snippet
         paginator:
           type: DefaultPaginator
           page_token_option:
@@ -111,12 +109,6 @@ definitions:
             type: RequestOption
             inject_into: request_parameter
             field_name: id
-      transformations:
-        - type: AddFields
-          fields:
-            - path:
-                - id
-              value: "{{ stream_partition.channel_id }}"
       schema_loader:
         type: InlineSchemaLoader
         schema:
@@ -502,6 +494,10 @@ schemas:
                 type:
                   - string
                   - "null"
+              favorites:
+                type:
+                  - string
+                  - "null"
               uploads:
                 type:
                   - string
@@ -547,6 +543,10 @@ schemas:
                   - string
                   - "null"
           publishedAt:
+            type:
+              - string
+              - "null"
+          defaultLanguage:
             type:
               - string
               - "null"
@@ -631,6 +631,125 @@ schemas:
             type:
               - string
               - "null"
+      brandingSettings:
+        type:
+          - object
+          - "null"
+        properties:
+          channel:
+            type:
+              - object
+              - "null"
+            properties:
+              title:
+                type:
+                  - string
+                  - "null"
+              description:
+                type:
+                  - string
+                  - "null"
+              keywords:
+                type:
+                  - string
+                  - "null"
+              trackingAnalyticsAccountId:
+                type:
+                  - string
+                  - "null"
+              unsubscribedTrailer:
+                type:
+                  - string
+                  - "null"
+              defaultLanguage:
+                type:
+                  - string
+                  - "null"
+              country:
+                type:
+                  - string
+                  - "null"
+          watch:
+            type:
+              - object
+              - "null"
+            properties:
+              textColor:
+                type:
+                  - string
+                  - "null"
+              backgroundColor:
+                type:
+                  - string
+                  - "null"
+              featuredPlaylistId:
+                type:
+                  - string
+                  - "null"
+      topicDetails:
+        type:
+          - object
+          - "null"
+        properties:
+          topicIds:
+            type:
+              - array
+              - "null"
+            items:
+              type:
+                - string
+                - "null"
+          topicCategories:
+            type:
+              - array
+              - "null"
+            items:
+              type:
+                - string
+                - "null"
+      status:
+        type:
+          - object
+          - "null"
+        properties:
+          privacyStatus:
+            type:
+              - string
+              - "null"
+          isLinked:
+            type:
+              - boolean
+              - "null"
+          longUploadsStatus:
+            type:
+              - string
+              - "null"
+          madeForKids:
+            type:
+              - boolean
+              - "null"
+          selfDeclaredMadeForKids:
+            type:
+              - boolean
+              - "null"
+      contentOwnerDetails:
+        type:
+          - object
+          - "null"
+        properties:
+          contentOwner:
+            type:
+              - string
+              - "null"
+          timeLinked:
+            type:
+              - string
+              - "null"
+      localizations:
+        type:
+          - object
+          - "null"
+        additionalProperties: true
     required:
       - id
   comments:
