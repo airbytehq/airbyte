@@ -4,6 +4,59 @@ import json
 from typing import Any, Dict, List, Optional
 
 from airbyte_cdk.test.mock_http import HttpResponse
+from airbyte_cdk.test.mock_http.response_builder import find_template
+
+
+def create_response(resource_name: str, status_code: int = 200) -> HttpResponse:
+    """
+    Create HTTP response using template from resource/http/response/<resource_name>.json
+
+    Args:
+        resource_name: Name of the JSON file (without .json extension)
+        status_code: HTTP status code
+    """
+    body = json.dumps(find_template(resource_name, __file__))
+    return HttpResponse(body, status_code)
+
+
+def create_oauth_response() -> HttpResponse:
+    """Create OAuth token response from template."""
+    return create_response("oauth")
+
+
+def create_sites_response() -> HttpResponse:
+    """Create sites endpoint response from template."""
+    return create_response("sites")
+
+
+def create_sitemaps_response() -> HttpResponse:
+    """Create sitemaps endpoint response from template."""
+    return create_response("sitemaps")
+
+
+def create_sitemaps_empty_response() -> HttpResponse:
+    """Create empty sitemaps endpoint response from template."""
+    return create_response("sitemaps_empty")
+
+
+def create_search_analytics_response() -> HttpResponse:
+    """Create search analytics endpoint response from template."""
+    return create_response("search_analytics")
+
+
+def create_search_analytics_empty_response() -> HttpResponse:
+    """Create empty search analytics endpoint response from template."""
+    return create_response("search_analytics_empty")
+
+
+def create_search_appearances_response() -> HttpResponse:
+    """Create search appearances endpoint response from template."""
+    return create_response("search_appearances")
+
+
+def error_response(status_code: int) -> HttpResponse:
+    """Create error response (400, 403, 429, etc.) from template."""
+    return create_response(str(status_code), status_code)
 
 
 class GoogleSearchConsoleSitesResponseBuilder:
@@ -182,27 +235,15 @@ def build_error_response(status_code: int, error_message: str, error_reason: str
 
 
 def build_permission_denied_response() -> HttpResponse:
-    """Build a 403 permission denied response."""
-    return build_error_response(
-        status_code=403,
-        error_message="User does not have sufficient permission for site 'https://example.com/'. See also: https://support.google.com/webmasters/answer/2451999.",
-        error_reason="forbidden",
-    )
+    """Build a 403 permission denied response from template."""
+    return error_response(403)
 
 
 def build_rate_limited_response() -> HttpResponse:
-    """Build a 429 rate limited response."""
-    return build_error_response(
-        status_code=429,
-        error_message="Rate Limit Exceeded",
-        error_reason="rateLimitExceeded",
-    )
+    """Build a 429 rate limited response from template."""
+    return error_response(429)
 
 
 def build_bad_request_response(message: str = "Invalid request") -> HttpResponse:
-    """Build a 400 bad request response."""
-    return build_error_response(
-        status_code=400,
-        error_message=message,
-        error_reason="badRequest",
-    )
+    """Build a 400 bad request response from template."""
+    return error_response(400)
