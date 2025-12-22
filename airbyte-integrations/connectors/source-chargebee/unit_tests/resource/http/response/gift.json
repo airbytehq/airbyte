@@ -1,0 +1,13 @@
+{
+  "list": [
+    {
+      "gift": {
+        "id": "gift_001",
+        "status": "claimed",
+        "updated_at": 1705312800,
+        "cf_gift_occasion": "Birthday",
+        "cf_gift_message": "Happy Birthday!"
+      }
+    }
+  ]
+}
