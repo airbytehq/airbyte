@@ -128,7 +128,7 @@ The file must be in PEM format, a plain text file containing your private key be
 3. On the Set up the source page, select SFTP Bulk from the Source type dropdown.
 4. Enter a name for the SFTP Bulk connector.
 
-#### Delivery Method
+## Delivery Method
 
 <FieldAnchor field="delivery_method.delivery_type">
 
@@ -136,11 +136,11 @@ Choose a [delivery method](../../platform/using-airbyte/delivery-methods) for yo
 
 </FieldAnchor>
 
-##### Preserve Sub-Directories in File Paths
+### Preserve Sub-Directories in File Paths
 
 If enabled, sends subdirectory folder structure along with source file names to the destination. Otherwise, files are synced by their names only. This option is ignored when file-based replication is not enabled.
 
-#### File-specific Configuration
+## File-specific Configuration
 
 Depending on your **File Type** selection, you are presented with a few configuration options specific to that file type.
 
