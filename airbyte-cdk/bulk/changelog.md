@@ -1,3 +1,19 @@
+## Version 0.1.92
+
+load cdk: datacoercion suite calls ValueCoercer.map
+
+## Version 0.1.91
+
+load cdk: upsert records test uses proper target schema
+
+## Version 0.1.90
+
+load cdk: components tests: data coercion tests cover all data types
+
+## Version 0.1.89
+
+load cdk: components tests: data coercion tests for int+number
+
 ## Version 0.1.88
 
 **Load CDK**

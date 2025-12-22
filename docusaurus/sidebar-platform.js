@@ -241,7 +241,7 @@ module.exports = {
     {
       type: "category",
       collapsible: false,
-      label: "Airbyte Platform",
+      label: "Data replication platform",
       link: {
         type: "doc",
         id: "readme",
