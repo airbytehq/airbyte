@@ -1176,7 +1176,8 @@ internal class PostgresDirectLoadSqlGeneratorTest {
 
         assert(sql.contains("BEGIN TRANSACTION;"))
         assert(sql.contains("COMMIT;"))
-        // Note: CASCADE is NOT valid for ALTER COLUMN TYPE in PostgreSQL, so it should not be included
+        // Note: CASCADE is NOT valid for ALTER COLUMN TYPE in PostgreSQL, so it should not be
+        // included
         assert(
             sql.contains(
                 "ALTER COLUMN \"modified_col\" TYPE jsonb USING to_jsonb(\"modified_col\");"
