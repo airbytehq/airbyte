@@ -36,6 +36,7 @@ jobs:
 
           commands: |
             ai-canary-prerelease
+            ai-docs-review
             ai-prove-fix
             ai-release-watch
             approve-regression-tests
