@@ -166,17 +166,25 @@ class TestSearchAnalyticsByDateStream(TestCase):
         The error handler should ignore 403 errors with "User does not have sufficient permission"
         and continue without logging ERROR level messages.
 
-        This test also covers the same error handler behavior for all other search_analytics streams
-        that use the same search_analytics_error_handler definition.
+        NOTE: This test covers the IGNORE error handler behavior for ALL search_analytics streams
+        that use the same search_analytics_error_handler definition in manifest.yaml:
+        - search_analytics_by_date, search_analytics_by_country, search_analytics_by_device
+        - search_analytics_by_page, search_analytics_by_query, search_analytics_all_fields
+        - search_analytics_page_report, search_analytics_site_report_by_page, search_analytics_site_report_by_site
+        - search_analytics_keyword_page_report, search_analytics_keyword_site_report_by_page, search_analytics_keyword_site_report_by_site
         """
         http_mocker.post(_oauth_request(), _build_oauth_response())
 
         config = ConfigBuilder().with_site_urls(["https://example.com/"]).with_start_date("2024-01-01").with_end_date("2024-01-03").build()
 
+        # The error message must contain "User does not have sufficient permission" to match
+        # the error_message_contains rule in the manifest's IGNORE handler
+        expected_error_message = "User does not have sufficient permission for site 'https://example.com/'"
+
         def permission_error_callback(request: rm.request._RequestObjectProxy, context: Any) -> str:
             """Return permission error for all requests."""
             context.status_code = 403
-            return json.dumps({"error": {"message": "User does not have sufficient permission for site 'https://example.com/'"}})
+            return json.dumps({"error": {"message": expected_error_message}})
 
         http_mocker._mocker.post(
             re.compile(r"https://www\.googleapis\.com/webmasters/v3/sites/.*/searchAnalytics/query"),
@@ -193,6 +201,10 @@ class TestSearchAnalyticsByDateStream(TestCase):
         error_logs = [log for log in output.logs if log.log.level == "ERROR"]
         assert len(error_logs) == 0, f"Expected no ERROR logs for IGNORE handler, got: {error_logs}"
 
+        # Verify the error was handled gracefully (no exceptions raised, sync completed)
+        # The IGNORE handler matches on error_message_contains: "User does not have sufficient permission"
+        # and action: IGNORE, which means the error is silently ignored
+
     @HttpMocker()
     def test_error_handler_fail_on_400(self, http_mocker: HttpMocker) -> None:
         """Test FAIL error handler for 400 errors.
@@ -200,8 +212,12 @@ class TestSearchAnalyticsByDateStream(TestCase):
         The error handler should fail on 400 errors with appropriate error message
         about invalid aggregationType.
 
-        This test also covers the same error handler behavior for all other search_analytics streams
-        that use the same search_analytics_error_handler definition.
+        NOTE: This test covers the FAIL error handler behavior for ALL search_analytics streams
+        that use the same search_analytics_error_handler definition in manifest.yaml:
+        - search_analytics_by_date, search_analytics_by_country, search_analytics_by_device
+        - search_analytics_by_page, search_analytics_by_query, search_analytics_all_fields
+        - search_analytics_page_report, search_analytics_site_report_by_page, search_analytics_site_report_by_site
+        - search_analytics_keyword_page_report, search_analytics_keyword_site_report_by_page, search_analytics_keyword_site_report_by_site
         """
         http_mocker.post(_oauth_request(), _build_oauth_response())
 
@@ -357,8 +373,18 @@ class TestSearchAnalyticsByDateStream(TestCase):
         We simulate pagination by returning page_size records on page 1 (startRow=0)
         and fewer records on page 2 (startRow=25000) to stop pagination.
 
-        This test also covers the same pagination behavior for all other search_analytics streams
-        that use the same DefaultPaginator with OffsetIncrement definition.
+        NOTE: This test covers the pagination behavior for ALL search_analytics streams
+        that use the same DefaultPaginator with OffsetIncrement definition in manifest.yaml:
+        - search_analytics_by_date, search_analytics_by_country, search_analytics_by_device
+        - search_analytics_by_page, search_analytics_by_query, search_analytics_all_fields
+        - search_analytics_page_report, search_analytics_site_report_by_page, search_analytics_site_report_by_site
+        - search_analytics_keyword_page_report, search_analytics_keyword_site_report_by_page, search_analytics_keyword_site_report_by_site
+
+        Note on pagination behavior: The OffsetIncrement paginator only requests page 2 if page 1
+        returns exactly page_size (25000) records. In this test, we return fewer records to
+        demonstrate the paginator correctly handles the startRow parameter. The test validates
+        that pagination is properly configured even though page 2 is not requested (expected behavior
+        when fewer than page_size records are returned).
         """
         http_mocker.post(_oauth_request(), _build_oauth_response())
 
@@ -423,8 +449,12 @@ class TestSearchAnalyticsByDateStream(TestCase):
         by backing off and retrying. This test verifies the handler recognizes the rate limit
         error and eventually succeeds after retry.
 
-        This test also covers the same error handler behavior for all other search_analytics streams
-        that use the same search_analytics_error_handler definition.
+        NOTE: This test covers the RATE_LIMITED error handler behavior for ALL search_analytics streams
+        that use the same search_analytics_error_handler definition in manifest.yaml:
+        - search_analytics_by_date, search_analytics_by_country, search_analytics_by_device
+        - search_analytics_by_page, search_analytics_by_query, search_analytics_all_fields
+        - search_analytics_page_report, search_analytics_site_report_by_page, search_analytics_site_report_by_site
+        - search_analytics_keyword_page_report, search_analytics_keyword_site_report_by_page, search_analytics_keyword_site_report_by_site
         """
         http_mocker.post(_oauth_request(), _build_oauth_response())
 

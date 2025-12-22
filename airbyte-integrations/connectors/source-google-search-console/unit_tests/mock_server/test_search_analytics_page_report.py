@@ -200,12 +200,12 @@ class TestSearchAnalyticsPageReportStream(TestCase):
         output = self._read_stream(config)
         records = [message for message in output.records if message.record.stream == _STREAM_NAME]
 
-        # Should have records after retry succeeds
-        assert len(records) >= 0, "Expected records after rate limit retry"
+        # Verify retry behavior occurred - request_count > 5 means retries happened after rate limits
+        assert request_count > 5, f"Expected retries after rate limit, but only {request_count} requests made"
 
-        # Verify no ERROR logs (rate limiting should be handled gracefully)
+        # Verify no ERROR logs (rate limiting should be handled gracefully with retries)
         error_logs = [log for log in output.logs if hasattr(log, "log") and log.log.level == "ERROR"]
-        assert len(error_logs) == 0, "Expected no ERROR logs for rate limited requests"
+        assert len(error_logs) == 0, "Expected no ERROR logs for rate limited requests - RATE_LIMITED handler should retry gracefully"
 
     @HttpMocker()
     def test_incremental_sync_first_sync_no_state(self, http_mocker: HttpMocker) -> None:

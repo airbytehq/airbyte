@@ -168,10 +168,13 @@ class TestSearchAnalyticsKeywordSiteReportByPageStream(TestCase):
             assert "dimensionFilterGroups" in body, "Should have dimensionFilterGroups for searchAppearance filter"
 
         # Should have records from the keyword site report by page (2 parent records x 1 record each = 2 records)
-        # Note: Record count may vary based on partitions, asserting at least 1 record with key field validation
+        # Exception: Using >= because record count depends on parent stream partitions (search_appearances)
+        # which are dynamically fetched. We assert on specific key fields to validate correctness.
         assert len(records) >= 1, f"Expected at least 1 record, got {len(records)}"
-        # Verify specific key fields are present
+        # Verify specific key fields are present - this validates record content regardless of count
         assert records[0].record.data["query"] == "test query", "Expected specific query in record"
+        assert records[0].record.data["date"] == "2024-01-01", "Expected specific date in record"
+        assert records[0].record.data["country"] == "usa", "Expected specific country in record"
 
         # Verify transformations added site_url
         for record in records:
@@ -251,8 +254,11 @@ class TestSearchAnalyticsKeywordSiteReportByPageStream(TestCase):
         output = self._read_stream(config, state=None, sync_mode=SyncMode.incremental)
         records = [message for message in output.records if message.record.stream == _STREAM_NAME]
 
-        # Should have records from keyword site report by page
+        # Exception: Using >= because record count depends on parent stream partitions (search_appearances)
+        # which are dynamically fetched. We assert on specific key fields to validate correctness.
         assert len(records) >= 1, f"Expected at least 1 record, got {len(records)}"
+        # Verify specific key fields
+        assert records[0].record.data["query"] == "test query", "Expected specific query in record"
 
         # Verify state message was emitted
         state_messages = output.state_messages
@@ -315,8 +321,11 @@ class TestSearchAnalyticsKeywordSiteReportByPageStream(TestCase):
         output = self._read_stream(config, state=prior_state, sync_mode=SyncMode.incremental)
         records = [message for message in output.records if message.record.stream == _STREAM_NAME]
 
-        # Should have records from keyword site report by page (after state cursor)
+        # Exception: Using >= because record count depends on parent stream partitions (search_appearances)
+        # which are dynamically fetched. We assert on specific key fields to validate correctness.
         assert len(records) >= 1, f"Expected at least 1 record, got {len(records)}"
+        # Verify specific key fields - records should be after state cursor date
+        assert records[0].record.data["query"] == "new query", "Expected specific query in record"
 
         # Verify state message was emitted with updated cursor
         state_messages = output.state_messages

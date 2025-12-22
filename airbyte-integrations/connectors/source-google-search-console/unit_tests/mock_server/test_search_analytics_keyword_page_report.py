@@ -166,10 +166,13 @@ class TestSearchAnalyticsKeywordPageReportStream(TestCase):
             assert "dimensionFilterGroups" in body, "Should have dimensionFilterGroups for searchAppearance filter"
 
         # Should have records from the keyword page report (2 parent records x 1 record each = 2 records)
-        # Note: Record count may vary based on partitions, asserting at least 1 record with key field validation
+        # Exception: Using >= because record count depends on parent stream partitions (search_appearances)
+        # which are dynamically fetched. We assert on specific key fields to validate correctness.
         assert len(records) >= 1, f"Expected at least 1 record, got {len(records)}"
-        # Verify specific key fields are present
+        # Verify specific key fields are present - this validates record content regardless of count
         assert records[0].record.data["page"] == "https://example.com/page1", "Expected specific page URL in record"
+        assert records[0].record.data["query"] == "test query", "Expected specific query in record"
+        assert records[0].record.data["date"] == "2024-01-01", "Expected specific date in record"
 
         # Verify transformations added site_url and search_type
         for record in records:
@@ -227,12 +230,12 @@ class TestSearchAnalyticsKeywordPageReportStream(TestCase):
         output = self._read_stream(config)
         records = [message for message in output.records if message.record.stream == _STREAM_NAME]
 
-        # Should have records after retry succeeds
-        assert len(records) >= 0, "Expected records after rate limit retry"
+        # Verify retry behavior occurred - request_count > 5 means retries happened after rate limits
+        assert request_count > 5, f"Expected retries after rate limit, but only {request_count} requests made"
 
-        # Verify no ERROR logs (rate limiting should be handled gracefully)
+        # Verify no ERROR logs (rate limiting should be handled gracefully with retries)
         error_logs = [log for log in output.logs if hasattr(log, "log") and log.log.level == "ERROR"]
-        assert len(error_logs) == 0, "Expected no ERROR logs for rate limited requests"
+        assert len(error_logs) == 0, "Expected no ERROR logs for rate limited requests - RATE_LIMITED handler should retry gracefully"
 
     @HttpMocker()
     def test_incremental_sync_first_sync_no_state(self, http_mocker: HttpMocker) -> None:
@@ -274,8 +277,11 @@ class TestSearchAnalyticsKeywordPageReportStream(TestCase):
         output = self._read_stream(config, state=None, sync_mode=SyncMode.incremental)
         records = [message for message in output.records if message.record.stream == _STREAM_NAME]
 
-        # Should have records from keyword page report
+        # Exception: Using >= because record count depends on parent stream partitions (search_appearances)
+        # which are dynamically fetched. We assert on specific key fields to validate correctness.
         assert len(records) >= 1, f"Expected at least 1 record, got {len(records)}"
+        # Verify specific key fields
+        assert records[0].record.data["query"] == "test query", "Expected specific query in record"
 
         # Verify state message was emitted
         state_messages = output.state_messages
@@ -338,8 +344,11 @@ class TestSearchAnalyticsKeywordPageReportStream(TestCase):
         output = self._read_stream(config, state=prior_state, sync_mode=SyncMode.incremental)
         records = [message for message in output.records if message.record.stream == _STREAM_NAME]
 
-        # Should have records from keyword page report (after state cursor)
+        # Exception: Using >= because record count depends on parent stream partitions (search_appearances)
+        # which are dynamically fetched. We assert on specific key fields to validate correctness.
         assert len(records) >= 1, f"Expected at least 1 record, got {len(records)}"
+        # Verify specific key fields - records should be after state cursor date
+        assert records[0].record.data["query"] == "new query", "Expected specific query in record"
 
         # Verify state message was emitted with updated cursor
         state_messages = output.state_messages
