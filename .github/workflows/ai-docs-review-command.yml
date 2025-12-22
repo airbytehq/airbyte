@@ -145,7 +145,7 @@ jobs:
 
       - name: Start AI documentation recommendation session
         if: (steps.check-fork.outputs.is_fork != 'true' || steps.check-fork.outputs.has_secrets == 'true') && steps.pr-files.outputs.has_connector_changes == 'true'
-        uses: aaronsteers/devin-action@main
+        uses: aaronsteers/devin-action@0d74d6d9ff1b16ada5966dc31af53a9d155759f4 # Pinned to specific commit for security
         with:
           comment-id: ${{ inputs.comment-id }}
           issue-number: ${{ inputs.pr }}
