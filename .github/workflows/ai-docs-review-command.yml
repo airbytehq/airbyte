@@ -84,6 +84,7 @@ jobs:
         if: steps.validate.outputs.valid == 'false' && inputs.comment-id != ''
         uses: peter-evans/create-or-update-comment@a35cf36e5301d70b76f316e867e7788a55a31dae # v1.4.5
         with:
+          token: ${{ github.token }}
           comment-id: ${{ inputs.comment-id }}
           body: |
             > **AI Docs Review Failed**
@@ -113,7 +114,8 @@ jobs:
 
           # Use github.repository (base repo) for API calls - works for both fork and non-fork PRs
           # Note: inputs.repo is the head repo which may be a fork, but PR number exists in base repo
-          FILES=$(gh api repos/${{ github.repository }}/pulls/${{ inputs.pr }}/files --jq '.[].filename' | jq -R -s -c 'split("\n")[:-1]')
+          # Use --paginate to handle PRs with more than 30 changed files
+          FILES=$(gh api --paginate repos/${{ github.repository }}/pulls/${{ inputs.pr }}/files --jq '.[].filename' | jq -R -s -c 'split("\n")[:-1]')
 
           if [ -z "$FILES" ] || [ "$FILES" = "[]" ]; then
             echo "No files changed in this PR - skipping documentation recommendations."
