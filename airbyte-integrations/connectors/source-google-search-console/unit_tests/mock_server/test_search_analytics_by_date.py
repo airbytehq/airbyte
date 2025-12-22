@@ -394,8 +394,7 @@ class TestSearchAnalyticsByDateStream(TestCase):
                 # Page 1: Return exactly page_size (25000) records to trigger page 2 request
                 # Generate 25000 records with varying dates
                 page1_records = [
-                    _build_search_analytics_row(f"2024-01-0{(i % 3) + 1}", clicks=100 + i, impressions=1000 + i)
-                    for i in range(_PAGE_SIZE)
+                    _build_search_analytics_row(f"2024-01-0{(i % 3) + 1}", clicks=100 + i, impressions=1000 + i) for i in range(_PAGE_SIZE)
                 ]
                 return json.dumps(_build_search_analytics_response(page1_records))
             elif start_row == _PAGE_SIZE:
