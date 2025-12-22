@@ -5,10 +5,14 @@
 package io.airbyte.cdk.load.component
 
 import io.airbyte.cdk.load.command.Append
+import io.airbyte.cdk.load.command.DefaultDestinationCatalogFactory
 import io.airbyte.cdk.load.command.DestinationStream
+import io.airbyte.cdk.load.command.DestinationStreamFactory
+import io.airbyte.cdk.load.command.NamespaceMapper
 import io.airbyte.cdk.load.component.SchemaMapperSuite.Companion.columnNameTestStreamDescriptor
 import io.airbyte.cdk.load.data.FieldType
 import io.airbyte.cdk.load.data.IntegerType
+import io.airbyte.cdk.load.schema.TableNameResolver
 import io.airbyte.cdk.load.schema.TableSchemaFactory
 import io.airbyte.cdk.load.schema.TableSchemaMapper
 import io.airbyte.cdk.load.schema.model.ColumnSchema
@@ -16,6 +20,11 @@ import io.airbyte.cdk.load.schema.model.StreamTableSchema
 import io.airbyte.cdk.load.schema.model.TableName
 import io.airbyte.cdk.load.schema.model.TableNames
 import io.airbyte.cdk.load.table.ColumnNameMapping
+import io.airbyte.cdk.load.util.Jsons
+import io.airbyte.protocol.models.v0.AirbyteStream
+import io.airbyte.protocol.models.v0.ConfiguredAirbyteCatalog
+import io.airbyte.protocol.models.v0.ConfiguredAirbyteStream
+import io.airbyte.protocol.models.v0.DestinationSyncMode
 import io.micronaut.test.extensions.junit5.annotation.MicronautTest
 import kotlin.test.assertEquals
 import kotlinx.coroutines.test.runTest
@@ -26,6 +35,10 @@ interface SchemaMapperSuite {
     val tableSchemaMapper: TableSchemaMapper
     val schemaFactory: TableSchemaFactory
     val opsClient: TableOperationsClient
+
+    val streamFactory: DestinationStreamFactory
+    val tableNameResolver: TableNameResolver
+    val namespaceMapper: NamespaceMapper
 
     val reservedKeyword: String
         get() = "table"
@@ -82,6 +95,47 @@ interface SchemaMapperSuite {
         validateCreateTable(columnName)
     }
 
+    fun `stream names avoid collisions`() {
+        val configuredCatalog =
+            ConfiguredAirbyteCatalog()
+                .withStreams(
+                    listOf(
+                        ConfiguredAirbyteStream()
+                            .withStream(
+                                AirbyteStream()
+                                    .withName("foo-1")
+                                    .withNamespace("bar-1")
+                                    .withJsonSchema(Jsons.readTree("""{"type": "object"}"""))
+                            )
+                            .withDestinationSyncMode(DestinationSyncMode.APPEND)
+                            .withSyncId(42)
+                            .withMinimumGenerationId(0)
+                            .withGenerationId(42),
+                        ConfiguredAirbyteStream()
+                            .withStream(
+                                AirbyteStream()
+                                    .withName("foo_1")
+                                    .withNamespace("bar_1")
+                                    .withJsonSchema(Jsons.readTree("""{"type": "object"}"""))
+                            )
+                            .withDestinationSyncMode(DestinationSyncMode.APPEND)
+                            .withSyncId(42)
+                            .withMinimumGenerationId(0)
+                            .withGenerationId(42),
+                    )
+                )
+        val syncCatalog =
+            DefaultDestinationCatalogFactory()
+                .syncCatalog(configuredCatalog, streamFactory, tableNameResolver, namespaceMapper)
+        val uniqueFinalTableNames =
+            syncCatalog.streams.map { it.tableSchema.tableNames.finalTableName }.toSet()
+        assertEquals(
+            configuredCatalog.streams.size,
+            uniqueFinalTableNames.size,
+            "Expected munged table names to be unique: $uniqueFinalTableNames"
+        )
+    }
+
     fun `column name with funky chars`(expectedColumnName: String) = runTest {
         val columnName =
             tableSchemaMapper.toColumnName("""column-test- -`~!@#$%^&*()-=_+[]\{}|;':",./<>?""")
@@ -110,6 +164,48 @@ interface SchemaMapperSuite {
         validateCreateTable(
             TableOperationsFixtures.ALL_TYPES_SCHEMA.properties,
             mappedTypes,
+        )
+    }
+
+    fun `column names avoid collisions`() {
+        val configuredCatalog =
+            ConfiguredAirbyteCatalog()
+                .withStreams(
+                    listOf(
+                        ConfiguredAirbyteStream()
+                            .withStream(
+                                AirbyteStream()
+                                    .withName("foo-1")
+                                    .withNamespace("bar-1")
+                                    .withJsonSchema(
+                                        Jsons.readTree(
+                                            """
+                                            {
+                                              "type": "object",
+                                              "properties": {
+                                                 "foo-1": {"type": "string"},
+                                                 "foo_1": {"type": "integer"}
+                                              }
+                                            }
+                                            """.trimIndent()
+                                        )
+                                    )
+                            )
+                            .withDestinationSyncMode(DestinationSyncMode.APPEND)
+                            .withSyncId(42)
+                            .withMinimumGenerationId(0)
+                            .withGenerationId(42),
+                    )
+                )
+        val syncCatalog =
+            DefaultDestinationCatalogFactory()
+                .syncCatalog(configuredCatalog, streamFactory, tableNameResolver, namespaceMapper)
+        val uniqueColumnNames =
+            syncCatalog.streams.first().tableSchema.columnSchema.finalSchema.keys
+        assertEquals(
+            configuredCatalog.streams.first().stream.jsonSchema["properties"].size(),
+            uniqueColumnNames.size,
+            "Expected munged column names to be unique: $uniqueColumnNames"
         )
     }
 
