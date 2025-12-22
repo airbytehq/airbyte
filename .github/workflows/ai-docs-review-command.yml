@@ -8,6 +8,11 @@
 # - Triggered via /ai-docs-review slash command on PRs
 # - Only processes PRs with connector changes
 # - Requires PR number input (fails gracefully if missing)
+#
+# Security model:
+# - Slash commands require write permission (only collaborators can trigger)
+# - This is workflow_dispatch, so secrets are always available
+# - Works for fork PRs because we don't execute PR code, only analyze files via API
 
 name: AI Docs Review Command
 
@@ -82,44 +87,13 @@ jobs:
         if: steps.validate.outputs.valid == 'false'
         run: exit 1
 
-      - name: Get PR info and resolve gitref
-        if: steps.validate.outputs.valid == 'true'
-        id: pr-info
-        env:
-          GH_TOKEN: ${{ steps.get-app-token.outputs.token }}
-        run: |
-          echo "Fetching PR #${{ inputs.pr }} info from ${{ inputs.repo }}..."
-
-          # Get PR info using the repo input
-          PR_INFO=$(gh api repos/${{ inputs.repo }}/pulls/${{ inputs.pr }})
-
-          # Check if PR is from a fork (head repo differs from base repo)
-          HEAD_REPO=$(echo "$PR_INFO" | jq -r '.head.repo.full_name')
-          BASE_REPO=$(echo "$PR_INFO" | jq -r '.base.repo.full_name')
-          if [ "$HEAD_REPO" != "$BASE_REPO" ]; then
-            echo "is_fork=true" >> $GITHUB_OUTPUT
-            echo "PR is from a fork: $HEAD_REPO -> $BASE_REPO"
-          else
-            echo "is_fork=false" >> $GITHUB_OUTPUT
-            echo "PR is from the same repo"
-          fi
-
-          # Resolve gitref: use input if provided, otherwise fetch from PR
-          if [ -n "${{ inputs.gitref }}" ]; then
-            echo "checkout_ref=${{ inputs.gitref }}" >> $GITHUB_OUTPUT
-            echo "Using provided gitref: ${{ inputs.gitref }}"
-          else
-            HEAD_SHA=$(echo "$PR_INFO" | jq -r '.head.sha')
-            echo "checkout_ref=$HEAD_SHA" >> $GITHUB_OUTPUT
-            echo "Resolved gitref from PR head: $HEAD_SHA"
-          fi
-
       - name: Checkout PR code
         if: steps.validate.outputs.valid == 'true'
         uses: actions/checkout@11bd71901bbe5b1630ceea73d27597364c9af683 # v4.2.2
         with:
           fetch-depth: 0
-          ref: ${{ steps.pr-info.outputs.checkout_ref }}
+          # Use refs/pull/N/head which works for both fork and non-fork PRs
+          ref: refs/pull/${{ inputs.pr }}/head
 
       - name: Get files changed in this PR
         if: steps.validate.outputs.valid == 'true'
@@ -129,8 +103,9 @@ jobs:
         run: |
           echo "Fetching files changed in PR #${{ inputs.pr }}..."
 
-          # Get the list of changed files from the PR using the repo input
-          FILES=$(gh api repos/${{ inputs.repo }}/pulls/${{ inputs.pr }}/files --jq '.[].filename' | jq -R -s -c 'split("\n")[:-1]')
+          # Use github.repository (base repo) for API calls - works for both fork and non-fork PRs
+          # Note: inputs.repo is the head repo which may be a fork, but PR number exists in base repo
+          FILES=$(gh api repos/${{ github.repository }}/pulls/${{ inputs.pr }}/files --jq '.[].filename' | jq -R -s -c 'split("\n")[:-1]')
 
           if [ -z "$FILES" ] || [ "$FILES" = "[]" ]; then
             echo "No files changed in this PR - skipping documentation recommendations."
