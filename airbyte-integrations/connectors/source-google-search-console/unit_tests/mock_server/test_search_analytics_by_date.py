@@ -362,8 +362,8 @@ class TestSearchAnalyticsByDateStream(TestCase):
         """Test pagination with 2 pages of results.
 
         The paginator uses OffsetIncrement with page_size 25000.
-        We simulate pagination by returning page_size records on page 1 (startRow=0)
-        and fewer records on page 2 (startRow=25000) to stop pagination.
+        We simulate pagination by returning exactly page_size (25000) records on page 1 (startRow=0)
+        to trigger a page 2 request, then return fewer records on page 2 (startRow=25000) to stop pagination.
 
         NOTE: This test covers the pagination behavior for ALL search_analytics streams
         that use the same DefaultPaginator with OffsetIncrement definition in manifest.yaml:
@@ -371,18 +371,13 @@ class TestSearchAnalyticsByDateStream(TestCase):
         - search_analytics_by_page, search_analytics_by_query, search_analytics_all_fields
         - search_analytics_page_report, search_analytics_site_report_by_page, search_analytics_site_report_by_site
         - search_analytics_keyword_page_report, search_analytics_keyword_site_report_by_page, search_analytics_keyword_site_report_by_site
-
-        Note on pagination behavior: The OffsetIncrement paginator only requests page 2 if page 1
-        returns exactly page_size (25000) records. In this test, we return fewer records to
-        demonstrate the paginator correctly handles the startRow parameter. The test validates
-        that pagination is properly configured even though page 2 is not requested (expected behavior
-        when fewer than page_size records are returned).
         """
         http_mocker.post(_oauth_request(), create_oauth_response())
 
         config = ConfigBuilder().with_site_urls(["https://example.com/"]).with_start_date("2024-01-01").with_end_date("2024-01-03").build()
 
         page_requests: List[Dict[str, Any]] = []
+        _PAGE_SIZE = 25000
 
         def pagination_callback(request: rm.request._RequestObjectProxy, context: Any) -> str:
             """Callback to handle pagination requests."""
@@ -396,19 +391,23 @@ class TestSearchAnalyticsByDateStream(TestCase):
             start_row = body.get("startRow", 0)
 
             if start_row == 0:
-                # Page 1: Return exactly page_size (25000) records to trigger page 2
-                # For testing, we'll return a smaller number but simulate the pagination
-                # by checking if startRow advances
-                return json.dumps(
-                    _build_search_analytics_response(
-                        [_build_search_analytics_row(f"2024-01-0{i % 3 + 1}", clicks=100 + i, impressions=1000 + i) for i in range(3)]
-                    )
-                )
-            else:
+                # Page 1: Return exactly page_size (25000) records to trigger page 2 request
+                # Generate 25000 records with varying dates
+                page1_records = [
+                    _build_search_analytics_row(f"2024-01-0{(i % 3) + 1}", clicks=100 + i, impressions=1000 + i)
+                    for i in range(_PAGE_SIZE)
+                ]
+                return json.dumps(_build_search_analytics_response(page1_records))
+            elif start_row == _PAGE_SIZE:
                 # Page 2: Return fewer records to stop pagination
-                return json.dumps(
-                    _build_search_analytics_response([_build_search_analytics_row("2024-01-02", clicks=500, impressions=5000)])
-                )
+                page2_records = [
+                    _build_search_analytics_row("2024-01-01", clicks=500, impressions=5000),
+                    _build_search_analytics_row("2024-01-02", clicks=600, impressions=6000),
+                ]
+                return json.dumps(_build_search_analytics_response(page2_records))
+            else:
+                # Unexpected startRow, return empty
+                return json.dumps(_build_search_analytics_response([]))
 
         http_mocker._mocker.post(
             re.compile(r"https://www\.googleapis\.com/webmasters/v3/sites/.*/searchAnalytics/query"),
@@ -418,20 +417,19 @@ class TestSearchAnalyticsByDateStream(TestCase):
         output = self._read_stream(config)
         records = [message for message in output.records if message.record.stream == _STREAM_NAME]
 
-        # Verify we got exactly 3 records from the response (from web search type page 1)
-        assert len(records) == 3, f"Expected exactly 3 records, got {len(records)}"
+        # Verify we got records from both pages (25000 from page 1 + 2 from page 2 = 25002)
+        assert len(records) == _PAGE_SIZE + 2, f"Expected {_PAGE_SIZE + 2} records (page 1 + page 2), got {len(records)}"
 
-        # Verify pagination was attempted by checking startRow values in requests
+        # Verify pagination was triggered by checking startRow values in requests
         web_requests = [r for r in page_requests if r.get("type") == "web"]
         start_rows = [r.get("startRow", 0) for r in web_requests]
 
-        # Should have at least one request with startRow=0 (first page)
+        # Should have requests for both page 1 (startRow=0) and page 2 (startRow=25000)
         assert 0 in start_rows, "Expected first page request with startRow=0"
+        assert _PAGE_SIZE in start_rows, f"Expected second page request with startRow={_PAGE_SIZE}"
 
-        # Note: Due to the OffsetIncrement paginator behavior, page 2 is only requested
-        # if page 1 returns exactly page_size (25000) records. In this test, we return
-        # fewer records, so pagination stops after page 1. This is expected behavior.
-        # The test validates that the paginator correctly handles the startRow parameter.
+        # Verify exactly 2 pages were requested for web search type
+        assert len(web_requests) == 2, f"Expected exactly 2 page requests for web, got {len(web_requests)}"
 
     @patch("airbyte_cdk.sources.streams.http.rate_limiting.time.sleep", lambda x: None)
     @HttpMocker()
