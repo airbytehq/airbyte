@@ -216,7 +216,7 @@ class DeletedProducts(IncrementalShopifyStream):
         json_response = response.json()
         events = json_response.get("data", {}).get("events", {}).get("nodes", [])
         for event in events:
-            if event.get("subjectType") == "Product" and event.get("subjectId"):
+            if event.get("subjectType") == "PRODUCT" and event.get("subjectId"):
                 subject_id = event.get("subjectId", "")
                 product_id = int(subject_id.split("/")[-1]) if "/" in subject_id else None
                 if product_id:
