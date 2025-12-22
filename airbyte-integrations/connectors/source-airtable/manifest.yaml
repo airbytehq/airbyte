@@ -591,8 +591,9 @@ spec:
         type: boolean
         description: When enabled, includes the base ID in stream names to ensure uniqueness. Use this if you have cloned Airtable bases with duplicate table names. Note that enabling this will change stream names and require a full refresh.
         default: false
-        order: 0
+        order: 1
       credentials:
+        order: 0
         title: Authentication
         type: object
         oneOf:
