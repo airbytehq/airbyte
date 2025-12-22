@@ -6,8 +6,8 @@
 #
 # Workflow triggers:
 # - Triggered via /ai-docs-review slash command on PRs
-# - Only processes PRs from non-forked repos or forks with secrets access
-# - Triggers for any connector changes (not filtered by support level)
+# - Only processes PRs with connector changes
+# - Requires PR number input (fails gracefully if missing)
 
 name: AI Docs Review Command
 
@@ -15,21 +15,21 @@ on:
   workflow_dispatch:
     inputs:
       pr:
-        description: "Pull request number (if triggered from a PR)"
+        description: "Pull request number (required)"
         type: number
         required: false
       comment-id:
         description: "The comment-id of the slash command. Used to update the comment with the status."
         required: false
       repo:
-        description: "Repo (passed by slash command dispatcher)"
+        description: "Repo in owner/repo format (passed by slash command dispatcher)"
         required: false
         default: "airbytehq/airbyte"
       gitref:
-        description: "Git ref (passed by slash command dispatcher)"
+        description: "Git ref to checkout (passed by slash command dispatcher, or fetched from PR if empty)"
         required: false
 
-run-name: "AI Docs Review for PR #${{ github.event.inputs.pr }}"
+run-name: "AI Docs Review for PR #${{ github.event.inputs.pr || 'unknown' }}"
 
 permissions:
   contents: read
@@ -47,8 +47,19 @@ jobs:
         run: |
           echo "run-url=https://github.com/$GITHUB_REPOSITORY/actions/runs/$GITHUB_RUN_ID" >> $GITHUB_OUTPUT
 
+      - name: Validate required inputs
+        id: validate
+        run: |
+          if [ -z "${{ inputs.pr }}" ] || [ "${{ inputs.pr }}" = "0" ]; then
+            echo "::error::Missing required input: pr. This workflow must be triggered from a PR using the /ai-docs-review slash command."
+            echo "valid=false" >> $GITHUB_OUTPUT
+            exit 0
+          fi
+          echo "valid=true" >> $GITHUB_OUTPUT
+
       - name: Authenticate as GitHub App
-        uses: actions/create-github-app-token@v2
+        if: steps.validate.outputs.valid == 'true'
+        uses: actions/create-github-app-token@67018539274d69449ef7c02e8e71183d1719ab42 # v2.1.4
         id: get-app-token
         with:
           owner: "airbytehq"
@@ -56,47 +67,70 @@ jobs:
           app-id: ${{ secrets.OCTAVIA_BOT_APP_ID }}
           private-key: ${{ secrets.OCTAVIA_BOT_PRIVATE_KEY }}
 
-      - name: Check fork and secrets access
-        id: check-fork
+      - name: Post error comment (missing PR input)
+        if: steps.validate.outputs.valid == 'false' && inputs.comment-id != ''
+        uses: peter-evans/create-or-update-comment@a35cf36e5301d70b76f316e867e7788a55a31dae # v1.4.5
+        with:
+          comment-id: ${{ inputs.comment-id }}
+          body: |
+            > **AI Docs Review Failed**
+            >
+            > Missing required input: PR number. This workflow must be triggered from a PR using the `/ai-docs-review` slash command.
+            > [View workflow run](${{ steps.job-vars.outputs.run-url }})
+
+      - name: Fail if inputs invalid
+        if: steps.validate.outputs.valid == 'false'
+        run: exit 1
+
+      - name: Get PR info and resolve gitref
+        if: steps.validate.outputs.valid == 'true'
+        id: pr-info
         env:
           GH_TOKEN: ${{ steps.get-app-token.outputs.token }}
         run: |
-          # Get PR info to check if it's from a fork
-          PR_INFO=$(gh api repos/${{ github.repository }}/pulls/${{ inputs.pr }})
-          IS_FORK=$(echo "$PR_INFO" | jq -r '.head.repo.fork')
-          echo "is_fork=$IS_FORK" >> $GITHUB_OUTPUT
+          echo "Fetching PR #${{ inputs.pr }} info from ${{ inputs.repo }}..."
 
-          # Check if we have access to secrets by checking if the Devin token is available
-          if [ -z "${{ secrets.DEVIN_AI_API_KEY }}" ]; then
-            echo "has_secrets=false" >> $GITHUB_OUTPUT
+          # Get PR info using the repo input
+          PR_INFO=$(gh api repos/${{ inputs.repo }}/pulls/${{ inputs.pr }})
+
+          # Check if PR is from a fork (head repo differs from base repo)
+          HEAD_REPO=$(echo "$PR_INFO" | jq -r '.head.repo.full_name')
+          BASE_REPO=$(echo "$PR_INFO" | jq -r '.base.repo.full_name')
+          if [ "$HEAD_REPO" != "$BASE_REPO" ]; then
+            echo "is_fork=true" >> $GITHUB_OUTPUT
+            echo "PR is from a fork: $HEAD_REPO -> $BASE_REPO"
           else
-            echo "has_secrets=true" >> $GITHUB_OUTPUT
+            echo "is_fork=false" >> $GITHUB_OUTPUT
+            echo "PR is from the same repo"
           fi
 
-      - name: Exit if fork without secrets access
-        if: steps.check-fork.outputs.is_fork == 'true' && steps.check-fork.outputs.has_secrets == 'false'
-        run: |
-          echo "Cannot run Devin session for fork PRs without secrets access."
-          echo "This is expected behavior - fork PRs do not have access to repository secrets."
-          exit 0
+          # Resolve gitref: use input if provided, otherwise fetch from PR
+          if [ -n "${{ inputs.gitref }}" ]; then
+            echo "checkout_ref=${{ inputs.gitref }}" >> $GITHUB_OUTPUT
+            echo "Using provided gitref: ${{ inputs.gitref }}"
+          else
+            HEAD_SHA=$(echo "$PR_INFO" | jq -r '.head.sha')
+            echo "checkout_ref=$HEAD_SHA" >> $GITHUB_OUTPUT
+            echo "Resolved gitref from PR head: $HEAD_SHA"
+          fi
 
       - name: Checkout PR code
-        if: steps.check-fork.outputs.is_fork != 'true' || steps.check-fork.outputs.has_secrets == 'true'
-        uses: actions/checkout@v4
+        if: steps.validate.outputs.valid == 'true'
+        uses: actions/checkout@11bd71901bbe5b1630ceea73d27597364c9af683 # v4.2.2
         with:
           fetch-depth: 0
-          ref: ${{ inputs.gitref }}
+          ref: ${{ steps.pr-info.outputs.checkout_ref }}
 
       - name: Get files changed in this PR
-        if: steps.check-fork.outputs.is_fork != 'true' || steps.check-fork.outputs.has_secrets == 'true'
+        if: steps.validate.outputs.valid == 'true'
         id: pr-files
         env:
           GH_TOKEN: ${{ steps.get-app-token.outputs.token }}
         run: |
           echo "Fetching files changed in PR #${{ inputs.pr }}..."
 
-          # Get the list of changed files from the PR
-          FILES=$(gh api repos/${{ github.repository }}/pulls/${{ inputs.pr }}/files --jq '.[].filename' | jq -R -s -c 'split("\n")[:-1]')
+          # Get the list of changed files from the PR using the repo input
+          FILES=$(gh api repos/${{ inputs.repo }}/pulls/${{ inputs.pr }}/files --jq '.[].filename' | jq -R -s -c 'split("\n")[:-1]')
 
           if [ -z "$FILES" ] || [ "$FILES" = "[]" ]; then
             echo "No files changed in this PR - skipping documentation recommendations."
@@ -119,8 +153,8 @@ jobs:
           echo "has_connector_changes=true" >> $GITHUB_OUTPUT
 
       - name: Post start comment
-        if: inputs.comment-id != '' && (steps.check-fork.outputs.is_fork != 'true' || steps.check-fork.outputs.has_secrets == 'true') && steps.pr-files.outputs.has_connector_changes == 'true'
-        uses: peter-evans/create-or-update-comment@v4
+        if: inputs.comment-id != '' && steps.validate.outputs.valid == 'true' && steps.pr-files.outputs.has_connector_changes == 'true'
+        uses: peter-evans/create-or-update-comment@a35cf36e5301d70b76f316e867e7788a55a31dae # v1.4.5
         with:
           token: ${{ steps.get-app-token.outputs.token }}
           comment-id: ${{ inputs.comment-id }}
@@ -132,8 +166,8 @@ jobs:
             > [View workflow run](${{ steps.job-vars.outputs.run-url }})
 
       - name: Post skip comment (no connector changes)
-        if: inputs.comment-id != '' && (steps.check-fork.outputs.is_fork != 'true' || steps.check-fork.outputs.has_secrets == 'true') && steps.pr-files.outputs.has_connector_changes == 'false'
-        uses: peter-evans/create-or-update-comment@v4
+        if: inputs.comment-id != '' && steps.validate.outputs.valid == 'true' && steps.pr-files.outputs.has_connector_changes == 'false'
+        uses: peter-evans/create-or-update-comment@a35cf36e5301d70b76f316e867e7788a55a31dae # v1.4.5
         with:
           token: ${{ steps.get-app-token.outputs.token }}
           comment-id: ${{ inputs.comment-id }}
@@ -144,7 +178,7 @@ jobs:
             > No connector changes detected in this PR. Documentation review is only triggered for PRs that modify connector code.
 
       - name: Start AI documentation recommendation session
-        if: (steps.check-fork.outputs.is_fork != 'true' || steps.check-fork.outputs.has_secrets == 'true') && steps.pr-files.outputs.has_connector_changes == 'true'
+        if: steps.validate.outputs.valid == 'true' && steps.pr-files.outputs.has_connector_changes == 'true'
         uses: aaronsteers/devin-action@0d74d6d9ff1b16ada5966dc31af53a9d155759f4 # Pinned to specific commit for security
         with:
           comment-id: ${{ inputs.comment-id }}
@@ -153,7 +187,7 @@ jobs:
           github-token: ${{ steps.get-app-token.outputs.token }}
           playbook-macro: "!connectordocs-pr-review"
           prompt-text: "The pull request to review is ${{ inputs.pr }}."
-          start-message: "📝 **AI Docs Review session starting...** Analyzing connector changes and preparing documentation recommendations."
+          start-message: "AI Docs Review session starting... Analyzing connector changes and preparing documentation recommendations."
           tags: |
             area/documentation
             team/documentation
