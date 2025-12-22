@@ -88,13 +88,7 @@ For more information on SSH key pair authentication, please refer to the
     |   | - 2022
     ```
 
-    An input of `/logs/2022` replicates only data contained within the specified folder, ignoring the `/files` and `/logs/2021` folders. Leaving this field blank replicates all applicable files in the remote server's designated entry point. You may choose to enter a [regular expression](https://docs.oracle.com/javase/8/docs/api/java/util/regex/Pattern.html) to specify a naming pattern for the files to be replicated. Consider the following example:
-
-    ```regex
-    log-([0-9]{4})([0-9]{2})([0-9]{2})
-    ```
-
-    This pattern filters for files that match the format `log-YYYYMMDD`, where `YYYY`, `MM`, and `DD` represent four-digit, two-digit, and two-digit numbers, respectively. For example, `log-20230713`. Leaving this field blank replicates all files not filtered by the previous two fields.
+    An input of `/logs/2022` replicates only data contained within the specified folder, ignoring the `/files` and `/logs/2021` folders. Leaving this field blank replicates all applicable files in the remote server's designated entry point.
 
 14. Click **Set up source** to complete setup. A test runs to verify the configuration.
 
