@@ -26,7 +26,25 @@ class EnrichedDestinationRecordAirbyteValueTest {
             generationId = 42L,
             minimumGenerationId = 10L,
             syncId = 100L,
-            namespaceMapper = NamespaceMapper()
+            namespaceMapper = NamespaceMapper(),
+            tableSchema =
+                io.airbyte.cdk.load.schema.model.StreamTableSchema(
+                    tableNames =
+                        io.airbyte.cdk.load.schema.model.TableNames(
+                            finalTableName =
+                                io.airbyte.cdk.load.schema.model.TableName(
+                                    "test_namespace",
+                                    "test_stream"
+                                )
+                        ),
+                    columnSchema =
+                        io.airbyte.cdk.load.schema.model.ColumnSchema(
+                            inputSchema = mapOf(),
+                            inputToFinalColumnNames = mapOf(),
+                            finalSchema = mapOf(),
+                        ),
+                    importType = Append,
+                )
         )
 
     private val emittedAtMs = 1234567890L

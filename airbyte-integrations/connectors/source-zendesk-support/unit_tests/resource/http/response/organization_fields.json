@@ -1,0 +1,23 @@
+{
+  "organization_fields": [
+    {
+      "id": 12345,
+      "url": "https://d3v-airbyte.zendesk.com/api/v2/organization_fields/12345.json",
+      "key": "industry",
+      "type": "text",
+      "title": "Industry",
+      "description": "Organization industry",
+      "raw_title": "Industry",
+      "raw_description": "Organization industry",
+      "position": 1,
+      "active": true,
+      "system": false,
+      "regexp_for_validation": null,
+      "created_at": "2024-01-01T00:00:00Z",
+      "updated_at": "2024-01-01T00:00:00Z"
+    }
+  ],
+  "count": 1,
+  "next_page": null,
+  "previous_page": null
+}
