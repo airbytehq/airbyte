@@ -63,35 +63,33 @@ class GoogleSearchConsoleSitesResponseBuilder:
     """
     Builder for creating HTTP responses for the sites endpoint.
 
-    The sites endpoint returns a list of sites in the format:
+    The sites endpoint /webmasters/v3/sites/{site_url} returns a single site object:
     {
-        "siteEntry": [
-            {"siteUrl": "https://example.com/", "permissionLevel": "siteOwner"},
-            ...
-        ]
+        "siteUrl": "https://example.com/",
+        "permissionLevel": "siteOwner"
     }
     """
 
     def __init__(self):
-        self._sites: List[Dict[str, Any]] = []
+        self._site_url: str = "https://example.com/"
+        self._permission_level: str = "siteOwner"
 
     def with_site(
         self,
         site_url: str,
         permission_level: str = "siteOwner",
     ) -> "GoogleSearchConsoleSitesResponseBuilder":
-        """Add a site to the response."""
-        self._sites.append(
-            {
-                "siteUrl": site_url,
-                "permissionLevel": permission_level,
-            }
-        )
+        """Set the site details for the response."""
+        self._site_url = site_url
+        self._permission_level = permission_level
         return self
 
     def build(self) -> HttpResponse:
         """Build and return the HttpResponse object."""
-        body = {"siteEntry": self._sites}
+        body = {
+            "siteUrl": self._site_url,
+            "permissionLevel": self._permission_level,
+        }
         return HttpResponse(body=json.dumps(body), status_code=200)
 
 
@@ -143,9 +141,8 @@ class GoogleSearchConsoleSitemapsResponseBuilder:
             "lastDownloaded": last_downloaded,
             "warnings": warnings,
             "errors": errors,
+            "contents": contents if contents else [{"type": "web", "submitted": "100", "indexed": "95"}],
         }
-        if contents:
-            sitemap["contents"] = contents
         self._sitemaps.append(sitemap)
         return self
 

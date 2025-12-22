@@ -16,34 +16,16 @@ from unittest import TestCase
 from urllib.parse import quote
 
 from mock_server.config import ConfigBuilder
+from mock_server.response_builder import GoogleSearchConsoleSitesResponseBuilder, create_oauth_response, create_sites_response
 
 from airbyte_cdk.models import SyncMode
 from airbyte_cdk.test.catalog_builder import CatalogBuilder
 from airbyte_cdk.test.entrypoint_wrapper import read
-from airbyte_cdk.test.mock_http import HttpMocker, HttpRequest, HttpResponse
+from airbyte_cdk.test.mock_http import HttpMocker, HttpRequest
 from unit_tests.conftest import get_source
 
 
 _STREAM_NAME = "sites"
-
-
-def _build_sites_response(site_url: str, permission_level: str = "siteOwner") -> HttpResponse:
-    """Build a response for the sites endpoint."""
-    body = {
-        "siteUrl": site_url,
-        "permissionLevel": permission_level,
-    }
-    return HttpResponse(body=json.dumps(body), status_code=200)
-
-
-def _build_oauth_response() -> HttpResponse:
-    """Build a mock OAuth token response."""
-    body = {
-        "access_token": "test_access_token",
-        "expires_in": 3600,
-        "token_type": "Bearer",
-    }
-    return HttpResponse(body=json.dumps(body), status_code=200)
 
 
 def _sites_request(site_url: str) -> HttpRequest:
@@ -91,10 +73,10 @@ class TestSitesStream(TestCase):
         """
         config = ConfigBuilder().with_site_urls(["https://example.com/"]).build()
 
-        http_mocker.post(_oauth_request(), _build_oauth_response())
+        http_mocker.post(_oauth_request(), create_oauth_response())
         http_mocker.get(
             _sites_request("https://example.com/"),
-            _build_sites_response("https://example.com/", "siteOwner"),
+            create_sites_response(),
         )
 
         source = get_source(config=config)
@@ -116,14 +98,14 @@ class TestSitesStream(TestCase):
         """
         config = ConfigBuilder().with_site_urls(["https://example1.com/", "https://example2.com/"]).build()
 
-        http_mocker.post(_oauth_request(), _build_oauth_response())
+        http_mocker.post(_oauth_request(), create_oauth_response())
         http_mocker.get(
             _sites_request("https://example1.com/"),
-            _build_sites_response("https://example1.com/", "siteOwner"),
+            GoogleSearchConsoleSitesResponseBuilder().with_site("https://example1.com/").build(),
         )
         http_mocker.get(
             _sites_request("https://example2.com/"),
-            _build_sites_response("https://example2.com/", "siteFullUser"),
+            GoogleSearchConsoleSitesResponseBuilder().with_site("https://example2.com/", "siteFullUser").build(),
         )
 
         source = get_source(config=config)

@@ -11,62 +11,24 @@ The sitemaps stream is a full refresh stream that:
 - Has no incremental sync
 """
 
-import json
 from unittest import TestCase
 from urllib.parse import quote
 
 from mock_server.config import ConfigBuilder
+from mock_server.response_builder import (
+    GoogleSearchConsoleSitemapsResponseBuilder,
+    create_oauth_response,
+    create_sitemaps_empty_response,
+)
 
 from airbyte_cdk.models import SyncMode
 from airbyte_cdk.test.catalog_builder import CatalogBuilder
 from airbyte_cdk.test.entrypoint_wrapper import read
-from airbyte_cdk.test.mock_http import HttpMocker, HttpRequest, HttpResponse
+from airbyte_cdk.test.mock_http import HttpMocker, HttpRequest
 from unit_tests.conftest import get_source
 
 
 _STREAM_NAME = "sitemaps"
-
-
-def _build_sitemaps_response(sitemaps: list) -> HttpResponse:
-    """Build a response for the sitemaps endpoint.
-
-    The sitemaps endpoint returns a response with a 'sitemap' array containing
-    sitemap objects with path, lastSubmitted, isPending, isSitemapsIndex, type, etc.
-    """
-    body = {"sitemap": sitemaps}
-    return HttpResponse(body=json.dumps(body), status_code=200)
-
-
-def _build_sitemap_record(
-    path: str,
-    sitemap_type: str = "sitemap",
-    is_pending: bool = False,
-    is_sitemaps_index: bool = False,
-    last_submitted: str = "2024-01-15T10:30:00.000Z",
-    last_downloaded: str = "2024-01-15T11:00:00.000Z",
-) -> dict:
-    """Build a single sitemap record."""
-    return {
-        "path": path,
-        "lastSubmitted": last_submitted,
-        "isPending": is_pending,
-        "isSitemapsIndex": is_sitemaps_index,
-        "type": sitemap_type,
-        "lastDownloaded": last_downloaded,
-        "warnings": "0",
-        "errors": "0",
-        "contents": [{"type": "web", "submitted": "100", "indexed": "95"}],
-    }
-
-
-def _build_oauth_response() -> HttpResponse:
-    """Build a mock OAuth token response."""
-    body = {
-        "access_token": "test_access_token",
-        "expires_in": 3600,
-        "token_type": "Bearer",
-    }
-    return HttpResponse(body=json.dumps(body), status_code=200)
 
 
 def _sitemaps_request(site_url: str) -> HttpRequest:
@@ -107,15 +69,13 @@ class TestSitemapsStream(TestCase):
         """
         config = ConfigBuilder().with_site_urls(["https://example.com/"]).build()
 
-        http_mocker.post(_oauth_request(), _build_oauth_response())
+        http_mocker.post(_oauth_request(), create_oauth_response())
         http_mocker.get(
             _sitemaps_request("https://example.com/"),
-            _build_sitemaps_response(
-                [
-                    _build_sitemap_record("https://example.com/sitemap.xml"),
-                    _build_sitemap_record("https://example.com/sitemap-posts.xml", sitemap_type="sitemap"),
-                ]
-            ),
+            GoogleSearchConsoleSitemapsResponseBuilder()
+            .with_sitemap("https://example.com/sitemap.xml")
+            .with_sitemap("https://example.com/sitemap-posts.xml")
+            .build(),
         )
 
         source = get_source(config=config)
@@ -137,23 +97,17 @@ class TestSitemapsStream(TestCase):
         """
         config = ConfigBuilder().with_site_urls(["https://example1.com/", "https://example2.com/"]).build()
 
-        http_mocker.post(_oauth_request(), _build_oauth_response())
+        http_mocker.post(_oauth_request(), create_oauth_response())
         http_mocker.get(
             _sitemaps_request("https://example1.com/"),
-            _build_sitemaps_response(
-                [
-                    _build_sitemap_record("https://example1.com/sitemap.xml"),
-                ]
-            ),
+            GoogleSearchConsoleSitemapsResponseBuilder().with_sitemap("https://example1.com/sitemap.xml").build(),
         )
         http_mocker.get(
             _sitemaps_request("https://example2.com/"),
-            _build_sitemaps_response(
-                [
-                    _build_sitemap_record("https://example2.com/sitemap.xml"),
-                    _build_sitemap_record("https://example2.com/sitemap-products.xml"),
-                ]
-            ),
+            GoogleSearchConsoleSitemapsResponseBuilder()
+            .with_sitemap("https://example2.com/sitemap.xml")
+            .with_sitemap("https://example2.com/sitemap-products.xml")
+            .build(),
         )
 
         source = get_source(config=config)
@@ -179,10 +133,10 @@ class TestSitemapsStream(TestCase):
         """
         config = ConfigBuilder().with_site_urls(["https://example.com/"]).build()
 
-        http_mocker.post(_oauth_request(), _build_oauth_response())
+        http_mocker.post(_oauth_request(), create_oauth_response())
         http_mocker.get(
             _sitemaps_request("https://example.com/"),
-            _build_sitemaps_response([]),
+            create_sitemaps_empty_response(),
         )
 
         source = get_source(config=config)
@@ -204,21 +158,19 @@ class TestSitemapsStream(TestCase):
         """
         config = ConfigBuilder().with_site_urls(["https://example.com/"]).build()
 
-        http_mocker.post(_oauth_request(), _build_oauth_response())
+        http_mocker.post(_oauth_request(), create_oauth_response())
         http_mocker.get(
             _sitemaps_request("https://example.com/"),
-            _build_sitemaps_response(
-                [
-                    _build_sitemap_record(
-                        path="https://example.com/sitemap.xml",
-                        sitemap_type="sitemap",
-                        is_pending=False,
-                        is_sitemaps_index=True,
-                        last_submitted="2024-01-15T10:30:00.000Z",
-                        last_downloaded="2024-01-15T11:00:00.000Z",
-                    ),
-                ]
-            ),
+            GoogleSearchConsoleSitemapsResponseBuilder()
+            .with_sitemap(
+                path="https://example.com/sitemap.xml",
+                sitemap_type="sitemap",
+                is_pending=False,
+                is_sitemaps_index=True,
+                last_submitted="2024-01-15T10:30:00.000Z",
+                last_downloaded="2024-01-15T11:00:00.000Z",
+            )
+            .build(),
         )
 
         source = get_source(config=config)
