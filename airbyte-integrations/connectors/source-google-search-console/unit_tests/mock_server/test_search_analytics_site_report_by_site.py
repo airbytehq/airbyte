@@ -28,17 +28,11 @@ from airbyte_cdk.test.entrypoint_wrapper import read
 from airbyte_cdk.test.mock_http import HttpMocker, HttpRequest, HttpResponse
 from airbyte_cdk.test.state_builder import StateBuilder
 from unit_tests.conftest import get_source
-
-
 _STREAM_NAME = "search_analytics_site_report_by_site"
 _SEARCH_TYPES = ["web", "news", "image", "video", "googleNews"]
-
-
 def _build_search_analytics_response(rows: list) -> dict:
     """Build a response body for the searchAnalytics endpoint."""
     return {"rows": rows}
-
-
 def _build_search_analytics_row(
     date: str,
     country: str,
@@ -57,16 +51,12 @@ def _build_search_analytics_row(
         "position": position,
     }
 
-
-
 def _oauth_request() -> HttpRequest:
     """Build a mock OAuth token request."""
     return HttpRequest(
         url="https://oauth2.googleapis.com/token",
         body="grant_type=refresh_token&client_id=test_client_id&client_secret=test_client_secret&refresh_token=test_refresh_token",
     )
-
-
 @freeze_time("2024-01-04T00:00:00Z")
 class TestSearchAnalyticsSiteReportBySiteStream(TestCase):
     """Tests for the search_analytics_site_report_by_site stream.
