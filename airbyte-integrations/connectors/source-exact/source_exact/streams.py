@@ -282,8 +282,7 @@ class ExactStream(HttpStream, CheckpointMixin, ABC):
 
         try:
             self.read_records(sync_mode=SyncMode.full_refresh)
-            return True
-            # Forbidden, user does not have access to the API
+            return True  # Forbidden, user does not have access to the API
         except requests.RequestException:
             return False
 
@@ -464,6 +463,12 @@ class SyncHRMSchedules(ExactSyncStream):
     endpoint = "sync/HRM/Schedules"
 
 
+class SyncLogisticsItems(ExactSyncStream):
+    """Stream to sync the endpoint `sync/Logistics/Items`"""
+
+    endpoint = "sync/Logistics/Items"
+
+
 class SyncInventoryItemStorageLocations(ExactSyncStream):
     """Stream to sync the endpoint `sync/Inventory/ItemStorageLocations`"""
 
@@ -498,12 +503,6 @@ class SyncInventoryStorageLocationStockPositions(ExactSyncStream):
     """Stream to sync the endpoint `sync/Inventory/StorageLocationStockPositions`"""
 
     endpoint = "sync/Inventory/StorageLocationStockPositions"
-
-
-class SyncLogisticsItems(ExactSyncStream):
-    """Stream to sync the endpoint `sync/Logistics/Items`"""
-
-    endpoint = "sync/Logistics/Items"
 
 
 class SyncLogisticsPurchaseItemPrices(ExactSyncStream):
@@ -558,6 +557,10 @@ class SyncPayrollEmployments(ExactSyncStream):
     """Stream to sync the endpoint `sync/Payroll/Employments`"""
 
     endpoint = "sync/Payroll/Employments"
+
+
+class SyncPayrollEmploymentSalaries(ExactSyncStream):
+    endpoint = "sync/Payroll/EmploymentSalaries"
 
 
 class SyncProjectProjectPlanning(ExactSyncStream):

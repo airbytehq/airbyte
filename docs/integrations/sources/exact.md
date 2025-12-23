@@ -139,6 +139,9 @@ at [Exact Knowledge Base](https://support.exactonline.com/community/s/knowledge-
 | 0.0.1   | 2022-12-14 | [20480](https://github.com/airbytehq/airbyte/pull/20480)  | New Source: Exact                                                        | 
 | 0.0.2   | 2025-01-01 | [61551](https://github.com/airbytehq/airbyte/pull/61551)  | Update of source to airbyte-cdk v.6                                      |
 | 0.0.3   | 2025-07-07 | [61551](https://github.com/airbytehq/airbyte/pull/61551)  | Update of stream FinancialReceivablesList to have a working cursor field |
-| 0.1.0   | 2025-10-15 | [61551](https://github.com/airbytehq/airbyte/pull/61551)  | Update changelog and project files to set version 0.1.0                  |
+| 0.0.4   | 2025-10-15 | [61551](https://github.com/airbytehq/airbyte/pull/61551)  | ...                                                                      |
+| 0.0.5   | 2025-12-23 | [61551](https://github.com/airbytehq/airbyte/pull/61551)  | Add schemas sync_logistic_items and sync_payroll_employment_salaries     |
+| 0.0.6   | 2025-12-23 | [61551](https://github.com/airbytehq/airbyte/pull/61551)  | Add new streams to code                                                  |
+| 0.1.0   | 2025-12-23 | [61551](https://github.com/airbytehq/airbyte/pull/61551)  | Update changelog and project files to set version 0.1.0                  |
 
 
