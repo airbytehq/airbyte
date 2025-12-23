@@ -3,14 +3,13 @@
 from unittest import TestCase
 
 from config_builder import ConfigBuilder
-from mock_server.response_builder import ZendeskChatResponseBuilder
+from conftest import get_source
 
 from airbyte_cdk.models import SyncMode
 from airbyte_cdk.test.catalog_builder import CatalogBuilder
 from airbyte_cdk.test.entrypoint_wrapper import read
 from airbyte_cdk.test.mock_http import HttpMocker, HttpRequest
-
-from conftest import get_source
+from mock_server.response_builder import ZendeskChatResponseBuilder
 
 
 _STREAM_NAME = "roles"
