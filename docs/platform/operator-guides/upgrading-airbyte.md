@@ -76,6 +76,12 @@ Run the following command to upgrade abctl.
 curl -LsfS https://get.airbyte.com | bash -
 ```
 
+Verify the upgrade.
+
+```bash
+abctl version
+```
+
 </TabItem>
 <TabItem value="abctl-go" label="Go">
 
@@ -85,6 +91,12 @@ Run the following command to upgrade abctl.
 go install github.com/airbytehq/abctl@latest
 ```
 
+Verify the upgrade.
+
+```bash
+abctl version
+```
+
 </TabItem>
 <TabItem value="abctl-brew" label="Homebrew">
 
@@ -92,6 +104,12 @@ Run the following command to upgrade abctl.
 
 ```bash
 brew upgrade abctl
+```
+
+Verify the upgrade.
+
+```bash
+abctl version
 ```
 
 </TabItem>
