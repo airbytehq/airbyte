@@ -176,11 +176,15 @@ class ClickhouseAirbyteClient(
                 true,
             ),
         )
-        val columnNames =
-            columnChangeset.columnsToChange.keys + columnChangeset.columnsToRetain.keys
+        // Build a map of column names to their types for the copyTable operation
+        // This allows copyTable to apply type-specific coercion (e.g., nullIf for booleans)
+        val columnsToRetain = columnChangeset.columnsToRetain
+        val columnsToChange =
+            columnChangeset.columnsToChange.mapValues { (_, change) -> change.newType }
+        val columns = columnsToRetain + columnsToChange
         execute(
             sqlGenerator.copyTable(
-                columnNames,
+                columns,
                 properTableName,
                 tempTableName,
             ),

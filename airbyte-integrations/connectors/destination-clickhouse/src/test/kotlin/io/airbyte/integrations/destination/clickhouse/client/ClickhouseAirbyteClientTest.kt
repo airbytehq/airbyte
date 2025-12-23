@@ -210,7 +210,11 @@ class ClickhouseAirbyteClientTest {
         coVerifyOrder {
             clickhouseSqlGenerator.createNamespace(tempTableName.namespace)
             clickhouseSqlGenerator.createTable(tempTableName, tableSchema1, true)
-            clickhouseSqlGenerator.copyTable(setOf("something"), finalTableName, tempTableName)
+            clickhouseSqlGenerator.copyTable(
+                mapOf("something" to ColumnType("IrrelevantValue", true)),
+                finalTableName,
+                tempTableName
+            )
             clickhouseSqlGenerator.exchangeTable(tempTableName, finalTableName)
             clickhouseSqlGenerator.dropTable(tempTableName)
         }
