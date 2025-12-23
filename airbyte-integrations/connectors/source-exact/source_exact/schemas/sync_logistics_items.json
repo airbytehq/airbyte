@@ -247,18 +247,6 @@
       "description": "Description of GLCosts",
       "type": ["null", "string"]
     },
-    "GLCostsWorkInProgress": {
-      "description": "GL account the work in progress project cost entries will be booked on. This overrules the GL account from the item group.",
-      "type": ["null", "string"]
-    },
-    "GLCostsWorkInProgressCode": {
-      "description": "Code of GL account for costs Work In Progress",
-      "type": ["null", "string"]
-    },
-    "GLCostsWorkInProgressDescription": {
-      "description": "Description of GLCosts Work In Progress",
-      "type": ["null", "string"]
-    },
     "GLRevenue": {
       "description": "GL account the revenue will be booked on. This overrules the GL account from the item group. If the license contains 'Intuit integration' this property overrides the value in Settings, not the item group.",
       "type": ["null", "string"]
@@ -269,18 +257,6 @@
     },
     "GLRevenueDescription": {
       "description": "Description of GLRevenue",
-      "type": ["null", "string"]
-    },
-    "GLRevenueWorkInProgress": {
-      "description": "GL account the work in progress project revenue entries will be booked on. This overrules the GL account from the item group.",
-      "type": ["null", "string"]
-    },
-    "GLRevenueWorkInProgressCode": {
-      "description": "Code of GLRevenue Work In Progress",
-      "type": ["null", "string"]
-    },
-    "GLRevenueWorkInProgressDescription": {
-      "description": "Description of GLRevenue Work In Progress",
       "type": ["null", "string"]
     },
     "GLStock": {
@@ -301,10 +277,6 @@
     },
     "IsBatchItem": {
       "description": "Indicates if batches are used for this item",
-      "type": ["null", "integer"]
-    },
-    "IsBatchNumberItem": {
-      "description": "This property is obsolete. Use property 'IsBatchItem' instead.",
       "type": ["null", "integer"]
     },
     "IsFractionAllowedItem": {
@@ -341,10 +313,6 @@
     },
     "IsSerialItem": {
       "description": "Indicates that serial numbers are used for this item",
-      "type": ["null", "boolean"]
-    },
-    "IsSerialNumberItem": {
-      "description": "This property is obsolete. Use property 'IsSerialItem' instead.",
       "type": ["null", "boolean"]
     },
     "IsStockItem": {
@@ -436,10 +404,6 @@
       "description": "Security level (0 - 100)",
       "type": ["null", "integer"]
     },
-    "StandardSalesPrice": {
-      "description": "Standard sales price",
-      "type": ["null", "number"]
-    },
     "StartDate": {
       "description": "Together with EndDate this determines if the item is active",
       "type": ["null", "string"],
@@ -480,10 +444,6 @@
     "UnitType": {
       "description": "Type of unit: A=Area, L=Length, O=Other, T=Time, V=Volume, W=Weight",
       "type": ["null", "string"]
-    },
-    "UseExplosion": {
-      "description": "Assemble at delivery",
-      "type": ["null", "integer"]
     }
   }
 }
