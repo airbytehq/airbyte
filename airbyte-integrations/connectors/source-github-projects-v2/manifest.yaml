@@ -1,7 +1,7 @@
 # GitHub Projects v2 Connector
 # This connector extracts GitHub Projects v2 items and field values using the GraphQL API
 
-version: "4.6.2"
+version: 0.78.5
 type: DeclarativeSource
 
 definitions:
