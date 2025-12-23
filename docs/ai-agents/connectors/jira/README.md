@@ -1,4 +1,4 @@
-# Airbyte Jira AI Connector
+# Jira agent connector
 
 Connector for Jira API
 
@@ -19,10 +19,13 @@ connector = JiraConnector(
     password="..."
   )
 )
-result = connector.issues.search()
+result = await connector.issues.search()
 ```
 
-## Documentation
+
+## Full documentation
+
+This connector supports the following entities and actions.
 
 | Entity | Actions |
 |--------|---------|
@@ -34,14 +37,12 @@ result = connector.issues.search()
 | Issue Worklogs | [List](./REFERENCE.md#issue-worklogs-list), [Get](./REFERENCE.md#issue-worklogs-get) |
 
 
-For detailed documentation on available actions and parameters, see [REFERENCE.md](./REFERENCE.md).
+For detailed documentation on available actions and parameters, see this connector's [full reference documentation](./REFERENCE.md).
 
-For the service's official API docs, see [Jira API Reference](https://developer.atlassian.com/cloud/jira/platform/rest/v3/intro/).
+For the service's official API docs, see the [Jira API reference](https://developer.atlassian.com/cloud/jira/platform/rest/v3/intro/).
 
-## Version Information
+## Version information
 
-**Package Version:** 0.1.8
-
-**Connector Version:** 1.0.2
-
-**Generated with connector-sdk:** c4c39c2797ecd929407c9417c728d425f77b37ed
+- **Package version:** 0.1.14
+- **Connector version:** 1.0.2
+- **Generated with Connector SDK commit SHA:** 12f6b994298f84dfa217940afe7c6b19bec4167b

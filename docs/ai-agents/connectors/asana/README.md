@@ -1,11 +1,11 @@
-# Airbyte Asana AI Connector
+# Asana agent connector
 
 Asana is a work management platform that helps teams organize, track, and manage
 projects and tasks. This connector provides access to tasks, projects, workspaces,
 teams, and users for project tracking, workload analysis, and productivity insights.
 
 
-## Example Questions
+## Example questions
 
 - What tasks are assigned to me this week?
 - List all projects in my workspace
@@ -18,7 +18,7 @@ teams, and users for project tracking, workload analysis, and productivity insig
 - Identify overdue tasks across all my projects
 - Show me details of my current workspace and its users
 
-## Unsupported Questions
+## Unsupported questions
 
 - Create a new task for [TeamMember]
 - Update the priority of this task
@@ -35,21 +35,43 @@ uv pip install airbyte-agent-asana
 
 ## Usage
 
+This connector supports multiple authentication methods:
+
+### OAuth 2
+
 ```python
-from airbyte_agent_asana import AsanaConnector, AsanaAuthConfig
+from airbyte_agent_asana import AsanaConnector
+from airbyte_agent_asana.models import AsanaOauth2AuthConfig
 
 connector = AsanaConnector(
-  auth_config=AsanaAuthConfig(
+  auth_config=AsanaOauth2AuthConfig(
     access_token="...",
     refresh_token="...",
     client_id="...",
     client_secret="..."
   )
 )
-result = connector.tasks.list()
+result = await connector.tasks.list()
 ```
 
-## Documentation
+### Personal Access Token
+
+```python
+from airbyte_agent_asana import AsanaConnector
+from airbyte_agent_asana.models import AsanaPersonalAccessTokenAuthConfig
+
+connector = AsanaConnector(
+  auth_config=AsanaPersonalAccessTokenAuthConfig(
+    token="..."
+  )
+)
+result = await connector.tasks.list()
+```
+
+
+## Full documentation
+
+This connector supports the following entities and actions.
 
 | Entity | Actions |
 |--------|---------|
@@ -77,14 +99,12 @@ result = connector.tasks.list()
 | Task Dependents | [List](./REFERENCE.md#task-dependents-list) |
 
 
-For detailed documentation on available actions and parameters, see [REFERENCE.md](./REFERENCE.md).
+For detailed documentation on available actions and parameters, see this connector's [full reference documentation](./REFERENCE.md).
 
-For the service's official API docs, see [Asana API Reference](https://developers.asana.com/reference/rest-api-reference).
+For the service's official API docs, see the [Asana API reference](https://developers.asana.com/reference/rest-api-reference).
 
-## Version Information
+## Version information
 
-**Package Version:** 0.19.19
-
-**Connector Version:** 0.1.4
-
-**Generated with connector-sdk:** c4c39c2797ecd929407c9417c728d425f77b37ed
+- **Package version:** 0.19.26
+- **Connector version:** 0.1.5
+- **Generated with Connector SDK commit SHA:** 12f6b994298f84dfa217940afe7c6b19bec4167b

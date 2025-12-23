@@ -25,7 +25,7 @@ from pipelines.helpers.utils import raise_if_not_user
 from pipelines.models.steps import STEP_PARAMS, Step, StepResult
 
 # Pin the PyAirbyte version to avoid updates from breaking CI
-PYAIRBYTE_VERSION = "0.20.2"
+PYAIRBYTE_VERSION = "0.35.1"
 
 
 class PytestStep(Step, ABC):
