@@ -609,10 +609,11 @@ streams:
             partition_field: item_id
             stream:
               $ref: "#/streams/4"
-            extra_fields:
-              - path:
-                  - project_id
-                value: "{{ record['project_id'] }}"
+          - type: ParentStreamConfig
+            parent_key: project_id
+            partition_field: project_id
+            stream:
+              $ref: "#/streams/4"
     transformations:
       - type: AddFields
         fields:
