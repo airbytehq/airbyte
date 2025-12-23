@@ -223,6 +223,30 @@ curl --request GET \
 </TabItem>
 </Tabs>
 
+## Trigger jobs via the API
+
+Use the `POST /v1/jobs` endpoint to trigger jobs for a connection. The `jobType` parameter determines what kind of operation runs.
+
+```bash title="Request"
+curl --request POST \
+     --url 'https://api.airbyte.com/v1/jobs' \
+     --header 'accept: application/json' \
+     --header 'content-type: application/json' \
+     --header 'authorization: Bearer <YOUR_ACCESS_TOKEN>' \
+     --data '{"connectionId": "<YOUR_CONNECTION_ID>", "jobType": "sync"}'
+```
+
+### Job types
+
+The API supports the following job types:
+
+| Job Type | Description |
+|----------|-------------|
+| `sync` | Runs a normal data synchronization from source to destination, respecting incremental state if configured. This is the standard operation for moving data. |
+| `reset` | Clears the connection's state and destination data, then re-syncs everything from scratch. Use this when you need to start fresh, such as after schema changes or data corruption. |
+| `refresh` | Re-reads data from the source without clearing the destination first. Useful when you want to update data without losing existing records or fully resetting incremental state. For more details, see [Refreshing your data](/platform/operator-guides/refreshes). |
+| `clear` | Removes all data from the destination for the connection without re-syncing. |
+
 ## Handle access token expiry in your requests
 
 Access tokens are short-lived and you need to regularly request a new one. To minimize unnecessary requests and authorization errors, ensure your API requests work together with requests for new access tokens.
