@@ -265,6 +265,10 @@
       "description": "Objective result rate",
       "$ref": "ads_insights_result.json"
     },
+    "objective_results": {
+      "description": "The objective results for the ad",
+      "$ref": "ads_insights_result.json"
+    },
     "onsite_conversion_messaging_detected_purchase_deduped": {
       "description": "Onsite conversion messaging detected purchase (deduplicated)",
       "type": ["null", "number"]
