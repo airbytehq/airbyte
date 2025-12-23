@@ -407,7 +407,10 @@ class Countries(HttpSubStream, FullRefreshShopifyGraphQlBulkStream):
         stream_slice: Optional[Mapping[str, Any]] = None,
         next_page_token: Optional[Mapping[str, Any]] = None,
     ) -> Optional[Mapping[str, Any]]:
-        location_group_id = stream_slice["parent"]["profile_location_groups"][0]["locationGroup"]["id"]
+        profile_location_groups = stream_slice["parent"]["profile_location_groups"]
+        if not profile_location_groups:
+            return None
+        location_group_id = profile_location_groups[0]["locationGroup"]["id"]
         return {
             "query": self.query(location_group_id=location_group_id, location_group_zones_cursor=self._sub_page_cursor).get(
                 query_args={
