@@ -42,8 +42,11 @@ private val log = KotlinLogging.logger {}
 private const val FLUSH_LIMIT = 1000
 
 /**
- * Accumulates and flushes records to Redshift via INSERT statements. NOT a @Singleton - created
- * per-stream by AggregateFactory.
+ * Accumulates and flushes records to Redshift via batched INSERT statements. NOT a @Singleton -
+ * created per-stream by AggregateFactory.
+ *
+ * Uses JDBC batch operations to efficiently insert multiple records in a single database
+ * round-trip, avoiding connection pool exhaustion.
  */
 class RedshiftAggregate(
     private val tableName: TableName,
@@ -64,16 +67,20 @@ class RedshiftAggregate(
 
         try {
             log.info { "Flushing ${buffer.size} records to $tableName..." }
-            dataSource.connection.use { _ -> buffer.forEach { record -> insertRecord(record) } }
+            insertBatch(buffer)
             log.info { "Finished flushing ${buffer.size} records" }
         } finally {
             buffer.clear()
         }
     }
 
-    private fun insertRecord(record: Map<String, AirbyteValue>) {
-        val columns = record.keys.joinToString(", ") { "\"$it\"" }
-        val placeholders = record.keys.joinToString(", ") { "?" }
+    private fun insertBatch(records: List<Map<String, AirbyteValue>>) {
+        if (records.isEmpty()) return
+
+        // All records should have the same schema, use first record for column names
+        val firstRecord = records.first()
+        val columns = firstRecord.keys.joinToString(", ") { "\"$it\"" }
+        val placeholders = firstRecord.keys.joinToString(", ") { "?" }
         val sql =
             """
             INSERT INTO "${tableName.namespace}"."${tableName.name}" ($columns)
@@ -82,10 +89,13 @@ class RedshiftAggregate(
 
         dataSource.connection.use { connection ->
             connection.prepareStatement(sql).use { statement ->
-                record.values.forEachIndexed { index, value ->
-                    setParameter(statement, index + 1, value)
+                for (record in records) {
+                    record.values.forEachIndexed { index, value ->
+                        setParameter(statement, index + 1, value)
+                    }
+                    statement.addBatch()
                 }
-                statement.executeUpdate()
+                statement.executeBatch()
             }
         }
     }
