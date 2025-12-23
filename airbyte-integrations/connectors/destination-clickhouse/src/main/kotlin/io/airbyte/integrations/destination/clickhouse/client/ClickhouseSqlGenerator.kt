@@ -97,9 +97,9 @@ class ClickhouseSqlGenerator {
             .andLog()
 
     /**
-     * Overload for copyTable that accepts column names without type information.
-     * This is used by the TableOperationsClient interface implementation.
-     * Note: This version does not apply type-specific coercion.
+     * Overload for copyTable that accepts column names without type information. This is used by
+     * the TableOperationsClient interface implementation. Note: This version does not apply
+     * type-specific coercion.
      */
     fun copyTable(
         columnNames: Set<String>,
@@ -111,9 +111,9 @@ class ClickhouseSqlGenerator {
     }
 
     /**
-     * Overload for copyTable that accepts column names with type information.
-     * This is used during schema evolution to apply type-specific coercion.
-     * For boolean columns, empty strings are converted to NULL using nullIf.
+     * Overload for copyTable that accepts column names with type information. This is used during
+     * schema evolution to apply type-specific coercion. For boolean columns, empty strings are
+     * converted to NULL using nullIf.
      */
     fun copyTable(
         columns: Map<String, ColumnType>,
