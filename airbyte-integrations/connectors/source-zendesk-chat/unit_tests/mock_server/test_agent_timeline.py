@@ -182,6 +182,10 @@ class TestAgentTimelineStream(TestCase):
 
         Pagination uses CursorPagination with cursor_value from response.next_page
         and stops when count < 1000. The next_page URL includes all query params.
+
+        NOTE: This test validates next_page URL pagination which is also used by the 'chats' stream.
+        Both streams use the same DefaultPaginator configuration with RequestPath page_token_option,
+        so this test provides pagination coverage for both streams.
         """
         next_page_url = (
             f"https://{_SUBDOMAIN}.zendesk.com/api/v2/chat/incremental/agent_timeline"

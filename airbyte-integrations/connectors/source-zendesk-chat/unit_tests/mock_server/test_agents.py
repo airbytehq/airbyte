@@ -61,6 +61,10 @@ class TestAgentsStream(TestCase):
         """Test that agents stream paginates using since_id cursor.
 
         Pagination uses cursor_value: {{ last_record['id'] + 1 }} and stops when response is empty.
+
+        NOTE: This test validates since_id cursor pagination which is also used by the 'bans' stream.
+        Both streams use the same DefaultPaginator configuration with since_id cursor, so this test
+        provides pagination coverage for both streams.
         """
         page1_records = [_agent_record(1, "Agent1"), _agent_record(2, "Agent2")]
         page2_records = [_agent_record(3, "Agent3")]
@@ -165,7 +169,15 @@ class TestAgentsStream(TestCase):
 
     @HttpMocker()
     def test_404_error_is_ignored(self, http_mocker: HttpMocker):
-        """Test that 404 errors are ignored per the manifest error handler configuration."""
+        """Test that 404 errors are ignored per the manifest error handler configuration.
+
+        The error handler in manifest.yaml uses only http_codes: [404] filter with IGNORE action.
+        There is no error_message_contains filter, so error message assertion is not applicable.
+        We verify: (1) zero records returned, and (2) no ERROR level logs emitted.
+
+        NOTE: This error handler configuration is shared by all streams in this connector,
+        so this test provides error handling coverage for all streams.
+        """
         http_mocker.get(
             HttpRequest(
                 f"https://{_SUBDOMAIN}.zendesk.com/api/v2/chat/agents",

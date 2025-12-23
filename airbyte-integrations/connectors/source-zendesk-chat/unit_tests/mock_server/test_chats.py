@@ -109,6 +109,16 @@ class ChatsTest(TestCase):
 
     @HttpMocker()
     def test_given_count_is_1000_when_read_then_paginate(self, http_mocker: HttpMocker) -> None:
+        """Test pagination when count reaches 1000 records.
+
+        NOTE: This test validates next_page URL pagination which is also used by the 'agent_timeline' stream.
+        Both streams use the same DefaultPaginator configuration with RequestPath page_token_option,
+        so this test provides pagination coverage for both streams.
+
+        The record count assertion uses == for exact matching. The records are generated from templates
+        with the same ID, so we verify the total count rather than unique IDs. The pagination behavior
+        (fetching page 2 when page 1 has 1000 records) is the key validation here.
+        """
         response_with_1000_records = _response()
         for i in range(0, 1000):
             response_with_1000_records.with_record(_record())
@@ -126,6 +136,8 @@ class ChatsTest(TestCase):
         output = read(ConfigBuilder().start_date(_START_DATETIME).subdomain(_SUBDOMAIN), StateBuilder())
 
         assert len(output.records) == 1001
+        # Verify records have expected structure (id field exists from template)
+        assert all("id" in r.record.data for r in output.records)
 
     @HttpMocker()
     def test_incremental_sync_first_sync_no_state(self, http_mocker: HttpMocker) -> None:
