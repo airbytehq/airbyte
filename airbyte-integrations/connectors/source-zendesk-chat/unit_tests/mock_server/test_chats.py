@@ -13,7 +13,7 @@ from airbyte_cdk import ConfiguredAirbyteCatalog, SyncMode, TState, YamlDeclarat
 from airbyte_cdk.test.catalog_builder import CatalogBuilder
 from airbyte_cdk.test.entrypoint_wrapper import EntrypointOutput
 from airbyte_cdk.test.entrypoint_wrapper import read as entrypoint_read
-from airbyte_cdk.test.mock_http import HttpMocker, HttpRequest
+from airbyte_cdk.test.mock_http import HttpMocker, HttpRequest, HttpResponse
 from airbyte_cdk.test.mock_http.response_builder import (
     FieldPath,
     HttpResponseBuilder,
@@ -81,6 +81,21 @@ def read(
 
 
 class ChatsTest(TestCase):
+    @HttpMocker()
+    def test_404_error_is_ignored(self, http_mocker: HttpMocker) -> None:
+        """Test that 404 errors are ignored per manifest error handler."""
+        http_mocker.get(
+            HttpRequest(
+                f"https://{_SUBDOMAIN}.zendesk.com/api/v2/chat/incremental/chats?fields=chats%28%2A%29&limit=1000&start_time={int(_START_DATETIME.timestamp())}"
+            ),
+            HttpResponse(body='{"error": "Not Found"}', status_code=404),
+        )
+
+        output = read(ConfigBuilder().start_date(_START_DATETIME).subdomain(_SUBDOMAIN), StateBuilder())
+
+        assert len(output.records) == 0
+        assert not any(log.log.level == "ERROR" for log in output.logs)
+
     @HttpMocker()
     def test_when_read_then_extract_records(self, http_mocker: HttpMocker) -> None:
         http_mocker.get(
