@@ -236,16 +236,19 @@ curl --request POST \
      --data '{"connectionId": "<YOUR_CONNECTION_ID>", "jobType": "sync"}'
 ```
 
-### Job types
-
-The API supports the following job types:
+### Supported job types
 
 | Job Type | Description |
 |----------|-------------|
 | `sync` | Runs a normal data synchronization from source to destination, respecting incremental state if configured. This is the standard operation for moving data. |
 | `reset` | Clears the connection's state and destination data, then re-syncs everything from scratch. Use this when you need to start fresh, such as after schema changes or data corruption. |
-| `refresh` | Re-reads data from the source without clearing the destination first. Useful when you want to update data without losing existing records or fully resetting incremental state. For more details, see [Refreshing your data](/platform/operator-guides/refreshes). |
-| `clear` | Removes all data from the destination for the connection without re-syncing. |
+| `clear` | Clears the connection's state and destination data. In the current API implementation, this behaves the same as `reset`. |
+
+### Refresh jobs
+
+The `refresh` job type appears in the `JobTypeEnum` but is not currently supported via the public API. Attempting to create a refresh job returns a 422 error with the message "Refreshes are not supported in the public API".
+
+To trigger a refresh, use the Airbyte UI instead. For more information about refresh behavior, see [Refreshing your data](/platform/operator-guides/refreshes).
 
 ## Handle access token expiry in your requests
 
