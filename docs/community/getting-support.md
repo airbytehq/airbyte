@@ -10,7 +10,7 @@ If you can't find an answer to your question in the docs, Airbyte has different 
 
 ### In-App Support Agent (Beta)
 
-Airbyte Cloud includes an AI-powered support agent accessible directly within the application. Look for the **Support** button in the bottom-right corner of the screen. The support agent can help answer questions about your workspace, connections, and common troubleshooting scenarios. It has context about your current workspace, making it easier to get relevant assistance.
+Airbyte Cloud includes an AI-powered support agent accessible directly within the application. Look for the **Support** button in the bottom-right corner of the screen. The support agent can help answer questions about your workspace, connections, and common troubleshooting scenarios. It has context about your current workspace, making it easier to get relevant assistance immediately, without creating a support ticket.
 
 ### Support Center
 
