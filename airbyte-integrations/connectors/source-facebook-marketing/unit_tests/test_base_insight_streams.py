@@ -537,6 +537,75 @@ class TestBaseInsightsStream:
             ]
         )
 
+    @pytest.mark.parametrize(
+        "custom_fields, expected_in_schema, expected_not_in_schema",
+        [
+            pytest.param(
+                ["conversion_leads", "cost_per_objective_result"],
+                ["conversion_leads", "cost_per_objective_result", "date_start", "date_stop", "account_id", "ad_id"],
+                [],
+                id="extra_fields_from_custom_schema",
+            ),
+            pytest.param(
+                ["account_id", "impressions", "conversion_leads"],
+                ["account_id", "impressions", "conversion_leads", "date_start", "date_stop", "ad_id"],
+                [],
+                id="mix_of_base_and_extra_fields",
+            ),
+            pytest.param(
+                ["video_thruplay_watched_actions", "objective_result_rate"],
+                ["video_thruplay_watched_actions", "objective_result_rate", "date_start", "date_stop", "account_id", "ad_id"],
+                [],
+                id="ads_action_stats_and_ads_insights_result_fields",
+            ),
+            pytest.param(
+                ["marketing_messages_delivered", "adset_end"],
+                ["marketing_messages_delivered", "adset_end", "date_start", "date_stop", "account_id", "ad_id"],
+                [],
+                id="numeric_and_string_extra_fields",
+            ),
+        ],
+    )
+    def test_get_json_schema_custom_with_extra_fields(self, api, some_config, custom_fields, expected_in_schema, expected_not_in_schema):
+        """Test that custom insights streams include extra fields from ads_insights_custom_fields.json"""
+        stream = AdsInsights(
+            api=api,
+            account_ids=some_config["account_ids"],
+            start_date=datetime(2010, 1, 1),
+            end_date=datetime(2011, 1, 1),
+            fields=custom_fields,
+            insights_lookback_window=28,
+        )
+
+        schema = stream.get_json_schema()
+
+        for field in expected_in_schema:
+            assert field in schema["properties"], f"Expected field '{field}' to be in schema"
+        for field in expected_not_in_schema:
+            assert field not in schema["properties"], f"Expected field '{field}' to NOT be in schema"
+
+    def test_get_json_schema_builtin_not_changed(self, api, some_config):
+        """Test that built-in Ads Insights stream (no custom fields) does not include extra fields"""
+        stream = AdsInsights(
+            api=api,
+            account_ids=some_config["account_ids"],
+            start_date=datetime(2010, 1, 1),
+            end_date=datetime(2011, 1, 1),
+            insights_lookback_window=28,
+        )
+
+        schema = stream.get_json_schema()
+
+        # These fields should NOT be in the built-in schema (they are only in ads_insights_custom_fields.json)
+        extra_fields = ["conversion_leads", "cost_per_objective_result", "video_thruplay_watched_actions"]
+        for field in extra_fields:
+            assert field not in schema["properties"], f"Extra field '{field}' should NOT be in built-in schema"
+
+        # But standard fields should still be present
+        assert "account_id" in schema["properties"]
+        assert "impressions" in schema["properties"]
+        assert "actions" in schema["properties"]
+
     def test_level_custom(self, api, some_config):
         stream = AdsInsights(
             api=api,

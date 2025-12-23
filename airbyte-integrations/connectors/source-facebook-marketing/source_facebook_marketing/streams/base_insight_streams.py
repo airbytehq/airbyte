@@ -394,6 +394,16 @@ class AdsInsights(FBMarketingIncrementalStream):
             # 'date_stop' and 'account_id' are also returned by default, even if they are not requested
             custom_fields = set(self._custom_fields + [self.cursor_field, "date_stop", "account_id", "ad_id"])
             schema["properties"] = {k: v for k, v in schema["properties"].items() if k in custom_fields}
+
+            # Load extra fields for custom insights that are not in the base ads_insights schema
+            extra_schema = loader.get_schema("ads_insights_custom_fields")
+            extra_properties = extra_schema.get("properties", {})
+
+            # Enrich schema with any missing custom fields defined in the extra schema
+            for field in self._custom_fields:
+                if field not in schema["properties"] and field in extra_properties:
+                    schema["properties"][field] = extra_properties[field]
+
         if self.breakdowns:
             breakdowns_properties = loader.get_schema("ads_insights_breakdowns")["properties"]
             schema["properties"].update({prop: breakdowns_properties[prop] for prop in self.breakdowns})
