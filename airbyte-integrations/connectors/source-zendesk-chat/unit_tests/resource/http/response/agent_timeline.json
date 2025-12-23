@@ -2,7 +2,7 @@
   "agent_timeline": [
     {
       "agent_id": 1001,
-      "start_time": 1609459200000000,
+      "start_time": "2021-01-01T00:00:00Z",
       "status": "online",
       "duration": 3600
     }

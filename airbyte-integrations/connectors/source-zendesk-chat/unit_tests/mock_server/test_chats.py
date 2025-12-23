@@ -42,8 +42,8 @@ _NEXT_PAGE_URL = f"https://{_SUBDOMAIN}.zendesk.com/api/v2/chat/incremental/chat
 sys.path.append(str(_SOURCE_FOLDER_PATH))  # to allow loading custom components
 
 
-def _catalog() -> ConfiguredAirbyteCatalog:
-    return CatalogBuilder().with_stream(_STREAM_NAME, SyncMode.full_refresh).build()
+def _catalog(sync_mode: SyncMode = SyncMode.full_refresh) -> ConfiguredAirbyteCatalog:
+    return CatalogBuilder().with_stream(_STREAM_NAME, sync_mode).build()
 
 
 def _source(catalog: ConfiguredAirbyteCatalog, config: Dict[str, Any], state: Optional[TState]) -> YamlDeclarativeSource:
@@ -72,8 +72,9 @@ def read(
     config_builder: Optional[ConfigBuilder] = None,
     state_builder: Optional[StateBuilder] = None,
     expecting_exception: bool = False,
+    sync_mode: SyncMode = SyncMode.full_refresh,
 ) -> EntrypointOutput:
-    catalog = _catalog()
+    catalog = _catalog(sync_mode)
     config = config_builder.build() if config_builder else ConfigBuilder().build()
     state = state_builder.build() if state_builder else StateBuilder().build()
     return entrypoint_read(_source(catalog, config, state), config, catalog, state, expecting_exception)
@@ -110,3 +111,60 @@ class ChatsTest(TestCase):
         output = read(ConfigBuilder().start_date(_START_DATETIME).subdomain(_SUBDOMAIN), StateBuilder())
 
         assert len(output.records) == 1001
+
+    @HttpMocker()
+    def test_incremental_sync_first_sync_no_state(self, http_mocker: HttpMocker) -> None:
+        """Test incremental sync without prior state (first sync).
+
+        Uses DatetimeBasedCursor with cursor_field: update_timestamp and datetime_format: %s.
+        The start_time request parameter uses the config's start_date converted to epoch seconds.
+        The state stores the cursor value as epoch seconds string.
+        """
+        update_timestamp_1 = "1609459200"
+        update_timestamp_2 = "1609462800"
+        http_mocker.get(
+            HttpRequest(
+                f"https://{_SUBDOMAIN}.zendesk.com/api/v2/chat/incremental/chats?fields=chats%28%2A%29&limit=1000&start_time={int(_START_DATETIME.timestamp())}"
+            ),
+            _response()
+            .with_record(_record().with_field(FieldPath("update_timestamp"), update_timestamp_1))
+            .with_record(_record().with_field(FieldPath("update_timestamp"), update_timestamp_2))
+            .build(),
+        )
+
+        output = read(
+            ConfigBuilder().start_date(_START_DATETIME).subdomain(_SUBDOMAIN),
+            StateBuilder(),
+            sync_mode=SyncMode.incremental,
+        )
+
+        assert len(output.records) == 2
+        assert len(output.state_messages) > 0
+        latest_state = output.most_recent_state.stream_state
+        assert latest_state.__dict__["update_timestamp"] == update_timestamp_2
+
+    @HttpMocker()
+    def test_incremental_sync_with_prior_state(self, http_mocker: HttpMocker) -> None:
+        """Test incremental sync with prior state (second sync).
+
+        When state has update_timestamp cursor, the request uses that value for the start_time parameter.
+        Both state and request parameter use epoch seconds format.
+        """
+        prior_cursor_seconds = "1609459200"
+        new_update_timestamp = "1609466400"
+        http_mocker.get(
+            HttpRequest(
+                f"https://{_SUBDOMAIN}.zendesk.com/api/v2/chat/incremental/chats?fields=chats%28%2A%29&limit=1000&start_time={prior_cursor_seconds}"
+            ),
+            _response().with_record(_record().with_field(FieldPath("update_timestamp"), new_update_timestamp)).build(),
+        )
+
+        output = read(
+            ConfigBuilder().start_date(_START_DATETIME).subdomain(_SUBDOMAIN),
+            StateBuilder().with_stream_state(_STREAM_NAME, {"update_timestamp": prior_cursor_seconds}),
+            sync_mode=SyncMode.incremental,
+        )
+
+        assert len(output.records) == 1
+        latest_state = output.most_recent_state.stream_state
+        assert latest_state.__dict__["update_timestamp"] == new_update_timestamp
