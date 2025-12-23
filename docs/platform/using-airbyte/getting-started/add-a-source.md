@@ -20,7 +20,7 @@ Add a new source connector to Airbyte.
 
 4. Configure your connector. Every connector has different options and settings, but you normally enter things like authentication information and the location where you store your data. Two setup interfaces are possible.
 
-    - If you use Airbyte Cloud, you can set up some connectors with help from the Connector Setup Assistant. In this case, the AI asks you questions and gives you context, and you provide the setup information. For help interacting with the AI, see [Set up source connectors with AI](#ai-agent).
+    - If you use Airbyte Cloud, you can set up connectors with help from the Connector Setup Assistant. In this case, the AI asks you questions and gives you context, and you provide the setup information. For help interacting with the AI, see [Set up source connectors with AI](#ai-agent).
 
     - If you use a self-managed version of Airbyte, or if the AI doesn't yet support this connector, you see a setup form and documentation. In this case, fill out the form to setup your connector, then click **Set up source**. Airbyte tests the source to ensure it can make a connection.
     Once the test completes, Airbyte takes you to the New Connection page, where you can set up a new destination connector, or choose one you previously created.

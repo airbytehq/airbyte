@@ -22,7 +22,7 @@ Add a new destination connector to Airbyte.
 
 4. Configure your connector. Every connector has different options and settings, but you normally enter things like authentication information and the location where you store your data. Two setup interfaces are possible.
 
-    - If you use Airbyte Cloud, you can set up some connectors with help from the Connector Setup Assistant. In this case, the AI asks you questions and gives you context, and you provide the setup information. For help interacting with the AI, see [Set up connectors with AI](#ai-agent).
+    - If you use Airbyte Cloud, you can set up connectors with help from the Connector Setup Assistant. In this case, the AI asks you questions and gives you context, and you provide the setup information. For help interacting with the AI, see [Set up connectors with AI](#ai-agent).
 
     - If you use a self-managed version of Airbyte, or if you prefer the traditional setup experience, you see a setup form and documentation. In this case, fill out the form to setup your connector, then click **Set up destination**. Airbyte tests the destination to ensure it can make a connection.
     Once the test completes, Airbyte takes you to that connector's Connections page, which is empty at this point.

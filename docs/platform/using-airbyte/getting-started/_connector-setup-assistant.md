@@ -34,7 +34,7 @@ The Connector Setup Assistant guides you through configuration by asking questio
 
 ### Completing the setup
 
-After you provide all the required configuration, the agent signals that setup is complete and Airbyte runs a connection test. If the test succeeds, Airbyte takes you to the New Connection page where you can configure your destination and start syncing data.
+After you provide all the required configuration, the agent signals that setup is complete and Airbyte runs a connection test. If the test succeeds, Airbyte takes you to the New Connection page where you can start syncing data.
 
 If the connection test fails, the agent explains the error and suggests how to fix it. You can update your configuration through the conversation or switch to form mode to make changes directly.
 
