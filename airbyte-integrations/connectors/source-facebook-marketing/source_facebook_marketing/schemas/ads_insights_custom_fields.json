@@ -341,6 +341,10 @@
       "description": "Result rate",
       "$ref": "ads_insights_result.json"
     },
+    "results": {
+      "description": "The results for the ad based on the objective",
+      "$ref": "ads_insights_result.json"
+    },
     "result_values_performance_indicator": {
       "description": "Result values performance indicator",
       "type": ["null", "string"]
