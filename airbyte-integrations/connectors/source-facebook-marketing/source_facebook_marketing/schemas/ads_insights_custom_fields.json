@@ -147,7 +147,7 @@
     },
     "instagram_upcoming_event_reminders_set": {
       "description": "Number of Instagram upcoming event reminders set",
-      "type": ["null", "integer"]
+      "type": ["null", "number"]
     },
     "interactive_component_tap": {
       "description": "Interactive component taps",
@@ -179,7 +179,7 @@
     },
     "marketing_messages_click_rate_benchmark": {
       "description": "Marketing messages click rate benchmark",
-      "type": ["null", "string"]
+      "type": ["null", "number"]
     },
     "marketing_messages_cost_per_delivered": {
       "description": "Marketing messages cost per delivered",
