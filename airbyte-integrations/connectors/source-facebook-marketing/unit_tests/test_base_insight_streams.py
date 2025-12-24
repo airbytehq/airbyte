@@ -606,6 +606,103 @@ class TestBaseInsightsStream:
         assert "impressions" in schema["properties"]
         assert "actions" in schema["properties"]
 
+    def test_fields_custom_with_objective_results(self, api, some_config):
+        """Test that objective_results field is included in schema when requested in custom fields"""
+        stream = AdsInsights(
+            api=api,
+            account_ids=some_config["account_ids"],
+            start_date=datetime(2010, 1, 1),
+            end_date=datetime(2011, 1, 1),
+            fields=["objective_results", "impressions"],
+            insights_lookback_window=28,
+        )
+
+        schema = stream.get_json_schema()
+        assert "objective_results" in schema["properties"], "objective_results should be in schema when requested"
+        assert "impressions" in schema["properties"], "impressions should be in schema when requested"
+
+    @pytest.mark.parametrize(
+        "custom_fields, record, expected_record",
+        [
+            pytest.param(
+                ["objective_results", "impressions"],
+                {"results": [{"action_type": "purchase", "value": "10"}], "impressions": 100},
+                {"objective_results": [{"action_type": "purchase", "value": "10"}], "impressions": 100},
+                id="rename_results_to_objective_results",
+            ),
+            pytest.param(
+                ["objective_results", "results", "impressions"],
+                {"results": [{"action_type": "purchase", "value": "10"}], "impressions": 100},
+                {"results": [{"action_type": "purchase", "value": "10"}], "impressions": 100},
+                id="no_rename_when_results_also_requested",
+            ),
+            pytest.param(
+                ["impressions", "clicks"],
+                {"results": [{"action_type": "purchase", "value": "10"}], "impressions": 100},
+                {"results": [{"action_type": "purchase", "value": "10"}], "impressions": 100},
+                id="no_rename_when_objective_results_not_requested",
+            ),
+            pytest.param(
+                None,
+                {"results": [{"action_type": "purchase", "value": "10"}], "impressions": 100},
+                {"results": [{"action_type": "purchase", "value": "10"}], "impressions": 100},
+                id="no_rename_for_builtin_stream",
+            ),
+            pytest.param(
+                ["objective_results", "impressions"],
+                {"impressions": 100, "clicks": 50},
+                {"impressions": 100, "clicks": 50},
+                id="no_rename_when_results_not_in_record",
+            ),
+            pytest.param(
+                ["objective_results", "impressions"],
+                {"objective_results": [{"action_type": "purchase", "value": "10"}], "impressions": 100},
+                {"objective_results": [{"action_type": "purchase", "value": "10"}], "impressions": 100},
+                id="no_rename_when_objective_results_already_in_record",
+            ),
+            pytest.param(
+                ["objective_results", "impressions"],
+                {"results": [{"action_type": "purchase", "value": "10"}], "impressions": 100, "spend": 50.5},
+                {"objective_results": [{"action_type": "purchase", "value": "10"}], "impressions": 100, "spend": 50.5},
+                id="rename_preserves_other_fields",
+            ),
+            pytest.param(
+                ["objective_results", "impressions"],
+                {"results": [], "impressions": 100},
+                {"objective_results": [], "impressions": 100},
+                id="rename_empty_results_array",
+            ),
+            pytest.param(
+                ["objective_results", "impressions"],
+                {"results": [{"action_type": "a", "value": "1"}, {"action_type": "b", "value": "2"}], "impressions": 100},
+                {"objective_results": [{"action_type": "a", "value": "1"}, {"action_type": "b", "value": "2"}], "impressions": 100},
+                id="rename_multiple_results_items",
+            ),
+            pytest.param(
+                ["impressions"],
+                {"results": [{"action_type": "purchase", "value": "10"}], "impressions": 100},
+                {"results": [{"action_type": "purchase", "value": "10"}], "impressions": 100},
+                id="no_rename_when_objective_results_not_in_custom_fields",
+            ),
+        ],
+    )
+    def test_objective_results_renamed_from_results(self, api, some_config, custom_fields, record, expected_record):
+        """Test that results field is renamed to objective_results when appropriate conditions are met.
+
+        See: https://github.com/airbytehq/oncall/issues/10126
+        """
+        stream = AdsInsights(
+            api=api,
+            account_ids=some_config["account_ids"],
+            start_date=datetime(2010, 1, 1),
+            end_date=datetime(2011, 1, 1),
+            fields=custom_fields,
+            insights_lookback_window=28,
+        )
+
+        transformed_record = stream._transform_objective_results(record)
+        assert transformed_record == expected_record
+
     def test_level_custom(self, api, some_config):
         stream = AdsInsights(
             api=api,
