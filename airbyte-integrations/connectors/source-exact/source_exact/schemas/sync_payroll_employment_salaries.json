@@ -8,38 +8,10 @@
       "description": "Timestamp",
       "type": ["null", "integer"]
     },
-    "AmountType": {
-      "description": "Salary Section: Salary type\nValue: 0 - Gross, 1 - Net.",
-      "type": ["null","integer"]
-    },
-    "AmountTypeDescription": {
-      "description": "Salary Section: Salary type description\nWhen AmountType value is 0, return 'Gross'\nWhen AmountType value 1, return 'Net'",
-      "type": ["null", "string"]
-    },
-    "AverageDaysPerWeek" : {
-      "description": "The average number of contract days that an employee works per week",
-      "type": ["null", "number"]
-    },
-    "AverageHoursPerWeek": {
-      "description": "The average number of contract hours that an employee works per week",
-      "type": ["null", "number"]
-    },
-    "BillabilityTarget": {
-      "description": "Schedule Section: Billability targe",
-      "type": ["null", "number"]
-    },
     "Created": {
       "description": "Created date.",
       "type": ["null", "string"],
       "format": "date-time"
-    },
-    "Creator": {
-      "description": "ID of creator.",
-      "type": ["null", "string"]
-    },
-    "CreatorFullName": {
-      "description": "Name of creator",
-      "type": ["null", "string"]
     },
     "Description": {
       "description": "General section: Custom description",
@@ -78,7 +50,7 @@
       "type": ["null", "string"]
     },
     "EndDate": {
-      "description": "End date of employment",
+      "description": "Salary record end date",
       "type": ["null", "string"],
       "format": "date-time"
     },
@@ -131,54 +103,10 @@
       "description": "Name of modifier",
       "type": ["null", "string"]
     },
-    "ParttimeAmount": {
-      "description": "Salary when working parttime",
-      "type": ["null", "number"]
-    },
-    "ParttimeFactor": {
-      "description": "Contract hours / Fulltime contract hours",
-      "type": ["null", "number"]
-    },
-    "SalaryBasedType": {
-      "description": "Salary Section: Salary based on.\nValue: 0 - Manual entry, 1 - Wagescale, 2 - Minimum wage, 3 - Minimum hourly wage",
-      "type": ["null", "integer"]
-    },
-    "SalaryBasedTypeDescription": {
-      "description": "When SalaryBasedType value is 0, return 'Manual entry'\nWhen SalaryBasedType value 1, return 'Wage scale'\nWhen SalaryBasedType value 2, return 'Minimum wage'\nWhen SalaryBasedType value 3, return 'Minimum hourly wage'",
-      "type": ["null", "string"]
-    },
-    "Scale": {
-      "description": "Employee wage scale",
-      "type": ["null", "string"]
-    },
-    "Schedule": {
-      "description": "Employment schedule",
-      "type": ["null", "string"]
-    },
-    "ScheduleCode": {
-      "description": "Employment schedule code",
-      "type": ["null", "string"]
-    },
-    "ScheduleDescription": {
-      "description": "Description of employment schedule",
-      "type": ["null", "string"]
-    },
     "StartDate": {
       "description": "Salary record start date",
       "type": ["null", "string"],
       "format": "date-time"
-    },
-    "WageScale": {
-      "description": "Salary Section: Wagescale ID",
-      "type": ["null", "string"]
-    },
-    "WageScalePeriod": {
-      "description": "Salary Section: period for automatic step increase",
-      "type": ["null", "integer"]
-    },
-    "WageScaleStep": {
-      "description": "Salary Section Wagescale step code",
-      "type": ["null", "string"]
     }
   }
 }
