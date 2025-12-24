@@ -104,7 +104,6 @@ _JOB_START_FIELDS = [
     "instant_experience_outbound_clicks",
     "mobile_app_purchase_roas",
     "objective",
-    "objective_results",
     "optimization_goal",
     "outbound_clicks",
     "outbound_clicks_ctr",
