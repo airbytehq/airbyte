@@ -119,7 +119,7 @@
     },
     "dda_results": {
       "description": "DDA results",
-      "$ref": "ads_action_stats.json"
+      "$ref": "ads_insights_dda_result.json"
     },
     "estimated_ad_recall_rate": {
       "description": "Estimated ad recall rate",
@@ -271,7 +271,7 @@
     },
     "onsite_conversion_messaging_detected_purchase_deduped": {
       "description": "Onsite conversion messaging detected purchase (deduplicated)",
-      "type": ["null", "number"]
+      "$ref": "ads_action_stats.json"
     },
     "place_page_name": {
       "description": "Name of the place page",
