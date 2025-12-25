@@ -223,6 +223,11 @@ class SourceSFTPBulkStreamReader(AbstractFileBasedStreamReader):
         # Normalize globs to handle root folder correctly
         normalized_globs = []
         for glob_pattern in globs:
+            # Clean up multiple consecutive slashes (e.g., // -> /)
+            # This can happen when patterns are constructed or user-provided
+            while "//" in glob_pattern:
+                glob_pattern = glob_pattern.replace("//", "/")
+
             # If glob doesn't start with /, make it relative to root_folder
             if not glob_pattern.startswith("/"):
                 normalized_globs.append(f"{root_folder.rstrip('/')}/{glob_pattern}")

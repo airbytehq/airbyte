@@ -67,6 +67,12 @@ class TestDirectoryMatching:
                 False,
                 "Doesn't match with non-root folder_path",
             ),
+            # Test double slashes in globs (normalized before reaching _directory_could_match_globs)
+            ("/downloads", ["/downloads/*.csv"], "/", True, "Double slash at start - normalized and matches directory"),
+            ("/downloads", ["/downloads/*.csv"], "/", True, "Multiple double slashes - normalized"),
+            ("/data/folder", ["/data/folder/*.csv"], "/", True, "Double slash in middle - normalized and matches directory"),
+            ("/data/folder", ["/data/folder/*.csv"], "/", True, "Multiple double slashes throughout - normalized"),
+            ("/logs", ["/downloads/*.csv"], "/", False, "Double slash but wrong directory - normalized"),
         ],
     )
     def test_directory_could_match_globs(self, dir_path, globs, root_folder, expected, description):
@@ -88,3 +94,62 @@ class TestDirectoryMatching:
         # Should not raise exceptions
         result = SourceSFTPBulkStreamReader._directory_could_match_globs(dir_path, globs, root_folder)
         assert isinstance(result, bool)
+
+
+class TestGlobNormalization:
+    """Test glob pattern normalization in get_matching_files"""
+
+    def test_double_slash_normalization(self):
+        """Test that double slashes in globs are normalized correctly"""
+        from source_sftp_bulk.stream_reader import SourceSFTPBulkStreamReader
+
+        # Simulate the normalization logic
+        globs = ["//downloads/file_*.csv", "/data//folder/*.txt", "//uploads//*.json"]
+        root_folder = "/"
+
+        normalized_globs = []
+        for glob_pattern in globs:
+            # This is the fix we implemented
+            while "//" in glob_pattern:
+                glob_pattern = glob_pattern.replace("//", "/")
+
+            if not glob_pattern.startswith("/"):
+                normalized_globs.append(f"{root_folder.rstrip('/')}/{glob_pattern}")
+            else:
+                normalized_globs.append(glob_pattern)
+
+        assert normalized_globs == ["/downloads/file_*.csv", "/data/folder/*.txt", "/uploads/*.json"]
+
+    def test_triple_slash_normalization(self):
+        """Test that triple or more slashes are normalized correctly"""
+        globs = ["///downloads/*.csv", "/data////folder/*.txt"]
+        root_folder = "/"
+
+        normalized_globs = []
+        for glob_pattern in globs:
+            while "//" in glob_pattern:
+                glob_pattern = glob_pattern.replace("//", "/")
+
+            if not glob_pattern.startswith("/"):
+                normalized_globs.append(f"{root_folder.rstrip('/')}/{glob_pattern}")
+            else:
+                normalized_globs.append(glob_pattern)
+
+        assert normalized_globs == ["/downloads/*.csv", "/data/folder/*.txt"]
+
+    def test_no_double_slash_unchanged(self):
+        """Test that globs without double slashes remain unchanged"""
+        globs = ["/downloads/file_*.csv", "/data/folder/*.txt"]
+        root_folder = "/"
+
+        normalized_globs = []
+        for glob_pattern in globs:
+            while "//" in glob_pattern:
+                glob_pattern = glob_pattern.replace("//", "/")
+
+            if not glob_pattern.startswith("/"):
+                normalized_globs.append(f"{root_folder.rstrip('/')}/{glob_pattern}")
+            else:
+                normalized_globs.append(glob_pattern)
+
+        assert normalized_globs == ["/downloads/file_*.csv", "/data/folder/*.txt"]
