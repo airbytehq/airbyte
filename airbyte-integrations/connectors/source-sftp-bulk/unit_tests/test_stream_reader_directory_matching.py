@@ -153,3 +153,77 @@ class TestGlobNormalization:
                 normalized_globs.append(glob_pattern)
 
         assert normalized_globs == ["/downloads/file_*.csv", "/data/folder/*.txt"]
+
+    def test_get_matching_files_with_double_slash_globs(self):
+        """Test that get_matching_files correctly normalizes globs with double slashes"""
+        import logging
+        from unittest.mock import MagicMock, patch
+        import paramiko
+        from source_sftp_bulk.spec import SourceSFTPBulkSpec
+
+        logger = logging.Logger("")
+
+        # Create a mock SFTP client
+        fake_client = MagicMock()
+        fake_client.from_transport = MagicMock(return_value=fake_client)
+
+        # Mock file system structure:
+        # /downloads/file_1.csv
+        # /downloads/subdir/file_2.csv
+        # /data/folder/file_3.txt
+        files_per_directory = {
+            "/": [
+                MagicMock(filename="downloads", st_mode=16877, st_mtime=1704067200),  # Directory
+                MagicMock(filename="data", st_mode=16877, st_mtime=1704067200),  # Directory
+            ],
+            "/downloads": [
+                MagicMock(filename="file_1.csv", st_mode=180, st_mtime=1704067200),  # File
+                MagicMock(filename="subdir", st_mode=16877, st_mtime=1704067200),  # Directory
+            ],
+            "/downloads/subdir": [
+                MagicMock(filename="file_2.csv", st_mode=180, st_mtime=1704067200),  # File
+            ],
+            "/data": [
+                MagicMock(filename="folder", st_mode=16877, st_mtime=1704067200),  # Directory
+            ],
+            "/data/folder": [
+                MagicMock(filename="file_3.txt", st_mode=180, st_mtime=1704067200),  # File
+            ],
+        }
+
+        def listdir_iter_side_effect(path):
+            return files_per_directory.get(path, [])
+
+        fake_client.listdir_iter = MagicMock(side_effect=listdir_iter_side_effect)
+
+        with patch.object(paramiko, "Transport", MagicMock()), patch.object(paramiko, "SFTPClient", fake_client):
+            reader = SourceSFTPBulkStreamReader()
+            config = SourceSFTPBulkSpec(
+                host="localhost",
+                username="username",
+                credentials={"auth_type": "password", "password": "password"},
+                port=123,
+                streams=[],
+            )
+            reader.config = config
+
+            # Test with globs containing double slashes
+            globs_with_double_slashes = [
+                "//downloads//*.csv",  # Normalizes to /downloads/*.csv
+                "/data//folder//**/*.txt",  # Normalizes to /data/folder/**/*.txt
+            ]
+
+            files = list(reader.get_matching_files(globs=globs_with_double_slashes, prefix=None, logger=logger))
+
+            # Extract file URIs for easier assertion
+            file_uris = sorted([f.uri for f in files])
+
+            # Should match:
+            # - /downloads/file_1.csv (matches first glob after normalization: /downloads/*.csv)
+            # - /data/folder/file_3.txt (matches second glob after normalization: /data/folder/**/*.txt)
+            expected_uris = sorted([
+                "/downloads/file_1.csv",
+                "/data/folder/file_3.txt",
+            ])
+
+            assert file_uris == expected_uris, f"Expected {expected_uris} but got {file_uris}"
