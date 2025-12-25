@@ -277,7 +277,7 @@ class MongoDbCdcEventUtilsTest {
     // Schema says "reviews" should be an array
     final Map<String, JsonNode> schemaMap = Map.of(
         "_id", Jsons.jsonNode(Map.of("type", "string")),
-        "reviews", Jsons.jsonNode(Map.of("type", "array", "items", Map.of("type", "object"))));
+        "reviews", Jsons.jsonNode(Map.of("type", "array")));
 
     final ObjectNode transformed = MongoDbCdcEventUtils.transformDataTypes(documentAsJson, schemaMap);
 
@@ -299,7 +299,7 @@ class MongoDbCdcEventUtilsTest {
     // Schema says "scores" should be an array
     final Map<String, JsonNode> schemaMap = Map.of(
         "_id", Jsons.jsonNode(Map.of("type", "string")),
-        "scores", Jsons.jsonNode(Map.of("type", "array", "items", Map.of("type", "object"))));
+        "scores", Jsons.jsonNode(Map.of("type", "array")));
 
     final ObjectNode transformed = MongoDbCdcEventUtils.transformDataTypes(documentAsJson, schemaMap);
 

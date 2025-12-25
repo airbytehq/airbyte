@@ -116,6 +116,17 @@ public class MongoDbDebeziumEventConverter implements DebeziumEventConverter {
         source, cdcMetadataInjector, true);
   }
 
+  /**
+   * Returns a map of all field names mapped to their type using the jsonSchema metadata from the
+   * configuredAirbyteCatalog.
+   *
+   * @param source JsonNode with the source metadata (version, name, ts_ms, snapshot status, etc).
+   * @param configuredAirbyteCatalog AirbyteCatalog object that includes jsonSchema with the
+   *        "properties" field containing all columns and their corresponding types
+   * @param cdcMetadataInjector Helper to extract stream namespace and name from the source
+   * @return Map of field names (String) to schema definition type (JsonNode) e.g.: { "filedName1":
+   *         {"type": "string"}, "fieldName2": {"type": "array"}, }
+   */
   private static Map<String, JsonNode> getConfiguredMongoDbCollectionFields(final JsonNode source,
                                                                             final ConfiguredAirbyteCatalog configuredAirbyteCatalog,
                                                                             final CdcMetadataInjector cdcMetadataInjector) {

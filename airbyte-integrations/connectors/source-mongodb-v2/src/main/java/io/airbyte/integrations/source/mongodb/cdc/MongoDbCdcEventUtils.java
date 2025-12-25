@@ -178,12 +178,9 @@ public class MongoDbCdcEventUtils {
   }
 
   /**
-   * Checks if the schema for a given field expects an array type. Handles both simple type
-   * declarations ("type": "array") and Bson types ("type": ["array", "null"]). See MongoDB type
-   * documentation: https://www.mongodb.com/docs/manual/reference/operator/query/type/
+   * Checks if the schema for a given field expects an array type.
    *
-   * @param fieldSchemas Map of field names to their JSON schema definitions (passed down from
-   *        getConfiguredMongoDbCollectionFields())
+   * @param fieldSchemas Map of field names to their JSON schema definitions
    * @param fieldName The field to check
    * @return true if the schema expects an array, false otherwise
    */
@@ -196,16 +193,7 @@ public class MongoDbCdcEventUtils {
     if (typeNode == null) {
       return false;
     }
-    // Handle Bson types: "type": ["array", "null"]
-    if (typeNode.isArray()) {
-      for (final JsonNode t : typeNode) {
-        if ("array".equals(t.asText())) {
-          return true;
-        }
-      }
-      return false;
-    }
-    // Handle simple type: "type": "array"
+
     return "array".equals(typeNode.asText());
   }
 
