@@ -100,59 +100,61 @@ class TestGlobNormalization:
     """Test glob pattern normalization in get_matching_files"""
 
     def test_double_slash_normalization(self):
-        """Test that double slashes in globs are normalized correctly"""
-        from source_sftp_bulk.stream_reader import SourceSFTPBulkStreamReader
+        """Test that globs are normalized to match // URI format when root is /"""
 
-        # Simulate the normalization logic
-        globs = ["//downloads/file_*.csv", "/data//folder/*.txt", "//uploads//*.json"]
+        # Simulate the new normalization logic
+        globs = ["//downloads/file_*.csv", "/downloads/file_*.csv", "downloads/file_*.csv"]
         root_folder = "/"
 
         normalized_globs = []
         for glob_pattern in globs:
-            # This is the fix we implemented
-            while "//" in glob_pattern:
-                glob_pattern = glob_pattern.replace("//", "/")
-
+            # Make glob relative to root_folder if it doesn't start with /
             if not glob_pattern.startswith("/"):
-                normalized_globs.append(f"{root_folder.rstrip('/')}/{glob_pattern}")
+                # When root_folder is "/", this creates "//pattern"
+                normalized_globs.append(f"{root_folder}/{glob_pattern}")
+            elif root_folder == "/" and glob_pattern.startswith("/") and not glob_pattern.startswith("//"):
+                # If user provides "/downloads/*.csv" and root is "/", prepend "/" to match "//" URIs
+                normalized_globs.append(f"/{glob_pattern}")
             else:
+                # Glob already has correct format or root is not "/"
                 normalized_globs.append(glob_pattern)
 
-        assert normalized_globs == ["/downloads/file_*.csv", "/data/folder/*.txt", "/uploads/*.json"]
+        # All should normalize to //downloads/file_*.csv when root is "/"
+        assert normalized_globs == ["//downloads/file_*.csv", "//downloads/file_*.csv", "//downloads/file_*.csv"]
 
-    def test_triple_slash_normalization(self):
-        """Test that triple or more slashes are normalized correctly"""
-        globs = ["///downloads/*.csv", "/data////folder/*.txt"]
-        root_folder = "/"
+    def test_glob_with_non_root_folder(self):
+        """Test that normalization works correctly with non-root folder_path"""
+        globs = ["downloads/*.csv", "/uploads/*.txt"]
+        root_folder = "/data"
 
         normalized_globs = []
         for glob_pattern in globs:
-            while "//" in glob_pattern:
-                glob_pattern = glob_pattern.replace("//", "/")
-
             if not glob_pattern.startswith("/"):
-                normalized_globs.append(f"{root_folder.rstrip('/')}/{glob_pattern}")
+                normalized_globs.append(f"{root_folder}/{glob_pattern}")
+            elif root_folder == "/" and glob_pattern.startswith("/") and not glob_pattern.startswith("//"):
+                normalized_globs.append(f"/{glob_pattern}")
             else:
                 normalized_globs.append(glob_pattern)
 
-        assert normalized_globs == ["/downloads/*.csv", "/data/folder/*.txt"]
+        # With non-root folder, no // prepending happens
+        assert normalized_globs == ["/data/downloads/*.csv", "/uploads/*.txt"]
 
-    def test_no_double_slash_unchanged(self):
-        """Test that globs without double slashes remain unchanged"""
+    def test_glob_starting_with_single_slash(self):
+        """Test that globs starting with single / get // prepended when root is /"""
         globs = ["/downloads/file_*.csv", "/data/folder/*.txt"]
         root_folder = "/"
 
         normalized_globs = []
         for glob_pattern in globs:
-            while "//" in glob_pattern:
-                glob_pattern = glob_pattern.replace("//", "/")
-
             if not glob_pattern.startswith("/"):
-                normalized_globs.append(f"{root_folder.rstrip('/')}/{glob_pattern}")
+                normalized_globs.append(f"{root_folder}/{glob_pattern}")
+            elif root_folder == "/" and glob_pattern.startswith("/") and not glob_pattern.startswith("//"):
+                normalized_globs.append(f"/{glob_pattern}")
             else:
                 normalized_globs.append(glob_pattern)
 
-        assert normalized_globs == ["/downloads/file_*.csv", "/data/folder/*.txt"]
+        # When root is "/", single / globs get // prepended
+        assert normalized_globs == ["//downloads/file_*.csv", "//data/folder/*.txt"]
 
     def test_get_matching_files_with_double_slash_globs(self):
         """Test that get_matching_files correctly normalizes globs with double slashes"""
@@ -167,26 +169,26 @@ class TestGlobNormalization:
         fake_client = MagicMock()
         fake_client.from_transport = MagicMock(return_value=fake_client)
 
-        # Mock file system structure:
-        # /downloads/file_1.csv
-        # /downloads/subdir/file_2.csv
-        # /data/folder/file_3.txt
+        # Mock file system structure (with // paths due to root folder being "/"):
+        # //downloads/file_1.csv
+        # //downloads/subdir/file_2.csv
+        # //data/folder/file_3.txt
         files_per_directory = {
             "/": [
                 MagicMock(filename="downloads", st_mode=16877, st_mtime=1704067200),  # Directory
                 MagicMock(filename="data", st_mode=16877, st_mtime=1704067200),  # Directory
             ],
-            "/downloads": [
+            "//downloads": [
                 MagicMock(filename="file_1.csv", st_mode=180, st_mtime=1704067200),  # File
                 MagicMock(filename="subdir", st_mode=16877, st_mtime=1704067200),  # Directory
             ],
-            "/downloads/subdir": [
+            "//downloads/subdir": [
                 MagicMock(filename="file_2.csv", st_mode=180, st_mtime=1704067200),  # File
             ],
-            "/data": [
+            "//data": [
                 MagicMock(filename="folder", st_mode=16877, st_mtime=1704067200),  # Directory
             ],
-            "/data/folder": [
+            "//data/folder": [
                 MagicMock(filename="file_3.txt", st_mode=180, st_mtime=1704067200),  # File
             ],
         }
@@ -207,23 +209,23 @@ class TestGlobNormalization:
             )
             reader.config = config
 
-            # Test with globs containing double slashes
-            globs_with_double_slashes = [
-                "//downloads//*.csv",  # Normalizes to /downloads/*.csv
-                "/data//folder//**/*.txt",  # Normalizes to /data/folder/**/*.txt
+            # Test with various glob patterns
+            globs = [
+                "//downloads/*.csv",  # Already has //, stays as //downloads/*.csv
+                "/data/folder/**/*.txt",  # Gets / prepended, becomes //data/folder/**/*.txt
             ]
 
-            files = list(reader.get_matching_files(globs=globs_with_double_slashes, prefix=None, logger=logger))
+            files = list(reader.get_matching_files(globs=globs, prefix=None, logger=logger))
 
             # Extract file URIs for easier assertion
             file_uris = sorted([f.uri for f in files])
 
-            # Should match:
-            # - /downloads/file_1.csv (matches first glob after normalization: /downloads/*.csv)
-            # - /data/folder/file_3.txt (matches second glob after normalization: /data/folder/**/*.txt)
+            # Should match (with // URIs):
+            # - //downloads/file_1.csv (matches first glob: //downloads/*.csv)
+            # - //data/folder/file_3.txt (matches second glob: //data/folder/**/*.txt)
             expected_uris = sorted([
-                "/downloads/file_1.csv",
-                "/data/folder/file_3.txt",
+                "//downloads/file_1.csv",
+                "//data/folder/file_3.txt",
             ])
 
             assert file_uris == expected_uris, f"Expected {expected_uris} but got {file_uris}"

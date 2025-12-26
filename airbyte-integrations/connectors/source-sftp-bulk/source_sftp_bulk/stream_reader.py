@@ -223,14 +223,12 @@ class SourceSFTPBulkStreamReader(AbstractFileBasedStreamReader):
         # Normalize globs to handle root folder correctly
         normalized_globs = []
         for glob_pattern in globs:
-            # Clean up multiple consecutive slashes (e.g., // -> /)
-            # This can happen when patterns are constructed or user-provided
-            while "//" in glob_pattern:
-                glob_pattern = glob_pattern.replace("//", "/")
-
             # If glob doesn't start with /, make it relative to root_folder
             if not glob_pattern.startswith("/"):
                 normalized_globs.append(f"{root_folder.rstrip('/')}/{glob_pattern}")
+            elif root_folder == "/" and glob_pattern.startswith("/") and not glob_pattern.startswith("//"):
+                # If user provides "/downloads/*.csv" and root is "/", prepend "/" to match "//" URIs
+                normalized_globs.append(f"/{glob_pattern}")
             else:
                 normalized_globs.append(glob_pattern)
 
@@ -240,7 +238,7 @@ class SourceSFTPBulkStreamReader(AbstractFileBasedStreamReader):
             try:
                 for item in self.sftp_client.sftp_connection.listdir_iter(current_dir):
                     if item.st_mode and stat.S_ISDIR(item.st_mode):
-                        dir_path = f"{current_dir.rstrip('/')}/{item.filename}"
+                        dir_path = f"{current_dir}/{item.filename}"
                         # Only traverse directories that could contain matching files
                         if self._directory_could_match_globs(dir_path, normalized_globs, root_folder):
                             directories.append(dir_path)
