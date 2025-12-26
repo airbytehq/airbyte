@@ -825,24 +825,6 @@ class IncrementalShopifyGraphQlBulkStream(IncrementalShopifyStream):
             # for majority of cases we fallback to start_date, otherwise.
             return self.config.get("start_date")
 
-    def _apply_lookback_window(self, state_value: str) -> str:
-        """
-        Apply the lookback window to the state value by subtracting the configured number of days.
-        This helps capture records that may have been missed due to race conditions or late-arriving data.
-        """
-        lookback_days = self.config.get("lookback_window_in_days", 0)
-        if lookback_days > 0:
-            state_datetime = pdm.parse(state_value)
-            adjusted_datetime = state_datetime.subtract(days=lookback_days)
-            # Ensure we don't go before the configured start_date
-            start_date = self.config.get("start_date")
-            if start_date:
-                start_datetime = pdm.parse(start_date)
-                if adjusted_datetime < start_datetime:
-                    adjusted_datetime = start_datetime
-            return adjusted_datetime.to_rfc3339_string()
-        return state_value
-
     def emit_slice_message(self, slice_start: datetime, slice_end: datetime) -> None:
         slice_size_message = f"Slice size: `P{round(self.job_manager._job_size, 1)}D`"
         slice_message = f"Stream: `{self.name}` requesting BULK Job for period: {slice_start} -- {slice_end}. {slice_size_message}."
