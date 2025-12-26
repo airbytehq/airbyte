@@ -26,7 +26,7 @@ definitions:
           path: videos
           http_method: GET
           request_parameters:
-            part: snippet,contentDetails,statistics
+            part: snippet,contentDetails,statistics,player
         record_selector:
           type: RecordSelector
           extractor:
@@ -441,44 +441,34 @@ schemas:
     $schema: http://json-schema.org/schema#
     additionalProperties: true
     properties:
-      description:
-        type:
-          - string
-          - "null"
-      categoryId:
-        type:
-          - string
-          - "null"
-      channelId:
-        type:
-          - string
-          - "null"
-      channelTitle:
-        type:
-          - string
-          - "null"
       datetime:
         type:
           - string
           - "null"
-      defaultAudioLanguage:
+      videoId:
+        type: string
+      kind:
         type:
           - string
           - "null"
-      defaultLanguage:
+      etag:
         type:
           - string
           - "null"
-      liveBroadcastContent:
+      id:
         type:
           - string
           - "null"
-      localized:
+      snippet:
         type:
           - object
           - "null"
         properties:
-          description:
+          publishedAt:
+            type:
+              - string
+              - "null"
+          channelId:
             type:
               - string
               - "null"
@@ -486,114 +476,244 @@ schemas:
             type:
               - string
               - "null"
-      publishedAt:
-        type:
-          - string
-          - "null"
-      tags:
-        type:
-          - array
-          - "null"
-        items:
-          type:
-            - string
-            - "null"
-      thumbnails:
+          description:
+            type:
+              - string
+              - "null"
+          channelTitle:
+            type:
+              - string
+              - "null"
+          tags:
+            type:
+              - array
+              - "null"
+            items:
+              type:
+                - string
+                - "null"
+          categoryId:
+            type:
+              - string
+              - "null"
+          liveBroadcastContent:
+            type:
+              - string
+              - "null"
+          defaultLanguage:
+            type:
+              - string
+              - "null"
+          defaultAudioLanguage:
+            type:
+              - string
+              - "null"
+          localized:
+            type:
+              - object
+              - "null"
+            properties:
+              title:
+                type:
+                  - string
+                  - "null"
+              description:
+                type:
+                  - string
+                  - "null"
+          thumbnails:
+            type:
+              - object
+              - "null"
+            properties:
+              default:
+                type:
+                  - object
+                  - "null"
+                properties:
+                  url:
+                    type:
+                      - string
+                      - "null"
+                  width:
+                    type:
+                      - number
+                      - "null"
+                  height:
+                    type:
+                      - number
+                      - "null"
+              medium:
+                type:
+                  - object
+                  - "null"
+                properties:
+                  url:
+                    type:
+                      - string
+                      - "null"
+                  width:
+                    type:
+                      - number
+                      - "null"
+                  height:
+                    type:
+                      - number
+                      - "null"
+              high:
+                type:
+                  - object
+                  - "null"
+                properties:
+                  url:
+                    type:
+                      - string
+                      - "null"
+                  width:
+                    type:
+                      - number
+                      - "null"
+                  height:
+                    type:
+                      - number
+                      - "null"
+              standard:
+                type:
+                  - object
+                  - "null"
+                properties:
+                  url:
+                    type:
+                      - string
+                      - "null"
+                  width:
+                    type:
+                      - number
+                      - "null"
+                  height:
+                    type:
+                      - number
+                      - "null"
+              maxres:
+                type:
+                  - object
+                  - "null"
+                properties:
+                  url:
+                    type:
+                      - string
+                      - "null"
+                  width:
+                    type:
+                      - number
+                      - "null"
+                  height:
+                    type:
+                      - number
+                      - "null"
+
+      contentDetails:
         type:
           - object
           - "null"
         properties:
-          default:
+          duration:
+            type:
+              - string
+              - "null"
+          dimension:
+            type:
+              - string
+              - "null"
+          definition:
+            type:
+              - string
+              - "null"
+          caption:
+            type:
+              - string
+              - "null"
+          licensedContent:
+            type:
+              - boolean
+              - "null"
+          projection:
+            type:
+              - string
+              - "null"
+          hasCustomThumbnail:
+            type:
+              - boolean
+              - "null"
+          regionRestriction:
             type:
               - object
               - "null"
             properties:
-              height:
+              allowed:
                 type:
-                  - number
+                  - array
                   - "null"
-              url:
+                items:
+                  type:
+                    - string
+                    - "null"
+              blocked:
                 type:
-                  - string
+                  - array
                   - "null"
-              width:
-                type:
-                  - number
-                  - "null"
-          high:
+                items:
+                  type:
+                    - string
+                    - "null"
+          contentRating:
             type:
               - object
               - "null"
-            properties:
-              height:
-                type:
-                  - number
-                  - "null"
-              url:
-                type:
-                  - string
-                  - "null"
-              width:
-                type:
-                  - number
-                  - "null"
-          maxres:
-            type:
-              - object
-              - "null"
-            properties:
-              height:
-                type:
-                  - number
-                  - "null"
-              url:
-                type:
-                  - string
-                  - "null"
-              width:
-                type:
-                  - number
-                  - "null"
-          medium:
-            type:
-              - object
-              - "null"
-            properties:
-              height:
-                type:
-                  - number
-                  - "null"
-              url:
-                type:
-                  - string
-                  - "null"
-              width:
-                type:
-                  - number
-                  - "null"
-          standard:
-            type:
-              - object
-              - "null"
-            properties:
-              height:
-                type:
-                  - number
-                  - "null"
-              url:
-                type:
-                  - string
-                  - "null"
-              width:
-                type:
-                  - number
-                  - "null"
-      title:
+
+      statistics:
         type:
-          - string
+          - object
           - "null"
-      videoId:
-        type: string
+        properties:
+          viewCount:
+            type:
+              - string
+              - "null"
+          likeCount:
+            type:
+              - string
+              - "null"
+          dislikeCount:
+            type:
+              - string
+              - "null"
+          favoriteCount:
+            type:
+              - string
+              - "null"
+          commentCount:
+            type:
+              - string
+              - "null"
+
+      player:
+        type:
+          - object
+          - "null"
+        properties:
+          embedHtml:
+            type:
+              - string
+              - "null"
+          embedHeight:
+            type:
+              - number
+              - "null"
+          embedWidth:
+            type:
+              - number
+              - "null"
     required:
       - videoId
   channels:
