@@ -173,6 +173,19 @@
               "default" : "{date}_{timestamp}_{part_number}{format_extension}",
               "airbyte_hidden" : true,
               "order" : 11
+            },
+            "partition_granularity" : {
+              "type" : "string",
+              "default" : "day",
+              "description" : "Partition granularity",
+              "title" : "Partition granularity",
+              "examples" : [ "year", "month", "day" ]
+            },
+            "timestamp_column" : {
+              "type" : "string",
+              "description" : "Timestamp column",
+              "title" : "Timestamp column",
+              "examples" : [ "updated_at" ]
             }
           },
           "title" : "S3",

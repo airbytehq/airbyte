@@ -7,7 +7,7 @@
 To build the connector via the [Airbyte CI CLI tool](https://github.com/airbytehq/airbyte/blob/master/airbyte-ci/connectors/pipelines/README.md), navigate to the root of the [Airbyte repository](https://github.com/airbytehq/airbyte) and execute the following command:
 
 ```shell
-> airbyte-ci connectors --name=destination-iceberg-v2 build
+> airbyte-ci connectors --name=destination-s3-data-lake build
 ```
 
 ###  Gradle
@@ -15,7 +15,7 @@ To build the connector via the [Airbyte CI CLI tool](https://github.com/airbyteh
 To build the connector via [Gradle](https://gradle.org/), navigate to the root of the [Airbyte repository](https://github.com/airbytehq/airbyte) and execute the following command:
 
 ```shell
-> ./gradlew :airbyte-integrations:connectors:destination-iceberg-v2:build
+> ./gradlew :airbyte-integrations:connectors:destination-s3-data-lake:build
 ```
 ## Execute
 

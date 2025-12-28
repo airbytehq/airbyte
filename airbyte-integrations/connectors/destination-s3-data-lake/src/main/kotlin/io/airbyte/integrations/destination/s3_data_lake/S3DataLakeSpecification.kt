@@ -51,6 +51,11 @@ class S3DataLakeSpecification :
 
     @get:JsonSchemaInject(json = """{"order":4}""") override val s3Endpoint: String? = null
 
+    @get:JsonSchemaInject(json = """{"order":5}""") override val timestampColumn: String? = null
+
+    @get:JsonSchemaInject(json = """{"order":6}""") override val partitionGranularity: String? = null
+
+
     @get:JsonSchemaDescription(
         """The root location of the data warehouse used by the Iceberg catalog. Typically includes a bucket name and path within that bucket. For AWS Glue and Nessie, must include the storage protocol (such as "s3://" for Amazon S3)."""
     )
@@ -60,17 +65,18 @@ class S3DataLakeSpecification :
                 {
                     "examples": ["s3://your-bucket/path/to/store/files/in"],
                     "always_show": true,
-                    "order":5
+                    "order":7
                 }
             """
     )
     override val warehouseLocation: String = ""
 
-    @get:JsonSchemaInject(json = """{"always_show": true,"order":6}""")
+    @get:JsonSchemaInject(json = """{"always_show": true,"order":8}""")
     override val mainBranchName: String = ""
 
-    @get:JsonSchemaInject(json = """{"always_show": true,"order":7}""")
+    @get:JsonSchemaInject(json = """{"always_show": true,"order":9}""")
     override val catalogType: CatalogType = GlueCatalogSpecification(glueId = "", databaseName = "")
+
 }
 
 @Singleton

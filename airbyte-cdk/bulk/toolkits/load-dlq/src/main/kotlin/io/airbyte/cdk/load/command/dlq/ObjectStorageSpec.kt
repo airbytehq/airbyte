@@ -139,4 +139,10 @@ class S3ObjectStorageSpec :
     )
     @get:JsonProperty("file_name_format")
     val fileNameFormat: String? = null
+
+    @get:JsonSchemaInject(json = """{"examples":["year", "month", "day"]}""")
+    override val partitionGranularity: String? = null
+
+    @get:JsonSchemaInject(json = """{"examples":["updated_at"]}""")
+    override val timestampColumn: String? = null 
 }

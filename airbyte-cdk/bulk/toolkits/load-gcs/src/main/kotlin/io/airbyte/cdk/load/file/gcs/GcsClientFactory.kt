@@ -54,7 +54,9 @@ class GcsClientFactory(
                                         S3BucketConfiguration(
                                             s3BucketName = config.gcsBucketName,
                                             s3BucketRegion = config.region,
-                                            s3Endpoint = GOOGLE_STORAGE_ENDPOINT
+                                            s3Endpoint = GOOGLE_STORAGE_ENDPOINT,
+                                            timestampColumn = "",
+                                            partitionGranularity = "",
                                         )
                                 },
                                 assumeRoleCredentials = null,

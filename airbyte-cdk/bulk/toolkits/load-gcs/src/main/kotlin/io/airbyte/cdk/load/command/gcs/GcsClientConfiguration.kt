@@ -31,6 +31,8 @@ data class GcsClientConfiguration(
             gcsBucketName,
             region,
             GOOGLE_STORAGE_ENDPOINT,
+            "",
+            "",
         )
 }
 
