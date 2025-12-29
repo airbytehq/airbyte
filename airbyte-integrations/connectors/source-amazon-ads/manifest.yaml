@@ -1542,7 +1542,7 @@ definitions:
     sponsored_brands_adgroups_report_stream:
       type: DeclarativeStream
       name: sponsored_brands_adgroups_report_stream
-      primary_key: ["profileId", "reportDate", "adGroupId"]
+      primary_key: ["profileId", "reportDate", "adGroupName", "adGroupId"]
       incremental_sync:
         $ref: "#/definitions/incremental_sync_report_datetime_cursor"
       transformations:
@@ -1590,7 +1590,7 @@ definitions:
     sponsored_brands_adgroups_report_stream_daily:
       type: DeclarativeStream
       name: sponsored_brands_adgroups_report_stream_daily
-      primary_key: ["profileId", "reportDate", "adGroupId"]
+      primary_key: ["profileId", "reportDate", "adGroupName", "adGroupId"]
       incremental_sync:
         $ref: "#/definitions/incremental_sync_report_datetime_cursor"
       transformations:
