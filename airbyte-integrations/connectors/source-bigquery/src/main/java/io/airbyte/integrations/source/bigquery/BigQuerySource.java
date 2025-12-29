@@ -33,6 +33,7 @@ import io.airbyte.protocol.models.CommonField;
 import io.airbyte.protocol.models.JsonSchemaType;
 import io.airbyte.protocol.models.v0.SyncMode;
 import java.util.ArrayList;
+import java.util.Arrays;
 import java.util.Collections;
 import java.util.List;
 import java.util.Map;
@@ -51,10 +52,13 @@ public class BigQuerySource extends AbstractDbSource<StandardSQLTypeName, BigQue
 
   public static final String CONFIG_DATASET_ID = "dataset_id";
   public static final String CONFIG_PROJECT_ID = "project_id";
+  public static final String CONFIG_PROJECT_IDS = "project_ids";
   public static final String CONFIG_CREDS = "credentials_json";
 
   private JsonNode dbConfig;
   private final BigQuerySourceOperations sourceOperations = new BigQuerySourceOperations();
+
+  private static final String NAMESPACE_SEPARATOR = ".";
 
   protected BigQuerySource() {
     super(null);
@@ -74,7 +78,8 @@ public class BigQuerySource extends AbstractDbSource<StandardSQLTypeName, BigQue
   @Override
   protected BigQueryDatabase createDatabase(final JsonNode sourceConfig) {
     dbConfig = Jsons.clone(sourceConfig);
-    final BigQueryDatabase database = new BigQueryDatabase(sourceConfig.get(CONFIG_PROJECT_ID).asText(), sourceConfig.get(CONFIG_CREDS).asText());
+    final String firstProjectId = getFirstProjectId(sourceConfig);
+    final BigQueryDatabase database = new BigQueryDatabase(firstProjectId, sourceConfig.get(CONFIG_CREDS).asText());
     database.setSourceConfig(sourceConfig);
     database.setDatabaseConfig(toDatabaseConfig(sourceConfig));
     return database;
@@ -120,26 +125,48 @@ public class BigQuerySource extends AbstractDbSource<StandardSQLTypeName, BigQue
 
   @Override
   protected List<TableInfo<CommonField<StandardSQLTypeName>>> discoverInternal(final BigQueryDatabase database, final String schema) {
-    final String projectId = dbConfig.get(CONFIG_PROJECT_ID).asText();
-    final List<Table> tables =
-        (isDatasetConfigured(database) ? database.getDatasetTables(getConfigDatasetId(database)) : database.getProjectTables(projectId));
+    final List<String> projectIds = getProjectIds(dbConfig);
     final List<TableInfo<CommonField<StandardSQLTypeName>>> result = new ArrayList<>();
-    tables.stream().map(table -> TableInfo.<CommonField<StandardSQLTypeName>>builder()
-        .nameSpace(table.getTableId().getDataset())
-        .name(table.getTableId().getTable())
-        .fields(Objects.requireNonNull(table.getDefinition().getSchema()).getFields().stream()
-            .map(f -> {
-              final StandardSQLTypeName standardType;
-              if (f.getType().getStandardType() == StandardSQLTypeName.STRUCT && f.getMode() == Field.Mode.REPEATED) {
-                standardType = StandardSQLTypeName.ARRAY;
-              } else
-                standardType = f.getType().getStandardType();
+    final boolean multiProject = projectIds.size() > 1;
 
-              return new CommonField<>(f.getName(), standardType);
-            })
-            .collect(Collectors.toList()))
-        .build())
-        .forEach(result::add);
+    for (final String projectId : projectIds) {
+      LOGGER.info("Discovering tables for project: {}", projectId);
+      final List<Table> tables;
+      if (isDatasetConfigured(database)) {
+        final String datasetId = getConfigDatasetId(database);
+        if (multiProject) {
+          // For multi-project with dataset filter, get all tables and filter by dataset
+          // Note: CDK has getDatasetTables(projectId, datasetId) but connector uses pinned CDK version
+          tables = database.getProjectTables(projectId).stream()
+              .filter(t -> datasetId.equals(t.getTableId().getDataset()))
+              .collect(Collectors.toList());
+        } else {
+          // Backward-compatible path: old behavior uses default project
+          tables = database.getDatasetTables(datasetId);
+        }
+      } else {
+        tables = database.getProjectTables(projectId);
+      }
+
+      tables.stream().map(table -> TableInfo.<CommonField<StandardSQLTypeName>>builder()
+          .nameSpace(multiProject
+              ? buildNamespace(projectId, table.getTableId().getDataset())
+              : table.getTableId().getDataset())
+          .name(table.getTableId().getTable())
+          .fields(Objects.requireNonNull(table.getDefinition().getSchema()).getFields().stream()
+              .map(f -> {
+                final StandardSQLTypeName standardType;
+                if (f.getType().getStandardType() == StandardSQLTypeName.STRUCT && f.getMode() == Field.Mode.REPEATED) {
+                  standardType = StandardSQLTypeName.ARRAY;
+                } else
+                  standardType = f.getType().getStandardType();
+
+                return new CommonField<>(f.getName(), standardType);
+              })
+              .collect(Collectors.toList()))
+          .build())
+          .forEach(result::add);
+    }
     return result;
   }
 
@@ -161,9 +188,16 @@ public class BigQuerySource extends AbstractDbSource<StandardSQLTypeName, BigQue
                                                                final String tableName,
                                                                final CursorInfo cursorInfo,
                                                                final StandardSQLTypeName cursorFieldType) {
+    final String projectIdFromNamespace = extractProjectIdFromNamespace(schemaName);
+    // For single-project configs, namespace is just dataset_id, so fall back to first project
+    final String projectId = projectIdFromNamespace != null
+        ? projectIdFromNamespace
+        : getFirstProjectId(dbConfig);
+    final String datasetId = extractDatasetIdFromNamespace(schemaName);
+    final String fullyQualifiedTableName = buildFullyQualifiedTableName(projectId, datasetId, tableName);
     return queryTableWithParams(database, String.format("SELECT %s FROM %s WHERE %s > ?",
         RelationalDbQueryUtils.enquoteIdentifierList(columnNames, getQuoteString()),
-        getFullyQualifiedTableNameWithQuoting(schemaName, tableName, getQuoteString()),
+        fullyQualifiedTableName,
         cursorInfo.getCursorField()),
         schemaName,
         tableName,
@@ -178,9 +212,16 @@ public class BigQuerySource extends AbstractDbSource<StandardSQLTypeName, BigQue
                                                                   final SyncMode syncMode,
                                                                   final Optional<String> cursorField) {
     LOGGER.info("Queueing query for table: {}", tableName);
+    final String projectIdFromNamespace = extractProjectIdFromNamespace(schemaName);
+    // For single-project configs, namespace is just dataset_id, so fall back to first project
+    final String projectId = projectIdFromNamespace != null
+        ? projectIdFromNamespace
+        : getFirstProjectId(dbConfig);
+    final String datasetId = extractDatasetIdFromNamespace(schemaName);
+    final String fullyQualifiedTableName = buildFullyQualifiedTableName(projectId, datasetId, tableName);
     return queryTable(database, String.format("SELECT %s FROM %s",
         enquoteIdentifierList(columnNames, getQuoteString()),
-        getFullyQualifiedTableNameWithQuoting(schemaName, tableName, getQuoteString())),
+        fullyQualifiedTableName),
         tableName, schemaName);
   }
 
@@ -212,6 +253,68 @@ public class BigQuerySource extends AbstractDbSource<StandardSQLTypeName, BigQue
 
   private String getConfigDatasetId(final SqlDatabase database) {
     return (isDatasetConfigured(database) ? database.getSourceConfig().get(CONFIG_DATASET_ID).asText() : "");
+  }
+
+  private List<String> getProjectIds(final JsonNode config) {
+    // First check for project_ids array (Option B - preferred for multi-project)
+    if (config.hasNonNull(CONFIG_PROJECT_IDS) && config.get(CONFIG_PROJECT_IDS).isArray()) {
+      final JsonNode projectIdsNode = config.get(CONFIG_PROJECT_IDS);
+      if (projectIdsNode.size() > 0) {
+        final List<String> projectIds = new ArrayList<>();
+        projectIdsNode.forEach(node -> {
+          final String projectId = node.asText().trim();
+          if (!projectId.isEmpty()) {
+            projectIds.add(projectId);
+          }
+        });
+        if (!projectIds.isEmpty()) {
+          return projectIds;
+        }
+      }
+    }
+    // Fall back to project_id field (single project or comma-separated for backward compatibility)
+    final String projectIdConfig = config.get(CONFIG_PROJECT_ID).asText();
+    return Arrays.stream(projectIdConfig.split(","))
+        .map(String::trim)
+        .filter(s -> !s.isEmpty())
+        .collect(Collectors.toList());
+  }
+
+  private String getFirstProjectId(final JsonNode config) {
+    final List<String> projectIds = getProjectIds(config);
+    if (projectIds.isEmpty()) {
+      throw new IllegalArgumentException("At least one project ID must be specified");
+    }
+    return projectIds.get(0);
+  }
+
+  private String buildFullyQualifiedTableName(final String projectId, final String datasetId, final String tableName) {
+    return getIdentifierWithQuoting(projectId, getQuoteString()) + NAMESPACE_SEPARATOR +
+        getIdentifierWithQuoting(datasetId, getQuoteString()) + NAMESPACE_SEPARATOR +
+        getIdentifierWithQuoting(tableName, getQuoteString());
+  }
+
+  private String getIdentifierWithQuoting(final String identifier, final String quoteString) {
+    return quoteString + identifier + quoteString;
+  }
+
+  private String buildNamespace(final String projectId, final String datasetId) {
+    return projectId + NAMESPACE_SEPARATOR + datasetId;
+  }
+
+  private String extractProjectIdFromNamespace(final String namespace) {
+    if (namespace == null || !namespace.contains(NAMESPACE_SEPARATOR)) {
+      return null;
+    }
+    return namespace.split("\\" + NAMESPACE_SEPARATOR)[0];
+  }
+
+  private String extractDatasetIdFromNamespace(final String namespace) {
+    if (namespace == null || !namespace.contains(NAMESPACE_SEPARATOR)) {
+      return namespace;
+    }
+    final String[] parts = namespace.split("\\" + NAMESPACE_SEPARATOR);
+    return parts.length > 1 ? parts[1] : namespace;
   }
 
   public static void main(final String[] args) throws Exception {
