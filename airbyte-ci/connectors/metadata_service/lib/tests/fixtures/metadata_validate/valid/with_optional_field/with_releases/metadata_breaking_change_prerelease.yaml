@@ -5,7 +5,7 @@ data:
   connectorType: source
   dockerRepository: airbyte/image-exists-1
   githubIssueLabel: source-alloydb-strict-encrypt
-  dockerImageTag: 2.0.0-dev.cf3628ccf3
+  dockerImageTag: 2.0.0-preview.cf3628c
   documentationUrl: https://docs.airbyte.com/integrations/sources/existingsource
   connectorSubtype: database
   releaseStage: generally_available

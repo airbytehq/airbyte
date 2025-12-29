@@ -1,0 +1,25 @@
+{
+  "topics": [
+    {
+      "id": 12345,
+      "url": "https://d3v-airbyte.zendesk.com/api/v2/community/topics/12345.json",
+      "html_url": "https://d3v-airbyte.zendesk.com/hc/en-us/community/topics/12345",
+      "name": "General Discussion",
+      "description": "General discussion topic",
+      "position": 0,
+      "follower_count": 10,
+      "created_at": "2024-01-01T00:00:00Z",
+      "updated_at": "2024-01-01T00:00:00Z",
+      "user_segment_id": null
+    }
+  ],
+  "meta": {
+    "has_more": false,
+    "after_cursor": null,
+    "before_cursor": null
+  },
+  "links": {
+    "prev": null,
+    "next": null
+  }
+}

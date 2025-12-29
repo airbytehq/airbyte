@@ -5,7 +5,11 @@
 package io.airbyte.cdk.load.command
 
 import io.airbyte.cdk.load.config.NamespaceDefinitionType
-import io.mockk.mockk
+import io.airbyte.cdk.load.data.ObjectType
+import io.airbyte.cdk.load.schema.model.ColumnSchema
+import io.airbyte.cdk.load.schema.model.StreamTableSchema
+import io.airbyte.cdk.load.schema.model.TableName
+import io.airbyte.cdk.load.schema.model.TableNames
 import org.junit.jupiter.api.Assertions
 import org.junit.jupiter.api.Test
 
@@ -22,8 +26,20 @@ class NamespaceMapperTest {
             generationId = 1,
             minimumGenerationId = 0,
             syncId = 1,
-            schema = mockk(relaxed = true),
-            namespaceMapper = namespaceMapper
+            schema = ObjectType(linkedMapOf()),
+            namespaceMapper = namespaceMapper,
+            tableSchema =
+                StreamTableSchema(
+                    tableNames =
+                        TableNames(finalTableName = TableName(unmappedNamespace, unmappedName)),
+                    columnSchema =
+                        ColumnSchema(
+                            inputSchema = mapOf(),
+                            inputToFinalColumnNames = mapOf(),
+                            finalSchema = mapOf(),
+                        ),
+                    importType = Append,
+                )
         )
     }
 
