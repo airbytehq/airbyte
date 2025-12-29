@@ -118,6 +118,10 @@ definitions:
             filter:
               fromDateTime: "{{ config['start_date'] }}"
             contentSelector:
+              context: "Extended"
+              contextTiming:
+                - "Now"
+                - "TimeOfCall"
               exposedFields:
                 media: true
                 content:
