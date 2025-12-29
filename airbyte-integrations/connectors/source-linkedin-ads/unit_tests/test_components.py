@@ -7,7 +7,11 @@ from unittest.mock import MagicMock
 
 import pytest
 from requests import Response
+from requests.exceptions import InvalidURL
 from requests.models import PreparedRequest
+
+from airbyte_cdk.models import FailureType
+from airbyte_cdk.sources.streams.http.error_handlers import ResponseAction
 
 
 logger = logging.getLogger("airbyte")
@@ -106,3 +110,42 @@ def test_date_str_from_date_range(components_module):
 
     assert transformed_record["start_date"] == expected_start_date
     assert transformed_record["end_date"] == expected_end_date
+
+
+def test_linkedin_ads_error_handler_invalid_url(components_module):
+    """
+    Test that LinkedInAdsErrorHandler handles InvalidURL exceptions with RETRY action.
+
+    This tests the custom error handling behavior added by LinkedInAdsErrorHandler
+    which extends DefaultErrorHandler to handle DNS resolution issues gracefully.
+    """
+    LinkedInAdsErrorHandler = components_module.LinkedInAdsErrorHandler
+
+    error_handler = LinkedInAdsErrorHandler(parameters={}, config={})
+    invalid_url_exception = InvalidURL("Invalid URL 'http://invalid': No host supplied")
+
+    error_resolution = error_handler.interpret_response(invalid_url_exception)
+
+    assert error_resolution.response_action == ResponseAction.RETRY
+    assert error_resolution.failure_type == FailureType.transient_error
+    assert "temporary DNS resolution issue" in error_resolution.error_message
+
+
+def test_linkedin_ads_error_handler_http_response(components_module):
+    """
+    Test that LinkedInAdsErrorHandler delegates HTTP responses to DefaultErrorHandler.
+
+    For regular HTTP responses (not InvalidURL exceptions), the handler should
+    delegate to the parent DefaultErrorHandler behavior.
+    """
+    LinkedInAdsErrorHandler = components_module.LinkedInAdsErrorHandler
+
+    error_handler = LinkedInAdsErrorHandler(parameters={}, config={})
+    mock_response = MagicMock(spec=Response)
+    mock_response.status_code = 200
+    mock_response.ok = True
+
+    error_resolution = error_handler.interpret_response(mock_response)
+
+    # For a successful response, DefaultErrorHandler returns SUCCESS action
+    assert error_resolution.response_action == ResponseAction.SUCCESS
