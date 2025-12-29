@@ -2,6 +2,7 @@
 
 pytest_plugins = ["airbyte_cdk.test.utils.manifest_only_fixtures"]
 
+import os
 import sys
 from copy import deepcopy
 from pathlib import Path
@@ -11,6 +12,9 @@ from pytest import fixture
 from airbyte_cdk import YamlDeclarativeSource
 from airbyte_cdk.test.catalog_builder import CatalogBuilder
 from airbyte_cdk.test.state_builder import StateBuilder
+
+
+os.environ["REQUEST_CACHE_PATH"] = "REQUEST_CACHE_PATH"
 
 
 # These methods will be needed when the connector is converted into manifest-only
@@ -84,3 +88,12 @@ def config_gen(config):
         return {k: v for k, v in new_config.items() if v is not ...}
 
     return inner
+
+
+@fixture(autouse=True)
+def clear_cache_before_each_test():
+    """Clear the HTTP request cache before each test to prevent test pollution."""
+    from airbyte_cdk.sources.streams.http import HttpStream
+
+    HttpStream._session = None
+    HttpStream._session_pool = {}

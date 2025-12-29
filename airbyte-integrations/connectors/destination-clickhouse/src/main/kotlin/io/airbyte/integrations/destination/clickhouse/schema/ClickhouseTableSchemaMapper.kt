@@ -30,7 +30,6 @@ import io.airbyte.cdk.load.schema.model.TableName
 import io.airbyte.cdk.load.table.TempTableNameGenerator
 import io.airbyte.integrations.destination.clickhouse.client.ClickhouseSqlTypes
 import io.airbyte.integrations.destination.clickhouse.client.isValidVersionColumn
-import io.airbyte.integrations.destination.clickhouse.config.toClickHouseCompatibleName
 import io.airbyte.integrations.destination.clickhouse.spec.ClickhouseConfiguration
 import jakarta.inject.Singleton
 
