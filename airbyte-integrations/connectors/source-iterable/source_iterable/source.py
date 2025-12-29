@@ -42,6 +42,7 @@ from .streams import (
     SmsSendSkip,
     SmsUsageInfo,
     Templates,
+    Users,
     WebPushClick,
     WebPushSend,
     WebPushSendSkip,
@@ -74,6 +75,7 @@ class SourceIterable(YamlDeclarativeSource):
             [
                 CampaignsMetrics(authenticator=authenticator, **date_range),
                 Templates(authenticator=authenticator, **date_range),
+                Users(authenticator=authenticator, **date_range),
                 EmailBounce(authenticator=authenticator, **date_range),
                 EmailClick(authenticator=authenticator, **date_range),
                 EmailComplaint(authenticator=authenticator, **date_range),
