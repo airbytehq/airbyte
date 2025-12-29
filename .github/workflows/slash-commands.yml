@@ -73,7 +73,9 @@ jobs:
             run-cat-tests
             run-connector-tests
             run-live-tests
+            run-live-tests-legacy
             run-regression-tests
+            run-regression-tests-legacy
             test-performance
             update-connector-cdk-version
 
