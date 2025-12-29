@@ -1472,16 +1472,15 @@ definitions:
                   "clicks",
                   "cost",
                   "impressions",
-                  "sales14d",
-                  "purchases14d",
-                  "unitsSold14d",
-                  "newToBrandPurchases14d",
-                  "newToBrandSales14d",
-                  "newToBrandUnitsSold14d",
-                  "newToBrandPurchasesPercentage14d",
-                  "newToBrandSalesPercentage14d",
-                  "newToBrandUnitsSoldPercentage14d",
-                  "topOfSearchImpressionShare",
+                  "sales",
+                  "purchases",
+                  "unitsSold",
+                  "newToBrandPurchases",
+                  "newToBrandSales",
+                  "newToBrandUnitsSold",
+                  "newToBrandPurchasesPercentage",
+                  "newToBrandSalesPercentage",
+                  "newToBrandUnitsSoldPercentage",
                 ]
               reportTypeId: sbCampaigns
               filters: []
@@ -1522,16 +1521,15 @@ definitions:
                 - "clicks"
                 - "cost"
                 - "impressions"
-                - "sales14d"
-                - "purchases14d"
-                - "unitsSold14d"
-                - "newToBrandPurchases14d"
-                - "newToBrandSales14d"
-                - "newToBrandUnitsSold14d"
-                - "newToBrandPurchasesPercentage14d"
-                - "newToBrandSalesPercentage14d"
-                - "newToBrandUnitsSoldPercentage14d"
-                - "topOfSearchImpressionShare"
+                - "sales"
+                - "purchases"
+                - "unitsSold"
+                - "newToBrandPurchases"
+                - "newToBrandSales"
+                - "newToBrandUnitsSold"
+                - "newToBrandPurchasesPercentage"
+                - "newToBrandSalesPercentage"
+                - "newToBrandUnitsSoldPercentage"
               reportTypeId: sbCampaigns
               filters: []
               timeUnit: DAILY
@@ -1559,7 +1557,7 @@ definitions:
             endDate: "{{ stream_interval.end_time }}"
             configuration:
               adProduct: SPONSORED_BRANDS
-              groupBy: ["campaign", "adGroup"]
+              groupBy: ["adGroup"]
               columns:
                 [
                   "campaignBudgetCurrencyCode",
@@ -1570,15 +1568,15 @@ definitions:
                   "clicks",
                   "cost",
                   "impressions",
-                  "sales14d",
-                  "purchases14d",
-                  "unitsSold14d",
-                  "newToBrandPurchases14d",
-                  "newToBrandSales14d",
-                  "newToBrandUnitsSold14d",
-                  "newToBrandPurchasesPercentage14d",
-                  "newToBrandSalesPercentage14d",
-                  "newToBrandUnitsSoldPercentage14d",
+                  "sales",
+                  "purchases",
+                  "unitsSold",
+                  "newToBrandPurchases",
+                  "newToBrandSales",
+                  "newToBrandUnitsSold",
+                  "newToBrandPurchasesPercentage",
+                  "newToBrandSalesPercentage",
+                  "newToBrandUnitsSoldPercentage",
                 ]
               reportTypeId: sbAdGroup
               filters: []
@@ -1607,7 +1605,7 @@ definitions:
             endDate: "{{ stream_interval.end_time }}"
             configuration:
               adProduct: SPONSORED_BRANDS
-              groupBy: ["campaign", "adGroup"]
+              groupBy: ["adGroup"]
               columns:
                 - "date"
                 - "campaignBudgetCurrencyCode"
@@ -1618,15 +1616,15 @@ definitions:
                 - "clicks"
                 - "cost"
                 - "impressions"
-                - "sales14d"
-                - "purchases14d"
-                - "unitsSold14d"
-                - "newToBrandPurchases14d"
-                - "newToBrandSales14d"
-                - "newToBrandUnitsSold14d"
-                - "newToBrandPurchasesPercentage14d"
-                - "newToBrandSalesPercentage14d"
-                - "newToBrandUnitsSoldPercentage14d"
+                - "sales"
+                - "purchases"
+                - "unitsSold"
+                - "newToBrandPurchases"
+                - "newToBrandSales"
+                - "newToBrandUnitsSold"
+                - "newToBrandPurchasesPercentage"
+                - "newToBrandSalesPercentage"
+                - "newToBrandUnitsSoldPercentage"
               reportTypeId: sbAdGroup
               filters: []
               timeUnit: DAILY
@@ -4823,43 +4821,39 @@ schemas:
         type:
           - "null"
           - integer
-      sales14d:
+      sales:
         type:
           - "null"
           - number
-      purchases14d:
+      purchases:
         type:
           - "null"
           - integer
-      unitsSold14d:
+      unitsSold:
         type:
           - "null"
           - integer
-      newToBrandPurchases14d:
+      newToBrandPurchases:
         type:
           - "null"
           - integer
-      newToBrandSales14d:
+      newToBrandSales:
         type:
           - "null"
           - number
-      newToBrandUnitsSold14d:
+      newToBrandUnitsSold:
         type:
           - "null"
           - integer
-      newToBrandPurchasesPercentage14d:
+      newToBrandPurchasesPercentage:
         type:
           - "null"
           - number
-      newToBrandSalesPercentage14d:
+      newToBrandSalesPercentage:
         type:
           - "null"
           - number
-      newToBrandUnitsSoldPercentage14d:
-        type:
-          - "null"
-          - number
-      topOfSearchImpressionShare:
+      newToBrandUnitsSoldPercentage:
         type:
           - "null"
           - number
@@ -4918,43 +4912,39 @@ schemas:
         type:
           - "null"
           - integer
-      sales14d:
+      sales:
         type:
           - "null"
           - number
-      purchases14d:
+      purchases:
         type:
           - "null"
           - integer
-      unitsSold14d:
+      unitsSold:
         type:
           - "null"
           - integer
-      newToBrandPurchases14d:
+      newToBrandPurchases:
         type:
           - "null"
           - integer
-      newToBrandSales14d:
+      newToBrandSales:
         type:
           - "null"
           - number
-      newToBrandUnitsSold14d:
+      newToBrandUnitsSold:
         type:
           - "null"
           - integer
-      newToBrandPurchasesPercentage14d:
+      newToBrandPurchasesPercentage:
         type:
           - "null"
           - number
-      newToBrandSalesPercentage14d:
+      newToBrandSalesPercentage:
         type:
           - "null"
           - number
-      newToBrandUnitsSoldPercentage14d:
-        type:
-          - "null"
-          - number
-      topOfSearchImpressionShare:
+      newToBrandUnitsSoldPercentage:
         type:
           - "null"
           - number
@@ -5005,39 +4995,39 @@ schemas:
         type:
           - "null"
           - integer
-      sales14d:
+      sales:
         type:
           - "null"
           - number
-      purchases14d:
+      purchases:
         type:
           - "null"
           - integer
-      unitsSold14d:
+      unitsSold:
         type:
           - "null"
           - integer
-      newToBrandPurchases14d:
+      newToBrandPurchases:
         type:
           - "null"
           - integer
-      newToBrandSales14d:
+      newToBrandSales:
         type:
           - "null"
           - number
-      newToBrandUnitsSold14d:
+      newToBrandUnitsSold:
         type:
           - "null"
           - integer
-      newToBrandPurchasesPercentage14d:
+      newToBrandPurchasesPercentage:
         type:
           - "null"
           - number
-      newToBrandSalesPercentage14d:
+      newToBrandSalesPercentage:
         type:
           - "null"
           - number
-      newToBrandUnitsSoldPercentage14d:
+      newToBrandUnitsSoldPercentage:
         type:
           - "null"
           - number
@@ -5092,39 +5082,39 @@ schemas:
         type:
           - "null"
           - integer
-      sales14d:
+      sales:
         type:
           - "null"
           - number
-      purchases14d:
+      purchases:
         type:
           - "null"
           - integer
-      unitsSold14d:
+      unitsSold:
         type:
           - "null"
           - integer
-      newToBrandPurchases14d:
+      newToBrandPurchases:
         type:
           - "null"
           - integer
-      newToBrandSales14d:
+      newToBrandSales:
         type:
           - "null"
           - number
-      newToBrandUnitsSold14d:
+      newToBrandUnitsSold:
         type:
           - "null"
           - integer
-      newToBrandPurchasesPercentage14d:
+      newToBrandPurchasesPercentage:
         type:
           - "null"
           - number
-      newToBrandSalesPercentage14d:
+      newToBrandSalesPercentage:
         type:
           - "null"
           - number
-      newToBrandUnitsSoldPercentage14d:
+      newToBrandUnitsSoldPercentage:
         type:
           - "null"
           - number
