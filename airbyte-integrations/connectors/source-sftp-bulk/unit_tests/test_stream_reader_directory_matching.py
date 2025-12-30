@@ -160,6 +160,7 @@ class TestGlobNormalization:
         """Test that get_matching_files correctly normalizes globs with double slashes"""
         import logging
         from unittest.mock import MagicMock, patch
+
         import paramiko
         from source_sftp_bulk.spec import SourceSFTPBulkSpec
 
@@ -223,9 +224,11 @@ class TestGlobNormalization:
             # Should match (with // URIs):
             # - //downloads/file_1.csv (matches first glob: //downloads/*.csv)
             # - //data/folder/file_3.txt (matches second glob: //data/folder/**/*.txt)
-            expected_uris = sorted([
-                "//downloads/file_1.csv",
-                "//data/folder/file_3.txt",
-            ])
+            expected_uris = sorted(
+                [
+                    "//downloads/file_1.csv",
+                    "//data/folder/file_3.txt",
+                ]
+            )
 
             assert file_uris == expected_uris, f"Expected {expected_uris} but got {file_uris}"

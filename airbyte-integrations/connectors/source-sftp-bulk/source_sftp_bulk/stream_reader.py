@@ -138,6 +138,11 @@ class SourceSFTPBulkStreamReader(AbstractFileBasedStreamReader):
             - dir_path="/data", glob="/*/folder/folder2/*" -> True (could lead to match)
             - dir_path="/data/folder", glob="/*/folder/folder2/*" -> True (partial match)
         """
+
+        if dir_path.startswith("//"):
+            #  wcmatch.glob in filter_files_by_globs_and_start_date makes // and / equal. removing // in the beginning for ease of calculations
+            dir_path = dir_path[1:]
+
         for glob_pattern in globs:
             # Handle recursive wildcard - it matches everything
             if "**" in glob_pattern:
@@ -226,11 +231,11 @@ class SourceSFTPBulkStreamReader(AbstractFileBasedStreamReader):
             # If glob doesn't start with /, make it relative to root_folder
             if not glob_pattern.startswith("/"):
                 normalized_globs.append(f"{root_folder.rstrip('/')}/{glob_pattern}")
-            elif root_folder == "/" and glob_pattern.startswith("/") and not glob_pattern.startswith("//"):
-                # If user provides "/downloads/*.csv" and root is "/", prepend "/" to match "//" URIs
-                normalized_globs.append(f"/{glob_pattern}")
             else:
                 normalized_globs.append(glob_pattern)
+            if glob_pattern.startswith("//"):
+                #  wcmatch.glob in filter_files_by_globs_and_start_date makes // and / equal. removing // in the beginning for ease of calculations
+                normalized_globs.append(glob_pattern[1:])
 
         # Iterate through directories and subdirectories
         while directories:
