@@ -50,7 +50,7 @@ class TestCheckMigrationGuide:
         assert connector.technical_name in result.message
         assert "Please create a migration guide in" in result.message
 
-    def test_fail_when_migration_guide_file_does_not_start_with_correct_header(self, mocker, tmp_path):
+    def test_fail_when_migration_guide_file_is_empty(self, mocker, tmp_path):
         # Arrange
         connector = mocker.Mock(
             name_from_metadata="Test Connector",
@@ -65,8 +65,43 @@ class TestCheckMigrationGuide:
 
         # Assert
         assert result.status == CheckStatus.FAILED
+        assert "Migration guide file for test-connector does not contain a markdown heading" in result.message
+
+    def test_fail_when_migration_guide_file_does_not_start_with_correct_header(self, mocker, tmp_path):
+        # Arrange
+        connector = mocker.Mock(
+            name_from_metadata="Test Connector",
+            technical_name="test-connector",
+            metadata={"releases": {"breakingChanges": {"1.0.0": "Description"}}},
+            migration_guide_file_path=tmp_path / "migration_guide.md",
+        )
+        connector.migration_guide_file_path.write_text("# Wrong Header")
+
+        # Act
+        result = documentation.CheckMigrationGuide()._run(connector)
+
+        # Assert
+        assert result.status == CheckStatus.FAILED
         assert "Migration guide file for test-connector does not start with the correct header" in result.message
-        assert "Expected '# Test Connector Migration Guide', got ''" in result.message
+        assert "Expected '# Test Connector Migration Guide', got '# Wrong Header'" in result.message
+
+    def test_pass_when_migration_guide_has_mdx_imports_before_title(self, mocker, tmp_path):
+        # Arrange
+        connector = mocker.Mock(
+            name_from_metadata="Test Connector",
+            technical_name="test-connector",
+            metadata={"releases": {"breakingChanges": {"1.0.0": "Description"}}},
+            migration_guide_file_path=tmp_path / "migration_guide.md",
+        )
+        connector.migration_guide_file_path.write_text(
+            "import SpecialDoc from '@site/src/components/SpecialDoc';\n\n" "# Test Connector Migration Guide\n" "## Upgrading to 1.0.0\n"
+        )
+
+        # Act
+        result = documentation.CheckMigrationGuide()._run(connector)
+
+        # Assert
+        assert result.status == CheckStatus.PASSED
 
     def test_fail_when_migration_guide_file_has_missing_version_headings(self, mocker, tmp_path):
         # Arrange
