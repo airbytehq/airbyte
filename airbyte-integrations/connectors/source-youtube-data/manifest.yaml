@@ -57,6 +57,10 @@ definitions:
               stream:
                 $ref: "#/definitions/streams/videos"
       transformations:
+        - type: DpathFlattenFields
+          field_path:
+            - "snippet"
+          delete_origin_value: true
         - type: AddFields
           fields:
             - path:
@@ -459,19 +463,55 @@ schemas:
         type:
           - string
           - "null"
-      snippet:
+      publishedAt:
+        type:
+          - string
+          - "null"
+      channelId:
+        type:
+          - string
+          - "null"
+      title:
+        type:
+          - string
+          - "null"
+      description:
+        type:
+          - string
+          - "null"
+      channelTitle:
+        type:
+          - string
+          - "null"
+      tags:
+        type:
+          - array
+          - "null"
+      items:
+        type:
+          - string
+          - "null"
+      categoryId:
+        type:
+          - string
+          - "null"
+      liveBroadcastContent:
+        type:
+          - string
+          - "null"
+      defaultLanguage:
+        type:
+          - string
+          - "null"
+      defaultAudioLanguage:
+        type:
+          - string
+          - "null"
+      localized:
         type:
           - object
           - "null"
         properties:
-          publishedAt:
-            type:
-              - string
-              - "null"
-          channelId:
-            type:
-              - string
-              - "null"
           title:
             type:
               - string
@@ -480,137 +520,96 @@ schemas:
             type:
               - string
               - "null"
-          channelTitle:
-            type:
-              - string
-              - "null"
-          tags:
-            type:
-              - array
-              - "null"
-            items:
-              type:
-                - string
-                - "null"
-          categoryId:
-            type:
-              - string
-              - "null"
-          liveBroadcastContent:
-            type:
-              - string
-              - "null"
-          defaultLanguage:
-            type:
-              - string
-              - "null"
-          defaultAudioLanguage:
-            type:
-              - string
-              - "null"
-          localized:
+      thumbnails:
+        type:
+          - object
+          - "null"
+        properties:
+          default:
             type:
               - object
               - "null"
             properties:
-              title:
+              url:
                 type:
                   - string
                   - "null"
-              description:
+              width:
                 type:
-                  - string
+                  - number
                   - "null"
-          thumbnails:
+              height:
+                type:
+                  - number
+                  - "null"
+          medium:
             type:
               - object
               - "null"
             properties:
-              default:
+              url:
                 type:
-                  - object
+                  - string
                   - "null"
-                properties:
-                  url:
-                    type:
-                      - string
-                      - "null"
-                  width:
-                    type:
-                      - number
-                      - "null"
-                  height:
-                    type:
-                      - number
-                      - "null"
-              medium:
+              width:
                 type:
-                  - object
+                  - number
                   - "null"
-                properties:
-                  url:
-                    type:
-                      - string
-                      - "null"
-                  width:
-                    type:
-                      - number
-                      - "null"
-                  height:
-                    type:
-                      - number
-                      - "null"
-              high:
+              height:
                 type:
-                  - object
+                  - number
                   - "null"
-                properties:
-                  url:
-                    type:
-                      - string
-                      - "null"
-                  width:
-                    type:
-                      - number
-                      - "null"
-                  height:
-                    type:
-                      - number
-                      - "null"
-              standard:
+          high:
+            type:
+              - object
+              - "null"
+            properties:
+              url:
                 type:
-                  - object
+                  - string
                   - "null"
-                properties:
-                  url:
-                    type:
-                      - string
-                      - "null"
-                  width:
-                    type:
-                      - number
-                      - "null"
-                  height:
-                    type:
-                      - number
-                      - "null"
-              maxres:
+              width:
                 type:
-                  - object
+                  - number
                   - "null"
-                properties:
-                  url:
-                    type:
-                      - string
-                      - "null"
-                  width:
-                    type:
-                      - number
-                      - "null"
-                  height:
-                    type:
-                      - number
-                      - "null"
+              height:
+                type:
+                  - number
+                  - "null"
+          standard:
+            type:
+              - object
+              - "null"
+            properties:
+              url:
+                type:
+                  - string
+                  - "null"
+              width:
+                type:
+                  - number
+                  - "null"
+              height:
+                type:
+                  - number
+                  - "null"
+          maxres:
+            type:
+              - object
+              - "null"
+            properties:
+              url:
+                type:
+                  - string
+                  - "null"
+              width:
+                type:
+                  - number
+                  - "null"
+              height:
+                type:
+                  - number
+                  - "null"
 
       contentDetails:
         type:
