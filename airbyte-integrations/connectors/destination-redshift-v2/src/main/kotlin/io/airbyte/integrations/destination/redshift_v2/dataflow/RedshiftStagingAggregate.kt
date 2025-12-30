@@ -31,8 +31,6 @@ import javax.sql.DataSource
 
 private val log = KotlinLogging.logger {}
 
-private const val FLUSH_LIMIT = 10_000
-
 /**
  * Accumulates and flushes records to Redshift via S3 staging and COPY command. Uses CSV format with
  * proper quoting for staging files.
@@ -61,9 +59,6 @@ class RedshiftStagingAggregate(
             columnOrder = record.fields.keys.toList()
         }
         buffer.add(record.fields)
-        if (buffer.size >= FLUSH_LIMIT) {
-            kotlinx.coroutines.runBlocking { flush() }
-        }
     }
 
     override suspend fun flush() {

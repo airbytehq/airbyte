@@ -126,17 +126,19 @@ class RedshiftV2BeanFactory {
 
     @Singleton
     fun aggregatePublishingConfig(dataChannelMedium: DataChannelMedium): AggregatePublishingConfig {
+        // Target ~50MB per aggregate for optimal Redshift COPY performance
+        val maxBytesPerAgg = 50_000_000L
         return if (dataChannelMedium == DataChannelMedium.STDIO) {
             AggregatePublishingConfig(
-                maxRecordsPerAgg = 10_000_000_000_000L,
-                maxEstBytesPerAgg = 350_000_000L,
-                maxEstBytesAllAggregates = 350_000_000L * 5,
+                maxRecordsPerAgg = 100_000L,
+                maxEstBytesPerAgg = maxBytesPerAgg,
+                maxEstBytesAllAggregates = maxBytesPerAgg * 5,
             )
         } else {
             AggregatePublishingConfig(
-                maxRecordsPerAgg = 10_000_000_000_000L,
-                maxEstBytesPerAgg = 350_000_000L,
-                maxEstBytesAllAggregates = 350_000_000L * 5,
+                maxRecordsPerAgg = 100_000L,
+                maxEstBytesPerAgg = maxBytesPerAgg,
+                maxEstBytesAllAggregates = maxBytesPerAgg * 5,
                 maxBufferedAggregates = 6,
             )
         }
