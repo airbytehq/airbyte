@@ -24,7 +24,7 @@ data:
         - STDIO
   registryOverrides:
     cloud:
-      enabled: false
+      enabled: true
     oss:
       enabled: false
   releaseStage: alpha
