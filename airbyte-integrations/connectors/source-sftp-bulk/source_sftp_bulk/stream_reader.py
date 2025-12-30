@@ -11,8 +11,8 @@ import psutil
 from wcmatch.glob import GLOBSTAR, globmatch
 
 from airbyte_cdk import FailureType
-from airbyte_cdk.sources.file_based.file_based_stream_reader import AbstractFileBasedStreamReader, FileReadMode
 from airbyte_cdk.sources.file_based.exceptions import FileSizeLimitError
+from airbyte_cdk.sources.file_based.file_based_stream_reader import AbstractFileBasedStreamReader, FileReadMode
 from airbyte_cdk.sources.file_based.remote_file import RemoteFile, UploadableRemoteFile
 from source_sftp_bulk.client import SFTPClient
 from source_sftp_bulk.spec import SourceSFTPBulkSpec

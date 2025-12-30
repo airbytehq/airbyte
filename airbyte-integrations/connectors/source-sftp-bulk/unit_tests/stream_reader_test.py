@@ -12,8 +12,8 @@ from source_sftp_bulk.spec import SourceSFTPBulkSpec
 from source_sftp_bulk.stream_reader import SFTPBulkUploadableRemoteFile, SourceSFTPBulkStreamReader
 
 from airbyte_cdk.sources.file_based.exceptions import FileSizeLimitError
-from airbyte_cdk.sources.file_based.remote_file import RemoteFile
 from airbyte_cdk.sources.file_based.file_based_stream_reader import FileReadMode
+from airbyte_cdk.sources.file_based.remote_file import RemoteFile
 
 
 logger = logging.Logger("")
