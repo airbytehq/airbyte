@@ -4,14 +4,16 @@
 import logging
 import stat
 from datetime import datetime
-from io import IOBase
+from io import IOBase, StringIO
 from typing import Any, Iterable, List, Optional
 
 import psutil
 from wcmatch.glob import GLOBSTAR, globmatch
 
+from airbyte_cdk import FailureType
 from airbyte_cdk.sources.file_based.file_based_stream_reader import AbstractFileBasedStreamReader, FileReadMode
-from airbyte_cdk.sources.file_based.remote_file import UploadableRemoteFile
+from airbyte_cdk.sources.file_based.exceptions import FileSizeLimitError
+from airbyte_cdk.sources.file_based.remote_file import RemoteFile, UploadableRemoteFile
 from source_sftp_bulk.client import SFTPClient
 from source_sftp_bulk.spec import SourceSFTPBulkSpec
 
@@ -274,5 +276,48 @@ class SourceSFTPBulkStreamReader(AbstractFileBasedStreamReader):
             )
 
     def open_file(self, file: SFTPBulkUploadableRemoteFile, mode: FileReadMode, encoding: Optional[str], logger: logging.Logger) -> IOBase:
-        remote_file = self.sftp_client.sftp_connection.open(file.uri, mode=mode.value)
-        return remote_file
+        # Read the entire file content into memory to avoid paramiko's repositioning issues
+        # The TextIOWrapper on top of paramiko SFTP files causes seek operations that fail
+        # with "Repositioning not supported after read/write data" errors
+
+        # Get file size using helper method that handles both file types
+        file_size = self.file_size(file)
+        encoding = encoding or "utf-8"
+
+        # Check if file exceeds size limit
+        if file_size > self.FILE_SIZE_LIMIT:
+            message = f"File size exceeds the limit. File uri: {file.uri}, size: {file_size / (1024 * 1024):.2f} MB"
+            raise FileSizeLimitError(message=message, internal_message=message, failure_type=FailureType.config_error)
+
+        # Log file loading
+        logger.debug(f"Loading file {file.uri} ({file_size / (1024 * 1024):.2f} MB) into memory with encoding '{encoding}'")
+
+        # Open the file in binary mode and read all content
+        sftp_file = self.sftp_client.sftp_connection.open(file.uri, mode="rb")
+        try:
+            file_content = sftp_file.read()
+        finally:
+            sftp_file.close()
+
+        # Decode the content with the specified encoding
+        # Use 'replace' error handling to avoid crashes on invalid characters
+        try:
+            decoded_content = file_content.decode(encoding, errors="replace")
+        except (UnicodeDecodeError, LookupError) as e:
+            logger.warning(f"Error decoding file {file.uri} with encoding '{encoding}': {e}. Falling back to utf-8.")
+            decoded_content = file_content.decode("utf-8", errors="replace")
+
+        # Return as StringIO for seekable text stream
+        return StringIO(decoded_content)
+
+    def file_size(self, file: Any) -> int:
+        if hasattr(file, "size"):
+            try:
+                return int(file.size)
+            except Exception:
+                pass
+
+        st_size = self.sftp_client.sftp_connection.stat(file.uri).st_size
+        if st_size is None:
+            raise ValueError(f"File size for {file.uri} is None.")
+        return int(st_size)
