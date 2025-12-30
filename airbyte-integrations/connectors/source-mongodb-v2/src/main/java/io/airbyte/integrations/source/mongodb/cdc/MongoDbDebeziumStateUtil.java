@@ -99,7 +99,46 @@ public class MongoDbDebeziumStateUtil implements DebeziumStateUtil {
       return true;
     }
 
-    // databaseNames and streamsByDatabase must be the same length
+    // First, try cluster-level validation without filter.
+    // The resume token may point to an event from any collection (including unsynced collections),
+    // so we validate against the entire cluster's change stream for accuracy.
+    try {
+      final ChangeStreamIterable<BsonDocument> clusterStream = mongoClient.watch(BsonDocument.class);
+      clusterStream.resumeAfter(savedOffset);
+      try (final var ignored = clusterStream.cursor()) {
+        LOGGER.info("Valid resume token '{}' present (cluster-level validation), corresponding to timestamp (seconds after epoch) : {}. "
+            + "Incremental sync will be performed for up-to-date streams.",
+            ResumeTokens.getData(savedOffset).asString().getValue(), ResumeTokens.getTimestamp(savedOffset).getTime());
+        return true;
+      }
+    } catch (final MongoCommandException e) {
+      // If unauthorized (error code 13), fall back to filtered validation for restricted permissions
+      if (e.getErrorCode() == 13) {
+        LOGGER.info("Cluster-level watch unauthorized (error code 13), falling back to filtered validation. Error: {}", e.getMessage());
+        return validateWithFilter(savedOffset, mongoClient, databaseNames, streamsByDatabase);
+      }
+      // Other command errors indicate invalid token
+      LOGGER.info("Invalid resume token '{}' (MongoCommandException), corresponding to timestamp (seconds after epoch) : {}, due to reason {}",
+          ResumeTokens.getData(savedOffset).asString().getValue(), ResumeTokens.getTimestamp(savedOffset).getTime(), e.getMessage());
+      return false;
+    } catch (final MongoChangeStreamException e) {
+      // Change stream exception indicates invalid token (e.g., token not found in oplog)
+      LOGGER.info("Invalid resume token '{}' (MongoChangeStreamException), corresponding to timestamp (seconds after epoch) : {}, due to reason {}",
+          ResumeTokens.getData(savedOffset).asString().getValue(), ResumeTokens.getTimestamp(savedOffset).getTime(), e.getMessage());
+      return false;
+    }
+  }
+
+  /**
+   * Validates resume token using filtered change stream (fallback for restricted permissions). Note:
+   * This method may incorrectly report valid tokens as invalid if the token points to an event from
+   * an unsynced collection. Use cluster-level validation when possible.
+   */
+  private boolean validateWithFilter(final BsonDocument savedOffset,
+                                     final MongoClient mongoClient,
+                                     final List<String> databaseNames,
+                                     final List<List<ConfiguredAirbyteStream>> streamsByDatabase) {
+    // Build filter for configured databases and collections
     List<Bson> orFilters = new ArrayList<>();
     LOGGER.info("The length of the database names is {}", databaseNames.size());
     for (int i = 0; i < databaseNames.size(); i++) {
