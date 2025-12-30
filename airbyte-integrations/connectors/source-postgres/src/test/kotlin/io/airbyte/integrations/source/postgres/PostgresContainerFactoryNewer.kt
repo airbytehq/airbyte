@@ -16,7 +16,7 @@ import org.testcontainers.containers.PostgreSQLContainer
 import org.testcontainers.utility.DockerImageName
 import org.testcontainers.utility.MountableFile
 
-object PostgresContainerFactory {
+object PostgresContainerFactoryNewer {
     private const val POSTGRES_17_BULLSEYE = "postgres:17-bullseye"
     private val log = KotlinLogging.logger {}
 

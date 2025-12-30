@@ -66,10 +66,10 @@ class PostgresSourceCursorBasedIntegrationTest {
 
     companion object {
         val log = KotlinLogging.logger {}
-        val dbContainer: PostgreSQLContainer<*> = PostgresContainerFactory.shared17()
+        val dbContainer: PostgreSQLContainer<*> = PostgresContainerFactoryNewer.shared17()
 
         val config: PostgresSourceConfigurationSpecification =
-            PostgresContainerFactory.config(dbContainer)
+            PostgresContainerFactoryNewer.config(dbContainer)
 
         val connectionFactory: JdbcConnectionFactory by lazy {
             JdbcConnectionFactory(PostgresSourceConfigurationFactory().make(config))

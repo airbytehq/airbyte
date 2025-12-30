@@ -21,7 +21,7 @@ import org.testcontainers.containers.PostgreSQLContainer
 class PostgresSourceFieldTypeMapperTest : FieldTypeMapperTest() {
 
     private val schema = TestAssetResourceNamer().getName()
-    override val configSpec = PostgresContainerFactory.config(container, listOf(schema))
+    override val configSpec = PostgresContainerFactoryNewer.config(container, listOf(schema))
     override val executor = JdbcTestDbExecutor(schema, jdbcConfig)
     private val jdbcConfig: JdbcSourceConfiguration
         get() = PostgresSourceConfigurationFactory().make(configSpec)
@@ -246,9 +246,9 @@ class PostgresSourceFieldTypeMapperTest : FieldTypeMapperTest() {
         @BeforeAll
         @Timeout(value = 300)
         fun startAndProvisionTestContainer() {
-            container = PostgresContainerFactory.shared17()
+            container = PostgresContainerFactoryNewer.shared17()
             val schema = TestAssetResourceNamer().getName()
-            val configSpec = PostgresContainerFactory.config(container, listOf(schema))
+            val configSpec = PostgresContainerFactoryNewer.config(container, listOf(schema))
             val jdbcConfig = PostgresSourceConfigurationFactory().make(configSpec)
             val executor = JdbcTestDbExecutor(schema, jdbcConfig)
             executor.executeUpdate("CREATE EXTENSION IF NOT EXISTS hstore;")
