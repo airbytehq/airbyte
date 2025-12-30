@@ -1,3 +1,9 @@
+## Version 0.1.94
+
+**Extract CDK**
+
+* Allow setting an upper limit for the number of rows pulled in a single query for a sequential partition read. 
+
 ## Version 0.1.93
 
 **Load CDK**
