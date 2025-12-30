@@ -69,6 +69,14 @@ help = "Get the language of the connector from its metadata.yaml file. Use with 
 cmd = """yq eval '.data.connectorBuildOptions.baseImage' ${POE_PWD}/metadata.yaml"""
 help = "Get the base image of the connector from its metadata.yaml file."
 
+[tasks.image]
+help = "Build and load the connector image locally (docker buildx --load). Usage: poe image [build] [--tag <tag>] (default tag: dev-{platform})."
+shell = '$(git rev-parse --show-toplevel)/poe-tasks/build-connector-image.sh ${tag}'
+args = [
+  { name = "subcommand", positional = true, default = "build", help = "Subcommand (only 'build' is supported)" },
+  { name = "tag", positional = false, options = ["--tag"], help = "Image tag to use (default dev-{platform})" },
+]
+
 [tasks.get-version]
 cmd = """yq eval '.data.dockerImageTag' ${POE_PWD}/metadata.yaml"""
 help = "Get the version of the connector from its metadata.yaml file."
