@@ -1,5 +1,6 @@
 {
   "documentationUrl": "https://docs.airbyte.com/integrations/sources/hardcoded-records",
+  "_demo_note": "DEMO: This field triggers Gate 3 (Safety/Reversibility) - modifying spec file",
   "connectionSpecification": {
     "$schema": "http://json-schema.org/draft-07/schema#",
     "title": "Hardcoded Records Source Spec",
