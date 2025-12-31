@@ -140,6 +140,7 @@ class CheckVersionIncrement(Check):
                     f"version on the default branch. Master version is {master_version}, current "
                     f"version is {current_version}. "
                     f"Update your PR branch from the default branch to get the latest connector version. "
+                    f"Maintainers can use the `/bump-version` PR slash command. "
                     f"AI agents can use the `bump_version_in_repo` tool from the `airbyte-ops-mcp` MCP server.",
                 )
             if current_version == master_version:
@@ -151,6 +152,7 @@ class CheckVersionIncrement(Check):
                         f"The dockerImageTag in {consts.METADATA_FILE_NAME} was not incremented. "
                         f"Master version is {master_version}, current version is {current_version}. "
                         f"Ignore this message if you do not intend to re-release the connector. "
+                        f"Maintainers can use the `/bump-version` PR slash command. "
                         f"AI agents can use the `bump_version_in_repo` tool from the `airbyte-ops-mcp` MCP server.",
                     )
                 else:
