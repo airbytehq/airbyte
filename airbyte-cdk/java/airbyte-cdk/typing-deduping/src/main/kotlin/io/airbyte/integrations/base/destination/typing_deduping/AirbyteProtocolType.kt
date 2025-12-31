@@ -23,6 +23,7 @@ enum class AirbyteProtocolType : AirbyteType {
     NUMBER,
     INTEGER,
     BOOLEAN,
+    GEOMETRY,
     UNKNOWN;
 
     override val typeName: String
@@ -54,6 +55,8 @@ enum class AirbyteProtocolType : AirbyteType {
                 return BOOLEAN
             } else if (AirbyteType.Companion.nodeMatches(propertyType, "integer")) {
                 return INTEGER
+            } else if (AirbyteType.Companion.nodeMatches(propertyType, "geometry")) {
+                return GEOMETRY
             } else if (AirbyteType.Companion.nodeMatches(propertyType, "number")) {
                 return if (AirbyteType.Companion.nodeMatches(airbyteType, "integer")) INTEGER
                 else NUMBER

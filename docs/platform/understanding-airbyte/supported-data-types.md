@@ -24,6 +24,7 @@ This table summarizes the available types. See the [Specific Types](#specific-ty
 | Array                      | `{"type": "array"}`; optionally `items`                                                             | `[1, 2, 3]`                                                       |
 | Object                     | `{"type": "object"}`; optionally `properties`                                                       | `{"foo": "bar"}`                                                  |
 | Union                      | `{"oneOf": [...]}`                                                                                  |                                                                   |
+| Geometry                   | `{"$ref": "WellKnownTypes.json#/definitions/Geometry"}`                                             | `{"type": "FeatureCollection", "features": [...]}`               |
 
 ### Record structure
 
@@ -180,3 +181,31 @@ As with arrays, objects may declare `properties`, each of which should have a ty
 Sources may want to mix different types in a single field, e.g. `"type": ["string", "object"]`. Destinations must handle this case, either using a native union type, or by finding a native type that can accept all of the source's types (this frequently will be `string` or `json`).
 
 In some cases, sources may want to use multiple types for the same field. For example, a user might have a property which holds one of two object schemas. This is supported with JSON schema's `oneOf` type. Note that many destinations do not currently support these types, and may not behave as expected.
+
+#### Geometry
+
+Geometry values represent spatial data as GeoJSON FeatureCollection objects. These contain geographic information including geometries (points, lines, polygons, etc.) and their associated properties. The geometry type assumes data is in the EPSG:4326 coordinate reference system (WGS84).
+
+For example, a source could emit this record with geometry data:
+
+```json
+{
+  "location": {
+    "type": "FeatureCollection",
+    "features": [
+      {
+        "type": "Feature",
+        "geometry": {
+          "type": "Point",
+          "coordinates": [-122.4194, 37.7749]
+        },
+        "properties": {
+          "name": "San Francisco"
+        }
+      }
+    ]
+  }
+}
+```
+
+Destinations that don't natively support spatial data types may serialize the geometry to JSON or a string representation.
