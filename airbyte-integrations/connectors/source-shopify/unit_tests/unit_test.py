@@ -148,16 +148,6 @@ def test_run_module_emits_spec():
             id="slice_with_missing_profile_location_groups_is_filtered",
         ),
         pytest.param(
-            [{}],
-            [],
-            id="slice_with_empty_parent_is_filtered",
-        ),
-        pytest.param(
-            [None],
-            [],
-            id="none_slice_is_filtered",
-        ),
-        pytest.param(
             [
                 {"parent": {"profile_location_groups": [{"locationGroup": {"id": "123"}}]}},
                 {"parent": {"profile_location_groups": []}},

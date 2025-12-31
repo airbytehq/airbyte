@@ -374,8 +374,6 @@ class Countries(HttpSubStream, FullRefreshShopifyGraphQlBulkStream):
         **kwargs,
     ) -> Iterable[Optional[Mapping[str, Any]]]:
         for stream_slice in super().stream_slices(stream_state=stream_state, **kwargs):
-            if not stream_slice:
-                continue
             parent = stream_slice.get("parent", {})
             profile_location_groups = parent.get("profile_location_groups", [])
             if profile_location_groups:
