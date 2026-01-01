@@ -24,7 +24,7 @@ on:
         default: "airbytehq/airbyte"
         type: string
       gitref:
-        description: "The git reference (branch or tag)"
+        description: "The git reference (branch or tag). NOTE: This input is ignored; the workflow always uses refs/pull/{pr}/head from the PR number."
         required: false
         type: string
       comment-id:
