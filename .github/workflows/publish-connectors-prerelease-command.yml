@@ -24,7 +24,7 @@ on:
         default: "airbytehq/airbyte"
         type: string
       gitref:
-        description: "The git reference (branch or tag)"
+        description: "The git reference (branch or tag). NOTE: This input is ignored; the workflow always uses refs/pull/{pr}/head from the PR number."
         required: false
         type: string
       comment-id:
@@ -32,8 +32,8 @@ on:
         required: false
         type: number
       pr:
-        description: "The pull request number, if applicable"
-        required: false
+        description: "The pull request number (required)"
+        required: true
         type: number
       connector:
         description: "Single connector name to publish (e.g., destination-pinecone). If not provided, auto-detects from PR changes (fails if 0 or 2+ connectors modified)."
@@ -60,7 +60,7 @@ jobs:
         uses: actions/checkout@v4
         with:
           repository: ${{ inputs.repo || github.repository }}
-          ref: ${{ inputs.gitref || '' }}
+          ref: refs/pull/${{ inputs.pr }}/head
           fetch-depth: 0
 
       - name: Get short SHA
@@ -133,7 +133,7 @@ jobs:
             > **Pre-release Connector Publish Started**
             >
             > Publishing pre-release build for connector `${{ steps.resolve-connector.outputs.connector-name }}`.
-            > Branch: `${{ inputs.gitref }}`
+            > PR: [#${{ inputs.pr }}](https://github.com/${{ inputs.repo || github.repository }}/pull/${{ inputs.pr }})
             >
             > Pre-release versions will be tagged as `{version}-preview.${{ steps.get-sha.outputs.short-sha }}`
             > and are available for version pinning via the scoped_configuration API.
@@ -147,7 +147,7 @@ jobs:
     with:
       connectors: ${{ format('--name={0}', needs.init.outputs.connector-name) }}
       release-type: pre-release
-      gitref: ${{ inputs.gitref }}
+      gitref: refs/pull/${{ inputs.pr }}/head
     secrets: inherit
 
   post-completion:
