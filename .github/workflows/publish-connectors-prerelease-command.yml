@@ -32,8 +32,8 @@ on:
         required: false
         type: number
       pr:
-        description: "The pull request number, if applicable"
-        required: false
+        description: "The pull request number (required)"
+        required: true
         type: number
       connector:
         description: "Single connector name to publish (e.g., destination-pinecone). If not provided, auto-detects from PR changes (fails if 0 or 2+ connectors modified)."
@@ -55,37 +55,12 @@ jobs:
       short-sha: ${{ steps.get-sha.outputs.short-sha }}
       connector-name: ${{ steps.resolve-connector.outputs.connector-name }}
       connector-version: ${{ steps.connector-version.outputs.connector-version }}
-      effective-gitref: ${{ steps.resolve-gitref.outputs.effective-gitref }}
     steps:
-      - name: Resolve effective gitref from PR number
-        id: resolve-gitref
-        run: |
-          set -euo pipefail
-
-          # When PR number is provided, use refs/pull/{pr}/head directly (no API call needed)
-          # This is the canonical way to reference PR code and cannot be overridden by callers
-          if [[ -n "${{ inputs.pr }}" ]]; then
-            EFFECTIVE_REF="refs/pull/${{ inputs.pr }}/head"
-            echo "Using PR ref: $EFFECTIVE_REF"
-            echo "effective-gitref=$EFFECTIVE_REF" >> $GITHUB_OUTPUT
-            exit 0
-          fi
-
-          # Fallback for non-PR invocations (e.g., manual dispatch without PR)
-          # Use inputs.gitref if provided, otherwise github.ref_name
-          if [[ -n "${{ inputs.gitref }}" ]]; then
-            echo "Using provided gitref: ${{ inputs.gitref }}"
-            echo "effective-gitref=${{ inputs.gitref }}" >> $GITHUB_OUTPUT
-          else
-            echo "Using github.ref_name: ${{ github.ref_name }}"
-            echo "effective-gitref=${{ github.ref_name }}" >> $GITHUB_OUTPUT
-          fi
-
       - name: Checkout to get commit SHA
         uses: actions/checkout@v4
         with:
           repository: ${{ inputs.repo || github.repository }}
-          ref: ${{ steps.resolve-gitref.outputs.effective-gitref }}
+          ref: refs/pull/${{ inputs.pr }}/head
           fetch-depth: 0
 
       - name: Get short SHA
@@ -172,7 +147,7 @@ jobs:
     with:
       connectors: ${{ format('--name={0}', needs.init.outputs.connector-name) }}
       release-type: pre-release
-      gitref: ${{ needs.init.outputs.effective-gitref }}
+      gitref: refs/pull/${{ inputs.pr }}/head
     secrets: inherit
 
   post-completion:
