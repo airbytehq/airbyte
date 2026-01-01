@@ -487,10 +487,10 @@ schemas:
         type:
           - array
           - "null"
-      items:
-        type:
-          - string
-          - "null"
+        items:
+          type:
+            - string
+            - "null"
       categoryId:
         type:
           - string
