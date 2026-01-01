@@ -133,7 +133,7 @@ jobs:
             > **Pre-release Connector Publish Started**
             >
             > Publishing pre-release build for connector `${{ steps.resolve-connector.outputs.connector-name }}`.
-            > Branch: `${{ inputs.gitref }}`
+            > Branch: `${{ inputs.gitref || github.ref_name }}`
             >
             > Pre-release versions will be tagged as `{version}-preview.${{ steps.get-sha.outputs.short-sha }}`
             > and are available for version pinning via the scoped_configuration API.
