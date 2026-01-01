@@ -55,8 +55,13 @@ get_only_connector() {
 }
 
 # Generate the prerelease image tag (e.g. `1.2.3-preview.abcde12`).
+# DEPRECATED: Use airbyte-ops-mcp CLI instead for single source of truth:
+#   airbyte-ops registry connector compute-prerelease-tag --base-version X.Y.Z --sha COMMIT_SHA
+# This function is kept for backward compatibility but should not be used in new code.
 generate_dev_tag() {
   local base="$1"
+  echo "WARNING: generate_dev_tag() is deprecated. Use airbyte-ops-mcp CLI instead:" >&2
+  echo "  airbyte-ops registry connector compute-prerelease-tag --base-version $base --sha \$(git rev-parse --short=7 HEAD)" >&2
   # Use 7-char short hash to match the new prerelease format.
   local hash
   hash=$(git rev-parse --short=7 HEAD)

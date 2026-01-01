@@ -139,9 +139,11 @@ runs:
           CONNECTOR_VERSION_TAG="${{ inputs.tag-override }}"
           echo "🏷 Using provided tag override: $CONNECTOR_VERSION_TAG"
         elif [[ "${{ inputs.release-type }}" == "pre-release" ]]; then
-          hash=$(git rev-parse --short=7 HEAD)
-          CONNECTOR_VERSION_TAG="${CONNECTOR_VERSION}-preview.${hash}"
-          echo "🏷 Using pre-release tag: $CONNECTOR_VERSION_TAG"
+          # Pre-release builds MUST use tag-override (computed by airbyte-ops-mcp CLI)
+          echo "❌ Pre-release builds require tag-override input."
+          echo "   Use airbyte-ops-mcp CLI to compute the prerelease tag:"
+          echo "   airbyte-ops registry connector compute-prerelease-tag --base-version X.Y.Z --sha COMMIT_SHA"
+          exit 1
         else
           CONNECTOR_VERSION_TAG="$CONNECTOR_VERSION"
           echo "🏷 Using main release tag: $CONNECTOR_VERSION_TAG"

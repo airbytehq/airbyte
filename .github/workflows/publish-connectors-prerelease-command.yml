@@ -55,6 +55,7 @@ jobs:
       short-sha: ${{ steps.get-sha.outputs.short-sha }}
       connector-name: ${{ steps.resolve-connector.outputs.connector-name }}
       connector-version: ${{ steps.connector-version.outputs.connector-version }}
+      prerelease-tag: ${{ steps.compute-prerelease-tag.outputs.prerelease-tag }}
     steps:
       - name: Checkout to get commit SHA
         uses: actions/checkout@v4
@@ -121,6 +122,29 @@ jobs:
           fi
           echo "connector-version=$VERSION" >> "$GITHUB_OUTPUT"
 
+      - name: Install uv
+        uses: astral-sh/setup-uv@d0cc045d04ccac9d8b7881df0226f9e82c39688e # v6.8.0
+
+      - name: Compute prerelease tag
+        id: compute-prerelease-tag
+        run: |
+          set -euo pipefail
+          BASE_VERSION="${{ steps.connector-version.outputs.connector-version }}"
+          SHORT_SHA="${{ steps.get-sha.outputs.short-sha }}"
+
+          if [[ -z "$BASE_VERSION" ]]; then
+            echo "::error::Base version is empty. Cannot compute prerelease tag."
+            exit 1
+          fi
+
+          # Use airbyte-ops-mcp CLI to compute the prerelease tag (single source of truth)
+          PRERELEASE_TAG=$(uvx airbyte-internal-ops registry connector compute-prerelease-tag \
+            --base-version "$BASE_VERSION" \
+            --sha "$SHORT_SHA")
+
+          echo "Computed prerelease tag: $PRERELEASE_TAG"
+          echo "prerelease-tag=$PRERELEASE_TAG" >> "$GITHUB_OUTPUT"
+
       - name: Append start comment
         id: append-start-comment
         if: inputs.comment-id != '' || inputs.pr != ''
@@ -148,6 +172,7 @@ jobs:
       connectors: ${{ format('--name={0}', needs.init.outputs.connector-name) }}
       release-type: pre-release
       gitref: refs/pull/${{ inputs.pr }}/head
+      prerelease-tag: ${{ needs.init.outputs.prerelease-tag }}
     secrets: inherit
 
   post-completion:
