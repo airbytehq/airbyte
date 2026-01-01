@@ -24,6 +24,7 @@ _Applies to connector with any Airbyte usage level_
 
 When a breaking change is introduced, we check that a migration guide is available. It should be stored under `./docs/integrations/<connector-type>s/<connector-name>-migrations.md`.
 This document should contain a section for each breaking change, in order of the version descending. It must explain users which action to take to migrate to the new version.
+See the Breaking Changes Policy for full requirements: https://docs.airbyte.com/platform/connector-development/connector-breaking-changes
 
 ### Connectors must have user facing documentation
 
@@ -302,7 +303,7 @@ _Applies to connector with any support level_
 _Applies to connector with any internal support level_
 _Applies to connector with any Airbyte usage level_
 
-If the connector version has a breaking change, the deadline field must be set to at least a week in the future.
+If the connector version has a breaking change, the deadline field must be set to at least a week in the future. See the Breaking Changes Policy for full requirements: https://docs.airbyte.com/platform/connector-development/connector-breaking-changes
 
 ### Certified source connector must have a value filled out for maxSecondsBetweenMessages in metadata
 

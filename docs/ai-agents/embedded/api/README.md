@@ -4,9 +4,9 @@ products: embedded
 
 ---
 
-# Airbyte API
+# Agent Engine API
 
-The Airbyte API allows you to build a fully integrated Airbyte Embedded Experience.
+The Agent Engine API allows you to build a fully integrated Airbyte Embedded Experience.
 
 ## Implementation Steps
 
@@ -27,4 +27,4 @@ For each user who wants to connect their data:
 
 This approach separates one-time organizational setup from per-user operations, making your integration more scalable.
 
-The complete API reference can be found at [api.airbyte.ai/api/v1/docs](https://api.airbyte.ai/api/v1/docs).
+[Full Agent Engine API reference](/ai-agents/embedded/api-reference/sonar).

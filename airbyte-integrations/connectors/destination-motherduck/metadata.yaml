@@ -66,4 +66,7 @@ data:
     - title: MotherDuck Status
       url: https://status.motherduck.com/
       type: status_page
+    - title: MotherDuck Version Lifecycle Schedules
+      url: https://motherduck.com/docs/troubleshooting/version-lifecycle-schedules/
+      type: api_deprecations
 metadataSpecVersion: "1.0"
