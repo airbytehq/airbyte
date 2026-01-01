@@ -454,6 +454,7 @@ WHERE actor_definition_id ='b5ea17b1-f170-46dc-bc31-cc744ca984c1' AND (configura
 
 | Version     | Date       | Pull Request                                                                                                      | Subject                                                                                                                                         |
 |:------------|:-----------|:------------------------------------------------------------------------------------------------------------------|:------------------------------------------------------------------------------------------------------------------------------------------------|
+| 4.3.3 | 2026-01-01 | [71078](https://github.com/airbytehq/airbyte/pull/71078) | Upgrade to Bulk CDK 0.1.93. |
 | 4.3.2       | 2025-12-10 | [70836](https://github.com/airbytehq/airbyte/pull/70836) | Add Azure SQL Database compatibility for SQL Server Agent check                                                              |
 | 4.3.1       | 2025-12-09 | [70823](https://github.com/airbytehq/airbyte/pull/70823) | Bump up connector version number to release the connector                                                                    |
 | 4.3.0-rc.10 | 2025-12-05 | [70306](https://github.com/airbytehq/airbyte/pull/70306) | Update CDK version to include fix for Debezium closing record race condition                                                                    |
