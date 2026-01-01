@@ -67,4 +67,10 @@ data:
     - title: PostHog Status
       url: https://status.posthog.com/
       type: status_page
+    - title: PostHog Events API (deprecated)
+      url: https://posthog.com/docs/api/events
+      type: api_deprecations
+    - title: PostHog API Queries (timestamp-based pagination)
+      url: https://posthog.com/docs/api/queries
+      type: api_reference
 metadataSpecVersion: "1.0"
