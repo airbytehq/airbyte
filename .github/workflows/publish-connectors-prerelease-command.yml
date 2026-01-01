@@ -57,35 +57,29 @@ jobs:
       connector-version: ${{ steps.connector-version.outputs.connector-version }}
       effective-gitref: ${{ steps.resolve-gitref.outputs.effective-gitref }}
     steps:
-      - name: Resolve effective gitref
+      - name: Resolve effective gitref from PR number
         id: resolve-gitref
-        env:
-          GH_TOKEN: ${{ github.token }}
         run: |
           set -euo pipefail
 
-          # Priority: inputs.gitref > PR head ref > github.ref_name
-          if [[ -n "${{ inputs.gitref }}" ]]; then
-            echo "Using provided gitref: ${{ inputs.gitref }}"
-            echo "effective-gitref=${{ inputs.gitref }}" >> $GITHUB_OUTPUT
+          # When PR number is provided, use refs/pull/{pr}/head directly (no API call needed)
+          # This is the canonical way to reference PR code and cannot be overridden by callers
+          if [[ -n "${{ inputs.pr }}" ]]; then
+            EFFECTIVE_REF="refs/pull/${{ inputs.pr }}/head"
+            echo "Using PR ref: $EFFECTIVE_REF"
+            echo "effective-gitref=$EFFECTIVE_REF" >> $GITHUB_OUTPUT
             exit 0
           fi
 
-          # If PR number is provided, fetch the head ref from the PR
-          if [[ -n "${{ inputs.pr }}" ]]; then
-            echo "Fetching head ref from PR #${{ inputs.pr }}..."
-            PR_HEAD_REF=$(gh pr view ${{ inputs.pr }} --repo ${{ inputs.repo || github.repository }} --json headRefName --jq '.headRefName')
-            if [[ -n "$PR_HEAD_REF" ]]; then
-              echo "Resolved PR head ref: $PR_HEAD_REF"
-              echo "effective-gitref=$PR_HEAD_REF" >> $GITHUB_OUTPUT
-              exit 0
-            fi
-            echo "::warning::Could not resolve PR head ref, falling back to github.ref_name"
+          # Fallback for non-PR invocations (e.g., manual dispatch without PR)
+          # Use inputs.gitref if provided, otherwise github.ref_name
+          if [[ -n "${{ inputs.gitref }}" ]]; then
+            echo "Using provided gitref: ${{ inputs.gitref }}"
+            echo "effective-gitref=${{ inputs.gitref }}" >> $GITHUB_OUTPUT
+          else
+            echo "Using github.ref_name: ${{ github.ref_name }}"
+            echo "effective-gitref=${{ github.ref_name }}" >> $GITHUB_OUTPUT
           fi
-
-          # Fallback to github.ref_name (may be 'master' if workflow dispatched on default branch)
-          echo "Using fallback github.ref_name: ${{ github.ref_name }}"
-          echo "effective-gitref=${{ github.ref_name }}" >> $GITHUB_OUTPUT
 
       - name: Checkout to get commit SHA
         uses: actions/checkout@v4
@@ -164,7 +158,7 @@ jobs:
             > **Pre-release Connector Publish Started**
             >
             > Publishing pre-release build for connector `${{ steps.resolve-connector.outputs.connector-name }}`.
-            > Branch: `${{ steps.resolve-gitref.outputs.effective-gitref }}`
+            > PR: [#${{ inputs.pr }}](https://github.com/${{ inputs.repo || github.repository }}/pull/${{ inputs.pr }})
             >
             > Pre-release versions will be tagged as `{version}-preview.${{ steps.get-sha.outputs.short-sha }}`
             > and are available for version pinning via the scoped_configuration API.
