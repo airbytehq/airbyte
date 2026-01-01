@@ -110,9 +110,11 @@ public class IcebergConsumer extends CommitOnStateAirbyteMessageConsumer {
       List<String> mergeKeys = catalogConfig.getFormatConfig().getMergeKeys();
       boolean partitionMode = catalogConfig.getFormatConfig().isPartitionMode();
       List<String> partitionKeys = catalogConfig.getFormatConfig().getPartitionKeys();
+      boolean datePartitionMode = catalogConfig.getFormatConfig().isDatePartitionMode();
+      String datePartitionSourceColumn = catalogConfig.getFormatConfig().getDatePartitionSourceColumn();
 
       WriteConfig writeConfig = new WriteConfig(namespace, streamName, isAppendMode, flushBatchSize, schema,
-          mergeMode, mergeKeys, partitionMode, partitionKeys);
+          mergeMode, mergeKeys, partitionMode, partitionKeys, datePartitionMode, datePartitionSourceColumn);
       configs.put(nameNamespacePair, writeConfig);
       try {
         spark.sql("DROP TABLE IF EXISTS " + writeConfig.getFullTempTableName());
@@ -219,6 +221,37 @@ public class IcebergConsumer extends CommitOnStateAirbyteMessageConsumer {
                 tempTableName,
                 finalTableName);
             mergeToFinalTable(writeConfig, tempTableName, finalTableName);
+          } else if (writeConfig.shouldDatePartition()) {
+            // Date-based hierarchical partitioning (year/month/day)
+            log.info("=> Migration({}) with date partitioning from {} to {}",
+                writeConfig.isAppendMode() ? "append" : "overwrite",
+                tempTableName,
+                finalTableName);
+            
+            String sourceCol = writeConfig.getDatePartitionSourceColumn();
+            log.info("=> Deriving year/month/day partitions from column: {}", sourceCol);
+            
+            // Read temp table and add derived year/month/day columns
+            Dataset<Row> df = spark.table(tempTableName)
+                .withColumn("year", functions.year(functions.col(sourceCol)))
+                .withColumn("month", functions.month(functions.col(sourceCol)))
+                .withColumn("day", functions.dayofmonth(functions.col(sourceCol)));
+            
+            // Write with hierarchical partitioning
+            DataFrameWriterV2<Row> writer = df
+                .writeTo(finalTableName)
+                .using("iceberg")
+                .partitionedBy(
+                    functions.col("year"),
+                    functions.col("month"),
+                    functions.col("day")
+                );
+            
+            if (saveMode == SaveMode.Append && tableExists) {
+              writer.append();
+            } else {
+              writer.createOrReplace();
+            }
           } else {
             log.info("=> Migration({}) data from {} to {}",
                 writeConfig.isAppendMode() ? "append" : "overwrite",

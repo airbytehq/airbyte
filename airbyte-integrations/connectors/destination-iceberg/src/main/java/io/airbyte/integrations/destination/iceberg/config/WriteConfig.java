@@ -37,6 +37,8 @@ public class WriteConfig implements Serializable {
   private final List<String> mergeKeys;
   private final boolean partitionMode;
   private final List<String> partitionKeys;
+  private final boolean datePartitionMode;
+  private final String datePartitionSourceColumn;
 
   // TODO perf: use stageFile to do cache, see
   // io.airbyte.integrations.destination.bigquery.BigQueryWriteConfig.addStagedFile
@@ -49,11 +51,19 @@ public class WriteConfig implements Serializable {
   public WriteConfig(String namespace, String streamName, boolean isAppendMode, Integer flushBatchSize,
       StructType schema) {
     this(namespace, streamName, isAppendMode, flushBatchSize, schema, false, new ArrayList<>(), false,
-        new ArrayList<>());
+        new ArrayList<>(), false, null);
+  }
+
+  // Constructor without date partition params (for backward compatibility)
+  public WriteConfig(String namespace, String streamName, boolean isAppendMode, Integer flushBatchSize,
+      StructType schema, boolean mergeMode, List<String> mergeKeys, boolean partitionMode, List<String> partitionKeys) {
+    this(namespace, streamName, isAppendMode, flushBatchSize, schema, mergeMode, mergeKeys, partitionMode,
+        partitionKeys, false, null);
   }
 
   public WriteConfig(String namespace, String streamName, boolean isAppendMode, Integer flushBatchSize,
-      StructType schema, boolean mergeMode, List<String> mergeKeys, boolean partitionMode, List<String> partitionKeys) {
+      StructType schema, boolean mergeMode, List<String> mergeKeys, boolean partitionMode, List<String> partitionKeys,
+      boolean datePartitionMode, String datePartitionSourceColumn) {
     this.namespace = namingResolver.convertStreamName(namespace);
     this.tableName = namingResolver.convertStreamName(AIRBYTE_RAW_TABLE_PREFIX + streamName);
     this.tempTableName = namingResolver.convertStreamName(AIRBYTE_TMP_TABLE_PREFIX + streamName);
@@ -67,6 +77,8 @@ public class WriteConfig implements Serializable {
     this.mergeKeys = mergeKeys != null ? new ArrayList<>(mergeKeys) : new ArrayList<>();
     this.partitionMode = partitionMode;
     this.partitionKeys = partitionKeys != null ? new ArrayList<>(partitionKeys) : new ArrayList<>();
+    this.datePartitionMode = datePartitionMode;
+    this.datePartitionSourceColumn = datePartitionSourceColumn;
     this.schema = schema;
     this.dataCache = new ArrayList<>(flushBatchSize);
   }
@@ -83,6 +95,13 @@ public class WriteConfig implements Serializable {
    */
   public boolean shouldPartition() {
     return partitionMode && partitionKeys != null && !partitionKeys.isEmpty();
+  }
+
+  /**
+   * Helper method to determine if date-based hierarchical partitioning should be performed
+   */
+  public boolean shouldDatePartition() {
+    return datePartitionMode && datePartitionSourceColumn != null && !datePartitionSourceColumn.isEmpty();
   }
 
   public List<String> fetchDataCache() {

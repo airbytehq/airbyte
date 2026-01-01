@@ -54,6 +54,8 @@ public class IcebergConstants {
   public static final String MERGE_KEYS_CONFIG_KEY = "merge_keys";
   public static final String PARTITION_MODE_CONFIG_KEY = "partition_mode";
   public static final String PARTITION_KEYS_CONFIG_KEY = "partition_keys";
+  public static final String DATE_PARTITION_MODE_CONFIG_KEY = "date_partition_mode";
+  public static final String DATE_PARTITION_SOURCE_COLUMN_CONFIG_KEY = "date_partition_source_column";
 
   /**
    * default values

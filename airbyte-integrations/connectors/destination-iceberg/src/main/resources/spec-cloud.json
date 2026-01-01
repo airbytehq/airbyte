@@ -180,6 +180,52 @@
             "type": "integer",
             "default": 100,
             "order": 3
+          },
+          "merge_mode": {
+            "title": "Enable merge mode",
+            "description": "Enable merge mode to deduplicate records based on merge keys. When enabled, records with matching merge keys will be updated instead of appended.",
+            "type": "boolean",
+            "default": false,
+            "order": 4
+          },
+          "merge_keys": {
+            "title": "Merge keys",
+            "description": "List of column names to use as merge keys for deduplication. Only used when merge mode is enabled.",
+            "type": "array",
+            "items": {
+              "type": "string"
+            },
+            "order": 5
+          },
+          "partition_mode": {
+            "title": "Enable partition mode",
+            "description": "Enable partition mode to partition table based on partition keys. When enabled, table will be partitioned based on the partition keys.",
+            "type": "boolean",
+            "default": false,
+            "order": 6
+          },
+          "partition_keys": {
+            "title": "Partition keys",
+            "description": "List of column names to use as partition keys for partitioning. Only used when partition mode is enabled.",
+            "type": "array",
+            "items": {
+              "type": "string"
+            },
+            "order": 7
+          },
+          "date_partition_mode": {
+            "title": "Enable date-based hierarchical partitioning",
+            "description": "When enabled, automatically creates year/month/day partition columns from a timestamp source column. This creates a hierarchical folder structure: year=YYYY/month=MM/day=DD/. This is useful for time-series data to enable efficient date-range queries.",
+            "type": "boolean",
+            "default": false,
+            "order": 8
+          },
+          "date_partition_source_column": {
+            "title": "Date partition source column",
+            "description": "The timestamp column to derive year, month, and day partitions from. Required when date partition mode is enabled. The column must be of timestamp type.",
+            "type": "string",
+            "examples": ["updated_at", "_airbyte_emitted_at", "created_at"],
+            "order": 9
           }
         },
         "order": 2

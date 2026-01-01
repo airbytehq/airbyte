@@ -452,6 +452,20 @@
               "type": "string"
             },
             "order": 7
+          },
+          "date_partition_mode": {
+            "title": "Enable date-based hierarchical partitioning",
+            "description": "When enabled, automatically creates year/month/day partition columns from a timestamp source column. This creates a hierarchical folder structure: year=YYYY/month=MM/day=DD/. This is useful for time-series data to enable efficient date-range queries.",
+            "type": "boolean",
+            "default": false,
+            "order": 8
+          },
+          "date_partition_source_column": {
+            "title": "Date partition source column",
+            "description": "The timestamp column to derive year, month, and day partitions from. Required when date partition mode is enabled. The column must be of timestamp type.",
+            "type": "string",
+            "examples": ["updated_at", "_airbyte_emitted_at", "created_at"],
+            "order": 9
           }
         },
         "order": 2
