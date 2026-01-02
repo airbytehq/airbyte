@@ -66,7 +66,8 @@ class TriggerPartitionFactory(
         val opaqueStateValue: OpaqueStateValue? = streamFeedBootstrap.currentState
 
         // An empty table stream state will be marked as a nullNode. This prevents repeated attempt
-        // to read it
+        // to read it. This relies on the fact that neither cursor columns nor trigger table
+        // timestamps can contain nulls, so we won't see a null value from the DB.
         if (opaqueStateValue?.isNull == true) {
             return null
         }
