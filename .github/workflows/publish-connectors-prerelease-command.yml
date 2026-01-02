@@ -48,14 +48,6 @@ jobs:
   init:
     name: Initialize Pre-release Publish
     runs-on: ubuntu-24.04
-    outputs:
-      run-url: ${{ steps.job-vars.outputs.run-url }}
-      pr-number: ${{ steps.job-vars.outputs.pr-number }}
-      comment-id: ${{ steps.append-start-comment.outputs.comment-id }}
-      short-sha: ${{ steps.get-sha.outputs.short-sha }}
-      connector-name: ${{ steps.resolve-connector.outputs.connector-name }}
-      connector-version: ${{ steps.connector-version.outputs.connector-version }}
-      prerelease-tag: ${{ steps.compute-prerelease-tag.outputs.prerelease-tag }}
     steps:
       - name: Checkout to get commit SHA
         uses: actions/checkout@v4
@@ -161,6 +153,14 @@ jobs:
             > and are available for version pinning via the scoped_configuration API.
             >
             > [View workflow run](${{ steps.job-vars.outputs.run-url }})
+    outputs:
+      run-url: ${{ steps.job-vars.outputs.run-url }}
+      pr-number: ${{ steps.job-vars.outputs.pr-number }}
+      comment-id: ${{ steps.append-start-comment.outputs.comment-id }}
+      short-sha: ${{ steps.get-sha.outputs.short-sha }}
+      connector-name: ${{ steps.resolve-connector.outputs.connector-name }}
+      connector-version: ${{ steps.connector-version.outputs.connector-version }}
+      prerelease-tag: ${{ steps.compute-prerelease-tag.outputs.prerelease-tag }}
 
   publish:
     name: Publish Pre-release
