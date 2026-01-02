@@ -129,18 +129,16 @@ jobs:
         id: compute-prerelease-tag
         run: |
           set -euo pipefail
-          BASE_VERSION="${{ steps.connector-version.outputs.connector-version }}"
+          CONNECTOR_NAME="${{ steps.resolve-connector.outputs.connector-name }}"
           SHORT_SHA="${{ steps.get-sha.outputs.short-sha }}"
-
-          if [[ -z "$BASE_VERSION" ]]; then
-            echo "::error::Base version is empty. Cannot compute prerelease tag."
-            exit 1
-          fi
+          BASE_VERSION="${{ steps.connector-version.outputs.connector-version }}"
 
           # Use airbyte-ops-mcp CLI to compute the prerelease tag (single source of truth)
+          # Pass --base-version to avoid GitHub API call since we already have the version locally
           PRERELEASE_TAG=$(uvx airbyte-internal-ops registry connector compute-prerelease-tag \
-            --base-version "$BASE_VERSION" \
-            --sha "$SHORT_SHA")
+            --connector-name "$CONNECTOR_NAME" \
+            --sha "$SHORT_SHA" \
+            --base-version "$BASE_VERSION")
 
           echo "Computed prerelease tag: $PRERELEASE_TAG"
           echo "prerelease-tag=$PRERELEASE_TAG" >> "$GITHUB_OUTPUT"
