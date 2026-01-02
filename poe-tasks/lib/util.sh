@@ -55,17 +55,13 @@ get_only_connector() {
 }
 
 # Generate the prerelease image tag (e.g. `1.2.3-preview.abcde12`).
-# DEPRECATED: Use airbyte-ops-mcp CLI instead for single source of truth:
-#   airbyte-ops registry connector compute-prerelease-tag --base-version X.Y.Z --sha COMMIT_SHA
-# This function is kept for backward compatibility but should not be used in new code.
+# DEPRECATED: This function has been removed. Use airbyte-ops-mcp CLI instead:
+#   airbyte-ops registry connector compute-prerelease-tag --connector-name <name> --sha <sha>
 generate_dev_tag() {
-  local base="$1"
-  echo "WARNING: generate_dev_tag() is deprecated. Use airbyte-ops-mcp CLI instead:" >&2
-  echo "  airbyte-ops registry connector compute-prerelease-tag --base-version $base --sha \$(git rev-parse --short=7 HEAD)" >&2
-  # Use 7-char short hash to match the new prerelease format.
-  local hash
-  hash=$(git rev-parse --short=7 HEAD)
-  echo "${base}-preview.${hash}"
+  echo "ERROR: generate_dev_tag() has been removed." >&2
+  echo "Use airbyte-ops-mcp CLI instead:" >&2
+  echo "  uvx airbyte-internal-ops registry connector compute-prerelease-tag --connector-name <name> --sha <sha>" >&2
+  exit 1
 }
 
 # Authenticate to gcloud using the contents of a variable.
