@@ -15,6 +15,7 @@ import io.airbyte.cdk.load.write.StreamLoader
 import io.airbyte.cdk.load.write.StreamStateStore
 import io.airbyte.integrations.destination.s3_data_lake.io.S3DataLakeUtil
 import io.github.oshai.kotlinlogging.KotlinLogging
+import org.apache.iceberg.PartitionSpec
 import org.apache.iceberg.Schema
 import org.apache.iceberg.Table
 import org.apache.iceberg.UpdateSchema
@@ -52,11 +53,14 @@ class S3DataLakeStreamLoader(
         val properties = s3DataLakeUtil.toCatalogProperties(config = icebergConfiguration)
         val catalog = icebergUtil.createCatalog(DEFAULT_CATALOG_NAME, properties)
         s3DataLakeUtil.createNamespaceWithGlueHandling(stream.mappedDescriptor, catalog)
+        val partitionSpec = PartitionSpec.builderFor(incomingSchema)
+        .day("ts_tz").build() 
         table =
             icebergUtil.createTable(
                 streamDescriptor = stream.mappedDescriptor,
                 catalog = catalog,
-                schema = incomingSchema
+                schema = incomingSchema,
+                partitionSpec = partitionSpec,
             )
 
         // Note that if we have columnTypeChangeBehavior OVERWRITE, we don't commit the schema

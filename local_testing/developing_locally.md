@@ -9,6 +9,7 @@
 
 1. https://docs.airbyte.com/platform/2.0/contributing-to-airbyte/developing-locally / https://docs.airbyte.com/platform/connector-development/local-connector-development
 2. https://github.com/airbytehq/airbyte/tree/master/connector-writer/destination
+3. https://docs.airbyte.com/platform/connector-development/debugging-docker
 
 # Set up sources and destination
 
