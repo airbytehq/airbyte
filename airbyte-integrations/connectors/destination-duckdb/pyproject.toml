@@ -9,7 +9,7 @@ readme = "README.md"
 [tool.poetry.dependencies]
 python = ">=3.10"
 airbyte-cdk = "^0.51.6"
-duckdb = "1.4.2"
+duckdb = ">=1.4.2,<2.0"
 pyarrow = "15.0.2"
 
 [tool.poetry.group.dev.dependencies]
