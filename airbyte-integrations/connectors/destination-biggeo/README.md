@@ -1,7 +1,44 @@
 # BigGeo Destination
 
 This is the repository for the BigGeo destination connector, written in Python.
-For information about how to use this connector within Airbyte, see [the documentation](https://docs.biggeo.io/integrations/destinations/biggeo).
+For information about how to use this connector within Airbyte, see [the documentation](https://docs.airbyte.com/integrations/destinations/biggeo).
+
+## Features
+
+### Batched Chunking
+
+This connector supports efficient batched data ingestion for handling large datasets. Instead of sending records one at a time, the connector batches records together and sends them in configurable chunks.
+
+**How it works:**
+
+1. **Session initialization**: The connector generates a `sync_id` to track the sync session
+2. **Record buffering**: Records are buffered in memory until the batch size is reached
+3. **Batch sending**: When the buffer is full, records are sent to the API as chunks
+4. **State handling**: When a STATE message is received, the current buffer is flushed
+5. **Finalization**: The last batch is sent with `is_final=True` to trigger data export
+
+**Configuration:**
+
+| Parameter | Type | Required | Default | Description |
+|-----------|------|----------|---------|-------------|
+| `api_key` | string | Yes | - | API Key for authenticating with BigGeo |
+| `batch_size` | integer | No | 1000 | Number of records to batch before sending (1-10000) |
+
+**Example configuration with custom batch size:**
+
+```json
+{
+  "api_key": "your-biggeo-api-key",
+  "batch_size": 5000
+}
+```
+
+**Benefits:**
+
+- **Network efficient**: Reduces HTTP overhead by batching multiple records per request
+- **Session tracking**: Uses `sync_id` for reliable session management on the server
+- **Resumable syncs**: Server maintains state via Redis for fault tolerance
+- **Configurable throughput**: Adjust `batch_size` based on your data and network conditions
 
 ## Local development
 
@@ -20,7 +57,7 @@ poetry install --with dev
 
 ### Create credentials
 
-**If you are a community contributor**, follow the instructions in the [documentation](https://docs.biggeo.io/integrations/destinations/biggeo)
+**If you are a community contributor**, follow the instructions in the [documentation](https://docs.airbyte.com/integrations/destinations/biggeo)
 to generate the necessary credentials. Then create a file `secrets/config.json` conforming to the `destination_biggeo/spec.json` file.
 Note that any directory named `secrets` is gitignored across the entire Airbyte repo, so there is no danger of accidentally checking in sensitive information.
 
@@ -32,6 +69,8 @@ Note that any directory named `secrets` is gitignored across the entire Airbyte 
   "batch_size": 1000
 }
 ```
+
+Note: `batch_size` is optional and defaults to 1000 records per batch.
 
 ### Locally running the connector
 

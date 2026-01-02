@@ -1,5 +1,5 @@
 {
-  "documentationUrl": "https://docs.biggeo.io/integrations/destinations/biggeo",
+  "documentationUrl": "https://docs.airbyte.com/integrations/destinations/biggeo",
   "connectionSpecification": {
     "$schema": "http://json-schema.org/draft-07/schema#",
     "title": "Destination BigGeo",

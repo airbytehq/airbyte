@@ -3,6 +3,37 @@
 This is the repository for the BigGeo source connector, written in Python.
 For information about how to use this connector within Airbyte, see [the documentation](https://docs.airbyte.com/integrations/sources/biggeo).
 
+## Features
+
+### Chunked Pagination
+
+This connector supports efficient chunked pagination for handling large datasets. Instead of fetching all data at once (which can cause memory issues and timeouts), the connector fetches data in configurable chunks.
+
+**How it works:**
+
+1. **First request**: The connector makes an initial request without a cursor or syncId
+2. **API response**: Returns `data[]`, `syncId`, `nextCursor`, and `hasMore`
+3. **Subsequent requests**: Include the `syncId` and `cursor=nextCursor` from the previous response
+4. **Completion**: Continue fetching until `hasMore=False`
+
+**Configuration:**
+
+| Parameter | Type | Required | Default | Description |
+|-----------|------|----------|---------|-------------|
+| `api_key` | string | Yes | - | API Key for authenticating with BigGeo |
+| `data_source_name` | string | No | - | Name of the data source to retrieve |
+| `chunk_size` | integer | No | 1000 | Number of records per chunk (1-10000) |
+
+**Example configuration with custom chunk size:**
+
+```json
+{
+  "api_key": "your-biggeo-api-key",
+  "data_source_name": "my_data_source",
+  "chunk_size": 5000
+}
+```
+
 ## Local development
 
 ### Prerequisites
@@ -29,9 +60,12 @@ Note that any directory named `secrets` is gitignored across the entire Airbyte 
 ```json
 {
   "api_key": "your-biggeo-api-key",
-  "data_source_name": "my_data_source"
+  "data_source_name": "my_data_source",
+  "chunk_size": 1000
 }
 ```
+
+Note: `chunk_size` is optional and defaults to 1000 records per chunk.
 
 ### Locally running the connector
 
