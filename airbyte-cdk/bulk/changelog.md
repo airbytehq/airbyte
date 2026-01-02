@@ -1,12 +1,12 @@
+## Version 0.1.94
+
+extract cdk: fix trigger table handling of empty change tables
+
 ## Version 0.1.93
 
 **Load CDK**
 
 * Add KDoc documentation to core destination interfaces: Aggregate, AggregateFactory and RecordDTO.
-
-## Version 0.1.92
-
-extract cdk: fix trigger table handling of empty tables
 
 ## Version 0.1.92
 
