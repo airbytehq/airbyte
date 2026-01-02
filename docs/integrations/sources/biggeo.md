@@ -9,7 +9,7 @@ The BigGeo source connector allows you to sync data from [BigGeo](https://biggeo
 | Feature                                  | Supported? |
 |:-----------------------------------------|:-----------|
 | Full Refresh Sync                        | Yes        |
-| Incremental Sync                         | Yes        |
+| Incremental Sync                         | No         |
 | Replicate Incremental Deletes            | No         |
 | SSL connection                           | Yes        |
 | Namespaces                               | No         |
@@ -59,7 +59,7 @@ The connector retrieves data from BigGeo in JSON format. The schema is dynamic a
 
 ## Limitations
 
-- The connector currently supports only full refresh syncs
+- The connector currently supports only Full Refresh syncs (incremental sync is not yet implemented)
 - Each Airbyte source connection can sync from one BigGeo data source at a time
 - To sync multiple data sources, you'll need to create multiple source connections
 
