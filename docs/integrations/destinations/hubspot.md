@@ -101,6 +101,7 @@ Hubspot has **scopes** for each API call. Each stream is tied to a scope and wil
 
 | Version | Date       | Pull Request                                                    | Subject                                   |
 |:--------|:-----------|:----------------------------------------------------------------|:------------------------------------------|
+| 0.0.9 | 2026-01-01 | [71075](https://github.com/airbytehq/airbyte/pull/71075) | Upgrade to Bulk CDK 0.1.93. |
 | 0.0.8 | 2025-11-01 | [69131](https://github.com/airbytehq/airbyte/pull/69131) | Upgrade to Bulk CDK 0.1.61. |
 | 0.0.7   | 2025-09-24 | [66684](https://github.com/airbytehq/airbyte/pull/66684)        | Pin to CDK artifact                       |
 | 0.0.6   | 2025-09-09 | [65986](https://github.com/airbytehq/airbyte/pull/65986)        | Adding product object                     |
