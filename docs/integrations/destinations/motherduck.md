@@ -34,6 +34,10 @@ For authentication, you will use your [MotherDuck Access Token](https://motherdu
 
 </FieldAnchor>
 
+### DuckDB version compatibility
+
+MotherDuck supports specific DuckDB versions according to a predictable lifecycle. For information about which DuckDB versions are currently supported and when versions reach end of life, see the [MotherDuck Version Lifecycle Schedules](https://motherduck.com/docs/troubleshooting/version-lifecycle-schedules/).
+
 ### Sync Overview
 
 #### Output schema
