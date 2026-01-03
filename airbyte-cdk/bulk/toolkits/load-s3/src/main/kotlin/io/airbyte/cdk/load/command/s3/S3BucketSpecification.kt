@@ -79,15 +79,29 @@ interface S3BucketSpecification {
     @get:JsonSchemaInject(json = """{"examples":["http://localhost:9000"]}""")
     val s3Endpoint: String?
 
+    @get:JsonSchemaTitle("Timestamp column")
+    @get:JsonPropertyDescription("Timestamp column")
+    @get:JsonProperty("timestamp_column", defaultValue = "", required = false)
+    @get:JsonSchemaInject(json = """{"examples":["updated_at"]}""")
+    val timestampColumn: String?
+
+    @get:JsonSchemaTitle("Partition granularity")
+    @get:JsonPropertyDescription("Partition granularity")
+    @get:JsonProperty("partition_granularity", defaultValue = "day", required = false)
+    @get:JsonSchemaInject(json = """{"examples":["year", "month", "day"]}""")
+    val partitionGranularity: String?
+
     fun toS3BucketConfiguration(): S3BucketConfiguration {
-        return S3BucketConfiguration(s3BucketName, s3BucketRegion?.region, s3Endpoint)
+        return S3BucketConfiguration(s3BucketName, s3BucketRegion?.region, s3Endpoint, timestampColumn, partitionGranularity)
     }
 }
 
 data class S3BucketConfiguration(
     val s3BucketName: String,
     val s3BucketRegion: String?,
-    val s3Endpoint: String?
+    val s3Endpoint: String?,
+    val timestampColumn: String?,
+    val partitionGranularity: String?
 )
 
 interface S3BucketConfigurationProvider {

@@ -1,0 +1,40 @@
+services:
+  nessie:
+    image: ghcr.io/projectnessie/nessie:0.106.0
+    networks:
+      - kind
+    ports:
+      - 19120:19120
+  localstack:
+    build: 
+      dockerfile: ./localstack.Dockerfile
+    networks:
+      - kind
+    ports:
+      - "127.0.0.1:4566:4566"            # LocalStack Gateway
+      - "127.0.0.1:4510-4559:4510-4559"  # external services port range
+    # volumes:
+    #   - './setup_localstack.sh:/etc/localstack/init/ready.d/init-aws.sh'
+  postgresdb:
+    image: postgres:18.1
+    restart: always
+    ports:
+      - 5432:5432
+    environment:
+      POSTGRES_PASSWORD: password
+    networks:
+      - kind
+    volumes:
+      - './setup_postgres.sql:/docker-entrypoint-initdb.d/setup_postgres.sql'
+  trino:
+    image: trinodb/trino:478
+    ports:
+      - 8080:8080
+    networks:
+      - kind
+    volumes:
+      - './setup_trino/catalog:/etc/trino/catalog'
+networks:
+  kind:
+    name: kind
+    external: true

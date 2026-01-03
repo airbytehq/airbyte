@@ -16,6 +16,7 @@ import io.airbyte.cdk.load.toolkits.iceberg.parquet.io.IcebergUtil
 import io.airbyte.integrations.destination.s3_data_lake.io.S3DataLakeUtil
 import jakarta.inject.Singleton
 import java.util.UUID
+import org.apache.iceberg.PartitionSpec
 import org.apache.iceberg.Schema
 import org.apache.iceberg.types.Types
 
@@ -80,6 +81,7 @@ class S3DataLakeChecker(
                 Types.NestedField.optional(2, "data", Types.StringType.get()),
             )
         s3DataLakeUtil.createNamespaceWithGlueHandling(testTableIdentifier, catalog)
+        val partitionSpec = PartitionSpec.builderFor(testTableSchema).day("ts_tz").build()
 
         var table: org.apache.iceberg.Table? = null
         try {
@@ -88,6 +90,7 @@ class S3DataLakeChecker(
                     testTableIdentifier,
                     catalog,
                     testTableSchema,
+                    partitionSpec
                 )
         } finally {
             // Always cleanup test table, even if creation or validation fails
