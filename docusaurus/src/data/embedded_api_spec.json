@@ -807,6 +807,108 @@
             "description": "Optional connector instance ID for direct API queries"
           },
           {
+            "name": "backend",
+            "in": "query",
+            "required": false,
+            "schema": {
+              "enum": ["opensearch", "galaxy"],
+              "type": "string",
+              "description": "Search backend to use",
+              "default": "opensearch",
+              "title": "Backend"
+            },
+            "description": "Search backend to use"
+          },
+          {
+            "name": "x-organization-id",
+            "in": "header",
+            "required": false,
+            "schema": {
+              "type": "string",
+              "format": "uuid",
+              "description": "The organization ID to target for this request",
+              "title": "X-Organization-Id"
+            },
+            "description": "The organization ID to target for this request"
+          }
+        ],
+        "requestBody": {
+          "required": true,
+          "content": {
+            "application/json": {
+              "schema": {
+                "$ref": "#/components/schemas/ChatPostRequest"
+              }
+            }
+          }
+        },
+        "responses": {
+          "200": {
+            "description": "Successful Response",
+            "content": {
+              "text/event-stream": {
+                "schema": {
+                  "$ref": "#/components/schemas/ChatMessageEvent"
+                }
+              }
+            }
+          },
+          "400": {
+            "description": "Bad request",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ApiErrorResponse"
+                }
+              }
+            }
+          },
+          "403": {
+            "description": "Forbidden",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ApiErrorResponse"
+                }
+              }
+            }
+          },
+          "422": {
+            "description": "Unprocessable entity",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ApiErrorResponse"
+                }
+              }
+            }
+          },
+          "500": {
+            "description": "Internal server error",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ApiErrorResponse"
+                }
+              }
+            }
+          }
+        }
+      }
+    },
+    "/api/v1/agents/chat/templates/sources": {
+      "post": {
+        "tags": ["Agents - Source Template Creator"],
+        "summary": "Post source template creator chat message",
+        "description": "Post a new message to a source template creation chat thread",
+        "operationId": "create_agents_chat_templates_sources",
+        "security": [
+          {
+            "HTTPBearer": []
+          }
+        ],
+        "parameters": [
+          {
             "name": "x-organization-id",
             "in": "header",
             "required": false,
@@ -1281,6 +1383,109 @@
               "application/json": {
                 "schema": {
                   "$ref": "#/components/schemas/ConnectorExecuteResponse"
+                }
+              }
+            }
+          },
+          "400": {
+            "description": "Bad request",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ApiErrorResponse"
+                }
+              }
+            }
+          },
+          "403": {
+            "description": "Forbidden",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ApiErrorResponse"
+                }
+              }
+            }
+          },
+          "422": {
+            "description": "Unprocessable entity",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ApiErrorResponse"
+                }
+              }
+            }
+          },
+          "500": {
+            "description": "Internal server error",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ApiErrorResponse"
+                }
+              }
+            }
+          }
+        }
+      }
+    },
+    "/api/v1/connectors/instances_for_user": {
+      "get": {
+        "summary": "Get Connector Instances For User",
+        "description": "List connector instances for a user by name.\n\nThis endpoint:\n1. Finds the user by name and organization_id\n2. Lists all connector instances for that user\n3. Optionally filters by definition_id\n\nArgs:\n    username: Name of the user\n    user_info: Authenticated user information from token\n    repository: Connector instance repository\n    workspace_repository: Workspace repository\n    definition_id: Optional connector definition ID to filter by\n\nReturns:\n    ConnectorInstancesListResponse with list of instances\n\nRaises:\n    HTTPException: 404 if user not found",
+        "operationId": "list_connectors_instances_for_user",
+        "security": [
+          {
+            "HTTPBearer": []
+          }
+        ],
+        "parameters": [
+          {
+            "name": "username",
+            "in": "query",
+            "required": true,
+            "schema": {
+              "type": "string",
+              "title": "Username"
+            }
+          },
+          {
+            "name": "definition_id",
+            "in": "query",
+            "required": false,
+            "schema": {
+              "anyOf": [
+                {
+                  "type": "string"
+                },
+                {
+                  "type": "null"
+                }
+              ],
+              "title": "Definition Id"
+            }
+          },
+          {
+            "name": "x-organization-id",
+            "in": "header",
+            "required": false,
+            "schema": {
+              "type": "string",
+              "format": "uuid",
+              "description": "The organization ID to target for this request",
+              "title": "X-Organization-Id"
+            },
+            "description": "The organization ID to target for this request"
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "Successful Response",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ConnectorInstancesListResponse"
                 }
               }
             }
@@ -13494,6 +13699,21 @@
         "title": "ConnectorInstanceResponse",
         "description": "Response model for connector instance retrieval."
       },
+      "ConnectorInstancesListResponse": {
+        "properties": {
+          "instances": {
+            "items": {
+              "$ref": "#/components/schemas/ConnectorInstanceResponse"
+            },
+            "type": "array",
+            "title": "Instances"
+          }
+        },
+        "type": "object",
+        "required": ["instances"],
+        "title": "ConnectorInstancesListResponse",
+        "description": "Response model for listing connector instances."
+      },
       "ConnectorSpecification": {
         "properties": {
           "documentationUrl": {
@@ -15688,6 +15908,18 @@
                 "type": "null"
               }
             ]
+          },
+          "trialEndsAt": {
+            "anyOf": [
+              {
+                "type": "string",
+                "format": "date-time"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "Trialendsat"
           }
         },
         "type": "object",
@@ -16819,6 +17051,12 @@
         "required": ["organization_id", "workspace_id"],
         "title": "ScopedTokenInfoGetResponse"
       },
+      "SearchBackend": {
+        "type": "string",
+        "enum": ["opensearch", "galaxy"],
+        "title": "SearchBackend",
+        "description": "Search backend to use for queries."
+      },
       "SearchHit": {
         "properties": {
           "id": {
@@ -16894,6 +17132,11 @@
             ],
             "title": "Fields",
             "description": "Field paths to include in results. Each path is a list of keys for nested access. Example: [['id'], ['user', 'name'], ['metadata', 'tags']] returns id, user.name, and metadata.tags."
+          },
+          "backend": {
+            "$ref": "#/components/schemas/SearchBackend",
+            "description": "Search backend to use. 'opensearch' (default) or 'galaxy' for Trino-based queries.",
+            "default": "opensearch"
           }
         },
         "type": "object",
