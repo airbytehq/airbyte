@@ -91,7 +91,8 @@ class CustomerClientFilter(RecordFilter):
     ) -> Iterable[Mapping[str, Any]]:
         for record in records:
             # Filter out records based on customer_ids if provided in the config
-            if self.config.get("customer_ids") and (record["id"] not in self.config["customer_ids"]):
+            # Convert record["id"] to string for comparison since customer_ids are parsed as strings
+            if self.config.get("customer_ids") and (str(record["id"]) not in self.config["customer_ids"]):
                 continue
 
             # Filter out records based on customer status if provided in the config
