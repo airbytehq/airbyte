@@ -1,10 +1,10 @@
 data:
   connectorBuildOptions:
-    baseImage: docker.io/airbyte/python-connector-base:2.0.0@sha256:c44839ba84406116e8ba68722a0f30e8f6e7056c726f447681bb9e9ece8bd916
+    baseImage: docker.io/airbyte/python-connector-base:4.1.0@sha256:1d1aa21d34e851df4e8a87b391c27724c06e2597608e7161f4d167be853bd7b6
   connectorSubtype: database
   connectorType: destination
   definitionId: 94bd199c-2ff0-4aa2-b98e-17f0acb72610
-  dockerImageTag: 0.5.1
+  dockerImageTag: 0.5.2
   dockerRepository: airbyte/destination-duckdb
   githubIssueLabel: destination-duckdb
   icon: duckdb.svg
