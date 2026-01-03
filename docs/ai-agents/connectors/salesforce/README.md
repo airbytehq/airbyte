@@ -9,20 +9,20 @@ notes, and attachments for sales analytics and customer relationship management.
 ## Example questions
 
 - Show me my top 5 opportunities this month
-- List all contacts from [Company] in the last quarter
+- List all contacts from {company} in the last quarter
 - Search for leads in the technology sector with revenue over $10M
 - What trends can you identify in my recent sales pipeline?
 - Summarize the open cases for my key accounts
 - Find upcoming events related to my most important opportunities
 - Analyze the performance of my recent marketing campaigns
 - Identify the highest value opportunities I'm currently tracking
-- Show me the notes and attachments for [customerX]'s account
+- Show me the notes and attachments for {customer}'s account
 
 ## Unsupported questions
 
-- Create a new lead for [personX]
+- Create a new lead for {person}
 - Update the status of my sales opportunity
-- Schedule a follow-up meeting with [customerX]
+- Schedule a follow-up meeting with {customer}
 - Delete this old contact record
 - Send an email to all contacts in this campaign
 
@@ -74,6 +74,6 @@ For the service's official API docs, see the [Salesforce API reference](https://
 
 ## Version information
 
-- **Package version:** 0.1.17
-- **Connector version:** 1.0.3
-- **Generated with Connector SDK commit SHA:** 12f6b994298f84dfa217940afe7c6b19bec4167b
+- **Package version:** 0.1.18
+- **Connector version:** 1.0.4
+- **Generated with Connector SDK commit SHA:** 0eb1b1c4afe2ae6607371288233ef427ccad1b80

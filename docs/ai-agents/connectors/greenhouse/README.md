@@ -8,11 +8,11 @@ for recruiting analytics and talent acquisition insights.
 
 ## Example questions
 
-- Show me candidates from [Company] who applied last month
+- Show me candidates from {company} who applied last month
 - What are the top 5 sources for our job applications this quarter?
 - List all open jobs in the Sales department
 - Analyze the interview schedules for our engineering candidates this week
-- Get details of recent job offers for [teamMember]
+- Get details of recent job offers for {team_member}
 - Compare the number of applications across different offices
 - Identify candidates who have multiple applications in our system
 - Show me upcoming scheduled interviews for our marketing positions
@@ -22,10 +22,10 @@ for recruiting analytics and talent acquisition insights.
 ## Unsupported questions
 
 - Create a new job posting for the marketing team
-- Schedule an interview for [candidate]
-- Update the status of [candidate]'s application
+- Schedule an interview for {candidate}
+- Update the status of {candidate}'s application
 - Delete a candidate profile
-- Send an offer letter to [candidate]
+- Send an offer letter to {candidate}
 - Edit the details of a job description
 
 ## Installation
@@ -74,6 +74,6 @@ For the service's official API docs, see the [Greenhouse API reference](https://
 
 ## Version information
 
-- **Package version:** 0.17.23
-- **Connector version:** 0.1.1
-- **Generated with Connector SDK commit SHA:** 12f6b994298f84dfa217940afe7c6b19bec4167b
+- **Package version:** 0.17.24
+- **Connector version:** 0.1.2
+- **Generated with Connector SDK commit SHA:** 0eb1b1c4afe2ae6607371288233ef427ccad1b80
