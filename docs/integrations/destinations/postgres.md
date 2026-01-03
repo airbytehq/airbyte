@@ -298,6 +298,7 @@ _where_ it is deployed.
 
 | Version | Date       | Pull Request                                               | Subject                                                                                                                                                                                |
 |:--------|:-----------|:-----------------------------------------------------------|:---------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------|
+| 3.0.6 | 2026-01-01 | [71076](https://github.com/airbytehq/airbyte/pull/71076) | Upgrade to Bulk CDK 0.1.93. |
 | 3.0.5 | 2025-12-12 | [70895](https://github.com/airbytehq/airbyte/pull/70895)    | Update CDK to 0.1.86.                                                                                                                                                                  |
 | 3.0.5-rc.1 | 2025-12-09 | [70338](https://github.com/airbytehq/airbyte/pull/70338)    | Update CDK to 0.1.86.                                                                                                                                                                  |
 | 3.0.4   | 2025-12-05 | [70355](https://github.com/airbytehq/airbyte/pull/70355)   | Fix: Force Append mode when "Raw tables only" mode is enabled, bypassing Dedupe mode to avoid errors.                                                                                  |
