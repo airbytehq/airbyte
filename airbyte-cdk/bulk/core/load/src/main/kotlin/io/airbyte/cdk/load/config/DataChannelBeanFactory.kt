@@ -196,10 +196,6 @@ class DataChannelBeanFactory {
                 }
                 ProtobufDataChannelReader(destinationMessageFactory)
             }
-            else ->
-                throw IllegalArgumentException(
-                    "Unsupported data channel format: $dataChannelFormat"
-                )
         }
 
     /**
