@@ -2,6 +2,33 @@
 
 Connector for Jira API
 
+## Example questions
+
+- Show me all open issues in the {project_key} project
+- What issues are assigned to {team_member} this week?
+- Find all high priority bugs in our current sprint
+- Get the details of issue {issue_key}
+- List all issues created in the last 7 days
+- Show me overdue issues across all projects
+- List all projects in my Jira instance
+- Get details of the {project_key} project
+- What projects have the most issues?
+- Who are all the users in my Jira instance?
+- Search for users named {user_name}
+- Get details of user {team_member}
+- Show me all comments on issue {issue_key}
+- How much time has been logged on issue {issue_key}?
+- List all worklogs for {issue_key} this month
+
+## Unsupported questions
+
+- Create a new issue in {project_key}
+- Update the status of {issue_key}
+- Add a comment to {issue_key}
+- Log time on {issue_key}
+- Delete issue {issue_key}
+- Assign {issue_key} to {team_member}
+
 ## Installation
 
 ```bash
@@ -43,6 +70,6 @@ For the service's official API docs, see the [Jira API reference](https://develo
 
 ## Version information
 
-- **Package version:** 0.1.14
-- **Connector version:** 1.0.2
-- **Generated with Connector SDK commit SHA:** 12f6b994298f84dfa217940afe7c6b19bec4167b
+- **Package version:** 0.1.15
+- **Connector version:** 1.0.3
+- **Generated with Connector SDK commit SHA:** 0eb1b1c4afe2ae6607371288233ef427ccad1b80

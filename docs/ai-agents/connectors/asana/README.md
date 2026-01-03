@@ -10,9 +10,9 @@ teams, and users for project tracking, workload analysis, and productivity insig
 - What tasks are assigned to me this week?
 - List all projects in my workspace
 - Summarize my team's workload and task completion rates
-- Show me the tasks for the [ProjectName] project
-- Who are the team members in my [TeamName] team?
-- Find all tasks related to [ClientName] across my workspaces
+- Show me the tasks for the {project_name} project
+- Who are the team members in my {team_name} team?
+- Find all tasks related to {client_name} across my workspaces
 - Analyze the most active projects in my workspace last month
 - Compare task completion rates between my different teams
 - Identify overdue tasks across all my projects
@@ -105,6 +105,6 @@ For the service's official API docs, see the [Asana API reference](https://devel
 
 ## Version information
 
-- **Package version:** 0.19.26
-- **Connector version:** 0.1.5
-- **Generated with Connector SDK commit SHA:** 12f6b994298f84dfa217940afe7c6b19bec4167b
+- **Package version:** 0.19.27
+- **Connector version:** 0.1.6
+- **Generated with Connector SDK commit SHA:** 0eb1b1c4afe2ae6607371288233ef427ccad1b80

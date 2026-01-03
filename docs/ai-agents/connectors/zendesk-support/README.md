@@ -11,20 +11,20 @@ for customer support analytics and service performance insights.
 
 - Show me the tickets assigned to me last week
 - What are the top 5 support issues our organization has faced this month?
-- List all unresolved tickets for [customerX]
+- List all unresolved tickets for {customer}
 - Analyze the satisfaction ratings for our support team in the last 30 days
 - Compare ticket resolution times across different support groups
-- Show me the details of recent tickets tagged with [specific tag]
+- Show me the details of recent tickets tagged with {tag}
 - Identify the most common ticket fields used in our support workflow
 - Summarize the performance of our SLA policies this quarter
 
 ## Unsupported questions
 
-- Create a new support ticket for [customerX]
+- Create a new support ticket for {customer}
 - Update the priority of this ticket
-- Assign this ticket to [teamMember]
+- Assign this ticket to {team_member}
 - Delete these old support tickets
-- Send an automatic response to [customerX]
+- Send an automatic response to {customer}
 
 ## Installation
 
@@ -103,6 +103,6 @@ For the service's official API docs, see the [Zendesk-Support API reference](htt
 
 ## Version information
 
-- **Package version:** 0.18.24
-- **Connector version:** 0.1.3
-- **Generated with Connector SDK commit SHA:** 12f6b994298f84dfa217940afe7c6b19bec4167b
+- **Package version:** 0.18.25
+- **Connector version:** 0.1.4
+- **Generated with Connector SDK commit SHA:** 0eb1b1c4afe2ae6607371288233ef427ccad1b80

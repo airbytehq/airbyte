@@ -12,7 +12,7 @@ for sprint planning, backlog management, and development workflow analysis.
 - Analyze the workload distribution across my development team
 - What are the top priority issues in our current sprint?
 - Identify the most active projects in our organization right now
-- Summarize the recent issues for [teamMember] in the last two weeks
+- Summarize the recent issues for {team_member} in the last two weeks
 - Compare the issue complexity across different teams
 - Which projects have the most unresolved issues?
 - Give me an overview of my team's current project backlog
@@ -63,6 +63,6 @@ For the service's official API docs, see the [Linear API reference](https://line
 
 ## Version information
 
-- **Package version:** 0.19.23
-- **Connector version:** 0.1.1
-- **Generated with Connector SDK commit SHA:** 12f6b994298f84dfa217940afe7c6b19bec4167b
+- **Package version:** 0.19.24
+- **Connector version:** 0.1.2
+- **Generated with Connector SDK commit SHA:** 0eb1b1c4afe2ae6607371288233ef427ccad1b80
