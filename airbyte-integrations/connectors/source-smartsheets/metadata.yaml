@@ -9,7 +9,7 @@ data:
   connectorSubtype: api
   connectorType: source
   definitionId: 374ebc65-6636-4ea0-925c-7d35999a8ffc
-  dockerImageTag: 1.1.46
+  dockerImageTag: 1.1.47
   dockerRepository: airbyte/source-smartsheets
   documentationUrl: https://docs.airbyte.com/integrations/sources/smartsheets
   githubIssueLabel: source-smartsheets
@@ -51,7 +51,7 @@ data:
             type: GSM
             alias: airbyte-connector-testing-secret-store
   connectorBuildOptions:
-    baseImage: docker.io/airbyte/python-connector-base:4.0.0@sha256:d9894b6895923b379f3006fa251147806919c62b7d9021b5cd125bb67d7bbe22
+    baseImage: docker.io/airbyte/python-connector-base:4.1.0@sha256:1d1aa21d34e851df4e8a87b391c27724c06e2597608e7161f4d167be853bd7b6
   externalDocumentationUrls:
     - title: Smartsheet API reference
       url: https://smartsheet.redoc.ly/
