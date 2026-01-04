@@ -26,7 +26,7 @@ definitions:
           path: videos
           http_method: GET
           request_parameters:
-            part: snippet,contentDetails,statistics,player
+            part: snippet,contentDetails,statistics,player,status
         record_selector:
           type: RecordSelector
           extractor:
@@ -712,6 +712,55 @@ schemas:
           embedWidth:
             type:
               - number
+              - "null"
+      status:
+        type:
+          - object
+          - "null"
+        properties:
+          uploadStatus:
+            type:
+              - string
+              - "null"
+          failureReason:
+            type:
+              - string
+              - "null"
+          rejectionReason:
+            type:
+              - string
+              - "null"
+          privacyStatus:
+            type:
+              - string
+              - "null"
+          publishAt:
+            type:
+              - string
+              - "null"
+          license:
+            type:
+              - string
+              - "null"
+          embeddable:
+            type:
+              - boolean
+              - "null"
+          publicStatsViewable:
+            type:
+              - boolean
+              - "null"
+          madeForKids:
+            type:
+              - boolean
+              - "null"
+          selfDeclaredMadeForKids:
+            type:
+              - boolean
+              - "null"
+          containsSyntheticMedia:
+            type:
+              - boolean
               - "null"
     required:
       - videoId
