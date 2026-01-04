@@ -9,6 +9,7 @@ import io.airbyte.cdk.load.check.DestinationCheckerV2
 import io.airbyte.cdk.load.command.Append
 import io.airbyte.cdk.load.command.DestinationStream
 import io.airbyte.cdk.load.command.NamespaceMapper
+import io.airbyte.cdk.load.component.ColumnType
 import io.airbyte.cdk.load.data.AirbyteValue
 import io.airbyte.cdk.load.data.FieldType
 import io.airbyte.cdk.load.data.ObjectType
@@ -20,7 +21,9 @@ import io.airbyte.cdk.load.schema.model.TableName
 import io.airbyte.cdk.load.schema.model.TableNames
 import io.airbyte.cdk.load.table.ColumnNameMapping
 import io.airbyte.integrations.destination.postgres.client.PostgresAirbyteClient
+import io.airbyte.integrations.destination.postgres.schema.PostgresColumnManager
 import io.airbyte.integrations.destination.postgres.spec.PostgresConfiguration
+import io.airbyte.integrations.destination.postgres.sql.PostgresDataType
 import io.airbyte.integrations.destination.postgres.write.load.PostgresInsertBuffer
 import io.micronaut.context.annotation.Requires
 import jakarta.inject.Singleton
@@ -35,6 +38,7 @@ internal const val CHECK_COLUMN_NAME = "test_key"
 class PostgresOssChecker(
     private val postgresAirbyteClient: PostgresAirbyteClient,
     private val postgresConfiguration: PostgresConfiguration,
+    private val columnManager: PostgresColumnManager,
 ) : DestinationCheckerV2 {
 
     override fun check() {
@@ -57,6 +61,25 @@ class PostgresOssChecker(
         val tempTableName = TableName(namespace = outputSchema, name = "${tableName}_tmp")
         val checkSchema =
             ObjectType(linkedMapOf(CHECK_COLUMN_NAME to FieldType(StringType, nullable = false)))
+        val tableSchema =
+            StreamTableSchema(
+                tableNames =
+                    TableNames(
+                        finalTableName = qualifiedTableName,
+                        tempTableName = tempTableName,
+                    ),
+                columnSchema =
+                    ColumnSchema(
+                        inputSchema = checkSchema.properties,
+                        inputToFinalColumnNames = mapOf(CHECK_COLUMN_NAME to CHECK_COLUMN_NAME),
+                        finalSchema =
+                            mapOf(
+                                CHECK_COLUMN_NAME to
+                                    ColumnType(PostgresDataType.VARCHAR.typeName, false)
+                            ),
+                    ),
+                importType = Append,
+            )
         val destinationStream =
             DestinationStream(
                 unmappedNamespace = outputSchema,
@@ -67,22 +90,7 @@ class PostgresOssChecker(
                 minimumGenerationId = 0L,
                 syncId = 0L,
                 namespaceMapper = NamespaceMapper(),
-                tableSchema =
-                    StreamTableSchema(
-                        tableNames =
-                            TableNames(
-                                finalTableName = qualifiedTableName,
-                                tempTableName = tempTableName,
-                            ),
-                        columnSchema =
-                            ColumnSchema(
-                                inputSchema = checkSchema.properties,
-                                inputToFinalColumnNames =
-                                    mapOf(CHECK_COLUMN_NAME to CHECK_COLUMN_NAME),
-                                finalSchema = emptyMap(),
-                            ),
-                        importType = Append,
-                    ),
+                tableSchema = tableSchema,
             )
         runBlocking {
             try {
@@ -94,13 +102,13 @@ class PostgresOssChecker(
                     replace = true,
                 )
 
-                val columns = postgresAirbyteClient.describeTable(qualifiedTableName)
                 val postgresInsertBuffer =
                     PostgresInsertBuffer(
                         tableName = qualifiedTableName,
-                        columns = columns,
                         postgresClient = postgresAirbyteClient,
                         postgresConfiguration = postgresConfiguration,
+                        columnSchema = tableSchema.columnSchema,
+                        columnManager = columnManager,
                     )
 
                 postgresInsertBuffer.accumulate(data)

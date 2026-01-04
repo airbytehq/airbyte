@@ -8,6 +8,7 @@ import io.airbyte.cdk.load.command.DestinationStream
 import io.airbyte.cdk.load.schema.model.TableName
 import io.airbyte.cdk.load.table.ColumnNameMapping
 import io.airbyte.integrations.destination.postgres.client.PostgresAirbyteClient
+import io.airbyte.integrations.destination.postgres.schema.PostgresColumnManager
 import io.airbyte.integrations.destination.postgres.spec.PostgresConfiguration
 import io.mockk.coEvery
 import io.mockk.coVerify
@@ -22,12 +23,14 @@ internal class PostgresOssCheckerTest {
     private lateinit var checker: PostgresOssChecker
     private lateinit var postgresAirbyteClient: PostgresAirbyteClient
     private lateinit var postgresConfiguration: PostgresConfiguration
+    private lateinit var columnManager: PostgresColumnManager
 
     @BeforeEach
     fun setup() {
         postgresAirbyteClient = mockk(relaxed = true)
         postgresConfiguration = mockk()
-        checker = PostgresOssChecker(postgresAirbyteClient, postgresConfiguration)
+        columnManager = PostgresColumnManager(postgresConfiguration)
+        checker = PostgresOssChecker(postgresAirbyteClient, postgresConfiguration, columnManager)
     }
 
     @Test
@@ -38,7 +41,6 @@ internal class PostgresOssCheckerTest {
 
         coEvery { postgresAirbyteClient.createNamespace(any()) } returns Unit
         coEvery { postgresAirbyteClient.createTable(any(), any(), any(), any()) } returns Unit
-        coEvery { postgresAirbyteClient.describeTable(any()) } returns listOf(CHECK_COLUMN_NAME)
         coEvery { postgresAirbyteClient.countTable(any()) } returns 1L
         coEvery { postgresAirbyteClient.dropTable(any()) } returns Unit
 
@@ -64,7 +66,6 @@ internal class PostgresOssCheckerTest {
 
         coEvery { postgresAirbyteClient.createNamespace(any()) } returns Unit
         coEvery { postgresAirbyteClient.createTable(any(), any(), any(), any()) } returns Unit
-        coEvery { postgresAirbyteClient.describeTable(any()) } returns listOf(CHECK_COLUMN_NAME)
         coEvery { postgresAirbyteClient.countTable(any()) } returns 0L
         coEvery { postgresAirbyteClient.dropTable(any()) } returns Unit
 
