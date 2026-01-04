@@ -187,6 +187,25 @@ constructor(
         return tableList
     }
 
+    /**
+     * Returns full information about all tables from a specific Dataset in a specific Project. This
+     * method supports multi-project configurations where tables need to be listed from projects
+     * other than the default/billing project.
+     *
+     * @param projectId BigQuery project id
+     * @param datasetId BigQuery dataset id
+     * @return List of BigQuery tables
+     */
+    fun getDatasetTables(projectId: String?, datasetId: String?): List<Table> {
+        val tableList: MutableList<Table> = ArrayList()
+        val bigQueryDatasetId = DatasetId.of(projectId, datasetId)
+        bigQuery
+            .listTables(bigQueryDatasetId)
+            .iterateAll()
+            .forEach(Consumer { table: Table -> tableList.add(bigQuery.getTable(table.tableId)) })
+        return tableList
+    }
+
     fun cleanDataSet(dataSetId: String) {
         // allows deletion of a dataset that has contents
         val option = BigQuery.DatasetDeleteOption.deleteContents()
