@@ -3,7 +3,7 @@ requires = [ "poetry-core>=1.0.0",]
 build-backend = "poetry.core.masonry.api"
 
 [tool.poetry]
-version = "0.1.3"
+version = "0.1.4"
 name = "source-zoho-crm"
 description = "Source implementation for <<Name>>."
 authors = [ "Airbyte <contact@airbyte.io>",]
@@ -16,8 +16,8 @@ repository = "https://github.com/airbytehq/airbyte"
 include = "source_zoho_crm"
 
 [tool.poetry.dependencies]
-python = "^3.9,<3.12"
-airbyte-cdk = "^1"
+python = "^3.10,<3.12"
+airbyte-cdk = "^7.4.1"
 
 [tool.poetry.scripts]
 source-zoho-crm = "source_zoho_crm.run:run"
