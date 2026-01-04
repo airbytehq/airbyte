@@ -11,7 +11,7 @@ data:
   connectorSubtype: api
   connectorType: source
   definitionId: 9da77001-af33-4bcd-be46-6252bf9342b9
-  dockerImageTag: 3.0.13
+  dockerImageTag: 3.1.0
   dockerRepository: airbyte/source-shopify
   documentationUrl: https://docs.airbyte.com/integrations/sources/shopify
   erdUrl: https://dbdocs.io/airbyteio/source-shopify?view=relationships
@@ -92,6 +92,12 @@ data:
           - scopeType: stream
             impactedScopes:
               ["countries", "product_variants", "articles", "blogs", "pages"]
+      3.1.0:
+        message: "The `collects` stream cursor field has changed from `id` to `updated_at` to enable capturing updates to existing records. This is a breaking change that requires clearing and resyncing the `collects` stream. See https://docs.airbyte.com/integrations/sources/shopify-migrations for details."
+        upgradeDeadline: "2026-01-25"
+        scopedImpact:
+          - scopeType: stream
+            impactedScopes: ["collects"]
   suggestedStreams:
     streams:
       - customers

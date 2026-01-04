@@ -1,5 +1,32 @@
 # Shopify Migration Guide
 
+## Upgrading to 3.1.0
+
+This version changes the cursor field for the `collects` stream from `id` to `updated_at` to enable capturing updates to existing records.
+
+### Collects Stream
+
+The `collects` stream previously used `id` as the cursor field with `since_id` filtering. This approach only captured new records but missed updates to existing collect records (product-collection relationships).
+
+The new implementation uses `updated_at` as the cursor field with client-side incremental sync. This means:
+
+- All records are fetched from the API (similar to full refresh)
+- Records are filtered client-side based on the `updated_at` cursor
+- Both new records AND updates to existing records are now captured
+
+This change addresses the issue reported in [airbytehq/airbyte#66581](https://github.com/airbytehq/airbyte/issues/66581).
+
+### Action items required for 3.1.0
+
+1. Select **Connections** in the main navbar and select the connection(s) affected by the update.
+2. Select the **Schema** tab.
+3. Select **Refresh source schema** to bring in any schema changes.
+4. Select **Save changes** at the bottom of the page.
+   - Ensure the **Clear affected streams** option is checked for the `collects` stream.
+5. Select **Save connection**.
+
+The `collects` stream state will be reset and a full sync will occur on the next run.
+
 ## Upgrading to 3.0.0
 
 This version contains schema changes for the following streams:

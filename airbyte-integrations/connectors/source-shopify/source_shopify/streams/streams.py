@@ -197,18 +197,47 @@ class MetafieldSmartCollections(MetafieldShopifySubstream):
 
 class Collects(IncrementalShopifyStream):
     """
-    Collects stream does not support Incremental Refresh based on datetime fields, only `since_id` is supported:
-    https://shopify.dev/docs/admin-api/rest/reference/products/collect
+    Collects stream uses client-side incremental sync because the Shopify REST API
+    does not support filtering by updated_at for this endpoint - only `since_id` is available.
+    https://shopify.dev/docs/api/admin-rest/latest/resources/collect
 
-    The Collect stream is the link between Products and Collections, if the Collection is created for Products,
-    the `collect` record is created, it's reasonable to Full Refresh all collects. As for Incremental refresh -
-    we would use the since_id specificaly for this stream.
+    The Collect stream is the link between Products and Collections. To capture both new records
+    AND updates to existing records, we fetch all records and filter client-side based on updated_at.
+
+    Breaking change from previous versions: cursor_field changed from `id` to `updated_at`.
     """
 
     data_field = "collects"
-    cursor_field = "id"
+    cursor_field = "updated_at"
     order_field = "id"
-    filter_field = "since_id"
+
+    def request_params(
+        self, stream_state: Optional[Mapping[str, Any]] = None, next_page_token: Optional[Mapping[str, Any]] = None, **kwargs
+    ) -> MutableMapping[str, Any]:
+        """
+        Override to implement client-side incremental sync.
+        We fetch all records (no server-side filtering) and filter client-side using filter_records_newer_than_state.
+        The Shopify Collects API only supports since_id filtering, which cannot capture updates to existing records.
+        """
+        params = {"limit": self.limit}
+        if next_page_token:
+            params.update(**next_page_token)
+        else:
+            params["order"] = f"{self.order_field} asc"
+        return params
+
+    def read_records(
+        self,
+        stream_state: Optional[Mapping[str, Any]] = None,
+        stream_slice: Optional[Mapping[str, Any]] = None,
+        **kwargs,
+    ) -> Iterable[Mapping[str, Any]]:
+        """
+        Override to apply client-side filtering based on updated_at cursor.
+        This ensures we capture both new records and updates to existing records.
+        """
+        records = super().read_records(stream_state=stream_state, stream_slice=stream_slice, **kwargs)
+        yield from self.filter_records_newer_than_state(stream_state, records)
 
 
 class Collections(IncrementalShopifyGraphQlBulkStream):
