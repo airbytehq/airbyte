@@ -58,6 +58,7 @@ import io.airbyte.cdk.load.schema.model.TableNames
 import io.airbyte.cdk.load.state.CheckpointId
 import io.airbyte.cdk.load.state.CheckpointIndex
 import io.airbyte.cdk.load.state.CheckpointKey
+import io.airbyte.cdk.load.test.util.CharacterizationTest
 import io.airbyte.cdk.load.test.util.ConfigurationUpdater
 import io.airbyte.cdk.load.test.util.DestinationCleaner
 import io.airbyte.cdk.load.test.util.DestinationDataDumper
@@ -68,6 +69,7 @@ import io.airbyte.cdk.load.test.util.NameMapper
 import io.airbyte.cdk.load.test.util.NoopExpectedRecordMapper
 import io.airbyte.cdk.load.test.util.NoopNameMapper
 import io.airbyte.cdk.load.test.util.OutputRecord
+import io.airbyte.cdk.load.test.util.SchemaDumper
 import io.airbyte.cdk.load.test.util.destination_process.DestinationUncleanExitException
 import io.airbyte.cdk.load.util.Jsons
 import io.airbyte.cdk.load.util.deserializeToNode
@@ -348,6 +350,7 @@ abstract class BasicFunctionalityIntegrationTest(
     dataChannelFormat: DataChannelFormat = DataChannelFormat.JSONL,
     val testSpeedModeStatsEmission: Boolean = true,
     val useDataFlowPipeline: Boolean = false,
+    val schemaDumper: SchemaDumper? = null,
 ) :
     IntegrationTest(
         additionalMicronautEnvs = additionalMicronautEnvs,
@@ -5171,6 +5174,37 @@ abstract class BasicFunctionalityIntegrationTest(
                     )
             )
         }
+    }
+
+    @Test
+    open fun testSchemaRegression() {
+        assumeTrue(schemaDumper != null)
+        val stream =
+            DestinationStream(
+                randomizedNamespace,
+                "test_stream",
+                // TODO also do dedup
+                Append,
+                // TODO use all the types here
+                ObjectType(linkedMapOf("int" to intType)),
+                generationId = 1,
+                minimumGenerationId = 1,
+                syncId = 42,
+                // TODO use nontrivial namespace mapper
+                namespaceMapper = namespaceMapperForMedium(),
+                tableSchema = emptyTableSchema,
+            )
+        runSync(
+            updatedConfig,
+            stream,
+            messages = emptyList(),
+        )
+        val actualSchema =
+            schemaDumper!!.discoverSchema(
+                stream.mappedDescriptor.namespace,
+                stream.mappedDescriptor.name
+            )
+        CharacterizationTest.doAssert("schema-regression/append/alltypes.txt", actualSchema)
     }
 
     private fun schematizedObject(
