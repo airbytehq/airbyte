@@ -145,6 +145,36 @@ class AdsInsights(FBMarketingIncrementalStream):
                 record[self.object_breakdowns[breakdown]] = record[breakdown]["id"]
         return record
 
+    def _transform_objective_results(self, record: Mapping[str, Any]) -> Mapping[str, Any]:
+        """
+        Transform 'results' field to 'objective_results' in API responses.
+
+        Facebook API returns 'results' field when 'objective_results' is requested.
+        This method renames the field when conditions are met:
+        1. Custom fields are configured (custom insights stream)
+        2. 'objective_results' is in the schema
+        3. 'objective_results' is in custom fields but 'results' is not
+        4. Record contains 'results' but not 'objective_results'
+
+        See: https://github.com/airbytehq/oncall/issues/10126
+        """
+        if not self._custom_fields:
+            return record
+
+        schema = self.get_json_schema()
+        properties = schema.get("properties", {})
+
+        has_objective_results_in_schema = "objective_results" in properties
+        has_objective_results_in_fields = "objective_results" in self._custom_fields
+        has_results_in_fields = "results" in self._custom_fields
+
+        should_rename = has_objective_results_in_schema and has_objective_results_in_fields and not has_results_in_fields
+
+        if should_rename and "results" in record and "objective_results" not in record:
+            record["objective_results"] = record.pop("results")
+
+        return record
+
     def list_objects(self, params: Mapping[str, Any]) -> Iterable:
         """Because insights has very different read_records we don't need this method anymore"""
 
@@ -168,7 +198,9 @@ class AdsInsights(FBMarketingIncrementalStream):
                 data = obj.export_all_data()
                 if self._response_data_is_valid(data):
                     self._add_account_id(data, account_id)
-                    yield self._transform_breakdown(data)
+                    data = self._transform_breakdown(data)
+                    data = self._transform_objective_results(data)
+                    yield data
         except FacebookBadObjectError as e:
             raise AirbyteTracedException(
                 message=f"API error occurs on Facebook side during job: {job}, wrong (empty) response received with errors: {e} "
