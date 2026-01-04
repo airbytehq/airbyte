@@ -27,6 +27,21 @@ spec:
         pattern: ^[0-9]{4}-[0-9]{2}-[0-9]{2}T[0-9]{2}:[0-9]{2}:[0-9]{2}Z$
         order: 1
         format: "date-time"
+      users_sync_interval:
+        type: "string"
+        title: "Users Sync Interval"
+        description: >-
+          The size of the time window (ISO8601 duration) for the users export stream. Smaller values reduce the risk of 
+          timeouts for accounts with large numbers of users. Default is P90D (90 days). Examples: PT1H (1 hour), 
+          P1D (1 day), P7D (7 days), P30D (30 days), P90D (90 days).
+        default: "P90D"
+        examples:
+          - "PT1H"
+          - "P1D"
+          - "P7D"
+          - "P30D"
+          - "P90D"
+        order: 2
 type: DeclarativeSource
 check:
   type: CheckStream
@@ -298,7 +313,7 @@ streams:
       partition_router: []
     primary_key: []
     incremental_sync:
-      step: P90D
+      step: "{{ config.get('users_sync_interval', 'P90D') }}"
       type: DatetimeBasedCursor
       cursor_field: profileUpdatedAt
       end_datetime:
