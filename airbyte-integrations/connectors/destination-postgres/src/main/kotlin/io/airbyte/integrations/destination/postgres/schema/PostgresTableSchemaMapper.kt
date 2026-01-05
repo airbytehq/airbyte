@@ -23,7 +23,9 @@ import io.airbyte.cdk.load.data.TimestampTypeWithTimezone
 import io.airbyte.cdk.load.data.TimestampTypeWithoutTimezone
 import io.airbyte.cdk.load.data.UnionType
 import io.airbyte.cdk.load.data.UnknownType
+import io.airbyte.cdk.load.message.Meta
 import io.airbyte.cdk.load.schema.TableSchemaMapper
+import io.airbyte.cdk.load.schema.model.StreamTableSchema
 import io.airbyte.cdk.load.schema.model.TableName
 import io.airbyte.cdk.load.table.TempTableNameGenerator
 import io.airbyte.cdk.load.table.TypingDedupingUtil
@@ -92,5 +94,24 @@ class PostgresTableSchemaMapper(
             }
 
         return ColumnType(postgresType, fieldType.nullable)
+    }
+
+    override fun toFinalSchema(tableSchema: StreamTableSchema): StreamTableSchema {
+        if (!config.legacyRawTablesOnly) {
+            return tableSchema
+        }
+
+        return StreamTableSchema(
+            tableNames = tableSchema.tableNames,
+            columnSchema =
+                tableSchema.columnSchema.copy(
+                    finalSchema =
+                        mapOf(
+                            Meta.COLUMN_NAME_DATA to
+                                ColumnType(PostgresDataType.JSONB.typeName, false)
+                        )
+                ),
+            importType = tableSchema.importType,
+        )
     }
 }
