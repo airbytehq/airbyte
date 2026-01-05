@@ -53,7 +53,7 @@ jobs:
           PR_NUMBER="${{ inputs.pr }}"
           GITREF="${{ inputs.gitref }}"
           REPO="${{ inputs.repo }}"
-          
+
           if [ -n "$PR_NUMBER" ] && [ "$PR_NUMBER" != "0" ]; then
             echo "context=pr" >> $GITHUB_OUTPUT
             echo "pr-number=$PR_NUMBER" >> $GITHUB_OUTPUT
