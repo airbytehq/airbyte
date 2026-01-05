@@ -352,6 +352,7 @@ abstract class BasicFunctionalityIntegrationTest(
     val testSpeedModeStatsEmission: Boolean = true,
     val useDataFlowPipeline: Boolean = false,
     val schemaDumper: SchemaDumper? = null,
+    goldenFileBasePath: String = "",
 ) :
     IntegrationTest(
         additionalMicronautEnvs = additionalMicronautEnvs,
@@ -365,6 +366,12 @@ abstract class BasicFunctionalityIntegrationTest(
         dataChannelMedium = dataChannelMedium,
         dataChannelFormat = dataChannelFormat,
     ) {
+    val goldenFileBasePath: String =
+        if (goldenFileBasePath.isEmpty()) {
+            goldenFileBasePath
+        } else {
+            "$goldenFileBasePath/"
+        }
 
     // Update config with any replacements.  This may be necessary when using testcontainers.
     val updatedConfig = configUpdater.update(configContents)
@@ -5179,14 +5186,72 @@ abstract class BasicFunctionalityIntegrationTest(
 
     // TODO also do dedup
     @Test
-    open fun testSchemaRegressionAppend() = runTest {
+    open fun testSchemaRegressionAppend() {
+        baseSchemaRegressionTest("append", Append)
+    }
+
+    @Test
+    open fun testSchemaRegressionSimpleDedup() {
+        baseSchemaRegressionTest(
+            "dedup_simple",
+            Dedupe(
+                primaryKey = listOf(listOf("string")),
+                cursor = listOf("number"),
+            )
+        )
+    }
+
+    @Test
+    open fun testSchemaRegressionDedupReservedWords() {
+        baseSchemaRegressionTest(
+            "dedup_reserved_word",
+            Dedupe(
+                primaryKey = listOf(listOf("column")),
+                cursor = listOf("table"),
+            )
+        )
+    }
+
+    @Test
+    open fun testSchemaRegressionFunkyCharsPk() {
+        baseSchemaRegressionTest(
+            "dedup_funky_chars_pk",
+            Dedupe(
+                primaryKey = listOf(listOf("é,./<>?'\";[]\\:{}|`~!@#$%^&*()_+-=")),
+                cursor = listOf("string"),
+            )
+        )
+    }
+
+    @Test
+    open fun testSchemaRegressionFunkyCharsCursor() {
+        baseSchemaRegressionTest(
+            "dedup_funky_chars_cursor",
+            Dedupe(
+                primaryKey = listOf(listOf("string")),
+                cursor = listOf("é,./<>?'\";[]\\:{}|`~!@#$%^&*()_+-="),
+            )
+        )
+    }
+
+    @Test
+    open fun testSchemaRegressionDedupCollidingNames() {
+        baseSchemaRegressionTest(
+            "dedup_colliding_names",
+            Dedupe(
+                primaryKey = listOf(listOf("foo!")),
+                cursor = listOf("foo$"),
+            )
+        )
+    }
+
+    open fun baseSchemaRegressionTest(filename: String, importType: ImportType) = runTest {
         assumeTrue(schemaDumper != null)
         val stream =
             DestinationStream(
                 randomizedNamespace,
                 "test_stream",
-                Append,
-                // TODO field names with funky chars
+                importType,
                 ObjectType(
                     linkedMapOf(
                         // Validate every airbyte type
@@ -5297,6 +5362,9 @@ abstract class BasicFunctionalityIntegrationTest(
                         "foo!" to FieldType(StringType, nullable = true),
                         "foo$" to FieldType(StringType, nullable = true),
                         "foo_" to FieldType(StringType, nullable = true),
+                        // upper/lowercasing
+                        "UPPER_CASE" to FieldType(StringType, nullable = true),
+                        "Mixed_Case" to FieldType(StringType, nullable = true),
                     )
                 ),
                 generationId = 1,
@@ -5316,7 +5384,10 @@ abstract class BasicFunctionalityIntegrationTest(
                 stream.mappedDescriptor.namespace,
                 stream.mappedDescriptor.name
             )
-        CharacterizationTest.doAssert("schema-regression/column_names/append.txt", actualSchema)
+        CharacterizationTest.doAssert(
+            "golden_files/${goldenFileBasePath}schema-regression/column_names/$filename.txt",
+            actualSchema
+        )
     }
 
     private fun schematizedObject(

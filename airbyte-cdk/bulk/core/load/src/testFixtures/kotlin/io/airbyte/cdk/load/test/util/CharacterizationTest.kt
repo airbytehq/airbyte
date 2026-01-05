@@ -24,7 +24,7 @@ object CharacterizationTest {
         Assertions.assertEquals(
             goldenFileContents,
             actualContents,
-            "File contents did not match previous version. Inspect the `git diff` and commit the change if this is intended.",
+            "Contents of $goldenFilePath did not match previous version. Inspect the `git diff` and commit the change if this is intended.",
         )
     }
 }
