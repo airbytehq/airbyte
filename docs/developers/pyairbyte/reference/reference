@@ -1,0 +1,209 @@
+{
+  "items": [
+    {
+      "items": [
+        {
+          "items": [
+            "reference/airbyte/_executors/__init__",
+            "reference/airbyte/_executors/base",
+            "reference/airbyte/_executors/declarative",
+            "reference/airbyte/_executors/docker",
+            "reference/airbyte/_executors/local",
+            "reference/airbyte/_executors/noop",
+            "reference/airbyte/_executors/python",
+            "reference/airbyte/_executors/util"
+          ],
+          "label": "airbyte._executors",
+          "type": "category"
+        },
+        {
+          "items": [
+            {
+              "items": [
+                "reference/airbyte/_processors/sql/__init__",
+                "reference/airbyte/_processors/sql/bigquery",
+                "reference/airbyte/_processors/sql/duckdb",
+                "reference/airbyte/_processors/sql/motherduck",
+                "reference/airbyte/_processors/sql/postgres",
+                "reference/airbyte/_processors/sql/snowflake"
+              ],
+              "label": "airbyte._processors.sql",
+              "type": "category"
+            },
+            "reference/airbyte/_processors/__init__"
+          ],
+          "label": "airbyte._processors",
+          "type": "category"
+        },
+        {
+          "items": [
+            "reference/airbyte/_util/__init__",
+            "reference/airbyte/_util/api_duck_types",
+            "reference/airbyte/_util/api_imports",
+            "reference/airbyte/_util/api_util",
+            "reference/airbyte/_util/connector_info",
+            "reference/airbyte/_util/document_rendering",
+            "reference/airbyte/_util/hashing",
+            "reference/airbyte/_util/meta",
+            "reference/airbyte/_util/name_normalizers",
+            "reference/airbyte/_util/pip_util",
+            "reference/airbyte/_util/registry_spec",
+            "reference/airbyte/_util/telemetry",
+            "reference/airbyte/_util/temp_files",
+            "reference/airbyte/_util/text_util",
+            "reference/airbyte/_util/venv_util"
+          ],
+          "label": "airbyte._util",
+          "type": "category"
+        },
+        {
+          "items": [
+            "reference/airbyte/_writers/__init__",
+            "reference/airbyte/_writers/base",
+            "reference/airbyte/_writers/file_writers",
+            "reference/airbyte/_writers/jsonl"
+          ],
+          "label": "airbyte._writers",
+          "type": "category"
+        },
+        {
+          "items": [
+            "reference/airbyte/caches/__init__",
+            "reference/airbyte/caches/_catalog_backend",
+            "reference/airbyte/caches/_state_backend",
+            "reference/airbyte/caches/_state_backend_base",
+            "reference/airbyte/caches/base",
+            "reference/airbyte/caches/bigquery",
+            "reference/airbyte/caches/duckdb",
+            "reference/airbyte/caches/generic",
+            "reference/airbyte/caches/motherduck",
+            "reference/airbyte/caches/postgres",
+            "reference/airbyte/caches/snowflake",
+            "reference/airbyte/caches/util"
+          ],
+          "label": "airbyte.caches",
+          "type": "category"
+        },
+        {
+          "items": [
+            "reference/airbyte/cloud/__init__",
+            "reference/airbyte/cloud/auth",
+            "reference/airbyte/cloud/client_config",
+            "reference/airbyte/cloud/connections",
+            "reference/airbyte/cloud/connectors",
+            "reference/airbyte/cloud/constants",
+            "reference/airbyte/cloud/sync_results",
+            "reference/airbyte/cloud/workspaces"
+          ],
+          "label": "airbyte.cloud",
+          "type": "category"
+        },
+        {
+          "items": [
+            "reference/airbyte/datasets/__init__",
+            "reference/airbyte/datasets/_base",
+            "reference/airbyte/datasets/_inmemory",
+            "reference/airbyte/datasets/_lazy",
+            "reference/airbyte/datasets/_map",
+            "reference/airbyte/datasets/_sql"
+          ],
+          "label": "airbyte.datasets",
+          "type": "category"
+        },
+        {
+          "items": [
+            "reference/airbyte/destinations/__init__",
+            "reference/airbyte/destinations/_translate_cache_to_dest",
+            "reference/airbyte/destinations/_translate_dest_to_cache",
+            "reference/airbyte/destinations/base",
+            "reference/airbyte/destinations/util"
+          ],
+          "label": "airbyte.destinations",
+          "type": "category"
+        },
+        {
+          "items": [
+            "reference/airbyte/experimental/__init__"
+          ],
+          "label": "airbyte.experimental",
+          "type": "category"
+        },
+        {
+          "items": [
+            "reference/airbyte/mcp/__init__",
+            "reference/airbyte/mcp/_annotations",
+            "reference/airbyte/mcp/_tool_utils",
+            "reference/airbyte/mcp/_util",
+            "reference/airbyte/mcp/cloud_ops",
+            "reference/airbyte/mcp/connector_registry",
+            "reference/airbyte/mcp/local_ops",
+            "reference/airbyte/mcp/prompts",
+            "reference/airbyte/mcp/server"
+          ],
+          "label": "airbyte.mcp",
+          "type": "category"
+        },
+        {
+          "items": [
+            "reference/airbyte/secrets/__init__",
+            "reference/airbyte/secrets/base",
+            "reference/airbyte/secrets/config",
+            "reference/airbyte/secrets/custom",
+            "reference/airbyte/secrets/env_vars",
+            "reference/airbyte/secrets/google_colab",
+            "reference/airbyte/secrets/google_gsm",
+            "reference/airbyte/secrets/hydration",
+            "reference/airbyte/secrets/prompt",
+            "reference/airbyte/secrets/util"
+          ],
+          "label": "airbyte.secrets",
+          "type": "category"
+        },
+        {
+          "items": [
+            "reference/airbyte/shared/__init__",
+            "reference/airbyte/shared/catalog_providers",
+            "reference/airbyte/shared/sql_processor",
+            "reference/airbyte/shared/state_providers",
+            "reference/airbyte/shared/state_writers"
+          ],
+          "label": "airbyte.shared",
+          "type": "category"
+        },
+        {
+          "items": [
+            "reference/airbyte/sources/__init__",
+            "reference/airbyte/sources/base",
+            "reference/airbyte/sources/registry",
+            "reference/airbyte/sources/util"
+          ],
+          "label": "airbyte.sources",
+          "type": "category"
+        },
+        "reference/airbyte/__init__",
+        "reference/airbyte/_batch_handles",
+        "reference/airbyte/_connector_base",
+        "reference/airbyte/_message_iterators",
+        "reference/airbyte/_registry_utils",
+        "reference/airbyte/callbacks",
+        "reference/airbyte/cli",
+        "reference/airbyte/constants",
+        "reference/airbyte/documents",
+        "reference/airbyte/exceptions",
+        "reference/airbyte/logs",
+        "reference/airbyte/progress",
+        "reference/airbyte/records",
+        "reference/airbyte/registry",
+        "reference/airbyte/results",
+        "reference/airbyte/strategies",
+        "reference/airbyte/types",
+        "reference/airbyte/validate",
+        "reference/airbyte/version"
+      ],
+      "label": "airbyte",
+      "type": "category"
+    }
+  ],
+  "label": "API Reference",
+  "type": "category"
+}

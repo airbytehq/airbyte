@@ -1,0 +1,23 @@
+loaders:
+  - type: python
+    search_path:
+      - ./pyairbyte-source
+    packages:
+      - airbyte
+
+processors:
+  - type: smart
+  - type: crossref
+
+renderer:
+  type: docusaurus
+  docs_base_path: docs/developers/pyairbyte
+  relative_output_path: reference
+  relative_sidebar_path: reference
+  sidebar_top_level_label: API Reference
+  markdown:
+    escape_html_in_docstring: true
+    render_module_header: true
+    descriptive_class_title: true
+    signature_with_def: true
+    signature_code_block: true
