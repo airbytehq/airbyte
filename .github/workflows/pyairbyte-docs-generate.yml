@@ -114,6 +114,14 @@ jobs:
             cat docs/developers/pyairbyte/reference/sidebar.json
           fi
 
+      - name: Cleanup PyAirbyte Source
+        run: |
+          # Remove the cloned PyAirbyte source directory to prevent it from being
+          # committed as a submodule (it contains a .git directory)
+          rm -rf pyairbyte-source
+          rm -f pydoc-markdown.yml
+          echo "Cleaned up temporary files"
+
       - name: Check for Changes
         id: changes
         run: |
