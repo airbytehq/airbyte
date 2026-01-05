@@ -22,7 +22,7 @@ Teams and organizations need efficient and timely data access to an ever-growing
 
 - **Robust platform** provides horizontal scaling required for large-scale data movement operations, available as [Cloud-managed](https://airbyte.com/product/airbyte-cloud) or [Self-managed](https://airbyte.com/product/airbyte-enterprise).
 
-- **Accessible User Interfaces** through the UI, [**PyAirbyte**](/developers/using-pyairbyte) (Python library), [**API**](/developers/api-documentation), and [**Terraform Provider**](/developers/terraform-documentation) to integrate with your preferred tooling and approach to infrastructure management.
+- **Accessible User Interfaces** through the UI, [**PyAirbyte**](/developers/pyairbyte) (Python library), [**API**](/developers/api-documentation), and [**Terraform Provider**](/developers/terraform-documentation) to integrate with your preferred tooling and approach to infrastructure management.
 
 Airbyte is suitable for a wide range of data integration use cases, including AI data infrastructure and EL(T) workloads.
 
@@ -103,7 +103,7 @@ Many people think of Airbyte and its connectors as infrastructure. The [Terrafor
 
 ### PyAirbyte
 
-If you want to use Python to move data, our Python library, [PyAirbyte](/developers/using-pyairbyte), might be the best fit for you. It's a good choice if you're using Jupyter Notebook or iterating on an early prototype for a large data project and don't need to run a server. PyAirbyte isn't an SDK for managing Airbyte. If that's what you're looking for, use the [API or Python SDK](#api-sdk).
+If you want to use Python to move data, our Python library, [PyAirbyte](/developers/pyairbyte), might be the best fit for you. It's a good choice if you're using Jupyter Notebook or iterating on an early prototype for a large data project and don't need to run a server. PyAirbyte isn't an SDK for managing Airbyte. If that's what you're looking for, use the [API or Python SDK](#api-sdk).
 
 ## Contribute
 
