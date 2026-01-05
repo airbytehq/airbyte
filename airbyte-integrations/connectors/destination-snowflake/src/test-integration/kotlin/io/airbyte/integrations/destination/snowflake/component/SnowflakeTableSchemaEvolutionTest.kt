@@ -9,13 +9,15 @@ import io.airbyte.cdk.load.component.TableSchemaEvolutionFixtures
 import io.airbyte.cdk.load.component.TableSchemaEvolutionSuite
 import io.airbyte.cdk.load.data.StringValue
 import io.airbyte.cdk.load.message.Meta
+import io.airbyte.cdk.load.schema.TableSchemaFactory
 import io.airbyte.cdk.load.table.ColumnNameMapping
 import io.airbyte.cdk.load.util.serializeToString
 import io.airbyte.integrations.destination.snowflake.client.SnowflakeAirbyteClient
-import io.airbyte.integrations.destination.snowflake.component.SnowflakeComponentTestFixtures.allTypesColumnNameMapping
-import io.airbyte.integrations.destination.snowflake.component.SnowflakeComponentTestFixtures.allTypesTableSchema
-import io.airbyte.integrations.destination.snowflake.component.SnowflakeComponentTestFixtures.idAndTestMapping
-import io.airbyte.integrations.destination.snowflake.component.SnowflakeComponentTestFixtures.testMapping
+import io.airbyte.integrations.destination.snowflake.component.config.SnowflakeComponentTestFixtures.allTypesColumnNameMapping
+import io.airbyte.integrations.destination.snowflake.component.config.SnowflakeComponentTestFixtures.allTypesTableSchema
+import io.airbyte.integrations.destination.snowflake.component.config.SnowflakeComponentTestFixtures.idAndTestMapping
+import io.airbyte.integrations.destination.snowflake.component.config.SnowflakeComponentTestFixtures.testMapping
+import io.airbyte.integrations.destination.snowflake.component.config.SnowflakeTestTableOperationsClient
 import io.micronaut.test.extensions.junit5.annotation.MicronautTest
 import org.junit.jupiter.api.Test
 import org.junit.jupiter.api.parallel.Execution
@@ -27,6 +29,7 @@ class SnowflakeTableSchemaEvolutionTest(
     override val client: SnowflakeAirbyteClient,
     override val opsClient: SnowflakeAirbyteClient,
     override val testClient: SnowflakeTestTableOperationsClient,
+    override val schemaFactory: TableSchemaFactory,
 ) : TableSchemaEvolutionSuite {
     override val airbyteMetaColumnMapping = Meta.COLUMN_NAMES.associateWith { it.uppercase() }
 
