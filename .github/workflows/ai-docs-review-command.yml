@@ -44,6 +44,11 @@ on:
 
 run-name: "AI Docs Review for PR #${{ github.event.inputs.pr || 'unknown' }}"
 
+# Prevent duplicate runs for the same PR
+concurrency:
+  group: ai-docs-review-${{ github.event.inputs.pr || 'unknown' }}
+  cancel-in-progress: false
+
 permissions:
   contents: read
   issues: write
@@ -63,8 +68,15 @@ jobs:
       - name: Validate required inputs
         id: validate
         run: |
-          if [ -z "${{ inputs.pr }}" ] || [ "${{ inputs.pr }}" = "0" ]; then
+          PR_INPUT="${{ inputs.pr }}"
+          if [ -z "$PR_INPUT" ] || [ "$PR_INPUT" = "0" ]; then
             echo "::error::Missing required input: pr. This workflow must be triggered from a PR using the /ai-docs-review slash command."
+            echo "valid=false" >> $GITHUB_OUTPUT
+            exit 0
+          fi
+          # Strict numeric validation to prevent injection attacks
+          if ! [[ "$PR_INPUT" =~ ^[0-9]+$ ]]; then
+            echo "::error::Invalid PR number format: '$PR_INPUT'. PR number must be a positive integer."
             echo "valid=false" >> $GITHUB_OUTPUT
             exit 0
           fi
@@ -82,7 +94,7 @@ jobs:
 
       - name: Post error comment (missing PR input)
         if: steps.validate.outputs.valid == 'false' && inputs.comment-id != ''
-        uses: peter-evans/create-or-update-comment@a35cf36e5301d70b76f316e867e7788a55a31dae # v1.4.5
+        uses: peter-evans/create-or-update-comment@e8674b075228eee787fea43ef493e45ece1004c9 # v5.0.0
         with:
           token: ${{ github.token }}
           comment-id: ${{ inputs.comment-id }}
@@ -139,7 +151,7 @@ jobs:
 
       - name: Post start comment
         if: inputs.comment-id != '' && steps.validate.outputs.valid == 'true' && steps.pr-files.outputs.has_connector_changes == 'true'
-        uses: peter-evans/create-or-update-comment@a35cf36e5301d70b76f316e867e7788a55a31dae # v1.4.5
+        uses: peter-evans/create-or-update-comment@e8674b075228eee787fea43ef493e45ece1004c9 # v5.0.0
         with:
           token: ${{ steps.get-app-token.outputs.token }}
           comment-id: ${{ inputs.comment-id }}
@@ -152,7 +164,7 @@ jobs:
 
       - name: Post skip comment (no connector changes)
         if: inputs.comment-id != '' && steps.validate.outputs.valid == 'true' && steps.pr-files.outputs.has_connector_changes == 'false'
-        uses: peter-evans/create-or-update-comment@a35cf36e5301d70b76f316e867e7788a55a31dae # v1.4.5
+        uses: peter-evans/create-or-update-comment@e8674b075228eee787fea43ef493e45ece1004c9 # v5.0.0
         with:
           token: ${{ steps.get-app-token.outputs.token }}
           comment-id: ${{ inputs.comment-id }}
@@ -176,3 +188,16 @@ jobs:
           tags: |
             area/documentation
             team/documentation
+
+      - name: Post failure comment
+        if: failure() && inputs.comment-id != '' && steps.validate.outputs.valid == 'true'
+        uses: peter-evans/create-or-update-comment@e8674b075228eee787fea43ef493e45ece1004c9 # v5.0.0
+        with:
+          token: ${{ steps.get-app-token.outputs.token || github.token }}
+          comment-id: ${{ inputs.comment-id }}
+          issue-number: ${{ inputs.pr }}
+          body: |
+            > **AI Docs Review Failed**
+            >
+            > An error occurred while processing the documentation review. Please check the workflow logs for details.
+            > [View workflow run](${{ steps.job-vars.outputs.run-url }})
