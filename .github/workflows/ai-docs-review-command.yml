@@ -170,7 +170,7 @@ jobs:
           issue-number: ${{ inputs.pr }}
           devin-token: ${{ secrets.DEVIN_AI_API_KEY }}
           github-token: ${{ steps.get-app-token.outputs.token }}
-          playbook-macro: "!connectordocs-pr-review"
+          playbook-macro: "!connectordocs_pr_review"
           prompt-text: "The pull request to review is ${{ inputs.pr }}."
           start-message: "AI Docs Review session starting... Analyzing connector changes and preparing documentation recommendations."
           tags: |
