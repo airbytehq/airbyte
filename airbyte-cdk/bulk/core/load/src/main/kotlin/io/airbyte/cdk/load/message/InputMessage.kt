@@ -56,10 +56,6 @@ sealed interface InputMessage {
                     outputStream.write('\n'.code)
                 }
             DataChannelFormat.PROTOBUF -> asProtobuf().writeDelimitedTo(outputStream)
-            else ->
-                throw IllegalArgumentException(
-                    "Unsupported data channel format: $dataChannelFormat"
-                )
         }
         outputStream.flush()
     }

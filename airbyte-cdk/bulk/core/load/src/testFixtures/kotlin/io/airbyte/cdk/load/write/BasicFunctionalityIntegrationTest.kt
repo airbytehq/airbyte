@@ -5259,7 +5259,6 @@ abstract class BasicFunctionalityIntegrationTest(
                 when (dataChannelFormat) {
                     DataChannelFormat.JSONL -> bytesForSocketJsonl
                     DataChannelFormat.PROTOBUF -> bytesForSocketProtobuf
-                    DataChannelFormat.FLATBUFFERS -> TODO()
                 }
         }
     }

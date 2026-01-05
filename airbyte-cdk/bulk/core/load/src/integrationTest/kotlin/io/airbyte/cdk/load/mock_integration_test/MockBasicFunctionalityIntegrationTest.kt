@@ -485,17 +485,3 @@ class MockBasicFunctionalityIntegrationTestSocketJsonl :
         DataChannelMedium.SOCKET,
         DataChannelFormat.JSONL,
     )
-
-@Disabled("we don't use flatbuffers")
-class MockBasicFunctionalityIntegrationTestStdioFlatbuffer :
-    BaseMockBasicFunctionalityIntegrationTest(
-        DataChannelMedium.STDIO,
-        DataChannelFormat.FLATBUFFERS,
-    )
-
-@Disabled("we don't use flatbuffers")
-class MockBasicFunctionalityIntegrationTestSocketFlatbuffer :
-    BaseMockBasicFunctionalityIntegrationTest(
-        DataChannelMedium.SOCKET,
-        DataChannelFormat.FLATBUFFERS,
-    )
