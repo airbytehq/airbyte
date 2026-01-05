@@ -35,16 +35,36 @@ uv pip install airbyte-agent-github
 
 ## Usage
 
+This connector supports multiple authentication methods:
+
+### OAuth 2
+
 ```python
-from airbyte_agent_github import GithubConnector, GithubAuthConfig
+from airbyte_agent_github import GithubConnector
+from airbyte_agent_github.models import GithubOauth2AuthConfig
 
 connector = GithubConnector(
-  auth_config=GithubAuthConfig(
+  auth_config=GithubOauth2AuthConfig(
     access_token="..."
   )
 )
-result = connector.repositories.get()
+result = await connector.repositories.get()
 ```
+
+### Personal Access Token
+
+```python
+from airbyte_agent_github import GithubConnector
+from airbyte_agent_github.models import GithubPersonalAccessTokenAuthConfig
+
+connector = GithubConnector(
+  auth_config=GithubPersonalAccessTokenAuthConfig(
+    token="..."
+  )
+)
+result = await connector.repositories.get()
+```
+
 
 ## Full documentation
 
@@ -81,6 +101,6 @@ For the service's official API docs, see the [Github API reference](https://docs
 
 ## Version information
 
-- **Package version:** 0.18.21
-- **Connector version:** 0.1.5
-- **Generated with Connector SDK commit SHA:** 57f08f6035b744556fa96334a7b764759896287c
+- **Package version:** 0.18.28
+- **Connector version:** 0.1.6
+- **Generated with Connector SDK commit SHA:** 12f6b994298f84dfa217940afe7c6b19bec4167b

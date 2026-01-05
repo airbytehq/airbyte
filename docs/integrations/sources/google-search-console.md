@@ -242,6 +242,7 @@ Google Search Console only retains data for websites from the last 16 months. An
 
 | Version     | Date       | Pull Request                                             | Subject                                                                                                                                                                |
 |:------------|:-----------|:---------------------------------------------------------|:-----------------------------------------------------------------------------------------------------------------------------------------------------------------------|
+| 1.10.19 | 2025-12-16 | [70517](https://github.com/airbytehq/airbyte/pull/70517) | Update dependencies |
 | 1.10.18 | 2025-12-09 | [70444](https://github.com/airbytehq/airbyte/pull/70444) | Add user-configurable API rate limit option for Search Analytics streams |
 | 1.10.17 | 2025-11-25 | [70059](https://github.com/airbytehq/airbyte/pull/70059) | Update dependencies |
 | 1.10.16 | 2025-11-18 | [69392](https://github.com/airbytehq/airbyte/pull/69392) | Update dependencies |

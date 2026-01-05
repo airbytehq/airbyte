@@ -9,7 +9,7 @@ import freezegun
 import paramiko
 import pytest
 from source_sftp_bulk.spec import SourceSFTPBulkSpec
-from source_sftp_bulk.stream_reader import SourceSFTPBulkStreamReader
+from source_sftp_bulk.stream_reader import SFTPBulkUploadableRemoteFile, SourceSFTPBulkStreamReader
 
 from airbyte_cdk.sources.file_based.exceptions import FileSizeLimitError
 
@@ -27,7 +27,7 @@ def test_stream_reader_files_read_and_filter_by_date():
             MagicMock(filename="sample_file_2.csv", st_mode=180, st_mtime=1704060200),
         ]
     ]
-    fake_client.listdir_attr = MagicMock(side_effect=files_on_server)
+    fake_client.listdir_iter = MagicMock(side_effect=files_on_server)
     with patch.object(paramiko, "Transport", MagicMock()), patch.object(paramiko, "SFTPClient", fake_client):
         reader = SourceSFTPBulkStreamReader()
         config = SourceSFTPBulkSpec(
@@ -45,9 +45,7 @@ def test_stream_reader_files_read_and_filter_by_date():
         assert files[0].last_modified == datetime.datetime(2024, 1, 1, 0, 0)
 
 
-@patch("source_sftp_bulk.stream_reader.SourceSFTPBulkStreamReader.file_size")
-def test_upload_file_size_error(file_size_mock):
-    file_size_mock.return_value = SourceSFTPBulkStreamReader.FILE_SIZE_LIMIT + 1
+def test_upload_file_size_error():
     reader = SourceSFTPBulkStreamReader()
     config = SourceSFTPBulkSpec(
         host="localhost",
@@ -59,7 +57,18 @@ def test_upload_file_size_error(file_size_mock):
     )
     reader.config = config
 
-    file = MagicMock(uri="//sample_file_1.csv")
+    class SizeOverWriteSFTPBulkUploadableRemoteFile(SFTPBulkUploadableRemoteFile):
+        @property
+        def size(self) -> int:
+            return SourceSFTPBulkStreamReader.FILE_SIZE_LIMIT + 1
+
+    file = SizeOverWriteSFTPBulkUploadableRemoteFile(
+        uri="//sample_file_1.csv",
+        last_modified=datetime.datetime(2024, 1, 1, 0, 0),
+        config=config,
+        sftp_client=MagicMock(),
+        logger=logger,
+    )
     with pytest.raises(FileSizeLimitError) as err:
         reader.upload(file, "/test", MagicMock())
-    assert str(err.value) == "File size exceeds the 1 GB limit. File uri: //sample_file_1.csv"
+    assert str(err.value) == "File size exceeds the 1.5 GB limit. File URI: //sample_file_1.csv"
