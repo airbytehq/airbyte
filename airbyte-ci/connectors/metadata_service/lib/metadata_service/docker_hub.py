@@ -16,11 +16,16 @@ def get_docker_hub_auth_token() -> str:
     if not (docker_username and docker_password):
         raise ValueError("Please set the DOCKER_HUB_USERNAME and DOCKER_HUB_PASSWORD environment variables.")
 
+    # TODO: remove
+    print(f"DOCKER_HUB_USERNAME = '{docker_username}'")
+
     auth_url = "https://hub.docker.com/v2/users/login/"
     auth_data = {"username": docker_username, "password": docker_password}
     response = requests.post(auth_url, json=auth_data)
 
     if response.status_code != 200:
+        # TODO: remove
+        time.sleep(60*60)
         raise ValueError("Failed to authenticate with Docker Hub. Please check your credentials.")
 
     token = response.json().get("token")
