@@ -10,6 +10,7 @@ import io.airbyte.cdk.load.write.SchematizedNestedValueBehavior
 import io.airbyte.cdk.load.write.StronglyTyped
 import io.airbyte.cdk.load.write.UnionBehavior
 import io.airbyte.cdk.load.write.UnknownTypesBehavior
+import io.airbyte.integrations.destination.postgres.db.toPostgresCompatibleName
 import io.airbyte.integrations.destination.postgres.PostgresConfigUpdater
 import io.airbyte.integrations.destination.postgres.PostgresContainerHelper
 import io.airbyte.integrations.destination.postgres.spec.PostgresConfigurationFactory
@@ -58,7 +59,7 @@ class PostgresAcceptanceTest :
         nullEqualsUnset = true,
         configUpdater = PostgresConfigUpdater(),
         recordMangler = PostgresTimestampNormalizationMapper,
-        nameMapper = PostgresNameMapper(),
+        nameMapper = { path -> path.map { it.toPostgresCompatibleName() } },
         useDataFlowPipeline = true,
     ) {
     companion object {
