@@ -267,8 +267,13 @@
       "statusCode": 301
     },
     {
+      "source": "/developers/using-pyairbyte",
+      "destination": "/developers/pyairbyte",
+      "statusCode": 301
+    },
+    {
       "source": "/pyairbyte",
-      "destination": "/developers/using-pyairbyte",
+      "destination": "/developers/pyairbyte",
       "statusCode": 301
     },
     {
