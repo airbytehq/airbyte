@@ -44,6 +44,7 @@ data:
     rolloutConfiguration:
       enableProgressiveRollout: false
   supportLevel: certified
+  supportsFileTransfer: true
   tags:
     - language:python
     - cdk:python-file-based
