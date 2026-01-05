@@ -62,6 +62,11 @@ class ClickhouseDirectLoadWriterWithJson :
     override fun testDedupChangePk() {
         super.testDedupChangePk()
     }
+
+    @Test
+    override fun testSchemaRegressionAppend() {
+        super.testSchemaRegressionAppend()
+    }
 }
 
 class ClickhouseDirectLoadWriterWithJsonProto :
@@ -126,12 +131,7 @@ abstract class ClickhouseAcceptanceTest(
     BasicFunctionalityIntegrationTest(
         configContents = Files.readString(configPath),
         configSpecClass = ClickhouseSpecificationOss::class.java,
-        dataDumper =
-            ClickhouseDataDumper { spec ->
-                val configOverrides = mutableMapOf<String, String>()
-                ClickhouseConfigurationFactory()
-                    .makeWithOverrides(spec as ClickhouseSpecificationOss, configOverrides)
-            },
+        dataDumper = ClickhouseDataDumper,
         destinationCleaner = ClickhouseDataCleaner,
         recordMangler = ClickhouseExpectedRecordMapper,
         isStreamSchemaRetroactive = true,
@@ -161,6 +161,7 @@ abstract class ClickhouseAcceptanceTest(
         dataChannelFormat = dataChannelFormat,
         dataChannelMedium = dataChannelMedium,
         useDataFlowPipeline = true,
+        schemaDumper = ClickhouseSchemaDumper,
     ) {
     companion object {
         @JvmStatic
@@ -182,14 +183,12 @@ abstract class ClickhouseAcceptanceTest(
     }
 }
 
-class ClickhouseDataDumper(
-    private val configProvider: (ConfigurationSpecification) -> ClickhouseConfiguration
-) : DestinationDataDumper {
+object ClickhouseDataDumper : DestinationDataDumper {
     override fun dumpRecords(
         spec: ConfigurationSpecification,
         stream: DestinationStream
     ): List<OutputRecord> {
-        val config = configProvider(spec)
+        val config = ClickhouseSpecToConfig.specToConfig(spec)
         val client = getClient(config)
 
         val isDedup = stream.importType is Dedupe
@@ -316,5 +315,13 @@ object ClientProvider {
             .setDefaultDatabase(config.resolvedDatabase)
             .retryOnFailures(ClientFaultCause.None)
             .build()
+    }
+}
+
+object ClickhouseSpecToConfig {
+    fun specToConfig(spec: ConfigurationSpecification): ClickhouseConfiguration {
+        val configOverrides = mutableMapOf<String, String>()
+        return ClickhouseConfigurationFactory()
+            .makeWithOverrides(spec as ClickhouseSpecificationOss, configOverrides)
     }
 }
