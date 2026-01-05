@@ -1,4 +1,4 @@
-# Airbyte Salesforce AI Connector
+# Salesforce agent connector
 
 Salesforce is a cloud-based CRM platform that helps businesses manage customer
 relationships, sales pipelines, and business operations. This connector provides
@@ -6,7 +6,7 @@ access to accounts, contacts, leads, opportunities, tasks, events, campaigns, ca
 notes, and attachments for sales analytics and customer relationship management.
 
 
-## Example Questions
+## Example questions
 
 - Show me my top 5 opportunities this month
 - List all contacts from [Company] in the last quarter
@@ -18,7 +18,7 @@ notes, and attachments for sales analytics and customer relationship management.
 - Identify the highest value opportunities I'm currently tracking
 - Show me the notes and attachments for [customerX]'s account
 
-## Unsupported Questions
+## Unsupported questions
 
 - Create a new lead for [personX]
 - Update the status of my sales opportunity
@@ -44,10 +44,13 @@ connector = SalesforceConnector(
     client_secret="..."
   )
 )
-result = connector.accounts.list()
+result = await connector.accounts.list()
 ```
 
-## Documentation
+
+## Full documentation
+
+This connector supports the following entities and actions.
 
 | Entity | Actions |
 |--------|---------|
@@ -65,14 +68,12 @@ result = connector.accounts.list()
 | Query | [List](./REFERENCE.md#query-list) |
 
 
-For detailed documentation on available actions and parameters, see [REFERENCE.md](./REFERENCE.md).
+For detailed documentation on available actions and parameters, see this connector's [full reference documentation](./REFERENCE.md).
 
-For the service's official API docs, see [Salesforce API Reference](https://developer.salesforce.com/docs/atlas.en-us.api_rest.meta/api_rest/intro_rest.htm).
+For the service's official API docs, see the [Salesforce API reference](https://developer.salesforce.com/docs/atlas.en-us.api_rest.meta/api_rest/intro_rest.htm).
 
-## Version Information
+## Version information
 
-**Package Version:** 0.1.11
-
-**Connector Version:** 1.0.3
-
-**Generated with connector-sdk:** c4c39c2797ecd929407c9417c728d425f77b37ed
+- **Package version:** 0.1.17
+- **Connector version:** 1.0.3
+- **Generated with Connector SDK commit SHA:** 12f6b994298f84dfa217940afe7c6b19bec4167b
