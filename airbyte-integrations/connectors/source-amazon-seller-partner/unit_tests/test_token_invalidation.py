@@ -5,10 +5,9 @@
 import json
 from unittest.mock import MagicMock, patch
 
+import components
 import pytest
 import requests
-
-import components
 from components import (
     TOKEN_EXPIRED_ERROR_MESSAGE,
     AmazonSellerPartnerWaitTimeFromHeaderBackoffStrategy,
