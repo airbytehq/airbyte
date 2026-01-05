@@ -100,9 +100,9 @@ The YouTube Data API source connector supports the following sync modes:
 
 ### Stream descriptions
 
-- **video**: Detailed information about videos from the specified channels, including title, description, thumbnails, publish date, tags, category, and language settings. This stream uses the `videos` parent stream to first discover video IDs, then fetches full video details for each.
+- **video**: Detailed information about videos from the specified channels. This stream uses the `videos` parent stream to first discover video IDs, then fetches full video details for each. Data includes snippet information (title, description, thumbnails, publish date, tags, category, language settings), content details (duration, dimension, definition, caption availability, region restrictions), statistics (view count, like count, comment count), player information (embed HTML), and status (upload status, privacy status, license, embeddable, made for kids).
 - **videos**: A list of video IDs discovered by searching the specified channels. This stream is used internally by the `video` and `comments` streams to identify which videos to fetch data for.
-- **channels**: Information about the specified YouTube channels, including channel description, custom URL, country, thumbnails, and subscriber/view/video counts.
+- **channels**: Information about the specified YouTube channels. Data includes snippet information (title, description, custom URL, country, thumbnails), content details (related playlists), statistics (subscriber count, view count, video count), branding settings (channel keywords, trailer, default language), topic details (topic categories), status (privacy status, made for kids), localizations, and content owner details.
 - **comments**: Comment threads on individual videos from the specified channels. For each video discovered in the channel, this stream fetches the top-level comments and their replies.
 - **channel_comments**: All comment threads related to the specified channels, including comments on the channel's videos and comments that mention the channel. This provides a broader view of channel engagement than the `comments` stream.
 
@@ -120,7 +120,7 @@ The YouTube Data API source connector supports the following sync modes:
 
 | Version | Date       | Pull Request | Subject                                                                                                                                                                |
 |---------|------------|--------------|------------------------------------------------------------------------------------------------------------------------------------------------------------------------|
-| 0.0.44  | 2025-12-17 | [70971](https://github.com/airbytehq/airbyte/pull/71016) | Fixed schemas  
+| 0.0.44  | 2025-12-17 | [71016](https://github.com/airbytehq/airbyte/pull/71016) | Fixed schemas  
 | 0.0.43  | 2025-12-17 | [70971](https://github.com/airbytehq/airbyte/pull/70971) | Add acceptance tests                                                                                                                         
 | 0.0.42  | 2025-11-23 | [69315](https://github.com/airbytehq/airbyte/pull/69315) | Add OAuth 2.0 support                                                                                                                       |
 | 0.0.41  | 2025-11-25 | [70079](https://github.com/airbytehq/airbyte/pull/70079) | Update dependencies|
