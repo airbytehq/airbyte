@@ -1,8 +1,8 @@
-{
+Schema: {
   "columns" : {
     "string" : {
       "type" : "String",
-      "nullable" : true
+      "nullable" : false
     },
     "number" : {
       "type" : "Decimal(38, 9)",
@@ -37,15 +37,15 @@
       "nullable" : true
     },
     "object" : {
-      "type" : "JSON",
+      "type" : "String",
       "nullable" : true
     },
     "object_with_empty_schema" : {
-      "type" : "JSON",
+      "type" : "String",
       "nullable" : true
     },
     "object_without_schema" : {
-      "type" : "JSON",
+      "type" : "String",
       "nullable" : true
     },
     "array" : {
@@ -105,15 +105,15 @@
       "nullable" : true
     },
     "object_nonnull" : {
-      "type" : "JSON",
+      "type" : "String",
       "nullable" : true
     },
     "object_with_empty_schema_nonnull" : {
-      "type" : "JSON",
+      "type" : "String",
       "nullable" : true
     },
     "object_without_schema_nonnull" : {
-      "type" : "JSON",
+      "type" : "String",
       "nullable" : true
     },
     "array_nonnull" : {
@@ -171,7 +171,15 @@
     "foo__2" : {
       "type" : "String",
       "nullable" : true
+    },
+    "UPPER_CASE" : {
+      "type" : "String",
+      "nullable" : true
+    },
+    "Mixed_Case" : {
+      "type" : "String",
+      "nullable" : true
     }
   }
 }
-TODO fetch table engine
+Table Engine: ReplacingMergeTree(_airbyte_extracted_at) ORDER BY string SETTINGS index_granularity = 8192

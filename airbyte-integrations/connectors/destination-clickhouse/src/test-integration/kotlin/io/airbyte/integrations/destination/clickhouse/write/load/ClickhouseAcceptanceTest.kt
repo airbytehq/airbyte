@@ -49,6 +49,7 @@ class ClickhouseDirectLoadWriterWithJson :
         Utils.getConfigPath("valid_connection.json"),
         SchematizedNestedValueBehavior.PASS_THROUGH,
         false,
+        goldenFileBasePath = "json_default",
     ) {
     /**
      * The way clickhouse handle json makes this test unfit JSON keeps a schema of the JSONs
@@ -78,6 +79,7 @@ class ClickhouseDirectLoadWriterWithJsonProto :
         dataChannelFormat = DataChannelFormat.PROTOBUF,
         dataChannelMedium = DataChannelMedium.SOCKET,
         unknownTypesBehavior = UnknownTypesBehavior.NULL,
+        goldenFileBasePath = "json_proto",
     ) {
     /**
      * The way clickhouse handle json makes this test unfit JSON keeps a schema of the JSONs
@@ -93,6 +95,7 @@ class ClickhouseDirectLoadWriterWithoutJson :
         Utils.getConfigPath("valid_connection_no_json.json"),
         SchematizedNestedValueBehavior.STRINGIFY,
         true,
+        goldenFileBasePath = "nonjson_default",
     )
 
 class ClickhouseDirectLoadWriterWithoutJsonProto :
@@ -104,6 +107,7 @@ class ClickhouseDirectLoadWriterWithoutJsonProto :
         dataChannelFormat = DataChannelFormat.PROTOBUF,
         dataChannelMedium = DataChannelMedium.SOCKET,
         unknownTypesBehavior = UnknownTypesBehavior.NULL,
+        goldenFileBasePath = "nonjson_proto",
     )
 
 @Disabled("Requires local bastion and CH instance to pass")
@@ -112,6 +116,7 @@ class ClickhouseDirectLoadWriterWithoutJsonSshTunnel :
         Path.of("secrets/ssh-tunnel.json"),
         SchematizedNestedValueBehavior.STRINGIFY,
         true,
+        goldenFileBasePath = "nonjson_ssh",
     ) {
     @Test
     override fun testBasicWrite() {
@@ -127,6 +132,7 @@ abstract class ClickhouseAcceptanceTest(
     isStreamSchemaRetroactiveForUnknownTypeToString: Boolean = true,
     dataChannelFormat: DataChannelFormat = DataChannelFormat.JSONL,
     dataChannelMedium: DataChannelMedium = DataChannelMedium.STDIO,
+    goldenFileBasePath: String,
 ) :
     BasicFunctionalityIntegrationTest(
         configContents = Files.readString(configPath),
@@ -162,6 +168,7 @@ abstract class ClickhouseAcceptanceTest(
         dataChannelMedium = dataChannelMedium,
         useDataFlowPipeline = true,
         schemaDumper = ClickhouseSchemaDumper,
+        goldenFileBasePath = goldenFileBasePath,
     ) {
     companion object {
         @JvmStatic
