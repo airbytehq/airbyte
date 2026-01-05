@@ -4,7 +4,6 @@
 
 package io.airbyte.integrations.destination.clickhouse.write.load
 
-import com.clickhouse.client.api.data_formats.ClickHouseBinaryFormatReader
 import io.airbyte.cdk.command.ConfigurationSpecification
 import io.airbyte.cdk.load.schema.model.TableName
 import io.airbyte.cdk.load.test.util.SchemaDumper
@@ -32,19 +31,26 @@ object ClickhouseSchemaDumper : SchemaDumper {
             Jsons.writerWithDefaultPrettyPrinter()
                 .writeValueAsString(airbyteClient.discoverSchema(tableName))
 
-        val engineQueryResponse =
+        val tableEngine =
             client
-                .query(
-                    "SELECT engine_full FROM system.tables WHERE database = {database:String} AND name = {name:String}",
-                    mapOf(
-                        "database" to tableName.namespace,
-                        "name" to tableName.name,
-                    ),
+                .newBinaryFormatReader(
+                    client
+                        .query(
+                            """
+                        SELECT engine_full FROM system.tables
+                        WHERE database = {database:String} AND name = {name:String}
+                        """.trimIndent(),
+                            mapOf(
+                                "database" to tableName.namespace,
+                                "name" to tableName.name,
+                            ),
+                        )
+                        .await()
                 )
-                .await()
-        val reader: ClickHouseBinaryFormatReader = client.newBinaryFormatReader(engineQueryResponse)
-        reader.next()
-        val tableEngine = reader.getString("engine_full")
+                .use { reader ->
+                    reader.next()
+                    reader.getString("engine_full")
+                }
         // baseSchema has newlines, so if we just do """...""".trimIndent(), it ends up kind of ugly
         return StringBuilder()
             .apply {
