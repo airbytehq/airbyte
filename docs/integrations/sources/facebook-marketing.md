@@ -350,11 +350,11 @@ This response indicates that the Facebook Graph API requires you to reduce the f
 
 ### Missing data for 7-day and 28-day view-through attribution windows
 
-Starting January 12, 2026, Meta removed support for the 7-day view-through (`7d_view`) and 28-day view-through (`28d_view`) attribution windows in the Ads Insights API. As a result these atribution windows were removed from request parameters for `ads_insights` and Ads Insights Reports streams. Therefore data previously returned for these windows is no longer available. 
+Starting January 12, 2026, Meta removed support for the 7-day view-through (`7d_view`) and 28-day view-through (`28d_view`) attribution windows in the Ads Insights API. As a result, these attribution windows were removed from request parameters for `ads_insights` and Ads Insights Reports streams. Data previously returned for these windows is no longer available. For more information, see Meta's [2025 Out-Of-Cycle Changes](https://developers.facebook.com/docs/marketing-api/out-of-cycle-changes/occ-2025/).
 
 #### What data is still available
 
-- `1d_view` atribution window remains supported and continues returning data where applicable.
+- The `1d_view` attribution window remains supported and continues returning data where applicable.
 - Click-through attribution windows (`1d_click`, `7d_click`, `28d_click`) are not affected by this change.
 
 ### Missing purchases or purchase value metrics
