@@ -4,6 +4,7 @@
 
 package io.airbyte.integrations.destination.postgres.write
 
+import io.airbyte.cdk.load.test.util.NoopNameMapper
 import io.airbyte.cdk.load.write.BasicFunctionalityIntegrationTest
 import io.airbyte.cdk.load.write.SchematizedNestedValueBehavior
 import io.airbyte.cdk.load.write.StronglyTyped
@@ -58,6 +59,7 @@ class PostgresRawAcceptanceTest :
         nullEqualsUnset = false,
         configUpdater = PostgresConfigUpdater(),
         recordMangler = PostgresExpectedRawRecordMapper,
+        nameMapper = NoopNameMapper,
         useDataFlowPipeline = true,
     ) {
     companion object {

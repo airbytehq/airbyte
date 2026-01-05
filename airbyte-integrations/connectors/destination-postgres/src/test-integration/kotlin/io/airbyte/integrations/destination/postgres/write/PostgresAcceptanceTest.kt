@@ -58,6 +58,7 @@ class PostgresAcceptanceTest :
         nullEqualsUnset = true,
         configUpdater = PostgresConfigUpdater(),
         recordMangler = PostgresTimestampNormalizationMapper,
+        nameMapper = PostgresNameMapper(),
         useDataFlowPipeline = true,
     ) {
     companion object {
