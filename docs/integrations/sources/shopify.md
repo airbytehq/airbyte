@@ -161,8 +161,9 @@ This source can sync data for the [Shopify REST API](https://shopify.dev/api/adm
 - [Order Refunds](https://shopify.dev/api/admin-rest/2024-04/resources/refund#top)
 - [Order Risks (GraphQL)](https://shopify.dev/api/admin-rest/2024-04/resources/order-risk#top)
 - [Pages](https://shopify.dev/api/admin-rest/2024-04/resources/page#top)
-- [Price Rules](https://shopify.dev/api/admin-rest/2024-04/resources/pricerule#top)
+- [Price Rules](https://shopify.dev/docs/api/admin-rest/2025-07/resources/pricerule)
 - [Products (GraphQL)](https://shopify.dev/docs/api/admin-graphql/2024-04/queries/products)
+- [Deleted Products (GraphQL)](https://shopify.dev/docs/api/admin-graphql/2024-04/queries/events) - Product deletion events
 - [Product Images (GraphQL)](https://shopify.dev/docs/api/admin-graphql/2024-04/objects/Image)
 - [Product Variants (GraphQL)](https://shopify.dev/docs/api/admin-graphql/2024-04/queries/productVariant)
 - [Shop](https://shopify.dev/api/admin-rest/2024-04/resources/shop)
@@ -176,9 +177,9 @@ This source can sync data for the [Shopify REST API](https://shopify.dev/api/adm
 
 ## Capturing deleted records
 
-The connector captures deletions for records in the `Articles`, `Blogs`, `CustomCollections`, `Orders`, `Pages`, `PriceRules` and `Products` streams.
+The connector captures deletions for records in the `Articles`, `Blogs`, `CustomCollections`, `Orders`, `Pages`, and `PriceRules` streams. When a record is deleted, the connector outputs a record with the `ID` of that record and the `deleted_at`, `deleted_message`, and `deleted_description` fields filled out. No other fields are filled out for the deleted records.
 
-When a record is deleted, the connector outputs a record with the `ID` of that record and the `deleted_at`, `deleted_message`, and `deleted_description` fields filled out. No other fields are filled out for the deleted records.
+For deleted products, use the dedicated `Deleted Products` stream, which queries the Shopify GraphQL Events API for product deletion events. This stream returns records with `id` (the product ID), `deleted_at`, `deleted_message`, and `shop_url` fields.
 
 Check the following Shopify documentation for more information about [retrieving deleted records](https://shopify.dev/docs/api/admin-rest/2024-04/resources/event).
 
@@ -248,6 +249,10 @@ For all `Shopify GraphQL BULK` api requests these limitations are applied: https
 
 | Version    | Date       | Pull Request                                             | Subject                                                                                                                                                                                                                                                                                                                                                                                   |
 |:-----------|:-----------|:---------------------------------------------------------|:------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------|
+| 3.1.0 | 2026-01-05 | [71005](https://github.com/airbytehq/airbyte/pull/71005) | Add `deleted_products` stream using GraphQL Events API |
+| 3.0.13 | 2025-10-21 | [68245](https://github.com/airbytehq/airbyte/pull/68245) | Update dependencies |
+| 3.0.12 | 2025-10-14 | [67805](https://github.com/airbytehq/airbyte/pull/67805) | Update dependencies |
+| 3.0.11 | 2025-10-07 | [67448](https://github.com/airbytehq/airbyte/pull/67448) | Update dependencies |
 | 3.0.10 | 2025-09-30 | [66904](https://github.com/airbytehq/airbyte/pull/66904) | Update dependencies |
 | 3.0.9 | 2025-09-16 | [66291](https://github.com/airbytehq/airbyte/pull/66291) | Promoting release candidate 3.0.9-rc.1 to a main version. |
 | 3.0.9-rc.1 | 2025-09-09 | [65987](https://github.com/airbytehq/airbyte/pull/65987) | Use filter field value to adjust slice for streams with ID cursor field.                                                                                                                                                                                                                                                                                                                  |

@@ -85,7 +85,7 @@ commit it in your PR.**:
 
 ```bash
 # From airbyte repo root
-connectors-qa generate-documentation docs/contributing-to-airbyte/resources/qa-checks.md
+connectors-qa generate-documentation docs/community/contributing-to-airbyte/resources/qa-checks.md
 ```
 
 ### Running tests
@@ -107,6 +107,10 @@ poe lint
 ```
 
 ## Changelog
+
+### 1.10.3
+
+Remove check that connectors enable the deprecated "acceptanceTests" test suite.
 
 ### 1.10.2
 Update Python version requirement from 3.10 to 3.11.

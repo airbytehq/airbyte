@@ -1,0 +1,3 @@
+# Ignore auto-generated connector documentation files synced from airbyte-agent-connectors repo
+# These files are generated and have formatting that doesn't conform to markdownlint rules
+docs/ai-agents/connectors/**

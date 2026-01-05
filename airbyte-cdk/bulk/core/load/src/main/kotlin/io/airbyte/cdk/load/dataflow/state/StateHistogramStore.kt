@@ -19,21 +19,29 @@ class StateHistogramStore {
     }
 
     fun acceptExpectedCounts(key: StateKey, count: Long): StateHistogram {
-        val inner = ConcurrentHashMap<StateKey, Long>()
-        inner[key] = count
+        val inner = ConcurrentHashMap<StateKey, Double>()
+        inner[key] = count.toDouble()
 
         return expected.merge(StateHistogram(inner))
     }
 
     fun isComplete(key: StateKey): Boolean {
         val expectedCount = expected.get(key)
-        val flushedCount = key.partitionKeys.sumOf { flushed.get(it) ?: 0 }
+        val flushedCount = key.partitionKeys.sumOf { flushed.get(it) ?: 0.0 }
 
         return expectedCount == flushedCount
     }
 
+    // mirrors isComplete. Purely for debugging purposes.
+    fun whyIsStateIncomplete(key: StateKey): String {
+        val expectedCount = expected.get(key)
+        val partitionFlushCounts = key.partitionKeys.map { flushed.get(it) ?: 0.0 }
+        val flushedCount = partitionFlushCounts.sum()
+        return "expectedCount $expectedCount does not equal flushedCount $flushedCount (by partition: $partitionFlushCounts)"
+    }
+
     fun remove(key: StateKey): Long? {
         key.partitionKeys.forEach { flushed.remove(it) }
-        return expected.remove(key)
+        return expected.remove(key)?.toLong()
     }
 }

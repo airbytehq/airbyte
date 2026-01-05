@@ -1,0 +1,45 @@
+{
+  "paging": {
+    "start": 0,
+    "count": 10,
+    "links": []
+  },
+  "elements": [
+    {
+      "clicks": 100,
+      "impressions": 19090,
+      "pivotValues": ["urn:li:sponsoredCampaign:123"],
+      "costInUsd": "209.449",
+      "dateRange": {
+        "start": {
+          "month": 1,
+          "day": 2,
+          "year": 2023
+        },
+        "end": {
+          "month": 1,
+          "day": 2,
+          "year": 2023
+        }
+      }
+    },
+    {
+      "clicks": 408,
+      "impressions": 20210,
+      "pivotValues": ["urn:li:sponsoredCampaign:123"],
+      "costInUsd": "509.980",
+      "dateRange": {
+        "start": {
+          "month": 1,
+          "day": 3,
+          "year": 2023
+        },
+        "end": {
+          "month": 1,
+          "day": 3,
+          "year": 2023
+        }
+      }
+    }
+  ]
+}

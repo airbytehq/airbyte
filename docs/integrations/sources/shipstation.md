@@ -51,6 +51,13 @@ Copy your key and secret and paste them into the respective fields.
 
 | Version          | Date              | Pull Request | Subject        |
 |------------------|-------------------|--------------|----------------|
+| 0.2.24 | 2025-12-16 | [70674](https://github.com/airbytehq/airbyte/pull/70674) | Update dependencies |
+| 0.2.23 | 2025-11-25 | [70104](https://github.com/airbytehq/airbyte/pull/70104) | Update dependencies |
+| 0.2.22 | 2025-11-18 | [69458](https://github.com/airbytehq/airbyte/pull/69458) | Update dependencies |
+| 0.2.21 | 2025-10-29 | [68802](https://github.com/airbytehq/airbyte/pull/68802) | Update dependencies |
+| 0.2.20 | 2025-10-21 | [68230](https://github.com/airbytehq/airbyte/pull/68230) | Update dependencies |
+| 0.2.19 | 2025-10-14 | [67777](https://github.com/airbytehq/airbyte/pull/67777) | Update dependencies |
+| 0.2.18 | 2025-10-07 | [67430](https://github.com/airbytehq/airbyte/pull/67430) | Update dependencies |
 | 0.2.17 | 2025-09-30 | [66910](https://github.com/airbytehq/airbyte/pull/66910) | Update dependencies |
 | 0.2.16 | 2025-09-24 | [66256](https://github.com/airbytehq/airbyte/pull/66256) | Update dependencies |
 | 0.2.15 | 2025-09-09 | [65722](https://github.com/airbytehq/airbyte/pull/65722) | Update dependencies |
