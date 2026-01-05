@@ -1,4 +1,4 @@
-# Using PyAirbyte
+# PyAirbyte
 
 PyAirbyte brings the power of Airbyte to every Python and AI developer.
 
@@ -21,12 +21,11 @@ pip install airbyte
 
 ## Demos
 
-Please check out this [YouTube video](https://youtu.be/tUTE-csnwCI) on how to get started with PyAirbyte!
+Check out this [YouTube video](https://youtu.be/tUTE-csnwCI) on how to get started with PyAirbyte.
 
 ## PyAirbyte API Reference
 
-Please refer to our [PyAirbyte API Reference](https://airbytehq.github.io/PyAirbyte/index.html) for
-a full list of classes, methods, and usage examples.
+See the [PyAirbyte API Reference](./reference/) for a full list of classes, methods, and usage examples.
 
 ## Usage
 
