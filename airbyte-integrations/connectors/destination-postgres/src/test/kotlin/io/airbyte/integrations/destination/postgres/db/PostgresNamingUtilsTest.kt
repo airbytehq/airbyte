@@ -50,7 +50,6 @@ internal class PostgresNamingUtilsTest {
 
     @Test
     fun testOnlySpecialCharactersReturnsFallbackName() {
-        val result = "@#$%^&*".toPostgresCompatibleName()
         // All special characters will be converted to underscores, which when collapsed
         // becomes "_______", but since it's not empty, it shouldn't trigger the fallback
         assertDoesNotThrow { "@#$%^&*".toPostgresCompatibleName() }
@@ -58,7 +57,7 @@ internal class PostgresNamingUtilsTest {
 
     @Test
     fun testLongNameTruncation() {
-        // PostgreSQL has a 63 character limit for identifiers
+        // PostgreSQL has a 63 characters limit for identifiers
         val longName = "a".repeat(100)
         val result = longName.toPostgresCompatibleName()
         assertTrue(result.length <= 63, "Result should be truncated to 63 characters or less")
