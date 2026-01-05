@@ -4,6 +4,8 @@
 
 package io.airbyte.cdk.load.test.util
 
+import io.airbyte.cdk.command.ConfigurationSpecification
+
 /**
  * Interstitial interface. Most destinations will eventually have a
  * [io.airbyte.cdk.load.component.TableSchemaEvolutionClient] instead.
@@ -19,5 +21,9 @@ interface SchemaDumper {
      *
      * and then destinations can append other stuff if they want (tablengine, etc.)
      */
-    fun discoverSchema(namespace: String?, name: String): String
+    suspend fun discoverSchema(
+        spec: ConfigurationSpecification,
+        namespace: String?,
+        name: String
+    ): String
 }

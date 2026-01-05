@@ -90,6 +90,7 @@ import java.time.OffsetDateTime
 import java.time.OffsetTime
 import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.runBlocking
+import kotlinx.coroutines.test.runTest
 import org.junit.jupiter.api.Assertions.assertDoesNotThrow
 import org.junit.jupiter.api.Assertions.assertEquals
 import org.junit.jupiter.api.Assertions.assertTrue
@@ -5176,21 +5177,21 @@ abstract class BasicFunctionalityIntegrationTest(
         }
     }
 
+    // TODO also do dedup
     @Test
-    open fun testSchemaRegression() {
+    open fun testSchemaRegressionAppend() = runTest {
         assumeTrue(schemaDumper != null)
         val stream =
             DestinationStream(
                 randomizedNamespace,
                 "test_stream",
-                // TODO also do dedup
                 Append,
                 // TODO use all the types here
+                // TODO field names with funky chars
                 ObjectType(linkedMapOf("int" to intType)),
                 generationId = 1,
                 minimumGenerationId = 1,
                 syncId = 42,
-                // TODO use nontrivial namespace mapper
                 namespaceMapper = namespaceMapperForMedium(),
                 tableSchema = emptyTableSchema,
             )
@@ -5201,10 +5202,11 @@ abstract class BasicFunctionalityIntegrationTest(
         )
         val actualSchema =
             schemaDumper!!.discoverSchema(
+                parsedConfig,
                 stream.mappedDescriptor.namespace,
                 stream.mappedDescriptor.name
             )
-        CharacterizationTest.doAssert("schema-regression/append/alltypes.txt", actualSchema)
+        CharacterizationTest.doAssert("schema-regression/column_names/append.txt", actualSchema)
     }
 
     private fun schematizedObject(

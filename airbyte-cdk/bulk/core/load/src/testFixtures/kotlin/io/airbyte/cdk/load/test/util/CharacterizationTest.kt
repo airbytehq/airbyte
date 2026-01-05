@@ -16,7 +16,7 @@ object CharacterizationTest {
     ) {
         val goldenFilePath = testResourcesPath.resolve(goldenFileName)
         if (!Files.exists(goldenFilePath)) {
-            Files.createDirectories(testResourcesPath)
+            Files.createDirectories(goldenFilePath.parent)
             Files.createFile(goldenFilePath)
         }
         val goldenFileContents = Files.readString(goldenFilePath)
