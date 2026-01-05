@@ -58,9 +58,14 @@ jobs:
             echo "version=${LATEST_VERSION}" >> $GITHUB_OUTPUT
           fi
 
-      - name: Install PyAirbyte
+      - name: Clone PyAirbyte Repository
         run: |
-          pip install airbyte==${{ steps.version.outputs.version }}
+          # Clone PyAirbyte at the specific version tag
+          # pydoc-markdown needs source files, not installed packages
+          git clone --depth 1 --branch "v${{ steps.version.outputs.version }}" \
+            https://github.com/airbytehq/PyAirbyte.git pyairbyte-source
+          echo "Cloned PyAirbyte v${{ steps.version.outputs.version }}"
+          ls -la pyairbyte-source/
 
       - name: Create pydoc-markdown Configuration
         run: |
@@ -68,13 +73,11 @@ jobs:
           loaders:
             - type: python
               search_path:
-                - .
+                - ./pyairbyte-source
               packages:
                 - airbyte
 
           processors:
-            - type: filter
-              skip_empty_modules: true
             - type: smart
             - type: crossref
 
@@ -88,11 +91,8 @@ jobs:
               escape_html_in_docstring: true
               render_module_header: true
               descriptive_class_title: true
-              add_method_class_prefix: false
-              add_member_class_prefix: false
               signature_with_def: true
               signature_code_block: true
-              render_typehint_in_data_header: true
           EOF
 
       - name: Generate API Documentation
