@@ -5184,7 +5184,6 @@ abstract class BasicFunctionalityIntegrationTest(
         }
     }
 
-    // TODO also do dedup
     @Test
     open fun testSchemaRegressionAppend() {
         baseSchemaRegressionTest("append", Append)
