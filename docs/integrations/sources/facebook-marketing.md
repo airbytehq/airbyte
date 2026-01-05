@@ -348,6 +348,15 @@ This response indicates that the Facebook Graph API requires you to reduce the f
 2. **Select the Source**: Click on the source that is having issues with synchronization.
 3. **Toggle Fields**: Unselect (toggle off) the fields you do not require. This action will ensure that these fields are not requested from the Graph API.
 
+### Missing data for 7-day and 28-day view-through attribution windows
+
+Starting January 12, 2026, Meta removed support for the 7-day view-through (`7d_view`) and 28-day view-through (`28d_view`) attribution windows in the Ads Insights API. As a result these atribution windows were removed from request parameters for `ads_insights` and Ads Insights Reports streams. Therefore data previously returned for these windows is no longer available. 
+
+#### What data is still available
+
+- `1d_view` atribution window remains supported and continues returning data where applicable.
+- Click-through attribution windows (`1d_click`, `7d_click`, `28d_click`) are not affected by this change.
+
 ### Missing purchases or purchase value metrics
 
 You may notice that Purchases or purchase value fields in the Ads Insights stream appear incomplete or under-reported for certain date ranges. This issue has been observed across multiple platforms, including direct Facebook API calls. It's not specific to Airbyte, but linked to intermittent upstream API behavior.
@@ -360,7 +369,7 @@ API users have reported missing purchase metrics on [Reddit](https://www.reddit.
 
 Facebook’s Ads Insights API dynamically aggregates and filters metrics. Purchase data may be missing or inconsistent for the following reasons.
 
-- Attribution window processing: Facebook re-attributes purchases up to 28 days after an impression or click, meaning recent data can fluctuate or appear missing until finalized.
+- Attribution window processing: Facebook re-attributes purchases up to 28 days after a click or 1 day after an impression, meaning recent data can fluctuate or appear missing until finalized.
 
 - Complex breakdowns or field combinations: including multiple breakdowns like `action_type`, `action_target_id`, and `action_destination` can result in partial or truncated responses.
 
