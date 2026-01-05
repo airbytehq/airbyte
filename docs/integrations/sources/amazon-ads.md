@@ -141,6 +141,16 @@ The 'Reports' stream(s) by default will have `timeUnit` set to `SUMMARY`. If you
 
 Information about expected report generation waiting time can be found [here](https://advertising.amazon.com/API/docs/en-us/get-started/developer-notes).
 
+### Rate Limits
+
+The Amazon Ads API uses dynamic rate limiting that varies by region and system load. Rate limits are not publicly documented with specific numbers. For more details, see the [Amazon Ads API Rate Limiting documentation](https://advertising.amazon.com/API/docs/en-us/reference/concepts/rate-limiting).
+
+**Adjusting Concurrency Settings:**
+
+If you experience rate limiting errors (429 status codes) during syncs, decrease the "Number of concurrent workers" setting in your connector configuration to reduce the load on the API.
+
+If you need better sync performance and are not experiencing rate limiting errors, you can increase the "Number of concurrent workers" setting (up to a maximum of 20) to improve throughput.
+
 ### Data type map
 
 | Integration Type         | Airbyte Type |
@@ -159,6 +169,9 @@ Information about expected report generation waiting time can be found [here](ht
 
 | Version    | Date       | Pull Request                                             | Subject                                                                                                                                                                |
 |:-----------|:-----------|:---------------------------------------------------------|:-----------------------------------------------------------------------------------------------------------------------------------------------------------------------|
+| 7.3.10 | 2025-12-16 | [70937](https://github.com/airbytehq/airbyte/pull/70937) | Update dependencies |
+| 7.3.9 | 2025-12-11 | [69836](https://github.com/airbytehq/airbyte/pull/69836) | Increase max concurrency to 20 and add rate limits documentation |
+| 7.3.8 | 2025-11-25 | [69911](https://github.com/airbytehq/airbyte/pull/69911) | Update dependencies |
 | 7.3.7 | 2025-10-29 | [69040](https://github.com/airbytehq/airbyte/pull/69040) | Update dependencies |
 | 7.3.6 | 2025-10-21 | [68579](https://github.com/airbytehq/airbyte/pull/68579) | Raise report creation errors as customer config errors instead of system errors. |
 | 7.3.5 | 2025-09-30 | [66760](https://github.com/airbytehq/airbyte/pull/66760) | Update dependencies |

@@ -32,4 +32,11 @@ data:
     pypi:
       enabled: false
       packageName: airbyte-source-qonto
+  externalDocumentationUrls:
+    - title: Qonto API documentation
+      url: https://api-doc.qonto.com/
+      type: api_reference
+    - title: Qonto authentication
+      url: https://api-doc.qonto.com/#authentication
+      type: authentication_guide
 metadataSpecVersion: "1.0"

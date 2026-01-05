@@ -44,4 +44,14 @@ data:
   supportsRefreshes: true
   tags:
     - language:java
+  externalDocumentationUrls:
+    - title: AWS S3 documentation
+      url: https://docs.aws.amazon.com/s3/
+      type: api_reference
+    - title: IAM authentication
+      url: https://docs.aws.amazon.com/IAM/latest/UserGuide/id_credentials_access-keys.html
+      type: authentication_guide
+    - title: Bucket policies and permissions
+      url: https://docs.aws.amazon.com/AmazonS3/latest/userguide/access-policy-language-overview.html
+      type: permissions_scopes
 metadataSpecVersion: "1.0"
