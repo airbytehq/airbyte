@@ -34,35 +34,33 @@ class PostgresColumnManager(
     }
 
     /**
-     * Get the list of Airbyte meta column names. In raw mode, includes _airbyte_data and
-     * _airbyte_loaded_at. In schema mode, only includes the standard meta columns.
+     * Get the list of Airbyte meta column names. In raw mode, includes _airbyte_loaded_at and
+     * _airbyte_data as additional columns. In schema mode, only includes the standard meta columns.
      *
      * @return List of meta column names
      */
     fun getMetaColumns(): List<String> =
         if (config.legacyRawTablesOnly) {
-            Constants.rawModeMetaCols
+            Constants.standardMetaCols + Constants.rawOnlyCols
         } else {
-            Constants.schemaModeMetaCols
+            Constants.standardMetaCols
         }
 
     object Constants {
-        val rawModeMetaCols =
+        /** Standard meta columns present in both raw and schema modes */
+        val standardMetaCols =
             listOf(
                 Meta.COLUMN_NAME_AB_RAW_ID,
                 Meta.COLUMN_NAME_AB_EXTRACTED_AT,
                 Meta.COLUMN_NAME_AB_META,
                 Meta.COLUMN_NAME_AB_GENERATION_ID,
-                Meta.COLUMN_NAME_AB_LOADED_AT,
-                Meta.COLUMN_NAME_DATA,
             )
 
-        val schemaModeMetaCols =
+        /** Additional columns only present in raw/legacy mode */
+        val rawOnlyCols =
             listOf(
-                Meta.COLUMN_NAME_AB_RAW_ID,
-                Meta.COLUMN_NAME_AB_EXTRACTED_AT,
-                Meta.COLUMN_NAME_AB_META,
-                Meta.COLUMN_NAME_AB_GENERATION_ID,
+                Meta.COLUMN_NAME_AB_LOADED_AT,
+                Meta.COLUMN_NAME_DATA,
             )
     }
 }
