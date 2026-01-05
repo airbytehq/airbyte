@@ -21,11 +21,11 @@
       "destination": "/developers/terraform-documentation",
       "statusCode": 301
     },
-    {
-      "source": "/platform/using-airbyte/pyairbyte/getting-started",
-      "destination": "/developers/using-pyairbyte",
-      "statusCode": 301
-    },
+        {
+          "source": "/platform/using-airbyte/pyairbyte/getting-started",
+          "destination": "/developers/pyairbyte",
+          "statusCode": 301
+        },
     {
       "source": "/operator-guides/configuring-airbyte-db",
       "destination": "/platform/deploying-airbyte/integrations/database",

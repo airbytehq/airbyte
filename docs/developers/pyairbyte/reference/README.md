@@ -1,7 +1,3 @@
----
-slug: /developers/pyairbyte/reference
----
-
 # PyAirbyte API Reference
 
 This section contains the auto-generated API reference documentation for PyAirbyte.

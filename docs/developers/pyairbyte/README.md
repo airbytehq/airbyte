@@ -1,7 +1,3 @@
----
-slug: /developers/pyairbyte
----
-
 # PyAirbyte
 
 PyAirbyte brings the power of Airbyte to every Python and AI developer.
