@@ -7,6 +7,7 @@ package io.airbyte.cdk.load.dataflow.config
 import io.micronaut.context.annotation.Factory
 import jakarta.inject.Named
 import jakarta.inject.Singleton
+import java.time.Duration
 import java.util.concurrent.Executors
 import kotlinx.coroutines.CoroutineDispatcher
 import kotlinx.coroutines.CoroutineScope
@@ -52,4 +53,12 @@ class DispatcherBeanFactory {
     @Named("streamFinalizeDispatcher")
     @Singleton
     fun streamFinalizeDispatcher() = Dispatchers.Default.limitedParallelism(10)
+
+    /**
+     * Interval at which the state reconciler checks for complete states to flush.
+     * Defaults to 30 seconds if not provided.
+     */
+    @Named("stateReconcilerInterval")
+    @Singleton
+    fun stateReconcilerInterval(): Duration? = null
 }
