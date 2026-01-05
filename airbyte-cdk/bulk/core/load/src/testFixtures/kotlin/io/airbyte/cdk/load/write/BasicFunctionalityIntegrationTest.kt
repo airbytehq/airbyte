@@ -5186,9 +5186,119 @@ abstract class BasicFunctionalityIntegrationTest(
                 randomizedNamespace,
                 "test_stream",
                 Append,
-                // TODO use all the types here
                 // TODO field names with funky chars
-                ObjectType(linkedMapOf("int" to intType)),
+                ObjectType(
+                    linkedMapOf(
+                        // Validate every airbyte type
+                        "string" to FieldType(StringType, nullable = true),
+                        "number" to FieldType(NumberType, nullable = true),
+                        "integer" to FieldType(IntegerType, nullable = true),
+                        "boolean" to FieldType(BooleanType, nullable = true),
+                        "timestamp_with_timezone" to
+                            FieldType(TimestampTypeWithTimezone, nullable = true),
+                        "timestamp_without_timezone" to
+                            FieldType(TimestampTypeWithoutTimezone, nullable = true),
+                        "time_with_timezone" to FieldType(TimeTypeWithTimezone, nullable = true),
+                        "time_without_timezone" to
+                            FieldType(TimeTypeWithoutTimezone, nullable = true),
+                        "date" to FieldType(DateType, nullable = true),
+                        "object" to
+                            FieldType(
+                                ObjectType(linkedMapOf("foo" to numberType)),
+                                nullable = true
+                            ),
+                        "object_with_empty_schema" to
+                            FieldType(ObjectTypeWithEmptySchema, nullable = true),
+                        "object_without_schema" to
+                            FieldType(ObjectTypeWithoutSchema, nullable = true),
+                        "array" to FieldType(ArrayType(numberType), nullable = true),
+                        "array_without_schema" to
+                            FieldType(ArrayTypeWithoutSchema, nullable = true),
+                        "union" to
+                            FieldType(
+                                UnionType.of(
+                                    listOf(IntegerType, ObjectTypeWithoutSchema),
+                                    isLegacyUnion = false
+                                ),
+                                nullable = true
+                            ),
+                        "legacy_union" to
+                            FieldType(
+                                UnionType.of(
+                                    listOf(IntegerType, ObjectTypeWithoutSchema),
+                                    isLegacyUnion = false
+                                ),
+                                nullable = true
+                            ),
+                        "unknown" to
+                            FieldType(
+                                UnknownType(Jsons.readTree("""{"type":"potato"}""")),
+                                nullable = true
+                            ),
+                        // and their nonnull equivalents
+                        "string_nonnull" to FieldType(StringType, nullable = false),
+                        "number_nonnull" to FieldType(NumberType, nullable = false),
+                        "integer_nonnull" to FieldType(IntegerType, nullable = false),
+                        "boolean_nonnull" to FieldType(BooleanType, nullable = false),
+                        "timestamp_with_timezone_nonnull" to
+                            FieldType(TimestampTypeWithTimezone, nullable = false),
+                        "timestamp_without_timezone_nonnull" to
+                            FieldType(TimestampTypeWithoutTimezone, nullable = false),
+                        "time_with_timezone_nonnull" to
+                            FieldType(TimeTypeWithTimezone, nullable = false),
+                        "time_without_timezone_nonnull" to
+                            FieldType(TimeTypeWithoutTimezone, nullable = false),
+                        "date_nonnull" to FieldType(DateType, nullable = false),
+                        "object_nonnull" to
+                            FieldType(
+                                ObjectType(linkedMapOf("foo" to numberType)),
+                                nullable = false
+                            ),
+                        "object_with_empty_schema_nonnull" to
+                            FieldType(ObjectTypeWithEmptySchema, nullable = false),
+                        "object_without_schema_nonnull" to
+                            FieldType(ObjectTypeWithoutSchema, nullable = false),
+                        "array_nonnull" to FieldType(ArrayType(numberType), nullable = false),
+                        "array_without_schema_nonnull" to
+                            FieldType(ArrayTypeWithoutSchema, nullable = false),
+                        "union_nonnull" to
+                            FieldType(
+                                UnionType.of(
+                                    listOf(IntegerType, ObjectTypeWithoutSchema),
+                                    isLegacyUnion = false
+                                ),
+                                nullable = false
+                            ),
+                        "legacy_union_nonnull" to
+                            FieldType(
+                                UnionType.of(
+                                    listOf(IntegerType, ObjectTypeWithoutSchema),
+                                    isLegacyUnion = false
+                                ),
+                                nullable = false
+                            ),
+                        "unknown_nonnull" to
+                            FieldType(
+                                UnknownType(Jsons.readTree("""{"type":"potato"}""")),
+                                nullable = false
+                            ),
+                        // and some interesting identifiers:
+                        // common SQL reserved words
+                        "table" to FieldType(StringType, nullable = true),
+                        "column" to FieldType(StringType, nullable = true),
+                        "create" to FieldType(StringType, nullable = true),
+                        "delete" to FieldType(StringType, nullable = true),
+                        // funky chars
+                        "é,./<>?'\";[]\\:{}|`~!@#$%^&*()_+-=" to
+                            FieldType(StringType, nullable = true),
+                        // starts with a number
+                        "1column" to FieldType(StringType, nullable = true),
+                        // column names that probably collide
+                        "foo!" to FieldType(StringType, nullable = true),
+                        "foo$" to FieldType(StringType, nullable = true),
+                        "foo_" to FieldType(StringType, nullable = true),
+                    )
+                ),
                 generationId = 1,
                 minimumGenerationId = 1,
                 syncId = 42,
