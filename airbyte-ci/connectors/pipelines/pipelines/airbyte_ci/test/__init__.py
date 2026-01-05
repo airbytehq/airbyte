@@ -14,7 +14,6 @@ INTERNAL_POETRY_PACKAGES = [
     "airbyte-ci/connectors/erd",
     "airbyte-ci/connectors/live-tests",
     "airbyte-ci/connectors/metadata_service/lib",
-    "airbyte-ci/connectors/metadata_service/orchestrator",
     "airbyte-integrations/bases/connector-acceptance-test",
 ]
 
