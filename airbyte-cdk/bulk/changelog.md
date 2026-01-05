@@ -1,3 +1,7 @@
+## Version 0.1.94
+
+extract cdk: fix trigger table handling of empty change tables
+
 ## Version 0.1.93
 
 **Load CDK**
