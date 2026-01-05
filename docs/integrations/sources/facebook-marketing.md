@@ -329,6 +329,10 @@ Please be aware that some fields, such as `conversions` and `conversion_values`,
 
 The Facebook Marketing connector uses the `lookback_window` parameter to repeatedly read data from the last `<lookback_window>` days during an Incremental sync. This means some data will be synced twice (or possibly more often) despite the cursor value being up to date, in order to capture updated ads conversion data from Facebook. You can change this date window by adjusting the `lookback_window` parameter when setting up the source, up to a maximum of 28 days. Smaller values will result in fewer duplicates, while larger values provide more accurate results. For a deeper understanding of the purpose and role of the attribution window, refer to this [Meta article](https://www.facebook.com/business/help/458681590974355?id=768381033531365).
 
+:::warning Attribution Window Deprecation
+As of January 12, 2026, Meta has deprecated the 7-day view-through (`7d_view`) and 28-day view-through (`28d_view`) attribution windows in the Ads Insights API. Queries using these attribution windows will return no data for those specific windows. The following attribution windows remain available: 1-day click (`1d_click`), 7-day click (`7d_click`), 28-day click (`28d_click`), 1-day view (`1d_view`), and 1-day engaged view. If you have Custom Insights configured with `7d_view` or `28d_view` attribution windows, those fields will no longer contain data. For more information, see Meta's [2025 Out-Of-Cycle Changes](https://developers.facebook.com/docs/marketing-api/out-of-cycle-changes/occ-2025/).
+:::
+
 ## Data type map
 
 | Integration Type | Airbyte Type |
