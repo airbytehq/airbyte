@@ -124,11 +124,21 @@ jobs:
             echo "has_changes=true" >> $GITHUB_OUTPUT
           fi
 
+      - name: Authenticate as GitHub App
+        if: steps.changes.outputs.has_changes == 'true'
+        uses: actions/create-github-app-token@df432ceedc7162793a195dd1713ff69aefc7379e # v2.0.6
+        id: get-app-token
+        with:
+          owner: "airbytehq"
+          repositories: "airbyte"
+          app-id: ${{ secrets.OCTAVIA_BOT_APP_ID }}
+          private-key: ${{ secrets.OCTAVIA_BOT_PRIVATE_KEY }}
+
       - name: Create Pull Request
         if: steps.changes.outputs.has_changes == 'true'
         uses: peter-evans/create-pull-request@271a8d0340265f705b14b6d32b9829c1cb33d45e # v7.0.8
         with:
-          token: ${{ secrets.GITHUB_TOKEN }}
+          token: ${{ steps.get-app-token.outputs.token }}
           commit-message: "docs: Update PyAirbyte API reference documentation for v${{ steps.version.outputs.version }}"
           title: "docs: Update PyAirbyte API reference documentation for v${{ steps.version.outputs.version }}"
           body: |
