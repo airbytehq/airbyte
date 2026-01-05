@@ -140,6 +140,16 @@ class DeletedProducts(IncrementalShopifyStream):
     Stream for fetching deleted products using the Shopify GraphQL Events API.
     This stream queries events with action:destroy and subject_type:Product to get deleted product records.
     https://shopify.dev/docs/api/admin-graphql/latest/queries/events
+    
+    Note: This stream extends IncrementalShopifyStream (REST base class) rather than IncrementalShopifyGraphQlBulkStream
+    because it uses Shopify's standard GraphQL Events API, NOT the Bulk Operations API (bulkOperationRunQuery).
+    The Events API has a fundamentally different architecture:
+    - Uses immediate queries with cursor pagination (not async job creation + file download)
+    - Returns results in response.data.events.nodes (not JSONL files)
+    - Requires different URL endpoint (/graphql.json), request format (POST with query in body), and pagination logic
+    
+    Therefore, url_base, path, request_params, next_page_token, and parse_response are overridden to accommodate
+    the GraphQL request/response structure while maintaining incremental sync capabilities from the base class.
     """
 
     data_field = "graphql"
