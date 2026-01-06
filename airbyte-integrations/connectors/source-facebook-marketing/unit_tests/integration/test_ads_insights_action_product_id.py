@@ -161,7 +161,7 @@ def _job_start_request(
         "breakdowns": ["product_id"],
         "fields": body_fields,
         "time_increment": 1,
-        "action_attribution_windows": ["1d_click", "7d_click", "28d_click", "1d_view", "7d_view", "28d_view"],
+        "action_attribution_windows": ["1d_click", "7d_click", "28d_click", "1d_view"],
         "filtering": [
             {
                 "field": f"ad.effective_status",
