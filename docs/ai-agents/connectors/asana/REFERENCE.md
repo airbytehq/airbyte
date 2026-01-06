@@ -35,7 +35,7 @@ The Asana connector supports the following entities and actions.
 
 #### Tasks List
 
-Returns a paginated list of tasks
+Returns a paginated list of tasks. Must include either a project OR a section OR a workspace AND assignee parameter.
 
 **Python SDK**
 
@@ -205,7 +205,7 @@ curl --location 'https://api.airbyte.ai/api/v1/connectors/instances/{your_connec
 
 #### Workspace Task Search List
 
-Returns tasks that match the specified search criteria. Note - This endpoint requires a premium Asana account.
+Returns tasks that match the specified search criteria. Note - This endpoint requires a premium Asana account. At least one search parameter must be provided.
 
 **Python SDK**
 
