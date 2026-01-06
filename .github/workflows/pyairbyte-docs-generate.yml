@@ -94,20 +94,22 @@ jobs:
       - name: Add Docusaurus Frontmatter
         run: |
           # Add Docusaurus-compatible frontmatter to generated markdown files
-          # Use unique id based on file path to avoid translation key conflicts
+          # Use unique id and title based on file path to avoid translation key conflicts
+          # See: https://github.com/facebook/docusaurus/discussions/11458
           base_dir="docs/developers/pyairbyte/reference"
           for file in $(find "$base_dir" -name "*.md"); do
-            filename=$(basename "$file" .md)
             # Generate unique id from relative path (e.g., airbyte/mcp/cloud_ops)
             rel_path="${file#$base_dir/}"
-            unique_id="${rel_path%.md}"
-            # Replace slashes with dashes for the id
-            unique_id=$(echo "$unique_id" | tr '/' '-')
+            module_path="${rel_path%.md}"
+            # Replace slashes with dots for the title (Python module notation)
+            module_title=$(echo "$module_path" | tr '/' '.')
+            # Replace slashes with dashes for the id (URL-safe)
+            unique_id=$(echo "$module_path" | tr '/' '-')
             # Create a temp file with frontmatter and original content
             {
               echo "---"
               echo "id: ${unique_id}"
-              echo "title: ${filename}"
+              echo "title: ${module_title}"
               echo "---"
               echo ""
               cat "$file"
