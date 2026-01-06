@@ -9,26 +9,22 @@ for customer support analytics and service performance insights.
 
 ## Example questions
 
-The Zendesk-Support connector is optimized to handle prompts like these.
-
 - Show me the tickets assigned to me last week
 - What are the top 5 support issues our organization has faced this month?
-- List all unresolved tickets for {customer}
+- List all unresolved tickets for [customerX]
 - Analyze the satisfaction ratings for our support team in the last 30 days
 - Compare ticket resolution times across different support groups
-- Show me the details of recent tickets tagged with {tag}
+- Show me the details of recent tickets tagged with [specific tag]
 - Identify the most common ticket fields used in our support workflow
 - Summarize the performance of our SLA policies this quarter
 
 ## Unsupported questions
 
-The Zendesk-Support connector isn't currently able to handle prompts like these.
-
-- Create a new support ticket for {customer}
+- Create a new support ticket for [customerX]
 - Update the priority of this ticket
-- Assign this ticket to {team_member}
+- Assign this ticket to [teamMember]
 - Delete these old support tickets
-- Send an automatic response to {customer}
+- Send an automatic response to [customerX]
 
 ## Installation
 
@@ -107,6 +103,6 @@ For the service's official API docs, see the [Zendesk-Support API reference](htt
 
 ## Version information
 
-- **Package version:** 0.18.27
-- **Connector version:** 0.1.4
-- **Generated with Connector SDK commit SHA:** e0e2f9890347de01530666b6ed5ed7bd22452c62
+- **Package version:** 0.18.24
+- **Connector version:** 0.1.3
+- **Generated with Connector SDK commit SHA:** 12f6b994298f84dfa217940afe7c6b19bec4167b
