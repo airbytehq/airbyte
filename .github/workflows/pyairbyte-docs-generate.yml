@@ -94,12 +94,12 @@ jobs:
       - name: Add Docusaurus Frontmatter
         run: |
           # Add Docusaurus-compatible frontmatter to generated markdown files
+          # Only add title - let Docusaurus generate sidebar from directory structure
           for file in $(find docs/developers/pyairbyte/reference -name "*.md"); do
             filename=$(basename "$file" .md)
             # Create a temp file with frontmatter and original content
             {
               echo "---"
-              echo "sidebar_label: ${filename}"
               echo "title: ${filename}"
               echo "---"
               echo ""
