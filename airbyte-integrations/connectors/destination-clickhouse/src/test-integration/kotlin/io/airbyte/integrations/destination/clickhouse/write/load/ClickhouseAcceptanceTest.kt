@@ -49,7 +49,6 @@ class ClickhouseDirectLoadWriterWithJson :
         Utils.getConfigPath("valid_connection.json"),
         SchematizedNestedValueBehavior.PASS_THROUGH,
         false,
-        goldenFileBasePath = "json_default",
     ) {
     /**
      * The way clickhouse handle json makes this test unfit JSON keeps a schema of the JSONs
@@ -79,7 +78,6 @@ class ClickhouseDirectLoadWriterWithJsonProto :
         dataChannelFormat = DataChannelFormat.PROTOBUF,
         dataChannelMedium = DataChannelMedium.SOCKET,
         unknownTypesBehavior = UnknownTypesBehavior.NULL,
-        goldenFileBasePath = "json_proto",
     ) {
     /**
      * The way clickhouse handle json makes this test unfit JSON keeps a schema of the JSONs
@@ -95,7 +93,6 @@ class ClickhouseDirectLoadWriterWithoutJson :
         Utils.getConfigPath("valid_connection_no_json.json"),
         SchematizedNestedValueBehavior.STRINGIFY,
         true,
-        goldenFileBasePath = "nonjson_default",
     )
 
 class ClickhouseDirectLoadWriterWithoutJsonProto :
@@ -107,7 +104,6 @@ class ClickhouseDirectLoadWriterWithoutJsonProto :
         dataChannelFormat = DataChannelFormat.PROTOBUF,
         dataChannelMedium = DataChannelMedium.SOCKET,
         unknownTypesBehavior = UnknownTypesBehavior.NULL,
-        goldenFileBasePath = "nonjson_proto",
     )
 
 @Disabled("Requires local bastion and CH instance to pass")
@@ -116,7 +112,6 @@ class ClickhouseDirectLoadWriterWithoutJsonSshTunnel :
         Path.of("secrets/ssh-tunnel.json"),
         SchematizedNestedValueBehavior.STRINGIFY,
         true,
-        goldenFileBasePath = "nonjson_ssh",
     ) {
     @Test
     override fun testBasicWrite() {
@@ -132,7 +127,6 @@ abstract class ClickhouseAcceptanceTest(
     isStreamSchemaRetroactiveForUnknownTypeToString: Boolean = true,
     dataChannelFormat: DataChannelFormat = DataChannelFormat.JSONL,
     dataChannelMedium: DataChannelMedium = DataChannelMedium.STDIO,
-    goldenFileBasePath: String,
 ) :
     BasicFunctionalityIntegrationTest(
         configContents = Files.readString(configPath),
@@ -168,7 +162,6 @@ abstract class ClickhouseAcceptanceTest(
         dataChannelMedium = dataChannelMedium,
         useDataFlowPipeline = true,
         schemaDumper = ClickhouseSchemaDumper,
-        goldenFileBasePath = goldenFileBasePath,
     ) {
     companion object {
         @JvmStatic
@@ -203,7 +196,8 @@ object ClickhouseDataDumper : DestinationDataDumper {
         val output = mutableListOf<OutputRecord>()
 
         val cleanedNamespace =
-            "${stream.mappedDescriptor.namespace ?: config.resolvedDatabase}".toClickHouseCompatibleName()
+            (stream.mappedDescriptor.namespace ?: config.resolvedDatabase)
+                .toClickHouseCompatibleName()
         val cleanedStreamName = stream.mappedDescriptor.name.toClickHouseCompatibleName()
 
         val namespacedTableName = "$cleanedNamespace.$cleanedStreamName"
@@ -261,8 +255,8 @@ object ClickhouseDataCleaner : DestinationCleaner {
                     "hostname" to ClickhouseContainerHelper.getIpAddress()!!,
                     "port" to (ClickhouseContainerHelper.getPort()?.toString())!!,
                     "protocol" to "http",
-                    "username" to ClickhouseContainerHelper.getUsername()!!,
-                    "password" to ClickhouseContainerHelper.getPassword()!!,
+                    "username" to ClickhouseContainerHelper.getUsername(),
+                    "password" to ClickhouseContainerHelper.getPassword(),
                 )
             )
 
@@ -281,7 +275,7 @@ object ClickhouseDataCleaner : DestinationCleaner {
 
                 client.query("DROP DATABASE IF EXISTS $databaseName").get()
             }
-        } catch (e: Exception) {
+        } catch (_: Exception) {
             // swallow the exception, we don't want to fail the test suite if the cleanup fails
         }
     }
