@@ -1,3 +1,4 @@
+# DEMO: This change triggers Gate 6 (PR Quality) - connector modified without docs changelog update
 data:
   ab_internal:
     ql: 400
