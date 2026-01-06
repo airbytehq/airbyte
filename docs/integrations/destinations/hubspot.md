@@ -4,7 +4,7 @@ dockerRepository: airbyte/destination-hubspot
 
 # HubSpot Destination
 
-This page guides you through the process of setting up the [HubSpot](https://www.hubspot.com/) destination connector. This connector supports [data activation](/platform/next/move-data/elt-data-activation) for operational workflows.
+This page guides you through the process of setting up the [HubSpot](https://www.hubspot.com/) destination connector. This connector supports [data activation](/platform/move-data/elt-data-activation) for operational workflows.
 
 ## Prerequisites
 
@@ -101,6 +101,7 @@ Hubspot has **scopes** for each API call. Each stream is tied to a scope and wil
 
 | Version | Date       | Pull Request                                                    | Subject                                   |
 |:--------|:-----------|:----------------------------------------------------------------|:------------------------------------------|
+| 0.0.8 | 2025-11-01 | [69131](https://github.com/airbytehq/airbyte/pull/69131) | Upgrade to Bulk CDK 0.1.61. |
 | 0.0.7   | 2025-09-24 | [66684](https://github.com/airbytehq/airbyte/pull/66684)        | Pin to CDK artifact                       |
 | 0.0.6   | 2025-09-09 | [65986](https://github.com/airbytehq/airbyte/pull/65986)        | Adding product object                     |
 | 0.0.5   | 2025-09-08 | [65157](https://github.com/airbytehq/airbyte/pull/65157)        | Update following breaking changes on spec |

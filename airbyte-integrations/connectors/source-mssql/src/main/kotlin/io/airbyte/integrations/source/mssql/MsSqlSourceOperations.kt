@@ -12,6 +12,7 @@ import io.airbyte.cdk.command.OpaqueStateValue
 import io.airbyte.cdk.data.FloatCodec
 import io.airbyte.cdk.data.JsonEncoder
 import io.airbyte.cdk.data.LeafAirbyteSchemaType
+import io.airbyte.cdk.data.LocalDateTimeCodec
 import io.airbyte.cdk.data.TextCodec
 import io.airbyte.cdk.discover.CdcIntegerMetaFieldType
 import io.airbyte.cdk.discover.CdcOffsetDateTimeMetaFieldType
@@ -37,6 +38,8 @@ import jakarta.inject.Singleton
 import java.sql.JDBCType
 import java.sql.PreparedStatement
 import java.sql.ResultSet
+import java.sql.Timestamp
+import java.time.LocalDateTime
 import java.time.OffsetDateTime
 
 private val log = KotlinLogging.logger {}
@@ -89,7 +92,7 @@ class MsSqlSourceOperations :
                     JDBCType.LONGNVARCHAR -> StringFieldType
                     JDBCType.DATE -> LocalDateFieldType
                     JDBCType.TIME -> LocalTimeFieldType
-                    JDBCType.TIMESTAMP -> LocalDateTimeFieldType
+                    JDBCType.TIMESTAMP -> MsSqlServerLocalDateTimeFieldType
                     JDBCType.BINARY,
                     JDBCType.VARBINARY,
                     JDBCType.LONGVARBINARY -> BytesFieldType
@@ -113,6 +116,38 @@ class MsSqlSourceOperations :
                 }
         return retVal
     }
+
+    // Custom LocalDateTime accessor that truncates to 6 decimal places (microseconds)
+    // SQL Server datetime2 can have up to 7 decimal places, but destination may only support 6
+    // decimal places
+    data object MsSqlServerLocalDateTimeAccessor : JdbcAccessor<LocalDateTime> {
+        override fun get(
+            rs: ResultSet,
+            colIdx: Int,
+        ): LocalDateTime? {
+            val timestamp = rs.getTimestamp(colIdx)?.takeUnless { rs.wasNull() } ?: return null
+            val localDateTime = timestamp.toLocalDateTime()
+            // Truncate to microseconds (6 decimal places) by zeroing out the nanoseconds beyond
+            // microseconds
+            val truncatedNanos = (localDateTime.nano / 1000) * 1000
+            return localDateTime.withNano(truncatedNanos)
+        }
+
+        override fun set(
+            stmt: PreparedStatement,
+            paramIdx: Int,
+            value: LocalDateTime,
+        ) {
+            stmt.setTimestamp(paramIdx, Timestamp.valueOf(value))
+        }
+    }
+
+    data object MsSqlServerLocalDateTimeFieldType :
+        SymmetricJdbcFieldType<LocalDateTime>(
+            LeafAirbyteSchemaType.TIMESTAMP_WITHOUT_TIMEZONE,
+            MsSqlServerLocalDateTimeAccessor,
+            LocalDateTimeCodec,
+        )
 
     data object MsSqlServerFloatAccessor : JdbcAccessor<Float> {
         override fun get(
@@ -203,7 +238,7 @@ class MsSqlSourceOperations :
         val jdbcType: JdbcFieldType<*>,
     ) {
         BINARY_FIELD(BinaryStreamFieldType, "VARBINARY", "BINARY"),
-        DATETIME_TYPES(LocalDateTimeFieldType, "DATETIME", "DATETIME2", "SMALLDATETIME"),
+        DATETIME_TYPES(MsSqlServerLocalDateTimeFieldType, "DATETIME", "DATETIME2", "SMALLDATETIME"),
         DATE(LocalDateFieldType, "DATE"),
         DATETIMEOFFSET(OffsetDateTimeFieldType, "DATETIMEOFFSET"),
         TIME_TYPE(LocalTimeFieldType, "TIME"),
@@ -262,17 +297,31 @@ class MsSqlSourceOperations :
             }
     }
 
-    fun Field.sql(): String = if (type is MsSqlServerHierarchyFieldType) "$id.ToString()" else "$id"
+    /**
+     * Quotes an identifier for SQL Server using square brackets. If the identifier contains a
+     * closing bracket ']', it will be escaped as ']]'. This protects against reserved keywords and
+     * special characters in identifier names.
+     */
+    fun String.quoted(): String = "[${this.replace("]", "]]")}]"
+
+    fun Field.sql(): String =
+        if (type is MsSqlServerHierarchyFieldType) "${id.quoted()}.ToString()" else id.quoted()
 
     fun FromNode.sql(): String =
         when (this) {
             NoFrom -> ""
-            is From -> if (this.namespace == null) "FROM $name" else "FROM $namespace.$name"
+            is From -> {
+                val ns = this.namespace
+                if (ns == null) "FROM ${name.quoted()}" else "FROM ${ns.quoted()}.${name.quoted()}"
+            }
             is FromSample -> {
+                val ns = this.namespace
                 if (sampleRateInv == 1L) {
-                    if (namespace == null) "FROM $name" else "FROM $namespace.$name"
+                    if (ns == null) "FROM ${name.quoted()}"
+                    else "FROM ${ns.quoted()}.${name.quoted()}"
                 } else {
-                    val tableName = if (namespace == null) name else "$namespace.$name"
+                    val tableName =
+                        if (ns == null) name.quoted() else "${ns.quoted()}.${name.quoted()}"
                     val samplePercent = sampleRatePercentage.toPlainString()
 
                     "FROM (SELECT TOP $sampleSize * FROM $tableName TABLESAMPLE ($samplePercent PERCENT) ORDER BY NEWID()) AS randomly_sampled"
