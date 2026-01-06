@@ -222,10 +222,17 @@
           },
           "date_partition_source_column": {
             "title": "Date partition source column",
-            "description": "The timestamp column to derive year, month, and day partitions from. Required when date partition mode is enabled. The column must be of timestamp type.",
+            "description": "The timestamp column to derive year, month, and day partitions from. If not specified, the cursor field from incremental sync will be used automatically.",
             "type": "string",
             "examples": ["updated_at", "_airbyte_emitted_at", "created_at"],
             "order": 9
+          },
+          "auto_date_partition": {
+            "title": "Auto date partition for incremental syncs",
+            "description": "When enabled (default), automatically creates year/month/day partitions using the cursor field for incremental/append syncs. This ensures efficient date-range queries on time-series data without manual configuration.",
+            "type": "boolean",
+            "default": true,
+            "order": 10
           }
         },
         "order": 2

@@ -14,6 +14,7 @@ import static io.airbyte.integrations.destination.iceberg.IcebergConstants.PARTI
 import static io.airbyte.integrations.destination.iceberg.IcebergConstants.PARTITION_MODE_CONFIG_KEY;
 import static io.airbyte.integrations.destination.iceberg.IcebergConstants.DATE_PARTITION_MODE_CONFIG_KEY;
 import static io.airbyte.integrations.destination.iceberg.IcebergConstants.DATE_PARTITION_SOURCE_COLUMN_CONFIG_KEY;
+import static io.airbyte.integrations.destination.iceberg.IcebergConstants.AUTO_DATE_PARTITION_CONFIG_KEY;
 import static io.airbyte.integrations.destination.iceberg.config.catalog.IcebergCatalogConfigFactory.getProperty;
 
 import com.fasterxml.jackson.databind.JsonNode;
@@ -33,6 +34,7 @@ public class FormatConfig {
   public static final boolean DEFAULT_MERGE_MODE = false;
   public static final boolean DEFAULT_PARTITION_MODE = false;
   public static final boolean DEFAULT_DATE_PARTITION_MODE = false;
+  public static final boolean DEFAULT_AUTO_DATE_PARTITION = true;
 
   private DataFileFormat format;
   private Integer flushBatchSize;
@@ -44,6 +46,7 @@ public class FormatConfig {
   private List<String> partitionKeys;
   private boolean datePartitionMode;
   private String datePartitionSourceColumn;
+  private boolean autoDatePartition;
 
   // TODO compression config
 
@@ -125,6 +128,13 @@ public class FormatConfig {
       this.datePartitionSourceColumn = formatConfigJson.get(DATE_PARTITION_SOURCE_COLUMN_CONFIG_KEY).asText();
     } else {
       this.datePartitionSourceColumn = null;
+    }
+
+    // autoDatePartition - automatically enable date partitioning using cursor field for incremental syncs
+    if (formatConfigJson.has(AUTO_DATE_PARTITION_CONFIG_KEY)) {
+      this.autoDatePartition = formatConfigJson.get(AUTO_DATE_PARTITION_CONFIG_KEY).asBoolean(DEFAULT_AUTO_DATE_PARTITION);
+    } else {
+      this.autoDatePartition = DEFAULT_AUTO_DATE_PARTITION;
     }
   }
 
