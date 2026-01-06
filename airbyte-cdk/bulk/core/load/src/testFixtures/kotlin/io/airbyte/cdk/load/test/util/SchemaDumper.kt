@@ -7,19 +7,24 @@ package io.airbyte.cdk.load.test.util
 import io.airbyte.cdk.command.ConfigurationSpecification
 
 /**
- * Interstitial interface. Most destinations will eventually have a
- * [io.airbyte.cdk.load.component.TableSchemaEvolutionClient] instead.
+ * Most destinations will eventually have a
+ * [io.airbyte.cdk.load.component.TableSchemaEvolutionClient] instead. However, some destinations
+ * want to assert against more than just the column names+types; this interface supports arbitrary
+ * information. For example, destination-clickhouse can include the TableEngine definition.
  */
 interface SchemaDumper {
     /**
-     * for destinations that already have a TableSchemaEvolutionClient, this is maybe just
+     * for destinations that already have a TableSchemaEvolutionClient, this is typically just
      * ```
      * return Jsons.writerWithDefaultPrettyPrinter()
      *   .writeValueAsString(client.discoverSchema(<something>))
      * ```
-     * (converting namespace+name to TableName is doable but slightly nontrivial)
+     * Converting namespace+name to TableName is doable but slightly nontrivial, e.g.
+     * ```kotlin
+     * val tableName = TableName(namespace ?: config.resolvedDatabase, name)
+     * ```
      *
-     * and then destinations can append other stuff if they want (tablengine, etc.)
+     * Your connector can append additional information as needed.
      */
     suspend fun discoverSchema(
         spec: ConfigurationSpecification,
