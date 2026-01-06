@@ -84,6 +84,19 @@ const config: Config = {
       "data-cookieless": "1",
       "data-auto-identify": "1",
     },
+    {
+      src: "https://widget.kapa.ai/kapa-widget.bundle.js",
+      async: true,
+      "data-website-id": "894ff9ab-1c3d-48d3-a014-aa0f52d0b113",
+      "data-project-name": "Airbyte docs chat bot",
+      "data-project-color": "#615EFF",
+      "data-project-logo": "https://docs.airbyte.com/img/logo-dark.png",
+      "data-modal-title": "Airbyte docs chat bot",
+      "data-modal-example-questions":
+        "What's Airbyte?,Can I try Airbyte quickly?,How do I use Terraform with Airbyte?",
+      "data-button-hide": "true",
+      "data-modal-override-open-selector-ask-ai": ".kapa-ai-trigger",
+    },
   ],
   headTags: [
     {
@@ -325,9 +338,6 @@ const config: Config = {
   ],
   customFields: {
     requestErdApiUrl: process.env.REQUEST_ERD_API_URL,
-    markpromptProjectKey:
-      process.env.MARKPROMPT_PROJECT_KEY ||
-      "sk_test_cbPFAzAxUvafRj6l1yjzrESu0bRpzQGK",
   },
   clientModules: [
     require.resolve("./src/scripts/cloudStatus.js"),
