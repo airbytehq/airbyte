@@ -57,7 +57,7 @@ jobs:
   ai-triage:
     name: AI Triage for Community Issue
     needs: check-permissions
-    if: needs.check-permissions.outputs.is-community-member == 'true'
+    # if: needs.check-permissions.outputs.is-community-member == 'true'
     runs-on: ubuntu-24.04
     steps:
       - name: Checkout code
