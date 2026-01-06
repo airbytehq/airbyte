@@ -2718,6 +2718,8 @@ definitions:
           request_body_json:
             reportType: GET_SALES_AND_TRAFFIC_REPORT
             marketplaceIds: '{{ [config["marketplace_id"]] }}'
+            dataStartTime: "{{ stream_slice.cursor_slice.start_time }}"
+            dataEndTime: "{{ stream_slice.cursor_slice.end_time }}"
         download_decoder:
           type: CustomDecoder
           class_name: source_declarative_manifest.components.GzipJsonDecoder
