@@ -41,18 +41,18 @@ jobs:
           # Get list of modified connectors
           connectors=$(./poe-tasks/get-modified-connectors.sh --json 2>/dev/null || echo '{"include":[]}')
           echo "connectors_matrix=$connectors" | tee -a $GITHUB_OUTPUT
-          
+
           # Check if any connectors were modified
           if [[ "$connectors" == '{"include":[]}' ]] || [[ -z "$connectors" ]]; then
             echo "has_connectors=false" | tee -a $GITHUB_OUTPUT
           else
             echo "has_connectors=true" | tee -a $GITHUB_OUTPUT
           fi
-          
+
           # Get Python connectors only (for pip-audit)
           python_connectors=$(./poe-tasks/get-modified-connectors.sh --json --no-java 2>/dev/null || echo '{"include":[]}')
           echo "python_connectors_matrix=$python_connectors" | tee -a $GITHUB_OUTPUT
-          
+
           if [[ "$python_connectors" == '{"include":[]}' ]] || [[ -z "$python_connectors" ]]; then
             echo "has_python_connectors=false" | tee -a $GITHUB_OUTPUT
           else
@@ -102,16 +102,16 @@ jobs:
         id: check-skips
         run: |
           connector_path="airbyte-integrations/connectors/${{ matrix.connector }}"
-          
+
           # Look for pytest skip markers in test files
           skip_count=0
           if [[ -d "$connector_path" ]]; then
             # Count skip markers (pytest.mark.skip, @skip, skipIf, etc.)
             skip_count=$(grep -r -E '@pytest\.mark\.skip|@skip|skipIf|pytest\.skip\(' "$connector_path" --include="*.py" 2>/dev/null | wc -l || echo "0")
           fi
-          
+
           echo "skip_count=$skip_count" | tee -a $GITHUB_OUTPUT
-          
+
           # Check if there's a justification label on the PR
           # For now, we just report the count - the playbook will evaluate
           if [[ "$skip_count" -gt 0 ]]; then
@@ -163,11 +163,11 @@ jobs:
           if [[ -f "pyproject.toml" ]]; then
             # Try to audit dependencies
             pip-audit --desc on --format json > audit-results.json 2>&1 || true
-            
+
             # Count vulnerabilities
             vuln_count=$(cat audit-results.json | python3 -c "import sys, json; data=json.load(sys.stdin); print(len(data.get('dependencies', [])))" 2>/dev/null || echo "0")
             echo "vuln_count=$vuln_count" | tee -a $GITHUB_OUTPUT
-            
+
             if [[ "$vuln_count" -gt 0 ]]; then
               echo "::error::Found $vuln_count vulnerable dependencies in ${{ matrix.connector }}"
               cat audit-results.json
@@ -200,24 +200,24 @@ jobs:
         run: |
           connector_path="airbyte-integrations/connectors/${{ matrix.connector }}"
           metadata_file="$connector_path/metadata.yaml"
-          
+
           # Get the base branch (usually master)
           base_ref="${{ github.base_ref }}"
-          
+
           # Check if spec files changed
           spec_changed=$(git diff --name-only origin/$base_ref...HEAD -- "$connector_path" | grep -E '(spec\.json|spec\.yaml|manifest\.yaml)' || true)
-          
+
           if [[ -n "$spec_changed" ]]; then
             echo "Spec files changed: $spec_changed"
-            
+
             # Check if metadata.yaml has breakingChanges entry for current version
             if [[ -f "$metadata_file" ]]; then
               current_version=$(grep -E '^  dockerImageTag:' "$metadata_file" | awk '{print $2}' | tr -d '"' || echo "unknown")
               echo "Current version: $current_version"
-              
+
               # Check if there's a breakingChanges entry
               has_breaking_entry=$(grep -A5 "breakingChanges:" "$metadata_file" | grep -E "^\s+$current_version:" || true)
-              
+
               if [[ -z "$has_breaking_entry" ]]; then
                 echo "::warning::Spec files changed but no breakingChanges entry found for version $current_version"
                 echo "needs_review=true" | tee -a $GITHUB_OUTPUT
@@ -253,27 +253,27 @@ jobs:
         run: |
           connector_path="airbyte-integrations/connectors/${{ matrix.connector }}"
           metadata_file="$connector_path/metadata.yaml"
-          
+
           # Extract connector type and name
           connector_type=$(echo "${{ matrix.connector }}" | cut -d'-' -f1)
           connector_name=$(echo "${{ matrix.connector }}" | sed 's/^source-//;s/^destination-//')
-          
+
           # Determine docs path
           if [[ "$connector_type" == "source" ]]; then
             docs_path="docs/integrations/sources/${connector_name}.md"
           else
             docs_path="docs/integrations/destinations/${connector_name}.md"
           fi
-          
+
           # Check if metadata has breakingChanges
           if [[ -f "$metadata_file" ]]; then
             has_breaking=$(grep -c "breakingChanges:" "$metadata_file" || echo "0")
-            
+
             if [[ "$has_breaking" -gt 0 ]]; then
               # Check if docs file was updated
               base_ref="${{ github.base_ref }}"
               docs_changed=$(git diff --name-only origin/$base_ref...HEAD -- "$docs_path" || true)
-              
+
               if [[ -z "$docs_changed" ]]; then
                 echo "::warning::Breaking changes detected but docs not updated at $docs_path"
                 echo "needs_migration_guide=true" | tee -a $GITHUB_OUTPUT
