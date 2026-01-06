@@ -1,13 +1,18 @@
 # Autodoc Workflow
 #
-# This workflow automatically triggers documentation updates for community-supported connectors
+# This workflow automatically triggers documentation updates for connectors
 # when changes are pushed to master. It uses Devin AI to review connector changes and
 # update the corresponding user documentation to ensure it stays current with code changes.
 #
 # Workflow triggers:
 # - Only on pushes to master branch
 # - Excludes bot-authored pushes to prevent automation loops
-# - Only processes community-supported connectors
+# - Processes any connector with metadata.yaml changes
+#
+# Limitations:
+# - The workflow only identifies one connector per push (the first metadata.yaml found)
+# - However, Devin AI is usually smart enough to detect and document all changed connectors
+#   in a multi-connector push, even if the workflow only explicitly identifies one
 
 name: Autodoc
 
@@ -36,72 +41,65 @@ jobs:
       - name: Get files changed in this push
         id: push-files
         run: |
-          echo "🔍 Fetching files changed in push from ${{ github.event.before }} to ${{ github.sha }}..."
-          FILES=$(git diff --name-only ${{ github.event.before }} ${{ github.sha }} | jq -R -s -c 'split("\n")[:-1]')
+          # Verify jq is available (pre-installed on GitHub runners, but check defensively)
+          if ! command -v jq &> /dev/null; then
+            echo "::error::jq is required but not found. Please ensure the runner image includes jq."
+            exit 1
+          fi
+
+          BEFORE="${{ github.event.before }}"
+          SHA="${{ github.sha }}"
+
+          # Handle edge cases where github.event.before may be invalid
+          # (e.g., all-zeros for first push, or commit not present locally after force push)
+          if [ -z "$BEFORE" ] || [ "$BEFORE" = "0000000000000000000000000000000000000000" ]; then
+            echo "⚠️  No valid 'before' commit (first push or force push) - using first parent as fallback"
+            BEFORE="${SHA}^"
+          elif ! git cat-file -e "${BEFORE}^{commit}" 2>/dev/null; then
+            echo "⚠️  'before' commit not found locally - using first parent as fallback"
+            BEFORE="${SHA}^"
+          fi
+
+          echo "🔍 Fetching files changed in push from $BEFORE to $SHA..."
+          FILES=$(git diff --name-only "$BEFORE" "$SHA" 2>/dev/null | jq -R -s -c 'split("\n")[:-1]') || FILES="[]"
 
           if [ -z "$FILES" ] || [ "$FILES" = "[]" ]; then
             echo "ℹ️  No files changed in this push - skipping documentation update."
+            echo "has_changes=false" >> $GITHUB_OUTPUT
+            echo "files=[]" >> $GITHUB_OUTPUT
             exit 0
           fi
 
           echo "✅ Successfully fetched changed files list"
+          echo "has_changes=true" >> $GITHUB_OUTPUT
           echo "files=$FILES" >> $GITHUB_OUTPUT
 
-      # Step 3: Install YAML parsing tool
-      - name: Install YAML parser (yq)
+      # Step 3: Check if this push affects a connector
+      - name: Check for connector changes
+        if: steps.push-files.outputs.has_changes == 'true'
+        id: check-connector
         run: |
-          echo "📦 Installing yq for metadata.yaml parsing..."
-          sudo wget https://github.com/mikefarah/yq/releases/download/v4.47.2/yq_linux_amd64 -O /usr/local/bin/yq
-          sudo chmod +x /usr/local/bin/yq
-          echo "✅ yq v4.47.2 installed successfully"
-
-      # Step 4: Determine if this push affects a community-supported connector
-      - name: Determine if connector is community-supported
-        id: check-support-level
-        run: |
-          echo "🔍 Checking if push contains community-supported connector changes..."
+          echo "🔍 Checking if push contains connector changes..."
 
           # Parse the changed files from Step 2
           CHANGED_FILES='${{ steps.push-files.outputs.files }}'
 
-          # Filter for connector metadata.yaml files in the changed files
-          METADATA_FILE=$(echo "$CHANGED_FILES" | yq -p json -r '.[] | select(test("airbyte-integrations/connectors/.*/metadata\\.yaml$"))' | head -n 1)
+          # Filter for connector metadata.yaml files in the changed files using jq
+          METADATA_FILE=$(echo "$CHANGED_FILES" | jq -r '.[] | select(test("airbyte-integrations/connectors/.*/metadata\\.yaml$"))' | head -n 1)
 
           if [ -z "$METADATA_FILE" ]; then
             echo "ℹ️  No connector metadata.yaml file found in changed files - this push doesn't affect connectors"
-            echo "metadata_file=false" >> $GITHUB_OUTPUT
-            echo "community_support=false" >> $GITHUB_OUTPUT
+            echo "connector_changed=false" >> $GITHUB_OUTPUT
             exit 0
           fi
 
-          # Parse the support level from the metadata
-          SUPPORT_LEVEL=$(yq '.data.supportLevel' "$METADATA_FILE")
-          echo "📋 Found metadata file: $METADATA_FILE"
-          echo "📋 Support level: $SUPPORT_LEVEL"
+          echo "📋 Found connector metadata file: $METADATA_FILE"
+          echo "✅ Connector change detected - documentation update needed"
+          echo "connector_changed=true" >> $GITHUB_OUTPUT
 
-          if [ "$SUPPORT_LEVEL" != "community" ]; then
-            echo "ℹ️  This connector is not community-supported (level: $SUPPORT_LEVEL)"
-            echo "metadata_file=true" >> $GITHUB_OUTPUT
-            echo "community_support=false" >> $GITHUB_OUTPUT
-            exit 0
-          fi
-
-          echo "✅ Community-supported connector detected - documentation update needed"
-          echo "metadata_file=true" >> $GITHUB_OUTPUT
-          echo "community_support=true" >> $GITHUB_OUTPUT
-
-      # Step 5: Skip documentation update for non-community connectors
-      - name: Skip documentation update (not community connector)
-        if: steps.check-support-level.outputs.metadata_file == 'false' || steps.check-support-level.outputs.community_support == 'false'
-        run: |
-          echo "⏭️  Skipping documentation update:"
-          echo "   - Metadata file found: ${{ steps.check-support-level.outputs.metadata_file }}"
-          echo "   - Community support: ${{ steps.check-support-level.outputs.community_support }}"
-          echo "   - Only community-supported connectors trigger automatic documentation updates"
-
-      # Step 6: Trigger AI documentation update for community connectors
+      # Step 4: Trigger AI documentation update for connector changes
       - name: Start AI documentation update session
-        if: steps.check-support-level.outputs.metadata_file == 'true' && steps.check-support-level.outputs.community_support == 'true'
+        if: steps.check-connector.outputs.connector_changed == 'true'
         env:
           PROMPT_TEXT: "The commit to review is ${{ github.sha }}. This commit was pushed to master and may contain connector changes that need documentation updates."
         uses: aaronsteers/devin-action@98d15ae93d1848914f5ab8e9ce45341182958d27 # v0.1.7 - Pinned to specific commit for security
