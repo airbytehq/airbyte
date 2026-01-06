@@ -1,0 +1,403 @@
+/*
+ * Copyright (c) 2025 Airbyte, Inc., all rights reserved.
+ */
+
+package io.airbyte.integrations.destination.clickhouse.component
+
+import io.airbyte.cdk.load.component.DataCoercionDateFixtures
+import io.airbyte.cdk.load.component.DataCoercionNumberFixtures
+import io.airbyte.cdk.load.component.DataCoercionNumberFixtures.NEGATIVE_HIGH_PRECISION_FLOAT
+import io.airbyte.cdk.load.component.DataCoercionNumberFixtures.POSITIVE_HIGH_PRECISION_FLOAT
+import io.airbyte.cdk.load.component.DataCoercionNumberFixtures.SMALLEST_NEGATIVE_FLOAT32
+import io.airbyte.cdk.load.component.DataCoercionNumberFixtures.SMALLEST_NEGATIVE_FLOAT64
+import io.airbyte.cdk.load.component.DataCoercionNumberFixtures.SMALLEST_POSITIVE_FLOAT32
+import io.airbyte.cdk.load.component.DataCoercionNumberFixtures.SMALLEST_POSITIVE_FLOAT64
+import io.airbyte.cdk.load.component.DataCoercionStringFixtures
+import io.airbyte.cdk.load.component.DataCoercionStringFixtures.LONG_STRING
+import io.airbyte.cdk.load.component.DataCoercionSuite
+import io.airbyte.cdk.load.component.DataCoercionTimestampNtzFixtures
+import io.airbyte.cdk.load.component.DataCoercionTimestampTzFixtures
+import io.airbyte.cdk.load.component.DataCoercionUnknownFixtures
+import io.airbyte.cdk.load.component.DataCoercionUnknownFixtures.STR_VALUE
+import io.airbyte.cdk.load.component.HIGH_PRECISION_TIMESTAMP
+import io.airbyte.cdk.load.component.MAXIMUM_TIMESTAMP
+import io.airbyte.cdk.load.component.MINIMUM_TIMESTAMP
+import io.airbyte.cdk.load.component.OUT_OF_RANGE_TIMESTAMP
+import io.airbyte.cdk.load.component.TableOperationsClient
+import io.airbyte.cdk.load.component.TestTableOperationsClient
+import io.airbyte.cdk.load.component.toArgs
+import io.airbyte.cdk.load.data.AirbyteValue
+import io.airbyte.cdk.load.data.DateValue
+import io.airbyte.cdk.load.data.StringValue
+import io.airbyte.cdk.load.data.TimestampWithTimezoneValue
+import io.airbyte.cdk.load.data.TimestampWithoutTimezoneValue
+import io.airbyte.cdk.load.dataflow.transform.ValueCoercer
+import io.airbyte.cdk.load.schema.TableSchemaFactory
+import io.airbyte.protocol.models.v0.AirbyteRecordMessageMetaChange.Reason
+import io.micronaut.test.extensions.junit5.annotation.MicronautTest
+import java.time.LocalDate
+import java.time.LocalDateTime
+import java.time.OffsetDateTime
+import java.time.ZoneId
+import java.time.ZoneOffset
+import org.junit.jupiter.api.Test
+import org.junit.jupiter.params.ParameterizedTest
+import org.junit.jupiter.params.provider.MethodSource
+
+@MicronautTest(environments = ["component"], resolveParameters = false)
+class ClickhouseDataCoercionTest(
+    override val coercer: ValueCoercer,
+    override val opsClient: TableOperationsClient,
+    override val testClient: TestTableOperationsClient,
+    override val schemaFactory: TableSchemaFactory,
+) : DataCoercionSuite {
+    @ParameterizedTest
+    // We use clickhouse's Int64 type for integers
+    @MethodSource("io.airbyte.cdk.load.component.DataCoercionIntegerFixtures#int64")
+    override fun `handle integer values`(
+        inputValue: AirbyteValue,
+        expectedValue: Any?,
+        expectedChangeReason: Reason?
+    ) {
+        super.`handle integer values`(inputValue, expectedValue, expectedChangeReason)
+    }
+
+    @ParameterizedTest
+    @MethodSource(
+        "io.airbyte.integrations.destination.clickhouse.component.ClickhouseDataCoercionTest#numbers"
+    )
+    override fun `handle number values`(
+        inputValue: AirbyteValue,
+        expectedValue: Any?,
+        expectedChangeReason: Reason?
+    ) {
+        super.`handle number values`(inputValue, expectedValue, expectedChangeReason)
+    }
+
+    @ParameterizedTest
+    @MethodSource(
+        "io.airbyte.integrations.destination.clickhouse.component.ClickhouseDataCoercionTest#timestampTz"
+    )
+    override fun `handle timestamptz values`(
+        inputValue: AirbyteValue,
+        expectedValue: Any?,
+        expectedChangeReason: Reason?
+    ) {
+        super.`handle timestamptz values`(inputValue, expectedValue, expectedChangeReason)
+    }
+
+    @ParameterizedTest
+    @MethodSource(
+        "io.airbyte.integrations.destination.clickhouse.component.ClickhouseDataCoercionTest#timestampNtz"
+    )
+    override fun `handle timestampntz values`(
+        inputValue: AirbyteValue,
+        expectedValue: Any?,
+        expectedChangeReason: Reason?
+    ) {
+        super.`handle timestampntz values`(inputValue, expectedValue, expectedChangeReason)
+    }
+
+    @ParameterizedTest
+    @MethodSource("io.airbyte.cdk.load.component.DataCoercionTimeTzFixtures#timetz")
+    override fun `handle timetz values`(
+        inputValue: AirbyteValue,
+        expectedValue: Any?,
+        expectedChangeReason: Reason?
+    ) {
+        super.`handle timetz values`(inputValue, expectedValue, expectedChangeReason)
+    }
+
+    @ParameterizedTest
+    @MethodSource("io.airbyte.cdk.load.component.DataCoercionTimeNtzFixtures#timentz")
+    override fun `handle timentz values`(
+        inputValue: AirbyteValue,
+        expectedValue: Any?,
+        expectedChangeReason: Reason?
+    ) {
+        super.`handle timentz values`(inputValue, expectedValue, expectedChangeReason)
+    }
+
+    @ParameterizedTest
+    @MethodSource(
+        "io.airbyte.integrations.destination.clickhouse.component.ClickhouseDataCoercionTest#date"
+    )
+    override fun `handle date values`(
+        inputValue: AirbyteValue,
+        expectedValue: Any?,
+        expectedChangeReason: Reason?
+    ) {
+        super.`handle date values`(inputValue, expectedValue, expectedChangeReason)
+    }
+
+    @Test
+    fun `handle boolean values`() {
+        super.`handle bool values`(expectedValue = true)
+    }
+
+    @ParameterizedTest
+    @MethodSource(
+        "io.airbyte.integrations.destination.clickhouse.component.ClickhouseDataCoercionTest#string"
+    )
+    override fun `handle string values`(
+        inputValue: AirbyteValue,
+        expectedValue: Any?,
+        expectedChangeReason: Reason?
+    ) {
+        super.`handle string values`(inputValue, expectedValue, expectedChangeReason)
+    }
+
+    @ParameterizedTest
+    // Clickhouse client reads JSON columns as String, so use stringifiedObjects
+    @MethodSource("io.airbyte.cdk.load.component.DataCoercionObjectFixtures#stringifiedObjects")
+    override fun `handle object values`(
+        inputValue: AirbyteValue,
+        expectedValue: Any?,
+        expectedChangeReason: Reason?
+    ) {
+        super.`handle object values`(inputValue, expectedValue, expectedChangeReason)
+    }
+
+    @ParameterizedTest
+    // Clickhouse client reads JSON columns as String, so use stringifiedObjects
+    @MethodSource("io.airbyte.cdk.load.component.DataCoercionObjectFixtures#stringifiedObjects")
+    override fun `handle empty object values`(
+        inputValue: AirbyteValue,
+        expectedValue: Any?,
+        expectedChangeReason: Reason?
+    ) {
+        super.`handle empty object values`(inputValue, expectedValue, expectedChangeReason)
+    }
+
+    @ParameterizedTest
+    // Clickhouse client reads JSON columns as String, so use stringifiedObjects
+    @MethodSource("io.airbyte.cdk.load.component.DataCoercionObjectFixtures#stringifiedObjects")
+    override fun `handle schemaless object values`(
+        inputValue: AirbyteValue,
+        expectedValue: Any?,
+        expectedChangeReason: Reason?
+    ) {
+        super.`handle schemaless object values`(inputValue, expectedValue, expectedChangeReason)
+    }
+
+    @ParameterizedTest
+    // We write arrays to String columns for historical reasons, so use stringifiedArrays
+    @MethodSource("io.airbyte.cdk.load.component.DataCoercionArrayFixtures#stringifiedArrays")
+    override fun `handle array values`(
+        inputValue: AirbyteValue,
+        expectedValue: Any?,
+        expectedChangeReason: Reason?
+    ) {
+        super.`handle array values`(inputValue, expectedValue, expectedChangeReason)
+    }
+
+    @ParameterizedTest
+    // We write arrays to String columns for historical reasons, so use stringifiedArrays
+    @MethodSource("io.airbyte.cdk.load.component.DataCoercionArrayFixtures#stringifiedArrays")
+    override fun `handle schemaless array values`(
+        inputValue: AirbyteValue,
+        expectedValue: Any?,
+        expectedChangeReason: Reason?
+    ) {
+        super.`handle schemaless array values`(inputValue, expectedValue, expectedChangeReason)
+    }
+
+    /**
+     * We don't have special handling for legacy unions, so don't bother implementing [`handle
+     * legacy union values`].
+     */
+    @ParameterizedTest
+    @MethodSource("io.airbyte.cdk.load.component.DataCoercionUnionFixtures#stringifiedUnions")
+    override fun `handle union values`(
+        inputValue: AirbyteValue,
+        expectedValue: Any?,
+        expectedChangeReason: Reason?
+    ) {
+        super.`handle union values`(inputValue, expectedValue, expectedChangeReason)
+    }
+
+    @ParameterizedTest
+    @MethodSource(
+        "io.airbyte.integrations.destination.clickhouse.component.ClickhouseDataCoercionTest#unknown"
+    )
+    override fun `handle unknown values`(
+        inputValue: AirbyteValue,
+        expectedValue: Any?,
+        expectedChangeReason: Reason?
+    ) {
+        super.`handle unknown values`(inputValue, expectedValue, expectedChangeReason)
+    }
+
+    companion object {
+        /**
+         * destination-clickhouse doesn't set a change reason when truncating high-precision numbers
+         * (https://github.com/airbytehq/airbyte-internal-issues/issues/15401)
+         */
+        @JvmStatic
+        fun numbers() =
+            DataCoercionNumberFixtures.numeric38_9
+                .map {
+                    when (it.name) {
+                        POSITIVE_HIGH_PRECISION_FLOAT,
+                        NEGATIVE_HIGH_PRECISION_FLOAT,
+                        SMALLEST_POSITIVE_FLOAT32,
+                        SMALLEST_NEGATIVE_FLOAT32,
+                        SMALLEST_POSITIVE_FLOAT64,
+                        SMALLEST_NEGATIVE_FLOAT64 -> it.copy(changeReason = null)
+                        else -> it
+                    }
+                }
+                .toArgs()
+
+        @JvmStatic
+        fun timestampTz() =
+            DataCoercionTimestampTzFixtures.commonWarehouse
+                .map { fixture ->
+                    when (fixture.name) {
+                        // We use DateTime64(3), so truncate expected values to millis
+                        HIGH_PRECISION_TIMESTAMP ->
+                            fixture.copy(outputValue = "2025-01-23T01:01:00.123Z")
+                        // Clickhouse timestamps can range from year 1900 <= it < 2300
+                        MINIMUM_TIMESTAMP ->
+                            fixture.copy(
+                                inputValue = TimestampWithTimezoneValue("1900-01-01T00:00:00Z"),
+                                outputValue = "1900-01-01T00:00:00Z",
+                            )
+                        MAXIMUM_TIMESTAMP ->
+                            fixture.copy(
+                                inputValue = TimestampWithTimezoneValue("2299-12-31T23:59:59.999Z"),
+                                outputValue = "2299-12-31T23:59:59.999Z",
+                            )
+                        OUT_OF_RANGE_TIMESTAMP ->
+                            fixture.copy(
+                                inputValue = TimestampWithTimezoneValue("2300-01-01T00:00:00Z")
+                            )
+                        else -> fixture
+                    }
+                }
+                // clickhouse client returns DateTime values as ZonedDateTime, so we need to do
+                // the conversion here
+                .map { fixture ->
+                    fixture.copy(
+                        outputValue =
+                            fixture.outputValue?.let {
+                                OffsetDateTime.parse(it as String)
+                                    .atZoneSameInstant(ZoneId.of("UTC"))
+                            }
+                    )
+                }
+                .toArgs()
+
+        /**
+         * Basically identical to [timestampTz], but creates TimestampWithoutTimezoneValue instead
+         * of TimestampWithTimezoneValue
+         *
+         * (note that we represent timestamp with/without timezone both as DateTime64, so the
+         * returned value is always an OffsetDateTime)
+         */
+        @JvmStatic
+        fun timestampNtz() =
+            DataCoercionTimestampNtzFixtures.commonWarehouse
+                .map { fixture ->
+                    when (fixture.name) {
+                        // We use DateTime64(3), so truncate expected values to millis
+                        HIGH_PRECISION_TIMESTAMP ->
+                            fixture.copy(outputValue = "2025-01-23T01:01:00.123")
+                        // Clickhouse timestamps can range from year 1900 <= it < 2300
+                        MINIMUM_TIMESTAMP ->
+                            fixture.copy(
+                                inputValue = TimestampWithoutTimezoneValue("1900-01-01T00:00:00"),
+                                outputValue = "1900-01-01T00:00:00",
+                            )
+                        MAXIMUM_TIMESTAMP ->
+                            fixture.copy(
+                                inputValue =
+                                    TimestampWithoutTimezoneValue("2299-12-31T23:59:59.999"),
+                                outputValue = "2299-12-31T23:59:59.999",
+                            )
+                        OUT_OF_RANGE_TIMESTAMP ->
+                            fixture.copy(
+                                inputValue = TimestampWithoutTimezoneValue("2300-01-01T00:00:00")
+                            )
+                        else -> fixture
+                    }
+                }
+                // clickhouse client returns DateTime values as ZonedDateTime, so we need to do
+                // the conversion here
+                .map { fixture ->
+                    fixture.copy(
+                        outputValue =
+                            fixture.outputValue?.let {
+                                LocalDateTime.parse(it as String)
+                                    .atOffset(ZoneOffset.UTC)
+                                    .atZoneSameInstant(ZoneId.of("UTC"))
+                            }
+                    )
+                }
+                .toArgs()
+
+        // We use DateTime64 for date rather than the Date type.
+        // Apply basically the same changes here.
+        @JvmStatic
+        fun date() =
+            DataCoercionDateFixtures.commonWarehouse
+                .map { fixture ->
+                    when (fixture.name) {
+                        // Clickhouse timestamps can range from year 1900 <= it < 2300
+                        MINIMUM_TIMESTAMP ->
+                            fixture.copy(
+                                inputValue = DateValue("1900-01-01"),
+                                outputValue = "1900-01-01"
+                            )
+                        MAXIMUM_TIMESTAMP ->
+                            fixture.copy(
+                                inputValue = DateValue("2299-12-31"),
+                                outputValue = "2299-12-31"
+                            )
+                        OUT_OF_RANGE_TIMESTAMP -> fixture.copy(inputValue = DateValue("2300-01-01"))
+                        else -> fixture
+                    }
+                }
+                .map { fixture ->
+                    fixture.copy(
+                        outputValue =
+                            fixture.outputValue?.let {
+                                LocalDate.parse(it as String)
+                                    .atTime(0, 0)
+                                    .atOffset(ZoneOffset.UTC)
+                                    .atZoneSameInstant(ZoneId.of("UTC"))
+                            }
+                    )
+                }
+                .toArgs()
+
+        @JvmStatic
+        fun string() =
+            DataCoercionStringFixtures.strings
+                .map { fixture ->
+                    when (fixture.name) {
+                        // Clickhouse doesn't seem to have limits on string length?
+                        // At the very least, we can happily write >16MB of string.
+                        LONG_STRING ->
+                            fixture.copy(
+                                outputValue = (fixture.inputValue as StringValue).value,
+                                changeReason = null,
+                            )
+                        else -> fixture
+                    }
+                }
+                .toArgs()
+
+        /** Similar to [union]. */
+        @JvmStatic
+        fun unknown() =
+            DataCoercionUnknownFixtures.stringifiedUnknowns
+                .map { fixture ->
+                    when (fixture.name) {
+                        STR_VALUE -> fixture.copy(outputValue = "foo")
+                        else -> fixture
+                    }
+                }
+                .toArgs()
+    }
+}

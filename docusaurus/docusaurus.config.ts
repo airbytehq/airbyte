@@ -44,6 +44,7 @@ const config: Config = {
     },
   },
   markdown: {
+    format: "detect",
     mermaid: true,
     hooks: {
       onBrokenMarkdownLinks: "throw",
@@ -136,6 +137,7 @@ const config: Config = {
         path: "../docs/platform",
         routeBasePath: "/platform",
         sidebarPath: "./sidebar-platform.js",
+        lastVersion: "current", // Default to Cloud/Next version instead of latest numbered version
         editUrl: ({
           version,
           docPath,
@@ -181,7 +183,6 @@ const config: Config = {
         remarkPlugins: [
           plugins.docsHeaderDecoration,
           plugins.enterpriseDocsHeaderInformation,
-          plugins.productInformation,
           plugins.docMetaTags,
           plugins.addButtonToTitle,
           [plugins.npm2yarn, { sync: true }],

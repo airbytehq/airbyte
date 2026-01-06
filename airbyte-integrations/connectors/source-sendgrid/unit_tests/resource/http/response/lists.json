@@ -1,0 +1,13 @@
+{
+  "result": [
+    {
+      "id": "abc123-def456",
+      "name": "Marketing List",
+      "contact_count": 1500,
+      "_metadata": {
+        "self": "https://api.sendgrid.com/v3/marketing/lists/abc123-def456"
+      }
+    }
+  ],
+  "_metadata": {}
+}

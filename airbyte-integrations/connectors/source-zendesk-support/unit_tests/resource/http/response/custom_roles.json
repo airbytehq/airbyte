@@ -1,0 +1,36 @@
+{
+  "custom_roles": [
+    {
+      "id": 12345,
+      "name": "Custom Agent Role",
+      "description": "A custom role for agents",
+      "role_type": 0,
+      "team_member_count": 5,
+      "configuration": {
+        "chat_access": true,
+        "manage_business_rules": false,
+        "manage_dynamic_content": false,
+        "manage_extensions_and_channels": false,
+        "manage_facebook": false,
+        "organization_editing": true,
+        "organization_notes_editing": true,
+        "ticket_access": "all",
+        "ticket_comment_access": "public",
+        "ticket_deletion": false,
+        "ticket_editing": true,
+        "ticket_merge": true,
+        "ticket_tag_editing": true,
+        "twitter_search_access": false,
+        "user_view_access": "full",
+        "view_deleted_tickets": false,
+        "voice_access": true,
+        "voice_dashboard_access": true
+      },
+      "created_at": "2024-01-01T00:00:00Z",
+      "updated_at": "2024-01-01T00:00:00Z"
+    }
+  ],
+  "next_page": null,
+  "previous_page": null,
+  "count": 1
+}
