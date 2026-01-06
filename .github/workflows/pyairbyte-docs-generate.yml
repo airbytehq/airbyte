@@ -103,6 +103,8 @@ jobs:
             module_path="${rel_path%.md}"
             # Replace slashes with dots for the title (Python module notation)
             module_title=$(echo "$module_path" | tr '/' '.')
+            # Truncate ".index" suffix from title (index.md files represent the parent module)
+            module_title="${module_title%.index}"
             # Replace slashes with dashes for the id (URL-safe)
             unique_id=$(echo "$module_path" | tr '/' '-')
             # Create a temp file with frontmatter and original content
@@ -117,6 +119,60 @@ jobs:
             mv "${file}.tmp" "$file"
           done
           echo "Added Docusaurus frontmatter to all generated files"
+
+      - name: Fix pdoc3 Indentation for CommonMark
+        run: |
+          # pdoc3 indents content by 4 spaces as part of its definition-list formatting.
+          # In CommonMark, 4-space indentation creates code blocks, causing headers and
+          # paragraphs to render as monospace text.
+          # This step de-indents the content while preserving fenced code blocks.
+          python3 << 'EOF'
+          import os
+          import re
+
+          def fix_pdoc3_indentation(content):
+              """De-indent pdoc3 output while preserving fenced code blocks."""
+              lines = content.split('\n')
+              result = []
+              in_fenced_code = False
+              
+              for line in lines:
+                  # Track fenced code blocks (``` or ~~~)
+                  stripped = line.lstrip()
+                  if stripped.startswith('```') or stripped.startswith('~~~'):
+                      in_fenced_code = not in_fenced_code
+                      result.append(line)
+                      continue
+                  
+                  # Don't modify lines inside fenced code blocks
+                  if in_fenced_code:
+                      result.append(line)
+                      continue
+                  
+                  # De-indent lines that start with exactly 4 spaces
+                  # This fixes pdoc3's definition-list indentation
+                  if line.startswith('    ') and not line.startswith('        '):
+                      result.append(line[4:])
+                  else:
+                      result.append(line)
+              
+              return '\n'.join(result)
+
+          # Process all markdown files
+          base_dir = 'docs/developers/pyairbyte/reference'
+          for root, dirs, files in os.walk(base_dir):
+              for filename in files:
+                  if filename.endswith('.md'):
+                      filepath = os.path.join(root, filename)
+                      with open(filepath, 'r', encoding='utf-8') as f:
+                          content = f.read()
+                      fixed_content = fix_pdoc3_indentation(content)
+                      with open(filepath, 'w', encoding='utf-8') as f:
+                          f.write(fixed_content)
+                      print(f"Fixed indentation: {filepath}")
+
+          print("Fixed pdoc3 indentation in all generated markdown files")
+          EOF
 
       - name: Escape Curly Braces for MDX Compatibility
         run: |
