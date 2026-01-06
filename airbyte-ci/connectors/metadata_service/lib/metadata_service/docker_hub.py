@@ -5,6 +5,8 @@
 import os
 import time
 from typing import Dict, Optional
+# TODO: remove
+import http.client as http_client
 
 import requests
 
@@ -19,6 +21,8 @@ def get_docker_hub_auth_token() -> str:
     # TODO: remove
     spaced = " ".join(docker_username)
     print(f"DOCKER_HUB_USERNAME = '{spaced}'")
+
+    http_client.HTTPConnection.debuglevel = 1
 
     auth_url = "https://hub.docker.com/v2/users/login/"
     auth_data = {"username": docker_username, "password": docker_password}
