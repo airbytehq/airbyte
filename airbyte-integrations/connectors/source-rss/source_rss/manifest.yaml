@@ -37,7 +37,7 @@ definitions:
       schema:
         $ref: "#/definitions/items_schema"
     $parameters:
-      path: "/"
+      path: ""
     incremental_sync:
       type: DatetimeBasedCursor
       cursor_field: published
