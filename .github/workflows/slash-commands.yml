@@ -58,6 +58,8 @@ jobs:
 
           commands: |
             ai-canary-prerelease
+            ai-docs-review
+            ai-create-docs-pr
             ai-prove-fix
             ai-release-watch
             approve-regression-tests
