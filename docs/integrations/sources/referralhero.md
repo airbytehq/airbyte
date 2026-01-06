@@ -30,6 +30,14 @@ Please follow the instructions in the following [referralhero](https://support.r
 
 | Version          | Date              | Pull Request | Subject        |
 |------------------|-------------------|--------------|----------------|
+| 0.0.31 | 2025-12-16 | [70585](https://github.com/airbytehq/airbyte/pull/70585) | Update dependencies |
+| 0.0.30 | 2025-11-25 | [70050](https://github.com/airbytehq/airbyte/pull/70050) | Update dependencies |
+| 0.0.29 | 2025-11-18 | [69593](https://github.com/airbytehq/airbyte/pull/69593) | Update dependencies |
+| 0.0.28 | 2025-10-29 | [68873](https://github.com/airbytehq/airbyte/pull/68873) | Update dependencies |
+| 0.0.27 | 2025-10-21 | [68363](https://github.com/airbytehq/airbyte/pull/68363) | Update dependencies |
+| 0.0.26 | 2025-10-14 | [67897](https://github.com/airbytehq/airbyte/pull/67897) | Update dependencies |
+| 0.0.25 | 2025-10-07 | [67540](https://github.com/airbytehq/airbyte/pull/67540) | Update dependencies |
+| 0.0.24 | 2025-09-30 | [66433](https://github.com/airbytehq/airbyte/pull/66433) | Update dependencies |
 | 0.0.23 | 2025-09-09 | [65669](https://github.com/airbytehq/airbyte/pull/65669) | Update dependencies |
 | 0.0.22 | 2025-08-24 | [65505](https://github.com/airbytehq/airbyte/pull/65505) | Update dependencies |
 | 0.0.21 | 2025-08-16 | [65005](https://github.com/airbytehq/airbyte/pull/65005) | Update dependencies |

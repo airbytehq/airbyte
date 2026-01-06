@@ -61,7 +61,7 @@ interface IcebergCatalogSpecifications {
      */
     @get:JsonSchemaTitle("Catalog Type")
     @get:JsonPropertyDescription(
-        "Specifies the type of Iceberg catalog (e.g., NESSIE, GLUE, REST) and its associated configuration."
+        "Specifies the type of Iceberg catalog (e.g., NESSIE, GLUE, REST, POLARIS) and its associated configuration."
     )
     @get:JsonProperty("catalog_type")
     val catalogType: CatalogType
@@ -91,6 +91,14 @@ interface IcebergCatalogSpecifications {
                         (catalogType as RestCatalogSpecification).serverUri,
                         (catalogType as RestCatalogSpecification).namespace
                     )
+                is PolarisCatalogSpecification ->
+                    PolarisCatalogConfiguration(
+                        (catalogType as PolarisCatalogSpecification).serverUri,
+                        (catalogType as PolarisCatalogSpecification).catalogName,
+                        (catalogType as PolarisCatalogSpecification).clientId,
+                        (catalogType as PolarisCatalogSpecification).clientSecret,
+                        (catalogType as PolarisCatalogSpecification).namespace,
+                    )
             }
 
         return IcebergCatalogConfiguration(warehouseLocation, mainBranchName, catalogConfiguration)
@@ -112,6 +120,7 @@ interface IcebergCatalogSpecifications {
     JsonSubTypes.Type(value = NessieCatalogSpecification::class, name = "NESSIE"),
     JsonSubTypes.Type(value = GlueCatalogSpecification::class, name = "GLUE"),
     JsonSubTypes.Type(value = RestCatalogSpecification::class, name = "REST"),
+    JsonSubTypes.Type(value = PolarisCatalogSpecification::class, name = "POLARIS"),
 )
 @JsonSchemaTitle("Iceberg Catalog Type")
 @JsonSchemaDescription(
@@ -123,6 +132,7 @@ sealed class CatalogType(@JsonSchemaTitle("Catalog Type") open val catalogType: 
         NESSIE("NESSIE"),
         GLUE("GLUE"),
         REST("REST"),
+        POLARIS("POLARIS"),
     }
 }
 
@@ -265,4 +275,102 @@ class RestCatalogSpecification(
            `Destination-defined` or `Source-defined`"""
     )
     val namespace: String
+) : CatalogType(catalogType)
+
+/**
+ * Polaris catalog specifications.
+ *
+ * Provides configuration details required to connect to Apache Polaris catalog service and manage
+ * Iceberg table metadata.
+ */
+@JsonSchemaTitle("Polaris Catalog")
+@JsonSchemaDescription(
+    "Configuration details for connecting to an Apache Polaris-based Iceberg catalog."
+)
+class PolarisCatalogSpecification(
+    @JsonSchemaTitle("Catalog Type")
+    @JsonProperty("catalog_type")
+    @JsonSchemaInject(json = """{"order":0}""")
+    override val catalogType: Type = Type.POLARIS,
+
+    /**
+     * The URI of the Polaris server.
+     *
+     * This is required to establish a connection. For example: `http://localhost:8181/api/catalog`
+     */
+    @get:JsonSchemaTitle("Polaris Server URI")
+    @get:JsonPropertyDescription(
+        "The base URL of the Polaris server used to connect to the Polaris catalog."
+    )
+    @get:JsonProperty("server_uri")
+    @JsonSchemaInject(json = """{"order":1}""")
+    val serverUri: String,
+
+    /**
+     * The Polaris catalog name.
+     *
+     * This is the catalog name created in Polaris. For example: `quickstart_catalog`
+     */
+    @get:JsonSchemaTitle("Polaris Catalog Name")
+    @get:JsonPropertyDescription(
+        "The name of the catalog in Polaris. This corresponds to the catalog name created via the Polaris Management API."
+    )
+    @get:JsonProperty("catalog_name")
+    @JsonSchemaInject(json = """{"order":2}""")
+    val catalogName: String,
+
+    /**
+     * OAuth Client ID for Polaris authentication.
+     *
+     * This is provided when creating a principal in Polaris. For example: `abc123clientid`
+     */
+    @get:JsonSchemaTitle("Client ID")
+    @get:JsonPropertyDescription("The OAuth Client ID for authenticating with the Polaris server.")
+    @get:JsonProperty("client_id")
+    @get:JsonSchemaInject(
+        json =
+            """{
+            "examples": ["abc123clientid"],
+            "airbyte_secret": true,
+            "order":3
+        }""",
+    )
+    val clientId: String,
+
+    /**
+     * OAuth Client Secret for Polaris authentication.
+     *
+     * This is provided when creating a principal in Polaris.
+     */
+    @get:JsonSchemaTitle("Client Secret")
+    @get:JsonPropertyDescription(
+        "The OAuth Client Secret for authenticating with the Polaris server."
+    )
+    @get:JsonProperty("client_secret")
+    @get:JsonSchemaInject(
+        json =
+            """{
+            "examples": ["secretkey123"],
+            "airbyte_secret": true,
+            "order":4
+        }""",
+    )
+    val clientSecret: String,
+
+    /**
+     * The namespace to be used when building the Table identifier
+     *
+     * This namespace will only be used if the stream namespace is null, meaning when the
+     * `Destination Namespace` setting for the connection is set to `Destination-defined` or
+     * `Source-defined`
+     */
+    @get:JsonSchemaTitle("Default namespace")
+    @get:JsonPropertyDescription(
+        """The Polaris namespace to be used in the Table identifier.
+           This will ONLY be used if the `Destination Namespace` setting for the connection is set to
+           `Destination-defined` or `Source-defined`"""
+    )
+    @get:JsonProperty("namespace")
+    @JsonSchemaInject(json = """{"order":5}""")
+    val namespace: String,
 ) : CatalogType(catalogType)

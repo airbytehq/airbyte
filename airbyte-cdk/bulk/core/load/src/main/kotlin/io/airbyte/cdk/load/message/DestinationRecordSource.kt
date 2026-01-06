@@ -2,6 +2,8 @@
  * Copyright (c) 2025 Airbyte, Inc., all rights reserved.
  */
 
+@file:Suppress("DEPRECATION")
+
 package io.airbyte.cdk.load.message
 
 import com.fasterxml.jackson.databind.JsonNode
@@ -81,6 +83,7 @@ value class DestinationRecordProtobufSource(val source: AirbyteMessageProtobuf) 
     override fun asJsonRecord(orderedSchema: Array<FieldAccessor>): JsonNode =
         asAirbyteValueProxy().asJson(orderedSchema)
 
+    @Suppress("DEPRECATION")
     override fun asAirbyteValueProxy(): AirbyteValueProxy =
         AirbyteValueProtobufProxy(source.record.dataList)
 }

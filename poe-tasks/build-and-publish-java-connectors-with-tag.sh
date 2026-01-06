@@ -7,7 +7,7 @@
 #   --name <name>:    Specifies the connector name (e.g., destination-bigquery).
 #                    
 #   --release-type:   Specifies the release type:
-#                     - pre-release: Builds with a dev tag (version-dev.githash).
+#                     - pre-release: Builds with a preview tag (version-preview.githash).
 #                     - main-release: Builds with the exact version from metadata.yaml.
 #                     Defaults to pre-release if not specified.
 #
@@ -84,6 +84,12 @@ if [[ -z "$base_tag" || "$base_tag" == "null" ]]; then
   exit 1
 fi
 
+docker_repository=$(yq -r '.data.dockerRepository' "$meta")
+if [[ -z "$docker_repository" || "$docker_repository" == "null" ]]; then
+  echo "Error:  dockerRepository missing in ${meta}" >&2
+  exit 1
+fi
+
 if [[ "$publish_mode" == "main-release" ]]; then
   docker_tag="$base_tag"
 else
@@ -91,14 +97,14 @@ else
 fi
 
 if $do_publish; then
-  echo "Building & publishing ${connector} with tag ${docker_tag}"
+  echo "Building & publishing ${connector} to ${docker_repository} with tag ${docker_tag}"
 
-  if dockerhub_tag_exists "airbyte/${connector}" "$docker_tag"; then
-    echo "ℹ️  Skipping publish — tag airbyte/${connector}:${docker_tag} already exists."
+  if dockerhub_tag_exists "${docker_repository}" "$docker_tag"; then
+    echo "ℹ️  Skipping publish — tag ${docker_repository}:${docker_tag} already exists."
     exit
   fi
 
-  echo "airbyte/${connector}:${docker_tag} image does not exists on Docker. Publishing..."
+  echo "${docker_repository}:${docker_tag} image does not exists on Docker. Publishing..."
   ./gradlew -Pdocker.publish \
             -DciMode=true \
             -Psbom=false \

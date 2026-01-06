@@ -30,7 +30,8 @@ For APIs and custom sources, most syncs will sync incrementally, so the row amou
 For Databases and File sources, Airbyte measures the data volume observed by the Airbyte Platform during the sync to determine data volumes. When the data is in transit, it is serialized to Airbyte Protocol format records. This is likely to be a larger representation of your data than you would see if you were to query your database directly, and varies depending on how your database stores and compresses data.
 
 ## Start a Trial
-To begin a trial of Airbyte Cloud, head to https://cloud.airbyte.com/signup. Your trial will only begin after your first successful sync. Trials last 14 days or when 400 trial credits are used, whichever occurs first. 
+
+To begin a trial of Airbyte Cloud, head to https://cloud.airbyte.com/signup. Your trial will only begin after your first successful sync. Trials last 30 days or when 400 trial credits are used, whichever occurs first.
 
 If you need additional trial credits or time to evaluate Airbyte, please reach out to our [Sales team](https://airbyte.com/company/talk-to-sales).
 

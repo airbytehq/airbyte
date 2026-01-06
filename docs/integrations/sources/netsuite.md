@@ -144,6 +144,9 @@ The connector is restricted by Netsuite [Concurrency Limit per Integration](http
 
 | Version | Date       | Pull Request                                             | Subject                                                   |
 |:--------|:-----------|:---------------------------------------------------------|:----------------------------------------------------------|
+| 0.1.27 | 2025-10-14 | [67787](https://github.com/airbytehq/airbyte/pull/67787) | Update dependencies |
+| 0.1.26 | 2025-10-07 | [67429](https://github.com/airbytehq/airbyte/pull/67429) | Update dependencies |
+| 0.1.25 | 2025-09-30 | [66934](https://github.com/airbytehq/airbyte/pull/66934) | Update dependencies |
 | 0.1.24 | 2025-09-23 | [66623](https://github.com/airbytehq/airbyte/pull/66623) | Update dependencies |
 | 0.1.23 | 2025-09-09 | [65813](https://github.com/airbytehq/airbyte/pull/65813) | Update dependencies |
 | 0.1.22 | 2025-08-23 | [65215](https://github.com/airbytehq/airbyte/pull/65215) | Update dependencies |

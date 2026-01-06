@@ -41,8 +41,7 @@ Upgrade by updating your `values.yaml` file and redeploying Airbyte. If you're n
    helm upgrade airbyte airbyte-v2/airbyte \
    --namespace airbyte-v2 \       # Target Kubernetes namespace
    --values ./values.yaml \       # Custom configuration values
-   --version 2.0.3 \              # Helm chart version to use
-   --set global.image.tag=1.7.0   # Airbyte version to use
+   --version 2.x.x                # Helm chart version to use
    ```
 
    </TabItem>
@@ -59,10 +58,104 @@ Upgrade by updating your `values.yaml` file and redeploying Airbyte. If you're n
 
 ## Upgrading Airbyte deployed with abctl
 
-`abctl` streamlines the way you manage a local installation of Airbyte OSS. 
+`abctl` streamlines the way you manage a local installation of Airbyte Core.
 
 Run `abctl local install` to upgrade to the latest version of Airbyte. If you'd like to ensure you're running the latest version of Airbyte, you can check the value of the Helm Chart's app version by running `abctl local status`.
 
 ### Upgrade abctl
 
-Occasionally, you need to update `abctl` to the latest version. Do that by running `brew upgrade abctl`. This is separate from upgrading Airbyte. It only upgrades the command line tool.
+Occasionally, you need to update `abctl` to the latest version. This is separate from upgrading Airbyte. It only upgrades the command line tool.
+
+<Tabs defaultValue="abctl-curl">
+
+<TabItem value="abctl-curl" label="curl">
+
+Run the following command to upgrade abctl.
+
+```shell
+curl -LsfS https://get.airbyte.com | bash -
+```
+
+Verify the upgrade.
+
+```bash
+abctl version
+```
+
+</TabItem>
+<TabItem value="abctl-go" label="Go">
+
+Run the following command to upgrade abctl.
+
+```bash
+go install github.com/airbytehq/abctl@latest
+```
+
+Verify the upgrade.
+
+```bash
+abctl version
+```
+
+</TabItem>
+<TabItem value="abctl-brew" label="Homebrew">
+
+Run the following command to upgrade abctl.
+
+```bash
+brew upgrade abctl
+```
+
+Verify the upgrade.
+
+```bash
+abctl version
+```
+
+</TabItem>
+<TabItem value="abctl-linux" label="GitHub - Linux">
+
+1. Verify your processor architecture.
+
+    ```bash
+    uname -m
+    ```
+
+    If the output is `x86_64`, download the **linux-amd64** release. If the output is `aarch64` or similar, download the **linux-arm64** release.
+
+2. Download the latest release from the [abctl releases page](https://github.com/airbytehq/abctl/releases/latest).
+
+3. Extract the archive. This creates a directory named `abctl`, which contains the executable and other needed files.
+
+    ```bash
+    tar -xvzf {name-of-file-downloaded.linux-*.tar.gz}
+    ```
+
+4. Replace the existing executable with the new version.
+
+    ```bash
+    chmod +x abctl/abctl
+    sudo mv abctl /usr/local/bin
+    ```
+
+5. Verify the upgrade.
+
+    ```bash
+    abctl version
+    ```
+
+</TabItem>
+<TabItem value="abctl-windows" label="GitHub - Windows">
+
+1. Download the latest release from the [abctl releases page](https://github.com/airbytehq/abctl/releases/latest). Download the **windows-amd64** or **windows-arm64** release depending on your processor architecture.
+
+2. Extract the zip file to the same location where you previously installed abctl, replacing the existing files.
+
+3. Verify the upgrade.
+
+    ```bash
+    abctl version
+    ```
+
+</TabItem>
+</Tabs>

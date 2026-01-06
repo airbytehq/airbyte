@@ -7,7 +7,7 @@ data:
   connectorSubtype: api
   connectorType: source
   definitionId: 547dc08e-ab51-421d-953b-8f3745201a8c
-  dockerImageTag: 0.1.56
+  dockerImageTag: 0.1.59
   dockerRepository: airbyte/source-kyriba
   documentationUrl: https://docs.airbyte.com/integrations/sources/kyriba
   githubIssueLabel: source-kyriba
@@ -39,4 +39,8 @@ data:
     #       secretStore:
     #         type: GSM
     #         alias: airbyte-connector-testing-secret-store
+  externalDocumentationUrls:
+    - title: Kyriba API documentation
+      url: https://developer.kyriba.com/
+      type: api_reference
 metadataSpecVersion: "1.0"

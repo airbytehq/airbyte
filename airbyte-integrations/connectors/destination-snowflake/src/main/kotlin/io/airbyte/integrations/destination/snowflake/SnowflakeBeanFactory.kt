@@ -9,16 +9,20 @@ import com.zaxxer.hikari.HikariDataSource
 import io.airbyte.cdk.Operation
 import io.airbyte.cdk.load.check.CheckOperationV2
 import io.airbyte.cdk.load.check.DestinationCheckerV2
-import io.airbyte.cdk.load.dataflow.config.MemoryAndParallelismConfig
-import io.airbyte.cdk.load.orchestration.db.DefaultTempTableNameGenerator
-import io.airbyte.cdk.load.orchestration.db.TempTableNameGenerator
+import io.airbyte.cdk.load.config.DataChannelMedium
+import io.airbyte.cdk.load.dataflow.config.AggregatePublishingConfig
+import io.airbyte.cdk.load.table.DefaultTempTableNameGenerator
+import io.airbyte.cdk.load.table.TempTableNameGenerator
 import io.airbyte.cdk.output.OutputConsumer
 import io.airbyte.integrations.destination.snowflake.cdk.SnowflakeMigratingConfigurationSpecificationSupplier
-import io.airbyte.integrations.destination.snowflake.db.toSnowflakeCompatibleName
+import io.airbyte.integrations.destination.snowflake.schema.toSnowflakeCompatibleName
 import io.airbyte.integrations.destination.snowflake.spec.KeyPairAuthConfiguration
 import io.airbyte.integrations.destination.snowflake.spec.SnowflakeConfiguration
 import io.airbyte.integrations.destination.snowflake.spec.SnowflakeConfigurationFactory
 import io.airbyte.integrations.destination.snowflake.spec.UsernamePasswordAuthConfiguration
+import io.airbyte.integrations.destination.snowflake.write.load.SnowflakeRawRecordFormatter
+import io.airbyte.integrations.destination.snowflake.write.load.SnowflakeRecordFormatter
+import io.airbyte.integrations.destination.snowflake.write.load.SnowflakeSchemaRecordFormatter
 import io.micronaut.context.annotation.Factory
 import io.micronaut.context.annotation.Primary
 import io.micronaut.context.annotation.Requires
@@ -204,7 +208,32 @@ class SnowflakeBeanFactory {
     ) = CheckOperationV2(destinationChecker, outputConsumer)
 
     @Singleton
-    fun getMemoryAndParallelismConfig(): MemoryAndParallelismConfig {
-        return MemoryAndParallelismConfig()
+    fun snowflakeRecordFormatter(
+        snowflakeConfiguration: SnowflakeConfiguration
+    ): SnowflakeRecordFormatter {
+        return if (snowflakeConfiguration.legacyRawTablesOnly) {
+            SnowflakeRawRecordFormatter()
+        } else {
+            SnowflakeSchemaRecordFormatter()
+        }
+    }
+
+    @Singleton
+    fun aggregatePublishingConfig(dataChannelMedium: DataChannelMedium): AggregatePublishingConfig {
+        // NOT speed mode
+        return if (dataChannelMedium == DataChannelMedium.STDIO) {
+            AggregatePublishingConfig(
+                maxRecordsPerAgg = 10_000_000_000_000L,
+                maxEstBytesPerAgg = 350_000_000L,
+                maxEstBytesAllAggregates = 350_000_000L * 5,
+            )
+        } else {
+            AggregatePublishingConfig(
+                maxRecordsPerAgg = 10_000_000_000_000L,
+                maxEstBytesPerAgg = 350_000_000L,
+                maxEstBytesAllAggregates = 350_000_000L * 5,
+                maxBufferedAggregates = 6,
+            )
+        }
     }
 }

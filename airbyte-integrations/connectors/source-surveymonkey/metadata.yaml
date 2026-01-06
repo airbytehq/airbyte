@@ -10,7 +10,7 @@ data:
   connectorSubtype: api
   connectorType: source
   definitionId: badc5925-0485-42be-8caa-b34096cb71b5
-  dockerImageTag: 0.3.43
+  dockerImageTag: 0.3.47
   dockerRepository: airbyte/source-surveymonkey
   documentationUrl: https://docs.airbyte.com/integrations/sources/surveymonkey
   githubIssueLabel: source-surveymonkey
@@ -52,4 +52,17 @@ data:
           secretStore:
             type: GSM
             alias: airbyte-connector-testing-secret-store
+  externalDocumentationUrls:
+    - title: SurveyMonkey API reference
+      url: https://developer.surveymonkey.com/api/v3/
+      type: api_reference
+    - title: SurveyMonkey API Changelog
+      url: https://developer.surveymonkey.com/api/v3/#changelog
+      type: api_release_history
+    - title: SurveyMonkey authentication
+      url: https://developer.surveymonkey.com/api/v3/#authentication
+      type: authentication_guide
+    - title: SurveyMonkey rate limits
+      url: https://developer.surveymonkey.com/api/v3/#rate-limits
+      type: rate_limits
 metadataSpecVersion: "1.0"

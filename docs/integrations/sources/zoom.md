@@ -71,6 +71,14 @@ JWT Tokens are deprecated, only Server-to-Server works now. [link to Zoom](https
 
 | Version | Date       | Pull Request                                             | Subject                                              |
 | :------ | :--------- | :------------------------------------------------------- | :--------------------------------------------------- |
+| 1.2.39 | 2025-12-16 | [70796](https://github.com/airbytehq/airbyte/pull/70796) | Update dependencies |
+| 1.2.38 | 2025-11-25 | [70145](https://github.com/airbytehq/airbyte/pull/70145) | Update dependencies |
+| 1.2.37 | 2025-11-18 | [69428](https://github.com/airbytehq/airbyte/pull/69428) | Update dependencies |
+| 1.2.36 | 2025-10-29 | [68840](https://github.com/airbytehq/airbyte/pull/68840) | Update dependencies |
+| 1.2.35 | 2025-10-21 | [68502](https://github.com/airbytehq/airbyte/pull/68502) | Update dependencies |
+| 1.2.34 | 2025-10-14 | [67984](https://github.com/airbytehq/airbyte/pull/67984) | Update dependencies |
+| 1.2.33 | 2025-10-07 | [67477](https://github.com/airbytehq/airbyte/pull/67477) | Update dependencies |
+| 1.2.32 | 2025-09-30 | [66942](https://github.com/airbytehq/airbyte/pull/66942) | Update dependencies |
 | 1.2.31 | 2025-09-24 | [66312](https://github.com/airbytehq/airbyte/pull/66312) | Update dependencies |
 | 1.2.30 | 2025-09-09 | [65697](https://github.com/airbytehq/airbyte/pull/65697) | Update dependencies |
 | 1.2.29 | 2025-08-23 | [65399](https://github.com/airbytehq/airbyte/pull/65399) | Update dependencies |

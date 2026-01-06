@@ -2,7 +2,7 @@ data:
   connectorSubtype: database
   connectorType: source
   definitionId: 6f2ac653-8623-43c4-8950-19218c7caf3d
-  dockerImageTag: 2.0.36
+  dockerImageTag: 2.0.39
   dockerRepository: airbyte/source-firebolt
   githubIssueLabel: source-firebolt
   connectorBuildOptions:
@@ -56,4 +56,14 @@ data:
           secretStore:
             type: GSM
             alias: airbyte-connector-testing-secret-store
+  externalDocumentationUrls:
+    - title: Firebolt API reference
+      url: https://docs.firebolt.io/godocs/Overview/api-reference.html
+      type: api_reference
+    - title: Firebolt authentication
+      url: https://docs.firebolt.io/godocs/Guides/managing-your-organization/service-accounts.html
+      type: authentication_guide
+    - title: Firebolt Status
+      url: https://status.firebolt.io/
+      type: status_page
 metadataSpecVersion: "1.0"

@@ -183,6 +183,12 @@ These two streams are effectively limited to **one request per minute**. Conside
 
 | Version    | Date       | Pull Request                                             | Subject                                                                                                                                                                |
 |:-----------|:-----------|:---------------------------------------------------------|:-----------------------------------------------------------------------------------------------------------------------------------------------------------------------|
+| 3.1.7 | 2025-10-29 | [68772](https://github.com/airbytehq/airbyte/pull/68772) | Update dependencies |
+| 3.1.6 | 2025-10-21 | [68282](https://github.com/airbytehq/airbyte/pull/68282) | Update dependencies |
+| 3.1.5 | 2025-10-14 | [67767](https://github.com/airbytehq/airbyte/pull/67767) | Update dependencies |
+| 3.1.4 | 2025-10-07 | [67449](https://github.com/airbytehq/airbyte/pull/67449) | Update dependencies |
+| 3.1.3 | 2025-10-06 | [67084](https://github.com/airbytehq/airbyte/pull/67084) | Update dependencies |
+| 3.1.2 | 2025-09-30 | [66566](https://github.com/airbytehq/airbyte/pull/66566) | Update to CDK v7 |
 | 3.1.1 | 2025-09-24 | [66640](https://github.com/airbytehq/airbyte/pull/66640) | Update dependencies |
 | 3.1.0 | 2025-09-18 | [66501](https://github.com/airbytehq/airbyte/pull/66501) | Promoting release candidate 3.1.0-rc.1 to a main version. |
 | 3.1.0-rc.1 | 2025-09-10 | [64160](https://github.com/airbytehq/airbyte/pull/64160) | Migrate to manifest-only.                                                                                                                                              |

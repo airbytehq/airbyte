@@ -5,7 +5,8 @@
 package io.airbyte.integrations.destination.snowflake.check
 
 import io.airbyte.integrations.destination.snowflake.client.SnowflakeAirbyteClient
-import io.airbyte.integrations.destination.snowflake.db.toSnowflakeCompatibleName
+import io.airbyte.integrations.destination.snowflake.schema.SnowflakeColumnManager
+import io.airbyte.integrations.destination.snowflake.schema.toSnowflakeCompatibleName
 import io.airbyte.integrations.destination.snowflake.spec.SnowflakeConfiguration
 import io.mockk.coEvery
 import io.mockk.coVerify
@@ -29,15 +30,22 @@ internal class SnowflakeCheckerTest {
             every { legacyRawTablesOnly } returns isLegacyRawTablesOnly
         }
 
+        val columnManager: SnowflakeColumnManager = SnowflakeColumnManager(snowflakeConfiguration)
+
         val checker =
             SnowflakeChecker(
                 snowflakeAirbyteClient = snowflakeAirbyteClient,
                 snowflakeConfiguration = snowflakeConfiguration,
+                columnManager = columnManager,
             )
         checker.check()
 
         coVerify(exactly = 1) {
-            snowflakeAirbyteClient.createNamespace(testSchema.toSnowflakeCompatibleName())
+            if (isLegacyRawTablesOnly) {
+                snowflakeAirbyteClient.createNamespace(testSchema)
+            } else {
+                snowflakeAirbyteClient.createNamespace(testSchema.toSnowflakeCompatibleName())
+            }
         }
         coVerify(exactly = 1) { snowflakeAirbyteClient.createTable(any(), any(), any(), any()) }
         coVerify(exactly = 1) { snowflakeAirbyteClient.dropTable(any()) }
@@ -55,16 +63,23 @@ internal class SnowflakeCheckerTest {
             every { legacyRawTablesOnly } returns isLegacyRawTablesOnly
         }
 
+        val columnManager: SnowflakeColumnManager = SnowflakeColumnManager(snowflakeConfiguration)
+
         val checker =
             SnowflakeChecker(
                 snowflakeAirbyteClient = snowflakeAirbyteClient,
                 snowflakeConfiguration = snowflakeConfiguration,
+                columnManager = columnManager,
             )
 
         assertThrows<IllegalArgumentException> { checker.check() }
 
         coVerify(exactly = 1) {
-            snowflakeAirbyteClient.createNamespace(testSchema.toSnowflakeCompatibleName())
+            if (isLegacyRawTablesOnly) {
+                snowflakeAirbyteClient.createNamespace(testSchema)
+            } else {
+                snowflakeAirbyteClient.createNamespace(testSchema.toSnowflakeCompatibleName())
+            }
         }
         coVerify(exactly = 1) { snowflakeAirbyteClient.createTable(any(), any(), any(), any()) }
         coVerify(exactly = 1) { snowflakeAirbyteClient.dropTable(any()) }

@@ -10,7 +10,7 @@ data:
   connectorSubtype: api
   connectorType: source
   definitionId: 9e0556f4-69df-4522-a3fb-03264d36b348
-  dockerImageTag: 1.4.34
+  dockerImageTag: 1.4.38
   dockerRepository: airbyte/source-marketo
   documentationUrl: https://docs.airbyte.com/integrations/sources/marketo
   githubIssueLabel: source-marketo
@@ -45,4 +45,14 @@ data:
           secretStore:
             type: GSM
             alias: airbyte-connector-testing-secret-store
+  externalDocumentationUrls:
+    - title: Marketo REST API
+      url: https://developers.marketo.com/rest-api/
+      type: api_reference
+    - title: Marketo authentication
+      url: https://developers.marketo.com/rest-api/authentication/
+      type: authentication_guide
+    - title: Marketo rate limits
+      url: https://developers.marketo.com/rest-api/marketo-integration-best-practices/#api_limits
+      type: rate_limits
 metadataSpecVersion: "1.0"

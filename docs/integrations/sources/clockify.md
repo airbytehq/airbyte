@@ -9,6 +9,14 @@ The Airbyte Source for [Clockify](https://clockify.me)
 
 | Version | Date       | Pull Request                                             | Subject                                                                         |
 | :------ | :--------- | :------------------------------------------------------- | :------------------------------------------------------------------------------ |
+| 0.4.41 | 2025-12-16 | [70655](https://github.com/airbytehq/airbyte/pull/70655) | Update dependencies |
+| 0.4.40 | 2025-11-25 | [69929](https://github.com/airbytehq/airbyte/pull/69929) | Update dependencies |
+| 0.4.39 | 2025-11-18 | [69625](https://github.com/airbytehq/airbyte/pull/69625) | Update dependencies |
+| 0.4.38 | 2025-10-29 | [68867](https://github.com/airbytehq/airbyte/pull/68867) | Update dependencies |
+| 0.4.37 | 2025-10-21 | [68535](https://github.com/airbytehq/airbyte/pull/68535) | Update dependencies |
+| 0.4.36 | 2025-10-14 | [68082](https://github.com/airbytehq/airbyte/pull/68082) | Update dependencies |
+| 0.4.35 | 2025-10-07 | [67187](https://github.com/airbytehq/airbyte/pull/67187) | Update dependencies |
+| 0.4.34 | 2025-09-30 | [66249](https://github.com/airbytehq/airbyte/pull/66249) | Update dependencies |
 | 0.4.33 | 2025-09-09 | [65750](https://github.com/airbytehq/airbyte/pull/65750) | Update dependencies |
 | 0.4.32 | 2025-08-23 | [65274](https://github.com/airbytehq/airbyte/pull/65274) | Update dependencies |
 | 0.4.31 | 2025-08-09 | [64752](https://github.com/airbytehq/airbyte/pull/64752) | Update dependencies |
