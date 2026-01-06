@@ -21,9 +21,10 @@ object CharacterizationTest {
         }
         val goldenFileContents = Files.readString(goldenFilePath)
         Files.write(goldenFilePath, actualContents.toByteArray())
-        Assertions.assertEquals(
-            goldenFileContents,
-            actualContents,
+        // don't use assertEquals, b/c the output is hard to read.
+        // We'll include the actual file path in the assert message.
+        Assertions.assertTrue(
+            goldenFileContents == actualContents,
             "Contents of $goldenFilePath did not match previous version. Inspect the `git diff` and commit the change if this is intended.",
         )
     }

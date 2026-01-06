@@ -352,7 +352,6 @@ abstract class BasicFunctionalityIntegrationTest(
     val testSpeedModeStatsEmission: Boolean = true,
     val useDataFlowPipeline: Boolean = false,
     val schemaDumper: SchemaDumper? = null,
-    goldenFileBasePath: String = "",
 ) :
     IntegrationTest(
         additionalMicronautEnvs = additionalMicronautEnvs,
@@ -366,12 +365,7 @@ abstract class BasicFunctionalityIntegrationTest(
         dataChannelMedium = dataChannelMedium,
         dataChannelFormat = dataChannelFormat,
     ) {
-    val goldenFileBasePath: String =
-        if (goldenFileBasePath.isEmpty()) {
-            goldenFileBasePath
-        } else {
-            "$goldenFileBasePath/"
-        }
+    val goldenFileBasePath = "golden_files/${this::class.simpleName}"
 
     // Update config with any replacements.  This may be necessary when using testcontainers.
     val updatedConfig = configUpdater.update(configContents)
@@ -5216,7 +5210,7 @@ abstract class BasicFunctionalityIntegrationTest(
         baseSchemaRegressionTest(
             "dedup_funky_chars_pk",
             Dedupe(
-                primaryKey = listOf(listOf("é,./<>?'\";[]\\:{}|`~!@#$%^&*()_+-=")),
+                primaryKey = listOf(listOf(FUNKY_CHARS_IDENTIFIER)),
                 cursor = listOf("string"),
             )
         )
@@ -5228,7 +5222,7 @@ abstract class BasicFunctionalityIntegrationTest(
             "dedup_funky_chars_cursor",
             Dedupe(
                 primaryKey = listOf(listOf("string")),
-                cursor = listOf("é,./<>?'\";[]\\:{}|`~!@#$%^&*()_+-="),
+                cursor = listOf(FUNKY_CHARS_IDENTIFIER),
             )
         )
     }
@@ -5353,8 +5347,7 @@ abstract class BasicFunctionalityIntegrationTest(
                         "create" to FieldType(StringType, nullable = true),
                         "delete" to FieldType(StringType, nullable = true),
                         // funky chars
-                        "é,./<>?'\";[]\\:{}|`~!@#$%^&*()_+-=" to
-                            FieldType(StringType, nullable = true),
+                        FUNKY_CHARS_IDENTIFIER to FieldType(StringType, nullable = true),
                         // starts with a number
                         "1column" to FieldType(StringType, nullable = true),
                         // column names that probably collide
@@ -5384,7 +5377,7 @@ abstract class BasicFunctionalityIntegrationTest(
                 stream.mappedDescriptor.name
             )
         CharacterizationTest.doAssert(
-            "golden_files/${goldenFileBasePath}schema-regression/column_names/$filename.txt",
+            "$goldenFileBasePath/schema-regression/column_names/$filename.txt",
             actualSchema
         )
     }
@@ -5453,6 +5446,7 @@ abstract class BasicFunctionalityIntegrationTest(
                 nullable = true,
             )
         private val timestamptzType = FieldType(TimestampTypeWithTimezone, nullable = true)
+        const val FUNKY_CHARS_IDENTIFIER = "é,./<>?'\";[]\\:{}|`~!@#$%^&*()_+-="
     }
 
     fun checkpointKeyForMedium(index: Int = 1, partitionId: String = "1"): CheckpointKey? {
