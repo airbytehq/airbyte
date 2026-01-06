@@ -48,6 +48,8 @@ public class MongoConstants {
   public static final String CAPTURE_MODE_LOOKUP_OPTION = "Lookup";
   public static final String CAPTURE_MODE_POST_IMAGE_OPTION = "Post Image";
 
+  public static final String RENDER_UUIDS_FROM_BINARY = "render_uuids_from_binary";
+
   private MongoConstants() {}
 
 }

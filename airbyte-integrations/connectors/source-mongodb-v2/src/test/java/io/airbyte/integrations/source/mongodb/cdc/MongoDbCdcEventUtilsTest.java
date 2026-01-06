@@ -132,7 +132,7 @@ class MongoDbCdcEventUtilsTest {
         .append("field18", new BsonBinary(legacyUuid, UuidRepresentation.JAVA_LEGACY));
 
     final String documentAsJson = document.toJson();
-    final ObjectNode transformed = MongoDbCdcEventUtils.transformDataTypes(documentAsJson, document.keySet());
+    final ObjectNode transformed = MongoDbCdcEventUtils.transformDataTypes(documentAsJson, document.keySet(), false);
 
     assertNotNull(transformed);
     assertNotEquals(documentAsJson, Jsons.serialize(transformed));
@@ -160,6 +160,52 @@ class MongoDbCdcEventUtilsTest {
     // decode these back to the original UUID.
     assertTrue(transformed.has("field17"));
     assertTrue(transformed.has("field18"));
+
+    // Verify that UUIDs are encoded as base64 strings when renderUuidFromBinary is false
+    assertNotNull(transformed.get("field17").asText());
+    assertNotNull(transformed.get("field18").asText());
+  }
+
+  @Test
+  void testTransformDataTypesWithUuidRendering() {
+    final UUID standardUuid = UUID.randomUUID();
+    final UUID legacyUuid = UUID.randomUUID();
+    final byte[] regularBinary = "test binary data".getBytes(Charset.defaultCharset());
+
+    final Document document = new Document()
+        .append("standardUuid", new BsonBinary(standardUuid, UuidRepresentation.STANDARD))
+        .append("legacyUuid", new BsonBinary(legacyUuid, UuidRepresentation.JAVA_LEGACY))
+        .append("regularBinary", new BsonBinary(regularBinary));
+
+    final String documentAsJson = document.toJson();
+
+    // Test with renderUuidFromBinary = true
+    final ObjectNode transformedWithUuid = MongoDbCdcEventUtils.transformDataTypes(documentAsJson, document.keySet(), true);
+
+    assertNotNull(transformedWithUuid);
+    assertTrue(transformedWithUuid.has("standardUuid"));
+    assertTrue(transformedWithUuid.has("legacyUuid"));
+    assertTrue(transformedWithUuid.has("regularBinary"));
+
+    // Both standard and legacy UUIDs should be rendered as UUID strings
+    assertEquals(standardUuid.toString(), transformedWithUuid.get("standardUuid").asText());
+    assertEquals(legacyUuid.toString(), transformedWithUuid.get("legacyUuid").asText());
+
+    // Regular binary data should still be encoded as base64 even when renderUuidFromBinary is true
+    assertEquals(Base64.getEncoder().encodeToString(regularBinary), transformedWithUuid.get("regularBinary").asText());
+
+    // Test with renderUuidFromBinary = false
+    final ObjectNode transformedWithoutUuid = MongoDbCdcEventUtils.transformDataTypes(documentAsJson, document.keySet(), false);
+
+    assertNotNull(transformedWithoutUuid);
+    assertTrue(transformedWithoutUuid.has("standardUuid"));
+    assertTrue(transformedWithoutUuid.has("legacyUuid"));
+    assertTrue(transformedWithoutUuid.has("regularBinary"));
+
+    // All binary data should be encoded as base64 strings when renderUuidFromBinary is false
+    assertNotNull(transformedWithoutUuid.get("standardUuid").asText());
+    assertNotNull(transformedWithoutUuid.get("legacyUuid").asText());
+    assertEquals(Base64.getEncoder().encodeToString(regularBinary), transformedWithoutUuid.get("regularBinary").asText());
   }
 
   @Test
@@ -185,7 +231,7 @@ class MongoDbCdcEventUtilsTest {
         .append("field16", new Document("key", "value"));
 
     final String documentAsJson = document.toJson();
-    final ObjectNode transformed = MongoDbCdcEventUtils.transformDataTypes(documentAsJson, Set.of("field1", "field2", "field3"));
+    final ObjectNode transformed = MongoDbCdcEventUtils.transformDataTypes(documentAsJson, Set.of("field1", "field2", "field3"), false);
 
     assertNotNull(transformed);
     assertNotEquals(documentAsJson, Jsons.serialize(transformed));
@@ -230,7 +276,7 @@ class MongoDbCdcEventUtilsTest {
         .append("field16", new Document("key", "value"));
 
     final String documentAsJson = document.toJson();
-    final ObjectNode transformed = MongoDbCdcEventUtils.transformDataTypesNoSchema(documentAsJson);
+    final ObjectNode transformed = MongoDbCdcEventUtils.transformDataTypesNoSchema(documentAsJson, false);
 
     assertNotNull(transformed);
     final var abDataNode = transformed.get(SCHEMALESS_MODE_DATA_FIELD);
