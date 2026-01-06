@@ -237,6 +237,7 @@ definitions:
     companies:
       type: DeclarativeStream
       name: "companies"
+      block_simultaneous_read: "companies"
       primary_key:
         - id
       retriever:
