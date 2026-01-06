@@ -3,11 +3,14 @@
 #
 
 
+import logging
 from functools import lru_cache
-from typing import Any, Dict, Mapping
+from typing import Any, Dict, List, Mapping, MutableMapping
 
 from .streams import GoogleAdsStream, IncrementalGoogleAdsStream
 from .utils import GAQL
+
+logger = logging.getLogger("airbyte")
 
 
 DATE_TYPES = ("segments.date", "segments.month", "segments.quarter", "segments.week")
@@ -86,6 +89,58 @@ class CustomQueryMixin:
 
 
 class IncrementalCustomQuery(CustomQueryMixin, IncrementalGoogleAdsStream):
+    def should_migrate(self, stream_state: Mapping[str, Any]) -> bool:
+        """
+        Check if state needs migration from CDK v7 concurrent format to legacy format.
+
+        CDK v7 concurrent format has "states" key with array of partition states.
+        Legacy format has customer_id keys directly: {customer_id: {cursor}}
+        """
+        return bool(stream_state and "states" in stream_state)
+
+    def migrate(self, stream_state: Mapping[str, Any]) -> Mapping[str, Any]:
+        """
+        Migrate CDK v7 concurrent state format to legacy format.
+
+        CDK v7 concurrent format:
+        {
+          "states": [{"cursor": {...}, "partition": {"customer_id": "customers/123", ...}}],
+          "state": {...}
+        }
+
+        Legacy format:
+        {"123": {"segments.date": "2025-12-20"}}
+        """
+        if not self.should_migrate(stream_state):
+            return stream_state
+
+        # Convert from concurrent to legacy format
+        legacy_state = {}
+        for partition_state in stream_state.get("states", []):
+            cursor = partition_state.get("cursor", {})
+            partition = partition_state.get("partition", {})
+            customer_id_full = partition.get("customer_id", "")
+
+            if customer_id_full and cursor:
+                # Extract customer_id without "customers/" prefix
+                customer_id = customer_id_full.replace("customers/", "") if customer_id_full.startswith("customers/") else customer_id_full
+                legacy_state[customer_id] = cursor
+
+        return legacy_state
+
+    @property
+    def state(self) -> MutableMapping[str, Any]:
+        return self._state
+
+    @state.setter
+    def state(self, value: MutableMapping[str, Any]):
+        """
+        Override state setter to automatically migrate CDK v7 concurrent state format.
+        """
+        if self.should_migrate(value):
+            value = self.migrate(value)
+        self._state.update(value)
+
     def get_query(self, stream_slice: Mapping[str, Any] = None) -> str:
         start_date, end_date = stream_slice["start_date"], stream_slice["end_date"]
         query = self.insert_segments_date_expr(self.config["query"], start_date, end_date)
