@@ -102,6 +102,7 @@ definitions:
       type: OffsetIncrement
       page_size: 100
 
+  # DEMO: This change triggers Gate 5 (Pre-Release Validation) - modifying pagination logic
   cursor_paginator:
     type: DefaultPaginator
     page_token_option:
