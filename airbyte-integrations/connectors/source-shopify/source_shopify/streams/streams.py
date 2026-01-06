@@ -472,6 +472,17 @@ class Countries(HttpSubStream, FullRefreshShopifyGraphQlBulkStream):
     query = DeliveryProfile
     response_field = "deliveryProfiles"
 
+    def stream_slices(
+        self,
+        stream_state: Optional[Mapping[str, Any]] = None,
+        **kwargs,
+    ) -> Iterable[Optional[Mapping[str, Any]]]:
+        for stream_slice in super().stream_slices(stream_state=stream_state, **kwargs):
+            parent = stream_slice.get("parent", {})
+            profile_location_groups = parent.get("profile_location_groups", [])
+            if profile_location_groups:
+                yield stream_slice
+
     def next_page_token(self, response: requests.Response) -> Optional[Mapping[str, Any]]:
         json_response = response.json().get("data", {})
         if not json_response:
