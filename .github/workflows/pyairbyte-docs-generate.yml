@@ -95,18 +95,17 @@ jobs:
         run: |
           # Add Docusaurus-compatible frontmatter to generated markdown files
           for file in $(find docs/developers/pyairbyte/reference -name "*.md"); do
-            # Extract module name from filename
             filename=$(basename "$file" .md)
-            
-            # Create frontmatter
-            frontmatter="---
-sidebar_label: ${filename}
-title: ${filename}
----
-
-"
-            # Prepend frontmatter to file
-            echo "$frontmatter$(cat "$file")" > "$file"
+            # Create a temp file with frontmatter and original content
+            {
+              echo "---"
+              echo "sidebar_label: ${filename}"
+              echo "title: ${filename}"
+              echo "---"
+              echo ""
+              cat "$file"
+            } > "${file}.tmp"
+            mv "${file}.tmp" "$file"
           done
           echo "Added Docusaurus frontmatter to all generated files"
 
