@@ -246,6 +246,7 @@ Each record is marked with `is_deleted` flag when the appropriate event happens 
 
 | Version     | Date       | Pull Request                                                 | Subject                                                                                                                                                                                                                       |
 |:------------|:-----------|:-------------------------------------------------------------|:------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------|
+| 5.15.15 | 2026-01-06 | [71153](https://github.com/airbytehq/airbyte/pull/71153) | Demo: Test Gate 6 PR description check (DO NOT MERGE) |
 | 5.15.14 | 2025-12-16 | [70638](https://github.com/airbytehq/airbyte/pull/70638) | Update dependencies |
 | 5.15.13 | 2025-11-25 | [70048](https://github.com/airbytehq/airbyte/pull/70048) | Update dependencies |
 | 5.15.12 | 2025-11-18 | [69580](https://github.com/airbytehq/airbyte/pull/69580) | Update dependencies |
