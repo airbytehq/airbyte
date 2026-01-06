@@ -18,10 +18,7 @@ def get_docker_hub_auth_token() -> str:
     if not (docker_username and docker_password):
         raise ValueError("Please set the DOCKER_HUB_USERNAME and DOCKER_HUB_PASSWORD environment variables.")
 
-    # TODO: remove
-    spaced = " ".join(docker_username)
-    print(f"DOCKER_HUB_USERNAME = '{spaced}'")
-
+    # TODO: Remove!
     http_client.HTTPConnection.debuglevel = 1
 
     auth_url = "https://hub.docker.com/v2/users/login/"

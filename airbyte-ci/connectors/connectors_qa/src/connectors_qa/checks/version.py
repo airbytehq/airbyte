@@ -42,6 +42,8 @@ class CheckVersionIncrement(Check):
     def _get_master_metadata(self, connector: Connector) -> Dict[str, Any] | None:
         """Get the metadata from the master branch or None if unable to retrieve."""
         # TODO: test out if this works on the private airbyte-enterprise repo - consider using git-based approach
+        if connector.ab_internal_is_enterprise:
+            return None
         github_url_prefix = "https://raw.githubusercontent.com/airbytehq/airbyte/master/airbyte-integrations/connectors"
         master_metadata_url = f"{github_url_prefix}/{connector.technical_name}/{consts.METADATA_FILE_NAME}"
         response = requests.get(master_metadata_url)
