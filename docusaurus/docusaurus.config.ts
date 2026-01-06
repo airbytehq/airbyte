@@ -88,10 +88,10 @@ const config: Config = {
       src: "https://widget.kapa.ai/kapa-widget.bundle.js",
       async: true,
       "data-website-id": "894ff9ab-1c3d-48d3-a014-aa0f52d0b113",
-      "data-project-name": "Airbyte docs chat bot",
+      "data-project-name": "Airbyte",
       "data-project-color": "#615EFF",
-      "data-project-logo": "https://docs.airbyte.com/img/logo-dark.png",
-      "data-modal-title": "Airbyte docs chat bot",
+      "data-project-logo": "https://docs.airbyte.com/img/favicon.png",
+      "data-modal-title": "Airbyte",
       "data-modal-example-questions":
         "What's Airbyte?,Can I try Airbyte quickly?,How do I use Terraform with Airbyte?",
       "data-button-hide": "true",
