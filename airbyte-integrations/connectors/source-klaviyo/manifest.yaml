@@ -156,7 +156,7 @@ definitions:
             cursor_value: "{{ response.get('links', {}).get('next') }}"
       incremental_sync:
         type: DatetimeBasedCursor
-        cursor_field: updated
+        cursor_field: timestamp
         cursor_datetime_formats:
           - "%Y-%m-%dT%H:%M:%S.%f%z"
           - "%Y-%m-%dT%H:%M:%S%z"
