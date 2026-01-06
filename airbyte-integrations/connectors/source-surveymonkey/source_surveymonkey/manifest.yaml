@@ -270,7 +270,7 @@ streams:
       requester:
         type: HttpRequester
         url_base: https://api.surveymonkey.com/v3/
-        path: collectors//{{ stream_partition.collector_id }}
+        path: collectors/{{ stream_partition.collector_id }}
         http_method: GET
         request_parameters: {}
         request_headers: {}
