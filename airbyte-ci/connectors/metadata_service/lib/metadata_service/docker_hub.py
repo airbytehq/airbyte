@@ -24,8 +24,6 @@ def get_docker_hub_auth_token() -> str:
     response = requests.post(auth_url, json=auth_data)
 
     if response.status_code != 200:
-        # TODO: remove
-        time.sleep(60*60)
         raise ValueError("Failed to authenticate with Docker Hub. Please check your credentials.")
 
     token = response.json().get("token")
