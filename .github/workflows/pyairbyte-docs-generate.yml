@@ -78,6 +78,11 @@ jobs:
                 - airbyte
 
           processors:
+            - type: filter
+              documented_only: true
+              exclude_private: true
+              exclude_special: true
+              skip_empty_modules: true
             - type: smart
             - type: crossref
 
