@@ -40,9 +40,9 @@ class SchemaMapperHarness(
         }
 
     fun testColumnIdentifiers(columnName: String, expectedColumnName: String) = runTest {
-        val columnName = tableSchemaMapper.toColumnName(columnName)
-        assertEquals(expectedColumnName, columnName)
-        validateCreateTableWithColumnName(columnName)
+        val mappedColumnName = tableSchemaMapper.toColumnName(columnName)
+        assertEquals(expectedColumnName, mappedColumnName)
+        validateCreateTableWithColumnName(mappedColumnName)
     }
 
     /**
