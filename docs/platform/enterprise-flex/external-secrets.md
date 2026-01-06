@@ -8,7 +8,6 @@ import TabItem from '@theme/TabItem';
 
 # External Secret Management
 
-
 This guide provides step-by-step instructions for configuring external secrets management with Airbyte Enterprise Flex. External secrets management allows Airbyte to securely store and manage connection credentials in your cloud provider's secrets manager (AWS Secrets Manager, Azure Key Vault, or Google Cloud Secret Manager) instead of storing them in Airbyte's internal database.
 
 :::info
@@ -92,13 +91,13 @@ Follow the instructions for your chosen cloud provider:
 
 Choose one of the following authentication methods:
 
-**Option A: IAM Role (Recommended)**
+**IAM Role (Recommended)**
 
 1. Create an IAM role with a trust relationship to your EKS cluster or service account
 2. Attach the `AirbyteSecretsManagerPolicy` (created in Step 1) to this role
 3. Note the Role ARN (e.g., `arn:aws:iam::123456789012:role/AirbyteSecretsRole`)
 
-**Option B: IAM User with Access Keys**
+**IAM User with Access Keys**
 
 1. Create an IAM user
 2. Attach the `AirbyteSecretsManagerPolicy` (created in Step 1) to this user
@@ -158,7 +157,7 @@ Provide Airbyte with the configuration details using the appropriate JSON format
 <Tabs>
 <TabItem value="aws" label="AWS" default>
 
-**Configuration Format 1: IAM Role**
+**IAM Role**
 
 ```json
 {
@@ -169,7 +168,7 @@ Provide Airbyte with the configuration details using the appropriate JSON format
 }
 ```
 
-**Example:**
+Example:
 
 ```json
 {
@@ -180,7 +179,7 @@ Provide Airbyte with the configuration details using the appropriate JSON format
 }
 ```
 
-**Configuration Format 2: Access Key**
+**Access Key**
 
 ```json
 {
@@ -192,7 +191,7 @@ Provide Airbyte with the configuration details using the appropriate JSON format
 }
 ```
 
-**Example:**
+Example:
 
 ```json
 {
@@ -216,7 +215,7 @@ Provide Airbyte with the configuration details using the appropriate JSON format
 }
 ```
 
-**Example:**
+Example:
 
 ```json
 {
@@ -337,16 +336,19 @@ After providing your configuration to Airbyte:
 ## Additional Resources
 
 ### AWS
+
 - [AWS Secrets Manager Documentation](https://docs.aws.amazon.com/secretsmanager/)
 - [IAM Roles for Service Accounts (IRSA)](https://docs.aws.amazon.com/eks/latest/userguide/iam-roles-for-service-accounts.html)
 - [Airbyte AWS Infrastructure Guide](https://docs.airbyte.com/platform/enterprise-setup/implementation-guide#aws-secret-manager-policy)
 
 ### Azure
+
 - [Azure Key Vault Documentation](https://docs.microsoft.com/azure/key-vault/)
 - [Microsoft Entra ID App Registration](https://docs.microsoft.com/azure/active-directory/develop/quickstart-register-app)
 - [Airbyte Azure Infrastructure Guide](https://docs.airbyte.com/platform/enterprise-setup/implementation-guide#azure-key-vault-policy)
 
 ### GCP
+
 - [Google Cloud Secret Manager Documentation](https://cloud.google.com/secret-manager/docs)
 - Contact your Airbyte representative for GCP-specific guidance
 
