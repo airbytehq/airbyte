@@ -164,6 +164,20 @@ The Amazon Seller Partner source connector supports the following [sync modes](h
 - [Vendor Inventory Report](https://developer-docs.amazon.com/sp-api/docs/report-type-values-analytics#vendor-retail-analytics-reports) \(full-refresh\)
 - [XML Orders By Order Date Report](https://developer-docs.amazon.com/sp-api/docs/report-type-values-order#order-tracking-reports) \(incremental\)
 
+### Brand Analytics streams
+
+The following streams require the **Brand Analytics Manager** role in your Amazon Seller Central account:
+
+- Amazon Search Terms Report
+- Market Basket Analysis Report
+- Repeat Purchase Report
+- Alternate Purchase Report
+- Item Comparison Report
+
+To access these streams, you must have the Brand Analytics Manager role assigned to your account. You can check your roles in [Seller Central](https://sellercentral.amazon.com/) under Settings > User Permissions. If you do not have this role, contact your account administrator to request access.
+
+For more information about Brand Analytics reports, see the [Amazon SP-API documentation](https://developer-docs.amazon.com/sp-api/docs/report-type-values-analytics#brand-analytics-reports).
+
 <HideInUI>
 
 ### Entity-Relationship Diagram (ERD)
