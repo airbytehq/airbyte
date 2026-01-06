@@ -122,11 +122,78 @@ jobs:
         run: |
           # Docusaurus uses MDX which interprets { and } as JSX expressions.
           # We need to escape them in the generated markdown files.
-          find docs/developers/pyairbyte/reference -name "*.md" -exec sed -i \
-            -e 's/\([^\\`]\){/\1\\{/g' \
-            -e 's/^{/\\{/g' \
-            {} \;
-          echo "Escaped curly braces in generated markdown files"
+          # Use a Python script for more reliable escaping that handles all edge cases.
+          python3 << 'EOF'
+          import os
+          import re
+
+          def escape_curly_braces(content):
+              """Escape curly braces for MDX compatibility, preserving code blocks and frontmatter."""
+              lines = content.split('\n')
+              result = []
+              in_code_block = False
+              in_frontmatter = False
+              frontmatter_count = 0
+              
+              for line in lines:
+                  # Track frontmatter (starts and ends with ---)
+                  if line.strip() == '---':
+                      frontmatter_count += 1
+                      if frontmatter_count == 1:
+                          in_frontmatter = True
+                      elif frontmatter_count == 2:
+                          in_frontmatter = False
+                      result.append(line)
+                      continue
+                  
+                  # Skip frontmatter content
+                  if in_frontmatter:
+                      result.append(line)
+                      continue
+                  
+                  # Track code blocks (``` or ~~~)
+                  if line.strip().startswith('```') or line.strip().startswith('~~~'):
+                      in_code_block = not in_code_block
+                      result.append(line)
+                      continue
+                  
+                  # Skip code blocks
+                  if in_code_block:
+                      result.append(line)
+                      continue
+                  
+                  # Escape curly braces outside of inline code
+                  # Split by inline code (backticks) and only escape non-code parts
+                  parts = re.split(r'(`[^`]+`)', line)
+                  escaped_parts = []
+                  for part in parts:
+                      if part.startswith('`') and part.endswith('`'):
+                          # This is inline code, don't escape
+                          escaped_parts.append(part)
+                      else:
+                          # Escape { and } that aren't already escaped
+                          part = re.sub(r'(?<!\\)\{', r'\\{', part)
+                          part = re.sub(r'(?<!\\)\}', r'\\}', part)
+                          escaped_parts.append(part)
+                  result.append(''.join(escaped_parts))
+              
+              return '\n'.join(result)
+
+          # Process all markdown files
+          base_dir = 'docs/developers/pyairbyte/reference'
+          for root, dirs, files in os.walk(base_dir):
+              for filename in files:
+                  if filename.endswith('.md'):
+                      filepath = os.path.join(root, filename)
+                      with open(filepath, 'r', encoding='utf-8') as f:
+                          content = f.read()
+                      escaped_content = escape_curly_braces(content)
+                      with open(filepath, 'w', encoding='utf-8') as f:
+                          f.write(escaped_content)
+                      print(f"Processed: {filepath}")
+
+          print("Escaped curly braces in all generated markdown files")
+          EOF
 
       - name: Cleanup PyAirbyte Source
         run: |
