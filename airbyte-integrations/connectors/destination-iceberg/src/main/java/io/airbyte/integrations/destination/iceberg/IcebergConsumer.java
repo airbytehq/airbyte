@@ -110,29 +110,20 @@ public class IcebergConsumer extends CommitOnStateAirbyteMessageConsumer {
       List<String> mergeKeys = catalogConfig.getFormatConfig().getMergeKeys();
       boolean partitionMode = catalogConfig.getFormatConfig().isPartitionMode();
       List<String> partitionKeys = catalogConfig.getFormatConfig().getPartitionKeys();
-      boolean datePartitionMode = catalogConfig.getFormatConfig().isDatePartitionMode();
-      String datePartitionSourceColumn = catalogConfig.getFormatConfig().getDatePartitionSourceColumn();
-
-      // Auto-detect cursor field for date partitioning if not explicitly configured
-      // When date_partition_mode is enabled but no source column specified, use cursor field
-      // Or automatically enable date partitioning when cursor field exists (for incremental syncs)
+      
+      // Auto date partitioning: use cursor field for incremental syncs
+      boolean datePartitionMode = false;
+      String datePartitionSourceColumn = null;
+      
       List<String> cursorField = stream.getCursorField();
-      if (cursorField != null && !cursorField.isEmpty()) {
+      if (cursorField != null && !cursorField.isEmpty() && catalogConfig.getFormatConfig().isAutoDatePartition()) {
         String cursorColumnName = cursorField.get(cursorField.size() - 1); // Get the last element (actual column name)
         log.info("=> Stream {} has cursor field: {}", streamName, cursorColumnName);
         
-        // If date partition mode is enabled but no source column specified, use cursor field
-        if (datePartitionMode && (datePartitionSourceColumn == null || datePartitionSourceColumn.isEmpty())) {
-          datePartitionSourceColumn = cursorColumnName;
-          log.info("=> Auto-using cursor field '{}' as date partition source column", cursorColumnName);
-        }
-        
-        // Auto-enable date partitioning for incremental syncs with cursor field (if not already configured)
-        if (!datePartitionMode && isAppendMode && catalogConfig.getFormatConfig().isAutoDatePartition()) {
-          datePartitionMode = true;
-          datePartitionSourceColumn = cursorColumnName;
-          log.info("=> Auto-enabling date partition mode using cursor field '{}' for incremental sync", cursorColumnName);
-        }
+        // Auto-enable date partitioning for syncs with cursor field
+        datePartitionMode = true;
+        datePartitionSourceColumn = cursorColumnName;
+        log.info("=> Auto-enabling date partition mode using cursor field '{}' for year/month/day partitions", cursorColumnName);
       }
 
       WriteConfig writeConfig = new WriteConfig(namespace, streamName, isAppendMode, flushBatchSize, schema,

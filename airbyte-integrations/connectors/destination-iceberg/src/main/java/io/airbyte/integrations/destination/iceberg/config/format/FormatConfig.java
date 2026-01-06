@@ -12,8 +12,6 @@ import static io.airbyte.integrations.destination.iceberg.IcebergConstants.MERGE
 import static io.airbyte.integrations.destination.iceberg.IcebergConstants.MERGE_MODE_CONFIG_KEY;
 import static io.airbyte.integrations.destination.iceberg.IcebergConstants.PARTITION_KEYS_CONFIG_KEY;
 import static io.airbyte.integrations.destination.iceberg.IcebergConstants.PARTITION_MODE_CONFIG_KEY;
-import static io.airbyte.integrations.destination.iceberg.IcebergConstants.DATE_PARTITION_MODE_CONFIG_KEY;
-import static io.airbyte.integrations.destination.iceberg.IcebergConstants.DATE_PARTITION_SOURCE_COLUMN_CONFIG_KEY;
 import static io.airbyte.integrations.destination.iceberg.IcebergConstants.AUTO_DATE_PARTITION_CONFIG_KEY;
 import static io.airbyte.integrations.destination.iceberg.config.catalog.IcebergCatalogConfigFactory.getProperty;
 
@@ -33,7 +31,6 @@ public class FormatConfig {
   public static final int DEFAULT_COMPACT_TARGET_FILE_SIZE_IN_MB = 100;
   public static final boolean DEFAULT_MERGE_MODE = false;
   public static final boolean DEFAULT_PARTITION_MODE = false;
-  public static final boolean DEFAULT_DATE_PARTITION_MODE = false;
   public static final boolean DEFAULT_AUTO_DATE_PARTITION = true;
 
   private DataFileFormat format;
@@ -44,8 +41,6 @@ public class FormatConfig {
   private List<String> mergeKeys;
   private boolean partitionMode;
   private List<String> partitionKeys;
-  private boolean datePartitionMode;
-  private String datePartitionSourceColumn;
   private boolean autoDatePartition;
 
   // TODO compression config
@@ -114,20 +109,6 @@ public class FormatConfig {
           this.partitionKeys.add(keyNode.asText());
         }
       }
-    }
-
-    // datePartitionMode - enables year/month/day hierarchical partitioning
-    if (formatConfigJson.has(DATE_PARTITION_MODE_CONFIG_KEY)) {
-      this.datePartitionMode = formatConfigJson.get(DATE_PARTITION_MODE_CONFIG_KEY).asBoolean(DEFAULT_DATE_PARTITION_MODE);
-    } else {
-      this.datePartitionMode = DEFAULT_DATE_PARTITION_MODE;
-    }
-
-    // datePartitionSourceColumn - the timestamp column to derive year/month/day from
-    if (formatConfigJson.has(DATE_PARTITION_SOURCE_COLUMN_CONFIG_KEY)) {
-      this.datePartitionSourceColumn = formatConfigJson.get(DATE_PARTITION_SOURCE_COLUMN_CONFIG_KEY).asText();
-    } else {
-      this.datePartitionSourceColumn = null;
     }
 
     // autoDatePartition - automatically enable date partitioning using cursor field for incremental syncs

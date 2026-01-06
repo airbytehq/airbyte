@@ -213,26 +213,12 @@
             },
             "order": 7
           },
-          "date_partition_mode": {
-            "title": "Enable date-based hierarchical partitioning",
-            "description": "When enabled, automatically creates year/month/day partition columns from a timestamp source column. This creates a hierarchical folder structure: year=YYYY/month=MM/day=DD/. This is useful for time-series data to enable efficient date-range queries.",
-            "type": "boolean",
-            "default": false,
-            "order": 8
-          },
-          "date_partition_source_column": {
-            "title": "Date partition source column",
-            "description": "The timestamp column to derive year, month, and day partitions from. If not specified, the cursor field from incremental sync will be used automatically.",
-            "type": "string",
-            "examples": ["updated_at", "_airbyte_emitted_at", "created_at"],
-            "order": 9
-          },
           "auto_date_partition": {
             "title": "Auto date partition for incremental syncs",
-            "description": "When enabled (default), automatically creates year/month/day partitions using the cursor field for incremental/append syncs. This ensures efficient date-range queries on time-series data without manual configuration.",
+            "description": "When enabled (default), automatically creates year/month/day partitions using the cursor field for incremental/append syncs. This creates a hierarchical folder structure: year=YYYY/month=MM/day=DD/. The cursor field selected for incremental sync is automatically used as the partition source.",
             "type": "boolean",
             "default": true,
-            "order": 10
+            "order": 8
           }
         },
         "order": 2
