@@ -58,6 +58,8 @@ jobs:
 
           commands: |
             ai-canary-prerelease
+            ai-docs-review
+            ai-create-docs-pr
             ai-prove-fix
             ai-release-watch
             approve-regression-tests
@@ -72,7 +74,6 @@ jobs:
             publish-java-cdk
             run-cat-tests
             run-connector-tests
-            run-live-tests
             run-regression-tests
             test-performance
             update-connector-cdk-version
