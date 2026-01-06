@@ -6,7 +6,6 @@
 from unittest.mock import MagicMock, Mock
 
 import pytest
-
 from source_google_ads.custom_query_stream import CustomQueryMixin, IncrementalCustomQuery
 from source_google_ads.models import CustomerModel
 from source_google_ads.utils import GAQL
@@ -100,23 +99,17 @@ class TestStateMigration:
             "states": [
                 {
                     "cursor": {"segments.date": "2025-12-20"},
-                    "partition": {
-                        "customer_id": "customers/1234567890",
-                        "parent_slice": {"customer_id": "9876543210", "parent_slice": {}}
-                    }
+                    "partition": {"customer_id": "customers/1234567890", "parent_slice": {"customer_id": "9876543210", "parent_slice": {}}},
                 }
             ],
-            "state": {"segments.date": "2025-12-20"}
+            "state": {"segments.date": "2025-12-20"},
         }
 
         assert mock_incremental_custom_query.should_migrate(concurrent_state) is True
 
     def test_should_not_migrate_legacy_state(self, mock_incremental_custom_query):
         """Test that legacy state format is not flagged for migration."""
-        legacy_state = {
-            "1234567890": {"segments.date": "2025-12-20"},
-            "9876543210": {"segments.date": "2025-12-21"}
-        }
+        legacy_state = {"1234567890": {"segments.date": "2025-12-20"}, "9876543210": {"segments.date": "2025-12-21"}}
 
         assert mock_incremental_custom_query.should_migrate(legacy_state) is False
 
@@ -131,18 +124,13 @@ class TestStateMigration:
             "states": [
                 {
                     "cursor": {"segments.date": "2025-12-20"},
-                    "partition": {
-                        "customer_id": "customers/1234567890",
-                        "parent_slice": {"customer_id": "9876543210", "parent_slice": {}}
-                    }
+                    "partition": {"customer_id": "customers/1234567890", "parent_slice": {"customer_id": "9876543210", "parent_slice": {}}},
                 }
             ],
-            "state": {"segments.date": "2025-12-20"}
+            "state": {"segments.date": "2025-12-20"},
         }
 
-        expected_legacy_state = {
-            "1234567890": {"segments.date": "2025-12-20"}
-        }
+        expected_legacy_state = {"1234567890": {"segments.date": "2025-12-20"}}
 
         migrated = mock_incremental_custom_query.migrate(concurrent_state)
         assert migrated == expected_legacy_state
@@ -153,33 +141,24 @@ class TestStateMigration:
             "states": [
                 {
                     "cursor": {"segments.date": "2025-12-20"},
-                    "partition": {
-                        "customer_id": "customers/1234567890",
-                        "parent_slice": {"customer_id": "9876543210", "parent_slice": {}}
-                    }
+                    "partition": {"customer_id": "customers/1234567890", "parent_slice": {"customer_id": "9876543210", "parent_slice": {}}},
                 },
                 {
                     "cursor": {"segments.date": "2025-12-21"},
-                    "partition": {
-                        "customer_id": "customers/9876543210",
-                        "parent_slice": {"customer_id": "9876543210", "parent_slice": {}}
-                    }
+                    "partition": {"customer_id": "customers/9876543210", "parent_slice": {"customer_id": "9876543210", "parent_slice": {}}},
                 },
                 {
                     "cursor": {"segments.date": "2025-12-19"},
-                    "partition": {
-                        "customer_id": "customers/5555555555",
-                        "parent_slice": {"customer_id": "9876543210", "parent_slice": {}}
-                    }
-                }
+                    "partition": {"customer_id": "customers/5555555555", "parent_slice": {"customer_id": "9876543210", "parent_slice": {}}},
+                },
             ],
-            "state": {"segments.date": "2025-12-19"}
+            "state": {"segments.date": "2025-12-19"},
         }
 
         expected_legacy_state = {
             "1234567890": {"segments.date": "2025-12-20"},
             "9876543210": {"segments.date": "2025-12-21"},
-            "5555555555": {"segments.date": "2025-12-19"}
+            "5555555555": {"segments.date": "2025-12-19"},
         }
 
         migrated = mock_incremental_custom_query.migrate(concurrent_state)
@@ -193,25 +172,21 @@ class TestStateMigration:
                     "cursor": {"segments.date": "2025-12-20"},
                     "partition": {
                         "customer_id": "1234567890",  # No "customers/" prefix
-                        "parent_slice": {"customer_id": "9876543210", "parent_slice": {}}
-                    }
+                        "parent_slice": {"customer_id": "9876543210", "parent_slice": {}},
+                    },
                 }
             ],
-            "state": {"segments.date": "2025-12-20"}
+            "state": {"segments.date": "2025-12-20"},
         }
 
-        expected_legacy_state = {
-            "1234567890": {"segments.date": "2025-12-20"}
-        }
+        expected_legacy_state = {"1234567890": {"segments.date": "2025-12-20"}}
 
         migrated = mock_incremental_custom_query.migrate(concurrent_state)
         assert migrated == expected_legacy_state
 
     def test_migrate_returns_original_if_no_migration_needed(self, mock_incremental_custom_query):
         """Test that migrate returns original state if no migration needed."""
-        legacy_state = {
-            "1234567890": {"segments.date": "2025-12-20"}
-        }
+        legacy_state = {"1234567890": {"segments.date": "2025-12-20"}}
 
         migrated = mock_incremental_custom_query.migrate(legacy_state)
         assert migrated == legacy_state
@@ -222,13 +197,10 @@ class TestStateMigration:
             "states": [
                 {
                     "cursor": {"segments.date": "2025-12-20"},
-                    "partition": {
-                        "customer_id": "customers/1234567890",
-                        "parent_slice": {"customer_id": "9876543210", "parent_slice": {}}
-                    }
+                    "partition": {"customer_id": "customers/1234567890", "parent_slice": {"customer_id": "9876543210", "parent_slice": {}}},
                 }
             ],
-            "state": {"segments.date": "2025-12-20"}
+            "state": {"segments.date": "2025-12-20"},
         }
 
         mock_incremental_custom_query.state = concurrent_state
@@ -240,9 +212,7 @@ class TestStateMigration:
 
     def test_state_setter_preserves_legacy_state(self, mock_incremental_custom_query):
         """Test that state setter preserves legacy state format."""
-        legacy_state = {
-            "1234567890": {"segments.date": "2025-12-20"}
-        }
+        legacy_state = {"1234567890": {"segments.date": "2025-12-20"}}
 
         mock_incremental_custom_query.state = legacy_state
 
@@ -251,10 +221,7 @@ class TestStateMigration:
 
     def test_migrate_empty_states_array(self, mock_incremental_custom_query):
         """Test migration with empty states array."""
-        concurrent_state = {
-            "states": [],
-            "state": {"segments.date": "2025-12-20"}
-        }
+        concurrent_state = {"states": [], "state": {"segments.date": "2025-12-20"}}
 
         migrated = mock_incremental_custom_query.migrate(concurrent_state)
         assert migrated == {}
@@ -263,14 +230,9 @@ class TestStateMigration:
         """Test migration handles partition states without cursor."""
         concurrent_state = {
             "states": [
-                {
-                    "partition": {
-                        "customer_id": "customers/1234567890",
-                        "parent_slice": {"customer_id": "9876543210", "parent_slice": {}}
-                    }
-                }
+                {"partition": {"customer_id": "customers/1234567890", "parent_slice": {"customer_id": "9876543210", "parent_slice": {}}}}
             ],
-            "state": {"segments.date": "2025-12-20"}
+            "state": {"segments.date": "2025-12-20"},
         }
 
         migrated = mock_incremental_custom_query.migrate(concurrent_state)
@@ -282,12 +244,10 @@ class TestStateMigration:
             "states": [
                 {
                     "cursor": {"segments.date": "2025-12-20"},
-                    "partition": {
-                        "parent_slice": {"customer_id": "9876543210", "parent_slice": {}}
-                    }
+                    "partition": {"parent_slice": {"customer_id": "9876543210", "parent_slice": {}}},
                 }
             ],
-            "state": {"segments.date": "2025-12-20"}
+            "state": {"segments.date": "2025-12-20"},
         }
 
         migrated = mock_incremental_custom_query.migrate(concurrent_state)

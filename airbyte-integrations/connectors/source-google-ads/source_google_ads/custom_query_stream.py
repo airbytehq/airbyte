@@ -10,6 +10,7 @@ from typing import Any, Dict, List, Mapping, MutableMapping
 from .streams import GoogleAdsStream, IncrementalGoogleAdsStream
 from .utils import GAQL
 
+
 logger = logging.getLogger("airbyte")
 
 
