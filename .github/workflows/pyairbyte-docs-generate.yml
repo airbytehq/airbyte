@@ -202,10 +202,24 @@ jobs:
           rm -rf pyairbyte-source
           echo "Cleaned up temporary files"
 
+      - name: Configure Docusaurus for CommonMark
+        run: |
+          # Ensure Docusaurus uses CommonMark format for .md files to avoid MDX compilation errors
+          # with curly braces in the generated documentation.
+          # See: https://docusaurus.io/docs/markdown-features#mdx-vs-commonmark
+          if ! grep -q 'format: "detect"' docusaurus/docusaurus.config.ts; then
+            # Add format: "detect" to the markdown config section
+            sed -i 's/markdown: {/markdown: {\n    format: "detect",/' docusaurus/docusaurus.config.ts
+            echo "Added markdown.format: detect to Docusaurus config"
+          else
+            echo "Docusaurus config already has format: detect"
+          fi
+
       - name: Check for Changes
         id: changes
         run: |
           git add docs/developers/pyairbyte/reference/
+          git add docusaurus/docusaurus.config.ts
           if git diff --cached --quiet; then
             echo "has_changes=false" >> $GITHUB_OUTPUT
           else
