@@ -7,14 +7,12 @@ access to customers for payment analytics and customer management.
 
 ## Example questions
 
-The Stripe connector is optimized to handle prompts like these.
-
 - Show me my top 10 customers by total revenue this month
 - List all customers who have spent over $5,000 in the last quarter
 - Analyze payment trends for my Stripe customers
 - Identify which customers have the most consistent subscription payments
 - Give me insights into my customer retention rates
-- Summarize the payment history for {customer}
+- Summarize the payment history for [customerX]
 - Compare customer spending patterns from last month to this month
 - Show me details about my highest-value Stripe customers
 - What are the key financial insights from my customer base?
@@ -22,13 +20,11 @@ The Stripe connector is optimized to handle prompts like these.
 
 ## Unsupported questions
 
-The Stripe connector isn't currently able to handle prompts like these.
-
 - Create a new customer profile in Stripe
-- Update the billing information for {customer}
+- Update the billing information for [customerX]
 - Delete a customer record
-- Send a payment reminder to {customer}
-- Schedule an automatic invoice for {company}
+- Send a payment reminder to [customerX]
+- Schedule an automatic invoice for [Company]
 
 ## Installation
 
@@ -75,6 +71,6 @@ For the service's official API docs, see the [Stripe API reference](https://docs
 
 ## Version information
 
-- **Package version:** 0.5.27
-- **Connector version:** 0.1.3
-- **Generated with Connector SDK commit SHA:** e0e2f9890347de01530666b6ed5ed7bd22452c62
+- **Package version:** 0.5.24
+- **Connector version:** 0.1.2
+- **Generated with Connector SDK commit SHA:** 12f6b994298f84dfa217940afe7c6b19bec4167b
