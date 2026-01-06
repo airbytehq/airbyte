@@ -1,0 +1,351 @@
+version: 7.0.4
+
+type: DeclarativeSource
+
+description: >-
+  The Bing Webmaster Tools source allows you to sync SEO and technical site
+  performance data from Microsoft Bing. It retrieves critical metrics such as
+  crawl statistics, keyword query performance, and daily rank/traffic summaries
+  to help you analyze your website's search engine visibility
+
+check:
+  type: CheckStream
+  stream_names:
+    - query_stats
+
+definitions:
+  linked:
+    HttpRequester:
+      authenticator:
+        type: ApiKeyAuthenticator
+        api_token: "{{ config[\"api_key\"] }}"
+        inject_into:
+          type: RequestOption
+          field_name: "{{ config[\"api_key\"] }}"
+          inject_into: request_parameter
+      request_parameters:
+        apikey: "{{ config[\"api_key\"] }}"
+        siteUrl: "{{ config[\"site_url\"] }}"
+
+streams:
+  - type: DeclarativeStream
+    name: query_stats
+    retriever:
+      type: SimpleRetriever
+      requester:
+        type: HttpRequester
+        authenticator:
+          type: ApiKeyAuthenticator
+          api_token: "{{ config[\"api_key\"] }}"
+          inject_into:
+            type: RequestOption
+            field_name: "{{ config[\"api_key\"] }}"
+            inject_into: request_parameter
+        http_method: GET
+        request_parameters:
+          apikey: "{{ config[\"api_key\"] }}"
+          siteUrl: "{{ config[\"site_url\"] }}"
+        url: https://ssl.bing.com/webmaster/api.svc/json/GetQueryStats
+      record_selector:
+        type: RecordSelector
+        extractor:
+          type: DpathExtractor
+          field_path:
+            - d
+        schema_normalization: Default
+    schema_loader:
+      type: InlineSchemaLoader
+      schema:
+        type: object
+        $schema: http://json-schema.org/schema#
+        properties:
+          __type:
+            type:
+              - string
+              - "null"
+          AvgClickPosition:
+            type:
+              - number
+              - "null"
+          AvgImpressionPosition:
+            type:
+              - number
+              - "null"
+          Clicks:
+            type:
+              - number
+              - "null"
+          Date:
+            type:
+              - string
+              - "null"
+          Impressions:
+            type:
+              - number
+              - "null"
+          Query:
+            type:
+              - string
+              - "null"
+          ctr:
+            type:
+              - number
+              - "null"
+          readable_date:
+            type:
+              - number
+              - "null"
+        additionalProperties: true
+    transformations:
+      - type: AddFields
+        fields:
+          - type: AddedFieldDefinition
+            path:
+              - ctr
+            value: >-
+              {{ (record["Clicks"] | float / (record["Impressions"] | float)) if
+              record.get("Impressions") else 0 }}
+          - type: AddedFieldDefinition
+            path:
+              - timestamp
+            value: "{{ record['Date'][6:19] }}"
+  - type: DeclarativeStream
+    name: traffic_stats
+    retriever:
+      type: SimpleRetriever
+      requester:
+        type: HttpRequester
+        authenticator:
+          type: ApiKeyAuthenticator
+          api_token: "{{ config[\"api_key\"] }}"
+          inject_into:
+            type: RequestOption
+            field_name: "{{ config[\"api_key\"] }}"
+            inject_into: request_parameter
+        http_method: GET
+        request_parameters:
+          apikey: "{{ config[\"api_key\"] }}"
+          siteUrl: "{{ config[\"site_url\"] }}"
+        url: https://ssl.bing.com/webmaster/api.svc/json/GetRankAndTrafficStats
+      record_selector:
+        type: RecordSelector
+        extractor:
+          type: DpathExtractor
+          field_path:
+            - d
+        schema_normalization: Default
+    schema_loader:
+      type: InlineSchemaLoader
+      schema:
+        type: object
+        $schema: http://json-schema.org/schema#
+        properties:
+          __type:
+            type:
+              - string
+              - "null"
+          Clicks:
+            type:
+              - number
+              - "null"
+          Date:
+            type:
+              - string
+              - "null"
+          Impressions:
+            type:
+              - number
+              - "null"
+          ctr:
+            type:
+              - number
+              - "null"
+          timestamp:
+            type:
+              - number
+              - "null"
+        additionalProperties: true
+    transformations:
+      - type: AddFields
+        fields:
+          - type: AddedFieldDefinition
+            path:
+              - ctr
+            value: >-
+              {{ (record["Clicks"] | float / (record["Impressions"] | float)) if
+              record.get("Impressions") else 0 }}
+          - type: AddedFieldDefinition
+            path:
+              - timestamp
+            value: "{{ record['Date'][6:19] }}"
+  - type: DeclarativeStream
+    name: crawl_stats
+    retriever:
+      type: SimpleRetriever
+      requester:
+        type: HttpRequester
+        authenticator:
+          type: ApiKeyAuthenticator
+          api_token: "{{ config[\"api_key\"] }}"
+          inject_into:
+            type: RequestOption
+            field_name: "{{ config[\"api_key\"] }}"
+            inject_into: request_parameter
+        http_method: GET
+        request_parameters:
+          apikey: "{{ config[\"api_key\"] }}"
+          siteUrl: "{{ config[\"site_url\"] }}"
+        url: https://ssl.bing.com/webmaster/api.svc/json/GetCrawlStats
+      record_selector:
+        type: RecordSelector
+        extractor:
+          type: DpathExtractor
+          field_path:
+            - d
+        schema_normalization: Default
+    schema_loader:
+      type: InlineSchemaLoader
+      schema:
+        type: object
+        $schema: http://json-schema.org/schema#
+        properties:
+          __type:
+            type:
+              - string
+              - "null"
+          AllOtherCodes:
+            type:
+              - number
+              - "null"
+          BlockedByRobotsTxt:
+            type:
+              - number
+              - "null"
+          Code2xx:
+            type:
+              - number
+              - "null"
+          Code301:
+            type:
+              - number
+              - "null"
+          Code302:
+            type:
+              - number
+              - "null"
+          Code4xx:
+            type:
+              - number
+              - "null"
+          Code5xx:
+            type:
+              - number
+              - "null"
+          ConnectionTimeout:
+            type:
+              - number
+              - "null"
+          ContainsMalware:
+            type:
+              - number
+              - "null"
+          CrawlErrors:
+            type:
+              - number
+              - "null"
+          CrawledPages:
+            type:
+              - number
+              - "null"
+          Date:
+            type:
+              - string
+              - "null"
+          DnsFailures:
+            type:
+              - number
+              - "null"
+          InIndex:
+            type:
+              - number
+              - "null"
+          InLinks:
+            type:
+              - number
+              - "null"
+          timestamp:
+            type:
+              - number
+              - "null"
+        additionalProperties: true
+    transformations:
+      - type: AddFields
+        fields:
+          - type: AddedFieldDefinition
+            path:
+              - timestamp
+            value: "{{ record['Date'][6:19] }}"
+
+spec:
+  type: Spec
+  connection_specification:
+    type: object
+    $schema: http://json-schema.org/draft-07/schema#
+    required:
+      - api_key
+      - site_url
+    properties:
+      api_key:
+        type: string
+        order: 0
+        title: API Key
+        airbyte_secret: true
+      site_url:
+        type: string
+        order: 1
+        title: Site URL
+    additionalProperties: true
+
+metadata:
+  testedStreams:
+    crawl_stats:
+      hasRecords: true
+      streamHash: bc0964350568cda8c62eeb8500e4e1cb64b26473
+      hasResponse: true
+      primaryKeysAreUnique: true
+      primaryKeysArePresent: true
+      responsesAreSuccessful: true
+      isStale: false
+    query_stats:
+      hasRecords: true
+      streamHash: 7a03963c6ea85c6d48057f8fccf6117a72ab3ca0
+      hasResponse: true
+      primaryKeysAreUnique: true
+      primaryKeysArePresent: true
+      responsesAreSuccessful: true
+      isStale: false
+    traffic_stats:
+      hasRecords: true
+      streamHash: ce844c59ce829661321887204039d2613a8ab8d1
+      hasResponse: true
+      primaryKeysAreUnique: true
+      primaryKeysArePresent: true
+      responsesAreSuccessful: true
+      isStale: false
+  autoImportSchema:
+    crawl_stats: true
+    query_stats: true
+    traffic_stats: true
+  applied_migrations:
+    - from_version: 3.9.6
+      to_version: "*"
+      migration: HttpRequesterUrlBaseToUrl
+      migrated_at: "2026-01-06T14:55:51.137914+00:00"
+    - from_version: 3.9.6
+      to_version: "*"
+      migration: HttpRequesterPathToUrl
+      migrated_at: "2026-01-06T14:55:51.139672+00:00"
+
+concurrency_level:
+  type: ConcurrencyLevel
+  default_concurrency: 1
