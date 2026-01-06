@@ -30,6 +30,17 @@ import kotlin.test.assertEquals
 import kotlinx.coroutines.test.runTest
 import org.junit.jupiter.api.assertDoesNotThrow
 
+/**
+ * This suite implements generic test cases for how destination connectors handle unusual names
+ * (including table names, table namespaces, and column names). Most of these test cases simply
+ * validate that the connector is capable of creating a table with the given identifiers; there are
+ * some blind spots around verifying that e.g. the
+ * [io.airbyte.cdk.load.dataflow.aggregate.Aggregate] handles these identifiers correctly.
+ *
+ * Failure to create a table (e.g. due to syntax error) typically indicates that your
+ * [TableSchemaMapper] does not correctly handle certain edge cases, or that your
+ * [TableOperationsClient] does not correctly enquote identifiers.
+ */
 @MicronautTest(environments = ["component"])
 interface SchemaMapperSuite {
     val tableSchemaMapper: TableSchemaMapper
