@@ -4,13 +4,8 @@ data:
       enabled: true
       packageName: airbyte-nexus-datasets
   connectorBuildOptions:
-    # Please update to the latest version of the connector base image.
-    # https://hub.docker.com/r/airbyte/python-connector-base
-    # Please use the full address with sha256 hash to guarantee build reproducibility.
-    #docker.io/airbyte/python-connector-base:3.0.0@sha256:1a0845ff2b30eafa793c6eee4e8f4283c2e52e1bbd44eed6cb9e9abd5d34d844
-    #base:3.0.2@sha256:73697fbe1c0e2ebb8ed58e2268484bb4bfb2cb56b653808e1680cbc50bafef75
-    #goes with above base airbyte-cdk = "6.61.0" and python = ">=3.10,<3.12"
-    baseImage: docker.io/airbyte/python-connector-base:4.0.2@sha256:9fdb1888c4264cf6fee473649ecb593f56f58e5d0096a87ee0b231777e2e3e73
+    baseImage: docker.io/airbyte/source-declarative-manifest:7.6.1@sha256:49207bf99921c8add2c57ee112bf6924dab708cb5de2f33d0d6f0a62470f7dae
+    #baseImage: docker.io/airbyte/python-connector-base:4.0.2@sha256:9fdb1888c4264cf6fee473649ecb593f56f58e5d0096a87ee0b231777e2e3e73
   connectorSubtype: api
   connectorType: source
   definitionId: 9e1fe63c-80ad-44fe-8927-10e66c9e209b
@@ -25,7 +20,7 @@ data:
   supportLevel: community
   documentationUrl: https://docs.airbyte.com/integrations/sources/nexus-datasets
   tags:
-    - language:python
+    - language:manifest-only
     - cdk:low-code
   connectorTestSuitesOptions:
     - suite: liveTests

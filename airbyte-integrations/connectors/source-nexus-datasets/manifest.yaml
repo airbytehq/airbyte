@@ -16,7 +16,7 @@ definitions:
     http_method: GET
     authenticator:
       type: CustomAuthenticator
-      class_name: source_nexus_datasets.auth.NexusCustomAuthenticator # Ensure this Python class exists and is correctly implemented
+      class_name: source_declarative_manifest.components.NexusCustomAuthenticator # Ensure this Python class exists and is correctly implemented
       config: "{{ config }}"
 
 streams:
@@ -36,7 +36,7 @@ streams:
         $ref: "#/definitions/base_requester" # Reference the shared requester
       decoder:
         type: CustomDecoder # Now using CustomDecoder
-        class_name: source_nexus_datasets.components.decorder.FlexibleDecoder # Pointing to your new Python class
+        class_name: source_declarative_manifest.components.FlexibleDecoder # Pointing to your new Python class
         $parameters: # Parameters passed to FlexibleDecoder's __init__
           # file_type is removed from here as it's inferred from Content-Type header
           config: "{{ config }}" # Explicitly pass the config object (REQUIRED for 6.36.2 CustomDecoder)
