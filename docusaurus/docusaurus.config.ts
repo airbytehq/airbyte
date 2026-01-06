@@ -91,9 +91,9 @@ const config: Config = {
       "data-project-name": "Airbyte",
       "data-project-color": "#615EFF",
       "data-project-logo": "https://docs.airbyte.com/img/favicon.png",
-      "data-modal-title": "Airbyte",
+      "data-modal-title": "Ask anything about Airbyte",
       "data-modal-example-questions":
-        "What's Airbyte?,Can I try Airbyte quickly?,How do I use Terraform with Airbyte?",
+        "What's Airbyte?,How do I try Airbyte Cloud?,Help me build a connector,Help me troubleshoot something",
       "data-button-hide": "true",
       "data-modal-override-open-selector-ask-ai": ".kapa-ai-trigger",
     },
