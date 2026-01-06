@@ -20,6 +20,46 @@ This will make `connectors-qa` available in your `PATH`.
 
 Feel free to run `connectors-qa --help` to see the available commands and options.
 
+### Working on this package
+
+If you're making changes to this package, you probably don't want to reinstall the whole thing every time you make
+a change. Instead, you can use `poetry` to install the package in editable mode. Code changes should be immediately
+reflected without reinstalling. From this directory:
+
+```bash
+poetry install
+poetry env activate
+```
+
+This will print the command you need to activate the virtual environment containing an editable version of this
+package. Run it like so:
+
+```bash
+source <SOME_LOCAL_PATH>/airbyte/airbyte-ci/connectors/connectors_qa/.venv/bin/activate
+```
+
+Now you can cd to the root of this repository (or the enterprise connector repository!) and run tests on a connector
+like so:
+
+```bash
+cd ../../..
+connectors-qa run --name=source-postgres
+```
+
+If you're also modifying the local dependencies (connector-ops, metadata-service), change pyproject.toml like so:
+
+```
+[tool.poetry.dependencies]
+connector-ops = { path = "../connector_ops", develop = true }
+metadata-service = { path = "../metadata_service/lib", develop = true }
+```
+
+Then reinstall:
+
+```bash
+poetry install
+```
+
 ### Examples
 
 #### Running QA checks on one or more connectors:
