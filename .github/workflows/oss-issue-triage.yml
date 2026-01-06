@@ -35,15 +35,15 @@ jobs:
           ISSUE_AUTHOR: ${{ github.event.issue.user.login }}
         run: |
           set -euo pipefail
-          
+
           echo "Checking permissions for user: $ISSUE_AUTHOR"
-          
+
           # Get the user's permission level for this repository
           PERMISSION=$(gh api repos/${{ github.repository }}/collaborators/$ISSUE_AUTHOR/permission \
             --jq '.permission' 2>/dev/null || echo "none")
-          
+
           echo "User permission level: $PERMISSION"
-          
+
           # Users with write, maintain, or admin access are NOT community members
           # Users with read or no access ARE community members
           if [[ "$PERMISSION" == "admin" || "$PERMISSION" == "maintain" || "$PERMISSION" == "write" ]]; then
@@ -76,19 +76,19 @@ jobs:
         uses: aaronsteers/devin-action@v0.2.0
         with:
           issue-number: ${{ github.event.issue.number }}
-          playbook-macro: '!oss_issue_triage'
+          playbook-macro: "!oss_issue_triage"
           devin-token: ${{ secrets.DEVIN_AI_API_KEY }}
           github-token: ${{ steps.get-app-token.outputs.token }}
           start-message: |
             **AI Triage Starting...**
-            
+
             Thank you for opening this issue! I'm an AI assistant that will help with initial triage.
-            
+
             I'll review your issue and:
             - Ask clarifying questions if needed
             - Provide immediate guidance if available
             - Escalate to the appropriate team if this requires engineering attention
-            
+
             [View playbook](https://github.com/airbytehq/oncall/blob/main/prompts/playbooks/oss_issue_triage.md)
           tags: |
             oss-issue-triage
