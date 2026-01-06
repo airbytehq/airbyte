@@ -1,3 +1,7 @@
+## Version 0.1.95
+
+load cdk: add schema mapper test suite
+
 ## Version 0.1.94
 
 extract cdk: fix trigger table handling of empty change tables
