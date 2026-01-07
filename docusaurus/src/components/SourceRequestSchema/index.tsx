@@ -12,8 +12,8 @@ import styles from "./index.module.css";
 import apiEndpointsDataRaw from "@site/src/data/api-endpoints-dereferenced.json";
 import { FontAwesomeIcon } from "@fortawesome/react-fontawesome";
 import { faChevronRight } from "@fortawesome/free-solid-svg-icons";
-import { SourceConfiguration } from "./SourceConfiguration";
-import { ApiEndpointsData, RequestBodyProperty } from "./types";
+import { SourceConfiguration } from "../SourceConfiguration";
+import { ApiEndpointsData, RequestBodyProperty } from "../SourceConfiguration/types";
 
 const apiEndpointsData = apiEndpointsDataRaw as ApiEndpointsData;
 

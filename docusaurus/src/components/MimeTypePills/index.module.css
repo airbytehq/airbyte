@@ -1,0 +1,19 @@
+/* MIME Type Pill */
+.mimeTypePill {
+  display: inline-block;
+  padding: 0.35rem 0.7rem;
+  border: 1px solid var(--ifm-color-primary);
+  border-radius: var(--ifm-global-radius);
+  font-size: 0.8rem;
+  font-weight: 600;
+  color: var(--ifm-color-primary);
+  background-color: transparent;
+  text-transform: uppercase;
+}
+
+/* MIME Type Pills Container */
+.mimeTypePillsContainer {
+  margin-bottom: 1rem;
+  display: flex;
+  gap: 0.5rem;
+}

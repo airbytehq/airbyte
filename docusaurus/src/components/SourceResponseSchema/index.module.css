@@ -1,0 +1,292 @@
+/* ============================================================================
+ * SourceResponseSchema Component Styles
+ * ============================================================================ */
+
+/* Container */
+.responseSchema {
+  width: 100%;
+}
+
+/* Responses Header */
+.responsesHeader {
+  font-size: 12px;
+  font-weight: 600;
+  display: flex;
+  align-items: center;
+  gap: 0.5rem;
+  text-transform: uppercase;
+  margin-bottom: 0;
+}
+
+/* Responses Header Container */
+.responsesHeaderContainer {
+  margin-bottom: 1rem;
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+}
+
+/* Status Code Pills Container */
+.statusCodePills {
+  display: flex;
+  gap: 0.5rem;
+  flex-wrap: wrap;
+  justify-content: flex-end;
+}
+
+/* Status Code Badge Pills */
+.statusCodeBadge {
+  display: inline-block;
+  padding: 0.35rem 0.75rem;
+  border-radius: var(--ifm-global-radius);
+  font-size: 0.85rem;
+  font-weight: 600;
+  border: none;
+  cursor: pointer;
+  transition: all 0.2s ease;
+  background-color: var(--ifm-color-emphasis-200);
+  color: var(--ifm-color-content);
+}
+
+.statusCodeBadge:hover {
+  opacity: 0.8;
+}
+
+.statusCodeBadge_success {
+  background-color: rgb(200, 230, 201);
+  color: rgb(27, 94, 32);
+}
+
+.statusCodeBadge_success:hover {
+  background-color: rgb(55, 168, 24);
+  color: white;
+}
+
+.statusCodeBadge_success.statusCodeBadge_active {
+  background-color: rgb(55, 168, 24);
+  color: white;
+}
+
+.statusCodeBadge_error {
+  background-color: var(--ifm-color-emphasis-200);
+  color: var(--ifm-color-content);
+}
+
+.statusCodeBadge_error:hover {
+  background-color: #d32f2f;
+  color: white;
+}
+
+.statusCodeBadge_error.statusCodeBadge_active {
+  background-color: #d32f2f;
+  color: white;
+}
+
+.statusCodeBadge_active {
+  opacity: 1;
+}
+
+/* Tab List - add responsive styling */
+.responseSchema :global([role="tablist"]) {
+  display: flex;
+  gap: 0.5rem;
+  flex-wrap: wrap;
+  margin-bottom: 1rem;
+}
+
+/* MIME Type Tab */
+.mimeTypeTab {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  padding: 0.35rem 0.7rem;
+  border: 1px solid transparent;
+  margin-top: 0 !important;
+  margin-right: 0.5rem;
+  font-weight: var(--ifm-font-weight-bold);
+  font-size: 10px;
+  text-transform: uppercase;
+  white-space: nowrap;
+  transition: 300ms;
+  background-color: var(--color-white);
+  border-radius: var(--ifm-global-radius);
+}
+
+.mimeTypeTab_active {
+  border-color: var(--ifm-color-primary);
+  color: var(--ifm-color-primary);
+  font-weight: 600;
+}
+
+/* Content Type Tab (Schema, Example, etc.) */
+.contentTypeTab {
+  padding: 0.35rem 0.7rem;
+  border: 1px solid transparent;
+  margin-right: 0.5rem;
+  font-weight: 600;
+  font-size: 0.85rem;
+  background-color: transparent;
+  color: var(--ifm-color-content);
+  cursor: pointer;
+  transition: all 0.2s ease;
+  border-radius: var(--ifm-global-radius);
+}
+
+.contentTypeTab:hover {
+  opacity: 0.75;
+}
+
+.contentTypeTab[data-headlessui-state*="selected"] {
+  border-color: var(--ifm-color-primary);
+  color: var(--ifm-color-primary);
+  font-weight: 600;
+}
+
+
+/* Tab List Container */
+.tabListContainer {
+  display: flex;
+  border-bottom: 2px solid var(--ifm-color-emphasis-200);
+  margin-bottom: 1rem;
+  gap: 1rem;
+}
+
+/* Status Code Tab Styling */
+.statusCodeTab {
+  padding: 0.35rem 0.75rem;
+  border-radius: var(--ifm-global-radius);
+  border: none;
+  background-color: transparent;
+  color: var(--ifm-color-content);
+  font-size: 0.85rem;
+  font-weight: 600;
+  cursor: pointer;
+  outline: none;
+  transition: all 0.2s ease;
+  margin-right: 0.5rem;
+}
+
+.statusCodeTab:hover {
+  opacity: 0.75;
+}
+
+.statusCodeTab_success {
+  background-color: rgb(200, 230, 201);
+  color: rgb(27, 94, 32);
+}
+
+.statusCodeTab_success:hover,
+.statusCodeTab_success[data-headlessui-state*="selected"] {
+  background-color: rgb(55, 168, 24);
+  color: white;
+}
+
+.statusCodeTab_error {
+  background-color: var(--ifm-color-emphasis-200);
+  color: var(--ifm-color-content);
+}
+
+.statusCodeTab_error:hover,
+.statusCodeTab_error[data-headlessui-state*="selected"] {
+  background-color: #d32f2f;
+  color: white;
+}
+
+/* Status Code Panels Container */
+.statusCodePanels {
+  margin-top: 1rem;
+}
+
+/* Tab Panels Container */
+.tabPanelsContainer {
+  padding-top: 1rem;
+}
+
+/* Response Description */
+.responseDescription {
+  margin-bottom: 1rem;
+}
+
+/* Schema Details Container */
+.schemaDetailsContainer {
+  text-align: left;
+  margin-top: 1rem;
+}
+
+/* Properties List */
+.propertiesList {
+  list-style: none;
+  padding: 0;
+  margin: 0;
+}
+
+/* Property Item */
+.propertyItem {
+  margin-bottom: 1rem;
+  padding-left: 1rem;
+  border-left: 2px solid var(--ifm-color-emphasis-200);
+}
+
+/* Property Header (name, type, required badge) */
+.propertyHeader {
+  display: flex;
+  align-items: baseline;
+  gap: 0.5rem;
+  flex-wrap: wrap;
+}
+
+/* Property Name */
+.propertyName {
+  font-weight: 600;
+  color: var(--ifm-color-content-secondary);
+}
+
+/* Property Type */
+.propertyType {
+  font-size: 0.85rem;
+  color: var(--ifm-color-emphasis-600);
+  font-family: monospace;
+}
+
+/* Required Badge */
+.propertyBadge_required {
+  font-size: 0.7rem;
+  font-weight: 600;
+  color: var(--ifm-color-danger);
+  text-transform: uppercase;
+  letter-spacing: 0.5px;
+}
+
+/* Read-only Indicator */
+.propertyBadge_readonly {
+  font-size: 0.7rem;
+  font-style: italic;
+  color: var(--ifm-color-emphasis-600);
+}
+
+/* Property Description */
+.propertyDescription {
+  font-size: 0.9rem;
+  color: var(--ifm-color-emphasis-700);
+  line-height: 1.5;
+  margin: 0.5rem 0 0 0;
+}
+
+/* Configuration Component Wrapper */
+.configurationWrapper {
+  margin-top: 0.75rem;
+}
+
+/* Schema Summary */
+.schemaSummary {
+  cursor: pointer;
+  user-select: none;
+  color: var(--ifm-color-content);
+  font-weight: 600;
+}
+
+/* Schema Content */
+.schemaContent {
+  padding: 1rem 0;
+  text-align: left;
+}
