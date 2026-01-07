@@ -11,22 +11,22 @@ notes, and attachments for sales analytics and customer relationship management.
 The Salesforce connector is optimized to handle prompts like these.
 
 - Show me my top 5 opportunities this month
-- List all contacts from {company} in the last quarter
+- List all contacts from \{company\} in the last quarter
 - Search for leads in the technology sector with revenue over $10M
 - What trends can you identify in my recent sales pipeline?
 - Summarize the open cases for my key accounts
 - Find upcoming events related to my most important opportunities
 - Analyze the performance of my recent marketing campaigns
 - Identify the highest value opportunities I'm currently tracking
-- Show me the notes and attachments for {customer}'s account
+- Show me the notes and attachments for \{customer\}'s account
 
 ## Unsupported questions
 
 The Salesforce connector isn't currently able to handle prompts like these.
 
-- Create a new lead for {person}
+- Create a new lead for \{person\}
 - Update the status of my sales opportunity
-- Schedule a follow-up meeting with {customer}
+- Schedule a follow-up meeting with \{customer\}
 - Delete this old contact record
 - Send an email to all contacts in this campaign
 
@@ -78,6 +78,6 @@ For the service's official API docs, see the [Salesforce API reference](https://
 
 ## Version information
 
-- **Package version:** 0.1.20
+- **Package version:** 0.1.21
 - **Connector version:** 1.0.4
-- **Generated with Connector SDK commit SHA:** e0e2f9890347de01530666b6ed5ed7bd22452c62
+- **Generated with Connector SDK commit SHA:** 0580c7278394ff52ee3bec5d5192905ac3b15878
