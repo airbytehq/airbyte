@@ -8,7 +8,7 @@ from typing import Any, Callable, Generator, Mapping, MutableMapping, Optional, 
 
 import requests
 
-from airbyte_cdk import Decoder
+from airbyte_cdk import AirbyteTracedException, Decoder, FailureType
 from airbyte_cdk.sources.declarative.migrations.state_migration import StateMigration
 from airbyte_cdk.sources.declarative.requesters.http_requester import HttpRequester
 from airbyte_cdk.sources.types import StreamSlice, StreamState
@@ -69,7 +69,7 @@ class JobRequester(HttpRequester):
                 "or the OAuth credentials do not have the required YouTube Analytics permissions. "
                 "If you manage multiple YouTube channels, try specifying a 'content_owner_id' in the connector configuration."
             )
-            raise ValueError(error_message)
+            raise AirbyteTracedException(message=error_message, failure_type=FailureType.config_error)
 
         stream_job = [r for r in response_json["jobs"] if r["reportTypeId"] == self._parameters["report_type_id"]]
 

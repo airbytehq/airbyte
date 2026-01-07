@@ -429,7 +429,7 @@ definitions:
       refresh_request_body: {}
       token_refresh_endpoint: https://oauth2.googleapis.com/token
     request_parameters:
-      onBehalfOfContentOwner: "{{ config.get('content_owner_id', '') }}"
+      onBehalfOfContentOwner: "{{ config.get('content_owner_id') if config.get('content_owner_id') else none }}"
     error_handler:
       type: DefaultErrorHandler
       response_filters:
