@@ -15,6 +15,9 @@ import io.airbyte.cdk.load.data.TimestampTypeWithTimezone
 import io.airbyte.cdk.load.schema.model.TableName
 import io.airbyte.cdk.load.table.CDC_DELETED_AT_COLUMN
 import io.airbyte.cdk.load.table.ColumnNameMapping
+import io.airbyte.cdk.load.table.DefaultTempTableNameGenerator
+import io.airbyte.integrations.destination.postgres.schema.PostgresColumnManager
+import io.airbyte.integrations.destination.postgres.schema.PostgresTableSchemaMapper
 import io.airbyte.integrations.destination.postgres.spec.CdcDeletionMode
 import io.airbyte.integrations.destination.postgres.spec.PostgresConfiguration
 import io.mockk.every
@@ -27,7 +30,8 @@ import org.junit.jupiter.api.assertThrows
 internal class PostgresDirectLoadSqlGeneratorTest {
 
     private lateinit var postgresDirectLoadSqlGenerator: PostgresDirectLoadSqlGenerator
-    private lateinit var columnUtils: PostgresColumnUtils
+    private lateinit var columnManager: PostgresColumnManager
+    private lateinit var tableSchemaMapper: PostgresTableSchemaMapper
     private lateinit var postgresConfiguration: PostgresConfiguration
 
     @BeforeEach
@@ -36,10 +40,14 @@ internal class PostgresDirectLoadSqlGeneratorTest {
             mockk<PostgresConfiguration> {
                 every { legacyRawTablesOnly } returns false
                 every { dropCascade } returns false
+                every { internalTableSchema } returns "airbyte_internal"
+                every { schema } returns "public"
             }
-        columnUtils = PostgresColumnUtils(postgresConfiguration)
+        columnManager = PostgresColumnManager(postgresConfiguration)
+        val tempTableNameGenerator = DefaultTempTableNameGenerator(internalNamespace = "airbyte_internal")
+        tableSchemaMapper = PostgresTableSchemaMapper(postgresConfiguration, tempTableNameGenerator)
         postgresDirectLoadSqlGenerator =
-            PostgresDirectLoadSqlGenerator(columnUtils, postgresConfiguration)
+            PostgresDirectLoadSqlGenerator(columnManager, tableSchemaMapper, postgresConfiguration)
     }
 
     @Test
@@ -212,9 +220,13 @@ internal class PostgresDirectLoadSqlGeneratorTest {
             mockk<PostgresConfiguration> {
                 every { legacyRawTablesOnly } returns true
                 every { dropCascade } returns false
+                every { internalTableSchema } returns "airbyte_internal"
+                every { schema } returns "public"
             }
-        val rawModeColumnUtils = PostgresColumnUtils(rawModeConfig)
-        val rawModeSqlGenerator = PostgresDirectLoadSqlGenerator(rawModeColumnUtils, rawModeConfig)
+        val rawModeColumnManager = PostgresColumnManager(rawModeConfig)
+        val rawModeTempTableNameGenerator = DefaultTempTableNameGenerator(internalNamespace = "airbyte_internal")
+        val rawModeTableSchemaMapper = PostgresTableSchemaMapper(rawModeConfig, rawModeTempTableNameGenerator)
+        val rawModeSqlGenerator = PostgresDirectLoadSqlGenerator(rawModeColumnManager, rawModeTableSchemaMapper, rawModeConfig)
 
         val stream =
             mockk<DestinationStream> {
@@ -1115,9 +1127,13 @@ internal class PostgresDirectLoadSqlGeneratorTest {
             mockk<PostgresConfiguration> {
                 every { legacyRawTablesOnly } returns false
                 every { dropCascade } returns true
+                every { internalTableSchema } returns "airbyte_internal"
+                every { schema } returns "public"
             }
-        val cascadeColumnUtils = PostgresColumnUtils(cascadeConfig)
-        val cascadeSqlGenerator = PostgresDirectLoadSqlGenerator(cascadeColumnUtils, cascadeConfig)
+        val cascadeColumnManager = PostgresColumnManager(cascadeConfig)
+        val cascadeTempTableNameGenerator = DefaultTempTableNameGenerator(internalNamespace = "airbyte_internal")
+        val cascadeTableSchemaMapper = PostgresTableSchemaMapper(cascadeConfig, cascadeTempTableNameGenerator)
+        val cascadeSqlGenerator = PostgresDirectLoadSqlGenerator(cascadeColumnManager, cascadeTableSchemaMapper, cascadeConfig)
 
         val tableName = TableName(namespace = "test_schema", name = "test_table")
         val columnsToAdd = emptySet<Column>()
@@ -1153,9 +1169,13 @@ internal class PostgresDirectLoadSqlGeneratorTest {
             mockk<PostgresConfiguration> {
                 every { legacyRawTablesOnly } returns false
                 every { dropCascade } returns true
+                every { internalTableSchema } returns "airbyte_internal"
+                every { schema } returns "public"
             }
-        val cascadeColumnUtils = PostgresColumnUtils(cascadeConfig)
-        val cascadeSqlGenerator = PostgresDirectLoadSqlGenerator(cascadeColumnUtils, cascadeConfig)
+        val cascadeColumnManager = PostgresColumnManager(cascadeConfig)
+        val cascadeTempTableNameGenerator = DefaultTempTableNameGenerator(internalNamespace = "airbyte_internal")
+        val cascadeTableSchemaMapper = PostgresTableSchemaMapper(cascadeConfig, cascadeTempTableNameGenerator)
+        val cascadeSqlGenerator = PostgresDirectLoadSqlGenerator(cascadeColumnManager, cascadeTableSchemaMapper, cascadeConfig)
 
         val tableName = TableName(namespace = "test_schema", name = "test_table")
         val columnsToAdd = emptySet<Column>()
@@ -1197,9 +1217,13 @@ internal class PostgresDirectLoadSqlGeneratorTest {
             mockk<PostgresConfiguration> {
                 every { legacyRawTablesOnly } returns false
                 every { dropCascade } returns true
+                every { internalTableSchema } returns "airbyte_internal"
+                every { schema } returns "public"
             }
-        val cascadeColumnUtils = PostgresColumnUtils(cascadeConfig)
-        val cascadeSqlGenerator = PostgresDirectLoadSqlGenerator(cascadeColumnUtils, cascadeConfig)
+        val cascadeColumnManager = PostgresColumnManager(cascadeConfig)
+        val cascadeTempTableNameGenerator = DefaultTempTableNameGenerator(internalNamespace = "airbyte_internal")
+        val cascadeTableSchemaMapper = PostgresTableSchemaMapper(cascadeConfig, cascadeTempTableNameGenerator)
+        val cascadeSqlGenerator = PostgresDirectLoadSqlGenerator(cascadeColumnManager, cascadeTableSchemaMapper, cascadeConfig)
 
         val tableName = TableName(namespace = "test_schema", name = "test_table")
         val columnsToAdd = emptySet<Column>()

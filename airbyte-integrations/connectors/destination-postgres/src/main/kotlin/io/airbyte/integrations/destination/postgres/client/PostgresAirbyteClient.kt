@@ -17,10 +17,10 @@ import io.airbyte.cdk.load.message.Meta.Companion.COLUMN_NAMES
 import io.airbyte.cdk.load.message.Meta.Companion.COLUMN_NAME_AB_GENERATION_ID
 import io.airbyte.cdk.load.schema.model.TableName
 import io.airbyte.cdk.load.table.ColumnNameMapping
+import io.airbyte.integrations.destination.postgres.schema.PostgresColumnManager
 import io.airbyte.integrations.destination.postgres.spec.PostgresConfiguration
 import io.airbyte.integrations.destination.postgres.sql.COUNT_TOTAL_ALIAS
 import io.airbyte.integrations.destination.postgres.sql.Column
-import io.airbyte.integrations.destination.postgres.sql.PostgresColumnUtils
 import io.airbyte.integrations.destination.postgres.sql.PostgresDirectLoadSqlGenerator
 import io.github.oshai.kotlinlogging.KotlinLogging
 import jakarta.inject.Singleton
@@ -38,7 +38,7 @@ private val log = KotlinLogging.logger {}
 class PostgresAirbyteClient(
     private val dataSource: DataSource,
     private val sqlGenerator: PostgresDirectLoadSqlGenerator,
-    private val postgresColumnUtils: PostgresColumnUtils,
+    private val columnManager: PostgresColumnManager,
     private val postgresConfiguration: PostgresConfiguration
 ) : TableSchemaEvolutionClient, TableOperationsClient {
 
@@ -164,9 +164,9 @@ class PostgresAirbyteClient(
         columnNameMapping: ColumnNameMapping
     ) {
         val columnsInDb = getColumnsFromDb(tableName)
-        val defaultColumnNames = postgresColumnUtils.defaultColumns().map { it.columnName }.toSet()
+        val defaultColumnNames = columnManager.getMetaColumnNames()
         val columnsInStream =
-            postgresColumnUtils
+            sqlGenerator
                 .getTargetColumns(stream, columnNameMapping)
                 .filter { it.columnName !in defaultColumnNames }
                 .toSet()
@@ -192,12 +192,12 @@ class PostgresAirbyteClient(
                     !isRawTablesMode &&
                         shouldRecreatePrimaryKeyIndex(stream, tableName, columnNameMapping),
                 primaryKeyColumnNames =
-                    postgresColumnUtils.getPrimaryKeysColumnNames(stream, columnNameMapping),
+                    sqlGenerator.getPrimaryKeysColumnNames(stream, columnNameMapping),
                 recreateCursorIndex =
                     !isRawTablesMode &&
                         shouldRecreateCursorIndex(stream, tableName, columnNameMapping),
                 cursorColumnName =
-                    postgresColumnUtils.getCursorColumnName(stream, columnNameMapping),
+                    sqlGenerator.getCursorColumnName(stream, columnNameMapping),
             )
         )
     }
@@ -246,9 +246,9 @@ class PostgresAirbyteClient(
             val columnsToAdd =
                 columnChangeset.columnsToAdd
                     .map { (name, type) ->
-                        io.airbyte.integrations.destination.postgres.sql.Column(
+                        Column(
                             columnName = name,
-                            columnTypeName = type.type.toString(), // forcing String to see if it accepts String. Wait, I want to test if it accepts AirbyteType.
+                            columnTypeName = type.type.toString(),
                             nullable = type.nullable
                         )
                     }
@@ -256,7 +256,7 @@ class PostgresAirbyteClient(
             val columnsToRemove =
                 columnChangeset.columnsToDrop
                     .map { (name, type) ->
-                        io.airbyte.integrations.destination.postgres.sql.Column(
+                        Column(
                             columnName = name,
                             columnTypeName = type.type.toString(),
                             nullable = type.nullable
@@ -266,7 +266,7 @@ class PostgresAirbyteClient(
             val columnsToModify =
                 columnChangeset.columnsToChange
                     .map { (name, change) ->
-                        io.airbyte.integrations.destination.postgres.sql.Column(
+                        Column(
                             columnName = name,
                             columnTypeName = change.newType.type.toString(),
                             nullable = change.newType.nullable
@@ -278,7 +278,7 @@ class PostgresAirbyteClient(
                         columnChangeset.columnsToDrop +
                         columnChangeset.columnsToChange.mapValues { it.value.originalType })
                     .map { (name, type) ->
-                        io.airbyte.integrations.destination.postgres.sql.Column(
+                        Column(
                             columnName = name,
                             columnTypeName = type.type.toString(),
                             nullable = type.nullable
@@ -334,7 +334,7 @@ class PostgresAirbyteClient(
         columnNameMapping: ColumnNameMapping
     ): Boolean {
         val streamPrimaryKeys =
-            postgresColumnUtils.getPrimaryKeysColumnNames(stream, columnNameMapping)
+            sqlGenerator.getPrimaryKeysColumnNames(stream, columnNameMapping)
         if (streamPrimaryKeys.isEmpty()) return false
 
         val existingPrimaryKeyIndexColumns = getPrimaryKeyIndexColumns(tableName)
@@ -378,7 +378,7 @@ class PostgresAirbyteClient(
         columnNameMapping: ColumnNameMapping
     ): Boolean {
         val streamCursor =
-            postgresColumnUtils.getCursorColumnName(stream, columnNameMapping) ?: return false
+            sqlGenerator.getCursorColumnName(stream, columnNameMapping) ?: return false
 
         val existingCursorIndexColumn = getCursorIndexColumn(tableName)
 
@@ -396,8 +396,7 @@ class PostgresAirbyteClient(
     internal fun getColumnsFromDb(tableName: TableName): Set<Column> =
         executeQuery(sqlGenerator.getTableSchema(tableName)) { rs ->
             val columnsInDb: MutableSet<Column> = mutableSetOf()
-            val defaultColumnNames =
-                postgresColumnUtils.defaultColumns().map { it.columnName }.toSet()
+            val defaultColumnNames = columnManager.getMetaColumnNames()
             while (rs.next()) {
                 val columnName = rs.getString(COLUMN_NAME_COLUMN)
 

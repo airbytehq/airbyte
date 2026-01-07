@@ -8,10 +8,10 @@ import io.airbyte.cdk.load.command.DestinationStream
 import io.airbyte.cdk.load.message.Meta.Companion.COLUMN_NAME_AB_GENERATION_ID
 import io.airbyte.cdk.load.schema.model.TableName
 import io.airbyte.cdk.load.table.ColumnNameMapping
+import io.airbyte.integrations.destination.postgres.schema.PostgresColumnManager
 import io.airbyte.integrations.destination.postgres.spec.PostgresConfiguration
 import io.airbyte.integrations.destination.postgres.sql.COUNT_TOTAL_ALIAS
 import io.airbyte.integrations.destination.postgres.sql.Column
-import io.airbyte.integrations.destination.postgres.sql.PostgresColumnUtils
 import io.airbyte.integrations.destination.postgres.sql.PostgresDirectLoadSqlGenerator
 import io.mockk.Runs
 import io.mockk.every
@@ -33,7 +33,7 @@ internal class PostgresAirbyteClientTest {
     private lateinit var client: PostgresAirbyteClient
     private lateinit var dataSource: DataSource
     private lateinit var sqlGenerator: PostgresDirectLoadSqlGenerator
-    private lateinit var postgresColumnUtils: PostgresColumnUtils
+    private lateinit var columnManager: PostgresColumnManager
     private lateinit var postgresConfiguration: PostgresConfiguration
 
     companion object {
@@ -44,14 +44,15 @@ internal class PostgresAirbyteClientTest {
     fun setup() {
         dataSource = mockk()
         sqlGenerator = mockk()
-        postgresColumnUtils = mockk()
+        columnManager = mockk()
         postgresConfiguration = mockk()
         every { postgresConfiguration.legacyRawTablesOnly } returns false
+        every { columnManager.getMetaColumnNames() } returns emptySet()
         client =
             PostgresAirbyteClient(
                 dataSource,
                 sqlGenerator,
-                postgresColumnUtils,
+                columnManager,
                 postgresConfiguration
             )
     }
@@ -442,8 +443,7 @@ internal class PostgresAirbyteClientTest {
 
         every { dataSource.connection } returns connection
         every { sqlGenerator.getTableSchema(tableName) } returns MOCK_SQL_QUERY
-        every { postgresColumnUtils.defaultColumns() } returns
-            listOf(Column(defaultColumnName, "varchar"))
+        every { columnManager.getMetaColumnNames() } returns setOf(defaultColumnName)
 
         val result = client.getColumnsFromDb(tableName)
 
@@ -477,7 +477,7 @@ internal class PostgresAirbyteClientTest {
 
         every { dataSource.connection } returns connection
         every { sqlGenerator.getTableSchema(tableName) } returns MOCK_SQL_QUERY
-        every { postgresColumnUtils.defaultColumns() } returns emptyList()
+        every { columnManager.getMetaColumnNames() } returns emptySet()
 
         val result = client.getColumnsFromDb(tableName)
 
@@ -573,14 +573,14 @@ internal class PostgresAirbyteClientTest {
         } returns MOCK_SQL_QUERY
 
         // no column changes
-        every { postgresColumnUtils.defaultColumns() } returns emptyList()
-        every { postgresColumnUtils.getTargetColumns(stream, columnNameMapping) } returns
+        every { columnManager.getMetaColumnNames() } returns emptySet()
+        every { sqlGenerator.getTargetColumns(stream, columnNameMapping) } returns
             listOf(Column("col1", "text"), Column("col2", "integer"))
 
         // no index changes
-        every { postgresColumnUtils.getPrimaryKeysColumnNames(stream, columnNameMapping) } returns
+        every { sqlGenerator.getPrimaryKeysColumnNames(stream, columnNameMapping) } returns
             emptyList()
-        every { postgresColumnUtils.getCursorColumnName(stream, columnNameMapping) } returns null
+        every { sqlGenerator.getCursorColumnName(stream, columnNameMapping) } returns null
 
         runBlocking {
             client.ensureSchemaMatches(stream, tableName, columnNameMapping)
@@ -645,13 +645,13 @@ internal class PostgresAirbyteClientTest {
             sqlGenerator.matchSchemas(any(), any(), any(), any(), any(), any(), any(), any(), any())
         } returns MOCK_SQL_QUERY
 
-        every { postgresColumnUtils.defaultColumns() } returns emptyList()
-        every { postgresColumnUtils.getTargetColumns(stream, columnNameMapping) } returns
+        every { columnManager.getMetaColumnNames() } returns emptySet()
+        every { sqlGenerator.getTargetColumns(stream, columnNameMapping) } returns
             listOf(Column("col1", "text"), Column("col2", "integer"))
 
-        every { postgresColumnUtils.getPrimaryKeysColumnNames(stream, columnNameMapping) } returns
+        every { sqlGenerator.getPrimaryKeysColumnNames(stream, columnNameMapping) } returns
             emptyList()
-        every { postgresColumnUtils.getCursorColumnName(stream, columnNameMapping) } returns null
+        every { sqlGenerator.getCursorColumnName(stream, columnNameMapping) } returns null
 
         runBlocking {
             client.ensureSchemaMatches(stream, tableName, columnNameMapping)
@@ -717,14 +717,14 @@ internal class PostgresAirbyteClientTest {
             sqlGenerator.matchSchemas(any(), any(), any(), any(), any(), any(), any(), any(), any())
         } returns MOCK_SQL_QUERY
 
-        every { postgresColumnUtils.defaultColumns() } returns emptyList()
-        every { postgresColumnUtils.getTargetColumns(stream, columnNameMapping) } returns
+        every { columnManager.getMetaColumnNames() } returns emptySet()
+        every { sqlGenerator.getTargetColumns(stream, columnNameMapping) } returns
             listOf(Column("col1", "text"))
 
         // primary key has changed
-        every { postgresColumnUtils.getPrimaryKeysColumnNames(stream, columnNameMapping) } returns
+        every { sqlGenerator.getPrimaryKeysColumnNames(stream, columnNameMapping) } returns
             listOf("new_pk")
-        every { postgresColumnUtils.getCursorColumnName(stream, columnNameMapping) } returns null
+        every { sqlGenerator.getCursorColumnName(stream, columnNameMapping) } returns null
 
         runBlocking {
             client.ensureSchemaMatches(stream, tableName, columnNameMapping)
@@ -790,14 +790,14 @@ internal class PostgresAirbyteClientTest {
             sqlGenerator.matchSchemas(any(), any(), any(), any(), any(), any(), any(), any(), any())
         } returns MOCK_SQL_QUERY
 
-        every { postgresColumnUtils.defaultColumns() } returns emptyList()
-        every { postgresColumnUtils.getTargetColumns(stream, columnNameMapping) } returns
+        every { columnManager.getMetaColumnNames() } returns emptySet()
+        every { sqlGenerator.getTargetColumns(stream, columnNameMapping) } returns
             listOf(Column("col1", "text"))
 
-        every { postgresColumnUtils.getPrimaryKeysColumnNames(stream, columnNameMapping) } returns
+        every { sqlGenerator.getPrimaryKeysColumnNames(stream, columnNameMapping) } returns
             emptyList()
         // cursor has changed
-        every { postgresColumnUtils.getCursorColumnName(stream, columnNameMapping) } returns
+        every { sqlGenerator.getCursorColumnName(stream, columnNameMapping) } returns
             "new_cursor"
 
         runBlocking {
@@ -850,15 +850,15 @@ internal class PostgresAirbyteClientTest {
             sqlGenerator.matchSchemas(any(), any(), any(), any(), any(), any(), any(), any(), any())
         } returns MOCK_SQL_QUERY
 
-        every { postgresColumnUtils.defaultColumns() } returns emptyList()
-        every { postgresColumnUtils.getTargetColumns(stream, columnNameMapping) } returns
+        every { columnManager.getMetaColumnNames() } returns emptySet()
+        every { sqlGenerator.getTargetColumns(stream, columnNameMapping) } returns
             emptyList()
 
         // Even though the stream has primary keys and cursor defined, they should be ignored
         // in raw tables mode
-        every { postgresColumnUtils.getPrimaryKeysColumnNames(stream, columnNameMapping) } returns
+        every { sqlGenerator.getPrimaryKeysColumnNames(stream, columnNameMapping) } returns
             listOf("ad_group_id")
-        every { postgresColumnUtils.getCursorColumnName(stream, columnNameMapping) } returns
+        every { sqlGenerator.getCursorColumnName(stream, columnNameMapping) } returns
             "updated_at"
 
         runBlocking {
@@ -912,14 +912,14 @@ internal class PostgresAirbyteClientTest {
             sqlGenerator.matchSchemas(any(), any(), any(), any(), any(), any(), any(), any(), any())
         } returns MOCK_SQL_QUERY
 
-        every { postgresColumnUtils.defaultColumns() } returns emptyList()
-        every { postgresColumnUtils.getTargetColumns(stream, columnNameMapping) } returns
+        every { columnManager.getMetaColumnNames() } returns emptySet()
+        every { sqlGenerator.getTargetColumns(stream, columnNameMapping) } returns
             emptyList()
 
         // Primary keys are defined - would normally trigger index recreation
-        every { postgresColumnUtils.getPrimaryKeysColumnNames(stream, columnNameMapping) } returns
+        every { sqlGenerator.getPrimaryKeysColumnNames(stream, columnNameMapping) } returns
             listOf("new_pk_column")
-        every { postgresColumnUtils.getCursorColumnName(stream, columnNameMapping) } returns null
+        every { sqlGenerator.getCursorColumnName(stream, columnNameMapping) } returns null
 
         runBlocking {
             client.ensureSchemaMatches(stream, tableName, columnNameMapping)
