@@ -13,7 +13,7 @@ The Github connector is optimized to handle prompts like these.
 - Show me all open issues in my repositories this month
 - List the top 5 repositories I've starred recently
 - Analyze the commit trends in my main project over the last quarter
-- Find all pull requests created by {team_member} in the past two weeks
+- Find all pull requests created by \{team_member\} in the past two weeks
 - Search for repositories related to machine learning in my organizations
 - Compare the number of contributors across my different team projects
 - Identify the most active branches in my main repository
@@ -105,6 +105,6 @@ For the service's official API docs, see the [Github API reference](https://docs
 
 ## Version information
 
-- **Package version:** 0.18.31
+- **Package version:** 0.18.32
 - **Connector version:** 0.1.7
-- **Generated with Connector SDK commit SHA:** e0e2f9890347de01530666b6ed5ed7bd22452c62
+- **Generated with Connector SDK commit SHA:** 0580c7278394ff52ee3bec5d5192905ac3b15878

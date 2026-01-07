@@ -6,32 +6,32 @@ Connector for Jira API
 
 The Jira connector is optimized to handle prompts like these.
 
-- Show me all open issues in the {project_key} project
-- What issues are assigned to {team_member} this week?
+- Show me all open issues in the \{project_key\} project
+- What issues are assigned to \{team_member\} this week?
 - Find all high priority bugs in our current sprint
-- Get the details of issue {issue_key}
+- Get the details of issue \{issue_key\}
 - List all issues created in the last 7 days
 - Show me overdue issues across all projects
 - List all projects in my Jira instance
-- Get details of the {project_key} project
+- Get details of the \{project_key\} project
 - What projects have the most issues?
 - Who are all the users in my Jira instance?
-- Search for users named {user_name}
-- Get details of user {team_member}
-- Show me all comments on issue {issue_key}
-- How much time has been logged on issue {issue_key}?
-- List all worklogs for {issue_key} this month
+- Search for users named \{user_name\}
+- Get details of user \{team_member\}
+- Show me all comments on issue \{issue_key\}
+- How much time has been logged on issue \{issue_key\}?
+- List all worklogs for \{issue_key\} this month
 
 ## Unsupported questions
 
 The Jira connector isn't currently able to handle prompts like these.
 
-- Create a new issue in {project_key}
-- Update the status of {issue_key}
-- Add a comment to {issue_key}
-- Log time on {issue_key}
-- Delete issue {issue_key}
-- Assign {issue_key} to {team_member}
+- Create a new issue in \{project_key\}
+- Update the status of \{issue_key\}
+- Add a comment to \{issue_key\}
+- Log time on \{issue_key\}
+- Delete issue \{issue_key\}
+- Assign \{issue_key\} to \{team_member\}
 
 ## Installation
 
@@ -74,6 +74,6 @@ For the service's official API docs, see the [Jira API reference](https://develo
 
 ## Version information
 
-- **Package version:** 0.1.17
+- **Package version:** 0.1.18
 - **Connector version:** 1.0.3
-- **Generated with Connector SDK commit SHA:** e0e2f9890347de01530666b6ed5ed7bd22452c62
+- **Generated with Connector SDK commit SHA:** 0580c7278394ff52ee3bec5d5192905ac3b15878

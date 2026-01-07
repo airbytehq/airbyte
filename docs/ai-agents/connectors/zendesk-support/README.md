@@ -13,10 +13,10 @@ The Zendesk-Support connector is optimized to handle prompts like these.
 
 - Show me the tickets assigned to me last week
 - What are the top 5 support issues our organization has faced this month?
-- List all unresolved tickets for {customer}
+- List all unresolved tickets for \{customer\}
 - Analyze the satisfaction ratings for our support team in the last 30 days
 - Compare ticket resolution times across different support groups
-- Show me the details of recent tickets tagged with {tag}
+- Show me the details of recent tickets tagged with \{tag\}
 - Identify the most common ticket fields used in our support workflow
 - Summarize the performance of our SLA policies this quarter
 
@@ -24,11 +24,11 @@ The Zendesk-Support connector is optimized to handle prompts like these.
 
 The Zendesk-Support connector isn't currently able to handle prompts like these.
 
-- Create a new support ticket for {customer}
+- Create a new support ticket for \{customer\}
 - Update the priority of this ticket
-- Assign this ticket to {team_member}
+- Assign this ticket to \{team_member\}
 - Delete these old support tickets
-- Send an automatic response to {customer}
+- Send an automatic response to \{customer\}
 
 ## Installation
 
@@ -107,6 +107,6 @@ For the service's official API docs, see the [Zendesk-Support API reference](htt
 
 ## Version information
 
-- **Package version:** 0.18.27
+- **Package version:** 0.18.28
 - **Connector version:** 0.1.4
-- **Generated with Connector SDK commit SHA:** e0e2f9890347de01530666b6ed5ed7bd22452c62
+- **Generated with Connector SDK commit SHA:** 0580c7278394ff52ee3bec5d5192905ac3b15878
