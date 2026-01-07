@@ -30,7 +30,7 @@ definitions:
               crmId createdAt updatedAt deletedAt additionalMetaData refId
               defaultPaymentExpirationMonth defaultPaymentExpirationYear
               defaultPaymentMethodLast4Digits defaultPaymentMethodType
-              hasPaymentMethod hasActiveSubscription totalActiveSubscriptions }
+              hasPaymentMethod hasActiveSubscription totalActiveSubscription }
               cursor } pageInfo { hasNextPage endCursor } totalCount } }
             variables:
               paging:
@@ -230,7 +230,7 @@ schemas:
         type:
           - boolean
           - "null"
-      totalActiveSubscriptions:
+      totalActiveSubscription:
         type:
           - integer
           - "null"
