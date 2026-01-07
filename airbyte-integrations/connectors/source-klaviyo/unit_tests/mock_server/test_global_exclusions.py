@@ -57,9 +57,7 @@ class TestGlobalExclusionsStream(TestCase):
 
         # Global exclusions stream uses profiles endpoint with filter and sort params
         http_mocker.get(
-            KlaviyoRequestBuilder.profiles_endpoint(_API_KEY)
-            .with_any_query_params()
-            .build(),
+            KlaviyoRequestBuilder.profiles_endpoint(_API_KEY).with_any_query_params().build(),
             HttpResponse(
                 body=json.dumps(
                     {
@@ -117,9 +115,7 @@ class TestGlobalExclusionsStream(TestCase):
 
         # Global exclusions stream uses profiles endpoint with filter and sort params
         http_mocker.get(
-            KlaviyoRequestBuilder.profiles_endpoint(_API_KEY)
-            .with_any_query_params()
-            .build(),
+            KlaviyoRequestBuilder.profiles_endpoint(_API_KEY).with_any_query_params().build(),
             HttpResponse(
                 body=json.dumps(
                     {
@@ -178,9 +174,7 @@ class TestGlobalExclusionsStream(TestCase):
 
         # Global exclusions stream uses profiles endpoint with filter and sort params
         http_mocker.get(
-            KlaviyoRequestBuilder.profiles_endpoint(_API_KEY)
-            .with_any_query_params()
-            .build(),
+            KlaviyoRequestBuilder.profiles_endpoint(_API_KEY).with_any_query_params().build(),
             HttpResponse(
                 body=json.dumps(
                     {
@@ -232,9 +226,7 @@ class TestGlobalExclusionsStream(TestCase):
 
         # Global exclusions stream uses profiles endpoint with filter and sort params
         http_mocker.get(
-            KlaviyoRequestBuilder.profiles_endpoint(_API_KEY)
-            .with_any_query_params()
-            .build(),
+            KlaviyoRequestBuilder.profiles_endpoint(_API_KEY).with_any_query_params().build(),
             HttpResponse(
                 body=json.dumps(
                     {
@@ -360,9 +352,7 @@ class TestGlobalExclusionsStream(TestCase):
 
         # Global exclusions stream uses profiles endpoint with filter and sort params
         http_mocker.get(
-            KlaviyoRequestBuilder.profiles_endpoint(_API_KEY)
-            .with_any_query_params()
-            .build(),
+            KlaviyoRequestBuilder.profiles_endpoint(_API_KEY).with_any_query_params().build(),
             [
                 HttpResponse(
                     body=json.dumps({"errors": [{"detail": "Rate limit exceeded"}]}),
@@ -428,9 +418,7 @@ class TestGlobalExclusionsStream(TestCase):
 
         # Global exclusions stream uses profiles endpoint with filter and sort params
         http_mocker.get(
-            KlaviyoRequestBuilder.profiles_endpoint("invalid_key")
-            .with_any_query_params()
-            .build(),
+            KlaviyoRequestBuilder.profiles_endpoint("invalid_key").with_any_query_params().build(),
             HttpResponse(
                 body=json.dumps({"errors": [{"detail": "Invalid API key"}]}),
                 status_code=401,
@@ -464,9 +452,7 @@ class TestGlobalExclusionsStream(TestCase):
 
         # Global exclusions stream uses profiles endpoint with filter and sort params
         http_mocker.get(
-            KlaviyoRequestBuilder.profiles_endpoint(_API_KEY)
-            .with_any_query_params()
-            .build(),
+            KlaviyoRequestBuilder.profiles_endpoint(_API_KEY).with_any_query_params().build(),
             HttpResponse(
                 body=json.dumps({"errors": [{"detail": "Forbidden - insufficient permissions"}]}),
                 status_code=403,
@@ -497,9 +483,7 @@ class TestGlobalExclusionsStream(TestCase):
 
         # Global exclusions stream uses profiles endpoint with filter and sort params
         http_mocker.get(
-            KlaviyoRequestBuilder.profiles_endpoint(_API_KEY)
-            .with_any_query_params()
-            .build(),
+            KlaviyoRequestBuilder.profiles_endpoint(_API_KEY).with_any_query_params().build(),
             HttpResponse(
                 body=json.dumps(
                     {
