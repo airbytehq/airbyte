@@ -24,9 +24,9 @@ definitions:
           request_headers:
             Content-Type: application/json
           request_body_json:
-            query: |
-              query GetCustomers($paging: CursorPaging, $filter: CustomerFilter) {
-                customers(paging: $paging, filter: $filter) {
+            query: >-
+              query GetCustomers($after: String) {
+                customers(paging: { first: 50, after: $after }) {
                   edges {
                     node {
                       id
@@ -57,10 +57,6 @@ definitions:
                   totalCount
                 }
               }
-            variables:
-              paging:
-                first: 50
-                after: "{{ next_page_token.after if next_page_token else '' }}"
         record_selector:
           type: RecordSelector
           extractor:
@@ -75,13 +71,13 @@ definitions:
           type: DefaultPaginator
           page_token_option:
             type: RequestOption
-            field_name: variables.paging.after
             inject_into: body_json
+            field_name: variables
           pagination_strategy:
             type: CursorPagination
-            page_size: 50
-            cursor_value: "{{ response.data.customers.pageInfo.endCursor }}"
-            stop_condition: "{{ not response.data.customers.pageInfo.hasNextPage }}"
+            cursor_value: >-
+              {{ '{"after": "' + response.data.customers.pageInfo.endCursor + '"}' if response.data.customers.pageInfo.endCursor else "" }}
+            stop_condition: "{{ response.data.customers.pageInfo.hasNextPage is false }}"
         decoder:
           type: JsonDecoder
       schema_loader:
@@ -102,45 +98,63 @@ definitions:
           request_headers:
             Content-Type: application/json
           request_body_json:
-            query: |
-              query GetActiveSubscriptions($input: GetActiveSubscriptionsInput!) {
-                getActiveSubscriptions(input: $input) {
-                  id
-                  subscriptionId
-                  refId
-                  status
-                  startDate
-                  endDate
-                  createdAt
-                  cancellationDate
-                  trialEndDate
-                  billingId
-                  billingLinkUrl
-                  crmId
-                  crmLinkUrl
-                  customerId
-                  pricingType
-                  wasInTrial
-                  budgetExceeded
-                  currentBillingPeriodStart
-                  currentBillingPeriodEnd
-                  effectiveEndDate
-                  additionalMetaData
+            query: >-
+              query GetSubscriptions($after: String) {
+                subscriptions(paging: { first: 50, after: $after }) {
+                  edges {
+                    node {
+                      id
+                      subscriptionId
+                      refId
+                      status
+                      startDate
+                      endDate
+                      createdAt
+                      cancellationDate
+                      trialEndDate
+                      billingId
+                      billingLinkUrl
+                      crmId
+                      crmLinkUrl
+                      customerId
+                      pricingType
+                      wasInTrial
+                      budgetExceeded
+                      currentBillingPeriodStart
+                      currentBillingPeriodEnd
+                      effectiveEndDate
+                      additionalMetaData
+                    }
+                    cursor
+                  }
+                  pageInfo {
+                    hasNextPage
+                    endCursor
+                  }
+                  totalCount
                 }
               }
-            variables:
-              input:
-                customerId: "{{ config.get('customer_id', '') }}"
-                resourceId: "{{ config.get('resource_id', '') }}"
         record_selector:
           type: RecordSelector
           extractor:
             type: DpathExtractor
             field_path:
               - data
-              - getActiveSubscriptions
+              - subscriptions
+              - edges
+              - "*"
+              - node
         paginator:
-          type: NoPagination
+          type: DefaultPaginator
+          page_token_option:
+            type: RequestOption
+            inject_into: body_json
+            field_name: variables
+          pagination_strategy:
+            type: CursorPagination
+            cursor_value: >-
+              {{ '{"after": "' + response.data.subscriptions.pageInfo.endCursor + '"}' if response.data.subscriptions.pageInfo.endCursor else "" }}
+            stop_condition: "{{ response.data.subscriptions.pageInfo.hasNextPage is false }}"
         decoder:
           type: JsonDecoder
       schema_loader:
@@ -177,16 +191,6 @@ spec:
         order: 0
         title: API Key
         airbyte_secret: true
-      customer_id:
-        type: string
-        description: Optional customer ID to filter subscriptions. Leave empty to get all subscriptions.
-        order: 1
-        title: Customer ID
-      resource_id:
-        type: string
-        description: Optional resource ID to filter subscriptions.
-        order: 2
-        title: Resource ID
     additionalProperties: true
 
 metadata:
