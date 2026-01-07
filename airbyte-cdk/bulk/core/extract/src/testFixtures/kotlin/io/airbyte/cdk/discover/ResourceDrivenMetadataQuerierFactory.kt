@@ -33,7 +33,7 @@ class ResourceDrivenMetadataQuerierFactory(
             val streamID: StreamIdentifier = StreamIdentifier.from(desc)
             map[streamID] = null
             val level2: Level2 = level1.metadata ?: continue
-            val columns: List<Field> =
+            val columns: List<EmittedField> =
                 level2.columns.map { (id: String, fullyQualifiedClassName: String) ->
                     val fieldType: FieldType =
                         Class.forName(fullyQualifiedClassName).kotlin.objectInstance as FieldType
@@ -60,7 +60,7 @@ class ResourceDrivenMetadataQuerierFactory(
 
             override fun fields(
                 streamID: StreamIdentifier,
-            ): List<Field> {
+            ): List<EmittedField> {
                 if (isClosed) throw IllegalStateException()
                 return metadata[streamID]?.fields ?: throw SQLException("query failed", "tbl")
             }
@@ -81,7 +81,7 @@ class ResourceDrivenMetadataQuerierFactory(
 }
 
 data class TestStreamMetadata(
-    val fields: List<Field>,
+    val fields: List<EmittedField>,
     val primaryKeys: List<List<String>>,
 )
 

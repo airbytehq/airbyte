@@ -33,16 +33,16 @@ import org.testcontainers.containers.PostgreSQLContainer
 class PostgresSourceCdcIntegrationTest {
 
     private val schema = TestAssetResourceNamer().getName()
-    val configSpec = PostgresContainerFactory.config(container, listOf(schema))
+    val configSpec = PostgresContainerFactoryNewer.config(container, listOf(schema))
     val executor = JdbcTestDbExecutor(schema, jdbcConfig)
     private val jdbcConfig: JdbcSourceConfiguration
         get() = PostgresSourceConfigurationFactory().make(configSpec)
 
     companion object {
-        val dbContainer: PostgreSQLContainer<*> = PostgresContainerFactory.shared17()
+        val dbContainer: PostgreSQLContainer<*> = PostgresContainerFactoryNewer.shared17()
 
         val config: PostgresSourceConfigurationSpecification =
-            PostgresContainerFactory.config(dbContainer)
+            PostgresContainerFactoryNewer.config(dbContainer)
 
         val connectionFactory: JdbcConnectionFactory by lazy {
             JdbcConnectionFactory(PostgresSourceConfigurationFactory().make(config))
