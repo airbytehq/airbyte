@@ -1442,6 +1442,198 @@ definitions:
         schema:
           $ref: "#/schemas/sponsored_brands_v3_report_stream_daily"
 
+    sponsored_brands_campaigns_report_stream:
+      type: DeclarativeStream
+      name: sponsored_brands_campaigns_report_stream
+      primary_key: ["profileId", "reportDate", "campaignId"]
+      incremental_sync:
+        $ref: "#/definitions/incremental_sync_report_datetime_cursor"
+      transformations:
+        $ref: "#/definitions/transformation_report_add_fields"
+      retriever:
+        $ref: "#/definitions/basic_async_retriever"
+        creation_requester:
+          $ref: "#/definitions/basic_async_retriever/creation_requester"
+          request_body_json:
+            name: "sb campaigns report {{ stream_interval.start_time }}"
+            startDate: "{{ stream_interval.start_time }}"
+            endDate: "{{ stream_interval.end_time }}"
+            configuration:
+              adProduct: SPONSORED_BRANDS
+              groupBy: ["campaign"]
+              columns:
+                [
+                  "campaignBudgetCurrencyCode",
+                  "campaignId",
+                  "campaignName",
+                  "campaignStatus",
+                  "campaignBudgetAmount",
+                  "campaignBudgetType",
+                  "clicks",
+                  "cost",
+                  "impressions",
+                  "sales",
+                  "purchases",
+                  "unitsSold",
+                  "newToBrandPurchases",
+                  "newToBrandSales",
+                  "newToBrandUnitsSold",
+                  "newToBrandPurchasesPercentage",
+                  "newToBrandSalesPercentage",
+                  "newToBrandUnitsSoldPercentage",
+                ]
+              reportTypeId: sbCampaigns
+              filters: []
+              timeUnit: SUMMARY
+              format: GZIP_JSON
+      schema_loader:
+        type: InlineSchemaLoader
+        schema:
+          $ref: "#/schemas/sponsored_brands_campaigns_report_stream"
+
+    sponsored_brands_campaigns_report_stream_daily:
+      type: DeclarativeStream
+      name: sponsored_brands_campaigns_report_stream_daily
+      primary_key: ["profileId", "reportDate", "campaignId"]
+      incremental_sync:
+        $ref: "#/definitions/incremental_sync_report_datetime_cursor"
+      transformations:
+        $ref: "#/definitions/transformation_report_add_fields"
+      retriever:
+        $ref: "#/definitions/basic_async_retriever"
+        creation_requester:
+          $ref: "#/definitions/basic_async_retriever/creation_requester"
+          request_body_json:
+            name: "sb campaigns report daily {{ stream_interval.start_time }}"
+            startDate: "{{ stream_interval.start_time }}"
+            endDate: "{{ stream_interval.end_time }}"
+            configuration:
+              adProduct: SPONSORED_BRANDS
+              groupBy: ["campaign"]
+              columns:
+                - "date"
+                - "campaignBudgetCurrencyCode"
+                - "campaignId"
+                - "campaignName"
+                - "campaignStatus"
+                - "campaignBudgetAmount"
+                - "campaignBudgetType"
+                - "clicks"
+                - "cost"
+                - "impressions"
+                - "sales"
+                - "purchases"
+                - "unitsSold"
+                - "newToBrandPurchases"
+                - "newToBrandSales"
+                - "newToBrandUnitsSold"
+                - "newToBrandPurchasesPercentage"
+                - "newToBrandSalesPercentage"
+                - "newToBrandUnitsSoldPercentage"
+              reportTypeId: sbCampaigns
+              filters: []
+              timeUnit: DAILY
+              format: GZIP_JSON
+      schema_loader:
+        type: InlineSchemaLoader
+        schema:
+          $ref: "#/schemas/sponsored_brands_campaigns_report_stream_daily"
+
+    sponsored_brands_adgroups_report_stream:
+      type: DeclarativeStream
+      name: sponsored_brands_adgroups_report_stream
+      primary_key: ["profileId", "reportDate", "adGroupName", "adGroupId"]
+      incremental_sync:
+        $ref: "#/definitions/incremental_sync_report_datetime_cursor"
+      transformations:
+        $ref: "#/definitions/transformation_report_add_fields"
+      retriever:
+        $ref: "#/definitions/basic_async_retriever"
+        creation_requester:
+          $ref: "#/definitions/basic_async_retriever/creation_requester"
+          request_body_json:
+            name: "sb adGroups report {{ stream_interval.start_time }}"
+            startDate: "{{ stream_interval.start_time }}"
+            endDate: "{{ stream_interval.end_time }}"
+            configuration:
+              adProduct: SPONSORED_BRANDS
+              groupBy: ["adGroup"]
+              columns:
+                [
+                  "campaignBudgetCurrencyCode",
+                  "campaignId",
+                  "campaignName",
+                  "adGroupId",
+                  "adGroupName",
+                  "clicks",
+                  "cost",
+                  "impressions",
+                  "sales",
+                  "purchases",
+                  "unitsSold",
+                  "newToBrandPurchases",
+                  "newToBrandSales",
+                  "newToBrandUnitsSold",
+                  "newToBrandPurchasesPercentage",
+                  "newToBrandSalesPercentage",
+                  "newToBrandUnitsSoldPercentage",
+                ]
+              reportTypeId: sbAdGroup
+              filters: []
+              timeUnit: SUMMARY
+              format: GZIP_JSON
+      schema_loader:
+        type: InlineSchemaLoader
+        schema:
+          $ref: "#/schemas/sponsored_brands_adgroups_report_stream"
+
+    sponsored_brands_adgroups_report_stream_daily:
+      type: DeclarativeStream
+      name: sponsored_brands_adgroups_report_stream_daily
+      primary_key: ["profileId", "reportDate", "adGroupName", "adGroupId"]
+      incremental_sync:
+        $ref: "#/definitions/incremental_sync_report_datetime_cursor"
+      transformations:
+        $ref: "#/definitions/transformation_report_add_fields"
+      retriever:
+        $ref: "#/definitions/basic_async_retriever"
+        creation_requester:
+          $ref: "#/definitions/basic_async_retriever/creation_requester"
+          request_body_json:
+            name: "sb adGroups report daily {{ stream_interval.start_time }}"
+            startDate: "{{ stream_interval.start_time }}"
+            endDate: "{{ stream_interval.end_time }}"
+            configuration:
+              adProduct: SPONSORED_BRANDS
+              groupBy: ["adGroup"]
+              columns:
+                - "date"
+                - "campaignBudgetCurrencyCode"
+                - "campaignId"
+                - "campaignName"
+                - "adGroupId"
+                - "adGroupName"
+                - "clicks"
+                - "cost"
+                - "impressions"
+                - "sales"
+                - "purchases"
+                - "unitsSold"
+                - "newToBrandPurchases"
+                - "newToBrandSales"
+                - "newToBrandUnitsSold"
+                - "newToBrandPurchasesPercentage"
+                - "newToBrandSalesPercentage"
+                - "newToBrandUnitsSoldPercentage"
+              reportTypeId: sbAdGroup
+              filters: []
+              timeUnit: DAILY
+              format: GZIP_JSON
+      schema_loader:
+        type: InlineSchemaLoader
+        schema:
+          $ref: "#/schemas/sponsored_brands_adgroups_report_stream_daily"
+
     sponsored_display_campaigns_report_stream:
       type: DeclarativeStream
       name: sponsored_display_campaigns_report_stream
@@ -3350,6 +3542,8 @@ streams:
   - $ref: "#/definitions/streams/attribution_report_performance_creative"
 
   - $ref: "#/definitions/streams/sponsored_brands_v3_report_stream"
+  - $ref: "#/definitions/streams/sponsored_brands_campaigns_report_stream"
+  - $ref: "#/definitions/streams/sponsored_brands_adgroups_report_stream"
 
   - $ref: "#/definitions/streams/sponsored_display_campaigns_report_stream"
   - $ref: "#/definitions/streams/sponsored_display_adgroups_report_stream"
@@ -3366,6 +3560,8 @@ streams:
   - $ref: "#/definitions/streams/sponsored_products_asins_targets_report_stream"
 
   - $ref: "#/definitions/streams/sponsored_brands_v3_report_stream_daily"
+  - $ref: "#/definitions/streams/sponsored_brands_campaigns_report_stream_daily"
+  - $ref: "#/definitions/streams/sponsored_brands_adgroups_report_stream_daily"
   - $ref: "#/definitions/streams/sponsored_display_campaigns_report_stream_daily"
   - $ref: "#/definitions/streams/sponsored_display_adgroups_report_stream_daily"
   - $ref: "#/definitions/streams/sponsored_display_productads_report_stream_daily"
@@ -4575,6 +4771,354 @@ schemas:
           - "null"
           - string
     title: sponsored_brands_v3_report_stream_daily
+    type:
+      - "null"
+      - object
+  sponsored_brands_campaigns_report_stream:
+    $schema: http://json-schema.org/draft-07/schema#
+    properties:
+      profileId:
+        type:
+          - "null"
+          - integer
+      reportDate:
+        type:
+          - "null"
+          - string
+      campaignBudgetCurrencyCode:
+        type:
+          - "null"
+          - string
+      campaignId:
+        type:
+          - "null"
+          - string
+      campaignName:
+        type:
+          - "null"
+          - string
+      campaignStatus:
+        type:
+          - "null"
+          - string
+      campaignBudgetAmount:
+        type:
+          - "null"
+          - number
+      campaignBudgetType:
+        type:
+          - "null"
+          - string
+      clicks:
+        type:
+          - "null"
+          - integer
+      cost:
+        type:
+          - "null"
+          - number
+      impressions:
+        type:
+          - "null"
+          - integer
+      sales:
+        type:
+          - "null"
+          - number
+      purchases:
+        type:
+          - "null"
+          - integer
+      unitsSold:
+        type:
+          - "null"
+          - integer
+      newToBrandPurchases:
+        type:
+          - "null"
+          - integer
+      newToBrandSales:
+        type:
+          - "null"
+          - number
+      newToBrandUnitsSold:
+        type:
+          - "null"
+          - integer
+      newToBrandPurchasesPercentage:
+        type:
+          - "null"
+          - number
+      newToBrandSalesPercentage:
+        type:
+          - "null"
+          - number
+      newToBrandUnitsSoldPercentage:
+        type:
+          - "null"
+          - number
+    title: sponsored_brands_campaigns_report_stream
+    type:
+      - "null"
+      - object
+  sponsored_brands_campaigns_report_stream_daily:
+    $schema: http://json-schema.org/draft-07/schema#
+    properties:
+      date:
+        type:
+          - "null"
+          - string
+      profileId:
+        type:
+          - "null"
+          - integer
+      reportDate:
+        type:
+          - "null"
+          - string
+      campaignBudgetCurrencyCode:
+        type:
+          - "null"
+          - string
+      campaignId:
+        type:
+          - "null"
+          - string
+      campaignName:
+        type:
+          - "null"
+          - string
+      campaignStatus:
+        type:
+          - "null"
+          - string
+      campaignBudgetAmount:
+        type:
+          - "null"
+          - number
+      campaignBudgetType:
+        type:
+          - "null"
+          - string
+      clicks:
+        type:
+          - "null"
+          - integer
+      cost:
+        type:
+          - "null"
+          - number
+      impressions:
+        type:
+          - "null"
+          - integer
+      sales:
+        type:
+          - "null"
+          - number
+      purchases:
+        type:
+          - "null"
+          - integer
+      unitsSold:
+        type:
+          - "null"
+          - integer
+      newToBrandPurchases:
+        type:
+          - "null"
+          - integer
+      newToBrandSales:
+        type:
+          - "null"
+          - number
+      newToBrandUnitsSold:
+        type:
+          - "null"
+          - integer
+      newToBrandPurchasesPercentage:
+        type:
+          - "null"
+          - number
+      newToBrandSalesPercentage:
+        type:
+          - "null"
+          - number
+      newToBrandUnitsSoldPercentage:
+        type:
+          - "null"
+          - number
+    title: sponsored_brands_campaigns_report_stream_daily
+    type:
+      - "null"
+      - object
+  sponsored_brands_adgroups_report_stream:
+    $schema: http://json-schema.org/draft-07/schema#
+    properties:
+      profileId:
+        type:
+          - "null"
+          - integer
+      reportDate:
+        type:
+          - "null"
+          - string
+      campaignBudgetCurrencyCode:
+        type:
+          - "null"
+          - string
+      campaignId:
+        type:
+          - "null"
+          - string
+      campaignName:
+        type:
+          - "null"
+          - string
+      adGroupId:
+        type:
+          - "null"
+          - string
+      adGroupName:
+        type:
+          - "null"
+          - string
+      clicks:
+        type:
+          - "null"
+          - integer
+      cost:
+        type:
+          - "null"
+          - number
+      impressions:
+        type:
+          - "null"
+          - integer
+      sales:
+        type:
+          - "null"
+          - number
+      purchases:
+        type:
+          - "null"
+          - integer
+      unitsSold:
+        type:
+          - "null"
+          - integer
+      newToBrandPurchases:
+        type:
+          - "null"
+          - integer
+      newToBrandSales:
+        type:
+          - "null"
+          - number
+      newToBrandUnitsSold:
+        type:
+          - "null"
+          - integer
+      newToBrandPurchasesPercentage:
+        type:
+          - "null"
+          - number
+      newToBrandSalesPercentage:
+        type:
+          - "null"
+          - number
+      newToBrandUnitsSoldPercentage:
+        type:
+          - "null"
+          - number
+    title: sponsored_brands_adgroups_report_stream
+    type:
+      - "null"
+      - object
+  sponsored_brands_adgroups_report_stream_daily:
+    $schema: http://json-schema.org/draft-07/schema#
+    properties:
+      date:
+        type:
+          - "null"
+          - string
+      profileId:
+        type:
+          - "null"
+          - integer
+      reportDate:
+        type:
+          - "null"
+          - string
+      campaignBudgetCurrencyCode:
+        type:
+          - "null"
+          - string
+      campaignId:
+        type:
+          - "null"
+          - string
+      campaignName:
+        type:
+          - "null"
+          - string
+      adGroupId:
+        type:
+          - "null"
+          - string
+      adGroupName:
+        type:
+          - "null"
+          - string
+      clicks:
+        type:
+          - "null"
+          - integer
+      cost:
+        type:
+          - "null"
+          - number
+      impressions:
+        type:
+          - "null"
+          - integer
+      sales:
+        type:
+          - "null"
+          - number
+      purchases:
+        type:
+          - "null"
+          - integer
+      unitsSold:
+        type:
+          - "null"
+          - integer
+      newToBrandPurchases:
+        type:
+          - "null"
+          - integer
+      newToBrandSales:
+        type:
+          - "null"
+          - number
+      newToBrandUnitsSold:
+        type:
+          - "null"
+          - integer
+      newToBrandPurchasesPercentage:
+        type:
+          - "null"
+          - number
+      newToBrandSalesPercentage:
+        type:
+          - "null"
+          - number
+      newToBrandUnitsSoldPercentage:
+        type:
+          - "null"
+          - number
+    title: sponsored_brands_adgroups_report_stream_daily
     type:
       - "null"
       - object
