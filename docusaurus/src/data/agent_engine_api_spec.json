@@ -2668,7 +2668,3785 @@
             "content": {
               "application/json": {
                 "schema": {
-                  "$ref": "#/components/schemas/OAuthCredentialsResponse"
+                  "$ref": "#/components/schemas/TemplateTagUpdateResponse"
+                }
+              }
+            }
+          },
+          "400": {
+            "description": "Bad request",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ApiErrorResponse"
+                }
+              }
+            }
+          },
+          "403": {
+            "description": "Forbidden",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ApiErrorResponse"
+                }
+              }
+            }
+          },
+          "422": {
+            "description": "Unprocessable entity",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ApiErrorResponse"
+                }
+              }
+            }
+          },
+          "500": {
+            "description": "Internal server error",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ApiErrorResponse"
+                }
+              }
+            }
+          }
+        }
+      },
+      "delete": {
+        "tags": ["Template Tags"],
+        "summary": "Delete Template Tag",
+        "description": "**Requires an Access Token as the bearer token.**\n\nDelete a tag.",
+        "operationId": "delete_integrations_templates_tags_name",
+        "security": [
+          {
+            "HTTPBearer": []
+          }
+        ],
+        "parameters": [
+          {
+            "name": "name",
+            "in": "path",
+            "required": true,
+            "schema": {
+              "type": "string",
+              "title": "Name"
+            }
+          },
+          {
+            "name": "x-organization-id",
+            "in": "header",
+            "required": false,
+            "schema": {
+              "type": "string",
+              "format": "uuid",
+              "description": "The organization ID to target for this request",
+              "title": "X-Organization-Id"
+            },
+            "description": "The organization ID to target for this request"
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "Successful Response",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/TemplateTagDeleteResponse"
+                }
+              }
+            }
+          },
+          "400": {
+            "description": "Bad request",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ApiErrorResponse"
+                }
+              }
+            }
+          },
+          "403": {
+            "description": "Forbidden",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ApiErrorResponse"
+                }
+              }
+            }
+          },
+          "422": {
+            "description": "Unprocessable entity",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ApiErrorResponse"
+                }
+              }
+            }
+          },
+          "500": {
+            "description": "Internal server error",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ApiErrorResponse"
+                }
+              }
+            }
+          }
+        }
+      }
+    },
+    "/api/v1/internal/account/applications": {
+      "post": {
+        "tags": ["Applications"],
+        "summary": "Get Or Create Application",
+        "operationId": "create_internal_account_applications",
+        "security": [
+          {
+            "HTTPBearer": []
+          }
+        ],
+        "parameters": [
+          {
+            "name": "x-organization-id",
+            "in": "header",
+            "required": false,
+            "schema": {
+              "type": "string",
+              "format": "uuid",
+              "description": "The organization ID to target for this request",
+              "title": "X-Organization-Id"
+            },
+            "description": "The organization ID to target for this request"
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "Successful Response",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/Application"
+                }
+              }
+            }
+          },
+          "400": {
+            "description": "Bad request",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ApiErrorResponse"
+                }
+              }
+            }
+          },
+          "403": {
+            "description": "Forbidden",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ApiErrorResponse"
+                }
+              }
+            }
+          },
+          "422": {
+            "description": "Unprocessable entity",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ApiErrorResponse"
+                }
+              }
+            }
+          },
+          "500": {
+            "description": "Internal server error",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ApiErrorResponse"
+                }
+              }
+            }
+          }
+        }
+      }
+    },
+    "/api/v1/internal/account/enroll": {
+      "post": {
+        "tags": ["Account"],
+        "summary": "Enroll",
+        "description": "Enroll an organization in PAYG billing and provisioning.\nSets up Orb billing, Stigg subscription, and payment status synchronously.\nReturns immediately with success or failure.\n\nThis endpoint is idempotent - if enrollment is already completed, returns existing subscription data\nwithout attempting to re-provision services.",
+        "operationId": "create_internal_account_enroll",
+        "security": [
+          {
+            "HTTPBearer": []
+          }
+        ],
+        "parameters": [
+          {
+            "name": "x-organization-id",
+            "in": "header",
+            "required": false,
+            "schema": {
+              "type": "string",
+              "format": "uuid",
+              "description": "The organization ID to target for this request",
+              "title": "X-Organization-Id"
+            },
+            "description": "The organization ID to target for this request"
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "Successful Response",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/OrganizationSignupResponse"
+                }
+              }
+            }
+          },
+          "400": {
+            "description": "Bad request",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ApiErrorResponse"
+                }
+              }
+            }
+          },
+          "403": {
+            "description": "Forbidden",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ApiErrorResponse"
+                }
+              }
+            }
+          },
+          "422": {
+            "description": "Unprocessable entity",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ApiErrorResponse"
+                }
+              }
+            }
+          },
+          "500": {
+            "description": "Internal server error",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ApiErrorResponse"
+                }
+              }
+            }
+          }
+        }
+      }
+    },
+    "/api/v1/internal/account/enrollment-status": {
+      "get": {
+        "tags": ["Account"],
+        "summary": "Get Enrollment Status",
+        "description": "Check user's enrollment status.\n\nDetermines:\n1. Whether user is new (has email in token) or existing (no email)\n2. Whether organization has completed enrollment\n3. Organization details if enrolled\n\nReturns:\n    EnrollmentStatusResponse with user and enrollment details",
+        "operationId": "get_internal_account_enrollment_status",
+        "security": [
+          {
+            "HTTPBearer": []
+          }
+        ],
+        "parameters": [
+          {
+            "name": "x-organization-id",
+            "in": "header",
+            "required": false,
+            "schema": {
+              "type": "string",
+              "format": "uuid",
+              "description": "The organization ID to target for this request",
+              "title": "X-Organization-Id"
+            },
+            "description": "The organization ID to target for this request"
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "Successful Response",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/EnrollmentStatusResponse"
+                }
+              }
+            }
+          },
+          "400": {
+            "description": "Bad request",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ApiErrorResponse"
+                }
+              }
+            }
+          },
+          "403": {
+            "description": "Forbidden",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ApiErrorResponse"
+                }
+              }
+            }
+          },
+          "422": {
+            "description": "Unprocessable entity",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ApiErrorResponse"
+                }
+              }
+            }
+          },
+          "500": {
+            "description": "Internal server error",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ApiErrorResponse"
+                }
+              }
+            }
+          }
+        }
+      }
+    },
+    "/api/v1/internal/account/organizations": {
+      "get": {
+        "tags": ["Organizations"],
+        "summary": "List Organizations",
+        "operationId": "list_internal_account_organizations",
+        "security": [
+          {
+            "HTTPBearer": []
+          }
+        ],
+        "parameters": [
+          {
+            "name": "x-organization-id",
+            "in": "header",
+            "required": false,
+            "schema": {
+              "type": "string",
+              "format": "uuid",
+              "description": "The organization ID to target for this request",
+              "title": "X-Organization-Id"
+            },
+            "description": "The organization ID to target for this request"
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "Successful Response",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/OrganizationsListResponse"
+                }
+              }
+            }
+          },
+          "400": {
+            "description": "Bad request",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ApiErrorResponse"
+                }
+              }
+            }
+          },
+          "403": {
+            "description": "Forbidden",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ApiErrorResponse"
+                }
+              }
+            }
+          },
+          "422": {
+            "description": "Unprocessable entity",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ApiErrorResponse"
+                }
+              }
+            }
+          },
+          "500": {
+            "description": "Internal server error",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ApiErrorResponse"
+                }
+              }
+            }
+          }
+        }
+      }
+    },
+    "/api/v1/internal/account/organizations/{id}/onboarding-progress": {
+      "post": {
+        "tags": ["Organizations"],
+        "summary": "Update Organization Onboarding Progress",
+        "description": "Update the onboarding progress for an organization.",
+        "operationId": "create_internal_account_organizations_id_onboarding_progress",
+        "security": [
+          {
+            "HTTPBearer": []
+          }
+        ],
+        "parameters": [
+          {
+            "name": "id",
+            "in": "path",
+            "required": true,
+            "schema": {
+              "type": "string",
+              "format": "uuid",
+              "title": "Id"
+            }
+          },
+          {
+            "name": "x-organization-id",
+            "in": "header",
+            "required": false,
+            "schema": {
+              "type": "string",
+              "format": "uuid",
+              "description": "The organization ID to target for this request",
+              "title": "X-Organization-Id"
+            },
+            "description": "The organization ID to target for this request"
+          }
+        ],
+        "requestBody": {
+          "required": true,
+          "content": {
+            "application/json": {
+              "schema": {
+                "$ref": "#/components/schemas/OnboardingProgressUpdateRequest"
+              }
+            }
+          }
+        },
+        "responses": {
+          "200": {
+            "description": "Successful Response",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/OnboardingProgressUpdateResponse"
+                }
+              }
+            }
+          },
+          "400": {
+            "description": "Bad request",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ApiErrorResponse"
+                }
+              }
+            }
+          },
+          "403": {
+            "description": "Forbidden",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ApiErrorResponse"
+                }
+              }
+            }
+          },
+          "422": {
+            "description": "Unprocessable entity",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ApiErrorResponse"
+                }
+              }
+            }
+          },
+          "500": {
+            "description": "Internal server error",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ApiErrorResponse"
+                }
+              }
+            }
+          }
+        }
+      }
+    },
+    "/api/v1/internal/account/organizations/{organization_id}": {
+      "get": {
+        "tags": ["Organizations"],
+        "summary": "Get Organization",
+        "operationId": "get_internal_account_organizations_organization_id",
+        "security": [
+          {
+            "HTTPBearer": []
+          }
+        ],
+        "parameters": [
+          {
+            "name": "organization_id",
+            "in": "path",
+            "required": true,
+            "schema": {
+              "type": "string",
+              "format": "uuid",
+              "description": "Organization ID to retrieve.",
+              "title": "Organization Id"
+            },
+            "description": "Organization ID to retrieve."
+          },
+          {
+            "name": "x-organization-id",
+            "in": "header",
+            "required": false,
+            "schema": {
+              "type": "string",
+              "format": "uuid",
+              "description": "The organization ID to target for this request",
+              "title": "X-Organization-Id"
+            },
+            "description": "The organization ID to target for this request"
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "Successful Response",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/OrganizationDetailResponse"
+                }
+              }
+            }
+          },
+          "400": {
+            "description": "Bad request",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ApiErrorResponse"
+                }
+              }
+            }
+          },
+          "403": {
+            "description": "Forbidden",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ApiErrorResponse"
+                }
+              }
+            }
+          },
+          "422": {
+            "description": "Unprocessable entity",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ApiErrorResponse"
+                }
+              }
+            }
+          },
+          "500": {
+            "description": "Internal server error",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ApiErrorResponse"
+                }
+              }
+            }
+          }
+        }
+      }
+    },
+    "/api/v1/internal/account/organizations/{organization_id}/billing-state": {
+      "patch": {
+        "tags": ["Organizations"],
+        "summary": "Update Organization Billing State",
+        "description": "Manually update organization billing state and sync to Airbyte.\n\nThis is an internal admin-only endpoint for testing and emergency use.\nIt updates the billing state in Sonar and automatically syncs to Airbyte\nto ensure workspaces/connections are enabled or disabled appropriately.\n\nBilling State Mapping (Sonar → Airbyte):\n    - TRIAL → MANUAL (syncs enabled)\n    - ENABLED → MANUAL (syncs enabled)\n    - GRACE_PERIOD → MANUAL (syncs enabled, Sonar tracks grace period internally)\n    - DISABLED → LOCKED (syncs disabled - Airbyte API doesn't allow DISABLED status)\n    - LOCKED → LOCKED (syncs disabled, requires payment)\n\nThe mapping ensures that:\n    - Paying customers (TRIAL/ENABLED/GRACE_PERIOD) have unrestricted access (MANUAL)\n    - Sonar tracks grace period end dates internally without Airbyte involvement\n    - Customers who cancel (DISABLED) are locked in Airbyte (LOCKED status)\n    - Customers with payment issues (LOCKED) have syncs blocked until payment\n\nNote: Airbyte's DISABLED status is reserved for internal billing automation only.\nWhen Sonar sets DISABLED, we use LOCKED which has the same effect (disables connections).\n\nGrace Period Handling:\n    - If grace_period_ends_at is not provided when transitioning to GRACE_PERIOD,\n      it will be auto-calculated as +1 day from now (matching webhook behavior)\n    - grace_period_ends_at is stored in Sonar DB but NOT sent to Airbyte\n\nArgs:\n    organization_id: The organization to update\n    request: The billing state to set and optional grace period end time\n\nReturns:\n    Updated billing state information\n\nRaises:\n    HTTPException 404: Organization not found\n    HTTPException 500: Failed to sync to Airbyte (will trigger retry)",
+        "operationId": "update_internal_account_organizations_organization_id_billing_state",
+        "security": [
+          {
+            "HTTPBearer": []
+          }
+        ],
+        "parameters": [
+          {
+            "name": "organization_id",
+            "in": "path",
+            "required": true,
+            "schema": {
+              "type": "string",
+              "format": "uuid",
+              "description": "Organization ID to update billing state for.",
+              "title": "Organization Id"
+            },
+            "description": "Organization ID to update billing state for."
+          },
+          {
+            "name": "x-organization-id",
+            "in": "header",
+            "required": false,
+            "schema": {
+              "type": "string",
+              "format": "uuid",
+              "description": "The organization ID to target for this request",
+              "title": "X-Organization-Id"
+            },
+            "description": "The organization ID to target for this request"
+          }
+        ],
+        "requestBody": {
+          "required": true,
+          "content": {
+            "application/json": {
+              "schema": {
+                "$ref": "#/components/schemas/BillingStateUpdateRequest"
+              }
+            }
+          }
+        },
+        "responses": {
+          "200": {
+            "description": "Successful Response",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/BillingStateUpdateResponse"
+                }
+              }
+            }
+          },
+          "400": {
+            "description": "Bad request",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ApiErrorResponse"
+                }
+              }
+            }
+          },
+          "403": {
+            "description": "Forbidden",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ApiErrorResponse"
+                }
+              }
+            }
+          },
+          "422": {
+            "description": "Unprocessable entity",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ApiErrorResponse"
+                }
+              }
+            }
+          },
+          "500": {
+            "description": "Internal server error",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ApiErrorResponse"
+                }
+              }
+            }
+          }
+        }
+      }
+    },
+    "/api/v1/internal/account/organizations/{organization_id}/customer-portal": {
+      "post": {
+        "tags": ["Organizations"],
+        "summary": "Get Customer Portal Link",
+        "description": "Get a link to the customer portal for an organization.\n\nThe customer portal allows users to manage their billing information,\nview invoices, and update payment methods.",
+        "operationId": "create_internal_account_organizations_organization_id_customer_portal",
+        "security": [
+          {
+            "HTTPBearer": []
+          }
+        ],
+        "parameters": [
+          {
+            "name": "organization_id",
+            "in": "path",
+            "required": true,
+            "schema": {
+              "type": "string",
+              "format": "uuid",
+              "description": "Organization ID to get customer portal link for.",
+              "title": "Organization Id"
+            },
+            "description": "Organization ID to get customer portal link for."
+          },
+          {
+            "name": "x-organization-id",
+            "in": "header",
+            "required": false,
+            "schema": {
+              "type": "string",
+              "format": "uuid",
+              "description": "The organization ID to target for this request",
+              "title": "X-Organization-Id"
+            },
+            "description": "The organization ID to target for this request"
+          }
+        ],
+        "requestBody": {
+          "required": true,
+          "content": {
+            "application/json": {
+              "schema": {
+                "$ref": "#/components/schemas/CustomerPortalRequest"
+              }
+            }
+          }
+        },
+        "responses": {
+          "200": {
+            "description": "Successful Response",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/CustomerPortalResponse"
+                }
+              }
+            }
+          },
+          "400": {
+            "description": "Bad request",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ApiErrorResponse"
+                }
+              }
+            }
+          },
+          "403": {
+            "description": "Forbidden",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ApiErrorResponse"
+                }
+              }
+            }
+          },
+          "422": {
+            "description": "Unprocessable entity",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ApiErrorResponse"
+                }
+              }
+            }
+          },
+          "500": {
+            "description": "Internal server error",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ApiErrorResponse"
+                }
+              }
+            }
+          }
+        }
+      }
+    },
+    "/api/v1/internal/account/organizations/{organization_id}/info": {
+      "get": {
+        "tags": ["Organizations"],
+        "summary": "Get Organization Info",
+        "operationId": "get_internal_account_organizations_organization_id_info",
+        "security": [
+          {
+            "HTTPBearer": []
+          }
+        ],
+        "parameters": [
+          {
+            "name": "organization_id",
+            "in": "path",
+            "required": true,
+            "schema": {
+              "type": "string",
+              "format": "uuid",
+              "description": "Organization ID to retrieve info for.",
+              "title": "Organization Id"
+            },
+            "description": "Organization ID to retrieve info for."
+          },
+          {
+            "name": "x-organization-id",
+            "in": "header",
+            "required": false,
+            "schema": {
+              "type": "string",
+              "format": "uuid",
+              "description": "The organization ID to target for this request",
+              "title": "X-Organization-Id"
+            },
+            "description": "The organization ID to target for this request"
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "Successful Response",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/OrganizationInfoResponse"
+                }
+              }
+            }
+          },
+          "400": {
+            "description": "Bad request",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ApiErrorResponse"
+                }
+              }
+            }
+          },
+          "403": {
+            "description": "Forbidden",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ApiErrorResponse"
+                }
+              }
+            }
+          },
+          "422": {
+            "description": "Unprocessable entity",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ApiErrorResponse"
+                }
+              }
+            }
+          },
+          "500": {
+            "description": "Internal server error",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ApiErrorResponse"
+                }
+              }
+            }
+          }
+        }
+      }
+    },
+    "/api/v1/internal/account/organizations/{organization_id}/invoices": {
+      "get": {
+        "tags": ["Organizations"],
+        "summary": "List Invoices",
+        "operationId": "get_internal_account_organizations_organization_id_invoices",
+        "security": [
+          {
+            "HTTPBearer": []
+          }
+        ],
+        "parameters": [
+          {
+            "name": "organization_id",
+            "in": "path",
+            "required": true,
+            "schema": {
+              "type": "string",
+              "format": "uuid",
+              "description": "Organization ID to retrieve invoices for.",
+              "title": "Organization Id"
+            },
+            "description": "Organization ID to retrieve invoices for."
+          },
+          {
+            "name": "x-organization-id",
+            "in": "header",
+            "required": false,
+            "schema": {
+              "type": "string",
+              "format": "uuid",
+              "description": "The organization ID to target for this request",
+              "title": "X-Organization-Id"
+            },
+            "description": "The organization ID to target for this request"
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "Successful Response",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/InvoicesResponse"
+                }
+              }
+            }
+          },
+          "400": {
+            "description": "Bad request",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ApiErrorResponse"
+                }
+              }
+            }
+          },
+          "403": {
+            "description": "Forbidden",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ApiErrorResponse"
+                }
+              }
+            }
+          },
+          "422": {
+            "description": "Unprocessable entity",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ApiErrorResponse"
+                }
+              }
+            }
+          },
+          "500": {
+            "description": "Internal server error",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ApiErrorResponse"
+                }
+              }
+            }
+          }
+        }
+      }
+    },
+    "/api/v1/internal/account/organizations/{organization_id}/payment-information": {
+      "get": {
+        "tags": ["Organizations"],
+        "summary": "Get Payment Information",
+        "operationId": "get_internal_account_organizations_organization_id_payment_information",
+        "security": [
+          {
+            "HTTPBearer": []
+          }
+        ],
+        "parameters": [
+          {
+            "name": "organization_id",
+            "in": "path",
+            "required": true,
+            "schema": {
+              "type": "string",
+              "format": "uuid",
+              "description": "Organization ID to retrieve payment information for.",
+              "title": "Organization Id"
+            },
+            "description": "Organization ID to retrieve payment information for."
+          },
+          {
+            "name": "x-organization-id",
+            "in": "header",
+            "required": false,
+            "schema": {
+              "type": "string",
+              "format": "uuid",
+              "description": "The organization ID to target for this request",
+              "title": "X-Organization-Id"
+            },
+            "description": "The organization ID to target for this request"
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "Successful Response",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/PaymentInformationResponse"
+                }
+              }
+            }
+          },
+          "400": {
+            "description": "Bad request",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ApiErrorResponse"
+                }
+              }
+            }
+          },
+          "403": {
+            "description": "Forbidden",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ApiErrorResponse"
+                }
+              }
+            }
+          },
+          "422": {
+            "description": "Unprocessable entity",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ApiErrorResponse"
+                }
+              }
+            }
+          },
+          "500": {
+            "description": "Internal server error",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ApiErrorResponse"
+                }
+              }
+            }
+          }
+        }
+      }
+    },
+    "/api/v1/internal/account/organizations/{organization_id}/signup": {
+      "post": {
+        "tags": ["Organizations"],
+        "summary": "Organization Signup",
+        "description": "Sign up an organization with synchronous provisioning.\nSets up Orb billing, Stigg subscription, and payment status in a single request.\nReturns immediately with subscription details.",
+        "operationId": "create_internal_account_organizations_organization_id_signup",
+        "security": [
+          {
+            "HTTPBearer": []
+          }
+        ],
+        "parameters": [
+          {
+            "name": "organization_id",
+            "in": "path",
+            "required": true,
+            "schema": {
+              "type": "string",
+              "format": "uuid",
+              "title": "Organization Id"
+            }
+          },
+          {
+            "name": "x-organization-id",
+            "in": "header",
+            "required": false,
+            "schema": {
+              "type": "string",
+              "format": "uuid",
+              "description": "The organization ID to target for this request",
+              "title": "X-Organization-Id"
+            },
+            "description": "The organization ID to target for this request"
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "Successful Response",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/OrganizationSignupResponse"
+                }
+              }
+            }
+          },
+          "400": {
+            "description": "Bad request",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ApiErrorResponse"
+                }
+              }
+            }
+          },
+          "403": {
+            "description": "Forbidden",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ApiErrorResponse"
+                }
+              }
+            }
+          },
+          "422": {
+            "description": "Unprocessable entity",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ApiErrorResponse"
+                }
+              }
+            }
+          },
+          "500": {
+            "description": "Internal server error",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ApiErrorResponse"
+                }
+              }
+            }
+          }
+        }
+      }
+    },
+    "/api/v1/internal/account/organizations/{organization_id}/subscription": {
+      "get": {
+        "tags": ["Organizations"],
+        "summary": "Get Organization Subscription",
+        "operationId": "get_internal_account_organizations_organization_id_subscription",
+        "security": [
+          {
+            "HTTPBearer": []
+          }
+        ],
+        "parameters": [
+          {
+            "name": "organization_id",
+            "in": "path",
+            "required": true,
+            "schema": {
+              "type": "string",
+              "format": "uuid",
+              "description": "Organization ID to retrieve subscription info for.",
+              "title": "Organization Id"
+            },
+            "description": "Organization ID to retrieve subscription info for."
+          },
+          {
+            "name": "x-organization-id",
+            "in": "header",
+            "required": false,
+            "schema": {
+              "type": "string",
+              "format": "uuid",
+              "description": "The organization ID to target for this request",
+              "title": "X-Organization-Id"
+            },
+            "description": "The organization ID to target for this request"
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "Successful Response",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/OrganizationSubscriptionResponse"
+                }
+              }
+            }
+          },
+          "400": {
+            "description": "Bad request",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ApiErrorResponse"
+                }
+              }
+            }
+          },
+          "403": {
+            "description": "Forbidden",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ApiErrorResponse"
+                }
+              }
+            }
+          },
+          "422": {
+            "description": "Unprocessable entity",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ApiErrorResponse"
+                }
+              }
+            }
+          },
+          "500": {
+            "description": "Internal server error",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ApiErrorResponse"
+                }
+              }
+            }
+          }
+        }
+      }
+    },
+    "/api/v1/internal/admin/rate_limits": {
+      "post": {
+        "tags": ["Admin - Rate Limits"],
+        "summary": "Create Rate Limit",
+        "description": "Create a new rate limit configuration.\n\nCan create:\n- Org-specific limits: Provide only organization_id (user_id=NULL)\n- User-specific limits: Provide only user_id (org_id=NULL)\n- Global limits: Provide neither (all NULL)\n- Tagged limits: Provide category_tag for endpoint-specific limits",
+        "operationId": "create_internal_admin_rate_limits",
+        "security": [
+          {
+            "HTTPBearer": []
+          }
+        ],
+        "parameters": [
+          {
+            "name": "x-organization-id",
+            "in": "header",
+            "required": false,
+            "schema": {
+              "type": "string",
+              "format": "uuid",
+              "description": "The organization ID to target for this request",
+              "title": "X-Organization-Id"
+            },
+            "description": "The organization ID to target for this request"
+          }
+        ],
+        "requestBody": {
+          "required": true,
+          "content": {
+            "application/json": {
+              "schema": {
+                "$ref": "#/components/schemas/RateLimitConfigCreate"
+              }
+            }
+          }
+        },
+        "responses": {
+          "201": {
+            "description": "Successful Response",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/RateLimitConfigResponse"
+                }
+              }
+            }
+          },
+          "400": {
+            "description": "Bad request",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ApiErrorResponse"
+                }
+              }
+            }
+          },
+          "403": {
+            "description": "Forbidden",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ApiErrorResponse"
+                }
+              }
+            }
+          },
+          "422": {
+            "description": "Unprocessable entity",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ApiErrorResponse"
+                }
+              }
+            }
+          },
+          "500": {
+            "description": "Internal server error",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ApiErrorResponse"
+                }
+              }
+            }
+          }
+        }
+      },
+      "get": {
+        "tags": ["Admin - Rate Limits"],
+        "summary": "List Rate Limits",
+        "description": "List all rate limit configurations for an organization or user, optionally filtered by tag.",
+        "operationId": "list_internal_admin_rate_limits",
+        "security": [
+          {
+            "HTTPBearer": []
+          }
+        ],
+        "parameters": [
+          {
+            "name": "organization_id",
+            "in": "query",
+            "required": true,
+            "schema": {
+              "type": "string",
+              "format": "uuid",
+              "description": "Organization ID to filter by",
+              "title": "Organization Id"
+            },
+            "description": "Organization ID to filter by"
+          },
+          {
+            "name": "user_id",
+            "in": "query",
+            "required": false,
+            "schema": {
+              "anyOf": [
+                {
+                  "type": "string",
+                  "format": "uuid"
+                },
+                {
+                  "type": "null"
+                }
+              ],
+              "description": "Optional user ID to filter by",
+              "title": "User Id"
+            },
+            "description": "Optional user ID to filter by"
+          },
+          {
+            "name": "category_tag",
+            "in": "query",
+            "required": false,
+            "schema": {
+              "anyOf": [
+                {
+                  "type": "string"
+                },
+                {
+                  "type": "null"
+                }
+              ],
+              "description": "Optional category tag to filter by",
+              "title": "Category Tag"
+            },
+            "description": "Optional category tag to filter by"
+          },
+          {
+            "name": "x-organization-id",
+            "in": "header",
+            "required": false,
+            "schema": {
+              "type": "string",
+              "format": "uuid",
+              "description": "The organization ID to target for this request",
+              "title": "X-Organization-Id"
+            },
+            "description": "The organization ID to target for this request"
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "Successful Response",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/RateLimitConfigListResponse"
+                }
+              }
+            }
+          },
+          "400": {
+            "description": "Bad request",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ApiErrorResponse"
+                }
+              }
+            }
+          },
+          "403": {
+            "description": "Forbidden",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ApiErrorResponse"
+                }
+              }
+            }
+          },
+          "422": {
+            "description": "Unprocessable entity",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ApiErrorResponse"
+                }
+              }
+            }
+          },
+          "500": {
+            "description": "Internal server error",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ApiErrorResponse"
+                }
+              }
+            }
+          }
+        }
+      }
+    },
+    "/api/v1/internal/admin/rate_limits/{config_id}": {
+      "get": {
+        "tags": ["Admin - Rate Limits"],
+        "summary": "Get Rate Limit",
+        "description": "Get a specific rate limit configuration.",
+        "operationId": "get_internal_admin_rate_limits_config_id",
+        "security": [
+          {
+            "HTTPBearer": []
+          }
+        ],
+        "parameters": [
+          {
+            "name": "config_id",
+            "in": "path",
+            "required": true,
+            "schema": {
+              "type": "string",
+              "format": "uuid",
+              "description": "Rate limit configuration ID",
+              "title": "Config Id"
+            },
+            "description": "Rate limit configuration ID"
+          },
+          {
+            "name": "x-organization-id",
+            "in": "header",
+            "required": false,
+            "schema": {
+              "type": "string",
+              "format": "uuid",
+              "description": "The organization ID to target for this request",
+              "title": "X-Organization-Id"
+            },
+            "description": "The organization ID to target for this request"
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "Successful Response",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/RateLimitConfigResponse"
+                }
+              }
+            }
+          },
+          "400": {
+            "description": "Bad request",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ApiErrorResponse"
+                }
+              }
+            }
+          },
+          "403": {
+            "description": "Forbidden",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ApiErrorResponse"
+                }
+              }
+            }
+          },
+          "422": {
+            "description": "Unprocessable entity",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ApiErrorResponse"
+                }
+              }
+            }
+          },
+          "500": {
+            "description": "Internal server error",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ApiErrorResponse"
+                }
+              }
+            }
+          }
+        }
+      },
+      "put": {
+        "tags": ["Admin - Rate Limits"],
+        "summary": "Update Rate Limit",
+        "description": "Update an existing rate limit configuration.",
+        "operationId": "update_internal_admin_rate_limits_config_id",
+        "security": [
+          {
+            "HTTPBearer": []
+          }
+        ],
+        "parameters": [
+          {
+            "name": "config_id",
+            "in": "path",
+            "required": true,
+            "schema": {
+              "type": "string",
+              "format": "uuid",
+              "description": "Rate limit configuration ID",
+              "title": "Config Id"
+            },
+            "description": "Rate limit configuration ID"
+          },
+          {
+            "name": "x-organization-id",
+            "in": "header",
+            "required": false,
+            "schema": {
+              "type": "string",
+              "format": "uuid",
+              "description": "The organization ID to target for this request",
+              "title": "X-Organization-Id"
+            },
+            "description": "The organization ID to target for this request"
+          }
+        ],
+        "requestBody": {
+          "required": true,
+          "content": {
+            "application/json": {
+              "schema": {
+                "$ref": "#/components/schemas/RateLimitConfigUpdate"
+              }
+            }
+          }
+        },
+        "responses": {
+          "200": {
+            "description": "Successful Response",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/RateLimitConfigResponse"
+                }
+              }
+            }
+          },
+          "400": {
+            "description": "Bad request",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ApiErrorResponse"
+                }
+              }
+            }
+          },
+          "403": {
+            "description": "Forbidden",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ApiErrorResponse"
+                }
+              }
+            }
+          },
+          "422": {
+            "description": "Unprocessable entity",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ApiErrorResponse"
+                }
+              }
+            }
+          },
+          "500": {
+            "description": "Internal server error",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ApiErrorResponse"
+                }
+              }
+            }
+          }
+        }
+      },
+      "delete": {
+        "tags": ["Admin - Rate Limits"],
+        "summary": "Delete Rate Limit",
+        "description": "Delete a rate limit configuration.",
+        "operationId": "delete_internal_admin_rate_limits_config_id",
+        "security": [
+          {
+            "HTTPBearer": []
+          }
+        ],
+        "parameters": [
+          {
+            "name": "config_id",
+            "in": "path",
+            "required": true,
+            "schema": {
+              "type": "string",
+              "format": "uuid",
+              "description": "Rate limit configuration ID",
+              "title": "Config Id"
+            },
+            "description": "Rate limit configuration ID"
+          },
+          {
+            "name": "x-organization-id",
+            "in": "header",
+            "required": false,
+            "schema": {
+              "type": "string",
+              "format": "uuid",
+              "description": "The organization ID to target for this request",
+              "title": "X-Organization-Id"
+            },
+            "description": "The organization ID to target for this request"
+          }
+        ],
+        "responses": {
+          "204": {
+            "description": "Successful Response"
+          },
+          "400": {
+            "description": "Bad request",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ApiErrorResponse"
+                }
+              }
+            }
+          },
+          "403": {
+            "description": "Forbidden",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ApiErrorResponse"
+                }
+              }
+            }
+          },
+          "422": {
+            "description": "Unprocessable entity",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ApiErrorResponse"
+                }
+              }
+            }
+          },
+          "500": {
+            "description": "Internal server error",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ApiErrorResponse"
+                }
+              }
+            }
+          }
+        }
+      }
+    },
+    "/api/v1/internal/health/check": {
+      "get": {
+        "tags": ["Health"],
+        "summary": "Health Check",
+        "operationId": "get_internal_health_check",
+        "responses": {
+          "200": {
+            "description": "Successful Response",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/HealthCheckGetResponse"
+                }
+              }
+            }
+          },
+          "400": {
+            "description": "Bad request",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ApiErrorResponse"
+                }
+              }
+            }
+          },
+          "403": {
+            "description": "Forbidden",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ApiErrorResponse"
+                }
+              }
+            }
+          },
+          "422": {
+            "description": "Unprocessable entity",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ApiErrorResponse"
+                }
+              }
+            }
+          },
+          "500": {
+            "description": "Internal server error",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ApiErrorResponse"
+                }
+              }
+            }
+          }
+        }
+      }
+    },
+    "/api/v1/internal/integrations/definitions/destinations/wrapped": {
+      "get": {
+        "tags": ["Internal Destinations Definitions"],
+        "summary": "List Wrapped Destination Definitions",
+        "description": "**Requires an Access Token as the bearer token.**\n\nGet a destination connector specification.",
+        "operationId": "list_internal_integrations_definitions_destinations_wrapped",
+        "security": [
+          {
+            "HTTPBearer": []
+          }
+        ],
+        "parameters": [
+          {
+            "name": "actorDefinitionIds",
+            "in": "query",
+            "required": false,
+            "schema": {
+              "type": "array",
+              "items": {
+                "type": "string",
+                "format": "uuid"
+              },
+              "description": "Filter by actor definition IDs (use repeated parameters: ?actorDefinitionIds=id1&actorDefinitionIds=id2)",
+              "default": [],
+              "title": "Actordefinitionids"
+            },
+            "description": "Filter by actor definition IDs (use repeated parameters: ?actorDefinitionIds=id1&actorDefinitionIds=id2)"
+          },
+          {
+            "name": "x-organization-id",
+            "in": "header",
+            "required": false,
+            "schema": {
+              "type": "string",
+              "format": "uuid",
+              "description": "The organization ID to target for this request",
+              "title": "X-Organization-Id"
+            },
+            "description": "The organization ID to target for this request"
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "Successful Response",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/DestinationDefinitionsWrappedListResponse"
+                }
+              }
+            }
+          },
+          "400": {
+            "description": "Bad request",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ApiErrorResponse"
+                }
+              }
+            }
+          },
+          "403": {
+            "description": "Forbidden",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ApiErrorResponse"
+                }
+              }
+            }
+          },
+          "422": {
+            "description": "Unprocessable entity",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ApiErrorResponse"
+                }
+              }
+            }
+          },
+          "500": {
+            "description": "Internal server error",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ApiErrorResponse"
+                }
+              }
+            }
+          }
+        }
+      }
+    },
+    "/api/v1/internal/integrations/definitions/destinations/wrapped/{id}": {
+      "get": {
+        "tags": ["Internal Destinations Definitions"],
+        "summary": "Get Wrapped Destination Definition",
+        "description": "**Requires an Access Token as the bearer token.**\n\nGet a destination connector specification.",
+        "operationId": "get_internal_integrations_definitions_destinations_wrapped_id",
+        "security": [
+          {
+            "HTTPBearer": []
+          }
+        ],
+        "parameters": [
+          {
+            "name": "id",
+            "in": "path",
+            "required": true,
+            "schema": {
+              "type": "string",
+              "format": "uuid",
+              "title": "Id"
+            }
+          },
+          {
+            "name": "x-organization-id",
+            "in": "header",
+            "required": false,
+            "schema": {
+              "type": "string",
+              "format": "uuid",
+              "description": "The organization ID to target for this request",
+              "title": "X-Organization-Id"
+            },
+            "description": "The organization ID to target for this request"
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "Successful Response",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/DestinationDefinitionResponse"
+                }
+              }
+            }
+          },
+          "400": {
+            "description": "Bad request",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ApiErrorResponse"
+                }
+              }
+            }
+          },
+          "403": {
+            "description": "Forbidden",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ApiErrorResponse"
+                }
+              }
+            }
+          },
+          "422": {
+            "description": "Unprocessable entity",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ApiErrorResponse"
+                }
+              }
+            }
+          },
+          "500": {
+            "description": "Internal server error",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ApiErrorResponse"
+                }
+              }
+            }
+          }
+        }
+      }
+    },
+    "/api/v1/internal/jobs": {
+      "get": {
+        "tags": ["Jobs"],
+        "summary": "List Jobs",
+        "description": "List all jobs from all job tables in a unified format.\n\nThis endpoint aggregates jobs from:\n- AsyncJob (modern job system)\n- CreateConnectionJob (legacy)\n- PatchDestinationAndConnectionsJob (legacy)\n- PatchPartialUserConfigJob (legacy)\n\nLegacy jobs are transformed to match the AsyncJob format:\n- job_type: The class name of the legacy job\n- input: JSON blob containing data set when the job was created\n- output: JSON blob containing data set during/after job execution",
+        "operationId": "list_internal_jobs",
+        "security": [
+          {
+            "HTTPBearer": []
+          }
+        ],
+        "parameters": [
+          {
+            "name": "limit",
+            "in": "query",
+            "required": false,
+            "schema": {
+              "type": "integer",
+              "maximum": 1000,
+              "minimum": 1,
+              "default": 100,
+              "title": "Limit"
+            }
+          },
+          {
+            "name": "offset",
+            "in": "query",
+            "required": false,
+            "schema": {
+              "type": "integer",
+              "minimum": 0,
+              "default": 0,
+              "title": "Offset"
+            }
+          },
+          {
+            "name": "x-organization-id",
+            "in": "header",
+            "required": false,
+            "schema": {
+              "type": "string",
+              "format": "uuid",
+              "description": "The organization ID to target for this request",
+              "title": "X-Organization-Id"
+            },
+            "description": "The organization ID to target for this request"
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "Successful Response",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ListJobsResponse"
+                }
+              }
+            }
+          },
+          "400": {
+            "description": "Bad request",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ApiErrorResponse"
+                }
+              }
+            }
+          },
+          "403": {
+            "description": "Forbidden",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ApiErrorResponse"
+                }
+              }
+            }
+          },
+          "422": {
+            "description": "Unprocessable entity",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ApiErrorResponse"
+                }
+              }
+            }
+          },
+          "500": {
+            "description": "Internal server error",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ApiErrorResponse"
+                }
+              }
+            }
+          }
+        }
+      }
+    },
+    "/api/v1/internal/oauth/sources/complete": {
+      "post": {
+        "tags": ["OAuth - Sources"],
+        "summary": "Complete Oauth",
+        "operationId": "create_internal_oauth_sources_complete",
+        "security": [
+          {
+            "HTTPBearer": []
+          }
+        ],
+        "parameters": [
+          {
+            "name": "x-organization-id",
+            "in": "header",
+            "required": false,
+            "schema": {
+              "type": "string",
+              "format": "uuid",
+              "description": "The organization ID to target for this request",
+              "title": "X-Organization-Id"
+            },
+            "description": "The organization ID to target for this request"
+          }
+        ],
+        "requestBody": {
+          "required": true,
+          "content": {
+            "application/json": {
+              "schema": {
+                "$ref": "#/components/schemas/CompleteSourceOauthRequest"
+              }
+            }
+          }
+        },
+        "responses": {
+          "200": {
+            "description": "Successful Response",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/CompleteSourceOauthResponse"
+                }
+              }
+            }
+          },
+          "400": {
+            "description": "Bad request",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ApiErrorResponse"
+                }
+              }
+            }
+          },
+          "403": {
+            "description": "Forbidden",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ApiErrorResponse"
+                }
+              }
+            }
+          },
+          "422": {
+            "description": "Unprocessable entity",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ApiErrorResponse"
+                }
+              }
+            }
+          },
+          "500": {
+            "description": "Internal server error",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ApiErrorResponse"
+                }
+              }
+            }
+          }
+        }
+      }
+    },
+    "/api/v1/internal/oauth/sources/get_embedded_consent_url": {
+      "post": {
+        "tags": ["OAuth - Sources"],
+        "summary": "Get Embedded Consent Url",
+        "operationId": "create_internal_oauth_sources_get_embedded_consent_url",
+        "security": [
+          {
+            "HTTPBearer": []
+          }
+        ],
+        "parameters": [
+          {
+            "name": "x-organization-id",
+            "in": "header",
+            "required": false,
+            "schema": {
+              "type": "string",
+              "format": "uuid",
+              "description": "The organization ID to target for this request",
+              "title": "X-Organization-Id"
+            },
+            "description": "The organization ID to target for this request"
+          }
+        ],
+        "requestBody": {
+          "required": true,
+          "content": {
+            "application/json": {
+              "schema": {
+                "$ref": "#/components/schemas/GetEmbeddedSourceConsentUrlRequest"
+              }
+            }
+          }
+        },
+        "responses": {
+          "200": {
+            "description": "Successful Response",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/GetEmbeddedSourceConsentUrlResponse"
+                }
+              }
+            }
+          },
+          "400": {
+            "description": "Bad request",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ApiErrorResponse"
+                }
+              }
+            }
+          },
+          "403": {
+            "description": "Forbidden",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ApiErrorResponse"
+                }
+              }
+            }
+          },
+          "422": {
+            "description": "Unprocessable entity",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ApiErrorResponse"
+                }
+              }
+            }
+          },
+          "500": {
+            "description": "Internal server error",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ApiErrorResponse"
+                }
+              }
+            }
+          }
+        }
+      }
+    },
+    "/api/v1/internal/oauth/sources/revoke": {
+      "post": {
+        "tags": ["OAuth - Sources"],
+        "summary": "Revoke Source Oauth",
+        "operationId": "create_internal_oauth_sources_revoke",
+        "security": [
+          {
+            "HTTPBearer": []
+          }
+        ],
+        "parameters": [
+          {
+            "name": "x-organization-id",
+            "in": "header",
+            "required": false,
+            "schema": {
+              "type": "string",
+              "format": "uuid",
+              "description": "The organization ID to target for this request",
+              "title": "X-Organization-Id"
+            },
+            "description": "The organization ID to target for this request"
+          }
+        ],
+        "requestBody": {
+          "required": true,
+          "content": {
+            "application/json": {
+              "schema": {
+                "$ref": "#/components/schemas/RevokeSourceOauthRequest"
+              }
+            }
+          }
+        },
+        "responses": {
+          "200": {
+            "description": "Successful Response",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/RevokeSourceOauthResponse"
+                }
+              }
+            }
+          },
+          "400": {
+            "description": "Bad request",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ApiErrorResponse"
+                }
+              }
+            }
+          },
+          "403": {
+            "description": "Forbidden",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ApiErrorResponse"
+                }
+              }
+            }
+          },
+          "422": {
+            "description": "Unprocessable entity",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ApiErrorResponse"
+                }
+              }
+            }
+          },
+          "500": {
+            "description": "Internal server error",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ApiErrorResponse"
+                }
+              }
+            }
+          }
+        }
+      }
+    },
+    "/api/v1/internal/webhooks/orb": {
+      "post": {
+        "tags": ["webhooks"],
+        "summary": "Receive Orb Webhook",
+        "description": "Receive and process Orb billing webhook events.\n\nSignature verification and parsing handled by dependency injection.\nBusiness logic delegated to OrbWebhookFunctions controller.\n\nReturns:\n    OrbWebhookResponse with processing status",
+        "operationId": "create_internal_webhooks_orb",
+        "responses": {
+          "200": {
+            "description": "Successful Response",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/OrbWebhookResponse"
+                }
+              }
+            }
+          },
+          "400": {
+            "description": "Bad request",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ApiErrorResponse"
+                }
+              }
+            }
+          },
+          "403": {
+            "description": "Forbidden",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ApiErrorResponse"
+                }
+              }
+            }
+          },
+          "422": {
+            "description": "Unprocessable entity",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ApiErrorResponse"
+                }
+              }
+            }
+          },
+          "500": {
+            "description": "Internal server error",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ApiErrorResponse"
+                }
+              }
+            }
+          }
+        }
+      }
+    },
+    "/api/v1/internal/webhooks/stripe": {
+      "post": {
+        "tags": ["webhooks"],
+        "summary": "Receive Stripe Webhook",
+        "description": "Receive and process Stripe billing webhook events.\n\nSignature verification and parsing handled by dependency injection.\nBusiness logic delegated to StripeWebhookFunctions controller.\n\nReturns:\n    StripeWebhookResponse with processing status",
+        "operationId": "create_internal_webhooks_stripe",
+        "responses": {
+          "200": {
+            "description": "Successful Response",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/StripeWebhookResponse"
+                }
+              }
+            }
+          },
+          "400": {
+            "description": "Bad request",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ApiErrorResponse"
+                }
+              }
+            }
+          },
+          "403": {
+            "description": "Forbidden",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ApiErrorResponse"
+                }
+              }
+            }
+          },
+          "422": {
+            "description": "Unprocessable entity",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ApiErrorResponse"
+                }
+              }
+            }
+          },
+          "500": {
+            "description": "Internal server error",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ApiErrorResponse"
+                }
+              }
+            }
+          }
+        }
+      }
+    },
+    "/api/v1/internal/workspaces/sync": {
+      "post": {
+        "tags": ["Internal Workspaces"],
+        "summary": "Sync Workspaces",
+        "description": "Sync workspaces from remote to local database.\n\nFetches all workspaces for the authenticated organization and creates\nany missing workspaces in the local database.\n\nReturns statistics about the sync operation including the total number of workspaces\nfound and the number created locally.",
+        "operationId": "create_internal_workspaces_sync",
+        "security": [
+          {
+            "HTTPBearer": []
+          }
+        ],
+        "parameters": [
+          {
+            "name": "x-organization-id",
+            "in": "header",
+            "required": false,
+            "schema": {
+              "type": "string",
+              "format": "uuid",
+              "description": "The organization ID to target for this request",
+              "title": "X-Organization-Id"
+            },
+            "description": "The organization ID to target for this request"
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "Successful Response",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/WorkspaceSyncResponse"
+                }
+              }
+            }
+          },
+          "400": {
+            "description": "Bad request",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ApiErrorResponse"
+                }
+              }
+            }
+          },
+          "403": {
+            "description": "Forbidden",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ApiErrorResponse"
+                }
+              }
+            }
+          },
+          "422": {
+            "description": "Unprocessable entity",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ApiErrorResponse"
+                }
+              }
+            }
+          },
+          "500": {
+            "description": "Internal server error",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ApiErrorResponse"
+                }
+              }
+            }
+          }
+        }
+      }
+    },
+    "/api/v1/sonar/apis": {
+      "get": {
+        "tags": ["Sonar - APIs"],
+        "summary": "List Sources",
+        "description": "**Requires an Access Token as the bearer token.**\n\nDeprecated. Use `/api/v1/integrations/sources` instead.",
+        "operationId": "deprecated_get_sonar_apis",
+        "deprecated": true,
+        "security": [
+          {
+            "HTTPBearer": []
+          }
+        ],
+        "parameters": [
+          {
+            "name": "limit",
+            "in": "query",
+            "required": false,
+            "schema": {
+              "type": "integer",
+              "maximum": 100,
+              "description": "The maximum number of sources to return.",
+              "default": 10,
+              "title": "Limit"
+            },
+            "description": "The maximum number of sources to return."
+          },
+          {
+            "name": "cursor",
+            "in": "query",
+            "required": false,
+            "schema": {
+              "type": "string",
+              "description": "An opaque string with encoded pagination metadata.",
+              "title": "Cursor"
+            },
+            "description": "An opaque string with encoded pagination metadata."
+          },
+          {
+            "name": "workspace_id",
+            "in": "query",
+            "required": true,
+            "schema": {
+              "type": "string",
+              "format": "uuid",
+              "description": "The workspace ID to list sources for.",
+              "title": "Workspace Id"
+            },
+            "description": "The workspace ID to list sources for."
+          },
+          {
+            "name": "x-organization-id",
+            "in": "header",
+            "required": false,
+            "schema": {
+              "type": "string",
+              "format": "uuid",
+              "description": "The organization ID to target for this request",
+              "title": "X-Organization-Id"
+            },
+            "description": "The organization ID to target for this request"
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "Successful Response",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ApisAvailableSourcesResponse"
+                }
+              }
+            }
+          },
+          "400": {
+            "description": "Bad request",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ApiErrorResponse"
+                }
+              }
+            }
+          },
+          "403": {
+            "description": "Forbidden",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ApiErrorResponse"
+                }
+              }
+            }
+          },
+          "422": {
+            "description": "Unprocessable entity",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ApiErrorResponse"
+                }
+              }
+            }
+          },
+          "500": {
+            "description": "Internal server error",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ApiErrorResponse"
+                }
+              }
+            }
+          }
+        }
+      }
+    },
+    "/api/v1/sonar/apis/{source_id}/request": {
+      "post": {
+        "tags": ["Sonar - APIs"],
+        "summary": "Request",
+        "description": "**Requires an Access Token as the bearer token.**\n\nMake a request to an API using the credentials and config associated with the provided source.\n\nThis API allows any system to make requests to a downstream system without ever sharing end users' credentials with the caller.",
+        "operationId": "create_sonar_apis_source_id_request",
+        "security": [
+          {
+            "HTTPBearer": []
+          }
+        ],
+        "parameters": [
+          {
+            "name": "source_id",
+            "in": "path",
+            "required": true,
+            "schema": {
+              "type": "string",
+              "format": "uuid",
+              "description": "The source ID to forward the request to.",
+              "title": "Source Id"
+            },
+            "description": "The source ID to forward the request to."
+          },
+          {
+            "name": "x-organization-id",
+            "in": "header",
+            "required": false,
+            "schema": {
+              "type": "string",
+              "format": "uuid",
+              "description": "The organization ID to target for this request",
+              "title": "X-Organization-Id"
+            },
+            "description": "The organization ID to target for this request"
+          }
+        ],
+        "requestBody": {
+          "required": true,
+          "content": {
+            "application/json": {
+              "schema": {
+                "$ref": "#/components/schemas/AuthenticationProxyRequest"
+              }
+            }
+          }
+        },
+        "responses": {
+          "200": {
+            "description": "Successful Response",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/AuthenticationProxyResponse"
+                }
+              }
+            }
+          },
+          "400": {
+            "description": "Bad request",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ApiErrorResponse"
+                }
+              }
+            }
+          },
+          "403": {
+            "description": "Forbidden",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ApiErrorResponse"
+                }
+              }
+            }
+          },
+          "422": {
+            "description": "Unprocessable entity",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ApiErrorResponse"
+                }
+              }
+            }
+          },
+          "500": {
+            "description": "Internal server error",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ApiErrorResponse"
+                }
+              }
+            }
+          }
+        }
+      }
+    },
+    "/api/v1/sonar/files/sources": {
+      "get": {
+        "tags": ["Sonar - Files"],
+        "summary": "List Sources",
+        "description": "**Requires an Access Token as the bearer token.**\n\nDeprecated. Use `/api/v1/integrations/sources` instead.",
+        "operationId": "get_sonar_files_sources",
+        "security": [
+          {
+            "HTTPBearer": []
+          }
+        ],
+        "parameters": [
+          {
+            "name": "workspace_id",
+            "in": "query",
+            "required": true,
+            "schema": {
+              "type": "string",
+              "format": "uuid",
+              "description": "The workspace ID to list files for.",
+              "title": "Workspace Id"
+            },
+            "description": "The workspace ID to list files for."
+          },
+          {
+            "name": "x-organization-id",
+            "in": "header",
+            "required": false,
+            "schema": {
+              "type": "string",
+              "format": "uuid",
+              "description": "The organization ID to target for this request",
+              "title": "X-Organization-Id"
+            },
+            "description": "The organization ID to target for this request"
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "Successful Response",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/FilesAvailableSourcesResponse"
+                }
+              }
+            }
+          },
+          "400": {
+            "description": "Bad request",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ApiErrorResponse"
+                }
+              }
+            }
+          },
+          "403": {
+            "description": "Forbidden",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ApiErrorResponse"
+                }
+              }
+            }
+          },
+          "422": {
+            "description": "Unprocessable entity",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ApiErrorResponse"
+                }
+              }
+            }
+          },
+          "500": {
+            "description": "Internal server error",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ApiErrorResponse"
+                }
+              }
+            }
+          }
+        }
+      }
+    },
+    "/api/v1/sonar/files/{source_id}/drives": {
+      "get": {
+        "tags": ["Sonar - Files"],
+        "summary": "List Drives",
+        "description": "**Requires an Access Token as the bearer token.**\n\nRetrieve the list of drives available using the credentials and config associated with the provided source.\n\nThis API allows any system to make requests to a downstream system without ever sharing end users' credentials with the caller.",
+        "operationId": "get_sonar_files_source_id_drives",
+        "security": [
+          {
+            "HTTPBearer": []
+          }
+        ],
+        "parameters": [
+          {
+            "name": "source_id",
+            "in": "path",
+            "required": true,
+            "schema": {
+              "type": "string",
+              "format": "uuid",
+              "description": "source_id for which to get the drives",
+              "title": "Source Id"
+            },
+            "description": "source_id for which to get the drives"
+          },
+          {
+            "name": "x-organization-id",
+            "in": "header",
+            "required": false,
+            "schema": {
+              "type": "string",
+              "format": "uuid",
+              "description": "The organization ID to target for this request",
+              "title": "X-Organization-Id"
+            },
+            "description": "The organization ID to target for this request"
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "Successful Response",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/GetDrivesResponse"
+                }
+              }
+            }
+          },
+          "400": {
+            "description": "Bad request",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ApiErrorResponse"
+                }
+              }
+            }
+          },
+          "403": {
+            "description": "Forbidden",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ApiErrorResponse"
+                }
+              }
+            }
+          },
+          "422": {
+            "description": "Unprocessable entity",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ApiErrorResponse"
+                }
+              }
+            }
+          },
+          "500": {
+            "description": "Internal server error",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ApiErrorResponse"
+                }
+              }
+            }
+          }
+        }
+      }
+    },
+    "/api/v1/sonar/files/{source_id}/drives/{drive_id}/get/{path}": {
+      "get": {
+        "tags": ["Sonar - Files"],
+        "summary": "Drive Stream File",
+        "description": "**Requires an Access Token as the bearer token.**\n\nRetrieve the file content at the specified path in a drive using the credentials and config associated with the provided source.\n\nThis API allows any system to make requests to a downstream system without ever sharing end users' credentials with the caller.",
+        "operationId": "get_sonar_files_source_id_drives_drive_id_get_path_path",
+        "security": [
+          {
+            "HTTPBearer": []
+          }
+        ],
+        "parameters": [
+          {
+            "name": "source_id",
+            "in": "path",
+            "required": true,
+            "schema": {
+              "type": "string",
+              "format": "uuid",
+              "description": "source_id for which to get file",
+              "title": "Source Id"
+            },
+            "description": "source_id for which to get file"
+          },
+          {
+            "name": "drive_id",
+            "in": "path",
+            "required": true,
+            "schema": {
+              "type": "string",
+              "description": "drive_id for which to get file",
+              "title": "Drive Id"
+            },
+            "description": "drive_id for which to get file"
+          },
+          {
+            "name": "path",
+            "in": "path",
+            "required": true,
+            "schema": {
+              "type": "string",
+              "description": "Path to the file to get",
+              "title": "Path"
+            },
+            "description": "Path to the file to get"
+          },
+          {
+            "name": "x-organization-id",
+            "in": "header",
+            "required": false,
+            "schema": {
+              "type": "string",
+              "format": "uuid",
+              "description": "The organization ID to target for this request",
+              "title": "X-Organization-Id"
+            },
+            "description": "The organization ID to target for this request"
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "Successful Response",
+            "content": {
+              "application/json": {
+                "schema": {}
+              }
+            }
+          },
+          "400": {
+            "description": "Bad request",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ApiErrorResponse"
+                }
+              }
+            }
+          },
+          "403": {
+            "description": "Forbidden",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ApiErrorResponse"
+                }
+              }
+            }
+          },
+          "422": {
+            "description": "Unprocessable entity",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ApiErrorResponse"
+                }
+              }
+            }
+          },
+          "500": {
+            "description": "Internal server error",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ApiErrorResponse"
+                }
+              }
+            }
+          }
+        }
+      }
+    },
+    "/api/v1/sonar/files/{source_id}/drives/{drive_id}/list/{path}": {
+      "get": {
+        "tags": ["Sonar - Files"],
+        "summary": "List Drive Files With Prefix",
+        "description": "**Requires an Access Token as the bearer token.**\n\nList Drive files at the specified path in a File Management System (like Sharepoint underneath drives) using the credentials and config associated with the provided source.\n\nThis API allows any system to make requests to a downstream system without ever sharing end users' credentials with the caller.",
+        "operationId": "list_sonar_files_source_id_drives_drive_id_list_path_path",
+        "security": [
+          {
+            "HTTPBearer": []
+          }
+        ],
+        "parameters": [
+          {
+            "name": "source_id",
+            "in": "path",
+            "required": true,
+            "schema": {
+              "type": "string",
+              "format": "uuid",
+              "description": "source_id for which to get file",
+              "title": "Source Id"
+            },
+            "description": "source_id for which to get file"
+          },
+          {
+            "name": "drive_id",
+            "in": "path",
+            "required": true,
+            "schema": {
+              "type": "string",
+              "description": "drive_id for which to get file",
+              "title": "Drive Id"
+            },
+            "description": "drive_id for which to get file"
+          },
+          {
+            "name": "path",
+            "in": "path",
+            "required": true,
+            "schema": {
+              "type": "string",
+              "description": "Optional path to folder within the drive",
+              "title": "Path"
+            },
+            "description": "Optional path to folder within the drive"
+          },
+          {
+            "name": "continuation_token",
+            "in": "query",
+            "required": false,
+            "schema": {
+              "type": "string",
+              "description": "Token for pagination",
+              "title": "Continuation Token"
+            },
+            "description": "Token for pagination"
+          },
+          {
+            "name": "limit",
+            "in": "query",
+            "required": false,
+            "schema": {
+              "type": "integer",
+              "description": "Limit for pagination",
+              "default": 100,
+              "title": "Limit"
+            },
+            "description": "Limit for pagination"
+          },
+          {
+            "name": "x-organization-id",
+            "in": "header",
+            "required": false,
+            "schema": {
+              "type": "string",
+              "format": "uuid",
+              "description": "The organization ID to target for this request",
+              "title": "X-Organization-Id"
+            },
+            "description": "The organization ID to target for this request"
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "Successful Response",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/FilesSourcesListResponse"
+                }
+              }
+            }
+          },
+          "400": {
+            "description": "Bad request",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ApiErrorResponse"
+                }
+              }
+            }
+          },
+          "403": {
+            "description": "Forbidden",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ApiErrorResponse"
+                }
+              }
+            }
+          },
+          "422": {
+            "description": "Unprocessable entity",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ApiErrorResponse"
+                }
+              }
+            }
+          },
+          "500": {
+            "description": "Internal server error",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ApiErrorResponse"
+                }
+              }
+            }
+          }
+        }
+      }
+    },
+    "/api/v1/sonar/files/{source_id}/get/{path}": {
+      "get": {
+        "tags": ["Sonar - Files"],
+        "summary": "Stream File",
+        "description": "**Requires an Access Token as the bearer token.**\n\nRetrieve the file content at the specified path using the credentials and config associated with the provided source.\n\nThis API allows any system to make requests to a downstream system without ever sharing end users' credentials with the caller.",
+        "operationId": "get_sonar_files_source_id_get_path_path",
+        "security": [
+          {
+            "HTTPBearer": []
+          }
+        ],
+        "parameters": [
+          {
+            "name": "source_id",
+            "in": "path",
+            "required": true,
+            "schema": {
+              "type": "string",
+              "format": "uuid",
+              "description": "source_id for which to get file",
+              "title": "Source Id"
+            },
+            "description": "source_id for which to get file"
+          },
+          {
+            "name": "path",
+            "in": "path",
+            "required": true,
+            "schema": {
+              "type": "string",
+              "description": "Path to the file to get",
+              "title": "Path"
+            },
+            "description": "Path to the file to get"
+          },
+          {
+            "name": "x-organization-id",
+            "in": "header",
+            "required": false,
+            "schema": {
+              "type": "string",
+              "format": "uuid",
+              "description": "The organization ID to target for this request",
+              "title": "X-Organization-Id"
+            },
+            "description": "The organization ID to target for this request"
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "Successful Response",
+            "content": {
+              "application/json": {
+                "schema": {}
+              }
+            }
+          },
+          "400": {
+            "description": "Bad request",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ApiErrorResponse"
+                }
+              }
+            }
+          },
+          "403": {
+            "description": "Forbidden",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ApiErrorResponse"
+                }
+              }
+            }
+          },
+          "422": {
+            "description": "Unprocessable entity",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ApiErrorResponse"
+                }
+              }
+            }
+          },
+          "500": {
+            "description": "Internal server error",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ApiErrorResponse"
+                }
+              }
+            }
+          }
+        }
+      }
+    },
+    "/api/v1/sonar/files/{source_id}/list/{path}": {
+      "get": {
+        "tags": ["Sonar - Files"],
+        "summary": "List Files With Prefix",
+        "description": "**Requires an Access Token as the bearer token.**\n\nList files at the specified path in a File Management System (Google Drive, S3...) using the credentials and config associated with the provided source.\n\nThis API allows any system to make requests to a downstream system without ever sharing end users' credentials with the caller.",
+        "operationId": "list_sonar_files_source_id_list_path_path",
+        "security": [
+          {
+            "HTTPBearer": []
+          }
+        ],
+        "parameters": [
+          {
+            "name": "source_id",
+            "in": "path",
+            "required": true,
+            "schema": {
+              "type": "string",
+              "format": "uuid",
+              "description": "source_id for which to list files",
+              "title": "Source Id"
+            },
+            "description": "source_id for which to list files"
+          },
+          {
+            "name": "path",
+            "in": "path",
+            "required": true,
+            "schema": {
+              "type": "string",
+              "description": "Optional prefix to filter files",
+              "title": "Path"
+            },
+            "description": "Optional prefix to filter files"
+          },
+          {
+            "name": "continuation_token",
+            "in": "query",
+            "required": false,
+            "schema": {
+              "type": "string",
+              "description": "Token for pagination",
+              "title": "Continuation Token"
+            },
+            "description": "Token for pagination"
+          },
+          {
+            "name": "limit",
+            "in": "query",
+            "required": false,
+            "schema": {
+              "type": "integer",
+              "description": "Limit for pagination",
+              "default": 100,
+              "title": "Limit"
+            },
+            "description": "Limit for pagination"
+          },
+          {
+            "name": "x-organization-id",
+            "in": "header",
+            "required": false,
+            "schema": {
+              "type": "string",
+              "format": "uuid",
+              "description": "The organization ID to target for this request",
+              "title": "X-Organization-Id"
+            },
+            "description": "The organization ID to target for this request"
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "Successful Response",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/FilesSourcesListResponse"
+                }
+              }
+            }
+          },
+          "400": {
+            "description": "Bad request",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ApiErrorResponse"
+                }
+              }
+            }
+          },
+          "403": {
+            "description": "Forbidden",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ApiErrorResponse"
+                }
+              }
+            }
+          },
+          "422": {
+            "description": "Unprocessable entity",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ApiErrorResponse"
+                }
+              }
+            }
+          },
+          "500": {
+            "description": "Internal server error",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ApiErrorResponse"
+                }
+              }
+            }
+          }
+        }
+      }
+    },
+    "/api/v1/tools/destinations": {
+      "post": {
+        "tags": ["Tool Wrappers - Destinations"],
+        "summary": "Tools Create Destination",
+        "operationId": "create_tools_destinations",
+        "security": [
+          {
+            "HTTPBearer": []
+          }
+        ],
+        "parameters": [
+          {
+            "name": "x-organization-id",
+            "in": "header",
+            "required": false,
+            "schema": {
+              "type": "string",
+              "format": "uuid",
+              "description": "The organization ID to target for this request",
+              "title": "X-Organization-Id"
+            },
+            "description": "The organization ID to target for this request"
+          }
+        ],
+        "requestBody": {
+          "required": true,
+          "content": {
+            "application/json": {
+              "schema": {
+                "$ref": "#/components/schemas/CoralDestinationCreateRequest"
+              }
+            }
+          }
+        },
+        "responses": {
+          "200": {
+            "description": "Successful Response",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/CoralDestinationCreateResponse"
+                }
+              }
+            }
+          },
+          "400": {
+            "description": "Bad request",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ApiErrorResponse"
+                }
+              }
+            }
+          },
+          "403": {
+            "description": "Forbidden",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ApiErrorResponse"
+                }
+              }
+            }
+          },
+          "422": {
+            "description": "Unprocessable entity",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ApiErrorResponse"
+                }
+              }
+            }
+          },
+          "500": {
+            "description": "Internal server error",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ApiErrorResponse"
+                }
+              }
+            }
+          }
+        }
+      }
+    },
+    "/api/v1/tools/destinations/{id}": {
+      "patch": {
+        "tags": ["Tool Wrappers - Destinations"],
+        "summary": "Tools Update Destination",
+        "operationId": "update_tools_destinations_id",
+        "security": [
+          {
+            "HTTPBearer": []
+          }
+        ],
+        "parameters": [
+          {
+            "name": "id",
+            "in": "path",
+            "required": true,
+            "schema": {
+              "type": "string",
+              "format": "uuid",
+              "title": "Id"
+            }
+          },
+          {
+            "name": "x-organization-id",
+            "in": "header",
+            "required": false,
+            "schema": {
+              "type": "string",
+              "format": "uuid",
+              "description": "The organization ID to target for this request",
+              "title": "X-Organization-Id"
+            },
+            "description": "The organization ID to target for this request"
+          }
+        ],
+        "requestBody": {
+          "required": true,
+          "content": {
+            "application/json": {
+              "schema": {
+                "$ref": "#/components/schemas/CoralDestinationUpdateRequest"
+              }
+            }
+          }
+        },
+        "responses": {
+          "200": {
+            "description": "Successful Response",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/CoralDestinationUpdateResponse"
+                }
+              }
+            }
+          },
+          "400": {
+            "description": "Bad request",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ApiErrorResponse"
+                }
+              }
+            }
+          },
+          "403": {
+            "description": "Forbidden",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ApiErrorResponse"
+                }
+              }
+            }
+          },
+          "422": {
+            "description": "Unprocessable entity",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ApiErrorResponse"
+                }
+              }
+            }
+          },
+          "500": {
+            "description": "Internal server error",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ApiErrorResponse"
+                }
+              }
+            }
+          }
+        }
+      }
+    },
+    "/api/v1/tools/sources": {
+      "post": {
+        "tags": ["Tool Wrappers - Sources"],
+        "summary": "Tools Create Source",
+        "operationId": "create_tools_sources",
+        "security": [
+          {
+            "HTTPBearer": []
+          }
+        ],
+        "parameters": [
+          {
+            "name": "x-organization-id",
+            "in": "header",
+            "required": false,
+            "schema": {
+              "type": "string",
+              "format": "uuid",
+              "description": "The organization ID to target for this request",
+              "title": "X-Organization-Id"
+            },
+            "description": "The organization ID to target for this request"
+          }
+        ],
+        "requestBody": {
+          "required": true,
+          "content": {
+            "application/json": {
+              "schema": {
+                "$ref": "#/components/schemas/CoralSourceCreateRequest"
+              }
+            }
+          }
+        },
+        "responses": {
+          "200": {
+            "description": "Successful Response",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/CoralSourceCreateResponse"
+                }
+              }
+            }
+          },
+          "400": {
+            "description": "Bad request",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ApiErrorResponse"
+                }
+              }
+            }
+          },
+          "403": {
+            "description": "Forbidden",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ApiErrorResponse"
+                }
+              }
+            }
+          },
+          "422": {
+            "description": "Unprocessable entity",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ApiErrorResponse"
+                }
+              }
+            }
+          },
+          "500": {
+            "description": "Internal server error",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ApiErrorResponse"
+                }
+              }
+            }
+          }
+        }
+      }
+    },
+    "/api/v1/tools/sources/{id}": {
+      "patch": {
+        "tags": ["Tool Wrappers - Sources"],
+        "summary": "Tools Update Source",
+        "operationId": "update_tools_sources_id",
+        "security": [
+          {
+            "HTTPBearer": []
+          }
+        ],
+        "parameters": [
+          {
+            "name": "id",
+            "in": "path",
+            "required": true,
+            "schema": {
+              "type": "string",
+              "format": "uuid",
+              "title": "Id"
+            }
+          },
+          {
+            "name": "x-organization-id",
+            "in": "header",
+            "required": false,
+            "schema": {
+              "type": "string",
+              "format": "uuid",
+              "description": "The organization ID to target for this request",
+              "title": "X-Organization-Id"
+            },
+            "description": "The organization ID to target for this request"
+          }
+        ],
+        "requestBody": {
+          "required": true,
+          "content": {
+            "application/json": {
+              "schema": {
+                "$ref": "#/components/schemas/CoralSourceUpdateRequest"
+              }
+            }
+          }
+        },
+        "responses": {
+          "200": {
+            "description": "Successful Response",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/CoralSourceUpdateResponse"
                 }
               }
             }
@@ -3444,6 +7222,130 @@
         "required": ["data_hosting_type"],
         "title": "AirbyteHostedConnectionTemplateCreateRequest",
         "description": "Create request for Airbyte-hosted connection templates where destination configuration is auto-populated."
+      },
+      "AndCondition": {
+        "properties": {
+          "and": {
+            "items": {
+              "anyOf": [
+                {
+                  "$ref": "#/components/schemas/EqCondition"
+                },
+                {
+                  "$ref": "#/components/schemas/NeqCondition"
+                },
+                {
+                  "$ref": "#/components/schemas/GtCondition"
+                },
+                {
+                  "$ref": "#/components/schemas/GteCondition"
+                },
+                {
+                  "$ref": "#/components/schemas/LtCondition"
+                },
+                {
+                  "$ref": "#/components/schemas/LteCondition"
+                },
+                {
+                  "$ref": "#/components/schemas/InCondition"
+                },
+                {
+                  "$ref": "#/components/schemas/LikeCondition"
+                },
+                {
+                  "$ref": "#/components/schemas/FuzzyCondition"
+                },
+                {
+                  "$ref": "#/components/schemas/SemanticCondition"
+                },
+                {
+                  "$ref": "#/components/schemas/NotCondition"
+                },
+                {
+                  "$ref": "#/components/schemas/AndCondition"
+                },
+                {
+                  "$ref": "#/components/schemas/OrCondition"
+                },
+                {
+                  "$ref": "#/components/schemas/AnyCondition"
+                },
+                {
+                  "$ref": "#/components/schemas/ContainsCondition"
+                }
+              ]
+            },
+            "type": "array",
+            "title": "And",
+            "description": "All conditions must match"
+          }
+        },
+        "type": "object",
+        "required": ["and"],
+        "title": "AndCondition",
+        "description": "True if all nested conditions are true."
+      },
+      "AnyCondition": {
+        "properties": {
+          "any": {
+            "additionalProperties": {
+              "anyOf": [
+                {
+                  "$ref": "#/components/schemas/EqCondition"
+                },
+                {
+                  "$ref": "#/components/schemas/NeqCondition"
+                },
+                {
+                  "$ref": "#/components/schemas/GtCondition"
+                },
+                {
+                  "$ref": "#/components/schemas/GteCondition"
+                },
+                {
+                  "$ref": "#/components/schemas/LtCondition"
+                },
+                {
+                  "$ref": "#/components/schemas/LteCondition"
+                },
+                {
+                  "$ref": "#/components/schemas/InCondition"
+                },
+                {
+                  "$ref": "#/components/schemas/LikeCondition"
+                },
+                {
+                  "$ref": "#/components/schemas/FuzzyCondition"
+                },
+                {
+                  "$ref": "#/components/schemas/SemanticCondition"
+                },
+                {
+                  "$ref": "#/components/schemas/NotCondition"
+                },
+                {
+                  "$ref": "#/components/schemas/AndCondition"
+                },
+                {
+                  "$ref": "#/components/schemas/OrCondition"
+                },
+                {
+                  "$ref": "#/components/schemas/AnyCondition"
+                },
+                {
+                  "$ref": "#/components/schemas/ContainsCondition"
+                }
+              ]
+            },
+            "type": "object",
+            "title": "Any",
+            "description": "Array field condition: {array_field_name: <condition>}"
+          }
+        },
+        "type": "object",
+        "required": ["any"],
+        "title": "AnyCondition",
+        "description": "Match if ANY element in array field matches the nested condition.\n\nExample: {\"any\": {\"addresses\": {\"eq\": {\"state\": \"CA\"}}}}\nReturns documents where any address has state = \"CA\""
       },
       "ApiError": {
         "properties": {
@@ -4541,6 +8443,18 @@
         "required": ["description", "is_valid"],
         "title": "CronExpressionDescribeResponse"
       },
+      "DemoJobCreateResponse": {
+        "properties": {
+          "job_id": {
+            "type": "string",
+            "format": "uuid",
+            "title": "Job Id"
+          }
+        },
+        "type": "object",
+        "required": ["job_id"],
+        "title": "DemoJobCreateResponse"
+      },
       "DestinationDefinitionListItem": {
         "properties": {
           "id": {
@@ -5004,6 +8918,384 @@
         "title": "FieldRenamingMapperConfig",
         "description": "Configuration for field renaming mapper - uses snake_case.\n\nRenames a single field in the data stream."
       },
+      "FieldTag": {
+        "properties": {
+          "field_name": {
+            "type": "string",
+            "title": "Field Name"
+          },
+          "tag": {
+            "type": "string",
+            "title": "Tag"
+          }
+        },
+        "type": "object",
+        "required": ["field_name", "tag"],
+        "title": "FieldTag"
+      },
+      "FileEntity": {
+        "type": "string",
+        "enum": ["file", "folder"],
+        "title": "FileEntity"
+      },
+      "FilesAvailableSource": {
+        "properties": {
+          "id": {
+            "type": "string",
+            "format": "uuid",
+            "title": "Id"
+          },
+          "workspace_id": {
+            "type": "string",
+            "format": "uuid",
+            "title": "Workspace Id"
+          },
+          "source_type": {
+            "type": "string",
+            "title": "Source Type"
+          }
+        },
+        "type": "object",
+        "required": ["id", "workspace_id", "source_type"],
+        "title": "FilesAvailableSource"
+      },
+      "FilesAvailableSourcesResponse": {
+        "properties": {
+          "sources": {
+            "items": {
+              "$ref": "#/components/schemas/FilesAvailableSource"
+            },
+            "type": "array",
+            "title": "Sources"
+          }
+        },
+        "type": "object",
+        "required": ["sources"],
+        "title": "FilesAvailableSourcesResponse"
+      },
+      "FilesSourceListItem": {
+        "properties": {
+          "bytes": {
+            "anyOf": [
+              {
+                "type": "integer"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "Bytes"
+          },
+          "relative_path": {
+            "type": "string",
+            "title": "Relative Path"
+          },
+          "modified": {
+            "anyOf": [
+              {
+                "type": "string",
+                "format": "date-time"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "Modified"
+          },
+          "source_url": {
+            "type": "string",
+            "title": "Source Url"
+          },
+          "type": {
+            "$ref": "#/components/schemas/FileEntity"
+          }
+        },
+        "type": "object",
+        "required": [
+          "bytes",
+          "relative_path",
+          "modified",
+          "source_url",
+          "type"
+        ],
+        "title": "FilesSourceListItem"
+      },
+      "FilesSourcesListResponse": {
+        "properties": {
+          "next": {
+            "anyOf": [
+              {
+                "type": "string"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "Next",
+            "description": "Next page url, empty if no more pages"
+          },
+          "items": {
+            "items": {
+              "$ref": "#/components/schemas/FilesSourceListItem"
+            },
+            "type": "array",
+            "title": "Items"
+          }
+        },
+        "type": "object",
+        "required": ["items"],
+        "title": "FilesSourcesListResponse"
+      },
+      "ForeignKey": {
+        "properties": {
+          "field_name": {
+            "type": "string",
+            "title": "Field Name"
+          },
+          "referenced_stream_name": {
+            "type": "string",
+            "title": "Referenced Stream Name"
+          },
+          "referenced_field_name": {
+            "type": "string",
+            "title": "Referenced Field Name"
+          },
+          "is_hierarchical": {
+            "type": "boolean",
+            "title": "Is Hierarchical"
+          }
+        },
+        "type": "object",
+        "required": [
+          "field_name",
+          "referenced_stream_name",
+          "referenced_field_name",
+          "is_hierarchical"
+        ],
+        "title": "ForeignKey"
+      },
+      "ForeignKeyCatalogContext": {
+        "properties": {
+          "stream": {
+            "anyOf": [
+              {
+                "type": "string"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "Stream"
+          },
+          "field": {
+            "anyOf": [
+              {
+                "type": "string"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "Field"
+          },
+          "foreign_keys": {
+            "items": {
+              "$ref": "#/components/schemas/ForeignKey"
+            },
+            "type": "array",
+            "title": "Foreign Keys"
+          },
+          "data_category": {
+            "anyOf": [
+              {
+                "$ref": "#/components/schemas/DataCategory"
+              },
+              {
+                "type": "null"
+              }
+            ]
+          }
+        },
+        "type": "object",
+        "title": "ForeignKeyCatalogContext"
+      },
+      "ForeignKeysIssueContext": {
+        "properties": {
+          "stream": {
+            "anyOf": [
+              {
+                "type": "string"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "Stream"
+          },
+          "field": {
+            "anyOf": [
+              {
+                "type": "string"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "Field"
+          },
+          "referenced_stream": {
+            "anyOf": [
+              {
+                "type": "string"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "Referenced Stream"
+          },
+          "referenced_field": {
+            "anyOf": [
+              {
+                "type": "string"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "Referenced Field"
+          }
+        },
+        "type": "object",
+        "title": "ForeignKeysIssueContext"
+      },
+      "FuzzyCondition": {
+        "properties": {
+          "fuzzy": {
+            "additionalProperties": {
+              "type": "string"
+            },
+            "type": "object",
+            "title": "Fuzzy",
+            "description": "Fuzzy match: {field_name: pattern}"
+          }
+        },
+        "type": "object",
+        "required": ["fuzzy"],
+        "title": "FuzzyCondition",
+        "description": "Fuzzy text match."
+      },
+      "GetDriveItem": {
+        "properties": {
+          "id": {
+            "type": "string",
+            "title": "Id"
+          },
+          "name": {
+            "type": "string",
+            "title": "Name"
+          },
+          "url": {
+            "type": "string",
+            "title": "Url"
+          }
+        },
+        "type": "object",
+        "required": ["id", "name", "url"],
+        "title": "GetDriveItem"
+      },
+      "GetDrivesResponse": {
+        "properties": {
+          "drives": {
+            "items": {
+              "$ref": "#/components/schemas/GetDriveItem"
+            },
+            "type": "array",
+            "title": "Drives"
+          }
+        },
+        "type": "object",
+        "required": ["drives"],
+        "title": "GetDrivesResponse"
+      },
+      "GetEmbeddedSourceConsentUrlRequest": {
+        "properties": {
+          "workspace_id": {
+            "type": "string",
+            "format": "uuid",
+            "title": "Workspace Id"
+          },
+          "source_definition_id": {
+            "type": "string",
+            "format": "uuid",
+            "title": "Source Definition Id"
+          },
+          "redirect_url": {
+            "type": "string",
+            "title": "Redirect Url",
+            "description": "The url to redirect to after getting the user consent"
+          },
+          "source_id": {
+            "anyOf": [
+              {
+                "type": "string",
+                "format": "uuid"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "Source Id"
+          },
+          "oauth_input_configuration": {
+            "additionalProperties": true,
+            "type": "object",
+            "title": "Oauth Input Configuration"
+          }
+        },
+        "type": "object",
+        "required": ["workspace_id", "source_definition_id", "redirect_url"],
+        "title": "GetEmbeddedSourceConsentUrlRequest"
+      },
+      "GetEmbeddedSourceConsentUrlResponse": {
+        "properties": {
+          "consent_url": {
+            "type": "string",
+            "title": "Consent Url"
+          }
+        },
+        "type": "object",
+        "required": ["consent_url"],
+        "title": "GetEmbeddedSourceConsentUrlResponse"
+      },
+      "GtCondition": {
+        "properties": {
+          "gt": {
+            "additionalProperties": true,
+            "type": "object",
+            "title": "Gt",
+            "description": "Greater than: {field_name: value}"
+          }
+        },
+        "type": "object",
+        "required": ["gt"],
+        "title": "GtCondition",
+        "description": "Greater than: field > value."
+      },
+      "GteCondition": {
+        "properties": {
+          "gte": {
+            "additionalProperties": true,
+            "type": "object",
+            "title": "Gte",
+            "description": "Greater than or equal: {field_name: value}"
+          }
+        },
+        "type": "object",
+        "required": ["gte"],
+        "title": "GteCondition",
+        "description": "Greater than or equal: field >= value (equivalent to not lt)."
+      },
       "HashingMapper": {
         "properties": {
           "type": {
@@ -5052,10 +9344,325 @@
         "title": "HashingMapperConfig",
         "description": "Configuration for hashing mapper - uses snake_case.\n\nTransforms a field value by applying a cryptographic hash function.\nThe original field is replaced with the hashed value, or a new field\ncan be created with a suffix."
       },
+      "HealthCheckGetResponse": {
+        "properties": {
+          "success": {
+            "type": "boolean",
+            "title": "Success"
+          },
+          "queue_information": {
+            "$ref": "#/components/schemas/QueueInformation"
+          }
+        },
+        "type": "object",
+        "required": ["success", "queue_information"],
+        "title": "HealthCheckGetResponse"
+      },
+      "HttpMethod": {
+        "type": "string",
+        "enum": ["GET", "POST", "PUT", "DELETE"],
+        "title": "HttpMethod"
+      },
+      "InCondition": {
+        "properties": {
+          "in": {
+            "additionalProperties": {
+              "items": {},
+              "type": "array"
+            },
+            "type": "object",
+            "title": "In",
+            "description": "In list: {field_name: [values]}"
+          }
+        },
+        "type": "object",
+        "required": ["in"],
+        "title": "InCondition",
+        "description": "In list: true if field value is in list (equivalent to or [eq, eq...])."
+      },
+      "Invoice": {
+        "properties": {
+          "id": {
+            "type": "string",
+            "title": "Id"
+          },
+          "total": {
+            "type": "integer",
+            "title": "Total"
+          },
+          "currency": {
+            "type": "string",
+            "title": "Currency"
+          },
+          "invoiceDate": {
+            "type": "integer",
+            "title": "Invoicedate"
+          },
+          "status": {
+            "type": "string",
+            "enum": ["draft", "open", "paid", "uncollectible", "void"],
+            "title": "Status"
+          },
+          "pdfUrl": {
+            "type": "string",
+            "title": "Pdfurl"
+          },
+          "invoiceUrl": {
+            "type": "string",
+            "title": "Invoiceurl"
+          },
+          "number": {
+            "anyOf": [
+              {
+                "type": "string"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "Number"
+          }
+        },
+        "type": "object",
+        "required": [
+          "id",
+          "total",
+          "currency",
+          "invoiceDate",
+          "status",
+          "pdfUrl",
+          "invoiceUrl"
+        ],
+        "title": "Invoice"
+      },
+      "InvoicesResponse": {
+        "properties": {
+          "invoices": {
+            "items": {
+              "$ref": "#/components/schemas/Invoice"
+            },
+            "type": "array",
+            "title": "Invoices"
+          },
+          "hasMore": {
+            "type": "boolean",
+            "title": "Hasmore"
+          }
+        },
+        "type": "object",
+        "required": ["invoices", "hasMore"],
+        "title": "InvoicesResponse"
+      },
+      "JobErrorData": {
+        "properties": {
+          "job_class": {
+            "type": "string",
+            "title": "Job Class"
+          },
+          "job_id": {
+            "type": "string",
+            "format": "uuid",
+            "title": "Job Id"
+          },
+          "error_at": {
+            "type": "string",
+            "format": "date-time",
+            "title": "Error At"
+          },
+          "error_type": {
+            "type": "string",
+            "enum": ["transient", "system", "config"],
+            "title": "Error Type"
+          },
+          "user_message": {
+            "type": "string",
+            "title": "User Message"
+          },
+          "exception": {
+            "$ref": "#/components/schemas/JobErrorException"
+          }
+        },
+        "type": "object",
+        "required": [
+          "job_class",
+          "job_id",
+          "error_at",
+          "error_type",
+          "user_message",
+          "exception"
+        ],
+        "title": "JobErrorData"
+      },
+      "JobErrorException": {
+        "properties": {
+          "message": {
+            "type": "string",
+            "title": "Message"
+          },
+          "traceback": {
+            "items": {
+              "type": "string"
+            },
+            "type": "array",
+            "title": "Traceback"
+          }
+        },
+        "type": "object",
+        "required": ["message", "traceback"],
+        "title": "JobErrorException"
+      },
+      "LikeCondition": {
+        "properties": {
+          "like": {
+            "additionalProperties": {
+              "type": "string"
+            },
+            "type": "object",
+            "title": "Like",
+            "description": "Like pattern: {field_name: pattern}"
+          }
+        },
+        "type": "object",
+        "required": ["like"],
+        "title": "LikeCondition",
+        "description": "Partial string match (supports % wildcards)."
+      },
+      "ListJobsResponse": {
+        "properties": {
+          "jobs": {
+            "items": {
+              "$ref": "#/components/schemas/UnifiedJob"
+            },
+            "type": "array",
+            "title": "Jobs"
+          },
+          "total": {
+            "type": "integer",
+            "title": "Total"
+          }
+        },
+        "type": "object",
+        "required": ["jobs", "total"],
+        "title": "ListJobsResponse",
+        "description": "Response for listing all jobs."
+      },
+      "LtCondition": {
+        "properties": {
+          "lt": {
+            "additionalProperties": true,
+            "type": "object",
+            "title": "Lt",
+            "description": "Less than: {field_name: value}"
+          }
+        },
+        "type": "object",
+        "required": ["lt"],
+        "title": "LtCondition",
+        "description": "Less than: field < value."
+      },
+      "LteCondition": {
+        "properties": {
+          "lte": {
+            "additionalProperties": true,
+            "type": "object",
+            "title": "Lte",
+            "description": "Less than or equal: {field_name: value}"
+          }
+        },
+        "type": "object",
+        "required": ["lte"],
+        "title": "LteCondition",
+        "description": "Less than or equal: field <= value (equivalent to not gt)."
+      },
+      "MessageContent": {
+        "properties": {
+          "content": {
+            "type": "string",
+            "title": "Content"
+          }
+        },
+        "type": "object",
+        "required": ["content"],
+        "title": "MessageContent",
+        "description": "Content of a chat message."
+      },
+      "NeqCondition": {
+        "properties": {
+          "neq": {
+            "additionalProperties": true,
+            "type": "object",
+            "title": "Neq",
+            "description": "Not equal: {field_name: value}"
+          }
+        },
+        "type": "object",
+        "required": ["neq"],
+        "title": "NeqCondition",
+        "description": "Not equal to: field does not equal value (equivalent to not eq)."
+      },
       "NonBreakingChangesPreference": {
         "type": "string",
         "enum": ["ignore", "disable", "propagate_columns", "propagate_fully"],
         "title": "NonBreakingChangesPreference"
+      },
+      "NotCondition": {
+        "properties": {
+          "not": {
+            "anyOf": [
+              {
+                "$ref": "#/components/schemas/EqCondition"
+              },
+              {
+                "$ref": "#/components/schemas/NeqCondition"
+              },
+              {
+                "$ref": "#/components/schemas/GtCondition"
+              },
+              {
+                "$ref": "#/components/schemas/GteCondition"
+              },
+              {
+                "$ref": "#/components/schemas/LtCondition"
+              },
+              {
+                "$ref": "#/components/schemas/LteCondition"
+              },
+              {
+                "$ref": "#/components/schemas/InCondition"
+              },
+              {
+                "$ref": "#/components/schemas/LikeCondition"
+              },
+              {
+                "$ref": "#/components/schemas/FuzzyCondition"
+              },
+              {
+                "$ref": "#/components/schemas/SemanticCondition"
+              },
+              {
+                "$ref": "#/components/schemas/NotCondition"
+              },
+              {
+                "$ref": "#/components/schemas/AndCondition"
+              },
+              {
+                "$ref": "#/components/schemas/OrCondition"
+              },
+              {
+                "$ref": "#/components/schemas/AnyCondition"
+              },
+              {
+                "$ref": "#/components/schemas/ContainsCondition"
+              }
+            ],
+            "title": "Not",
+            "description": "Negation of nested condition"
+          }
+        },
+        "type": "object",
+        "required": ["not"],
+        "title": "NotCondition",
+        "description": "Negates the nested condition."
       },
       "OAuthConfigSpecification": {
         "properties": {
@@ -5107,20 +9714,116 @@
       },
       "OAuthCredentialsRequest": {
         "properties": {
-          "connector_definition_id": {
-            "anyOf": [
-              {
-                "type": "string",
-                "format": "uuid"
-              },
-              {
-                "type": "null"
-              }
-            ],
-            "title": "Connector Definition Id",
-            "description": "Actor definition ID for the connector."
+          "onboarding_status": {
+            "$ref": "#/components/schemas/OnboardingStatusEnum"
+          }
+        },
+        "type": "object",
+        "required": ["onboarding_status"],
+        "title": "OnboardingProgressUpdateRequest"
+      },
+      "OnboardingProgressUpdateResponse": {
+        "properties": {
+          "organization_id": {
+            "type": "string",
+            "format": "uuid",
+            "title": "Organization Id"
           },
-          "connector_type": {
+          "onboarding_progress": {
+            "$ref": "#/components/schemas/OnboardingStatusEnum"
+          }
+        },
+        "type": "object",
+        "required": ["organization_id", "onboarding_progress"],
+        "title": "OnboardingProgressUpdateResponse"
+      },
+      "OnboardingStatusEnum": {
+        "type": "string",
+        "enum": [
+          "NOT_STARTED",
+          "DESTINATION_SETUP_COMPLETE",
+          "SOURCE_TEMPLATES_CONFIGURED",
+          "EMBED_CODE_COPIED",
+          "PAYMENT_COMPLETE",
+          "COMPLETED"
+        ],
+        "title": "OnboardingStatusEnum"
+      },
+      "OrCondition": {
+        "properties": {
+          "or": {
+            "items": {
+              "anyOf": [
+                {
+                  "$ref": "#/components/schemas/EqCondition"
+                },
+                {
+                  "$ref": "#/components/schemas/NeqCondition"
+                },
+                {
+                  "$ref": "#/components/schemas/GtCondition"
+                },
+                {
+                  "$ref": "#/components/schemas/GteCondition"
+                },
+                {
+                  "$ref": "#/components/schemas/LtCondition"
+                },
+                {
+                  "$ref": "#/components/schemas/LteCondition"
+                },
+                {
+                  "$ref": "#/components/schemas/InCondition"
+                },
+                {
+                  "$ref": "#/components/schemas/LikeCondition"
+                },
+                {
+                  "$ref": "#/components/schemas/FuzzyCondition"
+                },
+                {
+                  "$ref": "#/components/schemas/SemanticCondition"
+                },
+                {
+                  "$ref": "#/components/schemas/NotCondition"
+                },
+                {
+                  "$ref": "#/components/schemas/AndCondition"
+                },
+                {
+                  "$ref": "#/components/schemas/OrCondition"
+                },
+                {
+                  "$ref": "#/components/schemas/AnyCondition"
+                },
+                {
+                  "$ref": "#/components/schemas/ContainsCondition"
+                }
+              ]
+            },
+            "type": "array",
+            "title": "Or",
+            "description": "Any condition must match"
+          }
+        },
+        "type": "object",
+        "required": ["or"],
+        "title": "OrCondition",
+        "description": "True if any nested conditions are true."
+      },
+      "OrbWebhookResponse": {
+        "properties": {
+          "status": {
+            "type": "string",
+            "title": "Status",
+            "description": "Processing status"
+          },
+          "message": {
+            "type": "string",
+            "title": "Message",
+            "description": "Human-readable message"
+          },
+          "event_id": {
             "anyOf": [
               {
                 "type": "string"
@@ -5920,7 +10623,7 @@
                 "$ref": "#/components/schemas/FuzzyCondition"
               },
               {
-                "$ref": "#/components/schemas/SemanticCondition"
+                "$ref": "#/components/schemas/KeywordCondition"
               },
               {
                 "$ref": "#/components/schemas/NotCondition"
@@ -6230,11 +10933,6 @@
             ],
             "title": "Fields",
             "description": "Field paths to include in results. Each path is a list of keys for nested access. Example: [['id'], ['user', 'name'], ['metadata', 'tags']] returns id, user.name, and metadata.tags."
-          },
-          "backend": {
-            "$ref": "#/components/schemas/SearchBackend",
-            "description": "Search backend to use. 'opensearch' (default) or 'galaxy' for Trino-based queries.",
-            "default": "opensearch"
           }
         },
         "type": "object",
@@ -6251,10 +10949,6 @@
             "type": "array",
             "title": "Hits",
             "default": []
-          },
-          "total": {
-            "type": "integer",
-            "title": "Total"
           },
           "next_cursor": {
             "anyOf": [
@@ -6280,7 +10974,6 @@
           }
         },
         "type": "object",
-        "required": ["total"],
         "title": "SearchResponse",
         "description": "Response schema for search endpoint."
       },
@@ -6295,22 +10988,6 @@
         ],
         "title": "SecretMigrationStatus",
         "description": "Status of secret storage migration during organization enrollment.\n\n- NOT_STARTED: Migration has not been initiated (should not appear in practice)\n- IN_PROGRESS: Migration is currently running\n- COMPLETED: Secrets successfully migrated from default to organization-specific storage\n- FAILED: Migration encountered an error (enrollment continues, status tracked for monitoring)\n- NOT_APPLICABLE: No migration needed (CUSTOMER_OWNED storage, or no default secrets to migrate)"
-      },
-      "SemanticCondition": {
-        "properties": {
-          "semantic": {
-            "additionalProperties": {
-              "type": "string"
-            },
-            "type": "object",
-            "title": "Semantic",
-            "description": "Semantic search: {field_name: pattern}"
-          }
-        },
-        "type": "object",
-        "required": ["semantic"],
-        "title": "SemanticCondition",
-        "description": "AI-powered natural language search."
       },
       "SonarCatalogInput": {
         "properties": {
@@ -6375,10 +11052,551 @@
         "enum": ["structured", "unstructured", "dynamic", "customizable"],
         "title": "SonarCatalogSchemaType"
       },
-      "SourceConfigTemplateMode": {
-        "type": "string",
-        "enum": ["DIRECT", "REPLICATION", "MULTI"],
-        "title": "SourceConfigTemplateMode"
+      "SonarStream": {
+        "properties": {
+          "name": {
+            "anyOf": [
+              {
+                "type": "string"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "Name"
+          },
+          "description": {
+            "anyOf": [
+              {
+                "type": "string"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "Description"
+          },
+          "data_category": {
+            "anyOf": [
+              {
+                "$ref": "#/components/schemas/DataCategory"
+              },
+              {
+                "type": "null"
+              }
+            ]
+          },
+          "suggested": {
+            "type": "boolean",
+            "title": "Suggested",
+            "default": false
+          },
+          "is_metric": {
+            "type": "boolean",
+            "title": "Is Metric",
+            "description": "True if the stream represents aggregated metric data of a specific type. When true, data_category denotes the metric subtype (e.g., cohort). Use data_category='metric' only when the aggregation has no specific type.",
+            "default": false
+          },
+          "cursor_fields": {
+            "anyOf": [
+              {
+                "items": {
+                  "type": "string"
+                },
+                "type": "array"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "Cursor Fields"
+          },
+          "primary_key_fields": {
+            "anyOf": [
+              {
+                "items": {
+                  "items": {
+                    "type": "string"
+                  },
+                  "type": "array"
+                },
+                "type": "array"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "Primary Key Fields"
+          },
+          "pii_fields": {
+            "anyOf": [
+              {
+                "items": {
+                  "type": "string"
+                },
+                "type": "array"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "Pii Fields"
+          },
+          "immutable_fields": {
+            "anyOf": [
+              {
+                "items": {
+                  "type": "string"
+                },
+                "type": "array"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "Immutable Fields"
+          },
+          "field_tags": {
+            "anyOf": [
+              {
+                "items": {
+                  "$ref": "#/components/schemas/FieldTag"
+                },
+                "type": "array"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "Field Tags"
+          },
+          "foreign_keys": {
+            "anyOf": [
+              {
+                "items": {
+                  "$ref": "#/components/schemas/ForeignKey"
+                },
+                "type": "array"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "Foreign Keys"
+          },
+          "json_schema": {
+            "anyOf": [
+              {
+                "additionalProperties": true,
+                "type": "object"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "Json Schema"
+          }
+        },
+        "type": "object",
+        "title": "SonarStream"
+      },
+      "SourceCheckConfigRequest": {
+        "properties": {
+          "name": {
+            "anyOf": [
+              {
+                "type": "string"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "Name",
+            "description": "The name of the source."
+          },
+          "workspace_id": {
+            "type": "string",
+            "format": "uuid",
+            "title": "Workspace Id",
+            "description": "The workspace in which to create the source."
+          },
+          "source_template_id": {
+            "type": "string",
+            "format": "uuid",
+            "title": "Source Template Id",
+            "description": "The id of the source template to create the source from."
+          },
+          "source_config": {
+            "additionalProperties": true,
+            "type": "object",
+            "title": "Source Config",
+            "description": "The configuration for the source not already provided by the defaults in the source template (eg, credentials, bucket names). Must match the source template's User Config Spec."
+          },
+          "selected_connection_template_tags": {
+            "items": {
+              "type": "string"
+            },
+            "type": "array",
+            "title": "Selected Connection Template Tags",
+            "description": "Optional list of tags to filter which connection templates will be used for this source. "
+          },
+          "selected_connection_template_tags_mode": {
+            "$ref": "#/components/schemas/TagSelectionMode",
+            "description": "Tag selection mode for connection templates: 'all' (must have all tags) or 'any' (must have at least one tag). Defaults to 'any'.",
+            "default": "any"
+          }
+        },
+        "type": "object",
+        "required": ["workspace_id", "source_template_id", "source_config"],
+        "title": "SourceCheckConfigRequest"
+      },
+      "SourceCheckConfigResponse": {
+        "properties": {
+          "id": {
+            "type": "string",
+            "format": "uuid",
+            "title": "Id"
+          }
+        },
+        "type": "object",
+        "required": ["id"],
+        "title": "SourceCheckConfigResponse"
+      },
+      "SourceCheckConfigStatusResponse": {
+        "properties": {
+          "id": {
+            "type": "string",
+            "format": "uuid",
+            "title": "Id"
+          },
+          "status": {
+            "$ref": "#/components/schemas/CheckStatus"
+          },
+          "error_message": {
+            "anyOf": [
+              {
+                "type": "string"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "Error Message"
+          },
+          "failure_reason": {
+            "anyOf": [
+              {
+                "$ref": "#/components/schemas/FailureReason"
+              },
+              {
+                "type": "null"
+              }
+            ]
+          },
+          "enhanced_error_message": {
+            "anyOf": [
+              {
+                "type": "string"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "Enhanced Error Message",
+            "description": "LLM-enhanced user-friendly error message (when available). Prefer this over failure_reason.external_message for display when present."
+          }
+        },
+        "type": "object",
+        "required": ["id", "status"],
+        "title": "SourceCheckConfigStatusResponse"
+      },
+      "SourceCheckConfigUpdateRequest": {
+        "properties": {
+          "name": {
+            "anyOf": [
+              {
+                "type": "string"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "Name"
+          },
+          "source_config": {
+            "anyOf": [
+              {
+                "additionalProperties": true,
+                "type": "object"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "Source Config"
+          }
+        },
+        "type": "object",
+        "title": "SourceCheckConfigUpdateRequest"
+      },
+      "SourceCreateRequest": {
+        "properties": {
+          "name": {
+            "anyOf": [
+              {
+                "type": "string"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "Name",
+            "description": "The name of the source."
+          },
+          "workspace_id": {
+            "type": "string",
+            "format": "uuid",
+            "title": "Workspace Id",
+            "description": "The workspace in which to create the source."
+          },
+          "source_template_id": {
+            "type": "string",
+            "format": "uuid",
+            "title": "Source Template Id",
+            "description": "The id of the source template to create the source from."
+          },
+          "source_config": {
+            "additionalProperties": true,
+            "type": "object",
+            "title": "Source Config",
+            "description": "The configuration for the source not already provided by the defaults in the source template (eg, credentials, bucket names). Must match the source template's User Config Spec."
+          },
+          "selected_connection_template_tags": {
+            "items": {
+              "type": "string"
+            },
+            "type": "array",
+            "title": "Selected Connection Template Tags",
+            "description": "Optional list of tags to filter which connection templates will be used for this source. "
+          },
+          "selected_connection_template_tags_mode": {
+            "$ref": "#/components/schemas/TagSelectionMode",
+            "description": "Tag selection mode for connection templates: 'all' (must have all tags) or 'any' (must have at least one tag). Defaults to 'any'.",
+            "default": "any"
+          }
+        },
+        "type": "object",
+        "required": ["workspace_id", "source_template_id", "source_config"],
+        "title": "SourceCreateRequest"
+      },
+      "SourceCreateResponse": {
+        "properties": {
+          "id": {
+            "type": "string",
+            "format": "uuid",
+            "title": "Id"
+          },
+          "name": {
+            "type": "string",
+            "title": "Name"
+          },
+          "source_template": {
+            "$ref": "#/components/schemas/DetailedSourceTemplate"
+          },
+          "source_config": {
+            "additionalProperties": true,
+            "type": "object",
+            "title": "Source Config"
+          },
+          "created_at": {
+            "anyOf": [
+              {
+                "type": "string",
+                "format": "date-time"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "Created At"
+          },
+          "updated_at": {
+            "anyOf": [
+              {
+                "type": "string",
+                "format": "date-time"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "Updated At"
+          }
+        },
+        "type": "object",
+        "required": ["id", "name", "source_template", "source_config"],
+        "title": "SourceCreateResponse"
+      },
+      "SourceDefinitionCatalogCreateRequest": {
+        "properties": {
+          "sonar_catalog": {
+            "anyOf": [
+              {
+                "$ref": "#/components/schemas/SonarCatalogInput"
+              },
+              {
+                "type": "null"
+              }
+            ]
+          },
+          "catalog_type": {
+            "$ref": "#/components/schemas/SonarCatalogSchemaType"
+          }
+        },
+        "type": "object",
+        "required": ["catalog_type"],
+        "title": "SourceDefinitionCatalogCreateRequest"
+      },
+      "SourceDefinitionCatalogCreateResponse": {
+        "properties": {
+          "id": {
+            "type": "string",
+            "format": "uuid",
+            "title": "Id"
+          }
+        },
+        "type": "object",
+        "required": ["id"],
+        "title": "SourceDefinitionCatalogCreateResponse"
+      },
+      "SourceDefinitionCatalogDeleteResponse": {
+        "properties": {
+          "id": {
+            "type": "string",
+            "format": "uuid",
+            "title": "Id"
+          },
+          "deleted_at": {
+            "type": "string",
+            "format": "date-time",
+            "title": "Deleted At"
+          }
+        },
+        "type": "object",
+        "required": ["id", "deleted_at"],
+        "title": "SourceDefinitionCatalogDeleteResponse"
+      },
+      "SourceDefinitionCatalogGetResponse": {
+        "properties": {
+          "id": {
+            "type": "string",
+            "format": "uuid",
+            "title": "Id"
+          },
+          "name": {
+            "type": "string",
+            "title": "Name"
+          },
+          "source_definition_id": {
+            "type": "string",
+            "format": "uuid",
+            "title": "Source Definition Id"
+          },
+          "sonar_catalog": {
+            "anyOf": [
+              {
+                "$ref": "#/components/schemas/SonarCatalogOutput"
+              },
+              {
+                "type": "null"
+              }
+            ]
+          },
+          "catalog_type": {
+            "anyOf": [
+              {
+                "$ref": "#/components/schemas/SonarCatalogSchemaType"
+              },
+              {
+                "type": "null"
+              }
+            ]
+          },
+          "blessed": {
+            "type": "boolean",
+            "title": "Blessed",
+            "default": false
+          }
+        },
+        "type": "object",
+        "required": ["id", "name", "source_definition_id"],
+        "title": "SourceDefinitionCatalogGetResponse"
+      },
+      "SourceDefinitionCatalogPatchRequest": {
+        "properties": {
+          "patch_ops": {
+            "anyOf": [
+              {
+                "items": {
+                  "$ref": "#/components/schemas/PatchOp"
+                },
+                "type": "array"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "Patch Ops",
+            "description": "List of JSON Patch (RFC 6902) operations to apply to the catalog."
+          },
+          "blessed": {
+            "anyOf": [
+              {
+                "type": "boolean"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "Blessed",
+            "description": "Set to true to mark this catalog as blessed, preventing automatic discovery overwrites."
+          }
+        },
+        "type": "object",
+        "title": "SourceDefinitionCatalogPatchRequest"
+      },
+      "SourceDefinitionCatalogPatchResponse": {
+        "properties": {
+          "catalog": {
+            "$ref": "#/components/schemas/SonarCatalogOutput"
+          }
+        },
+        "type": "object",
+        "required": ["catalog"],
+        "title": "SourceDefinitionCatalogPatchResponse"
+      },
+      "SourceDefinitionCatalogQueryRequest": {
+        "properties": {
+          "query": {
+            "type": "string",
+            "title": "Query",
+            "description": "JMESPath query to filter the catalog. Example: `streams[].name` (names only) or `streams[?name=='users']` (users stream only)."
+          }
+        },
+        "type": "object",
+        "required": ["query"],
+        "title": "SourceDefinitionCatalogQueryRequest"
+      },
+      "SourceDefinitionCatalogQueryResponse": {
+        "properties": {
+          "result": {
+            "title": "Result",
+            "description": "The result of the JMESPath query on the source definition's catalog"
+          }
+        },
+        "type": "object",
+        "required": ["result"],
+        "title": "SourceDefinitionCatalogQueryResponse"
       },
       "SourceDefinitionListResponse": {
         "properties": {
@@ -7316,6 +12534,176 @@
         "type": "string",
         "enum": ["archived", "certified", "community", "none"],
         "title": "SupportLevel"
+      },
+      "SyncSuccessConnection": {
+        "properties": {
+          "id": {
+            "type": "string",
+            "title": "Id"
+          },
+          "name": {
+            "type": "string",
+            "title": "Name"
+          },
+          "url": {
+            "type": "string",
+            "title": "Url"
+          }
+        },
+        "type": "object",
+        "required": ["id", "name", "url"],
+        "title": "SyncSuccessConnection"
+      },
+      "SyncSuccessData": {
+        "properties": {
+          "workspace": {
+            "$ref": "#/components/schemas/SyncSuccessWorkspace"
+          },
+          "connection": {
+            "$ref": "#/components/schemas/SyncSuccessConnection"
+          },
+          "source": {
+            "$ref": "#/components/schemas/SyncSuccessSource"
+          },
+          "destination": {
+            "$ref": "#/components/schemas/SyncSuccessDestination"
+          },
+          "jobId": {
+            "type": "integer",
+            "title": "Jobid"
+          },
+          "startedAt": {
+            "type": "string",
+            "title": "Startedat"
+          },
+          "finishedAt": {
+            "type": "string",
+            "title": "Finishedat"
+          },
+          "bytesEmitted": {
+            "type": "integer",
+            "title": "Bytesemitted"
+          },
+          "bytesCommitted": {
+            "type": "integer",
+            "title": "Bytescommitted"
+          },
+          "recordsEmitted": {
+            "type": "integer",
+            "title": "Recordsemitted"
+          },
+          "recordsCommitted": {
+            "type": "integer",
+            "title": "Recordscommitted"
+          },
+          "bytesEmittedFormatted": {
+            "type": "string",
+            "title": "Bytesemittedformatted"
+          },
+          "bytesCommittedFormatted": {
+            "type": "string",
+            "title": "Bytescommittedformatted"
+          },
+          "success": {
+            "type": "boolean",
+            "title": "Success"
+          },
+          "durationInSeconds": {
+            "type": "integer",
+            "title": "Durationinseconds"
+          },
+          "durationFormatted": {
+            "type": "string",
+            "title": "Durationformatted"
+          }
+        },
+        "type": "object",
+        "required": [
+          "workspace",
+          "connection",
+          "source",
+          "destination",
+          "jobId",
+          "startedAt",
+          "finishedAt",
+          "bytesEmitted",
+          "bytesCommitted",
+          "recordsEmitted",
+          "recordsCommitted",
+          "bytesEmittedFormatted",
+          "bytesCommittedFormatted",
+          "success",
+          "durationInSeconds",
+          "durationFormatted"
+        ],
+        "title": "SyncSuccessData"
+      },
+      "SyncSuccessDestination": {
+        "properties": {
+          "id": {
+            "type": "string",
+            "title": "Id"
+          },
+          "name": {
+            "type": "string",
+            "title": "Name"
+          },
+          "url": {
+            "type": "string",
+            "title": "Url"
+          }
+        },
+        "type": "object",
+        "required": ["id", "name", "url"],
+        "title": "SyncSuccessDestination"
+      },
+      "SyncSuccessNotification": {
+        "properties": {
+          "data": {
+            "$ref": "#/components/schemas/SyncSuccessData"
+          }
+        },
+        "type": "object",
+        "required": ["data"],
+        "title": "SyncSuccessNotification"
+      },
+      "SyncSuccessSource": {
+        "properties": {
+          "id": {
+            "type": "string",
+            "title": "Id"
+          },
+          "name": {
+            "type": "string",
+            "title": "Name"
+          },
+          "url": {
+            "type": "string",
+            "title": "Url"
+          }
+        },
+        "type": "object",
+        "required": ["id", "name", "url"],
+        "title": "SyncSuccessSource"
+      },
+      "SyncSuccessWorkspace": {
+        "properties": {
+          "id": {
+            "type": "string",
+            "title": "Id"
+          },
+          "name": {
+            "type": "string",
+            "title": "Name"
+          },
+          "url": {
+            "type": "string",
+            "title": "Url"
+          }
+        },
+        "type": "object",
+        "required": ["id", "name", "url"],
+        "title": "SyncSuccessWorkspace"
       },
       "TagSelectionMode": {
         "type": "string",
