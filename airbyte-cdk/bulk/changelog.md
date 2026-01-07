@@ -1,3 +1,7 @@
+## Version 0.1.96
+
+load cdk: slightly refactor schema mapper suite
+
 ## Version 0.1.95
 
 load cdk: add schema mapper test suite
