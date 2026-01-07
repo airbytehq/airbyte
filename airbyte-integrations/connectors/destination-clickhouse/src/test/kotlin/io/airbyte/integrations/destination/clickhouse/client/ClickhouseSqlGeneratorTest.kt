@@ -132,7 +132,7 @@ class ClickhouseSqlGeneratorTest {
     }
 
     @Test
-    fun `test copyTable`() {
+    fun `test copyTable with column names`() {
         val sourceTable = TableName("source_namespace", "source_table")
         val targetTable = TableName("target_namespace", "target_table")
         val columnNames = setOf("target_col1", "target_col2")
@@ -145,19 +145,48 @@ class ClickhouseSqlGeneratorTest {
                 _airbyte_extracted_at,
                 _airbyte_meta,
                 _airbyte_generation_id,
-                target_col1,target_col2
+                `target_col1`,`target_col2`
             )
             SELECT
                 _airbyte_raw_id,
                 _airbyte_extracted_at,
                 _airbyte_meta,
                 _airbyte_generation_id,
-                target_col1,target_col2
+                `target_col1`,`target_col2`
             FROM `source_namespace`.`source_table`
         """.trimIndent()
 
         val actualSql = clickhouseSqlGenerator.copyTable(columnNames, sourceTable, targetTable)
         Assertions.assertEquals(expectedSql, actualSql)
+    }
+
+    @Test
+    fun `test copyTable with column types applies nullIf for boolean columns`() {
+        val sourceTable = TableName("source_namespace", "source_table")
+        val targetTable = TableName("target_namespace", "target_table")
+        val columns =
+            mapOf(
+                "string_col" to ColumnType("String", true),
+                "bool_col" to ColumnType("Bool", true),
+                "int_col" to ColumnType("Int64", true),
+            )
+
+        val actualSql = clickhouseSqlGenerator.copyTable(columns, sourceTable, targetTable)
+
+        // Verify that boolean columns use nullIf to handle empty strings
+        assertTrue(
+            actualSql.contains("nullIf(`bool_col`, '') as `bool_col`"),
+            "Expected SQL to contain nullIf for boolean column, but got: $actualSql"
+        )
+        // Verify that non-boolean columns are not wrapped in nullIf
+        assertTrue(
+            actualSql.contains("`string_col`") && !actualSql.contains("nullIf(`string_col`"),
+            "Expected string column to not use nullIf, but got: $actualSql"
+        )
+        assertTrue(
+            actualSql.contains("`int_col`") && !actualSql.contains("nullIf(`int_col`"),
+            "Expected int column to not use nullIf, but got: $actualSql"
+        )
     }
 
     companion object {
