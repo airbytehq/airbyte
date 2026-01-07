@@ -115,7 +115,7 @@ class SnowflakeBeanFactory {
         val datasourceConfig =
             HikariConfig().apply {
                 connectionTimeout = DATA_SOURCE_CONNECTION_TIMEOUT_MS
-                maximumPoolSize = 10 // TODO adjust based on speed sockets?
+                maximumPoolSize = 30
                 minimumIdle = 0
                 idleTimeout = DATA_SOURCE_IDLE_TIMEOUT_MS
                 initializationFailTimeout = -1
