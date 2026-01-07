@@ -1,8 +1,12 @@
+## Version 0.1.97
+
+load cdk: slightly refactor schema mapper suite
+
 ## Version 0.1.96
 
 **Extract CDK**
 
-* Allow setting an upper limit for the number of rows pulled in a single query for a sequential partition read. 
+* Allow setting an upper limit for the number of rows pulled in a single query for a sequential partition read.
 
 ## Version 0.1.95
 
