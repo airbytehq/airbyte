@@ -35,11 +35,16 @@ class ContentOwnerRequester(HttpRequester):
 
     def get_request_params(
         self,
+        *,
         stream_state: Optional[StreamState] = None,
         stream_slice: Optional[StreamSlice] = None,
         next_page_token: Optional[Mapping[str, Any]] = None,
     ) -> MutableMapping[str, Any]:
-        params = super().get_request_params(stream_state, stream_slice, next_page_token)
+        params = super().get_request_params(
+            stream_state=stream_state,
+            stream_slice=stream_slice,
+            next_page_token=next_page_token,
+        )
         content_owner_id = self.config.get("content_owner_id")
         if content_owner_id:
             params["onBehalfOfContentOwner"] = content_owner_id
