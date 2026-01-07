@@ -4,8 +4,6 @@
 
 package io.airbyte.integrations.destination.clickhouse.write.load
 
-import com.clickhouse.client.api.Client
-import com.clickhouse.client.api.ClientFaultCause
 import com.clickhouse.client.api.data_formats.ClickHouseBinaryFormatReader
 import com.fasterxml.jackson.databind.node.ArrayNode
 import io.airbyte.cdk.command.ConfigurationSpecification
@@ -17,6 +15,7 @@ import io.airbyte.cdk.load.config.DataChannelMedium
 import io.airbyte.cdk.load.data.AirbyteValue
 import io.airbyte.cdk.load.data.ObjectValue
 import io.airbyte.cdk.load.message.Meta
+import io.airbyte.cdk.load.schema.model.TableName
 import io.airbyte.cdk.load.test.util.DestinationCleaner
 import io.airbyte.cdk.load.test.util.DestinationDataDumper
 import io.airbyte.cdk.load.test.util.OutputRecord
@@ -32,10 +31,8 @@ import io.airbyte.integrations.destination.clickhouse.ClickhouseContainerHelper
 import io.airbyte.integrations.destination.clickhouse.Utils
 import io.airbyte.integrations.destination.clickhouse.fixtures.ClickhouseExpectedRecordMapper
 import io.airbyte.integrations.destination.clickhouse.schema.toClickHouseCompatibleName
-import io.airbyte.integrations.destination.clickhouse.spec.ClickhouseConfiguration
 import io.airbyte.integrations.destination.clickhouse.spec.ClickhouseConfigurationFactory
 import io.airbyte.integrations.destination.clickhouse.spec.ClickhouseSpecificationOss
-import io.airbyte.integrations.destination.clickhouse.write.load.ClientProvider.getClient
 import io.airbyte.protocol.models.v0.AirbyteRecordMessageMetaChange
 import java.nio.file.Files
 import java.nio.file.Path
@@ -66,6 +63,11 @@ class ClickhouseDirectLoadWriterWithJson :
     @Test
     override fun testSchemaRegressionAppend() {
         super.testSchemaRegressionAppend()
+    }
+
+    @Test
+    override fun tableIdentifierRegressionTestAppend() {
+        super.tableIdentifierRegressionTestAppend()
     }
 }
 
@@ -161,7 +163,28 @@ abstract class ClickhouseAcceptanceTest(
         dataChannelFormat = dataChannelFormat,
         dataChannelMedium = dataChannelMedium,
         useDataFlowPipeline = true,
-        schemaDumper = ClickhouseSchemaDumper,
+        schemaDumperProvider = { ClickhouseSchemaDumper(it) },
+        opsClientProvider = { Utils.getClickhouseAirbyteClient(it) },
+        tableIdentifierRegressionTestExpectedTableNames =
+            listOf(
+                TableName("table_id_regression_test", "table_id_regression_test"),
+                TableName("table", "table"),
+                TableName("column", "column"),
+                TableName("create", "create"),
+                TableName("delete", "delete"),
+                TableName("e________________________________", "e________________________________"),
+                TableName("_1foo", "_1foo"),
+                TableName("foo_", "table_id_regression_test"),
+                // yes, these are the same table name. Clearly there's a bug in our collision
+                // resolution logic.
+                TableName("foo_", "table_id_regression_test_304"),
+                TableName("foo_", "table_id_regression_test_304"),
+                TableName("table_id_regression_test", "foo_"),
+                TableName("table_id_regression_test", "foo__1b6"),
+                TableName("table_id_regression_test", "foo__e5f"),
+                TableName("UPPER_CASE", "UPPER_CASE"),
+                TableName("Mixed_Case", "Mixed_Case"),
+            )
     ) {
     companion object {
         @JvmStatic
@@ -188,8 +211,8 @@ object ClickhouseDataDumper : DestinationDataDumper {
         spec: ConfigurationSpecification,
         stream: DestinationStream
     ): List<OutputRecord> {
-        val config = ClickhouseSpecToConfig.specToConfig(spec)
-        val client = getClient(config)
+        val config = Utils.specToConfig(spec)
+        val client = Utils.getClickhouseClient(config)
 
         val isDedup = stream.importType is Dedupe
 
@@ -262,7 +285,7 @@ object ClickhouseDataCleaner : DestinationCleaner {
 
     override fun cleanup() {
         try {
-            val client = getClient(config)
+            val client = Utils.getClickhouseClient(config)
 
             val query = "select * from system.databases where name like 'test%'"
 
@@ -305,24 +328,4 @@ fun stringToMeta(metaAsString: String): OutputRecord.Meta {
         changes = changes,
         syncId = metaJson["sync_id"].longValue(),
     )
-}
-
-object ClientProvider {
-    fun getClient(config: ClickhouseConfiguration): Client {
-        return Client.Builder()
-            .setPassword(config.password)
-            .setUsername(config.username)
-            .addEndpoint(config.endpoint)
-            .setDefaultDatabase(config.resolvedDatabase)
-            .retryOnFailures(ClientFaultCause.None)
-            .build()
-    }
-}
-
-object ClickhouseSpecToConfig {
-    fun specToConfig(spec: ConfigurationSpecification): ClickhouseConfiguration {
-        val configOverrides = mutableMapOf<String, String>()
-        return ClickhouseConfigurationFactory()
-            .makeWithOverrides(spec as ClickhouseSpecificationOss, configOverrides)
-    }
 }
