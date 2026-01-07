@@ -201,7 +201,7 @@ class PostgresDirectLoadSqlGenerator(
     fun overwriteTable(sourceTableName: TableName, targetTableName: TableName): String {
         val moveSchemaSql =
             if (sourceTableName.namespace != targetTableName.namespace) {
-                "ALTER TABLE ${getNamespace(sourceTableName)}.${getName(targetTableName)} SET SCHEMA ${getNamespace(targetTableName)};"
+                "\nALTER TABLE ${getNamespace(sourceTableName)}.${getName(targetTableName)} SET SCHEMA ${getNamespace(targetTableName)};"
             } else {
                 ""
             }
@@ -209,8 +209,7 @@ class PostgresDirectLoadSqlGenerator(
         return """
             BEGIN TRANSACTION;
             DROP TABLE IF EXISTS ${getFullyQualifiedName(targetTableName)}$dropTableSuffix;
-            ALTER TABLE ${getFullyQualifiedName(sourceTableName)} RENAME TO ${getName(targetTableName)};
-            $moveSchemaSql
+            ALTER TABLE ${getFullyQualifiedName(sourceTableName)} RENAME TO ${getName(targetTableName)};$moveSchemaSql
             COMMIT;
             """
     }
