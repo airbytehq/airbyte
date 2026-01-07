@@ -33,7 +33,7 @@ class PostgresDirectLoadSqlGenerator(
         private val EXTRACTED_AT_COLUMN_NAME = quoteIdentifier(COLUMN_NAME_AB_EXTRACTED_AT)
         private val DELETED_AT_COLUMN_NAME = quoteIdentifier(CDC_DELETED_AT_COLUMN)
 
-        private fun quoteIdentifier(identifier: String) = "\"${identifier}\""
+        private fun quoteIdentifier(identifier: String) = "\"${identifier.replace("\"", "\"\"")}\""
     }
 
     /**
@@ -199,10 +199,18 @@ class PostgresDirectLoadSqlGenerator(
         quoteIdentifier(postgresColumnUtils.getExtractedAtIndexName(tableName))
 
     fun overwriteTable(sourceTableName: TableName, targetTableName: TableName): String {
+        val moveSchemaSql =
+            if (sourceTableName.namespace != targetTableName.namespace) {
+                "ALTER TABLE ${getNamespace(sourceTableName)}.${getName(targetTableName)} SET SCHEMA ${getNamespace(targetTableName)};"
+            } else {
+                ""
+            }
+
         return """
             BEGIN TRANSACTION;
             DROP TABLE IF EXISTS ${getFullyQualifiedName(targetTableName)}$dropTableSuffix;
             ALTER TABLE ${getFullyQualifiedName(sourceTableName)} RENAME TO ${getName(targetTableName)};
+            $moveSchemaSql
             COMMIT;
             """
     }
@@ -229,9 +237,13 @@ class PostgresDirectLoadSqlGenerator(
         }
     }
 
-    private fun getTargetColumnNames(columnNameMapping: ColumnNameMapping): List<String> =
-        getDefaultColumnNames() +
+    private fun getTargetColumnNames(columnNameMapping: ColumnNameMapping): List<String> {
+        if (postgresConfiguration.legacyRawTablesOnly == true) {
+            return getDefaultColumnNames()
+        }
+        return getDefaultColumnNames() +
             columnNameMapping.map { (_, targetName) -> quoteIdentifier(targetName) }
+    }
 
     private fun getTargetColumnName(
         streamColumnName: String,
@@ -523,7 +535,7 @@ class PostgresDirectLoadSqlGenerator(
     }
 
     fun createNamespace(namespace: String): String {
-        return "CREATE SCHEMA IF NOT EXISTS \"$namespace\";"
+        return "CREATE SCHEMA IF NOT EXISTS ${quoteIdentifier(namespace)};"
     }
 
     fun getGenerationId(tableName: TableName): String =
@@ -533,8 +545,8 @@ class PostgresDirectLoadSqlGenerator(
         """
         SELECT column_name, data_type, is_nullable
         FROM information_schema.columns
-        WHERE table_schema = '${tableName.namespace}'
-        AND table_name = '${tableName.name}';
+        WHERE table_schema = '${tableName.namespace.replace("'", "''")}'
+        AND table_name = '${tableName.name.replace("'", "''")}';
         """
 
     /**
@@ -569,8 +581,8 @@ class PostgresDirectLoadSqlGenerator(
         JOIN pg_attribute a ON a.attrelid = i.indrelid AND a.attnum = ANY(i.indkey)
         JOIN pg_class c ON c.oid = i.indexrelid
         JOIN pg_namespace n ON n.oid = c.relnamespace
-        WHERE c.relname = '${indexName}'
-        AND n.nspname = '${namespace}'
+        WHERE c.relname = '${indexName.replace("'", "''")}'
+        AND n.nspname = '${namespace.replace("'", "''")}'
         ORDER BY array_position(i.indkey, a.attnum);
         """
 
@@ -579,7 +591,7 @@ class PostgresDirectLoadSqlGenerator(
 
     fun copyFromCsv(tableName: TableName): String =
         """
-        COPY "${tableName.namespace}"."${tableName.name}"
+        COPY ${getFullyQualifiedName(tableName)}
         FROM STDIN
         WITH (FORMAT csv)
         """
@@ -652,14 +664,20 @@ class PostgresDirectLoadSqlGenerator(
     private fun getFullyQualifiedName(tableName: TableName): String =
         "${getNamespace(tableName)}.${getName(tableName)}"
 
-    private fun getNamespace(tableName: TableName): String = "\"${tableName.namespace}\""
+    private fun getNamespace(tableName: TableName): String {
+        return if (tableName.namespace.isNullOrBlank()) {
+            quoteIdentifier("public")
+        } else {
+            quoteIdentifier(tableName.namespace)
+        }
+    }
 
-    private fun getName(tableName: TableName): String = "\"${tableName.name}\""
+    private fun getName(tableName: TableName): String = quoteIdentifier(tableName.name)
 
-    private fun getName(column: Column): String = "\"${column.columnName}\""
+    private fun getName(column: Column): String = quoteIdentifier(column.columnName)
 
     internal fun Column.toSQLString(): String {
         val isNullableSuffix = if (nullable) "" else "NOT NULL"
-        return "\"$columnName\" $columnTypeName $isNullableSuffix".trim()
+        return "${quoteIdentifier(columnName)} $columnTypeName $isNullableSuffix".trim()
     }
 }

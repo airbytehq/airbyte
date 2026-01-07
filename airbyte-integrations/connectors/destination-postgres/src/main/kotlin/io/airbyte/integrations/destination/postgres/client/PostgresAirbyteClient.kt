@@ -245,23 +245,45 @@ class PostgresAirbyteClient(
             // Convert from TableColumns format to Column format
             val columnsToAdd =
                 columnChangeset.columnsToAdd
-                    .map { (name, type) -> Column(name, type.type, type.nullable) }
+                    .map { (name, type) ->
+                        io.airbyte.integrations.destination.postgres.sql.Column(
+                            columnName = name,
+                            columnTypeName = type.type.toString(), // forcing String to see if it accepts String. Wait, I want to test if it accepts AirbyteType.
+                            nullable = type.nullable
+                        )
+                    }
                     .toSet()
             val columnsToRemove =
                 columnChangeset.columnsToDrop
-                    .map { (name, type) -> Column(name, type.type, type.nullable) }
+                    .map { (name, type) ->
+                        io.airbyte.integrations.destination.postgres.sql.Column(
+                            columnName = name,
+                            columnTypeName = type.type.toString(),
+                            nullable = type.nullable
+                        )
+                    }
                     .toSet()
             val columnsToModify =
                 columnChangeset.columnsToChange
                     .map { (name, change) ->
-                        Column(name, change.newType.type, change.newType.nullable)
+                        io.airbyte.integrations.destination.postgres.sql.Column(
+                            columnName = name,
+                            columnTypeName = change.newType.type.toString(),
+                            nullable = change.newType.nullable
+                        )
                     }
                     .toSet()
             val columnsInDb =
                 (columnChangeset.columnsToRetain +
                         columnChangeset.columnsToDrop +
                         columnChangeset.columnsToChange.mapValues { it.value.originalType })
-                    .map { (name, type) -> Column(name, type.type, type.nullable) }
+                    .map { (name, type) ->
+                        io.airbyte.integrations.destination.postgres.sql.Column(
+                            columnName = name,
+                            columnTypeName = type.type.toString(),
+                            nullable = type.nullable
+                        )
+                    }
                     .toSet()
 
             execute(
