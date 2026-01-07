@@ -95,6 +95,7 @@ contain the `predictive_analytics` field and workflows depending on this field w
 
 | Version | Date       | Pull Request                                               | Subject                                                                                                                                                                |
 |:--------|:-----------|:-----------------------------------------------------------|:-----------------------------------------------------------------------------------------------------------------------------------------------------------------------|
+| 2.16.10 | 2026-01-06 | [71135](https://github.com/airbytehq/airbyte/pull/71135) | Fix global exclusions query filter and timestamp field |
 | 2.16.9 | 2025-12-16 | [70783](https://github.com/airbytehq/airbyte/pull/70783) | Update dependencies |
 | 2.16.8 | 2025-11-25 | [70028](https://github.com/airbytehq/airbyte/pull/70028) | Update dependencies |
 | 2.16.7 | 2025-11-18 | [69457](https://github.com/airbytehq/airbyte/pull/69457) | Update dependencies |

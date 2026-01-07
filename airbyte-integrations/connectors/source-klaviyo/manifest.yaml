@@ -106,6 +106,8 @@ definitions:
           http_method: GET
           request_parameters:
             additional-fields[profile]: subscriptions
+            filter: "and(greater-than(subscriptions.email.marketing.suppression.timestamp,{{ stream_interval.start_time }}),greater-than(subscriptions.email.marketing.suppression.timestamp,1970-01-01T00:00:00Z))"
+            sort: subscriptions.email.marketing.suppression.timestamp
           request_headers:
             Accept: application/json
             Revision: "2024-10-15"
@@ -136,12 +138,6 @@ definitions:
             type: DpathExtractor
             field_path:
               - data
-          record_filter:
-            type: RecordFilter
-            condition: >-
-              {{
-              record['attributes']['subscriptions']['email']['marketing']['suppression']
-              }}
         paginator:
           type: DefaultPaginator
           page_token_option:
@@ -161,7 +157,7 @@ definitions:
           - "%Y-%m-%dT%H:%M:%S.%f%z"
           - "%Y-%m-%dT%H:%M:%S%z"
           - "%Y-%m-%d %H:%M:%S%z"
-        datetime_format: "%Y-%m-%dT%H:%M:%S%z"
+        datetime_format: "%Y-%m-%dT%H:%M:%SZ"
         start_datetime:
           type: MinMaxDatetime
           datetime: "{{ config.get('start_date', '2012-01-01T00:00:00Z') }}"
@@ -171,7 +167,7 @@ definitions:
           fields:
             - path:
                 - updated
-              value: "{{ record.get('attributes', {}).get('updated') }}"
+              value: "{{ record.get('attributes', {}).get('subscriptions', {}).get('email', {}).get('marketing', {}).get('suppression', {}).get('timestamp') }}"
         - type: AddFields
           fields:
             - path:
