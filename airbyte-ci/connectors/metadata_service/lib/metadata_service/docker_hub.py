@@ -19,7 +19,7 @@ def get_docker_hub_auth_token() -> str:
     auth_url = "https://hub.docker.com/v2/users/login/"
     auth_data = {"username": docker_username, "password": docker_password}
     # make request look like docker client to avoid cloudflare blocks in CI
-    headers = {'User-Agent': 'Docker-Client/24.0.0 (linux)'}
+    headers = {"User-Agent": "Docker-Client/24.0.0 (linux)"}
     response = requests.post(auth_url, json=auth_data, headers=headers)
 
     if response.status_code != 200:
