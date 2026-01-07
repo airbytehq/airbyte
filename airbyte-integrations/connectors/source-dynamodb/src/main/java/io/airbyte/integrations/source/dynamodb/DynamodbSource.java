@@ -227,7 +227,7 @@ public class DynamodbSource extends BaseConnector implements Source {
 
     final String primitiveType = switch (cursorType) {
       case "\"string\"", "[\"null\",\"string\"]" -> "string";
-      case "\"integer\"", "[\"null\",\"integer\"]" -> "integer";
+      case "\"integer\"", "[\"null\",\"integer\"]" -> "number";
       case "\"number\"", "[\"null\",\"number\"]" -> "number";
       default -> throw new UnsupportedOperationException("Unsupported attribute type for filtering");
     };
