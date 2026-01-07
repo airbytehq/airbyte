@@ -7,17 +7,21 @@ for sprint planning, backlog management, and development workflow analysis.
 
 ## Example questions
 
+The Linear connector is optimized to handle prompts like these.
+
 - Show me the open issues assigned to my team this week
 - List out all projects I'm currently involved in
 - Analyze the workload distribution across my development team
 - What are the top priority issues in our current sprint?
 - Identify the most active projects in our organization right now
-- Summarize the recent issues for [teamMember] in the last two weeks
+- Summarize the recent issues for \{team_member\} in the last two weeks
 - Compare the issue complexity across different teams
 - Which projects have the most unresolved issues?
 - Give me an overview of my team's current project backlog
 
 ## Unsupported questions
+
+The Linear connector isn't currently able to handle prompts like these.
 
 - Create a new issue for the backend team
 - Update the priority of this specific issue
@@ -63,6 +67,6 @@ For the service's official API docs, see the [Linear API reference](https://line
 
 ## Version information
 
-- **Package version:** 0.19.23
-- **Connector version:** 0.1.1
-- **Generated with Connector SDK commit SHA:** 12f6b994298f84dfa217940afe7c6b19bec4167b
+- **Package version:** 0.19.27
+- **Connector version:** 0.1.2
+- **Generated with Connector SDK commit SHA:** 0580c7278394ff52ee3bec5d5192905ac3b15878
