@@ -214,7 +214,7 @@ class PostgresTestDatabase(container: PostgreSQLContainer<*>) :
                 )
         }
 
-        fun withXminReplication(): PostgresConfigBuilder? {
+        fun withXminReplication(): PostgresConfigBuilder {
             return this.with(
                 "replication_method",
                 Jsons.jsonNode<ImmutableMap<Any, Any>>(

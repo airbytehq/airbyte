@@ -241,8 +241,8 @@ class PostgresSourceConfigurationSpecification : ConfigurationSpecification() {
     JsonSubTypes.Type(value = EncryptionAllow::class, name = "allow"),
     JsonSubTypes.Type(value = EncryptionPrefer::class, name = "prefer"),
     JsonSubTypes.Type(value = EncryptionRequire::class, name = "require"),
-    JsonSubTypes.Type(value = SslVerifyCertificate::class, name = "verify_ca"),
-    JsonSubTypes.Type(value = SslVerifyFull::class, name = "verify_full"),
+    JsonSubTypes.Type(value = SslVerifyCertificate::class, name = "verify-ca"),
+    JsonSubTypes.Type(value = SslVerifyFull::class, name = "verify-full"),
 )
 @JsonSchemaTitle("Encryption")
 @JsonSchemaDescription("The encryption method which is used when communicating with the database.")
@@ -272,7 +272,7 @@ data object EncryptionPrefer : EncryptionSpecification
 )
 data object EncryptionRequire : EncryptionSpecification
 
-@JsonSchemaTitle("verify_ca")
+@JsonSchemaTitle("verify-ca")
 @JsonSchemaDescription(
     "To always require encryption and verify that the source has a valid SSL certificate."
 )
@@ -311,7 +311,7 @@ class SslVerifyCertificate : EncryptionSpecification {
     var sslClientPassword: String? = null
 }
 
-@JsonSchemaTitle("verify_full")
+@JsonSchemaTitle("verify-full")
 @JsonSchemaDescription(
     "To always require encryption and verify that the source has a valid SSL certificate."
 )
@@ -362,8 +362,8 @@ class MicronautPropertiesFriendlyEncryptionSpecification {
             "allow" -> EncryptionAllow
             "prefer" -> EncryptionPrefer
             "require" -> EncryptionRequire
-            "verify_ca" -> SslVerifyCertificate().also { it.sslCertificate = sslCertificate!! }
-            "verify_full" -> SslVerifyFull().also { it.sslCertificate = sslCertificate!! }
+            "verify-ca" -> SslVerifyCertificate().also { it.sslCertificate = sslCertificate!! }
+            "verify-full" -> SslVerifyFull().also { it.sslCertificate = sslCertificate!! }
             else -> throw ConfigErrorException("invalid value $mode")
         }
 }

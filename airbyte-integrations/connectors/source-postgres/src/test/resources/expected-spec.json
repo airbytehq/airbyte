@@ -408,7 +408,7 @@
             ]
           },
           {
-            "title": "verify_ca",
+            "title": "verify-ca",
             "type": "object",
             "additionalProperties": true,
             "description": "To always require encryption and verify that the source has a valid SSL certificate.",
@@ -416,9 +416,9 @@
               "mode": {
                 "type": "string",
                 "enum": [
-                  "verify_ca"
+                  "verify-ca"
                 ],
-                "default": "verify_ca"
+                "default": "verify-ca"
               },
               "ca_certificate": {
                 "type": "string",
@@ -455,7 +455,7 @@
             ]
           },
           {
-            "title": "verify_full",
+            "title": "verify-full",
             "type": "object",
             "additionalProperties": true,
             "description": "To always require encryption and verify that the source has a valid SSL certificate.",
@@ -463,9 +463,9 @@
               "mode": {
                 "type": "string",
                 "enum": [
-                  "verify_full"
+                  "verify-full"
                 ],
-                "default": "verify_full"
+                "default": "verify-full"
               },
               "ca_certificate": {
                 "type": "string",

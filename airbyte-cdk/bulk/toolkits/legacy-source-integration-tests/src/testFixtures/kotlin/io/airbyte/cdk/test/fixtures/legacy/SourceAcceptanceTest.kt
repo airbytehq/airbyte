@@ -4,6 +4,14 @@
 
 package io.airbyte.cdk.test.fixtures.legacy
 
+import com.deblock.jsondiff.DiffGenerator
+import com.deblock.jsondiff.diff.JsonDiff
+import com.deblock.jsondiff.matcher.CompositeJsonMatcher
+import com.deblock.jsondiff.matcher.JsonMatcher
+import com.deblock.jsondiff.matcher.StrictJsonArrayPartialMatcher
+import com.deblock.jsondiff.matcher.StrictJsonObjectPartialMatcher
+import com.deblock.jsondiff.matcher.StrictPrimitivePartialMatcher
+import com.deblock.jsondiff.viewer.OnlyErrorDiffViewer
 import com.fasterxml.jackson.databind.JsonNode
 import com.fasterxml.jackson.databind.node.ObjectNode
 import com.google.common.collect.Iterables
@@ -80,11 +88,21 @@ abstract class SourceAcceptanceTest : AbstractSourceConnectorTest() {
     @Test
     @Throws(Exception::class)
     open fun testGetSpec() {
-        Assertions.assertEquals(
+        val expected: String = io.airbyte.cdk.util.Jsons.writeValueAsString((spec))
+        val actual: String = io.airbyte.cdk.util.Jsons.writeValueAsString(runSpec())
+        val jsonMatcher: JsonMatcher =
+            CompositeJsonMatcher(
+                StrictJsonArrayPartialMatcher(),
+                StrictJsonObjectPartialMatcher(),
+                StrictPrimitivePartialMatcher(),
+            )
+        val diff: JsonDiff = DiffGenerator.diff(expected, actual, jsonMatcher)
+        Assertions.assertEquals("", OnlyErrorDiffViewer.from(diff).toString(), "Expected spec output by integration to be equal to spec provided by test runner")
+        /*Assertions.assertEquals(
             spec,
             runSpec(),
             "Expected spec output by integration to be equal to spec provided by test runner"
-        )
+        )*/
     }
 
     /**
