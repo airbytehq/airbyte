@@ -9,6 +9,7 @@ check:
 
 definitions:
   # Authenticator Definitions
+  # DEMO: This comment triggers Gate 2 (Security) - modifying authenticator config
   api_token_auth:
     type: BearerAuthenticator
     api_token: "{{ config['credentials']['access_token'] }}"
