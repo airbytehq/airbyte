@@ -171,7 +171,6 @@ definitions:
           fields:
             - path:
                 - updated
-              #value: "{{ record.get('attributes', {}).get('subscriptions', {}).get('email', {}).get('marketing', {}).get('suppression', [])[0].get('timestamp') }}"
               value: "{{ record['attributes']['subscriptions']['email']['marketing']['suppression']['timestamp'] }}"
         - type: AddFields
           fields:
