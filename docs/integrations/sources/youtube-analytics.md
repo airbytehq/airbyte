@@ -39,11 +39,11 @@ Youtube also generates historical data reports covering the 30-day period prior 
 
 ### Content Owner ID (Optional)
 
-If you manage multiple YouTube channels (brand accounts) under a single Google account, you may need to specify which channel's data to retrieve. The **Content Owner ID** field allows you to specify the content owner for whom the API request is being made.
+The **Content Owner ID** field is for YouTube partners who participate in the [YouTube Partner Program](https://support.google.com/youtube/answer/72851) and manage multiple channels through a content owner account. This includes Multi-Channel Networks (MCNs) and media companies that manage content across multiple YouTube channels.
 
-- If you only have one YouTube channel associated with your Google account, you can leave this field empty.
-- If you have multiple channels and want to retrieve data for a specific one, enter the content owner ID for that channel.
-- If you're unsure of your content owner ID, you can find it in the [YouTube Studio](https://studio.youtube.com/) under Settings > Channel > Advanced settings.
+- If you are a regular YouTube channel owner, leave this field empty. The connector will retrieve data for the channel associated with your OAuth credentials.
+- If you are a YouTube partner with a content owner account, enter your content owner ID to retrieve data for channels managed under that account.
+- Content owner IDs are provided by YouTube when you join the YouTube Partner Program. If you're unsure whether you have a content owner ID, you likely don't need one.
 
 ## Supported sync modes
 
