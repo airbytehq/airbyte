@@ -25,8 +25,8 @@ definitions:
             Content-Type: application/json
           request_body_json:
             query: >-
-              query GetCustomers($after: String) {
-                customers(paging: { first: 50, after: $after }) {
+              query GetCustomers($paging: CursorPaging) {
+                customers(paging: $paging) {
                   edges {
                     node {
                       id
@@ -57,6 +57,9 @@ definitions:
                   totalCount
                 }
               }
+            variables:
+              paging:
+                first: 50
         record_selector:
           type: RecordSelector
           extractor:
@@ -72,11 +75,10 @@ definitions:
           page_token_option:
             type: RequestOption
             inject_into: body_json
-            field_name: variables
+            field_name: variables.paging.after
           pagination_strategy:
             type: CursorPagination
-            cursor_value: >-
-              {{ '{"after": "' + response.data.customers.pageInfo.endCursor + '"}' if response.data.customers.pageInfo.endCursor else "" }}
+            cursor_value: "{{ response.data.customers.pageInfo.endCursor }}"
             stop_condition: "{{ response.data.customers.pageInfo.hasNextPage is false }}"
         decoder:
           type: JsonDecoder
@@ -99,8 +101,8 @@ definitions:
             Content-Type: application/json
           request_body_json:
             query: >-
-              query GetSubscriptions($after: String) {
-                subscriptions(paging: { first: 50, after: $after }) {
+              query GetSubscriptions($paging: CursorPaging) {
+                subscriptions(paging: $paging) {
                   edges {
                     node {
                       id
@@ -134,6 +136,9 @@ definitions:
                   totalCount
                 }
               }
+            variables:
+              paging:
+                first: 50
         record_selector:
           type: RecordSelector
           extractor:
@@ -149,11 +154,10 @@ definitions:
           page_token_option:
             type: RequestOption
             inject_into: body_json
-            field_name: variables
+            field_name: variables.paging.after
           pagination_strategy:
             type: CursorPagination
-            cursor_value: >-
-              {{ '{"after": "' + response.data.subscriptions.pageInfo.endCursor + '"}' if response.data.subscriptions.pageInfo.endCursor else "" }}
+            cursor_value: "{{ response.data.subscriptions.pageInfo.endCursor }}"
             stop_condition: "{{ response.data.subscriptions.pageInfo.hasNextPage is false }}"
         decoder:
           type: JsonDecoder
