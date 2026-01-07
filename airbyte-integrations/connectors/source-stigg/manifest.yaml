@@ -1,4 +1,4 @@
-version: 7.4.2
+version: 6.51.0
 
 type: DeclarativeSource
 
@@ -50,8 +50,7 @@ definitions:
           page_token_option:
             type: RequestOption
             inject_into: body_json
-            field_path:
-              - variables
+            field_name: variables
           pagination_strategy:
             type: CursorPagination
             cursor_value: >-
@@ -105,8 +104,7 @@ definitions:
           page_token_option:
             type: RequestOption
             inject_into: body_json
-            field_path:
-              - variables
+            field_name: variables
           pagination_strategy:
             type: CursorPagination
             cursor_value: >-
