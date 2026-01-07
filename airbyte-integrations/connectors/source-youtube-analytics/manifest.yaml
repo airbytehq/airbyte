@@ -1,4 +1,4 @@
-version: 6.41.1
+version: 6.42.0
 
 type: DeclarativeSource
 
@@ -428,6 +428,8 @@ definitions:
       refresh_token: '{{ config[''credentials'']["refresh_token"] }}'
       refresh_request_body: {}
       token_refresh_endpoint: https://oauth2.googleapis.com/token
+    request_parameters:
+      onBehalfOfContentOwner: "{{ config.get('content_owner_id', '') }}"
     error_handler:
       type: DefaultErrorHandler
       response_filters:
@@ -511,6 +513,15 @@ spec:
       - credentials
     additionalProperties: true
     properties:
+      content_owner_id:
+        type: string
+        title: Content Owner ID
+        description: >-
+          The ID of the content owner for whom the API request is being made.
+          This is useful if you manage multiple YouTube channels and need to
+          specify which content owner's data to retrieve. If not provided, the
+          API will use the channel associated with your OAuth credentials.
+        order: 0
       credentials:
         type: object
         title: Authenticate via OAuth 2.0

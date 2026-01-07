@@ -58,7 +58,20 @@ class JobRequester(HttpRequester):
             log_formatter,
         )
 
-        stream_job = [r for r in response.json()["jobs"] if r["reportTypeId"] == self._parameters["report_type_id"]]
+        response_json = response.json()
+        if "jobs" not in response_json:
+            error_message = "YouTube Reporting API did not return expected 'jobs' data. "
+            if "error" in response_json:
+                error_details = response_json["error"]
+                error_message += f"API Error: {error_details.get('message', str(error_details))}. "
+            error_message += (
+                "This may indicate that your Google account does not have a YouTube channel associated with it, "
+                "or the OAuth credentials do not have the required YouTube Analytics permissions. "
+                "If you manage multiple YouTube channels, try specifying a 'content_owner_id' in the connector configuration."
+            )
+            raise ValueError(error_message)
+
+        stream_job = [r for r in response_json["jobs"] if r["reportTypeId"] == self._parameters["report_type_id"]]
 
         if not stream_job:
             self._http_client.send_request(
