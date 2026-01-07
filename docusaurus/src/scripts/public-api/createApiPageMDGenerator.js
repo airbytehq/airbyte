@@ -70,7 +70,33 @@ function createApiPageMD(pageData) {
         multilinePattern,
         `<SourceRequestSchema pageId="${pageId}" />`,
       );
+    }
 
+    // Handle response configuration (for both response-only and dual-config endpoints)
+    if (hasResponseConfiguration) {
+      // Replace StatusCodes import
+      const statusCodesImportPattern =
+        /import\s+StatusCodes\s+from\s+["']@theme\/StatusCodes["'];?\n?/g;
+      markdown = markdown.replace(statusCodesImportPattern, "");
+
+      // Replace <StatusCodes ... /> components with SourceResponseSchema
+      const statusCodesComponentPattern = /<StatusCodes\s+[^>]*\/>/gs;
+      markdown = markdown.replace(
+        statusCodesComponentPattern,
+        `<SourceResponseSchema pageId="${pageId}" />`,
+      );
+
+      // Replace <StatusCodes ... > ... </StatusCodes> components with SourceResponseSchema
+      const statusCodesMultilinePattern =
+        /<StatusCodes\s+[^>]*>[\s\S]*?<\/StatusCodes>/g;
+      markdown = markdown.replace(
+        statusCodesMultilinePattern,
+        `<SourceResponseSchema pageId="${pageId}" />`,
+      );
+    }
+
+    // If request config exists but no response config, still remove StatusCodes (existing behavior)
+    if (hasRequestConfiguration && !hasResponseConfiguration) {
       // Remove StatusCodes import
       const statusCodesImportPattern =
         /import\s+StatusCodes\s+from\s+["']@theme\/StatusCodes["'];?\n?/g;
@@ -84,29 +110,6 @@ function createApiPageMD(pageData) {
       const statusCodesMultilinePattern =
         /<StatusCodes\s+[^>]*>[\s\S]*?<\/StatusCodes>/g;
       markdown = markdown.replace(statusCodesMultilinePattern, "");
-    } else if (hasResponseConfiguration) {
-      // For response-only endpoints, replace StatusCodes with TBD placeholder
-      // Don't touch RequestSchema - it's part of the response schema
-
-      // Replace StatusCodes import
-      const statusCodesImportPattern =
-        /import\s+StatusCodes\s+from\s+["']@theme\/StatusCodes["'];?\n?/g;
-      markdown = markdown.replace(statusCodesImportPattern, "");
-
-      // Replace <StatusCodes ... /> components with TBD
-      const statusCodesComponentPattern = /<StatusCodes\s+[^>]*\/>/gs;
-      markdown = markdown.replace(
-        statusCodesComponentPattern,
-        "TBD: Response Schema Component",
-      );
-
-      // Replace <StatusCodes ... > ... </StatusCodes> components with TBD
-      const statusCodesMultilinePattern =
-        /<StatusCodes\s+[^>]*>[\s\S]*?<\/StatusCodes>/g;
-      markdown = markdown.replace(
-        statusCodesMultilinePattern,
-        "TBD: Response Schema Component",
-      );
     }
   }
 
@@ -125,8 +128,58 @@ function extractEndpointInfo(pageData) {
   try {
     // Get schemas from request body and response
     const requestBodySchema = pageData.api.requestBody?.content?.['application/json']?.schema;
-    const successfulResponse = pageData.api.responses?.['200'] || pageData.api.responses?.['201'];
-    const responseSchema = successfulResponse?.content?.['application/json']?.schema;
+
+    // Extract all responses with their status codes and descriptions
+    const responses = pageData.api.responses || {};
+    const responsesByStatus = {};
+
+    for (const [statusCode, responseData] of Object.entries(responses)) {
+      // Extract examples from response (prefer application/json)
+      let examples = [];
+      let schema = null;
+      let properties = [];
+
+      if (responseData?.content?.['application/json']) {
+        schema = responseData.content['application/json'].schema;
+        const jsonExamples = responseData.content['application/json'].examples || {};
+        examples = Object.entries(jsonExamples).map(([exampleName, exampleData]) => ({
+          name: exampleName,
+          value: exampleData.value || exampleData
+        }));
+      } else if (responseData?.content) {
+        // If no JSON, try to get examples from first available content type
+        const firstContentType = Object.keys(responseData.content)[0];
+        if (firstContentType) {
+          schema = responseData.content[firstContentType].schema;
+          const firstExamples = responseData.content[firstContentType].examples || {};
+          examples = Object.entries(firstExamples).map(([exampleName, exampleData]) => ({
+            name: exampleName,
+            value: exampleData.value || exampleData
+          }));
+        }
+      }
+
+      // Extract properties from schema for this specific status code
+      if (schema?.properties) {
+        const required = schema.required || [];
+        for (const [name, prop] of Object.entries(schema.properties)) {
+          properties.push({
+            name,
+            type: prop.type || 'string',
+            required: required.includes(name),
+            description: prop.description || ''
+          });
+        }
+      }
+
+      // Always add the status code with description, examples, and properties
+      responsesByStatus[statusCode] = {
+        description: responseData.description || '',
+        examples: examples,
+        properties: properties,
+        _schema: schema  // Temporarily store for configuration extraction, don't export
+      };
+    }
 
     // Check request body for configuration
     let requestInfo = null;
@@ -134,10 +187,19 @@ function extractEndpointInfo(pageData) {
       requestInfo = extractConfigurationInfo(requestBodySchema, 'request');
     }
 
-    // Check response for configuration
+    // Check all responses for configuration
     let responseInfo = null;
-    if (responseSchema?.properties) {
-      responseInfo = extractConfigurationInfo(responseSchema, 'response');
+    for (const [statusCode, responseData] of Object.entries(responsesByStatus)) {
+      const configInfo = extractConfigurationInfo(responseData._schema, 'response');
+      if (configInfo) {
+        responseInfo = configInfo;
+        break; // Use the first response with configuration found
+      }
+    }
+
+    // Clean up temporary _schema fields from responsesByStatus (keep properties for per-status-code rendering)
+    for (const statusCode in responsesByStatus) {
+      delete responsesByStatus[statusCode]._schema;
     }
 
     // If we found configuration in either request or response, return the data
@@ -147,23 +209,22 @@ function extractEndpointInfo(pageData) {
         path: pageData.api.servers?.[0]?.url || '/',
         method: pageData.api.method?.toUpperCase() || 'POST',
         requestBodyProperties: requestInfo.properties,
-        configurationSchema: requestInfo.configProp,
+        responsesByStatus: responsesByStatus,
         hasRequestConfiguration: true,
         hasResponseConfiguration: !!responseInfo
       };
     }
 
-    // If only response has configuration, add a note for now
+    // If only response has configuration, return the data
     if (responseInfo) {
       return {
         operationId: pageData.api.operationId,
         path: pageData.api.servers?.[0]?.url || '/',
         method: pageData.api.method?.toUpperCase() || 'POST',
         requestBodyProperties: [],
-        configurationSchema: responseInfo.configProp,
+        responsesByStatus: responsesByStatus,
         hasRequestConfiguration: false,
-        hasResponseConfiguration: true,
-        note: 'Response contains SourceConfiguration - custom component needed for rendering'
+        hasResponseConfiguration: true
       };
     }
 
