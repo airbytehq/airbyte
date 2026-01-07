@@ -1,0 +1,25 @@
+data:
+  connectorType: destination
+  connectorSubtype: database
+  dockerImageTag: 0.1.0
+  dockerRepository: airbyte/destination-dev-null-v2
+  githubIssueLabel: destination-dev-null-v2
+  icon: icon.svg
+  license: MIT
+  name: Dev Null V2
+  documentationUrl: https://docs.airbyte.com/integrations/destinations/dev-null
+  registryOverrides:
+    cloud:
+      enabled: false
+    oss:
+      enabled: true
+  releaseStage: alpha
+  supportLevel: community
+  tags:
+    - language:kotlin
+  connectorTestSuitesOptions:
+    - suite: liveTests
+      testConnections:
+        - name: dev-null-v2_silent
+          id: 5f63abc0-f0a0-4f1d-9d64-fa14e7c5a6e8
+metadataSpecVersion: "1.0"
