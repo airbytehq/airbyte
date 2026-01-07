@@ -418,7 +418,8 @@ definitions:
           $ref: "#/schemas/playlist_traffic_source_a2"
 
   base_requester:
-    type: HttpRequester
+    type: CustomRequester
+    class_name: source_youtube_analytics.components.ContentOwnerRequester
     url_base: https://youtubereporting.googleapis.com/v1/
     authenticator:
       type: OAuthAuthenticator
@@ -428,8 +429,6 @@ definitions:
       refresh_token: '{{ config[''credentials'']["refresh_token"] }}'
       refresh_request_body: {}
       token_refresh_endpoint: https://oauth2.googleapis.com/token
-    request_parameters:
-      onBehalfOfContentOwner: "{{ config.get('content_owner_id') if config.get('content_owner_id') else none }}"
     error_handler:
       type: DefaultErrorHandler
       response_filters:

@@ -27,9 +27,30 @@ class CustomDecoder(Decoder):
 
 
 @dataclass
-class JobRequester(HttpRequester):
+class ContentOwnerRequester(HttpRequester):
+    """
+    Custom requester that conditionally adds the onBehalfOfContentOwner parameter
+    only when content_owner_id is provided in the config.
+    """
+
+    def get_request_params(
+        self,
+        stream_state: Optional[StreamState] = None,
+        stream_slice: Optional[StreamSlice] = None,
+        next_page_token: Optional[Mapping[str, Any]] = None,
+    ) -> MutableMapping[str, Any]:
+        params = super().get_request_params(stream_state, stream_slice, next_page_token)
+        content_owner_id = self.config.get("content_owner_id")
+        if content_owner_id:
+            params["onBehalfOfContentOwner"] = content_owner_id
+        return params
+
+
+@dataclass
+class JobRequester(ContentOwnerRequester):
     """
     Sends request to create a report job if it doesn't exist yet.
+    Extends ContentOwnerRequester to conditionally add onBehalfOfContentOwner parameter.
     """
 
     JOB_NAME = "Airbyte reporting job"
