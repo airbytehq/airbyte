@@ -114,7 +114,7 @@ definitions:
       field_name: limit
     pagination_strategy:
       type: CursorPagination
-      page_size: 100
+      page_size: 99  # DEMO: Changed from 100 to trigger Gate 5 (Pre-Release Validation)
       cursor_value: "{{ response.get('paging', {}).get('next', {}).get('after') }}"
 
   base_selector:
