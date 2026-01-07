@@ -118,17 +118,59 @@ jobs:
           done
           echo "Added Docusaurus frontmatter to all generated files"
 
-      - name: Escape Curly Braces for MDX Compatibility
+      - name: Sanitize for MDX Compatibility
         run: |
-          # Docusaurus uses MDX which interprets { and } as JSX expressions.
-          # We need to escape them in the generated markdown files.
+          # Docusaurus uses MDX which interprets { and } as JSX expressions,
+          # and <...> patterns as JSX tags. We need to escape these in the
+          # generated markdown files to prevent MDX compilation errors.
           # Use a Python script for more reliable escaping that handles all edge cases.
           python3 << 'EOF'
           import os
           import re
 
-          def escape_curly_braces(content):
-              """Escape curly braces for MDX compatibility, preserving code blocks and frontmatter."""
+          # HTML tags that should NOT be escaped (legitimate HTML in Markdown)
+          ALLOWED_HTML_TAGS = {
+              'a', 'abbr', 'address', 'article', 'aside', 'audio', 'b', 'bdi', 'bdo',
+              'blockquote', 'br', 'button', 'canvas', 'caption', 'cite', 'code', 'col',
+              'colgroup', 'data', 'datalist', 'dd', 'del', 'details', 'dfn', 'dialog',
+              'div', 'dl', 'dt', 'em', 'embed', 'fieldset', 'figcaption', 'figure',
+              'footer', 'form', 'h1', 'h2', 'h3', 'h4', 'h5', 'h6', 'header', 'hr',
+              'i', 'iframe', 'img', 'input', 'ins', 'kbd', 'label', 'legend', 'li',
+              'main', 'map', 'mark', 'menu', 'meter', 'nav', 'noscript', 'object',
+              'ol', 'optgroup', 'option', 'output', 'p', 'picture', 'pre', 'progress',
+              'q', 'rp', 'rt', 'ruby', 's', 'samp', 'section', 'select', 'small',
+              'source', 'span', 'strong', 'sub', 'summary', 'sup', 'table', 'tbody',
+              'td', 'template', 'textarea', 'tfoot', 'th', 'thead', 'time', 'tr',
+              'track', 'u', 'ul', 'var', 'video', 'wbr',
+          }
+
+          def is_allowed_html_tag(match_text):
+              """Check if a <...> pattern is a legitimate HTML tag."""
+              # Extract the tag name from patterns like <tag>, </tag>, <tag attr="val">
+              tag_match = re.match(r'</?([a-zA-Z][a-zA-Z0-9]*)', match_text)
+              if tag_match:
+                  tag_name = tag_match.group(1).lower()
+                  return tag_name in ALLOWED_HTML_TAGS
+              return False
+
+          def escape_angle_brackets(text):
+              """Escape angle brackets that look like JSX but aren't valid HTML tags."""
+              # Pattern to match <...> sequences that aren't in code
+              # We'll process these and escape non-HTML-tag patterns
+              def replace_angles(match):
+                  content = match.group(0)
+                  if is_allowed_html_tag(content):
+                      return content  # Keep legitimate HTML tags
+                  # Escape the angle brackets for non-HTML patterns
+                  return content.replace('<', '&lt;').replace('>', '&gt;')
+              
+              # Match angle-bracketed content that's not a simple HTML tag
+              # This catches type annotations like <str>, <int | None>, <CDCDeletionMode.HARD_DELETE: 'value'>
+              pattern = r'<[^>]+>'
+              return re.sub(pattern, replace_angles, text)
+
+          def sanitize_for_mdx(content):
+              """Sanitize content for MDX compatibility, preserving code blocks and frontmatter."""
               lines = content.split('\n')
               result = []
               in_code_block = False
@@ -162,7 +204,7 @@ jobs:
                       result.append(line)
                       continue
                   
-                  # Escape curly braces outside of inline code
+                  # Process line outside of code blocks
                   # Split by inline code (backticks) and only escape non-code parts
                   parts = re.split(r'(`[^`]+`)', line)
                   escaped_parts = []
@@ -171,9 +213,11 @@ jobs:
                           # This is inline code, don't escape
                           escaped_parts.append(part)
                       else:
-                          # Escape { and } that aren't already escaped
+                          # Escape curly braces that aren't already escaped
                           part = re.sub(r'(?<!\\)\{', r'\\{', part)
                           part = re.sub(r'(?<!\\)\}', r'\\}', part)
+                          # Escape angle brackets that look like JSX (but not valid HTML)
+                          part = escape_angle_brackets(part)
                           escaped_parts.append(part)
                   result.append(''.join(escaped_parts))
               
@@ -187,12 +231,12 @@ jobs:
                       filepath = os.path.join(root, filename)
                       with open(filepath, 'r', encoding='utf-8') as f:
                           content = f.read()
-                      escaped_content = escape_curly_braces(content)
+                      sanitized_content = sanitize_for_mdx(content)
                       with open(filepath, 'w', encoding='utf-8') as f:
-                          f.write(escaped_content)
+                          f.write(sanitized_content)
                       print(f"Processed: {filepath}")
 
-          print("Escaped curly braces in all generated markdown files")
+          print("Sanitized all generated markdown files for MDX compatibility")
           EOF
 
       - name: Cleanup PyAirbyte Source
@@ -202,24 +246,10 @@ jobs:
           rm -rf pyairbyte-source
           echo "Cleaned up temporary files"
 
-      - name: Configure Docusaurus for CommonMark
-        run: |
-          # Ensure Docusaurus uses CommonMark format for .md files to avoid MDX compilation errors
-          # with curly braces in the generated documentation.
-          # See: https://docusaurus.io/docs/markdown-features#mdx-vs-commonmark
-          if ! grep -q 'format: "detect"' docusaurus/docusaurus.config.ts; then
-            # Add format: "detect" to the markdown config section
-            sed -i 's/markdown: {/markdown: {\n    format: "detect",/' docusaurus/docusaurus.config.ts
-            echo "Added markdown.format: detect to Docusaurus config"
-          else
-            echo "Docusaurus config already has format: detect"
-          fi
-
       - name: Check for Changes
         id: changes
         run: |
           git add docs/developers/pyairbyte/reference/
-          git add docusaurus/docusaurus.config.ts
           if git diff --cached --quiet; then
             echo "has_changes=false" >> $GITHUB_OUTPUT
           else

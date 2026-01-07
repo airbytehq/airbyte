@@ -10,11 +10,11 @@ for recruiting analytics and talent acquisition insights.
 
 The Greenhouse connector is optimized to handle prompts like these.
 
-- Show me candidates from {company} who applied last month
+- Show me candidates from \{company\} who applied last month
 - What are the top 5 sources for our job applications this quarter?
 - List all open jobs in the Sales department
 - Analyze the interview schedules for our engineering candidates this week
-- Get details of recent job offers for {team_member}
+- Get details of recent job offers for \{team_member\}
 - Compare the number of applications across different offices
 - Identify candidates who have multiple applications in our system
 - Show me upcoming scheduled interviews for our marketing positions
@@ -26,10 +26,10 @@ The Greenhouse connector is optimized to handle prompts like these.
 The Greenhouse connector isn't currently able to handle prompts like these.
 
 - Create a new job posting for the marketing team
-- Schedule an interview for {candidate}
-- Update the status of {candidate}'s application
+- Schedule an interview for \{candidate\}
+- Update the status of \{candidate\}'s application
 - Delete a candidate profile
-- Send an offer letter to {candidate}
+- Send an offer letter to \{candidate\}
 - Edit the details of a job description
 
 ## Installation
@@ -78,6 +78,6 @@ For the service's official API docs, see the [Greenhouse API reference](https://
 
 ## Version information
 
-- **Package version:** 0.17.26
+- **Package version:** 0.17.27
 - **Connector version:** 0.1.2
-- **Generated with Connector SDK commit SHA:** e0e2f9890347de01530666b6ed5ed7bd22452c62
+- **Generated with Connector SDK commit SHA:** 0580c7278394ff52ee3bec5d5192905ac3b15878
