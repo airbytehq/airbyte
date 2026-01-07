@@ -419,7 +419,7 @@ definitions:
 
   base_requester:
     type: CustomRequester
-    class_name: source_youtube_analytics.components.ContentOwnerRequester
+    class_name: source_declarative_manifest.components.ContentOwnerRequester
     url_base: https://youtubereporting.googleapis.com/v1/
     authenticator:
       type: OAuthAuthenticator
