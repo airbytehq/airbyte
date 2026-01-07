@@ -50,7 +50,8 @@ definitions:
           page_token_option:
             type: RequestOption
             inject_into: body_json
-            field_name: variables
+            field_path:
+              - variables
           pagination_strategy:
             type: CursorPagination
             cursor_value: >-
@@ -104,7 +105,8 @@ definitions:
           page_token_option:
             type: RequestOption
             inject_into: body_json
-            field_name: variables
+            field_path:
+              - variables
           pagination_strategy:
             type: CursorPagination
             cursor_value: >-
