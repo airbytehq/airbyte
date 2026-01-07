@@ -106,7 +106,8 @@ Note: If you are running Airbyte on Windows with Docker backed by WSL2, you have
 
 ### Error message `Request failed:  (UNAVAILABLE, RPC 'GET_WELCOME_PACK')`
 
-This error may indicate that you are connecting with a `0.10.x` DuckDB client (as per DuckDB Destination connector versions `>=0.4.0`) and your database has not yet been upgraded to a version `>=0.10.x`. To resolve this, you'll need to manually upgrade your database or revert to a previous version of the DuckDB Destination connector.
+This error may indicate that you are connecting with a DuckDB client version that is incompatible with your database version. For example, if you are using DuckDB Destination connector version 0.6.0 or later (which uses DuckDB 1.4.x), your database must be compatible with DuckDB 1.4.x. To resolve this, you'll need to manually upgrade your database or revert to a previous version of the DuckDB Destination connector.
+
 For information about migrating between different versions of DuckDB, please see the [DuckDB Migration Guide](./duckdb-migrations).
 
 

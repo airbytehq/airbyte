@@ -1,5 +1,13 @@
 # DuckDB Migration Guide
 
+## Upgrading to 0.6.0
+
+This version updates the DuckDB libraries from `v1.2.1` to `v1.4.2`. DuckDB 1.4.x is an LTS (Long-Term Support) release with one year of community support. DuckDB `1.4.2` is backwards compatible with databases created using versions 0.10.x or higher of DuckDB. If your databases were created using an older version, you may need to manually upgrade your database file.
+
+Note that forward compatibility is provided on a best effort basis, so upgrading may cause your databases to no longer be readable in prior versions of DuckDB. You can read more about the DuckDB storage format here: https://duckdb.org/docs/stable/internals/storage.html.
+
+This version also requires Python 3.10 or higher due to the updated base image.
+
 ## Upgrading to 0.5.0
 
 This version updates the DuckDB libraries from `v0.10.3` to `v1.2.1`. Note that DuckDB `1.2.1` is backwards compatible with databases created using versions 0.10.x or higher of DuckDB. If your databases were created using an older version, you may need to manually upgrade your database file.
