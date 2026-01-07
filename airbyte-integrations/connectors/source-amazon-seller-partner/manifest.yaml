@@ -2831,6 +2831,20 @@ definitions:
         marketplaceIds: '{{ [config["marketplace_id"]] }}'
         dataStartTime: "{{ stream_slice.cursor_slice.start_time }}"
         dataEndTime: "{{ stream_slice.cursor_slice.end_time }}"
+      error_handler:
+        type: CompositeErrorHandler
+        error_handlers:
+          - type: DefaultErrorHandler
+            response_filters:
+              - type: HttpResponseFilter
+                action: RETRY
+                http_codes:
+                  - 403
+            backoff_strategies:
+              - class_name: "source_declarative_manifest.components.AmazonSellerPartnerWaitTimeFromHeaderBackoffStrategy"
+                type: CustomBackoffStrategy
+                header: x-amzn-RateLimit-Limit
+                default_backoff_time: 60
 
     polling_requester:
       type: HttpRequester
