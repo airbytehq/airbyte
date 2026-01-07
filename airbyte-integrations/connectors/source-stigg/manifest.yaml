@@ -34,7 +34,7 @@ definitions:
               cursor } pageInfo { hasNextPage endCursor } totalCount } }
             variables:
               paging:
-                first: 50
+                first: 25
         record_selector:
           type: RecordSelector
           extractor:
@@ -55,7 +55,7 @@ definitions:
           pagination_strategy:
             type: CursorPagination
             cursor_value: >-
-              {{ '{"paging": {"first": 50, "after": "' +
+              {{ '{"paging": {"first": 25, "after": "' +
               response.data.customers.pageInfo.endCursor + '"}}'
               if response.data.customers.pageInfo.endCursor else "" }}
             stop_condition: "{{ response.data.customers.pageInfo.hasNextPage is false }}"
@@ -89,7 +89,7 @@ definitions:
               cursor } pageInfo { hasNextPage endCursor } } }
             variables:
               paging:
-                first: 50
+                first: 25
         record_selector:
           type: RecordSelector
           extractor:
@@ -110,7 +110,7 @@ definitions:
           pagination_strategy:
             type: CursorPagination
             cursor_value: >-
-              {{ '{"paging": {"first": 50, "after": "' +
+              {{ '{"paging": {"first": 25, "after": "' +
               response.data.subscriptions.pageInfo.endCursor + '"}}'
               if response.data.subscriptions.pageInfo.endCursor else "" }}
             stop_condition: "{{ response.data.subscriptions.pageInfo.hasNextPage is false }}"
