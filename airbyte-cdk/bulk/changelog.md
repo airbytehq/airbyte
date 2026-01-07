@@ -1,8 +1,16 @@
-## Version 0.1.94
+## Version 0.1.96
 
 **Extract CDK**
 
 * Allow setting an upper limit for the number of rows pulled in a single query for a sequential partition read. 
+
+## Version 0.1.95
+
+load cdk: add schema mapper test suite
+
+## Version 0.1.94
+
+extract cdk: fix trigger table handling of empty change tables
 
 ## Version 0.1.93
 

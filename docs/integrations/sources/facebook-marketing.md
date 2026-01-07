@@ -232,7 +232,7 @@ To retrieve specific fields from Facebook Ads Insights combined with other break
 </FieldAnchor>
 
 <FieldAnchor field="custom_insights.insights_lookback_window">
-   10. (Optional) For **Custom Insights Lookback Window**, you may set a window in days to revisit data during syncing to capture updated conversion data from the API. Facebook allows for attribution windows of up to 28 days, during which time a conversion can be attributed to an ad. If you have set a custom attribution window in your Facebook account, please set the same value here. Otherwise, you may leave it at the default value of 28. For more information on action attributions, please refer to [the Meta Help Center](https://www.facebook.com/business/help/458681590974355?id=768381033531365).
+   10. (Optional) For **Custom Insights Lookback Window**, you may set a window in days to revisit data during syncing to capture updated conversion data from the API. Facebook allows for click-through attribution windows of up to 28 days, during which time a conversion can be attributed to an ad. View-through attribution is limited to 1 day. If you have set a custom attribution window in your Facebook account, please set the same value here. Otherwise, you may leave it at the default value of 28. For more information on action attributions, please refer to [the Meta Help Center](https://www.facebook.com/business/help/458681590974355?id=768381033531365).
 </FieldAnchor>
 
 <FieldAnchor field="page_size">
@@ -240,7 +240,7 @@ To retrieve specific fields from Facebook Ads Insights combined with other break
 </FieldAnchor>
 
 <FieldAnchor field="insights_lookback_window">
-12. (Optional) For **Insights Window Lookback**, you may set a window in days to revisit data during syncing to capture updated conversion data from the API. Facebook allows for attribution windows of up to 28 days, during which time a conversion can be attributed to an ad. If you have set a custom attribution window in your Facebook account, please set the same value here. Otherwise, you may leave it at the default value of 28. For more information on action attributions, please refer to [the Meta Help Center](https://www.facebook.com/business/help/458681590974355?id=768381033531365).
+12. (Optional) For **Insights Window Lookback**, you may set a window in days to revisit data during syncing to capture updated conversion data from the API. Facebook allows for click-through attribution windows of up to 28 days, during which time a conversion can be attributed to an ad. View-through attribution is limited to 1 day. If you have set a custom attribution window in your Facebook account, please set the same value here. Otherwise, you may leave it at the default value of 28. For more information on action attributions, please refer to [the Meta Help Center](https://www.facebook.com/business/help/458681590974355?id=768381033531365).
 </FieldAnchor>
 
 <FieldAnchor field="insights_job_timeout">
@@ -348,6 +348,15 @@ This response indicates that the Facebook Graph API requires you to reduce the f
 2. **Select the Source**: Click on the source that is having issues with synchronization.
 3. **Toggle Fields**: Unselect (toggle off) the fields you do not require. This action will ensure that these fields are not requested from the Graph API.
 
+### Missing data for 7-day and 28-day view-through attribution windows
+
+Starting January 12, 2026, Meta removed support for the 7-day view-through (`7d_view`) and 28-day view-through (`28d_view`) attribution windows in the Ads Insights API. As a result, these attribution windows were removed from request parameters for `ads_insights` and Ads Insights Reports streams. Data previously returned for these windows is no longer available. For more information, see Meta's [2025 Out-Of-Cycle Changes](https://developers.facebook.com/docs/marketing-api/out-of-cycle-changes/occ-2025/).
+
+#### What data is still available
+
+- The `1d_view` attribution window remains supported and continues returning data where applicable.
+- Click-through attribution windows (`1d_click`, `7d_click`, `28d_click`) are not affected by this change.
+
 ### Missing purchases or purchase value metrics
 
 You may notice that Purchases or purchase value fields in the Ads Insights stream appear incomplete or under-reported for certain date ranges. This issue has been observed across multiple platforms, including direct Facebook API calls. It's not specific to Airbyte, but linked to intermittent upstream API behavior.
@@ -360,7 +369,7 @@ API users have reported missing purchase metrics on [Reddit](https://www.reddit.
 
 Facebook’s Ads Insights API dynamically aggregates and filters metrics. Purchase data may be missing or inconsistent for the following reasons.
 
-- Attribution window processing: Facebook re-attributes purchases up to 28 days after an impression or click, meaning recent data can fluctuate or appear missing until finalized.
+- Attribution window processing: Facebook re-attributes purchases up to 28 days after a click or 1 day after an impression, meaning recent data can fluctuate or appear missing until finalized.
 
 - Complex breakdowns or field combinations: including multiple breakdowns like `action_type`, `action_target_id`, and `action_destination` can result in partial or truncated responses.
 
@@ -389,6 +398,8 @@ Facebook’s Ads Insights API dynamically aggregates and filters metrics. Purcha
 
 | Version    | Date       | Pull Request                                             | Subject                                                                                                                                                                                                                                                                                           |
 |:-----------|:-----------|:---------------------------------------------------------|:--------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------|
+| 4.2.0      | 2026-01-02 | [71029](https://github.com/airbytehq/airbyte/pull/71029) | Add 98 missing fields for custom insights streams including objective_results transformation                                                                                                                                                                                                      |
+| 4.1.3      | 2025-12-30 | [70349](https://github.com/airbytehq/airbyte/pull/70349) | Remove deprecated `7d_view` and `28d_view` attribution windows (Facebook API deprecation effective January 12, 2026)                                                                                                                                                                              |
 | 4.1.2      | 2025-11-05 | [69204](https://github.com/airbytehq/airbyte/pull/69204) | Add config migration that adds default action breakdowns                                                                                                                                                                                                                                          |
 | 4.1.1      | 2025-11-04 | [69169](https://github.com/airbytehq/airbyte/pull/69169) | Finalize progressive rollout.                                                                                                                                                                                                                                                                     |
 | 4.1.1-rc.1 | 2025-10-27 | [68632](https://github.com/airbytehq/airbyte/pull/68632) | Performance improvement on normalization                                                                                                                                                                                                                                                          |

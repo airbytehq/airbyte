@@ -1,5 +1,20 @@
 # Gong changelog
 
+## [0.19.29] - 2026-01-06
+- Updated connector definition (YAML version 0.1.5)
+- Source commit: 0580c727
+- SDK version: 0.1.0
+
+## [0.19.28] - 2026-01-06
+- Updated connector definition (YAML version 0.1.5)
+- Source commit: e0e2f989
+- SDK version: 0.1.0
+
+## [0.19.27] - 2026-01-05
+- Updated connector definition (YAML version 0.1.5)
+- Source commit: 3e274293
+- SDK version: 0.1.0
+
 ## [0.19.26] - 2025-12-19
 - Updated connector definition (YAML version 0.1.5)
 - Source commit: 12f6b994
