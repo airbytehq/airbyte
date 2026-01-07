@@ -7,10 +7,12 @@ tickets, and custom objects for customer relationship management and sales analy
 
 ## Example questions
 
-- Show me all deals from [Company] this quarter
+The Hubspot connector is optimized to handle prompts like these.
+
+- Show me all deals from \{company\} this quarter
 - What are the top 5 most valuable deals in my pipeline right now?
-- List recent tickets from [customerX] and analyze their support trends
-- Search for contacts in the marketing department at [Company]
+- List recent tickets from \{customer\} and analyze their support trends
+- Search for contacts in the marketing department at \{company\}
 - Give me an overview of my sales team's deals in the last 30 days
 - Identify the most active companies in our CRM this month
 - Compare the number of deals closed by different sales representatives
@@ -18,8 +20,10 @@ tickets, and custom objects for customer relationship management and sales analy
 
 ## Unsupported questions
 
-- Create a new contact record for [personX]
-- Update the contact information for [customerY]
+The Hubspot connector isn't currently able to handle prompts like these.
+
+- Create a new contact record for \{person\}
+- Update the contact information for \{customer\}
 - Delete the ticket from last week's support case
 - Schedule a follow-up task for this deal
 - Send an email to all contacts in the sales pipeline
@@ -46,6 +50,7 @@ connector = HubspotConnector(
 result = await connector.contacts.list()
 ```
 
+
 ## Full documentation
 
 This connector supports the following entities and actions.
@@ -66,6 +71,6 @@ For the service's official API docs, see the [Hubspot API reference](https://dev
 
 ## Version information
 
-- **Package version:** 0.15.21
-- **Connector version:** 0.1.2
-- **Generated with Connector SDK commit SHA:** f7c55d3e3cdc7568cab2da9d736285eec58f044b
+- **Package version:** 0.15.28
+- **Connector version:** 0.1.3
+- **Generated with Connector SDK commit SHA:** 0580c7278394ff52ee3bec5d5192905ac3b15878
