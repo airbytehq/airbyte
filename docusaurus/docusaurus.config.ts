@@ -97,7 +97,7 @@ const config: Config = {
       "data-button-hide": "true",
       "data-modal-override-open-selector-ask-ai": ".kapa-ai-trigger",
       "data-mcp-install-menu-enabled": "true",
-      "data-mcp-server-url": "https://airbytedocs.mcp.kapa.ai",
+      "data-mcp-server-url": "https://airbyte.mcp.kapa.ai",
     },
   ],
   headTags: [
