@@ -25,13 +25,16 @@ definitions:
             Content-Type: application/json
           request_body_json:
             query: >-
-              query GetCustomers($after: String) { customers(paging: { first:
-              50, after: $after }) { edges { node { id customerId name email
-              billingId crmId createdAt updatedAt deletedAt additionalMetaData
-              refId defaultPaymentExpirationMonth defaultPaymentExpirationYear
+              query GetCustomers($paging: CursorPaging) { customers(paging:
+              $paging) { edges { node { id customerId name email billingId
+              crmId createdAt updatedAt deletedAt additionalMetaData refId
+              defaultPaymentExpirationMonth defaultPaymentExpirationYear
               defaultPaymentMethodLast4Digits defaultPaymentMethodType
               hasPaymentMethod hasActiveSubscription totalActiveSubscriptions }
               cursor } pageInfo { hasNextPage endCursor } totalCount } }
+            variables:
+              paging:
+                first: 50
         record_selector:
           type: RecordSelector
           extractor:
@@ -51,8 +54,9 @@ definitions:
           pagination_strategy:
             type: CursorPagination
             cursor_value: >-
-              {{ '{"after": "' + response.data.customers.pageInfo.endCursor +
-              '"}' if response.data.customers.pageInfo.endCursor else "" }}
+              {{ '{"paging": {"first": 50, "after": "' +
+              response.data.customers.pageInfo.endCursor + '"}}'
+              if response.data.customers.pageInfo.endCursor else "" }}
             stop_condition: "{{ response.data.customers.pageInfo.hasNextPage is false }}"
         decoder:
           type: JsonDecoder
@@ -75,13 +79,16 @@ definitions:
             Content-Type: application/json
           request_body_json:
             query: >-
-              query GetSubscriptions($after: String) { subscriptions(paging: {
-              first: 50, after: $after }) { edges { node { id subscriptionId
+              query GetSubscriptions($paging: CursorPaging) {
+              subscriptions(paging: $paging) { edges { node { id subscriptionId
               refId status startDate endDate createdAt cancellationDate
               trialEndDate billingId billingLinkUrl crmId crmLinkUrl customerId
               pricingType wasInTrial budgetExceeded currentBillingPeriodStart
               currentBillingPeriodEnd effectiveEndDate additionalMetaData }
               cursor } pageInfo { hasNextPage endCursor } totalCount } }
+            variables:
+              paging:
+                first: 50
         record_selector:
           type: RecordSelector
           extractor:
@@ -101,9 +108,9 @@ definitions:
           pagination_strategy:
             type: CursorPagination
             cursor_value: >-
-              {{ '{"after": "' + response.data.subscriptions.pageInfo.endCursor
-              + '"}' if response.data.subscriptions.pageInfo.endCursor else ""
-              }}
+              {{ '{"paging": {"first": 50, "after": "' +
+              response.data.subscriptions.pageInfo.endCursor + '"}}'
+              if response.data.subscriptions.pageInfo.endCursor else "" }}
             stop_condition: "{{ response.data.subscriptions.pageInfo.hasNextPage is false }}"
         decoder:
           type: JsonDecoder
