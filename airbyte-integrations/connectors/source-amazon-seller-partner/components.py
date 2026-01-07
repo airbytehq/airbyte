@@ -111,6 +111,9 @@ class AmazonSellerPartnerWaitTimeFromHeaderBackoffStrategy(WaitTimeFromHeaderBac
         """
         Check if the response contains the specific "access token expired" error message
         from Amazon SP API and invalidate the token if so.
+
+        The error message can appear in either the 'message' or 'details' field of the
+        error response, so we check both fields.
         """
         if not isinstance(response_or_exception, requests.Response):
             return
@@ -122,8 +125,11 @@ class AmazonSellerPartnerWaitTimeFromHeaderBackoffStrategy(WaitTimeFromHeaderBac
             response_json = response_or_exception.json()
             errors = response_json.get("errors", [])
             for error in errors:
+                # Check both 'message' and 'details' fields as Amazon SP API may return
+                # the token expiration error in either field
+                message = error.get("message", "")
                 details = error.get("details", "")
-                if TOKEN_EXPIRED_ERROR_MESSAGE in details:
+                if TOKEN_EXPIRED_ERROR_MESSAGE in message or TOKEN_EXPIRED_ERROR_MESSAGE in details:
                     if _authenticator_instance is not None:
                         _authenticator_instance.invalidate_token()
                     return

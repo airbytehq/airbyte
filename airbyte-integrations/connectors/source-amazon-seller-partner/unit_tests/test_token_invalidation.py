@@ -39,7 +39,14 @@ def _create_response(status_code: int, json_body: dict) -> requests.Response:
             {"errors": [{"code": "Unauthorized", "message": "Access denied.", "details": TOKEN_EXPIRED_ERROR_MESSAGE}]},
             True,
             True,
-            id="403_with_token_expired_message_invalidates_token",
+            id="403_with_token_expired_in_details_invalidates_token",
+        ),
+        pytest.param(
+            403,
+            {"errors": [{"code": "Unauthorized", "message": TOKEN_EXPIRED_ERROR_MESSAGE, "details": ""}]},
+            True,
+            True,
+            id="403_with_token_expired_in_message_invalidates_token",
         ),
         pytest.param(
             403,
