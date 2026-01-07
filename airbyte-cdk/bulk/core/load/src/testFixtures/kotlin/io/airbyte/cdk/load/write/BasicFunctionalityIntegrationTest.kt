@@ -13,6 +13,7 @@ import io.airbyte.cdk.load.command.DestinationStream
 import io.airbyte.cdk.load.command.ImportType
 import io.airbyte.cdk.load.command.NamespaceMapper
 import io.airbyte.cdk.load.command.Property
+import io.airbyte.cdk.load.component.TableOperationsClient
 import io.airbyte.cdk.load.config.DataChannelFormat
 import io.airbyte.cdk.load.config.DataChannelMedium
 import io.airbyte.cdk.load.config.NamespaceDefinitionType
@@ -98,6 +99,7 @@ import org.junit.jupiter.api.Disabled
 import org.junit.jupiter.api.Test
 import org.junit.jupiter.api.assertAll
 import org.junit.jupiter.api.assertThrows
+import org.junit.jupiter.api.parallel.ResourceLock
 
 // TODO kill Untyped, rename StronglyTyped -> AllTypes, and use the
 //  SimpleTypeBehavior enum for all types.
@@ -350,7 +352,14 @@ abstract class BasicFunctionalityIntegrationTest(
     dataChannelFormat: DataChannelFormat = DataChannelFormat.JSONL,
     val testSpeedModeStatsEmission: Boolean = true,
     val useDataFlowPipeline: Boolean = false,
-    val schemaDumper: SchemaDumper? = null,
+    val schemaDumperProvider: ((ConfigurationSpecification) -> SchemaDumper)? = null,
+    val opsClientProvider: ((ConfigurationSpecification) -> TableOperationsClient)? = null,
+    /**
+     * If you provide a nonnull [opsClientProvider], you MUST also provide a list of expected
+     * [TableName]s. See [RegressionTestFixtures.tableIdentifierRegressionInputStreamDescriptors]
+     * for the list of input stream descriptors.
+     */
+    val tableIdentifierRegressionTestExpectedTableNames: List<TableName> = emptyList(),
 ) :
     IntegrationTest(
         additionalMicronautEnvs = additionalMicronautEnvs,
@@ -5257,6 +5266,29 @@ abstract class BasicFunctionalityIntegrationTest(
                 primaryKey = listOf(listOf("foo!")),
                 cursor = listOf("foo$"),
             )
+        )
+    }
+
+    /**
+     * This test does _not_ randomize the table identifier, to allow for more stringent assertions
+     * against the table names. As a result, it needs to explicitly drop the table(s) before
+     * executing the test. This may cause transient failures if there are multiple concurrent
+     * executions.
+     */
+    // we need to prevent tableIdentifierRegressionTestAppend + tableIdentifierRegressionTestDedup
+    // from executing concurrently, since they'll touch the same tables.
+    @ResourceLock("tableIdentifierRegressionTest")
+    @Test
+    open fun tableIdentifierRegressionTestAppend() {
+        regressionTestFixtures.baseTableIdentifierRegressionTest(Append)
+    }
+
+    /** See [tableIdentifierRegressionTestAppend] for information. */
+    @ResourceLock("tableIdentifierRegressionTest")
+    @Test
+    open fun tableIdentifierRegressionTestDedup() {
+        regressionTestFixtures.baseTableIdentifierRegressionTest(
+            Dedupe(primaryKey = listOf(listOf("blah")), cursor = emptyList())
         )
     }
 

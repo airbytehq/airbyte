@@ -4,6 +4,7 @@
 
 package io.airbyte.cdk.load.write
 
+import io.airbyte.cdk.load.command.DestinationCatalog
 import io.airbyte.cdk.load.command.DestinationStream
 import io.airbyte.cdk.load.command.ImportType
 import io.airbyte.cdk.load.data.ArrayType
@@ -26,12 +27,19 @@ import io.airbyte.cdk.load.data.UnknownType
 import io.airbyte.cdk.load.test.util.CharacterizationTest
 import io.airbyte.cdk.load.util.Jsons
 import io.airbyte.cdk.load.write.BasicFunctionalityIntegrationTest.Companion.numberType
+import kotlin.collections.forEach
+import kotlinx.coroutines.runBlocking
 import kotlinx.coroutines.test.runTest
+import org.junit.jupiter.api.Assertions.assertDoesNotThrow
+import org.junit.jupiter.api.Assertions.assertEquals
+import org.junit.jupiter.api.Assertions.assertTrue
 import org.junit.jupiter.api.Assumptions.assumeTrue
+import org.junit.jupiter.api.assertAll
 
 class RegressionTestFixtures(val testSuite: BasicFunctionalityIntegrationTest) {
     fun baseSchemaRegressionTest(filename: String, importType: ImportType) = runTest {
-        assumeTrue(testSuite.schemaDumper != null)
+        assumeTrue(testSuite.schemaDumperProvider != null)
+        val schemaDumper = testSuite.schemaDumperProvider!!(testSuite.parsedConfig)
         val stream =
             DestinationStream(
                 testSuite.randomizedNamespace,
@@ -163,10 +171,9 @@ class RegressionTestFixtures(val testSuite: BasicFunctionalityIntegrationTest) {
             messages = emptyList(),
         )
         val actualSchema =
-            testSuite.schemaDumper!!.discoverSchema(
-                testSuite.parsedConfig,
+            schemaDumper.discoverSchema(
                 stream.mappedDescriptor.namespace,
-                stream.mappedDescriptor.name
+                stream.mappedDescriptor.name,
             )
         CharacterizationTest.doAssert(
             "${testSuite.goldenFileBasePath}/schema-regression/column_names/$filename.txt",
@@ -174,7 +181,88 @@ class RegressionTestFixtures(val testSuite: BasicFunctionalityIntegrationTest) {
         )
     }
 
+    fun baseTableIdentifierRegressionTest(importType: ImportType) = runTest {
+        assumeTrue(testSuite.opsClientProvider != null)
+        assertEquals(
+            tableIdentifierRegressionInputStreamDescriptors.size,
+            testSuite.tableIdentifierRegressionTestExpectedTableNames.size,
+            "tableIdentifierRegressionTestExpectedTableNames has incorrect length; did you miss some test cases?",
+        )
+        val opsClient = testSuite.opsClientProvider!!(testSuite.parsedConfig)
+        testSuite.tableIdentifierRegressionTestExpectedTableNames.forEach {
+            if (opsClient.tableExists(it)) {
+                opsClient.dropTable(it)
+            }
+        }
+        val catalog =
+            DestinationCatalog(
+                tableIdentifierRegressionInputStreamDescriptors.map { (inputNamespace, inputName) ->
+                    DestinationStream(
+                        inputNamespace,
+                        inputName,
+                        importType,
+                        ObjectType(linkedMapOf("blah" to FieldType(StringType, nullable = true))),
+                        generationId = 1,
+                        minimumGenerationId = 1,
+                        syncId = 42,
+                        namespaceMapper = testSuite.namespaceMapperForMedium(),
+                        tableSchema = testSuite.emptyTableSchema,
+                    )
+                }
+            )
+        assertDoesNotThrow {
+            testSuite.runSync(
+                testSuite.updatedConfig,
+                catalog,
+                messages = emptyList(),
+            )
+        }
+        val assertions: Array<() -> Unit> =
+            testSuite.tableIdentifierRegressionTestExpectedTableNames
+                .map {
+                    // map each expected TableName to a lambda that asserts that the table exists
+                    {
+                        runBlocking {
+                            assertTrue(
+                                opsClient.tableExists(it),
+                                "Expected table ${it.toPrettyString()} to exist"
+                            )
+                        }
+                    }
+                }
+                .toTypedArray()
+        assertAll(*assertions)
+    }
+
     companion object {
         const val FUNKY_CHARS_IDENTIFIER = "é,./<>?'\";[]\\:{}|`~!@#$%^&*()_+-="
+        val tableIdentifierRegressionInputStreamDescriptors =
+            listOf(
+                // basic identifier
+                DestinationStream.Descriptor(
+                    "table_id_regression_test",
+                    "table_id_regression_test"
+                ),
+                // some reserved words
+                DestinationStream.Descriptor("table", "table"),
+                DestinationStream.Descriptor("column", "column"),
+                DestinationStream.Descriptor("create", "create"),
+                DestinationStream.Descriptor("delete", "delete"),
+                // funky char
+                DestinationStream.Descriptor(FUNKY_CHARS_IDENTIFIER, FUNKY_CHARS_IDENTIFIER),
+                // starts with a number
+                DestinationStream.Descriptor("1foo", "1foo"),
+                // namespaces that probably collide
+                DestinationStream.Descriptor("foo!", "table_id_regression_test"),
+                DestinationStream.Descriptor("foo$", "table_id_regression_test"),
+                DestinationStream.Descriptor("foo_", "table_id_regression_test"),
+                // names that probably collide
+                DestinationStream.Descriptor("table_id_regression_test", "foo!"),
+                DestinationStream.Descriptor("table_id_regression_test", "foo$"),
+                DestinationStream.Descriptor("table_id_regression_test", "foo_"),
+                // upper/lowercasing
+                DestinationStream.Descriptor("UPPER_CASE", "UPPER_CASE"),
+                DestinationStream.Descriptor("Mixed_Case", "Mixed_Case"),
+            )
     }
 }

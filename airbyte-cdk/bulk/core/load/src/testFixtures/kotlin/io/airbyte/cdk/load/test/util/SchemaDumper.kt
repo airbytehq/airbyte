@@ -4,8 +4,6 @@
 
 package io.airbyte.cdk.load.test.util
 
-import io.airbyte.cdk.command.ConfigurationSpecification
-
 /**
  * Most destinations will eventually have a
  * [io.airbyte.cdk.load.component.TableSchemaEvolutionClient] instead. However, some destinations
@@ -26,9 +24,5 @@ interface SchemaDumper {
      *
      * Your connector can append additional information as needed.
      */
-    suspend fun discoverSchema(
-        spec: ConfigurationSpecification,
-        namespace: String?,
-        name: String
-    ): String
+    suspend fun discoverSchema(namespace: String?, name: String): String
 }
