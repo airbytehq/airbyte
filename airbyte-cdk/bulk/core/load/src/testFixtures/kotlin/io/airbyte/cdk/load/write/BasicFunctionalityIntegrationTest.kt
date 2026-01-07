@@ -58,7 +58,6 @@ import io.airbyte.cdk.load.schema.model.TableNames
 import io.airbyte.cdk.load.state.CheckpointId
 import io.airbyte.cdk.load.state.CheckpointIndex
 import io.airbyte.cdk.load.state.CheckpointKey
-import io.airbyte.cdk.load.test.util.CharacterizationTest
 import io.airbyte.cdk.load.test.util.ConfigurationUpdater
 import io.airbyte.cdk.load.test.util.DestinationCleaner
 import io.airbyte.cdk.load.test.util.DestinationDataDumper
@@ -74,6 +73,7 @@ import io.airbyte.cdk.load.test.util.destination_process.DestinationUncleanExitE
 import io.airbyte.cdk.load.util.Jsons
 import io.airbyte.cdk.load.util.deserializeToNode
 import io.airbyte.cdk.load.util.serializeToString
+import io.airbyte.cdk.load.write.RegressionTestFixtures.Companion.FUNKY_CHARS_IDENTIFIER
 import io.airbyte.protocol.models.v0.AdditionalStats
 import io.airbyte.protocol.models.v0.AirbyteMessage
 import io.airbyte.protocol.models.v0.AirbyteRecordMessageFileReference
@@ -90,7 +90,6 @@ import java.time.OffsetDateTime
 import java.time.OffsetTime
 import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.runBlocking
-import kotlinx.coroutines.test.runTest
 import org.junit.jupiter.api.Assertions.assertDoesNotThrow
 import org.junit.jupiter.api.Assertions.assertEquals
 import org.junit.jupiter.api.Assertions.assertTrue
@@ -370,6 +369,8 @@ abstract class BasicFunctionalityIntegrationTest(
     // Update config with any replacements.  This may be necessary when using testcontainers.
     val updatedConfig = configUpdater.update(configContents)
     val parsedConfig = ValidatedJsonUtils.parseOne(configSpecClass, updatedConfig)
+
+    private val regressionTestFixtures = RegressionTestFixtures(this)
 
     @Test
     open fun testOutOfOrderStateMessages() {
@@ -5178,14 +5179,19 @@ abstract class BasicFunctionalityIntegrationTest(
         }
     }
 
+    /** Regression test for table schemas (column names, types, etc.) in append mode. */
     @Test
     open fun testSchemaRegressionAppend() {
-        baseSchemaRegressionTest("append", Append)
+        regressionTestFixtures.baseSchemaRegressionTest("append", Append)
     }
 
+    /**
+     * Regression test for table schemas (column names, types, etc.) in dedup mode, using simple
+     * identifiers for the PK/cursor.
+     */
     @Test
     open fun testSchemaRegressionSimpleDedup() {
-        baseSchemaRegressionTest(
+        regressionTestFixtures.baseSchemaRegressionTest(
             "dedup_simple",
             Dedupe(
                 primaryKey = listOf(listOf("string")),
@@ -5194,9 +5200,13 @@ abstract class BasicFunctionalityIntegrationTest(
         )
     }
 
+    /**
+     * Regression test for table schemas (column names, types, etc.) in dedup mode, using SQL
+     * reserved words for the PK/cursor.
+     */
     @Test
     open fun testSchemaRegressionDedupReservedWords() {
-        baseSchemaRegressionTest(
+        regressionTestFixtures.baseSchemaRegressionTest(
             "dedup_reserved_word",
             Dedupe(
                 primaryKey = listOf(listOf("column")),
@@ -5205,9 +5215,13 @@ abstract class BasicFunctionalityIntegrationTest(
         )
     }
 
+    /**
+     * Regression test for table schemas (column names, types, etc.) in dedup mode, using an
+     * identifier with funky chars for the PK.
+     */
     @Test
     open fun testSchemaRegressionFunkyCharsPk() {
-        baseSchemaRegressionTest(
+        regressionTestFixtures.baseSchemaRegressionTest(
             "dedup_funky_chars_pk",
             Dedupe(
                 primaryKey = listOf(listOf(FUNKY_CHARS_IDENTIFIER)),
@@ -5216,9 +5230,13 @@ abstract class BasicFunctionalityIntegrationTest(
         )
     }
 
+    /**
+     * Regression test for table schemas (column names, types, etc.) in dedup mode, using an
+     * identifier with funky chars for the PK.
+     */
     @Test
     open fun testSchemaRegressionFunkyCharsCursor() {
-        baseSchemaRegressionTest(
+        regressionTestFixtures.baseSchemaRegressionTest(
             "dedup_funky_chars_cursor",
             Dedupe(
                 primaryKey = listOf(listOf("string")),
@@ -5227,158 +5245,18 @@ abstract class BasicFunctionalityIntegrationTest(
         )
     }
 
+    /**
+     * Regression test for table schemas (column names, types, etc.) in dedup mode, using colliding
+     * identifiers for the PK/cursor.
+     */
     @Test
     open fun testSchemaRegressionDedupCollidingNames() {
-        baseSchemaRegressionTest(
+        regressionTestFixtures.baseSchemaRegressionTest(
             "dedup_colliding_names",
             Dedupe(
                 primaryKey = listOf(listOf("foo!")),
                 cursor = listOf("foo$"),
             )
-        )
-    }
-
-    open fun baseSchemaRegressionTest(filename: String, importType: ImportType) = runTest {
-        assumeTrue(schemaDumper != null)
-        val stream =
-            DestinationStream(
-                randomizedNamespace,
-                "test_stream",
-                importType,
-                ObjectType(
-                    linkedMapOf(
-                        // Validate every airbyte type
-                        "string" to FieldType(StringType, nullable = true),
-                        "number" to FieldType(NumberType, nullable = true),
-                        "integer" to FieldType(IntegerType, nullable = true),
-                        "boolean" to FieldType(BooleanType, nullable = true),
-                        "timestamp_with_timezone" to
-                            FieldType(TimestampTypeWithTimezone, nullable = true),
-                        "timestamp_without_timezone" to
-                            FieldType(TimestampTypeWithoutTimezone, nullable = true),
-                        "time_with_timezone" to FieldType(TimeTypeWithTimezone, nullable = true),
-                        "time_without_timezone" to
-                            FieldType(TimeTypeWithoutTimezone, nullable = true),
-                        "date" to FieldType(DateType, nullable = true),
-                        "object" to
-                            FieldType(
-                                ObjectType(linkedMapOf("foo" to numberType)),
-                                nullable = true
-                            ),
-                        "object_with_empty_schema" to
-                            FieldType(ObjectTypeWithEmptySchema, nullable = true),
-                        "object_without_schema" to
-                            FieldType(ObjectTypeWithoutSchema, nullable = true),
-                        "array" to FieldType(ArrayType(numberType), nullable = true),
-                        "array_without_schema" to
-                            FieldType(ArrayTypeWithoutSchema, nullable = true),
-                        "union" to
-                            FieldType(
-                                UnionType.of(
-                                    listOf(IntegerType, ObjectTypeWithoutSchema),
-                                    isLegacyUnion = false
-                                ),
-                                nullable = true
-                            ),
-                        "legacy_union" to
-                            FieldType(
-                                UnionType.of(
-                                    listOf(IntegerType, ObjectTypeWithoutSchema),
-                                    isLegacyUnion = false
-                                ),
-                                nullable = true
-                            ),
-                        "unknown" to
-                            FieldType(
-                                UnknownType(Jsons.readTree("""{"type":"potato"}""")),
-                                nullable = true
-                            ),
-                        // and their nonnull equivalents
-                        "string_nonnull" to FieldType(StringType, nullable = false),
-                        "number_nonnull" to FieldType(NumberType, nullable = false),
-                        "integer_nonnull" to FieldType(IntegerType, nullable = false),
-                        "boolean_nonnull" to FieldType(BooleanType, nullable = false),
-                        "timestamp_with_timezone_nonnull" to
-                            FieldType(TimestampTypeWithTimezone, nullable = false),
-                        "timestamp_without_timezone_nonnull" to
-                            FieldType(TimestampTypeWithoutTimezone, nullable = false),
-                        "time_with_timezone_nonnull" to
-                            FieldType(TimeTypeWithTimezone, nullable = false),
-                        "time_without_timezone_nonnull" to
-                            FieldType(TimeTypeWithoutTimezone, nullable = false),
-                        "date_nonnull" to FieldType(DateType, nullable = false),
-                        "object_nonnull" to
-                            FieldType(
-                                ObjectType(linkedMapOf("foo" to numberType)),
-                                nullable = false
-                            ),
-                        "object_with_empty_schema_nonnull" to
-                            FieldType(ObjectTypeWithEmptySchema, nullable = false),
-                        "object_without_schema_nonnull" to
-                            FieldType(ObjectTypeWithoutSchema, nullable = false),
-                        "array_nonnull" to FieldType(ArrayType(numberType), nullable = false),
-                        "array_without_schema_nonnull" to
-                            FieldType(ArrayTypeWithoutSchema, nullable = false),
-                        "union_nonnull" to
-                            FieldType(
-                                UnionType.of(
-                                    listOf(IntegerType, ObjectTypeWithoutSchema),
-                                    isLegacyUnion = false
-                                ),
-                                nullable = false
-                            ),
-                        "legacy_union_nonnull" to
-                            FieldType(
-                                UnionType.of(
-                                    listOf(IntegerType, ObjectTypeWithoutSchema),
-                                    isLegacyUnion = false
-                                ),
-                                nullable = false
-                            ),
-                        "unknown_nonnull" to
-                            FieldType(
-                                UnknownType(Jsons.readTree("""{"type":"potato"}""")),
-                                nullable = false
-                            ),
-                        // and some interesting identifiers:
-                        // common SQL reserved words
-                        "table" to FieldType(StringType, nullable = true),
-                        "column" to FieldType(StringType, nullable = true),
-                        "create" to FieldType(StringType, nullable = true),
-                        "delete" to FieldType(StringType, nullable = true),
-                        // funky chars
-                        FUNKY_CHARS_IDENTIFIER to FieldType(StringType, nullable = true),
-                        // starts with a number
-                        "1column" to FieldType(StringType, nullable = true),
-                        // column names that probably collide
-                        "foo!" to FieldType(StringType, nullable = true),
-                        "foo$" to FieldType(StringType, nullable = true),
-                        "foo_" to FieldType(StringType, nullable = true),
-                        // upper/lowercasing
-                        "UPPER_CASE" to FieldType(StringType, nullable = true),
-                        "Mixed_Case" to FieldType(StringType, nullable = true),
-                    )
-                ),
-                generationId = 1,
-                minimumGenerationId = 1,
-                syncId = 42,
-                namespaceMapper = namespaceMapperForMedium(),
-                tableSchema = emptyTableSchema,
-            )
-        runSync(
-            updatedConfig,
-            stream,
-            messages = emptyList(),
-        )
-        val actualSchema =
-            schemaDumper!!.discoverSchema(
-                parsedConfig,
-                stream.mappedDescriptor.namespace,
-                stream.mappedDescriptor.name
-            )
-        CharacterizationTest.doAssert(
-            "$goldenFileBasePath/schema-regression/column_names/$filename.txt",
-            actualSchema
         )
     }
 
@@ -5446,7 +5324,6 @@ abstract class BasicFunctionalityIntegrationTest(
                 nullable = true,
             )
         private val timestamptzType = FieldType(TimestampTypeWithTimezone, nullable = true)
-        const val FUNKY_CHARS_IDENTIFIER = "é,./<>?'\";[]\\:{}|`~!@#$%^&*()_+-="
     }
 
     fun checkpointKeyForMedium(index: Int = 1, partitionId: String = "1"): CheckpointKey? {
@@ -5482,7 +5359,7 @@ abstract class BasicFunctionalityIntegrationTest(
             expectedAdditionalStats
         } else null
 
-    protected fun namespaceMapperForMedium(): NamespaceMapper {
+    internal fun namespaceMapperForMedium(): NamespaceMapper {
         return when (dataChannelMedium) {
             DataChannelMedium.STDIO ->
                 NamespaceMapper(namespaceDefinitionType = NamespaceDefinitionType.SOURCE)
@@ -5494,7 +5371,7 @@ abstract class BasicFunctionalityIntegrationTest(
 
     // This will get blown away in the tests as the DestinationStream's we are mocking just get
     // converted to the protocol which has no concept of destination schemas
-    protected val emptyTableSchema: StreamTableSchema =
+    internal val emptyTableSchema: StreamTableSchema =
         StreamTableSchema(
             columnSchema =
                 ColumnSchema(
