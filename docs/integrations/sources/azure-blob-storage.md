@@ -301,7 +301,7 @@ The Azure Blob Storage connector should not encounter any [Microsoft API limitat
 
 | Version    | Date       | Pull Request                                             | Subject                                                                                      |
 |:-----------|:-----------|:---------------------------------------------------------|:---------------------------------------------------------------------------------------------|
-| 0.8.9 | 2026-01-06 | | Enable 'Copy raw files' delivery method for file transfers |
+| 0.8.9 | 2026-01-07 | | Enable 'Copy raw files' delivery method for file transfers |
 | 0.8.8 | 2025-12-16 | [70804](https://github.com/airbytehq/airbyte/pull/70804) | Update dependencies |
 | 0.8.7 | 2025-12-03 | [70316](https://github.com/airbytehq/airbyte/pull/70316) | Increase memory for check_connection to 4096Mi |
 | 0.8.6 | 2025-12-02 | [70291](https://github.com/airbytehq/airbyte/pull/70291) | Update dependencies |
