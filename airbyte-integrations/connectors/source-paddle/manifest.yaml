@@ -119,60 +119,6 @@ definitions:
         type: InlineSchemaLoader
         schema:
           $ref: "#/schemas/customer_addresses"
-    discounts:
-      type: DeclarativeStream
-      name: discounts
-      primary_key:
-        - id
-      retriever:
-        type: SimpleRetriever
-        requester:
-          $ref: "#/definitions/base_requester"
-          path: discounts
-          http_method: GET
-        record_selector:
-          type: RecordSelector
-          extractor:
-            type: DpathExtractor
-            field_path:
-              - data
-        paginator:
-          type: DefaultPaginator
-          page_token_option:
-            type: RequestPath
-          page_size_option:
-            type: RequestOption
-            field_name: per_page
-            inject_into: request_parameter
-          pagination_strategy:
-            type: CursorPagination
-            page_size: 20
-            cursor_value: >-
-              {{ response.get('meta', {}).get('pagination', {}).get('next', '')
-              }}
-            stop_condition: >-
-              {{ not response.get('meta', {}).get('pagination',
-              {}).get('has_more', False) }}
-        decoder:
-          type: JsonDecoder
-      incremental_sync:
-        type: DatetimeBasedCursor
-        cursor_field: updated_at
-        cursor_datetime_formats:
-          - "%Y-%m-%dT%H:%M:%S.%fZ"
-        datetime_format: "%Y-%m-%dT%H:%M:%S.%fZ"
-        start_datetime:
-          type: MinMaxDatetime
-          datetime: "{{ config[\"start_date\"] }}"
-          datetime_format: "%Y-%m-%dT%H:%M:%SZ"
-        end_datetime:
-          type: MinMaxDatetime
-          datetime: "{{ now_utc().strftime('%Y-%m-%dT%H:%M:%SZ') }}"
-          datetime_format: "%Y-%m-%dT%H:%M:%SZ"
-      schema_loader:
-        type: InlineSchemaLoader
-        schema:
-          $ref: "#/schemas/discounts"
     prices:
       type: DeclarativeStream
       name: prices
@@ -685,7 +631,6 @@ streams:
   - $ref: "#/definitions/streams/adjustments"
   - $ref: "#/definitions/streams/customers"
   - $ref: "#/definitions/streams/customer_addresses"
-  - $ref: "#/definitions/streams/discounts"
   - $ref: "#/definitions/streams/prices"
   - $ref: "#/definitions/streams/products"
   - $ref: "#/definitions/streams/businesses"
@@ -739,7 +684,6 @@ metadata:
     adjustments: true
     customers: true
     customer_addresses: true
-    discounts: true
     prices: true
     products: true
     businesses: true
@@ -767,13 +711,6 @@ metadata:
     customer_addresses:
       hasRecords: true
       streamHash: ce56e248bfcc8207dd6885b311b64d0be81528bb
-      hasResponse: true
-      primaryKeysAreUnique: true
-      primaryKeysArePresent: true
-      responsesAreSuccessful: true
-    discounts:
-      hasRecords: true
-      streamHash: 2e606bf0896a153d13bb8d9e51e388f525de3228
       hasResponse: true
       primaryKeysAreUnique: true
       primaryKeysArePresent: true
@@ -927,62 +864,6 @@ schemas:
       status:
         type:
           - string
-          - "null"
-      updated_at:
-        type: string
-    required:
-      - id
-      - updated_at
-  discounts:
-    type: object
-    $schema: http://json-schema.org/schema#
-    additionalProperties: true
-    properties:
-      type:
-        type:
-          - string
-          - "null"
-      description:
-        type:
-          - string
-          - "null"
-      amount:
-        type:
-          - string
-          - "null"
-      code:
-        type:
-          - string
-          - "null"
-      created_at:
-        type:
-          - string
-          - "null"
-      enabled_for_checkout:
-        type:
-          - boolean
-          - "null"
-      expires_at:
-        type:
-          - string
-          - "null"
-      id:
-        type: string
-      maximum_recurring_intervals:
-        type:
-          - number
-          - "null"
-      recur:
-        type:
-          - boolean
-          - "null"
-      status:
-        type:
-          - string
-          - "null"
-      times_used:
-        type:
-          - number
           - "null"
       updated_at:
         type: string
