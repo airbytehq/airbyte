@@ -40,33 +40,14 @@ Before you begin, ensure you have:
 
 ### Step 1: Set up SharePoint app
 
-The Microsoft Graph API uses OAuth for authentication. Microsoft Graph exposes granular permissions that control the access that apps have to resources, like users, groups, and mail.
+This connector requires an Azure AD application with **Application permissions** to access SharePoint data via the Microsoft Graph API.
 
-This source requires **Application permissions**. Follow these [instructions](https://docs.microsoft.com/en-us/graph/auth-v2-service?context=graph%2Fapi%2F1.0&view=graph-rest-1.0) for creating an app in the Azure portal.
+To create and configure your Azure AD application:
 
-1. Login to [Azure Portal](https://portal.azure.com/#home)
-2. Click upper-left menu icon and select **Azure Active Directory**
-3. Select **App Registrations**
-4. Click **New registration**
-5. Register an application
-   1. Name: SharePoint Lists Connector
-   2. Supported account types: Accounts in this organizational directory only
-   3. Click **Register**
-6. Record the **client_id** and **tenant_id** which will be used for authentication
-7. Select **Certificates & secrets**
-8. Click **New client secret**
-   1. Description: SharePoint Lists client secret
-   2. Expires: Select appropriate expiration
-   3. Click **Add**
-9. Copy the client secret value - this will be the **client_secret**
-10. Select **API permissions**
-    1. Click **Add a permission**
-11. Select **Microsoft Graph**
-12. Select **Application permissions**
-13. Select the following permission:
-    - Sites.Read.All
-14. Click **Add permissions**
-15. Click **Grant administrator consent**
+1. [Register an application in Azure AD](https://learn.microsoft.com/en-us/entra/identity-platform/quickstart-register-app) and note the **Application (client) ID** and **Directory (tenant) ID**
+2. [Create a client secret](https://learn.microsoft.com/en-us/entra/identity-platform/quickstart-register-app#add-a-client-secret) and save the secret value
+3. [Add the Microsoft Graph API permission](https://learn.microsoft.com/en-us/entra/identity-platform/quickstart-configure-app-access-web-apis#add-permissions-to-access-your-web-api) `Sites.Read.All` as an **Application permission** (not Delegated)
+4. Grant admin consent for the permission
 
 ### Step 2: Get your SharePoint site ID
 
@@ -83,7 +64,7 @@ The Site ID is required to identify which SharePoint site to sync from. You can 
 
 1. Navigate to the Airbyte dashboard
 2. Click **Sources** and then click **+ New source**
-3. On the **Set up the source** page, select **SharePoint Lists Enterprise** from the Source type dropdown
+3. Search for **SharePoint Lists Enterprise** and select it
 4. Enter a name for the connector
 5. Enter your **Client ID** (Application ID from Azure AD)
 6. Enter your **Client Secret**
@@ -110,7 +91,7 @@ The Site ID is required to identify which SharePoint site to sync from. You can 
 
 ### Static streams
 
-#### lists
+#### `lists`
 
 Metadata about all SharePoint lists in the site.
 
@@ -130,7 +111,7 @@ Metadata about all SharePoint lists in the site.
 **Primary Key**: `id`  
 **Cursor Field**: `lastModifiedDateTime`
 
-#### user_information
+#### `user_information`
 
 Lookup table for SharePoint users (useful for resolving Author/Editor lookup IDs).
 
@@ -222,7 +203,7 @@ The connector automatically handles the following SharePoint column types:
 
 ## Incremental sync behavior
 
-### lists stream
+### `lists` stream
 
 - Uses client-side filtering based on `lastModifiedDateTime`
 - Microsoft Graph API doesn't support server-side `$filter` on this endpoint
@@ -277,8 +258,13 @@ The connector automatically handles the following SharePoint column types:
 
 ## Changelog
 
-| Version | Date       | Pull Request                                                   | Subject                                                                                               |
-| ------- | ---------- | -------------------------------------------------------------- | ----------------------------------------------------------------------------------------------------- |
-| 0.1.0   | 2025-01-07 | [PR](https://github.com/airbytehq/airbyte-enterprise/pull/338) | Initial release with dynamic list/column discovery, incremental sync, and complex column type support |
+<details>
+<summary>Expand to review</summary>
+
+| Version | Date       | Pull Request                                                    | Subject                                                                                               |
+| ------- | ---------- | --------------------------------------------------------------- | ----------------------------------------------------------------------------------------------------- |
+| 0.1.0   | 2025-01-07 | [338](https://github.com/airbytehq/airbyte-enterprise/pull/338) | Initial release with dynamic list/column discovery, incremental sync, and complex column type support |
+
+</details>
 
 </HideInUI>
