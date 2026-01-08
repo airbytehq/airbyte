@@ -1,0 +1,18 @@
+{
+  "list": [
+    {
+      "promotional_credit": {
+        "id": "pc_001",
+        "customer_id": "cust_001",
+        "type": "increment",
+        "amount": 1000,
+        "currency_code": "USD",
+        "description": "Promotional credit",
+        "created_at": 1705312800,
+        "object": "promotional_credit",
+        "cf_promo_source": "Referral",
+        "cf_campaign_name": "Summer2024"
+      }
+    }
+  ]
+}
