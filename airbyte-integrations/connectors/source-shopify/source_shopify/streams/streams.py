@@ -147,9 +147,7 @@ class Disputes(IncrementalShopifyStream):
             params["order"] = f"{self.order_field} asc"
         return params
 
-    def read_records(
-        self, stream_state: Optional[Mapping[str, Any]] = None, **kwargs
-    ) -> Iterable[Mapping[str, Any]]:
+    def read_records(self, stream_state: Optional[Mapping[str, Any]] = None, **kwargs) -> Iterable[Mapping[str, Any]]:
         """
         Override to apply client-side filtering based on initiated_at cursor field.
         """
