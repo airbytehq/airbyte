@@ -115,7 +115,7 @@ In the `Manage / Certificates & secrets` panel, click `Client Secrets` and creat
    1. If you are accessing through a Service Principal, choose the `Authenticate via Client Credentials`.
      0. See [above](#step-1-set-up-azure-blob-storage) regarding setting IAM role bindings for the Service Principal and getting detail of the app registration
      1. Enter the `Directory (tenant) ID` value from app registration in Azure Portal into the `Tenant ID` field.
-     2. Enter the `Application (client) ID` from Azure Portal into the `Tenant ID` field. Note this is **not** the secret ID
+     2. Enter the `Application (client) ID` from Azure Portal into the `Client ID` field. Note this is **not** the secret ID
      3. Enter the Secret `Value` from Azure Portal into the `Client Secret` field.
 8. Add a stream
    1. Write the **File Type**
