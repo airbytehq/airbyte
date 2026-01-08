@@ -360,6 +360,21 @@ abstract class BasicFunctionalityIntegrationTest(
      * for the list of input stream descriptors.
      */
     val tableIdentifierRegressionTestExpectedTableNames: List<TableName> = emptyList(),
+    /**
+     * If set to a nonnull value, the regression tests will run against the image specified here
+     * rather than the current connector version. This is primarily useful for preventing a
+     * regression when migrating a connector from the legacy CDK to the bulk CDK.
+     *
+     * For example, if you're working on destination-databricks, you could:
+     * 1. Implement the connector using the bulk CDK (so that you have a working implementation of
+     * [io.airbyte.cdk.load.component.TestTableOperationsClient], etc.)
+     * 2. Run the regression tests using the bulk CDK connector, to populate the golden files
+     * 3. Set `regressionTestsImageOverride = "airbyte/destination-databricks:3.3.7"` and rerun the
+     * regression tests, to verify no changes
+     *
+     * IMPORTANT: You MUST unset this value before releasing your connector.
+     */
+    regressionTestsImageOverride: String? = null,
 ) :
     IntegrationTest(
         additionalMicronautEnvs = additionalMicronautEnvs,
@@ -379,7 +394,8 @@ abstract class BasicFunctionalityIntegrationTest(
     val updatedConfig = configUpdater.update(configContents)
     val parsedConfig = ValidatedJsonUtils.parseOne(configSpecClass, updatedConfig)
 
-    private val regressionTestFixtures = RegressionTestFixtures(this)
+    private val regressionTestFixtures =
+        RegressionTestFixtures(this, image = regressionTestsImageOverride)
 
     @Test
     open fun testOutOfOrderStateMessages() {

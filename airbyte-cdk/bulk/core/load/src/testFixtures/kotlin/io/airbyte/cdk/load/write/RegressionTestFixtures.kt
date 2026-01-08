@@ -25,6 +25,7 @@ import io.airbyte.cdk.load.data.TimestampTypeWithoutTimezone
 import io.airbyte.cdk.load.data.UnionType
 import io.airbyte.cdk.load.data.UnknownType
 import io.airbyte.cdk.load.test.util.CharacterizationTest
+import io.airbyte.cdk.load.test.util.destination_process.DockerizedDestinationFactory
 import io.airbyte.cdk.load.util.Jsons
 import io.airbyte.cdk.load.write.BasicFunctionalityIntegrationTest.Companion.numberType
 import kotlin.collections.forEach
@@ -36,7 +37,13 @@ import org.junit.jupiter.api.Assertions.assertTrue
 import org.junit.jupiter.api.Assumptions.assumeTrue
 import org.junit.jupiter.api.assertAll
 
-class RegressionTestFixtures(val testSuite: BasicFunctionalityIntegrationTest) {
+class RegressionTestFixtures(
+    val testSuite: BasicFunctionalityIntegrationTest,
+    image: String? = null
+) {
+    private val destinationProcessFactory =
+        image?.let { DockerizedDestinationFactory(image) } ?: testSuite.destinationProcessFactory
+
     fun baseSchemaRegressionTest(filename: String, importType: ImportType) = runTest {
         assumeTrue(testSuite.schemaDumperProvider != null)
         val schemaDumper = testSuite.schemaDumperProvider!!(testSuite.parsedConfig)
@@ -169,6 +176,7 @@ class RegressionTestFixtures(val testSuite: BasicFunctionalityIntegrationTest) {
             testSuite.updatedConfig,
             stream,
             messages = emptyList(),
+            destinationProcessFactory = destinationProcessFactory,
         )
         val actualSchema =
             schemaDumper.discoverSchema(

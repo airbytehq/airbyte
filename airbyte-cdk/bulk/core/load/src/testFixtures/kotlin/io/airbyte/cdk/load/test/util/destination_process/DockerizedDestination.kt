@@ -462,9 +462,10 @@ class DockerizedDestination(
 }
 
 class DockerizedDestinationFactory(
-    private val imageName: String,
-    private val imageVersion: String,
+    private val image: String,
 ) : DestinationProcessFactory() {
+    constructor(imageName: String, imageVersion: String) : this("$imageName:$imageVersion")
+
     override fun createDestinationProcess(
         command: String,
         configContents: String?,
@@ -477,7 +478,7 @@ class DockerizedDestinationFactory(
         vararg featureFlags: FeatureFlag,
     ): DestinationProcess {
         return DockerizedDestination(
-            "$imageName:$imageVersion",
+            image,
             command,
             configContents,
             catalog,
