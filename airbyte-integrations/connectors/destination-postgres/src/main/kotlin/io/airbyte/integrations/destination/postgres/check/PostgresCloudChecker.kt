@@ -8,6 +8,7 @@ import io.airbyte.cdk.command.AIRBYTE_CLOUD_ENV
 import io.airbyte.cdk.load.check.DestinationCheckerV2
 import io.airbyte.cdk.ssh.SshNoTunnelMethod
 import io.airbyte.integrations.destination.postgres.client.PostgresAirbyteClient
+import io.airbyte.integrations.destination.postgres.schema.PostgresColumnManager
 import io.airbyte.integrations.destination.postgres.spec.PostgresConfiguration
 import io.airbyte.integrations.destination.postgres.spec.SslModeRequire
 import io.airbyte.integrations.destination.postgres.spec.SslModeVerifyCa
@@ -27,9 +28,10 @@ class PostgresCloudChecker(
     constructor(
         postgresConfiguration: PostgresConfiguration,
         postgresAirbyteClient: PostgresAirbyteClient,
+        columnManager: PostgresColumnManager,
     ) : this(
         postgresConfiguration,
-        PostgresOssChecker(postgresAirbyteClient, postgresConfiguration)
+        PostgresOssChecker(postgresAirbyteClient, postgresConfiguration, columnManager)
     )
 
     override fun check() {

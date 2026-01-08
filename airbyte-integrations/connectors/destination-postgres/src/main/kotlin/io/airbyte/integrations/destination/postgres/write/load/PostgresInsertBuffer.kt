@@ -6,8 +6,10 @@ package io.airbyte.integrations.destination.postgres.write.load
 
 import com.google.common.annotations.VisibleForTesting
 import io.airbyte.cdk.load.data.AirbyteValue
+import io.airbyte.cdk.load.schema.model.ColumnSchema
 import io.airbyte.cdk.load.schema.model.TableName
 import io.airbyte.integrations.destination.postgres.client.PostgresAirbyteClient
+import io.airbyte.integrations.destination.postgres.schema.PostgresColumnManager
 import io.airbyte.integrations.destination.postgres.spec.PostgresConfiguration
 import io.github.oshai.kotlinlogging.KotlinLogging
 import java.io.File
@@ -24,11 +26,13 @@ internal const val DEFAULT_FLUSH_LIMIT = 1000
 
 class PostgresInsertBuffer(
     private val tableName: TableName,
-    val columns: List<String>,
     private val postgresClient: PostgresAirbyteClient,
     val postgresConfiguration: PostgresConfiguration,
+    private val columnSchema: ColumnSchema,
+    private val columnManager: PostgresColumnManager,
     private val flushLimit: Int = DEFAULT_FLUSH_LIMIT,
 ) {
+    val columns: List<String> = columnManager.getTableColumns(columnSchema)
 
     @VisibleForTesting internal var csvFilePath: Path? = null
 
