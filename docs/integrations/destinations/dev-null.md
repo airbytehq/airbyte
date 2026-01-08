@@ -49,7 +49,7 @@ The self-managed and Cloud variants have the same version number starting from v
 
 | Version     | Date       | Pull Request                                             | Subject                                                                                      |
 |:------------|:-----------|:---------------------------------------------------------|:---------------------------------------------------------------------------------------------|
-| 0.9.0-rc.2  | 2025-01-09 | [71191](https://github.com/airbytehq/airbyte/pull/71191) | Add missing configuration bean.                                                              |
+| 0.9.0-rc.2  | 2025-01-08 | [71242](https://github.com/airbytehq/airbyte/pull/71242) | Add missing configuration bean.                                                              |
 | 0.9.0-rc.1  | 2025-01-08 | [71191](https://github.com/airbytehq/airbyte/pull/71191) | Migrate to modern dataflow CDK architecture.                                                 |
 | 0.8.6       | 2025-11-01 | [69128](https://github.com/airbytehq/airbyte/pull/69128) | Upgrade to Bulk CDK 0.1.61.                                                                  |
 | 0.8.5       | 2025-10-21 | [67153](https://github.com/airbytehq/airbyte/pull/67153) | Implement new proto schema implementation                                                    |
