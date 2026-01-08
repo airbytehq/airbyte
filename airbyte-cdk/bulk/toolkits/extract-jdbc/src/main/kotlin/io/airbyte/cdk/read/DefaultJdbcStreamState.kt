@@ -34,8 +34,8 @@ class DefaultJdbcStreamState(
             val current = transient.get().limitState.current
 
             // Prevent overflow: use Math.multiplyExact which throws on overflow
-            val product = runCatching { Math.multiplyExact(fetchSize, current) }
-                .getOrElse { Long.MAX_VALUE }
+            val product =
+                runCatching { Math.multiplyExact(fetchSize, current) }.getOrElse { Long.MAX_VALUE }
 
             return sharedState.constants.maxSequentialQueryLimit?.coerceAtMost(product) ?: product
         }
