@@ -85,19 +85,28 @@ class JobRequester(ContentOwnerRequester):
         )
 
         response_json = response.json()
-        if "jobs" not in response_json:
-            error_message = "YouTube Reporting API did not return expected 'jobs' data. "
-            if "error" in response_json:
-                error_details = response_json["error"]
-                error_message += f"API Error: {error_details.get('message', str(error_details))}. "
-            error_message += (
-                "This may indicate that your Google account does not have a YouTube channel associated with it, "
-                "or the OAuth credentials do not have the required YouTube Analytics permissions. "
-                "If you manage multiple YouTube channels, try specifying a 'content_owner_id' in the connector configuration."
-            )
-            raise AirbyteTracedException(message=error_message, failure_type=FailureType.config_error)
 
-        stream_job = [r for r in response_json["jobs"] if r["reportTypeId"] == self._parameters["report_type_id"]]
+        # Handle error responses from the API
+        if "error" in response_json:
+            error_details = response_json["error"]
+            error_code = error_details.get("code", "unknown")
+            api_message = error_details.get("message", str(error_details))
+            error_message = (
+                f"YouTube Reporting API Error (code {error_code}): "
+                f"{api_message}. "
+            )
+            raise AirbyteTracedException(
+                message=error_message, failure_type=FailureType.config_error
+            )
+
+        # Handle the case where API returns {} instead of {"jobs": []}
+        # This can happen when no jobs exist yet - treat as empty list
+        jobs_list = response_json.get("jobs", [])
+        stream_job = [
+            r
+            for r in jobs_list
+            if r["reportTypeId"] == self._parameters["report_type_id"]
+        ]
 
         if not stream_job:
             self._http_client.send_request(
@@ -110,7 +119,7 @@ class JobRequester(ContentOwnerRequester):
                 ),
                 request_kwargs={"stream": self.stream_response},
                 headers=self._request_headers(stream_state, stream_slice, next_page_token, request_headers),
-                json={"name": self.JOB_NAME, "reportTypeId": self._parameters["report_id"]},
+                json={"name": self.JOB_NAME, "reportTypeId": self._parameters["report_type_id"]},
                 dedupe_query_params=True,
                 log_formatter=log_formatter,
                 exit_on_rate_limit=self._exit_on_rate_limit,

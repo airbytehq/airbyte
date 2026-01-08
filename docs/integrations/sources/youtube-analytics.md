@@ -96,6 +96,7 @@ The connector retrieves bulk report data from YouTube's reporting jobs, which mi
 
 | Version    | Date       | Pull Request                                             | Subject                                             |
 |:-----------|:-----------|:---------------------------------------------------------|:----------------------------------------------------|
+| 1.2.0-rc.2 | 2026-01-08 | []() | Fix incorrect report_id key and remove additional error message |
 | 1.2.0-rc.1 | 2026-01-07 | [71169](https://github.com/airbytehq/airbyte/pull/71169) | Add optional content_owner_id config for multi-channel support and improve error handling |
 | 1.1.2 | 2025-12-16 | [70715](https://github.com/airbytehq/airbyte/pull/70715) | Update dependencies |
 | 1.1.1 | 2025-12-02 | [64964](https://github.com/airbytehq/airbyte/pull/64964) | Update dependencies |
