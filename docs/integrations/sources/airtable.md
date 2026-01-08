@@ -69,6 +69,12 @@ This page contains the setup guide and reference information for the [Airtable](
 5. Click **Set up source**.
 <!-- /env:oss -->
 
+### Configuration options
+
+The Airtable connector provides the following optional configuration settings:
+
+- **Add Base ID to Stream Name**: When enabled, includes the Airtable base ID in stream names to ensure uniqueness. This is useful if you have cloned Airtable bases with tables that share the same name. Enabling this option changes stream names and requires a full refresh of your data.
+
 ### Note on changed table names and deleted tables
 
 Please keep in mind that if you start syncing a table via Airbyte, then rename it in your Airtable account, the connector will not continue syncing that table until you reset your connection schema and select it again. At that point, the table will begin syncing to a table with the new name in the destination. This is because there is no way for Airtable to tell Airbyte which tables have been renamed. Similarly, if you delete a table that was previously syncing, the connector will stop syncing it.
