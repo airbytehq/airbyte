@@ -8,6 +8,7 @@ import io.airbyte.cdk.load.data.json.JsonToAirbyteValue
 import io.airbyte.cdk.load.util.serializeToString
 import java.math.BigDecimal
 import java.math.BigInteger
+import java.time.Instant
 import java.time.LocalDate
 import java.time.LocalDateTime
 import java.time.LocalTime
@@ -150,6 +151,10 @@ object AirbyteValueCoercer {
     fun coerceTimestampTz(value: AirbyteValue): TimestampWithTimezoneValue? =
         when (value) {
             is TimestampWithTimezoneValue -> value
+            is IntegerValue -> {
+                val instant = Instant.ofEpochSecond(value.value.toLong())
+                TimestampWithTimezoneValue(OffsetDateTime.ofInstant(instant, ZoneOffset.UTC))
+            }
             else ->
                 requireType<StringValue, TimestampWithTimezoneValue>(value) {
                     TimestampWithTimezoneValue(offsetDateTime(it))
@@ -159,6 +164,10 @@ object AirbyteValueCoercer {
     fun coerceTimestampNtz(value: AirbyteValue): TimestampWithoutTimezoneValue? =
         when (value) {
             is TimestampWithoutTimezoneValue -> value
+            is IntegerValue -> {
+                val instant = Instant.ofEpochSecond(value.value.toLong())
+                TimestampWithoutTimezoneValue(LocalDateTime.ofInstant(instant, ZoneOffset.UTC))
+            }
             else ->
                 requireType<StringValue, TimestampWithoutTimezoneValue>(value) {
                     TimestampWithoutTimezoneValue(offsetDateTime(it).toLocalDateTime())

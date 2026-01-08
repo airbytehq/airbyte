@@ -1,3 +1,9 @@
+## Version 0.1.98
+
+**Load CDK**
+
+* Add Unix epoch integer-to-timestamp coercion support in AirbyteValueCoercer. Sources that emit Unix timestamps (e.g., `1766055687`) for fields declared as timestamp types will now correctly sync instead of failing with DESTINATION_SERIALIZATION_ERROR.
+
 ## Version 0.1.97
 
 load cdk: slightly refactor schema mapper suite
