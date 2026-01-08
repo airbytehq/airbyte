@@ -261,9 +261,9 @@ The connector automatically handles the following SharePoint column types:
 <details>
 <summary>Expand to review</summary>
 
-| Version | Date       | Pull Request                                                    | Subject                                                                                               |
-| ------- | ---------- | --------------------------------------------------------------- | ----------------------------------------------------------------------------------------------------- |
-| 0.1.0   | 2025-01-07 | [338](https://github.com/airbytehq/airbyte-enterprise/pull/338) | Initial release with dynamic list/column discovery, incremental sync, and complex column type support |
+| Version | Date       | Pull Request | Subject                                                                                               |
+| ------- | ---------- | ------------ | ----------------------------------------------------------------------------------------------------- |
+| 0.1.0   | 2025-01-07 | 338          | Initial release with dynamic list/column discovery, incremental sync, and complex column type support |
 
 </details>
 
