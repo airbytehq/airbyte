@@ -1,3 +1,7 @@
+## Version 0.1.98
+
+load cdk: Introduce scope and oauth server uri attributes in iceberg polaris spec
+
 ## Version 0.1.97
 
 load cdk: slightly refactor schema mapper suite
