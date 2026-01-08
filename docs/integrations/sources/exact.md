@@ -52,6 +52,8 @@ records. All other services are limited to 60 records per page.
 - **CRM**
     - account_classifications
     - account_classification_names
+- **PROJECT**
+  - employment_internal_rates
 
 ## Features
 
@@ -144,6 +146,7 @@ at [Exact Knowledge Base](https://support.exactonline.com/community/s/knowledge-
 | 0.0.6   | 2025-12-23 | [61551](https://github.com/airbytehq/airbyte/pull/61551) | Add new streams to code                                                  |
 | 0.0.7   | 2025-12-23 | [61551](https://github.com/airbytehq/airbyte/pull/61551) | Add new streams to class SourceExact                                     |
 | 0.0.8   | 2025-12-23 | [61551](https://github.com/airbytehq/airbyte/pull/61551) | Schema was incorrect for sync logistics items                            |
-| 0.1.0   | 2025-12-23 | [61551](https://github.com/airbytehq/airbyte/pull/61551) | Update changelog and project files to set version 0.1.0                  |
+| 0.0.9   | 2026-01-08 | [61551](https://github.com/airbytehq/airbyte/pull/61551) | Addition project_employment_internal_rates                               |
+| 0.1.0   | 2026-01-08 | [61551](https://github.com/airbytehq/airbyte/pull/61551) | Update changelog and project files to set version 0.1.0                  |
 
 
