@@ -255,6 +255,56 @@ class AirbyteValueDeepCoercingMapperTest {
         }
     }
 
+    @Test
+    fun testCoerceTimestampWithTimezoneFromUnixEpoch() {
+        // Test Unix epoch seconds to timestamp with timezone conversion
+        val epochPairs =
+            listOf(
+                // 2024-01-15T10:50:00Z
+                1705315800L to OffsetDateTime.of(2024, 1, 15, 10, 50, 0, 0, ZoneOffset.UTC),
+                // 2025-12-01T00:00:00Z
+                1764547200L to OffsetDateTime.of(2025, 12, 1, 0, 0, 0, 0, ZoneOffset.UTC),
+                // Unix epoch (1970-01-01T00:00:00Z)
+                0L to OffsetDateTime.of(1970, 1, 1, 0, 0, 0, 0, ZoneOffset.UTC),
+            )
+
+        epochPairs.forEach { (epochSeconds, expectedDateTime) ->
+            val (value, changes) =
+                mapper.map(IntegerValue(epochSeconds.toBigInteger()), TimestampTypeWithTimezone)
+
+            assertAll(
+                "Failed for epoch $epochSeconds",
+                { assertEquals(TimestampWithTimezoneValue(expectedDateTime), value) },
+                { assertEquals(emptyList<Meta.Change>(), changes) }
+            )
+        }
+    }
+
+    @Test
+    fun testCoerceTimestampWithoutTimezoneFromUnixEpoch() {
+        // Test Unix epoch seconds to timestamp without timezone conversion
+        val epochPairs =
+            listOf(
+                // 2024-01-15T10:50:00
+                1705315800L to LocalDateTime.of(2024, 1, 15, 10, 50, 0, 0),
+                // 2025-12-01T00:00:00
+                1764547200L to LocalDateTime.of(2025, 12, 1, 0, 0, 0, 0),
+                // Unix epoch (1970-01-01T00:00:00)
+                0L to LocalDateTime.of(1970, 1, 1, 0, 0, 0, 0),
+            )
+
+        epochPairs.forEach { (epochSeconds, expectedDateTime) ->
+            val (value, changes) =
+                mapper.map(IntegerValue(epochSeconds.toBigInteger()), TimestampTypeWithoutTimezone)
+
+            assertAll(
+                "Failed for epoch $epochSeconds",
+                { assertEquals(TimestampWithoutTimezoneValue(expectedDateTime), value) },
+                { assertEquals(emptyList<Meta.Change>(), changes) }
+            )
+        }
+    }
+
     private val timePairs: List<Pair<String, OffsetTime>> =
         listOf(
             "01:01:01" to LocalTime.parse("01:01:01").atOffset(ZoneOffset.UTC),
