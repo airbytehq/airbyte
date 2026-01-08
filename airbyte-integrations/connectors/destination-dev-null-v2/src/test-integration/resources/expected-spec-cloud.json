@@ -2,22 +2,30 @@
   "documentationUrl" : "https://docs.airbyte.com/integrations/destinations/dev-null",
   "connectionSpecification" : {
     "$schema" : "http://json-schema.org/draft-07/schema#",
-    "title" : "Dev Null Destination Spec V2",
+    "title" : "E2E Test Destination Spec",
     "type" : "object",
     "additionalProperties" : true,
     "properties" : {
-      "mode" : {
-        "type" : "string",
-        "description" : "How the destination should handle records",
-        "title" : "Operation Mode"
-      },
-      "log_every_n" : {
-        "type" : "integer",
-        "description" : "Log every Nth record (only applies in logging mode)",
-        "title" : "Log Every N Records"
+      "test_destination" : {
+        "oneOf" : [ {
+          "title" : "Silent",
+          "type" : "object",
+          "additionalProperties" : true,
+          "properties" : {
+            "test_destination_type" : {
+              "type" : "string",
+              "enum" : [ "SILENT" ],
+              "default" : "SILENT"
+            }
+          },
+          "required" : [ "test_destination_type" ]
+        } ],
+        "description" : "The type of destination to be used",
+        "title" : "Test Destination",
+        "type" : "object"
       }
     },
-    "required" : [ "mode", "log_every_n" ]
+    "required" : [ "test_destination" ]
   },
   "supportsIncremental" : true,
   "supportsNormalization" : false,

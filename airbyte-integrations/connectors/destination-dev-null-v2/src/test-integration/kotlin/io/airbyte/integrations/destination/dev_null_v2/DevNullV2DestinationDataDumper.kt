@@ -10,8 +10,8 @@ import io.airbyte.cdk.load.test.util.DestinationDataDumper
 import io.airbyte.cdk.load.test.util.OutputRecord
 
 /**
- * Dev-null doesn't actually store data, so this dumper returns empty results.
- * This is used by tests to verify that data was "written" (even though it was discarded).
+ * Dev-null doesn't actually store data, so this dumper returns empty results. This is used by tests
+ * to verify that data was "written" (even though it was discarded).
  */
 object DevNullV2DestinationDataDumper : DestinationDataDumper {
     override fun dumpRecords(
@@ -21,7 +21,7 @@ object DevNullV2DestinationDataDumper : DestinationDataDumper {
         // Dev-null doesn't store data, so always return empty list
         return emptyList()
     }
-    
+
     override fun dumpFile(
         spec: ConfigurationSpecification,
         stream: DestinationStream

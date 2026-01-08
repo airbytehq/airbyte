@@ -11,23 +11,49 @@ import jakarta.inject.Singleton
 @Singleton
 class DevNullV2Checker : DestinationChecker<DevNullV2Configuration> {
     private val log = KotlinLogging.logger {}
-    
+
     override fun check(config: DevNullV2Configuration) {
-        log.info { "Checking dev-null-v2 connection with mode: ${config.mode}" }
-        
-        // Validate mode
-        when (config.mode) {
-            "silent" -> log.info { "Silent mode configured - records will be discarded" }
-            "logging" -> log.info { "Logging mode configured - will log every ${config.logEveryN} records" }
-            "failing" -> log.info { "Failing mode configured - will simulate failures" }
-            else -> throw IllegalArgumentException("Invalid mode: ${config.mode}. Must be one of: silent, logging, failing")
+        log.info { "Checking dev-null-v2 connection with type: ${config.type}" }
+
+        // Validate based on type
+        when (config.type) {
+            DevNullV2Configuration.Type.SILENT ->
+                log.info { "Silent mode configured - records will be discarded" }
+            DevNullV2Configuration.Type.LOGGING -> {
+                log.info { "Logging mode configured - will log every ${config.logEvery} records" }
+                if (config.logEvery <= 0) {
+                    throw IllegalArgumentException(
+                        "logEvery must be positive, got: ${config.logEvery}"
+                    )
+                }
+                if (config.maxEntryCount <= 0) {
+                    throw IllegalArgumentException(
+                        "maxEntryCount must be positive, got: ${config.maxEntryCount}"
+                    )
+                }
+            }
+            DevNullV2Configuration.Type.THROTTLED -> {
+                log.info {
+                    "Throttled mode configured - will wait ${config.millisPerRecord}ms between records"
+                }
+                if (config.millisPerRecord < 0) {
+                    throw IllegalArgumentException(
+                        "millisPerRecord must be non-negative, got: ${config.millisPerRecord}"
+                    )
+                }
+            }
+            DevNullV2Configuration.Type.FAILING -> {
+                log.info {
+                    "Failing mode configured - will fail after ${config.numMessages} messages"
+                }
+                if (config.numMessages < 0) {
+                    throw IllegalArgumentException(
+                        "numMessages must be non-negative, got: ${config.numMessages}"
+                    )
+                }
+            }
         }
-        
-        // Validate logEveryN
-        if (config.logEveryN <= 0) {
-            throw IllegalArgumentException("logEveryN must be positive, got: ${config.logEveryN}")
-        }
-        
+
         log.info { "Check passed successfully" }
     }
 }

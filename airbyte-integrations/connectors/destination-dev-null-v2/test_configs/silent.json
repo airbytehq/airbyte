@@ -1,4 +1,5 @@
 {
-  "mode": "silent",
-  "log_every_n": 1000
+  "test_destination": {
+    "test_destination_type": "SILENT"
+  }
 }

@@ -12,25 +12,6 @@ import io.airbyte.cdk.load.dataflow.transform.RecordDTO
 import io.github.oshai.kotlinlogging.KotlinLogging
 import jakarta.inject.Singleton
 
-abstract class DevNullV2Aggregate(
-    private val config: DevNullV2Configuration,
-    streamDescriptor: DestinationStream.Descriptor,
-) : Aggregate {
-    protected val log = KotlinLogging.logger {}
-    protected var recordCount: Long = 0L
-    
-    abstract fun acceptInner(record: RecordDTO)
-    
-    override fun accept(record: RecordDTO) {
-        acceptInner(record)
-        recordCount++
-    }
-    
-    override suspend fun flush() {
-        /* Do nothing - dev-null doesn't persist data */
-    }
-}
-
 @Singleton
 class DevNullV2AggregateFactory(
     private val config: DevNullV2Configuration,
@@ -41,76 +22,101 @@ class DevNullV2AggregateFactory(
         key: StoreKey // This is actually DestinationStream.Descriptor
     ): Aggregate {
         val streamDescriptor = key as DestinationStream.Descriptor
-        return when (config.mode) {
-            "logging" -> {
-                log.info {
-                    "Creating LoggingAggregate for mode=logging"
-                }
-                LoggingAggregate(config, streamDescriptor)
+        return when (config.type) {
+            DevNullV2Configuration.Type.LOGGING -> {
+                log.info { "Creating LoggingAggregate for type=LOGGING" }
+                LoggingAggregate(
+                    logEveryN = config.logEvery,
+                    streamDescriptor = streamDescriptor,
+                    maxLogCount = config.maxEntryCount,
+                    sampleRate = config.sampleRate,
+                    seed = config.seed
+                )
             }
-            "silent" -> {
-                log.info {
-                    "Creating SilentAggregate for mode=silent"
-                }
-                SilentAggregate(config, streamDescriptor)
+            DevNullV2Configuration.Type.SILENT -> {
+                log.info { "Creating SilentAggregate for type=SILENT" }
+                SilentAggregate()
             }
-            "failing" -> {
-                log.info {
-                    "Creating FailingAggregate for mode=failing"
-                }
-                FailingAggregate(config, streamDescriptor)
+            DevNullV2Configuration.Type.THROTTLED -> {
+                log.info { "Creating ThrottledAggregate for type=THROTTLED" }
+                ThrottledAggregate(config.millisPerRecord)
             }
-            else -> {
-                log.info {
-                    "Unknown mode ${config.mode}, defaulting to silent"
-                }
-                SilentAggregate(config, streamDescriptor)
+            DevNullV2Configuration.Type.FAILING -> {
+                log.info { "Creating FailingAggregate for type=FAILING" }
+                FailingAggregate(streamDescriptor, config.numMessages)
             }
         }
     }
 }
 
 class LoggingAggregate(
-    config: DevNullV2Configuration,
+    private val logEveryN: Int,
     private val streamDescriptor: DestinationStream.Descriptor,
-) : DevNullV2Aggregate(config, streamDescriptor) {
-    private val logEveryN = config.logEveryN
+    private val maxLogCount: Int = 1000,
+    private val sampleRate: Double = 1.0,
+    seed: Long? = null
+) : Aggregate {
+    private val log = KotlinLogging.logger {}
+    private var recordCount: Long = 0L
     private var logCount: Long = 0L
-    private val maxLogCount: Int = 1000
+    private val random = seed?.let { kotlin.random.Random(it) } ?: kotlin.random.Random.Default
 
-    override fun acceptInner(record: RecordDTO) {
+    override fun accept(record: RecordDTO) {
         if (recordCount % logEveryN == 0L) {
-            if (++logCount <= maxLogCount) {
-                log.info {
-                    "Logging Destination(stream=$streamDescriptor, recordIndex=$recordCount, logEntry=$logCount/$maxLogCount): ${record.fields}"
+            if (sampleRate == 1.0 || random.nextDouble() < sampleRate) {
+                if (++logCount <= maxLogCount) {
+                    log.info {
+                        "Logging Destination(stream=$streamDescriptor, recordIndex=$recordCount, logEntry=$logCount/$maxLogCount): ${record.fields}"
+                    }
                 }
             }
         }
+        recordCount++
+    }
+
+    override suspend fun flush() {
+        /* Do nothing - dev-null doesn't persist data */
     }
 }
 
-class SilentAggregate(
-    config: DevNullV2Configuration,
-    streamDescriptor: DestinationStream.Descriptor,
-) : DevNullV2Aggregate(config, streamDescriptor) {
-    
-    override fun acceptInner(record: RecordDTO) {
+class SilentAggregate : Aggregate {
+    override fun accept(record: RecordDTO) {
         /* Do nothing - silently discard */
+    }
+
+    override suspend fun flush() {
+        /* Do nothing - dev-null doesn't persist data */
+    }
+}
+
+class ThrottledAggregate(private val millisPerRecord: Long) : Aggregate {
+    override fun accept(record: RecordDTO) {
+        Thread.sleep(millisPerRecord)
+    }
+
+    override suspend fun flush() {
+        /* Do nothing - dev-null doesn't persist data */
     }
 }
 
 class FailingAggregate(
-    config: DevNullV2Configuration,
     private val streamDescriptor: DestinationStream.Descriptor,
-) : DevNullV2Aggregate(config, streamDescriptor) {
-    private val failAfter: Int = 100
+    private val failAfter: Int
+) : Aggregate {
+    private val log = KotlinLogging.logger {}
+    private var recordCount: Long = 0L
 
-    override fun acceptInner(record: RecordDTO) {
+    override fun accept(record: RecordDTO) {
         if (recordCount > failAfter) {
             val message =
                 "Failing Destination(stream=$streamDescriptor, failAfter=$failAfter: failing at record $recordCount)"
             log.info { message }
             throw RuntimeException(message)
         }
+        recordCount++
+    }
+
+    override suspend fun flush() {
+        /* Do nothing - dev-null doesn't persist data */
     }
 }

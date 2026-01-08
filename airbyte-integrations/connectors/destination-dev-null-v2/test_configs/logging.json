@@ -1,4 +1,10 @@
 {
-  "mode": "logging",
-  "log_every_n": 10
+  "test_destination": {
+    "test_destination_type": "LOGGING",
+    "logging_config": {
+      "logging_type": "EveryNth",
+      "nth_entry_to_log": 10,
+      "max_entry_count": 100
+    }
+  }
 }

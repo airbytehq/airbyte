@@ -15,7 +15,7 @@ import org.junit.jupiter.api.Test
 class DevNullV2BasicFunctionalityIntegrationTest :
     BasicFunctionalityIntegrationTest(
         configContents = DevNullV2TestUtils.configContents(DevNullV2TestUtils.loggingConfigPath),
-        configSpecClass = DevNullV2Specification::class.java,
+        configSpecClass = DevNullV2SpecificationOss::class.java,
         dataDumper = DevNullV2DestinationDataDumper,
         destinationCleaner = NoopDestinationCleaner,
         recordMangler = NoopExpectedRecordMapper,
@@ -39,7 +39,7 @@ class DevNullV2BasicFunctionalityIntegrationTest :
         // We're using the data flow pipeline with Aggregate pattern
         useDataFlowPipeline = true,
     ) {
-    
+
     @Test
     override fun testBasicWrite() {
         super.testBasicWrite()
@@ -49,12 +49,12 @@ class DevNullV2BasicFunctionalityIntegrationTest :
     override fun testMidSyncCheckpointingStreamState() {
         super.testMidSyncCheckpointingStreamState()
     }
-    
+
     @Test
     override fun testNamespaces() {
         // Dev-null doesn't have namespaces, skip this test
     }
-    
+
     @Test
     override fun testFunkyCharacters() {
         // Dev-null doesn't need to handle special characters in names
