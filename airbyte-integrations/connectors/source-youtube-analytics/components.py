@@ -91,22 +91,13 @@ class JobRequester(ContentOwnerRequester):
             error_details = response_json["error"]
             error_code = error_details.get("code", "unknown")
             api_message = error_details.get("message", str(error_details))
-            error_message = (
-                f"YouTube Reporting API Error (code {error_code}): "
-                f"{api_message}. "
-            )
-            raise AirbyteTracedException(
-                message=error_message, failure_type=FailureType.config_error
-            )
+            error_message = f"YouTube Reporting API Error (code {error_code}): " f"{api_message}. "
+            raise AirbyteTracedException(message=error_message, failure_type=FailureType.config_error)
 
         # Handle the case where API returns {} instead of {"jobs": []}
         # This can happen when no jobs exist yet - treat as empty list
         jobs_list = response_json.get("jobs", [])
-        stream_job = [
-            r
-            for r in jobs_list
-            if r["reportTypeId"] == self._parameters["report_type_id"]
-        ]
+        stream_job = [r for r in jobs_list if r["reportTypeId"] == self._parameters["report_type_id"]]
 
         if not stream_job:
             self._http_client.send_request(
