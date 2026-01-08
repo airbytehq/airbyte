@@ -8411,7 +8411,22 @@ schemas:
             type:
             - 'null'
             - number
+          unitsOrderedB2B:
+            type:
+            - 'null'
+            - number
           orderedProductSales:
+            type: object
+            properties:
+              amount:
+                type:
+                - 'null'
+                - number
+              currencyCode:
+                type:
+                - 'null'
+                - string
+          orderedProductSalesB2B:
             type: object
             properties:
               amount:
@@ -8426,6 +8441,10 @@ schemas:
             type:
             - 'null'
             - number
+          totalOrderItemsB2B:
+            type:
+            - 'null'
+            - number
       trafficByAsin:
         type: object
         properties:
@@ -8433,7 +8452,15 @@ schemas:
             type:
             - 'null'
             - number
+          browserSessionsB2B:
+            type:
+            - 'null'
+            - number
           mobileAppSessions:
+            type:
+            - 'null'
+            - number
+          mobileAppSessionsB2B:
             type:
             - 'null'
             - number
@@ -8441,7 +8468,15 @@ schemas:
             type:
             - 'null'
             - number
+          sessionsB2B:
+            type:
+            - 'null'
+            - number
           browserSessionPercentage:
+            type:
+            - 'null'
+            - number
+          browserSessionPercentageB2B:
             type:
             - 'null'
             - number
@@ -8449,7 +8484,15 @@ schemas:
             type:
             - 'null'
             - number
+          mobileAppSessionPercentageB2B:
+            type:
+            - 'null'
+            - number
           sessionPercentage:
+            type:
+            - 'null'
+            - number
+          sessionPercentageB2B:
             type:
             - 'null'
             - number
@@ -8457,7 +8500,15 @@ schemas:
             type:
             - 'null'
             - number
+          browserPageViewsB2B:
+            type:
+            - 'null'
+            - number
           mobileAppPageViews:
+            type:
+            - 'null'
+            - number
+          mobileAppPageViewsB2B:
             type:
             - 'null'
             - number
@@ -8465,7 +8516,15 @@ schemas:
             type:
             - 'null'
             - number
+          pageViewsB2B:
+            type:
+            - 'null'
+            - number
           browserPageViewsPercentage:
+            type:
+            - 'null'
+            - number
+          browserPageViewsPercentageB2B:
             type:
             - 'null'
             - number
@@ -8473,7 +8532,15 @@ schemas:
             type:
             - 'null'
             - number
+          mobileAppPageViewsPercentageB2B:
+            type:
+            - 'null'
+            - number
           pageViewsPercentage:
+            type:
+            - 'null'
+            - number
+          pageViewsPercentageB2B:
             type:
             - 'null'
             - number
@@ -8481,7 +8548,15 @@ schemas:
             type:
             - 'null'
             - number
+          buyBoxPercentageB2B:
+            type:
+            - 'null'
+            - number
           unitSessionPercentage:
+            type:
+            - 'null'
+            - number
+          unitSessionPercentageB2B:
             type:
             - 'null'
             - number
