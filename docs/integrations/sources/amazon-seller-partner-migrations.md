@@ -1,5 +1,43 @@
 # Amazon Seller Partner Migration Guide
 
+## Upgrading to 5.0.0
+
+Two deprecated FBA Subscribe and Save report types have been removed from the connector per Amazon SP-API deprecation:
+
+- `GET_FBA_SNS_FORECAST_DATA` (Subscribe and Save Forecast Report)
+- `GET_FBA_SNS_PERFORMANCE_DATA` (Subscribe and Save Performance Report)
+
+These report types were deprecated by Amazon and will return empty responses starting July 25, 2025, and will be completely removed on December 11, 2025. See [Amazon's deprecation notice](https://developer-docs.amazon.com/sp-api/changelog/deprecation-of-two-fba-subscribe-and-save-report-types) for more details.
+
+### Action Required
+
+If you have these streams enabled in your connection:
+
+1. **Refresh the source schema** to remove the deprecated streams from your catalog
+2. **No data reset is required** - these streams are simply being removed from the available streams list
+
+### Steps to Update
+
+1. Select **Connections** in the main navbar.
+   1. Select the connection(s) affected by the update.
+2. Select the **Replication** tab.
+   1. Select **Refresh source schema**.
+   2. Select **OK**.
+
+```note
+The deprecated streams will no longer appear in your available streams list.
+```
+
+3. Select **Save changes** at the bottom of the page.
+
+```note
+No data reset is required for this upgrade as the streams are being removed, not modified.
+```
+
+4. Select **Save connection**.
+
+For more information on managing your Airbyte connections, see the [Airbyte documentation](/platform/operator-guides/clear).
+
 ## Upgrading to 4.0.0
 
 Stream `GET_FBA_STORAGE_FEE_CHARGES_DATA` now has updated schema, which matches Amazon Seller Partner [docs](https://developer-docs.amazon.com/sp-api/docs/fba-inventory-reports-attributes#get_fba_storage_fee_charges_data).
