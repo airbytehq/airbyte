@@ -118,16 +118,43 @@ class Disputes(IncrementalShopifyStream):
     captured new disputes but missed updates to existing disputes (e.g., status changes
     from 'needs_response' to 'won' or 'lost').
 
+    The Shopify API supports 'initiated_at' as a filter parameter, but only for exact date
+    matching (e.g., initiated_at=2013-05-03), not for range queries needed for incremental
+    sync. An alternative approach would be to iterate through dates and make multiple API
+    calls for each date, but this would be complex and inefficient. Instead, we leverage
+    the existing datetime-based client-side filtering that the connector already provides,
+    fetching all disputes ordered by 'initiated_at' and filtering them client-side.
+
     API Reference: https://shopify.dev/docs/api/admin-rest/latest/resources/dispute
     """
 
     data_field = "disputes"
     cursor_field = "initiated_at"
     order_field = "initiated_at"
-    filter_field = "initiated_at"
 
     def path(self, **kwargs) -> str:
         return f"shopify_payments/{self.data_field}.json"
+
+    def request_params(
+        self, stream_state: Optional[Mapping[str, Any]] = None, next_page_token: Optional[Mapping[str, Any]] = None, **kwargs
+    ) -> MutableMapping[str, Any]:
+        """
+        Override to exclude server-side filtering since the API only supports exact date matching,
+        not the range queries needed for incremental sync.
+        """
+        params = ShopifyStream.request_params(self, stream_state=stream_state, next_page_token=next_page_token, **kwargs)
+        if not next_page_token:
+            params["order"] = f"{self.order_field} asc"
+        return params
+
+    def read_records(
+        self, stream_state: Optional[Mapping[str, Any]] = None, **kwargs
+    ) -> Iterable[Mapping[str, Any]]:
+        """
+        Override to apply client-side filtering based on initiated_at cursor field.
+        """
+        records = super().read_records(stream_state=stream_state, **kwargs)
+        yield from self.filter_records_newer_than_state(stream_state=stream_state, records_slice=records)
 
 
 class MetafieldOrders(IncrementalShopifyGraphQlBulkStream):
