@@ -166,7 +166,7 @@ class PostgresAirbyteClient(
         columnNameMapping: ColumnNameMapping
     ) {
         val columnsInDb = getColumnsFromDb(tableName)
-        val columnsInStream = getUserColumns(stream, columnNameMapping)
+        val columnsInStream = getUserColumns(stream)
 
         val (addedColumns, deletedColumns, modifiedColumns) =
             generateSchemaChanges(columnsInDb, columnsInStream)
@@ -200,24 +200,14 @@ class PostgresAirbyteClient(
     }
 
     /**
-     * Get user columns from the stream schema as a map.
+     * Get user columns from the stream's pre-computed table schema.
      * In raw table mode, returns empty map since user columns are stored in _airbyte_data.
      */
-    private fun getUserColumns(
-        stream: DestinationStream,
-        columnNameMapping: ColumnNameMapping
-    ): Map<String, ColumnType> {
+    private fun getUserColumns(stream: DestinationStream): Map<String, ColumnType> {
         if (postgresConfiguration.legacyRawTablesOnly) {
             return emptyMap()
         }
-
-        val result = mutableMapOf<String, ColumnType>()
-        stream.schema.asColumns().forEach { (columnName, fieldType) ->
-            val targetColumnName = columnNameMapping[columnName] ?: columnName
-            val columnType = tableSchemaMapper.toColumnType(fieldType)
-            result[targetColumnName] = columnType
-        }
-        return result
+        return stream.tableSchema.columnSchema.finalSchema
     }
 
     override suspend fun discoverSchema(tableName: TableName): TableSchema {

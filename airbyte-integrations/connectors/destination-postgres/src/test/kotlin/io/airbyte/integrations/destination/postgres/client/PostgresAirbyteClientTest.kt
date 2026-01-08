@@ -7,12 +7,9 @@ package io.airbyte.integrations.destination.postgres.client
 import io.airbyte.cdk.load.command.DestinationStream
 import io.airbyte.cdk.load.component.ColumnType
 import io.airbyte.cdk.load.component.ColumnTypeChange
-import io.airbyte.cdk.load.data.AirbyteType
-import io.airbyte.cdk.load.data.FieldType
-import io.airbyte.cdk.load.data.IntegerType
-import io.airbyte.cdk.load.data.ObjectType
-import io.airbyte.cdk.load.data.StringType
 import io.airbyte.cdk.load.message.Meta.Companion.COLUMN_NAME_AB_GENERATION_ID
+import io.airbyte.cdk.load.schema.model.ColumnSchema
+import io.airbyte.cdk.load.schema.model.StreamTableSchema
 import io.airbyte.cdk.load.schema.model.TableName
 import io.airbyte.cdk.load.table.ColumnNameMapping
 import io.airbyte.integrations.destination.postgres.schema.PostgresColumnManager
@@ -587,15 +584,15 @@ internal class PostgresAirbyteClientTest {
             sqlGenerator.matchSchemas(any(), any(), any(), any(), any(), any(), any(), any())
         } returns MOCK_SQL_QUERY
 
-        // no column changes - mock stream schema to return same columns as DB
+        // no column changes - mock stream's pre-computed table schema to return same columns as DB
         every { columnManager.getMetaColumnNames() } returns emptySet()
-        val streamSchema = ObjectType(linkedMapOf(
-            "col1" to FieldType(StringType, nullable = true),
-            "col2" to FieldType(IntegerType, nullable = true)
-        ))
-        every { stream.schema } returns streamSchema
-        every { tableSchemaMapper.toColumnType(FieldType(StringType, nullable = true)) } returns ColumnType("text", true)
-        every { tableSchemaMapper.toColumnType(FieldType(IntegerType, nullable = true)) } returns ColumnType("integer", true)
+        val finalSchema = mapOf(
+            "col1" to ColumnType("text", true),
+            "col2" to ColumnType("integer", true)
+        )
+        val columnSchema = ColumnSchema(emptyMap(), emptyMap(), finalSchema)
+        val streamTableSchema = mockk<StreamTableSchema> { every { this@mockk.columnSchema } returns columnSchema }
+        every { stream.tableSchema } returns streamTableSchema
 
         // no index changes
         every { sqlGenerator.getPrimaryKeysColumnNames(stream, columnNameMapping) } returns
@@ -667,13 +664,13 @@ internal class PostgresAirbyteClientTest {
 
         every { columnManager.getMetaColumnNames() } returns emptySet()
         // Stream has col1 and col2 (col2 is new)
-        val streamSchema = ObjectType(linkedMapOf(
-            "col1" to FieldType(StringType, nullable = true),
-            "col2" to FieldType(IntegerType, nullable = true)
-        ))
-        every { stream.schema } returns streamSchema
-        every { tableSchemaMapper.toColumnType(FieldType(StringType, nullable = true)) } returns ColumnType("text", true)
-        every { tableSchemaMapper.toColumnType(FieldType(IntegerType, nullable = true)) } returns ColumnType("integer", true)
+        val finalSchema = mapOf(
+            "col1" to ColumnType("text", true),
+            "col2" to ColumnType("integer", true)
+        )
+        val columnSchema = ColumnSchema(emptyMap(), emptyMap(), finalSchema)
+        val streamTableSchema = mockk<StreamTableSchema> { every { this@mockk.columnSchema } returns columnSchema }
+        every { stream.tableSchema } returns streamTableSchema
 
         every { sqlGenerator.getPrimaryKeysColumnNames(stream, columnNameMapping) } returns
             emptyList()
@@ -744,11 +741,10 @@ internal class PostgresAirbyteClientTest {
         } returns MOCK_SQL_QUERY
 
         every { columnManager.getMetaColumnNames() } returns emptySet()
-        val streamSchema = ObjectType(linkedMapOf(
-            "col1" to FieldType(StringType, nullable = true)
-        ))
-        every { stream.schema } returns streamSchema
-        every { tableSchemaMapper.toColumnType(FieldType(StringType, nullable = true)) } returns ColumnType("text", true)
+        val finalSchema = mapOf("col1" to ColumnType("text", true))
+        val columnSchema = ColumnSchema(emptyMap(), emptyMap(), finalSchema)
+        val streamTableSchema = mockk<StreamTableSchema> { every { this@mockk.columnSchema } returns columnSchema }
+        every { stream.tableSchema } returns streamTableSchema
 
         // primary key has changed
         every { sqlGenerator.getPrimaryKeysColumnNames(stream, columnNameMapping) } returns
@@ -820,11 +816,10 @@ internal class PostgresAirbyteClientTest {
         } returns MOCK_SQL_QUERY
 
         every { columnManager.getMetaColumnNames() } returns emptySet()
-        val streamSchema = ObjectType(linkedMapOf(
-            "col1" to FieldType(StringType, nullable = true)
-        ))
-        every { stream.schema } returns streamSchema
-        every { tableSchemaMapper.toColumnType(FieldType(StringType, nullable = true)) } returns ColumnType("text", true)
+        val finalSchema = mapOf("col1" to ColumnType("text", true))
+        val columnSchema = ColumnSchema(emptyMap(), emptyMap(), finalSchema)
+        val streamTableSchema = mockk<StreamTableSchema> { every { this@mockk.columnSchema } returns columnSchema }
+        every { stream.tableSchema } returns streamTableSchema
 
         every { sqlGenerator.getPrimaryKeysColumnNames(stream, columnNameMapping) } returns
             emptyList()
@@ -898,13 +893,13 @@ internal class PostgresAirbyteClientTest {
 
         every { columnManager.getMetaColumnNames() } returns emptySet()
         // Stream has col1 and new_col but not old_col
-        val streamSchema = ObjectType(linkedMapOf(
-            "col1" to FieldType(StringType, nullable = true),
-            "new_col" to FieldType(IntegerType, nullable = true)
-        ))
-        every { stream.schema } returns streamSchema
-        every { tableSchemaMapper.toColumnType(FieldType(StringType, nullable = true)) } returns ColumnType("text", true)
-        every { tableSchemaMapper.toColumnType(FieldType(IntegerType, nullable = true)) } returns ColumnType("integer", true)
+        val finalSchema = mapOf(
+            "col1" to ColumnType("text", true),
+            "new_col" to ColumnType("integer", true)
+        )
+        val columnSchema = ColumnSchema(emptyMap(), emptyMap(), finalSchema)
+        val streamTableSchema = mockk<StreamTableSchema> { every { this@mockk.columnSchema } returns columnSchema }
+        every { stream.tableSchema } returns streamTableSchema
 
         every { sqlGenerator.getPrimaryKeysColumnNames(stream, columnNameMapping) } returns
             listOf("new_pk")
