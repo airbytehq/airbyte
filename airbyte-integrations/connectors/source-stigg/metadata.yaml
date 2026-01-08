@@ -25,7 +25,7 @@ data:
   name: Stigg
   releaseDate: 2026-01-07
   releaseStage: alpha
-  supportLevel: community
+  supportLevel: marketplace
   documentationUrl: https://docs.airbyte.com/integrations/sources/stigg
   tags:
     - language:manifest-only
