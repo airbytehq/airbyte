@@ -44,6 +44,7 @@ For existing **Airbyte Cloud** customers, if you are currently using the **API P
 <FieldAnchor field="shop">
 4. The **Shopify Store** field will be automatically filled after you authenticate your Shopify account based on the store you selected. Once populated, confirm the value is accurate.
 </FieldAnchor>
+
 <FieldAnchor field="start_date">
 5. (Optional) You may set a **Replication Start Date** as the starting point for your data replication. Any data created before this date will not be synced. Defaults to January 1st, 2020.
 </FieldAnchor>
