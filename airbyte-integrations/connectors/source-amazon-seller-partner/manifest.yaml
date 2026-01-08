@@ -2726,6 +2726,11 @@ definitions:
         download_extractor:
           type: DpathExtractor
           field_path: ["salesAndTrafficByAsin"]
+      transformations:
+        - type: AddFields
+          fields:
+            - path: ["queryEndDate"]
+              value: "{{ stream_slice.cursor_slice.end_time }}"
       schema_loader:
         type: InlineSchemaLoader
         schema:
@@ -2765,6 +2770,11 @@ definitions:
         download_extractor:
           type: DpathExtractor
           field_path: ["salesByAsin"]
+      transformations:
+        - type: AddFields
+          fields:
+            - path: ["endDate"]
+              value: "{{ stream_slice.cursor_slice.end_time }}"
       schema_loader:
         type: InlineSchemaLoader
         schema:
