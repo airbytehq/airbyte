@@ -19,15 +19,14 @@ class DevNullAggregateFactory(
     private val log = KotlinLogging.logger {}
 
     override fun create(
-        key: StoreKey // This is actually DestinationStream.Descriptor
+        key: StoreKey
     ): Aggregate {
-        val streamDescriptor = key as DestinationStream.Descriptor
         return when (val type = config.type) {
             is Logging -> {
                 log.info { "Creating LoggingAggregate for type=LOGGING" }
                 LoggingAggregate(
                     logEveryN = type.logEvery,
-                    streamDescriptor = streamDescriptor,
+                    streamDescriptor = key,
                     maxLogCount = type.maxEntryCount,
                     sampleRate = type.sampleRate,
                     seed = type.seed
