@@ -1,3 +1,9 @@
+## Version 0.1.96
+
+**Extract CDK**
+
+* Fix a bug causing and attempt to pull a negative number of rows.
+
 ## Version 0.1.97
 
 load cdk: slightly refactor schema mapper suite
