@@ -2,7 +2,7 @@
  * Copyright (c) 2024 Airbyte, Inc., all rights reserved.
  */
 
-package io.airbyte.integrations.destination.dev_null_v2
+package io.airbyte.integrations.destination.dev_null
 
 import io.airbyte.cdk.load.command.DestinationStream
 import io.airbyte.cdk.load.dataflow.aggregate.Aggregate
@@ -13,8 +13,8 @@ import io.github.oshai.kotlinlogging.KotlinLogging
 import jakarta.inject.Singleton
 
 @Singleton
-class DevNullV2AggregateFactory(
-    private val config: DevNullV2Configuration,
+class DevNullAggregateFactory(
+    private val config: DevNullConfiguration,
 ) : AggregateFactory {
     private val log = KotlinLogging.logger {}
 
@@ -22,28 +22,28 @@ class DevNullV2AggregateFactory(
         key: StoreKey // This is actually DestinationStream.Descriptor
     ): Aggregate {
         val streamDescriptor = key as DestinationStream.Descriptor
-        return when (config.type) {
-            DevNullV2Configuration.Type.LOGGING -> {
+        return when (val type = config.type) {
+            is Logging -> {
                 log.info { "Creating LoggingAggregate for type=LOGGING" }
                 LoggingAggregate(
-                    logEveryN = config.logEvery,
+                    logEveryN = type.logEvery,
                     streamDescriptor = streamDescriptor,
-                    maxLogCount = config.maxEntryCount,
-                    sampleRate = config.sampleRate,
-                    seed = config.seed
+                    maxLogCount = type.maxEntryCount,
+                    sampleRate = type.sampleRate,
+                    seed = type.seed
                 )
             }
-            DevNullV2Configuration.Type.SILENT -> {
+            is Silent -> {
                 log.info { "Creating SilentAggregate for type=SILENT" }
                 SilentAggregate()
             }
-            DevNullV2Configuration.Type.THROTTLED -> {
+            is Throttled -> {
                 log.info { "Creating ThrottledAggregate for type=THROTTLED" }
-                ThrottledAggregate(config.millisPerRecord)
+                ThrottledAggregate(type.millisPerRecord)
             }
-            DevNullV2Configuration.Type.FAILING -> {
+            is Failing -> {
                 log.info { "Creating FailingAggregate for type=FAILING" }
-                FailingAggregate(streamDescriptor, config.numMessages)
+                FailingAggregate(streamDescriptor, type.numMessages)
             }
         }
     }

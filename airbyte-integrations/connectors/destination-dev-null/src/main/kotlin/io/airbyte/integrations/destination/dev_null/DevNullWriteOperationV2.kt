@@ -2,7 +2,7 @@
  * Copyright (c) 2024 Airbyte, Inc., all rights reserved.
  */
 
-package io.airbyte.integrations.destination.dev_null_v2
+package io.airbyte.integrations.destination.dev_null
 
 import io.airbyte.cdk.Operation
 import io.airbyte.cdk.load.dataflow.DestinationLifecycle
@@ -14,7 +14,7 @@ import jakarta.inject.Singleton
 @Primary
 @Singleton
 @Requires(property = Operation.PROPERTY, value = "write")
-class DevNullV2WriteOperationV2(
+class DevNullWriteOperationV2(
     private val destinationLifecycle: DestinationLifecycle,
 ) : Operation {
     private val log = KotlinLogging.logger {}
