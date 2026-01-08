@@ -3,7 +3,7 @@ dockerRepository: airbyte/source-sharepoint-lists-enterprise
 enterprise-connector: true
 ---
 
-# SharePoint Lists enterprise
+# SharePoint Lists Enterprise
 
 <HideInUI>
 
