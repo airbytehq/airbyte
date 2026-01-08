@@ -18,9 +18,7 @@ class DevNullAggregateFactory(
 ) : AggregateFactory {
     private val log = KotlinLogging.logger {}
 
-    override fun create(
-        key: StoreKey
-    ): Aggregate {
+    override fun create(key: StoreKey): Aggregate {
         return when (val type = config.type) {
             is Logging -> {
                 log.info { "Creating LoggingAggregate for type=LOGGING" }
@@ -42,7 +40,7 @@ class DevNullAggregateFactory(
             }
             is Failing -> {
                 log.info { "Creating FailingAggregate for type=FAILING" }
-                FailingAggregate(streamDescriptor, type.numMessages)
+                FailingAggregate(key, type.numMessages)
             }
         }
     }
