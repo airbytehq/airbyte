@@ -7,6 +7,8 @@ package io.airbyte.integrations.destination.postgres.sql
 import com.google.common.annotations.VisibleForTesting
 import io.airbyte.cdk.load.command.Dedupe
 import io.airbyte.cdk.load.command.DestinationStream
+import io.airbyte.cdk.load.component.ColumnType
+import io.airbyte.cdk.load.component.ColumnTypeChange
 import io.airbyte.cdk.load.data.ObjectType
 import io.airbyte.cdk.load.data.ObjectTypeWithEmptySchema
 import io.airbyte.cdk.load.message.Meta.Companion.COLUMN_NAME_AB_EXTRACTED_AT
@@ -56,10 +58,28 @@ class PostgresDirectLoadSqlGenerator(
         columnNameMapping: ColumnNameMapping,
         replace: Boolean
     ): Pair<String, String> {
+        val metaColumns = columnManager.getMetaColumns()
+        val userColumns = getUserColumns(stream, columnNameMapping)
+
+        // Build column declarations from the meta columns and user schema
         val columnDeclarations =
-            getTargetColumns(stream, columnNameMapping).joinToString(",\n") {
-                it.toSQLString()
-            }
+            buildList {
+                    // Add Airbyte meta columns from the column manager
+                    metaColumns.forEach { (columnName, columnType) ->
+                        val nullability = if (columnType.nullable) "" else " NOT NULL"
+                        add("${quoteIdentifier(columnName)} ${columnType.type}$nullability")
+                    }
+
+                    // Add user columns from the mapped schema (only in typed mode)
+                    if (!postgresConfiguration.legacyRawTablesOnly) {
+                        userColumns.forEach { (columnName, columnType) ->
+                            val nullability = if (columnType.nullable) "" else " NOT NULL"
+                            add("${quoteIdentifier(columnName)} ${columnType.type}$nullability")
+                        }
+                    }
+                }
+                .joinToString(",\n")
+
         val dropTableIfExistsStatement =
             if (replace) "DROP TABLE IF EXISTS ${getFullyQualifiedName(tableName)}$dropTableSuffix;"
             else ""
@@ -77,30 +97,24 @@ class PostgresDirectLoadSqlGenerator(
     }
 
     /**
-     * Returns the list of columns and their types for a stream.
-     * - Raw table mode: Only returns system columns (including _airbyte_data), user columns are
-     *   ignored
-     * - Typed table mode: Returns system columns + mapped user columns
+     * Returns the user columns and their types for a stream as a map.
+     * In raw table mode, returns empty map since user columns are stored in _airbyte_data.
      */
-    internal fun getTargetColumns(
+    private fun getUserColumns(
         stream: DestinationStream,
         columnNameMapping: ColumnNameMapping
-    ): List<Column> {
-        val metaColumns = columnManager.getMetaColumns().map { (name, type) ->
-            Column(name, type.type, type.nullable)
-        }
-
+    ): LinkedHashMap<String, ColumnType> {
         if (postgresConfiguration.legacyRawTablesOnly) {
-            return metaColumns
+            return linkedMapOf()
         }
 
-        val userColumns = getSchemaColumns(stream).map { (columnName, fieldType) ->
+        val result = linkedMapOf<String, ColumnType>()
+        getSchemaColumns(stream).forEach { (columnName, fieldType) ->
             val targetColumnName = getTargetColumnName(columnName, columnNameMapping)
             val columnType = tableSchemaMapper.toColumnType(fieldType)
-            Column(targetColumnName, columnType.type, columnType.nullable)
+            result[targetColumnName] = columnType
         }
-
-        return metaColumns + userColumns
+        return result
     }
 
     private fun getSchemaColumns(stream: DestinationStream) =
@@ -310,9 +324,12 @@ class PostgresDirectLoadSqlGenerator(
         stream: DestinationStream,
         columnNameMapping: ColumnNameMapping
     ): List<String> {
-        return getTargetColumns(stream, columnNameMapping).map {
-            quoteIdentifier(getTargetColumnName(it.columnName, columnNameMapping))
+        val metaColumnNames = columnManager.getMetaColumnNames().map { quoteIdentifier(it) }
+        if (postgresConfiguration.legacyRawTablesOnly) {
+            return metaColumnNames
         }
+        val userColumnNames = getUserColumns(stream, columnNameMapping).keys.map { quoteIdentifier(it) }
+        return metaColumnNames + userColumnNames
     }
 
     private fun getTargetColumnNamesForCopy(columnNameMapping: ColumnNameMapping): List<String> {
@@ -665,10 +682,9 @@ class PostgresDirectLoadSqlGenerator(
 
     fun matchSchemas(
         tableName: TableName,
-        columnsToAdd: Set<Column>,
-        columnsToRemove: Set<Column>,
-        columnsToModify: Set<Column>,
-        columnsInDb: Set<Column>,
+        columnsToAdd: Map<String, ColumnType>,
+        columnsToRemove: Map<String, ColumnType>,
+        columnsToModify: Map<String, ColumnTypeChange>,
         recreatePrimaryKeyIndex: Boolean,
         primaryKeyColumnNames: List<String>,
         recreateCursorIndex: Boolean,
@@ -676,38 +692,42 @@ class PostgresDirectLoadSqlGenerator(
     ): String {
         val clauses = mutableSetOf<String>()
         val fullyQualifiedTableName = getFullyQualifiedName(tableName)
-        columnsToAdd.forEach {
+
+        columnsToAdd.forEach { (name, columnType) ->
+            // Note: we intentionally don't set NOT NULL.
+            // We're adding a new column, and we don't know what constitutes a reasonable
+            // default value for preexisting records.
             clauses.add(
-                "ALTER TABLE $fullyQualifiedTableName ADD COLUMN ${getName(it)} ${it.columnTypeName};"
+                "ALTER TABLE $fullyQualifiedTableName ADD COLUMN ${quoteIdentifier(name)} ${columnType.type};"
             )
         }
-        columnsToRemove.forEach {
+        columnsToRemove.forEach { (name, _) ->
             clauses.add(
-                "ALTER TABLE $fullyQualifiedTableName DROP COLUMN ${getName(it)}$dropTableSuffix;"
+                "ALTER TABLE $fullyQualifiedTableName DROP COLUMN ${quoteIdentifier(name)}$dropTableSuffix;"
             )
         }
 
-        columnsToModify.forEach { newColumn ->
-            val oldColumn = columnsInDb.find { it.columnName == newColumn.columnName }
-            val oldType = oldColumn?.columnTypeName
-            val newType = newColumn.columnTypeName
+        columnsToModify.forEach { (name, typeChange) ->
+            val oldType = typeChange.originalType.type
+            val newType = typeChange.newType.type
+            val quotedName = quoteIdentifier(name)
 
             val usingClause =
                 when {
                     // Converting to jsonb from any type
-                    newType == "jsonb" -> "USING to_jsonb(${getName(newColumn)})"
+                    newType == "jsonb" -> "USING to_jsonb($quotedName)"
                     // Converting from jsonb to varchar/text - extract text value without JSON
                     // quotes
                     oldType == "jsonb" &&
                         (newType == "varchar" ||
                             newType == "text" ||
                             newType == "character varying") ->
-                        "USING ${getName(newColumn)} #>> '{}'"
+                        "USING $quotedName #>> '{}'"
                     // Standard cast for other conversions
-                    else -> "USING ${getName(newColumn)}::$newType"
+                    else -> "USING $quotedName::$newType"
                 }
             clauses.add(
-                "ALTER TABLE $fullyQualifiedTableName ALTER COLUMN ${getName(newColumn)} TYPE $newType $usingClause;"
+                "ALTER TABLE $fullyQualifiedTableName ALTER COLUMN $quotedName TYPE $newType $usingClause;"
             )
         }
 
@@ -740,11 +760,4 @@ class PostgresDirectLoadSqlGenerator(
     }
 
     private fun getName(tableName: TableName): String = quoteIdentifier(tableName.name)
-
-    private fun getName(column: Column): String = quoteIdentifier(column.columnName)
-
-    internal fun Column.toSQLString(): String {
-        val isNullableSuffix = if (!nullable) "NOT NULL" else ""
-        return "${quoteIdentifier(columnName)} $columnTypeName $isNullableSuffix".trim()
-    }
 }
