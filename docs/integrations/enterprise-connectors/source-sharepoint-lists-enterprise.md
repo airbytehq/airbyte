@@ -1,0 +1,274 @@
+---
+dockerRepository: airbyte/source-sharepoint-lists-enterprise
+enterprise-connector: true
+---
+
+# SharePoint Lists Enterprise
+
+<HideInUI>
+
+This page contains the setup guide and reference information for the [SharePoint Lists Enterprise](https://portal.azure.com) source connector.
+
+</HideInUI>
+
+The SharePoint Lists source connector allows you to sync data from Microsoft SharePoint Lists to your data warehouse or destination of choice. This connector uses the Microsoft Graph API to extract list data with full support for dynamic schema discovery, incremental syncs, and complex column types.
+
+## Features
+
+- **Dynamic List Discovery**: Automatically discovers all non-hidden lists in your SharePoint site
+- **Dynamic Column Discovery**: Automatically detects and maps all column types for each list
+- **Incremental Sync Support**: Efficiently syncs only new and modified records
+- **Complex Column Type Support**: Handles Person/Group, Lookup, Managed Metadata, and Hyperlink columns
+- **User Information Table**: Provides a lookup table for Author/Editor resolution
+
+## Prerequisites
+
+Before you begin, ensure you have:
+
+1. **Azure AD Application** with the following API permissions:
+   - `Sites.Read.All` (Application permission)
+
+2. **SharePoint Site ID** in the format: `hostname,site-guid,web-guid`
+   - Example: `contoso.sharepoint.com,12345678-1234-1234-1234-123456789012,87654321-4321-4321-4321-210987654321`
+
+3. **Azure AD credentials**:
+   - Client ID (Application ID)
+   - Client Secret
+   - Tenant ID
+
+## Setup guide
+
+### Step 1: Set up SharePoint application
+
+The Microsoft Graph API uses OAuth for authentication. Microsoft Graph exposes granular permissions that control the access that apps have to resources, like users, groups, and mail.
+
+This source requires **Application permissions**. Follow these [instructions](https://docs.microsoft.com/en-us/graph/auth-v2-service?context=graph%2Fapi%2F1.0&view=graph-rest-1.0) for creating an app in the Azure portal.
+
+1. Login to [Azure Portal](https://portal.azure.com/#home)
+2. Click upper-left menu icon and select **Azure Active Directory**
+3. Select **App Registrations**
+4. Click **New registration**
+5. Register an application
+   1. Name: SharePoint Lists Connector
+   2. Supported account types: Accounts in this organizational directory only
+   3. Click **Register**
+6. Record the **client_id** and **tenant_id** which will be used for authentication
+7. Select **Certificates & secrets**
+8. Click **New client secret**
+   1. Description: SharePoint Lists client secret
+   2. Expires: Select appropriate expiration
+   3. Click **Add**
+9. Copy the client secret value - this will be the **client_secret**
+10. Select **API permissions**
+    1. Click **Add a permission**
+11. Select **Microsoft Graph**
+12. Select **Application permissions**
+13. Select the following permission:
+    - Sites.Read.All
+14. Click **Add permissions**
+15. Click **Grant admin consent**
+
+### Step 2: Get your SharePoint Site ID
+
+The Site ID is required to identify which SharePoint site to sync from. You can find it using Microsoft Graph Explorer:
+
+1. Go to [Microsoft Graph Explorer](https://developer.microsoft.com/en-us/graph/graph-explorer)
+2. Sign in with your Microsoft account
+3. Run the following query: `GET https://graph.microsoft.com/v1.0/sites/{hostname}:/sites/{site-name}`
+   - Replace `{hostname}` with your SharePoint hostname (e.g., `contoso.sharepoint.com`)
+   - Replace `{site-name}` with your site name
+4. The response will contain the `id` field in the format: `hostname,site-guid,web-guid`
+
+### Step 3: Set up the SharePoint Lists connector in Airbyte
+
+1. Navigate to the Airbyte dashboard
+2. Click **Sources** and then click **+ New source**
+3. On the **Set up the source** page, select **SharePoint Lists Enterprise** from the Source type dropdown
+4. Enter a name for the connector
+5. Enter your **Client ID** (Application ID from Azure AD)
+6. Enter your **Client Secret**
+7. Enter your **Tenant ID**
+8. Enter your **Site ID** in the format: `hostname,site-guid,web-guid`
+9. (Optional) Enter a **List Name Filter** regex pattern to filter which lists to sync
+10. (Optional) Configure **Skip Document Libraries** (default: true)
+11. (Optional) Set **Number of Workers** for parallel processing (default: 10, range: 1-20)
+12. Click **Set up source**
+
+## Configuration
+
+| Parameter | Required | Description |
+|-----------|----------|-------------|
+| `client_id` | Yes | Azure AD Application (client) ID |
+| `client_secret` | Yes | Azure AD Application client secret |
+| `tenant_id` | Yes | Azure AD Tenant ID |
+| `site_id` | Yes | SharePoint Site ID in format: `hostname,site-guid,web-guid` |
+| `list_name_filter` | No | Regex pattern to filter which lists to sync (e.g., `Perdue.*` to match lists starting with "Perdue") |
+| `skip_document_libraries` | No | Skip document library lists (default: `true`) |
+| `num_workers` | No | Number of concurrent workers for parallel processing (default: `10`, range: 1-20) |
+
+## Streams
+
+### Static Streams
+
+#### lists
+
+Metadata about all SharePoint lists in the site.
+
+| Property | Type | Description |
+|----------|------|-------------|
+| `id` | string | Unique list identifier |
+| `name` | string | Internal list name |
+| `displayName` | string | Display name of the list |
+| `description` | string | List description |
+| `webUrl` | string | URL to the list |
+| `createdDateTime` | string | ISO 8601 timestamp of creation |
+| `lastModifiedDateTime` | string | ISO 8601 timestamp of last modification |
+| `template` | string | List template type |
+| `hidden` | boolean | Whether the list is hidden |
+
+**Sync Mode**: Full Refresh, Incremental  
+**Primary Key**: `id`  
+**Cursor Field**: `lastModifiedDateTime`
+
+#### user_information
+
+Lookup table for SharePoint users (useful for resolving Author/Editor lookup IDs).
+
+| Property | Type | Description |
+|----------|------|-------------|
+| `user_lookup_id` | string | User lookup ID (matches AuthorLookupId/EditorLookupId) |
+| `user_title` | string | User display name |
+| `user_email` | string | User email address |
+| `user_login_name` | string | User login name |
+| `is_site_admin` | boolean | Whether user is a site admin |
+| `department` | string | User's department |
+| `job_title` | string | User's job title |
+
+**Sync Mode**: Full Refresh only  
+**Primary Key**: `user_lookup_id`
+
+### Dynamic Streams (List Items)
+
+For each non-hidden SharePoint list discovered, the connector creates a dynamic stream. The stream name is derived from the list's display name (normalized to lowercase with underscores).
+
+#### Standard Fields (All List Item Streams)
+
+| Property | Type | Description |
+|----------|------|-------------|
+| `_sharepoint_list_name` | string | Name of the source list |
+| `_sharepoint_id` | string | Unique item ID within the list |
+| `_sharepoint_deleted` | boolean | Whether the item is deleted |
+| `_sharepoint_modified` | string | ISO 8601 timestamp of last modification |
+| `_sharepoint_etag` | string | Entity tag for concurrency |
+| `title` | string | Item title |
+| `author` | string | Creator's display name |
+| `authoremail` | string | Creator's email |
+| `authorlookupid` | string | Creator's lookup ID |
+| `editor` | string | Last modifier's display name |
+| `editoremail` | string | Last modifier's email |
+| `editorlookupid` | string | Last modifier's lookup ID |
+| `created` | string | ISO 8601 timestamp of creation |
+| `modified` | string | ISO 8601 timestamp of last modification |
+| `version` | string | Item version |
+| `contenttype` | string | Content type name |
+
+**Plus**: All custom columns defined in the list (dynamically discovered)
+
+**Sync Mode**: Full Refresh, Incremental  
+**Primary Key**: `_sharepoint_id`  
+**Cursor Field**: `_sharepoint_modified`
+
+## Supported Column Types
+
+The connector automatically handles the following SharePoint column types:
+
+| SharePoint Type | Output Type | Notes |
+|-----------------|-------------|-------|
+| Text (Single/Multi-line) | string | |
+| Number | number | |
+| Currency | number | |
+| Date and Time | string | ISO 8601 format |
+| Yes/No | boolean | |
+| Choice | string | Single or multi-select |
+| Person or Group | string | Returns display name |
+| Lookup | string | Returns display value from referenced list |
+| Managed Metadata (Term) | string | Returns the term label |
+| Hyperlink or Picture | string | URL stored in main field, description in `{field}_description` |
+| Calculated | string | |
+| Geolocation | object | |
+
+### Complex Column Type Handling
+
+#### Person/Group Columns
+- Returns the user's display name as a string
+- Multi-select person columns return semicolon-separated display names
+- Use the `user_information` stream to get additional user details via `authorlookupid`/`editorlookupid`
+
+#### Lookup Columns
+- Returns the display value from the referenced list
+- Multi-value lookup columns return semicolon-separated values
+
+#### Managed Metadata (Term) Columns
+- Returns the term label as a string
+- Multi-value term columns return semicolon-separated labels
+
+#### Hyperlink/Picture Columns
+- Main field contains the URL
+- Additional `{fieldname}_description` field contains the link description
+
+## Incremental Sync Behavior
+
+### lists Stream
+- Uses client-side filtering based on `lastModifiedDateTime`
+- Microsoft Graph API does not support server-side `$filter` on this endpoint
+- All lists are fetched, but only those modified after the cursor are emitted
+
+### List Item Streams
+- Uses client-side filtering based on `lastModifiedDateTime`
+- Only items modified after the stored cursor value are emitted
+- Cursor is updated to the most recent `_sharepoint_modified` value
+
+## Rate Limiting and Performance
+
+- The connector respects Microsoft Graph API rate limits
+- Default page size is determined by the API (typically 200 items per page)
+- Use `num_workers` to control parallelization (higher values increase throughput but may hit rate limits)
+
+## Known Limitations
+
+1. **12 Lookup Column Limit**: SharePoint limits the number of lookup-type columns (Person, Lookup, Managed Metadata) to 12 when listing multiple items. If a list has more than 12 lookup columns, some may not return values. The connector logs a warning when this is detected.
+
+2. **Document Libraries**: By default, document libraries are skipped. Set `skip_document_libraries: false` to include them.
+
+3. **Schema Changes**: New columns added to lists are not automatically detected during syncs. A schema refresh is required to detect new columns or new lists.
+
+4. **Deleted Items**: The connector does not currently support delta queries for detecting deleted items. Deleted items are not synced.
+
+## Troubleshooting
+
+### Authentication Errors
+- Verify your Azure AD application has the required API permissions
+- Ensure the client secret has not expired
+- Check that the tenant ID is correct
+
+### Site Not Found
+- Verify the Site ID format: `hostname,site-guid,web-guid`
+- Use Graph Explorer to validate your site ID: `GET https://graph.microsoft.com/v1.0/sites/{site_id}`
+
+### Missing Columns
+- Refresh the schema in Airbyte to detect new columns
+- Check if the list has more than 12 lookup-type columns (SharePoint limitation)
+
+### Rate Limiting
+- Reduce `num_workers` if experiencing throttling
+- Microsoft Graph API has per-tenant and per-app rate limits
+
+<HideInUI>
+
+## Changelog
+
+| Version | Date | Pull Request | Subject |
+|---------|------|--------------|---------|
+| 0.1.0 | 2025-01-07 | [PR](https://github.com/airbytehq/airbyte-enterprise/pull/338) | Initial release with dynamic list/column discovery, incremental sync, and complex column type support |
+
+</HideInUI>
