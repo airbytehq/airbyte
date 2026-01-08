@@ -142,7 +142,7 @@ This source can sync data for the [Shopify REST API](https://shopify.dev/api/adm
 - [Blogs](https://shopify.dev/api/admin-rest/2024-04/resources/blog)
 - [Collects](https://shopify.dev/api/admin-rest/2024-04/resources/collect#top)
 - [Collections (GraphQL)](https://shopify.dev/docs/api/admin-graphql/2024-04/objects/Collection)
-- [Countries](https://shopify.dev/docs/api/admin-rest/2024-04/resources/country)
+- [Countries (GraphQL)](https://shopify.dev/docs/api/admin-graphql/2024-04/queries/deliveryProfiles)
 - [Custom Collections](https://shopify.dev/api/admin-rest/2024-04/resources/customcollection#top)
 - [Customers](https://shopify.dev/api/admin-rest/2024-04/resources/customer#top)
 - [Customer Journey Summary (GraphQL)](https://shopify.dev/docs/api/admin-graphql/2024-04/objects/customerjourneysummary)
