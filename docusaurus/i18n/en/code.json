@@ -91,15 +91,15 @@
     "description": "The label used to tell the user that he's browsing an unreleased doc version"
   },
   "theme.docs.versions.unmaintainedVersionLabel": {
-    "message": "This is documentation for Airbyte version {versionLabel}, which is no longer actively maintained.",
+    "message": "This is documentation for Airbyte version {versionLabel}. It does not include more recent features or changes.",
     "description": "The label used to tell the user that he's browsing an unmaintained doc version"
   },
   "theme.docs.versions.latestVersionSuggestionLabel": {
-    "message": "For up-to-date Self-Managed docs, see the {latestVersionLink} ({versionLabel}).",
+    "message": "For the latest docs, see the {latestVersionLink} docs.",
     "description": "The label used to tell the user to check the latest version"
   },
   "theme.docs.versions.latestVersionLinkLabel": {
-    "message": "latest version",
+    "message": "Airbyte Cloud",
     "description": "The label used for the latest version suggestion link label"
   },
   "theme.common.editThisPage": {

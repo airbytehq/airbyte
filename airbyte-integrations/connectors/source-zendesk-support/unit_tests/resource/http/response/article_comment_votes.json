@@ -1,0 +1,21 @@
+{
+  "votes": [
+    {
+      "id": 35436,
+      "url": "https://company.zendesk.com/api/v2/help_center/articles/123/comments/456/votes/35436.json",
+      "user_id": 235323,
+      "value": 1,
+      "created_at": "2009-07-20T22:55:29Z",
+      "updated_at": "2011-05-05T10:38:52Z"
+    }
+  ],
+  "meta": {
+    "has_more": false,
+    "after_cursor": "after-cursor",
+    "before_cursor": "before-cursor"
+  },
+  "links": {
+    "next": null,
+    "prev": null
+  }
+}
