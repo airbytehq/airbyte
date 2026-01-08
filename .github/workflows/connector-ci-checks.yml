@@ -213,6 +213,29 @@ jobs:
           files: |
             airbyte-integrations/connectors/${{ matrix.connector }}/build/test-results/**/*.xml
 
+      - name: Authenticate as GitHub App
+        uses: actions/create-github-app-token@v1
+        id: get-app-token
+        if: always() && !cancelled() && matrix.connector && github.event_name == 'workflow_call'
+        continue-on-error: true
+        with:
+          app-id: ${{ secrets.OCTAVIA_BOT_APP_ID }}
+          private-key: ${{ secrets.OCTAVIA_BOT_PRIVATE_KEY }}
+
+      - name: Create Check Status
+        if: >
+          always() && !cancelled() && matrix.connector &&
+          github.event_name == 'workflow_call' &&
+          steps.get-app-token.outcome == 'success'
+        uses: LouisBrunner/checks-action@v2.0.0
+        with:
+          name: "Test ${{ matrix.connector }} Connector [On-Demand]"
+          sha: ${{ steps.checkout.outputs.commit }}
+          status: completed
+          conclusion: ${{ job.status }}
+          token: ${{ steps.get-app-token.outputs.token }}
+          details_url: ${{ github.server_url }}/${{ github.repository }}/actions/runs/${{ github.run_id }}
+
   non-jvm-connectors-test:
     needs: [generate-matrix]
     runs-on: ubuntu-24.04
@@ -316,6 +339,29 @@ jobs:
           large_files: true
           files: |
             airbyte-integrations/connectors/${{ matrix.connector }}/build/test-results/**/*.xml
+
+      - name: Authenticate as GitHub App
+        uses: actions/create-github-app-token@v1
+        id: get-app-token
+        if: always() && !cancelled() && matrix.connector && github.event_name == 'workflow_call'
+        continue-on-error: true
+        with:
+          app-id: ${{ secrets.OCTAVIA_BOT_APP_ID }}
+          private-key: ${{ secrets.OCTAVIA_BOT_PRIVATE_KEY }}
+
+      - name: Create Check Status
+        if: >
+          always() && !cancelled() && matrix.connector &&
+          github.event_name == 'workflow_call' &&
+          steps.get-app-token.outcome == 'success'
+        uses: LouisBrunner/checks-action@v2.0.0
+        with:
+          name: "Test ${{ matrix.connector }} Connector [On-Demand]"
+          sha: ${{ steps.checkout.outputs.commit }}
+          status: completed
+          conclusion: ${{ job.status }}
+          token: ${{ steps.get-app-token.outputs.token }}
+          details_url: ${{ github.server_url }}/${{ github.repository }}/actions/runs/${{ github.run_id }}
 
   # Lint and format checks
 
