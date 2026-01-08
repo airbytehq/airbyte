@@ -73,7 +73,7 @@ This page contains the setup guide and reference information for the [Airtable](
 
 The Airtable connector provides the following optional configuration settings:
 
-- **Number of Concurrent Workers**: Controls the number of concurrent threads used for syncing. Higher values can speed up syncs but may hit rate limits. Airtable limits requests to 5 per second per base. The default is 5, with a minimum of 2 and maximum of 40.
+- **Number of Concurrent Workers**: Controls the number of concurrent threads used for syncing (default: 5, minimum: 2, maximum: 40). Higher values can improve sync performance when syncing multiple bases or when there is I/O wait time. The connector automatically respects Airtable's rate limit of 5 requests per second per base, so increasing this value will not cause rate limit errors.
 - **Add Base ID to Stream Name**: When enabled, includes the Airtable base ID in stream names to ensure uniqueness. This is useful if you have cloned Airtable bases with tables that share the same name. Enabling this option changes stream names and requires a full refresh of your data.
 
 ### Note on changed table names and deleted tables
