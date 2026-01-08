@@ -44,7 +44,7 @@ class PostgresDirectLoadSqlGenerator(
         private val EXTRACTED_AT_COLUMN_NAME = quoteIdentifier(COLUMN_NAME_AB_EXTRACTED_AT)
         private val DELETED_AT_COLUMN_NAME = quoteIdentifier(CDC_DELETED_AT_COLUMN)
 
-        private fun quoteIdentifier(identifier: String) = "\"${identifier.replace("\"", "\"\"")}\""
+        private fun quoteIdentifier(identifier: String) = "\"${identifier}\""
     }
 
     /**
@@ -161,7 +161,7 @@ class PostgresDirectLoadSqlGenerator(
                 createCursorIndexStatement(cursorColumnName, tableName)
             }
         val extractedAtIndexStatement =
-            "CREATE INDEX IF NOT EXISTS ${getExtractedAtIndexName(tableName)} ON ${getFullyQualifiedName(tableName)} ($EXTRACTED_AT_COLUMN_NAME);"
+            "CREATE INDEX IF NOT EXISTS ${quoteIdentifier(getExtractedAtIndexName(tableName))} ON ${getFullyQualifiedName(tableName)} ($EXTRACTED_AT_COLUMN_NAME);"
 
         return """
             $primaryKeyIndexStatement
@@ -289,7 +289,7 @@ class PostgresDirectLoadSqlGenerator(
         CURSOR_INDEX_PREFIX + tableName.name
 
     internal fun getExtractedAtIndexName(tableName: TableName): String =
-        quoteIdentifier(EXTRACTED_AT_INDEX_PREFIX + tableName.name)
+        EXTRACTED_AT_INDEX_PREFIX + tableName.name
 
     fun overwriteTable(sourceTableName: TableName, targetTableName: TableName): String {
         val moveSchemaSql =
