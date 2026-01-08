@@ -96,7 +96,7 @@ const config: Config = {
         "What's Airbyte?,How do I try Airbyte Cloud?,Help me build a connector,Help me troubleshoot something",
       "data-button-hide": "true",
       "data-modal-override-open-selector-ask-ai": ".kapa-ai-trigger",
-      "data-mcp-install-menu-enabled": "true",
+      "data-mcp-enabled": "true",
       "data-mcp-server-url": "https://airbyte.mcp.kapa.ai",
     },
   ],
