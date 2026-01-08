@@ -1,0 +1,76 @@
+{
+  "$schema": "http://json-schema.org/draft-07/schema#",
+  "type": "object",
+  "title": "EmploymentInternalRates",
+  "additionalProperties": true,
+  "properties": {
+    "ID": {
+      "description": "Primary key",
+      "type": ["null", "string"]
+    },
+    "Created": {
+      "description": "Date and time when the internal rates was created",
+      "type": ["null", "string"],
+      "format": "date-time"
+    },
+    "Creator": {
+      "description": "ID of user that created the internal rate",
+      "type": ["null", "string"]
+    },
+    "CreatorFullName": {
+      "description": "Full name of user that created the record",
+      "type": ["null", "string"]
+    },
+    "Division": {
+      "description": "Division code",
+      "type": ["null", "integer"]
+    },
+    "Employee": {
+      "description": "ID of employee that linked to the internal rate",
+      "type": ["null", "string"]
+    },
+    "EmployeeFullName": {
+      "description": "Name of employee that linked to the internal rate",
+      "type": ["null", "string"]
+    },
+    "EmployeeHID": {
+      "description": "Employee number that linked to the internal rate",
+      "type": ["null", "integer"]
+    },
+    "Employment": {
+      "description": "ID of employment that linked to the internal rate",
+      "type": ["null", "string"]
+    },
+    "EmploymentHID": {
+      "description": "Employement number that linked to the internal rate",
+      "type": ["null", "integer"]
+    },
+    "EndDate": {
+      "description": "End date of internal rate",
+      "type": ["null", "string"],
+      "format": "date-time"
+    },
+    "InternalRate": {
+      "description": "Amount of internal rate",
+      "type": ["null", "number"]
+    },
+    "Modified": {
+      "description": "Last modified date of invoice term",
+      "type": ["null", "string"],
+      "format": "date-time"
+    },
+    "Modifier": {
+      "description": "ID of user that modified the record",
+      "type": ["null", "string"]
+    },
+    "ModifierFullName": {
+      "description": "Full name of user that modified the record",
+      "type": ["null", "string"]
+    },
+    "StartDate": {
+      "description": "Start date of internal rate",
+      "type": ["null", "string"],
+      "format": "date-time"
+    }
+  }
+}
