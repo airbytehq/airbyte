@@ -1,0 +1,11 @@
+[
+  {
+    "id": 1,
+    "name": "First Response Time",
+    "description": "Track first response time",
+    "enabled": true,
+    "attribution_model": "first_touch",
+    "attribution_period": 30,
+    "settings": {}
+  }
+]

@@ -8,6 +8,8 @@ coaching metrics, and library content for sales performance analysis and revenue
 
 ## Example questions
 
+The Gong connector is optimized to handle prompts like these.
+
 - List all users in my Gong account
 - Show me calls from last week
 - Get the transcript for call abc123
@@ -18,6 +20,8 @@ coaching metrics, and library content for sales performance analysis and revenue
 - Get coaching metrics for manager user123
 
 ## Unsupported questions
+
+The Gong connector isn't currently able to handle prompts like these.
 
 - Create a new user in Gong
 - Delete a call recording
@@ -34,16 +38,37 @@ uv pip install airbyte-agent-gong
 
 ## Usage
 
+This connector supports multiple authentication methods:
+
+### OAuth 2.0 Authentication
+
 ```python
-from airbyte_agent_gong import GongConnector, GongAuthConfig
+from airbyte_agent_gong import GongConnector
+from airbyte_agent_gong.models import GongOauth20AuthenticationAuthConfig
 
 connector = GongConnector(
-  auth_config=GongAuthConfig(
+  auth_config=GongOauth20AuthenticationAuthConfig(
     access_token="..."
   )
 )
-result = connector.users.list()
+result = await connector.users.list()
 ```
+
+### Access Key Authentication
+
+```python
+from airbyte_agent_gong import GongConnector
+from airbyte_agent_gong.models import GongAccessKeyAuthenticationAuthConfig
+
+connector = GongConnector(
+  auth_config=GongAccessKeyAuthenticationAuthConfig(
+    access_key="...",
+    access_key_secret="..."
+  )
+)
+result = await connector.users.list()
+```
+
 
 ## Full documentation
 
@@ -75,6 +100,6 @@ For the service's official API docs, see the [Gong API reference](https://gong.a
 
 ## Version information
 
-- **Package version:** 0.19.20
+- **Package version:** 0.19.30
 - **Connector version:** 0.1.5
-- **Generated with Connector SDK commit SHA:** 4fe5029b71369ddb9ad9b5912e7f957fb4f81747
+- **Generated with Connector SDK commit SHA:** d023e05f2b7a1ddabf81fab7640c64de1e0aa6a1

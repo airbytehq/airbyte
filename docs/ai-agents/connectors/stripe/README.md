@@ -1,30 +1,34 @@
-# Airbyte Stripe AI Connector
+# Stripe agent connector
 
 Stripe is a payment processing platform that enables businesses to accept payments,
 manage subscriptions, and handle financial transactions. This connector provides
 access to customers for payment analytics and customer management.
 
 
-## Example Questions
+## Example questions
+
+The Stripe connector is optimized to handle prompts like these.
 
 - Show me my top 10 customers by total revenue this month
 - List all customers who have spent over $5,000 in the last quarter
 - Analyze payment trends for my Stripe customers
 - Identify which customers have the most consistent subscription payments
 - Give me insights into my customer retention rates
-- Summarize the payment history for [customerX]
+- Summarize the payment history for \{customer\}
 - Compare customer spending patterns from last month to this month
 - Show me details about my highest-value Stripe customers
 - What are the key financial insights from my customer base?
 - Break down my customers by their average transaction value
 
-## Unsupported Questions
+## Unsupported questions
+
+The Stripe connector isn't currently able to handle prompts like these.
 
 - Create a new customer profile in Stripe
-- Update the billing information for [customerX]
+- Update the billing information for \{customer\}
 - Delete a customer record
-- Send a payment reminder to [customerX]
-- Schedule an automatic invoice for [Company]
+- Send a payment reminder to \{customer\}
+- Schedule an automatic invoice for \{company\}
 
 ## Installation
 
@@ -42,10 +46,13 @@ connector = StripeConnector(
     api_key="..."
   )
 )
-result = connector.customers.list()
+result = await connector.customers.list()
 ```
 
-## Documentation
+
+## Full documentation
+
+This connector supports the following entities and actions.
 
 | Entity | Actions |
 |--------|---------|
@@ -62,14 +69,12 @@ result = connector.customers.list()
 | Payouts | [List](./REFERENCE.md#payouts-list), [Get](./REFERENCE.md#payouts-get) |
 
 
-For detailed documentation on available actions and parameters, see [REFERENCE.md](./REFERENCE.md).
+For detailed documentation on available actions and parameters, see this connector's [full reference documentation](./REFERENCE.md).
 
-For the service's official API docs, see [Stripe API Reference](https://docs.stripe.com/api).
+For the service's official API docs, see the [Stripe API reference](https://docs.stripe.com/api).
 
-## Version Information
+## Version information
 
-**Package Version:** 0.5.18
-
-**Connector Version:** 0.1.2
-
-**Generated with connector-sdk:** c4c39c2797ecd929407c9417c728d425f77b37ed
+- **Package version:** 0.5.29
+- **Connector version:** 0.1.3
+- **Generated with Connector SDK commit SHA:** d023e05f2b7a1ddabf81fab7640c64de1e0aa6a1

@@ -37,6 +37,14 @@ Youtube also generates historical data reports covering the 30-day period prior 
 5. Enter your `refresh_token`
 6. Click `Set up source`.
 
+### Content Owner ID (Optional)
+
+If you manage multiple YouTube channels (brand accounts) under a single Google account, you may need to specify which channel's data to retrieve. The **Content Owner ID** field allows you to specify the content owner for whom the API request is being made.
+
+- If you only have one YouTube channel associated with your Google account, you can leave this field empty.
+- If you have multiple channels and want to retrieve data for a specific one, enter the content owner ID for that channel.
+- If you're unsure of your content owner ID, you can find it in the [YouTube Studio](https://studio.youtube.com/) under Settings > Channel > Advanced settings.
+
 ## Supported sync modes
 
 The YouTube Analytics source connector supports the following [sync modes](https://docs.airbyte.com/cloud/core-concepts#connection-sync-modes):
@@ -88,6 +96,8 @@ The connector retrieves bulk report data from YouTube's reporting jobs, which mi
 
 | Version    | Date       | Pull Request                                             | Subject                                             |
 |:-----------|:-----------|:---------------------------------------------------------|:----------------------------------------------------|
+| 1.2.0-rc.1 | 2026-01-07 | [71169](https://github.com/airbytehq/airbyte/pull/71169) | Add optional content_owner_id config for multi-channel support and improve error handling |
+| 1.1.2 | 2025-12-16 | [70715](https://github.com/airbytehq/airbyte/pull/70715) | Update dependencies |
 | 1.1.1 | 2025-12-02 | [64964](https://github.com/airbytehq/airbyte/pull/64964) | Update dependencies |
 | 1.1.0 | 2025-11-17 | [69352](https://github.com/airbytehq/airbyte/pull/69352) | Promoting release candidate 1.1.0-rc.1 to a main version. |
 | 1.1.0-rc.1 | 2025-11-02 | [42838](https://github.com/airbytehq/airbyte/pull/42838) | Migrate to Manifest-only                            |
