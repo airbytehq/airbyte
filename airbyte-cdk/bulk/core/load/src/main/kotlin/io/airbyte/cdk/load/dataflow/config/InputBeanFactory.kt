@@ -94,7 +94,6 @@ class InputBeanFactory {
                     )
                 }
             }
-            else -> TODO("Not supported yet")
         }
 
     @Singleton
