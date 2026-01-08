@@ -8,10 +8,12 @@ development workflow analysis and project management insights.
 
 ## Example questions
 
+The Github connector is optimized to handle prompts like these.
+
 - Show me all open issues in my repositories this month
 - List the top 5 repositories I've starred recently
 - Analyze the commit trends in my main project over the last quarter
-- Find all pull requests created by [teamMember] in the past two weeks
+- Find all pull requests created by \{team_member\} in the past two weeks
 - Search for repositories related to machine learning in my organizations
 - Compare the number of contributors across my different team projects
 - Identify the most active branches in my main repository
@@ -20,6 +22,8 @@ development workflow analysis and project management insights.
 - Show me insights about pull request review patterns in our team
 
 ## Unsupported questions
+
+The Github connector isn't currently able to handle prompts like these.
 
 - Create a new issue in the project repository
 - Update the status of this pull request
@@ -101,6 +105,6 @@ For the service's official API docs, see the [Github API reference](https://docs
 
 ## Version information
 
-- **Package version:** 0.18.28
-- **Connector version:** 0.1.6
-- **Generated with Connector SDK commit SHA:** 12f6b994298f84dfa217940afe7c6b19bec4167b
+- **Package version:** 0.18.33
+- **Connector version:** 0.1.7
+- **Generated with Connector SDK commit SHA:** d023e05f2b7a1ddabf81fab7640c64de1e0aa6a1
