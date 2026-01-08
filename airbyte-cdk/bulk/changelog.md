@@ -1,3 +1,7 @@
+## Version 0.1.98
+
+load cdk: allow override of socket count in dest connectors
+
 ## Version 0.1.97
 
 load cdk: slightly refactor schema mapper suite
