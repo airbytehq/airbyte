@@ -249,6 +249,7 @@ For all `Shopify GraphQL BULK` api requests these limitations are applied: https
 
 | Version    | Date       | Pull Request                                             | Subject                                                                                                                                                                                                                                                                                                                                                                                   |
 |:-----------|:-----------|:---------------------------------------------------------|:------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------|
+| 3.1.1 | 2026-01-06 | [71035](https://github.com/airbytehq/airbyte/pull/71035) | Fix IndexError in countries stream when profile_location_groups is empty |
 | 3.1.0 | 2026-01-05 | [71005](https://github.com/airbytehq/airbyte/pull/71005) | Add `deleted_products` stream using GraphQL Events API |
 | 3.0.13 | 2025-10-21 | [68245](https://github.com/airbytehq/airbyte/pull/68245) | Update dependencies |
 | 3.0.12 | 2025-10-14 | [67805](https://github.com/airbytehq/airbyte/pull/67805) | Update dependencies |

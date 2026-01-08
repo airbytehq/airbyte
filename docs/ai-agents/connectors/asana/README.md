@@ -12,9 +12,9 @@ The Asana connector is optimized to handle prompts like these.
 - What tasks are assigned to me this week?
 - List all projects in my workspace
 - Summarize my team's workload and task completion rates
-- Show me the tasks for the {project_name} project
-- Who are the team members in my {team_name} team?
-- Find all tasks related to {client_name} across my workspaces
+- Show me the tasks for the \{project_name\} project
+- Who are the team members in my \{team_name\} team?
+- Find all tasks related to \{client_name\} across my workspaces
 - Analyze the most active projects in my workspace last month
 - Compare task completion rates between my different teams
 - Identify overdue tasks across all my projects
@@ -109,6 +109,6 @@ For the service's official API docs, see the [Asana API reference](https://devel
 
 ## Version information
 
-- **Package version:** 0.19.29
+- **Package version:** 0.19.31
 - **Connector version:** 0.1.6
-- **Generated with Connector SDK commit SHA:** e0e2f9890347de01530666b6ed5ed7bd22452c62
+- **Generated with Connector SDK commit SHA:** d023e05f2b7a1ddabf81fab7640c64de1e0aa6a1
