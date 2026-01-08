@@ -5391,7 +5391,7 @@ abstract class BasicFunctionalityIntegrationTest(
             expectedAdditionalStats
         } else null
 
-    internal fun namespaceMapperForMedium(): NamespaceMapper {
+    fun namespaceMapperForMedium(): NamespaceMapper {
         return when (dataChannelMedium) {
             DataChannelMedium.STDIO ->
                 NamespaceMapper(namespaceDefinitionType = NamespaceDefinitionType.SOURCE)
@@ -5403,7 +5403,7 @@ abstract class BasicFunctionalityIntegrationTest(
 
     // This will get blown away in the tests as the DestinationStream's we are mocking just get
     // converted to the protocol which has no concept of destination schemas
-    internal val emptyTableSchema: StreamTableSchema =
+    val emptyTableSchema: StreamTableSchema =
         StreamTableSchema(
             columnSchema =
                 ColumnSchema(
