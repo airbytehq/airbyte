@@ -254,8 +254,6 @@ The connector automatically handles the following SharePoint column types:
 - Reduce `num_workers` if experiencing throttling
 - Microsoft Graph API has per-tenant and per-app rate limits
 
-<HideInUI>
-
 ## Changelog
 
 <details>
@@ -266,5 +264,3 @@ The connector automatically handles the following SharePoint column types:
 | 0.1.0   | 2025-01-07 | 338          | Initial release with dynamic list/column discovery, incremental sync, and complex column type support |
 
 </details>
-
-</HideInUI>
