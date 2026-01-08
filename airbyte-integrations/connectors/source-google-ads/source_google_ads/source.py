@@ -31,7 +31,7 @@ class SourceGoogleAds(YamlDeclarativeSource):
         if config.get("end_date") == "":
             config.pop("end_date")
         if "customer_id" in config:
-            config["customer_ids"] = config["customer_id"].split(",")
+            config["customer_ids"] = [cid.strip() for cid in config["customer_id"].split(",") if cid.strip()]
             config.pop("customer_id")
 
         return config
