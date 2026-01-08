@@ -11,6 +11,7 @@ from requests.exceptions import ConnectionError, RequestException, SSLError
 from airbyte_cdk.models import FailureType, SyncMode
 from airbyte_cdk.sources import AbstractSource
 from airbyte_cdk.sources.streams import Stream
+from airbyte_cdk.sources.streams.http.exceptions import BaseBackoffException
 from airbyte_cdk.utils import AirbyteTracedException
 
 from .auth import MissingAccessTokenError, ShopifyAuthenticator
@@ -108,6 +109,8 @@ class ConnectionCheckTest:
             return False, self.describe_error("index_error", shop_name, response)
         except MissingAccessTokenError:
             return False, self.describe_error("missing_token_error")
+        except (BaseBackoffException, AirbyteTracedException) as error:
+            return False, self.describe_error("connection_error", shop_name) or str(error)
 
     def get_shop_id(self) -> str:
         """
