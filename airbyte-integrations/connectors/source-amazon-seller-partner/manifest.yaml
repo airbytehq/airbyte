@@ -8413,6 +8413,7 @@ schemas:
         type:
         - 'null'
         - string
+        format: date-time
       parentAsin:
         type:
         - 'null'
