@@ -2729,6 +2729,8 @@ definitions:
       transformations:
         - type: AddFields
           fields:
+            - path: ["queryStartDate"]
+              value: "{{ stream_slice.cursor_slice.start_time }}"
             - path: ["queryEndDate"]
               value: "{{ stream_slice.cursor_slice.end_time }}"
       schema_loader:
@@ -8402,6 +8404,10 @@ schemas:
     type: object
     $schema: http://json-schema.org/draft-07/schema#
     properties:
+      queryStartDate:
+        type:
+        - 'null'
+        - string
       queryEndDate:
         type:
         - 'null'
