@@ -5285,7 +5285,7 @@ abstract class BasicFunctionalityIntegrationTest(
             expectedAdditionalStats
         } else null
 
-    internal fun namespaceMapperForMedium(): NamespaceMapper = dataChannelMedium.namespaceMapper()
+    fun namespaceMapperForMedium(): NamespaceMapper = dataChannelMedium.namespaceMapper()
 }
 
 fun DataChannelMedium.namespaceMapper(): NamespaceMapper {
