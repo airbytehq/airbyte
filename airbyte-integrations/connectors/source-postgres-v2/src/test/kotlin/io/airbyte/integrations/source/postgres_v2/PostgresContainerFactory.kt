@@ -17,6 +17,16 @@ object PostgresContainerFactory {
     sealed interface PostgresContainerModifier :
         TestContainerFactory.ContainerModifier<PostgreSQLContainer<*>>
 
+    /**
+     * Modifier that configures PostgreSQL for CDC (logical replication).
+     * Sets wal_level=logical which is required for CDC to work.
+     */
+    data object WithCdc : PostgresContainerModifier {
+        override fun modify(container: PostgreSQLContainer<*>) {
+            container.withCommand("postgres -c wal_level=logical")
+        }
+    }
+
     fun exclusive(
         imageName: String,
         vararg modifiers: PostgresContainerModifier,
@@ -49,5 +59,31 @@ object PostgresContainerFactory {
             checkpointTargetIntervalSeconds = 60
             concurrency = 1
             setIncrementalValue(UserDefinedCursor)
+        }
+
+    /**
+     * Creates a CDC-specific configuration with replication slot and publication settings.
+     */
+    @JvmStatic
+    fun cdcConfig(
+        postgresContainer: PostgreSQLContainer<*>,
+        replicationSlot: String = "airbyte_slot",
+        publication: String = "airbyte_publication",
+    ): PostgresV2SourceConfigurationSpecification =
+        PostgresV2SourceConfigurationSpecification().apply {
+            host = postgresContainer.host
+            port = postgresContainer.getMappedPort(PostgreSQLContainer.POSTGRESQL_PORT)
+            username = postgresContainer.username
+            password = postgresContainer.password
+            database = postgresContainer.databaseName
+            schemas = listOf("public")
+            checkpointTargetIntervalSeconds = 60
+            concurrency = 1
+            setIncrementalValue(Cdc().apply {
+                this.replicationSlot = replicationSlot
+                this.publication = publication
+                this.invalidCdcCursorPositionBehavior = "Fail sync"
+                this.initialLoadTimeoutHours = 8
+            })
         }
 }

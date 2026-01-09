@@ -2,6 +2,7 @@
 package io.airbyte.integrations.source.postgres_v2
 
 import io.airbyte.cdk.ConfigErrorException
+import io.airbyte.cdk.command.CdcSourceConfiguration
 import io.airbyte.cdk.command.ConfigurationSpecificationSupplier
 import io.airbyte.cdk.command.JdbcSourceConfiguration
 import io.airbyte.cdk.command.SourceConfigurationFactory
@@ -35,9 +36,11 @@ data class PostgresV2SourceConfiguration(
     override val maxConcurrency: Int,
     override val resourceAcquisitionHeartbeat: Duration = Duration.ofMillis(100L),
     override val checkpointTargetInterval: Duration,
-    override val maxSnapshotReadDuration: Duration? = null,
-) : JdbcSourceConfiguration {
-    override val global = false
+    override val debeziumHeartbeatInterval: Duration = Duration.ofSeconds(10),
+) : JdbcSourceConfiguration, CdcSourceConfiguration {
+    override val global = incrementalConfiguration is CdcIncrementalConfiguration
+    override val maxSnapshotReadDuration: Duration?
+        get() = (incrementalConfiguration as? CdcIncrementalConfiguration)?.initialLoadTimeout
 
     /** Required to inject [PostgresV2SourceConfiguration] directly. */
     @Factory
@@ -58,6 +61,24 @@ sealed interface PostgresV2IncrementalConfiguration
 data object UserDefinedCursorIncrementalConfiguration : PostgresV2IncrementalConfiguration
 
 data object XminIncrementalConfiguration : PostgresV2IncrementalConfiguration
+
+data class CdcIncrementalConfiguration(
+    val replicationSlot: String,
+    val publication: String,
+    val initialLoadTimeout: Duration,
+    val invalidCdcCursorPositionBehavior: InvalidCdcCursorPositionBehavior,
+    val lsnCommitBehaviour: LsnCommitBehaviour,
+) : PostgresV2IncrementalConfiguration
+
+enum class InvalidCdcCursorPositionBehavior {
+    FAIL_SYNC,
+    RESET_SYNC,
+}
+
+enum class LsnCommitBehaviour {
+    AFTER_EACH_BATCH,
+    AFTER_CONNECTOR_SHUTDOWN,
+}
 
 @Singleton
 class PostgresV2SourceConfigurationFactory :
@@ -138,6 +159,29 @@ class PostgresV2SourceConfigurationFactory :
         when (incrementalSpec) {
             UserDefinedCursor -> UserDefinedCursorIncrementalConfiguration
             Xmin -> XminIncrementalConfiguration
+            is Cdc -> {
+                val initialLoadTimeout: Duration =
+                    Duration.ofHours(incrementalSpec.initialLoadTimeoutHours?.toLong() ?: 8)
+                val invalidCdcCursorPositionBehavior: InvalidCdcCursorPositionBehavior =
+                    if (incrementalSpec.invalidCdcCursorPositionBehavior == "Fail sync") {
+                        InvalidCdcCursorPositionBehavior.FAIL_SYNC
+                    } else {
+                        InvalidCdcCursorPositionBehavior.RESET_SYNC
+                    }
+                val lsnCommitBehaviour: LsnCommitBehaviour =
+                    if (incrementalSpec.lsnCommitBehaviour == "After each batch") {
+                        LsnCommitBehaviour.AFTER_EACH_BATCH
+                    } else {
+                        LsnCommitBehaviour.AFTER_CONNECTOR_SHUTDOWN
+                    }
+                CdcIncrementalConfiguration(
+                    replicationSlot = incrementalSpec.replicationSlot,
+                    publication = incrementalSpec.publication,
+                    initialLoadTimeout = initialLoadTimeout,
+                    invalidCdcCursorPositionBehavior = invalidCdcCursorPositionBehavior,
+                    lsnCommitBehaviour = lsnCommitBehaviour,
+                )
+            }
         }
 
     private fun fromSslModeSpec(sslModeSpec: SslModeSpecification?): Map<String, String> {

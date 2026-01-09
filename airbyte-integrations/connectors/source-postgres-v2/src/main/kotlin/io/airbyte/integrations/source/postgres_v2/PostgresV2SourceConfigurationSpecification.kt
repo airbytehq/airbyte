@@ -302,6 +302,7 @@ class MicronautPropertiesFriendlySslModeSpecification {
 @JsonSubTypes(
     JsonSubTypes.Type(value = UserDefinedCursor::class, name = "Standard"),
     JsonSubTypes.Type(value = Xmin::class, name = "Xmin"),
+    JsonSubTypes.Type(value = Cdc::class, name = "CDC"),
 )
 @JsonSchemaTitle("Update Method")
 @JsonSchemaDescription("Configures how data is extracted from the database.")
@@ -326,14 +327,82 @@ data object UserDefinedCursor : IncrementalConfigurationSpecification
 )
 data object Xmin : IncrementalConfigurationSpecification
 
+@JsonSchemaTitle("Read Changes using Change Data Capture (CDC)")
+@JsonSchemaDescription(
+    "<i>Recommended</i> - " +
+        "Incrementally reads new inserts, updates, and deletes using PostgreSQL's <a href=" +
+        "\"https://docs.airbyte.com/integrations/sources/postgres#cdc\"" +
+        "> logical replication feature</a>. This must be enabled on your database."
+)
+class Cdc : IncrementalConfigurationSpecification {
+    @JsonProperty("replication_slot")
+    @JsonSchemaTitle("Replication Slot")
+    @JsonPropertyDescription(
+        "A logical replication slot name created for the CDC sync. " +
+            "The slot should be created using the 'pgoutput' plugin."
+    )
+    @JsonSchemaInject(json = """{"order":1,"always_show":true}""")
+    lateinit var replicationSlot: String
+
+    @JsonProperty("publication")
+    @JsonSchemaTitle("Publication")
+    @JsonPropertyDescription(
+        "A PostgreSQL publication used for consuming changes. " +
+            "All tables must be added to the publication before syncing."
+    )
+    @JsonSchemaInject(json = """{"order":2,"always_show":true}""")
+    lateinit var publication: String
+
+    @JsonProperty("invalid_cdc_cursor_position_behavior")
+    @JsonSchemaTitle("Invalid CDC Position Behavior (Advanced)")
+    @JsonPropertyDescription(
+        "Determines whether Airbyte should fail or re-sync data in case of an stale/invalid cursor value. " +
+            "If 'Fail sync' is chosen, a user will have to manually reset the connection before being able to continue syncing data. " +
+            "If 'Re-sync data' is chosen, Airbyte will automatically trigger a refresh but could lead to higher cloud costs and data loss."
+    )
+    @JsonSchemaDefault("Fail sync")
+    @JsonSchemaInject(
+        json = """{"order":3,"always_show":true, "enum": ["Fail sync","Re-sync data"]}"""
+    )
+    var invalidCdcCursorPositionBehavior: String? = "Fail sync"
+
+    @JsonProperty("initial_load_timeout_hours")
+    @JsonSchemaTitle("Initial Load Timeout in Hours (Advanced)")
+    @JsonPropertyDescription(
+        "The amount of time an initial load is allowed to continue for before catching up on CDC logs."
+    )
+    @JsonSchemaDefault("8")
+    @JsonSchemaInject(json = """{"order":4, "max": 24, "min": 4,"always_show": true}""")
+    var initialLoadTimeoutHours: Int? = 8
+
+    @JsonProperty("lsn_commit_behaviour")
+    @JsonSchemaTitle("LSN Commit Behavior (Advanced)")
+    @JsonPropertyDescription(
+        "Determines when Airbyte should flush the LSN of processed WAL logs. " +
+            "'After each batch' is recommended for most cases. " +
+            "'After connector shutdown' can be used for debugging."
+    )
+    @JsonSchemaDefault("After each batch")
+    @JsonSchemaInject(
+        json = """{"order":5,"always_show":false, "enum": ["After each batch","After connector shutdown"]}"""
+    )
+    var lsnCommitBehaviour: String? = "After each batch"
+}
+
 @ConfigurationProperties("$CONNECTOR_CONFIG_PREFIX.replication_method")
 class MicronautPropertiesFriendlyIncrementalConfigurationSpecification {
     var method: String = "Standard"
+    var replicationSlot: String? = null
+    var publication: String? = null
 
     fun asIncrementalConfiguration(): IncrementalConfigurationSpecification =
         when (method) {
             "Standard" -> UserDefinedCursor
             "Xmin" -> Xmin
+            "CDC" -> Cdc().apply {
+                replicationSlot = this@MicronautPropertiesFriendlyIncrementalConfigurationSpecification.replicationSlot ?: "airbyte_slot"
+                publication = this@MicronautPropertiesFriendlyIncrementalConfigurationSpecification.publication ?: "airbyte_publication"
+            }
             else -> throw ConfigErrorException("invalid value $method")
         }
 }

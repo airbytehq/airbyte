@@ -3,6 +3,7 @@ package io.airbyte.integrations.source.postgres_v2
 
 import com.fasterxml.jackson.databind.node.ObjectNode
 import io.airbyte.cdk.command.OpaqueStateValue
+import io.airbyte.cdk.discover.CommonMetaField
 import io.airbyte.cdk.discover.Field
 import io.airbyte.cdk.discover.FieldOrMetaField
 import io.airbyte.cdk.discover.FieldType
@@ -65,14 +66,31 @@ import java.time.OffsetDateTime
 
 @Singleton
 @Primary
-class PostgresV2SourceOperations :
-    JdbcMetadataQuerier.FieldTypeMapper, SelectQueryGenerator, JdbcAirbyteStreamFactory {
+class PostgresV2SourceOperations(
+    private val configuration: PostgresV2SourceConfiguration? = null,
+) : JdbcMetadataQuerier.FieldTypeMapper, SelectQueryGenerator, JdbcAirbyteStreamFactory {
 
-    // Non-CDC source, so no global cursor or meta fields
-    override val globalCursor: FieldOrMetaField? = null
-    override val globalMetaFields: Set<MetaField> = emptySet()
+    private val isCdcMode: Boolean
+        get() = configuration?.incrementalConfiguration is CdcIncrementalConfiguration
 
-    // No-op for non-CDC sources
+    // For CDC mode, use _ab_cdc_cursor as the global cursor
+    override val globalCursor: FieldOrMetaField?
+        get() = if (isCdcMode) PostgresV2SourceCdcMetaFields.CDC_CURSOR else null
+
+    // For CDC mode, add CDC-specific meta fields
+    override val globalMetaFields: Set<MetaField>
+        get() = if (isCdcMode) {
+            setOf(
+                CommonMetaField.CDC_UPDATED_AT,
+                CommonMetaField.CDC_DELETED_AT,
+                PostgresV2SourceCdcMetaFields.CDC_LSN,
+                PostgresV2SourceCdcMetaFields.CDC_CURSOR,
+            )
+        } else {
+            emptySet()
+        }
+
+    // No-op for this implementation - CDC record decoration is handled by DebeziumOperations
     override fun decorateRecordData(
         timestamp: OffsetDateTime,
         globalStateValue: OpaqueStateValue?,
