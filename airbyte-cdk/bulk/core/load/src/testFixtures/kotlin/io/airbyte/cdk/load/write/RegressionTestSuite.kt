@@ -9,8 +9,6 @@ import io.airbyte.cdk.command.ValidatedJsonUtils
 import io.airbyte.cdk.load.command.Append
 import io.airbyte.cdk.load.command.Dedupe
 import io.airbyte.cdk.load.component.TableOperationsClient
-import io.airbyte.cdk.load.config.DataChannelFormat
-import io.airbyte.cdk.load.config.DataChannelMedium
 import io.airbyte.cdk.load.schema.model.TableName
 import io.airbyte.cdk.load.test.util.ConfigurationUpdater
 import io.airbyte.cdk.load.test.util.FakeConfigurationUpdater
@@ -53,8 +51,6 @@ abstract class RegressionTestSuite(
     val schemaDumperProvider: ((ConfigurationSpecification) -> SchemaDumper)? = null,
     val opsClientProvider: ((ConfigurationSpecification) -> TableOperationsClient)? = null,
     val destinationProcessFactoryOverride: DestinationProcessFactory? = null,
-    val dataChannelMedium: DataChannelMedium,
-    val dataChannelFormat: DataChannelFormat,
     /**
      * If you provide a nonnull [opsClientProvider], you MUST also provide a list of expected
      * [TableName]s. See [RegressionTestFixtures.tableIdentifierRegressionInputStreamDescriptors]
@@ -78,8 +74,6 @@ abstract class RegressionTestSuite(
                 schemaDumperProvider,
                 opsClientProvider,
                 destinationProcessFactory,
-                dataChannelMedium,
-                dataChannelFormat,
                 updatedConfig = updatedConfig,
                 parsedConfig,
                 goldenFileBasePath = goldenFileBasePath,

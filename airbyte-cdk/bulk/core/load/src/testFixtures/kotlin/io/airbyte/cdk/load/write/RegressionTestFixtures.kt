@@ -48,14 +48,17 @@ class RegressionTestFixtures(
     val schemaDumperProvider: ((ConfigurationSpecification) -> SchemaDumper)?,
     val opsClientProvider: ((ConfigurationSpecification) -> TableOperationsClient)?,
     val destinationProcessFactory: DestinationProcessFactory,
-    val dataChannelMedium: DataChannelMedium,
-    val dataChannelFormat: DataChannelFormat,
     val updatedConfig: String,
     val parsedConfig: ConfigurationSpecification,
     val goldenFileBasePath: String,
     val testPrettyName: String,
     val tableIdentifierRegressionTestExpectedTableNames: List<TableName>,
 ) {
+    // hardcode these values.
+    // these tests only depend on the catalog, which is identical between speed and normal mode.
+    // so there's no point making this configurable.
+    val dataChannelMedium = DataChannelMedium.STDIO
+    val dataChannelFormat = DataChannelFormat.JSONL
     val randomizedNamespace = IntegrationTest.generateRandomNamespace()
 
     fun baseSchemaRegressionTest(filename: String, importType: ImportType) = runTest {
