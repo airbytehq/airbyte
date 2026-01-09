@@ -36,7 +36,7 @@ import io.airbyte.cdk.load.test.util.DestinationDataDumper
 import io.airbyte.cdk.load.test.util.OutputRecord
 import io.airbyte.cdk.load.util.deserializeToNode
 import io.airbyte.integrations.destination.postgres.config.PostgresBeanFactory
-import io.airbyte.integrations.destination.postgres.db.toPostgresCompatibleName
+import io.airbyte.integrations.destination.postgres.schema.toPostgresCompatibleName
 import io.airbyte.integrations.destination.postgres.spec.PostgresConfiguration
 import java.time.LocalDate
 import java.time.LocalDateTime
