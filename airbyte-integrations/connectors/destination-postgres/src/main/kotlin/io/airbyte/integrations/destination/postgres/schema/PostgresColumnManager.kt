@@ -67,15 +67,13 @@ class PostgresColumnManager(
     object Constants {
         val rawModeMetaColumns =
             linkedMapOf(
-                Meta.COLUMN_NAME_AB_RAW_ID to
-                    ColumnType(PostgresDataType.VARCHAR.typeName, false),
+                Meta.COLUMN_NAME_AB_RAW_ID to ColumnType(PostgresDataType.VARCHAR.typeName, false),
                 Meta.COLUMN_NAME_AB_EXTRACTED_AT to
                     ColumnType(
                         PostgresDataType.TIMESTAMP_WITH_TIMEZONE.typeName,
                         false,
                     ),
-                Meta.COLUMN_NAME_AB_META to
-                    ColumnType(PostgresDataType.JSONB.typeName, false),
+                Meta.COLUMN_NAME_AB_META to ColumnType(PostgresDataType.JSONB.typeName, false),
                 Meta.COLUMN_NAME_AB_GENERATION_ID to
                     ColumnType(
                         PostgresDataType.BIGINT.typeName,
@@ -91,8 +89,7 @@ class PostgresColumnManager(
 
         val schemaModeMetaColumns =
             linkedMapOf(
-                Meta.COLUMN_NAME_AB_RAW_ID to
-                    ColumnType(PostgresDataType.VARCHAR.typeName, false),
+                Meta.COLUMN_NAME_AB_RAW_ID to ColumnType(PostgresDataType.VARCHAR.typeName, false),
                 Meta.COLUMN_NAME_AB_EXTRACTED_AT to
                     ColumnType(PostgresDataType.TIMESTAMP_WITH_TIMEZONE.typeName, false),
                 Meta.COLUMN_NAME_AB_META to ColumnType(PostgresDataType.JSONB.typeName, false),

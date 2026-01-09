@@ -193,15 +193,14 @@ class PostgresAirbyteClient(
                 recreateCursorIndex =
                     !isRawTablesMode &&
                         shouldRecreateCursorIndex(stream, tableName, columnNameMapping),
-                cursorColumnName =
-                    sqlGenerator.getCursorColumnName(stream, columnNameMapping),
+                cursorColumnName = sqlGenerator.getCursorColumnName(stream, columnNameMapping),
             )
         )
     }
 
     /**
-     * Get user columns from the stream's pre-computed table schema.
-     * In raw table mode, returns empty map since user columns are stored in _airbyte_data.
+     * Get user columns from the stream's pre-computed table schema. In raw table mode, returns
+     * empty map since user columns are stored in _airbyte_data.
      */
     private fun getUserColumns(stream: DestinationStream): Map<String, ColumnType> {
         if (postgresConfiguration.legacyRawTablesOnly) {
@@ -296,8 +295,7 @@ class PostgresAirbyteClient(
         tableName: TableName,
         columnNameMapping: ColumnNameMapping
     ): Boolean {
-        val streamPrimaryKeys =
-            sqlGenerator.getPrimaryKeysColumnNames(stream, columnNameMapping)
+        val streamPrimaryKeys = sqlGenerator.getPrimaryKeysColumnNames(stream, columnNameMapping)
         if (streamPrimaryKeys.isEmpty()) return false
 
         val existingPrimaryKeyIndexColumns = getPrimaryKeyIndexColumns(tableName)
@@ -408,10 +406,8 @@ class PostgresAirbyteClient(
         columnsInStream.forEach { (name, streamType) ->
             val dbType = columnsInDb[name]
             if (dbType != null && dbType.type != streamType.type) {
-                modifiedColumns[name] = ColumnTypeChange(
-                    originalType = dbType,
-                    newType = streamType
-                )
+                modifiedColumns[name] =
+                    ColumnTypeChange(originalType = dbType, newType = streamType)
             }
         }
 

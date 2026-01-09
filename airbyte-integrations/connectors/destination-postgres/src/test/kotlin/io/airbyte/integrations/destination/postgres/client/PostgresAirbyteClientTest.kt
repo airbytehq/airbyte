@@ -455,7 +455,8 @@ internal class PostgresAirbyteClientTest {
 
         val result = client.getColumnsFromDb(tableName)
 
-        val expectedColumns = mapOf("col1" to ColumnType("varchar", true), "col2" to ColumnType("bigint", true))
+        val expectedColumns =
+            mapOf("col1" to ColumnType("varchar", true), "col2" to ColumnType("bigint", true))
 
         assertEquals(expectedColumns, result)
     }
@@ -503,14 +504,10 @@ internal class PostgresAirbyteClientTest {
 
     @Test
     fun testGenerateSchemaChanges() {
-        val columnsInDb = mapOf(
-            "col1" to ColumnType("text", true),
-            "col2" to ColumnType("integer", true)
-        )
-        val columnsInStream = mapOf(
-            "col2" to ColumnType("varchar", true),
-            "col3" to ColumnType("boolean", true)
-        )
+        val columnsInDb =
+            mapOf("col1" to ColumnType("text", true), "col2" to ColumnType("integer", true))
+        val columnsInStream =
+            mapOf("col2" to ColumnType("varchar", true), "col3" to ColumnType("boolean", true))
 
         val (added, deleted, modified) = client.generateSchemaChanges(columnsInDb, columnsInStream)
 
@@ -521,15 +518,16 @@ internal class PostgresAirbyteClientTest {
         assertEquals(ColumnType("text", true), deleted["col1"])
 
         assertEquals(1, modified.size)
-        assertEquals(ColumnTypeChange(ColumnType("integer", true), ColumnType("varchar", true)), modified["col2"])
+        assertEquals(
+            ColumnTypeChange(ColumnType("integer", true), ColumnType("varchar", true)),
+            modified["col2"]
+        )
     }
 
     @Test
     fun testGenerateSchemaChangesNoChanges() {
-        val columns = mapOf(
-            "col1" to ColumnType("text", true),
-            "col2" to ColumnType("integer", true)
-        )
+        val columns =
+            mapOf("col1" to ColumnType("text", true), "col2" to ColumnType("integer", true))
 
         val (added, deleted, modified) = client.generateSchemaChanges(columns, columns)
 
@@ -586,12 +584,11 @@ internal class PostgresAirbyteClientTest {
 
         // no column changes - mock stream's pre-computed table schema to return same columns as DB
         every { columnManager.getMetaColumnNames() } returns emptySet()
-        val finalSchema = mapOf(
-            "col1" to ColumnType("text", true),
-            "col2" to ColumnType("integer", true)
-        )
+        val finalSchema =
+            mapOf("col1" to ColumnType("text", true), "col2" to ColumnType("integer", true))
         val columnSchema = ColumnSchema(emptyMap(), emptyMap(), finalSchema)
-        val streamTableSchema = mockk<StreamTableSchema> { every { this@mockk.columnSchema } returns columnSchema }
+        val streamTableSchema =
+            mockk<StreamTableSchema> { every { this@mockk.columnSchema } returns columnSchema }
         every { stream.tableSchema } returns streamTableSchema
 
         // no index changes
@@ -664,12 +661,11 @@ internal class PostgresAirbyteClientTest {
 
         every { columnManager.getMetaColumnNames() } returns emptySet()
         // Stream has col1 and col2 (col2 is new)
-        val finalSchema = mapOf(
-            "col1" to ColumnType("text", true),
-            "col2" to ColumnType("integer", true)
-        )
+        val finalSchema =
+            mapOf("col1" to ColumnType("text", true), "col2" to ColumnType("integer", true))
         val columnSchema = ColumnSchema(emptyMap(), emptyMap(), finalSchema)
-        val streamTableSchema = mockk<StreamTableSchema> { every { this@mockk.columnSchema } returns columnSchema }
+        val streamTableSchema =
+            mockk<StreamTableSchema> { every { this@mockk.columnSchema } returns columnSchema }
         every { stream.tableSchema } returns streamTableSchema
 
         every { sqlGenerator.getPrimaryKeysColumnNames(stream, columnNameMapping) } returns
@@ -743,7 +739,8 @@ internal class PostgresAirbyteClientTest {
         every { columnManager.getMetaColumnNames() } returns emptySet()
         val finalSchema = mapOf("col1" to ColumnType("text", true))
         val columnSchema = ColumnSchema(emptyMap(), emptyMap(), finalSchema)
-        val streamTableSchema = mockk<StreamTableSchema> { every { this@mockk.columnSchema } returns columnSchema }
+        val streamTableSchema =
+            mockk<StreamTableSchema> { every { this@mockk.columnSchema } returns columnSchema }
         every { stream.tableSchema } returns streamTableSchema
 
         // primary key has changed
@@ -818,7 +815,8 @@ internal class PostgresAirbyteClientTest {
         every { columnManager.getMetaColumnNames() } returns emptySet()
         val finalSchema = mapOf("col1" to ColumnType("text", true))
         val columnSchema = ColumnSchema(emptyMap(), emptyMap(), finalSchema)
-        val streamTableSchema = mockk<StreamTableSchema> { every { this@mockk.columnSchema } returns columnSchema }
+        val streamTableSchema =
+            mockk<StreamTableSchema> { every { this@mockk.columnSchema } returns columnSchema }
         every { stream.tableSchema } returns streamTableSchema
 
         every { sqlGenerator.getPrimaryKeysColumnNames(stream, columnNameMapping) } returns
@@ -893,12 +891,11 @@ internal class PostgresAirbyteClientTest {
 
         every { columnManager.getMetaColumnNames() } returns emptySet()
         // Stream has col1 and new_col but not old_col
-        val finalSchema = mapOf(
-            "col1" to ColumnType("text", true),
-            "new_col" to ColumnType("integer", true)
-        )
+        val finalSchema =
+            mapOf("col1" to ColumnType("text", true), "new_col" to ColumnType("integer", true))
         val columnSchema = ColumnSchema(emptyMap(), emptyMap(), finalSchema)
-        val streamTableSchema = mockk<StreamTableSchema> { every { this@mockk.columnSchema } returns columnSchema }
+        val streamTableSchema =
+            mockk<StreamTableSchema> { every { this@mockk.columnSchema } returns columnSchema }
         every { stream.tableSchema } returns streamTableSchema
 
         every { sqlGenerator.getPrimaryKeysColumnNames(stream, columnNameMapping) } returns

@@ -93,8 +93,8 @@ class PostgresDirectLoadSqlGenerator(
     }
 
     /**
-     * Returns the user columns and their types for a stream from the pre-computed table schema.
-     * In raw table mode, returns empty map since user columns are stored in _airbyte_data.
+     * Returns the user columns and their types for a stream from the pre-computed table schema. In
+     * raw table mode, returns empty map since user columns are stored in _airbyte_data.
      */
     private fun getUserColumns(stream: DestinationStream): Map<String, ColumnType> {
         if (postgresConfiguration.legacyRawTablesOnly) {
@@ -129,7 +129,8 @@ class PostgresDirectLoadSqlGenerator(
             if (postgresConfiguration.legacyRawTablesOnly) {
                 ""
             } else {
-                val primaryKeyColumnNames = getPrimaryKeysColumnNamesQuoted(stream, columnNameMapping)
+                val primaryKeyColumnNames =
+                    getPrimaryKeysColumnNamesQuoted(stream, columnNameMapping)
                 createPrimaryKeyIndexStatement(primaryKeyColumnNames, tableName)
             }
         val cursorIndexStatement =
@@ -206,8 +207,10 @@ class PostgresDirectLoadSqlGenerator(
         columnNameMapping: ColumnNameMapping
     ) = getCursorColumnName(stream, columnNameMapping)?.let { quoteIdentifier(it) }
 
-    private fun getCursorColumnNameQuoted(cursor: List<String>, columnNameMapping: ColumnNameMapping) =
-        getCursorColumnName(cursor, columnNameMapping)?.let { quoteIdentifier(it) }
+    private fun getCursorColumnNameQuoted(
+        cursor: List<String>,
+        columnNameMapping: ColumnNameMapping
+    ) = getCursorColumnName(cursor, columnNameMapping)?.let { quoteIdentifier(it) }
 
     internal fun recreatePrimaryKeyIndex(
         primaryKeyColumnNames: List<String>,
@@ -632,10 +635,7 @@ class PostgresDirectLoadSqlGenerator(
      * @return SQL query that returns column name in the cursor index
      */
     fun getCursorIndexColumn(tableName: TableName): String =
-        getIndexColumns(
-            indexName = getCursorIndexName(tableName),
-            namespace = tableName.namespace
-        )
+        getIndexColumns(indexName = getCursorIndexName(tableName), namespace = tableName.namespace)
 
     private fun getIndexColumns(indexName: String, namespace: String): String =
         """
@@ -700,8 +700,7 @@ class PostgresDirectLoadSqlGenerator(
                     oldType == "jsonb" &&
                         (newType == "varchar" ||
                             newType == "text" ||
-                            newType == "character varying") ->
-                        "USING $quotedName #>> '{}'"
+                            newType == "character varying") -> "USING $quotedName #>> '{}'"
                     // Standard cast for other conversions
                     else -> "USING $quotedName::$newType"
                 }
