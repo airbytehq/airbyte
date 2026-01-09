@@ -12,7 +12,7 @@ import jakarta.inject.Singleton
 @Singleton
 class DevNullWriter : DestinationWriter {
     override fun createStreamLoader(stream: DestinationStream): StreamLoader {
-        /* Do nothing. Work is done by the DirectLoader. TODO: Remove StreamLoader entirely. */
+        /* Does nothing */
         return object : StreamLoader {
             override val stream: DestinationStream = stream
         }

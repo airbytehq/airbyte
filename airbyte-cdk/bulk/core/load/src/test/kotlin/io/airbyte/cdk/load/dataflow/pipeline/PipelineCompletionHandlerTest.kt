@@ -45,6 +45,7 @@ class PipelineCompletionHandlerTest {
                 aggStore = aggStore,
                 stateHistogramStore = stateHistogramStore,
                 statsStore = statsStore,
+                dispatcher = kotlinx.coroutines.Dispatchers.Unconfined,
             )
     }
 
