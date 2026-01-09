@@ -69,6 +69,13 @@ This page contains the setup guide and reference information for the [Airtable](
 5. Click **Set up source**.
 <!-- /env:oss -->
 
+### Configuration options
+
+The Airtable connector provides the following optional configuration settings:
+
+- **Number of Concurrent Workers**: Controls the number of concurrent threads used for syncing (default: 5, minimum: 2, maximum: 40). Higher values can improve sync performance when syncing multiple bases or when there is I/O wait time. The connector automatically respects Airtable's rate limit of 5 requests per second per base, so increasing this value will not cause rate limit errors.
+- **Add Base ID to Stream Name**: When enabled, includes the Airtable base ID in stream names to ensure uniqueness. This is useful if you have cloned Airtable bases with tables that share the same name. Enabling this option changes stream names and requires a full refresh of your data.
+
 ### Note on changed table names and deleted tables
 
 Please keep in mind that if you start syncing a table via Airbyte, then rename it in your Airtable account, the connector will not continue syncing that table until you reset your connection schema and select it again. At that point, the table will begin syncing to a table with the new name in the destination. This is because there is no way for Airtable to tell Airbyte which tables have been renamed. Similarly, if you delete a table that was previously syncing, the connector will stop syncing it.
@@ -137,6 +144,8 @@ See information about rate limits [here](https://airtable.com/developers/web/api
 
 | Version    | Date       | Pull Request                                             | Subject                                                                                 |
 |:-----------|:-----------|:---------------------------------------------------------|:----------------------------------------------------------------------------------------|
+| 4.6.17 | 2026-01-08 | [70856](https://github.com/airbytehq/airbyte/pull/70856) | Add configurable option to include base_id in stream names for uniqueness |
+| 4.6.16 | 2026-01-08 | [71229](https://github.com/airbytehq/airbyte/pull/71229) | Promoting release candidate 4.6.16-rc.1 to a main version. |
 | 4.6.16-rc.1 | 2025-12-10 | [69778](https://github.com/airbytehq/airbyte/pull/69778) | Add HTTPAPIBudget and concurrency_level for improved sync performance |
 | 4.6.15 | 2025-12-02 | [70296](https://github.com/airbytehq/airbyte/pull/70296) | Bump memory for discover to 3GB and check to 1.5GB |
 | 4.6.14 | 2025-11-25 | [69916](https://github.com/airbytehq/airbyte/pull/69916) | Update dependencies |
