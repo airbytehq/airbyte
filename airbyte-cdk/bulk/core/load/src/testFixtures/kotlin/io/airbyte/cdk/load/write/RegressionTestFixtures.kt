@@ -183,12 +183,16 @@ class RegressionTestFixtures(
             dataChannelMedium,
             dataChannelFormat,
         )
+
         val actualSchema =
-            schemaDumper!!.discoverSchema(
-                parsedConfig,
-                stream.mappedDescriptor.namespace,
-                stream.mappedDescriptor.name
-            )
+            Jsons.writerWithDefaultPrettyPrinter()
+                .writeValueAsString(
+                    schemaDumper!!.discoverSchema(
+                        parsedConfig,
+                        stream.mappedDescriptor.namespace,
+                        stream.mappedDescriptor.name
+                    )
+                )
         CharacterizationTest.doAssert(
             "$goldenFileBasePath/schema-regression/column_names/$filename.txt",
             actualSchema,
