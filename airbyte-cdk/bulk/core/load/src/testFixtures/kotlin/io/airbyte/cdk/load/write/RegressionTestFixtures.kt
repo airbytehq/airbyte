@@ -4,8 +4,11 @@
 
 package io.airbyte.cdk.load.write
 
+import io.airbyte.cdk.command.ConfigurationSpecification
 import io.airbyte.cdk.load.command.DestinationStream
 import io.airbyte.cdk.load.command.ImportType
+import io.airbyte.cdk.load.config.DataChannelFormat
+import io.airbyte.cdk.load.config.DataChannelMedium
 import io.airbyte.cdk.load.data.ArrayType
 import io.airbyte.cdk.load.data.ArrayTypeWithoutSchema
 import io.airbyte.cdk.load.data.BooleanType
@@ -24,17 +27,31 @@ import io.airbyte.cdk.load.data.TimestampTypeWithoutTimezone
 import io.airbyte.cdk.load.data.UnionType
 import io.airbyte.cdk.load.data.UnknownType
 import io.airbyte.cdk.load.test.util.CharacterizationTest
+import io.airbyte.cdk.load.test.util.IntegrationTest
+import io.airbyte.cdk.load.test.util.SchemaDumper
+import io.airbyte.cdk.load.test.util.destination_process.DestinationProcessFactory
 import io.airbyte.cdk.load.util.Jsons
 import io.airbyte.cdk.load.write.BasicFunctionalityIntegrationTest.Companion.numberType
 import kotlinx.coroutines.test.runTest
 import org.junit.jupiter.api.Assumptions.assumeTrue
 
-class RegressionTestFixtures(val testSuite: BasicFunctionalityIntegrationTest) {
+class RegressionTestFixtures(
+    val schemaDumper: SchemaDumper?,
+    val destinationProcessFactory: DestinationProcessFactory,
+    val dataChannelMedium: DataChannelMedium,
+    val dataChannelFormat: DataChannelFormat,
+    val updatedConfig: String,
+    val parsedConfig: ConfigurationSpecification,
+    val goldenFileBasePath: String,
+    val testPrettyName: String,
+) {
+    val randomizedNamespace = IntegrationTest.generateRandomNamespace()
+
     fun baseSchemaRegressionTest(filename: String, importType: ImportType) = runTest {
-        assumeTrue(testSuite.schemaDumper != null)
+        assumeTrue(schemaDumper != null)
         val stream =
             DestinationStream(
-                testSuite.randomizedNamespace,
+                randomizedNamespace,
                 "test_stream",
                 importType,
                 ObjectType(
@@ -154,22 +171,23 @@ class RegressionTestFixtures(val testSuite: BasicFunctionalityIntegrationTest) {
                 generationId = 1,
                 minimumGenerationId = 1,
                 syncId = 42,
-                namespaceMapper = testSuite.namespaceMapperForMedium(),
-                tableSchema = testSuite.emptyTableSchema,
+                namespaceMapper = dataChannelMedium.namespaceMapper(),
+                tableSchema = BasicFunctionalityIntegrationTest.emptyTableSchema,
             )
-        testSuite.runSync(
-            testSuite.updatedConfig,
+        destinationProcessFactory.runSync(
+            updatedConfig,
             stream,
+            testPrettyName,
             messages = emptyList(),
         )
         val actualSchema =
-            testSuite.schemaDumper!!.discoverSchema(
-                testSuite.parsedConfig,
+            schemaDumper!!.discoverSchema(
+                parsedConfig,
                 stream.mappedDescriptor.namespace,
                 stream.mappedDescriptor.name
             )
         CharacterizationTest.doAssert(
-            "${testSuite.goldenFileBasePath}/schema-regression/column_names/$filename.txt",
+            "$goldenFileBasePath/schema-regression/column_names/$filename.txt",
             actualSchema,
         )
     }

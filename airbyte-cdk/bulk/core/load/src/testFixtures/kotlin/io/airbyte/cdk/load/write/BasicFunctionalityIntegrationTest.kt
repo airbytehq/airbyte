@@ -68,12 +68,10 @@ import io.airbyte.cdk.load.test.util.NameMapper
 import io.airbyte.cdk.load.test.util.NoopExpectedRecordMapper
 import io.airbyte.cdk.load.test.util.NoopNameMapper
 import io.airbyte.cdk.load.test.util.OutputRecord
-import io.airbyte.cdk.load.test.util.SchemaDumper
 import io.airbyte.cdk.load.test.util.destination_process.DestinationUncleanExitException
 import io.airbyte.cdk.load.util.Jsons
 import io.airbyte.cdk.load.util.deserializeToNode
 import io.airbyte.cdk.load.util.serializeToString
-import io.airbyte.cdk.load.write.RegressionTestFixtures.Companion.FUNKY_CHARS_IDENTIFIER
 import io.airbyte.protocol.models.v0.AdditionalStats
 import io.airbyte.protocol.models.v0.AirbyteMessage
 import io.airbyte.protocol.models.v0.AirbyteRecordMessageFileReference
@@ -350,7 +348,6 @@ abstract class BasicFunctionalityIntegrationTest(
     dataChannelFormat: DataChannelFormat = DataChannelFormat.JSONL,
     val testSpeedModeStatsEmission: Boolean = true,
     val useDataFlowPipeline: Boolean = false,
-    val schemaDumper: SchemaDumper? = null,
 ) :
     IntegrationTest(
         additionalMicronautEnvs = additionalMicronautEnvs,
@@ -364,13 +361,9 @@ abstract class BasicFunctionalityIntegrationTest(
         dataChannelMedium = dataChannelMedium,
         dataChannelFormat = dataChannelFormat,
     ) {
-    val goldenFileBasePath = "golden_files/${this::class.simpleName}"
-
     // Update config with any replacements.  This may be necessary when using testcontainers.
     val updatedConfig = configUpdater.update(configContents)
     val parsedConfig = ValidatedJsonUtils.parseOne(configSpecClass, updatedConfig)
-
-    private val regressionTestFixtures = RegressionTestFixtures(this)
 
     @Test
     open fun testOutOfOrderStateMessages() {
@@ -5179,87 +5172,6 @@ abstract class BasicFunctionalityIntegrationTest(
         }
     }
 
-    /** Regression test for table schemas (column names, types, etc.) in append mode. */
-    @Test
-    open fun testSchemaRegressionAppend() {
-        regressionTestFixtures.baseSchemaRegressionTest("append", Append)
-    }
-
-    /**
-     * Regression test for table schemas (column names, types, etc.) in dedup mode, using simple
-     * identifiers for the PK/cursor.
-     */
-    @Test
-    open fun testSchemaRegressionSimpleDedup() {
-        regressionTestFixtures.baseSchemaRegressionTest(
-            "dedup_simple",
-            Dedupe(
-                primaryKey = listOf(listOf("string")),
-                cursor = listOf("number"),
-            )
-        )
-    }
-
-    /**
-     * Regression test for table schemas (column names, types, etc.) in dedup mode, using SQL
-     * reserved words for the PK/cursor.
-     */
-    @Test
-    open fun testSchemaRegressionDedupReservedWords() {
-        regressionTestFixtures.baseSchemaRegressionTest(
-            "dedup_reserved_word",
-            Dedupe(
-                primaryKey = listOf(listOf("column")),
-                cursor = listOf("table"),
-            )
-        )
-    }
-
-    /**
-     * Regression test for table schemas (column names, types, etc.) in dedup mode, using an
-     * identifier with funky chars for the PK.
-     */
-    @Test
-    open fun testSchemaRegressionFunkyCharsPk() {
-        regressionTestFixtures.baseSchemaRegressionTest(
-            "dedup_funky_chars_pk",
-            Dedupe(
-                primaryKey = listOf(listOf(FUNKY_CHARS_IDENTIFIER)),
-                cursor = listOf("string"),
-            )
-        )
-    }
-
-    /**
-     * Regression test for table schemas (column names, types, etc.) in dedup mode, using an
-     * identifier with funky chars for the PK.
-     */
-    @Test
-    open fun testSchemaRegressionFunkyCharsCursor() {
-        regressionTestFixtures.baseSchemaRegressionTest(
-            "dedup_funky_chars_cursor",
-            Dedupe(
-                primaryKey = listOf(listOf("string")),
-                cursor = listOf(FUNKY_CHARS_IDENTIFIER),
-            )
-        )
-    }
-
-    /**
-     * Regression test for table schemas (column names, types, etc.) in dedup mode, using colliding
-     * identifiers for the PK/cursor.
-     */
-    @Test
-    open fun testSchemaRegressionDedupCollidingNames() {
-        regressionTestFixtures.baseSchemaRegressionTest(
-            "dedup_colliding_names",
-            Dedupe(
-                primaryKey = listOf(listOf("foo!")),
-                cursor = listOf("foo$"),
-            )
-        )
-    }
-
     private fun schematizedObject(
         fullObject: LinkedHashMap<String, Any?>,
         coercedObject: LinkedHashMap<String, Any?> = fullObject
@@ -5324,6 +5236,20 @@ abstract class BasicFunctionalityIntegrationTest(
                 nullable = true,
             )
         private val timestamptzType = FieldType(TimestampTypeWithTimezone, nullable = true)
+
+        // This will get blown away in the tests as the DestinationStream's we are mocking just get
+        // converted to the protocol which has no concept of destination schemas
+        val emptyTableSchema: StreamTableSchema =
+            StreamTableSchema(
+                columnSchema =
+                    ColumnSchema(
+                        inputSchema = mapOf(),
+                        inputToFinalColumnNames = mapOf(),
+                        finalSchema = mapOf(),
+                    ),
+                importType = Append,
+                tableNames = TableNames(finalTableName = TableName("namespace", "test")),
+            )
     }
 
     fun checkpointKeyForMedium(index: Int = 1, partitionId: String = "1"): CheckpointKey? {
@@ -5359,27 +5285,15 @@ abstract class BasicFunctionalityIntegrationTest(
             expectedAdditionalStats
         } else null
 
-    internal fun namespaceMapperForMedium(): NamespaceMapper {
-        return when (dataChannelMedium) {
-            DataChannelMedium.STDIO ->
-                NamespaceMapper(namespaceDefinitionType = NamespaceDefinitionType.SOURCE)
-            // TODO: Return something more dynamic? Based on the test?
-            DataChannelMedium.SOCKET ->
-                NamespaceMapper(namespaceDefinitionType = NamespaceDefinitionType.SOURCE)
-        }
-    }
+    internal fun namespaceMapperForMedium(): NamespaceMapper = dataChannelMedium.namespaceMapper()
+}
 
-    // This will get blown away in the tests as the DestinationStream's we are mocking just get
-    // converted to the protocol which has no concept of destination schemas
-    internal val emptyTableSchema: StreamTableSchema =
-        StreamTableSchema(
-            columnSchema =
-                ColumnSchema(
-                    inputSchema = mapOf(),
-                    inputToFinalColumnNames = mapOf(),
-                    finalSchema = mapOf(),
-                ),
-            importType = Append,
-            tableNames = TableNames(finalTableName = TableName("namespace", "test")),
-        )
+fun DataChannelMedium.namespaceMapper(): NamespaceMapper {
+    return when (this) {
+        DataChannelMedium.STDIO ->
+            NamespaceMapper(namespaceDefinitionType = NamespaceDefinitionType.SOURCE)
+        // TODO: Return something more dynamic? Based on the test?
+        DataChannelMedium.SOCKET ->
+            NamespaceMapper(namespaceDefinitionType = NamespaceDefinitionType.SOURCE)
+    }
 }

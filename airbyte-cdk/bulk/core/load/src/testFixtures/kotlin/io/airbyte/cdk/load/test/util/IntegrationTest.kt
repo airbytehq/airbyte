@@ -80,12 +80,8 @@ abstract class IntegrationTest(
     // multiple times.
     val destinationProcessFactory = DestinationProcessFactory.get(additionalMicronautEnvs)
 
-    @Suppress("DEPRECATION") private val randomSuffix = RandomStringUtils.randomAlphabetic(4)
-    private val timestampString =
-        LocalDateTime.ofInstant(Instant.now(), ZoneOffset.UTC)
-            .format(randomizedNamespaceDateFormatter)
     // stream name doesn't need to be randomized, only the namespace.
-    val randomizedNamespace = "test$timestampString$randomSuffix"
+    val randomizedNamespace = generateRandomNamespace()
 
     // junit is a bit wonky with injecting TestInfo.
     // You can declare it as a constructor param, but you get a TestInfo instance
@@ -367,6 +363,15 @@ abstract class IntegrationTest(
         val randomizedNamespaceRegex = Regex("test(\\d{8})[A-Za-z]{4}.*")
         val randomizedNamespaceDateFormatter: DateTimeFormatter =
             DateTimeFormatter.ofPattern("yyyyMMdd")
+
+        fun generateRandomNamespace(): String {
+            @Suppress("DEPRECATION") val randomSuffix = RandomStringUtils.randomAlphabetic(4)
+            val timestampString =
+                LocalDateTime.ofInstant(Instant.now(), ZoneOffset.UTC)
+                    .format(randomizedNamespaceDateFormatter)
+            // stream name doesn't need to be randomized, only the namespace.
+            return "test$timestampString$randomSuffix"
+        }
 
         /**
          * When set, this property forces the CDK to invoke processRecords once per record. This
