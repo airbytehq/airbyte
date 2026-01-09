@@ -1,5 +1,3 @@
-import MigrationGuide from '@site/static/_migration_guides_upgrade_guide.md';
-
 # Zendesk Support Migration Guide
 
 ## Upgrading to 4.0.0
