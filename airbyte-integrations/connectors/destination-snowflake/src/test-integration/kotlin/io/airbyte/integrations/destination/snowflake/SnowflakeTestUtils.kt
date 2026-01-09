@@ -21,7 +21,7 @@ object SnowflakeTestUtils {
      */
     const val CONFIG_WITH_AUTH_STAGING_IGNORE_CASING = "secrets/1s1t_case_insensitive.json"
     const val CONFIG_WITH_AUTH_STAGING_AND_RAW_OVERRIDE =
-        "secrets/1s1t_internal_staging_config_raw_schema_override.json"
+        "secrets/config_with_auth_staging_and_raw_override.json"
 
     fun getConfig(configPath: String): String = Files.readString(getConfigPath(configPath))
     fun getConfigPath(configPath: String): Path = Path.of(configPath)
