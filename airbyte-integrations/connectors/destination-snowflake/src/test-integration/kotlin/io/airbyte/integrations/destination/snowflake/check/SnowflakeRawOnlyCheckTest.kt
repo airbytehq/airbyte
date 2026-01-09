@@ -7,24 +7,19 @@ package io.airbyte.integrations.destination.snowflake.check
 import io.airbyte.cdk.command.FeatureFlag
 import io.airbyte.cdk.load.check.CheckIntegrationTest
 import io.airbyte.cdk.load.check.CheckTestConfig
-import io.airbyte.integrations.destination.snowflake.SnowflakeTestUtils.CONFIG_WITH_AUTH_STAGING
-import io.airbyte.integrations.destination.snowflake.SnowflakeTestUtils.CONFIG_WITH_AUTH_STAGING_IGNORE_CASING
+import io.airbyte.integrations.destination.snowflake.SnowflakeTestUtils.CONFIG_WITH_AUTH_STAGING_AND_RAW_OVERRIDE
 import io.airbyte.integrations.destination.snowflake.SnowflakeTestUtils.getConfig
 import io.airbyte.integrations.destination.snowflake.spec.SnowflakeSpecification
 import java.util.concurrent.TimeUnit
 import org.junit.jupiter.api.Test
 import org.junit.jupiter.api.Timeout
 
-class SnowflakeCheckTest :
+class SnowflakeRawOnlyCheckTest :
     CheckIntegrationTest<SnowflakeSpecification>(
         successConfigFilenames =
             listOf(
                 CheckTestConfig(
-                    configContents = getConfig(CONFIG_WITH_AUTH_STAGING),
-                    featureFlags = setOf(FeatureFlag.AIRBYTE_CLOUD_DEPLOYMENT),
-                ),
-                CheckTestConfig(
-                    configContents = getConfig(CONFIG_WITH_AUTH_STAGING_IGNORE_CASING),
+                    configContents = getConfig(CONFIG_WITH_AUTH_STAGING_AND_RAW_OVERRIDE),
                     featureFlags = setOf(FeatureFlag.AIRBYTE_CLOUD_DEPLOYMENT),
                 ),
             ),

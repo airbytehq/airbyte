@@ -53,9 +53,9 @@ class SnowflakeChecker(
             )
         // Add _airbyte_loaded_at for legacy raw tables mode since SnowflakeRawRecordFormatter
         // expects it
-        if (snowflakeConfiguration.legacyRawTablesOnly) {
-            baseData[Meta.COLUMN_NAME_AB_LOADED_AT] = AirbyteValue.from(OffsetDateTime.now())
-        }
+        // if (snowflakeConfiguration.legacyRawTablesOnly) {
+        //     baseData[Meta.COLUMN_NAME_AB_LOADED_AT] = AirbyteValue.from(OffsetDateTime.now())
+        // }
         val data = baseData.toMap()
         val outputSchema =
             if (snowflakeConfiguration.legacyRawTablesOnly) {
@@ -118,7 +118,7 @@ class SnowflakeChecker(
 
                 val snowflakeRecordFormatter =
                     if (snowflakeConfiguration.legacyRawTablesOnly) {
-                        SnowflakeRawRecordFormatter()
+                        SnowflakeSchemaRecordFormatter()
                     } else {
                         SnowflakeSchemaRecordFormatter()
                     }
