@@ -62,11 +62,6 @@ class ClickhouseDirectLoadWriterWithJson :
     override fun testDedupChangePk() {
         super.testDedupChangePk()
     }
-
-    @Test
-    override fun testSchemaRegressionAppend() {
-        super.testSchemaRegressionAppend()
-    }
 }
 
 class ClickhouseDirectLoadWriterWithJsonProto :
@@ -161,19 +156,12 @@ abstract class ClickhouseAcceptanceTest(
         dataChannelFormat = dataChannelFormat,
         dataChannelMedium = dataChannelMedium,
         useDataFlowPipeline = true,
-        schemaDumper = ClickhouseSchemaDumper,
     ) {
     companion object {
         @JvmStatic
         @BeforeAll
         fun beforeAll() {
             ClickhouseContainerHelper.start()
-        }
-
-        @JvmStatic
-        @BeforeAll
-        fun afterAll() {
-            ClickhouseContainerHelper.stop()
         }
     }
 
