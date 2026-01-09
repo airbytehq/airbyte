@@ -7,7 +7,6 @@ package io.airbyte.integrations.destination.clickhouse.write.load
 import io.airbyte.cdk.load.config.DataChannelFormat
 import io.airbyte.cdk.load.config.DataChannelMedium
 import io.airbyte.cdk.load.schema.model.TableName
-import io.airbyte.cdk.load.test.util.destination_process.DestinationProcessFactory
 import io.airbyte.cdk.load.write.RegressionTestSuite
 import io.airbyte.integrations.destination.clickhouse.ClickhouseConfigUpdater
 import io.airbyte.integrations.destination.clickhouse.ClickhouseContainerHelper
@@ -30,7 +29,6 @@ abstract class ClickhouseBaseRegressionTest(
         configUpdater = ClickhouseConfigUpdater(),
         schemaDumperProvider = { ClickhouseSchemaDumper(it) },
         opsClientProvider = { Utils.getClickhouseAirbyteClient(it) },
-        destinationProcessFactory = DestinationProcessFactory.get(emptyList()),
         dataChannelMedium = dataChannelMedium,
         dataChannelFormat = dataChannelFormat,
         tableIdentifierRegressionTestExpectedTableNames =
@@ -86,14 +84,14 @@ abstract class ClickhouseBaseRegressionTest(
 
     @ResourceLock("tableIdentifierRegressionTest")
     @Test
-    override fun tableIdentifierRegressionTestAppend() {
-        super.tableIdentifierRegressionTestAppend()
+    override fun testTableIdentifierRegressionAppend() {
+        super.testTableIdentifierRegressionAppend()
     }
 
     @ResourceLock("tableIdentifierRegressionTest")
     @Test
-    override fun tableIdentifierRegressionTestDedup() {
-        super.tableIdentifierRegressionTestDedup()
+    override fun testTableIdentifierRegressionDedup() {
+        super.testTableIdentifierRegressionDedup()
     }
 
     companion object {
