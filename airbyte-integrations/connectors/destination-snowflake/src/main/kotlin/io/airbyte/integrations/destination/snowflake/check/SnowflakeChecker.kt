@@ -46,8 +46,7 @@ class SnowflakeChecker(
                     AirbyteValue.from(UUID.randomUUID().toString()),
                 Meta.AirbyteMetaFields.EXTRACTED_AT.fieldName to
                     AirbyteValue.from(OffsetDateTime.now()),
-                Meta.COLUMN_NAME_AB_LOADED_AT to
-                    AirbyteValue.from(OffsetDateTime.now()),
+                Meta.COLUMN_NAME_AB_LOADED_AT to AirbyteValue.from(OffsetDateTime.now()),
                 Meta.AirbyteMetaFields.META.fieldName to
                     AirbyteValue.from(emptyMap<String, String>()),
                 Meta.AirbyteMetaFields.GENERATION_ID.fieldName to AirbyteValue.from(0),
