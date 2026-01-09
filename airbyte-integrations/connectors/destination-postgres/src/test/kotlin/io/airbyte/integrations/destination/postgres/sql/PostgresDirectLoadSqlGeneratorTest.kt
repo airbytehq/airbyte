@@ -9,6 +9,8 @@ import io.airbyte.cdk.load.command.Dedupe
 import io.airbyte.cdk.load.command.DestinationStream
 import io.airbyte.cdk.load.component.ColumnType
 import io.airbyte.cdk.load.component.ColumnTypeChange
+import io.airbyte.cdk.load.schema.model.ColumnSchema
+import io.airbyte.cdk.load.schema.model.StreamTableSchema
 import io.airbyte.cdk.load.data.FieldType
 import io.airbyte.cdk.load.data.IntegerType
 import io.airbyte.cdk.load.data.ObjectType
@@ -17,9 +19,7 @@ import io.airbyte.cdk.load.data.TimestampTypeWithTimezone
 import io.airbyte.cdk.load.schema.model.TableName
 import io.airbyte.cdk.load.table.CDC_DELETED_AT_COLUMN
 import io.airbyte.cdk.load.table.ColumnNameMapping
-import io.airbyte.cdk.load.table.DefaultTempTableNameGenerator
 import io.airbyte.integrations.destination.postgres.schema.PostgresColumnManager
-import io.airbyte.integrations.destination.postgres.schema.PostgresTableSchemaMapper
 import io.airbyte.integrations.destination.postgres.spec.CdcDeletionMode
 import io.airbyte.integrations.destination.postgres.spec.PostgresConfiguration
 import io.mockk.every
@@ -33,7 +33,6 @@ internal class PostgresDirectLoadSqlGeneratorTest {
 
     private lateinit var postgresDirectLoadSqlGenerator: PostgresDirectLoadSqlGenerator
     private lateinit var columnManager: PostgresColumnManager
-    private lateinit var tableSchemaMapper: PostgresTableSchemaMapper
     private lateinit var postgresConfiguration: PostgresConfiguration
 
     @BeforeEach
@@ -46,14 +45,18 @@ internal class PostgresDirectLoadSqlGeneratorTest {
                 every { schema } returns "public"
             }
         columnManager = PostgresColumnManager(postgresConfiguration)
-        val tempTableNameGenerator = DefaultTempTableNameGenerator(internalNamespace = "airbyte_internal")
-        tableSchemaMapper = PostgresTableSchemaMapper(postgresConfiguration, tempTableNameGenerator)
         postgresDirectLoadSqlGenerator =
-            PostgresDirectLoadSqlGenerator(columnManager, tableSchemaMapper, postgresConfiguration)
+            PostgresDirectLoadSqlGenerator(columnManager, postgresConfiguration)
     }
 
     @Test
     fun testCreateTable() {
+        val finalSchema = mapOf(
+            "targetId" to ColumnType("varchar", true),
+            "sourceName" to ColumnType("varchar", false)
+        )
+        val columnSchema = ColumnSchema(emptyMap(), emptyMap(), finalSchema)
+        val streamTableSchema = mockk<StreamTableSchema> { every { this@mockk.columnSchema } returns columnSchema }
         val stream =
             mockk<DestinationStream> {
                 every { schema } returns
@@ -66,6 +69,7 @@ internal class PostgresDirectLoadSqlGeneratorTest {
                     )
 
                 every { importType } returns Append
+                every { tableSchema } returns streamTableSchema
             }
         val columnNameMapping = ColumnNameMapping(mapOf("sourceId" to "targetId"))
         val tableName = TableName(namespace = "namespace", name = "name")
@@ -111,6 +115,9 @@ internal class PostgresDirectLoadSqlGeneratorTest {
 
     @Test
     fun testCreateTableNoReplace() {
+        val finalSchema = mapOf("targetId" to ColumnType("varchar", true))
+        val columnSchema = ColumnSchema(emptyMap(), emptyMap(), finalSchema)
+        val streamTableSchema = mockk<StreamTableSchema> { every { this@mockk.columnSchema } returns columnSchema }
         val stream =
             mockk<DestinationStream> {
                 every { schema } returns
@@ -122,6 +129,7 @@ internal class PostgresDirectLoadSqlGeneratorTest {
                     )
 
                 every { importType } returns Append
+                every { tableSchema } returns streamTableSchema
             }
         val columnNameMapping =
             ColumnNameMapping(
@@ -163,6 +171,13 @@ internal class PostgresDirectLoadSqlGeneratorTest {
 
     @Test
     fun testCreateTableWithPrimaryKeysAndCursor() {
+        val finalSchema = mapOf(
+            "id" to ColumnType("bigint", true),
+            "name" to ColumnType("varchar", true),
+            "updatedAt" to ColumnType("timestamp with time zone", true)
+        )
+        val columnSchema = ColumnSchema(emptyMap(), emptyMap(), finalSchema)
+        val streamTableSchema = mockk<StreamTableSchema> { every { this@mockk.columnSchema } returns columnSchema }
         val stream =
             mockk<DestinationStream> {
                 every { schema } returns
@@ -176,6 +191,7 @@ internal class PostgresDirectLoadSqlGeneratorTest {
                     )
                 every { importType } returns
                     Dedupe(primaryKey = listOf(listOf("id")), cursor = listOf("updatedAt"))
+                every { tableSchema } returns streamTableSchema
             }
         val columnNameMapping = ColumnNameMapping(emptyMap())
         val tableName = TableName(namespace = "test_schema", name = "test_table")
@@ -226,9 +242,7 @@ internal class PostgresDirectLoadSqlGeneratorTest {
                 every { schema } returns "public"
             }
         val rawModeColumnManager = PostgresColumnManager(rawModeConfig)
-        val rawModeTempTableNameGenerator = DefaultTempTableNameGenerator(internalNamespace = "airbyte_internal")
-        val rawModeTableSchemaMapper = PostgresTableSchemaMapper(rawModeConfig, rawModeTempTableNameGenerator)
-        val rawModeSqlGenerator = PostgresDirectLoadSqlGenerator(rawModeColumnManager, rawModeTableSchemaMapper, rawModeConfig)
+        val rawModeSqlGenerator = PostgresDirectLoadSqlGenerator(rawModeColumnManager, rawModeConfig)
 
         val stream =
             mockk<DestinationStream> {
@@ -358,6 +372,14 @@ internal class PostgresDirectLoadSqlGeneratorTest {
     fun testUpsertTable() {
         every { postgresConfiguration.cdcDeletionMode } returns CdcDeletionMode.HARD_DELETE
 
+        val finalSchema = mapOf(
+            "id" to ColumnType("bigint", false),
+            "name" to ColumnType("varchar", true),
+            "updatedAt" to ColumnType("timestamp with time zone", true),
+            CDC_DELETED_AT_COLUMN to ColumnType("timestamp with time zone", true)
+        )
+        val columnSchema = ColumnSchema(emptyMap(), emptyMap(), finalSchema)
+        val streamTableSchema = mockk<StreamTableSchema> { every { this@mockk.columnSchema } returns columnSchema }
         val stream =
             mockk<DestinationStream> {
                 every { schema } returns
@@ -374,6 +396,7 @@ internal class PostgresDirectLoadSqlGeneratorTest {
                     )
                 every { importType } returns
                     Dedupe(primaryKey = listOf(listOf("id")), cursor = listOf("updatedAt"))
+                every { tableSchema } returns streamTableSchema
             }
 
         val columnNameMapping = ColumnNameMapping(emptyMap())
@@ -1132,9 +1155,7 @@ internal class PostgresDirectLoadSqlGeneratorTest {
                 every { schema } returns "public"
             }
         val cascadeColumnManager = PostgresColumnManager(cascadeConfig)
-        val cascadeTempTableNameGenerator = DefaultTempTableNameGenerator(internalNamespace = "airbyte_internal")
-        val cascadeTableSchemaMapper = PostgresTableSchemaMapper(cascadeConfig, cascadeTempTableNameGenerator)
-        val cascadeSqlGenerator = PostgresDirectLoadSqlGenerator(cascadeColumnManager, cascadeTableSchemaMapper, cascadeConfig)
+        val cascadeSqlGenerator = PostgresDirectLoadSqlGenerator(cascadeColumnManager, cascadeConfig)
 
         val tableName = TableName(namespace = "test_schema", name = "test_table")
         val columnsToAdd = emptyMap<String, ColumnType>()
@@ -1174,9 +1195,7 @@ internal class PostgresDirectLoadSqlGeneratorTest {
                 every { schema } returns "public"
             }
         val cascadeColumnManager = PostgresColumnManager(cascadeConfig)
-        val cascadeTempTableNameGenerator = DefaultTempTableNameGenerator(internalNamespace = "airbyte_internal")
-        val cascadeTableSchemaMapper = PostgresTableSchemaMapper(cascadeConfig, cascadeTempTableNameGenerator)
-        val cascadeSqlGenerator = PostgresDirectLoadSqlGenerator(cascadeColumnManager, cascadeTableSchemaMapper, cascadeConfig)
+        val cascadeSqlGenerator = PostgresDirectLoadSqlGenerator(cascadeColumnManager, cascadeConfig)
 
         val tableName = TableName(namespace = "test_schema", name = "test_table")
         val columnsToAdd = emptyMap<String, ColumnType>()
@@ -1225,9 +1244,7 @@ internal class PostgresDirectLoadSqlGeneratorTest {
                 every { schema } returns "public"
             }
         val cascadeColumnManager = PostgresColumnManager(cascadeConfig)
-        val cascadeTempTableNameGenerator = DefaultTempTableNameGenerator(internalNamespace = "airbyte_internal")
-        val cascadeTableSchemaMapper = PostgresTableSchemaMapper(cascadeConfig, cascadeTempTableNameGenerator)
-        val cascadeSqlGenerator = PostgresDirectLoadSqlGenerator(cascadeColumnManager, cascadeTableSchemaMapper, cascadeConfig)
+        val cascadeSqlGenerator = PostgresDirectLoadSqlGenerator(cascadeColumnManager, cascadeConfig)
 
         val tableName = TableName(namespace = "test_schema", name = "test_table")
         val columnsToAdd = emptyMap<String, ColumnType>()

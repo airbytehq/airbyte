@@ -9,15 +9,12 @@ import io.airbyte.cdk.load.command.Dedupe
 import io.airbyte.cdk.load.command.DestinationStream
 import io.airbyte.cdk.load.component.ColumnType
 import io.airbyte.cdk.load.component.ColumnTypeChange
-import io.airbyte.cdk.load.data.ObjectType
-import io.airbyte.cdk.load.data.ObjectTypeWithEmptySchema
 import io.airbyte.cdk.load.message.Meta.Companion.COLUMN_NAME_AB_EXTRACTED_AT
 import io.airbyte.cdk.load.message.Meta.Companion.COLUMN_NAME_AB_GENERATION_ID
 import io.airbyte.cdk.load.schema.model.TableName
 import io.airbyte.cdk.load.table.CDC_DELETED_AT_COLUMN
 import io.airbyte.cdk.load.table.ColumnNameMapping
 import io.airbyte.integrations.destination.postgres.schema.PostgresColumnManager
-import io.airbyte.integrations.destination.postgres.schema.PostgresTableSchemaMapper
 import io.airbyte.integrations.destination.postgres.spec.CdcDeletionMode
 import io.airbyte.integrations.destination.postgres.spec.PostgresConfiguration
 import jakarta.inject.Singleton
@@ -32,7 +29,6 @@ private const val EXTRACTED_AT_INDEX_PREFIX = "idx_extracted_at_"
 @Singleton
 class PostgresDirectLoadSqlGenerator(
     private val columnManager: PostgresColumnManager,
-    private val tableSchemaMapper: PostgresTableSchemaMapper,
     private val postgresConfiguration: PostgresConfiguration
 ) {
 
@@ -59,7 +55,7 @@ class PostgresDirectLoadSqlGenerator(
         replace: Boolean
     ): Pair<String, String> {
         val metaColumns = columnManager.getMetaColumns()
-        val userColumns = getUserColumns(stream, columnNameMapping)
+        val userColumns = getUserColumns(stream)
 
         // Build column declarations from the meta columns and user schema
         val columnDeclarations =
@@ -97,32 +93,15 @@ class PostgresDirectLoadSqlGenerator(
     }
 
     /**
-     * Returns the user columns and their types for a stream as a map.
+     * Returns the user columns and their types for a stream from the pre-computed table schema.
      * In raw table mode, returns empty map since user columns are stored in _airbyte_data.
      */
-    private fun getUserColumns(
-        stream: DestinationStream,
-        columnNameMapping: ColumnNameMapping
-    ): LinkedHashMap<String, ColumnType> {
+    private fun getUserColumns(stream: DestinationStream): Map<String, ColumnType> {
         if (postgresConfiguration.legacyRawTablesOnly) {
-            return linkedMapOf()
+            return emptyMap()
         }
-
-        val result = linkedMapOf<String, ColumnType>()
-        getSchemaColumns(stream).forEach { (columnName, fieldType) ->
-            val targetColumnName = getTargetColumnName(columnName, columnNameMapping)
-            val columnType = tableSchemaMapper.toColumnType(fieldType)
-            result[targetColumnName] = columnType
-        }
-        return result
+        return stream.tableSchema.columnSchema.finalSchema
     }
-
-    private fun getSchemaColumns(stream: DestinationStream) =
-        when (val schema = stream.schema) {
-            is ObjectType -> schema.asColumns()
-            is ObjectTypeWithEmptySchema -> emptyMap()
-            else -> emptyMap()
-        }
 
     internal fun getTargetColumnName(
         streamColumnName: String,
@@ -328,7 +307,7 @@ class PostgresDirectLoadSqlGenerator(
         if (postgresConfiguration.legacyRawTablesOnly) {
             return metaColumnNames
         }
-        val userColumnNames = getUserColumns(stream, columnNameMapping).keys.map { quoteIdentifier(it) }
+        val userColumnNames = getUserColumns(stream).keys.map { quoteIdentifier(it) }
         return metaColumnNames + userColumnNames
     }
 
