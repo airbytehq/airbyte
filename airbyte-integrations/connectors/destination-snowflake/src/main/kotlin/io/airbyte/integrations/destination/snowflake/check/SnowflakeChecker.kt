@@ -51,7 +51,8 @@ class SnowflakeChecker(
                 Meta.AirbyteMetaFields.GENERATION_ID.fieldName to AirbyteValue.from(0),
                 CHECK_COLUMN_NAME.toSnowflakeCompatibleName() to AirbyteValue.from("test-value")
             )
-        // Add _airbyte_loaded_at for legacy raw tables mode since SnowflakeRawRecordFormatter expects it
+        // Add _airbyte_loaded_at for legacy raw tables mode since SnowflakeRawRecordFormatter
+        // expects it
         if (snowflakeConfiguration.legacyRawTablesOnly) {
             baseData[Meta.COLUMN_NAME_AB_LOADED_AT] = AirbyteValue.from(OffsetDateTime.now())
         }
