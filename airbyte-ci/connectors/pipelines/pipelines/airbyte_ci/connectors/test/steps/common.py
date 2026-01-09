@@ -220,8 +220,13 @@ class VersionIncrementCheck(VersionCheck):
 
 class QaChecks(SimpleDockerStep):
     """A step to run QA checks for a connectors.
-    More details in https://github.com/airbytehq/airbyte/blob/main/airbyte-ci/connectors/connectors_qa/README.md
+
+    This step uses the `connectors-qa` CLI from the `airbyte-internal-ops` PyPI package.
+    More details in https://github.com/airbytehq/airbyte-ops-mcp
     """
+
+    # The PyPI package that provides the connectors-qa CLI
+    AIRBYTE_INTERNAL_OPS_PACKAGE = "airbyte-internal-ops[qa]"
 
     def __init__(self, context: ConnectorContext) -> None:
         code_directory = context.connector.code_directory
@@ -241,6 +246,8 @@ class QaChecks(SimpleDockerStep):
             if icon_path:
                 icon_path = Path(str(icon_path).replace("-strict-encrypt", ""))
 
+        self._technical_name = technical_name
+
         super().__init__(
             title=f"Run QA checks for {technical_name}",
             context=context,
@@ -252,14 +259,20 @@ class QaChecks(SimpleDockerStep):
                 MountPath(migration_guide_file_path, optional=True),
                 MountPath(icon_path, optional=True),
             ],
-            internal_tools=[
-                MountPath(INTERNAL_TOOL_PATHS.CONNECTORS_QA.value),
-            ],
+            # No longer using internal_tools - we install from PyPI instead
+            internal_tools=[],
             secret_env_variables={"DOCKER_HUB_USERNAME": context.docker_hub_username, "DOCKER_HUB_PASSWORD": context.docker_hub_password}
             if context.docker_hub_username and context.docker_hub_password
             else None,
             command=["connectors-qa", "run", f"--name={technical_name}"],
         )
+
+    async def init_container(self) -> dagger.Container:
+        """Initialize the container and install airbyte-internal-ops from PyPI."""
+        container = await super().init_container()
+        # Install airbyte-internal-ops from PyPI using pipx
+        container = container.with_exec(["pipx", "install", self.AIRBYTE_INTERNAL_OPS_PACKAGE], use_entrypoint=True)
+        return container
 
 
 class AcceptanceTests(Step):
