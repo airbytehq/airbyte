@@ -304,7 +304,6 @@ class PostgresDirectLoadSqlGenerator(
 
     private fun getTargetColumnNamesForStream(
         stream: DestinationStream,
-        columnNameMapping: ColumnNameMapping
     ): List<String> {
         val metaColumnNames = columnManager.getMetaColumnNames().map { quoteIdentifier(it) }
         if (postgresConfiguration.legacyRawTablesOnly) {
@@ -354,7 +353,7 @@ class PostgresDirectLoadSqlGenerator(
 
         val primaryKeyTargetColumns = getPrimaryKeysColumnNamesQuoted(importType, columnNameMapping)
         val cursorTargetColumn = getCursorColumnNameQuoted(importType.cursor, columnNameMapping)
-        val allTargetColumns = getTargetColumnNamesForStream(stream, columnNameMapping)
+        val allTargetColumns = getTargetColumnNamesForStream(stream)
 
         val selectDedupedQuery =
             selectDeduped(
