@@ -24,7 +24,6 @@ import io.airbyte.integrations.destination.snowflake.schema.toSnowflakeCompatibl
 import io.airbyte.integrations.destination.snowflake.spec.SnowflakeConfiguration
 import io.airbyte.integrations.destination.snowflake.write.load.SnowflakeInsertBuffer
 import io.airbyte.integrations.destination.snowflake.write.load.SnowflakeRecordFormatter
-import io.github.oshai.kotlinlogging.KotlinLogging
 import jakarta.inject.Singleton
 import java.time.OffsetDateTime
 import java.util.UUID
@@ -40,10 +39,7 @@ class SnowflakeChecker(
     private val snowflakeRecordFormatter: SnowflakeRecordFormatter,
 ) : DestinationCheckerV2 {
 
-    private val log = KotlinLogging.logger {}
-
     override fun check() {
-        log.error { "Start Check, with raw only mode: ${snowflakeConfiguration.legacyRawTablesOnly}" }
         val data =
             mapOf(
                 Meta.AirbyteMetaFields.RAW_ID.fieldName to
@@ -56,8 +52,6 @@ class SnowflakeChecker(
                 Meta.AirbyteMetaFields.GENERATION_ID.fieldName to AirbyteValue.from(0),
                 CHECK_COLUMN_NAME.toSnowflakeCompatibleName() to AirbyteValue.from("test-value")
             )
-
-        log.error { "Writing: $data" }
         val outputSchema =
             if (snowflakeConfiguration.legacyRawTablesOnly) {
                 snowflakeConfiguration.schema
