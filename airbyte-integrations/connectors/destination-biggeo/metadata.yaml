@@ -1,0 +1,44 @@
+data:
+  ab_internal:
+    sl: 100
+    ql: 100
+  allowedHosts:
+    hosts:
+      - "studio.biggeo.com"
+  connectorBuildOptions:
+    baseImage: docker.io/airbyte/python-connector-base:4.0.2@sha256:9fdb1888c4264cf6fee473649ecb593f56f58e5d0096a87ee0b231777e2e3e73
+  connectorSubtype: api
+  connectorType: destination
+  definitionId: 94bd199c-2ff0-4aa2-b98e-17f0acb72611
+  dockerImageTag: 0.1.0
+  dockerRepository: airbyte/destination-biggeo
+  githubIssueLabel: destination-biggeo
+  icon: icon.svg
+  license: MIT
+  name: BigGeo
+  registryOverrides:
+    cloud:
+      enabled: true
+    oss:
+      enabled: true
+  releaseStage: alpha
+  releaseDate: 2024-01-01
+  resourceRequirements:
+    jobSpecific:
+      - jobType: check_connection
+        resourceRequirements:
+          memory_limit: 512Mi
+          memory_request: 256Mi
+      - jobType: sync
+        resourceRequirements:
+          memory_limit: 1Gi
+          memory_request: 512Mi
+  documentationUrl: https://docs.airbyte.com/integrations/destinations/biggeo
+  tags:
+    - language:python
+    - cdk:python
+  supportLevel: community
+  connectorTestSuitesOptions:
+    - suite: unitTests
+    - suite: integrationTests
+metadataSpecVersion: "1.0"
