@@ -105,11 +105,8 @@ definitions:
           path: profiles
           http_method: GET
           request_parameters:
-            additional-fields[profile]: subscriptionsfilter: >-
-              and(
-                greater-than(subscriptions.email.marketing.suppression.timestamp,'{{ stream_interval.start_time }}'),
-                greater-than(subscriptions.email.marketing.suppression.timestamp,'1970-01-01T00:00:00Z')
-              )
+            additional-fields[profile]: subscriptions
+            filter: "and(greater-than(subscriptions.email.marketing.suppression.timestamp,{{ stream_interval.start_time }}),greater-than(subscriptions.email.marketing.suppression.timestamp,1970-01-01T00:00:00Z))"
             sort: subscriptions.email.marketing.suppression.timestamp
           request_headers:
             Accept: application/json
@@ -160,7 +157,7 @@ definitions:
           - "%Y-%m-%dT%H:%M:%S.%f%z"
           - "%Y-%m-%dT%H:%M:%S%z"
           - "%Y-%m-%d %H:%M:%S%z"
-        datetime_format: "%Y-%m-%dT%H:%M:%S%z"
+        datetime_format: "%Y-%m-%dT%H:%M:%SZ"
         start_datetime:
           type: MinMaxDatetime
           datetime: "{{ config.get('start_date', '2012-01-01T00:00:00Z') }}"
