@@ -18,8 +18,8 @@ object PostgresContainerFactory {
         TestContainerFactory.ContainerModifier<PostgreSQLContainer<*>>
 
     /**
-     * Modifier that configures PostgreSQL for CDC (logical replication).
-     * Sets wal_level=logical which is required for CDC to work.
+     * Modifier that configures PostgreSQL for CDC (logical replication). Sets wal_level=logical
+     * which is required for CDC to work.
      */
     data object WithCdc : PostgresContainerModifier {
         override fun modify(container: PostgreSQLContainer<*>) {
@@ -61,9 +61,7 @@ object PostgresContainerFactory {
             setIncrementalValue(UserDefinedCursor)
         }
 
-    /**
-     * Creates a CDC-specific configuration with replication slot and publication settings.
-     */
+    /** Creates a CDC-specific configuration with replication slot and publication settings. */
     @JvmStatic
     fun cdcConfig(
         postgresContainer: PostgreSQLContainer<*>,
@@ -79,11 +77,13 @@ object PostgresContainerFactory {
             schemas = listOf("public")
             checkpointTargetIntervalSeconds = 60
             concurrency = 1
-            setIncrementalValue(Cdc().apply {
-                this.replicationSlot = replicationSlot
-                this.publication = publication
-                this.invalidCdcCursorPositionBehavior = "Fail sync"
-                this.initialLoadTimeoutHours = 8
-            })
+            setIncrementalValue(
+                Cdc().apply {
+                    this.replicationSlot = replicationSlot
+                    this.publication = publication
+                    this.invalidCdcCursorPositionBehavior = "Fail sync"
+                    this.initialLoadTimeoutHours = 8
+                }
+            )
         }
 }

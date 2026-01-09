@@ -196,8 +196,8 @@ class PostgresV2SourceDebeziumOperations(
     }
 
     /**
-     * Validates the deserialized state against the current PostgreSQL replication slot.
-     * Checks if the saved LSN is still valid (not behind the confirmed flush LSN).
+     * Validates the deserialized state against the current PostgreSQL replication slot. Checks if
+     * the saved LSN is still valid (not behind the confirmed flush LSN).
      */
     private fun validate(debeziumState: UnvalidatedDeserializedState): DebeziumWarmStartState {
         val savedPosition: PostgresV2SourceCdcPosition = position(debeziumState.offset)
@@ -211,7 +211,9 @@ class PostgresV2SourceDebeziumOperations(
         }
 
         // Check if saved LSN is behind the confirmed flush LSN
-        if (slotInfo.confirmedFlushLsn != null && savedPosition.lsn < slotInfo.confirmedFlushLsn.lsn) {
+        if (
+            slotInfo.confirmedFlushLsn != null && savedPosition.lsn < slotInfo.confirmedFlushLsn.lsn
+        ) {
             return abortCdcSync(
                 "Saved LSN (${savedPosition.lsnString}) is behind the confirmed flush LSN (${slotInfo.confirmedFlushLsn.lsnString})"
             )
@@ -244,7 +246,8 @@ class PostgresV2SourceDebeziumOperations(
     private fun queryReplicationSlotInfo(): ReplicationSlotInfo? {
         jdbcConnectionFactory.get().use { connection: Connection ->
             connection.createStatement().use { stmt: Statement ->
-                val sql = """
+                val sql =
+                    """
                     SELECT slot_name, plugin, database, confirmed_flush_lsn, restart_lsn
                     FROM pg_replication_slots
                     WHERE slot_name = '${cdcIncrementalConfiguration.replicationSlot}'
@@ -257,8 +260,12 @@ class PostgresV2SourceDebeziumOperations(
                         slotName = rs.getString("slot_name"),
                         plugin = rs.getString("plugin"),
                         database = rs.getString("database"),
-                        confirmedFlushLsn = confirmedFlushLsnStr?.let { PostgresV2SourceCdcPosition.fromLsnString(it) },
-                        restartLsn = restartLsnStr?.let { PostgresV2SourceCdcPosition.fromLsnString(it) },
+                        confirmedFlushLsn =
+                            confirmedFlushLsnStr?.let {
+                                PostgresV2SourceCdcPosition.fromLsnString(it)
+                            },
+                        restartLsn =
+                            restartLsnStr?.let { PostgresV2SourceCdcPosition.fromLsnString(it) },
                     )
                 }
             }

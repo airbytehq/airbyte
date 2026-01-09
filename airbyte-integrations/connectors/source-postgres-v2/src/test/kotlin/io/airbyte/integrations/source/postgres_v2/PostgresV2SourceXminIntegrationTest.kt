@@ -7,7 +7,6 @@ import io.airbyte.cdk.discover.DiscoveredStream
 import io.airbyte.cdk.discover.Field
 import io.airbyte.cdk.jdbc.IntFieldType
 import io.airbyte.cdk.jdbc.JdbcConnectionFactory
-import io.airbyte.cdk.jdbc.LongFieldType
 import io.airbyte.cdk.jdbc.StringFieldType
 import io.airbyte.cdk.output.BufferingOutputConsumer
 import io.airbyte.protocol.models.v0.AirbyteRecordMessage
@@ -33,8 +32,8 @@ import org.testcontainers.containers.PostgreSQLContainer
  * Integration tests for Xmin-based incremental sync mode.
  *
  * Note: The current implementation configures Xmin mode but still requires a user-defined cursor.
- * Full Xmin support would automatically use PostgreSQL's xmin system column as the cursor,
- * which would detect all inserts and updates without requiring a user-specified cursor column.
+ * Full Xmin support would automatically use PostgreSQL's xmin system column as the cursor, which
+ * would detect all inserts and updates without requiring a user-specified cursor column.
  *
  * These tests verify that the Xmin configuration works and that incremental syncs function
  * correctly when a cursor is specified alongside Xmin mode.

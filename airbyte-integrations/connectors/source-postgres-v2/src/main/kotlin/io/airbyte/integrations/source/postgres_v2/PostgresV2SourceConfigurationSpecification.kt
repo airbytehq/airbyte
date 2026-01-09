@@ -384,7 +384,8 @@ class Cdc : IncrementalConfigurationSpecification {
     )
     @JsonSchemaDefault("After each batch")
     @JsonSchemaInject(
-        json = """{"order":5,"always_show":false, "enum": ["After each batch","After connector shutdown"]}"""
+        json =
+            """{"order":5,"always_show":false, "enum": ["After each batch","After connector shutdown"]}"""
     )
     var lsnCommitBehaviour: String? = "After each batch"
 }
@@ -399,10 +400,17 @@ class MicronautPropertiesFriendlyIncrementalConfigurationSpecification {
         when (method) {
             "Standard" -> UserDefinedCursor
             "Xmin" -> Xmin
-            "CDC" -> Cdc().apply {
-                replicationSlot = this@MicronautPropertiesFriendlyIncrementalConfigurationSpecification.replicationSlot ?: "airbyte_slot"
-                publication = this@MicronautPropertiesFriendlyIncrementalConfigurationSpecification.publication ?: "airbyte_publication"
-            }
+            "CDC" ->
+                Cdc().apply {
+                    replicationSlot =
+                        this@MicronautPropertiesFriendlyIncrementalConfigurationSpecification
+                            .replicationSlot
+                            ?: "airbyte_slot"
+                    publication =
+                        this@MicronautPropertiesFriendlyIncrementalConfigurationSpecification
+                            .publication
+                            ?: "airbyte_publication"
+                }
             else -> throw ConfigErrorException("invalid value $method")
         }
 }

@@ -79,16 +79,17 @@ class PostgresV2SourceOperations(
 
     // For CDC mode, add CDC-specific meta fields
     override val globalMetaFields: Set<MetaField>
-        get() = if (isCdcMode) {
-            setOf(
-                CommonMetaField.CDC_UPDATED_AT,
-                CommonMetaField.CDC_DELETED_AT,
-                PostgresV2SourceCdcMetaFields.CDC_LSN,
-                PostgresV2SourceCdcMetaFields.CDC_CURSOR,
-            )
-        } else {
-            emptySet()
-        }
+        get() =
+            if (isCdcMode) {
+                setOf(
+                    CommonMetaField.CDC_UPDATED_AT,
+                    CommonMetaField.CDC_DELETED_AT,
+                    PostgresV2SourceCdcMetaFields.CDC_LSN,
+                    PostgresV2SourceCdcMetaFields.CDC_CURSOR,
+                )
+            } else {
+                emptySet()
+            }
 
     // No-op for this implementation - CDC record decoration is handled by DebeziumOperations
     override fun decorateRecordData(

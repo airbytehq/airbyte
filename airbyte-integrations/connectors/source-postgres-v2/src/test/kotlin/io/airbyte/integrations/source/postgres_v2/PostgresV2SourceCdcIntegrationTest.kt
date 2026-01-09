@@ -36,11 +36,7 @@ class PostgresV2SourceCdcIntegrationTest {
     @Test
     fun testCdcConfigurationIsValid() {
         // Verify that CDC configuration is correctly parsed
-        val config = PostgresContainerFactory.cdcConfig(
-            dbContainer,
-            REPLICATION_SLOT,
-            PUBLICATION
-        )
+        val config = PostgresContainerFactory.cdcConfig(dbContainer, REPLICATION_SLOT, PUBLICATION)
 
         val parsedConfig = PostgresV2SourceConfigurationFactory().make(config)
 
@@ -60,11 +56,14 @@ class PostgresV2SourceCdcIntegrationTest {
         // Verify that the replication slot was created and is accessible
         connectionFactory.get().use { connection: Connection ->
             connection.createStatement().use { stmt: Statement ->
-                val rs = stmt.executeQuery("""
+                val rs =
+                    stmt.executeQuery(
+                        """
                     SELECT slot_name, plugin, slot_type, database
                     FROM pg_replication_slots
                     WHERE slot_name = '$REPLICATION_SLOT'
-                """.trimIndent())
+                """.trimIndent()
+                    )
 
                 assertTrue(rs.next(), "Replication slot should exist")
                 assertEquals(REPLICATION_SLOT, rs.getString("slot_name"))
@@ -79,9 +78,12 @@ class PostgresV2SourceCdcIntegrationTest {
         // Verify that the publication was created
         connectionFactory.get().use { connection: Connection ->
             connection.createStatement().use { stmt: Statement ->
-                val rs = stmt.executeQuery("""
+                val rs =
+                    stmt.executeQuery(
+                        """
                     SELECT pubname FROM pg_publication WHERE pubname = '$PUBLICATION'
-                """.trimIndent())
+                """.trimIndent()
+                    )
 
                 assertTrue(rs.next(), "Publication should exist")
                 assertEquals(PUBLICATION, rs.getString("pubname"))
@@ -94,11 +96,14 @@ class PostgresV2SourceCdcIntegrationTest {
         // Verify that the test table is included in the publication
         connectionFactory.get().use { connection: Connection ->
             connection.createStatement().use { stmt: Statement ->
-                val rs = stmt.executeQuery("""
+                val rs =
+                    stmt.executeQuery(
+                        """
                     SELECT schemaname, tablename
                     FROM pg_publication_tables
                     WHERE pubname = '$PUBLICATION' AND tablename = '$tableName'
-                """.trimIndent())
+                """.trimIndent()
+                    )
 
                 assertTrue(rs.next(), "Table should be in publication")
                 assertEquals("public", rs.getString("schemaname"))
@@ -149,7 +154,8 @@ class PostgresV2SourceCdcIntegrationTest {
     @Test
     fun testCdcMetaFieldsInCdcMode() {
         // Verify that CDC meta fields are returned when in CDC mode
-        val cdcConfig = PostgresContainerFactory.cdcConfig(dbContainer, REPLICATION_SLOT, PUBLICATION)
+        val cdcConfig =
+            PostgresContainerFactory.cdcConfig(dbContainer, REPLICATION_SLOT, PUBLICATION)
         val parsedConfig = PostgresV2SourceConfigurationFactory().make(cdcConfig)
         val operations = PostgresV2SourceOperations(parsedConfig)
 
