@@ -8,8 +8,6 @@ import io.airbyte.cdk.command.ConfigurationSpecification
 import io.airbyte.cdk.command.ValidatedJsonUtils
 import io.airbyte.cdk.load.command.Append
 import io.airbyte.cdk.load.command.Dedupe
-import io.airbyte.cdk.load.config.DataChannelFormat
-import io.airbyte.cdk.load.config.DataChannelMedium
 import io.airbyte.cdk.load.test.util.ConfigurationUpdater
 import io.airbyte.cdk.load.test.util.FakeConfigurationUpdater
 import io.airbyte.cdk.load.test.util.SchemaDumper
@@ -24,8 +22,6 @@ abstract class RegressionTestSuite(
     val configUpdater: ConfigurationUpdater = FakeConfigurationUpdater,
     val schemaDumper: SchemaDumper? = null,
     val destinationProcessFactory: DestinationProcessFactory,
-    val dataChannelMedium: DataChannelMedium,
-    val dataChannelFormat: DataChannelFormat,
 ) {
     val goldenFileBasePath = "golden_files/${this::class.simpleName}"
     private lateinit var regressionTestFixtures: RegressionTestFixtures
@@ -39,8 +35,6 @@ abstract class RegressionTestSuite(
             RegressionTestFixtures(
                 schemaDumper,
                 destinationProcessFactory,
-                dataChannelMedium,
-                dataChannelFormat,
                 updatedConfig = updatedConfig,
                 parsedConfig,
                 goldenFileBasePath = goldenFileBasePath,
