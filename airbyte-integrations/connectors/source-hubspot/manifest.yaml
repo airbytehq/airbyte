@@ -114,7 +114,7 @@ definitions:
       field_name: limit
     pagination_strategy:
       type: CursorPagination
-      page_size: 100
+      page_size: 50  # Reduced from 100 to improve rate limit handling
       cursor_value: "{{ response.get('paging', {}).get('next', {}).get('after') }}"
 
   base_selector:
