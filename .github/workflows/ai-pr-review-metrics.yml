@@ -1,0 +1,212 @@
+name: AI PR Review Metrics Collection
+
+# Collects metrics from !pr_ai_review bot comments and pushes to Google Sheets
+# Runs daily at midnight UTC
+
+on:
+  schedule:
+    - cron: '0 0 * * *'  # Daily at midnight UTC
+  workflow_dispatch:  # Allow manual trigger for testing
+
+jobs:
+  collect-metrics:
+    runs-on: ubuntu-latest
+    steps:
+      - name: Checkout repository
+        uses: actions/checkout@v4
+
+      - name: Set up Python
+        uses: actions/setup-python@v5
+        with:
+          python-version: '3.11'
+
+      - name: Install dependencies
+        run: |
+          pip install gspread google-auth requests
+
+      - name: Collect and push metrics
+        env:
+          GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+          GOOGLE_SHEETS_CREDENTIALS: ${{ secrets.GOOGLE_SHEETS_CREDENTIALS }}
+          GOOGLE_SHEETS_SPREADSHEET_ID: ${{ secrets.GOOGLE_SHEETS_SPREADSHEET_ID }}
+        run: |
+          python << 'EOF'
+          import os
+          import json
+          import re
+          import requests
+          from datetime import datetime, timedelta
+          import gspread
+          from google.oauth2.service_account import Credentials
+
+          # Configuration
+          REPO = "airbytehq/airbyte"
+          GITHUB_TOKEN = os.environ.get("GITHUB_TOKEN")
+          GOOGLE_SHEETS_CREDENTIALS = os.environ.get("GOOGLE_SHEETS_CREDENTIALS")
+          SPREADSHEET_ID = os.environ.get("GOOGLE_SHEETS_SPREADSHEET_ID")
+
+          # Metrics marker pattern
+          METRICS_PATTERN = r'<!-- pr_ai_review_metrics: ({.*?}) -->'
+
+          def get_recent_bot_comments():
+              """Fetch bot comments from the last 24 hours containing metrics markers."""
+              headers = {
+                  "Authorization": f"token {GITHUB_TOKEN}",
+                  "Accept": "application/vnd.github.v3+json"
+              }
+              
+              # Search for recent issue comments by the bot
+              # Note: GitHub search API has limitations, so we fetch recent comments
+              since = (datetime.utcnow() - timedelta(days=1)).isoformat() + "Z"
+              
+              metrics = []
+              page = 1
+              
+              while True:
+                  # Fetch issue comments (PR comments are issue comments in GitHub API)
+                  url = f"https://api.github.com/repos/{REPO}/issues/comments"
+                  params = {
+                      "since": since,
+                      "per_page": 100,
+                      "page": page,
+                      "sort": "created",
+                      "direction": "desc"
+                  }
+                  
+                  response = requests.get(url, headers=headers, params=params)
+                  response.raise_for_status()
+                  comments = response.json()
+                  
+                  if not comments:
+                      break
+                  
+                  for comment in comments:
+                      # Check if comment is from the bot and contains metrics
+                      if comment.get("user", {}).get("login") == "devin-ai-integration[bot]":
+                          body = comment.get("body", "")
+                          match = re.search(METRICS_PATTERN, body)
+                          if match:
+                              try:
+                                  metrics_json = json.loads(match.group(1))
+                                  metrics_json["comment_id"] = comment["id"]
+                                  metrics_json["comment_url"] = comment["html_url"]
+                                  metrics.append(metrics_json)
+                              except json.JSONDecodeError:
+                                  print(f"Failed to parse metrics JSON from comment {comment['id']}")
+                  
+                  page += 1
+                  if len(comments) < 100:
+                      break
+              
+              return metrics
+
+          def push_to_google_sheets(metrics):
+              """Push metrics to Google Sheets."""
+              if not GOOGLE_SHEETS_CREDENTIALS or not SPREADSHEET_ID:
+                  print("Google Sheets credentials not configured. Skipping push.")
+                  print(f"Found {len(metrics)} metrics records:")
+                  for m in metrics:
+                      print(json.dumps(m, indent=2))
+                  return
+              
+              # Authenticate with Google Sheets
+              creds_dict = json.loads(GOOGLE_SHEETS_CREDENTIALS)
+              scopes = [
+                  "https://www.googleapis.com/auth/spreadsheets",
+                  "https://www.googleapis.com/auth/drive"
+              ]
+              creds = Credentials.from_service_account_info(creds_dict, scopes=scopes)
+              client = gspread.authorize(creds)
+              
+              # Open spreadsheet and get/create worksheet
+              spreadsheet = client.open_by_key(SPREADSHEET_ID)
+              try:
+                  worksheet = spreadsheet.worksheet("pr_ai_review_metrics")
+              except gspread.WorksheetNotFound:
+                  worksheet = spreadsheet.add_worksheet(title="pr_ai_review_metrics", rows=1000, cols=26)
+                  # Add headers
+                  headers = [
+                      "timestamp", "repo", "pr_number", "head_sha", "actor", "decision",
+                      "gate1_ci", "gate2_security", "gate3_safety", "gate4_ops_risk",
+                      "gate5_validation", "gate6_pr_quality", "gate1_coverage_warning",
+                      "gate5_evidence_type", "justification_used", "justification_verifiable",
+                      "auto_approve_eligible", "auto_approve_category", "connectors", "rerun",
+                      "comment_id", "comment_url", "collected_at"
+                  ]
+                  worksheet.append_row(headers)
+              
+              # Get existing comment IDs to avoid duplicates
+              existing_ids = set()
+              try:
+                  col_values = worksheet.col_values(21)  # comment_id column
+                  existing_ids = set(str(v) for v in col_values[1:] if v)  # Skip header
+              except Exception:
+                  pass
+              
+              # Append new metrics
+              collected_at = datetime.utcnow().isoformat() + "Z"
+              new_rows = []
+              
+              for m in metrics:
+                  if str(m.get("comment_id")) in existing_ids:
+                      continue
+                  
+                  gates = m.get("gates", {})
+                  row = [
+                      m.get("timestamp", ""),
+                      m.get("repo", ""),
+                      m.get("pr_number", ""),
+                      m.get("head_sha", ""),
+                      m.get("actor", ""),
+                      m.get("decision", ""),
+                      gates.get("gate1_ci", ""),
+                      gates.get("gate2_security", ""),
+                      gates.get("gate3_safety", ""),
+                      gates.get("gate4_ops_risk", ""),
+                      gates.get("gate5_validation", ""),
+                      gates.get("gate6_pr_quality", ""),
+                      str(m.get("gate1_coverage_warning", "")),
+                      m.get("gate5_evidence_type", ""),
+                      str(m.get("justification_used", "")),
+                      str(m.get("justification_verifiable", "")),
+                      str(m.get("auto_approve_eligible", "")),
+                      m.get("auto_approve_category", ""),
+                      ",".join(m.get("connectors", [])),
+                      str(m.get("rerun", "")),
+                      str(m.get("comment_id", "")),
+                      m.get("comment_url", ""),
+                      collected_at
+                  ]
+                  new_rows.append(row)
+              
+              if new_rows:
+                  worksheet.append_rows(new_rows)
+                  print(f"Added {len(new_rows)} new metrics records to Google Sheets")
+              else:
+                  print("No new metrics records to add")
+
+          def main():
+              print(f"Collecting metrics from {REPO}...")
+              metrics = get_recent_bot_comments()
+              print(f"Found {len(metrics)} metrics records from the last 24 hours")
+              
+              if metrics:
+                  push_to_google_sheets(metrics)
+              else:
+                  print("No metrics to process")
+
+          if __name__ == "__main__":
+              main()
+          EOF
+
+      - name: Summary
+        run: |
+          echo "## AI PR Review Metrics Collection" >> $GITHUB_STEP_SUMMARY
+          echo "" >> $GITHUB_STEP_SUMMARY
+          echo "Metrics collection completed. Check the workflow logs for details." >> $GITHUB_STEP_SUMMARY
+          echo "" >> $GITHUB_STEP_SUMMARY
+          echo "### Setup Required" >> $GITHUB_STEP_SUMMARY
+          echo "" >> $GITHUB_STEP_SUMMARY
+          echo "To enable Google Sheets integration, add these secrets:" >> $GITHUB_STEP_SUMMARY
+          echo "- \`GOOGLE_SHEETS_CREDENTIALS\`: JSON key for a Google Cloud service account" >> $GITHUB_STEP_SUMMARY
+          echo "- \`GOOGLE_SHEETS_SPREADSHEET_ID\`: ID of the target Google Sheet" >> $GITHUB_STEP_SUMMARY
