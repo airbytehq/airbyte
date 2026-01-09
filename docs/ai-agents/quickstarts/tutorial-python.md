@@ -87,7 +87,7 @@ import os
 from dotenv import load_dotenv
 from pydantic_ai import Agent
 from airbyte_agent_github import GithubConnector
-from airbyte_agent_github.models import GithubAuthConfig
+from airbyte_agent_github.models import GithubPersonalAccessTokenAuthConfig
 ```
 
 These imports provide:
@@ -96,7 +96,7 @@ These imports provide:
 - `load_dotenv`: Load environment variables from your `.env` file.
 - `Agent`: The Pydantic AI agent class that orchestrates LLM interactions and tool calls.
 - `GithubConnector`: The Airbyte agent connector that provides type-safe access to GitHub's API.
-- `GithubAuthConfig`: The authentication configuration for the GitHub connector.
+- `GithubPersonalAccessTokenAuthConfig`: The authentication configuration for the GitHub connector using a personal access token.
 
 ## Part 4: Add a .env file with your secrets
 
@@ -129,8 +129,8 @@ Define the agent connector for GitHub. It authenticates using your personal acce
 
 ```python title="agent.py"
 connector = GithubConnector(
-    auth_config=GithubAuthConfig(
-        access_token=os.environ["GITHUB_ACCESS_TOKEN"]
+    auth_config=GithubPersonalAccessTokenAuthConfig(
+        token=os.environ["GITHUB_ACCESS_TOKEN"]
     )
 )
 ```
