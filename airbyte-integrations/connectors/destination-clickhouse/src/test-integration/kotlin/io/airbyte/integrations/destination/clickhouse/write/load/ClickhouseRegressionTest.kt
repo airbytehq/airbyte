@@ -4,8 +4,6 @@
 
 package io.airbyte.integrations.destination.clickhouse.write.load
 
-import io.airbyte.cdk.load.config.DataChannelFormat
-import io.airbyte.cdk.load.config.DataChannelMedium
 import io.airbyte.cdk.load.schema.model.TableName
 import io.airbyte.cdk.load.write.RegressionTestSuite
 import io.airbyte.integrations.destination.clickhouse.ClickhouseConfigUpdater
@@ -18,19 +16,13 @@ import org.junit.jupiter.api.BeforeAll
 import org.junit.jupiter.api.Test
 import org.junit.jupiter.api.parallel.ResourceLock
 
-abstract class ClickhouseBaseRegressionTest(
-    configPath: Path,
-    dataChannelFormat: DataChannelFormat,
-    dataChannelMedium: DataChannelMedium,
-) :
+abstract class ClickhouseBaseRegressionTest(configPath: Path) :
     RegressionTestSuite(
         configContents = Files.readString(configPath),
         configSpecClass = ClickhouseSpecificationOss::class.java,
         configUpdater = ClickhouseConfigUpdater(),
         schemaDumperProvider = { ClickhouseSchemaDumper(it) },
         opsClientProvider = { Utils.getClickhouseAirbyteClient(it) },
-        dataChannelMedium = dataChannelMedium,
-        dataChannelFormat = dataChannelFormat,
         tableIdentifierRegressionTestExpectedTableNames =
             listOf(
                 TableName("table_id_regression_test", "table_id_regression_test"),
@@ -103,30 +95,12 @@ abstract class ClickhouseBaseRegressionTest(
     }
 }
 
-class ClickhouseJsonStdioRegressionTest :
+class ClickhouseJsonRegressionTest :
     ClickhouseBaseRegressionTest(
         Utils.getConfigPath("valid_connection.json"),
-        DataChannelFormat.JSONL,
-        DataChannelMedium.STDIO,
     )
 
-class ClickhouseJsonSpeedRegressionTest :
-    ClickhouseBaseRegressionTest(
-        Utils.getConfigPath("valid_connection.json"),
-        DataChannelFormat.PROTOBUF,
-        DataChannelMedium.SOCKET,
-    )
-
-class ClickhouseNonJsonStdioRegressionTest :
+class ClickhouseNonJsonRegressionTest :
     ClickhouseBaseRegressionTest(
         Utils.getConfigPath("valid_connection_no_json.json"),
-        DataChannelFormat.JSONL,
-        DataChannelMedium.STDIO,
-    )
-
-class ClickhouseNonJsonSpeedRegressionTest :
-    ClickhouseBaseRegressionTest(
-        Utils.getConfigPath("valid_connection_no_json.json"),
-        DataChannelFormat.PROTOBUF,
-        DataChannelMedium.SOCKET,
     )
