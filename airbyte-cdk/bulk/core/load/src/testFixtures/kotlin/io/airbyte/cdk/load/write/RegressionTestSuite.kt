@@ -17,16 +17,42 @@ import io.airbyte.cdk.load.test.util.FakeConfigurationUpdater
 import io.airbyte.cdk.load.test.util.SchemaDumper
 import io.airbyte.cdk.load.test.util.destination_process.DestinationProcessFactory
 import io.airbyte.cdk.load.write.RegressionTestFixtures.Companion.FUNKY_CHARS_IDENTIFIER
+import org.junit.jupiter.api.AfterEach
+import org.junit.jupiter.api.Assertions.assertNull
 import org.junit.jupiter.api.BeforeEach
 import org.junit.jupiter.api.TestInfo
 
+/**
+ * These tests verify that the connector does not change behavior between versions. The "schema
+ * regression" tests watch for changes in table schemas (column names+types, etc.). The "table
+ * identifier" tests watch for changes in the actual table names (i.e. schema name, table name,
+ * etc.). These tests follow the same pattern as the "component tests"; you must manually override
+ * each test case and annotate it with `@Test` to opt into the test.
+ *
+ * The schema regression tests operate automatically, in that they will dump the table schemas to
+ * the `src/test-integration/resources/golden_files/...` path.
+ *
+ * If you're migrating a connector to the bulk CDK, you can run the regression tests against the
+ * previous version of the connector, to populate its previous behavior. Simply override the
+ * [destinationProcessFactoryOverride] parameter:
+ * ```kotlin
+ * destinationProcessFactoryOverride = DockerizedDestinationFactory("airbyte/destination-foo", "previous_version")
+ * ```
+ * Just remember to revert this change before releasing your connector. The tests will always fail
+ * if this value is set, to prevent you from forgetting to unset it.
+ *
+ * The table identifier tests require developers to manually populate the
+ * [tableIdentifierRegressionTestExpectedTableNames] field. These tests are also quite finnicky;
+ * that they don't like to be run concurrently. Concurrent test runs (including across multiple PRs)
+ * may cause spurious successes _and_ failures.
+ */
 abstract class RegressionTestSuite(
     val configContents: String,
     val configSpecClass: Class<out ConfigurationSpecification>,
     val configUpdater: ConfigurationUpdater = FakeConfigurationUpdater,
     val schemaDumperProvider: ((ConfigurationSpecification) -> SchemaDumper)? = null,
     val opsClientProvider: ((ConfigurationSpecification) -> TableOperationsClient)? = null,
-    val destinationProcessFactory: DestinationProcessFactory,
+    val destinationProcessFactoryOverride: DestinationProcessFactory? = null,
     val dataChannelMedium: DataChannelMedium,
     val dataChannelFormat: DataChannelFormat,
     /**
@@ -36,6 +62,9 @@ abstract class RegressionTestSuite(
      */
     val tableIdentifierRegressionTestExpectedTableNames: List<TableName> = emptyList(),
 ) {
+    val destinationProcessFactory =
+        destinationProcessFactoryOverride ?: DestinationProcessFactory.get(emptyList())
+
     val goldenFileBasePath = "golden_files/${this::class.simpleName}"
     private lateinit var regressionTestFixtures: RegressionTestFixtures
 
@@ -57,6 +86,14 @@ abstract class RegressionTestSuite(
                 testPrettyName = "${testInfo.testClass.get().simpleName}.${testInfo.displayName}",
                 tableIdentifierRegressionTestExpectedTableNames,
             )
+    }
+
+    @AfterEach
+    fun safetyFail() {
+        assertNull(
+            destinationProcessFactoryOverride,
+            "Remember to unset the destinationProcessFactoryOverride!",
+        )
     }
 
     /** Regression test for table schemas (column names, types, etc.) in append mode. */
@@ -143,17 +180,17 @@ abstract class RegressionTestSuite(
      * Subclasses MUST annotate this test case with `@ResourceLock("tableIdentifierRegressionTest")`
      * to prevent race conditions.
      */
-    open fun tableIdentifierRegressionTestAppend() {
+    open fun testTableIdentifierRegressionAppend() {
         regressionTestFixtures.baseTableIdentifierRegressionTest(Append)
     }
 
     /**
-     * See [tableIdentifierRegressionTestAppend] for information.
+     * See [testTableIdentifierRegressionAppend] for information.
      *
      * Subclasses MUST annotate this test case with `@ResourceLock("tableIdentifierRegressionTest")`
      * to prevent race conditions.
      */
-    open fun tableIdentifierRegressionTestDedup() {
+    open fun testTableIdentifierRegressionDedup() {
         regressionTestFixtures.baseTableIdentifierRegressionTest(
             Dedupe(primaryKey = listOf(listOf("blah")), cursor = emptyList())
         )
