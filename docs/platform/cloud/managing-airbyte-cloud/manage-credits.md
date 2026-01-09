@@ -65,7 +65,7 @@ In the Account balance section, you can view more details about your balance.
 
 - **Invoice date**: The date of the upcoming invoice
 
-- **Remaining credits**: The amount of credits that remain. Airbyte uses these credits first before it accrues an invoice amount. This is typically only relevant if you pre-purchased credits before November 2024.
+- **Remaining credits**: The amount of credits that remain. Airbyte uses these credits first before it accrues an invoice amount.
 
 ### Review billing information
 
@@ -113,4 +113,4 @@ To unenroll, [email the Billing team](mailto:billing@airbyte.io) with your reque
 
 ## Purchasing credits
 
-You can no longer pre-purchase credits. As of November 2024, Airbyte Cloud has moved to in-arrears billing. You're invoiced monthly.
+Airbyte Cloud uses in-arrears billing, so you're invoiced monthly. If you want to pre-purchase credits, [contact Sales](https://airbyte.com/company/talk-to-sales).
