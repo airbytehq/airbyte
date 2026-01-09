@@ -136,6 +136,7 @@ class InputBeanFactory {
         aggregatePublishingConfig: AggregatePublishingConfig,
         @Named("aggregationDispatcher") aggregationDispatcher: CoroutineDispatcher,
         @Named("flushDispatcher") flushDispatcher: CoroutineDispatcher,
+        @Named("finalFlushDispatcher") finalFlushDispatcher: CoroutineDispatcher,
     ): List<DataFlowPipeline> =
         inputFlows.map {
             val aggStore = aggregateStoreFactory.make()
@@ -145,6 +146,7 @@ class InputBeanFactory {
                     aggStore,
                     stateHistogramStore,
                     statsStore,
+                    finalFlushDispatcher,
                 )
 
             DataFlowPipeline(
