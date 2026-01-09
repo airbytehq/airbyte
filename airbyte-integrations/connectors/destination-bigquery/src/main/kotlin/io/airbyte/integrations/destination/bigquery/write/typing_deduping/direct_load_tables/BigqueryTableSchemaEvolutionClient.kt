@@ -50,8 +50,16 @@ class BigqueryTableSchemaEvolutionClient(
         tableName: TableName,
         columnNameMapping: ColumnNameMapping,
     ) {
-        val existingTable =
-            bigquery.getTable(tableName.toTableId()).getDefinition<TableDefinition>()
+        val table = bigquery.getTable(tableName.toTableId())
+        if (table == null) {
+            // Table was deleted between initial status check and now - recreate it
+            logger.info {
+                "Table ${tableName.toPrettyString()} no longer exists for stream ${stream.mappedDescriptor.toPrettyString()}. Creating it."
+            }
+            sqlOperations.createTable(stream, tableName, columnNameMapping, replace = true)
+            return
+        }
+        val existingTable = table.getDefinition<TableDefinition>()
         val shouldRecreateTable = shouldRecreateTable(stream, columnNameMapping, existingTable)
         val alterTableReport = buildAlterTableReport(stream, columnNameMapping, existingTable)
         logger.info {
