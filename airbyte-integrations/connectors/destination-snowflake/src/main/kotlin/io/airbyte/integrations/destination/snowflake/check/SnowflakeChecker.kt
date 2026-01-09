@@ -23,8 +23,7 @@ import io.airbyte.integrations.destination.snowflake.schema.SnowflakeColumnManag
 import io.airbyte.integrations.destination.snowflake.schema.toSnowflakeCompatibleName
 import io.airbyte.integrations.destination.snowflake.spec.SnowflakeConfiguration
 import io.airbyte.integrations.destination.snowflake.write.load.SnowflakeInsertBuffer
-import io.airbyte.integrations.destination.snowflake.write.load.SnowflakeRawRecordFormatter
-import io.airbyte.integrations.destination.snowflake.write.load.SnowflakeSchemaRecordFormatter
+import io.airbyte.integrations.destination.snowflake.write.load.SnowflakeRecordFormatter
 import jakarta.inject.Singleton
 import java.time.OffsetDateTime
 import java.util.UUID
@@ -37,6 +36,7 @@ class SnowflakeChecker(
     private val snowflakeAirbyteClient: SnowflakeAirbyteClient,
     private val snowflakeConfiguration: SnowflakeConfiguration,
     private val columnManager: SnowflakeColumnManager,
+    private val snowflakeRecordFormatter: SnowflakeRecordFormatter,
 ) : DestinationCheckerV2 {
 
     override fun check() {
@@ -119,12 +119,7 @@ class SnowflakeChecker(
                         snowflakeConfiguration = snowflakeConfiguration,
                         columnSchema = tableSchema.columnSchema,
                         columnManager = columnManager,
-                        snowflakeRecordFormatter =
-                            if (snowflakeConfiguration.legacyRawTablesOnly) {
-                                SnowflakeRawRecordFormatter()
-                            } else {
-                                SnowflakeSchemaRecordFormatter()
-                            },
+                        snowflakeRecordFormatter = snowflakeRecordFormatter,
                     )
 
                 snowflakeInsertBuffer.accumulate(data)
