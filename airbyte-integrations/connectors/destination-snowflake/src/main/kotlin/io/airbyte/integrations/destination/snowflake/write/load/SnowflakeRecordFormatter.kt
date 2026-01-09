@@ -15,13 +15,18 @@ import io.airbyte.cdk.load.message.Meta.Companion.COLUMN_NAME_AB_META
 import io.airbyte.cdk.load.message.Meta.Companion.COLUMN_NAME_AB_RAW_ID
 import io.airbyte.cdk.load.schema.model.ColumnSchema
 import io.airbyte.cdk.load.util.Jsons
+import io.github.oshai.kotlinlogging.KotlinLogging
+import kotlin.math.log
 
 interface SnowflakeRecordFormatter {
     fun format(record: Map<String, AirbyteValue>, columnSchema: ColumnSchema): List<Any>
 }
 
 class SnowflakeSchemaRecordFormatter : SnowflakeRecordFormatter {
+    private val log = KotlinLogging.logger {}
     override fun format(record: Map<String, AirbyteValue>, columnSchema: ColumnSchema): List<Any> {
+        log.error { "Use SnowflakeSchemaRecordFormatter" }
+        log.error { "record: $record" }
         val result = mutableListOf<Any>()
         val userColumns = columnSchema.finalSchema.keys
 
@@ -38,16 +43,21 @@ class SnowflakeSchemaRecordFormatter : SnowflakeRecordFormatter {
         // Add user columns from the final schema
         userColumns.forEach { columnName -> result.add(record[columnName].toCsvValue()) }
 
+        log.error { "Result: $result" }
         return result
     }
 }
 
 class SnowflakeRawRecordFormatter : SnowflakeRecordFormatter {
 
+    private val log = KotlinLogging.logger {}
+
     override fun format(record: Map<String, AirbyteValue>, columnSchema: ColumnSchema): List<Any> =
         toOutputRecord(record.toMutableMap())
 
     private fun toOutputRecord(record: MutableMap<String, AirbyteValue>): List<Any> {
+        log.error { "Use SnowflakeRawRecordFormatter" }
+        log.error { "record: $record" }
         val outputRecord = mutableListOf<Any>()
         val mutableRecord = record.toMutableMap()
 
@@ -63,7 +73,7 @@ class SnowflakeRawRecordFormatter : SnowflakeRecordFormatter {
 
         // Convert all the remaining columns to a JSON document stored in the "data" column
         outputRecord.add(StringValue(Jsons.writeValueAsString(filteredRecord)).toCsvValue())
-
+        log.error { "Result: $outputRecord" }
         return outputRecord
     }
 }
