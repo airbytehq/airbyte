@@ -16,6 +16,7 @@ from airbyte_cdk import (
     RecordSelector,
     SimpleRetriever,
 )
+from airbyte_cdk.models import SyncMode
 from airbyte_cdk.sources.declarative.auth.oauth import DeclarativeOauth2Authenticator
 from airbyte_cdk.sources.declarative.auth.selective_authenticator import SelectiveAuthenticator
 from airbyte_cdk.sources.declarative.auth.token_provider import InterpolatedStringTokenProvider
@@ -23,9 +24,11 @@ from airbyte_cdk.sources.declarative.datetime.datetime_parser import DatetimePar
 from airbyte_cdk.sources.declarative.decoders import Decoder, JsonDecoder
 from airbyte_cdk.sources.declarative.extractors.http_selector import HttpSelector
 from airbyte_cdk.sources.declarative.extractors.record_extractor import RecordExtractor
-from airbyte_cdk.sources.declarative.interpolation import InterpolatedString
+from airbyte_cdk.sources.declarative.extractors.record_filter import RecordFilter
+from airbyte_cdk.sources.declarative.interpolation import InterpolatedBoolean, InterpolatedString
 from airbyte_cdk.sources.declarative.migrations.state_migration import StateMigration
 from airbyte_cdk.sources.declarative.partition_routers.list_partition_router import ListPartitionRouter
+from airbyte_cdk.sources.declarative.partition_routers.partition_router import PartitionRouter
 from airbyte_cdk.sources.declarative.requesters import HttpRequester
 from airbyte_cdk.sources.declarative.requesters.error_handlers.backoff_strategies import (
     ExponentialBackoffStrategy,
@@ -37,6 +40,7 @@ from airbyte_cdk.sources.declarative.requesters.paginators.strategies.pagination
 from airbyte_cdk.sources.declarative.requesters.request_options import InterpolatedRequestOptionsProvider
 from airbyte_cdk.sources.declarative.requesters.requester import Requester
 from airbyte_cdk.sources.declarative.schema.schema_loader import SchemaLoader
+from airbyte_cdk.sources.declarative.stream_slicers.stream_slicer import StreamSlicer
 from airbyte_cdk.sources.declarative.transformations import RecordTransformation
 from airbyte_cdk.sources.types import Config, Record, StreamSlice, StreamState
 from airbyte_cdk.sources.utils.transform import TransformConfig, TypeTransformer
@@ -856,6 +860,157 @@ class HubspotCustomObjectsSchemaLoader(SchemaLoader):
 
     def get_json_schema(self) -> Mapping[str, Any]:
         return self._schema
+
+
+@dataclass
+class HubspotAssociationStreamExtractor(RecordExtractor):
+    """
+    Flattens HubSpot association batch/read responses into individual records.
+
+    Transforms nested structure:
+    {
+      "results": [
+        {
+          "from": {"id": "123"},
+          "to": [
+            {
+              "toObjectId": 456,
+              "associationTypes": [
+                {"typeId": 3, "category": "HUBSPOT_DEFINED", "label": null}
+              ]
+            }
+          ]
+        }
+      ]
+    }
+
+    Into flat records:
+    {"from_id": "123", "to_id": "456", "association_type_id": 3, "category": "HUBSPOT_DEFINED", "label": null}
+    """
+
+    from_object: Union[InterpolatedString, str]
+    to_object: Union[InterpolatedString, str]
+    config: Config
+    parameters: InitVar[Mapping[str, Any]]
+    decoder: Decoder = field(default_factory=lambda: JsonDecoder(parameters={}))
+
+    def __post_init__(self, parameters: Mapping[str, Any]) -> None:
+        if isinstance(self.from_object, str):
+            self._from_object = InterpolatedString.create(self.from_object, parameters=parameters)
+        else:
+            self._from_object = self.from_object
+
+        if isinstance(self.to_object, str):
+            self._to_object = InterpolatedString.create(self.to_object, parameters=parameters)
+        else:
+            self._to_object = self.to_object
+
+    def extract_records(self, response: requests.Response) -> Iterable[Mapping[str, Any]]:
+        """
+        Extract and flatten association records from HubSpot batch/read API response.
+
+        Yields one record per association type (not per to_object).
+        Handles empty responses gracefully.
+        Ensures string IDs for schema consistency.
+        """
+        # Parse response JSON directly
+        body = response.json()
+        results = body.get("results", [])
+
+        for result in results:
+            from_obj = result.get("from", {})
+            from_id = str(from_obj.get("id", ""))
+
+            to_list = result.get("to", [])
+
+            for to_obj in to_list:
+                to_id = str(to_obj.get("toObjectId", ""))
+                association_types = to_obj.get("associationTypes", [])
+
+                # Emit one record per association type
+                for assoc_type in association_types:
+                    yield {
+                        "from_id": from_id,
+                        "to_id": to_id,
+                        "association_type_id": assoc_type.get("typeId"),
+                        "category": assoc_type.get("category"),
+                        "label": assoc_type.get("label"),
+                    }
+
+
+@dataclass
+class BatchingRecordFilter(RecordFilter):
+    """
+    Accumulates record IDs and emits batch records of up to batch_size.
+
+    Transforms a stream of individual records into a stream of batch records.
+    Each batch record contains: {"record_ids": [{"id": "1"}, {"id": "2"}, ...]}
+
+    This enables efficient batch API calls by grouping records before making requests.
+
+    Example:
+        Input:  [{"id": "1", "name": "A"}, {"id": "2", "name": "B"}, ...]
+        Output: [{"record_ids": [{"id": "1"}, {"id": "2"}, ..., {"id": "1000"}]},
+                 {"record_ids": [{"id": "1001"}, ...]}]
+    """
+
+    parameters: InitVar[Mapping[str, Any]]
+    config: Config
+    condition: str = ""
+    batch_size: int = 1000
+    id_field: str = "id"
+
+    def __post_init__(self, parameters: Mapping[str, Any]) -> None:
+        self._filter_interpolator = InterpolatedBoolean(condition=self.condition, parameters=parameters) if self.condition else None
+
+    def filter_records(
+        self,
+        records: Iterable[Mapping[str, Any]],
+        stream_state: StreamState,
+        stream_slice: Optional[StreamSlice] = None,
+        next_page_token: Optional[Mapping[str, Any]] = None,
+    ) -> Iterable[Mapping[str, Any]]:
+        """
+        Accumulate record IDs and yield batch records when batch_size is reached.
+
+        Process:
+        1. Iterate through records
+        2. Apply optional condition filter
+        3. Extract ID from each record
+        4. Accumulate IDs until batch_size is reached
+        5. Yield batch record and continue
+        6. Yield final partial batch at the end
+
+        Note: Uses local accumulator to avoid state pollution across multiple reads.
+        """
+        kwargs = {
+            "stream_state": stream_state,
+            "stream_slice": stream_slice,
+            "next_page_token": next_page_token,
+            "stream_slice.extra_fields": stream_slice.extra_fields if stream_slice else {},
+        }
+
+        # Use local accumulator instead of instance variable to avoid state sharing
+        accumulated_ids = []
+
+        for record in records:
+            # Apply condition filter if specified
+            if self._filter_interpolator and not self._filter_interpolator.eval(self.config, record=record, **kwargs):
+                continue
+
+            # Extract and accumulate ID
+            record_id = str(record.get(self.id_field, ""))
+            if record_id:
+                accumulated_ids.append({"id": record_id})
+
+            # Yield batch when we reach batch_size
+            if len(accumulated_ids) >= self.batch_size:
+                yield {"record_ids": accumulated_ids}
+                accumulated_ids = []
+
+        # Yield remaining IDs as final batch (if any)
+        if accumulated_ids:
+            yield {"record_ids": accumulated_ids}
 
 
 _TRUTHY_STRINGS = ("y", "yes", "t", "true", "on", "1")

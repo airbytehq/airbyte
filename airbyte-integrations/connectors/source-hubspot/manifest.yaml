@@ -1447,6 +1447,49 @@ definitions:
       cursor_granularity: PT0.001S
       lookback_window: PT{{ config.get('lookback_window', 0) }}M
 
+  base_crm_search_full_refresh_stream:
+    primary_key:
+      - id
+    $ref: "#/definitions/stream_base"
+    retriever:
+      $ref: "#/definitions/base_retriever"
+      requester:
+        $ref: "#/definitions/base_requester"
+        path: "/crm/v3/objects/{{ parameters['entity'] }}/search"
+        http_method: POST
+        request_body_json:
+          limit: 100
+          sorts:
+            - propertyName: hs_object_id
+              direction: ASCENDING
+          properties:
+            - hs_object_id
+          after: "{{ next_page_token['next_page_token'].get('after', 0) if next_page_token else 0 }}"
+      paginator:
+        type: DefaultPaginator
+        pagination_strategy:
+          type: CustomPaginationStrategy
+          class_name: source_declarative_manifest.components.HubspotCRMSearchPaginationStrategy
+          page_size: 100
+      record_selector:
+        type: RecordSelector
+        extractor:
+          type: DpathExtractor
+          field_path:
+            - results
+
+  base_batched_stream:
+    $ref: "#/definitions/base_crm_search_full_refresh_stream"
+    retriever:
+      $ref: "#/definitions/base_crm_search_full_refresh_stream/retriever"
+      record_selector:
+        $ref: "#/definitions/base_crm_search_full_refresh_stream/retriever/record_selector"
+        record_filter:
+          type: CustomRecordFilter
+          class_name: source_declarative_manifest.components.BatchingRecordFilter
+          batch_size: 1000
+          id_field: id
+
   companies_stream:
     $ref: "#/definitions/base_crm_search_incremental_stream"
     $parameters:
@@ -1845,6 +1888,472 @@ definitions:
           $ref: "#/schemas/tickets"
       - $ref: "#/definitions/base_dynamic_schema_loader"
 
+  # Batched Parent Streams (for association stream efficiency)
+  # These wrap existing streams with BatchingRecordFilter to group IDs into batches of 1,000
+
+  engagements_calls_batched_stream:
+    $ref: "#/definitions/base_batched_stream"
+    $parameters:
+      entity: calls
+    name: engagements_calls_batched
+
+  engagements_emails_batched_stream:
+    $ref: "#/definitions/base_batched_stream"
+    $parameters:
+      entity: emails
+    name: engagements_emails_batched
+
+  engagements_meetings_batched_stream:
+    $ref: "#/definitions/base_batched_stream"
+    $parameters:
+      entity: meetings
+    name: engagements_meetings_batched
+
+  engagements_notes_batched_stream:
+    $ref: "#/definitions/base_batched_stream"
+    $parameters:
+      entity: notes
+    name: engagements_notes_batched
+
+  engagements_tasks_batched_stream:
+    $ref: "#/definitions/base_batched_stream"
+    $parameters:
+      entity: tasks
+    name: engagements_tasks_batched
+
+  deals_batched_stream:
+    $ref: "#/definitions/base_batched_stream"
+    $parameters:
+      entity: deals
+    name: deals_batched
+
+  companies_batched_stream:
+    $ref: "#/definitions/base_batched_stream"
+    $parameters:
+      entity: companies
+    name: companies_batched
+
+  tickets_batched_stream:
+    $ref: "#/definitions/base_batched_stream"
+    $parameters:
+      entity: tickets
+    name: tickets_batched
+
+  # Association Streams Base Definition
+  base_association_stream:
+    type: DeclarativeStream
+    primary_key:
+      - from_id
+      - to_id
+      - association_type_id
+    retriever:
+      type: SimpleRetriever
+      requester:
+        $ref: "#/definitions/base_requester"
+        path: "/crm/v4/associations/{{ parameters['from_object'] }}/{{ parameters['to_object'] }}/batch/read"
+        http_method: POST
+        request_body_json:
+          inputs: "{{ stream_partition['record_ids'] }}"
+      record_selector:
+        type: RecordSelector
+        extractor:
+          type: CustomRecordExtractor
+          class_name: source_declarative_manifest.components.HubspotAssociationStreamExtractor
+          from_object: "{{ parameters['from_object'] }}"
+          to_object: "{{ parameters['to_object'] }}"
+      paginator:
+        type: NoPagination
+    schema_loader:
+      type: InlineSchemaLoader
+      schema:
+        $ref: "#/schemas/base_association"
+    $parameters:
+      name: ""
+      from_object: ""
+      to_object: ""
+
+  # Engagement Association Streams (20 streams)
+  # Calls associations
+  associations_calls_companies_stream:
+    $ref: "#/definitions/base_association_stream"
+    $parameters:
+      name: associations_calls_companies
+      from_object: calls
+      to_object: companies
+    retriever:
+      $ref: "#/definitions/base_association_stream/retriever"
+      partition_router:
+        type: SubstreamPartitionRouter
+        parent_stream_configs:
+          - stream: "#/definitions/engagements_calls_batched_stream"
+            parent_key: record_ids
+            partition_field: record_ids
+  associations_calls_contacts_stream:
+    $ref: "#/definitions/base_association_stream"
+    $parameters:
+      name: associations_calls_contacts
+      from_object: calls
+      to_object: contacts
+    retriever:
+      $ref: "#/definitions/base_association_stream/retriever"
+      partition_router:
+        type: SubstreamPartitionRouter
+        parent_stream_configs:
+          - stream: "#/definitions/engagements_calls_batched_stream"
+            parent_key: record_ids
+            partition_field: record_ids
+  associations_calls_deals_stream:
+    $ref: "#/definitions/base_association_stream"
+    $parameters:
+      name: associations_calls_deals
+      from_object: calls
+      to_object: deals
+    retriever:
+      $ref: "#/definitions/base_association_stream/retriever"
+      partition_router:
+        type: SubstreamPartitionRouter
+        parent_stream_configs:
+          - stream: "#/definitions/engagements_calls_batched_stream"
+            parent_key: record_ids
+            partition_field: record_ids
+  associations_calls_tickets_stream:
+    $ref: "#/definitions/base_association_stream"
+    $parameters:
+      name: associations_calls_tickets
+      from_object: calls
+      to_object: tickets
+    retriever:
+      $ref: "#/definitions/base_association_stream/retriever"
+      partition_router:
+        type: SubstreamPartitionRouter
+        parent_stream_configs:
+          - stream: "#/definitions/engagements_calls_batched_stream"
+            parent_key: record_ids
+            partition_field: record_ids
+
+  # Emails associations
+  associations_emails_companies_stream:
+    $ref: "#/definitions/base_association_stream"
+    $parameters:
+      name: associations_emails_companies
+      from_object: emails
+      to_object: companies
+    retriever:
+      $ref: "#/definitions/base_association_stream/retriever"
+      partition_router:
+        type: SubstreamPartitionRouter
+        parent_stream_configs:
+          - stream: "#/definitions/engagements_emails_batched_stream"
+            parent_key: record_ids
+            partition_field: record_ids
+  associations_emails_contacts_stream:
+    $ref: "#/definitions/base_association_stream"
+    $parameters:
+      name: associations_emails_contacts
+      from_object: emails
+      to_object: contacts
+    retriever:
+      $ref: "#/definitions/base_association_stream/retriever"
+      partition_router:
+        type: SubstreamPartitionRouter
+        parent_stream_configs:
+          - stream: "#/definitions/engagements_emails_batched_stream"
+            parent_key: record_ids
+            partition_field: record_ids
+  associations_emails_deals_stream:
+    $ref: "#/definitions/base_association_stream"
+    $parameters:
+      name: associations_emails_deals
+      from_object: emails
+      to_object: deals
+    retriever:
+      $ref: "#/definitions/base_association_stream/retriever"
+      partition_router:
+        type: SubstreamPartitionRouter
+        parent_stream_configs:
+          - stream: "#/definitions/engagements_emails_batched_stream"
+            parent_key: record_ids
+            partition_field: record_ids
+  associations_emails_tickets_stream:
+    $ref: "#/definitions/base_association_stream"
+    $parameters:
+      name: associations_emails_tickets
+      from_object: emails
+      to_object: tickets
+    retriever:
+      $ref: "#/definitions/base_association_stream/retriever"
+      partition_router:
+        type: SubstreamPartitionRouter
+        parent_stream_configs:
+          - stream: "#/definitions/engagements_emails_batched_stream"
+            parent_key: record_ids
+            partition_field: record_ids
+
+  # Meetings associations
+  associations_meetings_companies_stream:
+    $ref: "#/definitions/base_association_stream"
+    $parameters:
+      name: associations_meetings_companies
+      from_object: meetings
+      to_object: companies
+    retriever:
+      $ref: "#/definitions/base_association_stream/retriever"
+      partition_router:
+        type: SubstreamPartitionRouter
+        parent_stream_configs:
+          - stream: "#/definitions/engagements_meetings_batched_stream"
+            parent_key: record_ids
+            partition_field: record_ids
+  associations_meetings_contacts_stream:
+    $ref: "#/definitions/base_association_stream"
+    $parameters:
+      name: associations_meetings_contacts
+      from_object: meetings
+      to_object: contacts
+    retriever:
+      $ref: "#/definitions/base_association_stream/retriever"
+      partition_router:
+        type: SubstreamPartitionRouter
+        parent_stream_configs:
+          - stream: "#/definitions/engagements_meetings_batched_stream"
+            parent_key: record_ids
+            partition_field: record_ids
+  associations_meetings_deals_stream:
+    $ref: "#/definitions/base_association_stream"
+    $parameters:
+      name: associations_meetings_deals
+      from_object: meetings
+      to_object: deals
+    retriever:
+      $ref: "#/definitions/base_association_stream/retriever"
+      partition_router:
+        type: SubstreamPartitionRouter
+        parent_stream_configs:
+          - stream: "#/definitions/engagements_meetings_batched_stream"
+            parent_key: record_ids
+            partition_field: record_ids
+  associations_meetings_tickets_stream:
+    $ref: "#/definitions/base_association_stream"
+    $parameters:
+      name: associations_meetings_tickets
+      from_object: meetings
+      to_object: tickets
+    retriever:
+      $ref: "#/definitions/base_association_stream/retriever"
+      partition_router:
+        type: SubstreamPartitionRouter
+        parent_stream_configs:
+          - stream: "#/definitions/engagements_meetings_batched_stream"
+            parent_key: record_ids
+            partition_field: record_ids
+
+  # Notes associations
+  associations_notes_companies_stream:
+    $ref: "#/definitions/base_association_stream"
+    $parameters:
+      name: associations_notes_companies
+      from_object: notes
+      to_object: companies
+    retriever:
+      $ref: "#/definitions/base_association_stream/retriever"
+      partition_router:
+        type: SubstreamPartitionRouter
+        parent_stream_configs:
+          - stream: "#/definitions/engagements_notes_batched_stream"
+            parent_key: record_ids
+            partition_field: record_ids
+  associations_notes_contacts_stream:
+    $ref: "#/definitions/base_association_stream"
+    $parameters:
+      name: associations_notes_contacts
+      from_object: notes
+      to_object: contacts
+    retriever:
+      $ref: "#/definitions/base_association_stream/retriever"
+      partition_router:
+        type: SubstreamPartitionRouter
+        parent_stream_configs:
+          - stream: "#/definitions/engagements_notes_batched_stream"
+            parent_key: record_ids
+            partition_field: record_ids
+  associations_notes_deals_stream:
+    $ref: "#/definitions/base_association_stream"
+    $parameters:
+      name: associations_notes_deals
+      from_object: notes
+      to_object: deals
+    retriever:
+      $ref: "#/definitions/base_association_stream/retriever"
+      partition_router:
+        type: SubstreamPartitionRouter
+        parent_stream_configs:
+          - stream: "#/definitions/engagements_notes_batched_stream"
+            parent_key: record_ids
+            partition_field: record_ids
+  associations_notes_tickets_stream:
+    $ref: "#/definitions/base_association_stream"
+    $parameters:
+      name: associations_notes_tickets
+      from_object: notes
+      to_object: tickets
+    retriever:
+      $ref: "#/definitions/base_association_stream/retriever"
+      partition_router:
+        type: SubstreamPartitionRouter
+        parent_stream_configs:
+          - stream: "#/definitions/engagements_notes_batched_stream"
+            parent_key: record_ids
+            partition_field: record_ids
+
+  # Tasks associations
+  associations_tasks_companies_stream:
+    $ref: "#/definitions/base_association_stream"
+    $parameters:
+      name: associations_tasks_companies
+      from_object: tasks
+      to_object: companies
+    retriever:
+      $ref: "#/definitions/base_association_stream/retriever"
+      partition_router:
+        type: SubstreamPartitionRouter
+        parent_stream_configs:
+          - stream: "#/definitions/engagements_tasks_batched_stream"
+            parent_key: record_ids
+            partition_field: record_ids
+  associations_tasks_contacts_stream:
+    $ref: "#/definitions/base_association_stream"
+    $parameters:
+      name: associations_tasks_contacts
+      from_object: tasks
+      to_object: contacts
+    retriever:
+      $ref: "#/definitions/base_association_stream/retriever"
+      partition_router:
+        type: SubstreamPartitionRouter
+        parent_stream_configs:
+          - stream: "#/definitions/engagements_tasks_batched_stream"
+            parent_key: record_ids
+            partition_field: record_ids
+  associations_tasks_deals_stream:
+    $ref: "#/definitions/base_association_stream"
+    $parameters:
+      name: associations_tasks_deals
+      from_object: tasks
+      to_object: deals
+    retriever:
+      $ref: "#/definitions/base_association_stream/retriever"
+      partition_router:
+        type: SubstreamPartitionRouter
+        parent_stream_configs:
+          - stream: "#/definitions/engagements_tasks_batched_stream"
+            parent_key: record_ids
+            partition_field: record_ids
+  associations_tasks_tickets_stream:
+    $ref: "#/definitions/base_association_stream"
+    $parameters:
+      name: associations_tasks_tickets
+      from_object: tasks
+      to_object: tickets
+    retriever:
+      $ref: "#/definitions/base_association_stream/retriever"
+      partition_router:
+        type: SubstreamPartitionRouter
+        parent_stream_configs:
+          - stream: "#/definitions/engagements_tasks_batched_stream"
+            parent_key: record_ids
+            partition_field: record_ids
+
+  # Core CRM Association Streams (6 streams)
+  # Deals associations
+  associations_deals_companies_stream:
+    $ref: "#/definitions/base_association_stream"
+    $parameters:
+      name: associations_deals_companies
+      from_object: deals
+      to_object: companies
+    retriever:
+      $ref: "#/definitions/base_association_stream/retriever"
+      partition_router:
+        type: SubstreamPartitionRouter
+        parent_stream_configs:
+          - stream: "#/definitions/deals_batched_stream"
+            parent_key: record_ids
+            partition_field: record_ids
+  associations_deals_contacts_stream:
+    $ref: "#/definitions/base_association_stream"
+    $parameters:
+      name: associations_deals_contacts
+      from_object: deals
+      to_object: contacts
+    retriever:
+      $ref: "#/definitions/base_association_stream/retriever"
+      partition_router:
+        type: SubstreamPartitionRouter
+        parent_stream_configs:
+          - stream: "#/definitions/deals_batched_stream"
+            parent_key: record_ids
+            partition_field: record_ids
+
+  # Companies associations
+  associations_companies_contacts_stream:
+    $ref: "#/definitions/base_association_stream"
+    $parameters:
+      name: associations_companies_contacts
+      from_object: companies
+      to_object: contacts
+    retriever:
+      $ref: "#/definitions/base_association_stream/retriever"
+      partition_router:
+        type: SubstreamPartitionRouter
+        parent_stream_configs:
+          - stream: "#/definitions/companies_batched_stream"
+            parent_key: record_ids
+            partition_field: record_ids
+
+  # Tickets associations
+  associations_tickets_companies_stream:
+    $ref: "#/definitions/base_association_stream"
+    $parameters:
+      name: associations_tickets_companies
+      from_object: tickets
+      to_object: companies
+    retriever:
+      $ref: "#/definitions/base_association_stream/retriever"
+      partition_router:
+        type: SubstreamPartitionRouter
+        parent_stream_configs:
+          - stream: "#/definitions/tickets_batched_stream"
+            parent_key: record_ids
+            partition_field: record_ids
+  associations_tickets_contacts_stream:
+    $ref: "#/definitions/base_association_stream"
+    $parameters:
+      name: associations_tickets_contacts
+      from_object: tickets
+      to_object: contacts
+    retriever:
+      $ref: "#/definitions/base_association_stream/retriever"
+      partition_router:
+        type: SubstreamPartitionRouter
+        parent_stream_configs:
+          - stream: "#/definitions/tickets_batched_stream"
+            parent_key: record_ids
+            partition_field: record_ids
+  associations_tickets_deals_stream:
+    $ref: "#/definitions/base_association_stream"
+    $parameters:
+      name: associations_tickets_deals
+      from_object: tickets
+      to_object: deals
+    retriever:
+      $ref: "#/definitions/base_association_stream/retriever"
+      partition_router:
+        type: SubstreamPartitionRouter
+        parent_stream_configs:
+          - stream: "#/definitions/tickets_batched_stream"
+            parent_key: record_ids
+            partition_field: record_ids
+
 streams:
   - "#/definitions/campaigns_stream"
   - "#/definitions/companies_stream"
@@ -1878,6 +2387,33 @@ streams:
   - "#/definitions/ticket_pipelines_stream"
   - "#/definitions/tickets_stream"
   - "#/definitions/workflows_stream"
+  # Association Streams
+  - "#/definitions/associations_calls_companies_stream"
+  - "#/definitions/associations_calls_contacts_stream"
+  - "#/definitions/associations_calls_deals_stream"
+  - "#/definitions/associations_calls_tickets_stream"
+  - "#/definitions/associations_emails_companies_stream"
+  - "#/definitions/associations_emails_contacts_stream"
+  - "#/definitions/associations_emails_deals_stream"
+  - "#/definitions/associations_emails_tickets_stream"
+  - "#/definitions/associations_meetings_companies_stream"
+  - "#/definitions/associations_meetings_contacts_stream"
+  - "#/definitions/associations_meetings_deals_stream"
+  - "#/definitions/associations_meetings_tickets_stream"
+  - "#/definitions/associations_notes_companies_stream"
+  - "#/definitions/associations_notes_contacts_stream"
+  - "#/definitions/associations_notes_deals_stream"
+  - "#/definitions/associations_notes_tickets_stream"
+  - "#/definitions/associations_tasks_companies_stream"
+  - "#/definitions/associations_tasks_contacts_stream"
+  - "#/definitions/associations_tasks_deals_stream"
+  - "#/definitions/associations_tasks_tickets_stream"
+  - "#/definitions/associations_deals_companies_stream"
+  - "#/definitions/associations_deals_contacts_stream"
+  - "#/definitions/associations_companies_contacts_stream"
+  - "#/definitions/associations_tickets_companies_stream"
+  - "#/definitions/associations_tickets_contacts_stream"
+  - "#/definitions/associations_tickets_deals_stream"
 
 dynamic_streams:
   - type: DynamicDeclarativeStream
@@ -2279,6 +2815,33 @@ concurrency_level:
   max_concurrency: 40
 
 schemas:
+  base_association:
+    $schema: http://json-schema.org/draft-07/schema#
+    type: object
+    additionalProperties: true
+    properties:
+      from_id:
+        description: Source object ID
+        type: string
+      to_id:
+        description: Target object ID
+        type: string
+      association_type_id:
+        description: Numeric association type identifier
+        type:
+          - "null"
+          - integer
+      category:
+        description: Association category (HUBSPOT_DEFINED or USER_DEFINED)
+        type:
+          - "null"
+          - string
+      label:
+        description: Association label (null for unlabeled associations)
+        type:
+          - "null"
+          - string
+
   contact_lists:
     $schema: http://json-schema.org/draft-07/schema#
     type:
