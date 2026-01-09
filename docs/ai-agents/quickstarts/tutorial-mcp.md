@@ -228,18 +228,18 @@ In this tutorial, you learned how to:
 
     ```yaml title="configured_connectors.yaml"
     connectors:
-    - id: stripe
+      - id: stripe
         type: local
         connector_name: stripe
         description: "Stripe connector from Airbyte registry"
         secrets:
-        api_key: STRIPE_API_KEY
-    - id: github
+          api_key: STRIPE_API_KEY
+      - id: github
         type: local
         connector_name: github
         description: "GitHub connector from Airbyte registry"
         secrets:
-        token: GITHUB_TOKEN
+          token: GITHUB_TOKEN
     ```
 
 - If you need to run more complex processing and trigger effects based on your data, try the [Python](tutorial-python) tutorial to start using agent connectors with the Python SDK.
