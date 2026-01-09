@@ -4,9 +4,13 @@
 
 package io.airbyte.cdk.load.write
 
+import io.airbyte.cdk.command.ConfigurationSpecification
 import io.airbyte.cdk.load.command.DestinationCatalog
 import io.airbyte.cdk.load.command.DestinationStream
 import io.airbyte.cdk.load.command.ImportType
+import io.airbyte.cdk.load.component.TableOperationsClient
+import io.airbyte.cdk.load.config.DataChannelFormat
+import io.airbyte.cdk.load.config.DataChannelMedium
 import io.airbyte.cdk.load.data.ArrayType
 import io.airbyte.cdk.load.data.ArrayTypeWithoutSchema
 import io.airbyte.cdk.load.data.BooleanType
@@ -24,7 +28,11 @@ import io.airbyte.cdk.load.data.TimestampTypeWithTimezone
 import io.airbyte.cdk.load.data.TimestampTypeWithoutTimezone
 import io.airbyte.cdk.load.data.UnionType
 import io.airbyte.cdk.load.data.UnknownType
+import io.airbyte.cdk.load.schema.model.TableName
 import io.airbyte.cdk.load.test.util.CharacterizationTest
+import io.airbyte.cdk.load.test.util.IntegrationTest
+import io.airbyte.cdk.load.test.util.SchemaDumper
+import io.airbyte.cdk.load.test.util.destination_process.DestinationProcessFactory
 import io.airbyte.cdk.load.util.Jsons
 import io.airbyte.cdk.load.write.BasicFunctionalityIntegrationTest.Companion.numberType
 import kotlin.collections.forEach
@@ -36,13 +44,26 @@ import org.junit.jupiter.api.Assertions.assertTrue
 import org.junit.jupiter.api.Assumptions.assumeTrue
 import org.junit.jupiter.api.assertAll
 
-class RegressionTestFixtures(val testSuite: BasicFunctionalityIntegrationTest) {
+class RegressionTestFixtures(
+    val schemaDumperProvider: ((ConfigurationSpecification) -> SchemaDumper)?,
+    val opsClientProvider: ((ConfigurationSpecification) -> TableOperationsClient)?,
+    val destinationProcessFactory: DestinationProcessFactory,
+    val dataChannelMedium: DataChannelMedium,
+    val dataChannelFormat: DataChannelFormat,
+    val updatedConfig: String,
+    val parsedConfig: ConfigurationSpecification,
+    val goldenFileBasePath: String,
+    val testPrettyName: String,
+    val tableIdentifierRegressionTestExpectedTableNames: List<TableName>,
+) {
+    val randomizedNamespace = IntegrationTest.generateRandomNamespace()
+
     fun baseSchemaRegressionTest(filename: String, importType: ImportType) = runTest {
-        assumeTrue(testSuite.schemaDumperProvider != null)
-        val schemaDumper = testSuite.schemaDumperProvider!!(testSuite.parsedConfig)
+        assumeTrue(schemaDumperProvider != null)
+        val schemaDumper = schemaDumperProvider!!(parsedConfig)
         val stream =
             DestinationStream(
-                testSuite.randomizedNamespace,
+                randomizedNamespace,
                 "test_stream",
                 importType,
                 ObjectType(
@@ -162,34 +183,41 @@ class RegressionTestFixtures(val testSuite: BasicFunctionalityIntegrationTest) {
                 generationId = 1,
                 minimumGenerationId = 1,
                 syncId = 42,
-                namespaceMapper = testSuite.namespaceMapperForMedium(),
-                tableSchema = testSuite.emptyTableSchema,
+                namespaceMapper = dataChannelMedium.namespaceMapper(),
+                tableSchema = BasicFunctionalityIntegrationTest.emptyTableSchema,
             )
-        testSuite.runSync(
-            testSuite.updatedConfig,
-            stream,
+        destinationProcessFactory.runSync(
+            updatedConfig,
+            DestinationCatalog(listOf(stream)),
             messages = emptyList(),
+            testPrettyName,
+            dataChannelMedium,
+            dataChannelFormat,
         )
+
         val actualSchema =
-            schemaDumper.discoverSchema(
-                stream.mappedDescriptor.namespace,
-                stream.mappedDescriptor.name,
-            )
+            Jsons.writerWithDefaultPrettyPrinter()
+                .writeValueAsString(
+                    schemaDumper.discoverSchema(
+                        stream.mappedDescriptor.namespace,
+                        stream.mappedDescriptor.name
+                    )
+                )
         CharacterizationTest.doAssert(
-            "${testSuite.goldenFileBasePath}/schema-regression/column_names/$filename.txt",
+            "$goldenFileBasePath/schema-regression/column_names/$filename.txt",
             actualSchema,
         )
     }
 
     fun baseTableIdentifierRegressionTest(importType: ImportType) = runTest {
-        assumeTrue(testSuite.opsClientProvider != null)
+        assumeTrue(opsClientProvider != null)
         assertEquals(
             tableIdentifierRegressionInputStreamDescriptors.size,
-            testSuite.tableIdentifierRegressionTestExpectedTableNames.size,
+            tableIdentifierRegressionTestExpectedTableNames.size,
             "tableIdentifierRegressionTestExpectedTableNames has incorrect length; did you miss some test cases?",
         )
-        val opsClient = testSuite.opsClientProvider!!(testSuite.parsedConfig)
-        testSuite.tableIdentifierRegressionTestExpectedTableNames.forEach {
+        val opsClient = opsClientProvider!!(parsedConfig)
+        tableIdentifierRegressionTestExpectedTableNames.forEach {
             if (opsClient.tableExists(it)) {
                 opsClient.dropTable(it)
             }
@@ -205,20 +233,23 @@ class RegressionTestFixtures(val testSuite: BasicFunctionalityIntegrationTest) {
                         generationId = 1,
                         minimumGenerationId = 1,
                         syncId = 42,
-                        namespaceMapper = testSuite.namespaceMapperForMedium(),
-                        tableSchema = testSuite.emptyTableSchema,
+                        namespaceMapper = dataChannelMedium.namespaceMapper(),
+                        tableSchema = BasicFunctionalityIntegrationTest.emptyTableSchema,
                     )
                 }
             )
         assertDoesNotThrow {
-            testSuite.runSync(
-                testSuite.updatedConfig,
+            destinationProcessFactory.runSync(
+                updatedConfig,
                 catalog,
                 messages = emptyList(),
+                testPrettyName,
+                dataChannelMedium,
+                dataChannelFormat,
             )
         }
         val assertions: Array<() -> Unit> =
-            testSuite.tableIdentifierRegressionTestExpectedTableNames
+            tableIdentifierRegressionTestExpectedTableNames
                 .map {
                     // map each expected TableName to a lambda that asserts that the table exists
                     {
