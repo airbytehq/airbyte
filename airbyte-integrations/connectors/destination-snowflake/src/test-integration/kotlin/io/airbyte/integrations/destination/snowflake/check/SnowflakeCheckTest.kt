@@ -8,6 +8,7 @@ import io.airbyte.cdk.command.FeatureFlag
 import io.airbyte.cdk.load.check.CheckIntegrationTest
 import io.airbyte.cdk.load.check.CheckTestConfig
 import io.airbyte.integrations.destination.snowflake.SnowflakeTestUtils.CONFIG_WITH_AUTH_STAGING
+import io.airbyte.integrations.destination.snowflake.SnowflakeTestUtils.CONFIG_WITH_AUTH_STAGING_AND_RAW_OVERRIDE
 import io.airbyte.integrations.destination.snowflake.SnowflakeTestUtils.CONFIG_WITH_AUTH_STAGING_IGNORE_CASING
 import io.airbyte.integrations.destination.snowflake.SnowflakeTestUtils.getConfig
 import io.airbyte.integrations.destination.snowflake.spec.SnowflakeSpecification
@@ -25,6 +26,10 @@ class SnowflakeCheckTest :
                 ),
                 CheckTestConfig(
                     configContents = getConfig(CONFIG_WITH_AUTH_STAGING_IGNORE_CASING),
+                    featureFlags = setOf(FeatureFlag.AIRBYTE_CLOUD_DEPLOYMENT),
+                ),
+                CheckTestConfig(
+                    configContents = getConfig(CONFIG_WITH_AUTH_STAGING_AND_RAW_OVERRIDE),
                     featureFlags = setOf(FeatureFlag.AIRBYTE_CLOUD_DEPLOYMENT),
                 ),
             ),
