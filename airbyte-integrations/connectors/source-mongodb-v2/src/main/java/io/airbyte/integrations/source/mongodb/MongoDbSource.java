@@ -27,7 +27,6 @@ import io.airbyte.integrations.source.mongodb.state.MongoDbStateManager;
 import io.airbyte.protocol.models.v0.*;
 import java.time.Instant;
 import java.util.ArrayList;
-import java.util.Iterator;
 import java.util.List;
 import java.util.Optional;
 import org.slf4j.Logger;
@@ -150,100 +149,100 @@ public class MongoDbSource extends BaseConnector implements Source {
     }
   }
 
-    @Override
-    public AutoCloseableIterator<AirbyteMessage> read(final JsonNode config,
-                                                      final ConfiguredAirbyteCatalog catalog,
-                                                      final JsonNode state) {
-      final var emittedAt = Instant.now();
-      final var cdcMetadataInjector = MongoDbCdcConnectorMetadataInjector.getInstance(emittedAt);
-      final MongoDbSourceConfig sourceConfig = new MongoDbSourceConfig(config);
-      final var stateManager = MongoDbStateManager.createStateManager(state, sourceConfig);
+  @Override
+  public AutoCloseableIterator<AirbyteMessage> read(final JsonNode config,
+                                                    final ConfiguredAirbyteCatalog catalog,
+                                                    final JsonNode state) {
+    final var emittedAt = Instant.now();
+    final var cdcMetadataInjector = MongoDbCdcConnectorMetadataInjector.getInstance(emittedAt);
+    final MongoDbSourceConfig sourceConfig = new MongoDbSourceConfig(config);
+    final var stateManager = MongoDbStateManager.createStateManager(state, sourceConfig);
 
-      if (catalog != null) {
-        validateStateSyncMode(stateManager, catalog.getStreams());
-        MongoUtil.checkSchemaModeMismatch(sourceConfig.getEnforceSchema(),
-            stateManager.getCdcState() != null ? stateManager.getCdcState().schema_enforced() : sourceConfig.getEnforceSchema(), catalog);
-      }
+    if (catalog != null) {
+      validateStateSyncMode(stateManager, catalog.getStreams());
+      MongoUtil.checkSchemaModeMismatch(sourceConfig.getEnforceSchema(),
+          stateManager.getCdcState() != null ? stateManager.getCdcState().schema_enforced() : sourceConfig.getEnforceSchema(), catalog);
+    }
 
+    try {
+      // WARNING: do not close the client here since it needs to be used by the iterator
+      final MongoClient mongoClient = createMongoClient(sourceConfig);
       try {
-        // WARNING: do not close the client here since it needs to be used by the iterator
-        final MongoClient mongoClient = createMongoClient(sourceConfig);
-        try {
-          final List<ConfiguredAirbyteStream> fullRefreshStreams =
-              catalog.getStreams().stream().filter(s -> s.getSyncMode() == SyncMode.FULL_REFRESH).toList();
-          final List<ConfiguredAirbyteStream> incrementalStreams = catalog.getStreams().stream().filter(s -> !fullRefreshStreams.contains(s)).toList();
+        final List<ConfiguredAirbyteStream> fullRefreshStreams =
+            catalog.getStreams().stream().filter(s -> s.getSyncMode() == SyncMode.FULL_REFRESH).toList();
+        final List<ConfiguredAirbyteStream> incrementalStreams = catalog.getStreams().stream().filter(s -> !fullRefreshStreams.contains(s)).toList();
 
-          List<AutoCloseableIterator<AirbyteMessage>> iterators = new ArrayList<>();
-          if (!fullRefreshStreams.isEmpty()) {
-            LOGGER.info("There are {} Full refresh streams", fullRefreshStreams.size());
-            iterators.addAll(createFullRefreshIterators(sourceConfig, mongoClient, fullRefreshStreams, stateManager, emittedAt));
-          }
-
-          if (!incrementalStreams.isEmpty()) {
-            LOGGER.info("There are {} Incremental streams", incrementalStreams.size());
-            iterators
-                .addAll(cdcInitializer.createCdcIterators(mongoClient, cdcMetadataInjector, incrementalStreams, stateManager, emittedAt, sourceConfig));
-          }
-          final AutoCloseableIterator<AirbyteMessage> baseIterator =
-              AutoCloseableIterators.concatWithEagerClose(iterators, AirbyteTraceMessageUtility::emitStreamStatusTrace);
-          // Wrap the iterator to catch BSONObjectTooLarge errors and provide helpful error messages
-          return wrapIteratorWithBsonErrorHandling(baseIterator);
-        } catch (final Exception e) {
-          mongoClient.close();
-          throw e;
+        List<AutoCloseableIterator<AirbyteMessage>> iterators = new ArrayList<>();
+        if (!fullRefreshStreams.isEmpty()) {
+          LOGGER.info("There are {} Full refresh streams", fullRefreshStreams.size());
+          iterators.addAll(createFullRefreshIterators(sourceConfig, mongoClient, fullRefreshStreams, stateManager, emittedAt));
         }
+
+        if (!incrementalStreams.isEmpty()) {
+          LOGGER.info("There are {} Incremental streams", incrementalStreams.size());
+          iterators
+              .addAll(cdcInitializer.createCdcIterators(mongoClient, cdcMetadataInjector, incrementalStreams, stateManager, emittedAt, sourceConfig));
+        }
+        final AutoCloseableIterator<AirbyteMessage> baseIterator =
+            AutoCloseableIterators.concatWithEagerClose(iterators, AirbyteTraceMessageUtility::emitStreamStatusTrace);
+        // Wrap the iterator to catch BSONObjectTooLarge errors and provide helpful error messages
+        return wrapIteratorWithBsonErrorHandling(baseIterator);
       } catch (final Exception e) {
-        LOGGER.error("Unable to perform sync read operation.", e);
+        mongoClient.close();
         throw e;
       }
+    } catch (final Exception e) {
+      LOGGER.error("Unable to perform sync read operation.", e);
+      throw e;
     }
+  }
 
-    /**
-     * Wraps an iterator to catch BSONObjectTooLarge errors during CDC operations and provide
-     * helpful, actionable error messages to users.
-     *
-     * @param iterator The base iterator to wrap.
-     * @return A wrapped iterator that catches BSONObjectTooLarge errors.
-     */
-    private AutoCloseableIterator<AirbyteMessage> wrapIteratorWithBsonErrorHandling(
-        final AutoCloseableIterator<AirbyteMessage> iterator) {
-      return new AutoCloseableIterator<>() {
+  /**
+   * Wraps an iterator to catch BSONObjectTooLarge errors during CDC operations and provide
+   * helpful, actionable error messages to users.
+   *
+   * @param iterator The base iterator to wrap.
+   * @return A wrapped iterator that catches BSONObjectTooLarge errors.
+   */
+  private AutoCloseableIterator<AirbyteMessage> wrapIteratorWithBsonErrorHandling(
+      final AutoCloseableIterator<AirbyteMessage> iterator) {
+    return new AutoCloseableIterator<>() {
 
-        @Override
-        public boolean hasNext() {
-          try {
-            return iterator.hasNext();
-          } catch (final Exception e) {
-            throw handlePotentialBsonTooLargeError(e);
-          }
+      @Override
+      public boolean hasNext() {
+        try {
+          return iterator.hasNext();
+        } catch (final Exception e) {
+          throw handlePotentialBsonTooLargeError(e);
         }
+      }
 
-        @Override
-        public AirbyteMessage next() {
-          try {
-            return iterator.next();
-          } catch (final Exception e) {
-            throw handlePotentialBsonTooLargeError(e);
-          }
+      @Override
+      public AirbyteMessage next() {
+        try {
+          return iterator.next();
+        } catch (final Exception e) {
+          throw handlePotentialBsonTooLargeError(e);
         }
+      }
 
-        @Override
-        public void close() throws Exception {
-          iterator.close();
-        }
+      @Override
+      public void close() throws Exception {
+        iterator.close();
+      }
 
-        private RuntimeException handlePotentialBsonTooLargeError(final Exception e) {
-          if (MongoUtil.isBsonObjectTooLargeException(e)) {
-            LOGGER.error("BSONObjectTooLarge error detected during CDC sync. Original error: {}", e.getMessage(), e);
-            throw new ConfigErrorException(MongoConstants.BSON_OBJECT_TOO_LARGE_ERROR_MESSAGE, e);
-          }
-          if (e instanceof RuntimeException) {
-            throw (RuntimeException) e;
-          }
-          throw new RuntimeException(e);
+      private RuntimeException handlePotentialBsonTooLargeError(final Exception e) {
+        if (MongoUtil.isBsonObjectTooLargeException(e)) {
+          LOGGER.error("BSONObjectTooLarge error detected during CDC sync. Original error: {}", e.getMessage(), e);
+          throw new ConfigErrorException(MongoConstants.BSON_OBJECT_TOO_LARGE_ERROR_MESSAGE, e);
         }
-      };
-    }
+        if (e instanceof RuntimeException) {
+          throw (RuntimeException) e;
+        }
+        throw new RuntimeException(e);
+      }
+    };
+  }
 
   protected MongoClient createMongoClient(final MongoDbSourceConfig config) {
     return MongoConnectionUtils.createMongoClient(config);
