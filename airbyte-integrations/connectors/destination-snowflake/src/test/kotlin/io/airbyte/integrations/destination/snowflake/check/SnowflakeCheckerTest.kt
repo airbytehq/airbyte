@@ -37,6 +37,7 @@ internal class SnowflakeCheckerTest {
                 snowflakeAirbyteClient = snowflakeAirbyteClient,
                 snowflakeConfiguration = snowflakeConfiguration,
                 columnManager = columnManager,
+                snowflakeRecordFormatter = if (isLegacyRawTablesOnly) io.airbyte.integrations.destination.snowflake.write.load.SnowflakeRawRecordFormatter() else io.airbyte.integrations.destination.snowflake.write.load.SnowflakeSchemaRecordFormatter(),
             )
         checker.check()
 
@@ -70,6 +71,7 @@ internal class SnowflakeCheckerTest {
                 snowflakeAirbyteClient = snowflakeAirbyteClient,
                 snowflakeConfiguration = snowflakeConfiguration,
                 columnManager = columnManager,
+                snowflakeRecordFormatter = if (isLegacyRawTablesOnly) io.airbyte.integrations.destination.snowflake.write.load.SnowflakeRawRecordFormatter() else io.airbyte.integrations.destination.snowflake.write.load.SnowflakeSchemaRecordFormatter(),
             )
 
         assertThrows<IllegalArgumentException> { checker.check() }
