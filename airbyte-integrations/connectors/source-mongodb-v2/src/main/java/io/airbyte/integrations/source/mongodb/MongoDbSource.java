@@ -198,8 +198,8 @@ public class MongoDbSource extends BaseConnector implements Source {
   }
 
   /**
-   * Wraps an iterator to catch BSONObjectTooLarge errors during CDC operations and provide
-   * helpful, actionable error messages to users.
+   * Wraps an iterator to catch BSONObjectTooLarge errors during CDC operations and provide helpful,
+   * actionable error messages to users.
    *
    * @param iterator The base iterator to wrap.
    * @return A wrapped iterator that catches BSONObjectTooLarge errors.
