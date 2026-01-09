@@ -1,0 +1,847 @@
+{
+  "create-destination": {
+    "operationId": "createDestination",
+    "path": "https://api.airbyte.com/v1",
+    "method": "POST",
+    "requestBodyProperties": [
+      {
+        "name": "name",
+        "type": "string",
+        "required": true,
+        "description": "Name of the destination e.g. dev-mysql-instance."
+      },
+      {
+        "name": "definitionId",
+        "type": "string",
+        "required": false,
+        "description": "The UUID of the connector definition. One of configuration.destinationType or definitionId must be provided."
+      },
+      {
+        "name": "workspaceId",
+        "type": "string",
+        "required": true,
+        "description": ""
+      },
+      {
+        "name": "configuration",
+        "type": "string",
+        "required": true,
+        "description": "The values required to configure the destination."
+      },
+      {
+        "name": "resourceAllocation",
+        "type": "object",
+        "required": false,
+        "description": "actor or actor definition specific resource requirements. if default is set, these are the requirements that should be set for ALL jobs run for this actor definition. it is overriden by the job type specific configurations. if not set, the platform will use defaults. these values will be overriden by configuration at the connection level."
+      }
+    ],
+    "responsesByStatus": {
+      "200": {
+        "description": "Successful operation",
+        "examples": [
+          {
+            "name": "Destination Creation Response Example",
+            "value": {
+              "destinationId": "af0c3c67-aa61-419f-8922-95b0bf840e86"
+            }
+          }
+        ],
+        "properties": [
+          {
+            "name": "destinationId",
+            "type": "string",
+            "required": true,
+            "description": ""
+          },
+          {
+            "name": "name",
+            "type": "string",
+            "required": true,
+            "description": ""
+          },
+          {
+            "name": "destinationType",
+            "type": "string",
+            "required": true,
+            "description": ""
+          },
+          {
+            "name": "definitionId",
+            "type": "string",
+            "required": true,
+            "description": ""
+          },
+          {
+            "name": "workspaceId",
+            "type": "string",
+            "required": true,
+            "description": ""
+          },
+          {
+            "name": "configuration",
+            "type": "string",
+            "required": true,
+            "description": "The values required to configure the destination."
+          },
+          {
+            "name": "createdAt",
+            "type": "integer",
+            "required": true,
+            "description": ""
+          },
+          {
+            "name": "resourceAllocation",
+            "type": "object",
+            "required": false,
+            "description": "actor or actor definition specific resource requirements. if default is set, these are the requirements that should be set for ALL jobs run for this actor definition. it is overriden by the job type specific configurations. if not set, the platform will use defaults. these values will be overriden by configuration at the connection level."
+          }
+        ]
+      },
+      "400": {
+        "description": "Invalid data",
+        "examples": [],
+        "properties": []
+      },
+      "403": {
+        "description": "Not allowed",
+        "examples": [],
+        "properties": []
+      },
+      "404": {
+        "description": "Not found",
+        "examples": [],
+        "properties": []
+      }
+    },
+    "hasRequestConfiguration": true,
+    "hasResponseConfiguration": true
+  },
+  "get-destination": {
+    "operationId": "getDestination",
+    "path": "https://api.airbyte.com/v1",
+    "method": "GET",
+    "requestBodyProperties": [],
+    "responsesByStatus": {
+      "200": {
+        "description": "Get a Destination by the id in the path.",
+        "examples": [
+          {
+            "name": "Destination Get Response Example",
+            "value": {
+              "destinationId": "18dccc91-0ab1-4f72-9ed7-0b8fc27c5826",
+              "name": "My Destination",
+              "sourceType": "postgres",
+              "workspaceId": "744cc0ed-7f05-4949-9e60-2a814f90c035",
+              "configuration": {
+                "conversion_window_days": 14,
+                "customer_id": "1234567890",
+                "start_date": 1672531200000,
+                "end_date": 1704067200000
+              }
+            }
+          }
+        ],
+        "properties": [
+          {
+            "name": "destinationId",
+            "type": "string",
+            "required": true,
+            "description": ""
+          },
+          {
+            "name": "name",
+            "type": "string",
+            "required": true,
+            "description": ""
+          },
+          {
+            "name": "destinationType",
+            "type": "string",
+            "required": true,
+            "description": ""
+          },
+          {
+            "name": "definitionId",
+            "type": "string",
+            "required": true,
+            "description": ""
+          },
+          {
+            "name": "workspaceId",
+            "type": "string",
+            "required": true,
+            "description": ""
+          },
+          {
+            "name": "configuration",
+            "type": "string",
+            "required": true,
+            "description": "The values required to configure the destination."
+          },
+          {
+            "name": "createdAt",
+            "type": "integer",
+            "required": true,
+            "description": ""
+          },
+          {
+            "name": "resourceAllocation",
+            "type": "object",
+            "required": false,
+            "description": "actor or actor definition specific resource requirements. if default is set, these are the requirements that should be set for ALL jobs run for this actor definition. it is overriden by the job type specific configurations. if not set, the platform will use defaults. these values will be overriden by configuration at the connection level."
+          }
+        ]
+      },
+      "403": {
+        "description": "Not allowed",
+        "examples": [],
+        "properties": []
+      },
+      "404": {
+        "description": "Not found",
+        "examples": [],
+        "properties": []
+      }
+    },
+    "hasRequestConfiguration": false,
+    "hasResponseConfiguration": true
+  },
+  "patch-destination": {
+    "operationId": "patchDestination",
+    "path": "https://api.airbyte.com/v1",
+    "method": "PATCH",
+    "requestBodyProperties": [
+      {
+        "name": "name",
+        "type": "string",
+        "required": false,
+        "description": ""
+      },
+      {
+        "name": "configuration",
+        "type": "string",
+        "required": false,
+        "description": "The values required to configure the destination."
+      },
+      {
+        "name": "resourceAllocation",
+        "type": "object",
+        "required": false,
+        "description": "actor or actor definition specific resource requirements. if default is set, these are the requirements that should be set for ALL jobs run for this actor definition. it is overriden by the job type specific configurations. if not set, the platform will use defaults. these values will be overriden by configuration at the connection level."
+      }
+    ],
+    "responsesByStatus": {
+      "200": {
+        "description": "Update a Destination",
+        "examples": [
+          {
+            "name": "Destination Update Response Example",
+            "value": {
+              "destinationId": "18dccc91-0ab1-4f72-9ed7-0b8fc27c5826",
+              "name": "running",
+              "sourceType": "postgres",
+              "workspaceId": "744cc0ed-7f05-4949-9e60-2a814f90c035",
+              "configuration": {
+                "conversion_window_days": 14,
+                "customer_id": "1234567890",
+                "start_date": 1672531200000,
+                "end_date": 1704067200000
+              }
+            }
+          }
+        ],
+        "properties": [
+          {
+            "name": "destinationId",
+            "type": "string",
+            "required": true,
+            "description": ""
+          },
+          {
+            "name": "name",
+            "type": "string",
+            "required": true,
+            "description": ""
+          },
+          {
+            "name": "destinationType",
+            "type": "string",
+            "required": true,
+            "description": ""
+          },
+          {
+            "name": "definitionId",
+            "type": "string",
+            "required": true,
+            "description": ""
+          },
+          {
+            "name": "workspaceId",
+            "type": "string",
+            "required": true,
+            "description": ""
+          },
+          {
+            "name": "configuration",
+            "type": "string",
+            "required": true,
+            "description": "The values required to configure the destination."
+          },
+          {
+            "name": "createdAt",
+            "type": "integer",
+            "required": true,
+            "description": ""
+          },
+          {
+            "name": "resourceAllocation",
+            "type": "object",
+            "required": false,
+            "description": "actor or actor definition specific resource requirements. if default is set, these are the requirements that should be set for ALL jobs run for this actor definition. it is overriden by the job type specific configurations. if not set, the platform will use defaults. these values will be overriden by configuration at the connection level."
+          }
+        ]
+      },
+      "403": {
+        "description": "Not allowed",
+        "examples": [],
+        "properties": []
+      },
+      "404": {
+        "description": "Not found",
+        "examples": [],
+        "properties": []
+      }
+    },
+    "hasRequestConfiguration": true,
+    "hasResponseConfiguration": true
+  },
+  "put-destination": {
+    "operationId": "putDestination",
+    "path": "https://api.airbyte.com/v1",
+    "method": "PUT",
+    "requestBodyProperties": [
+      {
+        "name": "name",
+        "type": "string",
+        "required": true,
+        "description": ""
+      },
+      {
+        "name": "configuration",
+        "type": "string",
+        "required": true,
+        "description": "The values required to configure the destination."
+      },
+      {
+        "name": "resourceAllocation",
+        "type": "object",
+        "required": false,
+        "description": "actor or actor definition specific resource requirements. if default is set, these are the requirements that should be set for ALL jobs run for this actor definition. it is overriden by the job type specific configurations. if not set, the platform will use defaults. these values will be overriden by configuration at the connection level."
+      }
+    ],
+    "responsesByStatus": {
+      "200": {
+        "description": "Update a Destination and fully overwrite it",
+        "examples": [
+          {
+            "name": "Destination Update Response Example",
+            "value": {
+              "destinationId": "18dccc91-0ab1-4f72-9ed7-0b8fc27c5826",
+              "name": "running",
+              "sourceType": "postgres",
+              "workspaceId": "744cc0ed-7f05-4949-9e60-2a814f90c035",
+              "configuration": {
+                "conversion_window_days": 14,
+                "customer_id": "1234567890",
+                "start_date": 1672531200000,
+                "end_date": 1704067200000
+              }
+            }
+          }
+        ],
+        "properties": [
+          {
+            "name": "destinationId",
+            "type": "string",
+            "required": true,
+            "description": ""
+          },
+          {
+            "name": "name",
+            "type": "string",
+            "required": true,
+            "description": ""
+          },
+          {
+            "name": "destinationType",
+            "type": "string",
+            "required": true,
+            "description": ""
+          },
+          {
+            "name": "definitionId",
+            "type": "string",
+            "required": true,
+            "description": ""
+          },
+          {
+            "name": "workspaceId",
+            "type": "string",
+            "required": true,
+            "description": ""
+          },
+          {
+            "name": "configuration",
+            "type": "string",
+            "required": true,
+            "description": "The values required to configure the destination."
+          },
+          {
+            "name": "createdAt",
+            "type": "integer",
+            "required": true,
+            "description": ""
+          },
+          {
+            "name": "resourceAllocation",
+            "type": "object",
+            "required": false,
+            "description": "actor or actor definition specific resource requirements. if default is set, these are the requirements that should be set for ALL jobs run for this actor definition. it is overriden by the job type specific configurations. if not set, the platform will use defaults. these values will be overriden by configuration at the connection level."
+          }
+        ]
+      },
+      "403": {
+        "description": "Not allowed",
+        "examples": [],
+        "properties": []
+      },
+      "404": {
+        "description": "Not found",
+        "examples": [],
+        "properties": []
+      }
+    },
+    "hasRequestConfiguration": true,
+    "hasResponseConfiguration": true
+  },
+  "create-source": {
+    "operationId": "createSource",
+    "path": "https://api.airbyte.com/v1",
+    "method": "POST",
+    "requestBodyProperties": [
+      {
+        "name": "name",
+        "type": "string",
+        "required": true,
+        "description": "Name of the source e.g. dev-mysql-instance."
+      },
+      {
+        "name": "definitionId",
+        "type": "string",
+        "required": false,
+        "description": "The UUID of the connector definition. One of configuration.sourceType or definitionId must be provided."
+      },
+      {
+        "name": "workspaceId",
+        "type": "string",
+        "required": true,
+        "description": ""
+      },
+      {
+        "name": "configuration",
+        "type": "string",
+        "required": true,
+        "description": "The values required to configure the source."
+      },
+      {
+        "name": "secretId",
+        "type": "string",
+        "required": false,
+        "description": "Optional secretID obtained through the  OAuth redirect flow."
+      },
+      {
+        "name": "resourceAllocation",
+        "type": "object",
+        "required": false,
+        "description": "actor or actor definition specific resource requirements. if default is set, these are the requirements that should be set for ALL jobs run for this actor definition. it is overriden by the job type specific configurations. if not set, the platform will use defaults. these values will be overriden by configuration at the connection level."
+      }
+    ],
+    "responsesByStatus": {
+      "200": {
+        "description": "Successful operation",
+        "examples": [
+          {
+            "name": "Source Creation Response Example",
+            "value": {
+              "sourceId": "0c31738c-0b2d-4887-b506-e2cd1c39cc35"
+            }
+          }
+        ],
+        "properties": [
+          {
+            "name": "sourceId",
+            "type": "string",
+            "required": true,
+            "description": ""
+          },
+          {
+            "name": "name",
+            "type": "string",
+            "required": true,
+            "description": ""
+          },
+          {
+            "name": "sourceType",
+            "type": "string",
+            "required": true,
+            "description": ""
+          },
+          {
+            "name": "definitionId",
+            "type": "string",
+            "required": true,
+            "description": ""
+          },
+          {
+            "name": "workspaceId",
+            "type": "string",
+            "required": true,
+            "description": ""
+          },
+          {
+            "name": "configuration",
+            "type": "string",
+            "required": true,
+            "description": "The values required to configure the source."
+          },
+          {
+            "name": "createdAt",
+            "type": "integer",
+            "required": true,
+            "description": ""
+          },
+          {
+            "name": "resourceAllocation",
+            "type": "object",
+            "required": false,
+            "description": "actor or actor definition specific resource requirements. if default is set, these are the requirements that should be set for ALL jobs run for this actor definition. it is overriden by the job type specific configurations. if not set, the platform will use defaults. these values will be overriden by configuration at the connection level."
+          }
+        ]
+      },
+      "400": {
+        "description": "Invalid data",
+        "examples": [],
+        "properties": []
+      },
+      "403": {
+        "description": "Not allowed",
+        "examples": [],
+        "properties": []
+      }
+    },
+    "hasRequestConfiguration": true,
+    "hasResponseConfiguration": true
+  },
+  "get-source": {
+    "operationId": "getSource",
+    "path": "https://api.airbyte.com/v1",
+    "method": "GET",
+    "requestBodyProperties": [],
+    "responsesByStatus": {
+      "200": {
+        "description": "Get a Source by the id in the path.",
+        "examples": [
+          {
+            "name": "Source Get Response Example",
+            "value": {
+              "sourceId": "18dccc91-0ab1-4f72-9ed7-0b8fc27c5826",
+              "name": "running",
+              "sourceType": "postgres",
+              "workspaceId": "744cc0ed-7f05-4949-9e60-2a814f90c035"
+            }
+          }
+        ],
+        "properties": [
+          {
+            "name": "sourceId",
+            "type": "string",
+            "required": true,
+            "description": ""
+          },
+          {
+            "name": "name",
+            "type": "string",
+            "required": true,
+            "description": ""
+          },
+          {
+            "name": "sourceType",
+            "type": "string",
+            "required": true,
+            "description": ""
+          },
+          {
+            "name": "definitionId",
+            "type": "string",
+            "required": true,
+            "description": ""
+          },
+          {
+            "name": "workspaceId",
+            "type": "string",
+            "required": true,
+            "description": ""
+          },
+          {
+            "name": "configuration",
+            "type": "string",
+            "required": true,
+            "description": "The values required to configure the source."
+          },
+          {
+            "name": "createdAt",
+            "type": "integer",
+            "required": true,
+            "description": ""
+          },
+          {
+            "name": "resourceAllocation",
+            "type": "object",
+            "required": false,
+            "description": "actor or actor definition specific resource requirements. if default is set, these are the requirements that should be set for ALL jobs run for this actor definition. it is overriden by the job type specific configurations. if not set, the platform will use defaults. these values will be overriden by configuration at the connection level."
+          }
+        ]
+      },
+      "403": {
+        "description": "Not allowed",
+        "examples": [],
+        "properties": []
+      },
+      "404": {
+        "description": "Not found",
+        "examples": [],
+        "properties": []
+      }
+    },
+    "hasRequestConfiguration": false,
+    "hasResponseConfiguration": true
+  },
+  "patch-source": {
+    "operationId": "patchSource",
+    "path": "https://api.airbyte.com/v1",
+    "method": "PATCH",
+    "requestBodyProperties": [
+      {
+        "name": "name",
+        "type": "string",
+        "required": false,
+        "description": ""
+      },
+      {
+        "name": "workspaceId",
+        "type": "string",
+        "required": false,
+        "description": ""
+      },
+      {
+        "name": "configuration",
+        "type": "string",
+        "required": false,
+        "description": "The values required to configure the source."
+      },
+      {
+        "name": "secretId",
+        "type": "string",
+        "required": false,
+        "description": "Optional secretID obtained through the  OAuth redirect flow."
+      },
+      {
+        "name": "resourceAllocation",
+        "type": "object",
+        "required": false,
+        "description": "actor or actor definition specific resource requirements. if default is set, these are the requirements that should be set for ALL jobs run for this actor definition. it is overriden by the job type specific configurations. if not set, the platform will use defaults. these values will be overriden by configuration at the connection level."
+      }
+    ],
+    "responsesByStatus": {
+      "200": {
+        "description": "Update a Source",
+        "examples": [
+          {
+            "name": "Source Update Response Example",
+            "value": {
+              "sourceId": "18dccc91-0ab1-4f72-9ed7-0b8fc27c5826",
+              "name": "running",
+              "sourceType": "postgres",
+              "workspaceId": "744cc0ed-7f05-4949-9e60-2a814f90c035"
+            }
+          }
+        ],
+        "properties": [
+          {
+            "name": "sourceId",
+            "type": "string",
+            "required": true,
+            "description": ""
+          },
+          {
+            "name": "name",
+            "type": "string",
+            "required": true,
+            "description": ""
+          },
+          {
+            "name": "sourceType",
+            "type": "string",
+            "required": true,
+            "description": ""
+          },
+          {
+            "name": "definitionId",
+            "type": "string",
+            "required": true,
+            "description": ""
+          },
+          {
+            "name": "workspaceId",
+            "type": "string",
+            "required": true,
+            "description": ""
+          },
+          {
+            "name": "configuration",
+            "type": "string",
+            "required": true,
+            "description": "The values required to configure the source."
+          },
+          {
+            "name": "createdAt",
+            "type": "integer",
+            "required": true,
+            "description": ""
+          },
+          {
+            "name": "resourceAllocation",
+            "type": "object",
+            "required": false,
+            "description": "actor or actor definition specific resource requirements. if default is set, these are the requirements that should be set for ALL jobs run for this actor definition. it is overriden by the job type specific configurations. if not set, the platform will use defaults. these values will be overriden by configuration at the connection level."
+          }
+        ]
+      },
+      "403": {
+        "description": "Not allowed",
+        "examples": [],
+        "properties": []
+      },
+      "404": {
+        "description": "Not found",
+        "examples": [],
+        "properties": []
+      }
+    },
+    "hasRequestConfiguration": true,
+    "hasResponseConfiguration": true
+  },
+  "put-source": {
+    "operationId": "putSource",
+    "path": "https://api.airbyte.com/v1",
+    "method": "PUT",
+    "requestBodyProperties": [
+      {
+        "name": "name",
+        "type": "string",
+        "required": true,
+        "description": ""
+      },
+      {
+        "name": "configuration",
+        "type": "string",
+        "required": true,
+        "description": "The values required to configure the source."
+      },
+      {
+        "name": "resourceAllocation",
+        "type": "object",
+        "required": false,
+        "description": "actor or actor definition specific resource requirements. if default is set, these are the requirements that should be set for ALL jobs run for this actor definition. it is overriden by the job type specific configurations. if not set, the platform will use defaults. these values will be overriden by configuration at the connection level."
+      }
+    ],
+    "responsesByStatus": {
+      "200": {
+        "description": "Update a source and fully overwrite it",
+        "examples": [
+          {
+            "name": "Source Update Response Example",
+            "value": {
+              "sourceId": "18dccc91-0ab1-4f72-9ed7-0b8fc27c5826",
+              "name": "running",
+              "sourceType": "postgres",
+              "workspaceId": "744cc0ed-7f05-4949-9e60-2a814f90c035"
+            }
+          }
+        ],
+        "properties": [
+          {
+            "name": "sourceId",
+            "type": "string",
+            "required": true,
+            "description": ""
+          },
+          {
+            "name": "name",
+            "type": "string",
+            "required": true,
+            "description": ""
+          },
+          {
+            "name": "sourceType",
+            "type": "string",
+            "required": true,
+            "description": ""
+          },
+          {
+            "name": "definitionId",
+            "type": "string",
+            "required": true,
+            "description": ""
+          },
+          {
+            "name": "workspaceId",
+            "type": "string",
+            "required": true,
+            "description": ""
+          },
+          {
+            "name": "configuration",
+            "type": "string",
+            "required": true,
+            "description": "The values required to configure the source."
+          },
+          {
+            "name": "createdAt",
+            "type": "integer",
+            "required": true,
+            "description": ""
+          },
+          {
+            "name": "resourceAllocation",
+            "type": "object",
+            "required": false,
+            "description": "actor or actor definition specific resource requirements. if default is set, these are the requirements that should be set for ALL jobs run for this actor definition. it is overriden by the job type specific configurations. if not set, the platform will use defaults. these values will be overriden by configuration at the connection level."
+          }
+        ]
+      },
+      "403": {
+        "description": "Not allowed",
+        "examples": [],
+        "properties": []
+      },
+      "404": {
+        "description": "Not found",
+        "examples": [],
+        "properties": []
+      }
+    },
+    "hasRequestConfiguration": true,
+    "hasResponseConfiguration": true
+  }
+}

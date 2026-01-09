@@ -1,0 +1,40 @@
+diff --git a/lib/index.js b/lib/index.js
+index 172081921f17188e2e553c2d3feefae4c7a5e250..4c67261889fbcde2711502d5f4f5b91ae2093844 100644
+--- a/lib/index.js
++++ b/lib/index.js
+@@ -478,7 +478,7 @@ custom_edit_url: null
+                 let targetDocsPluginId;
+                 if (pluginId) {
+                     try {
+-                        const pluginConfig = getPluginConfig(plugins, pluginId);
++                        const pluginConfig = getPluginConfig(pluginInstances, pluginId);
+                         targetConfig = (_a = pluginConfig.config) !== null && _a !== void 0 ? _a : {};
+                         targetDocsPluginId = pluginConfig.docsPluginId;
+                     }
+@@ -532,7 +532,7 @@ custom_edit_url: null
+                 let targetDocsPluginId;
+                 if (pluginId) {
+                     try {
+-                        const pluginConfig = getPluginConfig(plugins, pluginId);
++                        const pluginConfig = getPluginConfig(pluginInstances, pluginId);
+                         targetConfig = (_a = pluginConfig.config) !== null && _a !== void 0 ? _a : {};
+                         targetDocsPluginId = pluginConfig.docsPluginId;
+                     }
+@@ -609,7 +609,7 @@ custom_edit_url: null
+                 let targetConfig;
+                 if (pluginId) {
+                     try {
+-                        const pluginConfig = getPluginConfig(plugins, pluginId);
++                        const pluginConfig = getPluginConfig(pluginInstances, pluginId);
+                         targetConfig = (_a = pluginConfig.config) !== null && _a !== void 0 ? _a : {};
+                     }
+                     catch {
+@@ -658,7 +658,7 @@ custom_edit_url: null
+                 let targetConfig;
+                 if (pluginId) {
+                     try {
+-                        const pluginConfig = getPluginConfig(plugins, pluginId);
++                        const pluginConfig = getPluginConfig(pluginInstances, pluginId);
+                         targetConfig = (_a = pluginConfig.config) !== null && _a !== void 0 ? _a : {};
+                     }
+                     catch {

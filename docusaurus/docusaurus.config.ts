@@ -2,11 +2,11 @@ import "dotenv/config.js";
 import type { Config } from "@docusaurus/types";
 import { themes as prismThemes } from "prism-react-renderer";
 import type { Options as ClassicPresetOptions } from "@docusaurus/preset-classic";
-import { PluginOptions as LLmPluginOptions } from "@signalwire/docusaurus-plugin-llms-txt";
 import {
   loadSonarApiSidebar,
   replaceApiReferenceCategory,
 } from "./src/scripts/embedded-api/sidebar-generator";
+import { generateDevelopersSidebar } from "./src/scripts/public-api/sidebar-generator";
 
 // Import remark plugins - lazy load to prevent webpack from bundling Node.js code
 const getRemarkPlugins = () => ({
@@ -27,6 +27,9 @@ const {
   SPEC_CACHE_PATH,
   API_SIDEBAR_PATH,
 } = require("./src/scripts/embedded-api/constants");
+
+// Import custom markdown generator for OpenAPI docs
+const { createApiPageMD } = require("./src/scripts/public-api/createApiPageMDGenerator");
 
 const lightCodeTheme = prismThemes.github;
 const darkCodeTheme = prismThemes.dracula;
@@ -124,6 +127,7 @@ const config: Config = {
         theme: {
           customCss: require.resolve("./src/css/custom.css"),
         },
+        debug: true,
       } satisfies ClassicPresetOptions,
     ],
   ],
@@ -234,8 +238,11 @@ const config: Config = {
         id: "developers",
         path: "../docs/developers",
         routeBasePath: "/developers",
-        sidebarPath: "./sidebar-developers.js",
+        docItemComponent: "@theme/ApiItem", // Required for OpenAPI docs rendering
         editUrl: "https://github.com/airbytehq/airbyte/blob/master/docs",
+        async sidebarItemsGenerator(args) {
+          return generateDevelopersSidebar(args);
+        },
         remarkPlugins: [
           plugins.productInformation,
           plugins.docMetaTags,
@@ -267,7 +274,7 @@ const config: Config = {
         id: "embedded-api",
         docsPluginId: "ai-agents",
         config: {
-          embedded: {
+          "embedded-api": {
             specPath: "src/data/embedded_api_spec.json",
             outputDir: "../docs/ai-agents/embedded/api-reference",
             sidebarOptions: {
@@ -280,20 +287,45 @@ const config: Config = {
         },
       },
     ],
-    require.resolve("./src/plugins/enterpriseConnectors"),
     [
-      "@signalwire/docusaurus-plugin-llms-txt",
+      "docusaurus-plugin-openapi-docs",
       {
-        siteTitle: "docs.airbyte.com llms.txt",
-        siteDescription:
-          "Airbyte is an open source platform designed for building and managing data pipelines, offering extensive connector options to facilitate data movement from various sources to destinations efficiently and effectively.",
-        depth: 4,
-        content: {
-          includePages: true,
-          excludeRoutes: ["./api-docs/**"],
+        id: "public-api",
+        docsPluginId: "developers",
+        config: {
+          "public-api": {
+            specPath: "src/data/public_api_spec.yaml",
+            outputDir: "../docs/developers/api-reference",
+            sidebarOptions: {
+              groupPathsBy: "tag",
+              categoryLinkSource: "tag",
+              sidebarCollapsed: false,
+              sidebarCollapsible: true,
+            },
+            markdownGenerators: {
+              createApiPageMD,
+            },
+          },
         },
-      } satisfies LLmPluginOptions,
+      },
     ],
+    require.resolve("./src/plugins/enterpriseConnectors"),
+    // [
+    //   "@signalwire/docusaurus-plugin-llms-txt",
+    //   {
+    //     siteTitle: "docs.airbyte.com llms.txt",
+    //     siteDescription:
+    //       "Airbyte is an open source platform designed for building and managing data pipelines, offering extensive connector options to facilitate data movement from various sources to destinations efficiently and effectively.",
+    //     depth: 4,
+    //     content: {
+    //       includePages: true,
+    //       excludeRoutes: [
+    //         "./ai-agents/embedded/api-reference/**",
+    //         "./developers/api-reference/**",
+    //       ],
+    //     },
+    //   } satisfies LLmPluginOptions,
+    // ],
     () => ({
       name: "Yaml loader",
       configureWebpack(config, isServer) {
@@ -319,6 +351,34 @@ const config: Config = {
               );
             },
           ],
+        };
+      },
+    }),
+    // MDX Debug Plugin - logs which files are being processed
+    () => ({
+      name: "MDX Debug Plugin",
+      configureWebpack(config, isServer) {
+        const plugin = {
+          apply(compiler) {
+            let processedCount = 0;
+            const startTime = Date.now();
+
+            // Track module processing
+            compiler.hooks.thisCompilation.tap("MDXDebugPlugin", (compilation) => {
+              compilation.hooks.buildModule.tap("MDXDebugPlugin", (module) => {
+                if (module.resource && module.resource.endsWith(".mdx")) {
+                  processedCount++;
+                  const elapsed = Date.now() - startTime;
+                  const fileName = module.resource.split("/").pop();
+                  console.log(`📄 [${elapsed}ms] Processing #${processedCount}: ${fileName}`);
+                }
+              });
+            });
+          },
+        };
+
+        return {
+          plugins: [plugin],
         };
       },
     }),
@@ -420,10 +480,12 @@ const config: Config = {
           label: "AI agents",
         },
         {
-          type: "docSidebar",
+          // type: "docSidebar",
+          type: "doc",
           position: "left",
           docsPluginId: "developers",
-          sidebarId: "developers",
+          docId: "README",
+          // sidebarId: "developers",
           label: "Developers",
         },
         {
