@@ -33,3 +33,10 @@ data:
   ab_internal:
     ql: 100
     sl: 100
+  externalDocumentationUrls:
+    - title: Ding Connect API documentation
+      url: https://docs.ding.com/
+      type: api_reference
+    - title: Ding authentication
+      url: https://docs.ding.com/#authentication
+      type: authentication_guide

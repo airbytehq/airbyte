@@ -21,7 +21,7 @@ properties:
         type: array
         items:
           type: string
-          enum: ["JSONL", "PROTOBUF", "FLATBUFFERS"]
+          enum: ["JSONL", "PROTOBUF"]
       supportedTransport:
         type: array
         items:

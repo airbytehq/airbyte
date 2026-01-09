@@ -273,11 +273,11 @@ def test_extract_records_with_included_fields(components_module, mock_response, 
     """
     Test the extraction of records with included fields from a Klaviyo API response. The API resoonse mocked is obtained
     from the API docs: https://developers.klaviyo.com/en/reference/get_events
-    The JSON file is located in the integration folder of within the unit_tests.
+    The JSON file is located in the mock_server folder of within the unit_tests.
     """
 
     # Load JSON from file
-    json_path = os.path.join(os.path.dirname(__file__), "integration", "get_events.json")
+    json_path = os.path.join(os.path.dirname(__file__), "mock_server", "get_events.json")
     with open(json_path, "r") as f:
         response_json = json.load(f)
 

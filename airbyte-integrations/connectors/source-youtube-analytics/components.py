@@ -8,7 +8,7 @@ from typing import Any, Callable, Generator, Mapping, MutableMapping, Optional, 
 
 import requests
 
-from airbyte_cdk import Decoder
+from airbyte_cdk import AirbyteTracedException, Decoder, FailureType
 from airbyte_cdk.sources.declarative.migrations.state_migration import StateMigration
 from airbyte_cdk.sources.declarative.requesters.http_requester import HttpRequester
 from airbyte_cdk.sources.types import StreamSlice, StreamState
@@ -27,9 +27,35 @@ class CustomDecoder(Decoder):
 
 
 @dataclass
-class JobRequester(HttpRequester):
+class ContentOwnerRequester(HttpRequester):
+    """
+    Custom requester that conditionally adds the onBehalfOfContentOwner parameter
+    only when content_owner_id is provided in the config.
+    """
+
+    def get_request_params(
+        self,
+        *,
+        stream_state: Optional[StreamState] = None,
+        stream_slice: Optional[StreamSlice] = None,
+        next_page_token: Optional[Mapping[str, Any]] = None,
+    ) -> MutableMapping[str, Any]:
+        params = super().get_request_params(
+            stream_state=stream_state,
+            stream_slice=stream_slice,
+            next_page_token=next_page_token,
+        )
+        content_owner_id = self.config.get("content_owner_id")
+        if content_owner_id:
+            params["onBehalfOfContentOwner"] = content_owner_id
+        return params
+
+
+@dataclass
+class JobRequester(ContentOwnerRequester):
     """
     Sends request to create a report job if it doesn't exist yet.
+    Extends ContentOwnerRequester to conditionally add onBehalfOfContentOwner parameter.
     """
 
     JOB_NAME = "Airbyte reporting job"
@@ -58,7 +84,20 @@ class JobRequester(HttpRequester):
             log_formatter,
         )
 
-        stream_job = [r for r in response.json()["jobs"] if r["reportTypeId"] == self._parameters["report_type_id"]]
+        response_json = response.json()
+        if "jobs" not in response_json:
+            error_message = "YouTube Reporting API did not return expected 'jobs' data. "
+            if "error" in response_json:
+                error_details = response_json["error"]
+                error_message += f"API Error: {error_details.get('message', str(error_details))}. "
+            error_message += (
+                "This may indicate that your Google account does not have a YouTube channel associated with it, "
+                "or the OAuth credentials do not have the required YouTube Analytics permissions. "
+                "If you manage multiple YouTube channels, try specifying a 'content_owner_id' in the connector configuration."
+            )
+            raise AirbyteTracedException(message=error_message, failure_type=FailureType.config_error)
+
+        stream_job = [r for r in response_json["jobs"] if r["reportTypeId"] == self._parameters["report_type_id"]]
 
         if not stream_job:
             self._http_client.send_request(
