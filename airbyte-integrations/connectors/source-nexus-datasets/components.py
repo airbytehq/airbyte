@@ -55,8 +55,6 @@ class NexusCustomAuthenticator(DeclarativeAuthenticator):
         self.dataset_name = self.config.get("dataset_name", "")
         self.export_prefix = self.config.get("dataset_export_prefix", "")
         self.mode = self.config.get("mode", "")
-        # self.logger.debug("user_detail_stream_attr: %s", user_detail_stream_attr)
-        # self.logger.debug("path: %s", path)
         self.input_url = self.config.get("base_url", "")
         self.userId = self.config.get("user_id", "")
         self.secretAccessKey = self.config.get("secret_key", "")
@@ -91,8 +89,6 @@ class NexusCustomAuthenticator(DeclarativeAuthenticator):
         # Parse final_url to extract components like path
         parsed_final_url = urlparse(final_url)
         self.pathInfo = parsed_final_url.path
-
-        # self.logger.debug("parsedurl query string: %s", parsed_final_url.query)
         self.querystring = parsed_final_url.query
 
     def get_auth_header(self) -> Mapping[str, Any]:
@@ -110,15 +106,12 @@ class NexusCustomAuthenticator(DeclarativeAuthenticator):
     def computeSignature(self) -> bytes:
         self.setDate()
         signingBase = self.createSigningBase()
-        # self.logger.debug("The signingBase: %s", signingBase)
         return self.sign(signingBase)
 
     def createSigningBase(self) -> bytes:
         if self.querystring:
             self.pathInfo += f"?{self.querystring}"
-
         # self.logger.debug("signingBase pathInfo: %s", self.pathInfo)
-
         ##To create signing base, all should be in lowercase
         components = OrderedDict(
             {
@@ -216,7 +209,10 @@ class FlexibleDecoder(Decoder):
                         yield {"raw_data": json.dumps(processed_record)}
                     except json.JSONDecodeError as e:
                         logging.warning(f"Skipping malformed JSONL line: {line.strip()} - Error: {e}")
-        elif "text/csv" in content_type or "application/csv" in content_type:
+        else:
+            self.logger.error(f"Unsupported or unrecognized Content-Type: {content_type}. Cannot decode response.")
+            raise ValueError(f"Unsupported or unrecognized Content-Type: {content_type}")
+        """elif "text/csv" in content_type or "application/csv" in content_type:
             try:
                 df = pd.read_csv(
                     io.BytesIO(content_bytes),
@@ -233,7 +229,7 @@ class FlexibleDecoder(Decoder):
             except Exception as e:
                 logging.error(f"Error decoding CSV (Content-Type: {content_type}): {e}")
                 raise
-        """elif (
+        elif (
             "application/parquet" in content_type
             or "application/x-parquet" in content_type
             or "application/vnd.apache.parquet" in content_type

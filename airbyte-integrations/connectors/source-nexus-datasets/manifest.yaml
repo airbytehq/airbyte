@@ -60,7 +60,6 @@ spec:
       - api_key
       - dataset_path
       - dataset_name
-      - file_type
       - mode
     additionalProperties: true
     properties:
@@ -114,38 +113,6 @@ spec:
           - Incremental
         default: Full
         order: 4
-      file_type: # Keep this if it's used for path construction or other logic, but not decoder selection
-        type: string
-        title: File Type
-        description: "Select the file type for the dataset export."
-        enum:
-          - JSONL
-          - CSV
-          - Parquet
-        default: JSONL
-        order: 3
-      csv_options: # This section is no longer used by FlexibleDecoder if hardcoded
-        type: object
-        title: CSV Options
-        description: "Options for parsing CSV files. Only applicable if File Type is CSV."
-        airbyte_hidden: true
-        properties:
-          delimiter:
-            type: string
-            description: "Delimiter character for CSV files (default: ',')."
-            default: ","
-          quote_char:
-            type: string
-            description: 'Quote character for CSV files (default: ''"'').'
-            default: '"'
-          encoding:
-            type: string
-            description: "Encoding for CSV files (default: 'utf-8')."
-            default: "utf-8"
-          skip_rows_before_header:
-            type: integer
-            description: "Number of rows to skip before the header (default: 0)."
-            default: 0
         additionalProperties: true # Set to false if you want to strictly define CSV options
 schemas:
   datasets:
