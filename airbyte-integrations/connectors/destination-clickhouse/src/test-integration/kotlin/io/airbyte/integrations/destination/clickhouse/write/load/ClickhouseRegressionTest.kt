@@ -17,6 +17,7 @@ import java.nio.file.Files
 import java.nio.file.Path
 import org.junit.jupiter.api.BeforeAll
 import org.junit.jupiter.api.Test
+import org.junit.jupiter.api.parallel.ResourceLock
 
 abstract class ClickhouseBaseRegressionTest(
     configPath: Path,
@@ -83,11 +84,13 @@ abstract class ClickhouseBaseRegressionTest(
         super.testSchemaRegressionDedupCollidingNames()
     }
 
+    @ResourceLock("tableIdentifierRegressionTest")
     @Test
     override fun tableIdentifierRegressionTestAppend() {
         super.tableIdentifierRegressionTestAppend()
     }
 
+    @ResourceLock("tableIdentifierRegressionTest")
     @Test
     override fun tableIdentifierRegressionTestDedup() {
         super.tableIdentifierRegressionTestDedup()
