@@ -406,8 +406,8 @@ public class MongoUtil {
 
   /**
    * Checks if the given exception is caused by a BSONObjectTooLarge error (MongoDB error code 10334).
-   * This error occurs when a BSON document exceeds the 16MB size limit, which can happen during
-   * CDC (Change Data Capture) operations when change stream events become too large.
+   * This error occurs when a BSON document exceeds the 16MB size limit, which can happen during CDC
+   * (Change Data Capture) operations when change stream events become too large.
    *
    * @param exception The exception to check.
    * @return true if the exception is caused by a BSONObjectTooLarge error, false otherwise.

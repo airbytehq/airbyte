@@ -205,7 +205,7 @@ public class MongoDbSource extends BaseConnector implements Source {
    * @return A wrapped iterator that catches BSONObjectTooLarge errors.
    */
   private AutoCloseableIterator<AirbyteMessage> wrapIteratorWithBsonErrorHandling(
-      final AutoCloseableIterator<AirbyteMessage> iterator) {
+                                                                                  final AutoCloseableIterator<AirbyteMessage> iterator) {
     return new AutoCloseableIterator<>() {
 
       @Override
@@ -241,6 +241,7 @@ public class MongoDbSource extends BaseConnector implements Source {
         }
         throw new RuntimeException(e);
       }
+
     };
   }
 
