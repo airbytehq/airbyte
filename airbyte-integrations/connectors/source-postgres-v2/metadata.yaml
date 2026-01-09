@@ -1,0 +1,31 @@
+data:
+  connectorSubtype: database
+  connectorType: source
+  definitionId: 8e9a4e9b-5c8e-4d7f-9a6b-3c2d1e0f9a8b
+  dockerImageTag: 0.1.0
+  dockerRepository: airbyte/source-postgres-v2
+  documentationUrl: https://docs.airbyte.com/integrations/sources/postgres-v2
+  githubIssueLabel: source-postgres-v2
+  icon: postgresql.svg
+  license: ELv2
+  name: PostgreSQL V2
+  connectorBuildOptions:
+    baseImage: docker.io/airbyte/java-connector-base:2.0.1@sha256:ec89bd1a89e825514dd2fc8730ba299a3ae1544580a078df0e35c5202c2085b3
+  connectorIPCOptions:
+    dataChannel:
+      version: "0.0.2"
+      supportedSerialization: ["JSONL", "PROTOBUF"]
+      supportedTransport: ["SOCKET", "STDIO"]
+  registryOverrides:
+    cloud:
+      enabled: false
+    oss:
+      enabled: true
+  releaseStage: alpha
+  supportLevel: community
+  tags:
+    - language:java
+  connectorTestSuitesOptions:
+    - suite: unitTests
+    - suite: integrationTests
+metadataSpecVersion: "1.0"

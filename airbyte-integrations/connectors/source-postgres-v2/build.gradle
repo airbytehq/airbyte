@@ -1,0 +1,22 @@
+plugins {
+    id 'airbyte-bulk-connector'
+    id "io.airbyte.gradle.docker"
+    id 'airbyte-connector-docker-convention'
+}
+
+application {
+    mainClass = 'io.airbyte.integrations.source.postgres_v2.PostgresV2Source'
+}
+
+airbyteBulkConnector {
+    core = 'extract'
+    toolkits = ['extract-jdbc', 'extract-cdc']
+}
+
+dependencies {
+    implementation 'org.postgresql:postgresql:42.7.4'
+    implementation 'io.debezium:debezium-connector-postgres:2.7.3.Final'
+
+    testImplementation 'org.testcontainers:postgresql'
+    testImplementation 'io.mockk:mockk:1.12.0'
+}
