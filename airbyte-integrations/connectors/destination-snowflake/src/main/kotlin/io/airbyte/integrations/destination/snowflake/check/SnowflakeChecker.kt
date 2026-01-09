@@ -23,6 +23,7 @@ import io.airbyte.integrations.destination.snowflake.schema.SnowflakeColumnManag
 import io.airbyte.integrations.destination.snowflake.schema.toSnowflakeCompatibleName
 import io.airbyte.integrations.destination.snowflake.spec.SnowflakeConfiguration
 import io.airbyte.integrations.destination.snowflake.write.load.SnowflakeInsertBuffer
+import io.airbyte.integrations.destination.snowflake.write.load.SnowflakeRawRecordFormatter
 import io.airbyte.integrations.destination.snowflake.write.load.SnowflakeSchemaRecordFormatter
 import jakarta.inject.Singleton
 import java.time.OffsetDateTime
@@ -44,6 +45,8 @@ class SnowflakeChecker(
                 Meta.AirbyteMetaFields.RAW_ID.fieldName to
                     AirbyteValue.from(UUID.randomUUID().toString()),
                 Meta.AirbyteMetaFields.EXTRACTED_AT.fieldName to
+                    AirbyteValue.from(OffsetDateTime.now()),
+                Meta.COLUMN_NAME_AB_LOADED_AT to
                     AirbyteValue.from(OffsetDateTime.now()),
                 Meta.AirbyteMetaFields.META.fieldName to
                     AirbyteValue.from(emptyMap<String, String>()),
@@ -116,7 +119,12 @@ class SnowflakeChecker(
                         snowflakeConfiguration = snowflakeConfiguration,
                         columnSchema = tableSchema.columnSchema,
                         columnManager = columnManager,
-                        snowflakeRecordFormatter = SnowflakeSchemaRecordFormatter(),
+                        snowflakeRecordFormatter =
+                            if (snowflakeConfiguration.legacyRawTablesOnly) {
+                                SnowflakeRawRecordFormatter()
+                            } else {
+                                SnowflakeSchemaRecordFormatter()
+                            },
                     )
 
                 snowflakeInsertBuffer.accumulate(data)
