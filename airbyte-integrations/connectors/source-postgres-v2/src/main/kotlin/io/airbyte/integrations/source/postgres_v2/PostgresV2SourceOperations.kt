@@ -10,9 +10,6 @@ import io.airbyte.cdk.discover.JdbcAirbyteStreamFactory
 import io.airbyte.cdk.discover.JdbcMetadataQuerier
 import io.airbyte.cdk.discover.MetaField
 import io.airbyte.cdk.discover.SystemType
-import io.airbyte.cdk.output.sockets.NativeRecordPayload
-import io.airbyte.cdk.read.Stream
-import java.time.OffsetDateTime
 import io.airbyte.cdk.jdbc.BigDecimalFieldType
 import io.airbyte.cdk.jdbc.BigIntegerFieldType
 import io.airbyte.cdk.jdbc.BinaryStreamFieldType
@@ -31,6 +28,7 @@ import io.airbyte.cdk.jdbc.OffsetTimeFieldType
 import io.airbyte.cdk.jdbc.PokemonFieldType
 import io.airbyte.cdk.jdbc.ShortFieldType
 import io.airbyte.cdk.jdbc.StringFieldType
+import io.airbyte.cdk.output.sockets.NativeRecordPayload
 import io.airbyte.cdk.read.And
 import io.airbyte.cdk.read.Equal
 import io.airbyte.cdk.read.From
@@ -55,6 +53,7 @@ import io.airbyte.cdk.read.SelectNode
 import io.airbyte.cdk.read.SelectQuery
 import io.airbyte.cdk.read.SelectQueryGenerator
 import io.airbyte.cdk.read.SelectQuerySpec
+import io.airbyte.cdk.read.Stream
 import io.airbyte.cdk.read.Where
 import io.airbyte.cdk.read.WhereClauseLeafNode
 import io.airbyte.cdk.read.WhereClauseNode
@@ -62,10 +61,12 @@ import io.airbyte.cdk.read.WhereNode
 import io.airbyte.cdk.util.Jsons
 import io.micronaut.context.annotation.Primary
 import jakarta.inject.Singleton
+import java.time.OffsetDateTime
 
 @Singleton
 @Primary
-class PostgresV2SourceOperations : JdbcMetadataQuerier.FieldTypeMapper, SelectQueryGenerator, JdbcAirbyteStreamFactory {
+class PostgresV2SourceOperations :
+    JdbcMetadataQuerier.FieldTypeMapper, SelectQueryGenerator, JdbcAirbyteStreamFactory {
 
     // Non-CDC source, so no global cursor or meta fields
     override val globalCursor: FieldOrMetaField? = null
@@ -114,10 +115,17 @@ class PostgresV2SourceOperations : JdbcMetadataQuerier.FieldTypeMapper, SelectQu
             typeName == "MONEY" -> BigDecimalFieldType
 
             // String types
-            typeName in listOf(
-                "CHAR", "CHARACTER", "VARCHAR", "CHARACTER VARYING",
-                "TEXT", "NAME", "CITEXT", "BPCHAR"
-            ) -> StringFieldType
+            typeName in
+                listOf(
+                    "CHAR",
+                    "CHARACTER",
+                    "VARCHAR",
+                    "CHARACTER VARYING",
+                    "TEXT",
+                    "NAME",
+                    "CITEXT",
+                    "BPCHAR"
+                ) -> StringFieldType
 
             // UUID
             typeName == "UUID" -> StringFieldType
@@ -143,14 +151,13 @@ class PostgresV2SourceOperations : JdbcMetadataQuerier.FieldTypeMapper, SelectQu
             typeName in listOf("INET", "CIDR", "MACADDR", "MACADDR8") -> StringFieldType
 
             // Geometric types
-            typeName in listOf(
-                "POINT", "LINE", "LSEG", "BOX", "PATH", "POLYGON", "CIRCLE"
-            ) -> StringFieldType
+            typeName in listOf("POINT", "LINE", "LSEG", "BOX", "PATH", "POLYGON", "CIRCLE") ->
+                StringFieldType
 
             // Range types
-            typeName in listOf(
-                "INT4RANGE", "INT8RANGE", "NUMRANGE", "TSRANGE", "TSTZRANGE", "DATERANGE"
-            ) -> StringFieldType
+            typeName in
+                listOf("INT4RANGE", "INT8RANGE", "NUMRANGE", "TSRANGE", "TSTZRANGE", "DATERANGE") ->
+                StringFieldType
 
             // Bit string types
             typeName in listOf("BIT", "VARBIT", "BIT VARYING") -> StringFieldType
@@ -193,7 +200,8 @@ class PostgresV2SourceOperations : JdbcMetadataQuerier.FieldTypeMapper, SelectQu
     fun FromNode.sql(): String =
         when (this) {
             NoFrom -> ""
-            is From -> if (this.namespace == null) "FROM \"$name\"" else "FROM \"$namespace\".\"$name\""
+            is From ->
+                if (this.namespace == null) "FROM \"$name\"" else "FROM \"$namespace\".\"$name\""
             is FromSample -> From(name, namespace).sql()
         }
 

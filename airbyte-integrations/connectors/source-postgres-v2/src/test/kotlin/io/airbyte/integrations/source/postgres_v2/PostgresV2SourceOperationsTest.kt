@@ -76,33 +76,35 @@ class PostgresV2SourceOperationsTest {
     )
     fun testTypeMapping(typeName: String, expectedTypeName: String) {
         val systemType = SystemType(typeName = typeName, typeCode = Types.OTHER)
-        val metadata = JdbcMetadataQuerier.ColumnMetadata(
-            name = "test_col",
-            label = "test_col",
-            type = systemType,
-            nullable = true,
-        )
+        val metadata =
+            JdbcMetadataQuerier.ColumnMetadata(
+                name = "test_col",
+                label = "test_col",
+                type = systemType,
+                nullable = true,
+            )
         val result = ops.toFieldType(metadata)
 
-        val expectedType = when (expectedTypeName) {
-            "BooleanFieldType" -> BooleanFieldType
-            "ShortFieldType" -> ShortFieldType
-            "IntFieldType" -> IntFieldType
-            "LongFieldType" -> LongFieldType
-            "FloatFieldType" -> FloatFieldType
-            "DoubleFieldType" -> DoubleFieldType
-            "BigDecimalFieldType" -> BigDecimalFieldType
-            "BigIntegerFieldType" -> BigIntegerFieldType
-            "StringFieldType" -> StringFieldType
-            "LocalDateFieldType" -> LocalDateFieldType
-            "LocalTimeFieldType" -> LocalTimeFieldType
-            "OffsetTimeFieldType" -> OffsetTimeFieldType
-            "LocalDateTimeFieldType" -> LocalDateTimeFieldType
-            "OffsetDateTimeFieldType" -> OffsetDateTimeFieldType
-            "BinaryStreamFieldType" -> BinaryStreamFieldType
-            "PokemonFieldType" -> PokemonFieldType
-            else -> throw IllegalArgumentException("Unknown type: $expectedTypeName")
-        }
+        val expectedType =
+            when (expectedTypeName) {
+                "BooleanFieldType" -> BooleanFieldType
+                "ShortFieldType" -> ShortFieldType
+                "IntFieldType" -> IntFieldType
+                "LongFieldType" -> LongFieldType
+                "FloatFieldType" -> FloatFieldType
+                "DoubleFieldType" -> DoubleFieldType
+                "BigDecimalFieldType" -> BigDecimalFieldType
+                "BigIntegerFieldType" -> BigIntegerFieldType
+                "StringFieldType" -> StringFieldType
+                "LocalDateFieldType" -> LocalDateFieldType
+                "LocalTimeFieldType" -> LocalTimeFieldType
+                "OffsetTimeFieldType" -> OffsetTimeFieldType
+                "LocalDateTimeFieldType" -> LocalDateTimeFieldType
+                "OffsetDateTimeFieldType" -> OffsetDateTimeFieldType
+                "BinaryStreamFieldType" -> BinaryStreamFieldType
+                "PokemonFieldType" -> PokemonFieldType
+                else -> throw IllegalArgumentException("Unknown type: $expectedTypeName")
+            }
 
         assertEquals(
             expectedType::class,
@@ -114,25 +116,28 @@ class PostgresV2SourceOperationsTest {
     @Test
     fun testNumericWithScaleZero() {
         val systemType = SystemType(typeName = "NUMERIC", typeCode = Types.NUMERIC, scale = 0)
-        val metadata = JdbcMetadataQuerier.ColumnMetadata(
-            name = "test_col",
-            label = "test_col",
-            type = systemType,
-            nullable = true,
-        )
+        val metadata =
+            JdbcMetadataQuerier.ColumnMetadata(
+                name = "test_col",
+                label = "test_col",
+                type = systemType,
+                nullable = true,
+            )
         val result = ops.toFieldType(metadata)
         assertEquals(BigIntegerFieldType::class, result::class)
     }
 
     @Test
     fun testNumericWithScale() {
-        val systemType = SystemType(typeName = "NUMERIC", typeCode = Types.NUMERIC, precision = 10, scale = 2)
-        val metadata = JdbcMetadataQuerier.ColumnMetadata(
-            name = "test_col",
-            label = "test_col",
-            type = systemType,
-            nullable = true,
-        )
+        val systemType =
+            SystemType(typeName = "NUMERIC", typeCode = Types.NUMERIC, precision = 10, scale = 2)
+        val metadata =
+            JdbcMetadataQuerier.ColumnMetadata(
+                name = "test_col",
+                label = "test_col",
+                type = systemType,
+                nullable = true,
+            )
         val result = ops.toFieldType(metadata)
         assertEquals(BigDecimalFieldType::class, result::class)
     }
@@ -140,12 +145,13 @@ class PostgresV2SourceOperationsTest {
     @Test
     fun testUnknownType() {
         val systemType = SystemType(typeName = "UNKNOWN_TYPE", typeCode = Types.OTHER)
-        val metadata = JdbcMetadataQuerier.ColumnMetadata(
-            name = "test_col",
-            label = "test_col",
-            type = systemType,
-            nullable = true,
-        )
+        val metadata =
+            JdbcMetadataQuerier.ColumnMetadata(
+                name = "test_col",
+                label = "test_col",
+                type = systemType,
+                nullable = true,
+            )
         val result = ops.toFieldType(metadata)
         assertEquals(PokemonFieldType::class, result::class)
     }
@@ -155,52 +161,46 @@ class PostgresV2SourceOperationsTest {
         val field1 = Field("id", LongFieldType)
         val field2 = Field("name", StringFieldType)
 
-        val spec = SelectQuerySpec(
-            SelectColumns(listOf(field1, field2)),
-            From("users", "public"),
-        )
+        val spec =
+            SelectQuerySpec(
+                SelectColumns(listOf(field1, field2)),
+                From("users", "public"),
+            )
 
         val query = ops.generate(spec)
 
-        assertEquals(
-            "SELECT \"id\", \"name\" FROM \"public\".\"users\"",
-            query.sql
-        )
+        assertEquals("SELECT \"id\", \"name\" FROM \"public\".\"users\"", query.sql)
     }
 
     @Test
     fun testSelectWithoutNamespace() {
         val field1 = Field("id", LongFieldType)
 
-        val spec = SelectQuerySpec(
-            SelectColumns(listOf(field1)),
-            From("users", null),
-        )
+        val spec =
+            SelectQuerySpec(
+                SelectColumns(listOf(field1)),
+                From("users", null),
+            )
 
         val query = ops.generate(spec)
 
-        assertEquals(
-            "SELECT \"id\" FROM \"users\"",
-            query.sql
-        )
+        assertEquals("SELECT \"id\" FROM \"users\"", query.sql)
     }
 
     @Test
     fun testSelectWithWhere() {
         val field1 = Field("id", LongFieldType)
 
-        val spec = SelectQuerySpec(
-            SelectColumns(listOf(field1)),
-            From("users", "public"),
-            Where(Greater(field1, Jsons.numberNode(100))),
-        )
+        val spec =
+            SelectQuerySpec(
+                SelectColumns(listOf(field1)),
+                From("users", "public"),
+                Where(Greater(field1, Jsons.numberNode(100))),
+            )
 
         val query = ops.generate(spec)
 
-        assertEquals(
-            "SELECT \"id\" FROM \"public\".\"users\" WHERE \"id\" > ?",
-            query.sql
-        )
+        assertEquals("SELECT \"id\" FROM \"public\".\"users\" WHERE \"id\" > ?", query.sql)
     }
 
     @Test
@@ -208,12 +208,13 @@ class PostgresV2SourceOperationsTest {
         val field1 = Field("id", LongFieldType)
         val field2 = Field("created_at", OffsetDateTimeFieldType)
 
-        val spec = SelectQuerySpec(
-            SelectColumns(listOf(field1, field2)),
-            From("users", "public"),
-            NoWhere,
-            OrderBy(listOf(field2)),
-        )
+        val spec =
+            SelectQuerySpec(
+                SelectColumns(listOf(field1, field2)),
+                From("users", "public"),
+                NoWhere,
+                OrderBy(listOf(field2)),
+            )
 
         val query = ops.generate(spec)
 
@@ -227,37 +228,33 @@ class PostgresV2SourceOperationsTest {
     fun testSelectWithLimit() {
         val field1 = Field("id", LongFieldType)
 
-        val spec = SelectQuerySpec(
-            SelectColumns(listOf(field1)),
-            From("users", "public"),
-            NoWhere,
-            NoOrderBy,
-            Limit(100),
-        )
+        val spec =
+            SelectQuerySpec(
+                SelectColumns(listOf(field1)),
+                From("users", "public"),
+                NoWhere,
+                NoOrderBy,
+                Limit(100),
+            )
 
         val query = ops.generate(spec)
 
-        assertEquals(
-            "SELECT \"id\" FROM \"public\".\"users\" LIMIT ?",
-            query.sql
-        )
+        assertEquals("SELECT \"id\" FROM \"public\".\"users\" LIMIT ?", query.sql)
     }
 
     @Test
     fun testSelectMax() {
         val field = Field("id", LongFieldType)
 
-        val spec = SelectQuerySpec(
-            SelectColumnMaxValue(field),
-            From("users", "public"),
-        )
+        val spec =
+            SelectQuerySpec(
+                SelectColumnMaxValue(field),
+                From("users", "public"),
+            )
 
         val query = ops.generate(spec)
 
-        assertEquals(
-            "SELECT MAX(\"id\") FROM \"public\".\"users\"",
-            query.sql
-        )
+        assertEquals("SELECT MAX(\"id\") FROM \"public\".\"users\"", query.sql)
     }
 
     @Test
@@ -265,13 +262,14 @@ class PostgresV2SourceOperationsTest {
         val idField = Field("id", LongFieldType)
         val nameField = Field("name", StringFieldType)
 
-        val spec = SelectQuerySpec(
-            SelectColumns(listOf(idField, nameField)),
-            From("users", "public"),
-            Where(Greater(idField, Jsons.numberNode(0))),
-            OrderBy(listOf(idField)),
-            Limit(1000),
-        )
+        val spec =
+            SelectQuerySpec(
+                SelectColumns(listOf(idField, nameField)),
+                From("users", "public"),
+                Where(Greater(idField, Jsons.numberNode(0))),
+                OrderBy(listOf(idField)),
+                Limit(1000),
+            )
 
         val query = ops.generate(spec)
 

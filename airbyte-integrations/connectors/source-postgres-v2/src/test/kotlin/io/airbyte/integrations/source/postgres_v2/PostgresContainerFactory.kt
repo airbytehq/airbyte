@@ -36,7 +36,9 @@ object PostgresContainerFactory {
     }
 
     @JvmStatic
-    fun config(postgresContainer: PostgreSQLContainer<*>): PostgresV2SourceConfigurationSpecification =
+    fun config(
+        postgresContainer: PostgreSQLContainer<*>
+    ): PostgresV2SourceConfigurationSpecification =
         PostgresV2SourceConfigurationSpecification().apply {
             host = postgresContainer.host
             port = postgresContainer.getMappedPort(PostgreSQLContainer.POSTGRESQL_PORT)

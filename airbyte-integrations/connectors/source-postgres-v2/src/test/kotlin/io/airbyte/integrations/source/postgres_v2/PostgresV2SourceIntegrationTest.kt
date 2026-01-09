@@ -26,10 +26,11 @@ class PostgresV2SourceIntegrationTest {
         @BeforeAll
         @JvmStatic
         fun setupContainer() {
-            postgres = PostgreSQLContainer(DockerImageName.parse("postgres:15-alpine"))
-                .withDatabaseName("testdb")
-                .withUsername("testuser")
-                .withPassword("testpassword")
+            postgres =
+                PostgreSQLContainer(DockerImageName.parse("postgres:15-alpine"))
+                    .withDatabaseName("testdb")
+                    .withUsername("testuser")
+                    .withPassword("testpassword")
             postgres.start()
         }
 
@@ -43,11 +44,7 @@ class PostgresV2SourceIntegrationTest {
     }
 
     private fun getConnection(): Connection {
-        return DriverManager.getConnection(
-            postgres.jdbcUrl,
-            postgres.username,
-            postgres.password
-        )
+        return DriverManager.getConnection(postgres.jdbcUrl, postgres.username, postgres.password)
     }
 
     private fun createTestSpec(): PostgresV2SourceConfigurationSpecification {
@@ -81,26 +78,29 @@ class PostgresV2SourceIntegrationTest {
         val ops = PostgresV2SourceOperations()
 
         // Test various PostgreSQL types
-        val testCases = listOf(
-            "INT4" to IntFieldType,
-            "VARCHAR" to StringFieldType,
-            "TEXT" to StringFieldType,
-            "BOOLEAN" to io.airbyte.cdk.jdbc.BooleanFieldType,
-            "BIGINT" to io.airbyte.cdk.jdbc.LongFieldType,
-            "FLOAT8" to io.airbyte.cdk.jdbc.DoubleFieldType,
-            "DATE" to io.airbyte.cdk.jdbc.LocalDateFieldType,
-            "TIMESTAMP" to io.airbyte.cdk.jdbc.LocalDateTimeFieldType,
-            "TIMESTAMPTZ" to io.airbyte.cdk.jdbc.OffsetDateTimeFieldType,
-        )
+        val testCases =
+            listOf(
+                "INT4" to IntFieldType,
+                "VARCHAR" to StringFieldType,
+                "TEXT" to StringFieldType,
+                "BOOLEAN" to io.airbyte.cdk.jdbc.BooleanFieldType,
+                "BIGINT" to io.airbyte.cdk.jdbc.LongFieldType,
+                "FLOAT8" to io.airbyte.cdk.jdbc.DoubleFieldType,
+                "DATE" to io.airbyte.cdk.jdbc.LocalDateFieldType,
+                "TIMESTAMP" to io.airbyte.cdk.jdbc.LocalDateTimeFieldType,
+                "TIMESTAMPTZ" to io.airbyte.cdk.jdbc.OffsetDateTimeFieldType,
+            )
 
         testCases.forEach { (typeName, expectedType) ->
-            val systemType = io.airbyte.cdk.discover.SystemType(typeName = typeName, typeCode = Types.OTHER)
-            val metadata = io.airbyte.cdk.discover.JdbcMetadataQuerier.ColumnMetadata(
-                name = "test_col",
-                label = "test_col",
-                type = systemType,
-                nullable = true,
-            )
+            val systemType =
+                io.airbyte.cdk.discover.SystemType(typeName = typeName, typeCode = Types.OTHER)
+            val metadata =
+                io.airbyte.cdk.discover.JdbcMetadataQuerier.ColumnMetadata(
+                    name = "test_col",
+                    label = "test_col",
+                    type = systemType,
+                    nullable = true,
+                )
             val result = ops.toFieldType(metadata)
             assertEquals(
                 expectedType::class,
@@ -116,10 +116,11 @@ class PostgresV2SourceIntegrationTest {
         val field = Field("id", IntFieldType)
         val field2 = Field("name", StringFieldType)
 
-        val selectSpec = io.airbyte.cdk.read.SelectQuerySpec(
-            io.airbyte.cdk.read.SelectColumns(listOf(field, field2)),
-            io.airbyte.cdk.read.From("users", "public"),
-        )
+        val selectSpec =
+            io.airbyte.cdk.read.SelectQuerySpec(
+                io.airbyte.cdk.read.SelectColumns(listOf(field, field2)),
+                io.airbyte.cdk.read.From("users", "public"),
+            )
 
         val query = ops.generate(selectSpec)
 
@@ -134,13 +135,14 @@ class PostgresV2SourceIntegrationTest {
         val ops = PostgresV2SourceOperations()
         val field = Field("id", io.airbyte.cdk.jdbc.LongFieldType)
 
-        val selectSpec = io.airbyte.cdk.read.SelectQuerySpec(
-            io.airbyte.cdk.read.SelectColumns(listOf(field)),
-            io.airbyte.cdk.read.From("users", "public"),
-            io.airbyte.cdk.read.Where(
-                io.airbyte.cdk.read.Greater(field, io.airbyte.cdk.util.Jsons.numberNode(10))
-            ),
-        )
+        val selectSpec =
+            io.airbyte.cdk.read.SelectQuerySpec(
+                io.airbyte.cdk.read.SelectColumns(listOf(field)),
+                io.airbyte.cdk.read.From("users", "public"),
+                io.airbyte.cdk.read.Where(
+                    io.airbyte.cdk.read.Greater(field, io.airbyte.cdk.util.Jsons.numberNode(10))
+                ),
+            )
 
         val query = ops.generate(selectSpec)
 
@@ -153,13 +155,14 @@ class PostgresV2SourceIntegrationTest {
         val ops = PostgresV2SourceOperations()
         val field = Field("id", io.airbyte.cdk.jdbc.LongFieldType)
 
-        val selectSpec = io.airbyte.cdk.read.SelectQuerySpec(
-            io.airbyte.cdk.read.SelectColumns(listOf(field)),
-            io.airbyte.cdk.read.From("users", "public"),
-            io.airbyte.cdk.read.NoWhere,
-            io.airbyte.cdk.read.OrderBy(listOf(field)),
-            io.airbyte.cdk.read.Limit(100),
-        )
+        val selectSpec =
+            io.airbyte.cdk.read.SelectQuerySpec(
+                io.airbyte.cdk.read.SelectColumns(listOf(field)),
+                io.airbyte.cdk.read.From("users", "public"),
+                io.airbyte.cdk.read.NoWhere,
+                io.airbyte.cdk.read.OrderBy(listOf(field)),
+                io.airbyte.cdk.read.Limit(100),
+            )
 
         val query = ops.generate(selectSpec)
 
@@ -183,24 +186,28 @@ class PostgresV2SourceIntegrationTest {
         getConnection().use { conn ->
             // Create test table
             conn.createStatement().use { stmt ->
-                stmt.execute("""
+                stmt.execute(
+                    """
                     CREATE TABLE IF NOT EXISTS test_users (
                         id SERIAL PRIMARY KEY,
                         name VARCHAR(100) NOT NULL,
                         email TEXT,
                         created_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP
                     )
-                """)
+                """
+                )
             }
 
             // Insert test data
-            conn.prepareStatement(
-                "INSERT INTO test_users (name, email) VALUES (?, ?) ON CONFLICT DO NOTHING"
-            ).use { pstmt ->
-                pstmt.setString(1, "John Doe")
-                pstmt.setString(2, "john@example.com")
-                pstmt.executeUpdate()
-            }
+            conn
+                .prepareStatement(
+                    "INSERT INTO test_users (name, email) VALUES (?, ?) ON CONFLICT DO NOTHING"
+                )
+                .use { pstmt ->
+                    pstmt.setString(1, "John Doe")
+                    pstmt.setString(2, "john@example.com")
+                    pstmt.executeUpdate()
+                }
 
             // Verify data
             conn.createStatement().use { stmt ->
@@ -215,10 +222,11 @@ class PostgresV2SourceIntegrationTest {
     fun testPrimaryKeyStateValue() {
         val pkField = Field("id", io.airbyte.cdk.jdbc.LongFieldType)
 
-        val checkpoint = PostgresV2SourceJdbcStreamStateValue.snapshotCheckpoint(
-            primaryKey = listOf(pkField),
-            primaryKeyCheckpoint = listOf(io.airbyte.cdk.util.Jsons.numberNode(100)),
-        )
+        val checkpoint =
+            PostgresV2SourceJdbcStreamStateValue.snapshotCheckpoint(
+                primaryKey = listOf(pkField),
+                primaryKeyCheckpoint = listOf(io.airbyte.cdk.util.Jsons.numberNode(100)),
+            )
 
         assertNotNull(checkpoint)
         assertTrue(checkpoint.has("pk_name"))

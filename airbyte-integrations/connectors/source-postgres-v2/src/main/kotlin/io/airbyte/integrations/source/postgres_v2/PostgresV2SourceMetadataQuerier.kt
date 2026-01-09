@@ -32,8 +32,8 @@ class PostgresV2SourceMetadataQuerier(
     }
 
     /**
-     * PostgreSQL-specific column discovery that avoids getPseudoColumns
-     * which is not implemented in the PostgreSQL JDBC driver.
+     * PostgreSQL-specific column discovery that avoids getPseudoColumns which is not implemented in
+     * the PostgreSQL JDBC driver.
      */
     val memoizedColumnMetadata: Map<TableName, List<JdbcMetadataQuerier.ColumnMetadata>> by lazy {
         val joinMap: Map<TableName, TableName> =
@@ -46,28 +46,31 @@ class PostgresV2SourceMetadataQuerier(
             for (namespace in base.config.namespaces) {
                 dbmd.getColumns(null, namespace, null, null).use { rs: ResultSet ->
                     while (rs.next()) {
-                        val tableName = TableName(
-                            catalog = rs.getString("TABLE_CAT"),
-                            schema = rs.getString("TABLE_SCHEM"),
-                            name = rs.getString("TABLE_NAME"),
-                            type = "",
-                        )
+                        val tableName =
+                            TableName(
+                                catalog = rs.getString("TABLE_CAT"),
+                                schema = rs.getString("TABLE_SCHEM"),
+                                name = rs.getString("TABLE_NAME"),
+                                type = "",
+                            )
                         val joinedTableName: TableName = joinMap[tableName] ?: continue
 
-                        val type = SystemType(
-                            typeName = rs.getString("TYPE_NAME"),
-                            typeCode = rs.getInt("DATA_TYPE"),
-                            precision = rs.getInt("COLUMN_SIZE").takeUnless { rs.wasNull() },
-                            scale = rs.getInt("DECIMAL_DIGITS").takeUnless { rs.wasNull() },
-                        )
+                        val type =
+                            SystemType(
+                                typeName = rs.getString("TYPE_NAME"),
+                                typeCode = rs.getInt("DATA_TYPE"),
+                                precision = rs.getInt("COLUMN_SIZE").takeUnless { rs.wasNull() },
+                                scale = rs.getInt("DECIMAL_DIGITS").takeUnless { rs.wasNull() },
+                            )
                         val columnName = rs.getString("COLUMN_NAME")
-                        val metadata = JdbcMetadataQuerier.ColumnMetadata(
-                            name = columnName,
-                            label = columnName,
-                            type = type,
-                            nullable = rs.getInt("NULLABLE") != DatabaseMetaData.columnNoNulls,
-                            ordinal = rs.getInt("ORDINAL_POSITION"),
-                        )
+                        val metadata =
+                            JdbcMetadataQuerier.ColumnMetadata(
+                                name = columnName,
+                                label = columnName,
+                                type = type,
+                                nullable = rs.getInt("NULLABLE") != DatabaseMetaData.columnNoNulls,
+                                ordinal = rs.getInt("ORDINAL_POSITION"),
+                            )
                         results.add(joinedTableName to metadata)
                     }
                 }
@@ -99,9 +102,7 @@ class PostgresV2SourceMetadataQuerier(
             .map(StreamIdentifier::from)
 
     fun findTableName(streamID: StreamIdentifier): TableName? =
-        base.memoizedTableNames.find {
-            it.name == streamID.name && it.schema == streamID.namespace
-        }
+        base.memoizedTableNames.find { it.name == streamID.name && it.schema == streamID.namespace }
 
     val memoizedPrimaryKeys: Map<TableName, List<List<String>>> by lazy {
         val results = mutableListOf<AllPrimaryKeysRow>()

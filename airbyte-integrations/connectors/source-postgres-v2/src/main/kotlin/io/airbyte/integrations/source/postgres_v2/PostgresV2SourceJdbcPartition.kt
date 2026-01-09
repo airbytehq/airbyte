@@ -79,7 +79,8 @@ class PostgresV2SourceJdbcNonResumableSnapshotPartition(
     override val streamState: DefaultJdbcStreamState,
 ) : PostgresV2SourceJdbcPartition(selectQueryGenerator, streamState) {
 
-    override val completeState: OpaqueStateValue = PostgresV2SourceJdbcStreamStateValue.snapshotCompleted
+    override val completeState: OpaqueStateValue =
+        PostgresV2SourceJdbcStreamStateValue.snapshotCompleted
 }
 
 /**
@@ -218,7 +219,8 @@ class PostgresV2SourceJdbcRfrSnapshotPartition(
         )
 }
 
-typealias PostgresV2SourceJdbcSplittableRfrSnapshotPartition = PostgresV2SourceJdbcRfrSnapshotPartition
+typealias PostgresV2SourceJdbcSplittableRfrSnapshotPartition =
+    PostgresV2SourceJdbcRfrSnapshotPartition
 
 /**
  * Default implementation of a [JdbcPartition] for a splittable partition involving cursor columns.

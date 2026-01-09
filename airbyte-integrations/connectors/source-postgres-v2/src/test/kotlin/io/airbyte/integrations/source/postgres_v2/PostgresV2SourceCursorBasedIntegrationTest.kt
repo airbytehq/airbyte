@@ -79,9 +79,15 @@ class PostgresV2SourceCursorBasedIntegrationTest {
         connectionFactory.get().use { connection: Connection ->
             connection.isReadOnly = false
             connection.createStatement().use { stmt: Statement ->
-                stmt.execute("INSERT INTO $tableName (k, v) VALUES (5, 'baz-ignore')")  // Below cursor, should be ignored
-                stmt.execute("INSERT INTO $tableName (k, v) VALUES (15, 'baz-ignore')") // Below cursor, should be ignored
-                stmt.execute("INSERT INTO $tableName (k, v) VALUES (100, 'baz')")       // Above cursor, should be read
+                stmt.execute(
+                    "INSERT INTO $tableName (k, v) VALUES (5, 'baz-ignore')"
+                ) // Below cursor, should be ignored
+                stmt.execute(
+                    "INSERT INTO $tableName (k, v) VALUES (15, 'baz-ignore')"
+                ) // Below cursor, should be ignored
+                stmt.execute(
+                    "INSERT INTO $tableName (k, v) VALUES (100, 'baz')"
+                ) // Above cursor, should be read
             }
         }
 
@@ -133,7 +139,8 @@ class PostgresV2SourceCursorBasedIntegrationTest {
 
     companion object {
         val log = KotlinLogging.logger {}
-        val dbContainer: PostgreSQLContainer<*> = PostgresContainerFactory.shared(imageName = "postgres:15-alpine")
+        val dbContainer: PostgreSQLContainer<*> =
+            PostgresContainerFactory.shared(imageName = "postgres:15-alpine")
 
         val config: PostgresV2SourceConfigurationSpecification =
             PostgresContainerFactory.config(dbContainer)
@@ -179,9 +186,7 @@ class PostgresV2SourceCursorBasedIntegrationTest {
             targetConnectionFactory.get().use { connection: Connection ->
                 connection.isReadOnly = false
                 connection.createStatement().use { stmt: Statement ->
-                    stmt.execute(
-                        "CREATE TABLE $tableName (k INTEGER PRIMARY KEY, v VARCHAR(80))"
-                    )
+                    stmt.execute("CREATE TABLE $tableName (k INTEGER PRIMARY KEY, v VARCHAR(80))")
                 }
             }
         }

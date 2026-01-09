@@ -35,7 +35,17 @@ import jakarta.inject.Singleton
  */
 @JsonSchemaTitle("PostgreSQL V2 Source Spec")
 @JsonPropertyOrder(
-    value = ["host", "port", "database", "schemas", "username", "password", "ssl_mode", "replication_method"],
+    value =
+        [
+            "host",
+            "port",
+            "database",
+            "schemas",
+            "username",
+            "password",
+            "ssl_mode",
+            "replication_method"
+        ],
 )
 @Singleton
 @ConfigurationProperties(CONNECTOR_CONFIG_PREFIX)
@@ -96,8 +106,7 @@ class PostgresV2SourceConfigurationSpecification : ConfigurationSpecification() 
     @ConfigurationBuilder(configurationPrefix = "ssl_mode")
     var sslMode = MicronautPropertiesFriendlySslModeSpecification()
 
-    @JsonIgnore
-    var sslModeJson: SslModeSpecification? = null
+    @JsonIgnore var sslModeJson: SslModeSpecification? = null
 
     @JsonSetter("ssl_mode")
     fun setSslModeValue(value: SslModeSpecification) {
@@ -117,8 +126,7 @@ class PostgresV2SourceConfigurationSpecification : ConfigurationSpecification() 
     @ConfigurationBuilder(configurationPrefix = "tunnel_method")
     val tunnelMethod = MicronautPropertiesFriendlySshTunnelMethodConfigurationSpecification()
 
-    @JsonIgnore
-    var tunnelMethodJson: SshTunnelMethodConfiguration? = null
+    @JsonIgnore var tunnelMethodJson: SshTunnelMethodConfiguration? = null
 
     @JsonSetter("tunnel_method")
     fun setTunnelMethodValue(value: SshTunnelMethodConfiguration) {
@@ -139,8 +147,7 @@ class PostgresV2SourceConfigurationSpecification : ConfigurationSpecification() 
     @ConfigurationBuilder(configurationPrefix = "replication_method")
     var replicationMethod = MicronautPropertiesFriendlyIncrementalConfigurationSpecification()
 
-    @JsonIgnore
-    var replicationMethodJson: IncrementalConfigurationSpecification? = null
+    @JsonIgnore var replicationMethodJson: IncrementalConfigurationSpecification? = null
 
     @JsonSetter("replication_method")
     fun setIncrementalValue(value: IncrementalConfigurationSpecification) {
@@ -168,11 +175,9 @@ class PostgresV2SourceConfigurationSpecification : ConfigurationSpecification() 
     @JsonPropertyDescription("Maximum number of concurrent queries to the database.")
     var concurrency: Int? = 1
 
-    @JsonIgnore
-    var additionalPropertiesMap = mutableMapOf<String, Any>()
+    @JsonIgnore var additionalPropertiesMap = mutableMapOf<String, Any>()
 
-    @JsonAnyGetter
-    fun getAdditionalProperties(): Map<String, Any> = additionalPropertiesMap
+    @JsonAnyGetter fun getAdditionalProperties(): Map<String, Any> = additionalPropertiesMap
 
     @JsonAnySetter
     fun setAdditionalProperty(name: String, value: Any) {
@@ -202,15 +207,21 @@ data object SslModeDisable : SslModeSpecification
 data object SslModeAllow : SslModeSpecification
 
 @JsonSchemaTitle("prefer")
-@JsonSchemaDescription("Allows unencrypted connection only if the source database does not support encryption.")
+@JsonSchemaDescription(
+    "Allows unencrypted connection only if the source database does not support encryption."
+)
 data object SslModePrefer : SslModeSpecification
 
 @JsonSchemaTitle("require")
-@JsonSchemaDescription("Always require encryption. If the source database server does not support encryption, connection will fail.")
+@JsonSchemaDescription(
+    "Always require encryption. If the source database server does not support encryption, connection will fail."
+)
 data object SslModeRequire : SslModeSpecification
 
 @JsonSchemaTitle("verify-ca")
-@JsonSchemaDescription("Always require encryption and verify that the source database server has a valid SSL certificate.")
+@JsonSchemaDescription(
+    "Always require encryption and verify that the source database server has a valid SSL certificate."
+)
 @SuppressFBWarnings(value = ["NP_NONNULL_RETURN_VIOLATION"], justification = "Micronaut DI")
 class SslModeVerifyCa : SslModeSpecification {
     @JsonProperty("ca_certificate", required = true)
@@ -239,7 +250,9 @@ class SslModeVerifyCa : SslModeSpecification {
 }
 
 @JsonSchemaTitle("verify-full")
-@JsonSchemaDescription("This is the most secure mode. Always require encryption and verify the identity of the source database server.")
+@JsonSchemaDescription(
+    "This is the most secure mode. Always require encryption and verify the identity of the source database server."
+)
 @SuppressFBWarnings(value = ["NP_NONNULL_RETURN_VIOLATION"], justification = "Micronaut DI")
 class SslModeVerifyFull : SslModeSpecification {
     @JsonProperty("ca_certificate", required = true)

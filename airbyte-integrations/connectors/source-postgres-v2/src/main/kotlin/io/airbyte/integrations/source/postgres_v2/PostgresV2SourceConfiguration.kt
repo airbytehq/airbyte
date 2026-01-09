@@ -44,11 +44,11 @@ data class PostgresV2SourceConfiguration(
     private class MicronautFactory {
         @Singleton
         fun postgresV2SourceConfig(
-            factory: SourceConfigurationFactory<
-                PostgresV2SourceConfigurationSpecification,
-                PostgresV2SourceConfiguration
-            >,
-            supplier: ConfigurationSpecificationSupplier<PostgresV2SourceConfigurationSpecification>,
+            factory:
+                SourceConfigurationFactory<
+                    PostgresV2SourceConfigurationSpecification, PostgresV2SourceConfiguration>,
+            supplier:
+                ConfigurationSpecificationSupplier<PostgresV2SourceConfigurationSpecification>,
         ): PostgresV2SourceConfiguration = factory.make(supplier.get())
     }
 }
@@ -61,7 +61,8 @@ data object XminIncrementalConfiguration : PostgresV2IncrementalConfiguration
 
 @Singleton
 class PostgresV2SourceConfigurationFactory :
-    SourceConfigurationFactory<PostgresV2SourceConfigurationSpecification, PostgresV2SourceConfiguration> {
+    SourceConfigurationFactory<
+        PostgresV2SourceConfigurationSpecification, PostgresV2SourceConfiguration> {
 
     override fun makeWithoutExceptionHandling(
         pojo: PostgresV2SourceConfigurationSpecification,
@@ -148,7 +149,8 @@ class PostgresV2SourceConfigurationFactory :
             is SslModeAllow -> {
                 extraJdbcProperties["sslmode"] = "allow"
             }
-            is SslModePrefer, null -> {
+            is SslModePrefer,
+            null -> {
                 extraJdbcProperties["sslmode"] = "prefer"
             }
             is SslModeRequire -> {
@@ -156,13 +158,23 @@ class PostgresV2SourceConfigurationFactory :
             }
             is SslModeVerifyCa -> {
                 extraJdbcProperties["sslmode"] = "verify-ca"
-                configureSslCertificates(extraJdbcProperties, sslModeSpec.caCertificate,
-                    sslModeSpec.clientCertificate, sslModeSpec.clientKey, sslModeSpec.clientKeyPassword)
+                configureSslCertificates(
+                    extraJdbcProperties,
+                    sslModeSpec.caCertificate,
+                    sslModeSpec.clientCertificate,
+                    sslModeSpec.clientKey,
+                    sslModeSpec.clientKeyPassword
+                )
             }
             is SslModeVerifyFull -> {
                 extraJdbcProperties["sslmode"] = "verify-full"
-                configureSslCertificates(extraJdbcProperties, sslModeSpec.caCertificate,
-                    sslModeSpec.clientCertificate, sslModeSpec.clientKey, sslModeSpec.clientKeyPassword)
+                configureSslCertificates(
+                    extraJdbcProperties,
+                    sslModeSpec.caCertificate,
+                    sslModeSpec.clientCertificate,
+                    sslModeSpec.clientKey,
+                    sslModeSpec.clientKeyPassword
+                )
             }
         }
         return extraJdbcProperties
@@ -175,30 +187,32 @@ class PostgresV2SourceConfigurationFactory :
         clientKey: String?,
         clientKeyPassword: String?,
     ) {
-        val password: String = clientKeyPassword.takeUnless { it.isNullOrBlank() }
-            ?: UUID.randomUUID().toString()
+        val password: String =
+            clientKeyPassword.takeUnless { it.isNullOrBlank() } ?: UUID.randomUUID().toString()
 
         // Create trust store for CA certificate
-        val trustStoreUrl: URL = buildKeyStore("trust") {
-            SSLCertificateUtils.keyStoreFromCertificate(
-                caCertificate,
-                password,
-                FileSystems.getDefault(),
-                directory = "",
-            )
-        }
+        val trustStoreUrl: URL =
+            buildKeyStore("trust") {
+                SSLCertificateUtils.keyStoreFromCertificate(
+                    caCertificate,
+                    password,
+                    FileSystems.getDefault(),
+                    directory = "",
+                )
+            }
         jdbcProperties["sslrootcert"] = trustStoreUrl.path
 
         if (!clientCertificate.isNullOrBlank() && !clientKey.isNullOrBlank()) {
             // Create key store for client certificate
-            val clientKeyStoreUrl: URL = buildKeyStore("client") {
-                SSLCertificateUtils.keyStoreFromClientCertificate(
-                    clientCertificate,
-                    clientKey,
-                    password,
-                    directory = ""
-                )
-            }
+            val clientKeyStoreUrl: URL =
+                buildKeyStore("client") {
+                    SSLCertificateUtils.keyStoreFromClientCertificate(
+                        clientCertificate,
+                        clientKey,
+                        password,
+                        directory = ""
+                    )
+                }
             jdbcProperties["sslcert"] = clientKeyStoreUrl.path
             jdbcProperties["sslkey"] = clientKey
             if (!clientKeyPassword.isNullOrBlank()) {

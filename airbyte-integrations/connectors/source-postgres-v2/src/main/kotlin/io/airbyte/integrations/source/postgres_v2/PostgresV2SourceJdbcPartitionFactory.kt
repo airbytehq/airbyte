@@ -184,8 +184,7 @@ class PostgresV2SourceJdbcPartitionFactory(
             if (sv.pkValue == upperBound.asText() || sv.pkValue == null) {
                 return null
             }
-            val pkLowerBound: JsonNode =
-                stateValueToJsonNode(pkChosenFromCatalog[0], sv.pkValue)
+            val pkLowerBound: JsonNode = stateValueToJsonNode(pkChosenFromCatalog[0], sv.pkValue)
 
             return PostgresV2SourceJdbcRfrSnapshotPartition(
                 selectQueryGenerator,
@@ -338,7 +337,8 @@ class PostgresV2SourceJdbcPartitionFactory(
             is PostgresV2SourceJdbcRfrSnapshotPartition ->
                 unsplitPartition.split(opaqueStateValues, upperBoundVal, lowerBoundVal)
             else -> null
-        } ?: listOf(unsplitPartition)
+        }
+            ?: listOf(unsplitPartition)
     }
 
     private fun PostgresV2SourceJdbcSnapshotWithCursorPartition.split(
