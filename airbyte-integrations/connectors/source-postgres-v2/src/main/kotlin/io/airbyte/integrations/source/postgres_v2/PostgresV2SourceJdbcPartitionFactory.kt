@@ -453,7 +453,7 @@ class PostgresV2SourceJdbcPartitionFactory(
         lowerBound: String?,
         upperBound: String,
     ): Map<String, String?> {
-        val num = opaqueStateValues.size
+        // opaqueStateValues.size could be used for more sophisticated boundary calculation
         val effectiveLowerBound = lowerBound ?: String()
         log.info { "calculating boundaries: [$effectiveLowerBound], [$upperBound]" }
 
