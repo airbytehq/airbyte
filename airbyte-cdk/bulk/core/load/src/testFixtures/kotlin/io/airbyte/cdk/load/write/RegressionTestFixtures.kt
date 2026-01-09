@@ -5,6 +5,7 @@
 package io.airbyte.cdk.load.write
 
 import io.airbyte.cdk.command.ConfigurationSpecification
+import io.airbyte.cdk.load.command.DestinationCatalog
 import io.airbyte.cdk.load.command.DestinationStream
 import io.airbyte.cdk.load.command.ImportType
 import io.airbyte.cdk.load.config.DataChannelFormat
@@ -176,9 +177,11 @@ class RegressionTestFixtures(
             )
         destinationProcessFactory.runSync(
             updatedConfig,
-            stream,
-            testPrettyName,
+            DestinationCatalog(listOf(stream)),
             messages = emptyList(),
+            testPrettyName,
+            dataChannelMedium,
+            dataChannelFormat,
         )
         val actualSchema =
             schemaDumper!!.discoverSchema(
