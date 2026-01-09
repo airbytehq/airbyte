@@ -23,6 +23,7 @@ import io.airbyte.integrations.destination.snowflake.schema.SnowflakeColumnManag
 import io.airbyte.integrations.destination.snowflake.schema.toSnowflakeCompatibleName
 import io.airbyte.integrations.destination.snowflake.spec.SnowflakeConfiguration
 import io.airbyte.integrations.destination.snowflake.write.load.SnowflakeInsertBuffer
+import io.airbyte.integrations.destination.snowflake.write.load.SnowflakeRawRecordFormatter
 import io.airbyte.integrations.destination.snowflake.write.load.SnowflakeSchemaRecordFormatter
 import jakarta.inject.Singleton
 import java.time.OffsetDateTime
@@ -39,8 +40,8 @@ class SnowflakeChecker(
 ) : DestinationCheckerV2 {
 
     override fun check() {
-        val data =
-            mapOf(
+        val baseData =
+            mutableMapOf(
                 Meta.AirbyteMetaFields.RAW_ID.fieldName to
                     AirbyteValue.from(UUID.randomUUID().toString()),
                 Meta.AirbyteMetaFields.EXTRACTED_AT.fieldName to
@@ -50,6 +51,11 @@ class SnowflakeChecker(
                 Meta.AirbyteMetaFields.GENERATION_ID.fieldName to AirbyteValue.from(0),
                 CHECK_COLUMN_NAME.toSnowflakeCompatibleName() to AirbyteValue.from("test-value")
             )
+        // Add _airbyte_loaded_at for legacy raw tables mode since SnowflakeRawRecordFormatter expects it
+        if (snowflakeConfiguration.legacyRawTablesOnly) {
+            baseData[Meta.COLUMN_NAME_AB_LOADED_AT] = AirbyteValue.from(OffsetDateTime.now())
+        }
+        val data = baseData.toMap()
         val outputSchema =
             if (snowflakeConfiguration.legacyRawTablesOnly) {
                 snowflakeConfiguration.schema
@@ -109,6 +115,12 @@ class SnowflakeChecker(
                     replace = true,
                 )
 
+                val snowflakeRecordFormatter =
+                    if (snowflakeConfiguration.legacyRawTablesOnly) {
+                        SnowflakeRawRecordFormatter()
+                    } else {
+                        SnowflakeSchemaRecordFormatter()
+                    }
                 val snowflakeInsertBuffer =
                     SnowflakeInsertBuffer(
                         tableName = qualifiedTableName,
@@ -116,7 +128,7 @@ class SnowflakeChecker(
                         snowflakeConfiguration = snowflakeConfiguration,
                         columnSchema = tableSchema.columnSchema,
                         columnManager = columnManager,
-                        snowflakeRecordFormatter = SnowflakeSchemaRecordFormatter(),
+                        snowflakeRecordFormatter = snowflakeRecordFormatter,
                     )
 
                 snowflakeInsertBuffer.accumulate(data)
