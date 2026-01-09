@@ -21,7 +21,7 @@ import jakarta.inject.Singleton
  *
  * This mapper uses [Transformations.toAlphanumericAndUnderscore] to ensure all names meet these
  * requirements.
- * 
+ *
  * NOTE: Name sanitization logic duplicated in BigLakeTableIdGenerator (different CDK interfaces).
  */
 @Singleton

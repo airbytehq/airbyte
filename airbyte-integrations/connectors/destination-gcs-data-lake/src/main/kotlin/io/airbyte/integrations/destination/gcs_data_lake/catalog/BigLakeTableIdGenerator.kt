@@ -11,10 +11,11 @@ import io.airbyte.cdk.load.toolkits.iceberg.parquet.tableIdOf
 import org.apache.iceberg.catalog.TableIdentifier
 
 /**
- * BigLake table ID generator that sanitizes names.
- * BigLake doesn't support special characters (converts to alphanumeric+underscore)
- * 
- * NOTE: Name sanitization logic duplicated in GcsDataLakeTableSchemaMapper (different CDK interfaces).
+ * BigLake table ID generator that sanitizes names. BigLake doesn't support special characters
+ * (converts to alphanumeric+underscore)
+ *
+ * NOTE: Name sanitization logic duplicated in GcsDataLakeTableSchemaMapper (different CDK
+ * interfaces).
  */
 class BigLakeTableIdGenerator(private val databaseName: String) : TableIdGenerator {
     override fun toTableIdentifier(stream: DestinationStream.Descriptor): TableIdentifier {

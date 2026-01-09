@@ -23,7 +23,7 @@ class GcsDataLakeBeanFactory {
             maxBufferedAggregates = 5,
         )
     }
-    
+
     @Singleton
     fun tableIdGenerator(config: GcsDataLakeConfiguration): TableIdGenerator {
         return BigLakeTableIdGenerator(config.namespace)
