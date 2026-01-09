@@ -91,13 +91,14 @@ Follow the instructions for your chosen cloud provider:
 
 Choose one of the following authentication methods:
 
-**IAM Role (Recommended)**
+IAM Role (Recommended)
 
-1. Create an IAM role with a trust relationship to your EKS cluster or service account
+1. Create an IAM role with a trust relationship to your EKS cluster or service account 
+    - This requires additional coordination with Airbyte and will enable the use of IAM authentication for some AWS-hosted sources
 2. Attach the `AirbyteSecretsManagerPolicy` (created in Step 1) to this role
 3. Note the Role ARN (e.g., `arn:aws:iam::123456789012:role/AirbyteSecretsRole`)
 
-**IAM User with Access Keys**
+IAM User with Access Keys
 
 1. Create an IAM user
 2. Attach the `AirbyteSecretsManagerPolicy` (created in Step 1) to this user
@@ -157,18 +158,7 @@ Provide Airbyte with the configuration details using the appropriate JSON format
 <Tabs>
 <TabItem value="aws" label="AWS" default>
 
-**IAM Role**
-
-```json
-{
-  "auth_type": "IAM_ROLE",
-  "roleArn": "<Role ARN in customer AWS account>",
-  "awsRegion": "<AWS Region to store secrets in>",
-  "tagKey": "AirbyteManaged"
-}
-```
-
-Example:
+IAM Role Example:
 
 ```json
 {
@@ -179,19 +169,7 @@ Example:
 }
 ```
 
-**Access Key**
-
-```json
-{
-  "auth_type": "ACCESS_KEY",
-  "awsAccessKey": "<access key for role>",
-  "awsSecretAccessKey": "<Secret for above access key>",
-  "awsRegion": "<AWS Region to store secrets in>",
-  "tagKey": "AirbyteManaged"
-}
-```
-
-Example:
+Access Key Example:
 
 ```json
 {
@@ -205,15 +183,6 @@ Example:
 
 </TabItem>
 <TabItem value="azure" label="Azure">
-
-```json
-{
-  "vaultUrl": "<Azure Key Vault URI>",
-  "tenantId": "<Azure Tenant ID>",
-  "clientId": "<Application Client ID>",
-  "clientSecret": "<Client Secret Value>"
-}
-```
 
 Example:
 
