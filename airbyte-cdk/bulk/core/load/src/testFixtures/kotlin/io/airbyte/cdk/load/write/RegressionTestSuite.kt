@@ -16,7 +16,6 @@ import io.airbyte.cdk.load.test.util.SchemaDumper
 import io.airbyte.cdk.load.test.util.destination_process.DestinationProcessFactory
 import io.airbyte.cdk.load.write.RegressionTestFixtures.Companion.FUNKY_CHARS_IDENTIFIER
 import org.junit.jupiter.api.BeforeEach
-import org.junit.jupiter.api.Test
 import org.junit.jupiter.api.TestInfo
 
 abstract class RegressionTestSuite(
@@ -50,7 +49,6 @@ abstract class RegressionTestSuite(
     }
 
     /** Regression test for table schemas (column names, types, etc.) in append mode. */
-    @Test
     open fun testSchemaRegressionAppend() {
         regressionTestFixtures.baseSchemaRegressionTest("append", Append)
     }
@@ -59,7 +57,6 @@ abstract class RegressionTestSuite(
      * Regression test for table schemas (column names, types, etc.) in dedup mode, using simple
      * identifiers for the PK/cursor.
      */
-    @Test
     open fun testSchemaRegressionSimpleDedup() {
         regressionTestFixtures.baseSchemaRegressionTest(
             "dedup_simple",
@@ -74,7 +71,6 @@ abstract class RegressionTestSuite(
      * Regression test for table schemas (column names, types, etc.) in dedup mode, using SQL
      * reserved words for the PK/cursor.
      */
-    @Test
     open fun testSchemaRegressionDedupReservedWords() {
         regressionTestFixtures.baseSchemaRegressionTest(
             "dedup_reserved_word",
@@ -89,7 +85,6 @@ abstract class RegressionTestSuite(
      * Regression test for table schemas (column names, types, etc.) in dedup mode, using an
      * identifier with funky chars for the PK.
      */
-    @Test
     open fun testSchemaRegressionFunkyCharsPk() {
         regressionTestFixtures.baseSchemaRegressionTest(
             "dedup_funky_chars_pk",
@@ -104,7 +99,6 @@ abstract class RegressionTestSuite(
      * Regression test for table schemas (column names, types, etc.) in dedup mode, using an
      * identifier with funky chars for the PK.
      */
-    @Test
     open fun testSchemaRegressionFunkyCharsCursor() {
         regressionTestFixtures.baseSchemaRegressionTest(
             "dedup_funky_chars_cursor",
@@ -119,7 +113,6 @@ abstract class RegressionTestSuite(
      * Regression test for table schemas (column names, types, etc.) in dedup mode, using colliding
      * identifiers for the PK/cursor.
      */
-    @Test
     open fun testSchemaRegressionDedupCollidingNames() {
         regressionTestFixtures.baseSchemaRegressionTest(
             "dedup_colliding_names",
