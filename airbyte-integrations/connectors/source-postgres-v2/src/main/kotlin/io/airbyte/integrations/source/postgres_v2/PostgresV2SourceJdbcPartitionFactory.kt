@@ -448,6 +448,7 @@ class PostgresV2SourceJdbcPartitionFactory(
         return lbs.zip(ubs).toMap()
     }
 
+    @Suppress("UNUSED_PARAMETER")
     private fun internalCalculateBoundaries(
         opaqueStateValues: List<OpaqueStateValue>,
         lowerBound: String?,
