@@ -2,9 +2,9 @@
 products: cloud
 ---
 
-# AWS PrivateLink for Airbyte Cloud
+# PrivateLink
 
-## Overview
+AWS PrivateLink allows Airbyte Cloud to securely connect to your data sources and destinations without exposing them to the public internet. Traffic between Airbyte and your resources stays entirely within AWS's private network, providing enhanced security for organizations with strict network isolation requirements.
 
 ## Benefits of Using PrivateLink
 
