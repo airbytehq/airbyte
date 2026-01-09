@@ -19,7 +19,6 @@ import io.airbyte.cdk.load.test.util.destination_process.DestinationProcessFacto
 import io.airbyte.cdk.load.write.RegressionTestFixtures.Companion.FUNKY_CHARS_IDENTIFIER
 import org.junit.jupiter.api.BeforeEach
 import org.junit.jupiter.api.TestInfo
-import org.junit.jupiter.api.parallel.ResourceLock
 
 abstract class RegressionTestSuite(
     val configContents: String,
@@ -140,16 +139,20 @@ abstract class RegressionTestSuite(
      * against the table names. As a result, it needs to explicitly drop the table(s) before
      * executing the test. This may cause transient failures if there are multiple concurrent
      * executions.
+     *
+     * Subclasses MUST annotate this test case with `@ResourceLock("tableIdentifierRegressionTest")`
+     * to prevent race conditions.
      */
-    // we need to prevent tableIdentifierRegressionTestAppend + tableIdentifierRegressionTestDedup
-    // from executing concurrently, since they'll touch the same tables.
-    @ResourceLock("tableIdentifierRegressionTest")
     open fun tableIdentifierRegressionTestAppend() {
         regressionTestFixtures.baseTableIdentifierRegressionTest(Append)
     }
 
-    /** See [tableIdentifierRegressionTestAppend] for information. */
-    @ResourceLock("tableIdentifierRegressionTest")
+    /**
+     * See [tableIdentifierRegressionTestAppend] for information.
+     *
+     * Subclasses MUST annotate this test case with `@ResourceLock("tableIdentifierRegressionTest")`
+     * to prevent race conditions.
+     */
     open fun tableIdentifierRegressionTestDedup() {
         regressionTestFixtures.baseTableIdentifierRegressionTest(
             Dedupe(primaryKey = listOf(listOf("blah")), cursor = emptyList())
