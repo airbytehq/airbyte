@@ -6,6 +6,7 @@ import io.airbyte.cdk.check.JdbcCheckQueries
 import io.airbyte.cdk.discover.Field
 import io.airbyte.cdk.discover.JdbcMetadataQuerier
 import io.airbyte.cdk.discover.MetadataQuerier
+import io.airbyte.cdk.discover.SystemType
 import io.airbyte.cdk.discover.TableName
 import io.airbyte.cdk.jdbc.DefaultJdbcConstants
 import io.airbyte.cdk.jdbc.JdbcConnectionFactory
@@ -14,6 +15,7 @@ import io.airbyte.protocol.models.v0.StreamDescriptor
 import io.github.oshai.kotlinlogging.KotlinLogging
 import io.micronaut.context.annotation.Primary
 import jakarta.inject.Singleton
+import java.sql.DatabaseMetaData
 import java.sql.ResultSet
 import java.sql.Statement
 
@@ -29,10 +31,61 @@ class PostgresV2SourceMetadataQuerier(
         // Additional PostgreSQL-specific validation can be added here
     }
 
+    /**
+     * PostgreSQL-specific column discovery that avoids getPseudoColumns
+     * which is not implemented in the PostgreSQL JDBC driver.
+     */
+    val memoizedColumnMetadata: Map<TableName, List<JdbcMetadataQuerier.ColumnMetadata>> by lazy {
+        val joinMap: Map<TableName, TableName> =
+            base.memoizedTableNames.associateBy { it.copy(type = "") }
+        val results = mutableListOf<Pair<TableName, JdbcMetadataQuerier.ColumnMetadata>>()
+        log.info { "Querying PostgreSQL column names for catalog discovery." }
+        try {
+            val dbmd: DatabaseMetaData = base.conn.metaData
+
+            for (namespace in base.config.namespaces) {
+                dbmd.getColumns(null, namespace, null, null).use { rs: ResultSet ->
+                    while (rs.next()) {
+                        val tableName = TableName(
+                            catalog = rs.getString("TABLE_CAT"),
+                            schema = rs.getString("TABLE_SCHEM"),
+                            name = rs.getString("TABLE_NAME"),
+                            type = "",
+                        )
+                        val joinedTableName: TableName = joinMap[tableName] ?: continue
+
+                        val type = SystemType(
+                            typeName = rs.getString("TYPE_NAME"),
+                            typeCode = rs.getInt("DATA_TYPE"),
+                            precision = rs.getInt("COLUMN_SIZE").takeUnless { rs.wasNull() },
+                            scale = rs.getInt("DECIMAL_DIGITS").takeUnless { rs.wasNull() },
+                        )
+                        val columnName = rs.getString("COLUMN_NAME")
+                        val metadata = JdbcMetadataQuerier.ColumnMetadata(
+                            name = columnName,
+                            label = columnName,
+                            type = type,
+                            nullable = rs.getInt("NULLABLE") != DatabaseMetaData.columnNoNulls,
+                            ordinal = rs.getInt("ORDINAL_POSITION"),
+                        )
+                        results.add(joinedTableName to metadata)
+                    }
+                }
+            }
+            log.info { "Discovered ${results.size} column(s) in PostgreSQL." }
+        } catch (e: Exception) {
+            throw RuntimeException("PostgreSQL column discovery query failed: ${e.message}", e)
+        }
+        return@lazy results.groupBy({ it.first }, { it.second }).mapValues {
+            (_, columnMetadataByTable: List<JdbcMetadataQuerier.ColumnMetadata>) ->
+            columnMetadataByTable.sortedBy { it.ordinal }
+        }
+    }
+
     override fun fields(streamID: StreamIdentifier): List<Field> {
         val table: TableName = findTableName(streamID) ?: return listOf()
-        if (table !in base.memoizedColumnMetadata) return listOf()
-        return base.memoizedColumnMetadata[table]!!.map {
+        if (table !in memoizedColumnMetadata) return listOf()
+        return memoizedColumnMetadata[table]!!.map {
             Field(it.label, base.fieldTypeMapper.toFieldType(it))
         }
     }

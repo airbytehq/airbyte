@@ -1,10 +1,18 @@
 /* Copyright (c) 2024 Airbyte, Inc., all rights reserved. */
 package io.airbyte.integrations.source.postgres_v2
 
+import com.fasterxml.jackson.databind.node.ObjectNode
+import io.airbyte.cdk.command.OpaqueStateValue
 import io.airbyte.cdk.discover.Field
+import io.airbyte.cdk.discover.FieldOrMetaField
 import io.airbyte.cdk.discover.FieldType
+import io.airbyte.cdk.discover.JdbcAirbyteStreamFactory
 import io.airbyte.cdk.discover.JdbcMetadataQuerier
+import io.airbyte.cdk.discover.MetaField
 import io.airbyte.cdk.discover.SystemType
+import io.airbyte.cdk.output.sockets.NativeRecordPayload
+import io.airbyte.cdk.read.Stream
+import java.time.OffsetDateTime
 import io.airbyte.cdk.jdbc.BigDecimalFieldType
 import io.airbyte.cdk.jdbc.BigIntegerFieldType
 import io.airbyte.cdk.jdbc.BinaryStreamFieldType
@@ -57,7 +65,26 @@ import jakarta.inject.Singleton
 
 @Singleton
 @Primary
-class PostgresV2SourceOperations : JdbcMetadataQuerier.FieldTypeMapper, SelectQueryGenerator {
+class PostgresV2SourceOperations : JdbcMetadataQuerier.FieldTypeMapper, SelectQueryGenerator, JdbcAirbyteStreamFactory {
+
+    // Non-CDC source, so no global cursor or meta fields
+    override val globalCursor: FieldOrMetaField? = null
+    override val globalMetaFields: Set<MetaField> = emptySet()
+
+    // No-op for non-CDC sources
+    override fun decorateRecordData(
+        timestamp: OffsetDateTime,
+        globalStateValue: OpaqueStateValue?,
+        stream: Stream,
+        recordData: ObjectNode
+    ) {}
+
+    override fun decorateRecordData(
+        timestamp: OffsetDateTime,
+        globalStateValue: OpaqueStateValue?,
+        stream: Stream,
+        recordData: NativeRecordPayload
+    ) {}
 
     override fun toFieldType(c: JdbcMetadataQuerier.ColumnMetadata): FieldType =
         when (val type = c.type) {
