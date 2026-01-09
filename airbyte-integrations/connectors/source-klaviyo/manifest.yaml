@@ -105,11 +105,10 @@ definitions:
           path: profiles
           http_method: GET
           request_parameters:
-            additional-fields[profile]: subscriptions
-            filter: >-
+            additional-fields[profile]: subscriptionsfilter: >-
               and(
-                greater-than(subscriptions.email.marketing.suppression.timestamp,{{ stream_interval.start_time }}),
-                greater-than(subscriptions.email.marketing.suppression.timestamp,1970-01-01T00:00:00Z)
+                greater-than(subscriptions.email.marketing.suppression.timestamp,'{{ stream_interval.start_time }}'),
+                greater-than(subscriptions.email.marketing.suppression.timestamp,'1970-01-01T00:00:00Z')
               )
             sort: subscriptions.email.marketing.suppression.timestamp
           request_headers:
