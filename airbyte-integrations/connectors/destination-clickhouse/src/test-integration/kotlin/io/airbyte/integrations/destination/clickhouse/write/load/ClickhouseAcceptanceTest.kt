@@ -15,7 +15,6 @@ import io.airbyte.cdk.load.config.DataChannelMedium
 import io.airbyte.cdk.load.data.AirbyteValue
 import io.airbyte.cdk.load.data.ObjectValue
 import io.airbyte.cdk.load.message.Meta
-import io.airbyte.cdk.load.schema.model.TableName
 import io.airbyte.cdk.load.test.util.DestinationCleaner
 import io.airbyte.cdk.load.test.util.DestinationDataDumper
 import io.airbyte.cdk.load.test.util.OutputRecord
@@ -58,16 +57,6 @@ class ClickhouseDirectLoadWriterWithJson :
     @Test
     override fun testDedupChangePk() {
         super.testDedupChangePk()
-    }
-
-    @Test
-    override fun testSchemaRegressionAppend() {
-        super.testSchemaRegressionAppend()
-    }
-
-    @Test
-    override fun tableIdentifierRegressionTestAppend() {
-        super.tableIdentifierRegressionTestAppend()
     }
 }
 
@@ -163,40 +152,12 @@ abstract class ClickhouseAcceptanceTest(
         dataChannelFormat = dataChannelFormat,
         dataChannelMedium = dataChannelMedium,
         useDataFlowPipeline = true,
-        schemaDumperProvider = { ClickhouseSchemaDumper(it) },
-        opsClientProvider = { Utils.getClickhouseAirbyteClient(it) },
-        tableIdentifierRegressionTestExpectedTableNames =
-            listOf(
-                TableName("table_id_regression_test", "table_id_regression_test"),
-                TableName("table", "table"),
-                TableName("column", "column"),
-                TableName("create", "create"),
-                TableName("delete", "delete"),
-                TableName("e________________________________", "e________________________________"),
-                TableName("_1foo", "_1foo"),
-                TableName("foo_", "table_id_regression_test"),
-                // yes, these are the same table name. Clearly there's a bug in our collision
-                // resolution logic.
-                TableName("foo_", "table_id_regression_test_304"),
-                TableName("foo_", "table_id_regression_test_304"),
-                TableName("table_id_regression_test", "foo_"),
-                TableName("table_id_regression_test", "foo__1b6"),
-                TableName("table_id_regression_test", "foo__e5f"),
-                TableName("UPPER_CASE", "UPPER_CASE"),
-                TableName("Mixed_Case", "Mixed_Case"),
-            )
     ) {
     companion object {
         @JvmStatic
         @BeforeAll
         fun beforeAll() {
             ClickhouseContainerHelper.start()
-        }
-
-        @JvmStatic
-        @BeforeAll
-        fun afterAll() {
-            ClickhouseContainerHelper.stop()
         }
     }
 

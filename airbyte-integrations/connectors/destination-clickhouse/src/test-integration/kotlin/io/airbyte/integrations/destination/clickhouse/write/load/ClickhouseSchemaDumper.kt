@@ -6,8 +6,8 @@ package io.airbyte.integrations.destination.clickhouse.write.load
 
 import io.airbyte.cdk.command.ConfigurationSpecification
 import io.airbyte.cdk.load.schema.model.TableName
+import io.airbyte.cdk.load.test.util.FullTableSchema
 import io.airbyte.cdk.load.test.util.SchemaDumper
-import io.airbyte.cdk.load.util.Jsons
 import io.airbyte.integrations.destination.clickhouse.Utils
 import kotlinx.coroutines.future.await
 
@@ -16,11 +16,9 @@ class ClickhouseSchemaDumper(spec: ConfigurationSpecification) : SchemaDumper {
     private val client = Utils.getClickhouseClient(spec)
     private val airbyteClient = Utils.getClickhouseAirbyteClient(spec)
 
-    override suspend fun discoverSchema(namespace: String?, name: String): String {
+    override suspend fun discoverSchema(namespace: String?, name: String): FullTableSchema {
         val tableName = TableName(namespace ?: config.resolvedDatabase, name)
-        val baseSchema =
-            Jsons.writerWithDefaultPrettyPrinter()
-                .writeValueAsString(airbyteClient.discoverSchema(tableName))
+        val tableSchema = airbyteClient.discoverSchema(tableName)
 
         val tableEngine =
             client
@@ -43,14 +41,9 @@ class ClickhouseSchemaDumper(spec: ConfigurationSpecification) : SchemaDumper {
                     reader.getString("engine_full")
                 }
         // baseSchema has newlines, so if we just do """...""".trimIndent(), it ends up kind of ugly
-        return StringBuilder()
-            .apply {
-                append("Schema: ")
-                append(baseSchema)
-                append("\n")
-                append("Table Engine: ")
-                append(tableEngine)
-            }
-            .toString()
+        return FullTableSchema(
+            tableSchema,
+            mapOf("tableEngine" to tableEngine),
+        )
     }
 }
