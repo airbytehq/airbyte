@@ -4,6 +4,8 @@ products: cloud
 
 # PrivateLink
 
+<!-- Confirm which subscriptions include PrivateLink -->
+
 PrivateLink is a cloud networking feature that lets you access a service privately over the cloud provider's internal network—without using the public internet and without exposing public IPs. PrivateLink allows Airbyte Cloud to securely connect to your data sources and destinations without exposing them to the public internet. Traffic between Airbyte and your resources stays entirely within your cloud provider's private network, providing enhanced security for organizations with strict network isolation requirements.
 
 ## Why use PrivateLink
@@ -94,8 +96,9 @@ AWS provides a guide for this configuration: [Access Amazon RDS across VPCs usin
 
 The general approach involves creating an NLB that targets your RDS or Aurora endpoint, then creating a VPC endpoint service that points to that NLB. Once configured, you can follow the standard PrivateLink setup steps described above.
 
-## IP Allowlisting (Optional)
+## IP allowlist (rare)
 
 In most cases, PrivateLink eliminates the need for IP allowlisting since traffic flows through private connections. However, if you have a connection where one side uses PrivateLink and the other side requires IP allowlisting (for example, a public source connecting to a PrivateLink-enabled destination), you may need to allowlist Airbyte's IP addresses for the non-PrivateLink endpoint.
 
 Contact Airbyte to obtain the current IP addresses for your region.
+<!-- This is a different set of IPs from those we publicly document already. I think it's OK to publish, but check. -->
