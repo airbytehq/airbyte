@@ -70,7 +70,7 @@ Before configuring any infrastructure, contact Airbyte to discuss your PrivateLi
 
 ### Step 2: Create a VPC Endpoint Service
 
-Create a VPC endpoint service in your AWS account that exposes your data source or destination:
+For a complete overview of sharing services through AWS PrivateLink, see [Share your services through AWS PrivateLink](https://docs.aws.amazon.com/vpc/latest/privatelink/privatelink-share-your-services.html). The key steps for Airbyte integration are:
 
 1. If your service doesn't already have a Network Load Balancer, create one that targets your service. See [Create a Network Load Balancer](https://docs.aws.amazon.com/elasticloadbalancing/latest/network/create-network-load-balancer.html) in the AWS documentation.
 
