@@ -50,9 +50,15 @@ Before setting up PrivateLink, ensure you have the following:
 
 - **AWS infrastructure**: Your source or destination must be running in AWS, since PrivateLink is currently AWS-only.
 
-- **Permissions to create VPC endpoint services**: You need IAM permissions to create and configure VPC endpoint services in your AWS account.
+- **Permissions to create VPC endpoint services**: You need IAM permissions to create and configure VPC endpoint services in your AWS account, including:
+  - `ec2:CreateVpcEndpointServiceConfiguration`
+  - `ec2:ModifyVpcEndpointServicePermissions`
+  - `ec2:DescribeVpcEndpointServiceConfigurations`
 
-- **Network Load Balancer (NLB)**: AWS PrivateLink requires a Network Load Balancer in front of your target service. If your service doesn't already have one, you'll need to create it as part of the setup process.
+- **Network Load Balancer (NLB)**: AWS PrivateLink requires a Network Load Balancer in front of your target service. If your service doesn't already have one, you'll need to create it as part of the setup process. This requires additional IAM permissions:
+  - `elasticloadbalancing:CreateLoadBalancer`
+  - `elasticloadbalancing:CreateTargetGroup`
+  - `elasticloadbalancing:RegisterTargets`
 
 ## Set up PrivateLink
 
