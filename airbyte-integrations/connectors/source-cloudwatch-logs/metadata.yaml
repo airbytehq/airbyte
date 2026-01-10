@@ -1,0 +1,24 @@
+data:
+  allowedHosts:
+    hosts:
+      - "*.amazonaws.com"
+  connectorSubtype: api
+  connectorType: source
+  definitionId: f88d2297-b0c6-40a5-adc7-e7fd845b1cf6
+  dockerImageTag: 0.0.1
+  dockerRepository: airbyte/source-cloudwatch-logs
+  githubIssueLabel: source-cloudwatch-logs
+  icon: icon.png
+  license: ELv2
+  maxSecondsBetweenMessages: 60
+  name: Cloudwatch Logs
+  tags:
+    - language:python
+  registries:
+    cloud:
+      enabled: false
+    oss:
+      enabled: true
+  supportLevel: community
+  documentationUrl: https://docs.airbyte.com/integrations/sources/cloudwatch-logs
+metadataSpecVersion: "1.0"
