@@ -19,7 +19,7 @@ repository = "https://github.com/airbytehq/airbyte"
 include = "source_cloudwatch_logs"
 
 [tool.poetry.dependencies]
-python = "^3.12,<3.14"
+python = "^3.13,<3.14"
 boto3 = "^1.42.25"
 airbyte-cdk ="^6.58.1"
 
