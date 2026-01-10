@@ -15,7 +15,11 @@ class SourceCloudwatchLogs(AbstractSource):
         """
         Uses STS to assume the role specified in config['role_arn']
         """
-        base_session = boto3.Session(region_name=config["region_name"])
+        base_session = boto3.Session(
+            region_name=config["region_name"],
+            aws_access_key_id=config.get("aws_access_key_id"),
+            aws_secret_access_key=config.get("aws_secret_access_key"),
+        )
 
         if not config.get("role_arn"):
             return base_session
