@@ -28,9 +28,19 @@ Airbyte maintains dedicated infrastructure for PrivateLink connections, ensuring
 
 ### Security model
 
+Airbyte's PrivateLink implementation ensures that only sync jobs from your workspace can access your PrivateLink endpoint. Each workspace is assigned a unique security token, and Airbyte's infrastructure enforces network-level isolation so that jobs from other workspaces cannot reach your endpoint—even if they run on shared infrastructure.
+
 ### Limitations and considerations
 
+PrivateLink is currently available for AWS only. Support for other cloud providers may be added in the future.
+
+PrivateLink connections are limited to sources and destinations running in AWS. This includes services like Snowflake, Databricks, and PostgreSQL hosted on AWS. If you need to connect to resources outside of AWS, PrivateLink is not currently an option.
+
+For managed AWS services like RDS or Aurora, additional configuration is required to expose them via PrivateLink. See [Using PrivateLink with Managed Services](#using-privatelink-with-managed-services) for details.
+
 ### Supported regions
+
+Contact Airbyte to confirm which regions are currently supported for PrivateLink connections.
 
 ## Prerequisites
 
