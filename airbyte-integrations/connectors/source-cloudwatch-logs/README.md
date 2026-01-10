@@ -22,7 +22,7 @@ poetry install --with dev
 
 Create a file `secrets/config.json` conforming to the `source_cloudwatch_logs"/spec.yaml` file.
 Note that any directory named `secrets` is gitignored across the entire Airbyte repo, so there is no danger of accidentally checking in sensitive information.
-See `sample_files/sample_config.json` for a sample config file.
+See `integration_tests/sample_config.json` for a sample config file.
 
 ### Locally running the connector
 
@@ -30,7 +30,7 @@ See `sample_files/sample_config.json` for a sample config file.
 poetry run source-cloudwatch-logs spec
 poetry run source-cloudwatch-logs check --config secrets/config.json
 poetry run source-cloudwatch-logs discover --config secrets/config.json
-poetry run source-cloudwatch-logs read --config secrets/config.json --catalog sample_files/configured_catalog.json
+poetry run source-cloudwatch-logs read --config secrets/config.json --catalog integration_tests/configured_catalog.json
 ```
 
 ### Running unit tests
