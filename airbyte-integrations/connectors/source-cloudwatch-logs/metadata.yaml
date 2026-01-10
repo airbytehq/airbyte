@@ -10,8 +10,7 @@ data:
   githubIssueLabel: source-cloudwatch-logs
   icon: icon.png
   license: ELv2
-  maxSecondsBetweenMessages: 60
-  name: Cloudwatch Logs
+  name: CloudwatchLogs
   tags:
     - language:python
   registries:
@@ -21,4 +20,9 @@ data:
       enabled: true
   supportLevel: community
   documentationUrl: https://docs.airbyte.com/integrations/sources/cloudwatch-logs
+  connectorBuildOptions:
+    baseImage: docker.io/airbyte/python-connector-base:4.1.0@sha256:ed84abaa9c21663afe5750a6a91792b4c728a6ca6eac34d057054844f33e3e1e
+  connectorTestSuitesOptions:
+    - suite: unitTests
+  maxSecondsBetweenMessages: 1
 metadataSpecVersion: "1.0"
