@@ -2,7 +2,7 @@
 
 from typing import Any, Mapping, MutableMapping, Optional
 
-from airbyte_cdk.sources.declarative.incremental.datetime_based_cursor import DatetimeBasedCursor
+from airbyte_cdk import DatetimeBasedCursor
 from airbyte_cdk.sources.declarative.requesters.request_option import RequestOptionType
 from airbyte_cdk.sources.declarative.types import StreamSlice, StreamState
 
