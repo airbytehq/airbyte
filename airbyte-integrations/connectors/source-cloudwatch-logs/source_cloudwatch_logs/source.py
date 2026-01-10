@@ -40,6 +40,20 @@ class SourceCloudwatchLogs(AbstractSource):
         )
         return session
 
+    @staticmethod
+    def _check_config(config: Mapping[str, Any]) -> None:
+        """
+        Validates input configuration
+        :param config: connector configuration
+        :return:
+        """
+        custom_log_reports = config.get("custom_log_reports", [])
+        if not custom_log_reports:
+            return
+
+        if len(set(custom["name"] for custom in custom_log_reports)) != len(custom_log_reports):
+            raise ValueError("Custom log report names must be unique.")
+
     def check_connection(
         self, logger: logging.Logger, config: Mapping[str, Any]
     ) -> Tuple[bool, Any]:
@@ -50,6 +64,8 @@ class SourceCloudwatchLogs(AbstractSource):
         :return:
         """
         try:
+            self._check_config(config)
+
             session = self._assume_role_session(config)
             client = session.client("logs")
             if config.get("log_group_prefix"):
