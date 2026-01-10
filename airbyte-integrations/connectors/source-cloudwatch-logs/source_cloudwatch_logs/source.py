@@ -85,9 +85,15 @@ class SourceCloudwatchLogs(AbstractSource):
         session = self._assume_role_session(config)
         region = config["region_name"]
         log_groups = self._get_log_group_names(config, session)
+        start_date = config.get("start_date")
 
         streams: List = [
-            Logs(region_name=region, log_group_name=group, session=session)
+            Logs(
+                region_name=region,
+                log_group_name=group,
+                session=session,
+                start_date=start_date,
+            )
             for group in log_groups
         ] + [
             Logs(
@@ -97,6 +103,7 @@ class SourceCloudwatchLogs(AbstractSource):
                 log_group_name=custom["log_group_name"],
                 log_stream_names=custom.get("log_stream_names"),
                 filter_pattern=custom.get("filter_pattern"),
+                start_date=start_date,
             )
             for custom in config.get("custom_log_reports", [])
         ]

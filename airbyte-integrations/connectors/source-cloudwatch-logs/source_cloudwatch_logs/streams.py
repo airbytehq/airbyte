@@ -35,6 +35,7 @@ class Logs(Stream, IncrementalMixin):
         name: Optional[str] = None,
         log_stream_names: Optional[List[str]] = None,
         filter_pattern: Optional[str] = None,
+        start_date: Optional[str] = None,
     ) -> None:
         super().__init__()
         self.region_name = region_name
