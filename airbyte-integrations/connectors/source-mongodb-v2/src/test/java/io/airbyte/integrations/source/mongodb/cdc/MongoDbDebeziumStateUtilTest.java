@@ -164,13 +164,11 @@ class MongoDbDebeziumStateUtilTest {
     final MongoChangeStreamCursor<ChangeStreamDocument<BsonDocument>> mongoChangeStreamCursor =
         mock(MongoChangeStreamCursor.class);
     final MongoClient mongoClient = mock(MongoClient.class);
-    final MongoDatabase mongoDatabase = mock(MongoDatabase.class);
 
     when(mongoChangeStreamCursor.getResumeToken()).thenReturn(resumeToken);
     when(changeStreamIterable.cursor()).thenReturn(mongoChangeStreamCursor);
     when(changeStreamIterable.resumeAfter(resumeToken)).thenReturn(changeStreamIterable);
-    when(mongoClient.getDatabase(DATABASE)).thenReturn(mongoDatabase);
-    when(mongoDatabase.watch(SINGLE_DB_PIPELINE, BsonDocument.class)).thenReturn(changeStreamIterable);
+    when(mongoClient.watch(BsonDocument.class)).thenReturn(changeStreamIterable);
     assertTrue(
         mongoDbDebeziumStateUtil.isValidResumeToken(resumeToken, mongoClient, List.of(DATABASE), List.of(SINGLE_DB_CONFIGURED_CATALOG.getStreams())));
   }
@@ -183,12 +181,11 @@ class MongoDbDebeziumStateUtilTest {
     final MongoChangeStreamCursor<ChangeStreamDocument<BsonDocument>> mongoChangeStreamCursor =
         mock(MongoChangeStreamCursor.class);
     final MongoClient mongoClient = mock(MongoClient.class);
-    final MongoDatabase mongoDatabase = mock(MongoDatabase.class);
 
     when(mongoChangeStreamCursor.getResumeToken()).thenReturn(resumeToken);
     when(changeStreamIterable.cursor()).thenReturn(mongoChangeStreamCursor);
     when(changeStreamIterable.resumeAfter(resumeToken)).thenReturn(changeStreamIterable);
-    when(mongoClient.watch(MULTIPLE_DB_PIPELINE, BsonDocument.class)).thenReturn(changeStreamIterable);
+    when(mongoClient.watch(BsonDocument.class)).thenReturn(changeStreamIterable);
     assertTrue(mongoDbDebeziumStateUtil.isValidResumeToken(resumeToken, mongoClient, List.of(DATABASE, DATABASE_1),
         List.of(database1Streams, database2Streams)));
   }
@@ -202,13 +199,11 @@ class MongoDbDebeziumStateUtilTest {
         mock(MongoChangeStreamCursor.class);
 
     final MongoClient mongoClient = mock(MongoClient.class);
-    final MongoDatabase mongoDatabase = mock(MongoDatabase.class);
 
     when(mongoChangeStreamCursor.getResumeToken()).thenReturn(resumeToken);
     when(changeStreamIterable.cursor()).thenThrow(new MongoCommandException(new BsonDocument(), new ServerAddress()));
     when(changeStreamIterable.resumeAfter(resumeToken)).thenReturn(changeStreamIterable);
-    when(mongoClient.getDatabase(DATABASE)).thenReturn(mongoDatabase);
-    when(mongoDatabase.watch(SINGLE_DB_PIPELINE, BsonDocument.class)).thenReturn(changeStreamIterable);
+    when(mongoClient.watch(BsonDocument.class)).thenReturn(changeStreamIterable);
     assertFalse(
         mongoDbDebeziumStateUtil.isValidResumeToken(resumeToken, mongoClient, List.of(DATABASE), List.of(SINGLE_DB_CONFIGURED_CATALOG.getStreams())));
   }
@@ -222,15 +217,40 @@ class MongoDbDebeziumStateUtilTest {
         mock(MongoChangeStreamCursor.class);
 
     final MongoClient mongoClient = mock(MongoClient.class);
-    final MongoDatabase mongoDatabase = mock(MongoDatabase.class);
 
     when(mongoChangeStreamCursor.getResumeToken()).thenReturn(resumeToken);
     when(changeStreamIterable.cursor()).thenThrow(new MongoCommandException(new BsonDocument(), new ServerAddress()));
     when(changeStreamIterable.resumeAfter(resumeToken)).thenReturn(changeStreamIterable);
-    when(mongoClient.watch(MULTIPLE_DB_PIPELINE, BsonDocument.class)).thenReturn(changeStreamIterable);
-    when(mongoClient.watch(MULTIPLE_DB_PIPELINE, BsonDocument.class)).thenReturn(changeStreamIterable);
+    when(mongoClient.watch(BsonDocument.class)).thenReturn(changeStreamIterable);
     assertFalse(mongoDbDebeziumStateUtil.isValidResumeToken(resumeToken, mongoClient, List.of(DATABASE, DATABASE_1),
         List.of(database1Streams, database2Streams)));
+  }
+
+  @Test
+  void testIsResumeTokenValidWithFallbackToFilteredValidation() {
+    final BsonDocument resumeToken = ResumeTokens.fromData(RESUME_TOKEN);
+
+    final ChangeStreamIterable<BsonDocument> clusterChangeStreamIterable = mock(ChangeStreamIterable.class);
+    final ChangeStreamIterable<BsonDocument> filteredChangeStreamIterable = mock(ChangeStreamIterable.class);
+    final MongoChangeStreamCursor<ChangeStreamDocument<BsonDocument>> mongoChangeStreamCursor =
+        mock(MongoChangeStreamCursor.class);
+
+    final MongoClient mongoClient = mock(MongoClient.class);
+    final MongoDatabase mongoDatabase = mock(MongoDatabase.class);
+
+    final BsonDocument errorResponse = BsonDocument.parse("{ok: 0, errmsg: 'not authorized', code: 13}");
+    when(clusterChangeStreamIterable.resumeAfter(resumeToken)).thenReturn(clusterChangeStreamIterable);
+    when(clusterChangeStreamIterable.cursor()).thenThrow(new MongoCommandException(errorResponse, new ServerAddress()));
+    when(mongoClient.watch(BsonDocument.class)).thenReturn(clusterChangeStreamIterable);
+
+    when(mongoChangeStreamCursor.getResumeToken()).thenReturn(resumeToken);
+    when(filteredChangeStreamIterable.cursor()).thenReturn(mongoChangeStreamCursor);
+    when(filteredChangeStreamIterable.resumeAfter(resumeToken)).thenReturn(filteredChangeStreamIterable);
+    when(mongoClient.getDatabase(DATABASE)).thenReturn(mongoDatabase);
+    when(mongoDatabase.watch(SINGLE_DB_PIPELINE, BsonDocument.class)).thenReturn(filteredChangeStreamIterable);
+
+    assertTrue(
+        mongoDbDebeziumStateUtil.isValidResumeToken(resumeToken, mongoClient, List.of(DATABASE), List.of(SINGLE_DB_CONFIGURED_CATALOG.getStreams())));
   }
 
 }
