@@ -1,0 +1,21 @@
+[project]
+name = "poetry add airbyte-cdk"
+version = "0.1.0"
+description = "Source connector for AWS Cloudwatch logs"
+authors = [
+    {name = "marie"}
+]
+readme = "README.md"
+requires-python = ">=3.12"
+dependencies = [
+]
+
+[dependency-groups]
+dev = [
+    "boto3 (>=1.42.25,<2.0.0)"
+]
+
+
+[build-system]
+requires = ["poetry-core>=2.0.0,<3.0.0"]
+build-backend = "poetry.core.masonry.api"
