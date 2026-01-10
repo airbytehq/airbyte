@@ -40,7 +40,7 @@ For managed AWS services like RDS or Aurora, additional configuration is require
 
 ### Supported regions
 
-Contact Airbyte to confirm which regions are currently supported for PrivateLink connections.
+<!-- Contact Airbyte to confirm which regions are currently supported for PrivateLink connections. -->
 
 ## Prerequisites
 
