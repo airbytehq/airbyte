@@ -139,8 +139,16 @@ To perform incremental syncs, Airbyte syncs cloudwatch logs from oldest to newes
 
 ## Cloudwatch Logs Provider Settings
 
+- **AWS Region**: The AWS region where your Cloudwatch Logs are hosted (e.g., `us-east-1`).
+- **AWS Role ARN**: The Amazon Resource Name (ARN) of the IAM Role to assume for accessing Cloudwatch Logs. This is an alternative to using AWS Access Key ID and Secret Access Key.
 - **AWS Access Key ID**: One half of the [required credentials](https://docs.aws.amazon.com/general/latest/gr/aws-sec-cred-types.html#access-keys-and-secret-access-keys) for accessing a private bucket.
 - **AWS Secret Access Key**: The other half of the [required credentials](https://docs.aws.amazon.com/general/latest/gr/aws-sec-cred-types.html#access-keys-and-secret-access-keys) for accessing a private bucket.
+- **Log Group Prefix**: An optional parameter to filter log groups by prefix. Only log groups with names that start with the specified prefix will be replicated."
+- **Session Duration**: An optional parameter that specifies the duration, in seconds, of the role session when assuming an IAM Role. The default value is 3600 seconds (1 hour). The minimum value is 900 seconds (15 minutes), and the maximum value is 43200 seconds (12 hours).
+- **Custom Log Reports**: An optional list of custom log reports to include. Each entry:
+  - **Log Group Name**: The name of the Cloudwatch Log Group to include.
+  - **Log Stream Names**: An optional list of specific Log Stream names within the Log Group to include. If left empty, all Log Streams within the specified Log Group will be included.
+  - **Filter Pattern**: An optional filter pattern to apply when retrieving log events from the specified Log Group. This allows for more granular control over which log events are replicated based on specific criteria.
 - **Start Date**: An optional parameter that marks a starting date and time in UTC for data replication. Use the provided datepicker (recommended) or enter the desired date programmatically in the format `YYYY-MM-DDTHH:mm:ssZ`. Leaving this field blank will replicate logs from the earliest available log event.
 
 ## Changelog
