@@ -93,7 +93,7 @@ Choose one of the following authentication methods:
 
 IAM Role (Recommended)
 
-1. Create an IAM role with a trust relationship to your EKS cluster or service account 
+1. Create an IAM role with a trust relationship to your EKS cluster or service account
     - This requires additional coordination with Airbyte and will enable the use of IAM authentication for some AWS-hosted sources
 2. Attach the `AirbyteSecretsManagerPolicy` (created in Step 1) to this role
 3. Note the Role ARN (e.g., `arn:aws:iam::123456789012:role/AirbyteSecretsRole`)
