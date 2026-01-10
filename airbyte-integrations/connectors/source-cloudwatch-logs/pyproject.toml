@@ -21,6 +21,7 @@ include = "source_cloudwatch_logs"
 [tool.poetry.dependencies]
 python = "^3.12,<3.14"
 boto3 = "^1.42.25"
+airbyte-cdk ="^6.58.1"
 
 [tool.poetry.scripts]
 source-cloudwatch-logs = "source_cloudwatch_logs.run:run"
