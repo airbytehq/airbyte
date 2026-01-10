@@ -88,4 +88,14 @@ Share your endpoint service name with Airbyte. Airbyte will create a VPC endpoin
 
 ## Using PrivateLink with Managed Services
 
+Managed AWS services like Amazon RDS and Aurora don't natively support VPC endpoint services. To use PrivateLink with these services, you need to set up additional infrastructure to expose them via a Network Load Balancer.
+
+AWS provides a guide for this configuration: [Access Amazon RDS across VPCs using AWS PrivateLink and Network Load Balancer](https://aws.amazon.com/blogs/database/access-amazon-rds-across-vpcs-using-aws-privatelink-and-network-load-balancer/).
+
+The general approach involves creating an NLB that targets your RDS or Aurora endpoint, then creating a VPC endpoint service that points to that NLB. Once configured, you can follow the standard PrivateLink setup steps described above.
+
 ## IP Allowlisting (Optional)
+
+In most cases, PrivateLink eliminates the need for IP allowlisting since traffic flows through private connections. However, if you have a connection where one side uses PrivateLink and the other side requires IP allowlisting (for example, a public source connecting to a PrivateLink-enabled destination), you may need to allowlist Airbyte's IP addresses for the non-PrivateLink endpoint.
+
+Contact Airbyte to obtain the current IP addresses for your region.
