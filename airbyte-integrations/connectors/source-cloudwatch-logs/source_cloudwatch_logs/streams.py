@@ -11,6 +11,7 @@ import datetime as dt
 import boto3
 import logging
 from functools import lru_cache
+from dateutil import parser
 
 from airbyte_cdk.sources.streams import Stream, IncrementalMixin
 from airbyte_cdk.sources.streams.core import StreamData
@@ -40,6 +41,7 @@ class Logs(Stream, IncrementalMixin):
         super().__init__()
         self.region_name = region_name
         self.log_group_name = log_group_name
+        self.start_date = int(parser.parse(start_date).timestamp() * 1000) if start_date else None
         self.client = session.client("logs")
         self._name = name
         self.kwargs: Dict[str, Any] = {}
@@ -71,8 +73,10 @@ class Logs(Stream, IncrementalMixin):
         last_state = stream_state.get(self.cursor_field)
         if last_state:
             start_timestamp = last_state
+        elif self.start_date:
+            start_timestamp = self.start_date
         else:
-            start_timestamp = self.get_start_timestamp()
+            start_timestamp = self._get_start_timestamp()
 
         if not start_timestamp:
             return []
@@ -90,7 +94,7 @@ class Logs(Stream, IncrementalMixin):
             for ts in range(start_timestamp, current_time + 1, one_day_ms)
         ]
 
-    def get_start_timestamp(self) -> Optional[int]:
+    def _get_start_timestamp(self) -> Optional[int]:
         response = self.client.filter_log_events(
             logGroupName=self.log_group_name,
             startTime=0,
