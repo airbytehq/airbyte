@@ -137,7 +137,7 @@ There is no predefined streams. The streams are based on the accessible Cloudwat
 
 To perform incremental syncs, Airbyte syncs cloudwatch logs from oldest to newest based on the timestamp of the log events. The state is stored as the timestamp of the latest log event that has been synced for each log group.
 
-## Cloudwatch Logs Provider Settings
+## Cloudwatch Logs Settings
 
 - **AWS Region**: The AWS region where your Cloudwatch Logs are hosted (e.g., `us-east-1`).
 - **AWS Role ARN**: The Amazon Resource Name (ARN) of the IAM Role to assume for accessing Cloudwatch Logs. This is an alternative to using AWS Access Key ID and Secret Access Key.
