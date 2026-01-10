@@ -1,6 +1,6 @@
 from __future__ import annotations
 
-from source_clouwatch_logs.source import SourceCloudwatchLogs
+from source_cloudwatch_logs.source import SourceCloudwatchLogs
 
 
 def run() -> None:
