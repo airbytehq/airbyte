@@ -64,11 +64,27 @@ Before setting up PrivateLink, ensure you have the following:
 
 ### Step 1: Contact Airbyte
 
+Before configuring any infrastructure, contact Airbyte to discuss your PrivateLink requirements. Airbyte will confirm region availability and provide you with the AWS account ID you'll need to grant access to your endpoint service.
+
 ### Step 2: Create a VPC Endpoint Service
+
+Create a VPC endpoint service in your AWS account that exposes your data source or destination:
+
+1. If your service doesn't already have a Network Load Balancer, create one that targets your service. See [Create a Network Load Balancer](https://docs.aws.amazon.com/elasticloadbalancing/latest/network/create-network-load-balancer.html) in the AWS documentation.
+
+2. Create a VPC endpoint service configuration that points to your Network Load Balancer. See [Create an endpoint service](https://docs.aws.amazon.com/vpc/latest/privatelink/create-endpoint-service.html) in the AWS documentation.
+
+3. Note your endpoint service name—it follows the format `com.amazonaws.vpce.{region}.vpce-svc-{id}`. You'll provide this to Airbyte in Step 4.
 
 ### Step 3: Configure permissions for Airbyte
 
+Add Airbyte's AWS account as an allowed principal on your endpoint service. This allows Airbyte to create a VPC endpoint that connects to your service.
+
+See [Manage permissions](https://docs.aws.amazon.com/vpc/latest/privatelink/configure-endpoint-service.html#add-remove-permissions) in the AWS documentation for instructions on adding principals to your endpoint service.
+
 ### Step 4: Provide your endpoint service name to Airbyte
+
+Share your endpoint service name with Airbyte. Airbyte will create a VPC endpoint on their side and complete the connection setup. Once configured, your PrivateLink connection will be ready to use with your Airbyte connections.
 
 ## Using PrivateLink with Managed Services
 
