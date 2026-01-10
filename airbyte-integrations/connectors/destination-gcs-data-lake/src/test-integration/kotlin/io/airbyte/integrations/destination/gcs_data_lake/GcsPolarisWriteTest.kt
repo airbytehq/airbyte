@@ -77,7 +77,8 @@ class GcsPolarisWriteTest :
                 generationId = 0,
                 minimumGenerationId = 0,
                 syncId,
-                namespaceMapper = NamespaceMapper()
+                namespaceMapper = NamespaceMapper(),
+                tableSchema = emptyTableSchema
             )
         val firstStream =
             makeStream(
