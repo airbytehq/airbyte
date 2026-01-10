@@ -186,7 +186,7 @@ The final table contains these fields, in addition to the columns declared in yo
 
 - `_AIRBYTE_RAW_ID`
 - `_AIRBYTE_GENERATION_ID`
-- `_AIRBYTE_EXCTRACTED_AT`
+- `_AIRBYTE_EXTRACTED_AT`
 - `_AIRBYTE_LOADED_AT`
 - `_AIRBYTE_META`
 
@@ -260,6 +260,9 @@ desired namespace.
 
 | Version         | Date       | Pull Request                                                 | Subject                                                                                                                                                                                |
 |:----------------|:-----------|:-------------------------------------------------------------|:---------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------|
+| 4.0.34 | 2026-01-09 | [71273](https://github.com/airbytehq/airbyte/pull/71273) | Fix check operation in raw tables only mode.                                                                                                                                           |
+| 4.0.33 | 2026-01-09 | [71248](https://github.com/airbytehq/airbyte/pull/71248) | Upgrade to CDK 0.1.99 — limit final aggregate parallelism.                                                                                                                             |
+| 4.0.32 | 2026-01-08 | [71233](https://github.com/airbytehq/airbyte/pull/71233) | Promoting release candidate 4.0.32-rc.2 to a main version. |
 | 4.0.32-rc.2     | 2025-12-19 | [71007](https://github.com/airbytehq/airbyte/pull/71007)     | Fix Raw Mode regression: Change _airbyte_data back to SnowflakeType.VARIANT                                                                                                            |
 | 4.0.32-rc.1     | 2025-12-18 | [70903](https://github.com/airbytehq/airbyte/pull/70903)     | Upgrade to CDK 0.1.91; internal refactoring                                                                                                                                            |
 | 4.0.31          | 2025-12-08 | [70442](https://github.com/airbytehq/airbyte/pull/70442)     | Write VARIANT values correctly when underlying Airbyte type is a `union`                                                                                                               |

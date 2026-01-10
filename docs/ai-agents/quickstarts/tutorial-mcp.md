@@ -84,13 +84,13 @@ Use your package manager to run the Connector MCP.
 1. If your `configured_connectors.yaml` and `.env` files are not in the repository root directory, specify their location with arguments before running the MCP.
 
     ```bash
-    python -m connector_mcp path/to/configured_connectors.yaml path/to/.env
+    python -m airbyte_agent_mcp path/to/configured_connectors.yaml path/to/.env
     ```
 
 2. Run the MCP.
 
     ```bash
-    uv run connector_mcp
+    uv run airbyte_agent_mcp
     ```
 
 ## Part 4: Use the Connector MCP with your agent
@@ -101,22 +101,22 @@ Use your package manager to run the Connector MCP.
 1. Add the MCP through your command line tool.
 
     ```bash
-    claude mcp add --transport stdio connector-mcp -- \
-    uv --directory /path/to/connector-mcp run connector_mcp
+    claude mcp add --transport stdio airbyte-agent-mcp -- \
+    uv --directory /path/to/airbyte-agent-mcp run airbyte_agent_mcp
     ```
 
     Alternatively, open `.claude.json` and add the following configuration. Take extra care to get the path to the connector MCP correct. Claude expects the path from the root of your machine, not a relative path.
 
     ```json title=".claude.json"
     "mcpServers": {
-        "connector-mcp": {
+        "airbyte-agent-mcp": {
             "type": "stdio",
             "command": "uv",
             "args": [
                 "--directory",
-                "/path/to/connector-mcp",
+                "/path/to/airbyte-agent-mcp",
                 "run",
-                "connector_mcp"
+                "airbyte_agent_mcp"
                 ],
             "env": {}
         }
@@ -138,12 +138,12 @@ Use your package manager to run the Connector MCP.
     You should see something like this.
 
     ```bash
-    Connector-mcp MCP Server
+    airbyte-agent-mcp MCP Server
 
     Status: ✔ connected
     Command: uv
-    Args: --directory /path/to/connector-mcp run connector_mcp
-    Config location: /path/to/.claude.json [project: /path/to/connector-mcp]
+    Args: --directory /path/to/airbyte-agent-mcp run airbyte_agent_mcp
+    Config location: /path/to/.claude.json [project: /path/to/airbyte-agent-mcp]
     Capabilities: tools
     Tools: 3 tools
     
@@ -163,7 +163,7 @@ The key configuration elements are:
 
 - **Transport**: stdio
 - **Command**: `uv`
-- **Arguments**: `--directory /path/to/connector-mcp run connector_mcp`
+- **Arguments**: `--directory /path/to/airbyte-agent-mcp run airbyte_agent_mcp`
 
 </TabItem>
 </Tabs>
@@ -228,18 +228,18 @@ In this tutorial, you learned how to:
 
     ```yaml title="configured_connectors.yaml"
     connectors:
-    - id: stripe
+      - id: stripe
         type: local
         connector_name: stripe
         description: "Stripe connector from Airbyte registry"
         secrets:
-        api_key: STRIPE_API_KEY
-    - id: github
+          api_key: STRIPE_API_KEY
+      - id: github
         type: local
         connector_name: github
         description: "GitHub connector from Airbyte registry"
         secrets:
-        token: GITHUB_TOKEN
+          token: GITHUB_TOKEN
     ```
 
 - If you need to run more complex processing and trigger effects based on your data, try the [Python](tutorial-python) tutorial to start using agent connectors with the Python SDK.
