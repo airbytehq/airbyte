@@ -4,7 +4,6 @@
 
 package io.airbyte.cdk.load.test.util
 
-import io.airbyte.cdk.command.ConfigurationSpecification
 import io.airbyte.cdk.load.component.TableSchema
 
 /**
@@ -26,11 +25,7 @@ interface SchemaDumper {
      * But you can add other stuff into the additionalInfo field as needed (clickhouse table engine,
      * bigquery clustering/partitioning keys, postgres indexes, etc.).
      */
-    suspend fun discoverSchema(
-        spec: ConfigurationSpecification,
-        namespace: String?,
-        name: String,
-    ): FullTableSchema
+    suspend fun discoverSchema(namespace: String?, name: String): FullTableSchema
 }
 
 /**
