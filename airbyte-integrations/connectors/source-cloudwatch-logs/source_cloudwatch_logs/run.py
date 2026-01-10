@@ -1,7 +1,8 @@
-from __future__ import annotations
-
+import sys
 from source_cloudwatch_logs.source import SourceCloudwatchLogs
+from airbyte_cdk.entrypoint import launch
 
 
 def run() -> None:
-    SourceCloudwatchLogs.launch()
+    source = SourceCloudwatchLogs()
+    launch(source, sys.argv[1:])
