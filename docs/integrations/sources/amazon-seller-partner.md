@@ -154,18 +154,15 @@ The Amazon Seller Partner source connector supports the following [sync modes](h
 - [Vendor Forecasting Report](https://developer-docs.amazon.com/sp-api/docs/report-type-values-analytics#vendor-retail-analytics-reports) \(full-refresh\)
 - [Vendor Orders](https://developer-docs.amazon.com/sp-api/docs/vendor-orders-api-v1-reference#get-vendorordersv1purchaseorders) \(incremental\)
 - [Vendor Order Status](https://developer-docs.amazon.com/sp-api/docs/vendor-orders-api-v1-reference#get-vendorordersv1purchaseOrdersStatus) \(incremental\)
+- [Amazon Search Terms Report](https://developer-docs.amazon.com/sp-api/docs/report-type-values-analytics#brand-analytics-reports) \(full-refresh\)
+- [Market Basket Analysis Report](https://developer-docs.amazon.com/sp-api/docs/report-type-values-analytics#brand-analytics-reports) \(full-refresh\)
+- [Repeat Purchase Report](https://developer-docs.amazon.com/sp-api/docs/report-type-values-analytics#brand-analytics-reports) \(full-refresh\)
+- [Alternate Purchase Report](https://developer-docs.amazon.com/sp-api/docs/report-type-values-analytics#brand-analytics-reports) \(full-refresh\)
+- [Item Comparison Report](https://developer-docs.amazon.com/sp-api/docs/report-type-values-analytics#brand-analytics-reports) \(full-refresh\)
+- [Sales and Traffic Business Report](https://developer-docs.amazon.com/sp-api/docs/report-type-values-analytics#seller-retail-analytics-reports) \(incremental\)
+- [Vendor Sales Report](https://developer-docs.amazon.com/sp-api/docs/report-type-values-analytics#vendor-retail-analytics-reports) \(incremental\)
+- [Vendor Inventory Report](https://developer-docs.amazon.com/sp-api/docs/report-type-values-analytics#vendor-retail-analytics-reports) \(full-refresh\)
 - [XML Orders By Order Date Report](https://developer-docs.amazon.com/sp-api/docs/report-type-values-order#order-tracking-reports) \(incremental\)
-<!-- env:oss -->
-- [Amazon Search Terms Report](https://developer-docs.amazon.com/sp-api/docs/report-type-values-analytics#brand-analytics-reports) \(only available in OSS, incremental\)
-- [Market Basket Analysis Report](https://developer-docs.amazon.com/sp-api/docs/report-type-values-analytics#brand-analytics-reports) \(only available in OSS, incremental\)
-- [Net Pure Product Margin Report](https://developer-docs.amazon.com/sp-api/docs/report-type-values-analytics#vendor-retail-analytics-reports) \(only available in OSS, incremental\)
-- [Rapid Retail Analytics Inventory Report](https://developer-docs.amazon.com/sp-api/docs/report-type-values-analytics#vendor-retail-analytics-reports) \(only available in OSS, incremental\)
-- [Repeat Purchase](https://developer-docs.amazon.com/sp-api/docs/report-type-values-analytics#brand-analytics-reports) \(only available in OSS, incremental\)
-- [Sales and Traffic Business Report](https://developer-docs.amazon.com/sp-api/docs/report-type-values-analytics#seller-retail-analytics-reports) \(only available in OSS, incremental\)
-- [Vendor Inventory Report](https://developer-docs.amazon.com/sp-api/docs/report-type-values-analytics#vendor-retail-analytics-reports) \(only available in OSS, incremental\)
-- [Vendor Sales Report](https://developer-docs.amazon.com/sp-api/docs/report-type-values-analytics#vendor-retail-analytics-reports) \(only available in OSS, incremental\)
-- [Vendor Traffic Report](https://developer-docs.amazon.com/sp-api/docs/report-type-values-analytics#vendor-retail-analytics-reports) \(only available in OSS, incremental\)
-<!-- /env:oss -->
 
 <HideInUI>
 
@@ -264,6 +261,7 @@ This configuration will sync partial data, until the source gets rate limited. O
 
 | Version    | Date       | Pull Request                                              | Subject                                                                                                                                                                             |
 |:-----------|:-----------|:----------------------------------------------------------|:------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------|
+| 5.1.0 | 2025-12-30 | [71055](https://github.com/airbytehq/airbyte/pull/71055) | Re-add brand analytics reports to Cloud: GET_BRAND_ANALYTICS_MARKET_BASKET_REPORT, GET_BRAND_ANALYTICS_SEARCH_TERMS_REPORT, GET_BRAND_ANALYTICS_REPEAT_PURCHASE_REPORT, GET_BRAND_ANALYTICS_ALTERNATE_PURCHASE_REPORT, GET_BRAND_ANALYTICS_ITEM_COMPARISON_REPORT, GET_SALES_AND_TRAFFIC_REPORT, GET_VENDOR_SALES_REPORT, GET_VENDOR_INVENTORY_REPORT |
 | 5.0.1 | 2025-12-11 | [70200](https://github.com/airbytehq/airbyte/pull/70200) | Fix financial events pagination causing 400 InvalidInput errors under rate limiting when syncing `ListFinancialEvents`, and align `ListFinancialEventGroups` pagination behavior |
 | 5.0.0 | 2025-12-03 | [69805](https://github.com/airbytehq/airbyte/pull/69805) | Remove deprecated FBA Subscribe and Save report types (GET_FBA_SNS_FORECAST_DATA and GET_FBA_SNS_PERFORMANCE_DATA)                                                                  |
 | 4.9.1 | 2025-11-25 | [69935](https://github.com/airbytehq/airbyte/pull/69935) | Update dependencies |
