@@ -36,7 +36,7 @@ streams:
         pagination_strategy:
           type: CursorPagination
           cursor_value: "{{ response[\"data\"][\"page_token\"] }}"
-          page_size: null
+          stop_condition: "{{ response['data']['has_more'] is false }}"
       requester:
         type: HttpRequester
         url: >-
@@ -125,30 +125,46 @@ spec:
     properties:
       app_id:
         type: string
+        description: >-
+          The unique identifier for your application. Found in the Feishu/Lark
+          Developer Console under "Credentials & Basic Info".
         order: 0
         title: App Id
         airbyte_secret: true
       table_id:
         type: string
+        description: >-
+          The unique identifier of the table. Found in the URL query parameter
+          table={table_id}.
         order: 4
         title: Table Id
       app_token:
         type: string
+        description: >-
+          The unique identifier of the Bitable (Base). Found in the URL:
+          /base/{app_token}.
         order: 2
         title: App Token
         airbyte_secret: true
       lark_host:
         type: string
+        description: >-
+          API Base URL. Use https://open.feishu.cn for China or
+          https://open.larksuite.com for global.
         order: 3
         title: Lark Host
         default: https://open.feishu.cn
       page_size:
         type: number
+        description: "Number of records per request. Max: 500. Default: 100."
         order: 5
         title: Page Size
-        default: 500
+        default: 100
       app_secret:
         type: string
+        description: >-
+          The secret key used to verify your application's identity. Found
+          alongside the App ID.
         order: 1
         title: App Secret
         airbyte_secret: true
