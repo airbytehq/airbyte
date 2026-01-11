@@ -9,6 +9,7 @@ import static io.airbyte.cdk.integrations.source.relationaldb.RelationalDbQueryU
 import static io.airbyte.cdk.integrations.source.relationaldb.RelationalDbQueryUtils.queryTable;
 
 import com.fasterxml.jackson.databind.JsonNode;
+import com.google.cloud.bigquery.DatasetId;
 import com.google.cloud.bigquery.Field;
 import com.google.cloud.bigquery.QueryParameterValue;
 import com.google.cloud.bigquery.StandardSQLTypeName;
@@ -21,7 +22,6 @@ import io.airbyte.cdk.integrations.base.IntegrationRunner;
 import io.airbyte.cdk.integrations.base.Source;
 import io.airbyte.cdk.integrations.source.relationaldb.AbstractDbSource;
 import io.airbyte.cdk.integrations.source.relationaldb.CursorInfo;
-import io.airbyte.cdk.integrations.source.relationaldb.RelationalDbQueryUtils;
 import io.airbyte.cdk.integrations.source.relationaldb.TableInfo;
 import io.airbyte.commons.functional.CheckedConsumer;
 import io.airbyte.commons.json.Jsons;
@@ -49,9 +49,11 @@ public class BigQuerySource extends AbstractDbSource<StandardSQLTypeName, BigQue
   private static final Logger LOGGER = LoggerFactory.getLogger(BigQuerySource.class);
   private static final String QUOTE = "`";
 
-  public static final String CONFIG_DATASET_ID = "dataset_id";
-  public static final String CONFIG_PROJECT_ID = "project_id";
   public static final String CONFIG_CREDS = "credentials_json";
+  public static final String CONFIG_PROJECT_ID = "project_id";
+  public static final String CONFIG_PROJECT_IDS = "project_ids";
+  public static final String CONFIG_DATASET_ID = "dataset_id";
+  public static final String CONFIG_DATASET_IDS = "dataset_ids";
 
   private JsonNode dbConfig;
   private final BigQuerySourceOperations sourceOperations = new BigQuerySourceOperations();
@@ -60,13 +62,31 @@ public class BigQuerySource extends AbstractDbSource<StandardSQLTypeName, BigQue
     super(null);
   }
 
+  private boolean isMultipleProjectMode(final JsonNode config) {
+    return config.hasNonNull(CONFIG_PROJECT_IDS) && config.get(CONFIG_PROJECT_IDS).isArray()
+        && config.get(CONFIG_PROJECT_IDS).size() > 1;
+  }
+
   @Override
   public JsonNode toDatabaseConfig(final JsonNode config) {
-    final var conf = ImmutableMap.builder()
-        .put(CONFIG_PROJECT_ID, config.get(CONFIG_PROJECT_ID).asText())
+
+    final var conf = ImmutableMap.<String, Object>builder()
         .put(CONFIG_CREDS, config.get(CONFIG_CREDS).asText());
-    if (config.hasNonNull(CONFIG_DATASET_ID)) {
-      conf.put(CONFIG_DATASET_ID, config.get(CONFIG_DATASET_ID).asText());
+
+    if (isMultipleProjectMode(config)) {
+      // Multi-project mode: use first project as billing project in CONFIG_PROJECT_ID
+      conf.put(CONFIG_PROJECT_IDS, config.get(CONFIG_PROJECT_IDS));
+      conf.put(CONFIG_PROJECT_ID, config.get(CONFIG_PROJECT_IDS).get(0).asText());
+
+      if (config.hasNonNull(CONFIG_DATASET_IDS)) {
+        conf.put(CONFIG_DATASET_IDS, config.get(CONFIG_DATASET_IDS));
+      }
+    } else {
+      conf.put(CONFIG_PROJECT_ID, config.get(CONFIG_PROJECT_ID).asText());
+
+      if (config.hasNonNull(CONFIG_DATASET_ID)) {
+        conf.put(CONFIG_DATASET_ID, config.get(CONFIG_DATASET_ID).asText());
+      }
     }
     return Jsons.jsonNode(conf.build());
   }
@@ -74,7 +94,17 @@ public class BigQuerySource extends AbstractDbSource<StandardSQLTypeName, BigQue
   @Override
   protected BigQueryDatabase createDatabase(final JsonNode sourceConfig) {
     dbConfig = Jsons.clone(sourceConfig);
-    final BigQueryDatabase database = new BigQueryDatabase(sourceConfig.get(CONFIG_PROJECT_ID).asText(), sourceConfig.get(CONFIG_CREDS).asText());
+    BigQueryDatabase database;
+
+    if (isMultipleProjectMode(sourceConfig)) {
+      LOGGER.info("Using multi-project mode for syncing.");
+      // In multi-project mode, the first project in project_ids is used as the billing project
+      // for all cross-project queries. In single-project mode, project_id is used directly.
+      database = new BigQueryDatabase(sourceConfig.get(CONFIG_PROJECT_IDS).get(0).asText(), sourceConfig.get(CONFIG_CREDS).asText());
+    } else {
+      LOGGER.info("Using single-project mode for syncing.");
+      database = new BigQueryDatabase(sourceConfig.get(CONFIG_PROJECT_ID).asText(), sourceConfig.get(CONFIG_CREDS).asText());
+    }
     database.setSourceConfig(sourceConfig);
     database.setDatabaseConfig(toDatabaseConfig(sourceConfig));
     return database;
@@ -120,12 +150,47 @@ public class BigQuerySource extends AbstractDbSource<StandardSQLTypeName, BigQue
 
   @Override
   protected List<TableInfo<CommonField<StandardSQLTypeName>>> discoverInternal(final BigQueryDatabase database, final String schema) {
-    final String projectId = dbConfig.get(CONFIG_PROJECT_ID).asText();
-    final List<Table> tables =
-        (isDatasetConfigured(database) ? database.getDatasetTables(getConfigDatasetId(database)) : database.getProjectTables(projectId));
+    final List<Table> tables = new ArrayList<>();
     final List<TableInfo<CommonField<StandardSQLTypeName>>> result = new ArrayList<>();
+
+    // Single project mode - uses project_id and dataset_id
+    if (!isMultipleProjectMode(dbConfig)) {
+      final String projectId = dbConfig.get(CONFIG_PROJECT_ID).asText();
+      tables.addAll(isDatasetConfigured(database) ? database.getDatasetTables(getConfigDatasetId(database)) : database.getProjectTables(projectId));
+    } else {
+      // Multiple project mode - converting the config project_ids and dataset_its to Array
+      final List<String> projectIds = getProjectIdsFromConfig(dbConfig);
+      final List<String> datasetIds = getDatasetIdsFromConfig(dbConfig);
+      for (String projectIdFromList : projectIds) {
+        if (datasetIds.isEmpty()) {
+          // No dataset filter - get all tables from all datasets in this project
+          tables.addAll(database.getProjectTables(projectIdFromList));
+        } else {
+          for (final String datasetId : datasetIds) {
+            try {
+              tables.addAll(getDatasetTablesFromProject(database, projectIdFromList, datasetId));
+            } catch (final Exception e) {
+              LOGGER.warn("Dataset '{}' not found in project '{}', skipping. Error: {}",
+                  datasetId, projectIdFromList, e.getMessage());
+            }
+          }
+        }
+      }
+    }
+
+    /*
+     * Build TableInfo objects from discovered BigQuery tables. Namespace format differs by mode: -
+     * Single-project mode: namespace = "dataset_id" (e.g., "my_dataset") - Multi-project mode:
+     * namespace = "project_id.dataset_id" (e.g., "my_project.my_dataset")
+     *
+     * Field type mapping: STRUCT fields with REPEATED mode are mapped to ARRAY type to correctly
+     * represent BigQuery's repeated struct pattern in the Airbyte schema.
+     */
     tables.stream().map(table -> TableInfo.<CommonField<StandardSQLTypeName>>builder()
-        .nameSpace(table.getTableId().getDataset())
+        .nameSpace(isMultipleProjectMode(dbConfig)
+            // in multiple project, we also need to include the projectId -> `projectID.datasetID`
+            ? table.getTableId().getProject() + "." + table.getTableId().getDataset()
+            : table.getTableId().getDataset())
         .name(table.getTableId().getTable())
         .fields(Objects.requireNonNull(table.getDefinition().getSchema()).getFields().stream()
             .map(f -> {
@@ -161,13 +226,23 @@ public class BigQuerySource extends AbstractDbSource<StandardSQLTypeName, BigQue
                                                                final String tableName,
                                                                final CursorInfo cursorInfo,
                                                                final StandardSQLTypeName cursorFieldType) {
-    return queryTableWithParams(database, String.format("SELECT %s FROM %s WHERE %s > ?",
-        RelationalDbQueryUtils.enquoteIdentifierList(columnNames, getQuoteString()),
-        getFullyQualifiedTableNameWithQuoting(schemaName, tableName, getQuoteString()),
-        cursorInfo.getCursorField()),
-        schemaName,
-        tableName,
-        sourceOperations.getQueryParameter(cursorFieldType, cursorInfo.getCursor()));
+    if (isMultipleProjectMode(dbConfig)) {
+      return queryTableWithParams(database, String.format("SELECT %s FROM %s WHERE %s > ?",
+          enquoteIdentifierList(columnNames, getQuoteString()),
+          getFullyQualifiedTableNameWithQuotingForMultipleProject(schemaName, tableName),
+          cursorInfo.getCursorField()),
+          schemaName,
+          tableName,
+          sourceOperations.getQueryParameter(cursorFieldType, cursorInfo.getCursor()));
+    } else {
+      return queryTableWithParams(database, String.format("SELECT %s FROM %s WHERE %s > ?",
+          enquoteIdentifierList(columnNames, getQuoteString()),
+          getFullyQualifiedTableNameWithQuoting(schemaName, tableName, getQuoteString()),
+          cursorInfo.getCursorField()),
+          schemaName,
+          tableName,
+          sourceOperations.getQueryParameter(cursorFieldType, cursorInfo.getCursor()));
+    }
   }
 
   @Override
@@ -178,10 +253,18 @@ public class BigQuerySource extends AbstractDbSource<StandardSQLTypeName, BigQue
                                                                   final SyncMode syncMode,
                                                                   final Optional<String> cursorField) {
     LOGGER.info("Queueing query for table: {}", tableName);
-    return queryTable(database, String.format("SELECT %s FROM %s",
-        enquoteIdentifierList(columnNames, getQuoteString()),
-        getFullyQualifiedTableNameWithQuoting(schemaName, tableName, getQuoteString())),
-        tableName, schemaName);
+    if (isMultipleProjectMode(dbConfig)) {
+      return queryTable(database, String.format("SELECT %s FROM %s",
+          enquoteIdentifierList(columnNames, getQuoteString()),
+          getFullyQualifiedTableNameWithQuotingForMultipleProject(schemaName, tableName)),
+          tableName, schemaName);
+
+    } else {
+      return queryTable(database, String.format("SELECT %s FROM %s",
+          enquoteIdentifierList(columnNames, getQuoteString()),
+          getFullyQualifiedTableNameWithQuoting(schemaName, tableName, getQuoteString())),
+          tableName, schemaName);
+    }
   }
 
   @Override
@@ -205,6 +288,59 @@ public class BigQuerySource extends AbstractDbSource<StandardSQLTypeName, BigQue
     }, airbyteStream);
   }
 
+  private List<String> getProjectIdsFromConfig(final JsonNode config) {
+    final List<String> projectIds = new ArrayList<>();
+    config.get(CONFIG_PROJECT_IDS).forEach(projectId -> projectIds.add(projectId.asText()));
+    return projectIds;
+  }
+
+  private List<String> getDatasetIdsFromConfig(final JsonNode config) {
+    // Empty dataset_ids - return empty list meaning "all datasets"
+    if (!config.hasNonNull(CONFIG_DATASET_IDS)
+        || !config.get(CONFIG_DATASET_IDS).isArray()
+        || config.get(CONFIG_DATASET_IDS).isEmpty()) {
+      return Collections.emptyList();
+    }
+    final List<String> datasetIds = new ArrayList<>();
+    config.get(CONFIG_DATASET_IDS).forEach(id -> datasetIds.add(id.asText()));
+    return datasetIds;
+  }
+
+  /**
+   * Builds fully qualified table name for multi-project mode. Format namespace (format:
+   * "project_id.dataset_id") to: `project`.`dataset`.`table`
+   */
+  private String getFullyQualifiedTableNameWithQuotingForMultipleProject(final String schemaName, final String tableName) {
+    final String[] parts = schemaName.split("\\.", 2);
+    final String projectId = parts[0];
+    final String datasetId = parts[1];
+    return String.format("`%s`.`%s`.`%s`", projectId, datasetId, tableName);
+  }
+
+  /**
+   * Returns tables from a specific dataset in a specific project. This is needed for multi-project
+   * support.
+   *
+   * @param database BigQueryDatabase instance
+   * @param projectId BigQuery project id
+   * @param datasetId BigQuery dataset id
+   * @return List of BigQuery tables
+   */
+  private List<Table> getDatasetTablesFromProject(final BigQueryDatabase database,
+                                                  final String projectId,
+                                                  final String datasetId) {
+    final List<Table> tableList = new ArrayList<>();
+    database.getBigQuery()
+        .listTables(DatasetId.of(projectId, datasetId))
+        .iterateAll()
+        .forEach(table -> tableList.add(database.getBigQuery().getTable(table.getTableId())));
+    return tableList;
+  }
+
+  /**
+   * Checks if a single dataset_id is configured (single-project mode only). Multi-project mode uses
+   * dataset_ids array instead.
+   */
   private boolean isDatasetConfigured(final SqlDatabase database) {
     final JsonNode config = database.getSourceConfig();
     return config.hasNonNull(CONFIG_DATASET_ID) ? !config.get(CONFIG_DATASET_ID).asText().isEmpty() : false;
