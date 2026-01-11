@@ -18,8 +18,8 @@ import boto3
 from airbyte_protocol_dataclasses.models.airbyte_protocol import SyncMode
 from dateutil import parser
 
+from airbyte_cdk.sources.streams import IncrementalMixin, Stream
 from airbyte_cdk.sources.streams.core import StreamData
-from airbyte_cdk.sources.streams import Stream, IncrementalMixin
 
 
 class Logs(Stream, IncrementalMixin):
@@ -157,9 +157,7 @@ class Logs(Stream, IncrementalMixin):
                 if self._cursor_value is None:
                     self._cursor_value = event[self.cursor_field]
                 else:
-                    self._cursor_value = max(
-                        event[self.cursor_field], self._cursor_value
-                    )
+                    self._cursor_value = max(event[self.cursor_field], self._cursor_value)
                 yield event
 
             next_token = response.get("nextToken")

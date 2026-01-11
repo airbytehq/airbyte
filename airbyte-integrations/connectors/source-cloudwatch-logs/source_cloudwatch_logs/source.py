@@ -4,11 +4,11 @@
 
 import logging
 from typing import Any, List, Mapping, Tuple
+
 import boto3
 
 from airbyte_cdk.sources import AbstractSource
 from airbyte_cdk.sources.streams import Stream
-
 from source_cloudwatch_logs.streams import Logs
 
 

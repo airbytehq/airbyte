@@ -4,8 +4,8 @@
 
 import datetime as dt
 from unittest.mock import MagicMock
-import pytest
 
+import pytest
 from source_cloudwatch_logs.streams import Logs
 
 
