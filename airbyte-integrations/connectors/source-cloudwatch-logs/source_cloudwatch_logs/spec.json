@@ -16,7 +16,7 @@
         "type": "string",
         "title": "AWS Role ARN",
         "description": "Optional. IAM Role ARN to assume for accessing CloudWatch logs.",
-        "default": "",
+        "default": null,
         "order": 1
       },
       "aws_access_key_id": {
@@ -24,14 +24,16 @@
         "description": "Optional. In order to access logs in Cloudwatch, this connector requires credentials with the proper permissions.",
         "airbyte_secret": true,
         "order": 2,
-        "type": "string"
+        "type": "string",
+        "default": null
       },
       "aws_secret_access_key": {
         "title": "AWS Secret Access Key",
         "description": "Optional. In order to access logs in Cloudwatch, this connector requires credentials with the proper permissions.",
         "airbyte_secret": true,
         "order": 3,
-        "type": "string"
+        "type": "string",
+        "default": null
       },
       "log_group_prefix": {
         "type": "string",
@@ -54,13 +56,15 @@
         "format": "date-time",
         "pattern": "^[0-9]{4}-[0-9]{2}-[0-9]{2}T[0-9]{2}:[0-9]{2}:[0-9]{2}Z$",
         "order": 6,
-        "type": "string"
+        "type": "string",
+        "default": null
       },
       "custom_log_reports": {
         "type": "array",
         "title": "Custom Log Reports",
         "description": "Optional. List of custom log reports to include",
         "order": 7,
+        "default": [],
         "items": {
           "type": "object",
           "properties": {
