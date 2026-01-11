@@ -5,7 +5,6 @@
 import sys
 
 from airbyte_cdk.entrypoint import launch
-
 from source_cloudwatch_logs.source import SourceCloudwatchLogs
 
 

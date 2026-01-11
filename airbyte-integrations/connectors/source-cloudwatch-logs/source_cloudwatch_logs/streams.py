@@ -14,6 +14,7 @@ from typing import (
     MutableMapping,
     Optional,
 )
+
 import boto3
 from airbyte_protocol_dataclasses.models.airbyte_protocol import SyncMode
 from dateutil import parser
