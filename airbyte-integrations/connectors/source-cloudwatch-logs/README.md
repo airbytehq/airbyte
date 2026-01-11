@@ -24,6 +24,11 @@ Create a file `secrets/config.json` conforming to the `source_cloudwatch_logs"/s
 Note that any directory named `secrets` is gitignored across the entire Airbyte repo, so there is no danger of accidentally checking in sensitive information.
 See `integration_tests/sample_config.json` for a sample config file.
 
+For iam role authentication to work in docker, generate `secrets/config_iam_role.json` using:
+```bash
+aws configure export-credentials > secrets/config_iam_role.json
+```
+
 ### Locally running the connector
 
 ```
