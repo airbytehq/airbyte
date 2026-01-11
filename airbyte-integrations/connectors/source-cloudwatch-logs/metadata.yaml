@@ -2,31 +2,33 @@ data:
   allowedHosts:
     hosts:
       - "*.amazonaws.com"
+  connectorBuildOptions:
+    baseImage: docker.io/airbyte/python-connector-base:4.1.0@sha256:ed84abaa9c21663afe5750a6a91792b4c728a6ca6eac34d057054844f33e3e1e
   connectorSubtype: api
   connectorType: source
   definitionId: f88d2297-b0c6-40a5-adc7-e7fd845b1cf6
   dockerImageTag: 0.1.0
   dockerRepository: airbyte/source-cloudwatch-logs
+  documentationUrl: https://docs.airbyte.com/integrations/sources/cloudwatch-logs
   githubIssueLabel: source-cloudwatch-logs
   icon: icon.png
   license: ELv2
-  name: CloudwatchLogs
+  maxSecondsBetweenMessages: 1
+  name: Cloudwatch Logs
   remoteRegistries:
     pypi:
       enabled: false
-  tags:
-    - language:python
-  registries:
+  registryOverrides:
     cloud:
       enabled: false
     oss:
       enabled: true
+  releaseStage: generally_available
   supportLevel: community
-  documentationUrl: https://docs.airbyte.com/integrations/sources/cloudwatch-logs
-  connectorBuildOptions:
-    baseImage: docker.io/airbyte/python-connector-base:4.1.0@sha256:ed84abaa9c21663afe5750a6a91792b4c728a6ca6eac34d057054844f33e3e1e
+  tags:
+    - language:python
+    - cdk:python-api-based
   connectorTestSuitesOptions:
     - suite: unitTests
     - suite: acceptanceTests
-  maxSecondsBetweenMessages: 1
 metadataSpecVersion: "1.0"
