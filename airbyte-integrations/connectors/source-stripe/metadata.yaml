@@ -2,6 +2,7 @@ data:
   ab_internal:
     ql: 400
     sl: 300
+    demo_test_field: true
   allowedHosts:
     hosts:
       - api.stripe.com
