@@ -5,7 +5,7 @@ data:
   connectorSubtype: api
   connectorType: source
   definitionId: f88d2297-b0c6-40a5-adc7-e7fd845b1cf6
-  dockerImageTag: 0.0.1
+  dockerImageTag: 0.1.0
   dockerRepository: airbyte/source-cloudwatch-logs
   githubIssueLabel: source-cloudwatch-logs
   icon: icon.png
