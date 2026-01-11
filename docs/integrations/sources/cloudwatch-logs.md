@@ -156,7 +156,8 @@ To perform incremental syncs, Airbyte syncs cloudwatch logs from oldest to newes
 <details>
   <summary>Expand to review</summary>
 
-| Version     | Date       | Pull Request                                                                                                    | Subject                                                                                                              |
-|:------------|:-----------|:----------------------------------------------------------------------------------------------------------------|:---------------------------------------------------------------------------------------------------------------------|
+| Version     | Date       | Pull Request                                                                                                    | Subject                                  |
+|:------------|:-----------|:----------------------------------------------------------------------------------------------------------------|:-----------------------------------------|
+| 0.1.0       | 2026-01-11 | [71295](https://github.com/airbytehq/airbyte/pull/71295)                                                          | Created Cloudwatch Logs source connector |
 
 </details>
