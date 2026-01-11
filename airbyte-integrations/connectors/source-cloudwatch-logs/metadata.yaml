@@ -18,6 +18,7 @@ data:
   remoteRegistries:
     pypi:
       enabled: false
+      packageName: airbyte-source-cloudwatch-logs
   registryOverrides:
     cloud:
       enabled: false
@@ -27,7 +28,7 @@ data:
   supportLevel: community
   tags:
     - language:python
-    - cdk:python-api-based
+    - cdk:python
   connectorTestSuitesOptions:
     - suite: unitTests
     - suite: acceptanceTests
