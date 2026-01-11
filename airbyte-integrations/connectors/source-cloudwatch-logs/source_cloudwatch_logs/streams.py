@@ -2,24 +2,24 @@
 # Copyright (c) 2023 Airbyte, Inc., all rights reserved.
 #
 
-from typing import (
-    Any,
-    Iterable,
-    Dict,
-    List,
-    Mapping,
-    Optional,
-    MutableMapping,
-)
 import datetime as dt
-import boto3
 import logging
 from functools import lru_cache
+from typing import (
+    Any,
+    Dict,
+    Iterable,
+    List,
+    Mapping,
+    MutableMapping,
+    Optional,
+)
+import boto3
+from airbyte_protocol_dataclasses.models.airbyte_protocol import SyncMode
 from dateutil import parser
 
-from airbyte_cdk.sources.streams import Stream, IncrementalMixin
 from airbyte_cdk.sources.streams.core import StreamData
-from airbyte_protocol_dataclasses.models.airbyte_protocol import SyncMode
+from airbyte_cdk.sources.streams import Stream, IncrementalMixin
 
 
 class Logs(Stream, IncrementalMixin):
@@ -54,9 +54,7 @@ class Logs(Stream, IncrementalMixin):
         if filter_pattern:
             self.kwargs["filterPattern"] = filter_pattern
 
-        self._logger = logging.getLogger(
-            f"airbyte.source.cloudwatch.{log_group_name}"
-        )
+        self._logger = logging.getLogger(f"airbyte.source.cloudwatch.{log_group_name}")
         self._logger.debug(f"Querying logs with parameters: {self.kwargs}")
 
     @property
@@ -86,9 +84,7 @@ class Logs(Stream, IncrementalMixin):
             return []
 
         # Create 1-day slices between beginning of the log group and now
-        current_time = int(
-            dt.datetime.now(dt.timezone.utc).timestamp() * 1000
-        )  # milliseconds
+        current_time = int(dt.datetime.now(dt.timezone.utc).timestamp() * 1000)  # milliseconds
         one_day_ms = 24 * 60 * 60 * 1000
         return [
             {
@@ -108,9 +104,7 @@ class Logs(Stream, IncrementalMixin):
         events = response.get("events", [])
         if events:
             earliest_timestamp: int = events[0]["timestamp"]
-            self.logger.info(
-                f"Earliest log event timestamp: {earliest_timestamp}"
-            )
+            self.logger.info(f"Earliest log event timestamp: {earliest_timestamp}")
             return earliest_timestamp
         else:
             return None
@@ -141,10 +135,7 @@ class Logs(Stream, IncrementalMixin):
 
         start_time = stream_slice.get("start_time", 0)
         end_time = stream_slice.get("end_time")
-        self._logger.info(
-            f"Fetching logs from: {start_time} to {end_time} for group: "
-            f"{self.log_group_name}"
-        )
+        self._logger.info(f"Fetching logs from: {start_time} to {end_time} for group: {self.log_group_name}")
 
         next_token = None
         while True:

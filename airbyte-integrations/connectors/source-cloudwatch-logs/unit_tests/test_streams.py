@@ -2,9 +2,9 @@
 # Copyright (c) 2023 Airbyte, Inc., all rights reserved.
 #
 
-import pytest
-from unittest.mock import MagicMock
 import datetime as dt
+from unittest.mock import MagicMock
+import pytest
 
 from source_cloudwatch_logs.streams import Logs
 
@@ -54,9 +54,7 @@ def test_read_records(log_stream, fake_events):
         "end_time": fake_events[-1]["timestamp"] + 1000,
     }
 
-    records = list(
-        log_stream.read_records(sync_mode=None, stream_slice=stream_slice)
-    )
+    records = list(log_stream.read_records(sync_mode=None, stream_slice=stream_slice))
 
     assert len(records) == len(fake_events)
     assert records[0]["message"] == "First log message"
@@ -73,9 +71,7 @@ def test_stream_slices(log_stream):
     current_time = int(dt.datetime.utcnow().timestamp() * 1000)
     stream_state = {"timestamp": current_time - 3600000}
 
-    slices = list(
-        log_stream.stream_slices(sync_mode=None, stream_state=stream_state)
-    )
+    slices = list(log_stream.stream_slices(sync_mode=None, stream_state=stream_state))
 
     assert len(slices) == 1
     assert "start_time" in slices[0]

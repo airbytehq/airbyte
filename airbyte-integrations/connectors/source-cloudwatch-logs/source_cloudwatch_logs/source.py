@@ -2,9 +2,9 @@
 # Copyright (c) 2023 Airbyte, Inc., all rights reserved.
 #
 
+import logging
 from typing import Any, List, Mapping, Tuple
 import boto3
-import logging
 
 from airbyte_cdk.sources import AbstractSource
 from airbyte_cdk.sources.streams import Stream
@@ -58,9 +58,7 @@ class SourceCloudwatchLogs(AbstractSource):
         if len(set(custom["name"] for custom in custom_log_reports)) != len(custom_log_reports):
             raise ValueError("Custom log report names must be unique.")
 
-    def check_connection(
-        self, logger: logging.Logger, config: Mapping[str, Any]
-    ) -> Tuple[bool, Any]:
+    def check_connection(self, logger: logging.Logger, config: Mapping[str, Any]) -> Tuple[bool, Any]:
         """
         Checks the authentication to AWS
         :param logger: airbyte logger
@@ -74,9 +72,7 @@ class SourceCloudwatchLogs(AbstractSource):
             client = session.client("logs")
             if config.get("log_group_prefix"):
                 # Validate specific log group
-                client.describe_log_streams(
-                    logGroupPrefix=config["log_group_prefix"]
-                )
+                client.describe_log_streams(logGroupPrefix=config["log_group_prefix"])
             else:
                 # Validate access to at least some log groups
                 client.describe_log_groups(limit=1)
@@ -85,9 +81,7 @@ class SourceCloudwatchLogs(AbstractSource):
             return False, str(e)
 
     @staticmethod
-    def _get_log_group_names(
-        config: Mapping[str, Any], session: boto3.Session
-    ) -> List[str]:
+    def _get_log_group_names(config: Mapping[str, Any], session: boto3.Session) -> List[str]:
         client = session.client("logs")
 
         groups = []
