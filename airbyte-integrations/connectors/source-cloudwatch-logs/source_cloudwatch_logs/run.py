@@ -1,3 +1,7 @@
+#
+# Copyright (c) 2023 Airbyte, Inc., all rights reserved.
+#
+
 import sys
 from source_cloudwatch_logs.source import SourceCloudwatchLogs
 from airbyte_cdk.entrypoint import launch

@@ -1,3 +1,7 @@
+#
+# Copyright (c) 2023 Airbyte, Inc., all rights reserved.
+#
+
 import pytest
 from unittest.mock import patch, MagicMock
 from source_cloudwatch_logs.source import SourceCloudwatchLogs
