@@ -1,0 +1,8 @@
+{
+  "hostname": "localhost",
+  "port": 3306,
+  "database": "replace_me_database",
+  "username": "replace_me_username",
+  "password": "replace_me_password",
+  "ssl_mode": "disabled"
+}

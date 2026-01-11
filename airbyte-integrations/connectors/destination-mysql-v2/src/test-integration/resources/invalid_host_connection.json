@@ -1,0 +1,8 @@
+{
+  "hostname": "nonexistent.invalid.host.local",
+  "port": 3306,
+  "database": "test_db",
+  "username": "root",
+  "password": "testpassword",
+  "ssl_mode": "disabled"
+}
