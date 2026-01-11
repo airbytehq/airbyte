@@ -11,6 +11,9 @@ data:
   icon: icon.png
   license: ELv2
   name: CloudwatchLogs
+  remoteRegistries:
+    pypi:
+      enabled: false
   tags:
     - language:python
   registries:
