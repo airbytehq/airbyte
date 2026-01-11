@@ -375,6 +375,7 @@ Now, you can identify the latest version of the 'Alice' record by querying wheth
 
 | Version | Date       | Pull Request                                               | Subject                                                                                                                         |
 |:--------|:-----------|:-----------------------------------------------------------|:--------------------------------------------------------------------------------------------------------------------------------|
+| 0.3.42 | 2026-01-01 | [71079](https://github.com/airbytehq/airbyte/pull/71079) | Upgrade to Bulk CDK 0.1.93. |
 | 0.3.41  | 2025-11-06 | [69232](https://github.com/airbytehq/airbyte/pull/69232) | Upgrade to Bulk CDK 0.1.69. Changes to handle changes in commit patterns                                                        |
 | 0.3.40  | 2025-11-01 | [69133](https://github.com/airbytehq/airbyte/pull/69133) | Upgrade to Bulk CDK 0.1.61.                                                                                                     |
 | 0.3.39  | 2025-10-16 | [68108](https://github.com/airbytehq/airbyte/pull/68108)   | Implement Polaris support                                                                                                       |
