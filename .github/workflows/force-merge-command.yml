@@ -109,9 +109,8 @@ jobs:
             >
             > A PR must have at least one approval before it can be force-merged.
             >
-            > **Options:**
-            > - Request a review from a team member with write access
-            > - Use `/ai-review` to get an AI-powered code review if no human reviewer is available
+            > Please request approval from a human reviewer
+            > or use `/ai-review` to request an AI-powered approval.
 
       - name: Fail if not approved
         if: steps.check-approval.outputs.approved != 'true'
