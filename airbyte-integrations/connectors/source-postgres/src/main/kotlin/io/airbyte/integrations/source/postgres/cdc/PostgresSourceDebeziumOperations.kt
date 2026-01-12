@@ -87,7 +87,7 @@ class PostgresSourceDebeziumOperations(val config: PostgresSourceConfiguration) 
         }
     }
 
-        val cdcConfig = config.cdc!!
+    val cdcConfig = config.cdc!!
 
     val commonPropertiesBuilder =
         DebeziumPropertiesBuilder()
