@@ -151,9 +151,10 @@ definitions:
               {%- set requested_profile_names = config.get("profile_names", []) -%}
               {%- set requested_marketplace_ids = config.get("marketplace_ids", []) -%}
               {%- set has_filters = requested_profiles or requested_profile_names or requested_marketplace_ids -%}
+              {%- set account_info = record.get("accountInfo", {}) -%}
               {%- set matches_profile_id = record["profileId"] in requested_profiles -%}
-              {%- set matches_profile_name = record["accountInfo"]["name"] in requested_profile_names -%}
-              {%- set matches_marketplace_id = record["accountInfo"]["marketplaceStringId"] in requested_marketplace_ids -%}
+              {%- set matches_profile_name = account_info.get("name", "") in requested_profile_names if requested_profile_names else false -%}
+              {%- set matches_marketplace_id = account_info.get("marketplaceStringId", "") in requested_marketplace_ids if requested_marketplace_ids else false -%}
               {{ matches_profile_id or matches_profile_name or matches_marketplace_id if has_filters else True }}
         paginator:
           type: NoPagination
