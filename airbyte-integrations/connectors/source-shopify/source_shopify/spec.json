@@ -119,6 +119,15 @@
         "default": 100000,
         "minimum": 15000,
         "maximum": 1000000
+      },
+      "lookback_window_in_days": {
+        "type": "integer",
+        "title": "Lookback Window (in days)",
+        "description": "The number of days to look back for records that may have been missed due to race conditions or late-arriving data. This is useful for ensuring data completeness in incremental syncs. Setting this to 1 or more will re-fetch records from the specified number of days before the last sync state.",
+        "default": 0,
+        "minimum": 0,
+        "maximum": 30,
+        "order": 7
       }
     }
   },

@@ -44,10 +44,14 @@ For existing **Airbyte Cloud** customers, if you are currently using the **API P
 <FieldAnchor field="shop">
 4. The **Shopify Store** field will be automatically filled after you authenticate your Shopify account based on the store you selected. Once populated, confirm the value is accurate.
 </FieldAnchor>
+
 <FieldAnchor field="start_date">
 5. (Optional) You may set a **Replication Start Date** as the starting point for your data replication. Any data created before this date will not be synced. Defaults to January 1st, 2020.
 </FieldAnchor>
-6. Click **Set up source** and wait for the connection test to complete.
+<FieldAnchor field="lookback_window_in_days">
+6. (Optional) You may set a **Lookback Window** (in days) to re-fetch records from a specified number of days before the last sync state. This helps capture records that may have been missed due to race conditions or late-arriving data during incremental syncs. Valid values are 0-30 days. Defaults to 0 (disabled).
+</FieldAnchor>
+7. Click **Set up source** and wait for the connection test to complete.
 <!-- /env:cloud -->
 
 <!-- env:oss -->
@@ -77,7 +81,8 @@ Authentication to the Shopify API requires a [custom application](https://help.s
 2. Enter your **Shopify Store** name. You can find this in your URL when logged in to Shopify or within the Store details section of your Settings.
 3. For **API Password**, enter your custom application's Admin API access token.
 4. (Optional) You may set a **Replication Start Date** as the starting point for your data replication. Any data created before this date will not be synced. Please note that this defaults to January 1st, 2020.
-5. Click **Set up source** and wait for the connection test to complete.
+5. (Optional) You may set a **Lookback Window** (in days) to re-fetch records from a specified number of days before the last sync state. This helps capture records that may have been missed due to race conditions or late-arriving data during incremental syncs. Valid values are 0-30 days. Defaults to 0 (disabled).
+6. Click **Set up source** and wait for the connection test to complete.
 
 ### Custom app scopes
 
@@ -237,6 +242,7 @@ For all `Shopify GraphQL BULK` api requests these limitations are applied: https
 - If you encounter access errors while using **OAuth2.0** authentication, please make sure you've followed this [Shopify Article](https://help.shopify.com/en/partners/dashboard/managing-stores/request-access#request-access) to request the access to the client's store first. Once the access is granted, you should be able to proceed with **OAuth2.0** authentication.
 - If you recieve a "The BULK job couldn't be created at this time, since another job is running." error, please [check your operation's progress](https://shopify.dev/docs/api/usage/bulk-operations/queries#check-an-operations-progress) with the `Shopify GraphQL BULK` api.
 - If you need to cancel a `Shopify GraphQL BULK`job, please follow [these steps](https://shopify.dev/docs/api/usage/bulk-operations/queries#canceling-an-operation).  You will need the current in-progress job ID to cancel.
+- If you notice missing records during incremental syncs, consider configuring a **Lookback Window**. Shopify's API may occasionally have delays in updating `updated_at` timestamps, which can cause records to be missed during incremental syncs. Setting a lookback window of 1-3 days will re-fetch recent records on each sync to ensure data completeness. Note that this will result in some duplicate API calls but ensures no records are missed.
 - Check out common troubleshooting issues for the Shopify source connector on our Airbyte Forum [here](https://github.com/airbytehq/airbyte/discussions).
 
 </details>
@@ -249,6 +255,7 @@ For all `Shopify GraphQL BULK` api requests these limitations are applied: https
 
 | Version    | Date       | Pull Request                                             | Subject                                                                                                                                                                                                                                                                                                                                                                                   |
 |:-----------|:-----------|:---------------------------------------------------------|:------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------|
+| 3.1.2 | 2026-01-07 | [70986](https://github.com/airbytehq/airbyte/pull/70986) | Add optional `lookback_window_in_days` configuration (0-30 days) to re-fetch recent records during incremental syncs, helping capture records missed due to race conditions or late-arriving data |
 | 3.1.1 | 2026-01-06 | [71035](https://github.com/airbytehq/airbyte/pull/71035) | Fix IndexError in countries stream when profile_location_groups is empty |
 | 3.1.0 | 2026-01-05 | [71005](https://github.com/airbytehq/airbyte/pull/71005) | Add `deleted_products` stream using GraphQL Events API |
 | 3.0.13 | 2025-10-21 | [68245](https://github.com/airbytehq/airbyte/pull/68245) | Update dependencies |
