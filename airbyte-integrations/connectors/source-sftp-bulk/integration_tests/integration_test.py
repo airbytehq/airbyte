@@ -68,9 +68,9 @@ def test_check_valid_config_private_key(configured_catalog: ConfiguredAirbyteCat
 def test_check_valid_config_private_key_with_passphrase(
     configured_catalog: ConfiguredAirbyteCatalog, config_private_key_with_passphrase: Mapping[str, Any]
 ):
-    outcome = SourceSFTPBulk(
-        catalog=configured_catalog, config=config_private_key_with_passphrase, state=None
-    ).check(logger, config_private_key_with_passphrase)
+    outcome = SourceSFTPBulk(catalog=configured_catalog, config=config_private_key_with_passphrase, state=None).check(
+        logger, config_private_key_with_passphrase
+    )
     assert outcome.status == Status.SUCCEEDED
 
 

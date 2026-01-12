@@ -93,7 +93,7 @@ def connector_setup_fixture(docker_client) -> None:
         f.write(public_key + "\n")
     with open(pub_key_with_passphrase_path, "w") as f:
         f.write(public_key_with_passphrase + "\n")
-        
+
     config = load_config("config_password.json")
     container = docker_client.containers.run(
         "atmoz/sftp",
