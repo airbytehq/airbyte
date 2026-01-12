@@ -1,5 +1,5 @@
 /*
- * Copyright (c) 2024 Airbyte, Inc., all rights reserved.
+ * Copyright (c) 2026 Airbyte, Inc., all rights reserved.
  */
 
 package io.airbyte.integrations.destination.s3_data_lake.io
@@ -35,6 +35,9 @@ import org.apache.iceberg.aws.AwsProperties
 import org.apache.iceberg.aws.s3.S3FileIO
 import org.apache.iceberg.aws.s3.S3FileIOProperties
 import org.apache.iceberg.catalog.Catalog
+import org.apache.iceberg.rest.auth.OAuth2Properties.CREDENTIAL
+import org.apache.iceberg.rest.auth.OAuth2Properties.OAUTH2_SERVER_URI
+import org.apache.iceberg.rest.auth.OAuth2Properties.SCOPE
 import org.projectnessie.client.NessieConfigConstants
 
 private const val AWS_REGION = "aws.region"
@@ -157,8 +160,9 @@ class S3DataLakeUtil(
                 CatalogUtil.ICEBERG_CATALOG_TYPE to ICEBERG_CATALOG_TYPE_REST,
                 AwsClientProperties.CLIENT_REGION to region,
                 URI to catalogConfig.serverUri,
-                "credential" to credential,
-                "scope" to "PRINCIPAL_ROLE:ALL",
+                CREDENTIAL to credential,
+                SCOPE to catalogConfig.scope,
+                OAUTH2_SERVER_URI to catalogConfig.oauth2ServerUri,
                 CatalogProperties.WAREHOUSE_LOCATION to catalogConfig.catalogName,
                 S3FileIOProperties.ACCESS_KEY_ID to awsAccessKeyId,
                 S3FileIOProperties.SECRET_ACCESS_KEY to awsSecretAccessKey,

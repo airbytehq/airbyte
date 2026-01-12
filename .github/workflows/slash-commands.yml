@@ -62,6 +62,7 @@ jobs:
             ai-create-docs-pr
             ai-prove-fix
             ai-release-watch
+            ai-review
             approve-regression-tests
             bump-bulk-cdk-version
             bump-progressive-rollout-version
