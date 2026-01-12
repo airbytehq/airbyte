@@ -170,13 +170,13 @@ If you need better sync performance and are not experiencing rate limiting error
 | Version    | Date       | Pull Request                                             | Subject                                                                                                                                                                |
 |:-----------|:-----------|:---------------------------------------------------------|:-----------------------------------------------------------------------------------------------------------------------------------------------------------------------|
 | 7.3.11 | 2026-01-12 | [71266](https://github.com/airbytehq/airbyte/pull/71266) | Cap start date to 60 days to match Amazon Ads API limitation |
-| 7.3.10 | 2025-12-16 | [70937](https://github.com/airbytehq/airbyte/pull/70937) | Update dependencies |
+| 7.3.10 | 2025-12-19 | [70937](https://github.com/airbytehq/airbyte/pull/70937) | Update dependencies |
 | 7.3.9 | 2025-12-11 | [69836](https://github.com/airbytehq/airbyte/pull/69836) | Increase max concurrency to 20 and add rate limits documentation |
 | 7.3.8 | 2025-11-25 | [69911](https://github.com/airbytehq/airbyte/pull/69911) | Update dependencies |
 | 7.3.7 | 2025-10-29 | [69040](https://github.com/airbytehq/airbyte/pull/69040) | Update dependencies |
 | 7.3.6 | 2025-10-21 | [68579](https://github.com/airbytehq/airbyte/pull/68579) | Raise report creation errors as customer config errors instead of system errors. |
 | 7.3.5 | 2025-09-30 | [66760](https://github.com/airbytehq/airbyte/pull/66760) | Update dependencies |
-| 7.3.4 | 2025-09-08 | [65992](https://github.com/airbytehq/airbyte/pull/65992) | Update to CDK v7 |
+| 7.3.4 | 2025-09-09 | [65992](https://github.com/airbytehq/airbyte/pull/65992) | Update to CDK v7 |
 | 7.3.3 | 2025-09-09 | [66032](https://github.com/airbytehq/airbyte/pull/66032) | Update dependencies |
 | 7.3.2 | 2025-08-09 | [64654](https://github.com/airbytehq/airbyte/pull/64654) | Update dependencies |
 | 7.3.1 | 2025-07-19 | [60633](https://github.com/airbytehq/airbyte/pull/60633) | Update dependencies |
