@@ -1,5 +1,5 @@
 /*
- * Copyright (c) 2025 Airbyte, Inc., all rights reserved.
+ * Copyright (c) 2026 Airbyte, Inc., all rights reserved.
  */
 
 import io.airbyte.cdk.load.integrationTest.DLQ_INTEGRATION_TEST_ENV
