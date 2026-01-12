@@ -105,7 +105,7 @@ If you encounter 403 errors, check the following:
 
 | Version | Date       | Pull Request                                             | Subject                                                                                                                                                                                                                                           |
 |:--------|:-----------| :------------------------------------------------------- |:--------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------|
-| 1.3.21 | 2025-12-16 | [70736](https://github.com/airbytehq/airbyte/pull/70736) | Update dependencies |
+| 1.3.21 | 2025-12-18 | [70736](https://github.com/airbytehq/airbyte/pull/70736) | Update dependencies |
 | 1.3.20 | 2025-11-25 | [69988](https://github.com/airbytehq/airbyte/pull/69988) | Update dependencies |
 | 1.3.19 | 2025-11-18 | [69685](https://github.com/airbytehq/airbyte/pull/69685) | Update dependencies |
 | 1.3.18 | 2025-10-29 | [68852](https://github.com/airbytehq/airbyte/pull/68852) | Update dependencies |
@@ -115,7 +115,7 @@ If you encounter 403 errors, check the following:
 | 1.3.14 | 2025-10-07 | [67227](https://github.com/airbytehq/airbyte/pull/67227) | Update dependencies |
 | 1.3.13 | 2025-09-30 | [66871](https://github.com/airbytehq/airbyte/pull/66871) | Update dependencies |
 | 1.3.12 | 2025-09-23 | [62286](https://github.com/airbytehq/airbyte/pull/62286) | Update dependencies |
-| 1.3.11 | 2025-09-11 | [66078](https://github.com/airbytehq/airbyte/pull/66078) | Update to CDK v7 |
+| 1.3.11 | 2025-09-15 | [66078](https://github.com/airbytehq/airbyte/pull/66078) | Update to CDK v7 |
 | 1.3.10 | 2025-06-21 | [61826](https://github.com/airbytehq/airbyte/pull/61826) | Update dependencies |
 | 1.3.9 | 2025-06-14 | [61314](https://github.com/airbytehq/airbyte/pull/61314) | Update dependencies |
 | 1.3.8 | 2025-05-25 | [60199](https://github.com/airbytehq/airbyte/pull/60199) | Update dependencies |
