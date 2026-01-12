@@ -186,7 +186,7 @@ For more details, see [Recharge API Rate Limits](https://developer.rechargepayme
 | 2.6.3 | 2025-01-25 | [52468](https://github.com/airbytehq/airbyte/pull/52468) | Update dependencies |
 | 2.6.2 | 2025-01-18 | [51914](https://github.com/airbytehq/airbyte/pull/51914) | Update dependencies |
 | 2.6.1 | 2025-01-11 | [51333](https://github.com/airbytehq/airbyte/pull/51333) | Update dependencies |
-| 2.6.0 | 2025-01-02 | [48382](https://github.com/airbytehq/airbyte/pull/49926) | Add new stream `bundle_selections` |
+| 2.6.0 | 2025-01-02 | [49926](https://github.com/airbytehq/airbyte/pull/49926) | Add new stream `bundle_selections` |
 | 2.5.4 | 2025-01-04 | [50927](https://github.com/airbytehq/airbyte/pull/50927) | Update dependencies |
 | 2.5.3 | 2024-12-28 | [50724](https://github.com/airbytehq/airbyte/pull/50724) | Update dependencies |
 | 2.5.2 | 2024-12-21 | [50265](https://github.com/airbytehq/airbyte/pull/50265) | Update dependencies |
