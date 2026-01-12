@@ -10,7 +10,6 @@ import io.airbyte.cdk.load.write.BasicFunctionalityIntegrationTest
 import io.airbyte.cdk.load.write.SchematizedNestedValueBehavior
 import io.airbyte.cdk.load.write.UnionBehavior
 import io.airbyte.cdk.load.write.Untyped
-import org.junit.jupiter.api.Test
 
 class DevNullBasicFunctionalityIntegrationTest :
     BasicFunctionalityIntegrationTest(
@@ -29,14 +28,5 @@ class DevNullBasicFunctionalityIntegrationTest :
         supportFileTransfer = false,
         commitDataIncrementally = false,
         allTypesBehavior = Untyped,
-    ) {
-    @Test
-    override fun testBasicWrite() {
-        super.testBasicWrite()
-    }
-
-    @Test
-    override fun testMidSyncCheckpointingStreamState() {
-        super.testMidSyncCheckpointingStreamState()
-    }
-}
+        useDataFlowPipeline = true,
+    )

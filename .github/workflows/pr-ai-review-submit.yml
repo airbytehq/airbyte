@@ -26,7 +26,7 @@ jobs:
           COMMENT_BODY: ${{ github.event.comment.body }}
         run: |
           # Extract the marker from the comment
-          # Format: <!-- pr_ai_review_result: PASS|FAIL; head_sha: abc123 -->
+          # Format: <!-- pr_ai_review_result: APPROVE|FAIL|UNKNOWN|SKIP; head_sha: abc123 -->
           MARKER=$(echo "$COMMENT_BODY" | grep -oP '<!-- pr_ai_review_result: \K[^>]+' | sed 's/ -->//')
 
           if [[ -z "$MARKER" ]]; then
@@ -35,8 +35,8 @@ jobs:
             exit 0
           fi
 
-          # Parse result (PASS or FAIL)
-          RESULT=$(echo "$MARKER" | grep -oP '^[A-Z]+' || echo "UNKNOWN")
+          # Parse result (APPROVE, FAIL, UNKNOWN, or SKIP)
+          RESULT=$(echo "$MARKER" | grep -oP '^[A-Z]+' || echo "NONE")
 
           # Parse head_sha
           HEAD_SHA=$(echo "$MARKER" | grep -oP 'head_sha: \K[a-f0-9]+' || echo "")
@@ -46,7 +46,7 @@ jobs:
           echo "head_sha=$HEAD_SHA" >> $GITHUB_OUTPUT
 
       - name: Authenticate as GitHub App
-        if: steps.parse-marker.outputs.result == 'FAIL'
+        if: steps.parse-marker.outputs.result == 'FAIL' || steps.parse-marker.outputs.result == 'APPROVE'
         uses: actions/create-github-app-token@v2
         id: get-app-token
         with:
@@ -166,8 +166,81 @@ jobs:
             echo "Skipped: Duplicate REQUEST_CHANGES review for same HEAD SHA"
           fi
 
-      - name: Log pass result
-        if: steps.parse-marker.outputs.result == 'PASS'
+      # APPROVE flow (Phase C)
+      - name: Check for existing APPROVE review
+        if: steps.parse-marker.outputs.result == 'APPROVE'
+        id: check-existing-approve
+        env:
+          GH_TOKEN: ${{ steps.get-app-token.outputs.token }}
         run: |
-          echo "All gates passed - no REQUEST_CHANGES review needed"
-          echo "Note: Auto-approval is not enabled. Human review is still required."
+          PR_NUMBER="${{ github.event.issue.number }}"
+          HEAD_SHA="${{ steps.parse-marker.outputs.head_sha }}"
+
+          # Get existing reviews
+          REVIEWS=$(curl -sS \
+            -H "Authorization: Bearer $GH_TOKEN" \
+            -H "Accept: application/vnd.github+json" \
+            "https://api.github.com/repos/${{ github.repository }}/pulls/$PR_NUMBER/reviews")
+
+          # Check for existing APPROVED review from bot for same HEAD SHA
+          EXISTING=$(echo "$REVIEWS" | jq -r --arg sha "$HEAD_SHA" \
+            '[.[] | select(.state == "APPROVED" and .commit_id == $sha and (.user.type == "Bot"))] | length')
+
+          if [[ "$EXISTING" -gt 0 ]]; then
+            echo "Existing APPROVE review found for HEAD SHA $HEAD_SHA - skipping duplicate"
+            echo "skip=true" >> $GITHUB_OUTPUT
+            exit 0
+          fi
+
+          echo "No existing APPROVE review for this HEAD SHA"
+          echo "skip=false" >> $GITHUB_OUTPUT
+
+      - name: Submit APPROVE review
+        if: steps.parse-marker.outputs.result == 'APPROVE' && steps.check-existing-approve.outputs.skip != 'true'
+        env:
+          GH_TOKEN: ${{ steps.get-app-token.outputs.token }}
+        run: |
+          PR_NUMBER="${{ github.event.issue.number }}"
+          HEAD_SHA="${{ steps.parse-marker.outputs.head_sha }}"
+
+          echo "Submitting APPROVE review for PR #$PR_NUMBER at HEAD SHA $HEAD_SHA"
+
+          # Submit the review
+          RESPONSE=$(curl -sS -X POST \
+            -H "Authorization: Bearer $GH_TOKEN" \
+            -H "Accept: application/vnd.github+json" \
+            "https://api.github.com/repos/${{ github.repository }}/pulls/$PR_NUMBER/reviews" \
+            -d @- <<EOF
+          {
+            "commit_id": "$HEAD_SHA",
+            "event": "APPROVE",
+            "body": "**AI PR Review: All Gates Pass**\n\nAll 6 gates (CI/Tests, Security, Safety/Reversibility, Operational Risk, Pre-Release Validation, PR Quality) have been evaluated and passed.\n\nSee the gate report comment above for details.\n\n> This review was automatically submitted by the AI PR Review system."
+          }
+          EOF
+          )
+
+          # Check if review was created successfully
+          REVIEW_ID=$(echo "$RESPONSE" | jq -r '.id // empty')
+          if [[ -n "$REVIEW_ID" ]]; then
+            echo "Successfully submitted APPROVE review (ID: $REVIEW_ID)"
+          else
+            echo "Failed to submit review. Response:"
+            echo "$RESPONSE" | jq
+            exit 1
+          fi
+
+      - name: Log APPROVE skip reason
+        if: steps.parse-marker.outputs.result == 'APPROVE' && steps.check-existing-approve.outputs.skip == 'true'
+        run: |
+          echo "Skipped: Duplicate APPROVE review for same HEAD SHA"
+
+      - name: Log UNKNOWN result
+        if: steps.parse-marker.outputs.result == 'UNKNOWN'
+        run: |
+          echo "Some gates are inconclusive (UNKNOWN) - no automated review submitted"
+          echo "Human review is recommended for this PR"
+
+      - name: Log SKIP result
+        if: steps.parse-marker.outputs.result == 'SKIP'
+        run: |
+          echo "Review skipped due to override or escalation label"
