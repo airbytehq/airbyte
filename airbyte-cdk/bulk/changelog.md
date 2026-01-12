@@ -1,3 +1,7 @@
+## Version 0.1.102
+
+load cdk: add schema regression test
+
 ## Version 0.1.101
 
 load cdk: Introduce scope and oauth server uri attributes in iceberg polaris spec
