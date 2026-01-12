@@ -112,7 +112,7 @@ class PostgresSourceCursorBasedIntegrationTest {
                     primaryKeyColumnIDs = listOf(listOf("k")),
                 )
             val stream: AirbyteStream =
-                PostgresSourceStreamFactory()
+                PostgresSourceStreamFactory(connectionFactory)
                     .create(PostgresSourceConfigurationFactory().make(config), discoveredStream)
 
             val configuredStream: ConfiguredAirbyteStream =
