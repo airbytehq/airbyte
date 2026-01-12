@@ -116,18 +116,21 @@ class PostgresSourceStreamFactory(val jdbcConnectionFactory: JdbcConnectionFacto
         val isXmin = postgresConfig.incrementalConfiguration is XminIncrementalConfiguration
         var isView = false
         discoveredStream.id.namespace?.let { namespace ->
-            if (viewsBySchema.containsKey(namespace).not()) {
-                viewsBySchema[namespace] = getViewsInSchema(namespace)
-            }
-            isView = viewsBySchema[namespace]?.contains(discoveredStream.id.name) == true
+            // TO-DO: unify views queries for all schemas in a single query.
+            isView = viewsBySchema.getOrPut(namespace) {
+                getViewsInSchema(namespace)
+            }.contains(discoveredStream.id.name) == true
         }
 
+        val supportsIncremental =
+            when {
+                isXmin -> !isView
+                isCdc -> hasPK
+                else -> hasPotentialCursorFields
+            }
         val syncModes =
             when {
-                // Incremental sync is only provided as a sync option if the stream has a potential
-                // cursor field or is configured as CDC or Xmin with a valid primary key.
-                isXmin.not() && (isCdc.not() && hasPotentialCursorFields || isCdc && hasPK) ||
-                    isXmin && isView.not() -> listOf(SyncMode.FULL_REFRESH, SyncMode.INCREMENTAL)
+                supportsIncremental -> listOf(SyncMode.FULL_REFRESH, SyncMode.INCREMENTAL)
                 else -> listOf(SyncMode.FULL_REFRESH)
             }
         val primaryKey: List<List<String>> =

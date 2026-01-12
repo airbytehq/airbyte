@@ -342,7 +342,7 @@ open class PostgresSourceJdbcPartitionFactory(
                     { stmt ->
                         stmt.setString(
                             1,
-                            """"${streamState.stream.namespace}"."${streamState.stream.name}""""
+                            with (streamState.stream) { toQualifiedTableName(namespace, name) }
                         )
                     },
                     { rs -> jdbcFieldType.jdbcGetter.get(rs, 1) }
